@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -25,7 +26,9 @@ from spectrum_systems.modules.runtime.review_signal_classifier import classify_r
 from spectrum_systems.modules.runtime.review_signal_consumer import build_review_integration_packet
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
-_COMMAND_MARKERS = ("/governed-next-step", "/run-ril", "/roadmap-2step")
+_COMMAND_MARKERS = ("/governed-next-step", "/run-ril", "/roadmap-draft", "/roadmap-approve", "/roadmap-2step")
+_ROADMAP_DRAFT_DIR = Path("artifacts/roadmap_drafts")
+_DRAFT_REF_PATTERN = re.compile(r"\bdraft_id\s*[:=]\s*([A-Za-z0-9_-]+)\b", re.IGNORECASE)
 
 
 class GithubReviewIngestionError(ValueError):
@@ -99,7 +102,7 @@ def _extract_review_body(event_name: str, payload: dict[str, Any], review_source
         marker = next((candidate for candidate in _COMMAND_MARKERS if candidate in body), None)
         if marker is None:
             raise GithubReviewIngestionError(
-                "issue_comment requires a command marker (/governed-next-step or /run-ril or /roadmap-2step)"
+                "issue_comment requires a command marker (/governed-next-step or /run-ril or /roadmap-draft or /roadmap-approve)"
             )
 
         comment_id = comment.get("id")
@@ -317,6 +320,74 @@ def _build_github_review_handoff_artifact(
     }
 
 
+def _extract_draft_reference(command_body: str) -> str | None:
+    match = _DRAFT_REF_PATTERN.search(command_body)
+    if match is None:
+        return None
+    ref = match.group(1).strip()
+    return ref or None
+
+
+def _persist_roadmap_draft(*, roadmap_artifact: dict[str, Any], emitted_at: str, pr_number: int, source_event_ref: str) -> tuple[str, str]:
+    roadmap_id = _require_non_empty_str(roadmap_artifact.get("roadmap_id"), field="roadmap_two_step_artifact.roadmap_id")
+    draft_id = deterministic_id(
+        prefix="rmd",
+        namespace="github_roadmap_draft",
+        payload={
+            "pr_number": pr_number,
+            "roadmap_id": roadmap_id,
+            "source_event_ref": source_event_ref,
+            "source_refs": roadmap_artifact.get("source_refs", []),
+        },
+    ).upper()
+    draft_dir = _ROADMAP_DRAFT_DIR / f"pr-{pr_number}" / draft_id
+    draft_dir.mkdir(parents=True, exist_ok=True)
+
+    roadmap_path = draft_dir / "roadmap_two_step_artifact.json"
+    metadata_path = draft_dir / "metadata.json"
+    _write_json(roadmap_path, roadmap_artifact)
+    metadata = {
+        "draft_id": draft_id,
+        "roadmap_id": roadmap_id,
+        "pr_number": pr_number,
+        "source_event_ref": source_event_ref,
+        "source_refs": roadmap_artifact.get("source_refs", []),
+        "created_at": emitted_at,
+        "bounded": True,
+    }
+    _write_json(metadata_path, metadata)
+    _write_json(_ROADMAP_DRAFT_DIR / f"pr-{pr_number}" / "LATEST_DRAFT.json", metadata)
+    return draft_id, str(roadmap_path)
+
+
+def _resolve_approved_roadmap_artifact(*, pr_number: int, review_body: str) -> tuple[str, str]:
+    requested_draft_id = _extract_draft_reference(review_body)
+    pr_root = _ROADMAP_DRAFT_DIR / f"pr-{pr_number}"
+    if requested_draft_id is None:
+        latest_path = pr_root / "LATEST_DRAFT.json"
+        if not latest_path.exists():
+            raise GithubReviewIngestionError("roadmap approval requires an existing draft (missing LATEST_DRAFT.json)")
+        latest = _load_json(latest_path)
+        requested_draft_id = _require_non_empty_str(latest.get("draft_id"), field="LATEST_DRAFT.draft_id")
+
+    draft_dir = pr_root / requested_draft_id
+    roadmap_path = draft_dir / "roadmap_two_step_artifact.json"
+    metadata_path = draft_dir / "metadata.json"
+    if not roadmap_path.exists() or not metadata_path.exists():
+        raise GithubReviewIngestionError(f"roadmap approval referenced missing draft artifact: {requested_draft_id}")
+    roadmap = _load_json(roadmap_path)
+    validate_artifact(roadmap, "roadmap_two_step_artifact")
+    _ = _load_json(metadata_path)
+    return requested_draft_id, str(roadmap_path)
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise GithubReviewIngestionError(f"expected JSON object in {path}")
+    return payload
+
+
 def ingest_github_review_event(
     *,
     event_name: str,
@@ -399,7 +470,8 @@ def ingest_github_review_event(
         "review_projection_bundle_artifact": str(artifact_dir / "review_projection_bundle_artifact.json"),
         "review_consumer_output_bundle_artifact": str(artifact_dir / "review_consumer_output_bundle_artifact.json"),
     }
-    if normalized.command_marker == "/roadmap-2step":
+    draft_id: str | None = None
+    if normalized.command_marker in {"/roadmap-draft", "/roadmap-2step"}:
         roadmap_artifact = build_two_step_roadmap_from_sources(
             {
                 "command_body": normalized.review_body,
@@ -409,9 +481,23 @@ def ingest_github_review_event(
                 "source_event_ref": normalized.source_event_ref,
             }
         )
-        roadmap_path = artifact_dir / "roadmap_two_step_artifact.json"
-        _write_json(roadmap_path, roadmap_artifact)
+        draft_id, roadmap_path = _persist_roadmap_draft(
+            roadmap_artifact=roadmap_artifact,
+            emitted_at=emitted_at,
+            pr_number=normalized.pr_number,
+            source_event_ref=normalized.source_event_ref,
+        )
+        _write_json(artifact_dir / "roadmap_two_step_artifact.json", roadmap_artifact)
         artifact_paths["roadmap_two_step_artifact"] = str(roadmap_path)
+        artifact_paths["roadmap_draft_metadata"] = str(Path(roadmap_path).parent / "metadata.json")
+    elif normalized.command_marker == "/roadmap-approve":
+        approved_draft_id, approved_roadmap_path = _resolve_approved_roadmap_artifact(
+            pr_number=normalized.pr_number,
+            review_body=normalized.review_body,
+        )
+        artifact_paths["roadmap_two_step_artifact"] = approved_roadmap_path
+        artifact_paths["roadmap_draft_metadata"] = str(Path(approved_roadmap_path).parent / "metadata.json")
+        draft_id = approved_draft_id
 
     summary = {
         "ingestion_id": normalized.ingestion_id,
@@ -421,6 +507,9 @@ def ingest_github_review_event(
         "review_source": normalized.review_source,
         "run_mode": normalized.run_mode,
         "source_event_ref": normalized.source_event_ref,
+        "command_marker": normalized.command_marker,
+        "review_body": normalized.review_body,
+        "roadmap_draft_id": draft_id,
         "artifact_dir": str(artifact_dir),
         "artifact_paths": artifact_paths,
         "artifacts_produced": sorted(artifact_paths.keys()),

@@ -14,7 +14,8 @@ from typing import Any
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
-_COMMAND = "/roadmap-2step"
+_COMMAND = "/roadmap-draft"
+_LEGACY_COMMAND = "/roadmap-2step"
 _REQUIRED_DOCS = (
     Path("docs/vision.md"),
     Path("docs/roadmaps/system_roadmap.md"),
@@ -49,6 +50,8 @@ def _extract_keywords(command_body: str) -> list[str]:
     normalized = command_body.lower().replace("\n", " ")
     if _COMMAND in normalized:
         normalized = normalized.replace(_COMMAND, " ")
+    if _LEGACY_COMMAND in normalized:
+        normalized = normalized.replace(_LEGACY_COMMAND, " ")
 
     tokens: list[str] = []
     for raw in normalized.replace(",", " ").replace(":", " ").split():
@@ -108,8 +111,8 @@ def build_two_step_roadmap_from_sources(input_context: dict[str, Any]) -> dict[s
     command_body = _require_non_empty_str(context.get("command_body"), field="input_context.command_body")
     emitted_at = _require_non_empty_str(context.get("emitted_at"), field="input_context.emitted_at")
 
-    if _COMMAND not in command_body:
-        raise GithubRoadmapBuilderError("command_body must include /roadmap-2step marker")
+    if _COMMAND not in command_body and _LEGACY_COMMAND not in command_body:
+        raise GithubRoadmapBuilderError("command_body must include /roadmap-draft marker")
 
     repo_root_raw = context.get("repo_root", ".")
     repo_root = Path(repo_root_raw)

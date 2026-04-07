@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -42,6 +43,8 @@ _OPTIONAL_RIL_KEYS = (
     "roadmap_two_step_artifact",
 )
 _CONTINUATION_ELIGIBLE_DECISIONS = {"hardening_required", "final_verification_required", "continue_bounded"}
+_ROADMAP_DRAFT_DIR = Path("artifacts/roadmap_drafts")
+_DRAFT_REF_PATTERN = re.compile(r"\bdraft_id\s*[:=]\s*([A-Za-z0-9_-]+)\b", re.IGNORECASE)
 
 
 class GithubClosureContinuationError(ValueError):
@@ -59,6 +62,9 @@ class ContinuationInputBundle:
     review_signal: dict[str, Any]
     optional_artifacts: dict[str, dict[str, Any]]
     roadmap_two_step_artifact: dict[str, Any] | None
+    command_marker: str | None
+    review_body: str
+    roadmap_draft_id: str | None
 
 
 @dataclass(frozen=True)
@@ -101,6 +107,47 @@ def _default_emitted_at() -> str:
     return datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def _extract_draft_reference(review_body: str) -> str | None:
+    match = _DRAFT_REF_PATTERN.search(review_body)
+    if match is None:
+        return None
+    token = match.group(1).strip()
+    return token or None
+
+
+def _resolve_and_validate_approved_roadmap(*, pr_number: int, review_body: str, roadmap_from_summary: dict[str, Any] | None, draft_id_from_summary: str | None) -> tuple[dict[str, Any], str]:
+    requested_draft_id = _extract_draft_reference(review_body) or draft_id_from_summary
+    pr_root = _ROADMAP_DRAFT_DIR / f"pr-{pr_number}"
+    latest_metadata_path = pr_root / "LATEST_DRAFT.json"
+    if not latest_metadata_path.exists():
+        raise GithubClosureContinuationError("roadmap approval requires LATEST_DRAFT.json under artifacts/roadmap_drafts")
+    latest_metadata = _load_json(latest_metadata_path, field="LATEST_DRAFT")
+    latest_draft_id = _require_non_empty_str(latest_metadata.get("draft_id"), field="LATEST_DRAFT.draft_id")
+
+    if requested_draft_id is None:
+        requested_draft_id = latest_draft_id
+
+    if requested_draft_id != latest_draft_id and _extract_draft_reference(review_body) is None:
+        raise GithubClosureContinuationError("approval without explicit draft_id must use latest draft")
+
+    draft_dir = pr_root / requested_draft_id
+    roadmap_path = draft_dir / "roadmap_two_step_artifact.json"
+    metadata_path = draft_dir / "metadata.json"
+    if not roadmap_path.exists() or not metadata_path.exists():
+        raise GithubClosureContinuationError(f"approved roadmap draft is missing artifacts: {requested_draft_id}")
+
+    metadata = _load_json(metadata_path, field="roadmap_draft.metadata")
+    metadata_draft_id = _require_non_empty_str(metadata.get("draft_id"), field="roadmap_draft.metadata.draft_id")
+    if metadata_draft_id != requested_draft_id:
+        raise GithubClosureContinuationError("roadmap draft metadata mismatch")
+
+    roadmap = _load_json(roadmap_path, field="roadmap_two_step_artifact")
+    validate_artifact(roadmap, "roadmap_two_step_artifact")
+    if roadmap_from_summary is not None and roadmap_from_summary.get("roadmap_id") != roadmap.get("roadmap_id"):
+        raise GithubClosureContinuationError("approval roadmap artifact is stale relative to resolved draft")
+    return roadmap, requested_draft_id
+
+
 def _load_ingestion_bundle(github_review_handoff_path: Path) -> ContinuationInputBundle:
     handoff = _load_json(github_review_handoff_path, field="github_review_handoff_artifact")
     validate_artifact(handoff, "github_review_handoff_artifact")
@@ -119,12 +166,26 @@ def _load_ingestion_bundle(github_review_handoff_path: Path) -> ContinuationInpu
         candidate = Path(ref)
         if candidate.is_absolute():
             return candidate
-        return handoff_dir / candidate
+        handoff_candidate = handoff_dir / candidate
+        if handoff_candidate.exists():
+            return handoff_candidate
+        return candidate
 
     ingestion_summary_path = _resolve_ref_path(str(artifact_refs["ingestion_summary_artifact"]))
     summary = _load_json(ingestion_summary_path, field="ingestion_summary")
     pr_number = _require_positive_int(summary.get("pr_number"), field="ingestion_summary.pr_number")
     ingestion_id = _require_non_empty_str(summary.get("ingestion_id"), field="ingestion_summary.ingestion_id")
+    command_marker_raw = summary.get("command_marker")
+    command_marker = command_marker_raw.strip() if isinstance(command_marker_raw, str) and command_marker_raw.strip() else None
+    review_body = summary.get("review_body")
+    if not isinstance(review_body, str) or not review_body.strip():
+        review_body = ""
+    roadmap_draft_id_raw = summary.get("roadmap_draft_id")
+    roadmap_draft_id = (
+        roadmap_draft_id_raw.strip()
+        if isinstance(roadmap_draft_id_raw, str) and roadmap_draft_id_raw.strip()
+        else None
+    )
 
     artifact_paths = summary.get("artifact_paths")
     if not isinstance(artifact_paths, dict):
@@ -164,6 +225,15 @@ def _load_ingestion_bundle(github_review_handoff_path: Path) -> ContinuationInpu
                 optional_artifacts[key] = payload
 
     roadmap_two_step_artifact = optional_artifacts.get("roadmap_two_step_artifact")
+    if command_marker == "/roadmap-approve":
+        if not roadmap_two_step_artifact:
+            raise GithubClosureContinuationError("roadmap approval requires roadmap_two_step_artifact in ingestion summary")
+        roadmap_two_step_artifact, roadmap_draft_id = _resolve_and_validate_approved_roadmap(
+            pr_number=pr_number,
+            review_body=review_body,
+            roadmap_from_summary=roadmap_two_step_artifact,
+            draft_id_from_summary=roadmap_draft_id,
+        )
 
     return ContinuationInputBundle(
         ingestion_summary=summary,
@@ -175,6 +245,9 @@ def _load_ingestion_bundle(github_review_handoff_path: Path) -> ContinuationInpu
         review_signal=review_signal,
         optional_artifacts=optional_artifacts,
         roadmap_two_step_artifact=roadmap_two_step_artifact,
+        command_marker=command_marker,
+        review_body=review_body,
+        roadmap_draft_id=roadmap_draft_id,
     )
 
 
@@ -312,6 +385,10 @@ def run_github_closure_continuation(
     retry_budget: int,
 ) -> dict[str, Any]:
     bundle = _load_ingestion_bundle(github_review_handoff_path)
+    if bundle.command_marker == "/roadmap-draft":
+        raise GithubClosureContinuationError("roadmap draft is preview-only and cannot trigger continuation")
+    if bundle.command_marker == "/roadmap-approve" and bundle.roadmap_two_step_artifact is None:
+        raise GithubClosureContinuationError("roadmap approval requires a validated roadmap artifact")
 
     continuation_seed = {
         "pr_number": bundle.pr_number,
@@ -431,6 +508,7 @@ def run_github_closure_continuation(
         "ingestion_id": bundle.ingestion_id,
         "continuation_id": continuation_id,
         "continuation_dir": str(artifact_paths.continuation_dir),
+        "command_marker": bundle.command_marker,
         "cde_decision": decision_type,
         "tlc_ran": tlc_ran,
         "final_terminal_state": final_terminal_state,
@@ -447,6 +525,7 @@ def run_github_closure_continuation(
             {
                 "roadmap_id": bundle.roadmap_two_step_artifact.get("roadmap_id"),
                 "artifact_path": bundle.artifact_paths.get("roadmap_two_step_artifact"),
+                "draft_id": bundle.roadmap_draft_id,
                 "steps": [step.get("description", "") for step in bundle.roadmap_two_step_artifact.get("steps", [])][:2],
             }
             if bundle.roadmap_two_step_artifact is not None

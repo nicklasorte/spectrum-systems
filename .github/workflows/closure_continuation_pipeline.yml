@@ -95,7 +95,54 @@ jobs:
           path: downloaded_review_trigger
           if_no_artifact_found: fail
 
+      - name: Inspect ingestion command marker
+        id: ingestion_gate
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+import json
+from pathlib import Path
+
+summary_path = Path("downloaded_review_trigger/ingestion_result.json")
+if not summary_path.exists():
+    raise SystemExit("missing ingestion_result.json from review-trigger artifacts")
+summary = json.loads(summary_path.read_text(encoding="utf-8"))
+command = summary.get("command_marker")
+if command == "/roadmap-draft":
+    Path("continuation_result.json").write_text(
+        json.dumps(
+            {
+                "status": "skipped",
+                "skip_reason": "roadmap_draft_preview_only",
+                "command_marker": command,
+                "pr_number": summary.get("pr_number"),
+                "ingestion_id": summary.get("ingestion_id"),
+                "tlc_ran": False,
+                "guardrails": {
+                    "draft_does_not_trigger_execution": True,
+                },
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    print("should_continue=false")
+else:
+    print("should_continue=true")
+PY
+          SHOULD_CONTINUE=$(python - <<'PY'
+import json
+from pathlib import Path
+result = json.loads(Path("downloaded_review_trigger/ingestion_result.json").read_text(encoding="utf-8"))
+print("false" if result.get("command_marker") == "/roadmap-draft" else "true")
+PY
+)
+          echo "should_continue=$SHOULD_CONTINUE" >> "$GITHUB_OUTPUT"
+
       - name: Run governed closure + continuation
+        if: steps.ingestion_gate.outputs.should_continue == 'true'
         id: continuation
         env:
           OUTPUT_ROOT: artifacts/github_closure_continuation
@@ -158,6 +205,7 @@ PY
           echo "continuation_dir=$CONTINUATION_DIR" >> "$GITHUB_OUTPUT"
 
       - name: Enforce terminal state and branch-update policy guardrails
+        if: steps.ingestion_gate.outputs.should_continue == 'true'
         run: |
           set -euo pipefail
           python - <<'PY'
@@ -185,6 +233,7 @@ PY
           if-no-files-found: error
 
       - name: Build PR feedback comment payload
+        if: steps.ingestion_gate.outputs.should_continue == 'true'
         id: pr_feedback
         run: |
           set -euo pipefail
@@ -244,6 +293,7 @@ Path("pr_feedback_comment.md").write_text(comment, encoding="utf-8")
 PY
 
       - name: Post PR feedback comment
+        if: steps.ingestion_gate.outputs.should_continue == 'true'
         # Read-only status feedback only: one marker-scoped machine comment is created/updated per PR.
         uses: actions/github-script@v7
         env:
@@ -311,6 +361,19 @@ if not result_path.exists():
 
 payload = json.loads(result_path.read_text(encoding='utf-8'))
 artifact_paths = payload.get('artifact_paths', {})
+
+if payload.get("status") == "skipped":
+    lines = [
+        '## Closure Continuation Pipeline Summary',
+        '',
+        '- Status: **skipped**',
+        f"- Reason: `{payload.get('skip_reason', 'unknown')}`",
+        f"- Command marker: `{payload.get('command_marker')}`",
+        f"- PR: **#{payload.get('pr_number')}**",
+        '- Guardrail: Draft preview does not trigger continuation.',
+    ]
+    Path('summary.md').write_text('\\n'.join(lines) + '\\n', encoding='utf-8')
+    raise SystemExit(0)
 
 lines = [
     '## Closure Continuation Pipeline Summary',

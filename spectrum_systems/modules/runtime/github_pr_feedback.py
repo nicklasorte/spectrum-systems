@@ -203,4 +203,41 @@ def build_pr_feedback_comment(artifacts: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-__all__ = ["GithubPrFeedbackError", "build_pr_feedback_comment"]
+def build_roadmap_draft_feedback_comment(payload: dict[str, Any]) -> str:
+    root = _require_dict(payload, field="payload")
+    roadmap = _require_dict(root.get("roadmap_two_step_artifact"), field="roadmap_two_step_artifact")
+    validate_artifact(roadmap, "roadmap_two_step_artifact")
+    roadmap_id = _require_non_empty_str(roadmap.get("roadmap_id"), field="roadmap_two_step_artifact.roadmap_id")
+    source_refs = roadmap.get("source_refs")
+    if not isinstance(source_refs, list) or len(source_refs) < 1:
+        raise GithubPrFeedbackError("roadmap_two_step_artifact.source_refs must be a non-empty list")
+    steps = roadmap.get("steps")
+    if not isinstance(steps, list) or len(steps) != 2:
+        raise GithubPrFeedbackError("roadmap_two_step_artifact.steps must contain exactly 2 steps")
+    draft_id = _require_non_empty_str(root.get("draft_id"), field="draft_id")
+
+    lines = [
+        "## Spectrum Systems — Roadmap Draft",
+        "",
+        f"- roadmap_id: {roadmap_id}",
+        f"- draft_id: {draft_id}",
+        f"- source_refs: {', '.join(str(ref) for ref in source_refs)}",
+        "- bounded: true",
+    ]
+    for idx, step in enumerate(steps, start=1):
+        if not isinstance(step, dict):
+            raise GithubPrFeedbackError("roadmap_two_step_artifact.steps entries must be objects")
+        description = _require_non_empty_str(step.get("description"), field=f"roadmap_two_step_artifact.steps[{idx - 1}].description")
+        lines.append(f"- step_{idx}: {description}")
+
+    lines.extend(
+        [
+            "",
+            "This is a preview only. No execution has occurred.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+__all__ = ["GithubPrFeedbackError", "build_pr_feedback_comment", "build_roadmap_draft_feedback_comment"]
