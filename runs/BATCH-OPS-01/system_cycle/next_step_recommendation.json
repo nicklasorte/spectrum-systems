@@ -1,0 +1,366 @@
+{
+  "recommendation_id": "NSR-0E9EE4734D4B",
+  "schema_version": "1.7.0",
+  "next_batch_id": "BATCH-I",
+  "continuation_decision": "continue",
+  "stop_reason": "loop_validation_failed",
+  "next_batch_candidate": "BATCH-I",
+  "execution_path_type": "positive_path",
+  "program_alignment_status": "aligned",
+  "program_stop_cause": "none",
+  "program_drift_severity": "low",
+  "next_cycle_decision": "run_next_cycle",
+  "next_cycle_decision_reason_codes": [
+    "healthy_aligned_progress"
+  ],
+  "next_cycle_inputs_ref": "next_cycle_input_bundle:NCB-A2C5B0FA689B",
+  "why": [
+    "adaptive_guardrail_status=alert",
+    "adaptive_policy_review=AEPR-0D0984D0492C",
+    "adaptive_useful_batches_per_run=0.0",
+    "authority_boundary_status=bounded",
+    "bounded_stop_reason=loop_validation_failed",
+    "integration_outcome=deterministic",
+    "next_eligible_candidate=BATCH-I",
+    "program_alignment_status=aligned",
+    "program_drift_severity=low",
+    "roadmap_adjustments_applied=0"
+  ],
+  "blockers": [],
+  "required_reviews": [],
+  "risk_summary": {
+    "level": "medium",
+    "signals": [
+      "adaptive_guardrail_status=alert",
+      "adaptive_safety_trend=watch",
+      "blocking_conditions=0",
+      "determinism_status=deterministic",
+      "replay_status=replayable"
+    ]
+  },
+  "next_step": {
+    "action": "execute next governed cycle for BATCH-I",
+    "why_now": "selected NSC-EXECUTE-NEXT-BATCH via deterministic ranking: program_alignment=5, unblock_potential=1, risk_reduction=2, dependency_readiness=5, review_readiness=3",
+    "blocked_by": [],
+    "watchouts": [
+      "control_state=allow",
+      "do_not_bypass_fail_closed_authority_boundaries",
+      "program_caused_stop=false",
+      "stop_reason=loop_validation_failed"
+    ],
+    "required_artifacts": [
+      "RLV-8571307FA3E7",
+      "core_system_integration_validation:CSIV-6248FE45096A",
+      "roadmap_multi_batch_run_result:RMB-F54563B70A1C"
+    ]
+  },
+  "remediation_plan_ref": "remediation_plan:RMP-B83D71E6A737",
+  "remediation_steps": [
+    {
+      "step_id": "RMS-01",
+      "action": "confirm_root_cause_chain",
+      "why": "stopped_at=loop_validation_failed; primary_chain_reason=loop_validation_failed",
+      "required_artifacts": [
+        "RLV-8571307FA3E7",
+        "core_system_integration_validation:CSIV-6248FE45096A",
+        "roadmap_multi_batch_run_result:RMB-F54563B70A1C",
+        "trace:trace-batch-ops-01"
+      ],
+      "trace_refs": [
+        "trace-batch-ops-01",
+        "stop_reason:loop_validation_failed"
+      ]
+    },
+    {
+      "step_id": "RMS-05",
+      "action": "rerun_bounded_batch_cycle",
+      "why": "verify remediation resolves stop condition without bypassing governance",
+      "required_artifacts": [
+        "RLV-8571307FA3E7",
+        "core_system_integration_validation:CSIV-6248FE45096A",
+        "roadmap_multi_batch_run_result:RMB-F54563B70A1C"
+      ],
+      "trace_refs": [
+        "trace-batch-ops-01",
+        "rerun:bounded_cycle"
+      ]
+    }
+  ],
+  "remediation_plan": {
+    "plan_id": "RMP-B83D71E6A737",
+    "root_cause": "execution_stop_reason:loop_validation_failed",
+    "remediation_steps": [
+      {
+        "step_id": "RMS-01",
+        "action": "confirm_root_cause_chain",
+        "why": "stopped_at=loop_validation_failed; primary_chain_reason=loop_validation_failed",
+        "required_artifacts": [
+          "RLV-8571307FA3E7",
+          "core_system_integration_validation:CSIV-6248FE45096A",
+          "roadmap_multi_batch_run_result:RMB-F54563B70A1C",
+          "trace:trace-batch-ops-01"
+        ],
+        "trace_refs": [
+          "trace-batch-ops-01",
+          "stop_reason:loop_validation_failed"
+        ]
+      },
+      {
+        "step_id": "RMS-05",
+        "action": "rerun_bounded_batch_cycle",
+        "why": "verify remediation resolves stop condition without bypassing governance",
+        "required_artifacts": [
+          "RLV-8571307FA3E7",
+          "core_system_integration_validation:CSIV-6248FE45096A",
+          "roadmap_multi_batch_run_result:RMB-F54563B70A1C"
+        ],
+        "trace_refs": [
+          "trace-batch-ops-01",
+          "rerun:bounded_cycle"
+        ]
+      }
+    ],
+    "required_artifacts": [
+      "RLV-8571307FA3E7",
+      "core_system_integration_validation:CSIV-6248FE45096A",
+      "roadmap_multi_batch_run_result:RMB-F54563B70A1C"
+    ],
+    "expected_outcome": "restore bounded continuation readiness",
+    "risk_level": "medium",
+    "created_at": "2026-04-07T00:32:00Z",
+    "trace_id": "trace-batch-ops-01"
+  },
+  "candidate_evaluation": {
+    "ranking_policy": "program_alignment>unblock_potential>risk_reduction>dependency_readiness>review_readiness",
+    "candidates": [
+      {
+        "candidate_id": "NSC-EXECUTE-NEXT-BATCH",
+        "action": "execute next governed cycle for BATCH-I",
+        "required_artifacts": [
+          "RLV-8571307FA3E7",
+          "core_system_integration_validation:CSIV-6248FE45096A",
+          "roadmap_multi_batch_run_result:RMB-F54563B70A1C"
+        ],
+        "blockers": [],
+        "risk_profile": {
+          "level": "low",
+          "signals": [
+            "authority_boundary_status=bounded",
+            "control_state=allow",
+            "deterministic_outcome=deterministic"
+          ]
+        },
+        "alignment_with_program": {
+          "priority": "roadmap_progression",
+          "justification": "Advances roadmap progression when eligible and unblocked."
+        },
+        "score": 538,
+        "ranking_factors": {
+          "program_alignment": 5,
+          "unblock_potential": 1,
+          "risk_reduction": 2,
+          "dependency_readiness": 5,
+          "review_readiness": 3
+        }
+      }
+    ],
+    "why_not_selected": []
+  },
+  "artifact_refs": {
+    "roadmap_multi_batch_run_result": "roadmap_multi_batch_run_result:RMB-F54563B70A1C",
+    "core_system_integration_validation": "core_system_integration_validation:CSIV-6248FE45096A",
+    "next_cycle_decision": "next_cycle_decision:NCD-B6ED74C4C8B7",
+    "next_cycle_input_bundle": "next_cycle_input_bundle:NCB-A2C5B0FA689B",
+    "trace_id": "trace-batch-ops-01",
+    "replay_refs": [
+      "RLV-8571307FA3E7"
+    ],
+    "upstream_refs": [
+      "context_bundle_v2:ctx-1",
+      "control_execution_result:ctrl-1",
+      "control_loop_certification_pack:cert-1",
+      "eval_result:eval-1",
+      "program_artifact:PRG-1",
+      "review_control_signal:rcs-1",
+      "roadmap_execution_loop_validation:RLV-TEST-001",
+      "roadmap_multi_batch_run_result:RMB-TEST-001",
+      "tpa_gate:gate-1"
+    ],
+    "downstream_refs": [
+      "build_summary:BSR-1A0A9293008F"
+    ],
+    "related_artifacts": [
+      "RLV-8571307FA3E7",
+      "adaptive_execution_observability:AEO-8D0FCED02886",
+      "adaptive_execution_policy_review:AEPR-0D0984D0492C",
+      "adaptive_execution_trend_report:AET-C78ED7E6AED5",
+      "allow_decision_proof:ADP-C803C8C2FE15",
+      "context_bundle_v2:ctx-1",
+      "control_execution_result:ctrl-1",
+      "control_loop_certification_pack:cert-1",
+      "core_system_integration_validation:CSIV-6248FE45096A",
+      "decision_proof_record:DPR-F03F2CDFB27C",
+      "eval_result:eval-1",
+      "failure_taxonomy_record:FTX-EBC118CA21D3",
+      "next_cycle_decision:NCD-B6ED74C4C8B7",
+      "next_cycle_input_bundle:NCB-A2C5B0FA689B",
+      "program_artifact:PRG-1",
+      "promotion_consistency_record:PCR-C0187C4480AE",
+      "remediation_plan:RMP-B83D71E6A737",
+      "review_control_signal:rcs-1",
+      "roadmap_execution_loop_validation:RLV-TEST-001",
+      "roadmap_multi_batch_run_result:RMB-F54563B70A1C",
+      "roadmap_multi_batch_run_result:RMB-TEST-001",
+      "rollback_plan_record:RBP-62CE8ABEFCFB",
+      "tpa_gate:gate-1"
+    ]
+  },
+  "trace_navigation": {
+    "trace_id": "trace-batch-ops-01",
+    "execution_path": [
+      "program_artifact:PRG-1",
+      "review_control_signal:rcs-1",
+      "context_bundle_v2:ctx-1",
+      "tpa_gate:gate-1",
+      "roadmap_execution_loop_validation:RLV-TEST-001",
+      "roadmap_multi_batch_run_result:RMB-TEST-001",
+      "control_execution_result:ctrl-1",
+      "control_loop_certification_pack:cert-1"
+    ],
+    "decision_points": [
+      "PRG:program_artifact_constraints",
+      "RVW:review_gate_assessment",
+      "CTX:context_validation",
+      "TPA:tpa_gate_decision",
+      "RDX:bounded_execution_outcome",
+      "CONTROL:control_decision",
+      "CERT:certification_status"
+    ],
+    "influencing_artifacts": [
+      "context_bundle_v2:ctx-1",
+      "control_execution_result:ctrl-1",
+      "control_loop_certification_pack:cert-1",
+      "eval_result:eval-1",
+      "program_artifact:PRG-1",
+      "review_control_signal:rcs-1",
+      "roadmap_execution_loop_validation:RLV-TEST-001",
+      "roadmap_multi_batch_run_result:RMB-TEST-001",
+      "tpa_gate:gate-1"
+    ],
+    "layer_transitions": [
+      "PRG->RVW",
+      "RVW->CTX",
+      "CTX->TPA",
+      "TPA->RDX",
+      "RDX->CONTROL",
+      "CONTROL->CERT"
+    ],
+    "replay_entry_points": {
+      "replay_from_context": {
+        "required_artifacts": [
+          "context_bundle_v2:ctx-1",
+          "tpa_gate:gate-1"
+        ],
+        "trace_refs": [
+          "trace-batch-ops-01",
+          "context_bundle_v2:ctx-1"
+        ]
+      },
+      "replay_from_plan": {
+        "required_artifacts": [
+          "program_artifact:PRG-1",
+          "review_control_signal:rcs-1",
+          "roadmap_execution_loop_validation:RLV-TEST-001"
+        ],
+        "trace_refs": [
+          "trace-batch-ops-01",
+          "roadmap_execution_loop_validation:RLV-TEST-001"
+        ]
+      },
+      "replay_from_execution": {
+        "required_artifacts": [
+          "roadmap_multi_batch_run_result:RMB-TEST-001",
+          "control_execution_result:ctrl-1",
+          "control_loop_certification_pack:cert-1"
+        ],
+        "trace_refs": [
+          "trace-batch-ops-01",
+          "roadmap_multi_batch_run_result:RMB-TEST-001"
+        ]
+      },
+      "replay_from_failure": {
+        "required_artifacts": [
+          "control_execution_result:ctrl-1"
+        ],
+        "trace_refs": [
+          "trace-batch-ops-01",
+          "control_execution_result:ctrl-1"
+        ]
+      }
+    },
+    "replay_ready": true
+  },
+  "replay_entry_points": {
+    "replay_from_context": {
+      "required_artifacts": [
+        "context_bundle_v2:ctx-1",
+        "core_system_integration_validation:CSIV-6248FE45096A",
+        "tpa_gate:gate-1"
+      ],
+      "trace_refs": [
+        "trace-batch-ops-01",
+        "trace_navigation:CSIV-6248FE45096A"
+      ]
+    },
+    "replay_from_plan": {
+      "required_artifacts": [
+        "core_system_integration_validation:CSIV-6248FE45096A",
+        "program_artifact:PRG-1",
+        "review_control_signal:rcs-1"
+      ],
+      "trace_refs": [
+        "trace-batch-ops-01",
+        "trace_navigation:CSIV-6248FE45096A"
+      ]
+    },
+    "replay_from_execution": {
+      "required_artifacts": [
+        "core_system_integration_validation:CSIV-6248FE45096A",
+        "roadmap_multi_batch_run_result:RMB-F54563B70A1C"
+      ],
+      "trace_refs": [
+        "trace-batch-ops-01",
+        "roadmap_multi_batch_run_result:RMB-F54563B70A1C"
+      ]
+    },
+    "replay_from_failure": {
+      "required_artifacts": [
+        "core_system_integration_validation:CSIV-6248FE45096A"
+      ],
+      "trace_refs": [
+        "trace-batch-ops-01",
+        "core_system_integration_validation:CSIV-6248FE45096A"
+      ]
+    }
+  },
+  "quick_links": [
+    "view trace -> trace_navigation:CSIV-6248FE45096A",
+    "replay this step -> replay_from_execution",
+    "inspect failure chain -> replay_from_failure"
+  ],
+  "trace_id": "trace-batch-ops-01",
+  "created_at": "2026-04-07T00:32:00Z",
+  "source_refs": [
+    "adaptive_execution_observability:AEO-8D0FCED02886",
+    "adaptive_execution_trend_report:AET-C78ED7E6AED5",
+    "allow_decision_proof:ADP-C803C8C2FE15",
+    "core_system_integration_validation:CSIV-6248FE45096A",
+    "decision_proof_record:DPR-F03F2CDFB27C",
+    "failure_taxonomy_record:FTX-EBC118CA21D3",
+    "next_cycle_decision:NCD-B6ED74C4C8B7",
+    "next_cycle_input_bundle:NCB-A2C5B0FA689B",
+    "policy_activation_record:PAC-000000000000",
+    "remediation_plan:RMP-B83D71E6A737",
+    "roadmap_multi_batch_run_result:RMB-F54563B70A1C"
+  ]
+}

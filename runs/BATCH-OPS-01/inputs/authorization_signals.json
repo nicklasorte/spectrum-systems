@@ -1,0 +1,12 @@
+{
+  "trace_id": "trace-batch-ops-01",
+  "required_signals_satisfied": true,
+  "hard_gate_state": "pass",
+  "certification_state": "complete",
+  "review_state": "complete",
+  "eval_state": "complete",
+  "replay_consistency": "match",
+  "control_freeze_condition": false,
+  "control_block_condition": false,
+  "warning_states": []
+}

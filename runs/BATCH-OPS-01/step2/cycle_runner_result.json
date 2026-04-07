@@ -1,0 +1,36 @@
+{
+  "cycle_runner_result_id": "CRR-D74A68C9848F",
+  "schema_version": "1.0.0",
+  "source_cycle_decision_id": "NCD-0CB521547975",
+  "source_cycle_input_bundle_id": "NCB-37BDB26AD2C5",
+  "attempted_execution": true,
+  "execution_status": "executed",
+  "refusal_reason_codes": [],
+  "refusal_severity": "expected",
+  "executed_cycle_id": "RMB-43815B2CBC11",
+  "emitted_artifact_refs": [
+    "next_cycle_decision:NCD-0CB521547975",
+    "next_cycle_input_bundle:NCB-37BDB26AD2C5",
+    "roadmap_multi_batch_run_result:RMB-43815B2CBC11"
+  ],
+  "next_cycle_decision_ref": "next_cycle_decision:NCD-0CB521547975",
+  "next_cycle_input_bundle_ref": "next_cycle_input_bundle:NCB-37BDB26AD2C5",
+  "error_detail": null,
+  "replay_entry_point": {
+    "input_artifact_refs": [
+      "next_cycle_decision:NCD-0CB521547975",
+      "next_cycle_input_bundle:NCB-37BDB26AD2C5"
+    ],
+    "decision_refs": [
+      "next_cycle_decision:NCD-0CB521547975"
+    ],
+    "bundle_refs": [
+      "next_cycle_input_bundle:NCB-37BDB26AD2C5"
+    ],
+    "execution_refs": [
+      "roadmap_multi_batch_run_result:RMB-43815B2CBC11"
+    ]
+  },
+  "created_at": "2026-04-07T00:30:00Z",
+  "trace_id": "trace-batch-ops-01"
+}

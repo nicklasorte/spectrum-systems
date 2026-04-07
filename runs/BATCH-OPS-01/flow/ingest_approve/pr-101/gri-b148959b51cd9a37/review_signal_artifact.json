@@ -1,0 +1,111 @@
+{
+  "action_items": [
+    {
+      "description": "Ensure trigger guardrails remain fail-closed",
+      "id": "CR-1",
+      "recommended_action": "Preserve event/command/pr guardrails for governed ingestion",
+      "severity": "critical",
+      "status": "open",
+      "trace": {
+        "line_number": 6,
+        "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+        "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+      }
+    },
+    {
+      "description": "Ingested trigger body must remain deterministic: /roadmap-approve draft_id:RMD-410E97243FCF55B9",
+      "id": "HI-1",
+      "recommended_action": "Keep deterministic normalization and pathing",
+      "severity": "high",
+      "status": "open",
+      "trace": {
+        "line_number": 11,
+        "source_excerpt": "HI-1: Ingested trigger body must remain deterministic: /roadmap-approve draft_id:RMD-410E97243FCF55B9",
+        "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+      }
+    },
+    {
+      "description": "Preserve RIL-only structuring boundary",
+      "id": "MI-1",
+      "recommended_action": "Do not add closure/repair logic to ingestion",
+      "severity": "medium",
+      "status": "open",
+      "trace": {
+        "line_number": 16,
+        "source_excerpt": "MI-1: Preserve RIL-only structuring boundary",
+        "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+      }
+    }
+  ],
+  "affected_systems": [
+    "ops",
+    "ril"
+  ],
+  "artifact_type": "review_signal_artifact",
+  "blocker_flags": true,
+  "blocker_ids": [
+    "CR-1"
+  ],
+  "critical_risks": [
+    {
+      "description": "Ensure trigger guardrails remain fail-closed",
+      "id": "CR-1",
+      "recommended_action": "Preserve event/command/pr guardrails for governed ingestion",
+      "severity": "critical",
+      "status": "open",
+      "trace": {
+        "line_number": 6,
+        "source_excerpt": "CR-1: Ensure trigger guardrails remain fail-closed",
+        "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+      }
+    }
+  ],
+  "emitted_at": "2026-04-07T00:00:00Z",
+  "extracted_reason_codes": [],
+  "high_priority_items": [
+    {
+      "description": "Ingested trigger body must remain deterministic: /roadmap-approve draft_id:RMD-410E97243FCF55B9",
+      "id": "HI-1",
+      "recommended_action": "Keep deterministic normalization and pathing",
+      "severity": "high",
+      "status": "open",
+      "trace": {
+        "line_number": 11,
+        "source_excerpt": "HI-1: Ingested trigger body must remain deterministic: /roadmap-approve draft_id:RMD-410E97243FCF55B9",
+        "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+      }
+    }
+  ],
+  "medium_priority_items": [
+    {
+      "description": "Preserve RIL-only structuring boundary",
+      "id": "MI-1",
+      "recommended_action": "Do not add closure/repair logic to ingestion",
+      "severity": "medium",
+      "status": "open",
+      "trace": {
+        "line_number": 16,
+        "source_excerpt": "MI-1: Preserve RIL-only structuring boundary",
+        "source_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md"
+      }
+    }
+  ],
+  "overall_verdict": "conditional_pass",
+  "provenance": {
+    "deterministic_hash_basis": "canonical-json-sha256",
+    "parser": "review_parsing_engine",
+    "source_action_tracker_hash": "f29c538cc0139808a196cd3cc86ad87e5a21c54437f687c424da5c751017bebe",
+    "source_review_hash": "b78e4040b76c8bd3ee8f37ec30ec20c586dee48b06c843da2c318a1422ff4ce9"
+  },
+  "review_date": "2026-04-07",
+  "review_signal_id": "rsv-7af2594069bc31b6",
+  "schema_version": "1.0.0",
+  "severity_counts": {
+    "critical": 1,
+    "high": 1,
+    "medium": 1
+  },
+  "source_action_tracker_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/action_tracker.md",
+  "source_review_path": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review.md",
+  "system_scope": "operator"
+}

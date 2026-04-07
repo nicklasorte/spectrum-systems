@@ -1,0 +1,49 @@
+{
+  "action_tracker_ref": "runs/BATCH-OPS-01/flow/ingest_approve/pr-101/gri-b148959b51cd9a37/review_consumer_output_bundle_artifact.json",
+  "artifact_class": "coordination",
+  "artifact_type": "closure_decision_artifact",
+  "blocker_count": 2,
+  "bounded_next_step_available": true,
+  "closure_decision_id": "cda-50c7df5836f0c96c",
+  "critical_count": 0,
+  "decision_reason_codes": [
+    "blocker_present",
+    "escalation_required"
+  ],
+  "decision_type": "escalate",
+  "emitted_at": "2026-04-07T00:15:00Z",
+  "evidence_refs": [
+    "review_consumer_output_bundle_artifact:rco-d9b92acc5eb8aa99",
+    "review_projection_bundle_artifact:rpb-dc222dda67c46b6b"
+  ],
+  "final_summary": "Closure decision 'escalate' for scope 'github_closure_continuation' based on blockers=2, critical=0, high=0, unresolved_actions=0.",
+  "high_priority_count": 0,
+  "lock_status": "blocked",
+  "medium_priority_count": 0,
+  "next_step_class": "escalation",
+  "next_step_ref": "roadmap_two_step_artifact:R2S-FC1D8FDA864DB3D2",
+  "provenance": {
+    "decision_rules_version": "cde-001-v1",
+    "deterministic_hash_basis": "canonical-json-sha256",
+    "engine": "closure_decision_engine",
+    "source_artifact_refs": [
+      "review_consumer_output_bundle_artifact:rco-d9b92acc5eb8aa99",
+      "review_projection_bundle_artifact:rpb-dc222dda67c46b6b"
+    ],
+    "source_artifact_types": [
+      "review_consumer_output_bundle_artifact",
+      "review_projection_bundle_artifact"
+    ]
+  },
+  "review_date": "2026-04-07",
+  "run_id": "gha-gcc-de0799c64bdc3f9a",
+  "schema_version": "1.0.0",
+  "source_artifact_refs": [
+    "review_consumer_output_bundle_artifact:rco-d9b92acc5eb8aa99",
+    "review_projection_bundle_artifact:rpb-dc222dda67c46b6b"
+  ],
+  "subject_scope": "github_closure_continuation",
+  "subsystem_acronym": "GHA",
+  "trace_id": "trace-gcc-de0799c64bdc3f9a",
+  "unresolved_action_item_ids": []
+}

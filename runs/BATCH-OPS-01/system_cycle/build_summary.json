@@ -1,0 +1,346 @@
+{
+  "summary_id": "BSR-1A0A9293008F",
+  "schema_version": "1.15.0",
+  "run_id": "RMB-F54563B70A1C",
+  "continuation_decision": "continue",
+  "stop_reason": "loop_validation_failed",
+  "next_batch_candidate": "BATCH-I",
+  "execution_path_type": "positive_path",
+  "program_alignment_status": "aligned",
+  "program_stop_cause": "none",
+  "program_drift_severity": "low",
+  "next_cycle_decision": "run_next_cycle",
+  "next_cycle_decision_reason_codes": [
+    "healthy_aligned_progress"
+  ],
+  "autonomy_decision": "stop",
+  "autonomy_reason_codes": [
+    "all_continue_conditions_satisfied",
+    "critical_risk_threshold_exceeded"
+  ],
+  "autonomy_decision_ref": "autonomy_decision_record:ADR-84637861D59E",
+  "decision_proof_ref": "decision_proof_record:DPR-F03F2CDFB27C",
+  "allow_decision_proof_ref": "allow_decision_proof:ADP-C803C8C2FE15",
+  "failure_taxonomy_ref": "failure_taxonomy_record:FTX-EBC118CA21D3",
+  "correction_pattern_ref": "correction_pattern_record:CPR-000000000000",
+  "policy_candidate_refs": [],
+  "policy_activation_ref": "policy_activation_record:PAC-000000000000",
+  "policy_conflict_refs": [],
+  "active_policy_refs": [],
+  "rollback_plan_ref": "rollback_plan_record:RBP-62CE8ABEFCFB",
+  "promotion_consistency_ref": "promotion_consistency_record:PCR-C0187C4480AE",
+  "decision_quality_budget_ref": "decision_quality_budget_status:DQB-09851D026F0D",
+  "calibration_assessment_ref": "calibration_assessment_record:CAL-788E7F83A83F",
+  "judgment_promotion_gate_ref": "judgment_promotion_gate_record:JPG-6D88343A916F",
+  "system_budget_status_ref": "system_budget_status:SBS-2B29DF5FA831",
+  "canary_rollout_ref": "canary_rollout_record:CNR-5E8F4C398204",
+  "continuous_eval_run_refs": [
+    "continuous_eval_run_record:CER-AA25C588CC9C",
+    "continuous_eval_run_record:CER-722883A04CC3",
+    "continuous_eval_run_record:CER-CBF4273E4363",
+    "continuous_eval_run_record:CER-FF5C31A21630"
+  ],
+  "trust_posture_snapshot_ref": "trust_posture_snapshot:TPS-21672FFD74FE",
+  "monitoring_contract_ref": "operations_monitoring_contract:OMC-01D154342693",
+  "operational_severity": "freeze",
+  "operational_required_action": "investigate",
+  "operational_escalation_state": "paused",
+  "artifact_family_health_report_ref": "artifact_family_health_report:AFH-3E957FFA30C0",
+  "evidence_gap_hotspot_report_ref": "evidence_gap_hotspot_report:EGH-563B44F3DAA9",
+  "override_hotspot_report_ref": "override_hotspot_report:OVH-AA60DBA666AF",
+  "judgment_lifecycle_refs": [
+    "judgment_lifecycle_record:JLC-000000000000"
+  ],
+  "precedent_selection_refs": [
+    "precedent_selection_record:PSL-000000000000"
+  ],
+  "precedent_conflict_refs": [],
+  "override_governance_refs": [
+    "override_governance_record:OVG-000000000000"
+  ],
+  "unknown_state_signal_refs": [],
+  "unknown_state_blockers": [],
+  "next_cycle_inputs_ref": "next_cycle_input_bundle:NCB-A2C5B0FA689B",
+  "exception_class": "execution_failure",
+  "recommended_exception_action": "remediation_batch",
+  "exception_action_type": "create_remediation_batch",
+  "exception_requires_human_review": false,
+  "exception_requires_freeze": false,
+  "capability_readiness_state": "unsafe",
+  "capability_readiness_ref": "capability_readiness_record:CRD-E8A22CCFD223",
+  "what_ran": [
+    "roadmap selection",
+    "control authorization",
+    "bounded execution (RDX-006)",
+    "integration validation (BATCH-Z)"
+  ],
+  "what_changed": [
+    "attempted_batches=BATCH-I",
+    "completed_batches=none",
+    "program_alignment_status=aligned",
+    "program_enforcement_mode=block"
+  ],
+  "what_failed": [
+    "loop_validation_failed"
+  ],
+  "run_outcome": {
+    "status": "blocked",
+    "stop_reason": "loop_validation_failed",
+    "has_blockers": false
+  },
+  "watch_next": [
+    "adaptive_guardrail_status=alert",
+    "adaptive_policy_tuning_signal=policy_tuned_due_to_high_early_stop_rate",
+    "adaptive_safety_trend=watch",
+    "adaptive_tuning_warranted=true",
+    "next_action=inspect run artifacts and remediate before rerun",
+    "next_batch_id=BATCH-I",
+    "program_caused_stop=false",
+    "recommended_program_aligned_move=execute next governed cycle for BATCH-I",
+    "roadmap_adjustments_applied=0"
+  ],
+  "artifact_index": {
+    "roadmap_multi_batch_run_result": "roadmap_multi_batch_run_result:RMB-F54563B70A1C",
+    "core_system_integration_validation": "core_system_integration_validation:CSIV-6248FE45096A",
+    "next_step_recommendation": "next_step_recommendation:NSR-0E9EE4734D4B",
+    "next_cycle_decision": "next_cycle_decision:NCD-B6ED74C4C8B7",
+    "next_cycle_input_bundle": "next_cycle_input_bundle:NCB-A2C5B0FA689B",
+    "trace_id": "trace-batch-ops-01",
+    "replay_refs": [
+      "RLV-8571307FA3E7"
+    ],
+    "upstream_refs": [
+      "context_bundle_v2:ctx-1",
+      "control_execution_result:ctrl-1",
+      "control_loop_certification_pack:cert-1",
+      "eval_result:eval-1",
+      "program_artifact:PRG-1",
+      "review_control_signal:rcs-1",
+      "roadmap_execution_loop_validation:RLV-TEST-001",
+      "roadmap_multi_batch_run_result:RMB-TEST-001",
+      "tpa_gate:gate-1"
+    ],
+    "downstream_refs": [
+      "next_step_recommendation:NSR-0E9EE4734D4B"
+    ],
+    "related_artifacts": [
+      "RLV-8571307FA3E7",
+      "adaptive_execution_observability:AEO-8D0FCED02886",
+      "adaptive_execution_policy_review:AEPR-0D0984D0492C",
+      "adaptive_execution_trend_report:AET-C78ED7E6AED5",
+      "allow_decision_proof:ADP-C803C8C2FE15",
+      "context_bundle_v2:ctx-1",
+      "control_execution_result:ctrl-1",
+      "control_loop_certification_pack:cert-1",
+      "core_system_integration_validation:CSIV-6248FE45096A",
+      "decision_proof_record:DPR-F03F2CDFB27C",
+      "eval_result:eval-1",
+      "failure_taxonomy_record:FTX-EBC118CA21D3",
+      "next_cycle_decision:NCD-B6ED74C4C8B7",
+      "next_cycle_input_bundle:NCB-A2C5B0FA689B",
+      "next_step_recommendation:NSR-0E9EE4734D4B",
+      "policy_activation_record:PAC-000000000000",
+      "program_artifact:PRG-1",
+      "promotion_consistency_record:PCR-C0187C4480AE",
+      "remediation_plan:RMP-B83D71E6A737",
+      "review_control_signal:rcs-1",
+      "roadmap_execution_loop_validation:RLV-TEST-001",
+      "roadmap_multi_batch_run_result:RMB-F54563B70A1C",
+      "roadmap_multi_batch_run_result:RMB-TEST-001",
+      "rollback_plan_record:RBP-62CE8ABEFCFB",
+      "tpa_gate:gate-1"
+    ]
+  },
+  "failure_surface": {
+    "stop_reason": "loop_validation_failed",
+    "root_cause": "execution_stop_reason:loop_validation_failed",
+    "root_cause_chain": [
+      {
+        "step": "bounded_execution",
+        "reason": "loop_validation_failed"
+      },
+      {
+        "step": "integration_validation",
+        "reason": "no_blocking_conditions"
+      },
+      {
+        "step": "control_outcome",
+        "reason": "proceed_or_continue"
+      }
+    ],
+    "next_action": "inspect run artifacts and remediate before rerun",
+    "blocker_refs": [],
+    "source_refs": [
+      "RLV-8571307FA3E7",
+      "core_system_integration_validation:CSIV-6248FE45096A",
+      "roadmap_multi_batch_run_result:RMB-F54563B70A1C"
+    ]
+  },
+  "trace_navigation": {
+    "trace_id": "trace-batch-ops-01",
+    "execution_path": [
+      "program_artifact:PRG-1",
+      "review_control_signal:rcs-1",
+      "context_bundle_v2:ctx-1",
+      "tpa_gate:gate-1",
+      "roadmap_execution_loop_validation:RLV-TEST-001",
+      "roadmap_multi_batch_run_result:RMB-TEST-001",
+      "control_execution_result:ctrl-1",
+      "control_loop_certification_pack:cert-1"
+    ],
+    "decision_points": [
+      "PRG:program_artifact_constraints",
+      "RVW:review_gate_assessment",
+      "CTX:context_validation",
+      "TPA:tpa_gate_decision",
+      "RDX:bounded_execution_outcome",
+      "CONTROL:control_decision",
+      "CERT:certification_status"
+    ],
+    "influencing_artifacts": [
+      "context_bundle_v2:ctx-1",
+      "control_execution_result:ctrl-1",
+      "control_loop_certification_pack:cert-1",
+      "eval_result:eval-1",
+      "program_artifact:PRG-1",
+      "review_control_signal:rcs-1",
+      "roadmap_execution_loop_validation:RLV-TEST-001",
+      "roadmap_multi_batch_run_result:RMB-TEST-001",
+      "tpa_gate:gate-1"
+    ],
+    "layer_transitions": [
+      "PRG->RVW",
+      "RVW->CTX",
+      "CTX->TPA",
+      "TPA->RDX",
+      "RDX->CONTROL",
+      "CONTROL->CERT"
+    ],
+    "replay_entry_points": {
+      "replay_from_context": {
+        "required_artifacts": [
+          "context_bundle_v2:ctx-1",
+          "tpa_gate:gate-1"
+        ],
+        "trace_refs": [
+          "trace-batch-ops-01",
+          "context_bundle_v2:ctx-1"
+        ]
+      },
+      "replay_from_plan": {
+        "required_artifacts": [
+          "program_artifact:PRG-1",
+          "review_control_signal:rcs-1",
+          "roadmap_execution_loop_validation:RLV-TEST-001"
+        ],
+        "trace_refs": [
+          "trace-batch-ops-01",
+          "roadmap_execution_loop_validation:RLV-TEST-001"
+        ]
+      },
+      "replay_from_execution": {
+        "required_artifacts": [
+          "roadmap_multi_batch_run_result:RMB-TEST-001",
+          "control_execution_result:ctrl-1",
+          "control_loop_certification_pack:cert-1"
+        ],
+        "trace_refs": [
+          "trace-batch-ops-01",
+          "roadmap_multi_batch_run_result:RMB-TEST-001"
+        ]
+      },
+      "replay_from_failure": {
+        "required_artifacts": [
+          "control_execution_result:ctrl-1"
+        ],
+        "trace_refs": [
+          "trace-batch-ops-01",
+          "control_execution_result:ctrl-1"
+        ]
+      }
+    },
+    "replay_ready": true
+  },
+  "replay_entry_points": {
+    "replay_from_context": {
+      "required_artifacts": [
+        "context_bundle_v2:ctx-1",
+        "core_system_integration_validation:CSIV-6248FE45096A",
+        "tpa_gate:gate-1"
+      ],
+      "trace_refs": [
+        "trace-batch-ops-01",
+        "trace_navigation:CSIV-6248FE45096A"
+      ]
+    },
+    "replay_from_plan": {
+      "required_artifacts": [
+        "core_system_integration_validation:CSIV-6248FE45096A",
+        "program_artifact:PRG-1",
+        "review_control_signal:rcs-1"
+      ],
+      "trace_refs": [
+        "trace-batch-ops-01",
+        "trace_navigation:CSIV-6248FE45096A"
+      ]
+    },
+    "replay_from_execution": {
+      "required_artifacts": [
+        "core_system_integration_validation:CSIV-6248FE45096A",
+        "roadmap_multi_batch_run_result:RMB-F54563B70A1C"
+      ],
+      "trace_refs": [
+        "trace-batch-ops-01",
+        "roadmap_multi_batch_run_result:RMB-F54563B70A1C"
+      ]
+    },
+    "replay_from_failure": {
+      "required_artifacts": [
+        "core_system_integration_validation:CSIV-6248FE45096A"
+      ],
+      "trace_refs": [
+        "trace-batch-ops-01",
+        "core_system_integration_validation:CSIV-6248FE45096A"
+      ]
+    }
+  },
+  "quick_links": [
+    "view trace -> trace_navigation:CSIV-6248FE45096A",
+    "replay this step -> replay_from_execution",
+    "inspect failure chain -> replay_from_failure"
+  ],
+  "trace_id": "trace-batch-ops-01",
+  "created_at": "2026-04-07T00:32:00Z",
+  "source_refs": [
+    "adaptive_execution_observability:AEO-8D0FCED02886",
+    "adaptive_execution_policy_review:AEPR-0D0984D0492C",
+    "adaptive_execution_trend_report:AET-C78ED7E6AED5",
+    "allow_decision_proof:ADP-C803C8C2FE15",
+    "artifact_family_health_report:AFH-3E957FFA30C0",
+    "calibration_assessment_record:CAL-788E7F83A83F",
+    "canary_rollout_record:CNR-5E8F4C398204",
+    "capability_readiness_record:CRD-E8A22CCFD223",
+    "continuous_eval_run_record:CER-722883A04CC3",
+    "continuous_eval_run_record:CER-AA25C588CC9C",
+    "continuous_eval_run_record:CER-CBF4273E4363",
+    "continuous_eval_run_record:CER-FF5C31A21630",
+    "core_system_integration_validation:CSIV-6248FE45096A",
+    "decision_proof_record:DPR-F03F2CDFB27C",
+    "decision_quality_budget_status:DQB-09851D026F0D",
+    "evidence_gap_hotspot_report:EGH-563B44F3DAA9",
+    "exception_classification_record:ECR-CBD982DCC12D",
+    "exception_resolution_record:ERR-B61B47DC6B19",
+    "failure_taxonomy_record:FTX-EBC118CA21D3",
+    "judgment_promotion_gate_record:JPG-6D88343A916F",
+    "next_cycle_decision:NCD-B6ED74C4C8B7",
+    "next_cycle_input_bundle:NCB-A2C5B0FA689B",
+    "next_step_recommendation:NSR-0E9EE4734D4B",
+    "override_hotspot_report:OVH-AA60DBA666AF",
+    "promotion_consistency_record:PCR-C0187C4480AE",
+    "remediation_plan:RMP-B83D71E6A737",
+    "roadmap_multi_batch_run_result:RMB-F54563B70A1C",
+    "rollback_plan_record:RBP-62CE8ABEFCFB",
+    "system_budget_status:SBS-2B29DF5FA831",
+    "trust_posture_snapshot:TPS-21672FFD74FE"
+  ]
+}

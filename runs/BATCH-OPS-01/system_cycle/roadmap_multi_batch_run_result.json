@@ -1,0 +1,115 @@
+{
+  "run_id": "RMB-F54563B70A1C",
+  "schema_version": "1.4.0",
+  "roadmap_id": "RDX-CANVAS-2026-04-03",
+  "attempted_batch_ids": [
+    "BATCH-I"
+  ],
+  "completed_batch_ids": [],
+  "blocked_batch_id": null,
+  "frozen_batch_id": null,
+  "stop_reason": "loop_validation_failed",
+  "stop_reason_codes": [
+    "loop_validation_failed"
+  ],
+  "max_batches_per_run": 1,
+  "resolved_max_batches_per_run": 1,
+  "batches_executed_count": 0,
+  "final_roadmap_status_ref": "roadmap_artifact:inline:RDX-CANVAS-2026-04-03",
+  "loop_validation_refs": [
+    "RLV-8571307FA3E7"
+  ],
+  "progress_update_refs": [],
+  "authorization_refs": [
+    "REA-888884B8D000"
+  ],
+  "continuation_decision_sequence": [
+    {
+      "step": 1,
+      "decision": "continue",
+      "reason_code": "continue_safe"
+    }
+  ],
+  "batch_continuation_records": [
+    {
+      "continuation_id": "BCR-149B48D29302",
+      "current_batch_id": "BATCH-I",
+      "next_candidate_batch_id": "BATCH-I",
+      "decision": "continue",
+      "reason_codes": [
+        "continue_safe"
+      ],
+      "signals_used": {
+        "last_control_decision": "allow",
+        "program_constraint_signal": {
+          "program_id": "PRG-ROADMAP-EXECUTION",
+          "program_version": "1.0.0",
+          "allowed_targets": [],
+          "disallowed_targets": [],
+          "priority_ordering": [],
+          "success_criteria": [
+            "roadmap_progression"
+          ],
+          "blocking_conditions": [],
+          "enforcement_mode": "block",
+          "created_at": "2026-04-07T00:32:00Z",
+          "trace_id": "trace-batch-ops-01"
+        },
+        "program_drift_signal": {
+          "drift_level": "low"
+        },
+        "failure_pattern_record": {
+          "repeated_failure_count": 0,
+          "stop_threshold": 2
+        },
+        "eval_summary": {
+          "health": "healthy"
+        },
+        "risk_signals": {
+          "risk_level": "medium",
+          "escalation_required": false
+        },
+        "roadmap_state": {
+          "current_batch_id": "BATCH-I",
+          "next_candidate_batch_id": "BATCH-I"
+        }
+      },
+      "program_state_snapshot": {
+        "allowed_targets": [],
+        "priority_ordering": [],
+        "blocking_conditions": [],
+        "roadmap_state": {
+          "current_batch_id": "BATCH-I",
+          "next_candidate_batch_id": "BATCH-I"
+        }
+      },
+      "risk_level": "medium",
+      "created_at": "2026-04-07T00:32:00Z",
+      "trace_id": "trace-batch-ops-01"
+    }
+  ],
+  "execution_efficiency_report": {
+    "batches_executed_per_run": 1,
+    "useful_batches": 0,
+    "early_stops": 1,
+    "average_progress_per_run": 0.0,
+    "chain_context_refs": [],
+    "adaptive_factors": {
+      "mode": "static",
+      "resolved_from": [
+        "static_cap"
+      ]
+    }
+  },
+  "executed_at": "2026-04-07T00:32:00Z",
+  "input_hash": "2fff292190f4d8971c944d280b9421be8cd2abaa0c1457aa5c9a543070dd08a9",
+  "trace_id": "trace-batch-ops-01",
+  "source_refs": [
+    "roadmap_artifact:inline",
+    "roadmap_execution_loop_validation:inline"
+  ],
+  "execution_path_type": "positive_path",
+  "program_alignment_status": "aligned",
+  "program_stop_cause": "none",
+  "program_drift_severity": "low"
+}

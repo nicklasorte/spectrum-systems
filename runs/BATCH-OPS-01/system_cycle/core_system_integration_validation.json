@@ -1,0 +1,150 @@
+{
+  "validation_id": "CSIV-6248FE45096A",
+  "schema_version": "1.1.0",
+  "exercised_layers": [
+    "PRG",
+    "RVW",
+    "RPT",
+    "CTX",
+    "TPA",
+    "MAP",
+    "RDX",
+    "CONTROL",
+    "CERT"
+  ],
+  "validation_scope": {
+    "batch_id": "BATCH-I",
+    "run_id": "run-1",
+    "mode": "governed_integration"
+  },
+  "determinism_status": "deterministic",
+  "replay_status": "replayable",
+  "authority_boundary_status": "bounded",
+  "cross_layer_findings": [],
+  "blocking_conditions": [],
+  "deterministic_outcome": "deterministic",
+  "replayability_fingerprint": "6d5ba3ccc624e68247e9fa211e9d6eff7b3c1c84d4f9158e69de0e4deb379d99",
+  "trace_navigation": {
+    "trace_id": "trace-batch-ops-01",
+    "execution_path": [
+      "program_artifact:PRG-1",
+      "review_control_signal:rcs-1",
+      "context_bundle_v2:ctx-1",
+      "tpa_gate:gate-1",
+      "roadmap_execution_loop_validation:RLV-TEST-001",
+      "roadmap_multi_batch_run_result:RMB-TEST-001",
+      "control_execution_result:ctrl-1",
+      "control_loop_certification_pack:cert-1"
+    ],
+    "decision_points": [
+      "PRG:program_artifact_constraints",
+      "RVW:review_gate_assessment",
+      "CTX:context_validation",
+      "TPA:tpa_gate_decision",
+      "RDX:bounded_execution_outcome",
+      "CONTROL:control_decision",
+      "CERT:certification_status"
+    ],
+    "influencing_artifacts": [
+      "context_bundle_v2:ctx-1",
+      "control_execution_result:ctrl-1",
+      "control_loop_certification_pack:cert-1",
+      "eval_result:eval-1",
+      "program_artifact:PRG-1",
+      "review_control_signal:rcs-1",
+      "roadmap_execution_loop_validation:RLV-TEST-001",
+      "roadmap_multi_batch_run_result:RMB-TEST-001",
+      "tpa_gate:gate-1"
+    ],
+    "layer_transitions": [
+      "PRG->RVW",
+      "RVW->CTX",
+      "CTX->TPA",
+      "TPA->RDX",
+      "RDX->CONTROL",
+      "CONTROL->CERT"
+    ],
+    "replay_entry_points": {
+      "replay_from_context": {
+        "required_artifacts": [
+          "context_bundle_v2:ctx-1",
+          "tpa_gate:gate-1"
+        ],
+        "trace_refs": [
+          "trace-batch-ops-01",
+          "context_bundle_v2:ctx-1"
+        ]
+      },
+      "replay_from_plan": {
+        "required_artifacts": [
+          "program_artifact:PRG-1",
+          "review_control_signal:rcs-1",
+          "roadmap_execution_loop_validation:RLV-TEST-001"
+        ],
+        "trace_refs": [
+          "trace-batch-ops-01",
+          "roadmap_execution_loop_validation:RLV-TEST-001"
+        ]
+      },
+      "replay_from_execution": {
+        "required_artifacts": [
+          "roadmap_multi_batch_run_result:RMB-TEST-001",
+          "control_execution_result:ctrl-1",
+          "control_loop_certification_pack:cert-1"
+        ],
+        "trace_refs": [
+          "trace-batch-ops-01",
+          "roadmap_multi_batch_run_result:RMB-TEST-001"
+        ]
+      },
+      "replay_from_failure": {
+        "required_artifacts": [
+          "control_execution_result:ctrl-1"
+        ],
+        "trace_refs": [
+          "trace-batch-ops-01",
+          "control_execution_result:ctrl-1"
+        ]
+      }
+    },
+    "replay_ready": true
+  },
+  "upstream_refs": [
+    "context_bundle_v2:ctx-1",
+    "control_execution_result:ctrl-1",
+    "control_loop_certification_pack:cert-1",
+    "eval_result:eval-1",
+    "program_artifact:PRG-1",
+    "review_control_signal:rcs-1",
+    "roadmap_execution_loop_validation:RLV-TEST-001",
+    "roadmap_multi_batch_run_result:RMB-TEST-001",
+    "tpa_gate:gate-1"
+  ],
+  "downstream_refs": [
+    "core_system_integration_validation:CSIV-6248FE45096A"
+  ],
+  "related_artifacts": [
+    "context_bundle_v2:ctx-1",
+    "control_execution_result:ctrl-1",
+    "control_loop_certification_pack:cert-1",
+    "eval_result:eval-1",
+    "program_artifact:PRG-1",
+    "review_control_signal:rcs-1",
+    "roadmap_execution_loop_validation:RLV-TEST-001",
+    "roadmap_multi_batch_run_result:RMB-TEST-001",
+    "tpa_gate:gate-1"
+  ],
+  "created_at": "2026-04-07T00:32:00Z",
+  "trace_id": "trace-batch-ops-01",
+  "source_refs": {
+    "program_artifact": "program_artifact:PRG-1",
+    "review_control_signal": "review_control_signal:rcs-1",
+    "eval_result": "eval_result:eval-1",
+    "context_bundle_v2": "context_bundle_v2:ctx-1",
+    "tpa_gate": "tpa_gate:gate-1",
+    "roadmap_execution_loop_validation": "roadmap_execution_loop_validation:RLV-TEST-001",
+    "roadmap_multi_batch_run_result": "roadmap_multi_batch_run_result:RMB-TEST-001",
+    "control_decision": "control_execution_result:ctrl-1",
+    "certification_pack": "control_loop_certification_pack:cert-1"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "artifact_paths": {
+    "closure_decision_artifact": "runs/BATCH-OPS-01/flow/closure_attempt_2/pr-101/gcc-d6511b55739ef3df/closure_decision_artifact.json",
+    "next_step_prompt_artifact": "runs/BATCH-OPS-01/flow/closure_attempt_2/pr-101/gcc-d6511b55739ef3df/next_step_prompt_artifact.json",
+    "promotion_gate_decision_artifact": "runs/BATCH-OPS-01/flow/closure_attempt_2/pr-101/gcc-d6511b55739ef3df/promotion_gate_decision_artifact.json",
+    "top_level_conductor_run_artifact": null
+  },
+  "branch_update_policy": {
+    "allowed_only_via_governed_tlc_path": true,
+    "blocked_states": [
+      "approval-pending",
+      "blocked",
+      "continue_repair_bounded",
+      "draft-only",
+      "escalated",
+      "exhausted",
+      "malformed-input",
+      "repairing"
+    ],
+    "branch_update_allowed": false,
+    "policy_note": "GitHub workflows do not mutate branches directly. Branch updates are permitted only for terminal_state=ready_for_merge with certified governed evidence.",
+    "promotion_allowed": false,
+    "promotion_decision_ref": "promotion_gate_decision_artifact:pgd-b883e049dae90b89"
+  },
+  "cde_decision": "escalate",
+  "command_marker": "/roadmap-approve",
+  "continuation_dir": "runs/BATCH-OPS-01/flow/closure_attempt_2/pr-101/gcc-d6511b55739ef3df",
+  "continuation_id": "gcc-d6511b55739ef3df",
+  "final_terminal_state": "escalated",
+  "guardrails": {
+    "adapter_normalization_only": true,
+    "cde_decides_only": true,
+    "fail_closed_on_missing_or_malformed_artifacts": true,
+    "github_triggers_only": true,
+    "no_execution_outside_pqx": true,
+    "no_raw_review_downstream_of_ril": true,
+    "sel_enforced": true,
+    "terminal_states_are_explicit_and_final": true,
+    "tlc_orchestrates_only": true
+  },
+  "ingestion_id": "gri-b148959b51cd9a37",
+  "pr_number": 101,
+  "roadmap_two_step": {
+    "artifact_path": "artifacts/roadmap_drafts/pr-101/RMD-410E97243FCF55B9/roadmap_two_step_artifact.json",
+    "draft_id": "RMD-410E97243FCF55B9",
+    "roadmap_id": "R2S-FC1D8FDA864DB3D2",
+    "steps": [
+      "Extract bounded implementation constraints from docs/roadmaps/system_roadmap.md.",
+      "Map extracted constraints into governed continuation inputs using CONTRACTS.md."
+    ]
+  },
+  "status": "success",
+  "tlc_ran": false
+}

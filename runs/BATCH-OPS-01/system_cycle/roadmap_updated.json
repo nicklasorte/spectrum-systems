@@ -1,0 +1,230 @@
+{
+  "roadmap_id": "RDX-CANVAS-2026-04-03",
+  "schema_version": "1.0.0",
+  "title": "Canvas Roadmap Batch Plan (A-M)",
+  "generated_at": "2026-04-07T00:32:00Z",
+  "source_ref": "nicklasorte/spectrum-systems@main#trace:rdx-001",
+  "batches": [
+    {
+      "batch_id": "BATCH-A",
+      "title": "Roadmap Authority and Baseline",
+      "step_ids": [
+        "MAP-001"
+      ],
+      "depends_on": [],
+      "required_signals": [
+        "roadmap_authority_resolved"
+      ],
+      "hard_gate_after": false,
+      "execution_mode": "pqx_batch",
+      "trust_goal": "authority_clarity",
+      "status": "completed"
+    },
+    {
+      "batch_id": "BATCH-B",
+      "title": "Review Ingestion Foundation",
+      "step_ids": [
+        "MAP-002"
+      ],
+      "depends_on": [
+        "BATCH-A"
+      ],
+      "required_signals": [
+        "review_snapshot_valid"
+      ],
+      "hard_gate_after": false,
+      "execution_mode": "pqx_batch",
+      "trust_goal": "review_integrity",
+      "status": "completed"
+    },
+    {
+      "batch_id": "BATCH-C",
+      "title": "Review Gate Enforcement",
+      "step_ids": [
+        "MAP-003"
+      ],
+      "depends_on": [
+        "BATCH-B"
+      ],
+      "required_signals": [
+        "review_gate_enforced"
+      ],
+      "hard_gate_after": false,
+      "execution_mode": "pqx_batch",
+      "trust_goal": "gate_discipline",
+      "status": "completed"
+    },
+    {
+      "batch_id": "BATCH-D",
+      "title": "Roadmap Integration Wiring",
+      "step_ids": [
+        "MAP-004"
+      ],
+      "depends_on": [
+        "BATCH-C"
+      ],
+      "required_signals": [
+        "roadmap_handoff_bound"
+      ],
+      "hard_gate_after": false,
+      "execution_mode": "pqx_batch",
+      "trust_goal": "integration_consistency",
+      "status": "completed"
+    },
+    {
+      "batch_id": "BATCH-E",
+      "title": "Roadmap Flow Documentation",
+      "step_ids": [
+        "MAP-DOC"
+      ],
+      "depends_on": [
+        "BATCH-D"
+      ],
+      "required_signals": [
+        "flow_doc_published"
+      ],
+      "hard_gate_after": false,
+      "execution_mode": "pqx_batch",
+      "trust_goal": "process_reconstructability",
+      "status": "completed"
+    },
+    {
+      "batch_id": "BATCH-F",
+      "title": "Review-Gated PQX Preparation",
+      "step_ids": [
+        "MAP-005"
+      ],
+      "depends_on": [
+        "BATCH-E"
+      ],
+      "required_signals": [
+        "pqx_gate_inputs_ready"
+      ],
+      "hard_gate_after": false,
+      "execution_mode": "pqx_batch",
+      "trust_goal": "execution_readiness",
+      "status": "completed"
+    },
+    {
+      "batch_id": "BATCH-G",
+      "title": "Certification + Promotion Enforcement",
+      "step_ids": [
+        "MAP-005A"
+      ],
+      "depends_on": [
+        "BATCH-F"
+      ],
+      "required_signals": [
+        "certification_boundary_pass"
+      ],
+      "hard_gate_after": true,
+      "execution_mode": "pqx_batch",
+      "trust_goal": "promotion_safety",
+      "status": "completed"
+    },
+    {
+      "batch_id": "BATCH-H",
+      "title": "Roadmap Artifact Foundation",
+      "step_ids": [
+        "RDX-001"
+      ],
+      "depends_on": [
+        "BATCH-G"
+      ],
+      "required_signals": [
+        "roadmap_artifact_schema_published"
+      ],
+      "hard_gate_after": false,
+      "execution_mode": "pqx_batch",
+      "trust_goal": "artifact_governance",
+      "status": "completed"
+    },
+    {
+      "batch_id": "BATCH-I",
+      "title": "Roadmap Executor Ingestion",
+      "step_ids": [
+        "RDX-002"
+      ],
+      "depends_on": [
+        "BATCH-H"
+      ],
+      "required_signals": [
+        "executor_ingestion_valid"
+      ],
+      "hard_gate_after": false,
+      "execution_mode": "pqx_batch",
+      "trust_goal": "ingestion_determinism",
+      "status": "not_started"
+    },
+    {
+      "batch_id": "BATCH-J",
+      "title": "Roadmap Progression State Binding",
+      "step_ids": [
+        "RDX-003"
+      ],
+      "depends_on": [
+        "BATCH-I"
+      ],
+      "required_signals": [
+        "state_binding_complete"
+      ],
+      "hard_gate_after": false,
+      "execution_mode": "pqx_batch",
+      "trust_goal": "state_integrity",
+      "status": "not_started"
+    },
+    {
+      "batch_id": "BATCH-K",
+      "title": "Deterministic Replay Surface",
+      "step_ids": [
+        "RDX-004"
+      ],
+      "depends_on": [
+        "BATCH-J"
+      ],
+      "required_signals": [
+        "replay_surface_emitted"
+      ],
+      "hard_gate_after": false,
+      "execution_mode": "pqx_batch",
+      "trust_goal": "replayability",
+      "status": "not_started"
+    },
+    {
+      "batch_id": "BATCH-L",
+      "title": "Hard-Gate Policy Consumption",
+      "step_ids": [
+        "RDX-005"
+      ],
+      "depends_on": [
+        "BATCH-K"
+      ],
+      "required_signals": [
+        "hard_gate_consumed"
+      ],
+      "hard_gate_after": true,
+      "execution_mode": "pqx_batch",
+      "trust_goal": "fail_closed_progression",
+      "status": "not_started"
+    },
+    {
+      "batch_id": "BATCH-M",
+      "title": "Roadmap Executor Activation Readiness",
+      "step_ids": [
+        "RDX-006"
+      ],
+      "depends_on": [
+        "BATCH-L"
+      ],
+      "required_signals": [
+        "executor_activation_certified"
+      ],
+      "hard_gate_after": true,
+      "execution_mode": "pqx_batch",
+      "trust_goal": "executor_admission_safety",
+      "status": "not_started"
+    }
+  ],
+  "current_batch_id": "BATCH-I",
+  "next_hard_gate": "CONTROL_LOOP_CLOSURE_CERTIFICATION_GATE"
+}
