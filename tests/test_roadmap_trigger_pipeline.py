@@ -6,10 +6,11 @@ from pathlib import Path
 WORKFLOW_PATH = Path('.github/workflows/review_trigger_pipeline.yml')
 
 
-def test_workflow_supports_roadmap_2step_command() -> None:
+def test_workflow_supports_roadmap_draft_and_approve_commands() -> None:
     text = WORKFLOW_PATH.read_text(encoding='utf-8')
 
-    assert '/roadmap-2step' in text
+    assert '/roadmap-draft' in text
+    assert '/roadmap-approve' in text
     assert 'issue_comment trigger allowed only for pull request threads' in text
     assert 'issue_comment trigger requires approved command marker' in text
 

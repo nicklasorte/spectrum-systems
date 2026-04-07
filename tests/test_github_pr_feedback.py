@@ -6,7 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from spectrum_systems.modules.runtime.github_pr_feedback import GithubPrFeedbackError, build_pr_feedback_comment
+from spectrum_systems.modules.runtime.github_pr_feedback import (
+    GithubPrFeedbackError,
+    build_pr_feedback_comment,
+    build_roadmap_draft_feedback_comment,
+)
 
 
 _FIXTURES = Path("contracts/examples")
@@ -130,3 +134,13 @@ def test_explicit_roadmap_artifact_input_is_rendered() -> None:
     assert "- Roadmap ID: R2S-2D11D09E9BA6FD4E" in comment
     assert comment.count("- Step 1:") == 1
     assert comment.count("- Step 2:") == 1
+
+
+def test_roadmap_draft_comment_format() -> None:
+    roadmap = _load_fixture("roadmap_two_step_artifact.json")
+    comment = build_roadmap_draft_feedback_comment(
+        {"roadmap_two_step_artifact": roadmap, "draft_id": "RMD-0001"}
+    )
+    assert "## Spectrum Systems — Roadmap Draft" in comment
+    assert "- bounded: true" in comment
+    assert "This is a preview only. No execution has occurred." in comment

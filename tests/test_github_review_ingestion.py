@@ -48,7 +48,7 @@ def test_issue_comment_command_gating() -> None:
     )
     assert normalized.command_marker == "/run-ril"
     roadmap_payload = _load_fixture("issue_comment_pr_command.json")
-    roadmap_payload["comment"]["body"] = "/roadmap-2step scope:runtime keywords:roadmap,governance"
+    roadmap_payload["comment"]["body"] = "/roadmap-draft scope:runtime keywords:roadmap,governance"
     roadmap_normalized = build_governed_review_inputs(
         event_name="issue_comment",
         payload=roadmap_payload,
@@ -56,7 +56,7 @@ def test_issue_comment_command_gating() -> None:
         run_mode="strict",
         emitted_at="2026-04-06T11:00:00Z",
     )
-    assert roadmap_normalized.command_marker == "/roadmap-2step"
+    assert roadmap_normalized.command_marker == "/roadmap-draft"
 
     bad_payload = {
         "action": "created",
@@ -183,7 +183,7 @@ def test_end_to_end_ril_pipeline_invocation_and_schema_valid_outputs(tmp_path: P
 
 def test_roadmap_command_emits_two_step_roadmap_artifact(tmp_path: Path) -> None:
     payload = _load_fixture("issue_comment_pr_command.json")
-    payload["comment"]["body"] = "/roadmap-2step scope:runtime keywords:roadmap,governance"
+    payload["comment"]["body"] = "/roadmap-draft scope:runtime keywords:roadmap,governance"
 
     summary = ingest_github_review_event(
         event_name="issue_comment",
@@ -201,3 +201,22 @@ def test_roadmap_command_emits_two_step_roadmap_artifact(tmp_path: Path) -> None
     roadmap = json.loads(roadmap_path.read_text(encoding="utf-8"))
     validate_artifact(roadmap, "roadmap_two_step_artifact")
     assert roadmap["step_count"] == 2
+    assert summary["command_marker"] == "/roadmap-draft"
+
+
+def test_roadmap_approve_requires_existing_draft(tmp_path: Path) -> None:
+    payload = _load_fixture("issue_comment_pr_command.json")
+    payload["comment"]["body"] = "/roadmap-approve draft_id:RMD-MISSING"
+
+    with pytest.raises(GithubReviewIngestionError, match="missing draft artifact"):
+        ingest_github_review_event(
+            event_name="issue_comment",
+            payload=payload,
+            output_root=tmp_path,
+            review_source="ril",
+            run_mode="strict",
+            emitted_at="2026-04-06T11:00:00Z",
+            repo="example/repo",
+            sha="sha",
+            run_id="run",
+        )

@@ -85,7 +85,7 @@ if not isinstance(issue, dict) or "pull_request" not in issue:
     raise SystemExit("issue_comment trigger allowed only for pull request threads")
 comment = event.get("comment")
 body = comment.get("body") if isinstance(comment, dict) else None
-markers = ("/governed-next-step", "/run-ril", "/roadmap-2step")
+markers = ("/governed-next-step", "/run-ril", "/roadmap-draft", "/roadmap-approve", "/roadmap-2step")
 if not isinstance(body, str) or not any(marker in body for marker in markers):
     raise SystemExit("issue_comment trigger requires approved command marker")
 PY
@@ -155,6 +155,78 @@ PY
           cp "$HANDOFF_PATH" github_review_handoff_artifact.json
 
           echo "artifact_dir=$ARTIFACT_DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Build roadmap draft PR feedback comment
+        if: always()
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+import json
+from pathlib import Path
+
+from spectrum_systems.modules.runtime.github_pr_feedback import build_roadmap_draft_feedback_comment
+
+result_path = Path("ingestion_result.json")
+if not result_path.exists():
+    raise SystemExit("ingestion_result.json missing")
+result = json.loads(result_path.read_text(encoding="utf-8"))
+if result.get("command_marker") != "/roadmap-draft":
+    raise SystemExit(0)
+artifact_paths = result.get("artifact_paths", {})
+roadmap_path = artifact_paths.get("roadmap_two_step_artifact")
+if not isinstance(roadmap_path, str) or not roadmap_path.strip():
+    raise SystemExit("roadmap draft command missing roadmap_two_step_artifact")
+metadata_path = artifact_paths.get("roadmap_draft_metadata")
+if not isinstance(metadata_path, str) or not metadata_path.strip():
+    raise SystemExit("roadmap draft command missing roadmap_draft_metadata")
+roadmap = json.loads(Path(roadmap_path).read_text(encoding="utf-8"))
+metadata = json.loads(Path(metadata_path).read_text(encoding="utf-8"))
+comment = build_roadmap_draft_feedback_comment({
+    "roadmap_two_step_artifact": roadmap,
+    "draft_id": metadata.get("draft_id"),
+})
+Path("roadmap_draft_comment.md").write_text(comment, encoding="utf-8")
+PY
+
+      - name: Post roadmap draft PR feedback comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (!fs.existsSync('ingestion_result.json')) {
+              return;
+            }
+            const result = JSON.parse(fs.readFileSync('ingestion_result.json', 'utf8'));
+            if (result.command_marker !== '/roadmap-draft') {
+              return;
+            }
+            const issue_number = result.pr_number;
+            const marker = '<!-- spectrum-systems-roadmap-draft -->';
+            const body = fs.readFileSync('roadmap_draft_comment.md', 'utf8');
+            const nextBody = `${marker}\n${body}`;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number,
+              per_page: 100,
+            });
+            const existing = comments.find((comment) => typeof comment.body === 'string' && comment.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: nextBody,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number,
+                body: nextBody,
+              });
+            }
 
       - name: Upload governed review ingestion artifacts
         uses: actions/upload-artifact@v4

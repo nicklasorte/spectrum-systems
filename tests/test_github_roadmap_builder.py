@@ -13,7 +13,7 @@ from spectrum_systems.modules.runtime.github_roadmap_builder import (
 
 def _context(tmp_path: Path) -> dict[str, object]:
     return {
-        "command_body": "/roadmap-2step scope:runtime keywords:governance,roadmap",
+        "command_body": "/roadmap-draft scope:runtime keywords:governance,roadmap",
         "emitted_at": "2026-04-06T12:00:00Z",
         "repo_root": tmp_path,
         "pr_number": 42,
@@ -61,5 +61,5 @@ def test_invalid_command_marker_fails_closed(tmp_path: Path) -> None:
     context = _context(tmp_path)
     context["command_body"] = "/run-ril"
 
-    with pytest.raises(GithubRoadmapBuilderError, match="/roadmap-2step"):
+    with pytest.raises(GithubRoadmapBuilderError, match="/roadmap-draft"):
         build_two_step_roadmap_from_sources(context)
