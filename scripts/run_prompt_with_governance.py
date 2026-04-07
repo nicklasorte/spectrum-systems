@@ -8,6 +8,17 @@ import sys
 from pathlib import Path
 
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _display_prompt_path(path: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return str(resolved)
+
+
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run governance preflight before prompt execution."
@@ -25,7 +36,7 @@ def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
 
     if not args.prompt_file.is_file():
-        print(f"ERROR: prompt file not found: {args.prompt_file}", file=sys.stderr)
+        print(f"ERROR: prompt file not found: {_display_prompt_path(args.prompt_file)}", file=sys.stderr)
         return 1
 
     checker = Path(__file__).with_name("check_governance_compliance.py")
@@ -42,10 +53,10 @@ def main(argv: list[str] | None = None) -> int:
         return result.returncode
 
     if args.execute:
-        print("PRECHECK PASSED: executing prompt (stub output below).")
+        print(f"PRECHECK PASSED: executing prompt (stub output below): {_display_prompt_path(args.prompt_file)}")
         print(args.prompt_file.read_text(encoding="utf-8"))
     else:
-        print("PRECHECK PASSED: prompt ready for execution.")
+        print(f"PRECHECK PASSED: prompt ready for execution: {_display_prompt_path(args.prompt_file)}")
 
     return 0
 

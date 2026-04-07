@@ -33,7 +33,7 @@ def test_run_prompt_with_governance_passes_for_valid_prompt(tmp_path: Path) -> N
 
     assert result.returncode == 0
     assert "PASS: governance compliance checks satisfied." in result.stdout
-    assert "PRECHECK PASSED: prompt ready for execution." in result.stdout
+    assert "PRECHECK PASSED: prompt ready for execution:" in result.stdout
 
 
 def test_run_prompt_with_governance_blocks_invalid_prompt(tmp_path: Path) -> None:

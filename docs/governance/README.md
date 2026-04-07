@@ -67,6 +67,9 @@ Prompt governance is now enforced through preflight validation instead of adviso
 - Prompt checker: `scripts/check_governance_compliance.py`
 - Prompt wrapper: `scripts/run_prompt_with_governance.py`
 - Execution rules: `docs/governance/prompt_execution_rules.md`
+- Governed prompt surface registry: `docs/governance/governed_prompt_surfaces.json`
+- Governed prompt registry guide: `docs/governance/governed_prompt_surfaces.md`
+- CI enforcement mapping: `docs/governance/ci_enforcement.md`
 
 ### What fail-closed means
 If a prompt omits any required governance reference, the checker returns failure (non-zero exit), and wrapper execution is blocked.
@@ -91,5 +94,7 @@ Each template already wires:
   - `python scripts/check_governance_compliance.py --text "<prompt_text>"`
 - Wrapper flow:
   - `python scripts/run_prompt_with_governance.py <prompt_file>`
+- Drift sync test:
+  - `pytest tests/test_governed_prompt_surface_sync.py`
 
 A missing governance reference is a blocking defect and must be remediated before prompt execution.

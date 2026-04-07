@@ -1,9 +1,12 @@
 # Next Recommended Slice
 
-## BATCH-GOV-FIX-02 — Governed Prompt Surface Registry Integration
+## BATCH-GOV-FIX-04 — Checker-Level External Path Regression Lock
 
-Integrate governed prompt docs (`docs/governance/prompt_includes/*`, `docs/governance/prompt_templates/*`, and prompt seam templates under `prompts/` + `templates/review/`) into a single repo-native governed prompt surface registry (`docs/governance/governed_prompt_surfaces.json`) and add a deterministic test to verify every registered surface includes required governance references.
+Add direct checker tests that call `scripts.check_governance_compliance.evaluate_prompt_file()` with external temp-path files to guarantee:
+- external valid prompt content passes,
+- external invalid prompt content fails fail-closed,
+- external-path handling remains crash-free.
 
 ### Outcome target
-- Keeps fail-closed prompt governance enforceable as prompt surface count grows.
-- Prevents future contract preflight drift by requiring explicit surface registration + test-backed coverage.
+- Prevents future regressions in external path handling independent of wrapper behavior.
+- Keeps governance preflight fail-closed and deterministic for both in-repo and out-of-repo prompt files.

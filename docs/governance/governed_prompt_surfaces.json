@@ -1,0 +1,104 @@
+{
+  "version": "1.0.0",
+  "registry_id": "governed_prompt_surfaces",
+  "description": "Canonical machine-readable governed prompt surface registry for fail-closed governance prompt preflight.",
+  "surfaces": [
+    {
+      "surface_id": "roadmap_prompt_template",
+      "prompt_class": "roadmap_prompt",
+      "path_globs": [
+        "docs/governance/prompt_templates/roadmap_prompt_template.md",
+        "docs/architecture/strategy_guided_roadmap_prompt.md"
+      ],
+      "requires_governance_check": true,
+      "required_references": [
+        "docs/governance/strategy_control_doc.md",
+        "docs/governance/source_inputs_manifest.json",
+        "docs/governance/prompt_includes/source_input_loading_include.md"
+      ],
+      "required_includes_or_templates": {
+        "mode": "any_of",
+        "paths": [
+          "docs/governance/prompt_includes/roadmap_governance_include.md"
+        ]
+      },
+      "checked_by": [
+        "scripts/check_governance_compliance.py",
+        "tests/test_governed_prompt_surface_sync.py"
+      ],
+      "notes": "Roadmap generation prompt surfaces must load roadmap governance include and core governance references."
+    },
+    {
+      "surface_id": "implementation_prompt_template",
+      "prompt_class": "implementation_prompt",
+      "path_globs": [
+        "docs/governance/prompt_templates/implementation_prompt_template.md",
+        "prompts/**/*.md",
+        "prompts/*.md"
+      ],
+      "requires_governance_check": true,
+      "required_references": [
+        "docs/governance/strategy_control_doc.md",
+        "docs/governance/source_inputs_manifest.json",
+        "docs/governance/prompt_includes/source_input_loading_include.md"
+      ],
+      "required_includes_or_templates": {
+        "mode": "any_of",
+        "paths": [
+          "docs/governance/prompt_includes/implementation_governance_include.md",
+          "docs/governance/prompt_includes/roadmap_governance_include.md"
+        ]
+      },
+      "checked_by": [
+        "scripts/check_governance_compliance.py",
+        "tests/test_governed_prompt_surface_sync.py"
+      ],
+      "notes": "Implementation prompt surfaces require core governance references plus at least one policy include."
+    },
+    {
+      "surface_id": "architecture_review_prompt_template",
+      "prompt_class": "architecture_review_prompt",
+      "path_globs": [
+        "docs/governance/prompt_templates/architecture_review_prompt_template.md",
+        "templates/review/*prompt*.md"
+      ],
+      "requires_governance_check": true,
+      "required_references": [
+        "docs/governance/strategy_control_doc.md",
+        "docs/governance/source_inputs_manifest.json",
+        "docs/governance/prompt_includes/source_input_loading_include.md"
+      ],
+      "required_includes_or_templates": {
+        "mode": "any_of",
+        "paths": [
+          "docs/governance/prompt_includes/implementation_governance_include.md"
+        ]
+      },
+      "checked_by": [
+        "scripts/check_governance_compliance.py",
+        "tests/test_governed_prompt_surface_sync.py"
+      ],
+      "notes": "Architecture review prompts are governed and must carry implementation-governance include semantics."
+    },
+    {
+      "surface_id": "governance_prompt_includes",
+      "prompt_class": "governance_prompt_include",
+      "path_globs": [
+        "docs/governance/prompt_includes/*.md"
+      ],
+      "requires_governance_check": true,
+      "required_references": [
+        "docs/governance/strategy_control_doc.md"
+      ],
+      "required_includes_or_templates": {
+        "mode": "all_of",
+        "paths": []
+      },
+      "checked_by": [
+        "scripts/check_governance_compliance.py",
+        "tests/test_governed_prompt_surface_sync.py"
+      ],
+      "notes": "Governance include docs remain in the governed surface registry to keep preflight visibility explicit."
+    }
+  ]
+}
