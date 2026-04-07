@@ -219,8 +219,8 @@ if terminal not in allowed:
 policy = result.get("branch_update_policy")
 if not isinstance(policy, dict):
     raise SystemExit("branch_update_policy missing from continuation_result")
-if policy.get("branch_update_allowed") and result.get("cde_decision") != "continue_bounded":
-    raise SystemExit("branch updates are allowed only for continue_bounded governed path")
+if policy.get("branch_update_allowed") and terminal != "ready_for_merge":
+    raise SystemExit("branch updates are allowed only when final_terminal_state is ready_for_merge")
 PY
 
       - name: Upload closure-continuation artifacts

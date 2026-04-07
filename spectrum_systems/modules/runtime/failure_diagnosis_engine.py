@@ -10,6 +10,7 @@ from typing import Any
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.utils.deterministic_id import deterministic_id
 
 
 class FailureDiagnosisError(ValueError):
@@ -158,6 +159,12 @@ _BLOCKING_SEVERITY = {
     "corroboration_validation_gap": "high",
     "override_temporal_validation_gap": "high",
     "unknown_failure_class": "high",
+}
+
+_SAFE_REPAIRABLE_CLASSES = {
+    "manifest_or_registry_mismatch",
+    "schema_example_drift",
+    "test_expectation_drift",
 }
 
 
@@ -447,4 +454,109 @@ def build_failure_diagnosis_artifact(
     }
 
     _validate(artifact, "failure_diagnosis_artifact", label="failure_diagnosis_artifact")
+    return artifact
+
+
+def normalize_pytest_failure_packet(
+    *,
+    source_run_ref: str,
+    command_ref: str,
+    failing_tests: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Normalize failed test output into structured RIL-consumable packet."""
+    if not isinstance(source_run_ref, str) or not source_run_ref.strip():
+        raise FailureDiagnosisError("source_run_ref must be a non-empty string")
+    if not isinstance(command_ref, str) or not command_ref.strip():
+        raise FailureDiagnosisError("command_ref must be a non-empty string")
+    if not isinstance(failing_tests, list) or not failing_tests:
+        raise FailureDiagnosisError("failing_tests must be a non-empty list")
+
+    normalized_tests: list[dict[str, Any]] = []
+    for row in failing_tests:
+        if not isinstance(row, dict):
+            raise FailureDiagnosisError("failing_tests entries must be objects")
+        test_name = str(row.get("test_name") or "").strip()
+        message = str(row.get("failure_message") or "").strip()
+        if not test_name or not message:
+            raise FailureDiagnosisError("failing_tests entries require test_name and failure_message")
+        normalized_tests.append(
+            {
+                "test_name": test_name,
+                "failure_message": message,
+                "artifact_ref": str(row.get("artifact_ref") or f"pytest_failure:{test_name}").strip(),
+                "command_ref": str(row.get("command_ref") or command_ref).strip(),
+                "markers": [str(item).strip() for item in (row.get("markers") or []) if str(item).strip()],
+            }
+        )
+
+    failure_id = deterministic_id(
+        prefix="flr",
+        namespace="ril_failure_packet",
+        payload={
+            "source_run_ref": source_run_ref,
+            "command_ref": command_ref,
+            "failing_tests": normalized_tests,
+        },
+    )
+    return {
+        "failure_id": failure_id,
+        "source_run_ref": source_run_ref.strip(),
+        "source_test_refs": sorted(test["artifact_ref"] for test in normalized_tests),
+        "failing_tests": sorted(normalized_tests, key=lambda item: item["test_name"]),
+        "command_ref": command_ref.strip(),
+    }
+
+
+def build_failure_repair_candidate_artifact(
+    *,
+    failure_packet: dict[str, Any],
+    failure_diagnosis_artifact: dict[str, Any],
+    proposed_repair_ref: str,
+    trace_refs: list[str],
+) -> dict[str, Any]:
+    """Build FRE bounded repair candidate artifact from structured failure and diagnosis."""
+    if not isinstance(failure_packet, dict):
+        raise FailureDiagnosisError("failure_packet must be an object")
+    if not isinstance(failure_diagnosis_artifact, dict):
+        raise FailureDiagnosisError("failure_diagnosis_artifact must be an object")
+    if not isinstance(proposed_repair_ref, str) or not proposed_repair_ref.strip():
+        raise FailureDiagnosisError("proposed_repair_ref must be non-empty")
+    if not isinstance(trace_refs, list) or not trace_refs or not all(isinstance(item, str) and item.strip() for item in trace_refs):
+        raise FailureDiagnosisError("trace_refs must be a non-empty list of strings")
+
+    primary = str(failure_diagnosis_artifact.get("primary_root_cause") or "").strip()
+    failure_id = str(failure_packet.get("failure_id") or "").strip()
+    source_run_ref = str(failure_packet.get("source_run_ref") or "").strip()
+    source_test_refs = failure_packet.get("source_test_refs")
+    if not primary or not failure_id or not source_run_ref or not isinstance(source_test_refs, list) or not source_test_refs:
+        raise FailureDiagnosisError("failure packet or diagnosis missing required fields")
+
+    safe_to_repair = primary in _SAFE_REPAIRABLE_CLASSES
+    bounded_scope = sorted(
+        set(
+            str(item).strip()
+            for item in (
+                failure_diagnosis_artifact.get("recommended_repair_paths")
+                or failure_diagnosis_artifact.get("related_contract_refs")
+                or []
+            )
+            if isinstance(item, str) and item.strip()
+        )
+    )
+    if safe_to_repair and not bounded_scope:
+        safe_to_repair = False
+
+    artifact = {
+        "artifact_type": "failure_repair_candidate_artifact",
+        "schema_version": "1.0.0",
+        "failure_id": failure_id,
+        "source_run_ref": source_run_ref,
+        "source_test_refs": sorted(set(str(item).strip() for item in source_test_refs if str(item).strip())),
+        "failure_class": primary,
+        "safe_to_repair": safe_to_repair,
+        "bounded_scope": bounded_scope,
+        "proposed_repair_ref": proposed_repair_ref.strip(),
+        "trace_refs": sorted(set(item.strip() for item in trace_refs if item.strip())),
+    }
+    _validate(artifact, "failure_repair_candidate_artifact", label="failure_repair_candidate_artifact")
     return artifact

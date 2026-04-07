@@ -87,7 +87,8 @@ def test_valid_outputs_cde_lock_no_tlc(tmp_path: Path) -> None:
 
     assert result["cde_decision"] == "lock"
     assert result["tlc_ran"] is False
-    assert result["final_terminal_state"] == "ready_for_merge"
+    assert result["final_terminal_state"] == "blocked"
+    assert result["branch_update_policy"]["branch_update_allowed"] is False
     assert result["artifact_paths"]["top_level_conductor_run_artifact"] is None
 
     closure = json.loads(Path(result["artifact_paths"]["closure_decision_artifact"]).read_text(encoding="utf-8"))
@@ -351,7 +352,7 @@ def test_roadmap_artifact_is_fed_into_continuation_pipeline(monkeypatch: pytest.
     assert result["roadmap_two_step"] is not None
 
 
-def test_branch_update_policy_only_allows_continue_bounded_path(tmp_path: Path) -> None:
+def test_branch_update_policy_only_allows_ready_for_merge_terminal_state(tmp_path: Path) -> None:
     summary_path, handoff_path = _build_ingestion_summary(tmp_path)
     _neutralize_escalation(summary_path)
 
@@ -380,4 +381,5 @@ def test_branch_update_policy_only_allows_continue_bounded_path(tmp_path: Path) 
         retry_budget=0,
     )
     assert continue_result["cde_decision"] == "continue_bounded"
-    assert continue_result["branch_update_policy"]["branch_update_allowed"] is True
+    assert continue_result["final_terminal_state"] == "exhausted"
+    assert continue_result["branch_update_policy"]["branch_update_allowed"] is False

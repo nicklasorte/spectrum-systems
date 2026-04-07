@@ -492,7 +492,7 @@ def run_github_closure_continuation(
     if tlc_result is not None:
         final_terminal_state = str(tlc_result.get("current_state"))
     elif decision_type == "lock":
-        final_terminal_state = "ready_for_merge"
+        final_terminal_state = "blocked"
     elif decision_type == "escalate":
         final_terminal_state = "escalated"
     else:
@@ -500,7 +500,7 @@ def run_github_closure_continuation(
     if final_terminal_state not in {"ready_for_merge", "blocked", "exhausted", "escalated"}:
         raise GithubClosureContinuationError(f"unsupported terminal state returned by continuation path: {final_terminal_state}")
 
-    branch_update_allowed = bool(decision_type == "continue_bounded" and tlc_ran)
+    branch_update_allowed = bool(final_terminal_state == "ready_for_merge")
 
     summary = {
         "status": "success",
@@ -545,10 +545,10 @@ def run_github_closure_continuation(
         "branch_update_policy": {
             "branch_update_allowed": branch_update_allowed,
             "allowed_only_via_governed_tlc_path": True,
-            "blocked_states": ["blocked", "escalated", "lock_without_continuation", "malformed_inputs"],
+            "blocked_states": ["blocked", "exhausted", "escalated", "malformed_inputs"],
             "policy_note": (
                 "GitHub workflows do not mutate branches directly. "
-                "Branch updates are permitted only on CDE continue_bounded paths executed through TLC with SEL enforcement."
+                "Branch updates are permitted only when continuation reaches terminal_state=ready_for_merge."
             ),
         },
     }

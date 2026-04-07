@@ -104,6 +104,17 @@ def test_post_hardening_requires_final_verification():
     assert artifact["next_step_class"] == "final_verification"
 
 
+def test_repair_loop_eligible_emits_continue_repair_bounded():
+    request = _base_request(
+        repair_loop_eligible=True,
+        bounded_next_step_available=True,
+        next_step_ref="repair_loop:run-1:1",
+    )
+    artifact = build_closure_decision_artifact(request)
+    assert artifact["decision_type"] == "continue_repair_bounded"
+    assert artifact["next_step_class"] == "bounded_repair"
+
+
 def test_no_safe_next_step_or_malformed_evidence_becomes_blocked():
     no_step_artifact = build_closure_decision_artifact(_base_request())
     assert no_step_artifact["decision_type"] == "blocked"

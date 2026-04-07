@@ -203,6 +203,16 @@ These rules are hard boundaries for architecture, contracts, and validation.
 - SEL wraps all subsystems as a cross-cutting enforcement boundary
 - RIL → CDE
 
+## Pre-PR bounded repair-loop behavior (GHA-008)
+- This is a **behavior** over existing systems, not a new system.
+- Ownership mapping is fixed:
+  - RIL structures failure/test surfaces into governed packets only.
+  - FRE diagnoses failure class, emits `failure_repair_candidate_artifact`, and proposes bounded repair scope.
+  - CDE is the only authority that may emit `continue_repair_bounded`.
+  - TLC only orchestrates bounded retries and terminal-state transitions.
+  - PQX is the only execution path for applying repairs and rerunning tests.
+  - SEL enforces scope, retry budget, and decision-state boundaries for each repair attempt.
+
 ## System Invariants
 1. Execution is owned only by **PQX**.
 2. Recovery and repair planning are owned only by **FRE**.

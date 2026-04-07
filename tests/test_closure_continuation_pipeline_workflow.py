@@ -45,3 +45,4 @@ def test_workflow_includes_guardrail_failure_points() -> None:
     assert "if_no_artifact_found: fail" in text
     assert "missing deterministic handoff artifact: downloaded_review_trigger/github_review_handoff_artifact.json" in text
     assert "unsupported terminal state" in text
+    assert "branch updates are allowed only when final_terminal_state is ready_for_merge" in text

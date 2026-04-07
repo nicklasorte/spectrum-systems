@@ -48,7 +48,10 @@
               "fre_boundary_violation",
               "ril_boundary_violation",
               "governance_evidence_violation",
-              "lineage_violation"
+              "lineage_violation",
+              "repair_scope_violation",
+              "repair_budget_violation",
+              "repair_decision_violation"
             ]
           },
           "boundary": {

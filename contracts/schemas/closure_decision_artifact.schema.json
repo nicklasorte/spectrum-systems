@@ -73,6 +73,7 @@
         "hardening_required",
         "final_verification_required",
         "continue_bounded",
+        "continue_repair_bounded",
         "blocked",
         "escalate"
       ]
@@ -115,7 +116,7 @@
     },
     "next_step_class": {
       "type": "string",
-      "enum": ["none", "hardening_batch", "final_verification", "bounded_continue", "escalation"]
+      "enum": ["none", "hardening_batch", "final_verification", "bounded_continue", "bounded_repair", "escalation"]
     },
     "next_step_ref": {
       "type": ["string", "null"],
