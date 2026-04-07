@@ -3604,7 +3604,7 @@
     },
     {
       "artifact_type": "roadmap_step_execution_artifact",
-      "artifact_class": "runtime",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "active",
       "intended_consumers": [
