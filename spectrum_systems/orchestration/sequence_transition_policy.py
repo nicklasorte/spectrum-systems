@@ -18,6 +18,7 @@ from spectrum_systems.modules.runtime.stage_contract_runtime import (
     evaluate_stage_transition_readiness,
     load_stage_contract,
 )
+from spectrum_systems.modules.runtime.hnx_execution_state import evaluate_long_running_policy
 
 SEQUENCE_STATES = {
     "admitted",
@@ -428,9 +429,32 @@ def _stage_contract_eval_statuses(manifest: dict[str, Any]) -> dict[str, str]:
     }
 
 
+def _continuity_gate(manifest: dict[str, Any], contract: dict[str, Any]) -> tuple[bool, str | None]:
+    policy_result = evaluate_long_running_policy(
+        stage_contract=contract,
+        checkpoint_record=manifest.get("checkpoint_record") if isinstance(manifest.get("checkpoint_record"), dict) else None,
+        handoff_artifact=manifest.get("handoff_artifact") if isinstance(manifest.get("handoff_artifact"), dict) else None,
+        request_resume=manifest.get("request_resume") is True,
+        checkpoint_age_minutes=int(manifest.get("checkpoint_age_minutes") or 0),
+        has_resume_validation_evidence=manifest.get("has_resume_validation_evidence") is True,
+        request_async_wait=manifest.get("request_async_wait") is True,
+        wait_elapsed_minutes=int(manifest.get("wait_elapsed_minutes") or 0),
+    )
+    if policy_result.get("allowed") is True:
+        return True, None
+    reason_codes = policy_result.get("reason_codes") or []
+    failures = (policy_result.get("validation_failures") or []) + (policy_result.get("policy_failures") or [])
+    reason = ",".join(reason_codes + failures) if (reason_codes or failures) else "HNX_LONG_RUNNING_POLICY_BLOCKED"
+    state = policy_result.get("recommended_state") or "block"
+    return False, f"continuity gate blocked: {reason} ({state})"
+
+
 def _stage_contract_gate(manifest: dict[str, Any], target_state: str) -> tuple[bool, str | None]:
     contract_path = manifest.get("stage_contract_path")
-    if target_state != "promoted" or not isinstance(contract_path, str) or not contract_path.strip():
+    if not isinstance(contract_path, str) or not contract_path.strip():
+        return True, None
+
+    if target_state in {"blocked", "frozen"}:
         return True, None
 
     if not _path_exists(contract_path):
@@ -440,6 +464,10 @@ def _stage_contract_gate(manifest: dict[str, Any], target_state: str) -> tuple[b
         contract = load_stage_contract(contract_path)
     except Exception as exc:  # noqa: BLE001
         return False, f"stage-contract gate blocked: invalid stage contract ({exc})"
+
+    continuity_ok, continuity_error = _continuity_gate(manifest, contract)
+    if not continuity_ok:
+        return False, continuity_error
 
     readiness = evaluate_stage_transition_readiness(
         contract_payload=contract,

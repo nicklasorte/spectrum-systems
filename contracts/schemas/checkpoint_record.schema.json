@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/checkpoint_record.schema.json",
+  "title": "Checkpoint Record",
+  "description": "Canonical HNX continuity artifact for deterministic long-running stage checkpointing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "checkpoint_id",
+    "workflow_id",
+    "stage_contract_id",
+    "stage_name",
+    "stage_sequence",
+    "execution_mode",
+    "state_snapshot",
+    "execution_context",
+    "created_at",
+    "trace",
+    "content_hash",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {"const": "checkpoint_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "checkpoint_id": {"type": "string", "minLength": 1},
+    "workflow_id": {"type": "string", "minLength": 1},
+    "stage_contract_id": {"type": "string", "minLength": 1},
+    "stage_name": {"type": "string", "minLength": 1},
+    "stage_sequence": {"type": "integer", "minimum": 0},
+    "execution_mode": {"type": "string", "enum": ["continuous", "reset_with_handoff"]},
+    "parent_checkpoint_id": {"type": "string", "minLength": 1},
+    "lineage_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "state_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_inputs", "observed_outputs", "eval_refs", "control_refs", "pending_actions"],
+      "properties": {
+        "required_inputs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "observed_outputs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "eval_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "control_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "pending_actions": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "execution_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["iteration_count", "elapsed_time_minutes", "cost_accumulated_usd"],
+      "properties": {
+        "iteration_count": {"type": "integer", "minimum": 0},
+        "elapsed_time_minutes": {"type": "integer", "minimum": 0},
+        "cost_accumulated_usd": {"type": "number", "minimum": 0}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "agent_run_id"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "agent_run_id": {"type": "string", "minLength": 1},
+        "span_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "content_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["created_by", "source", "version"],
+      "properties": {
+        "created_by": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "notes": {"type": "string"}
+      }
+    }
+  }
+}

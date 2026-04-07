@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.90",
+  "artifact_version": "1.3.92",
   "schema_version": "1.3.90",
-  "standards_version": "1.3.91",
+  "standards_version": "1.3.92",
   "record_id": "REC-STD-2026-04-07-BATCH-MB-02",
   "run_id": "run-20260407T000000Z-batch-mb-02",
   "created_at": "2026-04-07T00:00:00Z",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.90",
+  "source_repo_version": "1.3.92",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -222,6 +222,19 @@
       "notes": "Structured assumptions with validation plans and dependency links."
     },
     {
+      "artifact_type": "async_wait_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.92",
+      "last_updated_in": "1.3.92",
+      "example_path": "contracts/examples/async_wait_record.json",
+      "notes": "HR-B canonical async wait continuity artifact with deterministic timeout policy linkage."
+    },
+    {
       "artifact_type": "autonomy_decision_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -402,6 +415,19 @@
       "last_updated_in": "1.0.79",
       "example_path": "contracts/examples/certification_integrity_result.json",
       "notes": "VAL-11 governed DONE-01 integrity validation artifact proving fail-closed certification behavior under inconsistent, partial, and conflicting signal combinations."
+    },
+    {
+      "artifact_type": "checkpoint_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.92",
+      "last_updated_in": "1.3.92",
+      "example_path": "contracts/examples/checkpoint_record.json",
+      "notes": "HR-B canonical checkpoint continuity artifact for long-running governed execution."
     },
     {
       "artifact_type": "closure_decision_artifact",
@@ -1603,6 +1629,19 @@
       "last_updated_in": "1.0.88",
       "example_path": "contracts/examples/grounding_factcheck_eval.json",
       "notes": "HS-19 deterministic claim-level grounding/fact-check eval artifact with bounded failure classes and fail-closed policy traceability."
+    },
+    {
+      "artifact_type": "handoff_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.92",
+      "last_updated_in": "1.3.92",
+      "example_path": "contracts/examples/handoff_artifact.json",
+      "notes": "HR-B canonical governed reset-with-handoff state transfer artifact."
     },
     {
       "artifact_type": "hitl_override_decision",
@@ -3326,6 +3365,19 @@
       "notes": "Governed required-eval mapping by artifact family for fail-closed coverage enforcement."
     },
     {
+      "artifact_type": "resume_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.92",
+      "last_updated_in": "1.3.92",
+      "example_path": "contracts/examples/resume_record.json",
+      "notes": "HR-B canonical governed resume attempt artifact linked to checkpoint continuity state."
+    },
+    {
       "artifact_type": "review_artifact",
       "artifact_class": "review",
       "schema_version": "1.0.0",
@@ -3815,7 +3867,7 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.3.91",
-      "last_updated_in": "1.3.91",
+      "last_updated_in": "1.3.92",
       "example_path": "contracts/examples/stage_contracts/pqx_stage_contract.json",
       "notes": "HR-01/HR-02 canonical stage-local contract spine for deterministic transition readiness enforcement."
     },

@@ -11,14 +11,43 @@
   "sequence": 6,
   "status": "active",
   "inputs": [
-    {"artifact_type": "replay_result", "required": true, "min_count": 1, "schema_ref": "contracts/schemas/replay_result.schema.json"},
-    {"artifact_type": "evaluation_control_decision", "required": true, "min_count": 1, "schema_ref": "contracts/schemas/evaluation_control_decision.schema.json"},
-    {"artifact_type": "evaluation_enforcement_action", "required": true, "min_count": 1, "schema_ref": "contracts/schemas/evaluation_enforcement_action.schema.json"},
-    {"artifact_type": "eval_coverage_summary", "required": true, "min_count": 1, "schema_ref": "contracts/schemas/eval_coverage_summary.schema.json"},
-    {"artifact_type": "done_certification_record", "required": true, "min_count": 1, "schema_ref": "contracts/schemas/done_certification_record.schema.json"}
+    {
+      "artifact_type": "replay_result",
+      "required": true,
+      "min_count": 1,
+      "schema_ref": "contracts/schemas/replay_result.schema.json"
+    },
+    {
+      "artifact_type": "evaluation_control_decision",
+      "required": true,
+      "min_count": 1,
+      "schema_ref": "contracts/schemas/evaluation_control_decision.schema.json"
+    },
+    {
+      "artifact_type": "evaluation_enforcement_action",
+      "required": true,
+      "min_count": 1,
+      "schema_ref": "contracts/schemas/evaluation_enforcement_action.schema.json"
+    },
+    {
+      "artifact_type": "eval_coverage_summary",
+      "required": true,
+      "min_count": 1,
+      "schema_ref": "contracts/schemas/eval_coverage_summary.schema.json"
+    },
+    {
+      "artifact_type": "done_certification_record",
+      "required": true,
+      "min_count": 1,
+      "schema_ref": "contracts/schemas/done_certification_record.schema.json"
+    }
   ],
   "outputs_required": [
-    {"artifact_type": "promotion_consistency_record", "min_count": 1, "schema_ref": "contracts/schemas/promotion_consistency_record.schema.json"}
+    {
+      "artifact_type": "promotion_consistency_record",
+      "min_count": 1,
+      "schema_ref": "contracts/schemas/promotion_consistency_record.schema.json"
+    }
   ],
   "acceptance_criteria": [
     {
@@ -41,10 +70,17 @@
   },
   "permissions": {
     "sandbox_profile": "workspace-write",
-    "tool_allowlist": ["python", "pytest"],
+    "tool_allowlist": [
+      "python",
+      "pytest"
+    ],
     "network_access": false,
-    "write_scope": ["artifacts/pqx/"],
-    "human_approval_required_for": ["promotion_override"]
+    "write_scope": [
+      "artifacts/pqx/"
+    ],
+    "human_approval_required_for": [
+      "promotion_override"
+    ]
   },
   "budgets": {
     "max_iterations": 1,
@@ -53,11 +89,26 @@
     "max_retries": 0
   },
   "stop_conditions": [
-    {"condition": "required_artifact_missing", "behavior": "block"},
-    {"condition": "eval_failed", "behavior": "block"},
-    {"condition": "policy_violation", "behavior": "block"},
-    {"condition": "budget_exhausted", "behavior": "freeze"},
-    {"condition": "trace_incomplete", "behavior": "block"}
+    {
+      "condition": "required_artifact_missing",
+      "behavior": "block"
+    },
+    {
+      "condition": "eval_failed",
+      "behavior": "block"
+    },
+    {
+      "condition": "policy_violation",
+      "behavior": "block"
+    },
+    {
+      "condition": "budget_exhausted",
+      "behavior": "freeze"
+    },
+    {
+      "condition": "trace_incomplete",
+      "behavior": "block"
+    }
   ],
   "transition_rules": {
     "advance_requires_all_required_inputs": true,
@@ -77,5 +128,22 @@
     "created_by": "spectrum-systems",
     "source": "BATCH-HR-A",
     "version": "1.0.0"
+  },
+  "execution_mode": "continuous",
+  "resume_policy": {
+    "allowed": true,
+    "validation_required": true,
+    "max_resume_age_minutes": 240,
+    "resume_requires_human_review": false
+  },
+  "async_policy": {
+    "allowed": true,
+    "max_wait_minutes": 120,
+    "timeout_behavior": "freeze"
+  },
+  "compaction_policy": {
+    "allowed": true,
+    "trigger": "context_size",
+    "strategy": "summarize"
   }
 }

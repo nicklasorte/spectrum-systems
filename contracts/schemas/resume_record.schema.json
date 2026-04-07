@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/resume_record.schema.json",
+  "title": "Resume Record",
+  "description": "Canonical HNX governed resume attempt record for checkpoint continuation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "resume_id",
+    "checkpoint_id",
+    "resume_reason",
+    "resumed_at",
+    "validation_result",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {"const": "resume_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "resume_id": {"type": "string", "minLength": 1},
+    "checkpoint_id": {"type": "string", "minLength": 1},
+    "resume_reason": {"type": "string", "minLength": 1},
+    "resumed_at": {"type": "string", "format": "date-time"},
+    "validation_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason_codes"],
+      "properties": {
+        "status": {"type": "string", "enum": ["valid", "invalid"]},
+        "reason_codes": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        }
+      }
+    },
+    "trigger_ref": {"type": "string", "minLength": 1},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "agent_run_id"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "agent_run_id": {"type": "string", "minLength": 1},
+        "span_id": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

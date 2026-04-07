@@ -1,0 +1,18 @@
+{
+  "artifact_type": "resume_record",
+  "schema_version": "1.0.0",
+  "resume_id": "resume-001",
+  "checkpoint_id": "checkpoint-001",
+  "resume_reason": "operator_retry",
+  "resumed_at": "2026-04-07T00:10:00Z",
+  "validation_result": {
+    "status": "valid",
+    "reason_codes": [
+      "RESUME_ALLOWED"
+    ]
+  },
+  "trace": {
+    "trace_id": "trace-hrb-001",
+    "agent_run_id": "run-hrb-001"
+  }
+}

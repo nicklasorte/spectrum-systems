@@ -247,3 +247,18 @@ def test_transition_readiness_same_inputs_are_deterministic() -> None:
     first = evaluate_stage_transition_readiness(**kwargs).as_dict()
     second = evaluate_stage_transition_readiness(**kwargs).as_dict()
     assert first == second
+
+
+def test_stage_contract_examples_include_long_running_policy_fields() -> None:
+    payload = _pqx_contract()
+    assert payload["execution_mode"] in {"continuous", "reset_with_handoff"}
+    assert payload["resume_policy"]["validation_required"] is True
+    assert payload["async_policy"]["timeout_behavior"] in {"freeze", "block"}
+    assert payload["compaction_policy"]["strategy"] in {"summarize", "truncate"}
+
+
+def test_stage_contract_reset_mode_policy_validates() -> None:
+    payload = _pqx_contract()
+    payload["execution_mode"] = "reset_with_handoff"
+    payload["handoff"]["required"] = True
+    validate_stage_contract(payload)
