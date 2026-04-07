@@ -1,0 +1,81 @@
+{
+  "artifact_type": "stage_contract",
+  "schema_version": "1.0.0",
+  "contract_id": "stage-contract-pqx-promotion-readiness-v1",
+  "workflow_family": "pqx",
+  "stage": {
+    "name": "promoted",
+    "kind": "sequence_transition",
+    "description": "Gate PQX promotion transition on canonical stage-local artifact/eval/trace readiness signals."
+  },
+  "sequence": 6,
+  "status": "active",
+  "inputs": [
+    {"artifact_type": "replay_result", "required": true, "min_count": 1, "schema_ref": "contracts/schemas/replay_result.schema.json"},
+    {"artifact_type": "evaluation_control_decision", "required": true, "min_count": 1, "schema_ref": "contracts/schemas/evaluation_control_decision.schema.json"},
+    {"artifact_type": "evaluation_enforcement_action", "required": true, "min_count": 1, "schema_ref": "contracts/schemas/evaluation_enforcement_action.schema.json"},
+    {"artifact_type": "eval_coverage_summary", "required": true, "min_count": 1, "schema_ref": "contracts/schemas/eval_coverage_summary.schema.json"},
+    {"artifact_type": "done_certification_record", "required": true, "min_count": 1, "schema_ref": "contracts/schemas/done_certification_record.schema.json"}
+  ],
+  "outputs_required": [
+    {"artifact_type": "promotion_consistency_record", "min_count": 1, "schema_ref": "contracts/schemas/promotion_consistency_record.schema.json"}
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "pqx-promote-01",
+      "type": "policy_alignment",
+      "statement": "Promotion transition only advances when required control/eval/trace signals are complete and passing.",
+      "severity": "critical"
+    }
+  ],
+  "verification": {
+    "required_eval_types": [
+      "certification_status",
+      "promotion_control_allow"
+    ],
+    "required_validation_checks": [
+      "trust_spine_invariants",
+      "review_signal_gate"
+    ],
+    "notes": "Stage contract is stage-local and does not replace external promotion authority."
+  },
+  "permissions": {
+    "sandbox_profile": "workspace-write",
+    "tool_allowlist": ["python", "pytest"],
+    "network_access": false,
+    "write_scope": ["artifacts/pqx/"],
+    "human_approval_required_for": ["promotion_override"]
+  },
+  "budgets": {
+    "max_iterations": 1,
+    "max_wall_clock_minutes": 120,
+    "max_cost_usd": 5.0,
+    "max_retries": 0
+  },
+  "stop_conditions": [
+    {"condition": "required_artifact_missing", "behavior": "block"},
+    {"condition": "eval_failed", "behavior": "block"},
+    {"condition": "policy_violation", "behavior": "block"},
+    {"condition": "budget_exhausted", "behavior": "freeze"},
+    {"condition": "trace_incomplete", "behavior": "block"}
+  ],
+  "transition_rules": {
+    "advance_requires_all_required_inputs": true,
+    "advance_requires_all_required_outputs": false,
+    "advance_requires_all_required_evals": true,
+    "advance_requires_trace_completeness": true,
+    "indeterminate_eval_behavior": "freeze",
+    "missing_required_artifact_behavior": "block",
+    "missing_required_eval_behavior": "block",
+    "budget_exhausted_behavior": "freeze"
+  },
+  "handoff": {
+    "required": false,
+    "resume_supported": false
+  },
+  "provenance": {
+    "created_by": "spectrum-systems",
+    "source": "BATCH-HR-A",
+    "version": "1.0.0"
+  }
+}

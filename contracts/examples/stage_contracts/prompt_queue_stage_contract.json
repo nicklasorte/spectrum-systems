@@ -1,0 +1,102 @@
+{
+  "artifact_type": "stage_contract",
+  "schema_version": "1.0.0",
+  "contract_id": "stage-contract-prompt-queue-post-execution-v1",
+  "workflow_family": "prompt_queue",
+  "stage": {
+    "name": "post_execution_review",
+    "kind": "queue_transition",
+    "description": "Determine whether a failed prompt-queue execution may transition to review/handoff surfaces."
+  },
+  "sequence": 2,
+  "status": "active",
+  "inputs": [
+    {
+      "artifact_type": "prompt_queue_execution_result",
+      "required": true,
+      "min_count": 1,
+      "schema_ref": "contracts/schemas/prompt_queue_execution_result.schema.json"
+    },
+    {
+      "artifact_type": "prompt_queue_execution_gating_decision",
+      "required": true,
+      "min_count": 1,
+      "schema_ref": "contracts/schemas/prompt_queue_execution_gating_decision.schema.json"
+    }
+  ],
+  "outputs_required": [
+    {
+      "artifact_type": "prompt_queue_post_execution_decision",
+      "min_count": 1,
+      "schema_ref": "contracts/schemas/prompt_queue_post_execution_decision.schema.json"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "pq-postexec-01",
+      "type": "lineage",
+      "statement": "Decision must preserve work-item and artifact lineage links.",
+      "severity": "high"
+    }
+  ],
+  "verification": {
+    "required_eval_types": [
+      "post_execution_integrity_eval"
+    ],
+    "required_validation_checks": [
+      "prompt_queue_schema_validation",
+      "lineage_consistency"
+    ],
+    "commands": [
+      "pytest tests/test_prompt_queue_post_execution.py"
+    ],
+    "notes": "Contract defines stage-local readiness only; promotion/control authority remains external."
+  },
+  "permissions": {
+    "sandbox_profile": "workspace-write",
+    "tool_allowlist": [
+      "python",
+      "pytest"
+    ],
+    "network_access": false,
+    "write_scope": [
+      "artifacts/prompt_queue/"
+    ],
+    "human_approval_required_for": [
+      "manual_override"
+    ]
+  },
+  "budgets": {
+    "max_iterations": 4,
+    "max_wall_clock_minutes": 30,
+    "max_cost_usd": 2.0,
+    "max_retries": 2
+  },
+  "stop_conditions": [
+    {"condition": "required_artifact_missing", "behavior": "block"},
+    {"condition": "eval_failed", "behavior": "block"},
+    {"condition": "budget_exhausted", "behavior": "freeze"},
+    {"condition": "trace_incomplete", "behavior": "block"}
+  ],
+  "transition_rules": {
+    "advance_requires_all_required_inputs": true,
+    "advance_requires_all_required_outputs": true,
+    "advance_requires_all_required_evals": true,
+    "advance_requires_trace_completeness": true,
+    "indeterminate_eval_behavior": "freeze",
+    "missing_required_artifact_behavior": "block",
+    "missing_required_eval_behavior": "block",
+    "budget_exhausted_behavior": "freeze"
+  },
+  "handoff": {
+    "required": true,
+    "handoff_artifact_type": "prompt_queue_review_parsing_handoff",
+    "resume_supported": true
+  },
+  "provenance": {
+    "created_by": "spectrum-systems",
+    "source": "BATCH-HR-A",
+    "version": "1.0.0",
+    "notes": "Canonical example fixture for stage-contract spine adoption in prompt queue surfaces."
+  }
+}

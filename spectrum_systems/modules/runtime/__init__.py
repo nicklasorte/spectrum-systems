@@ -214,6 +214,13 @@ from spectrum_systems.modules.runtime.evaluation_monitor import (
     validate_monitor_summary,
 )
 
+from spectrum_systems.modules.runtime.stage_contract_runtime import (
+    StageTransitionReadinessResult,
+    evaluate_stage_transition_readiness,
+    load_stage_contract,
+    validate_stage_contract,
+)
+
 __all__ = [
     # BC — Runtime Compatibility
     "validate_runtime_environment",
@@ -360,6 +367,11 @@ __all__ = [
     # TRUST-01 — Context Admission Gate
     "run_context_admission",
     "ContextAdmissionError",
+    # HR-01/HR-02 — Stage contract runtime
+    "StageTransitionReadinessResult",
+    "load_stage_contract",
+    "validate_stage_contract",
+    "evaluate_stage_transition_readiness",
     # Runtime identity enforcement
     "RequiredIdentityError",
     "ensure_required_ids",
