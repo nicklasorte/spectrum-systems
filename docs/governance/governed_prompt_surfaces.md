@@ -1,41 +1,26 @@
 # Governed Prompt Surfaces
 
-## What governed prompt surfaces are
-Governed prompt surfaces are repository files that define, template, or include prompt content capable of changing roadmap ordering, implementation behavior, or architecture review outcomes.
+## Purpose
+List the prompt surfaces that are governance-controlled and their authority sources.
 
-In this repository, governed prompt surfaces include:
-- roadmap prompt templates,
-- implementation prompt templates,
-- architecture review prompt templates,
-- reusable prompt templates under `prompts/`,
-- governance prompt includes under `docs/governance/prompt_includes/`.
+## Canonical authority for all governed surfaces
+- `README.md`
+- `docs/architecture/system_registry.md`
+- `docs/governance/strategy_control_doc.md`
+- `docs/governance/prompt_contract.md`
+- `docs/governance/prompt_execution_rules.md`
 
-## Why the registry exists
-`docs/governance/governed_prompt_surfaces.json` is the single canonical machine-readable registry for governed prompt surfaces.
+## Governed surfaces
 
-It exists to prevent silent drift where a new prompt/include/template is added but is not visible to governance checking or contract preflight.
+| Surface | Scope | Required behavior |
+| --- | --- | --- |
+| Roadmap prompts | sequencing and prioritization | artifact-first execution, fail-closed, certification-gated promotion |
+| Architecture prompts | role boundaries and control behavior | preserve canonical role ownership, fail-closed on conflict |
+| Implementation prompts | governed markdown/contracts/schemas updates | follow prompt contract and execution preflight |
+| Review prompts | findings, remediation, and promotion decisions | explicit failure statements and certification gate enforcement |
 
-## Governance checker linkage
-`scripts/check_governance_compliance.py` reads the canonical registry and:
-- classifies prompt files by configured path globs,
-- applies required governance references/includes per surface,
-- fails explicitly when a governed file misses required references,
-- ignores non-governed files cleanly.
+## Out of scope
+Pure editorial prompts that do not affect execution behavior or role ownership.
 
-## Contract preflight linkage
-`scripts/run_contract_preflight.py` consults the same registry-backed checker classification to mark registry-matched prompt files as a governed evaluation surface (`governed_prompt_surface`).
-
-This keeps governance checker and preflight visibility on one taxonomy.
-
-## How to add a new governed prompt surface correctly
-1. Add/update the prompt/include/template file.
-2. Register its path glob and requirements in `docs/governance/governed_prompt_surfaces.json`.
-3. Ensure required references/includes exist in the file body.
-4. Run:
-   - `python scripts/check_governance_compliance.py --file <path>`
-   - `pytest tests/test_governed_prompt_surface_sync.py`
-5. Do not merge until both governance checker and sync test pass.
-
-## Why unregistered governed surfaces are blocking defects
-An unregistered governed prompt file can bypass required governance references and escape preflight visibility.
-That is a fail-open drift condition; therefore it is treated as a blocking defect.
+## Terminology rule
+Use normalized terms across governed surfaces: execution, artifact, failure, retrieve.
