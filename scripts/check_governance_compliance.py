@@ -106,12 +106,24 @@ def evaluate_prompt_text(prompt_text: str, surface: GovernedPromptSurface | None
     return ComplianceResult(passed=not missing, missing_items=missing, governed=True, surface_id=surface_id)
 
 
+def _path_for_surface_classification(file_path: Path) -> str | None:
+    resolved = file_path.resolve()
+    try:
+        return resolved.relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return None
+
+
 def evaluate_prompt_file(file_path: Path, surfaces: list[GovernedPromptSurface]) -> ComplianceResult:
-    relative_path = file_path.resolve().relative_to(REPO_ROOT).as_posix()
+    prompt_text = file_path.read_text(encoding="utf-8")
+    relative_path = _path_for_surface_classification(file_path)
+
+    if relative_path is None:
+        return evaluate_prompt_text(prompt_text)
+
     surface = classify_governed_surface_for_path(relative_path, surfaces)
     if surface is None or not surface.requires_governance_check:
         return ComplianceResult(passed=True, missing_items=[], governed=False, surface_id=None)
-    prompt_text = file_path.read_text(encoding="utf-8")
     return evaluate_prompt_text(prompt_text, surface=surface)
 
 

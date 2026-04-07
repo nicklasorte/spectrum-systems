@@ -1,11 +1,12 @@
 # Next Recommended Slice
 
-## BATCH-GOV-FIX-03 — CI Drift Gate for Registry-Covered Prompt Surfaces
+## BATCH-GOV-FIX-04 — Checker-Level External Path Regression Lock
 
-Add a dedicated CI gate that triggers on registry-covered governed prompt paths and enforces:
-- `python scripts/check_governance_compliance.py --file <changed-governed-file>` for each changed governed prompt file,
-- `pytest tests/test_governed_prompt_surface_sync.py` as the taxonomy coherence gate.
+Add direct checker tests that call `scripts.check_governance_compliance.evaluate_prompt_file()` with external temp-path files to guarantee:
+- external valid prompt content passes,
+- external invalid prompt content fails fail-closed,
+- external-path handling remains crash-free.
 
 ### Outcome target
-- Detects governed prompt surface drift at PR time with explicit, narrow feedback.
-- Preserves fail-closed behavior while keeping governance checks lightweight and repo-native.
+- Prevents future regressions in external path handling independent of wrapper behavior.
+- Keeps governance preflight fail-closed and deterministic for both in-repo and out-of-repo prompt files.
