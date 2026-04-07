@@ -2,6 +2,16 @@
 
 Use this prompt only for roadmap generation inside governed workflow seams.
 
+## Governance Preflight (Fail-Closed)
+Load and enforce before any roadmap analysis:
+- `docs/governance/prompt_includes/ENFORCED_PREAMBLE.md`
+- `docs/governance/prompt_includes/source_input_loading_include.md`
+- `docs/governance/strategy_control_doc.md`
+- `docs/governance/source_inputs_manifest.json`
+- `docs/governance/prompt_includes/roadmap_governance_include.md`
+
+If any required governance input is missing: STOP and return a blocking defect.
+
 ## Operating Order (Strict)
 1. `docs/architecture/strategy-control.md`
 2. `docs/architecture/foundation_pqx_eval_control.md`

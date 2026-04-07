@@ -65,5 +65,28 @@
       "docs/governance/prompt_contract.md"
     ],
     "note": "Superseding changes must keep historical traceability and cannot silently replace authority semantics."
+  },
+  "enforcement_mechanisms": {
+    "prompt_preflight_checker": "scripts/check_governance_compliance.py",
+    "prompt_preflight_wrapper": "scripts/run_prompt_with_governance.py",
+    "enforced_preamble": "docs/governance/prompt_includes/ENFORCED_PREAMBLE.md",
+    "execution_rules": "docs/governance/prompt_execution_rules.md"
+  },
+  "required_prompt_inputs": [
+    "docs/governance/strategy_control_doc.md",
+    "docs/governance/source_inputs_manifest.json",
+    "docs/governance/prompt_includes/source_input_loading_include.md",
+    "docs/governance/prompt_includes/roadmap_governance_include.md OR docs/governance/prompt_includes/implementation_governance_include.md"
+  ],
+  "preflight_checks": [
+    "strategy_control_doc_reference_present",
+    "source_inputs_manifest_reference_present",
+    "source_input_loading_include_reference_present",
+    "at_least_one_governance_include_present"
+  ],
+  "prompt_templates": {
+    "roadmap": "docs/governance/prompt_templates/roadmap_prompt_template.md",
+    "implementation": "docs/governance/prompt_templates/implementation_prompt_template.md",
+    "architecture_review": "docs/governance/prompt_templates/architecture_review_prompt_template.md"
   }
 }

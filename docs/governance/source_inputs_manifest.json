@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "description": "Canonical governance source inputs that prompts must load before producing roadmap, implementation, or architecture-review decisions.",
+  "required_sources": [
+    {
+      "id": "strategy_control_doc",
+      "path": "docs/governance/strategy_control_doc.md",
+      "role": "primary_strategy_authority",
+      "required": true
+    },
+    {
+      "id": "source_inputs_manifest",
+      "path": "docs/governance/source_inputs_manifest.json",
+      "role": "governance_source_registry",
+      "required": true
+    },
+    {
+      "id": "source_input_loading_include",
+      "path": "docs/governance/prompt_includes/source_input_loading_include.md",
+      "role": "source_loading_contract",
+      "required": true
+    },
+    {
+      "id": "roadmap_governance_include",
+      "path": "docs/governance/prompt_includes/roadmap_governance_include.md",
+      "role": "roadmap_governance_policy_include",
+      "required_for": [
+        "roadmap_prompt"
+      ]
+    },
+    {
+      "id": "implementation_governance_include",
+      "path": "docs/governance/prompt_includes/implementation_governance_include.md",
+      "role": "implementation_governance_policy_include",
+      "required_for": [
+        "implementation_prompt",
+        "architecture_review_prompt"
+      ]
+    }
+  ]
+}
