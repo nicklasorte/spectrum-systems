@@ -11,6 +11,7 @@ from typing import Any
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.runtime.failure_diagnosis_engine import build_failure_diagnosis_artifact
 from spectrum_systems.modules.runtime.pqx_execution_policy import evaluate_pqx_execution_policy
+from spectrum_systems.modules.runtime.pqx_execution_authority import issue_pqx_execution_authority_record
 from spectrum_systems.modules.runtime.pqx_sequence_runner import execute_sequence_run
 from spectrum_systems.modules.runtime.recovery_orchestrator import orchestrate_recovery
 from spectrum_systems.modules.runtime.repair_prompt_generator import generate_repair_prompt
@@ -319,6 +320,17 @@ def run_system_end_to_end_governed_validation(
     )
 
     # Phase 6 — SEL valid path allow + invalid bypass block.
+    pqx_execution_authority_record = issue_pqx_execution_authority_record(
+        queue_id=f"queue-{run_id}",
+        work_item_id=f"wi-{run_id}",
+        step_id="step-001",
+        trace={"trace_id": trace_id, "trace_refs": [trace_id, f"{trace_id}:fre", f"{trace_id}:ril"]},
+        source_refs=[
+            f"pqx_sequence_run:{pqx_result['queue_run_id']}",
+            f"failure_diagnosis_artifact:{diagnosis['diagnosis_id']}",
+        ],
+        issued_at=emitted_at,
+    )
     valid_sel_context = {
         "source_module": "spectrum_systems.modules.runtime.system_end_to_end_validator",
         "caller_identity": "tests/test_system_end_to_end_governed_loop.py",
@@ -332,6 +344,9 @@ def run_system_end_to_end_governed_validation(
             "tpa_required": True,
             "recovery_involved": True,
             "certification_required": True,
+            "queue_id": f"queue-{run_id}",
+            "work_item_id": f"wi-{run_id}",
+            "step_id": "step-001",
         },
         "artifact_references": {
             "execution_artifact": f"pqx_execution:{run_id}",
@@ -345,6 +360,7 @@ def run_system_end_to_end_governed_validation(
             "failure_diagnosis_artifact": f"failure_diagnosis_artifact:{diagnosis['diagnosis_id']}",
             "repair_prompt_artifact": f"repair_prompt_artifact:{repair_prompt['repair_prompt_id']}",
             "recovery_result_artifact": f"recovery_result_artifact:{recovery_result['recovery_result_id']}",
+            "pqx_execution_authority_record": pqx_execution_authority_record,
         },
         "trace_refs": [trace_id, f"{trace_id}:fre", f"{trace_id}:ril"],
         "lineage": {

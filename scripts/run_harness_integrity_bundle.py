@@ -36,6 +36,7 @@ from spectrum_systems.modules.runtime.governed_failure_injection import run_gove
 from spectrum_systems.modules.runtime.next_governed_cycle_runner import run_next_governed_cycle  # noqa: E402
 from spectrum_systems.modules.runtime.observability_metrics import build_observability_metrics  # noqa: E402
 from spectrum_systems.modules.runtime.permission_governance import evaluate_permission_decision  # noqa: E402
+from spectrum_systems.modules.runtime.pqx_execution_authority import issue_pqx_execution_authority_record  # noqa: E402
 from spectrum_systems.modules.runtime.replay_engine import run_replay  # noqa: E402
 
 REVIEW_DOC_PATH = Path("docs/reviews/harness_integrity_review.md")
@@ -127,18 +128,54 @@ def _run_prompt_queue_flow() -> Tuple[Dict[str, Any], Dict[str, Any]]:
     item["gating_decision_artifact_path"] = "contracts/examples/prompt_queue_execution_gating_decision.json"
 
     queue_state = make_queue_state(queue_id="queue-harness", work_items=[item])
-    gating = deepcopy(load_example("prompt_queue_execution_gating_decision"))
-    gating["work_item_id"] = item["work_item_id"]
-    gating["decision_status"] = "runnable"
-    gating["decision_reason_code"] = "runnable_within_policy"
+    permission_result = evaluate_permission_decision(
+        workflow_id=queue_state["queue_id"],
+        stage_contract={
+            "contract_id": "stage-pqx-queue-execution",
+            "stage": {"name": "pqx_queue_execution"},
+            "permissions": {
+                "tool_allowlist": ["simulated_executor"],
+                "write_scope": ["artifacts/prompt_queue/"],
+                "human_approval_required_for": [],
+            },
+        },
+        action_name="execute_queue_step",
+        tool_name="simulated_executor",
+        resource_scope=f"write:artifacts/prompt_queue/{item['work_item_id']}/step-001",
+        request_id=f"{queue_state['queue_id']}-{item['work_item_id']}-step-001",
+        trace_id=queue_state["queue_id"],
+        trace_refs=[
+            f"queue_id:{queue_state['queue_id']}",
+            f"work_item_id:{item['work_item_id']}",
+            "step_id:step-001",
+        ],
+    )
+    pqx_execution_authority_record = issue_pqx_execution_authority_record(
+        queue_id=queue_state["queue_id"],
+        work_item_id=item["work_item_id"],
+        step_id="step-001",
+        trace={
+            "trace_id": queue_state["queue_id"],
+            "trace_refs": permission_result.permission_decision_record["trace"]["trace_refs"],
+        },
+        source_refs=[
+            f"permission_request_record:{permission_result.permission_request_record['request_id']}",
+            f"permission_decision_record:{permission_result.permission_decision_record['decision_id']}",
+        ],
+    )
 
     result = run_queue_step_execution(
         step={"step_id": "step-001", "work_item_id": item["work_item_id"], "execution_mode": "simulated"},
         queue_state=queue_state,
-        input_refs={"gating_decision_artifact": gating, "source_queue_state_path": "artifacts/prompt_queue/queue_state.json"},
+        input_refs={
+            "permission_request_record": permission_result.permission_request_record,
+            "permission_decision_record": permission_result.permission_decision_record,
+            "pqx_execution_authority_record": pqx_execution_authority_record,
+            "source_queue_state_path": "artifacts/prompt_queue/queue_state.json",
+        },
     )
     validate_execution_result_artifact(result)
-    return result, gating
+    return result, permission_result.permission_decision_record
 
 
 def _run_orchestration_flow() -> Tuple[Dict[str, Any], Dict[str, Any]]:

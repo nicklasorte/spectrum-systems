@@ -3,10 +3,18 @@ from __future__ import annotations
 import copy
 
 from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.modules.runtime.pqx_execution_authority import issue_pqx_execution_authority_record
 from spectrum_systems.modules.runtime.system_enforcement_layer import enforce_system_boundaries
 
 
 def _valid_context() -> dict:
+    proof = issue_pqx_execution_authority_record(
+        queue_id="queue-001",
+        work_item_id="wi-001",
+        step_id="step-001",
+        trace={"trace_id": "trace://pqx/run-001", "trace_refs": ["trace://pqx/run-001", "trace://pqx/run-001/control"]},
+        source_refs=["permission_request_record:req-001", "permission_decision_record:dec-001"],
+    )
     return {
         "source_module": "spectrum_systems.modules.runtime.pqx_slice_runner",
         "caller_identity": "scripts/pqx_runner.py",
@@ -20,6 +28,9 @@ def _valid_context() -> dict:
             "tpa_required": True,
             "recovery_involved": False,
             "certification_required": True,
+            "queue_id": "queue-001",
+            "work_item_id": "wi-001",
+            "step_id": "step-001",
         },
         "artifact_references": {
             "execution_artifact": "artifacts/execution_result.json",
@@ -30,6 +41,7 @@ def _valid_context() -> dict:
             },
             "tpa_lineage_artifact": "artifacts/tpa_lineage.json",
             "tpa_artifact": "artifacts/tpa_prompt_bundle.json",
+            "pqx_execution_authority_record": proof,
         },
         "trace_refs": ["trace://pqx/run-001", "trace://pqx/run-001/control"],
         "lineage": {
@@ -69,6 +81,22 @@ def test_direct_execution_bypass_blocks_with_pqx_violation() -> None:
 
     result = enforce_system_boundaries(context)
 
+    assert result["enforcement_status"] == "block"
+    assert "pqx_entry_violation" in _violation_codes(result)
+
+
+def test_missing_pqx_proof_blocks_even_if_pqx_flags_present() -> None:
+    context = _valid_context()
+    context["artifact_references"].pop("pqx_execution_authority_record")
+    result = enforce_system_boundaries(context)
+    assert result["enforcement_status"] == "block"
+    assert "pqx_entry_violation" in _violation_codes(result)
+
+
+def test_invalid_pqx_proof_blocks() -> None:
+    context = _valid_context()
+    context["artifact_references"]["pqx_execution_authority_record"]["integrity"] = "0" * 64
+    result = enforce_system_boundaries(context)
     assert result["enforcement_status"] == "block"
     assert "pqx_entry_violation" in _violation_codes(result)
 

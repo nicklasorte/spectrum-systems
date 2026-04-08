@@ -104,8 +104,11 @@ def test_single_step_success_advances_and_completes(monkeypatch: pytest.MonkeyPa
     manifest = _base_manifest(total_steps=1)
     calls = {"count": 0}
 
+    captured: dict = {}
+
     def _execute(**kwargs):
         calls["count"] += 1
+        captured.update(kwargs)
         return {"execution_status": "success", "output_reference": "artifacts/output.json"}
 
     monkeypatch.setattr(
@@ -157,6 +160,11 @@ def test_single_step_success_advances_and_completes(monkeypatch: pytest.MonkeyPa
     assert updated["active_work_item_id"] is None
     assert updated["step_results"][0]["step_id"] == "step-001"
     assert updated["step_results"][0]["status"] == "completed"
+    input_refs = captured["input_refs"]
+    assert "gating_decision_artifact" not in input_refs
+    assert input_refs["permission_decision_record"]["artifact_type"] == "permission_decision_record"
+    assert input_refs["permission_decision_record"]["provenance"]["producer"] == "permission_governance"
+    assert input_refs["pqx_execution_authority_record"]["artifact_type"] == "pqx_execution_authority_record"
 
 
 def test_step_failure_halts_fail_closed(monkeypatch: pytest.MonkeyPatch) -> None:
