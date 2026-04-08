@@ -87,3 +87,101 @@ def test_direct_pqx_path_for_repo_write_is_rejected(tmp_path: Path) -> None:
 
     with pytest.raises(TopLevelConductorError, match="direct_pqx_repo_write_forbidden"):
         run_top_level_conductor(request)
+
+
+def test_tlc_rejects_repo_write_with_rejected_admission(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
+    request["build_admission_record"] = {
+        "artifact_type": "build_admission_record",
+        "admission_id": "adm-1",
+        "request_id": "req-1",
+        "execution_type": "repo_write",
+        "admission_status": "rejected",
+        "normalized_execution_request_ref": "normalized_execution_request:req-1",
+        "trace_id": "trace-tlc-aex-check",
+        "created_at": "2026-04-08T00:00:00Z",
+        "produced_by": "AEXEngine",
+        "reason_codes": ["blocked"],
+        "target_scope": {"repo": "spectrum-systems", "paths": ["x"]},
+    }
+    request["normalized_execution_request"] = {
+        "artifact_type": "normalized_execution_request",
+        "request_id": "req-1",
+        "prompt_text": "Modify file",
+        "execution_type": "repo_write",
+        "repo_mutation_requested": True,
+        "target_paths": ["x"],
+        "requested_outputs": ["patch"],
+        "source_prompt_kind": "codex_build_request",
+        "trace_id": "trace-tlc-aex-check",
+        "created_at": "2026-04-08T00:00:00Z",
+        "produced_by": "AEXEngine",
+    }
+    with pytest.raises(TopLevelConductorError, match="admission_not_accepted"):
+        run_top_level_conductor(request)
+
+
+def test_tlc_rejects_repo_write_with_unresolvable_normalized_ref(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
+    request["build_admission_record"] = {
+        "artifact_type": "build_admission_record",
+        "admission_id": "adm-1",
+        "request_id": "req-1",
+        "execution_type": "repo_write",
+        "admission_status": "accepted",
+        "normalized_execution_request_ref": "normalized_execution_request:req-other",
+        "trace_id": "trace-tlc-aex-check",
+        "created_at": "2026-04-08T00:00:00Z",
+        "produced_by": "AEXEngine",
+        "reason_codes": [],
+        "target_scope": {"repo": "spectrum-systems", "paths": ["x"]},
+    }
+    request["normalized_execution_request"] = {
+        "artifact_type": "normalized_execution_request",
+        "request_id": "req-1",
+        "prompt_text": "Modify file",
+        "execution_type": "repo_write",
+        "repo_mutation_requested": True,
+        "target_paths": ["x"],
+        "requested_outputs": ["patch"],
+        "source_prompt_kind": "codex_build_request",
+        "trace_id": "trace-tlc-aex-check",
+        "created_at": "2026-04-08T00:00:00Z",
+        "produced_by": "AEXEngine",
+    }
+    with pytest.raises(TopLevelConductorError, match="normalized_request_ref_unresolvable"):
+        run_top_level_conductor(request)
+
+
+def test_valid_admitted_repo_write_path_succeeds(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
+    request["require_review"] = False
+    request["build_admission_record"] = {
+        "artifact_type": "build_admission_record",
+        "admission_id": "adm-1",
+        "request_id": "req-1",
+        "execution_type": "repo_write",
+        "admission_status": "accepted",
+        "normalized_execution_request_ref": "normalized_execution_request:req-1",
+        "trace_id": "trace-tlc-aex-check",
+        "created_at": "2026-04-08T00:00:00Z",
+        "produced_by": "AEXEngine",
+        "reason_codes": [],
+        "target_scope": {"repo": "spectrum-systems", "paths": ["x"]},
+    }
+    request["normalized_execution_request"] = {
+        "artifact_type": "normalized_execution_request",
+        "request_id": "req-1",
+        "prompt_text": "Modify file",
+        "execution_type": "repo_write",
+        "repo_mutation_requested": True,
+        "target_paths": ["x"],
+        "requested_outputs": ["patch"],
+        "source_prompt_kind": "codex_build_request",
+        "trace_id": "trace-tlc-aex-check",
+        "created_at": "2026-04-08T00:00:00Z",
+        "produced_by": "AEXEngine",
+    }
+    result = run_top_level_conductor(request)
+    assert result["current_state"] in {"ready_for_merge", "blocked", "exhausted"}
+    assert "trace-tlc-aex-check" in result["trace_refs"]
