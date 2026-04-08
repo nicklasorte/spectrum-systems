@@ -14,6 +14,7 @@ sys.path.insert(0, str(_REPO_ROOT))
 from spectrum_systems.modules.runtime.control_executor import (  # noqa: E402
     build_execution_result,
     execute_control_signals,
+    execute_with_enforcement,
     explain_execution_path,
     summarize_execution_result,
     validate_execution_result,
@@ -293,3 +294,55 @@ def test_control_execution_result_requires_correlation_keys():
     assert result["trace_id"] == "trace-002"
     assert result["run_id"]
     assert result["artifact_id"] == "ART-001"
+
+
+def test_execute_with_enforcement_uses_canonical_enforcement_path(monkeypatch):
+    import spectrum_systems.modules.runtime.control_executor as ce
+
+    decision = {
+        "artifact_type": "evaluation_control_decision",
+        "schema_version": "1.2.0",
+        "decision_id": "ecd-1",
+        "eval_run_id": "eval-run-1",
+        "system_status": "healthy",
+        "system_response": "allow",
+        "triggered_signals": [],
+        "threshold_snapshot": {
+            "reliability_threshold": 0.85,
+            "drift_threshold": 0.2,
+            "trust_threshold": 0.8,
+        },
+        "threshold_context": "active_runtime",
+        "trace_id": "44444444-4444-4444-8444-444444444444",
+        "created_at": "2026-04-08T00:00:00Z",
+        "decision": "allow",
+        "rationale_code": "allow_healthy_eval_summary",
+        "input_signal_reference": {
+            "signal_type": "eval_summary",
+            "source_artifact_id": "eval-run-1",
+        },
+        "run_id": "eval-run-1",
+    }
+    expected = {
+        "artifact_type": "enforcement_result",
+        "schema_version": "1.1.0",
+        "enforcement_result_id": "ENF-test",
+        "timestamp": "2026-04-08T00:00:01Z",
+        "trace_id": decision["trace_id"],
+        "run_id": decision["run_id"],
+        "input_decision_reference": decision["decision_id"],
+        "enforcement_action": "allow_execution",
+        "final_status": "allow",
+        "rationale_code": decision["rationale_code"],
+        "fail_closed": False,
+        "enforcement_path": "baf_single_path",
+        "provenance": {
+            "source_artifact_type": "evaluation_control_decision",
+            "source_artifact_id": decision["decision_id"],
+        },
+    }
+
+    monkeypatch.setattr(ce, "validate_and_emit_decision", lambda _bundle_path: decision)
+    monkeypatch.setattr(ce, "enforce_control_decision", lambda payload: expected if payload is decision else {})
+
+    assert execute_with_enforcement("bundle-path") == expected

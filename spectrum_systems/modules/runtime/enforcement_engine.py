@@ -8,9 +8,9 @@ BAF single-path surface
 
 Legacy compatibility surface
 ----------------------------
-``enforce_budget_decision`` remains available for existing run-bundle and replay
-flows that still consume ``evaluation_budget_decision`` artifacts, but only
-through explicit non-governed compatibility mode.
+``enforce_budget_decision`` remains available only for explicit test/compatibility
+fixtures outside governed runtime execution, and requires explicit
+``compatibility_mode=True``.
 """
 
 from __future__ import annotations
@@ -169,7 +169,7 @@ _LEGACY_ACTION_MAP: Dict[str, Tuple[str, bool, str]] = {
     "block": ("block", False, "blocked"),
 }
 
-_LEGACY_CALLER_ALLOWLIST = ("tests.", "spectrum_systems.modules.runtime.control_executor")
+_LEGACY_CALLER_ALLOWLIST = ("tests.",)
 
 
 def _legacy_caller_is_allowed() -> bool:

@@ -42,12 +42,7 @@ from spectrum_systems.modules.runtime.error_budget import (
     update_error_budget,
     compute_burn_rate,
 )
-from spectrum_systems.modules.runtime.enforcement_engine import enforce_budget_decision
-from spectrum_systems.modules.runtime.evaluation_budget_governor import build_validation_budget_decision
-from spectrum_systems.modules.runtime.evaluation_monitor import (
-    build_validation_monitor_record,
-    summarize_validation_monitor_records,
-)
+from spectrum_systems.modules.runtime.enforcement_engine import enforce_control_decision
 from spectrum_systems.modules.runtime.run_bundle_validator import validate_and_emit_decision
 from spectrum_systems.modules.runtime.replay_engine import replay_run
 from spectrum_systems.modules.runtime.slo_enforcer import enforce_slo_policy
@@ -656,20 +651,14 @@ def explain_execution_path(control_signals: Dict[str, Any], execution_result: Di
 
 
 def execute_with_enforcement(bundle_path: str) -> Dict[str, Any]:
-    """Run validation control loop and enforce the resulting budget decision.
+    """Run validation control loop and enforce the resulting canonical control decision.
 
     Pipeline:
     1) validate_and_emit_decision
-    2) build monitor record
-    3) summarize monitor records
-    4) build evaluation budget decision
-    5) enforce budget decision
+    2) enforce canonical control decision
     """
     validation_decision = validate_and_emit_decision(bundle_path)
-    monitor_record = build_validation_monitor_record(validation_decision)
-    monitor_summary = summarize_validation_monitor_records([monitor_record])
-    budget_decision = build_validation_budget_decision(monitor_summary)
-    return enforce_budget_decision(budget_decision, compatibility_mode=True)
+    return enforce_control_decision(validation_decision)
 
 
 def execute_with_replay(bundle_path: str) -> Dict[str, Any]:
@@ -684,12 +673,14 @@ def execute_with_replay(bundle_path: str) -> Dict[str, Any]:
     original_enforcement = execute_with_enforcement(bundle_path)
 
     validation_decision = validate_and_emit_decision(bundle_path)
-    monitor_record = build_validation_monitor_record(validation_decision)
-    monitor_summary = summarize_validation_monitor_records([monitor_record])
-    budget_decision = build_validation_budget_decision(monitor_summary)
-
-    original_decision = dict(budget_decision)
-    original_decision["run_id"] = validation_decision.get("run_id")
-    original_decision["enforcement_action"] = original_enforcement.get("enforcement_action", "block")
+    original_decision = dict(validation_decision)
+    original_decision["final_status"] = original_enforcement.get(
+        "final_status",
+        original_decision.get("decision"),
+    )
+    original_decision["enforcement_action"] = original_enforcement.get(
+        "enforcement_action",
+        "",
+    )
 
     return replay_run(bundle_path, original_decision)
