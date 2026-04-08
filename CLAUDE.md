@@ -1,49 +1,86 @@
 # CLAUDE.md
 
-## Purpose
-Role-specific instructions for Claude in `spectrum-systems`.
+## System Identity
+Spectrum Systems is a governed execution runtime.
 
-This repository is a **governed runtime control plane**: contracts, schemas, governance rules, and execution documentation. It is not an implementation engine repository.
+It is not:
+- a chat system
+- an agent framework
+- a prompt wrapper
 
-## Canonical sources
-Use these as the authoritative baseline before producing reasoning, review findings, or recommendations:
-1. `README.md` (system identity and operating model)
-2. `docs/architecture/system_registry.md` (canonical system roles and ownership)
+## Core Loop
+input
+→ RIL (structure)
+→ CDE (decision)
+→ TLC (orchestration)
+→ PQX (execution)
+→ FRE (repair)
+→ SEL (enforcement)
+→ certification
+→ promotion
 
-If another document conflicts with these sources, treat the conflict as a governance defect and recommend correction.
+## Hard Rules
+- All work must go through governed runtime.
+- No direct repo mutation outside PQX.
+- No decision logic outside CDE.
+- No orchestration outside TLC.
+- No execution outside PQX.
+- No promotion without certification.
+- Fail-closed always.
 
-## Claude role
-Claude is the reasoning and review agent.
-- Perform architecture reasoning and risk assessment.
-- Review execution plans and governance artifacts.
-- Produce explicit findings and remediation guidance.
-- Do not perform implementation execution that belongs to Codex.
+## Promotion Rule
+`branch_update_allowed = (terminal_state == "ready_for_merge")`
 
-## System role map (reference)
-Use the canonical role ownership from `docs/architecture/system_registry.md`:
-`RIL`, `CDE`, `TLC`, `PQX`, `FRE`, `SEL`, `PRG`.
-Do not redefine role ownership in review outputs.
+No exceptions.
 
-## Required runtime model
-Every recommendation must preserve this model:
-1. **Artifact-first execution** (decisions and transitions are represented as governed artifacts).
-2. **Fail-closed behavior** (missing authority, missing artifact, or invalid state blocks execution).
-3. **Promotion requires certification** (no promotion path without explicit certification evidence).
+## Failure Handling
+failure
+→ evidence
+→ FRE diagnosis
+→ CDE decision
+→ bounded repair (TLC)
+→ retest
 
-## Review output requirements
-When Claude flags or approves work, outputs must be explicit and deterministic:
-- State the exact failure condition.
-- State the blocking effect on execution or promotion.
-- State the minimum remediation artifact required to clear the failure.
-- Avoid implicit instructions and hidden shortcuts.
+## Learning Loop
+failure
+→ classified
+→ eval candidate
+→ governed adoption
+→ roadmap signal
 
-## Terminology normalization
-Use these terms consistently in Claude outputs:
-- **execution** (not run/process/action)
-- **artifact** (not output/result/object)
-- **failure** (not issue/problem/error)
-- **retrieve** (not pull/extract)
+## System Ownership
+| System | Ownership |
+| --- | --- |
+| RIL | structure |
+| CDE | decision |
+| TLC | orchestration |
+| PQX | execution |
+| FRE | diagnosis/repair |
+| SEL | enforcement |
+| PRG | direction (no execution) |
 
-## Cross-links
+## Claude Role
+- Claude performs reasoning and review tasks.
+- Claude produces explicit findings, risk calls, and boundary checks.
+- Claude does not execute implementation changes.
+- Claude does not bypass the governed system.
+
+## Review Behavior
+- State evidence, decision boundary, and blocking condition explicitly.
+- Keep interpretation bounded to governed artifacts and declared ownership.
+- Do not infer implicit approval when evidence is missing.
+
+## Interpretation Boundaries
+- Interpret artifacts; do not redefine ownership.
+- Recommend remediation; do not execute remediation.
+- Escalate contradictions to canonical references.
+
+## Prohibited Behavior
+- No direct file edits outside governed flow.
+- No implicit decisions.
+- No hidden execution paths.
+- No bypass of SEL / CDE / TLC.
+
+## References (one level)
 - `README.md`
 - `docs/architecture/system_registry.md`

@@ -1,46 +1,85 @@
 # CODEX.md
 
-## Purpose
-Role-specific instructions for Codex in `spectrum-systems`.
+## System Identity
+Spectrum Systems is a governed execution runtime.
 
-This repository is a **governed runtime control plane**. Codex modifies governance artifacts, contracts, schemas, and documentation. It does not implement downstream runtime engine code.
+It is not:
+- a chat system
+- an agent framework
+- a prompt wrapper
 
-## Canonical sources
-Before execution, align with:
-1. `README.md` (system identity and operating model)
-2. `docs/architecture/system_registry.md` (canonical system roles and ownership)
+## Core Loop
+input
+→ RIL (structure)
+→ CDE (decision)
+→ TLC (orchestration)
+→ PQX (execution)
+→ FRE (repair)
+→ SEL (enforcement)
+→ certification
+→ promotion
 
-If another file conflicts, resolve toward these sources and record the conflict in the change summary.
+## Hard Rules
+- All work must go through governed runtime.
+- No direct repo mutation outside PQX.
+- No decision logic outside CDE.
+- No orchestration outside TLC.
+- No execution outside PQX.
+- No promotion without certification.
+- Fail-closed always.
 
-## Codex role
-Codex is the implementation agent for repository updates.
-- Execute approved scope changes deterministically.
-- Keep instructions explicit and minimal.
-- Avoid undocumented behavior changes.
-- Do not redefine subsystem roles.
+## Promotion Rule
+`branch_update_allowed = (terminal_state == "ready_for_merge")`
 
-## Required runtime model
-All modifications must preserve:
-1. **Artifact-first execution**
-2. **Fail-closed behavior**
-3. **Promotion requires certification**
+No exceptions.
 
-## System role map (reference)
-Treat `RIL`, `CDE`, `TLC`, `PQX`, `FRE`, `SEL`, and `PRG` as authoritative role names and ownership boundaries from `docs/architecture/system_registry.md`.
+## Failure Handling
+failure
+→ evidence
+→ FRE diagnosis
+→ CDE decision
+→ bounded repair (TLC)
+→ retest
 
-## Execution rules
-- One prompt has one primary transformation type.
-- Multi-file governance changes require a written plan before implementation.
-- Keep reference depth shallow (max one level) in high-impact docs.
-- Remove duplicate logic; keep one canonical definition per concept.
+## Learning Loop
+failure
+→ classified
+→ eval candidate
+→ governed adoption
+→ roadmap signal
 
-## Terminology normalization
-Use these terms consistently in modified docs:
-- **execution**
-- **artifact**
-- **failure**
-- **retrieve**
+## System Ownership
+| System | Ownership |
+| --- | --- |
+| RIL | structure |
+| CDE | decision |
+| TLC | orchestration |
+| PQX | execution |
+| FRE | diagnosis/repair |
+| SEL | enforcement |
+| PRG | direction (no execution) |
 
-## Cross-links
+## Codex Role
+- Codex executes changes via PQX-equivalent behavior.
+- Codex applies deterministic, bounded implementation updates.
+- Codex does not bypass the governed system.
+
+## Implementation Discipline
+- Keep scope bounded to requested artifacts.
+- Remove contradictions and duplicate instruction surfaces.
+- Keep rules explicit; avoid descriptive drift.
+
+## Testing Requirements
+- Validate changed artifacts for consistency with canonical ownership.
+- Run relevant checks before delivery.
+- Treat missing evidence as a failure.
+
+## Prohibited Behavior
+- No direct file edits outside governed flow.
+- No implicit decisions.
+- No hidden execution paths.
+- No bypass of SEL / CDE / TLC.
+
+## References (one level)
 - `README.md`
 - `docs/architecture/system_registry.md`
