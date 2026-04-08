@@ -252,6 +252,7 @@ class ContractSchemaTests(unittest.TestCase):
             "approval_boundary_record",
             "permission_request_record",
             "permission_decision_record",
+            "pqx_execution_authority_record",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)

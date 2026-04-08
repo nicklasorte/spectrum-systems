@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_execution_authority_record.schema.json",
+  "title": "PQX Execution Authority Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "authority_id",
+    "queue_id",
+    "work_item_id",
+    "step_id",
+    "trace",
+    "issued_at",
+    "issuer",
+    "authority_scope",
+    "source_refs",
+    "integrity",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {"const": "pqx_execution_authority_record"},
+    "schema_version": {"const": "1.0.0"},
+    "authority_id": {"type": "string", "minLength": 1},
+    "queue_id": {"type": "string", "minLength": 1},
+    "work_item_id": {"type": "string", "minLength": 1},
+    "step_id": {"type": "string", "pattern": "^step-[0-9]{3}$"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "trace_refs"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "trace_refs": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1
+        }
+      }
+    },
+    "issued_at": {"type": "string", "format": "date-time"},
+    "issuer": {"type": "string", "const": "pqx_state_machine"},
+    "authority_scope": {"type": "string", "const": "queue_step_execution"},
+    "source_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1
+    },
+    "integrity": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer", "produced_at"],
+      "properties": {
+        "producer": {"type": "string", "const": "pqx_state_machine"},
+        "produced_at": {"type": "string", "format": "date-time"}
+      }
+    }
+  }
+}

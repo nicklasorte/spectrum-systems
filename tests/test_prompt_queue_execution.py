@@ -62,16 +62,13 @@ def _runnable_item() -> dict:
     return item
 
 
-def _runnable_gating_decision() -> dict:
-    art = load_example("prompt_queue_execution_gating_decision")
-    art["work_item_id"] = "wi-parent.repair.1"
-    art["parent_work_item_id"] = "wi-parent"
-    art["repair_prompt_artifact_path"] = "artifacts/prompt_queue/repair_prompts/wi-parent.repair_prompt.json"
-    art["findings_artifact_path"] = "artifacts/prompt_queue/findings/wi-parent.findings.json"
-    art["review_artifact_path"] = "docs/reviews/2026-03-22-parent-review.md"
-    art["decision_status"] = "runnable"
-    art["decision_reason_code"] = "runnable_within_policy"
-    return art
+def _permission_decision(*, decision: str = "allow", producer: str = "permission_governance") -> dict:
+    record = load_example("permission_decision_record")
+    record["workflow_id"] = "queue-01"
+    record["decision"] = decision
+    record["trace"]["trace_refs"] = ["queue_id:queue-01", "work_item_id:wi-parent.repair.1", "step_id:step-001"]
+    record["provenance"]["producer"] = producer
+    return record
 
 
 def _queue(item: dict) -> dict:
@@ -81,9 +78,8 @@ def _queue(item: dict) -> dict:
 def test_valid_runnable_work_item_executes_successfully(tmp_path: Path):
     item = _runnable_item()
     queue = _queue(item)
-    gating = _runnable_gating_decision()
-
-    revalidate_execution_entry(work_item=item, gating_decision_artifact=gating)
+    decision = _permission_decision()
+    revalidate_execution_entry(work_item=item, permission_decision_record=decision, human_checkpoint_decision=None)
     queue_executing, executing_item = transition_to_executing(
         queue_state=queue,
         work_item_id=item["work_item_id"],
@@ -115,25 +111,26 @@ def test_valid_runnable_work_item_executes_successfully(tmp_path: Path):
 def test_execution_fails_closed_if_gating_path_missing():
     item = _runnable_item()
     item["gating_decision_artifact_path"] = None
-    with pytest.raises(ExecutionRunnerError, match="Missing gating_decision_artifact_path"):
-        revalidate_execution_entry(work_item=item, gating_decision_artifact=_runnable_gating_decision())
+    revalidate_execution_entry(
+        work_item=item,
+        permission_decision_record=_permission_decision(),
+        human_checkpoint_decision=None,
+    )
 
 
-def test_execution_fails_closed_if_gating_artifact_schema_invalid():
+def test_execution_fails_closed_if_permission_artifact_schema_invalid():
     item = _runnable_item()
-    invalid = _runnable_gating_decision()
-    invalid.pop("decision_status")
+    invalid = _permission_decision()
+    invalid.pop("decision")
     with pytest.raises(ExecutionRunnerError):
-        revalidate_execution_entry(work_item=item, gating_decision_artifact=invalid)
+        revalidate_execution_entry(work_item=item, permission_decision_record=invalid, human_checkpoint_decision=None)
 
 
-def test_execution_fails_closed_if_gating_decision_not_runnable():
+def test_execution_fails_closed_if_permission_decision_not_allow():
     item = _runnable_item()
-    blocked = _runnable_gating_decision()
-    blocked["decision_status"] = "blocked"
-    blocked["decision_reason_code"] = "blocked_invalid_work_item"
-    with pytest.raises(ExecutionRunnerError, match="must be runnable"):
-        revalidate_execution_entry(work_item=item, gating_decision_artifact=blocked)
+    denied = _permission_decision(decision="deny")
+    with pytest.raises(ExecutionRunnerError, match="must allow execution"):
+        revalidate_execution_entry(work_item=item, permission_decision_record=denied, human_checkpoint_decision=None)
 
 
 def test_duplicate_execution_prevented_once_item_is_not_runnable():
@@ -155,7 +152,7 @@ def test_wrong_starting_state_fails_closed():
     item = _runnable_item()
     item["status"] = WorkItemStatus.EXECUTION_GATED.value
     with pytest.raises(ExecutionRunnerError, match="status 'runnable'"):
-        revalidate_execution_entry(work_item=item, gating_decision_artifact=_runnable_gating_decision())
+        revalidate_execution_entry(work_item=item, permission_decision_record=_permission_decision(), human_checkpoint_decision=None)
 
 
 def test_execution_result_artifact_validates_against_schema():
@@ -181,9 +178,7 @@ def test_deterministic_simulated_execution_same_input_same_result():
 def test_partial_failure_artifact_written_but_queue_finalization_fails_blocks_second_execution(tmp_path: Path):
     item = _runnable_item()
     queue = _queue(item)
-    gating = _runnable_gating_decision()
-
-    revalidate_execution_entry(work_item=item, gating_decision_artifact=gating)
+    revalidate_execution_entry(work_item=item, permission_decision_record=_permission_decision(), human_checkpoint_decision=None)
     queue_executing, executing_item = transition_to_executing(queue_state=queue, work_item_id=item["work_item_id"])
 
     result = run_simulated_execution(
@@ -226,3 +221,27 @@ def test_updated_queue_and_work_item_validate_after_execution():
 
     validate_work_item(updated_item)
     validate_queue_state(queue_final)
+
+
+def test_execution_requires_approved_checkpoint_for_approval_required_decision():
+    item = _runnable_item()
+    decision = _permission_decision(decision="require_human_approval")
+
+    with pytest.raises(ExecutionRunnerError, match="human checkpoint decision is required"):
+        revalidate_execution_entry(work_item=item, permission_decision_record=decision, human_checkpoint_decision=None)
+
+    with pytest.raises(ExecutionRunnerError, match="blocked progression"):
+        revalidate_execution_entry(
+            work_item=item,
+            permission_decision_record=decision,
+            human_checkpoint_decision=load_example("human_checkpoint_decision") | {"decision": "reject"},
+        )
+
+
+def test_execution_accepts_approval_required_with_approve_checkpoint():
+    item = _runnable_item()
+    decision = _permission_decision(decision="require_human_approval")
+    checkpoint = load_example("human_checkpoint_decision")
+    checkpoint["decision"] = "approve"
+    checkpoint["request_id"] = "hcr-r-3"
+    revalidate_execution_entry(work_item=item, permission_decision_record=decision, human_checkpoint_decision=checkpoint)

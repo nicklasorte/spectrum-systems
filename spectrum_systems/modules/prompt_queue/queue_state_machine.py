@@ -17,6 +17,8 @@ from spectrum_systems.modules.prompt_queue.queue_artifact_io import (
 )
 from spectrum_systems.modules.prompt_queue.queue_manifest_validator import validate_queue_manifest
 from spectrum_systems.modules.prompt_queue.queue_models import WorkItemStatus, iso_now, utc_now
+from spectrum_systems.modules.runtime.permission_governance import evaluate_permission_decision
+from spectrum_systems.modules.runtime.pqx_execution_authority import issue_pqx_execution_authority_record
 
 
 class IllegalTransitionError(ValueError):
@@ -170,33 +172,45 @@ def _build_step_execution_inputs(queue_state: dict, step: dict) -> tuple[dict, d
         raise QueueLoopError("next step cannot be determined: active work item missing from queue_state")
 
     metadata = step.get("metadata") or {}
-    gating_decision_artifact = {
-        "gating_decision_artifact_id": f"generated-gating-{step['step_id']}",
-        "work_item_id": work_item_id,
-        "parent_work_item_id": work_item.get("parent_work_item_id"),
-        "repair_prompt_artifact_path": work_item.get("repair_prompt_artifact_path"),
-        "findings_artifact_path": work_item.get("spawned_from_findings_artifact_path"),
-        "review_artifact_path": work_item.get("spawned_from_review_artifact_path"),
-        "repair_loop_generation": int(work_item.get("repair_loop_generation") or 0),
-        "risk_level": work_item.get("risk_level"),
-        "decision_status": "runnable",
-        "decision_reason_code": "runnable_within_policy",
-        "approval_required": False,
-        "approval_present": False,
-        "max_generation_allowed": 2,
-        "gating_policy_id": "prompt_queue_execution_gating_policy.v1",
-        "generated_at": iso_now(utc_now),
-        "generator_version": "prompt_queue_execution_loop.v1",
-        "blocking_conditions": [],
-        "warnings": [],
-        "lineage_summary": {
-            "has_parent": bool(work_item.get("parent_work_item_id")),
-            "has_repair_prompt_lineage": bool(work_item.get("repair_prompt_artifact_path")),
-            "has_findings_lineage": bool(work_item.get("spawned_from_findings_artifact_path")),
-            "has_review_lineage": bool(work_item.get("spawned_from_review_artifact_path")),
+    trace_id = str(((metadata.get("trace") or {}).get("trace_id")) or queue_state.get("queue_id"))
+    trace_refs = [
+        f"queue_id:{queue_state.get('queue_id')}",
+        f"work_item_id:{work_item_id}",
+        f"step_id:{step['step_id']}",
+    ]
+    stage_contract = metadata.get("permission_stage_contract") or {
+        "contract_id": "stage-pqx-queue-execution",
+        "stage": {"name": "pqx_queue_execution"},
+        "permissions": {
+            "tool_allowlist": ["simulated_executor"],
+            "write_scope": ["artifacts/prompt_queue/"],
+            "human_approval_required_for": [],
         },
-        "source_queue_state_path": metadata.get("source_queue_state_path"),
     }
+    permission_result = evaluate_permission_decision(
+        workflow_id=str(queue_state.get("queue_id")),
+        stage_contract=stage_contract,
+        action_name="execute_queue_step",
+        tool_name="simulated_executor",
+        resource_scope=f"write:artifacts/prompt_queue/{work_item_id}/{step['step_id']}",
+        request_id=f"{queue_state.get('queue_id')}-{work_item_id}-{step['step_id']}",
+        trace_id=trace_id,
+        trace_refs=trace_refs,
+    )
+
+    pqx_execution_authority_record = issue_pqx_execution_authority_record(
+        queue_id=str(queue_state.get("queue_id")),
+        work_item_id=work_item_id,
+        step_id=step["step_id"],
+        trace={
+            "trace_id": trace_id,
+            "trace_refs": permission_result.permission_decision_record["trace"]["trace_refs"],
+        },
+        source_refs=[
+            f"permission_request_record:{permission_result.permission_request_record['request_id']}",
+            f"permission_decision_record:{permission_result.permission_decision_record['decision_id']}",
+        ],
+    )
 
     execution_mode = metadata.get("execution_mode") or metadata.get("run_mode") or "simulated"
     execution_step = {
@@ -205,7 +219,11 @@ def _build_step_execution_inputs(queue_state: dict, step: dict) -> tuple[dict, d
         "execution_mode": execution_mode,
     }
     input_refs = {
-        "gating_decision_artifact": gating_decision_artifact,
+        "permission_request_record": permission_result.permission_request_record,
+        "permission_decision_record": permission_result.permission_decision_record,
+        "human_checkpoint_request": permission_result.human_checkpoint_request,
+        "human_checkpoint_decision": metadata.get("human_checkpoint_decision"),
+        "pqx_execution_authority_record": pqx_execution_authority_record,
         "source_queue_state_path": metadata.get("source_queue_state_path"),
     }
     return execution_step, input_refs

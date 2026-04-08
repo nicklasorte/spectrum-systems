@@ -12,6 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
 from spectrum_systems.contracts import load_example  # noqa: E402
+from spectrum_systems.modules.runtime.pqx_execution_authority import issue_pqx_execution_authority_record  # noqa: E402
 from spectrum_systems.modules.prompt_queue import (  # noqa: E402
     ExecutionRunnerError,
     Priority,
@@ -57,12 +58,32 @@ def _queue(item: dict) -> dict:
     return make_queue_state(queue_id="queue-q2", work_items=[item])
 
 
-def _gating() -> dict:
-    gating = load_example("prompt_queue_execution_gating_decision")
-    gating["work_item_id"] = "wi-q2-001"
-    gating["decision_status"] = "runnable"
-    gating["decision_reason_code"] = "runnable_within_policy"
-    return gating
+def _permission_decision(*, decision: str = "allow", producer: str = "permission_governance") -> dict:
+    record = load_example("permission_decision_record")
+    record["decision_id"] = "pdr-wi-q2-001"
+    record["request_id"] = "req-wi-q2-001"
+    record["workflow_id"] = "queue-q2"
+    record["decision"] = decision
+    record["trace"]["trace_refs"] = ["queue_id:queue-q2", "work_item_id:wi-q2-001", "step_id:step-001"]
+    record["provenance"]["producer"] = producer
+    return record
+
+
+def _permission_request() -> dict:
+    record = load_example("permission_request_record")
+    record["request_id"] = "req-wi-q2-001"
+    record["workflow_id"] = "queue-q2"
+    return record
+
+
+def _pqx_proof() -> dict:
+    return issue_pqx_execution_authority_record(
+        queue_id="queue-q2",
+        work_item_id="wi-q2-001",
+        step_id="step-001",
+        trace={"trace_id": "queue-q2", "trace_refs": ["queue_id:queue-q2", "work_item_id:wi-q2-001", "step_id:step-001"]},
+        source_refs=["permission_request_record:req-wi-q2-001", "permission_decision_record:pdr-wi-q2-001"],
+    )
 
 
 def test_valid_step_execution_produces_normalized_artifact():
@@ -70,7 +91,9 @@ def test_valid_step_execution_produces_normalized_artifact():
         step={"step_id": "step-001", "work_item_id": "wi-q2-001", "execution_mode": "simulated"},
         queue_state=_queue(_work_item()),
         input_refs={
-            "gating_decision_artifact": _gating(),
+            "permission_request_record": _permission_request(),
+            "permission_decision_record": _permission_decision(),
+            "pqx_execution_authority_record": _pqx_proof(),
             "source_queue_state_path": "artifacts/prompt_queue/queue_state.json",
         },
         clock=FixedClock(["2026-03-28T00:00:01Z", "2026-03-28T00:00:02Z"]),
@@ -87,7 +110,11 @@ def test_missing_required_step_fields_fail_closed():
         run_queue_step_execution(
             step={"work_item_id": "wi-q2-001", "execution_mode": "simulated"},
             queue_state=_queue(_work_item()),
-            input_refs={"gating_decision_artifact": _gating()},
+            input_refs={
+                "permission_request_record": _permission_request(),
+                "permission_decision_record": _permission_decision(),
+                "pqx_execution_authority_record": _pqx_proof(),
+            },
         )
 
 
@@ -96,7 +123,7 @@ def test_malformed_input_refs_fail_closed():
         run_queue_step_execution(
             step={"step_id": "step-001", "work_item_id": "wi-q2-001", "execution_mode": "simulated"},
             queue_state=_queue(_work_item()),
-            input_refs={"gating_decision_artifact": "bad"},
+            input_refs={"permission_decision_record": "bad"},
         )
 
 
@@ -105,13 +132,22 @@ def test_unknown_execution_shape_fails_closed():
         run_queue_step_execution(
             step={"step_id": "step-001", "work_item_id": "wi-q2-001", "execution_mode": "live"},
             queue_state=_queue(_work_item()),
-            input_refs={"gating_decision_artifact": _gating()},
+            input_refs={
+                "permission_request_record": _permission_request(),
+                "permission_decision_record": _permission_decision(),
+                "pqx_execution_authority_record": _pqx_proof(),
+            },
         )
 
 
 def test_produced_artifact_refs_deterministic_for_same_input():
     queue_state = _queue(_work_item())
-    refs = {"gating_decision_artifact": _gating(), "source_queue_state_path": "artifacts/prompt_queue/queue_state.json"}
+    refs = {
+        "permission_request_record": _permission_request(),
+        "permission_decision_record": _permission_decision(),
+        "pqx_execution_authority_record": _pqx_proof(),
+        "source_queue_state_path": "artifacts/prompt_queue/queue_state.json",
+    }
     first = run_queue_step_execution(
         step={"step_id": "step-001", "work_item_id": "wi-q2-001", "execution_mode": "simulated"},
         queue_state=queue_state,
@@ -125,3 +161,44 @@ def test_produced_artifact_refs_deterministic_for_same_input():
         clock=FixedClock(["2026-03-28T00:00:01Z", "2026-03-28T00:00:02Z"]),
     )
     assert first["produced_artifact_refs"] == second["produced_artifact_refs"]
+
+
+def test_rejects_noncanonical_permission_provenance():
+    with pytest.raises(ExecutionRunnerError, match="provenance"):
+        run_queue_step_execution(
+            step={"step_id": "step-001", "work_item_id": "wi-q2-001", "execution_mode": "simulated"},
+            queue_state=_queue(_work_item()),
+            input_refs={
+                "permission_request_record": _permission_request(),
+                "permission_decision_record": _permission_decision(producer="other_component"),
+                "pqx_execution_authority_record": _pqx_proof(),
+            },
+        )
+
+
+def test_rejects_mismatched_work_item_trace_ref():
+    bad = _permission_decision()
+    bad["trace"]["trace_refs"] = ["work_item_id:wrong-id"]
+    with pytest.raises(ExecutionRunnerError, match="work item"):
+        run_queue_step_execution(
+            step={"step_id": "step-001", "work_item_id": "wi-q2-001", "execution_mode": "simulated"},
+            queue_state=_queue(_work_item()),
+            input_refs={
+                "permission_request_record": _permission_request(),
+                "permission_decision_record": bad,
+                "pqx_execution_authority_record": _pqx_proof(),
+            },
+        )
+
+
+def test_rejects_denied_permission_decision():
+    with pytest.raises(ExecutionRunnerError, match="must allow execution"):
+        run_queue_step_execution(
+            step={"step_id": "step-001", "work_item_id": "wi-q2-001", "execution_mode": "simulated"},
+            queue_state=_queue(_work_item()),
+            input_refs={
+                "permission_request_record": _permission_request(),
+                "permission_decision_record": _permission_decision(decision="deny"),
+                "pqx_execution_authority_record": _pqx_proof(),
+            },
+        )

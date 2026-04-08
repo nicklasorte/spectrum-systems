@@ -1,0 +1,28 @@
+{
+  "artifact_type": "pqx_execution_authority_record",
+  "schema_version": "1.0.0",
+  "authority_id": "pqar-queue-001-wi-001-step-001",
+  "queue_id": "queue-001",
+  "work_item_id": "wi-001",
+  "step_id": "step-001",
+  "trace": {
+    "trace_id": "trace-queue-001",
+    "trace_refs": [
+      "queue_id:queue-001",
+      "work_item_id:wi-001",
+      "step_id:step-001"
+    ]
+  },
+  "issued_at": "2026-04-08T00:00:00Z",
+  "issuer": "pqx_state_machine",
+  "authority_scope": "queue_step_execution",
+  "source_refs": [
+    "permission_request_record:req-queue-001-wi-001-step-001",
+    "permission_decision_record:dec-queue-001-wi-001-step-001"
+  ],
+  "integrity": "d2cf566cebe75f20db19e5245a248981ca57f3f593d2ccba88fef75f50fcbc7a",
+  "provenance": {
+    "producer": "pqx_state_machine",
+    "produced_at": "2026-04-08T00:00:00Z"
+  }
+}

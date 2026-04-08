@@ -9,6 +9,10 @@ from typing import Any
 from jsonschema import Draft202012Validator
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.pqx_execution_authority import (
+    PqxExecutionAuthorityError,
+    validate_pqx_execution_authority_record,
+)
 
 ViolationCode = str
 
@@ -123,6 +127,7 @@ def _is_present(value: Any) -> bool:
 
 def _check_pqx_entry(normalized: dict[str, Any], violations: list[dict[str, Any]]) -> None:
     request = normalized["execution_request"]
+    refs = normalized["artifact_references"]
     execution_context = str(request.get("execution_context") or "").strip()
     pqx_entry = bool(request.get("pqx_entry")) or execution_context == "pqx_governed"
     direct_cli = bool(request.get("direct_cli"))
@@ -136,6 +141,37 @@ def _check_pqx_entry(normalized: dict[str, Any], violations: list[dict[str, Any]
             boundary="PQX",
             field="execution_request",
             message="execution must originate from PQX-governed flow without direct bypass paths",
+        )
+        return
+
+    proof = refs.get("pqx_execution_authority_record")
+    if not isinstance(proof, dict):
+        _add_violation(
+            violations,
+            code="pqx_entry_violation",
+            boundary="PQX",
+            field="artifact_references.pqx_execution_authority_record",
+            message="PQX-governed execution requires a valid PQX-issued authority proof artifact",
+        )
+        return
+
+    expected_queue_id = request.get("queue_id")
+    expected_work_item_id = request.get("work_item_id")
+    expected_step_id = request.get("step_id")
+    try:
+        validate_pqx_execution_authority_record(
+            proof,
+            expected_queue_id=str(expected_queue_id) if _is_present(expected_queue_id) else None,
+            expected_work_item_id=str(expected_work_item_id) if _is_present(expected_work_item_id) else None,
+            expected_step_id=str(expected_step_id) if _is_present(expected_step_id) else None,
+        )
+    except (PqxExecutionAuthorityError, Exception) as exc:
+        _add_violation(
+            violations,
+            code="pqx_entry_violation",
+            boundary="PQX",
+            field="artifact_references.pqx_execution_authority_record",
+            message=f"PQX authority proof invalid: {exc}",
         )
 
 

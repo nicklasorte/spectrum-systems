@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import re
 
-from spectrum_systems.modules.prompt_queue.execution_gating_artifact_io import (
-    ExecutionGatingArtifactValidationError,
-    validate_execution_gating_decision_artifact,
-)
+from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import ArtifactValidationError, validate_queue_state, validate_work_item
 from spectrum_systems.modules.prompt_queue.queue_models import WorkItemStatus, iso_now, utc_now
+from spectrum_systems.modules.runtime.permission_governance import (
+    PermissionGovernanceError,
+    require_checkpoint_decision,
+)
+from spectrum_systems.modules.runtime.system_enforcement_layer import enforce_system_boundaries
 
 
 class ExecutionRunnerError(ValueError):
@@ -55,22 +57,49 @@ def _normalize_input_refs(input_refs: dict | None) -> dict:
     if not isinstance(refs, dict):
         raise ExecutionRunnerError("Malformed input_refs: expected object.")
 
-    allowed = {"gating_decision_artifact", "source_queue_state_path"}
+    allowed = {
+        "permission_request_record",
+        "permission_decision_record",
+        "human_checkpoint_request",
+        "human_checkpoint_decision",
+        "pqx_execution_authority_record",
+        "source_queue_state_path",
+    }
     extra = set(refs) - allowed
     if extra:
         unknown = ", ".join(sorted(extra))
         raise ExecutionRunnerError(f"Unknown execution shape: unsupported input_refs keys: {unknown}.")
 
-    gating = refs.get("gating_decision_artifact")
-    if not isinstance(gating, dict):
-        raise ExecutionRunnerError("Malformed input_refs: gating_decision_artifact is required and must be an object.")
+    permission_decision_record = refs.get("permission_decision_record")
+    if not isinstance(permission_decision_record, dict):
+        raise ExecutionRunnerError("Malformed input_refs: permission_decision_record is required and must be an object.")
+
+    permission_request_record = refs.get("permission_request_record")
+    if not isinstance(permission_request_record, dict):
+        raise ExecutionRunnerError("Malformed input_refs: permission_request_record is required and must be an object.")
+
+    checkpoint_request = refs.get("human_checkpoint_request")
+    if checkpoint_request is not None and not isinstance(checkpoint_request, dict):
+        raise ExecutionRunnerError("Malformed input_refs: human_checkpoint_request must be an object when provided.")
+
+    checkpoint_decision = refs.get("human_checkpoint_decision")
+    if checkpoint_decision is not None and not isinstance(checkpoint_decision, dict):
+        raise ExecutionRunnerError("Malformed input_refs: human_checkpoint_decision must be an object when provided.")
+
+    pqx_proof = refs.get("pqx_execution_authority_record")
+    if not isinstance(pqx_proof, dict):
+        raise ExecutionRunnerError("Malformed input_refs: pqx_execution_authority_record is required and must be an object.")
 
     source_queue_state_path = refs.get("source_queue_state_path")
     if source_queue_state_path is not None and (not isinstance(source_queue_state_path, str) or not source_queue_state_path):
         raise ExecutionRunnerError("Malformed input_refs: source_queue_state_path must be a non-empty string when provided.")
 
     return {
-        "gating_decision_artifact": dict(gating),
+        "permission_request_record": dict(permission_request_record),
+        "permission_decision_record": dict(permission_decision_record),
+        "human_checkpoint_request": None if checkpoint_request is None else dict(checkpoint_request),
+        "human_checkpoint_decision": None if checkpoint_decision is None else dict(checkpoint_decision),
+        "pqx_execution_authority_record": dict(pqx_proof),
         "source_queue_state_path": source_queue_state_path,
     }
 
@@ -78,7 +107,8 @@ def _normalize_input_refs(input_refs: dict | None) -> dict:
 def revalidate_execution_entry(
     *,
     work_item: dict,
-    gating_decision_artifact: dict,
+    permission_decision_record: dict,
+    human_checkpoint_decision: dict | None,
 ) -> None:
     if work_item.get("status") != WorkItemStatus.RUNNABLE.value:
         raise ExecutionRunnerError("Execution entry requires work item status 'runnable'.")
@@ -88,20 +118,35 @@ def revalidate_execution_entry(
     except ArtifactValidationError as exc:
         raise ExecutionRunnerError(str(exc)) from exc
 
-    gating_path = work_item.get("gating_decision_artifact_path")
-    if not gating_path:
-        raise ExecutionRunnerError("Missing gating_decision_artifact_path on work item.")
-
     try:
-        validate_execution_gating_decision_artifact(gating_decision_artifact)
-    except ExecutionGatingArtifactValidationError as exc:
+        validate_artifact(permission_decision_record, "permission_decision_record")
+    except Exception as exc:
         raise ExecutionRunnerError(str(exc)) from exc
 
-    if gating_decision_artifact.get("work_item_id") != work_item.get("work_item_id"):
-        raise ExecutionRunnerError("Gating artifact work_item_id does not match target work item.")
+    provenance = permission_decision_record.get("provenance")
+    if not isinstance(provenance, dict) or provenance.get("producer") != "permission_governance":
+        raise ExecutionRunnerError("Permission decision artifact provenance must be produced by permission_governance.")
 
-    if gating_decision_artifact.get("decision_status") != WorkItemStatus.RUNNABLE.value:
-        raise ExecutionRunnerError("Gating decision must be runnable at execution entry.")
+    trace = permission_decision_record.get("trace")
+    trace_refs = [] if not isinstance(trace, dict) else trace.get("trace_refs", [])
+    if not isinstance(trace_refs, list):
+        raise ExecutionRunnerError("Permission decision trace_refs must be a list.")
+    work_item_trace_ref = f"work_item_id:{work_item.get('work_item_id')}"
+    if work_item_trace_ref not in trace_refs:
+        raise ExecutionRunnerError("Permission decision trace provenance does not match target work item.")
+
+    decision = permission_decision_record.get("decision")
+    if decision != "allow":
+        if decision == "require_human_approval":
+            try:
+                require_checkpoint_decision(
+                    permission_decision_record=permission_decision_record,
+                    human_checkpoint_decision=human_checkpoint_decision,
+                )
+            except PermissionGovernanceError as exc:
+                raise ExecutionRunnerError(str(exc)) from exc
+        else:
+            raise ExecutionRunnerError("Permission decision must allow execution at execution entry.")
 
 
 def run_queue_step_execution(
@@ -129,8 +174,52 @@ def run_queue_step_execution(
     work_item = _find_work_item(queue_state, step_view["work_item_id"])
     revalidate_execution_entry(
         work_item=work_item,
-        gating_decision_artifact=refs["gating_decision_artifact"],
+        permission_decision_record=refs["permission_decision_record"],
+        human_checkpoint_decision=refs["human_checkpoint_decision"],
     )
+    sel_result = enforce_system_boundaries(
+        {
+            "source_module": "spectrum_systems.modules.prompt_queue.execution_runner",
+            "caller_identity": "run_queue_step_execution",
+            "execution_request": {
+                "execution_context": "pqx_governed",
+                "pqx_entry": True,
+                "direct_cli": False,
+                "ad_hoc_runtime": False,
+                "direct_slice_execution": False,
+                "tpa_required": False,
+                "recovery_involved": False,
+                "certification_required": False,
+            },
+            "artifact_references": {
+                "execution_artifact": f"permission_decision_record:{refs['permission_decision_record'].get('decision_id')}",
+                "trace_refs": refs["permission_decision_record"]["trace"]["trace_refs"],
+                "lineage": {
+                    "lineage_id": f"queue:{queue_state['queue_id']}:step:{step_view['step_id']}",
+                    "parent_refs": [
+                        f"permission_request_record:{refs['permission_request_record'].get('request_id')}",
+                        f"permission_decision_record:{refs['permission_decision_record'].get('decision_id')}",
+                    ],
+                },
+                "pqx_execution_authority_record": refs["pqx_execution_authority_record"],
+            },
+            "trace_refs": refs["permission_decision_record"]["trace"]["trace_refs"],
+            "lineage": {
+                "lineage_id": f"queue:{queue_state['queue_id']}:step:{step_view['step_id']}",
+                "parent_refs": [
+                    f"permission_request_record:{refs['permission_request_record'].get('request_id')}",
+                    f"permission_decision_record:{refs['permission_decision_record'].get('decision_id')}",
+                ],
+            },
+            "governance_evidence": {
+                "preflight_evidence": f"permission_request_record:{refs['permission_request_record'].get('request_id')}",
+                "control_evidence": f"permission_decision_record:{refs['permission_decision_record'].get('decision_id')}",
+            },
+            "downstream_consumption": {"consumed_artifact_types": ["review_projection_bundle_artifact"]},
+        }
+    )
+    if sel_result.get("enforcement_status") != "allow":
+        raise ExecutionRunnerError("SEL blocked execution due to authority boundary violations.")
     runner_result = run_simulated_execution(
         work_item=work_item,
         source_queue_state_path=refs["source_queue_state_path"],
