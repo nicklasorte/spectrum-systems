@@ -370,3 +370,4 @@ Closed plans are not deleted — they remain as execution history.
 | docs/review-actions/PLAN-BATCH-L-2026-04-03.md | BATCH-L — Failure Learning Loop | Active |
 | docs/review-actions/PLAN-BATCH-U-2026-04-03.md | BATCH-U — Operator / Usability Layer | Active |
 | docs/review-actions/PLAN-BATCH-AEX-HARDEN-01-2026-04-08.md | BATCH-AEX-HARDEN-01 — AEX/TLC/PQX enforcement hardening and drift tests | Active |
+| docs/review-actions/PLAN-BATCH-E-RQX-B4-2026-04-08.md | BATCH-E RQX-B4 — Operator handoff disposition/control integration | Active |

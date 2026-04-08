@@ -3678,6 +3678,19 @@
       "notes": "RQX-B3 strict unresolved post-cycle operator handoff artifact emitted after bounded one-cycle execution without automatic recursion."
     },
     {
+      "artifact_type": "review_handoff_disposition_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.102",
+      "last_updated_in": "1.3.102",
+      "example_path": "contracts/examples/review_handoff_disposition_artifact.json",
+      "notes": "RQX-B4 bounded control/scheduling disposition artifact classifying review_operator_handoff_artifact outcomes for manual hold/queue/escalation decisions without auto-recursion or execution authority transfer."
+    },
+    {
       "artifact_type": "review_projection_bundle_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
