@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from spectrum_systems.aex.engine import AEXEngine
 
 
@@ -21,7 +23,13 @@ def test_ambiguous_request_that_might_mutate_repo_is_rejected() -> None:
 
 
 def test_unknown_without_required_fields_fails_closed() -> None:
+    before = datetime.now(tz=timezone.utc)
     result = AEXEngine().admit_codex_request({"trace_id": "trace-1"})
+    after = datetime.now(tz=timezone.utc)
     assert result.accepted is False
     assert result.admission_rejection_record is not None
     assert result.admission_rejection_record["trace_id"] == "trace-1"
+    created_at = str(result.admission_rejection_record["created_at"]).replace("Z", "+00:00")
+    created = datetime.fromisoformat(created_at)
+    assert created >= before.replace(microsecond=0)
+    assert created <= after.replace(microsecond=0)

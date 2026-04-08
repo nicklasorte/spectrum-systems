@@ -528,6 +528,7 @@ def _run_tlc_with_precomputed_decision(
         "action_tracker_path": bundle.artifact_paths.get("review_consumer_output_bundle_artifact", "structured-only"),
         "runtime_dir": str(artifacts.continuation_dir / "runtime"),
         "emitted_at": emitted_at,
+        "repo_mutation_requested": False,
         "subsystems": {
             "ril": _ril_from_structured,
             "cde": _cde_passthrough,

@@ -70,6 +70,7 @@ def _base_request(tmp_path: Path) -> dict:
         "action_tracker_path": str(action_path),
         "runtime_dir": str(tmp_path / "runtime"),
         "emitted_at": "2026-04-06T00:00:00Z",
+        "repo_mutation_requested": False,
     }
 
 
@@ -235,6 +236,7 @@ def test_run_from_roadmap_executes_bounded_steps(tmp_path: Path) -> None:
             "action_tracker_path": str(action_path),
             "runtime_dir": str(tmp_path / "runtime"),
             "emitted_at": "2026-04-06T00:00:00Z",
+        "repo_mutation_requested": False,
         },
     )
 

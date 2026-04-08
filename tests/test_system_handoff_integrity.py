@@ -66,6 +66,7 @@ def _base_request(tmp_path: Path) -> dict:
         "action_tracker_path": str(action_path),
         "runtime_dir": str(tmp_path / "runtime"),
         "emitted_at": "2026-04-06T00:00:00Z",
+        "repo_mutation_requested": False,
     }
 
 
@@ -234,6 +235,7 @@ def test_tlc_fails_closed_on_missing_or_malformed_outputs(tmp_path: Path) -> Non
                 "decision_rationale": "ok",
                 "trace_id": "trace-x",
                 "emitted_at": "2026-04-06T00:00:00Z",
+        "repo_mutation_requested": False,
             },
             # missing next_step_class
         }

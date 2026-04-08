@@ -27,7 +27,12 @@ def _fixture(name: str) -> dict:
     return _load(_FIXTURES / name)
 
 
-def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[dict, Path]:
+def _manifest(
+    tmp_path: Path,
+    *,
+    state: str = "roadmap_under_review",
+    repo_mutation_requested: bool = False,
+) -> tuple[dict, Path]:
     roadmap_path = _REPO_ROOT / "docs" / "roadmap" / "system_roadmap.md"
     review_path = tmp_path / "roadmap_review.json"
     review_payload = _fixture("roadmap_review_approved.json")
@@ -57,7 +62,68 @@ def _manifest(tmp_path: Path, *, state: str = "roadmap_under_review") -> tuple[d
         "state_path": str(tmp_path / "pqx_state.json"),
         "runs_root": str(tmp_path / "pqx_runs"),
         "pqx_output_text": "deterministic pqx output",
+        "repo_mutation_requested": repo_mutation_requested,
     }
+    if repo_mutation_requested:
+        pqx_request.update(
+            {
+                "trace_id": "trace-cycle-test",
+                "build_admission_record": {
+                    "artifact_type": "build_admission_record",
+                    "admission_id": "adm-cycle-1",
+                    "request_id": "req-cycle-1",
+                    "execution_type": "repo_write",
+                    "admission_status": "accepted",
+                    "normalized_execution_request_ref": "normalized_execution_request:req-cycle-1",
+                    "trace_id": "trace-cycle-test",
+                    "created_at": "2026-04-08T00:00:00Z",
+                    "produced_by": "AEXEngine",
+                    "reason_codes": [],
+                    "target_scope": {"repo": "spectrum-systems", "paths": ["spectrum_systems/orchestration/cycle_runner.py"]},
+                },
+                "normalized_execution_request": {
+                    "artifact_type": "normalized_execution_request",
+                    "request_id": "req-cycle-1",
+                    "prompt_text": "Modify cycle execution path",
+                    "execution_type": "repo_write",
+                    "repo_mutation_requested": True,
+                    "target_paths": ["spectrum_systems/orchestration/cycle_runner.py"],
+                    "requested_outputs": ["patch"],
+                    "source_prompt_kind": "codex_build_request",
+                    "trace_id": "trace-cycle-test",
+                    "created_at": "2026-04-08T00:00:00Z",
+                    "produced_by": "AEXEngine",
+                },
+                "tlc_handoff_record": {
+                    "artifact_type": "tlc_handoff_record",
+                    "handoff_id": "tlc-handoff-cycle-1",
+                    "request_id": "req-cycle-1",
+                    "trace_id": "trace-cycle-test",
+                    "created_at": "2026-04-08T00:00:00Z",
+                    "produced_by": "TLC",
+                    "build_admission_record_ref": "build_admission_record:adm-cycle-1",
+                    "normalized_execution_request_ref": "normalized_execution_request:req-cycle-1",
+                    "handoff_status": "accepted",
+                    "target_subsystems": ["TPA", "PQX"],
+                    "execution_type": "repo_write",
+                    "repo_mutation_requested": True,
+                    "reason_codes": [],
+                    "tlc_run_context": {
+                        "run_id": "tlc-cycle-1",
+                        "branch_ref": "refs/heads/main",
+                        "objective": "repo mutating run",
+                        "entry_boundary": "aex_to_tlc",
+                    },
+                    "lineage": {
+                        "upstream_refs": [
+                            "build_admission_record:adm-cycle-1",
+                            "normalized_execution_request:req-cycle-1",
+                        ],
+                        "intended_path": ["TLC", "TPA", "PQX"],
+                    },
+                },
+            }
+        )
     pqx_request_path = tmp_path / "pqx_request.json"
     _write(pqx_request_path, pqx_request)
     eligibility_path = tmp_path / "roadmap_eligibility.json"
@@ -351,6 +417,24 @@ def test_cycle_runner_blocks_when_pqx_request_step_not_authorized(tmp_path: Path
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "blocked"
     assert "step_id must match manifest selected_step_id" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_repo_write_request_fails_closed_without_admission_artifacts(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="execution_ready", repo_mutation_requested=False)
+    request = _load(Path(manifest["pqx_execution_request_path"]))
+    request["repo_mutation_requested"] = True
+    _write(Path(manifest["pqx_execution_request_path"]), request)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert "repo-write handoff rejected" in " ".join(result["blocking_issues"])
+
+
+def test_cycle_runner_repo_write_request_succeeds_with_valid_admission_lineage(tmp_path: Path) -> None:
+    _, manifest_path = _manifest(tmp_path, state="execution_ready", repo_mutation_requested=True)
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "ok"
+    assert result["next_state"] == "execution_complete_unreviewed"
 
 
 def test_cycle_runner_blocks_when_required_review_missing(tmp_path: Path) -> None:

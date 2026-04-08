@@ -9,6 +9,10 @@ from typing import Any, Dict
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema, validate_artifact
+from spectrum_systems.modules.runtime.repo_write_lineage_guard import (
+    RepoWriteLineageGuardError,
+    validate_repo_write_lineage,
+)
 from spectrum_systems.modules.runtime.pqx_slice_runner import run_pqx_slice
 
 
@@ -39,11 +43,46 @@ def _validate_pqx_result_payload(payload: Dict[str, Any]) -> None:
         raise PQXHandoffError(f"pqx execution result failed schema validation: {detail}")
 
 
+def _is_repo_mutation_requested(request: Dict[str, Any]) -> bool:
+    if isinstance(request.get("repo_mutation_requested"), bool):
+        return bool(request["repo_mutation_requested"])
+    admission = request.get("build_admission_record")
+    if isinstance(admission, dict):
+        return str(admission.get("execution_type") or "") == "repo_write"
+    normalized = request.get("normalized_execution_request")
+    if isinstance(normalized, dict):
+        return bool(normalized.get("repo_mutation_requested"))
+    return False
+
+
+def _require_repo_write_admission_lineage(*, cycle_id: str, request: Dict[str, Any]) -> None:
+    if not _is_repo_mutation_requested(request):
+        return
+
+    admission = request.get("build_admission_record")
+    normalized = request.get("normalized_execution_request")
+    tlc_handoff_record = request.get("tlc_handoff_record")
+    expected_trace_id = request.get("trace_id")
+    expected_trace = expected_trace_id if isinstance(expected_trace_id, str) and expected_trace_id else None
+    try:
+        validate_repo_write_lineage(
+            build_admission_record=admission,
+            normalized_execution_request=normalized,
+            tlc_handoff_record=tlc_handoff_record,
+            expected_trace_id=expected_trace,
+        )
+    except (RepoWriteLineageGuardError, Exception) as exc:
+        raise PQXHandoffError(
+            f"repo-write handoff rejected for cycle_id={cycle_id}: missing or invalid AEX admission lineage ({exc})"
+        ) from exc
+
+
 def handoff_to_pqx(*, cycle_id: str, request_path: str | Path, reports_root: Path) -> Dict[str, Any]:
     """Execute canonical PQX seam and emit validated execution_report_artifact payload/path."""
 
     request = _load_json(request_path)
     _validate_request(request)
+    _require_repo_write_admission_lineage(cycle_id=cycle_id, request=request)
 
     result = run_pqx_slice(
         step_id=request["step_id"],

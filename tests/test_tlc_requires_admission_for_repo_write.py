@@ -51,6 +51,13 @@ def test_tlc_refuses_repo_write_without_admission_record(tmp_path: Path) -> None
         run_top_level_conductor(_base_request(tmp_path))
 
 
+def test_tlc_requires_explicit_repo_mutation_declaration_when_admission_artifacts_absent(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
+    request.pop("repo_mutation_requested")
+    with pytest.raises(TopLevelConductorError, match="repo_mutation_intent_undetermined"):
+        run_top_level_conductor(request)
+
+
 def test_direct_pqx_path_for_repo_write_is_rejected(tmp_path: Path) -> None:
     request = _base_request(tmp_path)
     request["build_admission_record"] = {
