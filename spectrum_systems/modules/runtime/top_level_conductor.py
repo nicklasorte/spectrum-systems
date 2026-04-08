@@ -22,6 +22,7 @@ from spectrum_systems.modules.runtime.failure_diagnosis_engine import (
     normalize_pytest_failure_packet,
 )
 from spectrum_systems.modules.runtime.pqx_execution_policy import evaluate_pqx_execution_policy
+from spectrum_systems.modules.runtime.pqx_execution_authority import issue_pqx_execution_authority_record
 from spectrum_systems.modules.runtime.pre_pr_governance_closure import (
     PrePRGovernanceClosureError,
     run_local_pre_pr_governance_closure,
@@ -762,6 +763,17 @@ def _enforce_sel(
     boundary: str,
     consumed_artifact_types: list[str] | None = None,
 ) -> bool:
+    queue_id = f"tlc-queue:{state['run_id']}"
+    work_item_id = f"tlc-work-item:{state['run_id']}"
+    step_id = "step-001"
+    pqx_execution_authority_record = issue_pqx_execution_authority_record(
+        queue_id=queue_id,
+        work_item_id=work_item_id,
+        step_id=step_id,
+        trace={"trace_id": state["trace_id"], "trace_refs": state["trace_refs"] or [state["trace_id"]]},
+        source_refs=[f"tlc_request:{state['run_id']}", f"boundary:{boundary}"],
+        issued_at=state["emitted_at"],
+    )
     payload = {
         "source_module": "top_level_conductor",
         "caller_identity": "tlc",
@@ -780,6 +792,9 @@ def _enforce_sel(
             "repair_files_touched": state["lineage"].get("pending_files_touched", []),
             "failure_learning_required": bool(state["lineage"].get("pending_failure_packet")),
             "requested_at": state["emitted_at"],
+            "queue_id": queue_id,
+            "work_item_id": work_item_id,
+            "step_id": step_id,
         },
         "artifact_references": {
             "execution_artifact": state["produced_artifact_refs"][0] if state["produced_artifact_refs"] else "request_artifact",
@@ -797,6 +812,7 @@ def _enforce_sel(
             "eval_adoption_decision_artifact": state["lineage"].get("latest_eval_adoption_decision_artifact"),
             "failure_learning_record_artifact": state["lineage"].get("latest_failure_learning_record_artifact"),
             "roadmap_signal_artifact": state["lineage"].get("latest_roadmap_signal_artifact"),
+            "pqx_execution_authority_record": pqx_execution_authority_record,
         },
         "downstream_consumption": {
             "consumed_artifact_types": consumed_artifact_types or ["review_projection_bundle_artifact"],

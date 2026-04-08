@@ -52,8 +52,18 @@ def compute_authority_integrity(*, queue_id: str, work_item_id: str, step_id: st
     return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
 
 
-def issue_pqx_execution_authority_record(*, queue_id: str, work_item_id: str, step_id: str, trace: Mapping[str, Any], source_refs: list[str], issuer: str = "pqx_state_machine", authority_scope: str = "queue_step_execution") -> dict[str, Any]:
-    issued_at = _utc_now()
+def issue_pqx_execution_authority_record(
+    *,
+    queue_id: str,
+    work_item_id: str,
+    step_id: str,
+    trace: Mapping[str, Any],
+    source_refs: list[str],
+    issuer: str = "pqx_state_machine",
+    authority_scope: str = "queue_step_execution",
+    issued_at: str | None = None,
+) -> dict[str, Any]:
+    issued_at = issued_at or _utc_now()
     authority_id = f"pqar-{queue_id}-{work_item_id}-{step_id}"
     integrity = compute_authority_integrity(
         queue_id=queue_id,
