@@ -64,9 +64,11 @@ def test_valid_artifact_input_builds_expected_markdown() -> None:
             "",
             "**Run ID:** tlc-1a2b3c4d5e6f",
             "",
-            "**Promotion Gate:** merge_ready",
+            "**Promotion Allowed:** true",
             "",
             "**Certification Status:** certified",
+            "",
+            "**Reason:** promotion_allowed",
             "",
             "**Artifacts:**",
             "- Closure Decision: artifacts/github_closure_continuation/pr-1/gcc-123/closure_decision_artifact.json",
@@ -82,6 +84,9 @@ def test_valid_artifact_input_builds_expected_markdown() -> None:
             "**Trace:**",
             "- trace-cde-2026-04-06-001",
             "- trace-tlc-0001",
+            "",
+            "**Missing Requirements:**",
+            "- none",
             "",
             "**Notes:**",
             "- This output is machine-generated and non-authoritative.",
@@ -134,8 +139,9 @@ def test_non_promotable_state_is_status_only_with_missing_requirements() -> None
 
     comment = build_pr_feedback_comment(artifacts)
 
-    assert "**Promotion Gate:** status_only" in comment
-    assert "**Promotion Requirements Missing:**" in comment
+    assert "**Promotion Allowed:** false" in comment
+    assert "**Reason:** terminal_state:blocked" in comment
+    assert "**Missing Requirements:**" in comment
     assert "- terminal_state_not_ready_for_merge" in comment
 
 

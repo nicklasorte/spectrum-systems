@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/run_summary_artifact.schema.json",
+  "title": "run_summary_artifact",
+  "description": "Deterministic per-run operator summary that references governed artifacts without replacing them.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "run_summary_id",
+    "run_id",
+    "entry_point",
+    "steps_executed",
+    "key_decisions",
+    "failure_occurred",
+    "repair_attempts",
+    "final_terminal_state",
+    "promotion_allowed",
+    "key_artifact_refs",
+    "trace_refs"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "run_summary_artifact"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "run_summary_id": {"type": "string", "minLength": 8},
+    "run_id": {"type": "string", "minLength": 3},
+    "entry_point": {"type": "string", "enum": ["review", "roadmap", "command"]},
+    "steps_executed": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "key_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["decision_surface", "decision_type", "artifact_ref"],
+        "properties": {
+          "decision_surface": {"type": "string", "minLength": 1},
+          "decision_type": {"type": "string", "minLength": 1},
+          "artifact_ref": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "failure_occurred": {"type": "boolean"},
+    "repair_attempts": {"type": "integer", "minimum": 0},
+    "final_terminal_state": {"type": "string", "minLength": 1},
+    "promotion_allowed": {"type": "boolean"},
+    "key_artifact_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "trace_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  }
+}

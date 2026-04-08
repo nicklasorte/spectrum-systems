@@ -6,7 +6,7 @@ from typing import Any
 
 from spectrum_systems.contracts import validate_artifact
 
-_ALLOWED_TERMINAL_STATES = {"ready_for_merge", "blocked", "exhausted", "escalated"}
+_ALLOWED_TERMINAL_STATES = {"ready_for_merge", "blocked", "exhausted", "escalated", "malformed_input"}
 
 
 class GithubPrFeedbackError(ValueError):
@@ -83,6 +83,14 @@ def _build_trace_refs(
         if ref not in deduped:
             deduped.append(ref)
     return deduped
+
+
+def _resolve_not_allowed_reason(*, terminal_state: str, missing_requirements: list[str]) -> str:
+    if terminal_state != "ready_for_merge":
+        return f"terminal_state:{terminal_state}"
+    if missing_requirements:
+        return "missing_requirements"
+    return "promotion_gate_rejected"
 
 
 def build_pr_feedback_comment(artifacts: dict[str, Any]) -> str:
@@ -172,6 +180,15 @@ def build_pr_feedback_comment(artifacts: dict[str, Any]) -> str:
         closure_decision_artifact=closure_decision_artifact,
         top_level_conductor_run_artifact=top_level_conductor_run_artifact,
     )
+    run_summary_path: str | None = None
+    if isinstance(artifact_paths.get("run_summary_artifact"), str):
+        run_summary_path = _require_non_empty_str(artifact_paths.get("run_summary_artifact"), field="artifact_paths.run_summary_artifact")
+
+    if promotion_allowed and terminal_state != "ready_for_merge":
+        raise GithubPrFeedbackError("promotion_allowed=true requires terminal_state=ready_for_merge")
+    if not promotion_allowed and terminal_state == "ready_for_merge" and not missing_requirements:
+        raise GithubPrFeedbackError("ready_for_merge without missing_requirements must have promotion_allowed=true")
+    not_allowed_reason = _resolve_not_allowed_reason(terminal_state=terminal_state, missing_requirements=missing_requirements)
 
     lines = [
         "## Spectrum Systems — Governed Run Result",
@@ -182,9 +199,11 @@ def build_pr_feedback_comment(artifacts: dict[str, Any]) -> str:
         "",
         f"**Run ID:** {run_id}",
         "",
-        f"**Promotion Gate:** {'merge_ready' if promotion_allowed else 'status_only'}",
+        f"**Promotion Allowed:** {'true' if promotion_allowed else 'false'}",
         "",
         f"**Certification Status:** {certification_status}",
+        "",
+        f"**Reason:** {'promotion_allowed' if promotion_allowed else not_allowed_reason}",
         "",
         "**Artifacts:**",
         f"- Closure Decision: {closure_path}",
@@ -194,6 +213,8 @@ def build_pr_feedback_comment(artifacts: dict[str, Any]) -> str:
 
     if next_step_path is not None:
         lines.append(f"- Next Step Prompt: {next_step_path}")
+    if run_summary_path is not None:
+        lines.append(f"- Run Summary: {run_summary_path}")
     if roadmap_two_step is not None:
         lines.extend(
             [
@@ -221,10 +242,12 @@ def build_pr_feedback_comment(artifacts: dict[str, Any]) -> str:
     for ref in trace_refs:
         lines.append(f"- {ref}")
 
-    if not promotion_allowed:
-        lines.extend(["", "**Promotion Requirements Missing:**"])
+    lines.extend(["", "**Missing Requirements:**"])
+    if missing_requirements:
         for requirement in missing_requirements:
             lines.append(f"- {requirement}")
+    else:
+        lines.append("- none")
 
     lines.extend(
         [

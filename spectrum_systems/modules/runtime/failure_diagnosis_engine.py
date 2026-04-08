@@ -27,14 +27,7 @@ _FAILURE_SOURCE_TYPES = {
     "control_surface_enforcement",
 }
 
-_FAILURE_CLASSES = {
-    "schema_mismatch",
-    "contract_registration_missing",
-    "branch_policy_violation",
-    "dependency_graph_violation",
-    "test_expectation_drift",
-    "unknown_failure",
-}
+_REGISTRY_CACHE: dict[str, Any] | None = None
 
 _RULES: list[dict[str, Any]] = [
     {
@@ -103,6 +96,15 @@ _SAFE_REPAIRABLE_CLASSES = {
     "test_expectation_drift",
 }
 
+_LEGACY_FAILURE_CLASS_ALIASES = {
+    "extraction_error",
+    "reasoning_error",
+    "grounding_failure",
+    "schema_violation",
+    "hallucination",
+    "regression_failure",
+}
+
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -122,6 +124,21 @@ def _validate(instance: dict[str, Any], schema_name: str, *, label: str) -> None
     if errors:
         details = "; ".join(error.message for error in errors)
         raise FailureDiagnosisError(f"{label} failed schema validation ({schema_name}): {details}")
+
+
+def _load_registry_cached() -> dict[str, Any]:
+    global _REGISTRY_CACHE
+    if _REGISTRY_CACHE is None:
+        _REGISTRY_CACHE = load_failure_class_registry()
+    return _REGISTRY_CACHE
+
+
+def _known_failure_classes() -> set[str]:
+    registry = _load_registry_cached()
+    classes = registry.get("classes")
+    if not isinstance(classes, dict):
+        raise FailureDiagnosisError("failure_class_registry.classes must be an object")
+    return {str(name).strip() for name in classes.keys() if str(name).strip()}
 
 
 def _require_non_empty_string_list(value: Any, *, field_name: str) -> list[str]:
@@ -284,6 +301,11 @@ def normalize_failure_intake(
 
 
 def _classify(evidence: list[dict[str, Any]]) -> tuple[str, list[str], list[dict[str, Any]]]:
+    known_classes = _known_failure_classes()
+    if _LEGACY_FAILURE_CLASS_ALIASES & known_classes:
+        raise FailureDiagnosisError("failure_class_registry contains legacy class aliases")
+    if "unknown_failure" not in known_classes:
+        raise FailureDiagnosisError("failure_class_registry must define unknown_failure")
     evidence_types = {row["evidence_type"] for row in evidence}
     matched_classes: list[str] = []
     reasoning_trace: list[dict[str, Any]] = []
@@ -304,12 +326,12 @@ def _classify(evidence: list[dict[str, Any]]) -> tuple[str, list[str], list[dict
             matched_classes.append(rule["classification"])
 
     primary = matched_classes[0] if matched_classes else "unknown_failure"
-    if primary not in _FAILURE_CLASSES:
-        raise FailureDiagnosisError(f"classifier produced unsupported class '{primary}'")
+    if primary not in known_classes:
+        primary = "unknown_failure"
 
     secondary = sorted({cls for cls in matched_classes[1:] if cls != primary})
     if not matched_classes:
-        secondary = sorted(cls for cls in evidence_types if cls in _FAILURE_CLASSES and cls != primary)
+        secondary = sorted(cls for cls in evidence_types if cls in known_classes and cls != primary)
 
     return primary, secondary, reasoning_trace
 
@@ -468,6 +490,8 @@ def build_failure_repair_candidate_artifact(
         raise FailureDiagnosisError("failure packet or diagnosis missing required fields")
 
     safe_to_repair = primary in _SAFE_REPAIRABLE_CLASSES
+    if primary == "unknown_failure":
+        safe_to_repair = False
     bounded_scope = sorted(
         set(
             str(item).strip()
