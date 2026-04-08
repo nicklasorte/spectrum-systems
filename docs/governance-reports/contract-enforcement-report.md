@@ -1,23 +1,24 @@
 # Cross-Repo Contract Enforcement Report
 
-Generated: 2026-03-21T15:04:56Z
+Generated: 2026-04-08T21:56:46Z
 Source: `contracts/standards-manifest.json`
 
 ## Summary
 
 | Status | Count |
 |--------|-------|
-| Pass | 12 |
+| Pass | 13 |
 | Fail | 0 |
 | Warning | 0 |
 | Not Yet Enforceable | 0 |
-| Total Inspected | 13 |
+| Total Inspected | 15 |
 
 ## Repos Inspected
 
 - **assumptions-registry-engine** `assumptions-registry-engine` — ✅ PASS
 - **comment-resolution-engine** `comment-resolution-engine` — ✅ PASS
 - **docx-comment-injection-engine** `docx-comment-injection-engine` — ✅ PASS
+- **governed-prompt-queue** `governed-prompt-queue` — ✅ PASS
 - **knowledge-graph-engine** `knowledge-graph-engine` — ✅ PASS
 - **meeting-minutes-engine** `meeting-minutes-engine` — ✅ PASS
 - **slide-intelligence-engine** `slide-intelligence-engine` — ✅ PASS
@@ -27,6 +28,7 @@ Source: `contracts/standards-manifest.json`
 - **spectrum-systems** — 🏛 GOVERNANCE REPO
 - **study-artifact-generator** `study-artifact-generator` — ✅ PASS
 - **system-factory** `system-factory` — ✅ PASS
+- **tlc** — 🏛 GOVERNANCE REPO
 - **working-paper-review-engine** `working-paper-review-engine` — ✅ PASS
 
 ## Enforcement Failures

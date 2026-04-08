@@ -400,6 +400,14 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("tpa_slice_artifact")
         validate_artifact(instance, "tpa_slice_artifact")
 
+    def test_review_fix_execution_loop_artifact_examples_validate(self) -> None:
+        for name in (
+            "review_fix_execution_request_artifact",
+            "review_fix_execution_result_artifact",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_tpa_observability_summary_example_validates(self) -> None:
         instance = load_example("tpa_observability_summary")
         validate_artifact(instance, "tpa_observability_summary")
