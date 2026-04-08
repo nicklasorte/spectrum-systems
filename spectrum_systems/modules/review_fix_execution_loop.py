@@ -16,6 +16,7 @@ from spectrum_systems.modules.runtime.codex_to_pqx_task_wrapper import run_wrapp
 
 REQUEST_FILE_SUFFIX = "_review_fix_execution_request_artifact.json"
 RESULT_FILE_SUFFIX = "_review_fix_execution_result_artifact.json"
+OPERATOR_HANDOFF_FILE_SUFFIX = "_review_operator_handoff_artifact.json"
 
 
 class ReviewFixExecutionLoopError(ValueError):
@@ -40,6 +41,142 @@ def validate_review_fix_execution_request_artifact(request_artifact: dict[str, A
 
 def validate_review_fix_execution_result_artifact(result_artifact: dict[str, Any]) -> None:
     _validate(result_artifact, "review_fix_execution_result_artifact")
+
+
+def validate_review_operator_handoff_artifact(handoff_artifact: dict[str, Any]) -> None:
+    _validate(handoff_artifact, "review_operator_handoff_artifact")
+
+
+def _handoff_reason_and_next_action(result_artifact: Mapping[str, Any]) -> tuple[str, str]:
+    status = result_artifact["status"]
+    if status == "blocked_checkpoint_missing":
+        return "checkpoint_required", "request_checkpoint_decision"
+    if status == "blocked_by_tpa":
+        return "tpa_blocked", "manual_review_required"
+    if status == "execution_failed":
+        return "execution_failed", "request_failure_diagnosis"
+
+    verdict = result_artifact["post_fix_review"]["verdict"]
+    if verdict == "fix_required":
+        return "post_cycle_fix_still_required", "schedule_follow_on_cycle"
+    if verdict == "not_safe_to_merge":
+        return "post_cycle_not_safe_to_merge", "escalate_to_owner"
+    return "review_incomplete", "manual_review_required"
+
+
+def _build_operator_handoff_artifact(
+    request_artifact: Mapping[str, Any],
+    result_artifact: Mapping[str, Any],
+    *,
+    review_result_artifact: Mapping[str, Any] | None,
+    emitted_at: str,
+) -> dict[str, Any]:
+    handoff_reason, recommended_next_action = _handoff_reason_and_next_action(result_artifact)
+    unresolved_finding_refs: list[str] = []
+    if isinstance(review_result_artifact, Mapping):
+        review_id = str(review_result_artifact["review_id"])
+        for finding in review_result_artifact.get("findings", []):
+            if isinstance(finding, Mapping):
+                finding_id = finding.get("finding_id")
+                if isinstance(finding_id, str) and finding_id.strip():
+                    unresolved_finding_refs.append(f"review_result_artifact:{review_id}#{finding_id}")
+
+    blocking_conditions = [f"terminal_status:{result_artifact['status']}"]
+    tpa_reason = result_artifact["tpa_decision"].get("reason")
+    if isinstance(tpa_reason, str) and tpa_reason.strip():
+        blocking_conditions.append(f"tpa_reason:{tpa_reason}")
+    execution_error = result_artifact["pqx_execution"].get("error")
+    if isinstance(execution_error, str) and execution_error.strip():
+        blocking_conditions.append(f"pqx_error:{execution_error}")
+
+    source_review_result_ref = result_artifact["post_fix_review"]["review_result_ref"]
+    handoff = {
+        "artifact_type": "review_operator_handoff_artifact",
+        "artifact_version": "1.0.0",
+        "schema_version": "1.0.0",
+        "standards_version": "1.0.0",
+        "handoff_id": f"roha:{result_artifact['result_id']}",
+        "review_id": result_artifact["review_id"],
+        "source_review_result_ref": source_review_result_ref,
+        "source_review_fix_execution_result_ref": f"review_fix_execution_result_artifact:{result_artifact['result_id']}",
+        "post_cycle_verdict": result_artifact["post_fix_review"]["verdict"],
+        "handoff_reason": handoff_reason,
+        "recommended_next_action": recommended_next_action,
+        "blocking_conditions": blocking_conditions,
+        "unresolved_finding_refs": unresolved_finding_refs,
+        "target_scope": request_artifact["post_fix_review_request_artifact"]["scope"],
+        "target_files": request_artifact["post_fix_review_request_artifact"]["changed_files"],
+        "target_surface_refs": request_artifact["fix_slices"][0]["target_surface_refs"],
+        "future_fix_cycle_permitted": True,
+        "provenance": {
+            "emitted_by_system": "RQX",
+            "loop_execution_mode": "single_bounded_cycle",
+            "auto_reentry_triggered": False,
+        },
+        "trace_linkage": {
+            "request_ref": result_artifact["request_ref"],
+            "fix_slice_ref": result_artifact["fix_slice_ref"],
+            "tpa_artifact_ref": result_artifact["tpa_decision"]["tpa_artifact_ref"],
+            "pqx_execution_ref": result_artifact["pqx_execution"]["execution_ref"],
+        },
+        "emitted_at": emitted_at,
+    }
+    validate_review_operator_handoff_artifact(handoff)
+    return handoff
+
+
+def _emit_result_bundle(
+    request_artifact: Mapping[str, Any],
+    result_artifact: dict[str, Any],
+    *,
+    output_dir: Path,
+    review_result_artifact: Mapping[str, Any] | None = None,
+    review_merge_readiness_artifact: Mapping[str, Any] | None = None,
+    markdown_review_path: str | None = None,
+) -> dict[str, Any]:
+    unresolved_statuses = {
+        "completed_fix_still_required",
+        "completed_not_safe_to_merge",
+        "blocked_by_tpa",
+        "blocked_checkpoint_missing",
+        "execution_failed",
+    }
+    emit_handoff = result_artifact["status"] in unresolved_statuses
+    handoff_artifact: dict[str, Any] | None = None
+    handoff_path: Path | None = None
+    if emit_handoff:
+        handoff_artifact = _build_operator_handoff_artifact(
+            request_artifact,
+            result_artifact,
+            review_result_artifact=review_result_artifact,
+            emitted_at=result_artifact["generated_at"],
+        )
+        handoff_path = output_dir / f"{result_artifact['review_id']}{OPERATOR_HANDOFF_FILE_SUFFIX}"
+        handoff_path.write_text(json.dumps(handoff_artifact, indent=2) + "\n", encoding="utf-8")
+        result_artifact["operator_handoff_ref"] = (
+            f"review_operator_handoff_artifact:{handoff_artifact['handoff_id']}"
+        )
+    else:
+        result_artifact["operator_handoff_ref"] = None
+
+    validate_review_fix_execution_result_artifact(result_artifact)
+    result_path = output_dir / f"{result_artifact['review_id']}{RESULT_FILE_SUFFIX}"
+    result_path.write_text(json.dumps(result_artifact, indent=2) + "\n", encoding="utf-8")
+
+    response = {
+        "review_fix_execution_result_artifact": result_artifact,
+        "review_fix_execution_result_artifact_path": str(result_path),
+    }
+    if handoff_artifact is not None and handoff_path is not None:
+        response["review_operator_handoff_artifact"] = handoff_artifact
+        response["review_operator_handoff_artifact_path"] = str(handoff_path)
+    if review_result_artifact is not None:
+        response["post_fix_review_result_artifact"] = review_result_artifact
+    if review_merge_readiness_artifact is not None:
+        response["post_fix_review_merge_readiness_artifact"] = review_merge_readiness_artifact
+    if markdown_review_path is not None:
+        response["post_fix_markdown_review_path"] = markdown_review_path
+    return response
 
 
 def _tpa_gate_decision(tpa_slice_artifact: Mapping[str, Any]) -> tuple[str, str | None]:
@@ -153,13 +290,7 @@ def run_review_fix_execution_cycle(
             "stopped": True,
             "generated_at": _utc_now(),
         }
-        validate_review_fix_execution_result_artifact(result)
-        result_path = output_dir / f"{review_id}{RESULT_FILE_SUFFIX}"
-        result_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-        return {
-            "review_fix_execution_result_artifact": result,
-            "review_fix_execution_result_artifact_path": str(result_path),
-        }
+        return _emit_result_bundle(request_artifact, result, output_dir=output_dir)
 
     tpa_decision, tpa_reason = _tpa_gate_decision(request_artifact["tpa_slice_artifact"])
     if tpa_decision != "allow":
@@ -196,13 +327,7 @@ def run_review_fix_execution_cycle(
             "stopped": True,
             "generated_at": _utc_now(),
         }
-        validate_review_fix_execution_result_artifact(result)
-        result_path = output_dir / f"{review_id}{RESULT_FILE_SUFFIX}"
-        result_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-        return {
-            "review_fix_execution_result_artifact": result,
-            "review_fix_execution_result_artifact_path": str(result_path),
-        }
+        return _emit_result_bundle(request_artifact, result, output_dir=output_dir)
 
     executor = pqx_executor or _default_pqx_executor
     try:
@@ -241,13 +366,7 @@ def run_review_fix_execution_cycle(
             "stopped": True,
             "generated_at": _utc_now(),
         }
-        validate_review_fix_execution_result_artifact(result)
-        result_path = output_dir / f"{review_id}{RESULT_FILE_SUFFIX}"
-        result_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-        return {
-            "review_fix_execution_result_artifact": result,
-            "review_fix_execution_result_artifact_path": str(result_path),
-        }
+        return _emit_result_bundle(request_artifact, result, output_dir=output_dir)
 
     if not isinstance(pqx_result, Mapping):
         raise ReviewFixExecutionLoopError("PQX execution result must be an object")
@@ -298,18 +417,14 @@ def run_review_fix_execution_cycle(
         "stopped": True,
         "generated_at": _utc_now(),
     }
-    validate_review_fix_execution_result_artifact(result)
-
-    result_path = output_dir / f"{review_id}{RESULT_FILE_SUFFIX}"
-    result_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-
-    return {
-        "review_fix_execution_result_artifact": result,
-        "review_fix_execution_result_artifact_path": str(result_path),
-        "post_fix_review_result_artifact": review_result["review_result_artifact"],
-        "post_fix_review_merge_readiness_artifact": review_result["review_merge_readiness_artifact"],
-        "post_fix_markdown_review_path": review_result["markdown_review_path"],
-    }
+    return _emit_result_bundle(
+        request_artifact,
+        result,
+        output_dir=output_dir,
+        review_result_artifact=review_result["review_result_artifact"],
+        review_merge_readiness_artifact=review_result["review_merge_readiness_artifact"],
+        markdown_review_path=review_result["markdown_review_path"],
+    )
 
 
 def _parse_args() -> argparse.Namespace:

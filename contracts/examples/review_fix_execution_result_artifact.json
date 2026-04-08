@@ -29,5 +29,6 @@
     "verdict": "safe_to_merge"
   },
   "stopped": true,
-  "generated_at": "2026-04-08T01:10:00Z"
+  "generated_at": "2026-04-08T01:10:00Z",
+  "operator_handoff_ref": null
 }

@@ -164,6 +164,7 @@ These rules are hard boundaries for architecture, contracts, and validation.
   - review_queue_execution
   - merge_readiness_verdict_emission
   - bounded_fix_slice_request_emission
+  - unresolved_post_cycle_operator_handoff_emission
 - **consumes:**
   - pqx_bundle_execution_record
   - pqx_slice_execution_record
@@ -174,6 +175,7 @@ These rules are hard boundaries for architecture, contracts, and validation.
   - review_result_artifact
   - review_merge_readiness_artifact
   - review_fix_slice_artifact
+  - review_operator_handoff_artifact
 - **must_not_do:**
   - reinterpret review semantics already owned by RIL
   - execute fix slices directly (PQX-owned)
