@@ -669,7 +669,7 @@ def execute_with_enforcement(bundle_path: str) -> Dict[str, Any]:
     monitor_record = build_validation_monitor_record(validation_decision)
     monitor_summary = summarize_validation_monitor_records([monitor_record])
     budget_decision = build_validation_budget_decision(monitor_summary)
-    return enforce_budget_decision(budget_decision)
+    return enforce_budget_decision(budget_decision, compatibility_mode=True)
 
 
 def execute_with_replay(bundle_path: str) -> Dict[str, Any]:
