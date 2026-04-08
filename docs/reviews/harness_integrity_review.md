@@ -10,7 +10,7 @@ Verification command (fail-closed if review exists and outputs missing/empty):
 - `python scripts/run_harness_integrity_bundle.py --verify-only --output-dir outputs/harness_bundle_review`
 
 ## Generated artifacts (authoritative)
-All required outputs are generated as JSON files under:
+Directory:
 - `outputs/harness_bundle_review/`
 
 Required reports:
@@ -25,10 +25,20 @@ Required reports:
 9. `error_budget_status.json`
 10. `replay_integrity_report.json`
 
-Index:
+Machine-consumable indexes:
 - `artifact_index.json`
+- `harness_bundle_index.json`
 
-## Backing logic
-The generated artifacts are computed from exercised PQX, prompt queue, orchestration, replay, drift, observability, and governed failure-injection seams in `scripts/run_harness_integrity_bundle.py`.
+## Top findings (from generated `harness_bundle_index.json`)
+1. `integrity:permission_decision_record_presence` — **blocking** (affected subsystem: integrity)
+2. `integrity:checkpoint_linkage_presence` — **blocking** (affected subsystem: integrity)
+3. `transition:mismatch_detected` — **warning** (affected subsystem: cross_system_transitions)
 
-This review document is informational only; the generated JSON artifacts are the runtime source of truth.
+Current generated summary fields (from `harness_bundle_index.json`):
+- `readiness_score`: 40
+- `blocking_findings_count`: 2
+- `warning_findings_count`: 1
+- `ready_for_bundle_02`: false
+
+## Evidence model
+This document is informational. The JSON artifacts above are the only authoritative evidence for downstream fix bundles.

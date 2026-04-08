@@ -9,6 +9,7 @@ import json
 import subprocess
 import sys
 from copy import deepcopy
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
@@ -48,6 +49,7 @@ REQUIRED_OUTPUTS = [
     "error_budget_status.json",
     "replay_integrity_report.json",
     "artifact_index.json",
+    "harness_bundle_index.json",
 ]
 
 
@@ -377,6 +379,94 @@ def _integrity_checks(pqx_trace: Dict[str, Any], queue_execution: Dict[str, Any]
     }
 
 
+def _extract_top_findings(
+    *,
+    integrity: Dict[str, Any],
+    transitions: Dict[str, Any],
+    trace: Dict[str, Any],
+    failures: Dict[str, Any],
+    replay: Dict[str, Any],
+    drift: Dict[str, Any],
+) -> Tuple[List[Dict[str, Any]], int, int]:
+    findings: List[Dict[str, Any]] = []
+
+    for failed in integrity.get("failed_checks", []):
+        findings.append(
+            {
+                "finding_id": f"integrity:{failed}",
+                "severity": "blocking",
+                "affected_subsystem": "integrity",
+                "recommended_next_action": f"Fix failed integrity check: {failed}",
+            }
+        )
+
+    if transitions.get("mismatch_detected"):
+        findings.append(
+            {
+                "finding_id": "transition:mismatch_detected",
+                "severity": "warning",
+                "affected_subsystem": "cross_system_transitions",
+                "recommended_next_action": "Reconcile transition outcomes across PQX, prompt queue, and orchestration seams.",
+            }
+        )
+
+    if not trace.get("complete", False):
+        findings.append(
+            {
+                "finding_id": "trace:incomplete",
+                "severity": "blocking",
+                "affected_subsystem": "trace",
+                "recommended_next_action": "Repair missing trace linkage fields across emitted artifacts.",
+            }
+        )
+
+    failure_count = int(failures.get("fail_count", 0))
+    if failure_count > 0:
+        findings.append(
+            {
+                "finding_id": "failure_injection:failed_cases",
+                "severity": "warning" if failure_count < 3 else "blocking",
+                "affected_subsystem": "failure_injection",
+                "recommended_next_action": "Address failed governed failure-injection scenarios before promotion.",
+            }
+        )
+
+    if not replay.get("deterministic_replay", False):
+        findings.append(
+            {
+                "finding_id": "replay:nondeterministic",
+                "severity": "blocking",
+                "affected_subsystem": "replay",
+                "recommended_next_action": "Eliminate replay nondeterminism and re-run bundle validation.",
+            }
+        )
+
+    drift_status = drift.get("drift_status")
+    if drift_status == "exceeds_threshold":
+        findings.append(
+            {
+                "finding_id": "drift:threshold_exceeded",
+                "severity": "blocking",
+                "affected_subsystem": "drift",
+                "recommended_next_action": "Remediate drift dimensions above block threshold.",
+            }
+        )
+    elif drift_status == "within_threshold":
+        findings.append(
+            {
+                "finding_id": "drift:warn_threshold_exceeded",
+                "severity": "warning",
+                "affected_subsystem": "drift",
+                "recommended_next_action": "Investigate warning-level drift signals and monitor trend.",
+            }
+        )
+
+    findings = findings[:5]
+    blocking_count = sum(1 for finding in findings if finding["severity"] == "blocking")
+    warning_count = sum(1 for finding in findings if finding["severity"] == "warning")
+    return findings, blocking_count, warning_count
+
+
 def run_bundle(output_dir: Path) -> Dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -571,7 +661,29 @@ def run_bundle(output_dir: Path) -> Dict[str, Any]:
     }
     _write_json(output_dir / "artifact_index.json", artifact_index)
 
-    return artifact_index
+    top_findings, blocking_findings_count, warning_findings_count = _extract_top_findings(
+        integrity=harness_integrity_report,
+        transitions=transition_consistency_report,
+        trace=trace_completeness_report,
+        failures=failure_injection_report,
+        replay=replay_integrity_report,
+        drift=drift_detection_report,
+    )
+    readiness_score = max(0, 100 - (blocking_findings_count * 25) - (warning_findings_count * 10))
+    harness_bundle_index = {
+        "artifact_type": "harness_bundle_index",
+        "bundle_run_timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "output_dir": str(output_dir),
+        "generated_report_files": sorted(artifacts.keys()),
+        "top_findings": top_findings,
+        "readiness_score": readiness_score,
+        "blocking_findings_count": blocking_findings_count,
+        "warning_findings_count": warning_findings_count,
+        "ready_for_bundle_02": blocking_findings_count == 0 and readiness_score >= 70,
+    }
+    _write_json(output_dir / "harness_bundle_index.json", harness_bundle_index)
+
+    return harness_bundle_index
 
 
 def main(argv: List[str] | None = None) -> int:
