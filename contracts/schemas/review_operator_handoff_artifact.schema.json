@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/review_operator_handoff_artifact.schema.json",
+  "title": "Review Operator Handoff Artifact",
+  "description": "Post-cycle bounded handoff emitted by RQX when one-cycle review-fix execution ends unresolved and requires human or scheduled follow-up.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "handoff_id",
+    "review_id",
+    "source_review_result_ref",
+    "source_review_fix_execution_result_ref",
+    "post_cycle_verdict",
+    "handoff_reason",
+    "recommended_next_action",
+    "blocking_conditions",
+    "unresolved_finding_refs",
+    "target_scope",
+    "target_files",
+    "target_surface_refs",
+    "future_fix_cycle_permitted",
+    "provenance",
+    "trace_linkage",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "review_operator_handoff_artifact"},
+    "artifact_version": {"type": "string", "const": "1.0.0"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "standards_version": {"type": "string", "const": "1.0.0"},
+    "handoff_id": {"type": "string", "pattern": "^roha:.+"},
+    "review_id": {"type": "string", "minLength": 1},
+    "source_review_result_ref": {"type": ["string", "null"], "pattern": "^review_result_artifact:.+"},
+    "source_review_fix_execution_result_ref": {"type": "string", "pattern": "^review_fix_execution_result_artifact:.+"},
+    "post_cycle_verdict": {
+      "type": ["string", "null"],
+      "enum": ["safe_to_merge", "fix_required", "not_safe_to_merge", null]
+    },
+    "handoff_reason": {
+      "type": "string",
+      "enum": [
+        "post_cycle_fix_still_required",
+        "post_cycle_not_safe_to_merge",
+        "tpa_blocked",
+        "checkpoint_required",
+        "execution_failed",
+        "review_incomplete",
+        "policy_blocked",
+        "unresolved_high_risk_findings"
+      ]
+    },
+    "recommended_next_action": {
+      "type": "string",
+      "enum": [
+        "manual_review_required",
+        "schedule_follow_on_cycle",
+        "escalate_to_owner",
+        "request_checkpoint_decision",
+        "request_failure_diagnosis",
+        "hold_no_action"
+      ]
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "unresolved_finding_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "target_scope": {"type": ["string", "null"]},
+    "target_files": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "target_surface_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "future_fix_cycle_permitted": {"type": "boolean", "const": true},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["emitted_by_system", "loop_execution_mode", "auto_reentry_triggered"],
+      "properties": {
+        "emitted_by_system": {"type": "string", "const": "RQX"},
+        "loop_execution_mode": {"type": "string", "const": "single_bounded_cycle"},
+        "auto_reentry_triggered": {"type": "boolean", "const": false}
+      }
+    },
+    "trace_linkage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["request_ref", "fix_slice_ref", "tpa_artifact_ref", "pqx_execution_ref"],
+      "properties": {
+        "request_ref": {"type": "string", "pattern": "^review_fix_execution_request_artifact:.+"},
+        "fix_slice_ref": {"type": "string", "pattern": "^review_fix_slice_artifact:.+"},
+        "tpa_artifact_ref": {"type": "string", "pattern": "^tpa_slice_artifact:.+"},
+        "pqx_execution_ref": {"type": ["string", "null"]}
+      }
+    },
+    "emitted_at": {"type": "string", "format": "date-time"}
+  }
+}

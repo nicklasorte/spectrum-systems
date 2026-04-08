@@ -23,15 +23,42 @@
     "generated_at"
   ],
   "properties": {
-    "artifact_type": {"type": "string", "const": "review_fix_execution_result_artifact"},
-    "artifact_version": {"type": "string", "const": "1.0.0"},
-    "schema_version": {"type": "string", "const": "1.0.0"},
-    "standards_version": {"type": "string", "const": "1.0.0"},
-    "result_id": {"type": "string", "minLength": 1},
-    "request_ref": {"type": "string", "pattern": "^review_fix_execution_request_artifact:.+"},
-    "review_id": {"type": "string", "minLength": 1},
-    "fix_slice_ref": {"type": "string", "pattern": "^review_fix_slice_artifact:.+"},
-    "loop_cycle_count": {"type": "integer", "const": 1},
+    "artifact_type": {
+      "type": "string",
+      "const": "review_fix_execution_result_artifact"
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "result_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "request_ref": {
+      "type": "string",
+      "pattern": "^review_fix_execution_request_artifact:.+"
+    },
+    "review_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fix_slice_ref": {
+      "type": "string",
+      "pattern": "^review_fix_slice_artifact:.+"
+    },
+    "loop_cycle_count": {
+      "type": "integer",
+      "const": 1
+    },
     "status": {
       "type": "string",
       "enum": [
@@ -47,38 +74,127 @@
     "tpa_decision": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["decision", "tpa_artifact_ref", "phase"],
+      "required": [
+        "decision",
+        "tpa_artifact_ref",
+        "phase"
+      ],
       "properties": {
-        "decision": {"type": "string", "enum": ["allow", "block"]},
-        "tpa_artifact_ref": {"type": "string", "pattern": "^tpa_slice_artifact:.+"},
-        "phase": {"type": "string", "const": "gate"},
-        "reason": {"type": ["string", "null"]}
+        "decision": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "block"
+          ]
+        },
+        "tpa_artifact_ref": {
+          "type": "string",
+          "pattern": "^tpa_slice_artifact:.+"
+        },
+        "phase": {
+          "type": "string",
+          "const": "gate"
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "pqx_execution": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["attempted", "execution_ref"],
+      "required": [
+        "attempted",
+        "execution_ref"
+      ],
       "properties": {
-        "attempted": {"type": "boolean"},
-        "execution_ref": {"type": ["string", "null"]},
-        "status": {"type": ["string", "null"]},
-        "error": {"type": ["string", "null"]}
+        "attempted": {
+          "type": "boolean"
+        },
+        "execution_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "post_fix_review": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["attempted", "review_result_ref", "review_merge_readiness_ref", "verdict"],
+      "required": [
+        "attempted",
+        "review_result_ref",
+        "review_merge_readiness_ref",
+        "verdict"
+      ],
       "properties": {
-        "attempted": {"type": "boolean"},
-        "review_result_ref": {"type": ["string", "null"], "pattern": "^review_result_artifact:.+"},
-        "review_merge_readiness_ref": {"type": ["string", "null"], "pattern": "^review_merge_readiness_artifact:.+"},
-        "markdown_review_path": {"type": ["string", "null"]},
-        "verdict": {"type": ["string", "null"], "enum": ["safe_to_merge", "fix_required", "not_safe_to_merge", null]}
+        "attempted": {
+          "type": "boolean"
+        },
+        "review_result_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^review_result_artifact:.+"
+        },
+        "review_merge_readiness_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^review_merge_readiness_artifact:.+"
+        },
+        "markdown_review_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verdict": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "safe_to_merge",
+            "fix_required",
+            "not_safe_to_merge",
+            null
+          ]
+        }
       }
     },
-    "stopped": {"type": "boolean", "const": true},
-    "generated_at": {"type": "string", "format": "date-time"}
+    "stopped": {
+      "type": "boolean",
+      "const": true
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "operator_handoff_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^review_operator_handoff_artifact:.+"
+    }
   }
 }

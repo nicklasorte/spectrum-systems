@@ -1,0 +1,39 @@
+{
+  "artifact_type": "review_operator_handoff_artifact",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "handoff_id": "roha:rferes-001",
+  "review_id": "rqx-02-review-001",
+  "source_review_result_ref": "review_result_artifact:rqx-02-review-002",
+  "source_review_fix_execution_result_ref": "review_fix_execution_result_artifact:rferes-001",
+  "post_cycle_verdict": "fix_required",
+  "handoff_reason": "post_cycle_fix_still_required",
+  "recommended_next_action": "schedule_follow_on_cycle",
+  "blocking_conditions": [
+    "post_cycle_verdict_unresolved"
+  ],
+  "unresolved_finding_refs": [
+    "review_result_artifact:rqx-02-review-002#F-1"
+  ],
+  "target_scope": "Bounded post-fix rerun review scope",
+  "target_files": [
+    "spectrum_systems/modules/review_queue_executor.py"
+  ],
+  "target_surface_refs": [
+    "spectrum_systems/modules/review_queue_executor.py"
+  ],
+  "future_fix_cycle_permitted": true,
+  "provenance": {
+    "emitted_by_system": "RQX",
+    "loop_execution_mode": "single_bounded_cycle",
+    "auto_reentry_triggered": false
+  },
+  "trace_linkage": {
+    "request_ref": "review_fix_execution_request_artifact:rfer-001",
+    "fix_slice_ref": "review_fix_slice_artifact:rfs-3f8f61e5d9ce",
+    "tpa_artifact_ref": "tpa_slice_artifact:run-001:AI-01:GATE",
+    "pqx_execution_ref": "exec:run-001:AI-01:1"
+  },
+  "emitted_at": "2026-04-08T01:15:00Z"
+}

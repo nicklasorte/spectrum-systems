@@ -32,6 +32,7 @@ def test_review_fix_execution_contract_examples_validate() -> None:
     for artifact_type in (
         "review_fix_execution_request_artifact",
         "review_fix_execution_result_artifact",
+        "review_operator_handoff_artifact",
     ):
         validate_artifact(load_example(artifact_type), artifact_type)
 
@@ -58,9 +59,11 @@ def test_happy_path_executes_once_and_reruns_review_once(tmp_path: Path) -> None
     artifact = result["review_fix_execution_result_artifact"]
     assert len(pqx_calls) == 1
     assert artifact["status"] == "completed_safe_to_merge"
+    assert artifact["operator_handoff_ref"] is None
     assert artifact["loop_cycle_count"] == 1
     assert artifact["post_fix_review"]["attempted"] is True
     assert artifact["post_fix_review"]["verdict"] == "safe_to_merge"
+    assert "review_operator_handoff_artifact" not in result
 
 
 def test_tpa_block_prevents_pqx_execution(tmp_path: Path) -> None:
@@ -87,6 +90,11 @@ def test_tpa_block_prevents_pqx_execution(tmp_path: Path) -> None:
     artifact = result["review_fix_execution_result_artifact"]
     assert artifact["status"] == "blocked_by_tpa"
     assert pqx_called is False
+    assert artifact["operator_handoff_ref"] is not None
+    handoff = result["review_operator_handoff_artifact"]
+    assert handoff["handoff_reason"] == "tpa_blocked"
+    assert handoff["recommended_next_action"] == "manual_review_required"
+    validate_artifact(handoff, "review_operator_handoff_artifact")
 
 
 def test_tpa_missing_or_malformed_fails_closed(tmp_path: Path) -> None:
@@ -145,6 +153,86 @@ def test_one_cycle_bound_stops_without_recursive_rerun(tmp_path: Path) -> None:
     assert pqx_count == 1
     assert artifact["status"] == "completed_fix_still_required"
     assert artifact["stopped"] is True
+    handoff = result["review_operator_handoff_artifact"]
+    assert handoff["post_cycle_verdict"] == "fix_required"
+    assert handoff["handoff_reason"] == "post_cycle_fix_still_required"
+    assert handoff["recommended_next_action"] == "schedule_follow_on_cycle"
+    assert handoff["source_review_result_ref"] == artifact["post_fix_review"]["review_result_ref"]
+    assert handoff["source_review_fix_execution_result_ref"] == (
+        f"review_fix_execution_result_artifact:{artifact['result_id']}"
+    )
+    assert handoff["trace_linkage"]["request_ref"] == artifact["request_ref"]
+    assert handoff["provenance"]["emitted_by_system"] == "RQX"
+    assert handoff["provenance"]["auto_reentry_triggered"] is False
+    validate_artifact(handoff, "review_operator_handoff_artifact")
+
+
+def test_not_safe_to_merge_emits_operator_handoff(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _prepare_post_fix_review_inputs(repo_root, validation_status="passed")
+    request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
+    request["post_fix_review_request_artifact"]["changed_files"].append("missing/file.py")
+
+    result = run_review_fix_execution_cycle(
+        request,
+        output_dir=repo_root / "artifacts/reviews",
+        repo_root=repo_root,
+        review_docs_dir=repo_root / "docs/reviews",
+        pqx_executor=lambda _: {"status": "complete", "execution_ref": "exec:run-001:AI-01:1"},
+    )
+
+    artifact = result["review_fix_execution_result_artifact"]
+    assert artifact["status"] == "completed_not_safe_to_merge"
+    handoff = result["review_operator_handoff_artifact"]
+    assert handoff["post_cycle_verdict"] == "not_safe_to_merge"
+    assert handoff["handoff_reason"] == "post_cycle_not_safe_to_merge"
+    assert handoff["recommended_next_action"] == "escalate_to_owner"
+
+
+def test_checkpoint_missing_emits_operator_handoff(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _prepare_post_fix_review_inputs(repo_root, validation_status="passed")
+    request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
+    request["checkpoint_required"] = True
+    request["checkpoint_ref"] = None
+
+    result = run_review_fix_execution_cycle(
+        request,
+        output_dir=repo_root / "artifacts/reviews",
+        repo_root=repo_root,
+        review_docs_dir=repo_root / "docs/reviews",
+        pqx_executor=lambda _: {"status": "complete", "execution_ref": "exec:run-001:AI-01:1"},
+    )
+
+    artifact = result["review_fix_execution_result_artifact"]
+    handoff = result["review_operator_handoff_artifact"]
+    assert artifact["status"] == "blocked_checkpoint_missing"
+    assert handoff["handoff_reason"] == "checkpoint_required"
+    assert handoff["recommended_next_action"] == "request_checkpoint_decision"
+
+
+def test_handoff_emission_does_not_trigger_additional_execution(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _prepare_post_fix_review_inputs(repo_root, validation_status="failed")
+    request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
+    pqx_count = 0
+
+    def _pqx_executor(_: dict) -> dict:
+        nonlocal pqx_count
+        pqx_count += 1
+        return {"status": "complete", "execution_ref": "exec:run-001:AI-01:1"}
+
+    result = run_review_fix_execution_cycle(
+        request,
+        output_dir=repo_root / "artifacts/reviews",
+        repo_root=repo_root,
+        review_docs_dir=repo_root / "docs/reviews",
+        pqx_executor=_pqx_executor,
+    )
+
+    assert pqx_count == 1
+    assert result["review_fix_execution_result_artifact"]["status"] == "completed_fix_still_required"
+    assert result["review_operator_handoff_artifact"]["provenance"]["auto_reentry_triggered"] is False
 
 
 def test_safe_or_not_safe_paths_do_not_execute_when_no_fix_slice(tmp_path: Path) -> None:
