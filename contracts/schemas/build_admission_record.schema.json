@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/build_admission_record.schema.json",
+  "title": "Build Admission Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "admission_id",
+    "request_id",
+    "execution_type",
+    "admission_status",
+    "normalized_execution_request_ref",
+    "trace_id",
+    "created_at",
+    "produced_by",
+    "reason_codes",
+    "target_scope"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "build_admission_record"},
+    "admission_id": {"type": "string", "minLength": 1},
+    "request_id": {"type": "string", "minLength": 1},
+    "execution_type": {"type": "string", "enum": ["repo_write", "read_only", "analysis_only", "unknown"]},
+    "admission_status": {"type": "string", "enum": ["accepted", "rejected"]},
+    "normalized_execution_request_ref": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "produced_by": {"type": "string", "minLength": 1},
+    "reason_codes": {"type": "array", "items": {"type": "string"}},
+    "target_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "paths"],
+      "properties": {
+        "repo": {"type": "string", "minLength": 1},
+        "paths": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

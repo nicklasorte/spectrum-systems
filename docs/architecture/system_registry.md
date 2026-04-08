@@ -7,6 +7,7 @@
 These rules are hard boundaries for architecture, contracts, and validation.
 
 ## System Map
+- **AEX** — admission and execution exchange boundary for repo-mutating Codex requests
 - **PQX** — bounded execution engine
 - **HNX** — stage harness (structure + time/continuity semantics)
 - **TPA** — trust/policy application gate on execution inputs and paths
@@ -22,6 +23,31 @@ These rules are hard boundaries for architecture, contracts, and validation.
 - **SIV** — not currently present in this repository scope (reserved acronym)
 
 ## System Definitions
+
+### AEX
+- **acronym:** `AEX`
+- **full_name:** Admission & Execution eXchange
+- **role:** Canonical entry point for all Codex execution requests that may mutate repository state.
+- **owns:**
+  - execution_admission
+  - request_validation
+  - execution_classification
+  - intake_artifact_creation
+  - entrypoint_enforcement
+- **consumes:**
+  - codex_build_request
+  - system context needed for request normalization
+- **produces:**
+  - build_admission_record
+  - normalized_execution_request
+  - admission_rejection_record
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - orchestrate workflows (TLC-owned)
+  - make trust/policy decisions (TPA-owned)
+  - evaluate outputs (RQX/RIL/FRE-owned)
+  - issue closure-state decisions (CDE-owned)
+  - enforce runtime actions directly (SEL-owned)
 
 ### PQX
 - **acronym:** `PQX`
@@ -249,8 +275,13 @@ These rules are hard boundaries for architecture, contracts, and validation.
 | RQX generates full repair diagnosis | Bounded review queue execution cannot replace diagnosis/planning ownership | FRE |
 | RQX enforces runtime decisions | Review queue execution cannot enforce runtime blocks | SEL |
 | RQX issues authoritative closure state | Review queue execution cannot become closure authority | CDE |
+| TLC performs admission validation | Orchestrator must not own repo-mutation admission | AEX |
+| PQX accepts repo-writing requests directly | Execution system cannot be public repo-write entrypoint | AEX |
+| AEX executes work | Admission boundary cannot execute bounded work | PQX |
+| AEX decides trust/policy admissibility | Admission boundary cannot own trust-policy authority | TPA |
 
 ## Allowed Interaction Graph
+- AEX → TLC
 - TLC → PQX
 - TLC → TPA
 - TLC → FRE
@@ -265,6 +296,11 @@ These rules are hard boundaries for architecture, contracts, and validation.
 - TPA → PQX (only approved tpa_slice_artifact may enter execution)
 - RQX → PQX (handoff only via TPA-approved artifacts; no direct execution)
 - RIL → CDE
+
+## Entry Invariant (Repo-Mutation Admission)
+- All Codex execution requests that create or modify repository state MUST enter through **AEX**.
+- **AEX** is the only system allowed to invoke **TLC** for repo-mutating work.
+- Any attempt to invoke **TLC** or **PQX** directly for repo-mutating work without a valid `build_admission_record` MUST fail closed.
 
 ## Pre-PR bounded repair-loop behavior (GHA-008)
 - This is a **behavior** over existing systems, not a new system.
@@ -285,3 +321,14 @@ These rules are hard boundaries for architecture, contracts, and validation.
 6. Orchestration is owned only by **TLC**.
 7. Program governance is owned only by **PRG**.
 8. Review-loop execution is owned only by **RQX**.
+9. Repo-mutation admission is owned only by **AEX**.
+
+## Canonical Repo-Mutation Path
+
+```mermaid
+flowchart LR
+    CR[Codex repo-mutating request] --> AEX[AEX]
+    AEX --> TLC[TLC]
+    TLC --> TPA[TPA]
+    TPA --> PQX[PQX]
+```

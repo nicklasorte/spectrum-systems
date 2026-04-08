@@ -5,6 +5,41 @@
   "registry_version": "v1.0.0",
   "systems": [
     {
+      "acronym": "AEX",
+      "full_name": "Admission & Execution eXchange",
+      "role": "Canonical entry point for all Codex execution requests that may mutate repository state.",
+      "owns": [
+        "execution_admission",
+        "request_validation",
+        "execution_classification",
+        "intake_artifact_creation",
+        "entrypoint_enforcement"
+      ],
+      "consumes": [
+        "codex_build_request",
+        "system_context"
+      ],
+      "produces": [
+        "build_admission_record",
+        "normalized_execution_request",
+        "admission_rejection_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "workflow_orchestration",
+        "trust_policy_adjudication",
+        "output_evaluation",
+        "closure_decisioning",
+        "runtime_enforcement"
+      ],
+      "upstream_dependencies": [
+        "PRG"
+      ],
+      "downstream_consumers": [
+        "TLC"
+      ]
+    },
+    {
       "acronym": "PQX",
       "full_name": "Prompt Queue Execution",
       "role": "Executes bounded authorized work slices.",
@@ -224,6 +259,7 @@
         "closure_decision_override"
       ],
       "upstream_dependencies": [
+        "AEX",
         "PRG"
       ],
       "downstream_consumers": [
@@ -271,14 +307,19 @@
     }
   ],
   "invariants": [
-    "execution_only_in_PQX",
-    "recovery_only_in_FRE",
-    "review_interpretation_only_in_RIL",
     "closure_decisions_only_in_CDE",
     "enforcement_only_in_SEL",
-    "orchestration_only_in_TLC"
+    "execution_only_in_PQX",
+    "orchestration_only_in_TLC",
+    "recovery_only_in_FRE",
+    "repo_mutation_admission_only_in_AEX",
+    "review_interpretation_only_in_RIL"
   ],
   "interaction_edges": [
+    {
+      "from": "AEX",
+      "to": "TLC"
+    },
     {
       "from": "TLC",
       "to": "PQX"
