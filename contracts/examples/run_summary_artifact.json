@@ -1,0 +1,33 @@
+{
+  "artifact_type": "run_summary_artifact",
+  "schema_version": "1.0.0",
+  "run_summary_id": "RSA-2d0f7d8fd77e8692",
+  "run_id": "tlc-1a2b3c4d5e6f",
+  "entry_point": "review",
+  "steps_executed": [
+    "requested -> admitted (request_admitted)",
+    "admitted -> executing (execution_admitted)",
+    "executing -> reviewing (execution_validated)",
+    "reviewing -> closure_decision_pending (review_outputs_available)",
+    "closure_decision_pending -> ready_for_merge (cde_lock)"
+  ],
+  "key_decisions": [
+    {
+      "decision_surface": "CDE",
+      "decision_type": "lock",
+      "artifact_ref": "closure_decision_artifact:CDE-0001"
+    }
+  ],
+  "failure_occurred": false,
+  "repair_attempts": 0,
+  "final_terminal_state": "ready_for_merge",
+  "promotion_allowed": true,
+  "key_artifact_refs": [
+    "closure_decision_artifact:CDE-0001",
+    "pqx_execution_record:PXR-0001",
+    "review_projection_bundle_artifact:RPB-0001"
+  ],
+  "trace_refs": [
+    "trace-tlc-0001"
+  ]
+}

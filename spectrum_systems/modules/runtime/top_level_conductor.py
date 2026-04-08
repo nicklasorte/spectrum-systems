@@ -207,6 +207,74 @@ def _build_roadmap_signal_artifact(*, learning: dict[str, Any], diagnosis_ref: s
     return artifact
 
 
+def _resolve_entry_point(run_request: dict[str, Any], *, require_review: bool) -> str:
+    raw = run_request.get("entry_point")
+    if isinstance(raw, str) and raw.strip() in {"review", "roadmap", "command"}:
+        return raw.strip()
+    if isinstance(run_request.get("roadmap_id"), str) and str(run_request.get("roadmap_id")).strip():
+        return "roadmap"
+    if require_review:
+        return "review"
+    return "command"
+
+
+def _build_run_summary_artifact(state: dict[str, Any], *, entry_point: str) -> dict[str, Any]:
+    steps_executed = [
+        f"{step['from']} -> {step['to']} ({step['reason']})"
+        for step in state.get("phase_history", [])
+        if isinstance(step, dict) and all(key in step for key in ("from", "to", "reason"))
+    ]
+    closure_ref = next(
+        (ref for ref in state.get("produced_artifact_refs", []) if isinstance(ref, str) and ref.startswith("closure_decision_artifact:")),
+        None,
+    )
+    closure_decision = state.get("lineage", {}).get("closure_decision_artifact")
+    decision_type = "unknown"
+    if isinstance(closure_decision, dict):
+        decision_type = str(closure_decision.get("decision_type") or "unknown")
+    key_decisions: list[dict[str, str]] = []
+    if isinstance(closure_ref, str):
+        key_decisions.append(
+            {
+                "decision_surface": "CDE",
+                "decision_type": decision_type,
+                "artifact_ref": closure_ref,
+            }
+        )
+
+    key_artifact_refs = sorted(
+        set(
+            ref
+            for ref in state.get("produced_artifact_refs", [])
+            if isinstance(ref, str) and not ref.startswith("run_summary_artifact:")
+        )
+    )
+    summary_seed = {
+        "run_id": state["run_id"],
+        "entry_point": entry_point,
+        "terminal_state": state["current_state"],
+        "steps_executed": steps_executed,
+        "key_artifact_refs": key_artifact_refs,
+    }
+    run_summary = {
+        "artifact_type": "run_summary_artifact",
+        "schema_version": "1.0.0",
+        "run_summary_id": f"RSA-{_canonical_hash(summary_seed)[:16]}",
+        "run_id": state["run_id"],
+        "entry_point": entry_point,
+        "steps_executed": steps_executed,
+        "key_decisions": key_decisions,
+        "failure_occurred": bool(state["current_state"] != "ready_for_merge"),
+        "repair_attempts": int(state.get("lineage", {}).get("repair_attempt_count", 0)),
+        "final_terminal_state": state["current_state"],
+        "promotion_allowed": bool(state["current_state"] == "ready_for_merge"),
+        "key_artifact_refs": key_artifact_refs,
+        "trace_refs": sorted(set(item for item in state.get("trace_refs", []) if isinstance(item, str) and item.strip())),
+    }
+    validate_artifact(run_summary, "run_summary_artifact")
+    return run_summary
+
+
 def _transition(*, state: dict[str, Any], to_state: str, reason: str) -> None:
     from_state = state["current_state"]
     state["phase_history"].append({"from": from_state, "to": to_state, "reason": reason})
@@ -863,6 +931,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
         state["lineage"]["repair_attempt_count"] = 0
         state["lineage"]["failure_recurrence"] = {}
 
+    entry_point = _resolve_entry_point(run_request, require_review=require_review)
     while state["current_state"] not in TERMINAL_STATES:
         if not _enforce_sel(state=state, sel_fn=resolved["sel"], boundary="state_transition"):
             break
@@ -1113,6 +1182,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
             )
             state["active_subsystems"].append("CDE")
             _extract_refs(cde_result if isinstance(cde_result, dict) else {}, produced_refs=state["produced_artifact_refs"], trace_refs=state["trace_refs"])
+            state["lineage"]["closure_decision_artifact"] = cde_result.get("closure_decision_artifact")
             _record_invocation(
                 state=state,
                 subsystem="CDE",
@@ -1298,6 +1368,11 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
     state["trace_refs"] = sorted(set(state["trace_refs"]))
     if state["stop_reason"] is None and state["current_state"] in TERMINAL_STATES:
         state["stop_reason"] = state["current_state"]
+    run_summary = _build_run_summary_artifact(state, entry_point=entry_point)
+    run_summary_ref = f"run_summary_artifact:{run_summary['run_summary_id']}"
+    state["lineage"]["run_summary_artifact"] = run_summary
+    state["lineage"]["run_summary_artifact_ref"] = run_summary_ref
+    state["produced_artifact_refs"] = sorted(set(state["produced_artifact_refs"] + [run_summary_ref]))
 
     output = {k: v for k, v in state.items() if k not in {"trace_id", "emitted_at"}}
     validate_artifact(output, "top_level_conductor_run_artifact")

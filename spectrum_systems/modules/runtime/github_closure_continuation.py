@@ -55,6 +55,38 @@ _READ_ONLY_TERMINAL_STATES = {
     "approval-pending",
     "malformed-input",
 }
+_TERMINAL_STATE_POLICY = {
+    "ready_for_merge": {
+        "promotion_allowed": True,
+        "branch_update_allowed": True,
+        "cde_decision_path": "lock",
+    },
+    "blocked": {
+        "promotion_allowed": False,
+        "branch_update_allowed": False,
+        "cde_decision_path": "blocked",
+    },
+    "escalated": {
+        "promotion_allowed": False,
+        "branch_update_allowed": False,
+        "cde_decision_path": "escalate",
+    },
+    "exhausted": {
+        "promotion_allowed": False,
+        "branch_update_allowed": False,
+        "cde_decision_path": "continue_bounded",
+    },
+    "malformed_input": {
+        "promotion_allowed": False,
+        "branch_update_allowed": False,
+        "cde_decision_path": "blocked",
+    },
+    "unknown_failure": {
+        "promotion_allowed": False,
+        "branch_update_allowed": False,
+        "cde_decision_path": "escalate",
+    },
+}
 
 
 class GithubClosureContinuationError(ValueError):
@@ -115,6 +147,15 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
 
 def _default_emitted_at() -> str:
     return datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def resolve_terminal_state_policy(terminal_state: str) -> dict[str, Any]:
+    policy = _TERMINAL_STATE_POLICY.get(terminal_state)
+    if not isinstance(policy, dict):
+        raise GithubClosureContinuationError(f"unsupported terminal state returned by continuation path: {terminal_state}")
+    resolved = dict(policy)
+    resolved["terminal_state"] = terminal_state
+    return resolved
 
 
 def _build_promotion_gate_decision_artifact(
@@ -623,10 +664,8 @@ def run_github_closure_continuation(
         final_terminal_state = "escalated"
     else:
         final_terminal_state = "blocked"
-    if final_terminal_state not in {"ready_for_merge", "blocked", "exhausted", "escalated"}:
-        raise GithubClosureContinuationError(f"unsupported terminal state returned by continuation path: {final_terminal_state}")
-
-    branch_update_allowed = bool(final_terminal_state == "ready_for_merge")
+    terminal_policy = resolve_terminal_state_policy(final_terminal_state)
+    branch_update_allowed = bool(terminal_policy["branch_update_allowed"])
     promotion_gate = _build_promotion_gate_decision_artifact(
         continuation_id=continuation_id,
         final_terminal_state=final_terminal_state,
@@ -636,7 +675,8 @@ def run_github_closure_continuation(
     )
     promotion_gate_path = artifact_paths.continuation_dir / "promotion_gate_decision_artifact.json"
     _write_json(promotion_gate_path, promotion_gate)
-    branch_update_allowed = bool(promotion_gate["promotion_allowed"])
+    if branch_update_allowed != bool(final_terminal_state == "ready_for_merge"):
+        raise GithubClosureContinuationError("branch_update_allowed invariant violated")
 
     summary = {
         "status": "success",

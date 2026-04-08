@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.92",
-  "schema_version": "1.3.90",
-  "standards_version": "1.3.92",
-  "record_id": "REC-STD-2026-04-07-BATCH-MB-02",
-  "run_id": "run-20260407T000000Z-batch-mb-02",
-  "created_at": "2026-04-07T00:00:00Z",
+  "artifact_version": "1.3.93",
+  "schema_version": "1.3.93",
+  "standards_version": "1.3.93",
+  "record_id": "REC-STD-2026-04-08-BATCH-CLEANUP-01",
+  "run_id": "run-20260408T000000Z-batch-cleanup-01",
+  "created_at": "2026-04-08T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.92",
+  "source_repo_version": "1.3.93",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -3887,6 +3887,19 @@
       "last_updated_in": "1.0.44",
       "example_path": "contracts/examples/routing_policy.json",
       "notes": "HS-04 governed deterministic routing policy mapping route_key/task_class to prompt alias and model selection inputs with fail-closed semantics."
+    },
+    {
+      "artifact_type": "run_summary_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.93",
+      "last_updated_in": "1.3.93",
+      "example_path": "contracts/examples/run_summary_artifact.json",
+      "notes": "BATCH-CLEANUP-01 deterministic operator run summary artifact that references key artifacts, key decisions, and terminal outcomes."
     },
     {
       "artifact_type": "service_level_objective",

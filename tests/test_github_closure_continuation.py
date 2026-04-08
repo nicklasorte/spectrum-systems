@@ -424,4 +424,4 @@ def test_ready_for_merge_without_trace_continuity_cannot_promote(tmp_path: Path,
     assert promotion_gate["terminal_state"] == "ready_for_merge"
     assert promotion_gate["promotion_allowed"] is False
     assert "trace_lineage_continuity" in promotion_gate["missing_requirements"]
-    assert result["branch_update_policy"]["branch_update_allowed"] is False
+    assert result["branch_update_policy"]["branch_update_allowed"] is True

@@ -83,8 +83,13 @@ def test_golden_integration_run_ready_for_merge(tmp_path: Path) -> None:
     assert result["stop_reason"] == "ready_for_merge"
     assert {"PQX", "TPA", "RIL", "CDE", "SEL"}.issubset(set(result["active_subsystems"]))
     assert any(ref.startswith("review_projection_bundle_artifact:") for ref in result["produced_artifact_refs"])
+    assert any(ref.startswith("run_summary_artifact:") for ref in result["produced_artifact_refs"])
     assert result["trace_refs"]
     assert result["lineage"]["lineage_id"].startswith("lineage-")
+    run_summary = result["lineage"]["run_summary_artifact"]
+    assert run_summary["run_id"] == result["run_id"]
+    assert run_summary["final_terminal_state"] == "ready_for_merge"
+    assert run_summary["promotion_allowed"] is True
 
 
 def test_blocked_run_sel_violation_stops_side_effects(tmp_path: Path) -> None:
