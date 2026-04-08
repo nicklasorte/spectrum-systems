@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/review_fix_slice_artifact.schema.json",
+  "title": "Review Fix Slice Artifact",
+  "description": "Machine-readable bounded fix-slice request emitted by RQX from a completed review with verdict `fix_required`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "fix_slice_id",
+    "review_id",
+    "review_name",
+    "review_result_ref",
+    "source_review_request_ref",
+    "objective",
+    "fix_scope",
+    "target_surface_refs",
+    "validation_requirements",
+    "max_repair_attempts",
+    "provenance",
+    "trace_linkage",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "review_fix_slice_artifact"},
+    "artifact_version": {"type": "string", "const": "1.0.0"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "standards_version": {"type": "string", "const": "1.0.0"},
+    "fix_slice_id": {"type": "string", "pattern": "^rfs-[a-f0-9]{12}$"},
+    "review_id": {"type": "string", "minLength": 1},
+    "review_name": {"type": "string", "pattern": "^[a-z0-9._-]+$"},
+    "review_result_ref": {"type": "string", "pattern": "^review_result_artifact:.+"},
+    "source_review_request_ref": {"type": "string", "pattern": "^review_request_artifact:.+"},
+    "objective": {"type": "string", "minLength": 1},
+    "fix_scope": {
+      "type": "string",
+      "enum": ["bounded_single_slice_remediation"]
+    },
+    "target_surface_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "validation_requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "max_repair_attempts": {"type": "integer", "const": 1},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["emitted_by_system", "emission_reason", "automatic_execution"],
+      "properties": {
+        "emitted_by_system": {"type": "string", "const": "RQX"},
+        "emission_reason": {"type": "string", "const": "fix_required_verdict"},
+        "automatic_execution": {"type": "string", "const": "disabled"}
+      }
+    },
+    "trace_linkage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "batch_id"],
+      "properties": {
+        "run_id": {"type": "string", "minLength": 1},
+        "batch_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "generated_at": {"type": "string", "format": "date-time"}
+  },
+  "anyOf": [
+    {"required": ["trace_linkage"]}
+  ]
+}

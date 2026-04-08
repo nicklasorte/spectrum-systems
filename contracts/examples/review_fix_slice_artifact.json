@@ -1,0 +1,31 @@
+{
+  "artifact_type": "review_fix_slice_artifact",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "fix_slice_id": "rfs-b4e73f1a9c21",
+  "review_id": "rqx-02-review-001",
+  "review_name": "rqx_02_review_run",
+  "review_result_ref": "review_result_artifact:rqx-02-review-001",
+  "source_review_request_ref": "review_request_artifact:rqx-02-review-001",
+  "objective": "Resolve high-severity validation failure signals in declared review scope and regenerate bounded review artifacts.",
+  "fix_scope": "bounded_single_slice_remediation",
+  "target_surface_refs": [
+    "src/example.py",
+    "artifacts/pqx_runs/run-rqx-unit-001/test_results.json"
+  ],
+  "validation_requirements": [
+    "artifacts/pqx_runs/run-rqx-unit-001/test_results.json"
+  ],
+  "max_repair_attempts": 1,
+  "provenance": {
+    "emitted_by_system": "RQX",
+    "emission_reason": "fix_required_verdict",
+    "automatic_execution": "disabled"
+  },
+  "trace_linkage": {
+    "run_id": "run-rqx-unit-001",
+    "batch_id": "batch-rqx-unit-001"
+  },
+  "generated_at": "2026-04-08T00:20:00Z"
+}
