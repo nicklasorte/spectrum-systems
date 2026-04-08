@@ -54,13 +54,18 @@ class TopLevelConductorError(ValueError):
 def _is_repo_mutation_requested(run_request: dict[str, Any]) -> bool:
     if isinstance(run_request.get("repo_mutation_requested"), bool):
         return bool(run_request["repo_mutation_requested"])
-    admission = run_request.get("build_admission_record")
-    if isinstance(admission, dict):
-        return str(admission.get("execution_type") or "") == "repo_write"
     normalized = run_request.get("normalized_execution_request")
     if isinstance(normalized, dict):
-        return bool(normalized.get("repo_mutation_requested"))
-    return False
+        if isinstance(normalized.get("repo_mutation_requested"), bool):
+            return bool(normalized["repo_mutation_requested"])
+    admission = run_request.get("build_admission_record")
+    if isinstance(admission, dict):
+        execution_type = str(admission.get("execution_type") or "")
+        if execution_type:
+            return execution_type == "repo_write"
+    raise TopLevelConductorError(
+        "repo_mutation_intent_undetermined: explicit repo_mutation_requested boolean is required when admission artifacts are absent"
+    )
 
 
 def _require_repo_write_admission(
@@ -488,8 +493,6 @@ def _real_sel(payload: dict[str, Any]) -> dict[str, Any]:
 
 def _real_pqx(payload: dict[str, Any]) -> dict[str, Any]:
     repo_write_lineage = payload.get("repo_write_lineage") if isinstance(payload.get("repo_write_lineage"), dict) else {}
-    if bool(payload.get("repo_mutation_requested")) and not isinstance(payload.get("build_admission_record"), dict):
-        raise TopLevelConductorError("direct_pqx_repo_write_forbidden: missing build_admission_record")
     emitted_at = _require_non_empty_str(payload.get("emitted_at"), field="emitted_at")
     request_artifact = {
         "schema_version": "1.1.0",
@@ -1565,6 +1568,7 @@ def run_from_roadmap(roadmap_artifact: dict[str, Any], *, run_request_overrides:
             "action_tracker_path": str(base_overrides.get("action_tracker_path", "contracts/examples/roadmap_review_artifact.json")),
             "runtime_dir": str(base_overrides.get("runtime_dir", Path("outputs") / "roadmap_execution" / execution_id)),
             "emitted_at": common_emitted_at,
+            "repo_mutation_requested": False,
         }
         request.update(base_overrides)
         request["objective"] = ordered["execution_request"]["objective"]

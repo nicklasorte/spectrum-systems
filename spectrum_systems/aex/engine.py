@@ -6,6 +6,7 @@ AEX must never execute work, decide trust policy, or replace TLC orchestration.
 from __future__ import annotations
 
 import hashlib
+from datetime import datetime, timezone
 from typing import Any, Callable, Mapping
 
 from spectrum_systems.aex.classifier import classify_execution_type, is_repo_sensitive_unknown
@@ -98,12 +99,13 @@ class AEXEngine:
         *,
         normalized: dict[str, Any] | None = None,
     ) -> AdmissionResult:
+        created_at = datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
         record = {
             "artifact_type": "admission_rejection_record",
             "rejection_id": self._id("rej", request_id, trace_id),
             "request_id": request_id,
             "trace_id": trace_id,
-            "created_at": "2026-04-08T00:00:00Z",
+            "created_at": created_at,
             "rejection_reason_codes": reason_codes,
             "rejection_summary": summary,
             "produced_by": "AEXEngine",

@@ -47,6 +47,7 @@ def _request(tmp_path: Path, *, retry_budget: int = 2, pass_after_attempt: bool 
         "action_tracker_path": str(action_path),
         "runtime_dir": str(tmp_path / "runtime"),
         "emitted_at": "2026-04-07T00:00:00Z",
+        "repo_mutation_requested": False,
         "pre_pr_command_ref": "pytest tests/test_contracts.py",
         "pre_pr_failures": [
             {

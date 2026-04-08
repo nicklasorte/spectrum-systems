@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from spectrum_systems.orchestration import pqx_handoff_adapter
 
 
@@ -150,3 +152,130 @@ def test_handoff_to_pqx_uses_none_when_preflight_artifact_not_provided(tmp_path:
     )
 
     assert captured["contract_preflight_result_artifact_path"] is None
+
+
+def _repo_write_lineage_payload() -> dict[str, object]:
+    return {
+        "repo_mutation_requested": True,
+        "trace_id": "trace-cycle-repo-write",
+        "build_admission_record": {
+            "artifact_type": "build_admission_record",
+            "admission_id": "adm-cycle-1",
+            "request_id": "req-cycle-1",
+            "execution_type": "repo_write",
+            "admission_status": "accepted",
+            "normalized_execution_request_ref": "normalized_execution_request:req-cycle-1",
+            "trace_id": "trace-cycle-repo-write",
+            "created_at": "2026-04-08T00:00:00Z",
+            "produced_by": "AEXEngine",
+            "reason_codes": [],
+            "target_scope": {"repo": "spectrum-systems", "paths": ["spectrum_systems/orchestration/cycle_runner.py"]},
+        },
+        "normalized_execution_request": {
+            "artifact_type": "normalized_execution_request",
+            "request_id": "req-cycle-1",
+            "prompt_text": "Modify orchestration path",
+            "execution_type": "repo_write",
+            "repo_mutation_requested": True,
+            "target_paths": ["spectrum_systems/orchestration/cycle_runner.py"],
+            "requested_outputs": ["patch"],
+            "source_prompt_kind": "codex_build_request",
+            "trace_id": "trace-cycle-repo-write",
+            "created_at": "2026-04-08T00:00:00Z",
+            "produced_by": "AEXEngine",
+        },
+        "tlc_handoff_record": {
+            "artifact_type": "tlc_handoff_record",
+            "handoff_id": "tlc-handoff-cycle-1",
+            "request_id": "req-cycle-1",
+            "trace_id": "trace-cycle-repo-write",
+            "created_at": "2026-04-08T00:00:00Z",
+            "produced_by": "TLC",
+            "build_admission_record_ref": "build_admission_record:adm-cycle-1",
+            "normalized_execution_request_ref": "normalized_execution_request:req-cycle-1",
+            "handoff_status": "accepted",
+            "target_subsystems": ["TPA", "PQX"],
+            "execution_type": "repo_write",
+            "repo_mutation_requested": True,
+            "reason_codes": [],
+            "tlc_run_context": {
+                "run_id": "tlc-cycle-1",
+                "branch_ref": "refs/heads/main",
+                "objective": "repo mutating run",
+                "entry_boundary": "aex_to_tlc",
+            },
+            "lineage": {
+                "upstream_refs": [
+                    "build_admission_record:adm-cycle-1",
+                    "normalized_execution_request:req-cycle-1",
+                ],
+                "intended_path": ["TLC", "TPA", "PQX"],
+            },
+        },
+    }
+
+
+def test_handoff_to_pqx_repo_write_fails_closed_without_admission_lineage(tmp_path: Path) -> None:
+    request_path = tmp_path / "request.json"
+    _write(
+        request_path,
+        {
+            "step_id": "AI-01",
+            "roadmap_path": "docs/roadmap/system_roadmap.md",
+            "state_path": str(tmp_path / "pqx_state.json"),
+            "runs_root": str(tmp_path / "runs"),
+            "pqx_output_text": "deterministic pqx output",
+            "repo_mutation_requested": True,
+        },
+    )
+
+    with pytest.raises(pqx_handoff_adapter.PQXHandoffError, match="repo-write handoff rejected"):
+        pqx_handoff_adapter.handoff_to_pqx(
+            cycle_id="cycle-test",
+            request_path=request_path,
+            reports_root=tmp_path / "reports",
+        )
+
+
+def test_handoff_to_pqx_repo_write_succeeds_with_valid_admission_lineage(tmp_path: Path, monkeypatch) -> None:
+    result_path = tmp_path / "pqx.result.json"
+    _write(
+        result_path,
+        {
+            "schema_version": "1.0.0",
+            "run_id": "pqx-slice-test",
+            "step_id": "AI-01",
+            "execution_status": "success",
+            "started_at": "2026-04-01T00:00:00Z",
+            "completed_at": "2026-04-01T00:01:00Z",
+            "output_text": "ok",
+            "error": None,
+        },
+    )
+    request_payload = {
+        "step_id": "AI-01",
+        "roadmap_path": "docs/roadmap/system_roadmap.md",
+        "state_path": str(tmp_path / "pqx_state.json"),
+        "runs_root": str(tmp_path / "runs"),
+        "pqx_output_text": "deterministic pqx output",
+        **_repo_write_lineage_payload(),
+    }
+    request_path = tmp_path / "request.json"
+    _write(request_path, request_payload)
+
+    def _fake_run_pqx_slice(**_: object) -> dict[str, object]:
+        return {
+            "status": "complete",
+            "run_id": "pqx-slice-test",
+            "request": str(tmp_path / "runs" / "request.json"),
+            "result": str(result_path),
+        }
+
+    monkeypatch.setattr(pqx_handoff_adapter, "run_pqx_slice", _fake_run_pqx_slice)
+    handoff = pqx_handoff_adapter.handoff_to_pqx(
+        cycle_id="cycle-test",
+        request_path=request_path,
+        reports_root=tmp_path / "reports",
+    )
+
+    assert handoff["report_payload"]["execution_status"] == "succeeded"
