@@ -301,7 +301,7 @@ def test_sequence_runner_persists_bundle_state_when_configured(tmp_path: Path) -
 
 
 def test_sequence_runner_bundle_state_blocks_out_of_order_progression(tmp_path: Path) -> None:
-    with pytest.raises(PQXSequenceRunnerError, match="step_id not declared in bundle plan"):
+    with pytest.raises(PQXSequenceRunnerError, match="queue_bundle_state_divergence"):
         execute_sequence_run(
             slice_requests=_slice_requests()[:1],
             state_path=tmp_path / "state.json",
@@ -311,6 +311,88 @@ def test_sequence_runner_bundle_state_blocks_out_of_order_progression(tmp_path: 
             bundle_state_path=tmp_path / "bundle_state.json",
             bundle_plan=[{"bundle_id": "BUNDLE-01", "step_ids": ["B3-01"], "depends_on": []}],
             clock=FixedClock(["2026-03-29T16:01:01Z", "2026-03-29T16:01:02Z", "2026-03-29T16:01:03Z", "2026-03-29T16:01:04Z"]),
+        )
+
+
+def test_resume_fails_closed_when_queue_bundle_completed_progress_diverges(tmp_path: Path) -> None:
+    state_path = tmp_path / "state.json"
+    bundle_state_path = tmp_path / "bundle_state.json"
+    execute_sequence_run(
+        slice_requests=_slice_requests()[:2],
+        state_path=state_path,
+        queue_run_id="queue-run-diverge-001",
+        run_id="run-diverge-001",
+        trace_id="trace-diverge-001",
+        bundle_state_path=bundle_state_path,
+        bundle_id="BUNDLE-03",
+        max_slices=1,
+        execute_slice=lambda _: {
+            "execution_status": "success",
+            "slice_execution_record": "record.json",
+            "done_certification_record": "cert.json",
+            "pqx_slice_audit_bundle": "audit.json",
+            "certification_complete": True,
+            "audit_complete": True,
+        },
+        clock=FixedClock([f"2026-03-30T00:10:{i:02d}Z" for i in range(1, 20)]),
+    )
+    tampered_bundle = json.loads(bundle_state_path.read_text(encoding="utf-8"))
+    tampered_bundle["completed_step_ids"] = []
+    bundle_state_path.write_text(json.dumps(tampered_bundle, indent=2) + "\n", encoding="utf-8")
+
+    with pytest.raises(PQXSequenceRunnerError, match="queue_bundle_state_divergence"):
+        execute_sequence_run(
+            slice_requests=_slice_requests()[:2],
+            state_path=state_path,
+            queue_run_id="queue-run-diverge-001",
+            run_id="run-diverge-001",
+            trace_id="trace-diverge-001",
+            bundle_state_path=bundle_state_path,
+            bundle_id="BUNDLE-03",
+            resume=True,
+            execute_slice=lambda _: {"execution_status": "success"},
+            clock=FixedClock([f"2026-03-30T00:11:{i:02d}Z" for i in range(1, 20)]),
+        )
+
+
+def test_resume_fails_closed_when_resume_token_is_inconsistent_with_progress(tmp_path: Path) -> None:
+    state_path = tmp_path / "state.json"
+    bundle_state_path = tmp_path / "bundle_state.json"
+    execute_sequence_run(
+        slice_requests=_slice_requests()[:2],
+        state_path=state_path,
+        queue_run_id="queue-run-token-001",
+        run_id="run-token-001",
+        trace_id="trace-token-001",
+        bundle_state_path=bundle_state_path,
+        bundle_id="BUNDLE-03",
+        max_slices=1,
+        execute_slice=lambda _: {
+            "execution_status": "success",
+            "slice_execution_record": "record.json",
+            "done_certification_record": "cert.json",
+            "pqx_slice_audit_bundle": "audit.json",
+            "certification_complete": True,
+            "audit_complete": True,
+        },
+        clock=FixedClock([f"2026-03-30T00:20:{i:02d}Z" for i in range(1, 20)]),
+    )
+    tampered_state = json.loads(state_path.read_text(encoding="utf-8"))
+    tampered_state["resume_token"] = "resume:queue-run-token-001:0"
+    state_path.write_text(json.dumps(tampered_state, indent=2) + "\n", encoding="utf-8")
+
+    with pytest.raises(PQXSequenceRunnerError, match="queue_bundle_state_divergence"):
+        execute_sequence_run(
+            slice_requests=_slice_requests()[:2],
+            state_path=state_path,
+            queue_run_id="queue-run-token-001",
+            run_id="run-token-001",
+            trace_id="trace-token-001",
+            bundle_state_path=bundle_state_path,
+            bundle_id="BUNDLE-03",
+            resume=True,
+            execute_slice=lambda _: {"execution_status": "success"},
+            clock=FixedClock([f"2026-03-30T00:21:{i:02d}Z" for i in range(1, 20)]),
         )
 
 

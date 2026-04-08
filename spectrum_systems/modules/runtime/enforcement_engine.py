@@ -9,7 +9,8 @@ BAF single-path surface
 Legacy compatibility surface
 ----------------------------
 ``enforce_budget_decision`` remains available for existing run-bundle and replay
-flows that still consume ``evaluation_budget_decision`` artifacts.
+flows that still consume ``evaluation_budget_decision`` artifacts, but only
+through explicit non-governed compatibility mode.
 """
 
 from __future__ import annotations
@@ -168,10 +169,7 @@ _LEGACY_ACTION_MAP: Dict[str, Tuple[str, bool, str]] = {
     "block": ("block", False, "blocked"),
 }
 
-_LEGACY_CALLER_ALLOWLIST = (
-    "spectrum_systems.modules.runtime.control_executor",
-    "tests.",
-)
+_LEGACY_CALLER_ALLOWLIST = ("tests.", "spectrum_systems.modules.runtime.control_executor")
 
 
 def _legacy_caller_is_allowed() -> bool:
@@ -195,8 +193,13 @@ def _validate_budget_decision_shape(decision: Any) -> Tuple[bool, List[str]]:
     return (len(errors) == 0, errors)
 
 
-def enforce_budget_decision(decision: dict) -> dict:
-    """Legacy budget-decision mapper retained for backward compatibility."""
+def enforce_budget_decision(decision: dict, *, compatibility_mode: bool = False) -> dict:
+    """Legacy budget-decision mapper retained for non-governed compatibility only."""
+    if compatibility_mode is not True:
+        raise EnforcementError(
+            "enforce_budget_decision is deprecated and disabled for governed execution; "
+            "explicit compatibility_mode=True is required for legacy/test-only callers"
+        )
     if not _legacy_caller_is_allowed():
         raise EnforcementError(
             "enforce_budget_decision is restricted to explicitly approved legacy callers"

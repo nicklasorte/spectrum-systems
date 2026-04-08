@@ -859,6 +859,91 @@ def _default_bundle_plan(slice_requests: list[dict], bundle_id: str) -> list[dic
     return [{"bundle_id": bundle_id, "step_ids": [entry["slice_id"] for entry in slice_requests], "depends_on": []}]
 
 
+def _parse_resume_token(token: str, *, expected_segments: int, label: str) -> list[str]:
+    parts = token.split(":")
+    if len(parts) != expected_segments or parts[0] != "resume":
+        raise PQXSequenceRunnerError(f"{label} malformed; expected resume token with {expected_segments} segments")
+    return parts
+
+
+def _assert_queue_bundle_state_consistency(
+    *,
+    queue_state: dict[str, Any],
+    bundle_state: dict[str, Any],
+    queue_run_id: str,
+    is_resume_boundary: bool,
+) -> None:
+    divergence_reasons: list[str] = []
+    queue_completed = list(queue_state.get("completed_slice_ids", []))
+    queue_failed = list(queue_state.get("failed_slice_ids", []))
+    bundle_completed = list(bundle_state.get("completed_step_ids", []))
+    bundle_blocked = list(bundle_state.get("blocked_step_ids", []))
+
+    if queue_completed != bundle_completed:
+        divergence_reasons.append("completed progress mismatch between queue completed_slice_ids and bundle completed_step_ids")
+
+    failed_not_blocked = [step_id for step_id in queue_failed if step_id not in bundle_blocked]
+    if failed_not_blocked:
+        divergence_reasons.append(
+            "failed queue slices missing in bundle blocked_step_ids: " + ",".join(failed_not_blocked)
+        )
+
+    queue_resume_token = str(queue_state.get("resume_token") or "")
+    queue_token_parts = _parse_resume_token(
+        queue_resume_token,
+        expected_segments=3,
+        label="queue resume_token",
+    )
+    if queue_token_parts[1] != queue_run_id:
+        divergence_reasons.append("queue resume_token queue_run_id mismatch")
+    if int(queue_token_parts[2]) != len(queue_completed):
+        divergence_reasons.append("queue resume_token progression index mismatch")
+
+    bundle_resume = bundle_state.get("resume_position") or {}
+    bundle_resume_token = str(bundle_resume.get("resume_token") or "")
+    bundle_token_parts = _parse_resume_token(
+        bundle_resume_token,
+        expected_segments=4,
+        label="bundle resume_position.resume_token",
+    )
+    if bundle_token_parts[1] != queue_run_id:
+        divergence_reasons.append("bundle resume token sequence_run_id mismatch")
+    if bundle_token_parts[2] != str(bundle_resume.get("bundle_id") or ""):
+        divergence_reasons.append("bundle resume token bundle_id mismatch")
+    if int(bundle_token_parts[3]) != len(bundle_completed):
+        divergence_reasons.append("bundle resume token progression index mismatch")
+
+    queue_next = _next_pending_slice(
+        queue_state.get("requested_slice_ids", []),
+        queue_completed,
+        queue_failed,
+    )
+    bundle_next = bundle_resume.get("next_step_id")
+    if queue_next != bundle_next:
+        divergence_reasons.append("queue next pending step disagrees with bundle resume_position.next_step_id")
+
+    if divergence_reasons:
+        boundary = "resume" if is_resume_boundary else "continuation"
+        raise PQXSequenceRunnerError(
+            "queue_bundle_state_divergence fail-closed at "
+            f"{boundary} boundary: "
+            + json.dumps(
+                {
+                    "queue_run_id": queue_run_id,
+                    "boundary": boundary,
+                    "queue_resume_token": queue_resume_token,
+                    "bundle_resume_token": bundle_resume_token,
+                    "queue_completed": queue_completed,
+                    "bundle_completed": bundle_completed,
+                    "queue_failed": queue_failed,
+                    "bundle_blocked": bundle_blocked,
+                    "reasons": divergence_reasons,
+                },
+                sort_keys=True,
+            )
+        )
+
+
 def _load_or_initialize_bundle_state(
     *,
     bundle_state_path: Path,
@@ -1096,6 +1181,12 @@ def execute_sequence_run(
             clock=clock,
             resume=resume,
         )
+        _assert_queue_bundle_state_consistency(
+            queue_state=state,
+            bundle_state=bundle_state,
+            queue_run_id=queue_run_id,
+            is_resume_boundary=resume,
+        )
 
     requested_ids = state["requested_slice_ids"]
     budget_thresholds = sequence_budget_thresholds or {"max_failed_slices": 1, "max_cumulative_severity": 5}
@@ -1113,6 +1204,13 @@ def execute_sequence_run(
     bypass_signals: list[dict[str, Any]] = []
     while True:
         _verify_continuity(state, slice_requests)
+        if bundle_state is not None:
+            _assert_queue_bundle_state_consistency(
+                queue_state=state,
+                bundle_state=bundle_state,
+                queue_run_id=queue_run_id,
+                is_resume_boundary=False,
+            )
         next_slice_id = _next_pending_slice(requested_ids, state["completed_slice_ids"], state["failed_slice_ids"])
         if next_slice_id is None:
             if len(requested_ids) >= 3:

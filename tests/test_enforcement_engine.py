@@ -131,7 +131,7 @@ def test_legacy_enforce_budget_decision_emits_deprecation_warning() -> None:
     }
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        enforce_budget_decision(legacy_decision)
+        enforce_budget_decision(legacy_decision, compatibility_mode=True)
     assert any(issubclass(w.category, DeprecationWarning) for w in caught)
 
 
@@ -151,7 +151,7 @@ def test_legacy_enforce_budget_decision_rejects_unapproved_callers() -> None:
 from spectrum_systems.modules.runtime.enforcement_engine import enforce_budget_decision
 
 def call_legacy(decision):
-    return enforce_budget_decision(decision)
+    return enforce_budget_decision(decision, compatibility_mode=True)
 """
     namespace: dict = {"__name__": "manual_script"}
     exec(module_source, namespace)
@@ -160,6 +160,21 @@ def call_legacy(decision):
         match="restricted to explicitly approved legacy callers",
     ):
         namespace["call_legacy"](legacy_decision)
+
+
+def test_legacy_enforce_budget_decision_rejects_governed_default_path() -> None:
+    legacy_decision = {
+        "artifact_type": "evaluation_budget_decision",
+        "schema_version": "1.0.0",
+        "decision_id": "legacy-3",
+        "trace_id": "44444444-4444-4444-8444-444444444444",
+        "run_id": "run-3",
+        "system_status": "healthy",
+        "system_response": "allow",
+        "reasons": ["legacy"],
+    }
+    with pytest.raises(EnforcementError, match="disabled for governed execution"):
+        enforce_budget_decision(legacy_decision)
 
 
 def test_no_non_test_callers_of_legacy_enforcement_path() -> None:
