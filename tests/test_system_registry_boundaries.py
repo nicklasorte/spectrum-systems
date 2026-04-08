@@ -80,6 +80,7 @@ def test_no_duplicate_ownership_across_systems() -> None:
 def test_known_invariants_hold() -> None:
     expected_owners = {
         "execution": "PQX",
+        "execution_admission": "AEX",
         "failure_diagnosis": "FRE",
         "review_interpretation": "RIL",
         "closure_decisions": "CDE",
@@ -129,6 +130,7 @@ def test_allowed_interaction_edges_present() -> None:
     registry = _load_registry()
     edge_pairs = {(edge["from"], edge["to"]) for edge in registry["interaction_edges"]}
     expected = {
+        ("AEX", "TLC"),
         ("TLC", "PQX"),
         ("TLC", "TPA"),
         ("TLC", "FRE"),

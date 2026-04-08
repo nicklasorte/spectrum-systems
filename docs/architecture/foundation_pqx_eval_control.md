@@ -4,7 +4,7 @@
 
 The foundation document defines the minimum viable system:
 
-PQX → output_artifact → eval_result/eval_summary → control_decision → enforcement_action → replay/trace
+AEX → TLC → TPA → PQX → output_artifact → eval_result/eval_summary → control_decision → enforcement_action → replay/trace
 
 Roadmap generation must:
 - measure repo reality against this
@@ -102,3 +102,20 @@ A critical drift signal exists when repository state diverges from the required 
 PQX → output_artifact → eval_result/eval_summary → control_decision → enforcement_action → replay/trace
 
 Any such divergence must trigger hardening-first roadmap sequencing.
+
+## Admission Boundary Clarification (AEX)
+
+- **AEX** is the admission boundary before orchestration for Codex requests that may mutate repository state.
+- **TLC** remains orchestration authority and is not a public write-entry surface.
+- **PQX** remains execution-only and must not accept direct repo-writing requests.
+- Repo-mutating orchestration must include `build_admission_record` and `normalized_execution_request` before TLC continues.
+
+## End-to-End Artifact Chain Extension
+
+- `normalized_execution_request` and `build_admission_record` are required intake artifacts for repo-mutating runs.
+- Rejections are represented by `admission_rejection_record` and must fail closed before TLC/TPA/PQX execution.
+
+## Module Architecture Extension
+
+- Admission module: `spectrum_systems.aex` emits admission artifacts and classification outcomes.
+- Orchestration module: `spectrum_systems.modules.runtime.top_level_conductor` consumes AEX artifacts and rejects direct repo-write requests without admission.

@@ -34,6 +34,7 @@ Spectrum Systems should expand only after trust closure is proven:
 - replayable
 - fail-closed
 - certification-gated
+- repo-mutation admission through AEX only (no alternate write paths)
 
 ## Stable Layers vs Replaceable Layers
 ### Stable (must not drift)
@@ -147,6 +148,7 @@ Correction actions:
 - require roadmap + mirror reconciliation in the same change set,
 - run changed-scope verification before commit,
 - classify and prioritize foundation hardening gaps before any expansion.
+- enforce AEX admission gating for repo-mutating requests (missing traceability/admission artifacts block TLC/PQX entry).
 
 ## Review / Prompting Enforcement
 - One prompt, one primary type (`PLAN`, `BUILD`, `WIRE`, `VALIDATE`, `REVIEW`).

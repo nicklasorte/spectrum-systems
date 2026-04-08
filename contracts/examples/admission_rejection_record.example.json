@@ -1,0 +1,12 @@
+{
+  "artifact_type": "admission_rejection_record",
+  "rejection_id": "rej-123456789abc",
+  "request_id": "req-002",
+  "trace_id": "trace-req-002",
+  "created_at": "2026-04-08T00:00:00Z",
+  "rejection_reason_codes": [
+    "unknown_execution_type"
+  ],
+  "rejection_summary": "execution type is unknown and repo mutation cannot be ruled out",
+  "produced_by": "AEXEngine"
+}

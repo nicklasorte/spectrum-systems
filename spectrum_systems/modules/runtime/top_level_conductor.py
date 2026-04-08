@@ -47,6 +47,36 @@ class TopLevelConductorError(ValueError):
     """Raised when TLC input or transition invariants are violated."""
 
 
+def _is_repo_mutation_requested(run_request: dict[str, Any]) -> bool:
+    if isinstance(run_request.get("repo_mutation_requested"), bool):
+        return bool(run_request["repo_mutation_requested"])
+    admission = run_request.get("build_admission_record")
+    if isinstance(admission, dict):
+        return str(admission.get("execution_type") or "") == "repo_write"
+    normalized = run_request.get("normalized_execution_request")
+    if isinstance(normalized, dict):
+        return bool(normalized.get("repo_mutation_requested"))
+    return False
+
+
+def _require_repo_write_admission(run_request: dict[str, Any], *, trace_refs: list[str]) -> None:
+    if not _is_repo_mutation_requested(run_request):
+        return
+
+    admission = run_request.get("build_admission_record")
+    normalized = run_request.get("normalized_execution_request")
+    if not isinstance(admission, dict) or not isinstance(normalized, dict):
+        raise TopLevelConductorError("direct_tlc_repo_write_forbidden: missing AEX admission artifacts")
+
+    validate_artifact(admission, "build_admission_record")
+    validate_artifact(normalized, "normalized_execution_request")
+
+    if admission.get("admission_status") != "accepted":
+        raise TopLevelConductorError("repo_mutation_without_admission: admission_status must be accepted")
+    if admission.get("trace_id") not in trace_refs and admission.get("trace_id") != normalized.get("trace_id"):
+        raise TopLevelConductorError("repo_mutation_without_admission: broken trace continuity")
+
+
 def _canonical_hash(payload: Any) -> str:
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
@@ -404,6 +434,8 @@ def _real_sel(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _real_pqx(payload: dict[str, Any]) -> dict[str, Any]:
+    if bool(payload.get("repo_mutation_requested")) and not isinstance(payload.get("build_admission_record"), dict):
+        raise TopLevelConductorError("direct_pqx_repo_write_forbidden: missing build_admission_record")
     emitted_at = _require_non_empty_str(payload.get("emitted_at"), field="emitted_at")
     request_artifact = {
         "schema_version": "1.1.0",
@@ -918,6 +950,10 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
         ),
     )
 
+    build_admission_record = run_request.get("build_admission_record")
+    normalized_execution_request = run_request.get("normalized_execution_request")
+    repo_mutation_requested = _is_repo_mutation_requested(run_request)
+
     state: dict[str, Any] = {
         "run_id": run_id,
         "objective": objective,
@@ -936,6 +972,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
         "lineage": lineage,
         "emitted_at": emitted_at,
     }
+    _require_repo_write_admission(run_request, trace_refs=state["trace_refs"])
     pre_pr_failures = run_request.get("pre_pr_failures")
     if isinstance(pre_pr_failures, list) and pre_pr_failures:
         packet = normalize_pytest_failure_packet(
@@ -972,6 +1009,8 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                     "runtime_dir": str(run_request.get("runtime_dir") or Path("outputs") / "tlc_runtime"),
                     "trace_id": state["trace_id"],
                     "emitted_at": state["emitted_at"],
+                    "repo_mutation_requested": repo_mutation_requested,
+                    "build_admission_record": build_admission_record,
                 }
             )
             _validate_handoff_output("PQX", pqx_result if isinstance(pqx_result, dict) else {})
