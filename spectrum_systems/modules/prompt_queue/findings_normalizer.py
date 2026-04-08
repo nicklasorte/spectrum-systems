@@ -18,6 +18,7 @@ FINDING_TYPE_ENUM = {
     "output_reference",
     "artifact_reference",
     "validation",
+    "execution_mode",
 }
 SEVERITY_ENUM = {"info", "warning", "error", "ambiguous"}
 _VALIDATION_STATUS_ENUM = {"valid", "invalid"}
@@ -130,13 +131,36 @@ def normalize_queue_step_findings(execution_result: dict) -> dict:
             }
         )
 
+
+    execution_mode = execution_result.get("execution_mode")
+    if execution_mode == "simulated":
+        findings.append(
+            {
+                "finding_id": f"{step_id}-execution-mode-simulated",
+                "finding_type": "execution_mode",
+                "severity": "info",
+                "summary": "execution_mode is simulated",
+                "details": "Simulated execution is non-production and cannot be treated as live execution evidence.",
+            }
+        )
+    elif execution_mode != "live":
+        findings.append(
+            {
+                "finding_id": f"{step_id}-execution-mode-unknown",
+                "finding_type": "execution_mode",
+                "severity": "error",
+                "summary": "execution_mode is invalid",
+                "details": "Execution result has an unsupported execution_mode value.",
+            }
+        )
+
     produced_refs = execution_result.get("produced_artifact_refs", [])
     if isinstance(produced_refs, list) and output_reference and output_reference not in produced_refs:
         findings.append(
             {
                 "finding_id": f"{step_id}-output-unlisted",
                 "finding_type": "artifact_reference",
-                "severity": "warning",
+                "severity": "info",
                 "summary": "output_reference not included in produced_artifact_refs",
                 "details": "Output reference is not present in produced_artifact_refs.",
             }

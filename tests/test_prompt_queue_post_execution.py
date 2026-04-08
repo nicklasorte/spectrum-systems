@@ -80,6 +80,12 @@ def _execution_result(status: str) -> dict:
     art["repair_prompt_artifact_path"] = "artifacts/prompt_queue/repair_prompts/wi-parent.repair_prompt.json"
     art["gating_decision_artifact_path"] = "artifacts/prompt_queue/gating/wi-parent.repair.1.execution_gating_decision.json"
     art["execution_status"] = status
+    if status == "failure":
+        art["output_reference"] = None
+        art["produced_artifact_refs"] = []
+        art["error_summary"] = "Execution failed in deterministic post-execution test fixture."
+    else:
+        art["error_summary"] = None
     return art
 
 

@@ -47,6 +47,7 @@ from spectrum_systems.modules.prompt_queue.execution_queue_integration import (
 from spectrum_systems.modules.prompt_queue.execution_runner import (
     ExecutionRunnerError,
     revalidate_execution_entry,
+    run_live_execution,
     run_queue_step_execution,
     run_simulated_execution,
 )
@@ -310,6 +311,7 @@ __all__ = [
     "finalize_execution",
     "ExecutionRunnerError",
     "revalidate_execution_entry",
+    "run_live_execution",
     "run_queue_step_execution",
     "run_simulated_execution",
     "write_execution_gating_decision_artifact",

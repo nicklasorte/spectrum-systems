@@ -121,12 +121,12 @@ def _execution_result() -> dict:
         "gating_decision_artifact_path": "artifacts/prompt_queue/gating/wi-001.execution_gating_decision.json",
         "spawned_from_findings_artifact_path": "artifacts/prompt_queue/findings/wi-001.findings.json",
         "spawned_from_review_artifact_path": "artifacts/prompt_queue/reviews/wi-001.review.md",
-        "execution_mode": "simulated",
+        "execution_mode": "live",
         "execution_status": "success",
         "started_at": "2026-03-28T00:05:00Z",
         "completed_at": "2026-03-28T00:05:01Z",
-        "output_reference": "artifacts/prompt_queue/simulated_outputs/wi-001.output.json",
-        "produced_artifact_refs": ["artifacts/prompt_queue/simulated_outputs/wi-001.output.json"],
+        "output_reference": "artifacts/prompt_queue/live_outputs/wi-001.output.json",
+        "produced_artifact_refs": ["artifacts/prompt_queue/live_outputs/wi-001.output.json"],
         "error_summary": None,
         "generated_at": "2026-03-28T00:05:01Z",
         "generator_version": "prompt-queue-execution-mvp-1",
@@ -300,6 +300,18 @@ def test_deterministic_output(tmp_path: Path) -> None:
     first = build_queue_audit_bundle(refs)
     second = build_queue_audit_bundle(refs)
     assert first == second
+
+
+def test_simulated_execution_is_not_certifiable_as_live(tmp_path: Path) -> None:
+    refs = _input_refs(tmp_path)
+    execution_path = Path(refs["execution_result_refs"][0])  # type: ignore[index]
+    execution = json.loads(execution_path.read_text(encoding="utf-8"))
+    execution["execution_mode"] = "simulated"
+    execution["output_reference"] = "artifacts/prompt_queue/simulated_outputs/wi-001.output.json"
+    execution["produced_artifact_refs"] = ["artifacts/prompt_queue/simulated_outputs/wi-001.output.json"]
+    execution_path.write_text(json.dumps(execution), encoding="utf-8")
+    bundle = build_queue_audit_bundle(refs)
+    assert bundle["completeness_status"] == "incomplete"
 
 
 def test_schema_example_validates() -> None:

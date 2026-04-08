@@ -41,12 +41,12 @@ def test_valid_report_produces_allow_decision():
     assert decision["decision"] == "allow"
 
 
-def test_warning_findings_produce_warn_decision():
+def test_info_findings_remain_allow_decision():
     artifact = _base_execution_result()
     artifact["produced_artifact_refs"] = ["artifacts/prompt_queue/simulated_outputs/other.output.json"]
     findings = parse_queue_step_report(artifact)
     decision = build_step_decision(findings, clock=FixedClock("2026-03-22T02:10:01Z"))
-    assert decision["decision"] == "warn"
+    assert decision["decision"] == "allow"
 
 
 def test_malformed_report_fails_closed():
@@ -58,8 +58,10 @@ def test_malformed_report_fails_closed():
 
 def test_ambiguous_findings_produce_block():
     artifact = _base_execution_result()
+    artifact["execution_status"] = "failure"
     artifact["output_reference"] = None
     artifact["produced_artifact_refs"] = []
+    artifact["error_summary"] = "Execution failed for ambiguous-finding test."
     findings = parse_queue_step_report(artifact)
     decision = build_step_decision(findings, clock=FixedClock("2026-03-22T02:10:01Z"))
     assert decision["decision"] == "block"

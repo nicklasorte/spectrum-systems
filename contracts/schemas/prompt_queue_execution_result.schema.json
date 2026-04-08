@@ -38,7 +38,7 @@
     "gating_decision_artifact_path": {"type": ["string", "null"], "minLength": 1},
     "spawned_from_findings_artifact_path": {"type": ["string", "null"], "minLength": 1},
     "spawned_from_review_artifact_path": {"type": ["string", "null"], "minLength": 1},
-    "execution_mode": {"type": "string", "const": "simulated"},
+    "execution_mode": {"type": "string", "enum": ["simulated", "live"]},
     "execution_status": {"type": "string", "enum": ["success", "failure"]},
     "started_at": {"type": "string", "format": "date-time"},
     "completed_at": {"type": "string", "format": "date-time"},
@@ -52,5 +52,40 @@
     "generator_version": {"type": "string", "minLength": 1},
     "source_queue_state_path": {"type": ["string", "null"], "minLength": 1},
     "execution_attempt_id": {"type": ["string", "null"], "minLength": 1}
-  }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"execution_mode": {"const": "live"}}},
+      "then": {
+        "properties": {
+          "execution_status": {"const": "success"},
+          "output_reference": {"type": "string", "minLength": 1},
+          "error_summary": {"type": "null"}
+        },
+        "required": ["output_reference"]
+      }
+    },
+    {
+      "if": {"properties": {"execution_mode": {"const": "simulated"}}},
+      "then": {
+        "properties": {
+          "output_reference": {
+            "anyOf": [
+              {"type": "null"},
+              {"type": "string", "pattern": "^artifacts/prompt_queue/simulated_outputs/"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"execution_status": {"const": "success"}}},
+      "then": {
+        "properties": {"output_reference": {"type": "string", "minLength": 1}, "error_summary": {"type": "null"}}
+      },
+      "else": {
+        "properties": {"output_reference": {"type": "null"}}
+      }
+    }
+  ]
 }
