@@ -14,6 +14,7 @@ These rules are hard boundaries for architecture, contracts, and validation.
 - **RDX** — roadmap selection and execution-loop governance adapter
 - **FRE** — failure diagnosis and repair planning
 - **RIL** — review interpretation and integration
+- **RQX** — bounded review queue execution and bounded fix-slice request emission
 - **SEL** — enforcement and fail-closed control actions
 - **CDE** — closure-state decision authority
 - **TLC** — top-level orchestration and routing across subsystems
@@ -129,6 +130,31 @@ These rules are hard boundaries for architecture, contracts, and validation.
   - execute work or repairs (PQX-owned)
   - decide closure state (CDE-owned)
 
+### RQX
+- **acronym:** `RQX`
+- **full_name:** Review Queue Executor
+- **role:** Executes the bounded review loop over completed execution batches and emits governed review outcomes and bounded fix-slice requests.
+- **owns:**
+  - review_queue_execution
+  - merge_readiness_verdict_emission
+  - bounded_fix_slice_request_emission
+- **consumes:**
+  - pqx_bundle_execution_record
+  - pqx_slice_execution_record
+  - review_request_artifact
+  - review_result_artifact
+  - validation/test result artifacts
+- **produces:**
+  - review_result_artifact
+  - review_merge_readiness_artifact
+  - review_fix_slice_artifact
+- **must_not_do:**
+  - reinterpret review semantics already owned by RIL
+  - execute fix slices directly (PQX-owned)
+  - perform deep repair diagnosis/planning (FRE-owned)
+  - enforce runtime blocks directly (SEL-owned)
+  - issue closure-state authority decisions (CDE-owned)
+
 ### SEL
 - **acronym:** `SEL`
 - **full_name:** System Enforcement Layer
@@ -218,15 +244,24 @@ These rules are hard boundaries for architecture, contracts, and validation.
 | PRG executes work | Program governance cannot run execution slices | PQX |
 | SEL rewrites review interpretation | Enforcement cannot reinterpret evidence semantics | RIL |
 | TPA emits closure decisions | Trust policy gating cannot decide closure lock state | CDE |
+| RQX executes fix slices | Review queue execution cannot subsume execution authority | PQX |
+| RQX reinterprets review semantics | Review queue execution cannot redefine review interpretation semantics | RIL |
+| RQX generates full repair diagnosis | Bounded review queue execution cannot replace diagnosis/planning ownership | FRE |
+| RQX enforces runtime decisions | Review queue execution cannot enforce runtime blocks | SEL |
+| RQX issues authoritative closure state | Review queue execution cannot become closure authority | CDE |
 
 ## Allowed Interaction Graph
 - TLC → PQX
 - TLC → TPA
 - TLC → FRE
 - TLC → RIL
+- TLC → RQX
 - TLC → CDE
 - TLC → PRG
 - SEL wraps all subsystems as a cross-cutting enforcement boundary
+- RQX → RIL
+- RQX → FRE
+- RQX → PQX (handoff via emitted review_fix_slice_artifact; no direct execution)
 - RIL → CDE
 
 ## Pre-PR bounded repair-loop behavior (GHA-008)
@@ -247,3 +282,4 @@ These rules are hard boundaries for architecture, contracts, and validation.
 5. Enforcement is owned only by **SEL**.
 6. Orchestration is owned only by **TLC**.
 7. Program governance is owned only by **PRG**.
+8. Review-loop execution is owned only by **RQX**.

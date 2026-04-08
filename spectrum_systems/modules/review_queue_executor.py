@@ -8,6 +8,7 @@ under `docs/reviews/`.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,6 +20,7 @@ from spectrum_systems.contracts import load_schema
 
 REVIEW_RESULT_FILE_SUFFIX = "_review_result_artifact.json"
 MERGE_READINESS_FILE_SUFFIX = "_review_merge_readiness_artifact.json"
+FIX_SLICE_FILE_SUFFIX = "_review_fix_slice_artifact.json"
 
 
 class ReviewQueueValidationError(ValueError):
@@ -43,6 +45,10 @@ def validate_review_result_artifact(result_artifact: dict[str, Any]) -> None:
 
 def validate_review_merge_readiness_artifact(merge_artifact: dict[str, Any]) -> None:
     _validate(merge_artifact, "review_merge_readiness_artifact")
+
+
+def validate_review_fix_slice_artifact(fix_slice_artifact: dict[str, Any]) -> None:
+    _validate(fix_slice_artifact, "review_fix_slice_artifact")
 
 
 def _utc_now() -> str:
@@ -133,7 +139,47 @@ def _required_follow_up(verdict: str, findings: list[dict[str, Any]]) -> list[st
     return follow_up
 
 
-def _render_markdown(result: dict[str, Any], generated_at: str) -> str:
+def _deterministic_fix_slice_id(review_id: str, findings: list[dict[str, Any]]) -> str:
+    finding_seed = "|".join(f"{finding['finding_id']}:{finding['severity']}:{finding['title']}" for finding in findings)
+    digest = hashlib.sha256(f"{review_id}|{finding_seed}".encode("utf-8")).hexdigest()
+    return f"rfs-{digest[:12]}"
+
+
+def _build_fix_slice_artifact(
+    request_artifact: dict[str, Any],
+    result_artifact: dict[str, Any],
+    *,
+    emitted_at: str,
+) -> dict[str, Any]:
+    return {
+        "artifact_type": "review_fix_slice_artifact",
+        "artifact_version": "1.0.0",
+        "schema_version": "1.0.0",
+        "standards_version": "1.0.0",
+        "fix_slice_id": _deterministic_fix_slice_id(request_artifact["review_id"], result_artifact["findings"]),
+        "review_id": request_artifact["review_id"],
+        "review_name": request_artifact["review_name"],
+        "review_result_ref": f"review_result_artifact:{request_artifact['review_id']}",
+        "source_review_request_ref": f"review_request_artifact:{request_artifact['review_id']}",
+        "objective": "Resolve high/medium review findings in bounded scope and regenerate review artifacts for merge readiness re-check.",
+        "fix_scope": "bounded_single_slice_remediation",
+        "target_surface_refs": request_artifact["changed_files"],
+        "validation_requirements": request_artifact["validation_result_refs"],
+        "max_repair_attempts": 1,
+        "provenance": {
+            "emitted_by_system": "RQX",
+            "emission_reason": "fix_required_verdict",
+            "automatic_execution": "disabled",
+        },
+        "trace_linkage": {
+            "run_id": request_artifact.get("run_id", "not_provided"),
+            "batch_id": request_artifact.get("batch_id", "not_provided"),
+        },
+        "generated_at": emitted_at,
+    }
+
+
+def _render_markdown(result: dict[str, Any], generated_at: str, fix_slice_ref: str | None = None) -> str:
     findings_lines: list[str] = []
     for finding in result["findings"]:
         evidence = ", ".join(finding["evidence"])
@@ -150,6 +196,13 @@ def _render_markdown(result: dict[str, Any], generated_at: str) -> str:
     follow_up = "\n".join(f"- {item}" for item in result["required_follow_up"]) or "- None"
     files = "\n".join(f"- {path}" for path in result["files_inspected"])
 
+    fix_slice_section = (
+        "\n## Bounded Fix Slice\n"
+        f"- Emitted: yes\n- Fix Slice Artifact Ref: {fix_slice_ref}\n"
+        if fix_slice_ref
+        else ""
+    )
+
     return (
         f"# {result['review_name']}\n\n"
         f"**Date:** {generated_at}\n"
@@ -161,6 +214,7 @@ def _render_markdown(result: dict[str, Any], generated_at: str) -> str:
         + "\n".join(findings_lines)
         + f"## Merge Decision\n{result['rationale']}\n\n"
         f"## Required Follow-Up\n{follow_up}\n"
+        f"{fix_slice_section}"
     )
 
 
@@ -226,25 +280,49 @@ def run_review_queue_executor(
         "generated_at": emitted_at,
     }
     validate_review_merge_readiness_artifact(merge_artifact)
+    fix_slice_artifact: dict[str, Any] | None = None
+    if verdict == "fix_required":
+        fix_slice_artifact = _build_fix_slice_artifact(
+            request_artifact,
+            result_artifact,
+            emitted_at=emitted_at,
+        )
+        validate_review_fix_slice_artifact(fix_slice_artifact)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     review_docs_dir.mkdir(parents=True, exist_ok=True)
 
     result_path = output_dir / f"{request_artifact['review_name']}{REVIEW_RESULT_FILE_SUFFIX}"
     merge_path = output_dir / f"{request_artifact['review_name']}{MERGE_READINESS_FILE_SUFFIX}"
+    fix_slice_path = output_dir / f"{request_artifact['review_name']}{FIX_SLICE_FILE_SUFFIX}"
     markdown_path = review_docs_dir / f"{request_artifact['review_name']}_review.md"
 
     result_path.write_text(json.dumps(result_artifact, indent=2) + "\n", encoding="utf-8")
     merge_path.write_text(json.dumps(merge_artifact, indent=2) + "\n", encoding="utf-8")
-    markdown_path.write_text(_render_markdown(result_artifact, emitted_at), encoding="utf-8")
+    if fix_slice_artifact is not None:
+        fix_slice_path.write_text(json.dumps(fix_slice_artifact, indent=2) + "\n", encoding="utf-8")
+    markdown_path.write_text(
+        _render_markdown(
+            result_artifact,
+            emitted_at,
+            fix_slice_ref=f"review_fix_slice_artifact:{fix_slice_artifact['fix_slice_id']}"
+            if fix_slice_artifact
+            else None,
+        ),
+        encoding="utf-8",
+    )
 
-    return {
+    response = {
         "review_result_artifact": result_artifact,
         "review_merge_readiness_artifact": merge_artifact,
         "review_result_artifact_path": str(result_path),
         "review_merge_readiness_artifact_path": str(merge_path),
         "markdown_review_path": str(markdown_path),
     }
+    if fix_slice_artifact is not None:
+        response["review_fix_slice_artifact"] = fix_slice_artifact
+        response["review_fix_slice_artifact_path"] = str(fix_slice_path)
+    return response
 
 
 def _parse_args() -> argparse.Namespace:

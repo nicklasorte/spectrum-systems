@@ -57,6 +57,7 @@ def test_review_queue_contract_examples_validate() -> None:
         "review_request_artifact",
         "review_result_artifact",
         "review_merge_readiness_artifact",
+        "review_fix_slice_artifact",
     ):
         validate_artifact(load_example(artifact_type), artifact_type)
 
@@ -107,6 +108,34 @@ def test_findings_and_severity_are_preserved_in_markdown(tmp_path: Path) -> None
     assert finding["severity"] == "high"
     assert f"Severity: {finding['severity']}" in markdown
     assert finding["title"] in markdown
+    assert "## Bounded Fix Slice" in markdown
+    assert "review_fix_slice_artifact:" in markdown
+
+
+def test_fix_required_emits_exactly_one_bounded_fix_slice_artifact(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _write_repo_inputs(repo_root, failed_validation=True)
+    request = _request_payload(tmp_path)
+
+    result = run_review_queue_executor(
+        request,
+        repo_root=repo_root,
+        output_dir=repo_root / "artifacts/reviews",
+        review_docs_dir=repo_root / "docs/reviews",
+        generated_at="2026-04-08T00:18:00Z",
+    )
+
+    assert result["review_result_artifact"]["verdict"] == "fix_required"
+    assert "review_fix_slice_artifact" in result
+    fix_slice = result["review_fix_slice_artifact"]
+    validate_artifact(fix_slice, "review_fix_slice_artifact")
+    assert fix_slice["review_result_ref"] == f"review_result_artifact:{request['review_id']}"
+    assert fix_slice["source_review_request_ref"] == f"review_request_artifact:{request['review_id']}"
+    assert fix_slice["max_repair_attempts"] == 1
+    assert fix_slice["target_surface_refs"] == request["changed_files"]
+    assert fix_slice["validation_requirements"] == request["validation_result_refs"]
+    assert Path(result["review_fix_slice_artifact_path"]).exists()
+    assert len(list((repo_root / "artifacts/reviews").glob("*_review_fix_slice_artifact.json"))) == 1
 
 
 def test_unknown_review_type_fails_closed(tmp_path: Path) -> None:
@@ -138,3 +167,21 @@ def test_bounded_review_output_disables_automatic_fix_execution(tmp_path: Path) 
     review_result = result["review_result_artifact"]
     assert review_result["bounded_review"] is True
     assert review_result["automatic_fix_execution"] == "disabled"
+    assert "review_fix_slice_artifact" not in result
+
+
+def test_not_safe_to_merge_emits_no_fix_slice_by_default(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _write_repo_inputs(repo_root)
+    request = _request_payload(tmp_path, changed_files=["src/missing_file.py"])
+
+    result = run_review_queue_executor(
+        request,
+        repo_root=repo_root,
+        output_dir=repo_root / "artifacts/reviews",
+        review_docs_dir=repo_root / "docs/reviews",
+        generated_at="2026-04-08T00:19:00Z",
+    )
+
+    assert result["review_result_artifact"]["verdict"] == "not_safe_to_merge"
+    assert "review_fix_slice_artifact" not in result

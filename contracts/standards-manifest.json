@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.96",
-  "schema_version": "1.3.96",
-  "standards_version": "1.3.96",
-  "record_id": "REC-STD-2026-04-08-RQX-01",
-  "run_id": "run-20260408T000000Z-rqx-01",
+  "artifact_version": "1.3.97",
+  "schema_version": "1.3.97",
+  "standards_version": "1.3.97",
+  "record_id": "REC-STD-2026-04-08-RQX-02",
+  "run_id": "run-20260408T020000Z-rqx-02",
   "created_at": "2026-04-08T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.96",
+  "source_repo_version": "1.3.97",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -3585,6 +3585,19 @@
       "last_updated_in": "1.3.96",
       "example_path": "contracts/examples/review_merge_readiness_artifact.json",
       "notes": "RQX-01 machine-readable bounded merge readiness verdict derived from review_result_artifact without automatic fix execution."
+    },
+    {
+      "artifact_type": "review_fix_slice_artifact",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.97",
+      "last_updated_in": "1.3.97",
+      "example_path": "contracts/examples/review_fix_slice_artifact.json",
+      "notes": "RQX-02 bounded single-slice fix request artifact emitted only for fix_required review verdicts; execution remains PQX-owned."
     },
     {
       "artifact_type": "review_projection_bundle_artifact",
