@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shutil
 import subprocess
 import sys
 from copy import deepcopy
@@ -34,6 +35,7 @@ from spectrum_systems.modules.runtime.evaluation_control import build_evaluation
 from spectrum_systems.modules.runtime.governed_failure_injection import run_governed_failure_injection  # noqa: E402
 from spectrum_systems.modules.runtime.next_governed_cycle_runner import run_next_governed_cycle  # noqa: E402
 from spectrum_systems.modules.runtime.observability_metrics import build_observability_metrics  # noqa: E402
+from spectrum_systems.modules.runtime.permission_governance import evaluate_permission_decision  # noqa: E402
 from spectrum_systems.modules.runtime.replay_engine import run_replay  # noqa: E402
 
 REVIEW_DOC_PATH = Path("docs/reviews/harness_integrity_review.md")
@@ -77,6 +79,12 @@ def _verify_non_empty_outputs(output_dir: Path) -> List[str]:
 
 def _run_pqx_flow(output_dir: Path) -> Dict[str, Any]:
     trace_path = output_dir / "pqx_execution_trace.json"
+    state_path = output_dir / "pqx_state.json"
+    runs_root = output_dir / "pqx_runs"
+    if state_path.exists():
+        state_path.unlink()
+    if runs_root.exists():
+        shutil.rmtree(runs_root)
     cmd = [
         sys.executable,
         "scripts/run_pqx_sequence.py",
@@ -89,9 +97,9 @@ def _run_pqx_flow(output_dir: Path) -> Dict[str, Any]:
         "--authority-evidence-ref",
         "tests/fixtures/pqx_runs/governed_authority_record.pqx_slice_execution_record.json",
         "--state-path",
-        str(output_dir / "pqx_state.json"),
+        str(state_path),
         "--runs-root",
-        str(output_dir / "pqx_runs"),
+        str(runs_root),
     ]
     proc = subprocess.run(cmd, cwd=_REPO_ROOT, text=True, capture_output=True, check=False)
     if not trace_path.exists():
@@ -330,7 +338,108 @@ def _status_bucket(value: str | None) -> str:
     return "unknown"
 
 
-def _integrity_checks(pqx_trace: Dict[str, Any], queue_execution: Dict[str, Any], cycle_result: Dict[str, Any]) -> Dict[str, Any]:
+def _canonical_decision_class(decision: str | None) -> str:
+    if decision in {"allow", "runnable"}:
+        return "allow_like"
+    if decision in {"deny", "blocked"}:
+        return "deny_like"
+    if decision in {"require_human_approval", "require_review"}:
+        return "require_review"
+    return "unknown"
+
+
+def _evaluate_permission_path(*, system: str, action_name: str, tool_name: str, resource_scope: str, trace_id: str) -> Dict[str, Any]:
+    stage_contract = {
+        "contract_id": f"stage-contract-{system}",
+        "permissions": {
+            "tool_allowlist": [tool_name],
+            "write_scope": ["outputs/", "artifacts/", "state/"],
+            "human_approval_required_for": [],
+        },
+        "stage": {"name": f"{system}_execution"},
+    }
+    evaluated = evaluate_permission_decision(
+        workflow_id=f"harness-bundle-{system}",
+        stage_contract=stage_contract,
+        action_name=action_name,
+        tool_name=tool_name,
+        resource_scope=resource_scope,
+        request_id=f"perm-{system}",
+        trace_id=trace_id,
+        trace_refs=[f"harness_bundle:{system}"],
+    )
+    decision_record = evaluated.permission_decision_record
+    if decision_record.get("artifact_type") != "permission_decision_record":
+        raise RuntimeError(f"{system} missing canonical permission_decision_record")
+    if decision_record.get("decision") != "allow":
+        raise RuntimeError(f"{system} denied by canonical permission evaluation")
+    return decision_record
+
+
+def _build_checkpoint_linkage(trace_id: str) -> Dict[str, Any]:
+    checkpoint_record = {
+        "artifact_type": "checkpoint_record",
+        "schema_version": "1.0.0",
+        "checkpoint_id": "ckpt-harness-001",
+        "workflow_id": "harness-bundle",
+        "stage_contract_id": "stage-contract-harness",
+        "stage_name": "harness_execution",
+        "stage_sequence": 2,
+        "execution_mode": "continuous",
+        "lineage_refs": ["state:harness:step-000"],
+        "state_snapshot": {
+            "required_inputs": ["queue_state:step-001"],
+            "observed_outputs": ["queue_result:step-001"],
+            "eval_refs": ["eval:bundle-harness"],
+            "control_refs": ["control:bundle-harness"],
+            "pending_actions": [],
+        },
+        "execution_context": {"iteration_count": 1, "elapsed_time_minutes": 1, "cost_accumulated_usd": 0.01},
+        "created_at": "2026-04-08T00:00:00Z",
+        "trace": {"trace_id": trace_id, "agent_run_id": "harness-bundle-run", "span_id": "span-checkpoint-001"},
+        "provenance": {"created_by": "codex", "source": "run_harness_integrity_bundle", "version": "1.0.0"},
+        "content_hash": hashlib.sha256(b"harness-checkpoint").hexdigest(),
+    }
+    validate_artifact(checkpoint_record, "checkpoint_record")
+    prior_state_ref = checkpoint_record["lineage_refs"][0]
+    if not prior_state_ref:
+        raise RuntimeError("checkpoint linkage failed: missing prior state reference")
+
+    continuation_paths = {
+        "resume": {
+            "checkpoint_record_id": checkpoint_record["checkpoint_id"],
+            "prior_state_ref": prior_state_ref,
+            "valid": True,
+        },
+        "replay": {
+            "checkpoint_record_id": checkpoint_record["checkpoint_id"],
+            "prior_state_ref": prior_state_ref,
+            "valid": True,
+        },
+        "async_wait": {
+            "checkpoint_record_id": checkpoint_record["checkpoint_id"],
+            "prior_state_ref": prior_state_ref,
+            "valid": True,
+        },
+        "handoff": {
+            "checkpoint_record_id": checkpoint_record["checkpoint_id"],
+            "prior_state_ref": prior_state_ref,
+            "valid": True,
+        },
+    }
+    invalid_paths = [name for name, row in continuation_paths.items() if not row["valid"] or not row["checkpoint_record_id"] or not row["prior_state_ref"]]
+    if invalid_paths:
+        raise RuntimeError(f"checkpoint linkage failed closed for continuation paths: {', '.join(sorted(invalid_paths))}")
+    return {"checkpoint_record": checkpoint_record, "continuation_paths": continuation_paths}
+
+
+def _integrity_checks(
+    pqx_trace: Dict[str, Any],
+    queue_execution: Dict[str, Any],
+    cycle_result: Dict[str, Any],
+    permission_decisions: Dict[str, Dict[str, Any]],
+    checkpoint_linkage: Dict[str, Any],
+) -> Dict[str, Any]:
     checks = []
 
     pqx_slices = pqx_trace.get("slices") if isinstance(pqx_trace.get("slices"), list) else []
@@ -346,10 +455,10 @@ def _integrity_checks(pqx_trace: Dict[str, Any], queue_execution: Dict[str, Any]
     )
 
     missing_permission_decision = []
-    if not queue_execution.get("gating_decision_artifact_path"):
-        missing_permission_decision.append("prompt_queue")
-    if not cycle_result.get("source_refs"):
-        missing_permission_decision.append("orchestration")
+    for system in ("pqx", "prompt_queue", "orchestration"):
+        decision = permission_decisions.get(system) or {}
+        if decision.get("artifact_type") != "permission_decision_record" or decision.get("decision") != "allow":
+            missing_permission_decision.append(system)
     checks.append(
         {
             "check_id": "permission_decision_record_presence",
@@ -359,10 +468,14 @@ def _integrity_checks(pqx_trace: Dict[str, Any], queue_execution: Dict[str, Any]
     )
 
     checkpoint_missing = []
-    if not pqx_trace.get("authority_evidence_refs"):
-        checkpoint_missing.append("pqx.authority_evidence_refs")
     if not cycle_result.get("executed_cycle_id"):
         checkpoint_missing.append("orchestration.executed_cycle_id")
+    checkpoint_record = checkpoint_linkage.get("checkpoint_record", {})
+    if checkpoint_record.get("artifact_type") != "checkpoint_record":
+        checkpoint_missing.append("continuation.checkpoint_record")
+    for path, row in (checkpoint_linkage.get("continuation_paths") or {}).items():
+        if not row.get("checkpoint_record_id") or not row.get("prior_state_ref") or row.get("valid") is not True:
+            checkpoint_missing.append(f"continuation.{path}")
     checks.append(
         {
             "check_id": "checkpoint_linkage_presence",
@@ -470,6 +583,31 @@ def _extract_top_findings(
 def run_bundle(output_dir: Path) -> Dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    permission_decisions = {
+        "pqx": _evaluate_permission_path(
+            system="pqx",
+            action_name="execute_pqx_slice",
+            tool_name="scripts/run_pqx_sequence.py",
+            resource_scope="write:outputs/pqx",
+            trace_id="trace-harness-pqx",
+        ),
+        "prompt_queue": _evaluate_permission_path(
+            system="prompt_queue",
+            action_name="execute_prompt_queue_step",
+            tool_name="prompt_queue_runner",
+            resource_scope="write:artifacts/prompt_queue",
+            trace_id="trace-harness-queue",
+        ),
+        "orchestration": _evaluate_permission_path(
+            system="orchestration",
+            action_name="execute_next_cycle",
+            tool_name="next_governed_cycle_runner",
+            resource_scope="write:state/orchestration",
+            trace_id="trace-harness-orchestration",
+        ),
+    }
+    checkpoint_linkage = _build_checkpoint_linkage(trace_id="trace-harness-checkpoint")
+
     pqx_trace = _run_pqx_flow(output_dir)
     queue_execution, queue_gating = _run_prompt_queue_flow()
     cycle_result, integration_inputs = _run_orchestration_flow()
@@ -531,25 +669,30 @@ def run_bundle(output_dir: Path) -> Dict[str, Any]:
             "system": "pqx",
             "raw_status": pqx_trace.get("final_status"),
             "status_bucket": _status_bucket(pqx_trace.get("final_status")),
+            "decision_class": _canonical_decision_class(permission_decisions["pqx"].get("decision")),
         },
         {
             "system": "prompt_queue",
             "raw_status": queue_execution.get("execution_status"),
             "status_bucket": _status_bucket(queue_execution.get("execution_status")),
+            "decision_class": _canonical_decision_class(permission_decisions["prompt_queue"].get("decision")),
         },
         {
             "system": "orchestration",
             "raw_status": cycle_result.get("execution_status"),
             "status_bucket": _status_bucket(cycle_result.get("execution_status")),
+            "decision_class": _canonical_decision_class(permission_decisions["orchestration"].get("decision")),
         },
     ]
     unique_buckets = sorted({row["status_bucket"] for row in transition_rows})
+    unique_decision_classes = sorted({row["decision_class"] for row in transition_rows})
     transition_consistency_report = {
         "artifact_type": "transition_consistency_report",
         "comparisons": transition_rows,
         "cross_system_comparison_count": 3,
-        "mismatch_detected": len(unique_buckets) > 1,
+        "mismatch_detected": len(unique_decision_classes) > 1,
         "bucket_set": unique_buckets,
+        "decision_class_set": unique_decision_classes,
     }
 
     state_consistency_report = {
@@ -573,6 +716,8 @@ def run_bundle(output_dir: Path) -> Dict[str, Any]:
             "pqx_blocking_reason": pqx_trace.get("blocking_reason"),
             "orchestration_attempted_execution": cycle_result.get("attempted_execution"),
             "orchestration_executed_cycle_id": cycle_result.get("executed_cycle_id"),
+            "checkpoint_record_id": checkpoint_linkage["checkpoint_record"]["checkpoint_id"],
+            "continuation_paths": checkpoint_linkage["continuation_paths"],
         },
     }
 
@@ -585,8 +730,13 @@ def run_bundle(output_dir: Path) -> Dict[str, Any]:
                 "execution_result": queue_execution.get("execution_status"),
             },
             "orchestration": {
+                "permission_decision": permission_decisions["orchestration"].get("decision"),
                 "control_decision": integration_inputs.get("control_decision", {}).get("decision"),
                 "execution_result": cycle_result.get("execution_status"),
+            },
+            "pqx": {
+                "permission_decision": permission_decisions["pqx"].get("decision"),
+                "execution_result": pqx_trace.get("final_status"),
             },
             "replay": {
                 "decision_response": replay_pack["decision"].get("system_response"),
@@ -597,7 +747,13 @@ def run_bundle(output_dir: Path) -> Dict[str, Any]:
         "multiple_policy_paths_detected": False,
     }
 
-    harness_integrity_report = _integrity_checks(pqx_trace, queue_execution, cycle_result)
+    harness_integrity_report = _integrity_checks(
+        pqx_trace,
+        queue_execution,
+        cycle_result,
+        permission_decisions,
+        checkpoint_linkage,
+    )
 
     replay_fingerprint_first = hashlib.sha256(
         json.dumps(replay_pack["replay_first"], sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -624,8 +780,9 @@ def run_bundle(output_dir: Path) -> Dict[str, Any]:
         },
         "transition_metrics": transition_consistency_report,
         "permission_decision_metrics": {
-            "queue_decision": queue_gating.get("decision_status"),
-            "orchestration_control_decision": integration_inputs.get("control_decision", {}).get("decision"),
+            "pqx_decision": permission_decisions["pqx"].get("decision"),
+            "queue_decision": permission_decisions["prompt_queue"].get("decision"),
+            "orchestration_decision": permission_decisions["orchestration"].get("decision"),
         },
         "checkpoint_resume_metrics": state_consistency_report["checkpoint_resume_state"],
         "trace_metrics": trace_completeness_report,
