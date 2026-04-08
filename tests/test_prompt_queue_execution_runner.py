@@ -101,6 +101,7 @@ def test_valid_step_execution_produces_normalized_artifact():
     assert result["step_id"] == "step-001"
     assert result["queue_id"] == "queue-q2"
     assert result["execution_type"] == "queue_step"
+    assert result["execution_mode"] == "simulated"
     assert result["produced_artifact_refs"] == ["artifacts/prompt_queue/simulated_outputs/wi-q2-001.output.json"]
     validate_execution_result_artifact(result)
 
@@ -127,8 +128,34 @@ def test_malformed_input_refs_fail_closed():
         )
 
 
+def test_missing_execution_mode_fails_closed():
+    with pytest.raises(ExecutionRunnerError, match="execution_mode"):
+        run_queue_step_execution(
+            step={"step_id": "step-001", "work_item_id": "wi-q2-001"},
+            queue_state=_queue(_work_item()),
+            input_refs={
+                "permission_request_record": _permission_request(),
+                "permission_decision_record": _permission_decision(),
+                "pqx_execution_authority_record": _pqx_proof(),
+            },
+        )
+
+
 def test_unknown_execution_shape_fails_closed():
     with pytest.raises(ExecutionRunnerError, match="Unknown execution shape"):
+        run_queue_step_execution(
+            step={"step_id": "step-001", "work_item_id": "wi-q2-001", "execution_mode": "shadow"},
+            queue_state=_queue(_work_item()),
+            input_refs={
+                "permission_request_record": _permission_request(),
+                "permission_decision_record": _permission_decision(),
+                "pqx_execution_authority_record": _pqx_proof(),
+            },
+        )
+
+
+def test_live_mode_requires_live_output_root_fail_closed():
+    with pytest.raises(ExecutionRunnerError, match="live output root"):
         run_queue_step_execution(
             step={"step_id": "step-001", "work_item_id": "wi-q2-001", "execution_mode": "live"},
             queue_state=_queue(_work_item()),
@@ -138,6 +165,25 @@ def test_unknown_execution_shape_fails_closed():
                 "pqx_execution_authority_record": _pqx_proof(),
             },
         )
+
+
+def test_live_mode_executes_with_real_output(tmp_path: Path):
+    result = run_queue_step_execution(
+        step={"step_id": "step-001", "work_item_id": "wi-q2-001", "execution_mode": "live"},
+        queue_state=_queue(_work_item()),
+        input_refs={
+            "permission_request_record": _permission_request(),
+            "permission_decision_record": _permission_decision(),
+            "pqx_execution_authority_record": _pqx_proof(),
+            "source_queue_state_path": "artifacts/prompt_queue/queue_state.json",
+            "live_output_root": str(tmp_path / "live_outputs"),
+        },
+        clock=FixedClock(["2026-03-28T00:00:03Z", "2026-03-28T00:00:04Z"]),
+    )
+    assert result["execution_mode"] == "live"
+    assert result["execution_status"] == "success"
+    assert Path(result["output_reference"]).is_file()
+    validate_execution_result_artifact(result)
 
 
 def test_produced_artifact_refs_deterministic_for_same_input():

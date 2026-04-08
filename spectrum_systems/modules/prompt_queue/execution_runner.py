@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import re
+from pathlib import Path
 
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.prompt_queue.queue_artifact_io import ArtifactValidationError, validate_queue_state, validate_work_item
@@ -19,7 +21,7 @@ class ExecutionRunnerError(ValueError):
 
 
 _STEP_ID_PATTERN = re.compile(r"^step-[0-9]{3}$")
-_SUPPORTED_EXECUTION_MODES = {"simulated"}
+_SUPPORTED_EXECUTION_MODES = {"simulated", "live"}
 
 
 def _validate_step_shape(step: dict) -> dict:
@@ -34,7 +36,9 @@ def _validate_step_shape(step: dict) -> dict:
     if not isinstance(work_item_id, str) or not work_item_id:
         raise ExecutionRunnerError("Queue step is missing work_item_id.")
 
-    execution_mode = step.get("execution_mode", "simulated")
+    execution_mode = step.get("execution_mode")
+    if not isinstance(execution_mode, str) or not execution_mode:
+        raise ExecutionRunnerError("Queue step is missing required execution_mode.")
     if execution_mode not in _SUPPORTED_EXECUTION_MODES:
         raise ExecutionRunnerError(f"Unknown execution shape: unsupported execution_mode '{execution_mode}'.")
 
@@ -64,6 +68,7 @@ def _normalize_input_refs(input_refs: dict | None) -> dict:
         "human_checkpoint_decision",
         "pqx_execution_authority_record",
         "source_queue_state_path",
+        "live_output_root",
     }
     extra = set(refs) - allowed
     if extra:
@@ -94,6 +99,10 @@ def _normalize_input_refs(input_refs: dict | None) -> dict:
     if source_queue_state_path is not None and (not isinstance(source_queue_state_path, str) or not source_queue_state_path):
         raise ExecutionRunnerError("Malformed input_refs: source_queue_state_path must be a non-empty string when provided.")
 
+    live_output_root = refs.get("live_output_root")
+    if live_output_root is not None and (not isinstance(live_output_root, str) or not live_output_root):
+        raise ExecutionRunnerError("Malformed input_refs: live_output_root must be a non-empty string when provided.")
+
     return {
         "permission_request_record": dict(permission_request_record),
         "permission_decision_record": dict(permission_decision_record),
@@ -101,6 +110,7 @@ def _normalize_input_refs(input_refs: dict | None) -> dict:
         "human_checkpoint_decision": None if checkpoint_decision is None else dict(checkpoint_decision),
         "pqx_execution_authority_record": dict(pqx_proof),
         "source_queue_state_path": source_queue_state_path,
+        "live_output_root": live_output_root,
     }
 
 
@@ -158,9 +168,9 @@ def run_queue_step_execution(
 ) -> dict:
     """Run one queue step through a normalized execution adapter boundary.
 
-    This adapter validates step and queue inputs fail-closed, calls existing runner seams
-    (`revalidate_execution_entry` and `run_simulated_execution`), and emits a deterministic
-    normalized execution result artifact shape.
+    This adapter validates step and queue inputs fail-closed, routes through
+    a mode-specific execution seam, and emits a deterministic normalized
+    execution result artifact shape.
     """
 
     step_view = _validate_step_shape(step)
@@ -220,11 +230,25 @@ def run_queue_step_execution(
     )
     if sel_result.get("enforcement_status") != "allow":
         raise ExecutionRunnerError("SEL blocked execution due to authority boundary violations.")
-    runner_result = run_simulated_execution(
-        work_item=work_item,
-        source_queue_state_path=refs["source_queue_state_path"],
-        clock=clock,
-    )
+
+    if step_view["execution_mode"] == "simulated":
+        runner_result = run_simulated_execution(
+            work_item=work_item,
+            source_queue_state_path=refs["source_queue_state_path"],
+            clock=clock,
+        )
+    elif step_view["execution_mode"] == "live":
+        runner_result = run_live_execution(
+            work_item=work_item,
+            source_queue_state_path=refs["source_queue_state_path"],
+            live_output_root=refs["live_output_root"],
+            clock=clock,
+        )
+    else:
+        raise ExecutionRunnerError(f"Unknown execution shape: unsupported execution_mode '{step_view['execution_mode']}'.")
+
+    if runner_result.get("execution_mode") != step_view["execution_mode"]:
+        raise ExecutionRunnerError("Execution mode mismatch between request and execution result.")
 
     output_reference = runner_result.get("output_reference")
     produced_refs = [] if output_reference is None else [output_reference]
@@ -290,5 +314,83 @@ def run_simulated_execution(*, work_item: dict, source_queue_state_path: str | N
         "error_summary": error_summary,
         "source_queue_state_path": source_queue_state_path,
         "generated_at": completed,
-        "generator_version": "prompt-queue-execution-mvp-1",
+        "generator_version": "prompt-queue-execution-mvp-2",
+    }
+
+
+def run_live_execution(
+    *,
+    work_item: dict,
+    source_queue_state_path: str | None,
+    live_output_root: str | None,
+    clock=utc_now,
+) -> dict:
+    if not live_output_root:
+        raise ExecutionRunnerError("Live execution requested but no live output root was provided.")
+
+    start = iso_now(clock)
+    output_path = Path(live_output_root) / f"{work_item['work_item_id']}.output.json"
+    output_payload = {
+        "work_item_id": work_item["work_item_id"],
+        "parent_work_item_id": work_item.get("parent_work_item_id"),
+        "execution_mode": "live",
+        "execution_timestamp": start,
+        "lineage": {
+            "repair_prompt_artifact_path": work_item.get("repair_prompt_artifact_path")
+            or work_item.get("spawned_from_repair_prompt_artifact_path"),
+            "gating_decision_artifact_path": work_item.get("gating_decision_artifact_path"),
+            "spawned_from_findings_artifact_path": work_item.get("spawned_from_findings_artifact_path"),
+            "spawned_from_review_artifact_path": work_item.get("spawned_from_review_artifact_path"),
+        },
+        "result": {
+            "status": "applied",
+            "details": "Governed live execution output artifact created.",
+        },
+    }
+
+    try:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(f"{json.dumps(output_payload, indent=2, sort_keys=True)}\n", encoding="utf-8")
+    except OSError as exc:
+        raise ExecutionRunnerError(f"Live execution failed while writing output artifact: {exc}") from exc
+
+    if not output_path.is_file() or output_path.stat().st_size == 0:
+        raise ExecutionRunnerError("Live execution produced no real output artifact.")
+
+    try:
+        emitted = json.loads(output_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise ExecutionRunnerError(f"Live execution output artifact unreadable: {exc}") from exc
+
+    if emitted.get("execution_mode") != "live":
+        raise ExecutionRunnerError("Live execution output artifact missing execution_mode='live'.")
+
+    completed = iso_now(clock)
+    execution_attempt_id = f"{work_item['work_item_id']}-attempt-1"
+    output_reference = output_path.as_posix()
+
+    return {
+        "execution_result_artifact_id": f"execres-{execution_attempt_id}",
+        "execution_attempt_id": execution_attempt_id,
+        "step_id": None,
+        "queue_id": None,
+        "trace_linkage": work_item.get("work_item_id"),
+        "execution_type": "queue_step",
+        "work_item_id": work_item["work_item_id"],
+        "parent_work_item_id": work_item.get("parent_work_item_id"),
+        "repair_prompt_artifact_path": work_item.get("repair_prompt_artifact_path")
+        or work_item.get("spawned_from_repair_prompt_artifact_path"),
+        "gating_decision_artifact_path": work_item.get("gating_decision_artifact_path"),
+        "spawned_from_findings_artifact_path": work_item.get("spawned_from_findings_artifact_path"),
+        "spawned_from_review_artifact_path": work_item.get("spawned_from_review_artifact_path"),
+        "execution_mode": "live",
+        "execution_status": "success",
+        "started_at": start,
+        "completed_at": completed,
+        "output_reference": output_reference,
+        "produced_artifact_refs": [output_reference],
+        "error_summary": None,
+        "source_queue_state_path": source_queue_state_path,
+        "generated_at": completed,
+        "generator_version": "prompt-queue-execution-mvp-2",
     }

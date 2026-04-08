@@ -22,6 +22,7 @@ from spectrum_systems.modules.prompt_queue import (  # noqa: E402
     make_queue_state,
     make_work_item,
     revalidate_execution_entry,
+    run_live_execution,
     run_simulated_execution,
     transition_to_executing,
     validate_execution_result_artifact,
@@ -157,6 +158,36 @@ def test_wrong_starting_state_fails_closed():
 
 def test_execution_result_artifact_validates_against_schema():
     validate_execution_result_artifact(load_example("prompt_queue_execution_result"))
+
+
+def test_live_execution_writes_real_output_artifact(tmp_path: Path):
+    item = _runnable_item()
+    item["status"] = WorkItemStatus.EXECUTING.value
+    result = run_live_execution(
+        work_item=item,
+        source_queue_state_path="artifacts/prompt_queue/queue_state.json",
+        live_output_root=str(tmp_path / "live_outputs"),
+        clock=FixedClock(["2026-03-22T03:30:00Z", "2026-03-22T03:30:01Z"]),
+    )
+    validate_execution_result_artifact(result)
+    assert result["execution_mode"] == "live"
+    assert result["execution_status"] == "success"
+    output_path = Path(result["output_reference"])
+    assert output_path.is_file()
+    payload = output_path.read_text(encoding="utf-8")
+    assert "\"execution_mode\": \"live\"" in payload
+
+
+def test_live_execution_without_output_root_fails_closed():
+    item = _runnable_item()
+    item["status"] = WorkItemStatus.EXECUTING.value
+    with pytest.raises(ExecutionRunnerError, match="live output root"):
+        run_live_execution(
+            work_item=item,
+            source_queue_state_path="artifacts/prompt_queue/queue_state.json",
+            live_output_root=None,
+            clock=FixedClock(["2026-03-22T03:31:00Z", "2026-03-22T03:31:01Z"]),
+        )
 
 
 def test_deterministic_simulated_execution_same_input_same_result():

@@ -196,12 +196,19 @@ def build_queue_audit_bundle(input_refs: dict) -> dict:
         if step_id not in transition_decisions:
             completeness_reasons.append(f"missing_transition_decision_for_{step_id}")
 
+    non_live_steps: list[str] = []
     for step_id in sorted(execution_results):
         if step_id not in completed_step_ids:
             completeness_reasons.append(f"unexpected_execution_result_for_{step_id}")
         trace_linkage = execution_results[step_id].get("trace_linkage")
         if not _trace_matches(trace_linkage, trace_id=trace_id, queue_id=queue_id):
             lineage_reasons.append(f"execution_trace_linkage_mismatch:{step_id}")
+        if execution_results[step_id].get("execution_mode") != "live":
+            non_live_steps.append(step_id)
+
+    if certification.get("certification_status") == "passed" and non_live_steps:
+        for step_id in non_live_steps:
+            completeness_reasons.append(f"simulated_execution_not_certifiable:{step_id}")
     for step_id in sorted(step_decisions):
         if step_id not in completed_step_ids:
             completeness_reasons.append(f"unexpected_step_decision_for_{step_id}")
