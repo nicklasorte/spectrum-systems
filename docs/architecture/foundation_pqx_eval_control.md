@@ -109,11 +109,13 @@ Any such divergence must trigger hardening-first roadmap sequencing.
 - **TLC** remains orchestration authority and is not a public write-entry surface.
 - **PQX** remains execution-only and must not accept direct repo-writing requests.
 - Repo-mutating orchestration must include `build_admission_record` and `normalized_execution_request` before TLC continues.
+- The AEX→TLC seam is contractized via `tlc_handoff_record` to make admission-to-orchestration lineage explicit and replayable for repo-mutating execution.
 - Enforcement is fail-closed end-to-end: missing/invalid AEX artifacts block TLC entry, and missing TLC lineage blocks PQX execution (`AEX → TLC → TPA → PQX` only).
 
 ## End-to-End Artifact Chain Extension
 
 - `normalized_execution_request` and `build_admission_record` are required intake artifacts for repo-mutating runs.
+- `tlc_handoff_record` is the TLC-owned bridge artifact that formalizes admitted repo-write continuation toward TPA/PQX.
 - Rejections are represented by `admission_rejection_record` and must fail closed before TLC/TPA/PQX execution.
 
 ## Module Architecture Extension

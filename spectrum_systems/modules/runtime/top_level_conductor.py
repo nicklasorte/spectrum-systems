@@ -63,7 +63,13 @@ def _is_repo_mutation_requested(run_request: dict[str, Any]) -> bool:
     return False
 
 
-def _require_repo_write_admission(run_request: dict[str, Any], *, trace_refs: list[str], expected_trace_id: str) -> dict[str, str] | None:
+def _require_repo_write_admission(
+    run_request: dict[str, Any],
+    *,
+    trace_refs: list[str],
+    expected_trace_id: str,
+    tlc_handoff_record: dict[str, Any],
+) -> dict[str, str] | None:
     if not _is_repo_mutation_requested(run_request):
         return None
 
@@ -71,23 +77,57 @@ def _require_repo_write_admission(run_request: dict[str, Any], *, trace_refs: li
     normalized = run_request.get("normalized_execution_request")
     if not isinstance(admission, dict) or not isinstance(normalized, dict):
         raise TopLevelConductorError("direct_tlc_repo_write_forbidden: missing AEX admission artifacts")
-    tlc_handoff = {
-        "tlc_mediated": True,
-        "trace_id": admission.get("trace_id"),
-        "request_id": normalized.get("request_id"),
-        "build_admission_record_ref": f"build_admission_record:{admission.get('admission_id') or ''}",
-    }
     try:
         validated = validate_repo_write_lineage(
             build_admission_record=admission,
             normalized_execution_request=normalized,
-            tlc_handoff_record=tlc_handoff,
+            tlc_handoff_record=tlc_handoff_record,
             expected_trace_id=expected_trace_id,
         )
     except (RepoWriteLineageGuardError, Exception) as exc:
         raise TopLevelConductorError(f"repo_mutation_without_admission:{exc}") from exc
     trace_refs.extend([validated["trace_id"]])
     return validated
+
+
+def _build_tlc_handoff_record(
+    *,
+    run_id: str,
+    objective: str,
+    branch_ref: str,
+    emitted_at: str,
+    repo_write_lineage: dict[str, str],
+) -> dict[str, Any]:
+    handoff = {
+        "artifact_type": "tlc_handoff_record",
+        "handoff_id": f"tlc-handoff-{run_id}",
+        "request_id": repo_write_lineage["request_id"],
+        "trace_id": repo_write_lineage["trace_id"],
+        "created_at": emitted_at,
+        "produced_by": "TLC",
+        "build_admission_record_ref": f"build_admission_record:{repo_write_lineage['admission_id']}",
+        "normalized_execution_request_ref": repo_write_lineage["normalized_execution_request_ref"],
+        "handoff_status": "accepted",
+        "target_subsystems": ["TPA", "PQX"],
+        "execution_type": "repo_write",
+        "repo_mutation_requested": True,
+        "reason_codes": [],
+        "tlc_run_context": {
+            "run_id": run_id,
+            "branch_ref": branch_ref,
+            "objective": objective,
+            "entry_boundary": "aex_to_tlc",
+        },
+        "lineage": {
+            "upstream_refs": [
+                f"build_admission_record:{repo_write_lineage['admission_id']}",
+                repo_write_lineage["normalized_execution_request_ref"],
+            ],
+            "intended_path": ["TLC", "TPA", "PQX"],
+        },
+    }
+    validate_artifact(handoff, "tlc_handoff_record")
+    return handoff
 
 
 def _canonical_hash(payload: Any) -> str:
@@ -549,7 +589,11 @@ def _real_pqx(payload: dict[str, Any]) -> dict[str, Any]:
                         if repo_write_lineage.get("admission_id")
                         else ""
                     ),
-                    f"tlc_handoff_record:{payload['run_id']}",
+                    (
+                        f"tlc_handoff_record:{repo_write_lineage.get('tlc_handoff_record', {}).get('handoff_id')}"
+                        if isinstance(repo_write_lineage.get("tlc_handoff_record"), dict)
+                        else ""
+                    ),
                 ]
                 if isinstance(ref, str) and ref
             ],
@@ -1001,10 +1045,28 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
         "lineage": lineage,
         "emitted_at": emitted_at,
     }
+    has_admission_inputs = isinstance(build_admission_record, dict) and isinstance(normalized_execution_request, dict)
+    tlc_handoff_record = (
+        _build_tlc_handoff_record(
+            run_id=state["run_id"],
+            objective=state["objective"],
+            branch_ref=state["branch_ref"],
+            emitted_at=state["emitted_at"],
+            repo_write_lineage={
+                "trace_id": str((build_admission_record or {}).get("trace_id") or ""),
+                "request_id": str((normalized_execution_request or {}).get("request_id") or ""),
+                "admission_id": str((build_admission_record or {}).get("admission_id") or ""),
+                "normalized_execution_request_ref": str((build_admission_record or {}).get("normalized_execution_request_ref") or ""),
+            },
+        )
+        if repo_mutation_requested and has_admission_inputs
+        else None
+    )
     repo_write_lineage = _require_repo_write_admission(
         run_request,
         trace_refs=state["trace_refs"],
         expected_trace_id=state["trace_id"],
+        tlc_handoff_record=tlc_handoff_record or {},
     )
     pre_pr_failures = run_request.get("pre_pr_failures")
     if isinstance(pre_pr_failures, list) and pre_pr_failures:
@@ -1048,13 +1110,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                         **(repo_write_lineage or {}),
                         "build_admission_record": build_admission_record,
                         "normalized_execution_request": normalized_execution_request,
-                        "tlc_handoff_record": {
-                            "tlc_mediated": True,
-                            "trace_id": state["trace_id"],
-                            "request_id": (repo_write_lineage or {}).get("request_id"),
-                            "build_admission_record_ref": f"build_admission_record:{(repo_write_lineage or {}).get('admission_id', '')}",
-                            "handoff_id": f"tlc-handoff-{state['run_id']}",
-                        },
+                        "tlc_handoff_record": tlc_handoff_record,
                     }
                     if repo_mutation_requested
                     else None,

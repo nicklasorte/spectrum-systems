@@ -230,10 +230,14 @@ These rules are hard boundaries for architecture, contracts, and validation.
   - subsystem_routing
   - bounded_cycle_coordination
 - **consumes:**
+  - build_admission_record
+  - normalized_execution_request
+  - tlc_handoff_record
   - tpa_slice_artifact
   - system_enforcement_result_artifact
   - closure_decision_artifact
 - **produces:**
+  - tlc_handoff_record
   - top_level_conductor_run_artifact
 - **must_not_do:**
   - execute work slice internals (PQX-owned)
@@ -301,6 +305,7 @@ These rules are hard boundaries for architecture, contracts, and validation.
 - All Codex execution requests that create or modify repository state MUST enter through **AEX**.
 - **AEX** is the only system allowed to invoke **TLC** for repo-mutating work.
 - **TLC** MUST validate `build_admission_record` and `normalized_execution_request` (accepted status, repo-write class, resolvable request reference, and trace continuity) before orchestration continues.
+- **TLC** MUST formalize admitted repo-write continuation as `tlc_handoff_record` before routing to downstream execution gates.
 - **PQX** MUST reject repo-writing execution that lacks AEX admission artifacts plus TLC-mediated lineage.
 - Any attempt to invoke **TLC** or **PQX** directly for repo-mutating work without valid AEX/TLC lineage MUST fail closed.
 
@@ -330,7 +335,11 @@ These rules are hard boundaries for architecture, contracts, and validation.
 ```mermaid
 flowchart LR
     CR[Codex repo-mutating request] --> AEX[AEX]
-    AEX --> TLC[TLC]
-    TLC --> TPA[TPA]
+    AEX --> BAR[build_admission_record]
+    AEX --> NER[normalized_execution_request]
+    BAR --> TLC[TLC]
+    NER --> TLC
+    TLC --> THR[tlc_handoff_record]
+    THR --> TPA[TPA]
     TPA --> PQX[PQX]
 ```
