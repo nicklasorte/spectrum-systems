@@ -4,12 +4,13 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 import sys
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
@@ -55,8 +56,21 @@ def _write_json(path: Path, payload: Dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _read_json(path: Path) -> Dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def _verify_required_outputs(output_dir: Path) -> List[str]:
     return [name for name in REQUIRED_OUTPUTS if not (output_dir / name).exists()]
+
+
+def _verify_non_empty_outputs(output_dir: Path) -> List[str]:
+    missing: List[str] = []
+    for name in REQUIRED_OUTPUTS:
+        out = output_dir / name
+        if not out.exists() or out.stat().st_size <= 2:
+            missing.append(name)
+    return missing
 
 
 def _run_pqx_flow(output_dir: Path) -> Dict[str, Any]:
@@ -80,10 +94,12 @@ def _run_pqx_flow(output_dir: Path) -> Dict[str, Any]:
     proc = subprocess.run(cmd, cwd=_REPO_ROOT, text=True, capture_output=True, check=False)
     if not trace_path.exists():
         raise RuntimeError(f"PQX flow failed: {proc.stderr.strip() or proc.stdout.strip()}")
-    return json.loads(trace_path.read_text(encoding="utf-8"))
+    payload = _read_json(trace_path)
+    payload["runner_exit_code"] = proc.returncode
+    return payload
 
 
-def _run_prompt_queue_flow() -> Dict[str, Any]:
+def _run_prompt_queue_flow() -> Tuple[Dict[str, Any], Dict[str, Any]]:
     item = make_work_item(
         work_item_id="wi-harness-001",
         prompt_id="prompt-harness-001",
@@ -95,7 +111,11 @@ def _run_prompt_queue_flow() -> Dict[str, Any]:
         scope_paths=["spectrum_systems/modules/prompt_queue"],
     )
     item["status"] = WorkItemStatus.RUNNABLE.value
+    item["repair_prompt_artifact_path"] = "artifacts/prompt_queue/repair_prompts/wi-harness.repair_prompt.json"
+    item["spawned_from_findings_artifact_path"] = "artifacts/prompt_queue/findings/wi-harness.findings.json"
+    item["spawned_from_review_artifact_path"] = "docs/reviews/2026-04-08-harness.md"
     item["gating_decision_artifact_path"] = "contracts/examples/prompt_queue_execution_gating_decision.json"
+
     queue_state = make_queue_state(queue_id="queue-harness", work_items=[item])
     gating = deepcopy(load_example("prompt_queue_execution_gating_decision"))
     gating["work_item_id"] = item["work_item_id"]
@@ -108,10 +128,10 @@ def _run_prompt_queue_flow() -> Dict[str, Any]:
         input_refs={"gating_decision_artifact": gating, "source_queue_state_path": "artifacts/prompt_queue/queue_state.json"},
     )
     validate_execution_result_artifact(result)
-    return result
+    return result, gating
 
 
-def _run_orchestration_flow() -> Dict[str, Any]:
+def _run_orchestration_flow() -> Tuple[Dict[str, Any], Dict[str, Any]]:
     decision = deepcopy(load_example("next_cycle_decision"))
     decision["decision"] = "run_next_cycle"
 
@@ -191,10 +211,11 @@ def _run_orchestration_flow() -> Dict[str, Any]:
         integration_inputs=integration_inputs,
         pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
         pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
         created_at="2026-04-08T00:00:00Z",
         pqx_execute_fn=_pqx_stub,
     )
-    return result["cycle_runner_result"]
+    return result["cycle_runner_result"], integration_inputs
 
 
 def _build_replay_artifacts() -> Dict[str, Any]:
@@ -270,7 +291,7 @@ def _build_replay_artifacts() -> Dict[str, Any]:
         "stage": "runtime_gate",
         "runtime_environment": "bundle",
     }
-    replay_result = run_replay(
+    first = run_replay(
         eval_summary,
         decision,
         enforcement,
@@ -278,9 +299,7 @@ def _build_replay_artifacts() -> Dict[str, Any]:
         slo_definition=slo_definition,
         error_budget_policy=load_example("error_budget_policy"),
     )
-    validate_artifact(replay_result, "replay_result")
-
-    second_replay_result = run_replay(
+    second = run_replay(
         eval_summary,
         decision,
         enforcement,
@@ -288,14 +307,73 @@ def _build_replay_artifacts() -> Dict[str, Any]:
         slo_definition=slo_definition,
         error_budget_policy=load_example("error_budget_policy"),
     )
+    validate_artifact(first, "replay_result")
+    validate_artifact(second, "replay_result")
 
     return {
         "eval_summary": eval_summary,
         "decision": decision,
         "enforcement": enforcement,
-        "replay_result": replay_result,
-        "second_replay_result": second_replay_result,
+        "replay_first": first,
+        "replay_second": second,
         "slo_definition": slo_definition,
+    }
+
+
+def _status_bucket(value: str | None) -> str:
+    if value in {"ALLOW", "completed", "executed", "success"}:
+        return "allow_like"
+    if value in {"BLOCK", "REQUIRE_REVIEW", "refused", "failure", "deny", "blocked"}:
+        return "deny_like"
+    return "unknown"
+
+
+def _integrity_checks(pqx_trace: Dict[str, Any], queue_execution: Dict[str, Any], cycle_result: Dict[str, Any]) -> Dict[str, Any]:
+    checks = []
+
+    pqx_slices = pqx_trace.get("slices") if isinstance(pqx_trace.get("slices"), list) else []
+    missing_stage_contract = [
+        s.get("slice_id") for s in pqx_slices if not s.get("wrapper_ref") and not s.get("slice_execution_record_ref")
+    ]
+    checks.append(
+        {
+            "check_id": "stage_contract_presence",
+            "passed": not missing_stage_contract,
+            "details": {"missing_stage_contract_slice_ids": missing_stage_contract},
+        }
+    )
+
+    missing_permission_decision = []
+    if not queue_execution.get("gating_decision_artifact_path"):
+        missing_permission_decision.append("prompt_queue")
+    if not cycle_result.get("source_refs"):
+        missing_permission_decision.append("orchestration")
+    checks.append(
+        {
+            "check_id": "permission_decision_record_presence",
+            "passed": not missing_permission_decision,
+            "details": {"missing_permission_decision_systems": missing_permission_decision},
+        }
+    )
+
+    checkpoint_missing = []
+    if not pqx_trace.get("authority_evidence_refs"):
+        checkpoint_missing.append("pqx.authority_evidence_refs")
+    if not cycle_result.get("executed_cycle_id"):
+        checkpoint_missing.append("orchestration.executed_cycle_id")
+    checks.append(
+        {
+            "check_id": "checkpoint_linkage_presence",
+            "passed": not checkpoint_missing,
+            "details": {"missing_checkpoint_linkage": checkpoint_missing},
+        }
+    )
+
+    return {
+        "artifact_type": "harness_integrity_report",
+        "checks": checks,
+        "failed_checks": [c["check_id"] for c in checks if not c["passed"]],
+        "all_passed": all(c["passed"] for c in checks),
     }
 
 
@@ -303,12 +381,12 @@ def run_bundle(output_dir: Path) -> Dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     pqx_trace = _run_pqx_flow(output_dir)
-    queue_execution = _run_prompt_queue_flow()
-    cycle_runner_result = _run_orchestration_flow()
+    queue_execution, queue_gating = _run_prompt_queue_flow()
+    cycle_result, integration_inputs = _run_orchestration_flow()
     replay_pack = _build_replay_artifacts()
 
     observability_metrics = build_observability_metrics(
-        [replay_pack["replay_result"]],
+        [replay_pack["replay_first"]],
         slo_definition=replay_pack["slo_definition"],
     )
     error_budget_status = build_error_budget_status(
@@ -317,95 +395,151 @@ def run_bundle(output_dir: Path) -> Dict[str, Any]:
         policy=load_example("error_budget_policy"),
     )
     drift_detection_report = build_drift_detection_result(
-        replay_pack["replay_result"],
-        replay_pack["second_replay_result"],
+        replay_pack["replay_first"],
+        replay_pack["replay_second"],
         load_example("baseline_gate_policy"),
     )
 
-    failure_injection_report = run_governed_failure_injection()
-
-    trace_ids = {
-        "pqx": pqx_trace.get("trace_id"),
-        "queue": queue_execution.get("trace", {}).get("trace_id"),
-        "orchestration": cycle_runner_result.get("trace_id"),
-        "replay": replay_pack["replay_result"].get("trace_id"),
+    failure_summary = run_governed_failure_injection()
+    case_results = list(failure_summary.get("results") or [])
+    failure_injection_report = {
+        "artifact_type": "failure_injection_report",
+        "case_count": len(case_results),
+        "pass_count": int(failure_summary.get("pass_count", 0)),
+        "fail_count": int(failure_summary.get("fail_count", 0)),
+        "scenarios": [
+            {
+                "scenario": case["injection_case_id"],
+                "expected_behavior": case["expected_outcome"],
+                "observed_behavior": case["observed_outcome"],
+                "pass": bool(case["passed"]),
+                "fail_closed": bool(case["observed_outcome"] in {"block", "deny", "refused"}),
+            }
+            for case in case_results
+        ],
     }
-    traced = [value for value in trace_ids.values() if isinstance(value, str) and value.strip()]
+
+    trace_links = {
+        "pqx": pqx_trace.get("trace_id"),
+        "prompt_queue": queue_execution.get("trace_linkage"),
+        "orchestration": cycle_result.get("trace_id"),
+        "replay": replay_pack["replay_first"].get("trace_id"),
+        "decision": replay_pack["decision"].get("trace_id"),
+        "enforcement": replay_pack["enforcement"].get("trace_id"),
+    }
+    trace_values = [v for v in trace_links.values() if isinstance(v, str) and v.strip()]
     trace_completeness_report = {
         "artifact_type": "trace_completeness_report",
-        "trace_ids": trace_ids,
-        "coverage_ratio": round(len(traced) / len(trace_ids), 4),
-        "complete": len(traced) == len(trace_ids),
-        "missing_trace_sources": sorted(name for name, value in trace_ids.items() if not value),
+        "trace_links": trace_links,
+        "coverage_ratio": round(len(trace_values) / len(trace_links), 4),
+        "complete": len(trace_values) == len(trace_links),
+        "missing": sorted([k for k, v in trace_links.items() if not v]),
     }
 
+    transition_rows = [
+        {
+            "system": "pqx",
+            "raw_status": pqx_trace.get("final_status"),
+            "status_bucket": _status_bucket(pqx_trace.get("final_status")),
+        },
+        {
+            "system": "prompt_queue",
+            "raw_status": queue_execution.get("execution_status"),
+            "status_bucket": _status_bucket(queue_execution.get("execution_status")),
+        },
+        {
+            "system": "orchestration",
+            "raw_status": cycle_result.get("execution_status"),
+            "status_bucket": _status_bucket(cycle_result.get("execution_status")),
+        },
+    ]
+    unique_buckets = sorted({row["status_bucket"] for row in transition_rows})
     transition_consistency_report = {
         "artifact_type": "transition_consistency_report",
-        "pqx_final_status": pqx_trace.get("final_status"),
-        "prompt_queue_execution_status": queue_execution.get("execution_status"),
-        "orchestration_execution_status": cycle_runner_result.get("execution_status"),
-        "allowed_equivalent": pqx_trace.get("final_status") == "ALLOW"
-        and queue_execution.get("execution_status") == "completed"
-        and cycle_runner_result.get("execution_status") in {"completed", "partial"},
+        "comparisons": transition_rows,
+        "cross_system_comparison_count": 3,
+        "mismatch_detected": len(unique_buckets) > 1,
+        "bucket_set": unique_buckets,
     }
 
     state_consistency_report = {
         "artifact_type": "state_consistency_report",
         "authoritative_state_models": [
-            "pqx_sequential_execution_trace",
-            "prompt_queue_execution_result",
-            "cycle_runner_result",
-            "replay_result",
+            {"system": "pqx", "artifact_type": pqx_trace.get("artifact_type"), "id": pqx_trace.get("trace_id")},
+            {
+                "system": "prompt_queue",
+                "artifact_type": "prompt_queue_execution_result",
+                "id": queue_execution.get("execution_result_artifact_id"),
+            },
+            {
+                "system": "orchestration",
+                "artifact_type": "cycle_runner_result",
+                "id": cycle_result.get("cycle_runner_result_id"),
+            },
+            {"system": "replay", "artifact_type": replay_pack["replay_first"].get("artifact_type"), "id": replay_pack["replay_first"].get("replay_id")},
         ],
         "duplicate_authoritative_models_detected": False,
-        "state_ids": {
-            "pqx_trace_id": pqx_trace.get("trace_id"),
-            "queue_execution_id": queue_execution.get("execution_id"),
-            "cycle_runner_result_id": cycle_runner_result.get("cycle_runner_result_id"),
-            "replay_id": replay_pack["replay_result"].get("replay_id"),
+        "checkpoint_resume_state": {
+            "pqx_blocking_reason": pqx_trace.get("blocking_reason"),
+            "orchestration_attempted_execution": cycle_result.get("attempted_execution"),
+            "orchestration_executed_cycle_id": cycle_result.get("executed_cycle_id"),
         },
     }
 
     policy_path_consistency_report = {
         "artifact_type": "policy_path_consistency_report",
-        "paths": {
-            "pqx": "evaluation_control_decision -> enforcement_result",
-            "prompt_queue": "execution_gating_decision -> prompt_queue_execution_result",
-            "orchestration": "next_cycle_decision -> cycle_runner_result",
+        "policy_paths": {
+            "prompt_queue": {
+                "permission_decision": queue_gating.get("decision_status"),
+                "decision_reason_code": queue_gating.get("decision_reason_code"),
+                "execution_result": queue_execution.get("execution_status"),
+            },
+            "orchestration": {
+                "control_decision": integration_inputs.get("control_decision", {}).get("decision"),
+                "execution_result": cycle_result.get("execution_status"),
+            },
+            "replay": {
+                "decision_response": replay_pack["decision"].get("system_response"),
+                "enforcement_action": replay_pack["enforcement"].get("enforcement_action"),
+                "replay_final_status": replay_pack["replay_first"].get("replay_final_status"),
+            },
         },
         "multiple_policy_paths_detected": False,
     }
 
-    harness_integrity_report = {
-        "artifact_type": "harness_integrity_report",
-        "bypass_paths_detected": [],
-        "hidden_runtime_state_indicators": [],
-        "duplicate_continuity_semantics": [],
-        "governance_seams_checked": [
-            "pqx_execution_trace",
-            "prompt_queue_execution",
-            "next_governed_cycle_runner",
-            "replay_engine",
-            "governed_failure_injection",
-        ],
-    }
+    harness_integrity_report = _integrity_checks(pqx_trace, queue_execution, cycle_result)
 
+    replay_fingerprint_first = hashlib.sha256(
+        json.dumps(replay_pack["replay_first"], sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    replay_fingerprint_second = hashlib.sha256(
+        json.dumps(replay_pack["replay_second"], sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
     replay_integrity_report = {
         "artifact_type": "replay_integrity_report",
-        "deterministic_replay": replay_pack["replay_result"] == replay_pack["second_replay_result"],
-        "consistency_status": replay_pack["replay_result"].get("consistency_status"),
-        "drift_detected": replay_pack["replay_result"].get("drift_detected"),
-        "trace_id": replay_pack["replay_result"].get("trace_id"),
+        "deterministic_replay": replay_fingerprint_first == replay_fingerprint_second,
+        "first_fingerprint": replay_fingerprint_first,
+        "second_fingerprint": replay_fingerprint_second,
+        "trace_id": replay_pack["replay_first"].get("trace_id"),
+        "consistency_status": replay_pack["replay_first"].get("consistency_status"),
     }
 
     harness_observability_metrics = {
         "artifact_type": "harness_observability_metrics",
-        "stage_metrics": {
+        "stage_level_metrics": {
+            "pqx_runner_exit_code": pqx_trace.get("runner_exit_code"),
             "pqx_final_status": pqx_trace.get("final_status"),
             "prompt_queue_execution_status": queue_execution.get("execution_status"),
-            "orchestration_execution_status": cycle_runner_result.get("execution_status"),
+            "orchestration_execution_status": cycle_result.get("execution_status"),
         },
-        "replay_metrics": observability_metrics,
+        "transition_metrics": transition_consistency_report,
+        "permission_decision_metrics": {
+            "queue_decision": queue_gating.get("decision_status"),
+            "orchestration_control_decision": integration_inputs.get("control_decision", {}).get("decision"),
+        },
+        "checkpoint_resume_metrics": state_consistency_report["checkpoint_resume_state"],
+        "trace_metrics": trace_completeness_report,
+        "embedded_observability_artifact": observability_metrics,
     }
 
     artifacts = {
@@ -420,7 +554,6 @@ def run_bundle(output_dir: Path) -> Dict[str, Any]:
         "error_budget_status.json": error_budget_status,
         "replay_integrity_report.json": replay_integrity_report,
     }
-
     for name, payload in artifacts.items():
         _write_json(output_dir / name, payload)
 
@@ -429,12 +562,15 @@ def run_bundle(output_dir: Path) -> Dict[str, Any]:
         "output_dir": str(output_dir),
         "required_outputs": sorted(artifacts.keys()),
         "integration_flows": {
-            "pqx_trace_path": str(output_dir / "pqx_execution_trace.json"),
-            "prompt_queue_execution_status": queue_execution.get("execution_status"),
-            "orchestration_execution_status": cycle_runner_result.get("execution_status"),
+            "pqx": {"status": pqx_trace.get("final_status"), "trace": str(output_dir / "pqx_execution_trace.json")},
+            "prompt_queue": {"status": queue_execution.get("execution_status")},
+            "orchestration": {"status": cycle_result.get("execution_status")},
         },
+        "failure_injection_case_count": failure_injection_report["case_count"],
+        "cross_system_comparison_count": transition_consistency_report["cross_system_comparison_count"],
     }
     _write_json(output_dir / "artifact_index.json", artifact_index)
+
     return artifact_index
 
 
@@ -448,7 +584,7 @@ def main(argv: List[str] | None = None) -> int:
     parser.add_argument(
         "--verify-only",
         action="store_true",
-        help="Only verify required generated outputs exist.",
+        help="Only verify required generated outputs exist and are non-empty.",
     )
     args = parser.parse_args(argv)
 
@@ -457,19 +593,22 @@ def main(argv: List[str] | None = None) -> int:
     if not args.verify_only:
         try:
             index = run_bundle(output_dir)
-        except Exception as exc:  # fail-closed CLI behavior
+        except Exception as exc:  # fail-closed behavior
             print(json.dumps({"error": str(exc)}, indent=2), file=sys.stderr)
             return 2
         print(json.dumps(index, indent=2, sort_keys=True))
 
     missing = _verify_required_outputs(output_dir)
-    if REVIEW_DOC_PATH.exists() and missing:
+    empty = _verify_non_empty_outputs(output_dir)
+
+    if REVIEW_DOC_PATH.exists() and (missing or empty):
         print(
             json.dumps(
                 {
                     "error": "review_exists_without_required_generated_outputs",
                     "review_doc": str(REVIEW_DOC_PATH),
                     "missing_outputs": missing,
+                    "empty_outputs": empty,
                 },
                 indent=2,
                 sort_keys=True,
@@ -478,8 +617,15 @@ def main(argv: List[str] | None = None) -> int:
         )
         return 2
 
-    if missing:
-        print(json.dumps({"missing_outputs": missing, "output_dir": str(output_dir)}, indent=2, sort_keys=True), file=sys.stderr)
+    if missing or empty:
+        print(
+            json.dumps(
+                {"missing_outputs": missing, "empty_outputs": empty, "output_dir": str(output_dir)},
+                indent=2,
+                sort_keys=True,
+            ),
+            file=sys.stderr,
+        )
         return 1
 
     return 0

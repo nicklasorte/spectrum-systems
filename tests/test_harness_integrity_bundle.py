@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 
 
@@ -25,7 +26,7 @@ def test_verify_only_fails_when_review_exists_and_outputs_missing(tmp_path: Path
     assert rc == 2
 
 
-def test_run_bundle_emits_required_outputs(tmp_path: Path, monkeypatch) -> None:
+def test_run_bundle_emits_real_outputs_and_metrics(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     review = tmp_path / "harness_integrity_review.md"
     review.write_text("review exists", encoding="utf-8")
@@ -36,4 +37,23 @@ def test_run_bundle_emits_required_outputs(tmp_path: Path, monkeypatch) -> None:
     assert rc == 0
 
     for name in module.REQUIRED_OUTPUTS:
-        assert (out_dir / name).exists(), f"missing output {name}"
+        target = out_dir / name
+        assert target.exists(), f"missing output {name}"
+        assert target.stat().st_size > 2, f"empty output {name}"
+
+    failure = json.loads((out_dir / "failure_injection_report.json").read_text(encoding="utf-8"))
+    assert failure["case_count"] >= 3
+    assert len(failure["scenarios"]) >= 3
+
+    transitions = json.loads((out_dir / "transition_consistency_report.json").read_text(encoding="utf-8"))
+    assert transitions["cross_system_comparison_count"] >= 1
+    assert len(transitions["comparisons"]) >= 3
+
+    trace = json.loads((out_dir / "trace_completeness_report.json").read_text(encoding="utf-8"))
+    assert "coverage_ratio" in trace
+
+    replay = json.loads((out_dir / "replay_integrity_report.json").read_text(encoding="utf-8"))
+    assert replay["deterministic_replay"] is True
+
+    verify_rc = module.main(["--verify-only", "--output-dir", str(out_dir)])
+    assert verify_rc == 0
