@@ -40,11 +40,29 @@ def _lineage() -> dict[str, object]:
             "produced_by": "AEXEngine",
         },
         "tlc_handoff_record": {
-            "tlc_mediated": True,
-            "trace_id": "trace-repo-write",
-            "request_id": "req-1",
-            "build_admission_record_ref": "build_admission_record:adm-1",
+            "artifact_type": "tlc_handoff_record",
             "handoff_id": "tlc-handoff-1",
+            "request_id": "req-1",
+            "trace_id": "trace-repo-write",
+            "created_at": "2026-04-08T00:00:00Z",
+            "produced_by": "TLC",
+            "build_admission_record_ref": "build_admission_record:adm-1",
+            "normalized_execution_request_ref": "normalized_execution_request:req-1",
+            "handoff_status": "accepted",
+            "target_subsystems": ["TPA", "PQX"],
+            "execution_type": "repo_write",
+            "repo_mutation_requested": True,
+            "reason_codes": [],
+            "tlc_run_context": {
+                "run_id": "tlc-aex-check",
+                "branch_ref": "refs/heads/main",
+                "objective": "repo mutation",
+                "entry_boundary": "aex_to_tlc",
+            },
+            "lineage": {
+                "upstream_refs": ["build_admission_record:adm-1", "normalized_execution_request:req-1"],
+                "intended_path": ["TLC", "TPA", "PQX"],
+            },
         },
     }
 

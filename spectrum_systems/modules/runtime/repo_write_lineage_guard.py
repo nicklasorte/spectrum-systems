@@ -35,6 +35,7 @@ def validate_repo_write_lineage(
 
     validate_artifact(build_admission_record, "build_admission_record")
     validate_artifact(normalized_execution_request, "normalized_execution_request")
+    validate_artifact(tlc_handoff_record, "tlc_handoff_record")
 
     admission_status = _require_non_empty_string(build_admission_record.get("admission_status"), field="admission_status")
     if admission_status != "accepted":
@@ -75,12 +76,17 @@ def validate_repo_write_lineage(
     if normalized_ref != expected_normalized_ref:
         raise RepoWriteLineageGuardError("repo_write_lineage_rejected:normalized_request_ref_unresolvable")
 
-    if not bool(tlc_handoff_record.get("tlc_mediated")):
-        raise RepoWriteLineageGuardError("repo_write_lineage_rejected:tlc_mediation_missing")
+    handoff_status = _require_non_empty_string(tlc_handoff_record.get("handoff_status"), field="tlc_handoff_record.handoff_status")
+    if handoff_status != "accepted":
+        raise RepoWriteLineageGuardError("repo_write_lineage_rejected:handoff_not_accepted")
     handoff_trace_id = _require_non_empty_string(tlc_handoff_record.get("trace_id"), field="tlc_handoff_record.trace_id")
     handoff_request_id = _require_non_empty_string(tlc_handoff_record.get("request_id"), field="tlc_handoff_record.request_id")
     handoff_admission_id = _require_non_empty_string(
         tlc_handoff_record.get("build_admission_record_ref"), field="tlc_handoff_record.build_admission_record_ref"
+    )
+    handoff_normalized_ref = _require_non_empty_string(
+        tlc_handoff_record.get("normalized_execution_request_ref"),
+        field="tlc_handoff_record.normalized_execution_request_ref",
     )
     if handoff_trace_id != admission_trace_id:
         raise RepoWriteLineageGuardError("repo_write_lineage_rejected:handoff_trace_id_mismatch")
@@ -88,6 +94,8 @@ def validate_repo_write_lineage(
         raise RepoWriteLineageGuardError("repo_write_lineage_rejected:handoff_request_id_mismatch")
     if handoff_admission_id != f"build_admission_record:{build_admission_record['admission_id']}":
         raise RepoWriteLineageGuardError("repo_write_lineage_rejected:handoff_admission_ref_mismatch")
+    if handoff_normalized_ref != expected_normalized_ref:
+        raise RepoWriteLineageGuardError("repo_write_lineage_rejected:handoff_normalized_ref_mismatch")
 
     _require_non_empty_string(build_admission_record.get("produced_by"), field="build_admission_record.produced_by")
     _require_non_empty_string(normalized_execution_request.get("produced_by"), field="normalized_execution_request.produced_by")
