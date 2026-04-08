@@ -1,0 +1,32 @@
+{
+  "artifact_type": "review_handoff_disposition_artifact",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "disposition_id": "rhda:roha:rferes-001",
+  "source_handoff_ref": "review_operator_handoff_artifact:roha:rferes-001",
+  "source_review_fix_execution_result_ref": "review_fix_execution_result_artifact:rferes-001",
+  "source_review_result_ref": "review_result_artifact:review-001",
+  "source_review_id": "review-001",
+  "disposition": "schedule_follow_on_cycle",
+  "permitted_follow_on": "permitted_with_explicit_operator_action",
+  "required_human_action": true,
+  "scheduling_eligible": true,
+  "escalation_owner_ref": null,
+  "reason_code": "unresolved_fix_required",
+  "rationale": "Post-cycle review still requires fixes; follow-on cycle is allowed only via explicit operator action.",
+  "provenance": {
+    "classified_by_system": "TLC",
+    "execution_triggered": false,
+    "rqx_cycle_reentry_triggered": false,
+    "closure_authority_transferred": false
+  },
+  "trace_linkage": {
+    "handoff_id": "roha:rferes-001",
+    "request_ref": "review_fix_execution_request_artifact:rfer-001",
+    "fix_slice_ref": "review_fix_slice_artifact:rfs-3f8f61e5d9ce",
+    "tpa_artifact_ref": "tpa_slice_artifact:tpa-gate-001",
+    "pqx_execution_ref": "exec:run-001:AI-01:1"
+  },
+  "emitted_at": "2026-04-08T12:00:00Z"
+}
