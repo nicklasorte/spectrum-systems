@@ -109,6 +109,7 @@ Any such divergence must trigger hardening-first roadmap sequencing.
 - **TLC** remains orchestration authority and is not a public write-entry surface.
 - **PQX** remains execution-only and must not accept direct repo-writing requests.
 - Repo-mutating orchestration must include `build_admission_record` and `normalized_execution_request` before TLC continues.
+- Enforcement is fail-closed end-to-end: missing/invalid AEX artifacts block TLC entry, and missing TLC lineage blocks PQX execution (`AEX → TLC → TPA → PQX` only).
 
 ## End-to-End Artifact Chain Extension
 

@@ -23,6 +23,10 @@ from spectrum_systems.modules.runtime.failure_diagnosis_engine import (
 )
 from spectrum_systems.modules.runtime.pqx_execution_policy import evaluate_pqx_execution_policy
 from spectrum_systems.modules.runtime.pqx_execution_authority import issue_pqx_execution_authority_record
+from spectrum_systems.modules.runtime.repo_write_lineage_guard import (
+    RepoWriteLineageGuardError,
+    validate_repo_write_lineage,
+)
 from spectrum_systems.modules.runtime.pre_pr_governance_closure import (
     PrePRGovernanceClosureError,
     run_local_pre_pr_governance_closure,
@@ -59,22 +63,31 @@ def _is_repo_mutation_requested(run_request: dict[str, Any]) -> bool:
     return False
 
 
-def _require_repo_write_admission(run_request: dict[str, Any], *, trace_refs: list[str]) -> None:
+def _require_repo_write_admission(run_request: dict[str, Any], *, trace_refs: list[str], expected_trace_id: str) -> dict[str, str] | None:
     if not _is_repo_mutation_requested(run_request):
-        return
+        return None
 
     admission = run_request.get("build_admission_record")
     normalized = run_request.get("normalized_execution_request")
     if not isinstance(admission, dict) or not isinstance(normalized, dict):
         raise TopLevelConductorError("direct_tlc_repo_write_forbidden: missing AEX admission artifacts")
-
-    validate_artifact(admission, "build_admission_record")
-    validate_artifact(normalized, "normalized_execution_request")
-
-    if admission.get("admission_status") != "accepted":
-        raise TopLevelConductorError("repo_mutation_without_admission: admission_status must be accepted")
-    if admission.get("trace_id") not in trace_refs and admission.get("trace_id") != normalized.get("trace_id"):
-        raise TopLevelConductorError("repo_mutation_without_admission: broken trace continuity")
+    tlc_handoff = {
+        "tlc_mediated": True,
+        "trace_id": admission.get("trace_id"),
+        "request_id": normalized.get("request_id"),
+        "build_admission_record_ref": f"build_admission_record:{admission.get('admission_id') or ''}",
+    }
+    try:
+        validated = validate_repo_write_lineage(
+            build_admission_record=admission,
+            normalized_execution_request=normalized,
+            tlc_handoff_record=tlc_handoff,
+            expected_trace_id=expected_trace_id,
+        )
+    except (RepoWriteLineageGuardError, Exception) as exc:
+        raise TopLevelConductorError(f"repo_mutation_without_admission:{exc}") from exc
+    trace_refs.extend([validated["trace_id"]])
+    return validated
 
 
 def _canonical_hash(payload: Any) -> str:
@@ -434,6 +447,7 @@ def _real_sel(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _real_pqx(payload: dict[str, Any]) -> dict[str, Any]:
+    repo_write_lineage = payload.get("repo_write_lineage") if isinstance(payload.get("repo_write_lineage"), dict) else {}
     if bool(payload.get("repo_mutation_requested")) and not isinstance(payload.get("build_admission_record"), dict):
         raise TopLevelConductorError("direct_pqx_repo_write_forbidden: missing build_admission_record")
     emitted_at = _require_non_empty_str(payload.get("emitted_at"), field="emitted_at")
@@ -490,6 +504,8 @@ def _real_pqx(payload: dict[str, Any]) -> dict[str, Any]:
         bundle_state_path=bundle_state_path,
         enforce_dependency_admission=False,
         clock=_clock,
+        execution_class="repo_write" if bool(payload.get("repo_mutation_requested")) else "read_only",
+        repo_write_lineage=payload.get("repo_write_lineage"),
     )
 
     history = pqx_result.get("execution_history", [])
@@ -523,7 +539,20 @@ def _real_pqx(payload: dict[str, Any]) -> dict[str, Any]:
         "trace_refs": [payload["trace_id"]],
         "lineage": {
             "lineage_id": f"lineage:{payload['run_id']}:pqx",
-            "parent_refs": [f"request:{payload['run_id']}"],
+            "parent_refs": [
+                ref
+                for ref in [
+                    f"request:{payload['run_id']}",
+                    str(repo_write_lineage.get("normalized_execution_request_ref") or ""),
+                    (
+                        f"build_admission_record:{repo_write_lineage.get('admission_id')}"
+                        if repo_write_lineage.get("admission_id")
+                        else ""
+                    ),
+                    f"tlc_handoff_record:{payload['run_id']}",
+                ]
+                if isinstance(ref, str) and ref
+            ],
         },
         "request_artifact": request_artifact,
         "execution_artifact": output_artifact,
@@ -972,7 +1001,11 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
         "lineage": lineage,
         "emitted_at": emitted_at,
     }
-    _require_repo_write_admission(run_request, trace_refs=state["trace_refs"])
+    repo_write_lineage = _require_repo_write_admission(
+        run_request,
+        trace_refs=state["trace_refs"],
+        expected_trace_id=state["trace_id"],
+    )
     pre_pr_failures = run_request.get("pre_pr_failures")
     if isinstance(pre_pr_failures, list) and pre_pr_failures:
         packet = normalize_pytest_failure_packet(
@@ -1011,6 +1044,20 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                     "emitted_at": state["emitted_at"],
                     "repo_mutation_requested": repo_mutation_requested,
                     "build_admission_record": build_admission_record,
+                    "repo_write_lineage": {
+                        **(repo_write_lineage or {}),
+                        "build_admission_record": build_admission_record,
+                        "normalized_execution_request": normalized_execution_request,
+                        "tlc_handoff_record": {
+                            "tlc_mediated": True,
+                            "trace_id": state["trace_id"],
+                            "request_id": (repo_write_lineage or {}).get("request_id"),
+                            "build_admission_record_ref": f"build_admission_record:{(repo_write_lineage or {}).get('admission_id', '')}",
+                            "handoff_id": f"tlc-handoff-{state['run_id']}",
+                        },
+                    }
+                    if repo_mutation_requested
+                    else None,
                 }
             )
             _validate_handoff_output("PQX", pqx_result if isinstance(pqx_result, dict) else {})

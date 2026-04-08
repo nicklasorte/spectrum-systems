@@ -300,7 +300,9 @@ These rules are hard boundaries for architecture, contracts, and validation.
 ## Entry Invariant (Repo-Mutation Admission)
 - All Codex execution requests that create or modify repository state MUST enter through **AEX**.
 - **AEX** is the only system allowed to invoke **TLC** for repo-mutating work.
-- Any attempt to invoke **TLC** or **PQX** directly for repo-mutating work without a valid `build_admission_record` MUST fail closed.
+- **TLC** MUST validate `build_admission_record` and `normalized_execution_request` (accepted status, repo-write class, resolvable request reference, and trace continuity) before orchestration continues.
+- **PQX** MUST reject repo-writing execution that lacks AEX admission artifacts plus TLC-mediated lineage.
+- Any attempt to invoke **TLC** or **PQX** directly for repo-mutating work without valid AEX/TLC lineage MUST fail closed.
 
 ## Pre-PR bounded repair-loop behavior (GHA-008)
 - This is a **behavior** over existing systems, not a new system.

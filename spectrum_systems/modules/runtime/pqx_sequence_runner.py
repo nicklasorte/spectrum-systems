@@ -20,6 +20,7 @@ from spectrum_systems.modules.runtime.pqx_slice_runner import (
     confirm_slice_completion_after_enforcement_allow,
     run_pqx_slice,
 )
+from spectrum_systems.modules.runtime.repo_write_lineage_guard import RepoWriteLineageGuardError, validate_repo_write_lineage
 from spectrum_systems.modules.runtime.tpa_complexity_governance import (
     build_complexity_budget,
     build_complexity_trend,
@@ -1071,6 +1072,8 @@ def execute_sequence_run(
     review_eval_artifacts: dict[str, Any] | None = None,
     review_control_decision: dict[str, Any] | None = None,
     tpa_scope_policy_path: str | Path | None = None,
+    execution_class: str = "read_only",
+    repo_write_lineage: dict[str, Any] | None = None,
 ) -> dict:
     """Run a narrow deterministic sequential PQX batch (2–3 slices) with persistent resumable state."""
 
@@ -1080,6 +1083,19 @@ def execute_sequence_run(
         raise PQXSequenceRunnerError("run_id is required")
     if not isinstance(trace_id, str) or not trace_id:
         raise PQXSequenceRunnerError("trace_id is required")
+    if execution_class not in {"read_only", "repo_write"}:
+        raise PQXSequenceRunnerError("execution_class must be read_only or repo_write")
+    if execution_class == "repo_write":
+        lineage = repo_write_lineage if isinstance(repo_write_lineage, dict) else {}
+        try:
+            validate_repo_write_lineage(
+                build_admission_record=lineage.get("build_admission_record"),
+                normalized_execution_request=lineage.get("normalized_execution_request"),
+                tlc_handoff_record=lineage.get("tlc_handoff_record"),
+                expected_trace_id=trace_id,
+            )
+        except (RepoWriteLineageGuardError, Exception) as exc:
+            raise PQXSequenceRunnerError(f"direct_pqx_repo_write_forbidden:{exc}") from exc
 
     _validate_slice_requests(slice_requests)
     review_results = review_results_by_slice or {}
