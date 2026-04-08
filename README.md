@@ -131,6 +131,15 @@ Current architecture centers on a governed runtime with explicit role ownership 
 4. Run validation checks before proposing promotion-relevant changes.
 5. Treat this repo as control-plane governance; keep operational runtime code in implementation repositories.
 
+## Related and Historical Documents
+
+- Current and historical system maturity references: `docs/system-maturity-model.md`.
+- Historical maturity guidance references: `docs/level-0-to-20-playbook.md` and `docs/review-maturity-rubric.md`.
+- Study-loop context and prior operating flow framing: `docs/spectrum-study-operating-model.md`.
+- Historical long-range planning reference: `docs/100-step-roadmap.md` (100-step roadmap).
+
+These links are retained for compatibility and historical context. Active runtime guidance remains this README plus the canonical ownership registry in `docs/architecture/system_registry.md`.
+
 ## Philosophy
 
 The system, not the model, controls execution.
