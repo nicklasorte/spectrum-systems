@@ -1,0 +1,23 @@
+{
+  "artifact_type": "review_request_artifact",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "review_id": "rqx-01-review-001",
+  "review_name": "rqx_01_initial_build",
+  "review_type": "code_path_review",
+  "scope": "RQX-01 initial bounded review loop over completed PQX execution outputs.",
+  "run_id": "run-rqx-01-0001",
+  "batch_id": "batch-rqx-01",
+  "changed_files": [
+    "spectrum_systems/modules/review_queue_executor.py",
+    "contracts/schemas/review_result_artifact.schema.json"
+  ],
+  "produced_artifact_refs": [
+    "artifacts/pqx_runs/run-rqx-01-0001/post_execution_decision.json"
+  ],
+  "validation_result_refs": [
+    "artifacts/pqx_runs/run-rqx-01-0001/test_results.json"
+  ],
+  "requested_at": "2026-04-08T00:00:00Z"
+}

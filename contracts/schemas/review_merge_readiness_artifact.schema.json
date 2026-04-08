@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/review_merge_readiness_artifact.schema.json",
+  "title": "Review Merge Readiness Artifact",
+  "description": "Machine-readable merge readiness verdict from bounded RQX review output.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "review_id",
+    "review_name",
+    "review_result_ref",
+    "verdict",
+    "merge_ready",
+    "rationale",
+    "required_follow_up",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "review_merge_readiness_artifact"},
+    "artifact_version": {"type": "string", "const": "1.0.0"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "standards_version": {"type": "string", "const": "1.0.0"},
+    "review_id": {"type": "string", "minLength": 1},
+    "review_name": {"type": "string", "pattern": "^[a-z0-9._-]+$"},
+    "review_result_ref": {"type": "string", "minLength": 1},
+    "verdict": {
+      "type": "string",
+      "enum": ["safe_to_merge", "fix_required", "not_safe_to_merge"]
+    },
+    "merge_ready": {"type": "boolean"},
+    "rationale": {"type": "string", "minLength": 1},
+    "required_follow_up": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "generated_at": {"type": "string", "format": "date-time"}
+  }
+}

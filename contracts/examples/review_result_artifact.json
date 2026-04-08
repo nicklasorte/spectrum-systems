@@ -1,0 +1,36 @@
+{
+  "artifact_type": "review_result_artifact",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "review_id": "rqx-01-review-001",
+  "review_name": "rqx_01_initial_build",
+  "review_type": "code_path_review",
+  "scope": "RQX-01 initial bounded review loop over completed PQX execution outputs.",
+  "run_id": "run-rqx-01-0001",
+  "batch_id": "batch-rqx-01",
+  "files_inspected": [
+    "spectrum_systems/modules/review_queue_executor.py",
+    "contracts/schemas/review_result_artifact.schema.json"
+  ],
+  "findings": [
+    {
+      "finding_id": "F-1",
+      "title": "Validation reference indicates failed checks",
+      "severity": "high",
+      "evidence": [
+        "artifacts/pqx_runs/run-rqx-01-0001/test_results.json"
+      ],
+      "why_it_matters": "Failed validation means the reviewed slice cannot be considered safe to merge."
+    }
+  ],
+  "verdict": "fix_required",
+  "rationale": "At least one high-severity signal was detected from validation references.",
+  "required_follow_up": [
+    "Address failing validation and rerun RQX review before merge."
+  ],
+  "source_review_request_ref": "review_request_artifact:rqx-01-review-001",
+  "generated_at": "2026-04-08T00:05:00Z",
+  "bounded_review": true,
+  "automatic_fix_execution": "disabled"
+}

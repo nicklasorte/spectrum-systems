@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/review_request_artifact.schema.json",
+  "title": "Review Request Artifact",
+  "description": "Bounded structured request for RQX review execution over completed PQX work.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "review_id",
+    "review_name",
+    "review_type",
+    "scope",
+    "changed_files",
+    "produced_artifact_refs",
+    "validation_result_refs",
+    "requested_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "review_request_artifact"
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "review_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_name": {
+      "type": "string",
+      "pattern": "^[a-z0-9._-]+$"
+    },
+    "review_type": {
+      "type": "string",
+      "enum": [
+        "code_path_review",
+        "architecture_boundary_review",
+        "contract_surface_review",
+        "trust_boundary_review"
+      ]
+    },
+    "scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "batch_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changed_files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "produced_artifact_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "validation_result_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "requested_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "run_id"
+      ]
+    },
+    {
+      "required": [
+        "batch_id"
+      ]
+    }
+  ]
+}
