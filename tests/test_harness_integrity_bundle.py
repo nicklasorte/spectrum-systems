@@ -52,7 +52,9 @@ def test_run_bundle_emits_real_outputs_and_metrics(tmp_path: Path, monkeypatch) 
     transitions = json.loads((out_dir / "transition_consistency_report.json").read_text(encoding="utf-8"))
     assert transitions["cross_system_comparison_count"] >= 1
     assert len(transitions["comparisons"]) >= 3
-    assert {"system", "raw_status", "status_bucket"} <= set(transitions["comparisons"][0].keys())
+    assert {"system", "raw_status", "status_bucket", "decision_class"} <= set(transitions["comparisons"][0].keys())
+    assert transitions["decision_class_set"] == ["allow_like"]
+    assert transitions["mismatch_detected"] is False
 
     trace = json.loads((out_dir / "trace_completeness_report.json").read_text(encoding="utf-8"))
     assert "coverage_ratio" in trace and "trace_links" in trace
@@ -64,6 +66,7 @@ def test_run_bundle_emits_real_outputs_and_metrics(tmp_path: Path, monkeypatch) 
     integrity = json.loads((out_dir / "harness_integrity_report.json").read_text(encoding="utf-8"))
     assert "checks" in integrity and len(integrity["checks"]) >= 3
     assert {"check_id", "passed", "details"} <= set(integrity["checks"][0].keys())
+    assert integrity["all_passed"] is True
 
     index = json.loads((out_dir / "harness_bundle_index.json").read_text(encoding="utf-8"))
     assert "bundle_run_timestamp" in index
@@ -71,6 +74,8 @@ def test_run_bundle_emits_real_outputs_and_metrics(tmp_path: Path, monkeypatch) 
     assert "readiness_score" in index
     assert "blocking_findings_count" in index
     assert "warning_findings_count" in index
+    assert index["blocking_findings_count"] == 0
+    assert index["readiness_score"] > 80
 
     verify_rc = module.main(["--verify-only", "--output-dir", str(out_dir)])
     assert verify_rc == 0
