@@ -1,0 +1,33 @@
+{
+  "artifact_type": "review_fix_execution_result_artifact",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "result_id": "rferes-001",
+  "request_ref": "review_fix_execution_request_artifact:rfer-001",
+  "review_id": "rqx-02-review-001",
+  "fix_slice_ref": "review_fix_slice_artifact:rfs-3f8f61e5d9ce",
+  "loop_cycle_count": 1,
+  "status": "completed_safe_to_merge",
+  "tpa_decision": {
+    "decision": "allow",
+    "tpa_artifact_ref": "tpa_slice_artifact:run-001:AI-01:GATE",
+    "phase": "gate",
+    "reason": null
+  },
+  "pqx_execution": {
+    "attempted": true,
+    "execution_ref": "exec:run-001:AI-01:1",
+    "status": "complete",
+    "error": null
+  },
+  "post_fix_review": {
+    "attempted": true,
+    "review_result_ref": "review_result_artifact:rqx-02-review-002",
+    "review_merge_readiness_ref": "review_merge_readiness_artifact:rqx-02-review-002",
+    "markdown_review_path": "docs/reviews/rqx_02_review_rerun_review.md",
+    "verdict": "safe_to_merge"
+  },
+  "stopped": true,
+  "generated_at": "2026-04-08T01:10:00Z"
+}

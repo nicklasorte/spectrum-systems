@@ -1,0 +1,227 @@
+{
+  "artifact_type": "review_fix_execution_request_artifact",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "request_id": "rfer-001",
+  "review_id": "rqx-02-review-001",
+  "source_review_result_ref": "review_result_artifact:rqx-02-review-001",
+  "fix_slices": [
+    {
+      "artifact_type": "review_fix_slice_artifact",
+      "artifact_version": "1.0.0",
+      "schema_version": "1.0.0",
+      "standards_version": "1.0.0",
+      "fix_slice_id": "rfs-3f8f61e5d9ce",
+      "review_id": "rqx-02-review-001",
+      "review_name": "rqx_02_review_run",
+      "review_result_ref": "review_result_artifact:rqx-02-review-001",
+      "source_review_request_ref": "review_request_artifact:rqx-02-review-001",
+      "objective": "Resolve high severity finding and rerun bounded review.",
+      "fix_scope": "bounded_single_slice_remediation",
+      "target_surface_refs": [
+        "spectrum_systems/modules/review_queue_executor.py"
+      ],
+      "validation_requirements": [
+        "artifacts/pqx_runs/run-rqx-unit-001/test_results.json"
+      ],
+      "max_repair_attempts": 1,
+      "provenance": {
+        "emitted_by_system": "RQX",
+        "emission_reason": "fix_required_verdict",
+        "automatic_execution": "disabled"
+      },
+      "trace_linkage": {
+        "run_id": "run-rqx-unit-001",
+        "batch_id": "batch-rqx-unit-001"
+      },
+      "generated_at": "2026-04-08T01:00:00Z"
+    }
+  ],
+  "tpa_slice_artifact": {
+    "artifact_type": "tpa_slice_artifact",
+    "schema_version": "1.2.0",
+    "artifact_id": "run-001:AI-01:GATE",
+    "run_id": "run-001",
+    "trace_id": "trace-001",
+    "slice_id": "AI-01",
+    "step_id": "AI-01",
+    "phase": "gate",
+    "produced_at": "2026-04-08T01:01:00Z",
+    "artifact": {
+      "artifact_kind": "gate",
+      "build_artifact_id": "run-001:AI-01:BUILD",
+      "simplify_artifact_id": "run-001:AI-01:SIMPLIFY",
+      "behavioral_equivalence": true,
+      "contract_valid": true,
+      "tests_valid": true,
+      "selected_pass": "pass_2_simplify",
+      "rejected_pass": "pass_1_build",
+      "selection_inputs": {
+        "build_artifact_id": "run-001:AI-01:BUILD",
+        "simplify_artifact_id": "run-001:AI-01:SIMPLIFY",
+        "comparison_inputs_present": true
+      },
+      "selection_metrics": {
+        "build": {
+          "files_changed_count": 2,
+          "lines_added": 12,
+          "lines_removed": 3,
+          "net_line_delta": 9,
+          "functions_added_count": 1,
+          "functions_removed_count": 0,
+          "helpers_added_count": 0,
+          "helpers_removed_count": 0,
+          "wrappers_collapsed_count": 0,
+          "deletions_count": 0,
+          "public_surface_delta_count": 0,
+          "approximate_max_nesting_delta": 0,
+          "approximate_branching_delta": 0,
+          "abstraction_added_count": 0,
+          "abstraction_removed_count": 0
+        },
+        "simplify": {
+          "files_changed_count": 2,
+          "lines_added": 9,
+          "lines_removed": 4,
+          "net_line_delta": 5,
+          "functions_added_count": 1,
+          "functions_removed_count": 0,
+          "helpers_added_count": 0,
+          "helpers_removed_count": 0,
+          "wrappers_collapsed_count": 0,
+          "deletions_count": 0,
+          "public_surface_delta_count": 0,
+          "approximate_max_nesting_delta": 0,
+          "approximate_branching_delta": 0,
+          "abstraction_added_count": 0,
+          "abstraction_removed_count": 0
+        },
+        "simplify_delta": {
+          "files_changed_count": 0,
+          "lines_added": -3,
+          "lines_removed": 1,
+          "net_line_delta": -4,
+          "functions_added_count": 0,
+          "functions_removed_count": 0,
+          "helpers_added_count": 0,
+          "helpers_removed_count": 0,
+          "wrappers_collapsed_count": 0,
+          "deletions_count": 0,
+          "public_surface_delta_count": 0,
+          "approximate_max_nesting_delta": 0,
+          "approximate_branching_delta": 0,
+          "abstraction_added_count": 0,
+          "abstraction_removed_count": 0
+        }
+      },
+      "selection_rationale": "Bounded fix slice remains within policy scope.",
+      "promotion_ready": true,
+      "fail_closed_reason": null,
+      "context_bundle_ref": "context-bundle:rqx-b2",
+      "review_signal_refs": ["review_result_artifact:rqx-02-review-001"],
+      "eval_signal_refs": [],
+      "addressed_failure_pattern_refs": [],
+      "unaddressed_failure_pattern_refs": [],
+      "high_risk_unmitigated": false,
+      "risk_mitigation_refs": ["mitigation:bounded-scope"],
+      "simplicity_review": {
+        "decision": "allow",
+        "overall_severity": "low",
+        "findings": [],
+        "report_ref": "simplicity:run-001"
+      },
+      "complexity_regression_gate": {
+        "decision": "allow",
+        "policy_ref": "policy:complexity-regression-v1",
+        "regression_detected": false,
+        "historical_baseline_available": true,
+        "historical_baseline_ref": "baseline:run-000",
+        "exception_justified": false
+      }
+    }
+  },
+  "pqx_task_wrapper": {
+    "schema_version": "1.0.0",
+    "artifact_type": "codex_pqx_task_wrapper",
+    "wrapper_id": "codex-pqx-2ea4ad6d1535e24d",
+    "task_identity": {
+      "task_id": "rqx-b2-example",
+      "run_id": "run-001",
+      "step_id": "AI-01",
+      "step_name": "Apply bounded review fix slice"
+    },
+    "task_source": {
+      "source_type": "codex_prompt",
+      "prompt": "Apply the bounded review fix slice rfs-3f8f61e5d9ce only."
+    },
+    "execution_intent": {
+      "execution_context": "pqx_governed",
+      "mode": "governed"
+    },
+    "governance": {
+      "classification": "governed_pqx_required",
+      "pqx_required": true,
+      "authority_state": "authoritative_governed_pqx",
+      "authority_resolution": "explicit_pqx_context",
+      "authority_evidence_ref": "contracts/examples/contract_preflight_result_artifact.json",
+      "contract_preflight_result_artifact_path": "contracts/examples/contract_preflight_result_artifact.json"
+    },
+    "changed_paths": [
+      "spectrum_systems/modules/review_queue_executor.py"
+    ],
+    "metadata": {
+      "requested_at": "2026-04-08T01:00:00Z",
+      "dependencies": [],
+      "policy_version": "1.0.0",
+      "authority_notes": "RQX-B2 bounded fix execution"
+    },
+    "pqx_execution_request": {
+      "schema_version": "1.1.0",
+      "run_id": "run-001",
+      "step_id": "AI-01",
+      "step_name": "Apply bounded review fix slice",
+      "dependencies": [],
+      "requested_at": "2026-04-08T01:00:00Z",
+      "prompt": "Apply the bounded review fix slice rfs-3f8f61e5d9ce only.",
+      "roadmap_version": "docs/roadmaps/system_roadmap.md",
+      "row_snapshot": {
+        "row_index": 0,
+        "step_id": "AI-01",
+        "step_name": "Apply bounded review fix slice",
+        "dependencies": [],
+        "status": "ready"
+      }
+    }
+  },
+  "post_fix_review_request_artifact": {
+    "artifact_type": "review_request_artifact",
+    "artifact_version": "1.0.0",
+    "schema_version": "1.0.0",
+    "standards_version": "1.0.0",
+    "review_id": "rqx-02-review-002",
+    "review_name": "rqx_02_review_rerun",
+    "review_type": "code_path_review",
+    "scope": "Post-fix bounded re-review.",
+    "run_id": "run-001",
+    "batch_id": "batch-rqx-02",
+    "changed_files": ["spectrum_systems/modules/review_queue_executor.py"],
+    "produced_artifact_refs": ["artifacts/pqx_runs/run-001/output.json"],
+    "validation_result_refs": ["artifacts/pqx_runs/run-001/test_results.json"],
+    "requested_at": "2026-04-08T01:02:00Z"
+  },
+  "loop_cycle_count": 1,
+  "max_fix_execution_cycles": 1,
+  "checkpoint_required": false,
+  "requested_at": "2026-04-08T01:02:00Z",
+  "provenance": {
+    "emitted_by_system": "RQX",
+    "execution_path": "RQX_to_TPA_to_PQX_to_RQX"
+  },
+  "pqx_runtime": {
+    "roadmap_path": "docs/roadmaps/system_roadmap.md",
+    "state_path": "artifacts/prompt_queue/state.json",
+    "runs_root": "artifacts/pqx_runs",
+    "pqx_output_text": "RQX-B2 bounded fix execution completed."
+  }
+}

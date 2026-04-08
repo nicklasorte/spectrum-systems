@@ -261,7 +261,9 @@ These rules are hard boundaries for architecture, contracts, and validation.
 - SEL wraps all subsystems as a cross-cutting enforcement boundary
 - RQX → RIL
 - RQX → FRE
-- RQX → PQX (handoff via emitted review_fix_slice_artifact; no direct execution)
+- RQX → TPA (review fix slices must be policy-gated before execution)
+- TPA → PQX (only approved tpa_slice_artifact may enter execution)
+- RQX → PQX (handoff only via TPA-approved artifacts; no direct execution)
 - RIL → CDE
 
 ## Pre-PR bounded repair-loop behavior (GHA-008)

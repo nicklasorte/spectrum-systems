@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-21T15:04:56Z",
+  "generated_at": "2026-04-08T21:56:46Z",
   "source_manifest": "contracts/standards-manifest.json",
   "repos": [
     {
@@ -82,6 +82,23 @@
           "contract": "pdf_anchored_docx_comment_injection_contract",
           "pinned_version": "1.0.1",
           "canonical_version": "1.0.1",
+          "drift": false
+        }
+      ],
+      "contracts_produced": [],
+      "validation_status": "pass",
+      "failures": [],
+      "warnings": []
+    },
+    {
+      "repo_name": "governed-prompt-queue",
+      "repo_type": "pipeline",
+      "system_id": "governed-prompt-queue",
+      "contracts_consumed": [
+        {
+          "contract": "review_artifact",
+          "pinned_version": "1.0.0",
+          "canonical_version": "1.0.0",
           "drift": false
         }
       ],
@@ -446,6 +463,16 @@
       "warnings": []
     },
     {
+      "repo_name": "tlc",
+      "repo_type": "governance",
+      "system_id": "",
+      "contracts_consumed": [],
+      "contracts_produced": [],
+      "validation_status": "governance-repo",
+      "failures": [],
+      "warnings": []
+    },
+    {
       "repo_name": "working-paper-review-engine",
       "repo_type": "operational_engine",
       "system_id": "working-paper-review-engine",
@@ -605,6 +632,13 @@
         "comment-resolution-engine",
         "system-factory",
         "working-paper-review-engine"
+      ]
+    },
+    "review_artifact": {
+      "canonical_version": "1.0.0",
+      "status": "stable",
+      "consumers": [
+        "governed-prompt-queue"
       ]
     },
     "reviewer_comment_set": {

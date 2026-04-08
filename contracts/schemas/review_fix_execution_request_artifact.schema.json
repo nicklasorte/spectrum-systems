@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/review_fix_execution_request_artifact.schema.json",
+  "title": "Review Fix Execution Request Artifact",
+  "description": "Bounded one-cycle review fix execution request requiring TPA approval before PQX execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "request_id",
+    "review_id",
+    "source_review_result_ref",
+    "fix_slices",
+    "tpa_slice_artifact",
+    "pqx_task_wrapper",
+    "post_fix_review_request_artifact",
+    "loop_cycle_count",
+    "max_fix_execution_cycles",
+    "checkpoint_required",
+    "requested_at",
+    "provenance"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "review_fix_execution_request_artifact"},
+    "artifact_version": {"type": "string", "const": "1.0.0"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "standards_version": {"type": "string", "const": "1.0.0"},
+    "request_id": {"type": "string", "minLength": 1},
+    "review_id": {"type": "string", "minLength": 1},
+    "source_review_result_ref": {"type": "string", "pattern": "^review_result_artifact:.+"},
+    "fix_slices": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "artifact_type",
+          "fix_slice_id",
+          "review_result_ref",
+          "max_repair_attempts",
+          "target_surface_refs",
+          "validation_requirements"
+        ],
+        "properties": {
+          "artifact_type": {"type": "string", "const": "review_fix_slice_artifact"},
+          "fix_slice_id": {"type": "string", "pattern": "^rfs-[a-f0-9]{12}$"},
+          "review_result_ref": {"type": "string", "pattern": "^review_result_artifact:.+"},
+          "max_repair_attempts": {"type": "integer", "const": 1},
+          "target_surface_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "validation_requirements": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+        }
+      }
+    },
+    "tpa_slice_artifact": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["artifact_type", "artifact_id", "phase", "artifact"],
+      "properties": {
+        "artifact_type": {"type": "string", "const": "tpa_slice_artifact"},
+        "artifact_id": {"type": "string", "minLength": 1},
+        "phase": {"type": "string", "const": "gate"},
+        "artifact": {"type": "object"}
+      }
+    },
+    "pqx_task_wrapper": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["artifact_type", "wrapper_id", "execution_intent", "governance"],
+      "properties": {
+        "artifact_type": {"type": "string", "const": "codex_pqx_task_wrapper"},
+        "wrapper_id": {"type": "string", "minLength": 1},
+        "execution_intent": {"type": "object"},
+        "governance": {"type": "object"}
+      }
+    },
+    "post_fix_review_request_artifact": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["artifact_type", "review_id", "review_name", "changed_files", "validation_result_refs"],
+      "properties": {
+        "artifact_type": {"type": "string", "const": "review_request_artifact"},
+        "review_id": {"type": "string", "minLength": 1},
+        "review_name": {"type": "string", "minLength": 1},
+        "changed_files": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "validation_result_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "loop_cycle_count": {"type": "integer", "const": 1},
+    "max_fix_execution_cycles": {"type": "integer", "const": 1},
+    "checkpoint_required": {"type": "boolean"},
+    "checkpoint_ref": {"type": ["string", "null"], "minLength": 1},
+    "requested_at": {"type": "string", "format": "date-time"},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["emitted_by_system", "execution_path"],
+      "properties": {
+        "emitted_by_system": {"type": "string", "const": "RQX"},
+        "execution_path": {"type": "string", "const": "RQX_to_TPA_to_PQX_to_RQX"}
+      }
+    },
+    "pqx_runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roadmap_path", "state_path", "runs_root", "pqx_output_text"],
+      "properties": {
+        "roadmap_path": {"type": "string", "minLength": 1},
+        "state_path": {"type": "string", "minLength": 1},
+        "runs_root": {"type": "string", "minLength": 1},
+        "pqx_output_text": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"checkpoint_required": {"const": true}}},
+      "then": {"required": ["checkpoint_ref"]}
+    }
+  ]
+}
