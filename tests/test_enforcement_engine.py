@@ -191,10 +191,13 @@ def test_no_non_test_callers_of_legacy_enforcement_path() -> None:
             callers.append(str(rel))
     assert sorted(callers) == sorted(
         [
-            "spectrum_systems/modules/runtime/control_executor.py",
             "spectrum_systems/modules/runtime/evaluation_enforcement_bridge.py",
         ]
     )
+
+
+def test_legacy_enforcement_allowlist_excludes_runtime_callers() -> None:
+    assert "spectrum_systems.modules.runtime.control_executor" not in enforcement_engine._LEGACY_CALLER_ALLOWLIST
 
 
 def test_timestamp_override_supports_stable_enforcement_result_content() -> None:

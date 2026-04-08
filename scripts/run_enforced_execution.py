@@ -23,9 +23,8 @@ from spectrum_systems.modules.runtime.control_executor import (  # noqa: E402
 
 _EXIT_CODES = {
     "allow": 0,
-    "warn": 0,
-    "freeze": 1,
-    "block": 2,
+    "require_review": 1,
+    "deny": 2,
 }
 
 
@@ -41,7 +40,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 2
 
     print(json.dumps(enforcement_result, indent=2, sort_keys=True))
-    return _EXIT_CODES.get(enforcement_result.get("enforcement_action", "block"), 2)
+    return _EXIT_CODES.get(enforcement_result.get("final_status", "deny"), 2)
 
 
 if __name__ == "__main__":
