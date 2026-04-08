@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.95",
-  "schema_version": "1.3.95",
-  "standards_version": "1.3.95",
-  "record_id": "REC-STD-2026-04-08-SS-HARD-02",
-  "run_id": "run-20260408T000000Z-ss-hard-02",
+  "artifact_version": "1.3.96",
+  "schema_version": "1.3.96",
+  "standards_version": "1.3.96",
+  "record_id": "REC-STD-2026-04-08-RQX-01",
+  "run_id": "run-20260408T000000Z-rqx-01",
   "created_at": "2026-04-08T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.95",
+  "source_repo_version": "1.3.96",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -3574,6 +3574,19 @@
       "notes": "RIL-003 bounded deterministic integration packet routing review_control_signal_artifact classes into control-loop, roadmap, and readiness intake channels without enforcement or policy mutation."
     },
     {
+      "artifact_type": "review_merge_readiness_artifact",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.96",
+      "last_updated_in": "1.3.96",
+      "example_path": "contracts/examples/review_merge_readiness_artifact.json",
+      "notes": "RQX-01 machine-readable bounded merge readiness verdict derived from review_result_artifact without automatic fix execution."
+    },
+    {
       "artifact_type": "review_projection_bundle_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -3598,6 +3611,32 @@
       "last_updated_in": "1.3.32",
       "example_path": "contracts/examples/review_request.json",
       "notes": "BATCH-R typed governed review request contract for deterministic trigger policy routing."
+    },
+    {
+      "artifact_type": "review_request_artifact",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.96",
+      "last_updated_in": "1.3.96",
+      "example_path": "contracts/examples/review_request_artifact.json",
+      "notes": "RQX-01 strict bounded request contract for review queue execution over completed PQX run or batch context."
+    },
+    {
+      "artifact_type": "review_result_artifact",
+      "artifact_class": "review",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.96",
+      "last_updated_in": "1.3.96",
+      "example_path": "contracts/examples/review_result_artifact.json",
+      "notes": "RQX-01 bounded structured review output containing findings, severity, verdict, rationale, and required follow-up."
     },
     {
       "artifact_type": "review_signal_artifact",

@@ -1,0 +1,16 @@
+{
+  "artifact_type": "review_merge_readiness_artifact",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "review_id": "rqx-01-review-001",
+  "review_name": "rqx_01_initial_build",
+  "review_result_ref": "review_result_artifact:rqx-01-review-001",
+  "verdict": "fix_required",
+  "merge_ready": false,
+  "rationale": "High-severity findings require remediation before merge readiness can be granted.",
+  "required_follow_up": [
+    "Resolve high-severity findings and regenerate review artifacts."
+  ],
+  "generated_at": "2026-04-08T00:05:00Z"
+}
