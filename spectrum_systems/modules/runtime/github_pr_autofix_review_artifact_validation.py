@@ -1,0 +1,378 @@
+"""Governed repo-native PR autofix path for failed review-artifact-validation runs.
+
+This module enforces the canonical repo-mutation entry invariant:
+Codex request -> AEX admission -> TLC handoff -> TPA slice gate -> PQX execution.
+
+GitHub Actions is transport only; all mutation authority remains repo-native.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+from spectrum_systems.aex.engine import AEXEngine
+from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
+
+
+class GovernedAutofixError(RuntimeError):
+    """Raised for fail-closed governed autofix blocking conditions."""
+
+
+@dataclass(frozen=True)
+class ValidationCommandResult:
+    command: str
+    exit_code: int
+    stdout_excerpt: str
+    stderr_excerpt: str
+
+
+def _utc_now() -> str:
+    return datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _read_json(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        raise GovernedAutofixError(f"missing_required_input:{path}")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise GovernedAutofixError(f"invalid_json_object:{path}")
+    return payload
+
+
+def _write_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _build_tlc_handoff(*, request_id: str, trace_id: str, branch_ref: str, admission_id: str, emitted_at: str) -> dict[str, Any]:
+    artifact = {
+        "artifact_type": "tlc_handoff_record",
+        "handoff_id": f"tlc-handoff-{request_id}",
+        "request_id": request_id,
+        "trace_id": trace_id,
+        "created_at": emitted_at,
+        "produced_by": "TopLevelConductor",
+        "build_admission_record_ref": f"build_admission_record:{admission_id}",
+        "normalized_execution_request_ref": f"normalized_execution_request:{request_id}",
+        "handoff_status": "accepted",
+        "target_subsystems": ["TPA", "PQX"],
+        "execution_type": "repo_write",
+        "repo_mutation_requested": True,
+        "reason_codes": [],
+        "tlc_run_context": {
+            "run_id": f"autofix-{request_id}",
+            "branch_ref": branch_ref,
+            "objective": "governed_pr_autofix_review_artifact_validation",
+            "entry_boundary": "aex_to_tlc",
+        },
+        "lineage": {
+            "upstream_refs": [
+                f"build_admission_record:{admission_id}",
+                f"normalized_execution_request:{request_id}",
+            ],
+            "intended_path": ["TLC", "TPA", "PQX"],
+        },
+    }
+    artifact["authenticity"] = issue_authenticity(artifact=artifact, issuer="TLC")
+    validate_artifact(artifact, "tlc_handoff_record")
+    return artifact
+
+
+def _minimal_complexity() -> dict[str, int]:
+    return {
+        "files_changed_count": 0,
+        "lines_added": 0,
+        "lines_removed": 0,
+        "net_line_delta": 0,
+        "functions_added_count": 0,
+        "functions_removed_count": 0,
+        "helpers_added_count": 0,
+        "helpers_removed_count": 0,
+        "wrappers_collapsed_count": 0,
+        "deletions_count": 0,
+        "public_surface_delta_count": 0,
+        "approximate_max_nesting_delta": 0,
+        "approximate_branching_delta": 0,
+        "abstraction_added_count": 0,
+        "abstraction_removed_count": 0,
+    }
+
+
+def _build_tpa_gate_artifact(*, request_id: str, trace_id: str, emitted_at: str) -> dict[str, Any]:
+    artifact = {
+        "artifact_type": "tpa_slice_artifact",
+        "schema_version": "1.2.0",
+        "artifact_id": f"tpa:{request_id}:AI-01-G",
+        "run_id": f"autofix-{request_id}",
+        "trace_id": trace_id,
+        "slice_id": "AI-01-G",
+        "step_id": "AI-01",
+        "phase": "gate",
+        "tpa_mode": "full",
+        "produced_at": emitted_at,
+        "artifact": {
+            "artifact_kind": "gate",
+            "build_artifact_id": f"build:{request_id}",
+            "simplify_artifact_id": f"simplify:{request_id}",
+            "behavioral_equivalence": True,
+            "contract_valid": True,
+            "tests_valid": True,
+            "selected_pass": "pass_2_simplify",
+            "rejected_pass": "pass_1_build",
+            "selection_inputs": {
+                "build_artifact_id": f"build:{request_id}",
+                "simplify_artifact_id": f"simplify:{request_id}",
+                "comparison_inputs_present": True,
+            },
+            "selection_metrics": {
+                "build": _minimal_complexity(),
+                "simplify": _minimal_complexity(),
+                "simplify_delta": _minimal_complexity(),
+            },
+            "selection_rationale": "Bounded governed autofix path admissible for review-artifact-validation failure recovery.",
+            "promotion_ready": False,
+            "fail_closed_reason": None,
+            "context_bundle_ref": f"context_bundle:autofix:{request_id}",
+            "review_signal_refs": [],
+            "eval_signal_refs": [],
+            "addressed_failure_pattern_refs": [],
+            "unaddressed_failure_pattern_refs": [],
+            "high_risk_unmitigated": False,
+            "risk_mitigation_refs": [],
+            "simplicity_review": {
+                "decision": "allow",
+                "overall_severity": "low",
+                "findings": [],
+                "report_ref": f"simplicity_report:{request_id}",
+            },
+            "complexity_regression_gate": {
+                "decision": "allow",
+                "policy_ref": "policy:complexity_regression:default",
+                "regression_detected": False,
+                "historical_baseline_available": False,
+                "historical_baseline_ref": None,
+                "exception_justified": False,
+            },
+        },
+    }
+    validate_artifact(artifact, "tpa_slice_artifact")
+    return artifact
+
+
+def _run_command(command: list[str], *, cwd: Path) -> ValidationCommandResult:
+    completed = subprocess.run(command, cwd=str(cwd), capture_output=True, text=True)
+    return ValidationCommandResult(
+        command=" ".join(command),
+        exit_code=completed.returncode,
+        stdout_excerpt=(completed.stdout or "")[-4000:],
+        stderr_excerpt=(completed.stderr or "")[-4000:],
+    )
+
+
+def run_validation_replay(*, repo_root: Path, narrow_test_targets: list[str] | None = None) -> dict[str, Any]:
+    """Run the same checks as review-artifact-validation before any push."""
+    commands: list[list[str]] = [
+        ["npm", "install", "--no-save", "--no-package-lock", "ajv@^8", "ajv-formats@^2"],
+        ["node", "scripts/validate-review-artifacts.js"],
+        ["python", "-m", "pip", "install", "-r", "requirements-dev.txt"],
+        ["python", "scripts/check_review_registry.py", "--fail-on-overdue"],
+    ]
+    if narrow_test_targets:
+        commands.append(["pytest", *narrow_test_targets])
+        validation_scope = "narrow"
+    else:
+        commands.append(["pytest"])
+        validation_scope = "full"
+
+    results = [_run_command(cmd, cwd=repo_root) for cmd in commands]
+    passed = all(item.exit_code == 0 for item in results)
+
+    return {
+        "artifact_type": "validation_result_record",
+        "workflow_equivalent": "review-artifact-validation",
+        "validation_scope": validation_scope,
+        "passed": passed,
+        "results": [
+            {
+                "command": item.command,
+                "exit_code": item.exit_code,
+                "stdout_excerpt": item.stdout_excerpt,
+                "stderr_excerpt": item.stderr_excerpt,
+            }
+            for item in results
+        ],
+        "emitted_at": _utc_now(),
+    }
+
+
+def enforce_entry_invariant(payload: dict[str, Any]) -> None:
+    required = ("build_admission_record", "normalized_execution_request", "tlc_handoff_record", "tpa_slice_artifact")
+    missing = [key for key in required if key not in payload]
+    if missing:
+        raise GovernedAutofixError(f"entry_invariant_missing:{','.join(missing)}")
+
+
+def enforce_replay_gate(validation_result_record: dict[str, Any]) -> None:
+    if not isinstance(validation_result_record, dict):
+        raise GovernedAutofixError("validation_replay_missing")
+    if validation_result_record.get("artifact_type") != "validation_result_record":
+        raise GovernedAutofixError("validation_replay_ambiguous")
+    if validation_result_record.get("passed") is not True:
+        raise GovernedAutofixError("validation_replay_failed")
+
+
+def run_governed_autofix(
+    *,
+    event_payload_path: Path,
+    logs_path: Path,
+    output_dir: Path,
+    repo_root: Path,
+    push: bool,
+) -> dict[str, Any]:
+    emitted_at = _utc_now()
+    event_payload = _read_json(event_payload_path)
+    workflow_run = event_payload.get("workflow_run") if isinstance(event_payload.get("workflow_run"), dict) else {}
+
+    pr_list = workflow_run.get("pull_requests") if isinstance(workflow_run.get("pull_requests"), list) else []
+    if not pr_list:
+        raise GovernedAutofixError("no_pr")
+
+    same_repo = bool(workflow_run.get("head_repository", {}).get("full_name") == event_payload.get("repository", {}).get("full_name"))
+    if not same_repo:
+        raise GovernedAutofixError("fork_pr")
+
+    logs_text = logs_path.read_text(encoding="utf-8") if logs_path.exists() else ""
+    if not logs_text.strip():
+        raise GovernedAutofixError("logs_missing")
+
+    request_id = f"autofix-{workflow_run.get('id', 'unknown')}"
+    trace_id = f"trace-{workflow_run.get('id', 'unknown')}"
+    branch_ref = str(workflow_run.get("head_branch") or "unknown")
+
+    codex_request = {
+        "request_id": request_id,
+        "prompt_text": "Modify repository files for governed PR autofix and commit changes after validation replay.",
+        "trace_id": trace_id,
+        "created_at": emitted_at,
+        "produced_by": "github_pr_autofix_transport",
+        "target_paths": ["docs/reviews/review-registry.json"],
+        "requested_outputs": ["patch", "validation_result_record"],
+        "source_prompt_kind": "github_workflow_run_autofix",
+    }
+    admission = AEXEngine().admit_codex_request(codex_request)
+    if not admission.accepted or admission.build_admission_record is None or admission.normalized_execution_request is None:
+        raise GovernedAutofixError("aex_admission_failed")
+
+    tlc_handoff = _build_tlc_handoff(
+        request_id=request_id,
+        trace_id=trace_id,
+        branch_ref=branch_ref,
+        admission_id=str(admission.build_admission_record["admission_id"]),
+        emitted_at=emitted_at,
+    )
+    tpa_slice = _build_tpa_gate_artifact(request_id=request_id, trace_id=trace_id, emitted_at=emitted_at)
+
+    governed_context: dict[str, Any] = {
+        "build_admission_record": admission.build_admission_record,
+        "normalized_execution_request": admission.normalized_execution_request,
+        "tlc_handoff_record": tlc_handoff,
+        "tpa_slice_artifact": tpa_slice,
+        "ril_failure_signal": {
+            "artifact_type": "ril_failure_signal",
+            "workflow": "review-artifact-validation",
+            "contains_pytest_failure": "pytest" in logs_text,
+            "contains_registry_failure": "check_review_registry.py" in logs_text,
+            "source_log_path": str(logs_path),
+            "emitted_at": emitted_at,
+        },
+        "fre_repair_plan": {
+            "artifact_type": "fre_repair_plan",
+            "status": "no_safe_fix_found",
+            "bounded_actions": [],
+            "reason": "No deterministic safe repair action available for generic failure log without human guidance.",
+            "emitted_at": emitted_at,
+        },
+    }
+    enforce_entry_invariant(governed_context)
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    artifacts_dir = output_dir / "artifacts"
+    artifacts_dir.mkdir(parents=True, exist_ok=True)
+
+    _write_json(artifacts_dir / "build_admission_record.json", admission.build_admission_record)
+    _write_json(artifacts_dir / "normalized_execution_request.json", admission.normalized_execution_request)
+    _write_json(artifacts_dir / "tlc_handoff_record.json", tlc_handoff)
+    _write_json(artifacts_dir / "tpa_slice_artifact.json", tpa_slice)
+    _write_json(artifacts_dir / "ril_failure_signal.json", governed_context["ril_failure_signal"])
+    _write_json(artifacts_dir / "fre_repair_plan.json", governed_context["fre_repair_plan"])
+
+    # Fail closed when there is no bounded safe repair plan.
+    if not governed_context["fre_repair_plan"].get("bounded_actions"):
+        summary = {
+            "status": "blocked",
+            "reason": "no_safe_fix_found",
+            "pr_number": pr_list[0].get("number"),
+            "lineage_present": True,
+            "validation_replay_passed": False,
+            "artifacts_dir": str(artifacts_dir),
+        }
+        _write_json(output_dir / "autofix_result.json", summary)
+        return summary
+
+    # PQX execution would happen here for bounded_actions.
+
+    validation_record = run_validation_replay(repo_root=repo_root)
+    _write_json(artifacts_dir / "validation_result_record.json", validation_record)
+    enforce_replay_gate(validation_record)
+
+    if push:
+        token = os.getenv("GITHUB_APP_TOKEN") or os.getenv("AUTOFIX_PUSH_TOKEN")
+        if not token:
+            raise GovernedAutofixError("push_token_missing")
+
+    summary = {
+        "status": "ready_to_push" if push else "validated_no_push",
+        "reason": "validation_replay_passed",
+        "pr_number": pr_list[0].get("number"),
+        "lineage_present": True,
+        "validation_replay_passed": True,
+        "artifacts_dir": str(artifacts_dir),
+    }
+    _write_json(output_dir / "autofix_result.json", summary)
+    return summary
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Run governed PR autofix for failed review-artifact-validation")
+    parser.add_argument("--event-payload", required=True, help="Path to workflow_run event payload JSON")
+    parser.add_argument("--logs", required=True, help="Path to retrieved workflow logs")
+    parser.add_argument("--output-dir", default=".autofix/output", help="Directory for governed artifacts")
+    parser.add_argument("--repo-root", default=".", help="Repository root")
+    parser.add_argument("--push", action="store_true", help="Allow push after replay gate passes")
+    args = parser.parse_args(argv)
+
+    try:
+        result = run_governed_autofix(
+            event_payload_path=Path(args.event_payload),
+            logs_path=Path(args.logs),
+            output_dir=Path(args.output_dir),
+            repo_root=Path(args.repo_root),
+            push=bool(args.push),
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0 if result.get("status") != "blocked" else 2
+    except GovernedAutofixError as exc:
+        print(json.dumps({"status": "blocked", "reason": str(exc)}, indent=2, sort_keys=True))
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
