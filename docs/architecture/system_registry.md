@@ -86,7 +86,13 @@ These rules are hard boundaries for architecture, contracts, and validation.
 ### MAP
 - **acronym:** `MAP`
 - **full_name:** Mediation and Projection
-- **role:** Translates governed review artifacts into deterministic projections consumed by downstream control surfaces.
+- **role:** Performs mediation/projection formatting only for governed artifacts that are already semantically interpreted by RIL.
+- **owns:**
+  - mediation_projection_formatting
+- **must_not_do:**
+  - reinterpret review semantics (RIL-owned)
+  - perform review-loop execution (RQX-owned)
+  - make closure or promotion decisions (CDE-owned)
 
 ### RDX
 - **acronym:** `RDX`
@@ -178,8 +184,10 @@ These rules are hard boundaries for architecture, contracts, and validation.
   - review_operator_handoff_artifact
 - **must_not_do:**
   - reinterpret review semantics already owned by RIL
+  - own review interpretation semantics (RIL-owned)
   - execute fix slices directly (PQX-owned)
   - perform deep repair diagnosis/planning (FRE-owned)
+  - own repair diagnosis/planning responsibilities (FRE-owned)
   - enforce runtime blocks directly (SEL-owned)
   - issue closure-state authority decisions (CDE-owned)
 
@@ -201,17 +209,19 @@ These rules are hard boundaries for architecture, contracts, and validation.
   - action_trace_record
 - **must_not_do:**
   - reinterpret review payload semantics (RIL-owned)
+  - reinterpret policy admissibility semantics (TPA-owned)
   - generate repair plans (FRE-owned)
   - orchestrate workflow routing (TLC-owned)
 
 ### CDE
 - **acronym:** `CDE`
 - **full_name:** Closure Decision Engine
-- **role:** Produces authoritative closure-state decisions from governed evidence.
+- **role:** Sole authoritative owner for closure-state and readiness-to-close decisions from governed evidence.
 - **owns:**
   - closure_decisions
   - closure_lock_state
   - bounded_next_step_classification
+  - promotion_readiness_decisioning
 - **consumes:**
   - review_projection_bundle_artifact
   - review_signal_artifact
@@ -226,13 +236,12 @@ These rules are hard boundaries for architecture, contracts, and validation.
 ### TLC
 - **acronym:** `TLC`
 - **full_name:** Top Level Conductor
-- **role:** Orchestrates subsystem invocation order, cross-system routing, and bounded control/scheduling disposition classification for unresolved operator handoffs.
+- **role:** Orchestrates subsystem invocation order, cross-system routing, and bounded non-authoritative handoff disposition classification.
 - **owns:**
   - orchestration
   - subsystem_routing
   - bounded_cycle_coordination
   - unresolved_handoff_disposition_classification
-  - review_promotion_gate_evaluation
 - **consumes:**
   - build_admission_record
   - normalized_execution_request
@@ -248,11 +257,14 @@ These rules are hard boundaries for architecture, contracts, and validation.
   - tlc_handoff_record
   - top_level_conductor_run_artifact
   - review_handoff_disposition_artifact
-  - review_promotion_gate_artifact
 - **must_not_do:**
   - execute work slice internals (PQX-owned)
   - perform repair diagnosis/planning (FRE-owned)
   - substitute closure authority (CDE-owned)
+  - perform policy admissibility evaluation (TPA-owned)
+  - perform review interpretation (RIL-owned)
+  - own admission validation authority (AEX-owned)
+  - own promotion readiness or closure decision authority (CDE-owned)
 
 ### PRG
 - **acronym:** `PRG`
@@ -274,6 +286,7 @@ These rules are hard boundaries for architecture, contracts, and validation.
   - execute bounded work (PQX-owned)
   - enforce runtime blocks (SEL-owned)
   - interpret review integration packets (RIL-owned)
+  - influence runtime execution authority or admission decisions (PQX/AEX-owned)
 
 ## Anti-Duplication Table
 | Invalid behavior | Why invalid | Canonical owner |
@@ -283,6 +296,7 @@ These rules are hard boundaries for architecture, contracts, and validation.
 | RIL enforces decisions | Interpretation cannot trigger hard gates | SEL |
 | PRG executes work | Program governance cannot run execution slices | PQX |
 | SEL rewrites review interpretation | Enforcement cannot reinterpret evidence semantics | RIL |
+| SEL rewrites policy interpretation | Enforcement cannot become a second policy engine | TPA |
 | TPA emits closure decisions | Trust policy gating cannot decide closure lock state | CDE |
 | RQX executes fix slices | Review queue execution cannot subsume execution authority | PQX |
 | RQX reinterprets review semantics | Review queue execution cannot redefine review interpretation semantics | RIL |
@@ -310,8 +324,8 @@ These rules are hard boundaries for architecture, contracts, and validation.
 - TPA → PQX (only approved tpa_slice_artifact may enter execution)
 - RQX → PQX (handoff only via TPA-approved artifacts; no direct execution)
 - RQX → TLC (operator handoff disposition classification only; no auto-recursion)
-- TLC → review_handoff_disposition_artifact (classification output only; no execution trigger)
-- TLC → review_promotion_gate_artifact (readiness classification signal only; no automatic merge/promotion and no closure authority override)
+- TLC → review_handoff_disposition_artifact (classification output only; no execution trigger and no closure authority)
+- CDE → closure_decision_artifact (readiness-to-close / bounded-next-step / promotion-readiness decisions)
 - RIL → CDE
 
 ## Entry Invariant (Repo-Mutation Admission)
