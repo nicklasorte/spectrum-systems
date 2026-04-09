@@ -260,6 +260,23 @@ def _build_fix_request(
         "fix_reentry": True,
         "cycle_id": cycle_id,
     }
+    if isinstance(base_request.get("repo_mutation_requested"), bool):
+        request_payload["repo_mutation_requested"] = base_request["repo_mutation_requested"]
+    repo_mutation_requested = request_payload.get("repo_mutation_requested") is True
+    if not repo_mutation_requested:
+        admission = base_request.get("build_admission_record")
+        normalized = base_request.get("normalized_execution_request")
+        repo_mutation_requested = (
+            (isinstance(admission, dict) and str(admission.get("execution_type") or "") == "repo_write")
+            or (isinstance(normalized, dict) and bool(normalized.get("repo_mutation_requested")))
+        )
+        if repo_mutation_requested:
+            request_payload["repo_mutation_requested"] = True
+    if repo_mutation_requested:
+        for key in ("build_admission_record", "normalized_execution_request", "tlc_handoff_record"):
+            value = base_request.get(key)
+            if value is not None:
+                request_payload[key] = value
     preflight_artifact_path = base_request.get("contract_preflight_result_artifact_path")
     if isinstance(preflight_artifact_path, str) and preflight_artifact_path.strip():
         request_payload["contract_preflight_result_artifact_path"] = preflight_artifact_path

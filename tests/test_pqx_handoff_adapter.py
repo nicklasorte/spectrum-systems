@@ -71,6 +71,7 @@ def test_handoff_to_pqx_forwards_contract_preflight_artifact_path(tmp_path: Path
             "state_path": str(tmp_path / "pqx_state.json"),
             "runs_root": str(tmp_path / "runs"),
             "pqx_output_text": "deterministic pqx output",
+            "repo_mutation_requested": False,
             "contract_preflight_result_artifact_path": str(preflight_artifact_path),
         },
     )
@@ -126,6 +127,7 @@ def test_handoff_to_pqx_uses_none_when_preflight_artifact_not_provided(tmp_path:
             "state_path": str(tmp_path / "pqx_state.json"),
             "runs_root": str(tmp_path / "runs"),
             "pqx_output_text": "deterministic pqx output",
+            "repo_mutation_requested": False,
         },
     )
 

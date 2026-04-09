@@ -52,7 +52,7 @@ def _is_repo_mutation_requested(request: Dict[str, Any]) -> bool:
     normalized = request.get("normalized_execution_request")
     if isinstance(normalized, dict):
         return bool(normalized.get("repo_mutation_requested"))
-    return False
+    raise PQXHandoffError("repo_mutation_intent_unknown: explicit declaration required")
 
 
 def _require_repo_write_admission_lineage(*, cycle_id: str, request: Dict[str, Any]) -> None:
