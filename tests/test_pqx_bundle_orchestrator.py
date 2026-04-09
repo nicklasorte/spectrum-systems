@@ -16,6 +16,7 @@ from spectrum_systems.modules.runtime.pqx_bundle_orchestrator import (
     resolve_bundle_definition,
     validate_bundle_definition,
 )
+from spectrum_systems.modules.review_fix_execution_loop import compute_tpa_gate_provenance_token
 
 
 class FixedClock:
@@ -253,6 +254,33 @@ def test_execute_fixes_records_fix_gate_before_step_progression(tmp_path: Path) 
         encoding="utf-8",
     )
 
+    tpa_artifact = {
+        "artifact_type": "tpa_slice_artifact",
+        "schema_version": "1.2.0",
+        "artifact_id": "tpa:fix:rev-block:f-001:gate",
+        "run_id": "run-gate-block-001",
+        "trace_id": "trace-gate-block-001",
+        "slice_id": "AI-01-G",
+        "step_id": "AI-01",
+        "phase": "gate",
+        "produced_at": "2026-04-09T00:00:00Z",
+        "artifact": {
+            "artifact_kind": "gate",
+            "promotion_ready": True,
+            "high_risk_unmitigated": False,
+            "fail_closed_reason": None,
+            "review_signal_refs": ["review_result_artifact:REV-BLOCK"],
+            "selection_inputs": {"comparison_inputs_present": True},
+            "complexity_regression_gate": {"decision": "allow"},
+            "simplicity_review": {"decision": "allow"},
+        },
+    }
+    authority_path = tmp_path / "artifacts/tpa_authority" / f"{tpa_artifact['artifact_id']}.json"
+    authority_path.parent.mkdir(parents=True, exist_ok=True)
+    stored = dict(tpa_artifact)
+    stored["authoritative_integrity_token"] = compute_tpa_gate_provenance_token(tpa_artifact)
+    authority_path.write_text(json.dumps(stored, indent=2) + "\n", encoding="utf-8")
+
     result = execute_bundle_run(
         bundle_id="BUNDLE-T1",
         bundle_state_path=state_path,
@@ -263,6 +291,15 @@ def test_execute_fixes_records_fix_gate_before_step_progression(tmp_path: Path) 
         bundle_plan_path=plan_path,
         execute_step=lambda _: {"execution_status": "success"},
         execute_fixes=True,
+        tpa_gate_artifacts_by_fix_id={
+            "fix:REV-BLOCK:F-001": {
+                "request_artifact": {
+                    "source_review_result_ref": "review_result_artifact:REV-BLOCK",
+                    "fix_slices": [{"review_result_ref": "review_result_artifact:REV-BLOCK"}],
+                    "tpa_slice_artifact": tpa_artifact,
+                }
+            }
+        },
     )
     assert result["status"] == "completed"
     assert result["failure_classification"] is None

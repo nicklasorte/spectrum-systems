@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable, Mapping
 
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.pqx_backbone import (
@@ -44,6 +44,7 @@ from spectrum_systems.modules.runtime.pqx_triage_planner import (
     build_triage_plan_record,
 )
 from spectrum_systems.modules.runtime.pqx_sequence_runner import execute_sequence_run
+from spectrum_systems.modules.review_fix_execution_loop import validate_tpa_gate_authoritative_provenance
 from spectrum_systems.modules.runtime.pqx_slice_runner import (
     confirm_slice_completion_after_enforcement_allow,
     run_pqx_slice,
@@ -404,6 +405,8 @@ def _execute_pending_fix_loop(
     sequence_run_id: str,
     trace_id: str,
     clock,
+    tpa_gate_artifacts_by_fix_id: Mapping[str, Mapping[str, Any]] | None,
+    repo_root: Path,
 ) -> tuple[dict, list[dict], list[dict]]:
     pending_fixes = load_pending_fixes(bundle_state)
     if not pending_fixes:
@@ -414,6 +417,14 @@ def _execute_pending_fix_loop(
     fix_gate_records: list[dict] = []
 
     for fix in pending_fixes:
+        fix_id = str(fix.get("fix_id") or "")
+        gate_bundle = dict((tpa_gate_artifacts_by_fix_id or {}).get(fix_id) or {})
+        if not gate_bundle:
+            raise PQXBundleOrchestratorError("missing authoritative TPA gate artifact for pending fix execution")
+        request_artifact = gate_bundle.get("request_artifact")
+        if not isinstance(request_artifact, Mapping):
+            raise PQXBundleOrchestratorError("invalid TPA gate bundle: request_artifact is required")
+        validate_tpa_gate_authoritative_provenance(request_artifact=request_artifact, repo_root=repo_root)
         fix_step = normalize_fix_into_step(fix)
         validate_fix_step(fix_step, roadmap)
         insertion_point = determine_fix_insertion_point(fix_step, roadmap)
@@ -531,6 +542,7 @@ def execute_bundle_run(
     roadmap_path: str | Path = LEGACY_EXECUTION_ROADMAP_PATH,
     execute_step: StepExecutor | None = None,
     execute_fixes: bool = False,
+    tpa_gate_artifacts_by_fix_id: Mapping[str, Mapping[str, Any]] | None = None,
     emit_triage_plan: bool = False,
     triage_plan_on: tuple[str, ...] = ("review_findings", "fix_gate_blocked", "blocked_outstanding_findings"),
     clock=utc_now,
@@ -640,6 +652,8 @@ def execute_bundle_run(
                 sequence_run_id=sequence_run_id,
                 trace_id=trace_id,
                 clock=clock,
+                tpa_gate_artifacts_by_fix_id=tpa_gate_artifacts_by_fix_id,
+                repo_root=state_path.parent,
             )
             if executed_fix_records:
                 assert_fix_gate_allows_resume(bundle_state)

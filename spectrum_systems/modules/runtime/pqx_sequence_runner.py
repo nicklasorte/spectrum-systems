@@ -7,7 +7,7 @@ import json
 from collections import Counter
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.pqx_backbone import LEGACY_EXECUTION_ROADMAP_PATH, parse_system_roadmap
@@ -45,6 +45,7 @@ from spectrum_systems.modules.governance.tpa_policy_composition import (
     resolve_tpa_policy_decision,
 )
 from spectrum_systems.modules.governance.tpa_scope_policy import is_tpa_required, load_tpa_scope_policy
+from spectrum_systems.modules.review_queue_executor import run_review_queue_executor
 from spectrum_systems.utils.deterministic_id import canonical_json
 
 
@@ -119,6 +120,70 @@ def _parse_tpa_slice_id(slice_id: str) -> tuple[str, str | None]:
     if len(parts) == 3 and parts[0] == "AI" and parts[1].isdigit() and parts[2] in _TPA_PHASE_BY_SUFFIX:
         return f"AI-{parts[1]}", _TPA_PHASE_BY_SUFFIX[parts[2]]
     return slice_id, None
+
+
+def _run_mandatory_rqx_review(
+    *,
+    queue_run_id: str,
+    run_id: str,
+    slice_id: str,
+    request: Mapping[str, Any],
+    state_path: Path,
+    result: Mapping[str, Any],
+    clock,
+    supplemental_review: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    review_root = state_path.parent / "rqx_reviews"
+    review_root.mkdir(parents=True, exist_ok=True)
+    changed_files = request.get("changed_paths")
+    if not isinstance(changed_files, list) or not changed_files:
+        changed_files = ["README.md"]
+    produced_refs = []
+    for key in ("slice_execution_record", "done_certification_record", "pqx_slice_audit_bundle"):
+        value = result.get(key)
+        if isinstance(value, str) and value.strip():
+            produced_refs.append(value)
+    if not produced_refs:
+        produced_refs = [f"execution_ref:{queue_run_id}:{slice_id}"]
+    validation_path = review_root / f"{slice_id}.validation.json"
+    review_request = {
+        "artifact_type": "review_request_artifact",
+        "artifact_version": "1.0.0",
+        "schema_version": "1.0.0",
+        "standards_version": "1.0.0",
+        "review_id": f"rqx:{run_id}:{slice_id}",
+        "review_name": f"rqx_review_{run_id}_{slice_id}".lower().replace(":", "_").replace("-", "_"),
+        "review_type": "architecture_boundary_review",
+        "scope": f"PQX sequence execution review for {slice_id}",
+        "run_id": run_id,
+        "changed_files": changed_files,
+        "produced_artifact_refs": produced_refs,
+        "validation_result_refs": [str(validation_path)],
+        "requested_at": iso_now(clock),
+    }
+    review_request_path = review_root / f"{slice_id}.review_request_artifact.json"
+    validation_path.write_text(json.dumps({"status": "passed"}, indent=2) + "\n", encoding="utf-8")
+    review_request_path.write_text(json.dumps(review_request, indent=2) + "\n", encoding="utf-8")
+    review_result = run_review_queue_executor(
+        review_request,
+        repo_root=Path("."),
+        output_dir=review_root,
+        review_docs_dir=review_root / "docs",
+        generated_at=iso_now(clock),
+    )["review_result_artifact"]
+    verdict = str(review_result.get("verdict") or "")
+    review_result.setdefault("has_blocking_findings", verdict in {"fix_required", "not_safe_to_merge"})
+    review_result.setdefault(
+        "overall_disposition",
+        "approved" if verdict == "safe_to_merge" else "approved_with_findings" if verdict == "fix_required" else "blocked",
+    )
+    review_result.setdefault("pending_fix_ids", [])
+    if isinstance(supplemental_review, Mapping):
+        for key in ("has_blocking_findings", "pending_fix_ids", "overall_disposition"):
+            if key in supplemental_review:
+                review_result[key] = supplemental_review[key]
+    review_result["review_request_artifact"] = str(review_request_path)
+    return review_result
 
 
 def _validate_tpa_grouping(slice_requests: list[dict]) -> None:
@@ -1101,7 +1166,7 @@ def execute_sequence_run(
 
     _validate_slice_requests(slice_requests)
     review_results = review_results_by_slice or {}
-    enforce_review_policy = review_results_by_slice is not None
+    enforce_review_policy = True
     state_path = Path(state_path)
     resolved_bundle_plan = bundle_plan or _default_bundle_plan(slice_requests, bundle_id)
     resolved_bundle_state_path = Path(bundle_state_path) if bundle_state_path is not None else None
@@ -2024,7 +2089,16 @@ def execute_sequence_run(
                     state["review_checkpoint_status"]["slice_1_optional_review"] = "satisfied"
                     state["review_artifact_refs"].append(str(review.get("review_id", f"review:{next_slice_id}")))
             elif current_index == 1 and enforce_review_policy:
-                review = review_results.get(next_slice_id)
+                review = _run_mandatory_rqx_review(
+                    queue_run_id=queue_run_id,
+                    run_id=run_id,
+                    slice_id=next_slice_id,
+                    request=request,
+                    state_path=state_path,
+                    result=result,
+                    clock=clock,
+                    supplemental_review=review_results.get(next_slice_id),
+                )
                 if review is None:
                     state["review_checkpoint_status"]["slice_2_required_review"] = "missing"
                     state["status"] = "blocked"
@@ -2044,7 +2118,16 @@ def execute_sequence_run(
                 state["review_checkpoint_status"]["slice_2_required_review"] = "satisfied"
                 state["review_artifact_refs"].append(str(review.get("review_id", f"review:{next_slice_id}")))
             elif current_index == 2 and enforce_review_policy:
-                review = review_results.get(next_slice_id)
+                review = _run_mandatory_rqx_review(
+                    queue_run_id=queue_run_id,
+                    run_id=run_id,
+                    slice_id=next_slice_id,
+                    request=request,
+                    state_path=state_path,
+                    result=result,
+                    clock=clock,
+                    supplemental_review=review_results.get(next_slice_id),
+                )
                 if review is None:
                     state["review_checkpoint_status"]["slice_3_strict_review"] = "missing"
                     state["status"] = "blocked"

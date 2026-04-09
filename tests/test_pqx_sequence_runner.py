@@ -92,6 +92,35 @@ def test_happy_path_runs_three_slices_in_order_and_persists(tmp_path: Path) -> N
     assert checkpoints[1]["completed_slice_ids"] == ["PQX-QUEUE-01"]
 
 
+def test_execute_sequence_run_requires_review(tmp_path: Path) -> None:
+    state_path = tmp_path / "sequence.json"
+
+    def _executor(payload: dict) -> dict:
+        return {
+            "execution_status": "success",
+            "slice_execution_record": f"{payload['slice_id']}.record.json",
+            "done_certification_record": f"{payload['slice_id']}.cert.json",
+            "pqx_slice_audit_bundle": f"{payload['slice_id']}.audit.json",
+            "certification_complete": True,
+            "audit_complete": True,
+        }
+
+    state = execute_sequence_run(
+        slice_requests=_slice_requests(),
+        state_path=state_path,
+        queue_run_id="queue-run-review-001",
+        run_id="run-review-001",
+        trace_id="trace-review-001",
+        execute_slice=_executor,
+    )
+
+    assert state["status"] == "completed"
+    assert state["review_checkpoint_status"]["slice_2_required_review"] == "satisfied"
+    assert state["review_checkpoint_status"]["slice_3_strict_review"] == "satisfied"
+    assert (tmp_path / "rqx_reviews" / "PQX-QUEUE-02.review_request_artifact.json").is_file()
+    assert (tmp_path / "rqx_reviews" / "PQX-QUEUE-03.review_request_artifact.json").is_file()
+
+
 def test_resume_after_interruption_continues_without_rerun(tmp_path: Path) -> None:
     state_path = tmp_path / "sequence.json"
     calls: list[str] = []
