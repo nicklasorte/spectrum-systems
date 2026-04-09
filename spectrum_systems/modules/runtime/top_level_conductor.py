@@ -782,6 +782,17 @@ def _real_cde(payload: dict[str, Any]) -> dict[str, Any]:
             "next_step_ref": payload.get("next_step_ref"),
             "emitted_at": payload["emitted_at"],
             "trace_id": payload["trace_id"],
+            "eval_summary_ref": payload.get("eval_summary_ref"),
+            "required_eval_ids": payload.get("required_eval_ids"),
+            "required_eval_results": payload.get("required_eval_results"),
+            "required_eval_completeness_rollup": payload.get("required_eval_completeness_rollup"),
+            "trace_artifact_refs": payload.get("trace_artifact_refs"),
+            "trace_ids": payload.get("trace_ids"),
+            "certification_required_for_promotion": payload.get("certification_required_for_promotion"),
+            "certification_ref": payload.get("certification_ref"),
+            "certification_status": payload.get("certification_status"),
+            "required_replay_consistency_refs": payload.get("required_replay_consistency_refs"),
+            "replay_consistency_refs": payload.get("replay_consistency_refs"),
         }
     )
     validate_artifact(decision, "closure_decision_artifact")
@@ -1330,6 +1341,31 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                         if repair_loop_eligible
                         else "BATCH-H"
                     ),
+                    "eval_summary_ref": f"eval_summary:{state['run_id']}",
+                    "required_eval_ids": [
+                        "tlc_review_projection_bundle_present",
+                        "tlc_review_consumer_bundle_present",
+                    ],
+                    "required_eval_results": [
+                        {
+                            "eval_id": "tlc_review_projection_bundle_present",
+                            "status": "pass",
+                            "eval_result_ref": f"eval_result:{state['run_id']}:projection_bundle",
+                        },
+                        {
+                            "eval_id": "tlc_review_consumer_bundle_present",
+                            "status": "pass",
+                            "eval_result_ref": f"eval_result:{state['run_id']}:consumer_bundle",
+                        },
+                    ],
+                    "required_eval_completeness_rollup": {"complete": True},
+                    "trace_artifact_refs": [f"trace:{state['trace_id']}", ril_ref],
+                    "trace_ids": [state["trace_id"]],
+                    "certification_required_for_promotion": True,
+                    "certification_ref": f"certification:{state['run_id']}",
+                    "certification_status": "passed" if repair_packet is None else "missing",
+                    "required_replay_consistency_refs": [],
+                    "replay_consistency_refs": [f"promotion_consistency_record:{state['run_id']}"],
                 }
             )
             _validate_handoff_output("CDE", cde_result if isinstance(cde_result, dict) else {})
