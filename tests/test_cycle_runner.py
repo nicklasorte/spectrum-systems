@@ -238,7 +238,7 @@ def _manifest(
             "certification_pack_ref": "c",
             "error_budget_ref": "d",
             "policy_ref": str(allow_policy_path),
-            "closure_decision_artifact_ref": str(_REPO_ROOT / "contracts" / "examples" / "closure_decision_artifact.json"),
+            "closure_decision_artifact_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "closure_decision_lock.json"),
             "review_control_signal_ref": str(_REPO_ROOT / "contracts" / "examples" / "review_control_signal.json"),
             "ril_output_artifact_ref": str(_REPO_ROOT / "contracts" / "examples" / "review_integration_packet_artifact.json"),
             "trust_spine_evidence_cohesion_result_ref": str(
@@ -1089,7 +1089,7 @@ def test_cycle_runner_sequence_state_blocks_promotion_without_control_allow(tmp_
 
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "blocked"
-    assert "decision_type is non-promotable" in result["blocking_issues"][-1]
+    assert "decision_type must be lock" in result["blocking_issues"][-1]
 
 
 def test_cycle_runner_sequence_state_blocks_promotion_without_hard_gate_falsification_and_missing_replay_authority_refs(tmp_path: Path) -> None:

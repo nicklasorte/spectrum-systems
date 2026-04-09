@@ -9,6 +9,7 @@ from spectrum_systems.modules.runtime.github_closure_continuation import run_git
 from spectrum_systems.modules.runtime.github_review_ingestion import ingest_github_review_event
 
 _FIXTURES = Path("tests/fixtures/github_events")
+_REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _ingest(tmp_path: Path, *, event_name: str, fixture_name: str, body_override: str | None = None) -> Path:
@@ -55,6 +56,39 @@ def _neutralize_escalation(handoff: Path) -> None:
         artifact_path.write_text(json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _attach_complete_cde_evidence(handoff: Path) -> None:
+    handoff_payload = json.loads(handoff.read_text(encoding="utf-8"))
+    summary_path = Path(handoff_payload["artifact_refs"]["ingestion_summary_artifact"])
+    if not summary_path.is_absolute():
+        summary_path = handoff.parent / summary_path
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    artifact_paths = summary.get("artifact_paths", {})
+    assert isinstance(artifact_paths, dict)
+
+    evidence_dir = summary_path.parent / "cde_evidence"
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    sources = {
+        "eval_summary": _REPO_ROOT / "contracts" / "examples" / "eval_summary.json",
+        "done_certification_record": _REPO_ROOT / "contracts" / "examples" / "done_certification_record.json",
+        "promotion_consistency_record": _REPO_ROOT / "contracts" / "examples" / "promotion_consistency_record.json",
+    }
+    for key, source in sources.items():
+        target = evidence_dir / source.name
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+        artifact_paths[key] = str(target)
+
+    summary["artifact_paths"] = artifact_paths
+    summary["cde_evidence_inputs"] = {
+        "required_eval_complete": True,
+        "required_eval_ids": ["eval-a", "eval-b"],
+        "required_eval_results": [
+            {"eval_id": "eval-a", "status": "pass"},
+            {"eval_id": "eval-b", "status": "pass"},
+        ],
+    }
+    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
 def _patched_tlc_ready(request: dict[str, object]) -> dict[str, object]:
     run_id = str(request.get("run_id") or "tlc-run")
     continuation_id = run_id.removeprefix("tlc-")
@@ -82,6 +116,7 @@ def _patched_tlc_ready(request: dict[str, object]) -> dict[str, object]:
 def test_scenario_clean_review_path_promotes_when_ready(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     handoff = _ingest(tmp_path, event_name="pull_request_review", fixture_name="pull_request_review_submitted.json")
     _neutralize_escalation(handoff)
+    _attach_complete_cde_evidence(handoff)
     import spectrum_systems.modules.runtime.github_closure_continuation as module_under_test
 
     monkeypatch.setattr(module_under_test, "run_top_level_conductor", _patched_tlc_ready)
@@ -103,6 +138,7 @@ def test_scenario_clean_review_path_promotes_when_ready(tmp_path: Path, monkeypa
 def test_scenario_repair_then_pass(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     handoff = _ingest(tmp_path, event_name="pull_request_review", fixture_name="pull_request_review_submitted.json")
     _neutralize_escalation(handoff)
+    _attach_complete_cde_evidence(handoff)
     import spectrum_systems.modules.runtime.github_closure_continuation as module_under_test
 
     monkeypatch.setattr(module_under_test, "run_top_level_conductor", _patched_tlc_ready)
@@ -140,6 +176,7 @@ def test_scenario_unsafe_escalated_blocks_promotion(tmp_path: Path) -> None:
 def test_scenario_exhausted_retry_budget_blocks_promotion(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     handoff = _ingest(tmp_path, event_name="pull_request_review", fixture_name="pull_request_review_submitted.json")
     _neutralize_escalation(handoff)
+    _attach_complete_cde_evidence(handoff)
     import spectrum_systems.modules.runtime.github_closure_continuation as module_under_test
 
     def _patched_tlc_exhausted(request: dict[str, object]) -> dict[str, object]:
@@ -211,6 +248,7 @@ def test_scenario_roadmap_approve_executes_and_follows_promotion_logic(tmp_path:
         body_override="/roadmap-approve",
     )
     _neutralize_escalation(handoff)
+    _attach_complete_cde_evidence(handoff)
     import spectrum_systems.modules.runtime.github_closure_continuation as module_under_test
 
     monkeypatch.setattr(module_under_test, "run_top_level_conductor", _patched_tlc_ready)

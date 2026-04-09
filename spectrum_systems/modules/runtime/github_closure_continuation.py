@@ -41,6 +41,9 @@ _OPTIONAL_RIL_KEYS = (
     "review_control_signal_artifact",
     "review_integration_packet_artifact",
     "roadmap_two_step_artifact",
+    "eval_summary",
+    "done_certification_record",
+    "promotion_consistency_record",
 )
 _CONTINUATION_ELIGIBLE_DECISIONS = {"hardening_required", "final_verification_required", "continue_bounded"}
 _ROADMAP_DRAFT_DIR = Path("artifacts/roadmap_drafts")
@@ -195,7 +198,7 @@ def _build_promotion_gate_decision_artifact(
     closure_decision_type = str(closure_decision_artifact.get("decision_type") or "")
     closure_reason_codes = closure_decision_artifact.get("decision_reason_codes")
     evidence_refs = closure_decision_artifact.get("evidence_refs")
-    if closure_decision_type != "lock":
+    if closure_decision_type in {"blocked", "escalate"}:
         missing_requirements.append("non_promotable_cde_decision")
     if not isinstance(closure_reason_codes, list):
         missing_requirements.append("invalid_cde_reason_codes")
@@ -497,14 +500,28 @@ def _build_cde_source_artifacts(bundle: ContinuationInputBundle) -> list[dict[st
 def _extract_cde_evidence_inputs(bundle: ContinuationInputBundle, *, trace_id: str) -> dict[str, Any]:
     optional = bundle.optional_artifacts
     eval_summary = optional.get("eval_summary")
-    required_evals = optional.get("required_eval_result_set")
     certification = optional.get("done_certification_record")
     replay_consistency = optional.get("promotion_consistency_record")
+    summary_inputs = bundle.ingestion_summary.get("cde_evidence_inputs")
+    summary_inputs = summary_inputs if isinstance(summary_inputs, dict) else {}
 
-    required_eval_ids = []
+    required_eval_ids = [str(item).strip() for item in summary_inputs.get("required_eval_ids", []) if isinstance(item, str) and item.strip()]
     required_eval_results = []
-    if isinstance(required_evals, dict):
-        for entry in required_evals.get("required_eval_results", []):
+    for entry in summary_inputs.get("required_eval_results", []):
+        if not isinstance(entry, dict):
+            continue
+        eval_id = str(entry.get("eval_id") or "").strip()
+        if not eval_id:
+            continue
+        required_eval_results.append(
+            {
+                "eval_id": eval_id,
+                "status": str(entry.get("status") or "").strip().lower(),
+                "indeterminate_policy": entry.get("indeterminate_policy"),
+            }
+        )
+    if isinstance(eval_summary, dict):
+        for entry in eval_summary.get("required_eval_results", []):
             if not isinstance(entry, dict):
                 continue
             eval_id = str(entry.get("eval_id") or "").strip()
@@ -520,15 +537,21 @@ def _extract_cde_evidence_inputs(bundle: ContinuationInputBundle, *, trace_id: s
             )
 
     eval_summary_ref = None
-    if isinstance(eval_summary, dict) and isinstance(eval_summary.get("eval_summary_id"), str):
-        eval_summary_ref = f"eval_summary:{eval_summary['eval_summary_id']}"
+    if isinstance(eval_summary, dict):
+        eval_summary_id = eval_summary.get("eval_summary_id") or eval_summary.get("eval_run_id")
+        if isinstance(eval_summary_id, str) and eval_summary_id.strip():
+            eval_summary_ref = f"eval_summary:{eval_summary_id.strip()}"
     certification_ref = None
     certification_status = None
     if isinstance(certification, dict):
         cert_id = certification.get("certification_id") or certification.get("record_id") or certification.get("done_certification_id")
         if isinstance(cert_id, str) and cert_id.strip():
             certification_ref = f"certification:{cert_id.strip()}"
-        certification_status = certification.get("certification_status") or certification.get("status")
+        certification_status = (
+            certification.get("certification_status")
+            or certification.get("status")
+            or certification.get("final_status")
+        )
 
     replay_refs = []
     if isinstance(replay_consistency, dict):
@@ -540,6 +563,9 @@ def _extract_cde_evidence_inputs(bundle: ContinuationInputBundle, *, trace_id: s
         "eval_summary_ref": eval_summary_ref,
         "required_eval_ids": required_eval_ids,
         "required_eval_results": required_eval_results,
+        "required_eval_completeness_rollup": {
+            "complete": summary_inputs.get("required_eval_complete") is True,
+        },
         "trace_artifact_refs": [f"trace:{trace_id}"],
         "trace_ids": [trace_id],
         "certification_required_for_promotion": True,

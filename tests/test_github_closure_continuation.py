@@ -14,6 +14,7 @@ from spectrum_systems.modules.runtime.github_review_ingestion import ingest_gith
 
 
 _FIXTURES = Path("tests/fixtures/github_events")
+_REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _load_fixture(name: str) -> dict:
@@ -37,6 +38,40 @@ def _build_ingestion_summary(tmp_path: Path) -> tuple[Path, Path]:
     summary_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     handoff_path = Path(result["artifact_paths"]["github_review_handoff_artifact"])
     return summary_path, handoff_path
+
+
+def _attach_complete_cde_evidence(summary_path: Path, handoff_path: Path) -> None:
+    _ = json.loads(summary_path.read_text(encoding="utf-8"))
+    handoff = json.loads(handoff_path.read_text(encoding="utf-8"))
+    ingestion_summary_path = Path(handoff["artifact_refs"]["ingestion_summary_artifact"])
+    if not ingestion_summary_path.is_absolute():
+        ingestion_summary_path = handoff_path.parent / ingestion_summary_path
+    summary = json.loads(ingestion_summary_path.read_text(encoding="utf-8"))
+    artifact_paths = summary.get("artifact_paths", {})
+    assert isinstance(artifact_paths, dict)
+
+    evidence_dir = summary_path.parent / "artifacts" / "cde_evidence"
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    source_files = {
+        "eval_summary": _REPO_ROOT / "contracts" / "examples" / "eval_summary.json",
+        "done_certification_record": _REPO_ROOT / "contracts" / "examples" / "done_certification_record.json",
+        "promotion_consistency_record": _REPO_ROOT / "contracts" / "examples" / "promotion_consistency_record.json",
+    }
+    for key, source in source_files.items():
+        target = evidence_dir / source.name
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+        artifact_paths[key] = str(target)
+
+    summary["artifact_paths"] = artifact_paths
+    summary["cde_evidence_inputs"] = {
+        "required_eval_complete": True,
+        "required_eval_ids": ["eval-a", "eval-b"],
+        "required_eval_results": [
+            {"eval_id": "eval-a", "status": "pass"},
+            {"eval_id": "eval-b", "status": "pass"},
+        ],
+    }
+    ingestion_summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def _build_ingestion_summary_with_roadmap(tmp_path: Path) -> tuple[Path, Path]:
@@ -72,6 +107,7 @@ def _neutralize_escalation(summary_path: Path) -> None:
 def test_valid_outputs_cde_lock_no_tlc(tmp_path: Path) -> None:
     summary_path, handoff_path = _build_ingestion_summary(tmp_path)
     _neutralize_escalation(summary_path)
+    _attach_complete_cde_evidence(summary_path, handoff_path)
 
     result = run_github_closure_continuation(
         github_review_handoff_path=handoff_path,
@@ -248,6 +284,7 @@ def test_schema_validation_of_produced_artifacts(tmp_path: Path) -> None:
 
 def test_no_raw_review_consumption_downstream_of_ril(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     summary_path, handoff_path = _build_ingestion_summary(tmp_path)
+    _attach_complete_cde_evidence(summary_path, handoff_path)
     captured_request: dict[str, object] = {}
 
     import spectrum_systems.modules.runtime.github_closure_continuation as module_under_test
@@ -275,12 +312,13 @@ def test_no_raw_review_consumption_downstream_of_ril(monkeypatch: pytest.MonkeyP
     source_artifacts = captured_request["source_artifacts"]
     assert isinstance(source_artifacts, list)
     artifact_types = {row["artifact_type"] for row in source_artifacts if isinstance(row, dict)}
-    assert artifact_types == {"review_projection_bundle_artifact", "review_consumer_output_bundle_artifact"}
+    assert artifact_types == {"review_signal_artifact", "review_projection_bundle_artifact", "review_consumer_output_bundle_artifact"}
 
 
 def test_no_closure_decisioning_outside_cde(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     summary_path, handoff_path = _build_ingestion_summary(tmp_path)
     _neutralize_escalation(summary_path)
+    _attach_complete_cde_evidence(summary_path, handoff_path)
 
     import spectrum_systems.modules.runtime.github_closure_continuation as module_under_test
 
