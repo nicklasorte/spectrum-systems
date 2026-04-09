@@ -27,6 +27,12 @@ Role boundaries are fixed by the system registry:
 
 The loop is bounded and stop-based. The system always ends in a terminal state; the operator then decides whether to merge.
 
+Governed build/review/fix clarifications:
+- Review is mandatory after every PQX execution record (`pqx_slice_execution_record` / `pqx_bundle_execution_record`).
+- Fix execution is permitted only on `tpa_slice_artifact` inputs issued by TPA.
+- RQX performs review artifact production only and does not execute fixes.
+- Unresolved review outcomes are terminal for execution and route to TLC handoff disposition classification (no automatic PQX recursion).
+
 ## 2) How to Trigger the Governed Loop
 
 Use only the existing trigger paths.

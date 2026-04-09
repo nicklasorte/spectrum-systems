@@ -12,6 +12,7 @@ from typing import Any, Callable, Mapping
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema, validate_artifact
+from spectrum_systems.modules.review_handoff_disposition import emit_review_handoff_disposition
 from spectrum_systems.modules.review_queue_executor import run_review_queue_executor
 from spectrum_systems.modules.runtime.codex_to_pqx_task_wrapper import run_wrapped_pqx_task
 
@@ -191,6 +192,7 @@ def _emit_result_bundle(
     emit_handoff = result_artifact["status"] in unresolved_statuses
     handoff_artifact: dict[str, Any] | None = None
     handoff_path: Path | None = None
+    disposition_result: dict[str, Any] | None = None
     if emit_handoff:
         handoff_artifact = _build_operator_handoff_artifact(
             request_artifact,
@@ -200,6 +202,7 @@ def _emit_result_bundle(
         )
         handoff_path = output_dir / f"{result_artifact['review_id']}{OPERATOR_HANDOFF_FILE_SUFFIX}"
         handoff_path.write_text(json.dumps(handoff_artifact, indent=2) + "\n", encoding="utf-8")
+        disposition_result = emit_review_handoff_disposition(handoff_artifact, output_dir=output_dir)
         result_artifact["operator_handoff_ref"] = (
             f"review_operator_handoff_artifact:{handoff_artifact['handoff_id']}"
         )
@@ -217,6 +220,8 @@ def _emit_result_bundle(
     if handoff_artifact is not None and handoff_path is not None:
         response["review_operator_handoff_artifact"] = handoff_artifact
         response["review_operator_handoff_artifact_path"] = str(handoff_path)
+    if disposition_result is not None:
+        response.update(disposition_result)
     if review_result_artifact is not None:
         response["post_fix_review_result_artifact"] = review_result_artifact
     if review_merge_readiness_artifact is not None:
