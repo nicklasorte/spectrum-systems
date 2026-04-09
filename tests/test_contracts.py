@@ -406,6 +406,7 @@ class ContractSchemaTests(unittest.TestCase):
             "review_fix_execution_result_artifact",
             "review_operator_handoff_artifact",
             "review_handoff_disposition_artifact",
+            "review_promotion_gate_artifact",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)

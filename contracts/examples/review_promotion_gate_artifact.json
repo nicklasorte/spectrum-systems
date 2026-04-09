@@ -1,0 +1,28 @@
+{
+  "artifact_type": "review_promotion_gate_artifact",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "gate_id": "rpga:rqx-02-review-002:6f9738f5f564",
+  "source_review_result_ref": "review_result_artifact:rqx-02-review-002",
+  "source_review_merge_readiness_ref": "review_merge_readiness_artifact:rqx-02-review-002",
+  "source_review_operator_handoff_ref": null,
+  "source_review_handoff_disposition_ref": null,
+  "gate_decision": "allow",
+  "gate_reason_code": "safe_to_merge",
+  "blocking_refs": [],
+  "required_manual_action": false,
+  "promotion_eligible": true,
+  "provenance": {
+    "classified_by_system": "TLC",
+    "automatic_promotion_triggered": false,
+    "automatic_merge_triggered": false,
+    "closure_authority_transferred": false
+  },
+  "trace_linkage": {
+    "review_id": "rqx-02-review-002",
+    "review_result_ref": "review_result_artifact:rqx-02-review-002",
+    "review_merge_readiness_ref": "review_merge_readiness_artifact:rqx-02-review-002"
+  },
+  "emitted_at": "2026-04-09T12:00:00Z"
+}
