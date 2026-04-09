@@ -21,6 +21,7 @@ Workflow: `.github/workflows/pr-autofix-review-artifact-validation.yml`
 
 Responsibilities:
 1. Detect failed `review-artifact-validation` run for PR event.
+2. Emit explicit fork-PR skip signal outside trusted mutation boundary.
 2. Retrieve run logs and persist `.autofix/input/*` artifacts.
 3. Invoke repo-native governed entrypoint.
 4. Publish PR comment from emitted governed summary.
@@ -54,7 +55,9 @@ Responsibilities are explicitly partitioned by System Registry ownership.
 
 ### PQX — execution owner
 - Owns repair execution and validation replay execution.
-- In this slice, no bounded safe repair is currently auto-applied unless a deterministic action is available.
+- In this slice, only deterministic bounded text-repair actions are allowed.
+- A commit is created only after replay validation passes.
+- Push is attempted only when a non-`GITHUB_TOKEN` mutation token is present.
 
 ### RIL + FRE + RQX boundaries
 - RIL interprets workflow log failures into structured signal artifacts.
@@ -102,6 +105,7 @@ SEL enforcement:
    - Fallback push identity: `AUTOFIX_PUSH_TOKEN`.
 2. Push token rule:
    - `GITHUB_TOKEN` is not relied on for mutation flows requiring rerun-trigger semantics.
+   - `actions/checkout` disables persisted credentials; push auth is explicit in repo-native execution.
 3. Fork boundary:
    - Fork PR workflow runs are blocked fail closed.
 4. Secret exposure:
@@ -116,6 +120,9 @@ The path blocks when any of the following occurs:
 - TLC lineage artifact missing/invalid
 - TPA gate artifact missing/invalid
 - no bounded safe repair is available
+- bounded repair action target is missing or mismatched
+- bounded repair applies but no git diff exists
+- staged mutation set is empty
 - replay validation missing
 - replay validation ambiguous
 - replay validation fails

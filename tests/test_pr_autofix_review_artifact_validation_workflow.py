@@ -21,7 +21,8 @@ def test_workflow_guards_pr_scope_and_same_repo_boundary() -> None:
     text = WORKFLOW_PATH.read_text(encoding='utf-8')
     assert "github.event.workflow_run.event == 'pull_request'" in text
     assert 'github.event.workflow_run.head_repository.full_name == github.repository' in text
-    assert 'no_pr' in text
+    assert 'explicit-fork-skip' in text
+    assert 'governed autofix skipped: fork PR is outside trusted mutation boundary' in text
 
 
 def test_workflow_uses_repo_native_entrypoint_and_persists_artifacts() -> None:
@@ -30,6 +31,7 @@ def test_workflow_uses_repo_native_entrypoint_and_persists_artifacts() -> None:
     assert '.autofix/input/workflow_run_event.json' in text
     assert '.autofix/input/workflow_logs.txt' in text
     assert '.autofix/output/autofix_result.json' in text
+    assert '--push' in text
 
 
 def test_workflow_comments_and_enforces_fail_closed_terminal_step() -> None:
@@ -37,3 +39,6 @@ def test_workflow_comments_and_enforces_fail_closed_terminal_step() -> None:
     assert 'actions/github-script@v7' in text
     assert 'Fail-closed behavior is enforced' in text
     assert 'governed autofix blocked (fail-closed)' in text
+    assert 'AUTOFIX_PUSH_TOKEN' in text
+    assert 'GITHUB_APP_TOKEN' in text
+    assert 'persist-credentials: false' in text
