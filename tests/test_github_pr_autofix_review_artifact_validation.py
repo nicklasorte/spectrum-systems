@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
 
 from spectrum_systems.modules.runtime.github_pr_autofix_review_artifact_validation import (
     GovernedAutofixError,
+    _narrow_test_targets_if_safe,
     enforce_entry_invariant,
     enforce_replay_gate,
     run_governed_autofix,
@@ -46,7 +48,7 @@ def test_run_governed_autofix_blocks_without_safe_fix_plan(tmp_path: Path) -> No
         event_payload_path=event_path,
         logs_path=logs_path,
         output_dir=tmp_path / 'out',
-        repo_root=tmp_path,
+        repo_root=_init_git_repo(tmp_path),
         push=False,
     )
 
@@ -54,6 +56,82 @@ def test_run_governed_autofix_blocks_without_safe_fix_plan(tmp_path: Path) -> No
     assert out['reason'] == 'no_safe_fix_found'
     assert out['lineage_present'] is True
     assert out['validation_replay_passed'] is False
+
+
+def _init_git_repo(tmp_path: Path) -> Path:
+    subprocess.run(['git', 'init'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
+    subprocess.run(['git', 'checkout', '-b', 'feature/test'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
+    subprocess.run(['git', 'config', 'user.email', 'test@example.com'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
+    subprocess.run(['git', 'config', 'user.name', 'Test User'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
+    subprocess.run(['git', 'remote', 'add', 'origin', 'https://github.com/nicklasorte/spectrum-systems.git'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
+    (tmp_path / 'requirements-dev.txt').write_text('', encoding='utf-8')
+    (tmp_path / 'scripts').mkdir(parents=True, exist_ok=True)
+    (tmp_path / 'scripts' / 'validate-review-artifacts.js').write_text('console.log("ok")\n', encoding='utf-8')
+    (tmp_path / 'scripts' / 'check_review_registry.py').write_text('print("ok")\n', encoding='utf-8')
+    subprocess.run(['git', 'add', '.'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
+    subprocess.run(['git', 'commit', '-m', 'initial'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
+    return tmp_path
+
+
+def test_run_governed_autofix_applies_bounded_fix_and_commits(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    repo_root = _init_git_repo(tmp_path)
+    target = repo_root / 'tests' / 'test_demo.py'
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text('def test_demo():\n    assert 1 == 2\n', encoding='utf-8')
+    subprocess.run(['git', 'add', str(target)], cwd=str(repo_root), check=True, capture_output=True, text=True)
+    subprocess.run(['git', 'commit', '-m', 'introduce failure'], cwd=str(repo_root), check=True, capture_output=True, text=True)
+
+    event_payload = {
+        'repository': {'full_name': 'nicklasorte/spectrum-systems'},
+        'workflow_run': {
+            'id': 321,
+            'head_branch': 'feature/test',
+            'head_repository': {'full_name': 'nicklasorte/spectrum-systems'},
+            'pull_requests': [{'number': 12}],
+        },
+    }
+    event_path = repo_root / 'event.json'
+    event_path.write_text(json.dumps(event_payload), encoding='utf-8')
+    logs_path = repo_root / 'logs.txt'
+    logs_path.write_text('pytest\n tests/test_demo.py:2: AssertionError\n E assert 1 == 2\n', encoding='utf-8')
+
+    monkeypatch.setattr(
+        'spectrum_systems.modules.runtime.github_pr_autofix_review_artifact_validation.run_validation_replay',
+        lambda **_: {'artifact_type': 'validation_result_record', 'passed': True, 'validation_scope': 'narrow', 'results': []},
+    )
+
+    out = run_governed_autofix(
+        event_payload_path=event_path,
+        logs_path=logs_path,
+        output_dir=repo_root / 'out',
+        repo_root=repo_root,
+        push=False,
+    )
+    assert out['status'] == 'validated_committed_no_push'
+    assert out['validation_replay_passed'] is True
+    assert out['repair_applied'] is True
+    assert (repo_root / 'tests' / 'test_demo.py').read_text(encoding='utf-8').endswith('assert 1 == 1\n')
+
+
+def test_narrowing_is_blocked_when_multilayer_failure_signal_present() -> None:
+    event_logs = 'pytest\ncheck_review_registry.py failed\n tests/test_demo.py:2: AssertionError\n E assert 1 == 2\n'
+    # helper should reject narrowing under cross-layer failure signal
+    from spectrum_systems.modules.runtime.github_pr_autofix_review_artifact_validation import RepairAction
+
+    targets = _narrow_test_targets_if_safe(
+        actions=[
+            RepairAction(
+                action_id='a',
+                action_type='text_replace',
+                target_path='tests/test_demo.py',
+                match_text='assert 1 == 2',
+                replacement_text='assert 1 == 1',
+                rationale='bounded',
+            )
+        ],
+        logs_text=event_logs,
+    )
+    assert targets is None
 
 
 def test_run_governed_autofix_fails_closed_for_fork_pr(tmp_path: Path) -> None:
@@ -76,6 +154,68 @@ def test_run_governed_autofix_fails_closed_for_fork_pr(tmp_path: Path) -> None:
             event_payload_path=event_path,
             logs_path=logs_path,
             output_dir=tmp_path / 'out',
-            repo_root=tmp_path,
+            repo_root=_init_git_repo(tmp_path),
             push=False,
+        )
+
+
+def test_run_governed_autofix_fails_closed_for_missing_logs(tmp_path: Path) -> None:
+    repo_root = _init_git_repo(tmp_path)
+    event_payload = {
+        'repository': {'full_name': 'nicklasorte/spectrum-systems'},
+        'workflow_run': {
+            'id': 444,
+            'head_branch': 'feature/test',
+            'head_repository': {'full_name': 'nicklasorte/spectrum-systems'},
+            'pull_requests': [{'number': 3}],
+        },
+    }
+    event_path = repo_root / 'event.json'
+    event_path.write_text(json.dumps(event_payload), encoding='utf-8')
+    with pytest.raises(GovernedAutofixError, match='logs_missing'):
+        run_governed_autofix(
+            event_payload_path=event_path,
+            logs_path=repo_root / 'missing-logs.txt',
+            output_dir=repo_root / 'out',
+            repo_root=repo_root,
+            push=False,
+        )
+
+
+def test_push_path_rejects_github_token_only(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    repo_root = _init_git_repo(tmp_path)
+    target = repo_root / 'tests' / 'test_push_demo.py'
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text('def test_push_demo():\n    assert 1 == 2\n', encoding='utf-8')
+    subprocess.run(['git', 'add', str(target)], cwd=str(repo_root), check=True, capture_output=True, text=True)
+    subprocess.run(['git', 'commit', '-m', 'introduce push failure'], cwd=str(repo_root), check=True, capture_output=True, text=True)
+
+    event_payload = {
+        'repository': {'full_name': 'nicklasorte/spectrum-systems'},
+        'workflow_run': {
+            'id': 777,
+            'head_branch': 'feature/test',
+            'head_repository': {'full_name': 'nicklasorte/spectrum-systems'},
+            'pull_requests': [{'number': 77}],
+        },
+    }
+    event_path = repo_root / 'event.json'
+    event_path.write_text(json.dumps(event_payload), encoding='utf-8')
+    logs_path = repo_root / 'logs.txt'
+    logs_path.write_text('pytest\n tests/test_push_demo.py:2: AssertionError\n E assert 1 == 2\n', encoding='utf-8')
+    monkeypatch.setenv('GITHUB_TOKEN', 'ghs-only-not-allowed')
+    monkeypatch.delenv('AUTOFIX_PUSH_TOKEN', raising=False)
+    monkeypatch.delenv('GITHUB_APP_TOKEN', raising=False)
+    monkeypatch.setattr(
+        'spectrum_systems.modules.runtime.github_pr_autofix_review_artifact_validation.run_validation_replay',
+        lambda **_: {'artifact_type': 'validation_result_record', 'passed': True, 'validation_scope': 'narrow', 'results': []},
+    )
+
+    with pytest.raises(GovernedAutofixError, match='push_token_missing'):
+        run_governed_autofix(
+            event_payload_path=event_path,
+            logs_path=logs_path,
+            output_dir=repo_root / 'out',
+            repo_root=repo_root,
+            push=True,
         )

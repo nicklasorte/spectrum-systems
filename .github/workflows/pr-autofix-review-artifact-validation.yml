@@ -11,6 +11,16 @@ permissions:
   pull-requests: write
 
 jobs:
+  explicit-fork-skip:
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.head_repository.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Emit explicit fork skip
+        run: |
+          echo "governed autofix skipped: fork PR is outside trusted mutation boundary"
+
   governed-pr-autofix:
     if: >-
       github.event.workflow_run.conclusion == 'failure' &&
@@ -20,6 +30,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -34,36 +46,6 @@ jobs:
           set -euo pipefail
           mkdir -p .autofix/input
           cp "$GITHUB_EVENT_PATH" .autofix/input/workflow_run_event.json
-
-      - name: Resolve PR context and fail closed when absent
-        id: pr_context
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-import json
-import os
-import urllib.request
-
-repo = os.environ["REPO"]
-run_id = os.environ["RUN_ID"]
-url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}"
-req = urllib.request.Request(url, headers={"Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}", "Accept": "application/vnd.github+json"})
-with urllib.request.urlopen(req) as resp:
-    data = json.loads(resp.read().decode("utf-8"))
-prs = data.get("pull_requests") or []
-if not prs:
-    raise SystemExit("no_pr")
-pr_number = prs[0].get("number")
-if not isinstance(pr_number, int) or pr_number <= 0:
-    raise SystemExit("no_pr")
-print(f"pr_number={pr_number}")
-with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-    fh.write(f"pr_number={pr_number}\n")
-PY
 
       - name: Retrieve failed workflow logs
         env:
@@ -100,6 +82,9 @@ PY
 
       - name: Run governed repo-native autofix entrypoint
         id: governed_autofix
+        env:
+          AUTOFIX_PUSH_TOKEN: ${{ secrets.AUTOFIX_PUSH_TOKEN }}
+          GITHUB_APP_TOKEN: ${{ secrets.GITHUB_APP_TOKEN }}
         run: |
           set -euo pipefail
           mkdir -p .autofix/output
@@ -108,7 +93,8 @@ PY
             --event-payload .autofix/input/workflow_run_event.json \
             --logs .autofix/input/workflow_logs.txt \
             --output-dir .autofix/output \
-            --repo-root .
+            --repo-root . \
+            --push
           exit_code=$?
           set -e
           echo "exit_code=${exit_code}" >> "$GITHUB_OUTPUT"
@@ -124,16 +110,18 @@ PY
         if: always()
         uses: actions/github-script@v7
         env:
-          PR_NUMBER: ${{ steps.pr_context.outputs.pr_number }}
           EXIT_CODE: ${{ steps.governed_autofix.outputs.exit_code }}
         with:
           script: |
             const fs = require('fs');
-            const prNumber = Number(process.env.PR_NUMBER);
             const exitCode = process.env.EXIT_CODE || 'unknown';
             let summary = { status: 'blocked', reason: 'autofix_result_missing' };
             if (fs.existsSync('.autofix/output/autofix_result.json')) {
               summary = JSON.parse(fs.readFileSync('.autofix/output/autofix_result.json', 'utf8'));
+            }
+            const prNumber = Number(summary.pr_number || 0);
+            if (!Number.isFinite(prNumber) || prNumber <= 0) {
+              throw new Error('no_pr');
             }
             const body = [
               '### Governed PR Autofix — review-artifact-validation',
@@ -142,6 +130,7 @@ PY
               `- Reason: \\`${summary.reason || 'unknown'}\\``,
               `- Entry invariant lineage present: **${summary.lineage_present === true ? 'yes' : 'no'}**`,
               `- Pre-push validation replay passed: **${summary.validation_replay_passed === true ? 'yes' : 'no'}**`,
+              `- Repair applied: **${summary.repair_applied === true ? 'yes' : 'no'}**`,
               `- Workflow exit code: \\`${exitCode}\\``,
               '',
               'Fail-closed behavior is enforced when required artifacts, policy gates, or replay evidence are missing.'
