@@ -280,6 +280,46 @@ def test_detect_changed_paths_uses_current_head_fallback_when_explicit_head_is_m
     assert detected.changed_paths == ["contracts/schemas/roadmap_eligibility_artifact.schema.json"]
 
 
+def test_detect_changed_paths_dedupes_refs_attempted_preserving_order(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(preflight, "_diff_name_only", lambda *_args, **_kwargs: ([], "fatal: unavailable"))
+    monkeypatch.setattr(preflight, "_github_sha_pair", lambda: ("base", "head", "github_pr_sha_diff"))
+    monkeypatch.setattr(preflight, "_local_workspace_changes", lambda _repo: [])
+
+    class _Result:
+        returncode = 0
+        stdout = "contracts/schemas/roadmap_eligibility_artifact.schema.json\n"
+        combined_output = ""
+
+    monkeypatch.setattr(preflight, "_run", lambda *_args, **_kwargs: _Result())
+
+    detected = preflight.detect_changed_paths(repo_root=tmp_path, base_ref="base", head_ref="head", explicit=[])
+
+    assert detected.refs_attempted == ["base..head", "base..HEAD", "working_tree_vs_HEAD"]
+    assert detected.changed_path_detection_mode == "working_tree_diff_head"
+
+    report = {
+        "status": "passed",
+        "changed_contracts": detected.changed_paths,
+        "impact": {"producers": [], "fixtures_or_builders": [], "consumers": []},
+        "masked_failures": [],
+        "recommended_repair_areas": [],
+        "changed_path_detection": {
+            "refs_attempted": detected.refs_attempted,
+            "fallback_used": detected.fallback_used,
+            "evaluation_mode": "partial",
+            "changed_paths_resolved": detected.changed_paths,
+            "evaluated_surfaces": [],
+        },
+    }
+    artifact = preflight.build_preflight_result_artifact(
+        report=report,
+        json_report_path=tmp_path / "report.json",
+        markdown_report_path=tmp_path / "report.md",
+        hardening_flow=False,
+    )
+    preflight.Draft202012Validator(preflight.load_schema("contract_preflight_result_artifact")).validate(artifact)
+
+
 def test_detect_changed_paths_degrades_to_full_governed_scan(monkeypatch) -> None:
     monkeypatch.setattr(preflight, "_diff_name_only", lambda *_args, **_kwargs: ([], "fatal: unavailable"))
     monkeypatch.setattr(preflight, "_github_sha_pair", lambda: None)
