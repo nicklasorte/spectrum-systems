@@ -334,6 +334,7 @@ These rules are hard boundaries for architecture, contracts, and validation.
 - **TLC** MUST validate `build_admission_record` and `normalized_execution_request` (accepted status, repo-write class, resolvable request reference, and trace continuity) before orchestration continues.
 - **TLC** MUST formalize admitted repo-write continuation as `tlc_handoff_record` before routing to downstream execution gates.
 - **PQX** MUST reject repo-writing execution that lacks AEX admission artifacts plus TLC-mediated lineage.
+- `build_admission_record`, `normalized_execution_request`, and `tlc_handoff_record` MUST each include verifiable `authenticity` attestation (issuer, key_id, payload digest, and attestation) and MUST be verified fail-closed at the PQX repo-write lineage boundary.
 - Any attempt to invoke **TLC** or **PQX** directly for repo-mutating work without valid AEX/TLC lineage MUST fail closed.
 
 ## Pre-PR bounded repair-loop behavior (GHA-008)

@@ -23,8 +23,10 @@ def test_valid_repo_write_request_emits_admission_record() -> None:
     assert result.build_admission_record["admission_status"] == "accepted"
     assert result.build_admission_record["execution_type"] == "repo_write"
     assert result.build_admission_record["trace_id"] == "trace-aex-01"
+    assert result.build_admission_record["authenticity"]["issuer"] == "AEX"
     assert result.normalized_execution_request is not None
     assert result.normalized_execution_request["trace_id"] == "trace-aex-01"
+    assert result.normalized_execution_request["authenticity"]["issuer"] == "AEX"
 
 
 def test_invalid_repo_write_request_emits_rejection_record() -> None:

@@ -15,5 +15,11 @@
   "source_prompt_kind": "codex_build_request",
   "trace_id": "trace-req-001",
   "created_at": "2026-04-08T00:00:00Z",
-  "produced_by": "AEXEngine"
+  "produced_by": "AEXEngine",
+  "authenticity": {
+    "issuer": "AEX",
+    "key_id": "local-system-v1",
+    "payload_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "attestation": "0000000000000000000000000000000000000000000000000000000000000000"
+  }
 }

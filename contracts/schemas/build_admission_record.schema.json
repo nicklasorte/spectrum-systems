@@ -15,26 +15,109 @@
     "created_at",
     "produced_by",
     "reason_codes",
-    "target_scope"
+    "target_scope",
+    "authenticity"
   ],
   "properties": {
-    "artifact_type": {"type": "string", "const": "build_admission_record"},
-    "admission_id": {"type": "string", "minLength": 1},
-    "request_id": {"type": "string", "minLength": 1},
-    "execution_type": {"type": "string", "enum": ["repo_write", "read_only", "analysis_only", "unknown"]},
-    "admission_status": {"type": "string", "enum": ["accepted", "rejected"]},
-    "normalized_execution_request_ref": {"type": "string", "minLength": 1},
-    "trace_id": {"type": "string", "minLength": 1},
-    "created_at": {"type": "string", "format": "date-time"},
-    "produced_by": {"type": "string", "minLength": 1},
-    "reason_codes": {"type": "array", "items": {"type": "string"}},
+    "artifact_type": {
+      "type": "string",
+      "const": "build_admission_record"
+    },
+    "admission_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_type": {
+      "type": "string",
+      "enum": [
+        "repo_write",
+        "read_only",
+        "analysis_only",
+        "unknown"
+      ]
+    },
+    "admission_status": {
+      "type": "string",
+      "enum": [
+        "accepted",
+        "rejected"
+      ]
+    },
+    "normalized_execution_request_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "produced_by": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "target_scope": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["repo", "paths"],
+      "required": [
+        "repo",
+        "paths"
+      ],
       "properties": {
-        "repo": {"type": "string", "minLength": 1},
-        "paths": {"type": "array", "items": {"type": "string"}}
+        "repo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "authenticity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issuer",
+        "key_id",
+        "payload_digest",
+        "attestation"
+      ],
+      "properties": {
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "AEX",
+            "TLC"
+          ]
+        },
+        "key_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "attestation": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
       }
     }
   }

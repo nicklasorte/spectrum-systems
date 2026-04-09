@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.modules.runtime.lineage_authenticity import verify_authenticity
 
 
 class RepoWriteLineageGuardError(ValueError):
@@ -36,6 +37,12 @@ def validate_repo_write_lineage(
     validate_artifact(build_admission_record, "build_admission_record")
     validate_artifact(normalized_execution_request, "normalized_execution_request")
     validate_artifact(tlc_handoff_record, "tlc_handoff_record")
+    try:
+        verify_authenticity(artifact=build_admission_record, expected_issuer="AEX")
+        verify_authenticity(artifact=normalized_execution_request, expected_issuer="AEX")
+        verify_authenticity(artifact=tlc_handoff_record, expected_issuer="TLC")
+    except ValueError as exc:
+        raise RepoWriteLineageGuardError(f"repo_write_lineage_rejected:{exc}") from exc
 
     admission_status = _require_non_empty_string(build_admission_record.get("admission_status"), field="admission_status")
     if admission_status != "accepted":

@@ -13,6 +13,7 @@ from spectrum_systems.aex.classifier import classify_execution_type, is_repo_sen
 from spectrum_systems.aex.errors import INVALID_REQUEST_SHAPE, MISSING_REQUIRED_FIELD, UNKNOWN_EXECUTION_TYPE
 from spectrum_systems.aex.models import AdmissionResult, CodexBuildRequest
 from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 
 
 class AEXEngine:
@@ -55,6 +56,7 @@ class AEXEngine:
             "created_at": normalized_input.created_at,
             "produced_by": normalized_input.produced_by,
         }
+        normalized["authenticity"] = issue_authenticity(artifact=normalized, issuer="AEX")
         validate_artifact(normalized, "normalized_execution_request")
 
         if is_repo_sensitive_unknown(
@@ -87,6 +89,7 @@ class AEXEngine:
                 "paths": normalized_input.target_paths,
             },
         }
+        record["authenticity"] = issue_authenticity(artifact=record, issuer="AEX")
         validate_artifact(record, "build_admission_record")
         return AdmissionResult(normalized_execution_request=normalized, build_admission_record=record, admission_rejection_record=None)
 

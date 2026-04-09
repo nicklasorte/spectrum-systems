@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 from spectrum_systems.orchestration import cycle_runner
 from spectrum_systems.orchestration import pqx_handoff_adapter
 from spectrum_systems.modules.runtime.judgment_engine import retrieve_precedents, run_judgment, select_policy
@@ -124,6 +125,15 @@ def _manifest(
                     },
                 },
             }
+        )
+        pqx_request["build_admission_record"]["authenticity"] = issue_authenticity(
+            artifact=pqx_request["build_admission_record"], issuer="AEX"
+        )
+        pqx_request["normalized_execution_request"]["authenticity"] = issue_authenticity(
+            artifact=pqx_request["normalized_execution_request"], issuer="AEX"
+        )
+        pqx_request["tlc_handoff_record"]["authenticity"] = issue_authenticity(
+            artifact=pqx_request["tlc_handoff_record"], issuer="TLC"
         )
     pqx_request_path = tmp_path / "pqx_request.json"
     _write(pqx_request_path, pqx_request)
