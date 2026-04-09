@@ -265,7 +265,10 @@ def test_handoff_to_pqx_repo_write_succeeds_with_valid_admission_lineage(tmp_pat
     request_path = tmp_path / "request.json"
     _write(request_path, request_payload)
 
-    def _fake_run_pqx_slice(**_: object) -> dict[str, object]:
+    captured: dict[str, object] = {}
+
+    def _fake_run_pqx_slice(**kwargs: object) -> dict[str, object]:
+        captured.update(kwargs)
         return {
             "status": "complete",
             "run_id": "pqx-slice-test",
@@ -281,3 +284,6 @@ def test_handoff_to_pqx_repo_write_succeeds_with_valid_admission_lineage(tmp_pat
     )
 
     assert handoff["report_payload"]["execution_status"] == "succeeded"
+    assert captured["execution_intent"] == "repo_write"
+    assert isinstance(captured["repo_write_lineage"], dict)
+    assert captured["repo_write_lineage"]["build_admission_record"]["artifact_type"] == "build_admission_record"

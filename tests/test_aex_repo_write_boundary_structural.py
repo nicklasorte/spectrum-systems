@@ -11,7 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 APPROVED_REPO_WRITE_CALLERS = {
     "spectrum_systems/modules/runtime/top_level_conductor.py",
 }
-APPROVED_RUN_PQX_SLICE_CALLERS = {
+EXPECTED_RUN_PQX_SLICE_DIRECT_CALLERS = {
     "scripts/pqx_runner.py",
     "spectrum_systems/modules/pqx_backbone.py",
     "spectrum_systems/modules/runtime/codex_to_pqx_task_wrapper.py",
@@ -61,7 +61,8 @@ def test_only_approved_callers_use_repo_write_execution_class_for_pqx() -> None:
     assert not violations, f"non-approved repo_write execute_sequence_run callers: {sorted(set(violations))}"
 
 
-def test_only_approved_callers_invoke_run_pqx_slice_directly() -> None:
+def test_run_pqx_slice_direct_callers_match_expected_boundary_surface() -> None:
+    seen: set[str] = set()
     violations: list[str] = []
     for path in REPO_ROOT.rglob("*.py"):
         relative = str(path.relative_to(REPO_ROOT))
@@ -72,6 +73,29 @@ def test_only_approved_callers_invoke_run_pqx_slice_directly() -> None:
             if not isinstance(node, ast.Call):
                 continue
             if isinstance(node.func, ast.Name) and node.func.id == "run_pqx_slice":
-                if relative not in APPROVED_RUN_PQX_SLICE_CALLERS:
+                seen.add(relative)
+                if relative not in EXPECTED_RUN_PQX_SLICE_DIRECT_CALLERS:
                     violations.append(relative)
     assert not violations, f"non-approved direct run_pqx_slice callers: {sorted(set(violations))}"
+    assert seen == EXPECTED_RUN_PQX_SLICE_DIRECT_CALLERS
+
+
+def test_direct_run_pqx_slice_callers_must_declare_execution_intent() -> None:
+    # Direct callers are not safe because they are allowlisted. They are safe because
+    # the common execution boundary guard requires explicit intent and repo-write lineage.
+    violations: list[str] = []
+    for relative in sorted(EXPECTED_RUN_PQX_SLICE_DIRECT_CALLERS):
+        tree = ast.parse((REPO_ROOT / relative).read_text(encoding="utf-8"), filename=relative)
+        has_intent_keyword = False
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            if not isinstance(node.func, ast.Name) or node.func.id != "run_pqx_slice":
+                continue
+            if any(keyword.arg == "execution_intent" for keyword in node.keywords):
+                has_intent_keyword = True
+            else:
+                violations.append(relative)
+        if not has_intent_keyword:
+            violations.append(relative)
+    assert not violations, f"direct run_pqx_slice callers missing execution_intent boundary declaration: {sorted(set(violations))}"

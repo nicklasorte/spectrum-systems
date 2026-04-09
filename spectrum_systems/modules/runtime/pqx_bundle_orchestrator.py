@@ -564,6 +564,7 @@ def execute_bundle_run(
                 runs_root=Path(output_dir) / "slice_runs",
                 clock=clock,
                 pqx_output_text=f"bundle deterministic output for {payload['slice_id']}",
+                execution_intent="non_repo_write",
             )
             if slice_result.get("status") != "complete":
                 return {"execution_status": "failed", "error": slice_result.get("reason") or slice_result.get("block_type", "blocked")}

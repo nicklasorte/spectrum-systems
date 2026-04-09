@@ -107,10 +107,10 @@ Any such divergence must trigger hardening-first roadmap sequencing.
 
 - **AEX** is the admission boundary before orchestration for Codex requests that may mutate repository state.
 - **TLC** remains orchestration authority and is not a public write-entry surface.
-- **PQX** remains execution-only and must not accept direct repo-writing requests.
+- **PQX** remains execution-only and enforces repo-write lineage at the execution boundary (`run_pqx_slice`): repo-write requires valid `build_admission_record`, `normalized_execution_request`, and `tlc_handoff_record`.
 - Repo-mutating orchestration must include `build_admission_record` and `normalized_execution_request` before TLC continues.
 - The AEX→TLC seam is contractized via `tlc_handoff_record` to make admission-to-orchestration lineage explicit and replayable for repo-mutating execution.
-- Enforcement is fail-closed end-to-end: missing/invalid AEX artifacts block TLC entry, and missing TLC lineage blocks PQX execution (`AEX → TLC → TPA → PQX` only).
+- Enforcement is fail-closed end-to-end: missing/invalid AEX artifacts block TLC entry, and missing/unknown execution intent or missing TLC lineage blocks PQX execution (`AEX → TLC → TPA → PQX` only).
 
 ## End-to-End Artifact Chain Extension
 

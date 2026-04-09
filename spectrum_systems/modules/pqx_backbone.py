@@ -345,6 +345,7 @@ def run_pqx_backbone(
         runs_root=runs_root,
         clock=clock,
         pqx_output_text=pqx_output_text,
+        execution_intent="non_repo_write",
     )
     if result.get("status") != "complete":
         return result

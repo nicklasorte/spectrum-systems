@@ -249,6 +249,7 @@ def run_wrapped_pqx_task(
         state_path=state_path,
         runs_root=runs_root,
         pqx_output_text=pqx_output_text,
+        execution_intent="non_repo_write",
         contract_preflight_result_artifact_path=(
             Path(str(governance["contract_preflight_result_artifact_path"]))
             if isinstance(governance.get("contract_preflight_result_artifact_path"), str)
