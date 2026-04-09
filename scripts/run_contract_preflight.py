@@ -230,9 +230,27 @@ def _local_workspace_changes(repo_root: Path) -> list[str]:
     return sorted(set(paths))
 
 
+def _dedupe_preserve_order(items: list[str]) -> list[str]:
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for item in items:
+        if item in seen:
+            continue
+        seen.add(item)
+        deduped.append(item)
+    return deduped
+
+
 def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit: list[str] | None = None) -> ChangedPathDetectionResult:
     refs_attempted: list[str] = []
     warnings: list[str] = []
+    seen_refs_attempted: set[str] = set()
+
+    def _append_ref_attempt(ref: str) -> None:
+        if ref in seen_refs_attempted:
+            return
+        seen_refs_attempted.add(ref)
+        refs_attempted.append(ref)
 
     if explicit:
         return ChangedPathDetectionResult(
@@ -244,7 +262,7 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
         )
 
     # B: explicit base/head refs when resolvable.
-    refs_attempted.append(f"{base_ref}..{head_ref}")
+    _append_ref_attempt(f"{base_ref}..{head_ref}")
     diff_paths, error = _diff_name_only(repo_root, base_ref, head_ref)
     if not error:
         return ChangedPathDetectionResult(
@@ -257,7 +275,7 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
     warnings.append(f"base/head diff unavailable: {error}")
 
     if head_ref != "HEAD":
-        refs_attempted.append(f"{base_ref}..HEAD")
+        _append_ref_attempt(f"{base_ref}..HEAD")
         current_head_paths, current_head_error = _diff_name_only(repo_root, base_ref, "HEAD")
         if not current_head_error:
             return ChangedPathDetectionResult(
@@ -273,7 +291,7 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
     sha_pair = _github_sha_pair()
     if sha_pair:
         gh_base, gh_head, mode = sha_pair
-        refs_attempted.append(f"{gh_base}..{gh_head}")
+        _append_ref_attempt(f"{gh_base}..{gh_head}")
         gh_paths, gh_error = _diff_name_only(repo_root, gh_base, gh_head)
         if not gh_error:
             return ChangedPathDetectionResult(
@@ -299,7 +317,7 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
     if local_changes:
         warnings.append("local workspace fallback had no governed contract paths; continuing to deeper fallback")
 
-    refs_attempted.append("working_tree_vs_HEAD")
+    _append_ref_attempt("working_tree_vs_HEAD")
     working_tree = _run(["git", "diff", "--name-only", "HEAD"], cwd=repo_root)
     if working_tree.returncode == 0:
         paths = sorted({line.strip() for line in working_tree.stdout.splitlines() if line.strip()})
@@ -1180,7 +1198,7 @@ def main() -> int:
     detection_meta = {
         "changed_path_detection_mode": detection.changed_path_detection_mode,
         "changed_paths_resolved": detection.changed_paths,
-        "refs_attempted": detection.refs_attempted,
+        "refs_attempted": _dedupe_preserve_order(list(detection.refs_attempted)),
         "fallback_used": detection.fallback_used,
         "warnings": detection.warnings,
         "evaluation_mode": surface_classification["evaluation_mode"],

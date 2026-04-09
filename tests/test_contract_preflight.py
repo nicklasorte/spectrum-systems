@@ -280,6 +280,18 @@ def test_detect_changed_paths_uses_current_head_fallback_when_explicit_head_is_m
     assert detected.changed_paths == ["contracts/schemas/roadmap_eligibility_artifact.schema.json"]
 
 
+def test_detect_changed_paths_dedupes_refs_attempted_preserving_order(monkeypatch) -> None:
+    def _fake_diff(_repo: Path, _base: str, _head: str) -> tuple[list[str], str | None]:
+        return [], "fatal: unavailable"
+
+    monkeypatch.setattr(preflight, "_diff_name_only", _fake_diff)
+    monkeypatch.setattr(preflight, "_github_sha_pair", lambda: ("base", "HEAD", "github_pr_sha_pair"))
+    monkeypatch.setattr(preflight, "_local_workspace_changes", lambda _repo: ["contracts/schemas/roadmap_eligibility_artifact.schema.json"])
+
+    detected = preflight.detect_changed_paths(repo_root=Path("."), base_ref="base", head_ref="HEAD", explicit=[])
+    assert detected.refs_attempted == ["base..HEAD"]
+
+
 def test_detect_changed_paths_degrades_to_full_governed_scan(monkeypatch) -> None:
     monkeypatch.setattr(preflight, "_diff_name_only", lambda *_args, **_kwargs: ([], "fatal: unavailable"))
     monkeypatch.setattr(preflight, "_github_sha_pair", lambda: None)
@@ -475,6 +487,65 @@ def test_main_report_includes_changed_path_fallback_metadata(tmp_path: Path, mon
     assert preflight_artifact["control_signal"]["strategy_gate_decision"] == "WARN"
     assert preflight_artifact["control_surface_gap_status"] == "not_run"
     assert preflight_artifact["control_surface_gap_blocking"] is False
+
+
+def test_preflight_artifact_dedupes_refs_attempted_before_schema_validation(monkeypatch, tmp_path: Path) -> None:
+    output_dir = tmp_path / "out"
+    wrapper_path = tmp_path / "wrapper.json"
+    wrapper_path.write_text(json.dumps(_governed_wrapper_payload(), indent=2), encoding="utf-8")
+
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": str(wrapper_path),
+                "authority_evidence_ref": "data/pqx_runs/AI-01/example.pqx_slice_execution_record.json",
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+            changed_path_detection_mode="base_head_diff",
+            refs_attempted=["origin/main..HEAD", "origin/main..HEAD", "base..HEAD"],
+            fallback_used=False,
+            warnings=[],
+        ),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "build_impact_map",
+        lambda *_args, **_kwargs: {
+            "producers": [],
+            "fixtures_or_builders": [],
+            "consumers": [],
+            "required_smoke_tests": [],
+            "contract_impact_artifact": {},
+        },
+    )
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 0
+
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["changed_path_detection"]["refs_attempted"] == ["origin/main..HEAD", "base..HEAD"]
+
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["trace"]["refs_attempted"] == ["origin/main..HEAD", "base..HEAD"]
 
 
 def test_preflight_blocks_when_gap_bridge_reports_blocking(monkeypatch, tmp_path: Path) -> None:
