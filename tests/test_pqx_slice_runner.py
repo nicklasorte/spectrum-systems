@@ -7,8 +7,9 @@ import pytest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 from spectrum_systems.modules.runtime.pqx_slice_runner import run_pqx_slice as _run_pqx_slice
+from spectrum_systems.modules.runtime.repo_write_lineage_guard import reset_repo_write_lineage_replay_state
+from tests.helpers_repo_write_lineage import build_valid_repo_write_lineage
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -33,67 +34,7 @@ class FixedClock:
 
 
 def _valid_repo_write_lineage(trace_id: str = "trace-repo-write") -> dict[str, object]:
-    lineage = {
-        "build_admission_record": {
-            "artifact_type": "build_admission_record",
-            "admission_id": "adm-1",
-            "request_id": "req-1",
-            "execution_type": "repo_write",
-            "admission_status": "accepted",
-            "normalized_execution_request_ref": "normalized_execution_request:req-1",
-            "trace_id": trace_id,
-            "created_at": "2026-04-08T00:00:00Z",
-            "produced_by": "AEXEngine",
-            "reason_codes": [],
-            "target_scope": {"repo": "spectrum-systems", "paths": ["x"]},
-        },
-        "normalized_execution_request": {
-            "artifact_type": "normalized_execution_request",
-            "request_id": "req-1",
-            "prompt_text": "modify repo",
-            "execution_type": "repo_write",
-            "repo_mutation_requested": True,
-            "target_paths": ["x"],
-            "requested_outputs": ["patch"],
-            "source_prompt_kind": "codex_build_request",
-            "trace_id": trace_id,
-            "created_at": "2026-04-08T00:00:00Z",
-            "produced_by": "AEXEngine",
-        },
-        "tlc_handoff_record": {
-            "artifact_type": "tlc_handoff_record",
-            "handoff_id": "tlc-handoff-1",
-            "request_id": "req-1",
-            "trace_id": trace_id,
-            "created_at": "2026-04-08T00:00:00Z",
-            "produced_by": "TLC",
-            "build_admission_record_ref": "build_admission_record:adm-1",
-            "normalized_execution_request_ref": "normalized_execution_request:req-1",
-            "handoff_status": "accepted",
-            "target_subsystems": ["TPA", "PQX"],
-            "execution_type": "repo_write",
-            "repo_mutation_requested": True,
-            "reason_codes": [],
-            "tlc_run_context": {
-                "run_id": "tlc-aex-check",
-                "branch_ref": "refs/heads/main",
-                "objective": "repo mutation",
-                "entry_boundary": "aex_to_tlc",
-            },
-            "lineage": {
-                "upstream_refs": ["build_admission_record:adm-1", "normalized_execution_request:req-1"],
-                "intended_path": ["TLC", "TPA", "PQX"],
-            },
-        },
-    }
-    lineage["build_admission_record"]["authenticity"] = issue_authenticity(
-        artifact=lineage["build_admission_record"], issuer="AEX"
-    )
-    lineage["normalized_execution_request"]["authenticity"] = issue_authenticity(
-        artifact=lineage["normalized_execution_request"], issuer="AEX"
-    )
-    lineage["tlc_handoff_record"]["authenticity"] = issue_authenticity(artifact=lineage["tlc_handoff_record"], issuer="TLC")
-    return lineage
+    return build_valid_repo_write_lineage(request_id="req-1", trace_id=trace_id)
 
 
 def test_run_pqx_slice_repo_write_requires_lineage(tmp_path: Path) -> None:
@@ -170,6 +111,7 @@ def test_run_pqx_slice_isolated_non_repo_path_can_skip_lineage_if_truly_non_muta
 
 
 def test_run_pqx_slice_rejects_replayed_repo_write_lineage(tmp_path: Path) -> None:
+    reset_repo_write_lineage_replay_state(clear_persistent_registry=True)
     runtime_root = REPO_ROOT / "artifacts" / "test_tmp" / f"replay-{tmp_path.name}"
     state_path = runtime_root / "pqx_state.json"
     state_path.parent.mkdir(parents=True, exist_ok=True)
@@ -199,6 +141,48 @@ def test_run_pqx_slice_rejects_replayed_repo_write_lineage(tmp_path: Path) -> No
     assert second["status"] == "blocked"
     assert second["block_type"] == "REPO_WRITE_LINEAGE_REQUIRED"
     assert "lineage_replay_detected" in second["reason"]
+
+
+def test_run_pqx_slice_symlinked_repo_target_requires_lineage(tmp_path: Path) -> None:
+    external_root = tmp_path / "outside"
+    external_root.mkdir(parents=True, exist_ok=True)
+    symlinked_state = external_root / "state-link.json"
+    symlinked_state.symlink_to(REPO_ROOT / "state" / "symlinked-pqx-state.json")
+
+    result = _run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=symlinked_state,
+        runs_root=external_root / "runs",
+        pqx_output_text="deterministic output",
+        execution_intent="non_repo_write",
+        clock=FixedClock(),
+    )
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "REPO_WRITE_LINEAGE_REQUIRED"
+
+
+def test_run_pqx_slice_symlinked_repo_target_with_valid_lineage_succeeds(tmp_path: Path) -> None:
+    reset_repo_write_lineage_replay_state(clear_persistent_registry=True)
+    external_root = tmp_path / "outside"
+    external_root.mkdir(parents=True, exist_ok=True)
+    symlinked_state = external_root / "state-link.json"
+    repo_state_path = REPO_ROOT / "state" / "symlinked-pqx-state-valid.json"
+    repo_state_path.parent.mkdir(parents=True, exist_ok=True)
+    repo_state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    symlinked_state.symlink_to(repo_state_path)
+
+    result = _run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=symlinked_state,
+        runs_root=external_root / "runs",
+        pqx_output_text="deterministic output",
+        execution_intent="non_repo_write",
+        repo_write_lineage=_valid_repo_write_lineage(trace_id="trace-symlink"),
+        clock=FixedClock(),
+    )
+    assert result["status"] == "complete"
 
 
 def test_run_pqx_slice_valid_run_emits_required_artifacts(tmp_path: Path) -> None:

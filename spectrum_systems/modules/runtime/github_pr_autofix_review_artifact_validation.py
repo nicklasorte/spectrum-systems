@@ -440,9 +440,6 @@ def run_governed_autofix(
         "handoff_ref": f"tlc_handoff_record:tlc-handoff-{request_id}",
         "trace_id": trace_id,
     }
-    admission_record["authenticity"] = issue_authenticity(artifact=admission_record, issuer="AEX")
-    validate_artifact(admission_record, "build_admission_record")
-
     tlc_handoff = _build_tlc_handoff(
         request_id=request_id,
         trace_id=trace_id,

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import inspect
 import os
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -75,6 +76,20 @@ def _canonical_payload(artifact: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
+_AUTHORIZED_ISSUANCE_CALLERS: dict[tuple[str, str], set[str]] = {
+    ("AEX", "normalized_execution_request"): {
+        "spectrum_systems.aex.engine:AEXEngine.admit_codex_request",
+    },
+    ("AEX", "build_admission_record"): {
+        "spectrum_systems.aex.engine:AEXEngine.admit_codex_request",
+    },
+    ("TLC", "tlc_handoff_record"): {
+        "spectrum_systems.modules.runtime.top_level_conductor:_build_tlc_handoff_record",
+        "spectrum_systems.modules.runtime.github_pr_autofix_review_artifact_validation:_build_tlc_handoff",
+    },
+}
+
+
 def _auth_scope(artifact: dict[str, Any]) -> str:
     artifact_type = str(artifact.get("artifact_type") or "unknown")
     request_id = str(artifact.get("request_id") or "missing")
@@ -107,8 +122,37 @@ def _compute_attestation(
     return hmac.new(secret.encode("utf-8"), message, hashlib.sha256).hexdigest()
 
 
+def _caller_identity(frame_info: inspect.FrameInfo) -> str:
+    module_name = frame_info.frame.f_globals.get("__name__", "<unknown>")
+    function_name = frame_info.function
+    if "self" in frame_info.frame.f_locals:
+        owner = frame_info.frame.f_locals["self"].__class__.__name__
+        function_name = f"{owner}.{function_name}"
+    return f"{module_name}:{function_name}"
+
+
+def _enforce_boundary_issuance_authority(*, artifact: dict[str, Any], issuer: str) -> None:
+    artifact_type = str(artifact.get("artifact_type") or "").strip()
+    if not artifact_type:
+        raise LineageAuthenticityError("authenticity_artifact_type_required")
+    allowed_callers = _AUTHORIZED_ISSUANCE_CALLERS.get((issuer, artifact_type))
+    if not allowed_callers:
+        raise LineageAuthenticityError(f"authenticity_issuer_artifact_type_unissuable:{issuer}:{artifact_type}")
+
+    call_stack = inspect.stack(context=0)
+    try:
+        observed_callers = {_caller_identity(frame_info) for frame_info in call_stack[2:10]}
+    finally:
+        del call_stack
+    if observed_callers.isdisjoint(allowed_callers):
+        raise LineageAuthenticityError(
+            f"authenticity_boundary_issuer_forbidden:{issuer}:{artifact_type}"
+        )
+
+
 def issue_authenticity(*, artifact: dict[str, Any], issuer: str) -> dict[str, str]:
     required_issuer = _require_issuer(issuer)
+    _enforce_boundary_issuance_authority(artifact=artifact, issuer=required_issuer)
     key_id = _issuer_key_id(required_issuer)
     payload_digest = compute_payload_digest(artifact)
     audience = AUDIENCE_REPO_WRITE_BOUNDARY

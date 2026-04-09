@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 from spectrum_systems.orchestration import cycle_runner
 from spectrum_systems.orchestration import pqx_handoff_adapter
 from spectrum_systems.modules.runtime.judgment_engine import retrieve_precedents, run_judgment, select_policy
+from tests.helpers_repo_write_lineage import build_valid_repo_write_lineage
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -67,73 +67,14 @@ def _manifest(
         "repo_mutation_requested": repo_mutation_requested,
     }
     if repo_mutation_requested:
+        lineage = build_valid_repo_write_lineage(request_id="req-cycle-1", trace_id="trace-cycle-test")
         pqx_request.update(
             {
                 "trace_id": "trace-cycle-test",
-                "build_admission_record": {
-                    "artifact_type": "build_admission_record",
-                    "admission_id": "adm-cycle-1",
-                    "request_id": "req-cycle-1",
-                    "execution_type": "repo_write",
-                    "admission_status": "accepted",
-                    "normalized_execution_request_ref": "normalized_execution_request:req-cycle-1",
-                    "trace_id": "trace-cycle-test",
-                    "created_at": "2026-04-08T00:00:00Z",
-                    "produced_by": "AEXEngine",
-                    "reason_codes": [],
-                    "target_scope": {"repo": "spectrum-systems", "paths": ["spectrum_systems/orchestration/cycle_runner.py"]},
-                },
-                "normalized_execution_request": {
-                    "artifact_type": "normalized_execution_request",
-                    "request_id": "req-cycle-1",
-                    "prompt_text": "Modify cycle execution path",
-                    "execution_type": "repo_write",
-                    "repo_mutation_requested": True,
-                    "target_paths": ["spectrum_systems/orchestration/cycle_runner.py"],
-                    "requested_outputs": ["patch"],
-                    "source_prompt_kind": "codex_build_request",
-                    "trace_id": "trace-cycle-test",
-                    "created_at": "2026-04-08T00:00:00Z",
-                    "produced_by": "AEXEngine",
-                },
-                "tlc_handoff_record": {
-                    "artifact_type": "tlc_handoff_record",
-                    "handoff_id": "tlc-handoff-cycle-1",
-                    "request_id": "req-cycle-1",
-                    "trace_id": "trace-cycle-test",
-                    "created_at": "2026-04-08T00:00:00Z",
-                    "produced_by": "TLC",
-                    "build_admission_record_ref": "build_admission_record:adm-cycle-1",
-                    "normalized_execution_request_ref": "normalized_execution_request:req-cycle-1",
-                    "handoff_status": "accepted",
-                    "target_subsystems": ["TPA", "PQX"],
-                    "execution_type": "repo_write",
-                    "repo_mutation_requested": True,
-                    "reason_codes": [],
-                    "tlc_run_context": {
-                        "run_id": "tlc-cycle-1",
-                        "branch_ref": "refs/heads/main",
-                        "objective": "repo mutating run",
-                        "entry_boundary": "aex_to_tlc",
-                    },
-                    "lineage": {
-                        "upstream_refs": [
-                            "build_admission_record:adm-cycle-1",
-                            "normalized_execution_request:req-cycle-1",
-                        ],
-                        "intended_path": ["TLC", "TPA", "PQX"],
-                    },
-                },
+                "build_admission_record": lineage["build_admission_record"],
+                "normalized_execution_request": lineage["normalized_execution_request"],
+                "tlc_handoff_record": lineage["tlc_handoff_record"],
             }
-        )
-        pqx_request["build_admission_record"]["authenticity"] = issue_authenticity(
-            artifact=pqx_request["build_admission_record"], issuer="AEX"
-        )
-        pqx_request["normalized_execution_request"]["authenticity"] = issue_authenticity(
-            artifact=pqx_request["normalized_execution_request"], issuer="AEX"
-        )
-        pqx_request["tlc_handoff_record"]["authenticity"] = issue_authenticity(
-            artifact=pqx_request["tlc_handoff_record"], issuer="TLC"
         )
     pqx_request_path = tmp_path / "pqx_request.json"
     _write(pqx_request_path, pqx_request)
@@ -481,37 +422,6 @@ def test_fix_reentry_repo_write_rejects_replayed_admission_lineage(tmp_path: Pat
     assert fix_roadmap_result["next_state"] == "fix_roadmap_ready"
 
     after_fix_roadmap = _load(manifest_path)
-    refreshed_request_path = Path(after_fix_roadmap["pqx_execution_request_path"])
-    refreshed_request = _load(refreshed_request_path)
-    refreshed_request["build_admission_record"]["admission_id"] = "adm-1-reentry"
-    refreshed_request["build_admission_record"]["request_id"] = "req-1-reentry"
-    refreshed_request["build_admission_record"]["trace_id"] = "trace-1-reentry"
-    refreshed_request["build_admission_record"]["normalized_execution_request_ref"] = "normalized_execution_request:req-1-reentry"
-
-    refreshed_request["normalized_execution_request"]["request_id"] = "req-1-reentry"
-    refreshed_request["normalized_execution_request"]["trace_id"] = "trace-1-reentry"
-
-    refreshed_request["tlc_handoff_record"]["handoff_id"] = "tlc-handoff-1-reentry"
-    refreshed_request["tlc_handoff_record"]["request_id"] = "req-1-reentry"
-    refreshed_request["tlc_handoff_record"]["trace_id"] = "trace-1-reentry"
-    refreshed_request["tlc_handoff_record"]["build_admission_record_ref"] = "build_admission_record:adm-1-reentry"
-    refreshed_request["tlc_handoff_record"]["normalized_execution_request_ref"] = "normalized_execution_request:req-1-reentry"
-    refreshed_request["tlc_handoff_record"]["lineage"]["upstream_refs"] = [
-        "build_admission_record:adm-1-reentry",
-        "normalized_execution_request:req-1-reentry",
-    ]
-
-    refreshed_request["build_admission_record"]["authenticity"] = issue_authenticity(
-        artifact=refreshed_request["build_admission_record"], issuer="AEX"
-    )
-    refreshed_request["normalized_execution_request"]["authenticity"] = issue_authenticity(
-        artifact=refreshed_request["normalized_execution_request"], issuer="AEX"
-    )
-    refreshed_request["tlc_handoff_record"]["authenticity"] = issue_authenticity(
-        artifact=refreshed_request["tlc_handoff_record"], issuer="TLC"
-    )
-    _write(refreshed_request_path, refreshed_request)
-
     reentry_result = cycle_runner.run_cycle(manifest_path)
     assert reentry_result["status"] == "blocked"
     assert any("lineage_replay_detected" in issue for issue in reentry_result["blocking_issues"])

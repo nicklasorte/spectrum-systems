@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 from spectrum_systems.modules.runtime.top_level_conductor import TopLevelConductorError, run_top_level_conductor
+from tests.helpers_repo_write_lineage import build_valid_repo_write_lineage
 
 
 VALID_REVIEW = """---
@@ -48,12 +48,7 @@ def _base_request(tmp_path: Path) -> dict[str, object]:
 
 
 def _attach_aex_authenticity(request: dict[str, object]) -> None:
-    admission = request.get("build_admission_record")
-    normalized = request.get("normalized_execution_request")
-    if isinstance(admission, dict):
-        admission["authenticity"] = issue_authenticity(artifact=admission, issuer="AEX")
-    if isinstance(normalized, dict):
-        normalized["authenticity"] = issue_authenticity(artifact=normalized, issuer="AEX")
+    return
 
 
 def test_tlc_refuses_repo_write_without_admission_record(tmp_path: Path) -> None:
@@ -70,33 +65,9 @@ def test_tlc_requires_explicit_repo_mutation_declaration_when_admission_artifact
 
 def test_direct_pqx_path_for_repo_write_is_rejected(tmp_path: Path) -> None:
     request = _base_request(tmp_path)
-    request["build_admission_record"] = {
-        "artifact_type": "build_admission_record",
-        "admission_id": "adm-1",
-        "request_id": "req-1",
-        "execution_type": "repo_write",
-        "admission_status": "accepted",
-        "normalized_execution_request_ref": "normalized_execution_request:req-1",
-        "trace_id": "trace-tlc-aex-check",
-        "created_at": "2026-04-08T00:00:00Z",
-        "produced_by": "AEXEngine",
-        "reason_codes": [],
-        "target_scope": {"repo": "spectrum-systems", "paths": ["x"]},
-    }
-    request["normalized_execution_request"] = {
-        "artifact_type": "normalized_execution_request",
-        "request_id": "req-1",
-        "prompt_text": "Modify file",
-        "execution_type": "repo_write",
-        "repo_mutation_requested": True,
-        "target_paths": ["x"],
-        "requested_outputs": ["patch"],
-        "source_prompt_kind": "codex_build_request",
-        "trace_id": "trace-tlc-aex-check",
-        "created_at": "2026-04-08T00:00:00Z",
-        "produced_by": "AEXEngine",
-    }
-    _attach_aex_authenticity(request)
+    lineage = build_valid_repo_write_lineage(request_id="req-1", trace_id="trace-tlc-aex-check")
+    request["build_admission_record"] = lineage["build_admission_record"]
+    request["normalized_execution_request"] = lineage["normalized_execution_request"]
 
     def _bad_pqx(_payload: dict[str, object]) -> dict[str, object]:
         raise TopLevelConductorError("direct_pqx_repo_write_forbidden")
@@ -109,100 +80,30 @@ def test_direct_pqx_path_for_repo_write_is_rejected(tmp_path: Path) -> None:
 
 def test_tlc_rejects_repo_write_with_rejected_admission(tmp_path: Path) -> None:
     request = _base_request(tmp_path)
-    request["build_admission_record"] = {
-        "artifact_type": "build_admission_record",
-        "admission_id": "adm-1",
-        "request_id": "req-1",
-        "execution_type": "repo_write",
-        "admission_status": "rejected",
-        "normalized_execution_request_ref": "normalized_execution_request:req-1",
-        "trace_id": "trace-tlc-aex-check",
-        "created_at": "2026-04-08T00:00:00Z",
-        "produced_by": "AEXEngine",
-        "reason_codes": ["blocked"],
-        "target_scope": {"repo": "spectrum-systems", "paths": ["x"]},
-    }
-    request["normalized_execution_request"] = {
-        "artifact_type": "normalized_execution_request",
-        "request_id": "req-1",
-        "prompt_text": "Modify file",
-        "execution_type": "repo_write",
-        "repo_mutation_requested": True,
-        "target_paths": ["x"],
-        "requested_outputs": ["patch"],
-        "source_prompt_kind": "codex_build_request",
-        "trace_id": "trace-tlc-aex-check",
-        "created_at": "2026-04-08T00:00:00Z",
-        "produced_by": "AEXEngine",
-    }
-    _attach_aex_authenticity(request)
-    with pytest.raises(TopLevelConductorError, match="admission_not_accepted"):
+    lineage = build_valid_repo_write_lineage(request_id="req-1", trace_id="trace-tlc-aex-check")
+    request["build_admission_record"] = lineage["build_admission_record"]
+    request["normalized_execution_request"] = lineage["normalized_execution_request"]
+    request["build_admission_record"]["admission_status"] = "rejected"
+    with pytest.raises(TopLevelConductorError, match="repo_mutation_without_admission"):
         run_top_level_conductor(request)
 
 
 def test_tlc_rejects_repo_write_with_unresolvable_normalized_ref(tmp_path: Path) -> None:
     request = _base_request(tmp_path)
-    request["build_admission_record"] = {
-        "artifact_type": "build_admission_record",
-        "admission_id": "adm-1",
-        "request_id": "req-1",
-        "execution_type": "repo_write",
-        "admission_status": "accepted",
-        "normalized_execution_request_ref": "normalized_execution_request:req-other",
-        "trace_id": "trace-tlc-aex-check",
-        "created_at": "2026-04-08T00:00:00Z",
-        "produced_by": "AEXEngine",
-        "reason_codes": [],
-        "target_scope": {"repo": "spectrum-systems", "paths": ["x"]},
-    }
-    request["normalized_execution_request"] = {
-        "artifact_type": "normalized_execution_request",
-        "request_id": "req-1",
-        "prompt_text": "Modify file",
-        "execution_type": "repo_write",
-        "repo_mutation_requested": True,
-        "target_paths": ["x"],
-        "requested_outputs": ["patch"],
-        "source_prompt_kind": "codex_build_request",
-        "trace_id": "trace-tlc-aex-check",
-        "created_at": "2026-04-08T00:00:00Z",
-        "produced_by": "AEXEngine",
-    }
-    _attach_aex_authenticity(request)
-    with pytest.raises(TopLevelConductorError, match="normalized_request_ref_unresolvable"):
+    lineage = build_valid_repo_write_lineage(request_id="req-1", trace_id="trace-tlc-aex-check")
+    request["build_admission_record"] = lineage["build_admission_record"]
+    request["normalized_execution_request"] = lineage["normalized_execution_request"]
+    request["build_admission_record"]["normalized_execution_request_ref"] = "normalized_execution_request:req-other"
+    with pytest.raises(TopLevelConductorError, match="repo_mutation_without_admission"):
         run_top_level_conductor(request)
 
 
 def test_valid_admitted_repo_write_path_succeeds(tmp_path: Path) -> None:
     request = _base_request(tmp_path)
     request["require_review"] = False
-    request["build_admission_record"] = {
-        "artifact_type": "build_admission_record",
-        "admission_id": "adm-1",
-        "request_id": "req-1",
-        "execution_type": "repo_write",
-        "admission_status": "accepted",
-        "normalized_execution_request_ref": "normalized_execution_request:req-1",
-        "trace_id": "trace-tlc-aex-check",
-        "created_at": "2026-04-08T00:00:00Z",
-        "produced_by": "AEXEngine",
-        "reason_codes": [],
-        "target_scope": {"repo": "spectrum-systems", "paths": ["x"]},
-    }
-    request["normalized_execution_request"] = {
-        "artifact_type": "normalized_execution_request",
-        "request_id": "req-1",
-        "prompt_text": "Modify file",
-        "execution_type": "repo_write",
-        "repo_mutation_requested": True,
-        "target_paths": ["x"],
-        "requested_outputs": ["patch"],
-        "source_prompt_kind": "codex_build_request",
-        "trace_id": "trace-tlc-aex-check",
-        "created_at": "2026-04-08T00:00:00Z",
-        "produced_by": "AEXEngine",
-    }
-    _attach_aex_authenticity(request)
+    lineage = build_valid_repo_write_lineage(request_id="req-1", trace_id="trace-tlc-aex-check")
+    request["build_admission_record"] = lineage["build_admission_record"]
+    request["normalized_execution_request"] = lineage["normalized_execution_request"]
     result = run_top_level_conductor(request)
     assert result["current_state"] in {"ready_for_merge", "blocked", "exhausted"}
     assert "trace-tlc-aex-check" in result["trace_refs"]

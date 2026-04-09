@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 from spectrum_systems.modules.runtime.pqx_sequence_runner import PQXSequenceRunnerError, execute_sequence_run
 from spectrum_systems.modules.runtime.top_level_conductor import TopLevelConductorError, run_top_level_conductor
+from tests.helpers_repo_write_lineage import build_valid_repo_write_lineage
 
 
 def _base_request(tmp_path: Path) -> dict[str, object]:
@@ -32,39 +32,12 @@ def _base_request(tmp_path: Path) -> dict[str, object]:
         "review_path": str(review_path),
         "action_tracker_path": str(action_path),
         "repo_mutation_requested": True,
-        "build_admission_record": {
-            "artifact_type": "build_admission_record",
-            "admission_id": "adm-flow-1",
-            "request_id": "req-flow-1",
-            "execution_type": "repo_write",
-            "admission_status": "accepted",
-            "normalized_execution_request_ref": "normalized_execution_request:req-flow-1",
-            "trace_id": "trace-tlc-handoff-flow",
-            "created_at": "2026-04-08T00:00:00Z",
-            "produced_by": "AEXEngine",
-            "reason_codes": [],
-            "target_scope": {"repo": "spectrum-systems", "paths": ["x"]},
-        },
-        "normalized_execution_request": {
-            "artifact_type": "normalized_execution_request",
-            "request_id": "req-flow-1",
-            "prompt_text": "Modify file",
-            "execution_type": "repo_write",
-            "repo_mutation_requested": True,
-            "target_paths": ["x"],
-            "requested_outputs": ["patch"],
-            "source_prompt_kind": "codex_build_request",
-            "trace_id": "trace-tlc-handoff-flow",
-            "created_at": "2026-04-08T00:00:00Z",
-            "produced_by": "AEXEngine",
-        },
+        **build_valid_repo_write_lineage(
+            request_id="req-flow-1",
+            trace_id="trace-tlc-handoff-flow",
+            created_at="2026-04-08T00:00:00Z",
+        ),
     }
-    request["build_admission_record"]["authenticity"] = issue_authenticity(
-        artifact=request["build_admission_record"], issuer="AEX"
-    )
-    request["normalized_execution_request"]["authenticity"] = issue_authenticity(
-        artifact=request["normalized_execution_request"], issuer="AEX"
-    )
     return request
 
 
@@ -110,10 +83,8 @@ def test_valid_repo_write_path_uses_tlc_handoff_record(tmp_path: Path) -> None:
     assert isinstance(handoff, dict)
     assert handoff["artifact_type"] == "tlc_handoff_record"
     assert handoff["trace_id"] == "trace-tlc-handoff-flow"
-    assert handoff["lineage"]["upstream_refs"] == [
-        "build_admission_record:adm-flow-1",
-        "normalized_execution_request:req-flow-1",
-    ]
+    assert handoff["lineage"]["upstream_refs"][0].startswith("build_admission_record:adm-")
+    assert handoff["lineage"]["upstream_refs"][1] == "normalized_execution_request:req-flow-1"
     assert handoff["lineage"]["intended_path"] == ["TLC", "TPA", "PQX"]
     assert "trace-tlc-handoff-flow" in result["trace_refs"]
 
