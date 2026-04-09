@@ -228,6 +228,9 @@ def _manifest(
             "certification_pack_ref": "c",
             "error_budget_ref": "d",
             "policy_ref": str(allow_policy_path),
+            "closure_decision_artifact_ref": str(_REPO_ROOT / "contracts" / "examples" / "closure_decision_artifact.json"),
+            "review_control_signal_ref": str(_REPO_ROOT / "contracts" / "examples" / "review_control_signal.json"),
+            "ril_output_artifact_ref": str(_REPO_ROOT / "contracts" / "examples" / "review_integration_packet_artifact.json"),
             "trust_spine_evidence_cohesion_result_ref": str(
                 _REPO_ROOT / "contracts" / "examples" / "trust_spine_evidence_cohesion_result.json"
             ),
@@ -514,17 +517,11 @@ def test_cycle_runner_persists_remediation_and_fix_plan_when_decision_blocks(tmp
 
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "blocked"
+    assert "fre_fix_plan_artifact_ref" in " ".join(result["blocking_issues"])
 
     updated = _load(manifest_path)
-    assert updated["drift_remediation_artifact_path"] is not None
-    assert updated["fix_plan_artifact_path"] is not None
-    assert Path(updated["drift_remediation_artifact_path"]).is_file()
-    assert Path(updated["fix_plan_artifact_path"]).is_file()
-
-    decision_payload = _load(Path(updated["next_step_decision_artifact_path"]))
-    assert decision_payload["remediation_required"] is True
-    assert decision_payload["drift_remediation_artifact_path"] == updated["drift_remediation_artifact_path"]
-    assert decision_payload["fix_plan_artifact_path"] == updated["fix_plan_artifact_path"]
+    assert updated["drift_remediation_artifact_path"] is None
+    assert updated["fix_plan_artifact_path"] is None
 
 
 def test_cycle_runner_blocks_when_eligibility_artifact_missing(tmp_path: Path) -> None:
@@ -609,10 +606,7 @@ def test_cycle_runner_blocks_on_failed_or_missing_certification(tmp_path: Path) 
 
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "blocked"
-    assert any(
-        token in " ".join(result["blocking_issues"])
-        for token in ("done certification handoff failed", "next-step decision blocked progression")
-    )
+    assert "fre_fix_plan_artifact_ref" in " ".join(result["blocking_issues"])
 
 
 def test_cycle_runner_judgment_happy_path_allows_progression(tmp_path: Path) -> None:
@@ -1076,11 +1070,16 @@ def test_cycle_runner_sequence_state_blocks_promotion_without_control_allow(tmp_
     manifest["done_certification_input_refs"]["eval_coverage_summary_ref"] = str(
         _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json"
     )
+    closure = json.loads((_REPO_ROOT / "contracts" / "examples" / "closure_decision_artifact.json").read_text(encoding="utf-8"))
+    closure["decision_type"] = "blocked"
+    closure_path = tmp_path / "closure_blocked.json"
+    _write(closure_path, closure)
+    manifest["done_certification_input_refs"]["closure_decision_artifact_ref"] = str(closure_path)
     _write(manifest_path, manifest)
 
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "blocked"
-    assert "control_allow_promotion" in result["blocking_issues"][-1]
+    assert "decision_type is non-promotable" in result["blocking_issues"][-1]
 
 
 def test_cycle_runner_sequence_state_blocks_promotion_without_hard_gate_falsification_and_missing_replay_authority_refs(tmp_path: Path) -> None:

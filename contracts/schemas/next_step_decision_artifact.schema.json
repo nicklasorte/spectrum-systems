@@ -2,15 +2,15 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/next_step_decision_artifact.schema.json",
   "title": "Next Step Decision Artifact",
-  "description": "Deterministic fail-closed control-layer next-step decision artifact.",
+  "description": "Deterministic fail-closed non-authoritative next-step recommendation artifact.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "decision_id",
     "cycle_id",
     "current_state",
-    "next_action",
-    "allowed_actions",
+    "recommendation_action",
+    "recommendation_candidates",
     "blocking",
     "blocking_reasons",
     "required_inputs_missing",
@@ -32,7 +32,8 @@
     "remediation_class",
     "blocking_reason_category",
     "drift_remediation_artifact_path",
-    "fix_plan_artifact_path"
+    "fre_fix_plan_artifact_ref",
+    "authority_level"
   ],
   "properties": {
     "decision_id": {
@@ -46,9 +47,21 @@
     "current_state": {
       "type": "string"
     },
+    "recommendation_action": {
+      "type": "string",
+      "minLength": 1
+    },
     "next_action": {
       "type": "string",
       "minLength": 1
+    },
+    "recommendation_candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
     "allowed_actions": {
       "type": "array",
@@ -137,19 +150,23 @@
         "null"
       ]
     },
+    "fre_fix_plan_artifact_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "fix_plan_artifact_path": {
       "type": [
         "string",
         "null"
       ]
     },
-    "drift_remediation_artifact": {
-      "type": [
-        "object",
-        "null"
-      ]
+    "authority_level": {
+      "type": "string",
+      "const": "non_authoritative_recommendation"
     },
-    "fix_plan_artifact": {
+    "drift_remediation_artifact": {
       "type": [
         "object",
         "null"

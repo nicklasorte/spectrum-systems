@@ -8,11 +8,9 @@
   "source_review_merge_readiness_ref": "review_merge_readiness_artifact:rqx-02-review-002",
   "source_review_operator_handoff_ref": null,
   "source_review_handoff_disposition_ref": null,
-  "gate_decision": "allow",
   "gate_reason_code": "safe_to_merge",
   "blocking_refs": [],
   "required_manual_action": false,
-  "promotion_eligible": true,
   "provenance": {
     "classified_by_system": "TLC",
     "automatic_promotion_triggered": false,
@@ -24,5 +22,7 @@
     "review_result_ref": "review_result_artifact:rqx-02-review-002",
     "review_merge_readiness_ref": "review_merge_readiness_artifact:rqx-02-review-002"
   },
-  "emitted_at": "2026-04-09T12:00:00Z"
+  "emitted_at": "2026-04-09T12:00:00Z",
+  "source_closure_decision_ref": "closure_decision_artifact:cda-8f64afee1c778f18",
+  "signal_status": "clean"
 }

@@ -423,9 +423,10 @@ def _stage_contract_input_counts(manifest: dict[str, Any]) -> dict[str, int]:
 
 
 def _stage_contract_eval_statuses(manifest: dict[str, Any]) -> dict[str, str]:
+    closure_ok, _ = _closure_decision_gate(manifest)
     return {
         "certification_status": "pass" if manifest.get("certification_status") == "passed" else "fail",
-        "promotion_control_allow": "pass" if manifest.get("control_allow_promotion") is True else "fail",
+        "promotion_control_allow": "pass" if closure_ok else "fail",
     }
 
 
@@ -518,6 +519,52 @@ def _review_signal_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
         return False, "promotion blocked by review_control_signal gate_assessment=CONDITIONAL"
     if str(payload.get("scale_recommendation") or "") == "NO":
         return False, "promotion blocked by review_control_signal scale_recommendation=NO"
+
+    ril_output_ref = manifest.get("ril_output_artifact_ref")
+    refs = manifest.get("done_certification_input_refs")
+    if (not isinstance(ril_output_ref, str) or not ril_output_ref.strip()) and isinstance(refs, dict):
+        ril_output_ref = refs.get("ril_output_artifact_ref")
+    if not isinstance(ril_output_ref, str) or not ril_output_ref.strip():
+        return False, "promotion blocked: review loop requires ril_output_artifact_ref"
+    if not _path_exists(ril_output_ref):
+        return False, "promotion blocked: ril_output_artifact_ref is unreadable"
+    try:
+        ril_payload = json.loads(Path(ril_output_ref).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False, "promotion blocked: ril_output_artifact_ref is unreadable"
+    artifact_type = str(ril_payload.get("artifact_type") or "")
+    if not artifact_type.startswith("review_") or artifact_type == "review_result_artifact":
+        return False, "promotion blocked: review loop requires RIL output artifact, not raw interpretation"
+    return True, None
+
+
+def _closure_decision_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
+    closure_ref = manifest.get("closure_decision_artifact_ref")
+    refs = manifest.get("done_certification_input_refs")
+    if (not isinstance(closure_ref, str) or not closure_ref.strip()) and isinstance(refs, dict):
+        closure_ref = refs.get("closure_decision_artifact_ref")
+    if not isinstance(closure_ref, str) or not closure_ref.strip():
+        return False, "promotion requires closure_decision_artifact"
+    if not _path_exists(closure_ref):
+        return False, "promotion requires readable closure_decision_artifact"
+    try:
+        payload = json.loads(Path(closure_ref).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False, "promotion requires readable closure_decision_artifact"
+    errors = sorted(
+        Draft202012Validator(load_schema("closure_decision_artifact")).iter_errors(payload),
+        key=lambda err: str(list(err.absolute_path)),
+    )
+    if errors:
+        return False, "promotion requires schema-valid closure_decision_artifact"
+    provenance = payload.get("provenance") if isinstance(payload.get("provenance"), dict) else {}
+    if provenance.get("engine") != "closure_decision_engine":
+        return False, "promotion requires CDE closure_decision_artifact provenance.engine=closure_decision_engine"
+    if not str(provenance.get("decision_rules_version") or "").startswith("cde-"):
+        return False, "promotion requires CDE closure_decision_artifact decision_rules_version"
+    decision_type = str(payload.get("decision_type") or "")
+    if decision_type in {"blocked", "escalate"}:
+        return False, "promotion blocked: closure_decision_artifact decision_type is non-promotable"
     return True, None
 
 def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) -> SequenceTransitionDecision:
@@ -553,6 +600,9 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
         if not isinstance(review_paths, list) or not review_paths:
             return SequenceTransitionDecision(False, "certification_pending requires review artifacts")
     elif target_state == "promoted":
+        closure_passed, closure_error = _closure_decision_gate(manifest)
+        if not closure_passed:
+            return SequenceTransitionDecision(False, closure_error)
         required_judgments = manifest.get("required_judgments")
         if isinstance(required_judgments, list) and "artifact_release_readiness" in required_judgments:
             required_paths = {
@@ -587,8 +637,6 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
             return SequenceTransitionDecision(False, cohesion_error)
         if manifest.get("decision_blocked") is True:
             return SequenceTransitionDecision(False, "promotion blocked by decision_blocked=true")
-        if manifest.get("control_allow_promotion") is not True:
-            return SequenceTransitionDecision(False, "promotion requires explicit control_allow_promotion=true")
 
     contract_gate_passed, contract_gate_error = _stage_contract_gate(manifest, target_state)
     if not contract_gate_passed:

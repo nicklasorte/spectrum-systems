@@ -258,28 +258,46 @@ def _evaluate_tpa_admission_gate(context: Optional[Dict[str, Any]]) -> Dict[str,
         gate["gate_passed"] = False
         return gate
 
-    gate_payload = dict(envelope.get("gate_decision") or {})
-    regression_decision = str(gate_payload.get("complexity_regression_decision") or "").lower()
-    simplicity_decision = str(gate_payload.get("simplicity_decision") or "").lower()
-    if not bool(gate_payload.get("promotion_ready")) or regression_decision in {"block", "freeze"} or simplicity_decision in {"block", "freeze"}:
-        gate["reason_code"] = "missing_tpa_artifact"
-        gate["block_reason"] = "reason_code=missing_tpa_artifact; TPA envelope gate decision did not satisfy promotion conditions"
+    return gate
+
+
+def _evaluate_execution_gate(
+    decision: Dict[str, Any],
+    context: Optional[Dict[str, Any]],
+    enforcement_scope: str,
+) -> Dict[str, Any]:
+    gate = {
+        "gate_passed": True,
+        "block_reason": None,
+    }
+    if enforcement_scope == "promotion":
+        return gate
+    if not (isinstance(context, dict) and context.get("execution_context") is True):
+        return gate
+    trace_id = str(decision.get("trace_id") or "")
+    if not trace_id:
         gate["gate_passed"] = False
+        gate["block_reason"] = "execution requires trace_id"
+        return gate
+    eval_summary = context.get("eval_summary")
+    if not isinstance(eval_summary, dict):
+        gate["gate_passed"] = False
+        gate["block_reason"] = "execution requires eval_summary artifact payload"
+        return gate
+    if not isinstance(eval_summary.get("summary_id"), str) or not eval_summary.get("summary_id"):
+        gate["gate_passed"] = False
+        gate["block_reason"] = "execution requires eval_summary.summary_id"
+        return gate
+    if str(eval_summary.get("summary_id")) != str(decision.get("summary_id")):
+        gate["gate_passed"] = False
+        gate["block_reason"] = "execution requires eval_summary.summary_id to match decision.summary_id"
         return gate
 
-    if str(envelope.get("execution_mode") or "") == "cleanup_only":
-        cleanup_validation = envelope.get("cleanup_only_validation")
-        if not isinstance(cleanup_validation, dict):
-            gate["reason_code"] = "missing_tpa_artifact"
-            gate["block_reason"] = "reason_code=missing_tpa_artifact; cleanup-only envelope missing cleanup_only_validation"
-            gate["gate_passed"] = False
-            return gate
-        if not bool(cleanup_validation.get("equivalence_proven")) or not str(cleanup_validation.get("replay_ref") or "").strip():
-            gate["reason_code"] = "missing_tpa_artifact"
-            gate["block_reason"] = "reason_code=missing_tpa_artifact; cleanup-only envelope missing equivalence/replay evidence"
-            gate["gate_passed"] = False
-            return gate
-
+    tpa_gate = _evaluate_tpa_admission_gate(context)
+    if not tpa_gate["gate_passed"]:
+        gate["gate_passed"] = False
+        gate["block_reason"] = tpa_gate["block_reason"]
+        return gate
     return gate
 
 
@@ -946,6 +964,7 @@ def enforce_budget_decision(
     required_human_actions = _build_required_human_actions(system_response, decision)
     reasons: List[str] = list(decision.get("reasons", []))
     certification_gate = _evaluate_certification_gate(context, enforcement_scope, decision=decision)
+    execution_gate = _evaluate_execution_gate(decision, context, enforcement_scope)
 
     if context and _OVERRIDE_AUTHORIZATION_KEY in context:
         raise EnforcementBridgeError(
@@ -958,6 +977,13 @@ def enforce_budget_decision(
             reasons.append(gate_reason)
         if gate_reason not in required_human_actions:
             required_human_actions.append(gate_reason)
+        system_response = "block"
+    if not execution_gate["gate_passed"]:
+        exec_reason = str(execution_gate.get("block_reason") or "Execution gate blocked enforcement.")
+        if exec_reason not in reasons:
+            reasons.append(exec_reason)
+        if exec_reason not in required_human_actions:
+            required_human_actions.append(exec_reason)
         system_response = "block"
 
     if system_response in {"allow", "warn"}:

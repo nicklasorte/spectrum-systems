@@ -52,6 +52,10 @@ def validate_review_promotion_gate_artifact(gate_artifact: dict[str, Any]) -> No
     _validate(gate_artifact, "review_promotion_gate_artifact")
 
 
+def validate_closure_decision_artifact(closure_decision_artifact: dict[str, Any]) -> None:
+    _validate(closure_decision_artifact, "closure_decision_artifact")
+
+
 def _deterministic_gate_id(
     review_result_artifact: dict[str, Any],
     merge_readiness_artifact: dict[str, Any],
@@ -70,28 +74,29 @@ def _deterministic_gate_id(
     return f"rpga:{review_result_artifact['review_id']}:{digest[:12]}"
 
 
-def _reason_from_disposition(disposition_artifact: dict[str, Any]) -> tuple[str, str]:
+def _reason_from_disposition(disposition_artifact: dict[str, Any]) -> str:
     reason_code = disposition_artifact["reason_code"]
     disposition = disposition_artifact["disposition"]
 
     if reason_code == "policy_blocked":
-        return ("block", "policy_blocked")
+        return "policy_blocked"
     if reason_code == "not_safe_to_merge":
-        return ("block", "unresolved_not_safe_to_merge")
+        return "unresolved_not_safe_to_merge"
     if reason_code == "unresolved_fix_required":
-        return ("hold_manual_resolution", "unresolved_fix_required")
+        return "unresolved_fix_required"
     if disposition == "escalate_to_owner":
-        return ("hold_manual_resolution", "disposition_escalated")
+        return "disposition_escalated"
     if disposition in {"manual_review_required", "hold_pending_input", "request_checkpoint_decision"}:
-        return ("hold_manual_resolution", "disposition_requires_manual_review")
+        return "disposition_requires_manual_review"
 
-    return ("block", "ambiguous_review_state")
+    return "ambiguous_review_state"
 
 
 def build_review_promotion_gate_artifact(
     *,
     review_result_artifact: dict[str, Any] | None,
     review_merge_readiness_artifact: dict[str, Any] | None,
+    closure_decision_artifact: dict[str, Any] | None,
     review_operator_handoff_artifact: dict[str, Any] | None = None,
     review_handoff_disposition_artifact: dict[str, Any] | None = None,
     emitted_at: str | None = None,
@@ -103,8 +108,9 @@ def build_review_promotion_gate_artifact(
     source_review_merge_readiness_ref: str | None = None
     source_review_operator_handoff_ref: str | None = None
     source_review_handoff_disposition_ref: str | None = None
+    source_closure_decision_ref: str | None = None
 
-    if review_result_artifact is None or review_merge_readiness_artifact is None:
+    if review_result_artifact is None or review_merge_readiness_artifact is None or closure_decision_artifact is None:
         gate_artifact = {
             "artifact_type": "review_promotion_gate_artifact",
             "artifact_version": "1.0.0",
@@ -115,11 +121,11 @@ def build_review_promotion_gate_artifact(
             "source_review_merge_readiness_ref": source_review_merge_readiness_ref,
             "source_review_operator_handoff_ref": source_review_operator_handoff_ref,
             "source_review_handoff_disposition_ref": source_review_handoff_disposition_ref,
-            "gate_decision": "block",
+            "source_closure_decision_ref": source_closure_decision_ref,
+            "signal_status": "invalid",
             "gate_reason_code": "missing_required_review_artifact",
             "blocking_refs": [],
             "required_manual_action": True,
-            "promotion_eligible": False,
             "provenance": {
                 "classified_by_system": "TLC",
                 "automatic_promotion_triggered": False,
@@ -138,11 +144,16 @@ def build_review_promotion_gate_artifact(
 
     validate_review_result_artifact(review_result_artifact)
     validate_review_merge_readiness_artifact(review_merge_readiness_artifact)
+    validate_closure_decision_artifact(closure_decision_artifact)
 
     source_review_result_ref = f"review_result_artifact:{review_result_artifact['review_id']}"
     source_review_merge_readiness_ref = (
         f"review_merge_readiness_artifact:{review_merge_readiness_artifact['review_id']}"
     )
+    source_closure_decision_ref = (
+        f"closure_decision_artifact:{closure_decision_artifact['closure_decision_id']}"
+    )
+    blocking_refs.append(source_closure_decision_ref)
 
     if review_operator_handoff_artifact is not None:
         validate_review_operator_handoff_artifact(review_operator_handoff_artifact)
@@ -158,10 +169,9 @@ def build_review_promotion_gate_artifact(
         )
         blocking_refs.append(source_review_handoff_disposition_ref)
 
-    gate_decision = "block"
+    signal_status = "invalid"
     gate_reason_code = "ambiguous_review_state"
     required_manual_action = True
-    promotion_eligible = False
 
     review_id = review_result_artifact["review_id"]
     review_verdict = review_result_artifact["verdict"]
@@ -191,24 +201,29 @@ def build_review_promotion_gate_artifact(
         and review_handoff_disposition_artifact["source_handoff_ref"] != source_review_operator_handoff_ref
     ):
         gate_reason_code = "ambiguous_review_state"
+    elif closure_decision_artifact["provenance"]["engine"] != "closure_decision_engine":
+        gate_reason_code = "missing_required_review_artifact"
+    elif not str(closure_decision_artifact["provenance"]["decision_rules_version"]).startswith("cde-"):
+        gate_reason_code = "missing_required_review_artifact"
+    elif not isinstance(closure_decision_artifact.get("trace_id"), str) or not closure_decision_artifact["trace_id"]:
+        gate_reason_code = "missing_required_review_artifact"
     elif review_verdict == "safe_to_merge" and review_operator_handoff_artifact is None and review_handoff_disposition_artifact is None:
-        gate_decision = "allow"
+        signal_status = "clean"
         gate_reason_code = "safe_to_merge"
         required_manual_action = False
-        promotion_eligible = True
     elif review_operator_handoff_artifact is not None and review_handoff_disposition_artifact is None:
-        gate_decision = "hold_manual_resolution"
+        signal_status = "manual_review_required"
         gate_reason_code = "handoff_pending"
         required_manual_action = True
     elif review_handoff_disposition_artifact is not None:
-        gate_decision, gate_reason_code = _reason_from_disposition(review_handoff_disposition_artifact)
-        required_manual_action = gate_decision != "allow"
-        promotion_eligible = False
+        gate_reason_code = _reason_from_disposition(review_handoff_disposition_artifact)
+        signal_status = "manual_review_required"
+        required_manual_action = True
     elif review_verdict == "fix_required":
-        gate_decision = "block"
+        signal_status = "manual_review_required"
         gate_reason_code = "unresolved_fix_required"
     elif review_verdict == "not_safe_to_merge":
-        gate_decision = "block"
+        signal_status = "manual_review_required"
         gate_reason_code = "unresolved_not_safe_to_merge"
     else:
         gate_reason_code = "ambiguous_review_state"
@@ -228,11 +243,11 @@ def build_review_promotion_gate_artifact(
         "source_review_merge_readiness_ref": source_review_merge_readiness_ref,
         "source_review_operator_handoff_ref": source_review_operator_handoff_ref,
         "source_review_handoff_disposition_ref": source_review_handoff_disposition_ref,
-        "gate_decision": gate_decision,
+        "source_closure_decision_ref": source_closure_decision_ref,
+        "signal_status": signal_status,
         "gate_reason_code": gate_reason_code,
         "blocking_refs": blocking_refs,
         "required_manual_action": required_manual_action,
-        "promotion_eligible": promotion_eligible,
         "provenance": {
             "classified_by_system": "TLC",
             "automatic_promotion_triggered": False,
@@ -254,6 +269,7 @@ def emit_review_promotion_gate(
     *,
     review_result_artifact: dict[str, Any] | None,
     review_merge_readiness_artifact: dict[str, Any] | None,
+    closure_decision_artifact: dict[str, Any] | None,
     output_dir: Path,
     review_operator_handoff_artifact: dict[str, Any] | None = None,
     review_handoff_disposition_artifact: dict[str, Any] | None = None,
@@ -262,6 +278,7 @@ def emit_review_promotion_gate(
     gate_artifact = build_review_promotion_gate_artifact(
         review_result_artifact=review_result_artifact,
         review_merge_readiness_artifact=review_merge_readiness_artifact,
+        closure_decision_artifact=closure_decision_artifact,
         review_operator_handoff_artifact=review_operator_handoff_artifact,
         review_handoff_disposition_artifact=review_handoff_disposition_artifact,
         emitted_at=emitted_at,
@@ -298,6 +315,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--review-result", help="Path to review_result_artifact JSON.")
     parser.add_argument("--merge-readiness", help="Path to review_merge_readiness_artifact JSON.")
+    parser.add_argument("--closure-decision", help="Path to closure_decision_artifact JSON.")
     parser.add_argument("--handoff", help="Optional path to review_operator_handoff_artifact JSON.")
     parser.add_argument("--disposition", help="Optional path to review_handoff_disposition_artifact JSON.")
     parser.add_argument("--output-dir", default="artifacts/reviews", help="Directory for gate artifacts.")
@@ -309,6 +327,7 @@ def main() -> int:
     result = emit_review_promotion_gate(
         review_result_artifact=_read_json(args.review_result),
         review_merge_readiness_artifact=_read_json(args.merge_readiness),
+        closure_decision_artifact=_read_json(args.closure_decision),
         review_operator_handoff_artifact=_read_json(args.handoff),
         review_handoff_disposition_artifact=_read_json(args.disposition),
         output_dir=Path(args.output_dir),

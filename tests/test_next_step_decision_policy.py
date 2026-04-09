@@ -132,8 +132,10 @@ def test_decision_behavior_matches_policy_mapping(tmp_path: Path, monkeypatch: p
     manifest_path = _write(tmp_path / "cycle_manifest.json", _manifest("execution_ready"))
     eligibility_path = _write(tmp_path / "eligibility.json", _eligibility())
     decision = build_next_step_decision(str(manifest_path), str(eligibility_path))
-    assert decision["next_action"] == "prepare_execution_request"
-    assert decision["allowed_actions"] == ["prepare_execution_request", "block"]
+    assert decision["recommendation_action"] == "prepare_execution_request"
+    assert decision["recommendation_candidates"] == ["prepare_execution_request", "block"]
+    assert decision["next_action"] == decision["recommendation_action"]
+    assert decision["allowed_actions"] == decision["recommendation_candidates"]
 
 
 def test_policy_change_changes_decision_deterministically(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
