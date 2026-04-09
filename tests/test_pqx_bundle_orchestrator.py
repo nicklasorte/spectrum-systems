@@ -126,7 +126,7 @@ def test_ordered_execution_still_completes_when_no_review_required(tmp_path: Pat
     assert calls == ["AI-01", "AI-02", "TRUST-01"]
 
 
-def test_pqx_execution_triggers_rqx_review_for_bundle_record(tmp_path: Path) -> None:
+def test_build_triggers_review(tmp_path: Path) -> None:
     plan_path = _bundle_plan(tmp_path)
     result = execute_bundle_run(
         bundle_id="BUNDLE-T1",
@@ -142,6 +142,10 @@ def test_pqx_execution_triggers_rqx_review_for_bundle_record(tmp_path: Path) -> 
     assert result["status"] == "completed"
     assert Path(tmp_path / "out" / "BUNDLE-T1.review_request_artifact.json").exists()
     assert Path(tmp_path / "out" / result["review_result_artifact"]).exists()
+
+
+def test_pqx_execution_triggers_rqx_review_for_bundle_record(tmp_path: Path) -> None:
+    test_build_triggers_review(tmp_path)
 
 
 def test_block_on_first_failure(tmp_path: Path) -> None:

@@ -76,6 +76,10 @@ def test_happy_path_executes_once_and_reruns_review_once(tmp_path: Path) -> None
     assert "review_operator_handoff_artifact" not in result
 
 
+def test_fix_reentry_triggers_review(tmp_path: Path) -> None:
+    test_happy_path_executes_once_and_reruns_review_once(tmp_path)
+
+
 def test_tpa_block_prevents_pqx_execution(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     _prepare_post_fix_review_inputs(repo_root)
@@ -105,6 +109,8 @@ def test_tpa_block_prevents_pqx_execution(tmp_path: Path) -> None:
     handoff = result["review_operator_handoff_artifact"]
     assert handoff["handoff_reason"] == "tpa_blocked"
     assert handoff["recommended_next_action"] == "manual_review_required"
+    assert result["review_handoff_disposition_artifact"]["provenance"]["classified_by_system"] == "TLC"
+    assert result["review_handoff_disposition_artifact"]["provenance"]["execution_triggered"] is False
     validate_artifact(handoff, "review_operator_handoff_artifact")
 
 
@@ -149,6 +155,10 @@ def test_rqx_never_calls_pqx_directly(tmp_path: Path) -> None:
     assert result["review_fix_execution_result_artifact"]["status"] == "blocked_by_tpa"
 
 
+def test_rqx_never_executes_fixes(tmp_path: Path) -> None:
+    test_rqx_never_calls_pqx_directly(tmp_path)
+
+
 def test_pqx_rejects_non_tpa_fix_execution(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     _prepare_post_fix_review_inputs(repo_root)
@@ -166,6 +176,10 @@ def test_pqx_rejects_non_tpa_fix_execution(tmp_path: Path) -> None:
         )
 
 
+def test_fix_requires_tpa_gate(tmp_path: Path) -> None:
+    test_pqx_rejects_non_tpa_fix_execution(tmp_path)
+
+
 def test_rqx_routes_fix_slice_to_tpa(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     _prepare_post_fix_review_inputs(repo_root)
@@ -181,6 +195,10 @@ def test_rqx_routes_fix_slice_to_tpa(tmp_path: Path) -> None:
             review_docs_dir=repo_root / "docs/reviews",
             pqx_executor=lambda _: {"status": "complete"},
         )
+
+
+def test_rqx_routes_fix_to_tpa(tmp_path: Path) -> None:
+    test_rqx_routes_fix_slice_to_tpa(tmp_path)
 
 
 def test_raw_prompt_bypass_is_rejected(tmp_path: Path) -> None:
@@ -308,6 +326,12 @@ def test_handoff_emission_does_not_trigger_additional_execution(tmp_path: Path) 
     assert pqx_count == 1
     assert result["review_fix_execution_result_artifact"]["status"] == "completed_fix_still_required"
     assert result["review_operator_handoff_artifact"]["provenance"]["auto_reentry_triggered"] is False
+    assert result["review_handoff_disposition_artifact"]["provenance"]["execution_triggered"] is False
+    assert result["review_handoff_disposition_artifact"]["provenance"]["rqx_cycle_reentry_triggered"] is False
+
+
+def test_unresolved_stops_execution(tmp_path: Path) -> None:
+    test_handoff_emission_does_not_trigger_additional_execution(tmp_path)
 
 
 def test_safe_or_not_safe_paths_do_not_execute_when_no_fix_slice(tmp_path: Path) -> None:
