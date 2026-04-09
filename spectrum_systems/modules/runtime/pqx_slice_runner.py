@@ -48,6 +48,7 @@ from spectrum_systems.modules.runtime.repo_write_lineage_guard import (
     RepoWriteLineageGuardError,
     validate_repo_write_lineage,
 )
+from spectrum_systems.modules.review_queue_executor import run_review_queue_executor
 
 
 class PQXSliceRunnerError(ValueError):
@@ -68,6 +69,45 @@ def _write_json(path: Path, payload: dict) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return path
+
+
+def _emit_post_execution_review(
+    *,
+    step_id: str,
+    run_id: str,
+    request_ref: str,
+    execution_record_ref: str,
+    certification_ref: str,
+    review_root: Path,
+) -> dict[str, Any]:
+    review_request = {
+        "artifact_type": "review_request_artifact",
+        "artifact_version": "1.0.0",
+        "schema_version": "1.0.0",
+        "standards_version": "1.0.0",
+        "review_id": f"rqx:{run_id}:{step_id}",
+        "review_name": f"rqx_review_{run_id}_{step_id}".lower().replace(":", "_").replace("-", "_"),
+        "review_type": "code_path_review",
+        "scope": f"PQX slice execution review for {step_id}",
+        "run_id": run_id,
+        "changed_files": [request_ref],
+        "produced_artifact_refs": [execution_record_ref],
+        "validation_result_refs": [certification_ref],
+        "requested_at": iso_now(utc_now),
+    }
+    review_request_path = _write_json(review_root / f"{run_id}.review_request_artifact.json", review_request)
+    review_result = run_review_queue_executor(
+        review_request,
+        repo_root=REPO_ROOT,
+        output_dir=review_root,
+        review_docs_dir=review_root / "docs",
+    )
+    return {
+        "review_request_artifact": review_request,
+        "review_request_artifact_path": str(review_request_path),
+        "rqx_review_result_artifact": review_result["review_result_artifact"],
+        "rqx_review_result_artifact_path": review_result["review_result_artifact_path"],
+    }
 
 
 def _build_control_surface_gap_influence(*, packet: dict, packet_ref: str, work_items: list[dict]) -> dict[str, object]:
@@ -995,6 +1035,14 @@ def run_pqx_slice(
         execution_record["artifacts_emitted"].append(str(contract_preflight_result_artifact_path))
     validate_artifact(execution_record, "pqx_slice_execution_record")
     execution_record_path = _write_json(step_dir / f"{run_id}.pqx_slice_execution_record.json", execution_record)
+    review_summary = _emit_post_execution_review(
+        step_id=normalized_step_id,
+        run_id=run_id,
+        request_ref=_relative(request_path),
+        execution_record_ref=_relative(execution_record_path),
+        certification_ref=_relative(certification_path),
+        review_root=step_dir / "reviews",
+    )
 
     audit_bundle = {
         "bundle_id": f"pqx-slice-audit:{run_id}:{normalized_step_id}",
@@ -1026,6 +1074,7 @@ def run_pqx_slice(
         "certification_status": "certified",
         "pqx_slice_audit_bundle": str(audit_bundle_path),
         "control_surface_gap_visibility": control_surface_visibility,
+        **review_summary,
     }
     if preflight_artifact is not None:
         response["contract_preflight_status"] = preflight_artifact.get("preflight_status")

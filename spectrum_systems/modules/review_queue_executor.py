@@ -21,6 +21,7 @@ from spectrum_systems.contracts import load_schema
 REVIEW_RESULT_FILE_SUFFIX = "_review_result_artifact.json"
 MERGE_READINESS_FILE_SUFFIX = "_review_merge_readiness_artifact.json"
 FIX_SLICE_FILE_SUFFIX = "_review_fix_slice_artifact.json"
+OPERATOR_HANDOFF_FILE_SUFFIX = "_review_operator_handoff_artifact.json"
 
 
 class ReviewQueueValidationError(ValueError):
@@ -49,6 +50,10 @@ def validate_review_merge_readiness_artifact(merge_artifact: dict[str, Any]) -> 
 
 def validate_review_fix_slice_artifact(fix_slice_artifact: dict[str, Any]) -> None:
     _validate(fix_slice_artifact, "review_fix_slice_artifact")
+
+
+def validate_review_operator_handoff_artifact(handoff_artifact: dict[str, Any]) -> None:
+    _validate(handoff_artifact, "review_operator_handoff_artifact")
 
 
 def _utc_now() -> str:
@@ -218,6 +223,53 @@ def _render_markdown(result: dict[str, Any], generated_at: str, fix_slice_ref: s
     )
 
 
+def _build_operator_handoff_artifact(
+    request_artifact: dict[str, Any],
+    result_artifact: dict[str, Any],
+    *,
+    emitted_at: str,
+) -> dict[str, Any]:
+    review_id = request_artifact["review_id"]
+    unresolved_finding_refs = [
+        f"review_result_artifact:{review_id}#{finding['finding_id']}"
+        for finding in result_artifact["findings"]
+        if isinstance(finding, dict) and isinstance(finding.get("finding_id"), str) and finding["finding_id"].strip()
+    ]
+    handoff = {
+        "artifact_type": "review_operator_handoff_artifact",
+        "artifact_version": "1.0.0",
+        "schema_version": "1.0.0",
+        "standards_version": "1.0.0",
+        "handoff_id": f"roha:rqx:{review_id}",
+        "review_id": review_id,
+        "source_review_result_ref": f"review_result_artifact:{review_id}",
+        "source_review_fix_execution_result_ref": f"review_fix_execution_result_artifact:rqx-review:{review_id}",
+        "post_cycle_verdict": result_artifact["verdict"],
+        "handoff_reason": "review_incomplete",
+        "recommended_next_action": "manual_review_required",
+        "blocking_conditions": ["review_verdict:not_safe_to_merge"],
+        "unresolved_finding_refs": unresolved_finding_refs,
+        "target_scope": request_artifact["scope"],
+        "target_files": request_artifact["changed_files"],
+        "target_surface_refs": request_artifact["produced_artifact_refs"],
+        "future_fix_cycle_permitted": True,
+        "provenance": {
+            "emitted_by_system": "RQX",
+            "loop_execution_mode": "single_bounded_cycle",
+            "auto_reentry_triggered": False,
+        },
+        "trace_linkage": {
+            "request_ref": f"review_fix_execution_request_artifact:rqx-review:{review_id}",
+            "fix_slice_ref": f"review_fix_slice_artifact:none:{review_id}",
+            "tpa_artifact_ref": f"tpa_slice_artifact:none:{review_id}",
+            "pqx_execution_ref": None,
+        },
+        "emitted_at": emitted_at,
+    }
+    validate_review_operator_handoff_artifact(handoff)
+    return handoff
+
+
 def run_review_queue_executor(
     request_artifact: dict[str, Any],
     *,
@@ -295,12 +347,21 @@ def run_review_queue_executor(
     result_path = output_dir / f"{request_artifact['review_name']}{REVIEW_RESULT_FILE_SUFFIX}"
     merge_path = output_dir / f"{request_artifact['review_name']}{MERGE_READINESS_FILE_SUFFIX}"
     fix_slice_path = output_dir / f"{request_artifact['review_name']}{FIX_SLICE_FILE_SUFFIX}"
+    handoff_path = output_dir / f"{request_artifact['review_name']}{OPERATOR_HANDOFF_FILE_SUFFIX}"
     markdown_path = review_docs_dir / f"{request_artifact['review_name']}_review.md"
 
     result_path.write_text(json.dumps(result_artifact, indent=2) + "\n", encoding="utf-8")
     merge_path.write_text(json.dumps(merge_artifact, indent=2) + "\n", encoding="utf-8")
     if fix_slice_artifact is not None:
         fix_slice_path.write_text(json.dumps(fix_slice_artifact, indent=2) + "\n", encoding="utf-8")
+    handoff_artifact: dict[str, Any] | None = None
+    if verdict == "not_safe_to_merge":
+        handoff_artifact = _build_operator_handoff_artifact(
+            request_artifact,
+            result_artifact,
+            emitted_at=emitted_at,
+        )
+        handoff_path.write_text(json.dumps(handoff_artifact, indent=2) + "\n", encoding="utf-8")
     markdown_path.write_text(
         _render_markdown(
             result_artifact,
@@ -322,6 +383,9 @@ def run_review_queue_executor(
     if fix_slice_artifact is not None:
         response["review_fix_slice_artifact"] = fix_slice_artifact
         response["review_fix_slice_artifact_path"] = str(fix_slice_path)
+    if handoff_artifact is not None:
+        response["review_operator_handoff_artifact"] = handoff_artifact
+        response["review_operator_handoff_artifact_path"] = str(handoff_path)
     return response
 
 

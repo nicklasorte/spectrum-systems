@@ -185,3 +185,23 @@ def test_not_safe_to_merge_emits_no_fix_slice_by_default(tmp_path: Path) -> None
 
     assert result["review_result_artifact"]["verdict"] == "not_safe_to_merge"
     assert "review_fix_slice_artifact" not in result
+
+
+def test_unresolved_review_produces_operator_handoff(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _write_repo_inputs(repo_root)
+    request = _request_payload(tmp_path, changed_files=["src/missing_file.py"])
+
+    result = run_review_queue_executor(
+        request,
+        repo_root=repo_root,
+        output_dir=repo_root / "artifacts/reviews",
+        review_docs_dir=repo_root / "docs/reviews",
+        generated_at="2026-04-09T00:00:00Z",
+    )
+
+    assert result["review_result_artifact"]["verdict"] == "not_safe_to_merge"
+    handoff = result["review_operator_handoff_artifact"]
+    validate_artifact(handoff, "review_operator_handoff_artifact")
+    assert handoff["provenance"]["emitted_by_system"] == "RQX"
+    assert Path(result["review_operator_handoff_artifact_path"]).exists()

@@ -216,6 +216,27 @@ def _tpa_gate_decision(tpa_slice_artifact: Mapping[str, Any]) -> tuple[str, str 
     return "allow", None
 
 
+def _assert_tpa_gated_fix_flow(request_artifact: Mapping[str, Any]) -> None:
+    fix_slice = request_artifact["fix_slices"][0]
+    source_review_result_ref = request_artifact["source_review_result_ref"]
+    if fix_slice.get("review_result_ref") != source_review_result_ref:
+        raise ReviewFixExecutionLoopError("review_fix_slice_artifact must match source_review_result_ref")
+
+    tpa_slice_artifact = request_artifact["tpa_slice_artifact"]
+    if tpa_slice_artifact.get("artifact_type") != "tpa_slice_artifact":
+        raise ReviewFixExecutionLoopError("only tpa_slice_artifact may enter PQX fix execution")
+
+    gate_artifact = tpa_slice_artifact.get("artifact")
+    if not isinstance(gate_artifact, Mapping):
+        raise ReviewFixExecutionLoopError("tpa_slice_artifact.artifact must be an object")
+
+    review_signal_refs = gate_artifact.get("review_signal_refs")
+    if not isinstance(review_signal_refs, list) or source_review_result_ref not in review_signal_refs:
+        raise ReviewFixExecutionLoopError(
+            "tpa gate must bind to source_review_result_ref before PQX execution"
+        )
+
+
 def _default_pqx_executor(request_artifact: Mapping[str, Any]) -> dict[str, Any]:
     runtime = request_artifact.get("pqx_runtime")
     if not isinstance(runtime, Mapping):
@@ -247,6 +268,7 @@ def run_review_fix_execution_cycle(
         )
 
     validate_review_fix_execution_request_artifact(request_artifact)
+    _assert_tpa_gated_fix_flow(request_artifact)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     request_id = str(request_artifact["request_id"])
