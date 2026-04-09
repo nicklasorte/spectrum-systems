@@ -1,0 +1,28 @@
+{
+  "artifact_type": "validation_result_record",
+  "validation_result_id": "vr-autofix-12345-1",
+  "attempt_id": "repair-autofix-12345-1",
+  "admission_ref": "build_admission_record:adm-123456789abc",
+  "trace_id": "trace-12345",
+  "workflow_equivalent": "review-artifact-validation",
+  "validation_target": {
+    "type": "pull_request",
+    "value": "nicklasorte/spectrum-systems#42"
+  },
+  "validation_scope": "full",
+  "validation_path": "pre_push_replay",
+  "commands": [
+    {
+      "command": "node scripts/validate-review-artifacts.js",
+      "exit_code": 0,
+      "stdout_excerpt": "ok",
+      "stderr_excerpt": ""
+    }
+  ],
+  "status": "passed",
+  "blocking_reason": null,
+  "failure_summary": null,
+  "passed": true,
+  "enforcement_owner": "SEL",
+  "emitted_at": "2026-04-09T00:00:00Z"
+}

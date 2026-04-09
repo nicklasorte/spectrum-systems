@@ -1,0 +1,17 @@
+{
+  "artifact_type": "repair_attempt_record",
+  "attempt_id": "repair-autofix-12345-1",
+  "owner": "FRE",
+  "request_id": "autofix-12345",
+  "source_failure_ref": "ril_failure_signal:autofix-12345",
+  "repair_scope_summary": "Bounded deterministic text replacement for explicit assertion failure.",
+  "target_scope": [
+    "tests/test_demo.py"
+  ],
+  "execution_outcome": "completed",
+  "validation_result_ref": "validation_result_record:vr-autofix-12345-1",
+  "validation_status": "passed",
+  "push_outcome": "blocked",
+  "trace_id": "trace-12345",
+  "emitted_at": "2026-04-09T00:00:00Z"
+}

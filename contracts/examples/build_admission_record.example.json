@@ -16,6 +16,35 @@
       "spectrum_systems/modules/runtime/top_level_conductor.py"
     ]
   },
+  "request_source": {
+    "owner": "AEX",
+    "source_workflow": {
+      "workflow": "review-artifact-validation",
+      "workflow_run_id": "12345",
+      "head_branch": "feature/governed-autofix",
+      "trigger": "workflow_run"
+    },
+    "repository": {
+      "full_name": "nicklasorte/spectrum-systems"
+    },
+    "pull_request": {
+      "number": 42
+    }
+  },
+  "repo_mutation_classification": {
+    "owner": "AEX",
+    "repo_mutation_requested": true,
+    "execution_type": "repo_write"
+  },
+  "admission_decision": {
+    "status": "accepted",
+    "rejection_reason": null
+  },
+  "lineage": {
+    "handoff_owner": "TLC",
+    "handoff_ref": "tlc_handoff_record:tlc-handoff-req-001",
+    "trace_id": "trace-req-001"
+  },
   "authenticity": {
     "issuer": "AEX",
     "key_id": "local-system-v1",

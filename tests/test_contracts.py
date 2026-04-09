@@ -275,6 +275,11 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("replay_result")
         validate_artifact(instance, "replay_result")
 
+    def test_afx_02_artifact_spine_examples_validate(self) -> None:
+        for name in ("build_admission_record", "validation_result_record", "repair_attempt_record"):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_drift_and_baseline_gate_contract_examples_validate(self) -> None:
         for name in ("drift_detection_result", "baseline_gate_decision", "baseline_gate_policy"):
             instance = load_example(name)

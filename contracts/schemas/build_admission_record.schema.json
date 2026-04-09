@@ -119,6 +119,90 @@
           "pattern": "^[0-9a-f]{64}$"
         }
       }
+    },
+    "request_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner",
+        "source_workflow",
+        "repository",
+        "pull_request"
+      ],
+      "properties": {
+        "owner": {
+          "type": "string",
+          "const": "AEX"
+        },
+        "source_workflow": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "workflow",
+            "workflow_run_id",
+            "head_branch",
+            "trigger"
+          ],
+          "properties": {
+            "workflow": {"type": "string", "minLength": 1},
+            "workflow_run_id": {"type": "string", "minLength": 1},
+            "head_branch": {"type": "string", "minLength": 1},
+            "trigger": {"type": "string", "minLength": 1}
+          }
+        },
+        "repository": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["full_name"],
+          "properties": {
+            "full_name": {"type": "string", "minLength": 1}
+          }
+        },
+        "pull_request": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["number"],
+          "properties": {
+            "number": {"type": ["integer", "null"], "minimum": 1}
+          }
+        }
+      }
+    },
+    "repo_mutation_classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner",
+        "repo_mutation_requested",
+        "execution_type"
+      ],
+      "properties": {
+        "owner": {"type": "string", "const": "AEX"},
+        "repo_mutation_requested": {"type": "boolean"},
+        "execution_type": {
+          "type": "string",
+          "enum": ["repo_write", "read_only", "analysis_only", "unknown"]
+        }
+      }
+    },
+    "admission_decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "rejection_reason"],
+      "properties": {
+        "status": {"type": "string", "enum": ["accepted", "rejected"]},
+        "rejection_reason": {"type": ["string", "null"]}
+      }
+    },
+    "lineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["handoff_owner", "handoff_ref", "trace_id"],
+      "properties": {
+        "handoff_owner": {"type": "string", "const": "TLC"},
+        "handoff_ref": {"type": "string", "minLength": 1},
+        "trace_id": {"type": "string", "minLength": 1}
+      }
     }
   }
 }
