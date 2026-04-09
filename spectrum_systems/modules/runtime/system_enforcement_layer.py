@@ -410,6 +410,51 @@ def _check_failure_learning_governance(normalized: dict[str, Any], violations: l
         )
 
 
+def _check_closure_authority_boundaries(normalized: dict[str, Any], violations: list[dict[str, Any]]) -> None:
+    request = normalized["execution_request"]
+    refs = normalized["artifact_references"]
+
+    closure_source = str(request.get("closure_decision_source") or "cde_only").strip().lower()
+    readiness_source = str(request.get("promotion_readiness_decisioning") or "cde_only").strip().lower()
+    if closure_source not in {"cde", "cde_only"}:
+        _add_violation(
+            violations,
+            code="repair_decision_violation",
+            boundary="CDE",
+            field="execution_request.closure_decision_source",
+            message="closure decision authority must remain CDE-only",
+        )
+    if readiness_source not in {"cde", "cde_only"}:
+        _add_violation(
+            violations,
+            code="repair_decision_violation",
+            boundary="CDE",
+            field="execution_request.promotion_readiness_decisioning",
+            message="promotion readiness decisioning must remain CDE-only",
+        )
+
+    closure_artifact = refs.get("closure_decision_artifact")
+    closure_ref = refs.get("closure_decision_artifact_ref")
+    if _is_present(closure_artifact) and not _is_present(closure_ref):
+        _add_violation(
+            violations,
+            code="lineage_violation",
+            boundary="CDE",
+            field="artifact_references.closure_decision_artifact_ref",
+            message="closure decision artifact must include deterministic CDE reference",
+        )
+
+    lock_state = str(request.get("closure_lock_state") or "open").strip().lower()
+    if lock_state == "locked":
+        _add_violation(
+            violations,
+            code="repair_budget_violation",
+            boundary="SEL",
+            field="execution_request.closure_lock_state",
+            message="execution after closure lock is forbidden",
+        )
+
+
 def enforce_system_boundaries(context: dict[str, Any]) -> dict[str, Any]:
     """Enforce SEL governed boundaries; fail closed when any boundary violation exists."""
 
@@ -428,6 +473,7 @@ def enforce_system_boundaries(context: dict[str, Any]) -> dict[str, Any]:
     _check_lineage(normalized, violations)
     _check_repair_boundaries(normalized, violations)
     _check_failure_learning_governance(normalized, violations)
+    _check_closure_authority_boundaries(normalized, violations)
 
     violated_boundaries = sorted({str(item["boundary"]) for item in violations})
     payload_for_id = {

@@ -168,3 +168,28 @@ def test_traceability_violations_map_to_specific_input_fields() -> None:
     assert violations_by_code["governance_evidence_violation"]["field"] == "governance_evidence"
     assert "PQX" in result["violated_boundaries"]
     assert "GOVERNANCE_EVIDENCE" in result["violated_boundaries"]
+
+
+def test_sel_enforces_closure_decision() -> None:
+    context = _valid_context()
+    context["execution_request"]["closure_lock_state"] = "locked"
+    context["execution_request"]["closure_decision_source"] = "CDE"
+    context["execution_request"]["promotion_readiness_decisioning"] = "CDE"
+    context["artifact_references"]["closure_decision_artifact"] = {"artifact_type": "closure_decision_artifact"}
+    context["artifact_references"]["closure_decision_artifact_ref"] = "closure_decision_artifact:cda-001"
+
+    result = enforce_system_boundaries(context)
+
+    assert result["enforcement_status"] == "block"
+    assert "repair_budget_violation" in _violation_codes(result)
+
+
+def test_only_cde_can_emit_closure_decision() -> None:
+    context = _valid_context()
+    context["execution_request"]["closure_decision_source"] = "PQX"
+    context["execution_request"]["promotion_readiness_decisioning"] = "RQX"
+
+    result = enforce_system_boundaries(context)
+
+    assert result["enforcement_status"] == "block"
+    assert "repair_decision_violation" in _violation_codes(result)
