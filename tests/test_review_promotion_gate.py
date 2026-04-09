@@ -36,6 +36,20 @@ def _safe_review_pair() -> tuple[dict, dict]:
     return review_result, merge_readiness
 
 
+def _lock_closure_decision() -> dict:
+    artifact = copy.deepcopy(load_example("closure_decision_artifact"))
+    artifact["decision_type"] = "lock"
+    artifact["decision_reason_codes"] = ["final_verification_passed"]
+    artifact["lock_status"] = "locked"
+    artifact["next_step_class"] = "none"
+    artifact["next_step_ref"] = None
+    artifact["bounded_next_step_available"] = False
+    artifact["critical_count"] = 0
+    artifact["high_priority_count"] = 0
+    artifact["unresolved_action_item_ids"] = []
+    return artifact
+
+
 def test_review_promotion_gate_contract_example_validates() -> None:
     validate_artifact(load_example("review_promotion_gate_artifact"), "review_promotion_gate_artifact")
 
@@ -46,7 +60,7 @@ def test_safe_to_merge_without_unresolved_state_allows_promotion_gate(tmp_path) 
     result = emit_review_promotion_gate(
         review_result_artifact=review_result,
         review_merge_readiness_artifact=merge_readiness,
-        closure_decision_artifact=copy.deepcopy(load_example("closure_decision_artifact")),
+        closure_decision_artifact=_lock_closure_decision(),
         output_dir=tmp_path,
     )
 
@@ -80,7 +94,7 @@ def test_unresolved_handoff_without_disposition_holds_manual_resolution(tmp_path
     result = emit_review_promotion_gate(
         review_result_artifact=review_result,
         review_merge_readiness_artifact=merge_readiness,
-        closure_decision_artifact=copy.deepcopy(load_example("closure_decision_artifact")),
+        closure_decision_artifact=_lock_closure_decision(),
         review_operator_handoff_artifact=handoff,
         output_dir=tmp_path,
     )
@@ -120,7 +134,7 @@ def test_disposition_outcomes_do_not_allow_promotion(
     result = emit_review_promotion_gate(
         review_result_artifact=review_result,
         review_merge_readiness_artifact=merge_readiness,
-        closure_decision_artifact=copy.deepcopy(load_example("closure_decision_artifact")),
+        closure_decision_artifact=_lock_closure_decision(),
         review_operator_handoff_artifact=handoff,
         review_handoff_disposition_artifact=disposition_artifact,
         output_dir=tmp_path,
@@ -138,7 +152,7 @@ def test_ambiguous_review_state_is_blocked(tmp_path) -> None:
     result = emit_review_promotion_gate(
         review_result_artifact=review_result,
         review_merge_readiness_artifact=merge_readiness,
-        closure_decision_artifact=copy.deepcopy(load_example("closure_decision_artifact")),
+        closure_decision_artifact=_lock_closure_decision(),
         output_dir=tmp_path,
     )
 
@@ -153,14 +167,14 @@ def test_promotion_gate_emits_once_per_review_state(tmp_path) -> None:
     emit_review_promotion_gate(
         review_result_artifact=review_result,
         review_merge_readiness_artifact=merge_readiness,
-        closure_decision_artifact=copy.deepcopy(load_example("closure_decision_artifact")),
+        closure_decision_artifact=_lock_closure_decision(),
         output_dir=tmp_path,
     )
     with pytest.raises(ReviewPromotionGateError, match="already exists"):
         emit_review_promotion_gate(
             review_result_artifact=review_result,
             review_merge_readiness_artifact=merge_readiness,
-            closure_decision_artifact=copy.deepcopy(load_example("closure_decision_artifact")),
+            closure_decision_artifact=_lock_closure_decision(),
             output_dir=tmp_path,
         )
 
@@ -170,7 +184,7 @@ def test_gate_artifact_does_not_trigger_merge_or_closure_authority(tmp_path) -> 
     result = emit_review_promotion_gate(
         review_result_artifact=review_result,
         review_merge_readiness_artifact=merge_readiness,
-        closure_decision_artifact=copy.deepcopy(load_example("closure_decision_artifact")),
+        closure_decision_artifact=_lock_closure_decision(),
         output_dir=tmp_path,
     )
     gate = result["review_promotion_gate_artifact"]
@@ -181,3 +195,19 @@ def test_gate_artifact_does_not_trigger_merge_or_closure_authority(tmp_path) -> 
     assert gate["provenance"]["automatic_merge_triggered"] is False
     assert gate["provenance"]["automatic_promotion_triggered"] is False
     assert gate["provenance"]["closure_authority_transferred"] is False
+
+
+def test_non_promotable_cde_decision_blocks_clean_promotion_gate(tmp_path) -> None:
+    review_result, merge_readiness = _safe_review_pair()
+    closure = _lock_closure_decision()
+    closure["decision_reason_codes"] = ["promotion_evidence_incomplete", "cde_missing_eval_summary_evidence"]
+
+    result = emit_review_promotion_gate(
+        review_result_artifact=review_result,
+        review_merge_readiness_artifact=merge_readiness,
+        closure_decision_artifact=closure,
+        output_dir=tmp_path,
+    )
+    gate = result["review_promotion_gate_artifact"]
+    assert gate["signal_status"] == "invalid"
+    assert gate["gate_reason_code"] == "missing_required_review_artifact"

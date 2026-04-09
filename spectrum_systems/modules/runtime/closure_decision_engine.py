@@ -156,6 +156,96 @@ def _extract_counts(source_artifacts: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _is_placeholder_trace_id(trace_id: str) -> bool:
+    lowered = trace_id.strip().lower()
+    if not lowered:
+        return True
+    placeholder_values = {
+        "unknown",
+        "none",
+        "null",
+        "n/a",
+        "na",
+        "tbd",
+        "todo",
+        "trace-placeholder",
+        "placeholder",
+    }
+    return lowered in placeholder_values or lowered.startswith("placeholder")
+
+
+def _promotion_evidence_blockers(request: dict[str, Any], *, trace_id: str) -> list[str]:
+    evidence = request.get("promotion_evidence")
+    if not isinstance(evidence, dict):
+        return ["missing_promotion_evidence"]
+
+    blockers: list[str] = []
+
+    eval_summary_ref = evidence.get("eval_summary_ref")
+    eval_bundle_ref = evidence.get("eval_bundle_ref")
+    eval_coverage_summary_ref = evidence.get("eval_coverage_summary_ref")
+    if not any(
+        isinstance(ref, str) and ref.strip()
+        for ref in (eval_summary_ref, eval_bundle_ref, eval_coverage_summary_ref)
+    ):
+        blockers.append("missing_eval_summary_evidence")
+
+    required_eval_statuses = evidence.get("required_eval_statuses")
+    if not isinstance(required_eval_statuses, dict) or not required_eval_statuses:
+        blockers.append("missing_required_eval_evidence")
+    else:
+        missing_required: list[str] = []
+        failed_required: list[str] = []
+        indeterminate_required: list[str] = []
+        for eval_name, raw_status in required_eval_statuses.items():
+            if not isinstance(eval_name, str) or not eval_name.strip():
+                blockers.append("malformed_required_eval_evidence")
+                continue
+            status = str(raw_status or "").strip().lower()
+            if status in {"", "missing", "not_run", "not-run", "unknown"}:
+                missing_required.append(eval_name.strip())
+            elif status in {"fail", "failed", "error"}:
+                failed_required.append(eval_name.strip())
+            elif status in {"indeterminate", "inconclusive"}:
+                indeterminate_required.append(eval_name.strip())
+            elif status not in {"pass", "passed"}:
+                blockers.append("malformed_required_eval_evidence")
+        if missing_required:
+            blockers.append("missing_required_eval")
+        if failed_required:
+            blockers.append("failed_required_eval")
+        if indeterminate_required:
+            allow_indeterminate = bool(evidence.get("allow_indeterminate_required_evals", False))
+            policy_ref = evidence.get("allow_indeterminate_policy_ref")
+            policy_valid = isinstance(policy_ref, str) and policy_ref.strip()
+            if not (allow_indeterminate and policy_valid):
+                blockers.append("indeterminate_required_eval")
+
+    traceability_refs = evidence.get("traceability_refs")
+    if _is_placeholder_trace_id(trace_id):
+        blockers.append("trace_id_placeholder_or_invalid")
+    if not isinstance(traceability_refs, list) or not any(
+        isinstance(ref, str) and ref.strip() for ref in traceability_refs
+    ):
+        blockers.append("missing_traceability_refs")
+
+    certification_required = bool(evidence.get("certification_required", True))
+    if certification_required:
+        cert_ref = evidence.get("certification_ref")
+        cert_status = str(evidence.get("certification_status") or "").strip().lower()
+        if not isinstance(cert_ref, str) or not cert_ref.strip():
+            blockers.append("missing_certification_evidence")
+        if cert_status not in {"passed", "complete", "completed"}:
+            blockers.append("failed_or_missing_certification")
+
+    if bool(evidence.get("replay_consistency_required", False)):
+        replay_refs = evidence.get("replay_consistency_refs")
+        if not isinstance(replay_refs, list) or not any(isinstance(ref, str) and ref.strip() for ref in replay_refs):
+            blockers.append("missing_replay_consistency_evidence")
+
+    return sorted(set(blockers))
+
+
 def _validate_sources(source_artifacts: Any) -> list[dict[str, Any]]:
     if not isinstance(source_artifacts, list) or not source_artifacts:
         raise ClosureDecisionEngineError("source_artifacts must be a non-empty array")
@@ -180,6 +270,7 @@ def _determine_decision(
     escalation_required: bool,
     bounded_next_step_available: bool,
     repair_loop_eligible: bool,
+    promotion_evidence_blockers: list[str],
 ) -> tuple[str, list[str]]:
     reason_codes = set(counts["reason_codes"])
 
@@ -197,6 +288,12 @@ def _determine_decision(
         and counts["high_priority_count"] == 0
         and not counts["unresolved_action_item_ids"]
     ):
+        if promotion_evidence_blockers:
+            return "blocked", sorted(
+                reason_codes
+                | {"promotion_evidence_incomplete"}
+                | {f"cde_{reason}" for reason in promotion_evidence_blockers}
+            )
         return "lock", sorted(reason_codes | {"final_verification_passed"})
 
     if counts["critical_count"] > 0 or counts["high_priority_count"] > 0:
@@ -222,6 +319,8 @@ def build_closure_decision_artifact(request: dict[str, Any]) -> dict[str, Any]:
     subject_scope = _require_non_empty(request.get("subject_scope"), "subject_scope")
     emitted_at = _require_non_empty(request.get("emitted_at"), "emitted_at")
     trace_id = _require_non_empty(request.get("trace_id"), "trace_id")
+    if _is_placeholder_trace_id(trace_id):
+        raise ClosureDecisionEngineError("trace_id must be non-placeholder")
 
     source_artifacts = _validate_sources(request.get("source_artifacts"))
     counts = _extract_counts(source_artifacts)
@@ -232,6 +331,7 @@ def build_closure_decision_artifact(request: dict[str, Any]) -> dict[str, Any]:
     escalation_required = bool(request.get("escalation_required", False))
     bounded_next_step_available = bool(request.get("bounded_next_step_available", False))
     repair_loop_eligible = bool(request.get("repair_loop_eligible", False))
+    promotion_evidence_blockers = _promotion_evidence_blockers(request, trace_id=trace_id)
 
     if not counts["evidence_refs"]:
         raise ClosureDecisionEngineError("insufficient evidence references for closure decision")
@@ -244,6 +344,7 @@ def build_closure_decision_artifact(request: dict[str, Any]) -> dict[str, Any]:
         escalation_required=escalation_required,
         bounded_next_step_available=bounded_next_step_available,
         repair_loop_eligible=repair_loop_eligible,
+        promotion_evidence_blockers=promotion_evidence_blockers,
     )
 
     if decision_type not in _DECISION_TYPES:

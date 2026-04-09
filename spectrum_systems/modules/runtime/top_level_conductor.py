@@ -781,6 +781,7 @@ def _real_cde(payload: dict[str, Any]) -> dict[str, Any]:
             "bounded_next_step_available": payload.get("bounded_next_step_available", False),
             "repair_loop_eligible": payload.get("repair_loop_eligible", False),
             "next_step_ref": payload.get("next_step_ref"),
+            "promotion_evidence": payload.get("promotion_evidence"),
             "emitted_at": payload["emitted_at"],
             "trace_id": payload["trace_id"],
         }
@@ -1331,6 +1332,20 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                         if repair_loop_eligible
                         else "BATCH-H"
                     ),
+                    "promotion_evidence": {
+                        "eval_summary_ref": run_request.get("eval_summary_ref"),
+                        "eval_coverage_summary_ref": run_request.get("eval_coverage_summary_ref"),
+                        "required_eval_statuses": run_request.get("required_eval_statuses"),
+                        "traceability_refs": run_request.get(
+                            "traceability_refs",
+                            [ril_ref, _require_non_empty_str(run_request.get("action_tracker_path"), field="action_tracker_path")],
+                        ),
+                        "certification_required": bool(run_request.get("certification_required_for_promotion", True)),
+                        "certification_status": run_request.get("certification_status"),
+                        "certification_ref": run_request.get("certification_ref"),
+                        "replay_consistency_required": bool(run_request.get("replay_consistency_required", False)),
+                        "replay_consistency_refs": run_request.get("replay_consistency_refs", []),
+                    },
                 }
             )
             _validate_handoff_output("CDE", cde_result if isinstance(cde_result, dict) else {})

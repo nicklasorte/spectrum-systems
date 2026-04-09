@@ -71,6 +71,15 @@ def _base_request(tmp_path: Path) -> dict:
         "runtime_dir": str(tmp_path / "runtime"),
         "emitted_at": "2026-04-06T00:00:00Z",
         "repo_mutation_requested": False,
+        "eval_summary_ref": "eval_summary_artifact:tlc-test-run",
+        "eval_coverage_summary_ref": "eval_coverage_summary:tlc-test-run",
+        "required_eval_statuses": {"governed_required_eval_set": "passed"},
+        "certification_status": "passed",
+        "certification_ref": "done_certification_record:tlc-test-run",
+        "traceability_refs": [
+            "review_projection_bundle_artifact:tlc-test-run",
+            str(action_path),
+        ],
     }
 
 
@@ -236,7 +245,16 @@ def test_run_from_roadmap_executes_bounded_steps(tmp_path: Path) -> None:
             "action_tracker_path": str(action_path),
             "runtime_dir": str(tmp_path / "runtime"),
             "emitted_at": "2026-04-06T00:00:00Z",
-        "repo_mutation_requested": False,
+            "repo_mutation_requested": False,
+            "eval_summary_ref": "eval_summary_artifact:roadmap-run",
+            "eval_coverage_summary_ref": "eval_coverage_summary:roadmap-run",
+            "required_eval_statuses": {"governed_required_eval_set": "passed"},
+            "certification_status": "passed",
+            "certification_ref": "done_certification_record:roadmap-run",
+            "traceability_refs": [
+                "review_projection_bundle_artifact:roadmap-run",
+                str(action_path),
+            ],
         },
     )
 

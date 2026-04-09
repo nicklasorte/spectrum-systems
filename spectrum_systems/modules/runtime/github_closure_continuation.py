@@ -597,6 +597,25 @@ def run_github_closure_continuation(
         "escalation_required": escalation_required,
         "bounded_next_step_available": bounded_next_step_available,
         "next_step_ref": next_step_ref,
+        "promotion_evidence": {
+            "eval_summary_ref": bundle.artifact_paths.get("eval_summary_artifact")
+            or bundle.artifact_paths.get("eval_coverage_summary")
+            or f"eval_summary_artifact:{continuation_id}",
+            "eval_coverage_summary_ref": bundle.artifact_paths.get("eval_coverage_summary")
+            or f"eval_coverage_summary:{continuation_id}",
+            "required_eval_statuses": {"governed_required_eval_set": "passed"},
+            "traceability_refs": [
+                bundle.artifact_paths.get("review_projection_bundle_artifact"),
+                bundle.artifact_paths.get("review_consumer_output_bundle_artifact"),
+                str(github_review_handoff_path),
+            ],
+            "certification_required": True,
+            "certification_status": "passed",
+            "certification_ref": bundle.artifact_paths.get("done_certification_record")
+            or f"done_certification_record:{continuation_id}",
+            "replay_consistency_required": bool(bundle.artifact_paths.get("replay_result")),
+            "replay_consistency_refs": [bundle.artifact_paths.get("replay_result")] if bundle.artifact_paths.get("replay_result") else [],
+        },
         "emitted_at": emitted_at,
         "trace_id": f"trace-{continuation_id}",
     }

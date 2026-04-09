@@ -92,6 +92,28 @@ def _reason_from_disposition(disposition_artifact: dict[str, Any]) -> str:
     return "ambiguous_review_state"
 
 
+def _closure_decision_is_promotable(closure_decision_artifact: dict[str, Any]) -> bool:
+    if str(closure_decision_artifact.get("decision_type") or "") != "lock":
+        return False
+    reason_codes = closure_decision_artifact.get("decision_reason_codes")
+    normalized = {
+        str(reason).strip().lower()
+        for reason in reason_codes
+        if isinstance(reason_codes, list) and isinstance(reason, str) and reason.strip()
+    }
+    if "promotion_evidence_incomplete" in normalized:
+        return False
+    if any(
+        reason.startswith("cde_missing_")
+        or reason.startswith("cde_failed_")
+        or reason.startswith("cde_indeterminate_")
+        or reason.startswith("cde_trace_")
+        for reason in normalized
+    ):
+        return False
+    return True
+
+
 def build_review_promotion_gate_artifact(
     *,
     review_result_artifact: dict[str, Any] | None,
@@ -207,6 +229,10 @@ def build_review_promotion_gate_artifact(
         gate_reason_code = "missing_required_review_artifact"
     elif not isinstance(closure_decision_artifact.get("trace_id"), str) or not closure_decision_artifact["trace_id"]:
         gate_reason_code = "missing_required_review_artifact"
+    elif not _closure_decision_is_promotable(closure_decision_artifact):
+        signal_status = "invalid"
+        gate_reason_code = "missing_required_review_artifact"
+        required_manual_action = True
     elif review_verdict == "safe_to_merge" and review_operator_handoff_artifact is None and review_handoff_disposition_artifact is None:
         signal_status = "clean"
         gate_reason_code = "safe_to_merge"

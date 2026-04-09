@@ -1,0 +1,46 @@
+{
+  "artifact_type": "closure_decision_artifact",
+  "artifact_class": "coordination",
+  "schema_version": "1.0.0",
+  "closure_decision_id": "cda-aaaaaaaaaaaaaaaa",
+  "subject_scope": "runtime_control_loop",
+  "subsystem_acronym": "CDE",
+  "run_id": "run-seq-allow-001",
+  "review_date": "2026-04-06",
+  "action_tracker_ref": "review_action_tracker_artifact:rat-seq-001",
+  "decision_type": "lock",
+  "decision_reason_codes": ["final_verification_passed"],
+  "blocker_count": 0,
+  "critical_count": 0,
+  "high_priority_count": 0,
+  "medium_priority_count": 0,
+  "unresolved_action_item_ids": [],
+  "lock_status": "locked",
+  "next_step_class": "none",
+  "next_step_ref": null,
+  "bounded_next_step_available": false,
+  "evidence_refs": [
+    "review_projection_bundle_artifact:rpb-seq-001",
+    "review_signal_artifact:rsa-seq-001"
+  ],
+  "source_artifact_refs": [
+    "review_projection_bundle_artifact:rpb-seq-001",
+    "review_signal_artifact:rsa-seq-001"
+  ],
+  "final_summary": "Closure decision 'lock' for scope 'runtime_control_loop' based on blockers=0, critical=0, high=0, unresolved_actions=0.",
+  "emitted_at": "2026-04-06T00:00:00Z",
+  "trace_id": "trace-seq-lock-001",
+  "provenance": {
+    "engine": "closure_decision_engine",
+    "decision_rules_version": "cde-001-v1",
+    "deterministic_hash_basis": "canonical-json-sha256",
+    "source_artifact_types": [
+      "review_projection_bundle_artifact",
+      "review_signal_artifact"
+    ],
+    "source_artifact_refs": [
+      "review_projection_bundle_artifact:rpb-seq-001",
+      "review_signal_artifact:rsa-seq-001"
+    ]
+  }
+}

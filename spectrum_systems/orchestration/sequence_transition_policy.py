@@ -563,8 +563,16 @@ def _closure_decision_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
     if not str(provenance.get("decision_rules_version") or "").startswith("cde-"):
         return False, "promotion requires CDE closure_decision_artifact decision_rules_version"
     decision_type = str(payload.get("decision_type") or "")
-    if decision_type in {"blocked", "escalate"}:
-        return False, "promotion blocked: closure_decision_artifact decision_type is non-promotable"
+    if decision_type != "lock":
+        return False, "promotion blocked: closure_decision_artifact is non-promotable unless decision_type=lock"
+    reason_codes = payload.get("decision_reason_codes")
+    normalized_reasons = set()
+    if isinstance(reason_codes, list):
+        normalized_reasons = {str(reason).strip().lower() for reason in reason_codes if isinstance(reason, str) and reason.strip()}
+    if "promotion_evidence_incomplete" in normalized_reasons:
+        return False, "promotion blocked: CDE reported incomplete promotion evidence"
+    if any(reason.startswith("cde_missing_") or reason.startswith("cde_failed_") or reason.startswith("cde_indeterminate_") for reason in normalized_reasons):
+        return False, "promotion blocked: CDE evidence completeness failure present"
     return True, None
 
 def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) -> SequenceTransitionDecision:

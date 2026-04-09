@@ -45,6 +45,28 @@ def _base_request(**overrides):
     return base
 
 
+def _promotion_evidence(**overrides):
+    base = {
+        "eval_summary_ref": "eval_summary_artifact:es-001",
+        "eval_coverage_summary_ref": "eval_coverage_summary:ecs-001",
+        "required_eval_statuses": {
+            "eval_required_regression": "passed",
+            "eval_required_replay": "passed",
+        },
+        "traceability_refs": [
+            "review_projection_bundle_artifact:rpb-1111111111111111",
+            "review_signal_artifact:rsa-1111111111111111",
+        ],
+        "certification_required": True,
+        "certification_status": "passed",
+        "certification_ref": "done_certification_record:cert-001",
+        "replay_consistency_required": True,
+        "replay_consistency_refs": ["replay_result:rr-001"],
+    }
+    base.update(overrides)
+    return base
+
+
 def _validate(instance: dict, schema_name: str):
     validator = Draft202012Validator(load_schema(schema_name))
     errors = sorted(validator.iter_errors(instance), key=lambda err: str(list(err.absolute_path)))
@@ -64,6 +86,7 @@ def test_final_verification_pass_leads_to_lock():
                 "blocker_present": False,
             }
         ],
+        promotion_evidence=_promotion_evidence(),
     )
     artifact = build_closure_decision_artifact(request)
     assert artifact["decision_type"] == "lock"
@@ -113,6 +136,84 @@ def test_repair_loop_eligible_emits_continue_repair_bounded():
     artifact = build_closure_decision_artifact(request)
     assert artifact["decision_type"] == "continue_repair_bounded"
     assert artifact["next_step_class"] == "bounded_repair"
+    assert "promotion_evidence_incomplete" not in artifact["decision_reason_codes"]
+
+
+def test_missing_eval_summary_blocks_promotion_capable_decision():
+    artifact = build_closure_decision_artifact(
+            _base_request(
+                closure_complete=True,
+                final_verification_passed=True,
+                promotion_evidence=_promotion_evidence(
+                    eval_summary_ref="",
+                    eval_coverage_summary_ref="",
+                ),
+            )
+        )
+    assert artifact["decision_type"] == "blocked"
+    assert "promotion_evidence_incomplete" in artifact["decision_reason_codes"]
+    assert "cde_missing_eval_summary_evidence" in artifact["decision_reason_codes"]
+
+
+def test_missing_required_eval_blocks_promotion_capable_decision():
+    artifact = build_closure_decision_artifact(
+        _base_request(
+            closure_complete=True,
+            final_verification_passed=True,
+            promotion_evidence=_promotion_evidence(required_eval_statuses={"eval_required_regression": "missing"}),
+        )
+    )
+    assert artifact["decision_type"] == "blocked"
+    assert "cde_missing_required_eval" in artifact["decision_reason_codes"]
+
+
+def test_failed_required_eval_blocks_promotion_capable_decision():
+    artifact = build_closure_decision_artifact(
+        _base_request(
+            closure_complete=True,
+            final_verification_passed=True,
+            promotion_evidence=_promotion_evidence(required_eval_statuses={"eval_required_regression": "failed"}),
+        )
+    )
+    assert artifact["decision_type"] == "blocked"
+    assert "cde_failed_required_eval" in artifact["decision_reason_codes"]
+
+
+def test_indeterminate_required_eval_blocks_without_explicit_policy():
+    artifact = build_closure_decision_artifact(
+        _base_request(
+            closure_complete=True,
+            final_verification_passed=True,
+            promotion_evidence=_promotion_evidence(required_eval_statuses={"eval_required_regression": "indeterminate"}),
+        )
+    )
+    assert artifact["decision_type"] == "blocked"
+    assert "cde_indeterminate_required_eval" in artifact["decision_reason_codes"]
+
+
+def test_missing_trace_blocks_promotion_capable_decision():
+    artifact = build_closure_decision_artifact(
+        _base_request(
+            closure_complete=True,
+            final_verification_passed=True,
+            promotion_evidence=_promotion_evidence(traceability_refs=[]),
+        )
+    )
+    assert artifact["decision_type"] == "blocked"
+    assert "cde_missing_traceability_refs" in artifact["decision_reason_codes"]
+
+
+def test_missing_required_certification_blocks_promotion_capable_decision():
+    artifact = build_closure_decision_artifact(
+        _base_request(
+            closure_complete=True,
+            final_verification_passed=True,
+            promotion_evidence=_promotion_evidence(certification_ref="", certification_status="failed"),
+        )
+    )
+    assert artifact["decision_type"] == "blocked"
+    assert "cde_missing_certification_evidence" in artifact["decision_reason_codes"]
+    assert "cde_failed_or_missing_certification" in artifact["decision_reason_codes"]
 
 
 def test_no_safe_next_step_or_malformed_evidence_becomes_blocked():
