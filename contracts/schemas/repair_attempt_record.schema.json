@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/repair_attempt_record.schema.json",
+  "title": "Repair Attempt Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "attempt_id",
+    "owner",
+    "request_id",
+    "source_failure_ref",
+    "repair_scope_summary",
+    "target_scope",
+    "execution_outcome",
+    "validation_result_ref",
+    "validation_status",
+    "push_outcome",
+    "trace_id",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "repair_attempt_record"},
+    "attempt_id": {"type": "string", "minLength": 1},
+    "owner": {"type": "string", "const": "FRE"},
+    "request_id": {"type": "string", "minLength": 1},
+    "source_failure_ref": {"type": "string", "minLength": 1},
+    "repair_scope_summary": {"type": "string", "minLength": 1},
+    "target_scope": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "execution_outcome": {"type": "string", "enum": ["completed", "blocked", "no_safe_fix"]},
+    "validation_result_ref": {"type": "string", "minLength": 1},
+    "validation_status": {"type": "string", "enum": ["passed", "failed", "not_run"]},
+    "push_outcome": {"type": "string", "enum": ["pushed", "blocked", "no_safe_fix"]},
+    "trace_id": {"type": "string", "minLength": 1},
+    "emitted_at": {"type": "string", "format": "date-time"}
+  }
+}

@@ -63,6 +63,13 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _write_required_artifact(*, path: Path, payload: dict[str, Any], artifact_type: str) -> None:
+    try:
+        _write_json(path, payload)
+    except OSError as exc:
+        raise GovernedAutofixError(f"artifact_write_failed:{artifact_type}") from exc
+
+
 def _build_tlc_handoff(*, request_id: str, trace_id: str, branch_ref: str, admission_id: str, emitted_at: str) -> dict[str, Any]:
     artifact = {
         "artifact_type": "tlc_handoff_record",
@@ -313,10 +320,19 @@ def run_validation_replay(*, repo_root: Path, narrow_test_targets: list[str] | N
 
     return {
         "artifact_type": "validation_result_record",
+        "validation_result_id": "",
+        "attempt_id": "",
+        "admission_ref": "",
+        "trace_id": "",
+        "enforcement_owner": "SEL",
         "workflow_equivalent": "review-artifact-validation",
         "validation_scope": validation_scope,
-        "passed": passed,
-        "results": [
+        "validation_target": {"type": "repo_branch", "value": ""},
+        "validation_path": "pre_push_replay",
+        "status": "passed" if passed else "failed",
+        "blocking_reason": None if passed else "validation_command_failed",
+        "failure_summary": None if passed else "One or more replay commands failed.",
+        "commands": [
             {
                 "command": item.command,
                 "exit_code": item.exit_code,
@@ -325,6 +341,7 @@ def run_validation_replay(*, repo_root: Path, narrow_test_targets: list[str] | N
             }
             for item in results
         ],
+        "passed": passed,
         "emitted_at": _utc_now(),
     }
 
@@ -343,6 +360,12 @@ def enforce_replay_gate(validation_result_record: dict[str, Any]) -> None:
         raise GovernedAutofixError("validation_replay_ambiguous")
     if validation_result_record.get("passed") is not True:
         raise GovernedAutofixError("validation_replay_failed")
+
+
+def enforce_repair_validation_linkage(repair_attempt_record: dict[str, Any]) -> None:
+    validation_ref = repair_attempt_record.get("validation_result_ref")
+    if not isinstance(validation_ref, str) or not validation_ref.strip():
+        raise GovernedAutofixError("repair_validation_link_missing")
 
 
 def run_governed_autofix(
@@ -386,6 +409,39 @@ def run_governed_autofix(
     admission = AEXEngine().admit_codex_request(codex_request)
     if not admission.accepted or admission.build_admission_record is None or admission.normalized_execution_request is None:
         raise GovernedAutofixError("aex_admission_failed")
+    admission_record = dict(admission.build_admission_record)
+    pr_number = pr_list[0].get("number")
+    admission_record["request_source"] = {
+        "owner": "AEX",
+        "source_workflow": {
+            "workflow": "review-artifact-validation",
+            "workflow_run_id": str(workflow_run.get("id") or "unknown"),
+            "head_branch": branch_ref,
+            "trigger": "workflow_run",
+        },
+        "repository": {
+            "full_name": str(event_payload.get("repository", {}).get("full_name") or "unknown"),
+        },
+        "pull_request": {
+            "number": int(pr_number) if isinstance(pr_number, int) else None,
+        },
+    }
+    admission_record["repo_mutation_classification"] = {
+        "owner": "AEX",
+        "repo_mutation_requested": bool(admission.normalized_execution_request.get("repo_mutation_requested")),
+        "execution_type": str(admission_record.get("execution_type") or "unknown"),
+    }
+    admission_record["admission_decision"] = {
+        "status": str(admission_record.get("admission_status") or "rejected"),
+        "rejection_reason": None,
+    }
+    admission_record["lineage"] = {
+        "handoff_owner": "TLC",
+        "handoff_ref": f"tlc_handoff_record:tlc-handoff-{request_id}",
+        "trace_id": trace_id,
+    }
+    admission_record["authenticity"] = issue_authenticity(artifact=admission_record, issuer="AEX")
+    validate_artifact(admission_record, "build_admission_record")
 
     tlc_handoff = _build_tlc_handoff(
         request_id=request_id,
@@ -398,7 +454,7 @@ def run_governed_autofix(
 
     bounded_actions = _derive_bounded_actions(logs_text=logs_text)
     governed_context: dict[str, Any] = {
-        "build_admission_record": admission.build_admission_record,
+        "build_admission_record": admission_record,
         "normalized_execution_request": admission.normalized_execution_request,
         "tlc_handoff_record": tlc_handoff,
         "tpa_slice_artifact": tpa_slice,
@@ -434,15 +490,41 @@ def run_governed_autofix(
     artifacts_dir = output_dir / "artifacts"
     artifacts_dir.mkdir(parents=True, exist_ok=True)
 
-    _write_json(artifacts_dir / "build_admission_record.json", admission.build_admission_record)
-    _write_json(artifacts_dir / "normalized_execution_request.json", admission.normalized_execution_request)
-    _write_json(artifacts_dir / "tlc_handoff_record.json", tlc_handoff)
-    _write_json(artifacts_dir / "tpa_slice_artifact.json", tpa_slice)
-    _write_json(artifacts_dir / "ril_failure_signal.json", governed_context["ril_failure_signal"])
-    _write_json(artifacts_dir / "fre_repair_plan.json", governed_context["fre_repair_plan"])
+    _write_required_artifact(
+        path=artifacts_dir / "build_admission_record.json",
+        payload=admission_record,
+        artifact_type="build_admission_record",
+    )
+    _write_required_artifact(path=artifacts_dir / "normalized_execution_request.json", payload=admission.normalized_execution_request, artifact_type="normalized_execution_request")
+    _write_required_artifact(path=artifacts_dir / "tlc_handoff_record.json", payload=tlc_handoff, artifact_type="tlc_handoff_record")
+    _write_required_artifact(path=artifacts_dir / "tpa_slice_artifact.json", payload=tpa_slice, artifact_type="tpa_slice_artifact")
+    _write_required_artifact(path=artifacts_dir / "ril_failure_signal.json", payload=governed_context["ril_failure_signal"], artifact_type="ril_failure_signal")
+    _write_required_artifact(path=artifacts_dir / "fre_repair_plan.json", payload=governed_context["fre_repair_plan"], artifact_type="fre_repair_plan")
 
     # Fail closed when there is no bounded safe repair plan.
     if not governed_context["fre_repair_plan"].get("bounded_actions"):
+        no_safe_repair_attempt = {
+            "artifact_type": "repair_attempt_record",
+            "attempt_id": f"repair-{request_id}-1",
+            "owner": "FRE",
+            "request_id": request_id,
+            "source_failure_ref": f"ril_failure_signal:{request_id}",
+            "repair_scope_summary": "No deterministic bounded repair action available from provided failure signal.",
+            "target_scope": [],
+            "execution_outcome": "no_safe_fix",
+            "validation_result_ref": "validation_result_record:not_run_no_safe_fix",
+            "validation_status": "not_run",
+            "push_outcome": "no_safe_fix",
+            "trace_id": trace_id,
+            "emitted_at": _utc_now(),
+        }
+        validate_artifact(no_safe_repair_attempt, "repair_attempt_record")
+        enforce_repair_validation_linkage(no_safe_repair_attempt)
+        _write_required_artifact(
+            path=artifacts_dir / "repair_attempt_record.json",
+            payload=no_safe_repair_attempt,
+            artifact_type="repair_attempt_record",
+        )
         summary = {
             "status": "blocked",
             "reason": "no_safe_fix_found",
@@ -471,8 +553,15 @@ def run_governed_autofix(
         raise GovernedAutofixError("repair_applied_but_no_git_change")
 
     narrow_targets = _narrow_test_targets_if_safe(actions=bounded_actions, logs_text=logs_text)
+    attempt_id = f"repair-{request_id}-1"
     validation_record = run_validation_replay(repo_root=repo_root, narrow_test_targets=narrow_targets)
-    _write_json(artifacts_dir / "validation_result_record.json", validation_record)
+    validation_record["validation_result_id"] = f"vr-{request_id}-1"
+    validation_record["attempt_id"] = attempt_id
+    validation_record["admission_ref"] = f"build_admission_record:{admission_record['admission_id']}"
+    validation_record["trace_id"] = trace_id
+    validation_record["validation_target"] = {"type": "pull_request", "value": f"{event_payload.get('repository', {}).get('full_name')}#{pr_number}"}
+    validate_artifact(validation_record, "validation_result_record")
+    _write_required_artifact(path=artifacts_dir / "validation_result_record.json", payload=validation_record, artifact_type="validation_result_record")
     enforce_replay_gate(validation_record)
 
     commit_sha = _git_commit_changes(
@@ -481,11 +570,32 @@ def run_governed_autofix(
         request_id=request_id,
     )
     pushed_branch = None
+    push_outcome = "blocked"
     if push:
         token = os.getenv("GITHUB_APP_TOKEN") or os.getenv("AUTOFIX_PUSH_TOKEN")
         if not token:
             raise GovernedAutofixError("push_token_missing")
         pushed_branch = _push_with_governed_token(repo_root=repo_root, branch_ref=branch_ref, token=token)
+        push_outcome = "pushed"
+
+    repair_attempt_record = {
+        "artifact_type": "repair_attempt_record",
+        "attempt_id": attempt_id,
+        "owner": "FRE",
+        "request_id": request_id,
+        "source_failure_ref": f"ril_failure_signal:{request_id}",
+        "repair_scope_summary": "Bounded deterministic text replacement derived from explicit pytest assertion failure signal.",
+        "target_scope": mutation_record["applied_paths"],
+        "execution_outcome": "completed",
+        "validation_result_ref": f"validation_result_record:{validation_record['validation_result_id']}",
+        "validation_status": validation_record["status"],
+        "push_outcome": push_outcome if validation_record["passed"] else "blocked",
+        "trace_id": trace_id,
+        "emitted_at": _utc_now(),
+    }
+    validate_artifact(repair_attempt_record, "repair_attempt_record")
+    enforce_repair_validation_linkage(repair_attempt_record)
+    _write_required_artifact(path=artifacts_dir / "repair_attempt_record.json", payload=repair_attempt_record, artifact_type="repair_attempt_record")
 
     summary = {
         "status": "pushed" if push else "validated_committed_no_push",

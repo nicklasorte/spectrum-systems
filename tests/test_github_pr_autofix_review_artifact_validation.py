@@ -10,6 +10,7 @@ from spectrum_systems.modules.runtime.github_pr_autofix_review_artifact_validati
     GovernedAutofixError,
     _narrow_test_targets_if_safe,
     enforce_entry_invariant,
+    enforce_repair_validation_linkage,
     enforce_replay_gate,
     run_governed_autofix,
 )
@@ -26,6 +27,11 @@ def test_replay_gate_fails_closed_on_missing_or_failed_result() -> None:
 
     with pytest.raises(GovernedAutofixError, match='validation_replay_failed'):
         enforce_replay_gate({'artifact_type': 'validation_result_record', 'passed': False})
+
+
+def test_repair_attempt_requires_validation_linkage() -> None:
+    with pytest.raises(GovernedAutofixError, match='repair_validation_link_missing'):
+        enforce_repair_validation_linkage({'artifact_type': 'repair_attempt_record', 'validation_result_ref': ''})
 
 
 def test_run_governed_autofix_blocks_without_safe_fix_plan(tmp_path: Path) -> None:
@@ -56,6 +62,10 @@ def test_run_governed_autofix_blocks_without_safe_fix_plan(tmp_path: Path) -> No
     assert out['reason'] == 'no_safe_fix_found'
     assert out['lineage_present'] is True
     assert out['validation_replay_passed'] is False
+    repair_attempt = json.loads((tmp_path / 'out' / 'artifacts' / 'repair_attempt_record.json').read_text(encoding='utf-8'))
+    assert repair_attempt['artifact_type'] == 'repair_attempt_record'
+    assert repair_attempt['execution_outcome'] == 'no_safe_fix'
+    assert repair_attempt['push_outcome'] == 'no_safe_fix'
 
 
 def _init_git_repo(tmp_path: Path) -> Path:
@@ -97,7 +107,24 @@ def test_run_governed_autofix_applies_bounded_fix_and_commits(monkeypatch: pytes
 
     monkeypatch.setattr(
         'spectrum_systems.modules.runtime.github_pr_autofix_review_artifact_validation.run_validation_replay',
-        lambda **_: {'artifact_type': 'validation_result_record', 'passed': True, 'validation_scope': 'narrow', 'results': []},
+        lambda **_: {
+            'artifact_type': 'validation_result_record',
+            'validation_result_id': '',
+            'attempt_id': '',
+            'admission_ref': '',
+            'trace_id': '',
+            'workflow_equivalent': 'review-artifact-validation',
+            'validation_target': {'type': 'repo_branch', 'value': 'feature/test'},
+            'validation_scope': 'narrow',
+            'validation_path': 'pre_push_replay',
+            'commands': [{'command': 'pytest tests/test_demo.py', 'exit_code': 0, 'stdout_excerpt': '', 'stderr_excerpt': ''}],
+            'status': 'passed',
+            'blocking_reason': None,
+            'failure_summary': None,
+            'enforcement_owner': 'SEL',
+            'passed': True,
+            'emitted_at': '2026-04-09T00:00:00Z',
+        },
     )
 
     out = run_governed_autofix(
@@ -111,6 +138,19 @@ def test_run_governed_autofix_applies_bounded_fix_and_commits(monkeypatch: pytes
     assert out['validation_replay_passed'] is True
     assert out['repair_applied'] is True
     assert (repo_root / 'tests' / 'test_demo.py').read_text(encoding='utf-8').endswith('assert 1 == 1\n')
+    admission_record = json.loads((repo_root / 'out' / 'artifacts' / 'build_admission_record.json').read_text(encoding='utf-8'))
+    assert admission_record['request_source']['owner'] == 'AEX'
+    assert admission_record['request_source']['source_workflow']['workflow'] == 'review-artifact-validation'
+    assert admission_record['repo_mutation_classification']['repo_mutation_requested'] is True
+    validation_record = json.loads((repo_root / 'out' / 'artifacts' / 'validation_result_record.json').read_text(encoding='utf-8'))
+    assert validation_record['artifact_type'] == 'validation_result_record'
+    assert validation_record['validation_scope'] == 'narrow'
+    assert validation_record['status'] == 'passed'
+    repair_attempt = json.loads((repo_root / 'out' / 'artifacts' / 'repair_attempt_record.json').read_text(encoding='utf-8'))
+    assert repair_attempt['artifact_type'] == 'repair_attempt_record'
+    assert repair_attempt['owner'] == 'FRE'
+    assert repair_attempt['validation_result_ref'].startswith('validation_result_record:')
+    assert repair_attempt['push_outcome'] == 'blocked'
 
 
 def test_narrowing_is_blocked_when_multilayer_failure_signal_present() -> None:
@@ -208,7 +248,24 @@ def test_push_path_rejects_github_token_only(monkeypatch: pytest.MonkeyPatch, tm
     monkeypatch.delenv('GITHUB_APP_TOKEN', raising=False)
     monkeypatch.setattr(
         'spectrum_systems.modules.runtime.github_pr_autofix_review_artifact_validation.run_validation_replay',
-        lambda **_: {'artifact_type': 'validation_result_record', 'passed': True, 'validation_scope': 'narrow', 'results': []},
+        lambda **_: {
+            'artifact_type': 'validation_result_record',
+            'validation_result_id': '',
+            'attempt_id': '',
+            'admission_ref': '',
+            'trace_id': '',
+            'workflow_equivalent': 'review-artifact-validation',
+            'validation_target': {'type': 'repo_branch', 'value': 'feature/test'},
+            'validation_scope': 'narrow',
+            'validation_path': 'pre_push_replay',
+            'commands': [{'command': 'pytest tests/test_push_demo.py', 'exit_code': 0, 'stdout_excerpt': '', 'stderr_excerpt': ''}],
+            'status': 'passed',
+            'blocking_reason': None,
+            'failure_summary': None,
+            'enforcement_owner': 'SEL',
+            'passed': True,
+            'emitted_at': '2026-04-09T00:00:00Z',
+        },
     )
 
     with pytest.raises(GovernedAutofixError, match='push_token_missing'):

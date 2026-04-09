@@ -98,6 +98,22 @@ SEL enforcement:
 - missing replay artifact -> block push
 - ambiguous replay artifact -> block push
 
+## AFX-02 artifact spine (thin evidence layer)
+The autofix entrypoint emits three required governed artifacts as repo-native JSON files in `<output-dir>/artifacts/`:
+
+1. **`build_admission_record`** (AEX-owned admission evidence)
+   - Captures request identity, workflow run source, repository + PR identity, repo-mutation classification, admission decision, and TLC handoff lineage reference.
+2. **`validation_result_record`** (PQX execution + SEL enforcement evidence)
+   - Captures pre-push replay target/scope/path, command evidence, pass/fail status, blocking summary, and linkage to the admission + repair attempt.
+3. **`repair_attempt_record`** (FRE-linked bounded repair evidence)
+   - Captures failure reference, bounded scope/targets, execution outcome, validation linkage, and push outcome (`pushed`, `blocked`, `no_safe_fix`).
+
+Fail-closed conditions added for AFX-02:
+- required artifact file write failure
+- missing admission evidence before repo mutation
+- missing/failed validation result before commit/push progression
+- repair attempt record missing a validation linkage
+
 ## Security model
 1. Secrets boundary:
    - `OPENAI_API_KEY` for model access (if later repair planning needs it).
