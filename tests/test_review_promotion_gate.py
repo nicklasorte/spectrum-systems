@@ -46,13 +46,13 @@ def test_safe_to_merge_without_unresolved_state_allows_promotion_gate(tmp_path) 
     result = emit_review_promotion_gate(
         review_result_artifact=review_result,
         review_merge_readiness_artifact=merge_readiness,
+        closure_decision_artifact=copy.deepcopy(load_example("closure_decision_artifact")),
         output_dir=tmp_path,
     )
 
     gate = result["review_promotion_gate_artifact"]
-    assert gate["gate_decision"] == "allow"
+    assert gate["signal_status"] == "clean"
     assert gate["gate_reason_code"] == "safe_to_merge"
-    assert gate["promotion_eligible"] is True
     assert gate["required_manual_action"] is False
     validate_artifact(gate, "review_promotion_gate_artifact")
 
@@ -61,13 +61,13 @@ def test_missing_required_review_artifacts_fails_closed(tmp_path) -> None:
     result = emit_review_promotion_gate(
         review_result_artifact=None,
         review_merge_readiness_artifact=None,
+        closure_decision_artifact=None,
         output_dir=tmp_path,
     )
 
     gate = result["review_promotion_gate_artifact"]
-    assert gate["gate_decision"] == "block"
+    assert gate["signal_status"] == "invalid"
     assert gate["gate_reason_code"] == "missing_required_review_artifact"
-    assert gate["promotion_eligible"] is False
 
 
 
@@ -80,30 +80,30 @@ def test_unresolved_handoff_without_disposition_holds_manual_resolution(tmp_path
     result = emit_review_promotion_gate(
         review_result_artifact=review_result,
         review_merge_readiness_artifact=merge_readiness,
+        closure_decision_artifact=copy.deepcopy(load_example("closure_decision_artifact")),
         review_operator_handoff_artifact=handoff,
         output_dir=tmp_path,
     )
 
     gate = result["review_promotion_gate_artifact"]
-    assert gate["gate_decision"] == "hold_manual_resolution"
+    assert gate["signal_status"] == "manual_review_required"
     assert gate["gate_reason_code"] == "handoff_pending"
-    assert gate["promotion_eligible"] is False
 
 
 @pytest.mark.parametrize(
-    ("disposition", "reason_code", "expected_decision", "expected_gate_reason"),
+    ("disposition", "reason_code", "expected_signal", "expected_gate_reason"),
     [
-        ("manual_review_required", "missing_prerequisite", "hold_manual_resolution", "disposition_requires_manual_review"),
-        ("escalate_to_owner", "not_safe_to_merge", "block", "unresolved_not_safe_to_merge"),
-        ("hold_pending_input", "execution_failed", "hold_manual_resolution", "disposition_requires_manual_review"),
-        ("schedule_follow_on_cycle", "unresolved_fix_required", "hold_manual_resolution", "unresolved_fix_required"),
+        ("manual_review_required", "missing_prerequisite", "manual_review_required", "disposition_requires_manual_review"),
+        ("escalate_to_owner", "not_safe_to_merge", "manual_review_required", "unresolved_not_safe_to_merge"),
+        ("hold_pending_input", "execution_failed", "manual_review_required", "disposition_requires_manual_review"),
+        ("schedule_follow_on_cycle", "unresolved_fix_required", "manual_review_required", "unresolved_fix_required"),
     ],
 )
 def test_disposition_outcomes_do_not_allow_promotion(
     tmp_path,
     disposition: str,
     reason_code: str,
-    expected_decision: str,
+    expected_signal: str,
     expected_gate_reason: str,
 ) -> None:
     review_result, merge_readiness = _safe_review_pair()
@@ -120,15 +120,15 @@ def test_disposition_outcomes_do_not_allow_promotion(
     result = emit_review_promotion_gate(
         review_result_artifact=review_result,
         review_merge_readiness_artifact=merge_readiness,
+        closure_decision_artifact=copy.deepcopy(load_example("closure_decision_artifact")),
         review_operator_handoff_artifact=handoff,
         review_handoff_disposition_artifact=disposition_artifact,
         output_dir=tmp_path,
     )
 
     gate = result["review_promotion_gate_artifact"]
-    assert gate["gate_decision"] == expected_decision
+    assert gate["signal_status"] == expected_signal
     assert gate["gate_reason_code"] == expected_gate_reason
-    assert gate["promotion_eligible"] is False
 
 
 def test_ambiguous_review_state_is_blocked(tmp_path) -> None:
@@ -138,11 +138,12 @@ def test_ambiguous_review_state_is_blocked(tmp_path) -> None:
     result = emit_review_promotion_gate(
         review_result_artifact=review_result,
         review_merge_readiness_artifact=merge_readiness,
+        closure_decision_artifact=copy.deepcopy(load_example("closure_decision_artifact")),
         output_dir=tmp_path,
     )
 
     gate = result["review_promotion_gate_artifact"]
-    assert gate["gate_decision"] == "block"
+    assert gate["signal_status"] == "invalid"
     assert gate["gate_reason_code"] == "ambiguous_review_state"
 
 
@@ -152,12 +153,14 @@ def test_promotion_gate_emits_once_per_review_state(tmp_path) -> None:
     emit_review_promotion_gate(
         review_result_artifact=review_result,
         review_merge_readiness_artifact=merge_readiness,
+        closure_decision_artifact=copy.deepcopy(load_example("closure_decision_artifact")),
         output_dir=tmp_path,
     )
     with pytest.raises(ReviewPromotionGateError, match="already exists"):
         emit_review_promotion_gate(
             review_result_artifact=review_result,
             review_merge_readiness_artifact=merge_readiness,
+            closure_decision_artifact=copy.deepcopy(load_example("closure_decision_artifact")),
             output_dir=tmp_path,
         )
 
@@ -167,6 +170,7 @@ def test_gate_artifact_does_not_trigger_merge_or_closure_authority(tmp_path) -> 
     result = emit_review_promotion_gate(
         review_result_artifact=review_result,
         review_merge_readiness_artifact=merge_readiness,
+        closure_decision_artifact=copy.deepcopy(load_example("closure_decision_artifact")),
         output_dir=tmp_path,
     )
     gate = result["review_promotion_gate_artifact"]

@@ -1,84 +1,69 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 
 from spectrum_systems.orchestration.fix_plan import FixPlanError, build_fix_plan_artifact
 
 
 def _manifest() -> dict:
-    return {
-        "cycle_id": "cycle-test",
-        "current_state": "blocked",
-        "updated_at": "2026-03-30T00:00:00Z",
-    }
+    return {"cycle_id": "cycle-test", "current_state": "blocked", "updated_at": "2026-03-30T00:00:00Z"}
 
 
 def _decision() -> dict:
-    return {
-        "decision_id": "d" * 64,
-        "current_state": "blocked",
-    }
+    return {"decision_id": "d" * 64, "current_state": "blocked", "trace_id": "trace-test"}
 
 
-def _remediation(remediation_class: str) -> dict:
-    return {
+def _remediation(path: str | None) -> dict:
+    payload = {
         "remediation_id": "a" * 64,
         "cycle_id": "cycle-test",
         "decision_id": "d" * 64,
-        "current_state": "blocked",
-        "normalized_category": "blocking_drift_finding",
-        "remediation_class": remediation_class,
-        "blocking": True,
-        "evidence_refs": ["drift_detection_result_path:exceeds_threshold"],
-        "policy_id": "DRIFT_REMEDIATION_POLICY",
-        "policy_version": "1.0.0",
-        "policy_hash": "b" * 64,
+        "remediation_class": "roadmap_repair",
     }
+    if path is not None:
+        payload["fre_fix_plan_artifact_ref"] = path
+    return payload
 
 
-@pytest.mark.parametrize(
-    "remediation_class",
-    [
-        "manifest_repair",
-        "provenance_repair",
-        "contract_repair",
-        "roadmap_repair",
-        "review_repair",
-        "execution_artifact_repair",
-        "governance_alignment_repair",
-        "judgment_evidence_repair",
-        "certification_input_repair",
-    ],
-)
-def test_fix_plan_generation_for_each_remediation_class_family(remediation_class: str) -> None:
-    artifact = build_fix_plan_artifact(manifest=_manifest(), decision=_decision(), remediation=_remediation(remediation_class))
-    assert artifact["remediation_class"] == remediation_class
-    assert artifact["required_actions"]
-    assert artifact["validation_requirements"]
-    assert artifact["completion_criteria"]
+def test_requires_fre_fix_plan_reference() -> None:
+    with pytest.raises(FixPlanError, match="fre_fix_plan_artifact_ref"):
+        build_fix_plan_artifact(manifest=_manifest(), decision=_decision(), remediation=_remediation(None))
 
 
-def test_deterministic_fix_plan_ids() -> None:
-    first = build_fix_plan_artifact(manifest=_manifest(), decision=_decision(), remediation=_remediation("roadmap_repair"))
-    second = build_fix_plan_artifact(manifest=_manifest(), decision=_decision(), remediation=_remediation("roadmap_repair"))
-    assert first["fix_plan_id"] == second["fix_plan_id"]
+def test_requires_existing_fre_fix_plan_file(tmp_path: Path) -> None:
+    with pytest.raises(FixPlanError, match="file"):
+        build_fix_plan_artifact(
+            manifest=_manifest(),
+            decision=_decision(),
+            remediation=_remediation(str(tmp_path / "missing_fix_plan.json")),
+        )
 
 
-def test_missing_inputs_fail_closed() -> None:
-    bad = _remediation("roadmap_repair")
-    bad.pop("policy_hash")
-    with pytest.raises(FixPlanError):
-        build_fix_plan_artifact(manifest=_manifest(), decision=_decision(), remediation=bad)
+def test_fre_artifact_must_declare_fre_policy(tmp_path: Path) -> None:
+    artifact = json.loads((Path(__file__).resolve().parents[1] / "contracts" / "examples" / "fix_plan_artifact.json").read_text())
+    artifact["policy_id"] = "DRIFT_REMEDIATION_POLICY"
+    path = tmp_path / "fix_plan.json"
+    path.write_text(json.dumps(artifact), encoding="utf-8")
+    with pytest.raises(FixPlanError, match="FRE_"):
+        build_fix_plan_artifact(
+            manifest=_manifest(),
+            decision=_decision(),
+            remediation=_remediation(str(path)),
+        )
 
 
-def test_validation_requirements_and_completion_criteria_populated_deterministically() -> None:
-    artifact = build_fix_plan_artifact(manifest=_manifest(), decision=_decision(), remediation=_remediation("roadmap_repair"))
-    assert artifact["validation_requirements"] == [
-        "schema:drift_remediation_artifact",
-        "schema:fix_plan_artifact",
-        "policy:DRIFT_REMEDIATION_POLICY@1.0.0",
-    ]
-    assert artifact["completion_criteria"] == [
-        "blocking_drift_finding resolved",
-        "next_step_decision.blocking == false",
-    ]
+def test_accepts_schema_valid_fre_fix_plan_artifact(tmp_path: Path) -> None:
+    artifact = json.loads((Path(__file__).resolve().parents[1] / "contracts" / "examples" / "fix_plan_artifact.json").read_text())
+    artifact["policy_id"] = "FRE_REMEDIATION_POLICY"
+    artifact["decision_id"] = "d" * 64
+    path = tmp_path / "fix_plan_fre.json"
+    path.write_text(json.dumps(artifact), encoding="utf-8")
+    loaded = build_fix_plan_artifact(
+        manifest=_manifest(),
+        decision=_decision(),
+        remediation=_remediation(str(path)),
+    )
+    assert loaded["policy_id"] == "FRE_REMEDIATION_POLICY"

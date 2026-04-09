@@ -14,7 +14,6 @@ from spectrum_systems.orchestration.drift_remediation import (
     build_drift_remediation_artifact,
     load_drift_remediation_policy,
 )
-from spectrum_systems.orchestration.fix_plan import build_fix_plan_artifact
 
 _POLICY_PATH = Path(__file__).resolve().parents[2] / "data" / "policy" / "next_step_decision_policy.json"
 _REQUIRED_POLICY_ID = "NEXT_STEP_DECISION_POLICY"
@@ -264,20 +263,20 @@ def build_next_step_decision(cycle_manifest_path: str, roadmap_eligibility_artif
 
     if state not in states:
         missing_inputs.append("current_state")
-        next_action = governance["invalid_state_action"]
-        allowed_actions = [governance["invalid_state_action"]]
+        recommendation_action = governance["invalid_state_action"]
+        recommendation_candidates = [governance["invalid_state_action"]]
         blocking_reasons.append("invalid lifecycle state")
     else:
-        next_action = mapping[state]["next_action"]
-        allowed_actions = mapping[state]["allowed_actions"]
+        recommendation_action = mapping[state]["next_action"]
+        recommendation_candidates = mapping[state]["allowed_actions"]
         missing_inputs.extend(_required_input_missing_for_state(manifest, state, policy))
 
     if missing_inputs:
-        next_action = governance["missing_input_action"]
+        recommendation_action = governance["missing_input_action"]
         blocking_reasons.append("missing required governance signals")
 
     if drift_detected:
-        next_action = policy["drift_blocking_rules"]["remediation_action"]
+        recommendation_action = policy["drift_blocking_rules"]["remediation_action"]
         blocking_reasons.append(policy["drift_blocking_rules"]["blocking_reason"])
 
     requested_selected_step_id = manifest.get("selected_step_id")
@@ -318,8 +317,8 @@ def build_next_step_decision(cycle_manifest_path: str, roadmap_eligibility_artif
         "selection_basis": "eligibility_constrained",
         "cycle_id": cycle_id,
         "current_state": state,
-        "next_action": next_action,
-        "allowed_actions": allowed_actions,
+        "recommendation_action": recommendation_action,
+        "recommendation_candidates": recommendation_candidates,
         "blocking": blocking,
         "required_inputs_missing": sorted(set(missing_inputs)),
         "drift_detected": drift_detected,
@@ -337,8 +336,8 @@ def build_next_step_decision(cycle_manifest_path: str, roadmap_eligibility_artif
         "decision_id": _decision_id(core_id_fields),
         "cycle_id": cycle_id,
         "current_state": state,
-        "next_action": next_action,
-        "allowed_actions": allowed_actions,
+        "recommendation_action": recommendation_action,
+        "recommendation_candidates": recommendation_candidates,
         "blocking": blocking,
         "blocking_reasons": sorted(set(blocking_reasons)),
         "required_inputs_missing": sorted(set(missing_inputs)),
@@ -355,7 +354,7 @@ def build_next_step_decision(cycle_manifest_path: str, roadmap_eligibility_artif
         "selected_step_id": selected_step_id,
         "selection_basis": "eligibility_constrained",
         "decision_rationale": (
-            f"state={state};action={next_action};blocking={'true' if blocking else 'false'};"
+            f"state={state};action={recommendation_action};blocking={'true' if blocking else 'false'};"
             f"reasons={len(set(blocking_reasons))};drift={'true' if drift_detected else 'false'};trust={trust_score}"
         ),
         "decided_at": decided_at,
@@ -363,7 +362,8 @@ def build_next_step_decision(cycle_manifest_path: str, roadmap_eligibility_artif
         "remediation_class": None,
         "blocking_reason_category": None,
         "drift_remediation_artifact_path": None,
-        "fix_plan_artifact_path": None,
+        "fre_fix_plan_artifact_ref": None,
+        "authority_level": "non_authoritative_recommendation",
     }
 
     if blocking:
@@ -374,16 +374,14 @@ def build_next_step_decision(cycle_manifest_path: str, roadmap_eligibility_artif
             policy=remediation_policy,
             policy_hash=remediation_policy_hash,
         )
-        fix_plan_artifact = build_fix_plan_artifact(
-            manifest=manifest,
-            decision=decision,
-            remediation=remediation_artifact,
-        )
+        fre_fix_plan_artifact_ref = manifest.get("fre_fix_plan_artifact_ref")
+        if not _path_exists(fre_fix_plan_artifact_ref):
+            raise NextStepDecisionError("blocking recommendation requires fre_fix_plan_artifact_ref")
         decision["remediation_required"] = True
         decision["remediation_class"] = remediation_artifact["remediation_class"]
         decision["blocking_reason_category"] = remediation_artifact["normalized_category"]
         decision["drift_remediation_artifact"] = remediation_artifact
-        decision["fix_plan_artifact"] = fix_plan_artifact
+        decision["fre_fix_plan_artifact_ref"] = str(fre_fix_plan_artifact_ref)
 
     schema = load_schema("next_step_decision_artifact")
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(decision)

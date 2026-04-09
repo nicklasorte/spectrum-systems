@@ -24,7 +24,6 @@ def _base_manifest(state: str) -> dict:
         "certification_status": "passed",
         "certification_record_path": str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json"),
         "decision_blocked": False,
-        "control_allow_promotion": True,
         "required_judgments": ["artifact_release_readiness"],
         "judgment_record_path": str(_REPO_ROOT / "contracts" / "examples" / "judgment_record.json"),
         "judgment_application_record_path": str(_REPO_ROOT / "contracts" / "examples" / "judgment_application_record.json"),
@@ -37,6 +36,8 @@ def _base_manifest(state: str) -> dict:
             "eval_coverage_summary_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json"),
             "certification_pack_ref": str(_REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"),
             "review_control_signal_ref": str(_REPO_ROOT / "contracts" / "examples" / "review_control_signal.json"),
+            "closure_decision_artifact_ref": str(_REPO_ROOT / "contracts" / "examples" / "closure_decision_artifact.json"),
+            "ril_output_artifact_ref": str(_REPO_ROOT / "contracts" / "examples" / "review_integration_packet_artifact.json"),
             "trust_spine_evidence_cohesion_result_ref": str(_REPO_ROOT / "contracts" / "examples" / "trust_spine_evidence_cohesion_result.json"),
         },
         "review_signal_policy": {"required_for_promotion": True},
@@ -83,9 +84,14 @@ def test_sequence_indeterminate_fixture_blocks_inconsistent_evidence() -> None:
     for case in fixture["cases"]:
         manifest = _base_manifest(case["from"])
         manifest.update(case.get("mutations", {}))
+        if case["name"] == "promotion_without_control_allow":
+            manifest["done_certification_input_refs"].pop("closure_decision_artifact_ref", None)
         decision = evaluate_sequence_transition(manifest, case["to"])
         assert decision.allowed is False
-        assert case["reason"] in str(decision.reason)
+        if case["reason"] == "explicit control_allow_promotion":
+            assert "closure_decision_artifact" in str(decision.reason)
+        else:
+            assert case["reason"] in str(decision.reason)
 
 
 def test_promotion_blocks_when_failure_binding_proof_missing() -> None:
@@ -94,6 +100,14 @@ def test_promotion_blocks_when_failure_binding_proof_missing() -> None:
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False
     assert "failure_binding_required_for_progression" in str(decision.reason)
+
+
+def test_promotion_blocks_when_closure_decision_artifact_missing() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["done_certification_input_refs"].pop("closure_decision_artifact_ref")
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "closure_decision_artifact" in str(decision.reason)
 
 
 def test_promotion_blocks_when_required_judgment_artifact_missing() -> None:
@@ -124,7 +138,10 @@ def test_promotion_requires_replay_authority_refs_even_when_falsification_ref_ca
     cert_pack_path.write_text(json.dumps(cert_pack), encoding="utf-8")
 
     manifest["hard_gate_falsification_record_path"] = ""
-    manifest["done_certification_input_refs"] = {"certification_pack_ref": str(cert_pack_path)}
+    manifest["done_certification_input_refs"] = {
+        "certification_pack_ref": str(cert_pack_path),
+        "closure_decision_artifact_ref": str(_REPO_ROOT / "contracts" / "examples" / "closure_decision_artifact.json"),
+    }
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False
     assert "TRUST_SPINE_REQUIRED_REF_MISSING" in str(decision.reason)

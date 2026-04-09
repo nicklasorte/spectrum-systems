@@ -62,6 +62,7 @@ def _manifest(state: str = "draft_roadmap") -> dict:
         "judgment_record_path": None,
         "judgment_application_record_path": None,
         "judgment_eval_result_path": None,
+        "fre_fix_plan_artifact_ref": str(_REPO_ROOT / "contracts" / "examples" / "fix_plan_artifact.json"),
     }
 
 
@@ -120,7 +121,7 @@ def test_happy_path_progression(tmp_path: Path) -> None:
     path = _write(tmp_path / "cycle_manifest.json", _manifest("draft_roadmap"))
     eligibility_path = _write(tmp_path / "eligibility.json", _eligibility())
     decision = build_next_step_decision(str(path), str(eligibility_path))
-    assert decision["next_action"] == "submit_for_review"
+    assert decision["recommendation_action"] == "submit_for_review"
     assert decision["blocking"] is False
     assert decision["remediation_required"] is False
     assert decision["policy_id"] == "NEXT_STEP_DECISION_POLICY"
@@ -135,7 +136,7 @@ def test_missing_strategy_fails_closed(tmp_path: Path) -> None:
     path = _write(tmp_path / "cycle_manifest.json", payload)
     eligibility_path = _write(tmp_path / "eligibility.json", _eligibility())
     decision = build_next_step_decision(str(path), str(eligibility_path))
-    assert decision["next_action"] == "block"
+    assert decision["recommendation_action"] == "block"
     assert "strategy_authority" in " ".join(decision["required_inputs_missing"])
     assert decision["blocking"] is True
 
@@ -146,7 +147,7 @@ def test_missing_sources_fail_closed(tmp_path: Path) -> None:
     path = _write(tmp_path / "cycle_manifest.json", payload)
     eligibility_path = _write(tmp_path / "eligibility.json", _eligibility())
     decision = build_next_step_decision(str(path), str(eligibility_path))
-    assert decision["next_action"] == "block"
+    assert decision["recommendation_action"] == "block"
     assert "source_authorities" in " ".join(decision["required_inputs_missing"])
 
 
@@ -158,21 +159,33 @@ def test_drift_detected_forces_remediation(tmp_path: Path) -> None:
     path = _write(tmp_path / "cycle_manifest.json", payload)
     eligibility_path = _write(tmp_path / "eligibility.json", _eligibility())
     decision = build_next_step_decision(str(path), str(eligibility_path))
-    assert decision["next_action"] == "generate_fix_roadmap"
+    assert decision["recommendation_action"] == "generate_fix_roadmap"
     assert decision["blocking"] is True
     assert decision["drift_detected"] is True
     assert decision["remediation_required"] is True
     assert decision["remediation_class"] == "roadmap_repair"
     assert decision["blocking_reason_category"] == "blocking_drift_finding"
     assert isinstance(decision["drift_remediation_artifact"], dict)
-    assert isinstance(decision["fix_plan_artifact"], dict)
+    assert decision["fre_fix_plan_artifact_ref"] == str(_REPO_ROOT / "contracts" / "examples" / "fix_plan_artifact.json")
+
+
+def test_blocking_recommendation_requires_fre_fix_plan_artifact(tmp_path: Path) -> None:
+    payload = _manifest("execution_complete_unreviewed")
+    payload.pop("fre_fix_plan_artifact_ref")
+    drift_path = tmp_path / "drift.json"
+    _write(drift_path, {"drift_detected": True, "drift_status": "exceeds_threshold"})
+    payload["drift_detection_result_path"] = str(drift_path)
+    path = _write(tmp_path / "cycle_manifest.json", payload)
+    eligibility_path = _write(tmp_path / "eligibility.json", _eligibility())
+    with pytest.raises(ValueError, match="fre_fix_plan_artifact_ref"):
+        build_next_step_decision(str(path), str(eligibility_path))
 
 
 def test_invalid_state_fails_closed(tmp_path: Path) -> None:
     path = _write(tmp_path / "cycle_manifest.json", _manifest("invalid_state"))
     eligibility_path = _write(tmp_path / "eligibility.json", _eligibility())
     decision = build_next_step_decision(str(path), str(eligibility_path))
-    assert decision["next_action"] == "block"
+    assert decision["recommendation_action"] == "block"
     assert decision["blocking"] is True
 
 
