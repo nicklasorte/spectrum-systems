@@ -1,0 +1,12 @@
+{
+  "bounded": true,
+  "created_at": "2026-04-06T12:00:00Z",
+  "draft_id": "RMD-4EB6373A1D4351EB",
+  "pr_number": 43,
+  "roadmap_id": "R2S-2666D38C0570AC63",
+  "source_event_ref": "issue_comment:202",
+  "source_refs": [
+    "docs/roadmaps/system_roadmap.md#sha256:c0ab096906ec",
+    "SYSTEMS.md#sha256:757eaa68c5a2"
+  ]
+}

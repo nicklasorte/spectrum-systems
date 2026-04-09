@@ -1,0 +1,34 @@
+{
+  "bounded": true,
+  "generated_at": "2026-04-06T11:00:00Z",
+  "roadmap_id": "R2S-CC5330F8888CAD42",
+  "schema_version": "1.0.0",
+  "source_refs": [
+    "docs/roadmaps/system_roadmap.md#sha256:c0ab096906ec",
+    "SYSTEMS.md#sha256:757eaa68c5a2"
+  ],
+  "step_count": 2,
+  "steps": [
+    {
+      "description": "Extract bounded implementation constraints from docs/roadmaps/system_roadmap.md.",
+      "expected_outputs": [
+        "constraints::system_roadmap.md"
+      ],
+      "required_inputs": [
+        "docs/roadmaps/system_roadmap.md#sha256:c0ab096906ec"
+      ],
+      "step_id": "step_1"
+    },
+    {
+      "description": "Map extracted constraints into governed continuation inputs using SYSTEMS.md.",
+      "expected_outputs": [
+        "governed_continuation_input"
+      ],
+      "required_inputs": [
+        "SYSTEMS.md#sha256:757eaa68c5a2",
+        "output:step_1"
+      ],
+      "step_id": "step_2"
+    }
+  ]
+}
