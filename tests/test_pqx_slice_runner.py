@@ -7,6 +7,7 @@ import pytest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 from spectrum_systems.modules.runtime.pqx_slice_runner import run_pqx_slice as _run_pqx_slice
 
 
@@ -30,7 +31,7 @@ class FixedClock:
 
 
 def _valid_repo_write_lineage(trace_id: str = "trace-repo-write") -> dict[str, object]:
-    return {
+    lineage = {
         "build_admission_record": {
             "artifact_type": "build_admission_record",
             "admission_id": "adm-1",
@@ -83,6 +84,14 @@ def _valid_repo_write_lineage(trace_id: str = "trace-repo-write") -> dict[str, o
             },
         },
     }
+    lineage["build_admission_record"]["authenticity"] = issue_authenticity(
+        artifact=lineage["build_admission_record"], issuer="AEX"
+    )
+    lineage["normalized_execution_request"]["authenticity"] = issue_authenticity(
+        artifact=lineage["normalized_execution_request"], issuer="AEX"
+    )
+    lineage["tlc_handoff_record"]["authenticity"] = issue_authenticity(artifact=lineage["tlc_handoff_record"], issuer="TLC")
+    return lineage
 
 
 def test_run_pqx_slice_repo_write_requires_lineage(tmp_path: Path) -> None:

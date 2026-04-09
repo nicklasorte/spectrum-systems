@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 from spectrum_systems.modules.runtime.pqx_sequence_runner import PQXSequenceRunnerError, execute_sequence_run
 
 
@@ -12,7 +13,7 @@ def _slice_requests() -> list[dict[str, str]]:
 
 
 def _lineage() -> dict[str, object]:
-    return {
+    lineage = {
         "build_admission_record": {
             "artifact_type": "build_admission_record",
             "admission_id": "adm-1",
@@ -65,6 +66,12 @@ def _lineage() -> dict[str, object]:
             },
         },
     }
+    lineage["build_admission_record"]["authenticity"] = issue_authenticity(artifact=lineage["build_admission_record"], issuer="AEX")
+    lineage["normalized_execution_request"]["authenticity"] = issue_authenticity(
+        artifact=lineage["normalized_execution_request"], issuer="AEX"
+    )
+    lineage["tlc_handoff_record"]["authenticity"] = issue_authenticity(artifact=lineage["tlc_handoff_record"], issuer="TLC")
+    return lineage
 
 
 def test_pqx_rejects_repo_write_without_aex_tlc_lineage(tmp_path: Path) -> None:
@@ -109,3 +116,35 @@ def test_pqx_allows_valid_repo_write_lineage(tmp_path: Path) -> None:
         repo_write_lineage=_lineage(),
     )
     assert state["status"] in {"completed", "blocked", "failed"}
+
+
+def test_pqx_rejects_repo_write_with_missing_authenticity(tmp_path: Path) -> None:
+    lineage = _lineage()
+    lineage["build_admission_record"].pop("authenticity", None)
+    with pytest.raises(PQXSequenceRunnerError, match="direct_pqx_repo_write_forbidden"):
+        execute_sequence_run(
+            slice_requests=_slice_requests(),
+            state_path=tmp_path / "state.json",
+            queue_run_id="queue-1",
+            run_id="run-1",
+            trace_id="trace-repo-write",
+            max_slices=1,
+            execution_class="repo_write",
+            repo_write_lineage=lineage,
+        )
+
+
+def test_pqx_rejects_repo_write_with_forged_authenticity(tmp_path: Path) -> None:
+    lineage = _lineage()
+    lineage["build_admission_record"]["trace_id"] = "trace-forged"
+    with pytest.raises(PQXSequenceRunnerError, match="direct_pqx_repo_write_forbidden"):
+        execute_sequence_run(
+            slice_requests=_slice_requests(),
+            state_path=tmp_path / "state.json",
+            queue_run_id="queue-1",
+            run_id="run-1",
+            trace_id="trace-repo-write",
+            max_slices=1,
+            execution_class="repo_write",
+            repo_write_lineage=lineage,
+        )

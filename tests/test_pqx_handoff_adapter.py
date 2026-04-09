@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 from spectrum_systems.orchestration import pqx_handoff_adapter
 
 
@@ -157,7 +158,7 @@ def test_handoff_to_pqx_uses_none_when_preflight_artifact_not_provided(tmp_path:
 
 
 def _repo_write_lineage_payload() -> dict[str, object]:
-    return {
+    payload = {
         "repo_mutation_requested": True,
         "trace_id": "trace-cycle-repo-write",
         "build_admission_record": {
@@ -215,6 +216,14 @@ def _repo_write_lineage_payload() -> dict[str, object]:
             },
         },
     }
+    payload["build_admission_record"]["authenticity"] = issue_authenticity(
+        artifact=payload["build_admission_record"], issuer="AEX"
+    )
+    payload["normalized_execution_request"]["authenticity"] = issue_authenticity(
+        artifact=payload["normalized_execution_request"], issuer="AEX"
+    )
+    payload["tlc_handoff_record"]["authenticity"] = issue_authenticity(artifact=payload["tlc_handoff_record"], issuer="TLC")
+    return payload
 
 
 def test_handoff_to_pqx_repo_write_fails_closed_without_admission_lineage(tmp_path: Path) -> None:

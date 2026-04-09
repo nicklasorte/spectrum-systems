@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 from spectrum_systems.modules.runtime.top_level_conductor import TopLevelConductorError, run_top_level_conductor
 
 
@@ -46,6 +47,15 @@ def _base_request(tmp_path: Path) -> dict[str, object]:
     }
 
 
+def _attach_aex_authenticity(request: dict[str, object]) -> None:
+    admission = request.get("build_admission_record")
+    normalized = request.get("normalized_execution_request")
+    if isinstance(admission, dict):
+        admission["authenticity"] = issue_authenticity(artifact=admission, issuer="AEX")
+    if isinstance(normalized, dict):
+        normalized["authenticity"] = issue_authenticity(artifact=normalized, issuer="AEX")
+
+
 def test_tlc_refuses_repo_write_without_admission_record(tmp_path: Path) -> None:
     with pytest.raises(TopLevelConductorError, match="direct_tlc_repo_write_forbidden"):
         run_top_level_conductor(_base_request(tmp_path))
@@ -86,6 +96,7 @@ def test_direct_pqx_path_for_repo_write_is_rejected(tmp_path: Path) -> None:
         "created_at": "2026-04-08T00:00:00Z",
         "produced_by": "AEXEngine",
     }
+    _attach_aex_authenticity(request)
 
     def _bad_pqx(_payload: dict[str, object]) -> dict[str, object]:
         raise TopLevelConductorError("direct_pqx_repo_write_forbidden")
@@ -124,6 +135,7 @@ def test_tlc_rejects_repo_write_with_rejected_admission(tmp_path: Path) -> None:
         "created_at": "2026-04-08T00:00:00Z",
         "produced_by": "AEXEngine",
     }
+    _attach_aex_authenticity(request)
     with pytest.raises(TopLevelConductorError, match="admission_not_accepted"):
         run_top_level_conductor(request)
 
@@ -156,6 +168,7 @@ def test_tlc_rejects_repo_write_with_unresolvable_normalized_ref(tmp_path: Path)
         "created_at": "2026-04-08T00:00:00Z",
         "produced_by": "AEXEngine",
     }
+    _attach_aex_authenticity(request)
     with pytest.raises(TopLevelConductorError, match="normalized_request_ref_unresolvable"):
         run_top_level_conductor(request)
 
@@ -189,6 +202,7 @@ def test_valid_admitted_repo_write_path_succeeds(tmp_path: Path) -> None:
         "created_at": "2026-04-08T00:00:00Z",
         "produced_by": "AEXEngine",
     }
+    _attach_aex_authenticity(request)
     result = run_top_level_conductor(request)
     assert result["current_state"] in {"ready_for_merge", "blocked", "exhausted"}
     assert "trace-tlc-aex-check" in result["trace_refs"]

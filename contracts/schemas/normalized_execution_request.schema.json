@@ -15,19 +15,92 @@
     "source_prompt_kind",
     "trace_id",
     "created_at",
-    "produced_by"
+    "produced_by",
+    "authenticity"
   ],
   "properties": {
-    "artifact_type": {"type": "string", "const": "normalized_execution_request"},
-    "request_id": {"type": "string", "minLength": 1},
-    "prompt_text": {"type": "string", "minLength": 1},
-    "execution_type": {"type": "string", "enum": ["repo_write", "read_only", "analysis_only", "unknown"]},
-    "repo_mutation_requested": {"type": "boolean"},
-    "target_paths": {"type": "array", "items": {"type": "string"}},
-    "requested_outputs": {"type": "array", "items": {"type": "string"}},
-    "source_prompt_kind": {"type": "string", "minLength": 1},
-    "trace_id": {"type": "string", "minLength": 1},
-    "created_at": {"type": "string", "format": "date-time"},
-    "produced_by": {"type": "string", "minLength": 1}
+    "artifact_type": {
+      "type": "string",
+      "const": "normalized_execution_request"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prompt_text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_type": {
+      "type": "string",
+      "enum": [
+        "repo_write",
+        "read_only",
+        "analysis_only",
+        "unknown"
+      ]
+    },
+    "repo_mutation_requested": {
+      "type": "boolean"
+    },
+    "target_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "requested_outputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_prompt_kind": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "produced_by": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authenticity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issuer",
+        "key_id",
+        "payload_digest",
+        "attestation"
+      ],
+      "properties": {
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "AEX",
+            "TLC"
+          ]
+        },
+        "key_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "attestation": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
   }
 }

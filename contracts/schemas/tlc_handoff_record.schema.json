@@ -20,7 +20,8 @@
     "repo_mutation_requested",
     "reason_codes",
     "tlc_run_context",
-    "lineage"
+    "lineage",
+    "authenticity"
   ],
   "properties": {
     "artifact_type": {
@@ -157,6 +158,37 @@
               "PQX"
             ]
           }
+        }
+      }
+    },
+    "authenticity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issuer",
+        "key_id",
+        "payload_digest",
+        "attestation"
+      ],
+      "properties": {
+        "issuer": {
+          "type": "string",
+          "enum": [
+            "AEX",
+            "TLC"
+          ]
+        },
+        "key_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "attestation": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
         }
       }
     }

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 from spectrum_systems.modules.runtime.pqx_sequence_runner import PQXSequenceRunnerError, execute_sequence_run
 from spectrum_systems.modules.runtime.top_level_conductor import TopLevelConductorError, run_top_level_conductor
 
@@ -19,7 +20,7 @@ def _base_request(tmp_path: Path) -> dict[str, object]:
         "# Action Tracker\n\n## Critical Items\n| ID | Risk | Severity | Recommended Action | Status | Notes |\n| --- | --- | --- | --- | --- | --- |\n| CR-1 | Blocking risk | Critical | Fix | Closed | fixed |\n",
         encoding="utf-8",
     )
-    return {
+    request = {
         "objective": "repo mutating run",
         "branch_ref": "refs/heads/main",
         "run_id": "tlc-handoff-flow",
@@ -58,6 +59,13 @@ def _base_request(tmp_path: Path) -> dict[str, object]:
             "produced_by": "AEXEngine",
         },
     }
+    request["build_admission_record"]["authenticity"] = issue_authenticity(
+        artifact=request["build_admission_record"], issuer="AEX"
+    )
+    request["normalized_execution_request"]["authenticity"] = issue_authenticity(
+        artifact=request["normalized_execution_request"], issuer="AEX"
+    )
+    return request
 
 
 def test_valid_repo_write_path_uses_tlc_handoff_record(tmp_path: Path) -> None:

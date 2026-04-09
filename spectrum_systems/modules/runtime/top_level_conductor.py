@@ -27,6 +27,7 @@ from spectrum_systems.modules.runtime.repo_write_lineage_guard import (
     RepoWriteLineageGuardError,
     validate_repo_write_lineage,
 )
+from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 from spectrum_systems.modules.runtime.pre_pr_governance_closure import (
     PrePRGovernanceClosureError,
     run_local_pre_pr_governance_closure,
@@ -131,6 +132,7 @@ def _build_tlc_handoff_record(
             "intended_path": ["TLC", "TPA", "PQX"],
         },
     }
+    handoff["authenticity"] = issue_authenticity(artifact=handoff, issuer="TLC")
     validate_artifact(handoff, "tlc_handoff_record")
     return handoff
 
