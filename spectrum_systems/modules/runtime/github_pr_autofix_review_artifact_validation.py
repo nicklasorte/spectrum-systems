@@ -127,7 +127,7 @@ def _minimal_complexity() -> dict[str, int]:
 def _build_tpa_gate_artifact(*, request_id: str, trace_id: str, emitted_at: str) -> dict[str, Any]:
     artifact = {
         "artifact_type": "tpa_slice_artifact",
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "artifact_id": f"tpa:{request_id}:AI-01-G",
         "run_id": f"autofix-{request_id}",
         "trace_id": trace_id,
@@ -181,6 +181,7 @@ def _build_tpa_gate_artifact(*, request_id: str, trace_id: str, emitted_at: str)
             },
         },
     }
+    artifact["authenticity"] = issue_authenticity(artifact=artifact, issuer="TPA")
     validate_artifact(artifact, "tpa_slice_artifact")
     return artifact
 

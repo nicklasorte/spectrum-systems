@@ -17,14 +17,17 @@ AUDIENCE_REPO_WRITE_BOUNDARY = "pqx_repo_write_boundary"
 ISSUER_DEFAULT_KEY_IDS = {
     "AEX": "aex-hs256-v1",
     "TLC": "tlc-hs256-v1",
+    "TPA": "tpa-hs256-v1",
 }
 _ISSUER_SECRET_ENV = {
     "AEX": "SPECTRUM_LINEAGE_AUTH_SECRET_AEX",
     "TLC": "SPECTRUM_LINEAGE_AUTH_SECRET_TLC",
+    "TPA": "SPECTRUM_LINEAGE_AUTH_SECRET_TPA",
 }
 _ISSUER_KEY_ENV = {
     "AEX": "SPECTRUM_LINEAGE_AUTH_KEY_ID_AEX",
     "TLC": "SPECTRUM_LINEAGE_AUTH_KEY_ID_TLC",
+    "TPA": "SPECTRUM_LINEAGE_AUTH_KEY_ID_TPA",
 }
 
 
@@ -87,6 +90,10 @@ _AUTHORIZED_ISSUANCE_CALLERS: dict[tuple[str, str], set[str]] = {
     ("TLC", "tlc_handoff_record"): {
         "spectrum_systems.modules.runtime.top_level_conductor:_build_tlc_handoff_record",
         "spectrum_systems.modules.runtime.github_pr_autofix_review_artifact_validation:_build_tlc_handoff",
+    },
+    ("TPA", "tpa_slice_artifact"): {
+        "spectrum_systems.modules.runtime.pqx_sequence_runner:_build_tpa_slice_artifact",
+        "spectrum_systems.modules.runtime.github_pr_autofix_review_artifact_validation:_build_tpa_gate_artifact",
     },
 }
 

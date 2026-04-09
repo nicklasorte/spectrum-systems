@@ -21,6 +21,7 @@ from spectrum_systems.modules.runtime.pqx_slice_runner import (
     run_pqx_slice,
 )
 from spectrum_systems.modules.runtime.repo_write_lineage_guard import RepoWriteLineageGuardError, validate_repo_write_lineage
+from spectrum_systems.modules.runtime.lineage_authenticity import LineageAuthenticityError, issue_authenticity
 from spectrum_systems.modules.runtime.tpa_complexity_governance import (
     build_complexity_budget,
     build_complexity_trend,
@@ -440,6 +441,7 @@ def _build_batch_result(state: dict) -> dict:
 
 def _build_tpa_slice_artifact(
     *,
+    request_id: str,
     run_id: str,
     trace_id: str,
     slice_id: str,
@@ -452,8 +454,9 @@ def _build_tpa_slice_artifact(
         raise PQXSequenceRunnerError("TPA artifact requested for non-TPA slice id")
     artifact = {
         "artifact_type": "tpa_slice_artifact",
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "artifact_id": f"tpa:{run_id}:{slice_id}",
+        "request_id": request_id,
         "run_id": run_id,
         "trace_id": trace_id,
         "slice_id": slice_id,
@@ -463,6 +466,10 @@ def _build_tpa_slice_artifact(
         "produced_at": produced_at,
         "artifact": artifact_payload,
     }
+    try:
+        artifact["authenticity"] = issue_authenticity(artifact=artifact, issuer="TPA")
+    except LineageAuthenticityError as exc:
+        raise PQXSequenceRunnerError(f"invalid TPA {phase} artifact for {slice_id}: {exc}") from exc
     try:
         validate_artifact(artifact, "tpa_slice_artifact")
     except Exception as exc:
@@ -1580,6 +1587,7 @@ def execute_sequence_run(
                     raise PQXSequenceRunnerError("tpa_bypass_detected: lightweight mode not eligible for this scope")
                 tpa_mode = requested_mode
                 artifacts["plan"] = _build_tpa_slice_artifact(
+                    request_id=str(request.get("request_id") or f"{run_id}:{next_slice_id}"),
                     run_id=run_id,
                     trace_id=request["trace_id"],
                     slice_id=next_slice_id,
@@ -1623,6 +1631,7 @@ def execute_sequence_run(
                 if planned_modules and not planned_modules.intersection(reused_modules):
                     raise PQXSequenceRunnerError("TPA build must reuse modules surfaced by plan context")
                 artifacts["build"] = _build_tpa_slice_artifact(
+                    request_id=str(request.get("request_id") or f"{run_id}:{next_slice_id}"),
                     run_id=run_id,
                     trace_id=request["trace_id"],
                     slice_id=next_slice_id,
@@ -1685,6 +1694,7 @@ def execute_sequence_run(
                 if not simplify_payload.get("pattern_consistency_refs"):
                     raise PQXSequenceRunnerError("TPA simplify must declare pattern consistency references")
                 artifacts["simplify"] = _build_tpa_slice_artifact(
+                    request_id=str(request.get("request_id") or f"{run_id}:{next_slice_id}"),
                     run_id=run_id,
                     trace_id=request["trace_id"],
                     slice_id=next_slice_id,
@@ -1879,6 +1889,7 @@ def execute_sequence_run(
                         "TPA gate cannot mark promotion_ready when contract-backed policy composition resolves freeze/block"
                     )
                 artifacts["gate"] = _build_tpa_slice_artifact(
+                    request_id=str(request.get("request_id") or f"{run_id}:{next_slice_id}"),
                     run_id=run_id,
                     trace_id=request["trace_id"],
                     slice_id=next_slice_id,

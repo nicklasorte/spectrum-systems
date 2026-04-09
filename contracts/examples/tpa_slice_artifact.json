@@ -1,6 +1,6 @@
 {
   "artifact_type": "tpa_slice_artifact",
-  "schema_version": "1.2.0",
+  "schema_version": "1.3.0",
   "artifact_id": "tpa:run-001:AI-01-P",
   "run_id": "run-001",
   "trace_id": "trace-001",
@@ -35,5 +35,17 @@
       "build_small": true,
       "no_redesign": true
     }
+  },
+  "request_id": "rfer-001",
+  "authenticity": {
+    "issuer": "TPA",
+    "key_id": "tpa-hs256-v1",
+    "payload_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "audience": "pqx_repo_write_boundary",
+    "scope": "repo_write_lineage:tpa_slice_artifact:rfer-001:trace-001",
+    "issued_at": "2026-04-08T01:01:00Z",
+    "expires_at": "2026-04-08T01:16:00Z",
+    "lineage_token_id": "lin-000000000000000000000000",
+    "attestation": "0000000000000000000000000000000000000000000000000000000000000000"
   }
 }

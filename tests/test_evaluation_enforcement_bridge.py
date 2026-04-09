@@ -213,10 +213,22 @@ def _write_tpa_artifacts(tmp_path: Path, *, step_id: str = "AI-01") -> Dict[str,
     refs: Dict[str, str] = {}
     for phase, payload in phase_payloads.items():
         artifact = {
-            "artifact_type": "tpa_slice_artifact", "schema_version": "1.2.0",
+            "artifact_type": "tpa_slice_artifact", "schema_version": "1.3.0",
             "artifact_id": f"tpa:run-001:{step_id}-{suffix[phase]}", "run_id": "run-001", "trace_id": "trace-001",
+            "request_id": f"req:{step_id}:{phase}",
             "slice_id": f"{step_id}-{suffix[phase]}", "step_id": step_id, "phase": phase,
             "produced_at": "2026-04-04T00:00:00Z", "artifact": payload,
+            "authenticity": {
+                "issuer": "TPA",
+                "key_id": "tpa-hs256-v1",
+                "payload_digest": f"sha256:{'0'*64}",
+                "audience": "pqx_repo_write_boundary",
+                "scope": f"repo_write_lineage:tpa_slice_artifact:req:{step_id}:{phase}:trace-001",
+                "issued_at": "2026-04-04T00:00:00Z",
+                "expires_at": "2026-04-04T00:15:00Z",
+                "lineage_token_id": "lin-1234567890abcdef12345678",
+                "attestation": "0" * 64,
+            },
         }
         out = tmp_path / f"{phase}.json"
         out.write_text(json.dumps(artifact), encoding="utf-8")

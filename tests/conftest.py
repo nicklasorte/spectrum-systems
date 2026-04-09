@@ -10,8 +10,10 @@ from spectrum_systems.modules.runtime.lineage_issuance_registry import reset_lin
 
 os.environ.setdefault("SPECTRUM_LINEAGE_AUTH_SECRET_AEX", "test-lineage-auth-secret-aex")
 os.environ.setdefault("SPECTRUM_LINEAGE_AUTH_SECRET_TLC", "test-lineage-auth-secret-tlc")
+os.environ.setdefault("SPECTRUM_LINEAGE_AUTH_SECRET_TPA", "test-lineage-auth-secret-tpa")
 os.environ.setdefault("SPECTRUM_LINEAGE_AUTH_KEY_ID_AEX", "aex-hs256-v1")
 os.environ.setdefault("SPECTRUM_LINEAGE_AUTH_KEY_ID_TLC", "tlc-hs256-v1")
+os.environ.setdefault("SPECTRUM_LINEAGE_AUTH_KEY_ID_TPA", "tpa-hs256-v1")
 os.environ.setdefault("SPECTRUM_LINEAGE_AUTH_TTL_SECONDS", "900")
 os.environ.setdefault("SPECTRUM_LINEAGE_AUTH_MAX_AGE_SECONDS", "3600")
 

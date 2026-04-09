@@ -10,35 +10,143 @@
     "schema_version",
     "artifact_id",
     "run_id",
+    "request_id",
     "trace_id",
     "slice_id",
     "step_id",
     "phase",
     "produced_at",
-    "artifact"
+    "artifact",
+    "authenticity"
   ],
   "properties": {
-    "artifact_type": {"type": "string", "const": "tpa_slice_artifact"},
-    "schema_version": {"type": "string", "const": "1.2.0"},
-    "artifact_id": {"type": "string", "minLength": 1},
-    "run_id": {"type": "string", "minLength": 1},
-    "trace_id": {"type": "string", "minLength": 1},
-    "slice_id": {"type": "string", "minLength": 1},
-    "step_id": {"type": "string", "pattern": "^AI-[0-9]+$"},
-    "phase": {"type": "string", "enum": ["plan", "build", "simplify", "gate"]},
-    "tpa_mode": {"type": "string", "enum": ["full", "lightweight"]},
-    "produced_at": {"type": "string", "format": "date-time"},
+    "artifact_type": {
+      "type": "string",
+      "const": "tpa_slice_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.3.0"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "slice_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "step_id": {
+      "type": "string",
+      "pattern": "^AI-[0-9]+$"
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "plan",
+        "build",
+        "simplify",
+        "gate"
+      ]
+    },
+    "tpa_mode": {
+      "type": "string",
+      "enum": [
+        "full",
+        "lightweight"
+      ]
+    },
+    "produced_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "artifact": {
       "oneOf": [
-        {"$ref": "#/$defs/plan_artifact"},
-        {"$ref": "#/$defs/build_artifact"},
-        {"$ref": "#/$defs/simplify_artifact"},
-        {"$ref": "#/$defs/gate_artifact"}
+        {
+          "$ref": "#/$defs/plan_artifact"
+        },
+        {
+          "$ref": "#/$defs/build_artifact"
+        },
+        {
+          "$ref": "#/$defs/simplify_artifact"
+        },
+        {
+          "$ref": "#/$defs/gate_artifact"
+        }
       ]
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authenticity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issuer",
+        "key_id",
+        "payload_digest",
+        "audience",
+        "scope",
+        "issued_at",
+        "expires_at",
+        "lineage_token_id",
+        "attestation"
+      ],
+      "properties": {
+        "issuer": {
+          "type": "string",
+          "const": "TPA"
+        },
+        "key_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "attestation": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "audience": {
+          "type": "string",
+          "const": "pqx_repo_write_boundary"
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lineage_token_id": {
+          "type": "string",
+          "pattern": "^lin-[0-9a-f]{24}$"
+        }
+      }
     }
   },
   "$defs": {
-    "non_empty": {"type": "string", "minLength": 1},
+    "non_empty": {
+      "type": "string",
+      "minLength": 1
+    },
     "complexity_signals": {
       "type": "object",
       "additionalProperties": false,
@@ -60,21 +168,62 @@
         "abstraction_removed_count"
       ],
       "properties": {
-        "files_changed_count": {"type": "integer", "minimum": 0},
-        "lines_added": {"type": "integer", "minimum": 0},
-        "lines_removed": {"type": "integer", "minimum": 0},
-        "net_line_delta": {"type": "integer"},
-        "functions_added_count": {"type": "integer", "minimum": 0},
-        "functions_removed_count": {"type": "integer", "minimum": 0},
-        "helpers_added_count": {"type": "integer", "minimum": 0},
-        "helpers_removed_count": {"type": "integer", "minimum": 0},
-        "wrappers_collapsed_count": {"type": "integer", "minimum": 0},
-        "deletions_count": {"type": "integer", "minimum": 0},
-        "public_surface_delta_count": {"type": "integer"},
-        "approximate_max_nesting_delta": {"type": "integer"},
-        "approximate_branching_delta": {"type": "integer"},
-        "abstraction_added_count": {"type": "integer", "minimum": 0},
-        "abstraction_removed_count": {"type": "integer", "minimum": 0}
+        "files_changed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lines_added": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lines_removed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "net_line_delta": {
+          "type": "integer"
+        },
+        "functions_added_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "functions_removed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "helpers_added_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "helpers_removed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "wrappers_collapsed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "deletions_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "public_surface_delta_count": {
+          "type": "integer"
+        },
+        "approximate_max_nesting_delta": {
+          "type": "integer"
+        },
+        "approximate_branching_delta": {
+          "type": "integer"
+        },
+        "abstraction_added_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "abstraction_removed_count": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "complexity_signal_delta": {
@@ -98,21 +247,51 @@
         "abstraction_removed_count"
       ],
       "properties": {
-        "files_changed_count": {"type": "integer"},
-        "lines_added": {"type": "integer"},
-        "lines_removed": {"type": "integer"},
-        "net_line_delta": {"type": "integer"},
-        "functions_added_count": {"type": "integer"},
-        "functions_removed_count": {"type": "integer"},
-        "helpers_added_count": {"type": "integer"},
-        "helpers_removed_count": {"type": "integer"},
-        "wrappers_collapsed_count": {"type": "integer"},
-        "deletions_count": {"type": "integer"},
-        "public_surface_delta_count": {"type": "integer"},
-        "approximate_max_nesting_delta": {"type": "integer"},
-        "approximate_branching_delta": {"type": "integer"},
-        "abstraction_added_count": {"type": "integer"},
-        "abstraction_removed_count": {"type": "integer"}
+        "files_changed_count": {
+          "type": "integer"
+        },
+        "lines_added": {
+          "type": "integer"
+        },
+        "lines_removed": {
+          "type": "integer"
+        },
+        "net_line_delta": {
+          "type": "integer"
+        },
+        "functions_added_count": {
+          "type": "integer"
+        },
+        "functions_removed_count": {
+          "type": "integer"
+        },
+        "helpers_added_count": {
+          "type": "integer"
+        },
+        "helpers_removed_count": {
+          "type": "integer"
+        },
+        "wrappers_collapsed_count": {
+          "type": "integer"
+        },
+        "deletions_count": {
+          "type": "integer"
+        },
+        "public_surface_delta_count": {
+          "type": "integer"
+        },
+        "approximate_max_nesting_delta": {
+          "type": "integer"
+        },
+        "approximate_branching_delta": {
+          "type": "integer"
+        },
+        "abstraction_added_count": {
+          "type": "integer"
+        },
+        "abstraction_removed_count": {
+          "type": "integer"
+        }
       }
     },
     "plan_artifact": {
@@ -133,41 +312,129 @@
         "context_rationale"
       ],
       "properties": {
-        "artifact_kind": {"type": "string", "const": "plan"},
-        "execution_mode": {"type": "string", "enum": ["feature_build", "cleanup_only"]},
+        "artifact_kind": {
+          "type": "string",
+          "const": "plan"
+        },
+        "execution_mode": {
+          "type": "string",
+          "enum": [
+            "feature_build",
+            "cleanup_only"
+          ]
+        },
         "cleanup_scope": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["bounded_files", "reason"],
+          "required": [
+            "bounded_files",
+            "reason"
+          ],
           "properties": {
-            "bounded_files": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "minItems": 1, "uniqueItems": true},
-            "reason": {"$ref": "#/$defs/non_empty"}
+            "bounded_files": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/non_empty"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "reason": {
+              "$ref": "#/$defs/non_empty"
+            }
           }
         },
-        "files_touched": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "seams_reused": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "abstraction_intent": {"type": "string", "enum": ["reuse_existing", "minimal_extension"]},
-        "context_bundle_ref": {"$ref": "#/$defs/non_empty"},
-        "known_risk_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "prior_failure_pattern_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "modules_affected": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "improvement_objective": {"$ref": "#/$defs/non_empty"},
-        "context_rationale": {"$ref": "#/$defs/non_empty"},
-        "tpa_mode": {"type": "string", "enum": ["full", "lightweight"]},
+        "files_touched": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "seams_reused": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "abstraction_intent": {
+          "type": "string",
+          "enum": [
+            "reuse_existing",
+            "minimal_extension"
+          ]
+        },
+        "context_bundle_ref": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "known_risk_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "prior_failure_pattern_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "modules_affected": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "improvement_objective": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "context_rationale": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "tpa_mode": {
+          "type": "string",
+          "enum": [
+            "full",
+            "lightweight"
+          ]
+        },
         "constraints_acknowledged": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["build_small", "no_redesign"],
+          "required": [
+            "build_small",
+            "no_redesign"
+          ],
           "properties": {
-            "build_small": {"type": "boolean", "const": true},
-            "no_redesign": {"type": "boolean", "const": true}
+            "build_small": {
+              "type": "boolean",
+              "const": true
+            },
+            "no_redesign": {
+              "type": "boolean",
+              "const": true
+            }
           }
         }
       },
       "allOf": [
         {
-          "if": {"properties": {"execution_mode": {"const": "cleanup_only"}}},
-          "then": {"required": ["cleanup_scope"]}
+          "if": {
+            "properties": {
+              "execution_mode": {
+                "const": "cleanup_only"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "cleanup_scope"
+            ]
+          }
         }
       ]
     },
@@ -190,30 +457,83 @@
         "complexity_signals"
       ],
       "properties": {
-        "artifact_kind": {"type": "string", "const": "build"},
-        "files_touched": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "new_layers": {"type": "integer", "minimum": 0},
-        "unused_helpers": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "unnecessary_indirection": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "plan_scope_match": {"type": "boolean"},
+        "artifact_kind": {
+          "type": "string",
+          "const": "build"
+        },
+        "files_touched": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "new_layers": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unused_helpers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "unnecessary_indirection": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "plan_scope_match": {
+          "type": "boolean"
+        },
         "abstraction_justifications": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["abstraction", "justification"],
+            "required": [
+              "abstraction",
+              "justification"
+            ],
             "properties": {
-              "abstraction": {"$ref": "#/$defs/non_empty"},
-              "justification": {"$ref": "#/$defs/non_empty"}
+              "abstraction": {
+                "$ref": "#/$defs/non_empty"
+              },
+              "justification": {
+                "$ref": "#/$defs/non_empty"
+              }
             }
           }
         },
-        "context_bundle_ref": {"$ref": "#/$defs/non_empty"},
-        "known_failure_patterns_avoided": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "existing_abstractions_satisfied": {"type": "boolean"},
-        "speculative_expansion_detected": {"type": "boolean"},
-        "reused_module_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "complexity_signals": {"$ref": "#/$defs/complexity_signals"}
+        "context_bundle_ref": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "known_failure_patterns_avoided": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "existing_abstractions_satisfied": {
+          "type": "boolean"
+        },
+        "speculative_expansion_detected": {
+          "type": "boolean"
+        },
+        "reused_module_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "complexity_signals": {
+          "$ref": "#/$defs/complexity_signals"
+        }
       }
     },
     "simplify_artifact": {
@@ -233,19 +553,56 @@
         "delete_pass"
       ],
       "properties": {
-        "artifact_kind": {"type": "string", "const": "simplify"},
-        "source_build_artifact_id": {"$ref": "#/$defs/non_empty"},
+        "artifact_kind": {
+          "type": "string",
+          "const": "simplify"
+        },
+        "source_build_artifact_id": {
+          "$ref": "#/$defs/non_empty"
+        },
         "actions": {
           "type": "array",
-          "items": {"type": "string", "enum": ["dedupe_logic", "reduce_nesting", "rename_for_clarity", "delete_unnecessary_code"]}
+          "items": {
+            "type": "string",
+            "enum": [
+              "dedupe_logic",
+              "reduce_nesting",
+              "rename_for_clarity",
+              "delete_unnecessary_code"
+            ]
+          }
         },
-        "behavior_changed": {"type": "boolean"},
-        "new_layers_introduced": {"type": "integer", "minimum": 0},
-        "context_bundle_ref": {"$ref": "#/$defs/non_empty"},
-        "redundant_code_paths_removed": {"type": "integer", "minimum": 0},
-        "duplicate_logic_collapsed": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "pattern_consistency_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "complexity_signals": {"$ref": "#/$defs/complexity_signals"},
+        "behavior_changed": {
+          "type": "boolean"
+        },
+        "new_layers_introduced": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "context_bundle_ref": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "redundant_code_paths_removed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duplicate_logic_collapsed": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "pattern_consistency_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "complexity_signals": {
+          "$ref": "#/$defs/complexity_signals"
+        },
         "delete_pass": {
           "type": "object",
           "additionalProperties": false,
@@ -260,14 +617,53 @@
             "indirection_avoided"
           ],
           "properties": {
-            "deletion_considered": {"type": "boolean"},
-            "deletion_performed": {"type": "boolean"},
-            "deletion_rejected_reason": {"type": ["string", "null"]},
-            "deleted_items": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-            "collapsed_abstractions": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-            "removed_helpers": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-            "removed_wrappers": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-            "indirection_avoided": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true}
+            "deletion_considered": {
+              "type": "boolean"
+            },
+            "deletion_performed": {
+              "type": "boolean"
+            },
+            "deletion_rejected_reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "deleted_items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/non_empty"
+              },
+              "uniqueItems": true
+            },
+            "collapsed_abstractions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/non_empty"
+              },
+              "uniqueItems": true
+            },
+            "removed_helpers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/non_empty"
+              },
+              "uniqueItems": true
+            },
+            "removed_wrappers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/non_empty"
+              },
+              "uniqueItems": true
+            },
+            "indirection_avoided": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/non_empty"
+              },
+              "uniqueItems": true
+            }
           }
         }
       }
@@ -300,57 +696,170 @@
         "complexity_regression_gate"
       ],
       "properties": {
-        "artifact_kind": {"type": "string", "const": "gate"},
-        "build_artifact_id": {"$ref": "#/$defs/non_empty"},
-        "simplify_artifact_id": {"$ref": "#/$defs/non_empty"},
-        "behavioral_equivalence": {"type": "boolean"},
-        "contract_valid": {"type": "boolean"},
-        "tests_valid": {"type": "boolean"},
-        "selected_pass": {"type": "string", "enum": ["pass_1_build", "pass_2_simplify"]},
-        "rejected_pass": {"type": "string", "enum": ["pass_1_build", "pass_2_simplify"]},
+        "artifact_kind": {
+          "type": "string",
+          "const": "gate"
+        },
+        "build_artifact_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "simplify_artifact_id": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "behavioral_equivalence": {
+          "type": "boolean"
+        },
+        "contract_valid": {
+          "type": "boolean"
+        },
+        "tests_valid": {
+          "type": "boolean"
+        },
+        "selected_pass": {
+          "type": "string",
+          "enum": [
+            "pass_1_build",
+            "pass_2_simplify"
+          ]
+        },
+        "rejected_pass": {
+          "type": "string",
+          "enum": [
+            "pass_1_build",
+            "pass_2_simplify"
+          ]
+        },
         "selection_inputs": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["build_artifact_id", "simplify_artifact_id", "comparison_inputs_present"],
+          "required": [
+            "build_artifact_id",
+            "simplify_artifact_id",
+            "comparison_inputs_present"
+          ],
           "properties": {
-            "build_artifact_id": {"$ref": "#/$defs/non_empty"},
-            "simplify_artifact_id": {"$ref": "#/$defs/non_empty"},
-            "comparison_inputs_present": {"type": "boolean"}
+            "build_artifact_id": {
+              "$ref": "#/$defs/non_empty"
+            },
+            "simplify_artifact_id": {
+              "$ref": "#/$defs/non_empty"
+            },
+            "comparison_inputs_present": {
+              "type": "boolean"
+            }
           }
         },
         "selection_metrics": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["build", "simplify", "simplify_delta"],
+          "required": [
+            "build",
+            "simplify",
+            "simplify_delta"
+          ],
           "properties": {
-            "build": {"$ref": "#/$defs/complexity_signals"},
-            "simplify": {"$ref": "#/$defs/complexity_signals"},
-            "simplify_delta": {"$ref": "#/$defs/complexity_signal_delta"}
+            "build": {
+              "$ref": "#/$defs/complexity_signals"
+            },
+            "simplify": {
+              "$ref": "#/$defs/complexity_signals"
+            },
+            "simplify_delta": {
+              "$ref": "#/$defs/complexity_signal_delta"
+            }
           }
         },
-        "selection_rationale": {"$ref": "#/$defs/non_empty"},
-        "promotion_ready": {"type": "boolean"},
-        "fail_closed_reason": {"type": ["string", "null"]},
-        "context_bundle_ref": {"$ref": "#/$defs/non_empty"},
-        "review_signal_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "eval_signal_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "addressed_failure_pattern_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "unaddressed_failure_pattern_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
-        "high_risk_unmitigated": {"type": "boolean"},
-        "risk_mitigation_refs": {"type": "array", "items": {"$ref": "#/$defs/non_empty"}, "uniqueItems": true},
+        "selection_rationale": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "promotion_ready": {
+          "type": "boolean"
+        },
+        "fail_closed_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "context_bundle_ref": {
+          "$ref": "#/$defs/non_empty"
+        },
+        "review_signal_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "eval_signal_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "addressed_failure_pattern_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "unaddressed_failure_pattern_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
+        "high_risk_unmitigated": {
+          "type": "boolean"
+        },
+        "risk_mitigation_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty"
+          },
+          "uniqueItems": true
+        },
         "simplicity_review": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["decision", "overall_severity", "findings", "report_ref"],
+          "required": [
+            "decision",
+            "overall_severity",
+            "findings",
+            "report_ref"
+          ],
           "properties": {
-            "decision": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]},
-            "overall_severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+            "decision": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "freeze",
+                "block"
+              ]
+            },
+            "overall_severity": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "critical"
+              ]
+            },
             "findings": {
               "type": "array",
               "items": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["category", "severity", "message"],
+                "required": [
+                  "category",
+                  "severity",
+                  "message"
+                ],
                 "properties": {
                   "category": {
                     "type": "string",
@@ -364,12 +873,24 @@
                       "delete_instead_of_abstract"
                     ]
                   },
-                  "severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
-                  "message": {"$ref": "#/$defs/non_empty"}
+                  "severity": {
+                    "type": "string",
+                    "enum": [
+                      "low",
+                      "medium",
+                      "high",
+                      "critical"
+                    ]
+                  },
+                  "message": {
+                    "$ref": "#/$defs/non_empty"
+                  }
                 }
               }
             },
-            "report_ref": {"$ref": "#/$defs/non_empty"}
+            "report_ref": {
+              "$ref": "#/$defs/non_empty"
+            }
           }
         },
         "complexity_regression_gate": {
@@ -384,22 +905,56 @@
             "exception_justified"
           ],
           "properties": {
-            "decision": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]},
-            "policy_ref": {"$ref": "#/$defs/non_empty"},
-            "regression_detected": {"type": "boolean"},
-            "historical_baseline_available": {"type": "boolean"},
-            "historical_baseline_ref": {"type": ["string", "null"]},
-            "exception_justified": {"type": "boolean"}
+            "decision": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "freeze",
+                "block"
+              ]
+            },
+            "policy_ref": {
+              "$ref": "#/$defs/non_empty"
+            },
+            "regression_detected": {
+              "type": "boolean"
+            },
+            "historical_baseline_available": {
+              "type": "boolean"
+            },
+            "historical_baseline_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "exception_justified": {
+              "type": "boolean"
+            }
           }
         },
         "cleanup_only_validation": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["mode_enabled", "equivalence_proven", "replay_ref"],
+          "required": [
+            "mode_enabled",
+            "equivalence_proven",
+            "replay_ref"
+          ],
           "properties": {
-            "mode_enabled": {"type": "boolean"},
-            "equivalence_proven": {"type": "boolean"},
-            "replay_ref": {"type": ["string", "null"]}
+            "mode_enabled": {
+              "type": "boolean"
+            },
+            "equivalence_proven": {
+              "type": "boolean"
+            },
+            "replay_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
           }
         }
       }
