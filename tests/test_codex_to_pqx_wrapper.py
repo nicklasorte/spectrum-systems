@@ -111,6 +111,22 @@ def test_wrapper_to_pqx_compatibility_uses_expected_ingestion_seam(monkeypatch: 
     assert captured["changed_paths"] == wrapper["changed_paths"]
 
 
+def test_run_wrapped_pqx_task_repo_controlled_paths_require_lineage(tmp_path: Path) -> None:
+    wrapper = wrapper_module.build_codex_pqx_task_wrapper(_governed_input()).wrapper
+    runtime_root = REPO_ROOT / "artifacts" / "test_tmp" / f"wrapper-{tmp_path.name}"
+
+    result = wrapper_module.run_wrapped_pqx_task(
+        wrapper=wrapper,
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=runtime_root / "state.json",
+        runs_root=runtime_root / "runs",
+        pqx_output_text="pqx output",
+    )
+
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "REPO_WRITE_LINEAGE_REQUIRED"
+
+
 def test_cli_invalid_input_fails_closed(tmp_path: Path) -> None:
     process = subprocess.run(
         [

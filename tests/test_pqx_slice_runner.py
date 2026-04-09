@@ -10,6 +10,8 @@ from pathlib import Path
 from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 from spectrum_systems.modules.runtime.pqx_slice_runner import run_pqx_slice as _run_pqx_slice
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
 
 def run_pqx_slice(**kwargs):
     if "execution_intent" not in kwargs:
@@ -135,6 +137,68 @@ def test_run_pqx_slice_unknown_intent_fails_closed(tmp_path: Path) -> None:
     )
     assert result["status"] == "blocked"
     assert result["block_type"] == "REPO_WRITE_LINEAGE_REQUIRED"
+
+
+def test_run_pqx_slice_repo_capable_path_requires_lineage_even_when_intent_is_non_repo_write(tmp_path: Path) -> None:
+    runtime_root = REPO_ROOT / "artifacts" / "test_tmp" / tmp_path.name
+    result = _run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=runtime_root / "state.json",
+        runs_root=runtime_root / "runs",
+        pqx_output_text="deterministic output",
+        execution_intent="non_repo_write",
+        clock=FixedClock(),
+    )
+    assert result["status"] == "blocked"
+    assert result["block_type"] == "REPO_WRITE_LINEAGE_REQUIRED"
+
+
+def test_run_pqx_slice_isolated_non_repo_path_can_skip_lineage_if_truly_non_mutating(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    result = _run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="deterministic output",
+        execution_intent="non_repo_write",
+        clock=FixedClock(),
+    )
+    assert result["status"] == "complete"
+
+
+def test_run_pqx_slice_rejects_replayed_repo_write_lineage(tmp_path: Path) -> None:
+    runtime_root = REPO_ROOT / "artifacts" / "test_tmp" / f"replay-{tmp_path.name}"
+    state_path = runtime_root / "pqx_state.json"
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    lineage = _valid_repo_write_lineage(trace_id="trace-replay-guard")
+    first = _run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=runtime_root / "runs",
+        pqx_output_text="deterministic output",
+        execution_intent="non_repo_write",
+        repo_write_lineage=lineage,
+        clock=FixedClock(),
+    )
+    second = _run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=runtime_root / "runs",
+        pqx_output_text="deterministic output",
+        execution_intent="non_repo_write",
+        repo_write_lineage=lineage,
+        clock=FixedClock(),
+    )
+    assert first["status"] == "complete"
+    assert second["status"] == "blocked"
+    assert second["block_type"] == "REPO_WRITE_LINEAGE_REQUIRED"
+    assert "lineage_replay_detected" in second["reason"]
 
 
 def test_run_pqx_slice_valid_run_emits_required_artifacts(tmp_path: Path) -> None:

@@ -472,7 +472,7 @@ def test_fix_reentry_repo_write_fails_without_admission_lineage(tmp_path: Path) 
     assert "repo-write handoff rejected" in " ".join(reentry_result["blocking_issues"])
 
 
-def test_fix_reentry_repo_write_succeeds_with_admission_lineage(tmp_path: Path) -> None:
+def test_fix_reentry_repo_write_rejects_replayed_admission_lineage(tmp_path: Path) -> None:
     manifest, manifest_path = _manifest(tmp_path, state="implementation_reviews_complete", repo_mutation_requested=True)
     _seed_implementation_reviews(manifest, tmp_path)
     _write(manifest_path, manifest)
@@ -483,6 +483,24 @@ def test_fix_reentry_repo_write_succeeds_with_admission_lineage(tmp_path: Path) 
     after_fix_roadmap = _load(manifest_path)
     refreshed_request_path = Path(after_fix_roadmap["pqx_execution_request_path"])
     refreshed_request = _load(refreshed_request_path)
+    refreshed_request["build_admission_record"]["admission_id"] = "adm-1-reentry"
+    refreshed_request["build_admission_record"]["request_id"] = "req-1-reentry"
+    refreshed_request["build_admission_record"]["trace_id"] = "trace-1-reentry"
+    refreshed_request["build_admission_record"]["normalized_execution_request_ref"] = "normalized_execution_request:req-1-reentry"
+
+    refreshed_request["normalized_execution_request"]["request_id"] = "req-1-reentry"
+    refreshed_request["normalized_execution_request"]["trace_id"] = "trace-1-reentry"
+
+    refreshed_request["tlc_handoff_record"]["handoff_id"] = "tlc-handoff-1-reentry"
+    refreshed_request["tlc_handoff_record"]["request_id"] = "req-1-reentry"
+    refreshed_request["tlc_handoff_record"]["trace_id"] = "trace-1-reentry"
+    refreshed_request["tlc_handoff_record"]["build_admission_record_ref"] = "build_admission_record:adm-1-reentry"
+    refreshed_request["tlc_handoff_record"]["normalized_execution_request_ref"] = "normalized_execution_request:req-1-reentry"
+    refreshed_request["tlc_handoff_record"]["lineage"]["upstream_refs"] = [
+        "build_admission_record:adm-1-reentry",
+        "normalized_execution_request:req-1-reentry",
+    ]
+
     refreshed_request["build_admission_record"]["authenticity"] = issue_authenticity(
         artifact=refreshed_request["build_admission_record"], issuer="AEX"
     )
@@ -495,11 +513,8 @@ def test_fix_reentry_repo_write_succeeds_with_admission_lineage(tmp_path: Path) 
     _write(refreshed_request_path, refreshed_request)
 
     reentry_result = cycle_runner.run_cycle(manifest_path)
-    assert reentry_result["status"] == "ok"
-    assert reentry_result["next_state"] == "fixes_in_progress"
-
-    after_reentry = _load(manifest_path)
-    assert after_reentry["fix_execution_report_paths"]
+    assert reentry_result["status"] == "blocked"
+    assert any("lineage_replay_detected" in issue for issue in reentry_result["blocking_issues"])
 
 
 def test_handoff_adapter_unknown_mutation_intent_fails_closed(tmp_path: Path) -> None:

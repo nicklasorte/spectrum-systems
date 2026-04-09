@@ -172,6 +172,8 @@ def _enforce_repo_write_lineage_boundary(
     *,
     step_id: str,
     run_id: str,
+    state_path: Path,
+    runs_root: Path,
     execution_intent: str | None,
     repo_write_lineage: dict[str, Any] | None,
 ) -> dict | None:
@@ -183,7 +185,12 @@ def _enforce_repo_write_lineage_boundary(
             reason="repo_mutation_intent_unknown: explicit execution_intent is required",
             block_type="REPO_WRITE_LINEAGE_REQUIRED",
         )
-    if normalized_intent == "non_repo_write":
+
+    if not _requires_repo_write_lineage(
+        execution_intent=normalized_intent,
+        state_path=state_path,
+        runs_root=runs_root,
+    ):
         return None
 
     lineage = repo_write_lineage if isinstance(repo_write_lineage, dict) else {}
@@ -192,8 +199,8 @@ def _enforce_repo_write_lineage_boundary(
             build_admission_record=lineage.get("build_admission_record"),
             normalized_execution_request=lineage.get("normalized_execution_request"),
             tlc_handoff_record=lineage.get("tlc_handoff_record"),
-            enforce_replay_protection=False,
-            replay_context=run_id,
+            enforce_replay_protection=True,
+            replay_context=None,
         )
     except (RepoWriteLineageGuardError, Exception) as exc:
         return _block_payload(
@@ -203,6 +210,21 @@ def _enforce_repo_write_lineage_boundary(
             block_type="REPO_WRITE_LINEAGE_REQUIRED",
         )
     return None
+
+
+def _requires_repo_write_lineage(*, execution_intent: str, state_path: Path, runs_root: Path) -> bool:
+    if execution_intent == "repo_write":
+        return True
+    return _is_repo_controlled_path(state_path) or _is_repo_controlled_path(runs_root)
+
+
+def _is_repo_controlled_path(path: Path) -> bool:
+    candidate = path if path.is_absolute() else (REPO_ROOT / path)
+    try:
+        candidate.relative_to(REPO_ROOT)
+        return True
+    except ValueError:
+        return False
 
 
 def _resolve_repo_ref_path(path_ref: str) -> Path:
@@ -634,6 +656,8 @@ def run_pqx_slice(
     lineage_block = _enforce_repo_write_lineage_boundary(
         step_id=normalized_step_id,
         run_id=run_id,
+        state_path=state_path,
+        runs_root=runs_root,
         execution_intent=execution_intent,
         repo_write_lineage=repo_write_lineage,
     )
