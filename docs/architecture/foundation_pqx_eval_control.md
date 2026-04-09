@@ -111,6 +111,7 @@ Any such divergence must trigger hardening-first roadmap sequencing.
 - Repo-mutating orchestration must include `build_admission_record` and `normalized_execution_request` before TLC continues.
 - The AEX→TLC seam is contractized via `tlc_handoff_record` to make admission-to-orchestration lineage explicit and replayable for repo-mutating execution.
 - Enforcement is fail-closed end-to-end: missing/invalid AEX artifacts block TLC entry, and missing/unknown execution intent or missing TLC lineage blocks PQX execution (`AEX → TLC → TPA → PQX` only).
+- Repo-write lineage authenticity is issuer-scoped (AEX/TLC secrets per issuer), default secret fallback is forbidden, and PQX rejects stale/wrong-audience/replayed lineage tokens at the execution boundary.
 
 ## End-to-End Artifact Chain Extension
 

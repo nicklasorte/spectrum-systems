@@ -89,6 +89,7 @@ def _require_repo_write_admission(
             normalized_execution_request=normalized,
             tlc_handoff_record=tlc_handoff_record,
             expected_trace_id=expected_trace_id,
+            enforce_replay_protection=False,
         )
     except (RepoWriteLineageGuardError, Exception) as exc:
         raise TopLevelConductorError(f"repo_mutation_without_admission:{exc}") from exc

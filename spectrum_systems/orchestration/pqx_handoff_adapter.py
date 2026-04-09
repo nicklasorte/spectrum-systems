@@ -70,6 +70,8 @@ def _require_repo_write_admission_lineage(*, cycle_id: str, request: Dict[str, A
             normalized_execution_request=normalized,
             tlc_handoff_record=tlc_handoff_record,
             expected_trace_id=expected_trace,
+            enforce_replay_protection=False,
+            replay_context=cycle_id,
         )
     except (RepoWriteLineageGuardError, Exception) as exc:
         raise PQXHandoffError(

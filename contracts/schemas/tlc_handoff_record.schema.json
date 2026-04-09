@@ -168,6 +168,11 @@
         "issuer",
         "key_id",
         "payload_digest",
+        "audience",
+        "scope",
+        "issued_at",
+        "expires_at",
+        "lineage_token_id",
         "attestation"
       ],
       "properties": {
@@ -189,6 +194,26 @@
         "attestation": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
+        },
+        "audience": {
+          "type": "string",
+          "const": "pqx_repo_write_boundary"
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lineage_token_id": {
+          "type": "string",
+          "pattern": "^lin-[0-9a-f]{24}$"
         }
       }
     }

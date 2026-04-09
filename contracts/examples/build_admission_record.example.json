@@ -47,8 +47,13 @@
   },
   "authenticity": {
     "issuer": "AEX",
-    "key_id": "local-system-v1",
+    "key_id": "aex-hs256-v1",
     "payload_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "audience": "pqx_repo_write_boundary",
+    "scope": "repo_write_lineage:build_admission_record:req-001:trace-req-001",
+    "issued_at": "2026-04-08T00:00:00Z",
+    "expires_at": "2026-04-08T00:15:00Z",
+    "lineage_token_id": "lin-000000000000000000000000",
     "attestation": "0000000000000000000000000000000000000000000000000000000000000000"
   }
 }
