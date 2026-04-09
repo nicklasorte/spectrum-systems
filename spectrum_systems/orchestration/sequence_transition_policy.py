@@ -563,8 +563,34 @@ def _closure_decision_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
     if not str(provenance.get("decision_rules_version") or "").startswith("cde-"):
         return False, "promotion requires CDE closure_decision_artifact decision_rules_version"
     decision_type = str(payload.get("decision_type") or "")
-    if decision_type in {"blocked", "escalate"}:
-        return False, "promotion blocked: closure_decision_artifact decision_type is non-promotable"
+    if decision_type != "lock":
+        return False, "promotion blocked: closure_decision_artifact decision_type must be lock"
+    reason_codes = payload.get("decision_reason_codes")
+    if not isinstance(reason_codes, list):
+        return False, "promotion blocked: closure_decision_artifact decision_reason_codes is invalid"
+    blocked_reasons = {
+        "missing_eval_summary_ref",
+        "missing_required_eval_results",
+        "failed_required_eval_result",
+        "indeterminate_required_eval_result",
+        "missing_trace_artifact_refs",
+        "weak_trace_artifact_refs",
+        "missing_certification_ref",
+        "invalid_certification_status",
+        "missing_required_replay_consistency_ref",
+    }
+    reason_set = {str(item).strip() for item in reason_codes if isinstance(item, str)}
+    violating = sorted(reason_set & blocked_reasons)
+    if violating:
+        return False, "promotion blocked: closure_decision_artifact evidence completeness failed (" + ",".join(violating) + ")"
+    evidence_refs = payload.get("evidence_refs")
+    if not isinstance(evidence_refs, list) or not evidence_refs:
+        return False, "promotion blocked: closure_decision_artifact evidence_refs missing"
+    ref_values = {str(item).strip() for item in evidence_refs if isinstance(item, str) and str(item).strip()}
+    required_prefixes = ("eval_summary:", "eval_result:", "trace:", "certification:")
+    for prefix in required_prefixes:
+        if not any(value.startswith(prefix) for value in ref_values):
+            return False, f"promotion blocked: closure_decision_artifact missing governed evidence ref ({prefix})"
     return True, None
 
 def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) -> SequenceTransitionDecision:

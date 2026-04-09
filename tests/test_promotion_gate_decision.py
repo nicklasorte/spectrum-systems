@@ -49,7 +49,7 @@ def test_non_ready_state_cannot_promote(tmp_path: Path) -> None:
     assert gate["terminal_state"] == "escalated"
 
 
-def test_ready_for_merge_with_required_evidence_can_promote(tmp_path: Path) -> None:
+def test_ready_for_merge_terminal_state_still_blocks_without_complete_cde_evidence(tmp_path: Path) -> None:
     handoff = _build_handoff(tmp_path)
     result = run_github_closure_continuation(
         github_review_handoff_path=handoff,
@@ -64,6 +64,5 @@ def test_ready_for_merge_with_required_evidence_can_promote(tmp_path: Path) -> N
     )
     gate = json.loads(Path(result["artifact_paths"]["promotion_gate_decision_artifact"]).read_text(encoding="utf-8"))
     validate_artifact(gate, "promotion_gate_decision_artifact")
-    if gate["terminal_state"] == "ready_for_merge":
-        assert gate["promotion_allowed"] is True
-        assert gate["missing_requirements"] == []
+    assert gate["promotion_allowed"] is False
+    assert "non_promotable_cde_decision" in gate["missing_requirements"] or "cde_evidence_incomplete" in gate["missing_requirements"]

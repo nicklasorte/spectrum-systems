@@ -1,0 +1,48 @@
+{
+  "artifact_type": "closure_decision_artifact",
+  "artifact_class": "coordination",
+  "schema_version": "1.0.0",
+  "closure_decision_id": "cda-1111111111111111",
+  "subject_scope": "runtime_control_loop",
+  "subsystem_acronym": "RCL",
+  "run_id": "run-2026-04-09-001",
+  "review_date": "2026-04-09",
+  "action_tracker_ref": "review_action_tracker_artifact:rat-1111111111111111",
+  "decision_type": "lock",
+  "decision_reason_codes": [
+    "final_verification_passed"
+  ],
+  "blocker_count": 0,
+  "critical_count": 0,
+  "high_priority_count": 0,
+  "medium_priority_count": 0,
+  "unresolved_action_item_ids": [],
+  "lock_status": "locked",
+  "next_step_class": "none",
+  "next_step_ref": null,
+  "bounded_next_step_available": false,
+  "evidence_refs": [
+    "review_projection_bundle_artifact:rpb-1111111111111111",
+    "eval_summary:es-1111111111111111",
+    "eval_result:eval-a",
+    "trace:trace-seq",
+    "certification:cert-1111111111111111"
+  ],
+  "source_artifact_refs": [
+    "review_projection_bundle_artifact:rpb-1111111111111111"
+  ],
+  "final_summary": "Closure decision 'lock' for scope 'runtime_control_loop' based on blockers=0, critical=0, high=0, unresolved_actions=0.",
+  "emitted_at": "2026-04-09T00:00:00Z",
+  "trace_id": "trace-seq",
+  "provenance": {
+    "engine": "closure_decision_engine",
+    "decision_rules_version": "cde-001-v1",
+    "deterministic_hash_basis": "canonical-json-sha256",
+    "source_artifact_types": [
+      "review_projection_bundle_artifact"
+    ],
+    "source_artifact_refs": [
+      "review_projection_bundle_artifact:rpb-1111111111111111"
+    ]
+  }
+}

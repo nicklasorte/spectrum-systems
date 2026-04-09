@@ -36,7 +36,7 @@ def _base_manifest(state: str) -> dict:
             "eval_coverage_summary_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json"),
             "certification_pack_ref": str(_REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"),
             "review_control_signal_ref": str(_REPO_ROOT / "contracts" / "examples" / "review_control_signal.json"),
-            "closure_decision_artifact_ref": str(_REPO_ROOT / "contracts" / "examples" / "closure_decision_artifact.json"),
+            "closure_decision_artifact_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "closure_decision_lock.json"),
             "ril_output_artifact_ref": str(_REPO_ROOT / "contracts" / "examples" / "review_integration_packet_artifact.json"),
             "trust_spine_evidence_cohesion_result_ref": str(_REPO_ROOT / "contracts" / "examples" / "trust_spine_evidence_cohesion_result.json"),
         },
@@ -110,6 +110,33 @@ def test_promotion_blocks_when_closure_decision_artifact_missing() -> None:
     assert "closure_decision_artifact" in str(decision.reason)
 
 
+def test_promotion_blocks_when_closure_decision_not_lock(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    closure = json.loads(Path(manifest["done_certification_input_refs"]["closure_decision_artifact_ref"]).read_text(encoding="utf-8"))
+    closure["decision_type"] = "continue_bounded"
+    closure["next_step_class"] = "bounded_continue"
+    closure["next_step_ref"] = "bounded_continue:seq"
+    closure["bounded_next_step_available"] = True
+    path = tmp_path / "closure_non_lock.json"
+    path.write_text(json.dumps(closure), encoding="utf-8")
+    manifest["done_certification_input_refs"]["closure_decision_artifact_ref"] = str(path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "must be lock" in str(decision.reason)
+
+
+def test_promotion_blocks_when_closure_decision_evidence_incomplete(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    closure = json.loads(Path(manifest["done_certification_input_refs"]["closure_decision_artifact_ref"]).read_text(encoding="utf-8"))
+    closure["decision_reason_codes"] = ["missing_eval_summary_ref"]
+    path = tmp_path / "closure_incomplete_evidence.json"
+    path.write_text(json.dumps(closure), encoding="utf-8")
+    manifest["done_certification_input_refs"]["closure_decision_artifact_ref"] = str(path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "evidence completeness failed" in str(decision.reason)
+
+
 def test_promotion_blocks_when_required_judgment_artifact_missing() -> None:
     manifest = _base_manifest("certification_pending")
     manifest["judgment_eval_result_path"] = ""
@@ -140,7 +167,7 @@ def test_promotion_requires_replay_authority_refs_even_when_falsification_ref_ca
     manifest["hard_gate_falsification_record_path"] = ""
     manifest["done_certification_input_refs"] = {
         "certification_pack_ref": str(cert_pack_path),
-        "closure_decision_artifact_ref": str(_REPO_ROOT / "contracts" / "examples" / "closure_decision_artifact.json"),
+        "closure_decision_artifact_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "closure_decision_lock.json"),
     }
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False

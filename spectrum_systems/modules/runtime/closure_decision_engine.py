@@ -44,6 +44,19 @@ _NEXT_STEP_CLASS_BY_DECISION = {
     "escalate": "escalation",
 }
 
+_PROMOTABLE_DECISION_TYPE = "lock"
+_EVIDENCE_INCOMPLETE_REASON_CODES = {
+    "missing_eval_summary_ref",
+    "missing_required_eval_results",
+    "failed_required_eval_result",
+    "indeterminate_required_eval_result",
+    "missing_trace_artifact_refs",
+    "weak_trace_artifact_refs",
+    "missing_certification_ref",
+    "invalid_certification_status",
+    "missing_required_replay_consistency_ref",
+}
+
 
 class ClosureDecisionEngineError(ValueError):
     """Raised when closure decisioning cannot proceed deterministically."""
@@ -171,6 +184,79 @@ def _validate_sources(source_artifacts: Any) -> list[dict[str, Any]]:
     return typed_sources
 
 
+def _nonempty_string_set(values: Any) -> set[str]:
+    if not isinstance(values, list):
+        return set()
+    normalized: set[str] = set()
+    for value in values:
+        if isinstance(value, str) and value.strip():
+            normalized.add(value.strip())
+    return normalized
+
+
+def _validate_promotable_evidence(request: dict[str, Any], *, trace_id: str) -> tuple[bool, list[str], list[str]]:
+    """Validate governed evidence required before CDE can emit promotable outcome."""
+    reason_codes: set[str] = set()
+
+    eval_summary_ref = request.get("eval_summary_ref")
+    if not isinstance(eval_summary_ref, str) or not eval_summary_ref.strip():
+        reason_codes.add("missing_eval_summary_ref")
+
+    required_eval_ids = _nonempty_string_set(request.get("required_eval_ids"))
+    completeness_rollup = request.get("required_eval_completeness_rollup")
+    rollup_complete = isinstance(completeness_rollup, dict) and completeness_rollup.get("complete") is True
+    if not required_eval_ids and not rollup_complete:
+        reason_codes.add("missing_required_eval_results")
+    required_eval_results = request.get("required_eval_results")
+    provided_eval_ids: set[str] = set()
+    if isinstance(required_eval_results, list):
+        for item in required_eval_results:
+            if not isinstance(item, dict):
+                continue
+            eval_id = str(item.get("eval_id") or "").strip()
+            if not eval_id:
+                continue
+            provided_eval_ids.add(eval_id)
+            if eval_id not in required_eval_ids:
+                continue
+            status = str(item.get("status") or "").strip().lower()
+            if status in {"fail", "failed", "error"}:
+                reason_codes.add("failed_required_eval_result")
+            elif status not in {"pass", "passed", "success"}:
+                reason_codes.add("indeterminate_required_eval_result")
+
+    missing_eval_ids = sorted(required_eval_ids - provided_eval_ids)
+    if missing_eval_ids:
+        reason_codes.add("missing_required_eval_results")
+
+    trace_artifact_refs = _nonempty_string_set(request.get("trace_artifact_refs"))
+    if not trace_artifact_refs:
+        reason_codes.add("missing_trace_artifact_refs")
+    elif any(token in ref.lower() for ref in trace_artifact_refs for token in {"not_provided", "placeholder", "sentinel"}):
+        reason_codes.add("weak_trace_artifact_refs")
+
+    trace_values = _nonempty_string_set(request.get("trace_ids"))
+    if trace_values and trace_id not in trace_values:
+        reason_codes.add("weak_trace_artifact_refs")
+
+    certification_required = request.get("certification_required_for_promotion") is True
+    if certification_required:
+        certification_ref = request.get("certification_ref")
+        if not isinstance(certification_ref, str) or not certification_ref.strip():
+            reason_codes.add("missing_certification_ref")
+        certification_status = str(request.get("certification_status") or "").strip().lower()
+        if certification_status not in {"pass", "passed", "certified", "complete"}:
+            reason_codes.add("invalid_certification_status")
+
+    replay_required_refs = _nonempty_string_set(request.get("required_replay_consistency_refs"))
+    replay_provided_refs = _nonempty_string_set(request.get("replay_consistency_refs"))
+    if replay_required_refs and not replay_required_refs.issubset(replay_provided_refs):
+        reason_codes.add("missing_required_replay_consistency_ref")
+
+    complete = not reason_codes
+    return complete, sorted(reason_codes), missing_eval_ids
+
+
 def _determine_decision(
     *,
     counts: dict[str, Any],
@@ -246,6 +332,14 @@ def build_closure_decision_artifact(request: dict[str, Any]) -> dict[str, Any]:
         repair_loop_eligible=repair_loop_eligible,
     )
 
+    evidence_complete, evidence_reason_codes, missing_eval_ids = _validate_promotable_evidence(request, trace_id=trace_id)
+    if missing_eval_ids:
+        decision_reason_codes = sorted(set(decision_reason_codes) | {"missing_required_eval_results"})
+
+    if decision_type == _PROMOTABLE_DECISION_TYPE and not evidence_complete:
+        decision_type = "blocked"
+        decision_reason_codes = sorted(set(decision_reason_codes) | set(evidence_reason_codes))
+
     if decision_type not in _DECISION_TYPES:
         raise ClosureDecisionEngineError(f"unsupported decision type derived: {decision_type}")
 
@@ -281,6 +375,26 @@ def build_closure_decision_artifact(request: dict[str, Any]) -> dict[str, Any]:
         "trace_id": trace_id,
     }
 
+    evidence_refs = set(counts["evidence_refs"])
+    for key in ("eval_summary_ref", "certification_ref"):
+        value = request.get(key)
+        if isinstance(value, str) and value.strip():
+            evidence_refs.add(value.strip())
+    for key in ("trace_artifact_refs", "replay_consistency_refs"):
+        for value in _nonempty_string_set(request.get(key)):
+            evidence_refs.add(value)
+    required_eval_results = request.get("required_eval_results")
+    if isinstance(required_eval_results, list):
+        for item in required_eval_results:
+            if not isinstance(item, dict):
+                continue
+            eval_ref = item.get("eval_result_ref")
+            eval_id = item.get("eval_id")
+            if isinstance(eval_ref, str) and eval_ref.strip():
+                evidence_refs.add(eval_ref.strip())
+            elif isinstance(eval_id, str) and eval_id.strip():
+                evidence_refs.add(f"eval_result:{eval_id.strip()}")
+
     artifact = {
         "artifact_type": "closure_decision_artifact",
         "artifact_class": "coordination",
@@ -306,7 +420,7 @@ def build_closure_decision_artifact(request: dict[str, Any]) -> dict[str, Any]:
         "next_step_class": next_step_class,
         "next_step_ref": next_step_ref,
         "bounded_next_step_available": bool(next_step_ref),
-        "evidence_refs": counts["evidence_refs"],
+        "evidence_refs": sorted(evidence_refs),
         "source_artifact_refs": source_artifact_refs,
         "final_summary": (
             f"Closure decision '{decision_type}' for scope '{subject_scope}' based on "
@@ -323,6 +437,10 @@ def build_closure_decision_artifact(request: dict[str, Any]) -> dict[str, Any]:
             "source_artifact_refs": source_artifact_refs,
         },
     }
+
+    # Additional request diagnostics are folded into final summary without contract expansion.
+    if any(code in _EVIDENCE_INCOMPLETE_REASON_CODES for code in decision_reason_codes):
+        artifact["final_summary"] += " Promotion-capable closure blocked due to incomplete governed evidence."
 
     _validate_schema(artifact, "closure_decision_artifact", label="closure_decision_artifact")
     return artifact

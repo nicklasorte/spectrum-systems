@@ -40,6 +40,18 @@ def _base_request(**overrides):
         "hardening_completed": False,
         "bounded_next_step_available": False,
         "next_step_ref": None,
+        "eval_summary_ref": "eval_summary:es-001",
+        "required_eval_ids": ["eval-a", "eval-b"],
+        "required_eval_results": [
+            {"eval_id": "eval-a", "status": "pass", "eval_result_ref": "eval_result:eval-a"},
+            {"eval_id": "eval-b", "status": "pass", "eval_result_ref": "eval_result:eval-b"},
+        ],
+        "trace_artifact_refs": ["trace:trace-cde-test-001", "review_signal_artifact:rsa-0001"],
+        "trace_ids": [TRACE_ID],
+        "certification_required_for_promotion": True,
+        "certification_ref": "certification:cert-001",
+        "certification_status": "passed",
+        "replay_consistency_refs": ["promotion_consistency_record:pcr-001"],
     }
     base.update(overrides)
     return base
@@ -168,11 +180,12 @@ def test_traceability_refs_propagate_to_decision_artifact():
         ]
     )
     artifact = build_closure_decision_artifact(request)
-    assert artifact["evidence_refs"] == [
+    assert "review_projection_bundle_artifact:rpb-feedfeedfeedfeed" in artifact["evidence_refs"]
+    assert "review_signal_artifact:rsa-0000000000000000" in artifact["evidence_refs"]
+    assert artifact["source_artifact_refs"] == [
         "review_projection_bundle_artifact:rpb-feedfeedfeedfeed",
         "review_signal_artifact:rsa-0000000000000000",
     ]
-    assert artifact["source_artifact_refs"] == artifact["evidence_refs"]
 
 
 def test_optional_next_step_prompt_generation_correctness():
@@ -215,3 +228,77 @@ def test_unsupported_source_artifact_fails_closed():
                 ]
             )
         )
+
+
+def test_missing_eval_summary_blocks_promotable_lock() -> None:
+    artifact = build_closure_decision_artifact(
+        _base_request(
+            closure_complete=True,
+            final_verification_passed=True,
+            eval_summary_ref=None,
+        )
+    )
+    assert artifact["decision_type"] == "blocked"
+    assert "missing_eval_summary_ref" in artifact["decision_reason_codes"]
+
+
+def test_missing_required_eval_result_blocks_promotable_lock() -> None:
+    artifact = build_closure_decision_artifact(
+        _base_request(
+            closure_complete=True,
+            final_verification_passed=True,
+            required_eval_results=[{"eval_id": "eval-a", "status": "pass"}],
+        )
+    )
+    assert artifact["decision_type"] == "blocked"
+    assert "missing_required_eval_results" in artifact["decision_reason_codes"]
+
+
+def test_failed_or_indeterminate_required_eval_blocks_promotable_lock() -> None:
+    failed = build_closure_decision_artifact(
+        _base_request(
+            closure_complete=True,
+            final_verification_passed=True,
+            required_eval_results=[
+                {"eval_id": "eval-a", "status": "pass"},
+                {"eval_id": "eval-b", "status": "fail"},
+            ],
+        )
+    )
+    assert failed["decision_type"] == "blocked"
+    assert "failed_required_eval_result" in failed["decision_reason_codes"]
+
+    indeterminate = build_closure_decision_artifact(
+        _base_request(
+            closure_complete=True,
+            final_verification_passed=True,
+            required_eval_results=[
+                {"eval_id": "eval-a", "status": "pass"},
+                {"eval_id": "eval-b", "status": "indeterminate"},
+            ],
+        )
+    )
+    assert indeterminate["decision_type"] == "blocked"
+    assert "indeterminate_required_eval_result" in indeterminate["decision_reason_codes"]
+
+
+def test_missing_trace_or_certification_blocks_promotable_lock() -> None:
+    missing_trace = build_closure_decision_artifact(
+        _base_request(
+            closure_complete=True,
+            final_verification_passed=True,
+            trace_artifact_refs=[],
+        )
+    )
+    assert missing_trace["decision_type"] == "blocked"
+    assert "missing_trace_artifact_refs" in missing_trace["decision_reason_codes"]
+
+    missing_cert = build_closure_decision_artifact(
+        _base_request(
+            closure_complete=True,
+            final_verification_passed=True,
+            certification_ref=None,
+        )
+    )
+    assert missing_cert["decision_type"] == "blocked"
+    assert "missing_certification_ref" in missing_cert["decision_reason_codes"]

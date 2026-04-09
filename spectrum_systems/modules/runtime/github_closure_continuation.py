@@ -87,6 +87,17 @@ _TERMINAL_STATE_POLICY = {
         "cde_decision_path": "escalate",
     },
 }
+_CDE_EVIDENCE_BLOCK_REASONS = {
+    "missing_eval_summary_ref",
+    "missing_required_eval_results",
+    "failed_required_eval_result",
+    "indeterminate_required_eval_result",
+    "missing_trace_artifact_refs",
+    "weak_trace_artifact_refs",
+    "missing_certification_ref",
+    "invalid_certification_status",
+    "missing_required_replay_consistency_ref",
+}
 
 
 class GithubClosureContinuationError(ValueError):
@@ -180,6 +191,30 @@ def _build_promotion_gate_decision_artifact(
         supporting_refs.append(tlc_ref)
     else:
         missing_requirements.append("top_level_conductor_run_artifact")
+
+    closure_decision_type = str(closure_decision_artifact.get("decision_type") or "")
+    closure_reason_codes = closure_decision_artifact.get("decision_reason_codes")
+    evidence_refs = closure_decision_artifact.get("evidence_refs")
+    if closure_decision_type != "lock":
+        missing_requirements.append("non_promotable_cde_decision")
+    if not isinstance(closure_reason_codes, list):
+        missing_requirements.append("invalid_cde_reason_codes")
+    else:
+        reason_set = {str(item).strip() for item in closure_reason_codes if isinstance(item, str)}
+        if reason_set & _CDE_EVIDENCE_BLOCK_REASONS:
+            missing_requirements.append("cde_evidence_incomplete")
+    if not isinstance(evidence_refs, list) or not evidence_refs:
+        missing_requirements.append("cde_evidence_refs_missing")
+    else:
+        normalized_refs = {str(item).strip() for item in evidence_refs if isinstance(item, str) and item.strip()}
+        for prefix, requirement in (
+            ("eval_summary:", "missing_eval_summary_evidence_ref"),
+            ("eval_result:", "missing_required_eval_evidence_ref"),
+            ("trace:", "missing_trace_evidence_ref"),
+            ("certification:", "missing_certification_evidence_ref"),
+        ):
+            if not any(ref.startswith(prefix) for ref in normalized_refs):
+                missing_requirements.append(requirement)
 
     repair_ref: str | None = None
     certification_ref: str | None = None
@@ -421,6 +456,18 @@ def _load_ingestion_bundle(github_review_handoff_path: Path) -> ContinuationInpu
 def _build_cde_source_artifacts(bundle: ContinuationInputBundle) -> list[dict[str, Any]]:
     return [
         {
+            "artifact_type": "review_signal_artifact",
+            "review_signal_artifact_id": bundle.review_signal["review_signal_id"],
+            "artifact_ref": f"review_signal_artifact:{bundle.review_signal['review_signal_id']}",
+            "blocker_count": int(bundle.review_signal.get("blocker_count", 0) or 0),
+            "critical_count": int(bundle.review_signal.get("critical_count", 0) or 0),
+            "high_priority_count": int(bundle.review_signal.get("high_priority_count", 0) or 0),
+            "medium_priority_count": int(bundle.review_signal.get("medium_priority_count", 0) or 0),
+            "unresolved_action_item_ids": list(bundle.review_signal.get("unresolved_action_item_ids", [])),
+            "blocker_present": bool(bundle.review_signal.get("blocker_present", False)),
+            "escalation_present": bool(bundle.review_signal.get("escalation_present", False)),
+        },
+        {
             "artifact_type": "review_projection_bundle_artifact",
             "review_projection_bundle_id": bundle.projection_bundle["review_projection_bundle_id"],
             "artifact_ref": f"review_projection_bundle_artifact:{bundle.projection_bundle['review_projection_bundle_id']}",
@@ -445,6 +492,62 @@ def _build_cde_source_artifacts(bundle: ContinuationInputBundle) -> list[dict[st
             "escalation_present": bool(bundle.consumer_bundle.get("escalation_present", False)),
         },
     ]
+
+
+def _extract_cde_evidence_inputs(bundle: ContinuationInputBundle, *, trace_id: str) -> dict[str, Any]:
+    optional = bundle.optional_artifacts
+    eval_summary = optional.get("eval_summary")
+    required_evals = optional.get("required_eval_result_set")
+    certification = optional.get("done_certification_record")
+    replay_consistency = optional.get("promotion_consistency_record")
+
+    required_eval_ids = []
+    required_eval_results = []
+    if isinstance(required_evals, dict):
+        for entry in required_evals.get("required_eval_results", []):
+            if not isinstance(entry, dict):
+                continue
+            eval_id = str(entry.get("eval_id") or "").strip()
+            if not eval_id:
+                continue
+            required_eval_ids.append(eval_id)
+            required_eval_results.append(
+                {
+                    "eval_id": eval_id,
+                    "status": str(entry.get("status") or "").strip().lower(),
+                    "indeterminate_policy": entry.get("indeterminate_policy"),
+                }
+            )
+
+    eval_summary_ref = None
+    if isinstance(eval_summary, dict) and isinstance(eval_summary.get("eval_summary_id"), str):
+        eval_summary_ref = f"eval_summary:{eval_summary['eval_summary_id']}"
+    certification_ref = None
+    certification_status = None
+    if isinstance(certification, dict):
+        cert_id = certification.get("certification_id") or certification.get("record_id") or certification.get("done_certification_id")
+        if isinstance(cert_id, str) and cert_id.strip():
+            certification_ref = f"certification:{cert_id.strip()}"
+        certification_status = certification.get("certification_status") or certification.get("status")
+
+    replay_refs = []
+    if isinstance(replay_consistency, dict):
+        replay_id = replay_consistency.get("record_id") or replay_consistency.get("promotion_consistency_id")
+        if isinstance(replay_id, str) and replay_id.strip():
+            replay_refs.append(f"promotion_consistency_record:{replay_id.strip()}")
+
+    return {
+        "eval_summary_ref": eval_summary_ref,
+        "required_eval_ids": required_eval_ids,
+        "required_eval_results": required_eval_results,
+        "trace_artifact_refs": [f"trace:{trace_id}"],
+        "trace_ids": [trace_id],
+        "certification_required_for_promotion": True,
+        "certification_ref": certification_ref,
+        "certification_status": certification_status,
+        "required_replay_consistency_refs": [],
+        "replay_consistency_refs": replay_refs,
+    }
 
 
 def _build_continuation_paths(*, output_root: Path, pr_number: int, continuation_id: str) -> ContinuationArtifacts:
@@ -600,6 +703,7 @@ def run_github_closure_continuation(
         "emitted_at": emitted_at,
         "trace_id": f"trace-{continuation_id}",
     }
+    cde_request.update(_extract_cde_evidence_inputs(bundle, trace_id=cde_request["trace_id"]))
 
     decision_artifact = build_closure_decision_artifact(cde_request)
     validate_artifact(decision_artifact, "closure_decision_artifact")
