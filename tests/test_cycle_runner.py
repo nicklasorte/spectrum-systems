@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from spectrum_systems.orchestration import cycle_runner
+from spectrum_systems.orchestration import pqx_handoff_adapter
 from spectrum_systems.modules.runtime.judgment_engine import retrieve_precedents, run_judgment, select_policy
 
 
@@ -435,6 +436,63 @@ def test_cycle_runner_repo_write_request_succeeds_with_valid_admission_lineage(t
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "ok"
     assert result["next_state"] == "execution_complete_unreviewed"
+
+
+def test_fix_reentry_repo_write_fails_without_admission_lineage(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="implementation_reviews_complete", repo_mutation_requested=True)
+    _seed_implementation_reviews(manifest, tmp_path)
+    _write(manifest_path, manifest)
+
+    fix_roadmap_result = cycle_runner.run_cycle(manifest_path)
+    assert fix_roadmap_result["next_state"] == "fix_roadmap_ready"
+
+    after_fix_roadmap = _load(manifest_path)
+    base_request_path = Path(after_fix_roadmap["pqx_execution_request_path"])
+    base_request = _load(base_request_path)
+    base_request.pop("build_admission_record", None)
+    base_request.pop("normalized_execution_request", None)
+    base_request.pop("tlc_handoff_record", None)
+    _write(base_request_path, base_request)
+
+    reentry_result = cycle_runner.run_cycle(manifest_path)
+    assert reentry_result["status"] == "blocked"
+    assert "repo-write handoff rejected" in " ".join(reentry_result["blocking_issues"])
+
+
+def test_fix_reentry_repo_write_succeeds_with_admission_lineage(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="implementation_reviews_complete", repo_mutation_requested=True)
+    _seed_implementation_reviews(manifest, tmp_path)
+    _write(manifest_path, manifest)
+
+    fix_roadmap_result = cycle_runner.run_cycle(manifest_path)
+    assert fix_roadmap_result["next_state"] == "fix_roadmap_ready"
+
+    reentry_result = cycle_runner.run_cycle(manifest_path)
+    assert reentry_result["status"] == "ok"
+    assert reentry_result["next_state"] == "fixes_in_progress"
+
+    after_reentry = _load(manifest_path)
+    assert after_reentry["fix_execution_report_paths"]
+
+
+def test_handoff_adapter_unknown_mutation_intent_fails_closed(tmp_path: Path) -> None:
+    request_path = tmp_path / "request.json"
+    _write(
+        request_path,
+        {
+            "step_id": "AI-01",
+            "roadmap_path": "docs/roadmap/system_roadmap.md",
+            "state_path": str(tmp_path / "pqx_state.json"),
+            "runs_root": str(tmp_path / "runs"),
+            "pqx_output_text": "deterministic pqx output",
+        },
+    )
+    with pytest.raises(pqx_handoff_adapter.PQXHandoffError, match="repo_mutation_intent_unknown"):
+        pqx_handoff_adapter.handoff_to_pqx(
+            cycle_id="cycle-test",
+            request_path=request_path,
+            reports_root=tmp_path / "reports",
+        )
 
 
 def test_cycle_runner_blocks_when_required_review_missing(tmp_path: Path) -> None:
