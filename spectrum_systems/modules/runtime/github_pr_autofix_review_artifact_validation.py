@@ -129,6 +129,7 @@ def _build_tpa_gate_artifact(*, request_id: str, trace_id: str, emitted_at: str)
         "artifact_type": "tpa_slice_artifact",
         "schema_version": "1.3.0",
         "artifact_id": f"tpa:{request_id}:AI-01-G",
+        "request_id": request_id,
         "run_id": f"autofix-{request_id}",
         "trace_id": trace_id,
         "slice_id": "AI-01-G",
