@@ -223,6 +223,24 @@ def test_run_pqx_slice_valid_run_emits_required_artifacts(tmp_path: Path) -> Non
     )
 
 
+def test_pqx_execution_triggers_rqx_review(tmp_path: Path) -> None:
+    state_path = tmp_path / "pqx_state.json"
+    state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
+    result = run_pqx_slice(
+        step_id="AI-01",
+        roadmap_path=Path("docs/roadmap/system_roadmap.md"),
+        state_path=state_path,
+        runs_root=tmp_path / "runs",
+        pqx_output_text="deterministic output",
+        clock=FixedClock(),
+    )
+    assert result["status"] == "complete"
+    request = result["review_request_artifact"]
+    assert request["artifact_type"] == "review_request_artifact"
+    assert Path(result["review_request_artifact_path"]).exists()
+    assert Path(result["rqx_review_result_artifact_path"]).exists()
+
+
 def test_run_pqx_slice_invalid_step_blocks_entrypoint(tmp_path: Path) -> None:
     result = run_pqx_slice(
         step_id="NOT-A-ROW",

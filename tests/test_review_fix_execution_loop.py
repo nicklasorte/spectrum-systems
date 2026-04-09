@@ -113,6 +113,61 @@ def test_tpa_missing_or_malformed_fails_closed(tmp_path: Path) -> None:
         )
 
 
+def test_rqx_never_calls_pqx_directly(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _prepare_post_fix_review_inputs(repo_root)
+    request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
+    request["tpa_slice_artifact"]["artifact"]["promotion_ready"] = False
+    called = False
+
+    def _pqx_executor(_: dict) -> dict:
+        nonlocal called
+        called = True
+        return {"status": "complete"}
+
+    result = run_review_fix_execution_cycle(
+        request,
+        output_dir=repo_root / "artifacts/reviews",
+        repo_root=repo_root,
+        review_docs_dir=repo_root / "docs/reviews",
+        pqx_executor=_pqx_executor,
+    )
+    assert called is False
+    assert result["review_fix_execution_result_artifact"]["status"] == "blocked_by_tpa"
+
+
+def test_pqx_rejects_non_tpa_fix_execution(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _prepare_post_fix_review_inputs(repo_root)
+    request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
+    request["tpa_slice_artifact"]["artifact"]["review_signal_refs"] = []
+
+    with pytest.raises(ReviewFixExecutionLoopError, match="tpa gate must bind"):
+        run_review_fix_execution_cycle(
+            request,
+            output_dir=repo_root / "artifacts/reviews",
+            repo_root=repo_root,
+            review_docs_dir=repo_root / "docs/reviews",
+            pqx_executor=lambda _: {"status": "complete"},
+        )
+
+
+def test_rqx_routes_fix_slice_to_tpa(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _prepare_post_fix_review_inputs(repo_root)
+    request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
+    request["fix_slices"][0]["review_result_ref"] = "review_result_artifact:different-review"
+
+    with pytest.raises(ReviewFixExecutionLoopError, match="must match source_review_result_ref"):
+        run_review_fix_execution_cycle(
+            request,
+            output_dir=repo_root / "artifacts/reviews",
+            repo_root=repo_root,
+            review_docs_dir=repo_root / "docs/reviews",
+            pqx_executor=lambda _: {"status": "complete"},
+        )
+
+
 def test_raw_prompt_bypass_is_rejected(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     _prepare_post_fix_review_inputs(repo_root)

@@ -50,6 +50,7 @@ from spectrum_systems.modules.runtime.pqx_slice_runner import (
 )
 from spectrum_systems.modules.runtime.pqx_judgment import build_pqx_judgment_record
 from spectrum_systems.modules.prompt_queue.queue_models import iso_now, utc_now
+from spectrum_systems.modules.review_queue_executor import run_review_queue_executor
 
 
 BUNDLE_PLAN_PATH = REPO_ROOT / "docs" / "roadmaps" / "execution_bundles.md"
@@ -479,6 +480,44 @@ def _load_json_artifact_refs(*, refs: list[str], repo_root: Path) -> list[dict]:
     return artifacts
 
 
+def _emit_bundle_post_execution_review(
+    *,
+    bundle_id: str,
+    run_id: str,
+    record_ref: str,
+    output_refs: list[str],
+    output_root: Path,
+    now: str,
+) -> dict[str, str]:
+    review_request = {
+        "artifact_type": "review_request_artifact",
+        "artifact_version": "1.0.0",
+        "schema_version": "1.0.0",
+        "standards_version": "1.0.0",
+        "review_id": f"rqx:{run_id}:{bundle_id}",
+        "review_name": f"rqx_review_{run_id}_{bundle_id}".lower().replace(":", "_").replace("-", "_"),
+        "review_type": "architecture_boundary_review",
+        "scope": f"PQX bundle execution review for {bundle_id}",
+        "run_id": run_id,
+        "changed_files": output_refs if output_refs else [record_ref],
+        "produced_artifact_refs": [record_ref],
+        "validation_result_refs": output_refs if output_refs else [record_ref],
+        "requested_at": now,
+    }
+    review_request_path = output_root / f"{bundle_id}.review_request_artifact.json"
+    review_request_path.write_text(json.dumps(review_request, indent=2) + "\n", encoding="utf-8")
+    review_result = run_review_queue_executor(
+        review_request,
+        repo_root=REPO_ROOT,
+        output_dir=output_root / "reviews",
+        review_docs_dir=output_root / "reviews" / "docs",
+    )
+    return {
+        "review_request_artifact": _relative(review_request_path),
+        "review_result_artifact": _relative(Path(review_result["review_result_artifact_path"])),
+    }
+
+
 def execute_bundle_run(
     *,
     bundle_id: str,
@@ -722,6 +761,14 @@ def execute_bundle_run(
 
     record_path = output_root / f"{bundle_id}.bundle_execution_record.json"
     record_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+    bundle_review_refs = _emit_bundle_post_execution_review(
+        bundle_id=bundle_id,
+        run_id=run_id,
+        record_ref=_relative(record_path),
+        output_refs=list(record["output_artifact_refs"]),
+        output_root=output_root,
+        now=iso_now(clock),
+    )
     judgment_refs: list[str] = []
     if status == "blocked":
         judgment = build_pqx_judgment_record(
@@ -806,4 +853,6 @@ def execute_bundle_run(
         "bundle_state": _relative(state_path),
         "triage_plan_record": triage_plan_record_ref,
         "judgment_record_refs": judgment_refs,
+        "review_request_artifact": bundle_review_refs["review_request_artifact"],
+        "review_result_artifact": bundle_review_refs["review_result_artifact"],
     }
