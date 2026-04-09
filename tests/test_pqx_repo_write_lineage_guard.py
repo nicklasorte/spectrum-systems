@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import json
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,7 @@ from spectrum_systems.modules.runtime.repo_write_lineage_guard import (
     reset_repo_write_lineage_replay_state,
     validate_repo_write_lineage,
 )
+from spectrum_systems.modules.runtime.lineage_issuance_registry import _ISSUANCE_REGISTRY_PATH
 from tests.helpers_repo_write_lineage import build_valid_repo_write_lineage
 
 
@@ -273,10 +275,70 @@ def test_repo_write_lineage_accepts_valid_fresh_authentic_lineage() -> None:
     assert validated["request_id"] == "req-1"
 
 
+def test_repo_write_lineage_rejects_valid_signature_without_registry_issuance() -> None:
+    lineage = _lineage()
+    if _ISSUANCE_REGISTRY_PATH.exists():
+        _ISSUANCE_REGISTRY_PATH.unlink()
+    with pytest.raises(RepoWriteLineageGuardError, match="lineage_issuance_missing"):
+        validate_repo_write_lineage(
+            build_admission_record=lineage["build_admission_record"],
+            normalized_execution_request=lineage["normalized_execution_request"],
+            tlc_handoff_record=lineage["tlc_handoff_record"],
+            expected_trace_id="trace-repo-write",
+        )
+
+
+def test_repo_write_lineage_accepts_valid_signature_with_registry_issuance() -> None:
+    lineage = _lineage()
+    validated = validate_repo_write_lineage(
+        build_admission_record=lineage["build_admission_record"],
+        normalized_execution_request=lineage["normalized_execution_request"],
+        tlc_handoff_record=lineage["tlc_handoff_record"],
+        expected_trace_id="trace-repo-write",
+    )
+    assert validated["request_id"] == "req-1"
+
+
+def test_repo_write_lineage_rejects_forged_registry_mismatch() -> None:
+    lineage = _lineage()
+    payload = json.loads(_ISSUANCE_REGISTRY_PATH.read_text(encoding="utf-8"))
+    records = payload["issuance_records"]
+    admission_ref = f"build_admission_record:{lineage['build_admission_record']['admission_id']}"
+    for record in records:
+        if record.get("artifact_type") == "build_admission_record" and record.get("artifact_id") == admission_ref.split(":")[1]:
+            record["key_id"] = "forged-key-id"
+            break
+    _ISSUANCE_REGISTRY_PATH.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    with pytest.raises(RepoWriteLineageGuardError, match="lineage_issuance_mismatch:key_id"):
+        validate_repo_write_lineage(
+            build_admission_record=lineage["build_admission_record"],
+            normalized_execution_request=lineage["normalized_execution_request"],
+            tlc_handoff_record=lineage["tlc_handoff_record"],
+            expected_trace_id="trace-repo-write",
+        )
+
+
 def test_pqx_boundary_rejects_repo_write_with_forged_lineage(tmp_path: Path) -> None:
     lineage = _lineage()
     lineage["build_admission_record"]["authenticity"]["scope"] = "repo_write_lineage:build_admission_record:req-1:forged"
     with pytest.raises(PQXSequenceRunnerError, match="direct_pqx_repo_write_forbidden"):
+        execute_sequence_run(
+            slice_requests=_slice_requests(),
+            state_path=tmp_path / "state.json",
+            queue_run_id="queue-1",
+            run_id="run-1",
+            trace_id="trace-repo-write",
+            max_slices=1,
+            execution_class="repo_write",
+            repo_write_lineage=lineage,
+        )
+
+
+def test_run_pqx_slice_rejects_forged_lineage_even_if_signature_is_valid(tmp_path: Path) -> None:
+    lineage = _lineage()
+    if _ISSUANCE_REGISTRY_PATH.exists():
+        _ISSUANCE_REGISTRY_PATH.unlink()
+    with pytest.raises(PQXSequenceRunnerError, match="direct_pqx_repo_write_forbidden:repo_write_lineage_rejected:lineage_issuance_missing"):
         execute_sequence_run(
             slice_requests=_slice_requests(),
             state_path=tmp_path / "state.json",

@@ -10,6 +10,10 @@ from typing import Any
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.pqx_backbone import REPO_ROOT
 from spectrum_systems.modules.runtime.lineage_authenticity import LineageAuthenticityError, verify_authenticity
+from spectrum_systems.modules.runtime.lineage_issuance_registry import (
+    LineageIssuanceRegistryError,
+    verify_authoritative_lineage_issuance,
+)
 
 
 class RepoWriteLineageGuardError(ValueError):
@@ -111,6 +115,27 @@ def validate_repo_write_lineage(
         normalized_auth = verify_authenticity(artifact=normalized_execution_request, expected_issuer="AEX")
         handoff_auth = verify_authenticity(artifact=tlc_handoff_record, expected_issuer="TLC")
     except (ValueError, LineageAuthenticityError) as exc:
+        raise RepoWriteLineageGuardError(f"repo_write_lineage_rejected:{exc}") from exc
+    try:
+        verify_authoritative_lineage_issuance(
+            artifact=build_admission_record,
+            issuer="AEX",
+            key_id=admission_auth["key_id"],
+            payload_digest=admission_auth["payload_digest"],
+        )
+        verify_authoritative_lineage_issuance(
+            artifact=normalized_execution_request,
+            issuer="AEX",
+            key_id=normalized_auth["key_id"],
+            payload_digest=normalized_auth["payload_digest"],
+        )
+        verify_authoritative_lineage_issuance(
+            artifact=tlc_handoff_record,
+            issuer="TLC",
+            key_id=handoff_auth["key_id"],
+            payload_digest=handoff_auth["payload_digest"],
+        )
+    except LineageIssuanceRegistryError as exc:
         raise RepoWriteLineageGuardError(f"repo_write_lineage_rejected:{exc}") from exc
 
     admission_status = _require_non_empty_string(build_admission_record.get("admission_status"), field="admission_status")

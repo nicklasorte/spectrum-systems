@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from spectrum_systems.utils.deterministic_id import canonical_json
+from spectrum_systems.modules.runtime.lineage_issuance_registry import record_authoritative_lineage_issuance
 
 AUDIENCE_REPO_WRITE_BOUNDARY = "pqx_repo_write_boundary"
 ISSUER_DEFAULT_KEY_IDS = {
@@ -164,7 +165,7 @@ def issue_authenticity(*, artifact: dict[str, Any], issuer: str) -> dict[str, st
     issued_at = _format_timestamp(issued_at_dt)
     expires_at = _format_timestamp(issued_at_dt + timedelta(seconds=ttl_seconds))
     lineage_token_id = _lineage_token_id()
-    return {
+    authenticity = {
         "issuer": required_issuer,
         "key_id": key_id,
         "payload_digest": payload_digest,
@@ -185,6 +186,14 @@ def issue_authenticity(*, artifact: dict[str, Any], issuer: str) -> dict[str, st
             secret=_issuer_secret(required_issuer),
         ),
     }
+    record_authoritative_lineage_issuance(
+        artifact=artifact,
+        issuer=required_issuer,
+        key_id=authenticity["key_id"],
+        payload_digest=authenticity["payload_digest"],
+        issued_at=authenticity["issued_at"],
+    )
+    return authenticity
 
 
 def verify_authenticity(*, artifact: dict[str, Any], expected_issuer: str) -> dict[str, str]:
@@ -274,6 +283,7 @@ def verify_authenticity(*, artifact: dict[str, Any], expected_issuer: str) -> di
     return {
         "issuer": issuer,
         "key_id": expected_key_id,
+        "payload_digest": payload_digest,
         "lineage_token_id": lineage_token_id,
         "scope": expected_scope,
         "audience": audience,
