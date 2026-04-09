@@ -83,6 +83,14 @@ def handoff_to_pqx(*, cycle_id: str, request_path: str | Path, reports_root: Pat
     request = _load_json(request_path)
     _validate_request(request)
     _require_repo_write_admission_lineage(cycle_id=cycle_id, request=request)
+    execution_intent = "repo_write" if _is_repo_mutation_requested(request) else "non_repo_write"
+    repo_write_lineage = None
+    if execution_intent == "repo_write":
+        repo_write_lineage = {
+            "build_admission_record": request.get("build_admission_record"),
+            "normalized_execution_request": request.get("normalized_execution_request"),
+            "tlc_handoff_record": request.get("tlc_handoff_record"),
+        }
 
     result = run_pqx_slice(
         step_id=request["step_id"],
@@ -90,6 +98,8 @@ def handoff_to_pqx(*, cycle_id: str, request_path: str | Path, reports_root: Pat
         state_path=Path(request["state_path"]),
         runs_root=Path(request["runs_root"]),
         pqx_output_text=request["pqx_output_text"],
+        execution_intent=execution_intent,
+        repo_write_lineage=repo_write_lineage,
         contract_preflight_result_artifact_path=(
             Path(request["contract_preflight_result_artifact_path"])
             if isinstance(request.get("contract_preflight_result_artifact_path"), str)

@@ -105,6 +105,26 @@ def parse_args() -> argparse.Namespace:
         "--authority-evidence-ref",
         help="Optional authority evidence ref for governed required-context enforcement.",
     )
+    parser.add_argument(
+        "--execution-intent",
+        choices=("repo_write", "non_repo_write"),
+        help="Required PQX execution intent declaration at the execution boundary.",
+    )
+    parser.add_argument(
+        "--build-admission-record-path",
+        type=Path,
+        help="Optional build_admission_record JSON path required for repo_write execution_intent.",
+    )
+    parser.add_argument(
+        "--normalized-execution-request-path",
+        type=Path,
+        help="Optional normalized_execution_request JSON path required for repo_write execution_intent.",
+    )
+    parser.add_argument(
+        "--tlc-handoff-record-path",
+        type=Path,
+        help="Optional tlc_handoff_record JSON path required for repo_write execution_intent.",
+    )
     return parser.parse_args()
 
 
@@ -149,6 +169,37 @@ def main() -> int:
         )
         return 2
 
+    lineage_payload = None
+    if any(
+        path is not None
+        for path in (
+            args.build_admission_record_path,
+            args.normalized_execution_request_path,
+            args.tlc_handoff_record_path,
+        )
+    ):
+        try:
+            lineage_payload = {
+                "build_admission_record": (
+                    json.loads(args.build_admission_record_path.read_text(encoding="utf-8"))
+                    if args.build_admission_record_path
+                    else None
+                ),
+                "normalized_execution_request": (
+                    json.loads(args.normalized_execution_request_path.read_text(encoding="utf-8"))
+                    if args.normalized_execution_request_path
+                    else None
+                ),
+                "tlc_handoff_record": (
+                    json.loads(args.tlc_handoff_record_path.read_text(encoding="utf-8"))
+                    if args.tlc_handoff_record_path
+                    else None
+                ),
+            }
+        except (OSError, json.JSONDecodeError) as exc:
+            print({"status": "blocked", "block_type": "REPO_WRITE_LINEAGE_REQUIRED", "reason": f"invalid lineage artifact path: {exc}"})
+            return 2
+
     result = run_pqx_slice(
         step_id=args.step_id or "",
         pqx_output_text=pqx_output_text,
@@ -164,6 +215,8 @@ def main() -> int:
         provided_reviews=args.provided_review,
         provided_eval_artifacts=args.provided_eval_artifact,
         control_surface_gap_packet_ref=str(args.control_surface_gap_packet) if args.control_surface_gap_packet else None,
+        execution_intent=args.execution_intent,
+        repo_write_lineage=lineage_payload,
     )
 
     print(result)

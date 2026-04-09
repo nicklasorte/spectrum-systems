@@ -1117,6 +1117,7 @@ def execute_sequence_run(
                 runs_root=Path(state_path).parent / "pqx_slice_runs",
                 clock=clock,
                 pqx_output_text=f"deterministic output for {payload['slice_id']}",
+                execution_intent="non_repo_write",
             )
             if step_result.get("status") != "complete":
                 return {

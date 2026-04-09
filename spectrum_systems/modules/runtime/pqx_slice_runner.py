@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.governance import (
@@ -43,6 +43,10 @@ from spectrum_systems.modules.pqx_backbone import (
 from spectrum_systems.modules.runtime.enforcement_engine import (
     EnforcementError,
     enforce_control_decision,
+)
+from spectrum_systems.modules.runtime.repo_write_lineage_guard import (
+    RepoWriteLineageGuardError,
+    validate_repo_write_lineage,
 )
 
 
@@ -162,6 +166,41 @@ def _block_payload(*, step_id: str, run_id: str, reason: str, block_type: str = 
         "run_id": run_id,
         "reason": reason,
     }
+
+
+def _enforce_repo_write_lineage_boundary(
+    *,
+    step_id: str,
+    run_id: str,
+    execution_intent: str | None,
+    repo_write_lineage: dict[str, Any] | None,
+) -> dict | None:
+    normalized_intent = execution_intent.strip() if isinstance(execution_intent, str) else ""
+    if normalized_intent not in {"repo_write", "non_repo_write"}:
+        return _block_payload(
+            step_id=step_id,
+            run_id=run_id,
+            reason="repo_mutation_intent_unknown: explicit execution_intent is required",
+            block_type="REPO_WRITE_LINEAGE_REQUIRED",
+        )
+    if normalized_intent == "non_repo_write":
+        return None
+
+    lineage = repo_write_lineage if isinstance(repo_write_lineage, dict) else {}
+    try:
+        validate_repo_write_lineage(
+            build_admission_record=lineage.get("build_admission_record"),
+            normalized_execution_request=lineage.get("normalized_execution_request"),
+            tlc_handoff_record=lineage.get("tlc_handoff_record"),
+        )
+    except (RepoWriteLineageGuardError, Exception) as exc:
+        return _block_payload(
+            step_id=step_id,
+            run_id=run_id,
+            reason=f"repo_write_lineage_missing_or_invalid:{exc}",
+            block_type="REPO_WRITE_LINEAGE_REQUIRED",
+        )
+    return None
 
 
 def _resolve_repo_ref_path(path_ref: str) -> Path:
@@ -578,6 +617,8 @@ def run_pqx_slice(
     require_control_surface_gap_packet_for_control_surfaces: bool = True,
     fixture_decision_mode: str = "allow",
     require_system_readiness_for_certification: bool = False,
+    execution_intent: str | None = None,
+    repo_write_lineage: dict[str, Any] | None = None,
 ) -> dict:
     """Canonical single-path slice execution with mandatory certification and audit artifacts."""
 
@@ -588,6 +629,15 @@ def run_pqx_slice(
         return _block_payload(step_id=str(step_id), run_id=run_id, reason="step_id is required")
 
     normalized_step_id = step_id.strip()
+    lineage_block = _enforce_repo_write_lineage_boundary(
+        step_id=normalized_step_id,
+        run_id=run_id,
+        execution_intent=execution_intent,
+        repo_write_lineage=repo_write_lineage,
+    )
+    if lineage_block is not None:
+        return lineage_block
+
     try:
         authority = resolve_roadmap_authority()
     except PQXBackboneError as exc:
