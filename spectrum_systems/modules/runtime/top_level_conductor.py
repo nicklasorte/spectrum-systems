@@ -432,6 +432,14 @@ def _enforce_handoff(
 
 
 def _validate_handoff_output(subsystem: str, result: dict[str, Any]) -> None:
+    if subsystem != "CDE":
+        if isinstance(result.get("closure_decision_artifact"), dict):
+            raise TopLevelConductorError(f"{subsystem} must not emit closure_decision_artifact; route closure signals to CDE")
+        if isinstance(result.get("decision_type"), str) and result.get("decision_type"):
+            raise TopLevelConductorError(f"{subsystem} must not emit decision_type; closure authority is CDE-only")
+        if isinstance(result.get("next_step_class"), str) and result.get("next_step_class"):
+            raise TopLevelConductorError(f"{subsystem} must not emit next_step_class; bounded-next-step classification is CDE-only")
+
     if subsystem == "PQX":
         if not isinstance(result.get("request_artifact"), dict):
             raise TopLevelConductorError("PQX output must include request_artifact")
@@ -906,6 +914,9 @@ def _enforce_sel(
             "queue_id": queue_id,
             "work_item_id": work_item_id,
             "step_id": step_id,
+            "closure_lock_state": state["lineage"].get("closure_lock_state", "open"),
+            "closure_decision_source": state["lineage"].get("closure_decision_source", "cde_only"),
+            "promotion_readiness_decisioning": state["lineage"].get("promotion_readiness_decisioning", "cde_only"),
         },
         "artifact_references": {
             "execution_artifact": state["produced_artifact_refs"][0] if state["produced_artifact_refs"] else "request_artifact",
@@ -924,6 +935,13 @@ def _enforce_sel(
             "failure_learning_record_artifact": state["lineage"].get("latest_failure_learning_record_artifact"),
             "roadmap_signal_artifact": state["lineage"].get("latest_roadmap_signal_artifact"),
             "pqx_execution_authority_record": pqx_execution_authority_record,
+            "closure_decision_artifact": state["lineage"].get("closure_decision_artifact"),
+            "closure_decision_artifact_ref": (
+                f"closure_decision_artifact:{state['lineage']['closure_decision_artifact']['closure_decision_id']}"
+                if isinstance(state["lineage"].get("closure_decision_artifact"), dict)
+                and isinstance(state["lineage"]["closure_decision_artifact"].get("closure_decision_id"), str)
+                else None
+            ),
         },
         "downstream_consumption": {
             "consumed_artifact_types": consumed_artifact_types or ["review_projection_bundle_artifact"],
@@ -1015,6 +1033,10 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
     lineage = deepcopy(run_request.get("lineage")) if isinstance(run_request.get("lineage"), dict) else {}
     lineage.setdefault("lineage_id", f"lineage-{run_id}")
     lineage.setdefault("parent_refs", [f"request:{run_id}"])
+    lineage.setdefault("closure_lock_state", "open")
+    lineage.setdefault("closure_decision_source", "cde_only")
+    lineage.setdefault("promotion_readiness_decisioning", "cde_only")
+    lineage.setdefault("repair_validation_passed", False)
     lineage.setdefault(
         "request_hash",
         _canonical_hash(
@@ -1300,8 +1322,10 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                 isinstance(repair_candidate, dict)
                 and repair_candidate.get("safe_to_repair")
                 and repair_candidate.get("bounded_scope")
+                and not bool(state["lineage"].get("repair_validation_passed", False))
                 and state["retry_budget_remaining"] > 0
             )
+            closure_complete = repair_packet is None or bool(state["lineage"].get("repair_validation_passed", False))
             cde_result = resolved["cde"](
                 {
                     "run_id": state["run_id"],
@@ -1320,9 +1344,9 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                             "unresolved_action_item_ids": [],
                         }
                     ],
-                    "closure_complete": repair_packet is None,
-                    "final_verification_passed": repair_packet is None,
-                    "hardening_completed": repair_packet is None,
+                    "closure_complete": closure_complete,
+                    "final_verification_passed": closure_complete,
+                    "hardening_completed": closure_complete,
                     "escalation_required": False,
                     "bounded_next_step_available": state["retry_budget_remaining"] > 0,
                     "repair_loop_eligible": repair_loop_eligible,
@@ -1358,6 +1382,9 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
             )
             decision = cde_result.get("decision_type") if isinstance(cde_result, dict) else None
             state["closure_state"] = str(cde_result.get("closure_state", "pending")) if isinstance(cde_result, dict) else "pending"
+            state["lineage"]["closure_decision_source"] = "CDE"
+            state["lineage"]["promotion_readiness_decisioning"] = "CDE"
+            state["lineage"]["closure_lock_state"] = "locked" if decision in {"lock", "blocked", "escalate"} else "open"
 
             if decision == "lock":
                 _transition(state=state, to_state="ready_for_merge", reason="cde_lock")
@@ -1499,10 +1526,10 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                             _transition(state=state, to_state="blocked", reason="local_pre_pr_governance_block")
                             state["stop_reason"] = f"local_pre_pr_governance_block:{exc}"
                             break
-                    _transition(state=state, to_state="ready_for_merge", reason="repair_tests_green")
-                    state["ready_for_merge"] = True
-                    state["stop_reason"] = "ready_for_merge"
-                    break
+                    state["lineage"]["repair_validation_passed"] = True
+                    _transition(state=state, to_state="closure_decision_pending", reason="repair_validation_passed_route_to_cde")
+                    continue
+                state["lineage"]["repair_validation_passed"] = False
                 state["retry_budget_remaining"] -= 1
                 if state["retry_budget_remaining"] <= 0:
                     _transition(state=state, to_state="exhausted", reason="repair_attempts_exhausted")

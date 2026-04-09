@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from spectrum_systems.modules.runtime.system_enforcement_layer import enforce_system_boundaries
+from spectrum_systems.modules.runtime.closure_decision_engine import build_closure_decision_artifact
 from spectrum_systems.modules.runtime.top_level_conductor import (
     TopLevelConductorError,
     run_from_roadmap,
@@ -242,3 +243,153 @@ def test_run_from_roadmap_executes_bounded_steps(tmp_path: Path) -> None:
 
     assert result["execution_status"] == "completed"
     assert len(result["step_execution_artifacts"]) == 2
+
+
+def test_tlc_does_not_emit_closure_decisions(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
+
+    def _ril_with_closure_authority(_: dict) -> dict:
+        return {
+            "outputs_exist": True,
+            "artifact_refs": [],
+            "trace_refs": ["trace-illegal"],
+            "decision_type": "lock",
+            "review_signal_artifact": {"artifact_type": "review_signal_artifact"},
+            "review_projection_bundle_artifact": {"artifact_type": "review_projection_bundle_artifact"},
+            "review_consumer_output_bundle_artifact": {"artifact_type": "review_consumer_output_bundle_artifact"},
+        }
+
+    request["subsystems"] = {"ril": _ril_with_closure_authority}
+    with pytest.raises(TopLevelConductorError, match="CDE-only"):
+        run_top_level_conductor(request)
+
+
+def test_only_cde_can_emit_closure_decision(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
+
+    def _pqx_with_closure_artifact(_: dict) -> dict:
+        return {
+            "entry_valid": True,
+            "validation_passed": True,
+            "closure_decision_artifact": {"artifact_type": "closure_decision_artifact"},
+            "request_artifact": {
+                "schema_version": "1.1.0",
+                "run_id": "x",
+                "step_id": "s",
+                "step_name": "n",
+                "dependencies": [],
+                "requested_at": "2026-04-06T00:00:00Z",
+                "prompt": "p",
+            },
+            "execution_artifact": {
+                "schema_version": "1.1.0",
+                "run_id": "x",
+                "step_id": "s",
+                "execution_status": "success",
+                "started_at": "2026-04-06T00:00:00Z",
+                "completed_at": "2026-04-06T00:00:00Z",
+                "output_text": "",
+                "error": None,
+            },
+            "trace_refs": ["trace-x"],
+            "lineage": {"lineage_id": "lineage:x", "parent_refs": ["request:x"]},
+        }
+
+    request["subsystems"] = {"pqx": _pqx_with_closure_artifact}
+    with pytest.raises(TopLevelConductorError, match="must not emit closure_decision_artifact"):
+        run_top_level_conductor(request)
+
+
+def test_rqx_cannot_decide_closure(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
+
+    def _rqx_like_ril(_: dict) -> dict:
+        return {
+            "outputs_exist": True,
+            "artifact_refs": [],
+            "trace_refs": ["trace-rqx"],
+            "decision_type": "lock",
+            "next_step_class": "none",
+            "review_signal_artifact": {"artifact_type": "review_signal_artifact"},
+            "review_projection_bundle_artifact": {"artifact_type": "review_projection_bundle_artifact"},
+            "review_consumer_output_bundle_artifact": {"artifact_type": "review_consumer_output_bundle_artifact"},
+        }
+
+    request["subsystems"] = {"ril": _rqx_like_ril}
+    with pytest.raises(TopLevelConductorError, match="closure authority is CDE-only"):
+        run_top_level_conductor(request)
+
+
+def test_pqx_cannot_mark_done(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
+
+    def _blocking_cde(payload: dict) -> dict:
+        decision = build_closure_decision_artifact(
+            {
+                "subject_scope": "top_level_conductor",
+                "subsystem_acronym": "TLC",
+                "run_id": payload["run_id"],
+                "review_date": payload["review_date"],
+                "action_tracker_ref": payload["action_tracker_ref"],
+                "source_artifacts": payload["source_artifacts"],
+                "closure_complete": False,
+                "final_verification_passed": False,
+                "hardening_completed": False,
+                "escalation_required": False,
+                "bounded_next_step_available": False,
+                "emitted_at": payload["emitted_at"],
+                "trace_id": payload["trace_id"],
+            }
+        )
+        return {
+            "decision_type": decision["decision_type"],
+            "next_step_class": decision["next_step_class"],
+            "closure_state": "open",
+            "artifact_refs": [f"closure_decision_artifact:{decision['closure_decision_id']}"],
+            "trace_refs": [decision["trace_id"]],
+            "closure_decision_artifact": decision,
+        }
+
+    request["subsystems"] = {"cde": _blocking_cde}
+    result = run_top_level_conductor(request)
+    assert result["current_state"] == "blocked"
+    assert result["ready_for_merge"] is False
+
+
+def test_tlc_routes_to_cde_for_closure(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
+    cde_calls: list[dict] = []
+
+    def _tracking_cde(payload: dict) -> dict:
+        cde_calls.append({"source_artifacts": payload.get("source_artifacts", [])})
+        decision = build_closure_decision_artifact(
+            {
+                "subject_scope": "top_level_conductor",
+                "subsystem_acronym": "TLC",
+                "run_id": payload["run_id"],
+                "review_date": payload["review_date"],
+                "action_tracker_ref": payload["action_tracker_ref"],
+                "source_artifacts": payload["source_artifacts"],
+                "closure_complete": False,
+                "final_verification_passed": False,
+                "hardening_completed": False,
+                "escalation_required": payload.get("escalation_required", False),
+                "bounded_next_step_available": False,
+                "emitted_at": payload["emitted_at"],
+                "trace_id": payload["trace_id"],
+            }
+        )
+        return {
+            "decision_type": decision["decision_type"],
+            "next_step_class": decision["next_step_class"],
+            "closure_state": "closed" if decision["decision_type"] == "lock" else "open",
+            "artifact_refs": [f"closure_decision_artifact:{decision['closure_decision_id']}"],
+            "trace_refs": [decision["trace_id"]],
+            "closure_decision_artifact": decision,
+        }
+
+    request["subsystems"] = {"cde": _tracking_cde}
+    result = run_top_level_conductor(request)
+    assert len(cde_calls) >= 1
+    assert cde_calls[0]["source_artifacts"]
+    assert result["current_state"] == "blocked"
