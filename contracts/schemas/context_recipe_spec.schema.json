@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/context_recipe_spec.schema.json",
+  "title": "Context Recipe Spec",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_kind",
+    "artifact_id",
+    "created_at",
+    "schema_ref",
+    "recipe_id",
+    "recipe_version",
+    "task_scope",
+    "source_requirements",
+    "required_source_types",
+    "admissibility_policy_refs",
+    "ranking_policy_ref",
+    "budget_policy_ref",
+    "freshness_rules",
+    "trace_requirements"
+  ],
+  "properties": {
+    "artifact_kind": {
+      "type": "string",
+      "const": "context_recipe_spec"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "schema_ref": {
+      "type": "string",
+      "const": "contracts/schemas/context_recipe_spec.schema.json"
+    },
+    "recipe_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "recipe_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min_sources",
+        "max_sources"
+      ],
+      "properties": {
+        "min_sources": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_sources": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "required_source_types": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "admissibility_policy_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "ranking_policy_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "budget_policy_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "freshness_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ttl_seconds",
+        "allow_stale"
+      ],
+      "properties": {
+        "ttl_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "allow_stale": {
+          "type": "boolean"
+        }
+      }
+    },
+    "trace_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "require_trace_id",
+        "require_run_id",
+        "require_lineage_refs"
+      ],
+      "properties": {
+        "require_trace_id": {
+          "type": "boolean",
+          "const": true
+        },
+        "require_run_id": {
+          "type": "boolean",
+          "const": true
+        },
+        "require_lineage_refs": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    }
+  }
+}

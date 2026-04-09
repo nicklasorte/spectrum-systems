@@ -1,0 +1,16 @@
+{
+  "artifact_kind": "context_recipe_spec",
+  "artifact_id": "ctxrecipe-001",
+  "created_at": "2026-04-09T00:00:00Z",
+  "schema_ref": "contracts/schemas/context_recipe_spec.schema.json",
+  "recipe_id": "recipe-core",
+  "recipe_version": "1.0.0",
+  "task_scope": "governed_context_foundation",
+  "source_requirements": {"min_sources": 1, "max_sources": 4},
+  "required_source_types": ["governance_doc", "schema"],
+  "admissibility_policy_refs": ["policy:tpa:ctx:1.0.0"],
+  "ranking_policy_ref": "policy:ranking:ctx:1.0.0",
+  "budget_policy_ref": "policy:budget:ctx:1.0.0",
+  "freshness_rules": {"ttl_seconds": 86400, "allow_stale": false},
+  "trace_requirements": {"require_trace_id": true, "require_run_id": true, "require_lineage_refs": true}
+}

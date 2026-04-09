@@ -1,0 +1,17 @@
+{
+  "artifact_kind": "context_source_admission_record",
+  "artifact_id": "ctxsrcadm-001",
+  "created_at": "2026-04-09T00:00:00Z",
+  "schema_ref": "contracts/schemas/context_source_admission_record.schema.json",
+  "trace": {"trace_id": "trace-ctx-a", "run_id": "run-ctx-a"},
+  "source_ref": "source:alpha",
+  "source_type": "governance_doc",
+  "source_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "source_schema_ref": "contracts/schemas/roadmap_artifact.schema.json",
+  "freshness_status": "fresh",
+  "trust_class": "trusted",
+  "classification": "internal",
+  "admissibility_decision": "allow",
+  "reason_codes": ["source_type_allowed", "freshness_ok", "trust_class_ok"],
+  "policy_ref": "policy:tpa:ctx:1.0.0"
+}

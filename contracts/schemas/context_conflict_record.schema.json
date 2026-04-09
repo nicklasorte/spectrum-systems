@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/context_conflict_record.schema.json",
+  "title": "Context Conflict Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_kind",
+    "artifact_id",
+    "created_at",
+    "schema_ref",
+    "trace",
+    "bundle_id",
+    "conflicting_source_refs",
+    "conflict_type",
+    "conflict_summary",
+    "severity",
+    "resolution_required"
+  ],
+  "properties": {
+    "artifact_kind": {"type": "string", "const": "context_conflict_record"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "schema_ref": {"type": "string", "const": "contracts/schemas/context_conflict_record.schema.json"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "run_id"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "run_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "bundle_id": {"type": "string", "minLength": 1},
+    "conflicting_source_refs": {
+      "type": "array",
+      "minItems": 2,
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "conflict_type": {"type": "string", "enum": ["fact_mismatch", "policy_mismatch", "staleness_mismatch", "classification_mismatch"]},
+    "conflict_summary": {"type": "string", "minLength": 1},
+    "severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+    "resolution_required": {"type": "boolean"}
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "artifact_kind": "context_bundle_record",
+  "artifact_id": "ctxbrec-001",
+  "created_at": "2026-04-09T00:00:00Z",
+  "schema_ref": "contracts/schemas/context_bundle_record.schema.json",
+  "trace": {"trace_id": "trace-ctx-a", "run_id": "run-ctx-a"},
+  "bundle_id": "bundle-001",
+  "recipe_id": "recipe-core",
+  "recipe_version": "1.0.0",
+  "bundle_manifest_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_refs": ["source:alpha", "source:beta"],
+  "provenance_summary": {"source_count": 2, "provenance_refs": ["prov:1", "prov:2"]},
+  "trust_summary": {"min_trust_class": "trusted", "blocked_source_count": 0, "policy_ref": "policy:tpa:ctx:1.0.0"},
+  "admissibility_status": "approved",
+  "assembly_budget": {"max_sources": 4, "max_tokens": 2048, "consumed_sources": 2, "consumed_tokens": 512},
+  "lineage": {
+    "aex_admission_ref": "build_admission_record:adm-123",
+    "normalized_request_ref": "normalized_execution_request:req-123",
+    "tlc_handoff_ref": "tlc_handoff_record:tlc-123",
+    "tpa_slice_ref": "tpa_slice_artifact:tpa-123"
+  }
+}

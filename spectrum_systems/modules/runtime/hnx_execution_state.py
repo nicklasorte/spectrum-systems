@@ -6,6 +6,14 @@ import hashlib
 import json
 from typing import Any, Mapping
 
+_CONTEXT_STAGE_SEQUENCE = (
+    "context_map",
+    "context_admission",
+    "context_assembly",
+    "context_preflight",
+    "context_checkpoint_resume",
+)
+
 
 def _stable_hash(payload: Mapping[str, Any]) -> str:
     return hashlib.sha256(json.dumps(dict(payload), sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
@@ -238,3 +246,67 @@ def evaluate_long_running_policy(
     if request_resume:
         return _base_result(allowed=True, state="resume", reason_codes=reasons or ["RESUME_ALLOWED"])
     return _base_result(allowed=True, state="resume", reason_codes=["LONG_RUNNING_POLICY_OK"])
+
+
+def evaluate_context_stage_semantics(
+    *,
+    stage_name: str,
+    artifacts: Mapping[str, Any],
+    resume_requested: bool = False,
+) -> dict[str, Any]:
+    """HNX-owned context stage structure + continuity semantics (no execution/policy decisions)."""
+    if stage_name not in _CONTEXT_STAGE_SEQUENCE:
+        return _base_result(
+            allowed=False,
+            state="block",
+            validation_failures=["UNKNOWN_CONTEXT_STAGE"],
+            reason_codes=["UNKNOWN_CONTEXT_STAGE"],
+        )
+
+    failures: list[str] = []
+    outputs_required: list[str] = []
+    continuity_required: list[str] = []
+    payload = dict(artifacts)
+
+    if stage_name == "context_map":
+        outputs_required = ["context_recipe_spec"]
+    elif stage_name == "context_admission":
+        outputs_required = ["context_source_admission_record"]
+        if not isinstance(payload.get("context_recipe_spec"), Mapping):
+            failures.append("MISSING_CONTEXT_RECIPE_SPEC")
+    elif stage_name == "context_assembly":
+        outputs_required = ["context_bundle_record"]
+        for field in ("build_admission_record", "normalized_execution_request", "tlc_handoff_record", "tpa_slice_artifact"):
+            if not isinstance(payload.get(field), Mapping):
+                failures.append(f"MISSING_REQUIRED_LINEAGE_{field.upper()}")
+    elif stage_name == "context_preflight":
+        outputs_required = ["pqx_slice_execution_record"]
+        for field in ("context_bundle_record", "tpa_slice_artifact"):
+            if not isinstance(payload.get(field), Mapping):
+                failures.append(f"MISSING_REQUIRED_INPUT_{field.upper()}")
+    elif stage_name == "context_checkpoint_resume":
+        outputs_required = ["checkpoint_record"]
+        continuity_required = ["checkpoint_id", "checkpoint_hash", "resume_token"]
+        if resume_requested:
+            checkpoint = payload.get("checkpoint_record")
+            if not isinstance(checkpoint, Mapping):
+                failures.append("CHECKPOINT_RECORD_REQUIRED_FOR_RESUME")
+            else:
+                for key in continuity_required:
+                    value = checkpoint.get(key)
+                    if not isinstance(value, str) or not value.strip():
+                        failures.append(f"MISSING_CONTINUITY_FIELD_{key.upper()}")
+
+    status = "ready" if not failures else "blocked"
+    return {
+        **_base_result(
+            allowed=not failures,
+            state="resume" if not failures else "block",
+            validation_failures=failures,
+            reason_codes=failures or [f"{stage_name.upper()}_SEMANTICS_VALID"],
+        ),
+        "stage_name": stage_name,
+        "outputs_required": outputs_required,
+        "continuity_required": continuity_required,
+        "status": status,
+    }

@@ -1,0 +1,13 @@
+{
+  "artifact_kind": "context_conflict_record",
+  "artifact_id": "ctxconf-001",
+  "created_at": "2026-04-09T00:00:00Z",
+  "schema_ref": "contracts/schemas/context_conflict_record.schema.json",
+  "trace": {"trace_id": "trace-ctx-a", "run_id": "run-ctx-a"},
+  "bundle_id": "bundle-001",
+  "conflicting_source_refs": ["source:alpha", "source:beta"],
+  "conflict_type": "fact_mismatch",
+  "conflict_summary": "Source alpha and beta disagree on ownership mapping.",
+  "severity": "high",
+  "resolution_required": true
+}

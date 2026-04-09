@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/context_source_admission_record.schema.json",
+  "title": "Context Source Admission Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_kind",
+    "artifact_id",
+    "created_at",
+    "schema_ref",
+    "trace",
+    "source_ref",
+    "source_type",
+    "source_digest",
+    "source_schema_ref",
+    "freshness_status",
+    "trust_class",
+    "classification",
+    "admissibility_decision",
+    "reason_codes",
+    "policy_ref"
+  ],
+  "properties": {
+    "artifact_kind": {"type": "string", "const": "context_source_admission_record"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "schema_ref": {"type": "string", "const": "contracts/schemas/context_source_admission_record.schema.json"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "run_id"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "run_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "source_ref": {"type": "string", "minLength": 1},
+    "source_type": {"type": "string", "minLength": 1},
+    "source_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "source_schema_ref": {"type": "string", "minLength": 1},
+    "freshness_status": {"type": "string", "enum": ["fresh", "stale"]},
+    "trust_class": {"type": "string", "enum": ["trusted", "restricted", "untrusted"]},
+    "classification": {"type": "string", "enum": ["public", "internal", "confidential", "restricted"]},
+    "admissibility_decision": {"type": "string", "enum": ["allow", "deny"]},
+    "reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "policy_ref": {"type": "string", "minLength": 1}
+  }
+}
