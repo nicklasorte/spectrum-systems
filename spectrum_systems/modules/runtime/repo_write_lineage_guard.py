@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import json
 from threading import Lock
+from pathlib import Path
 from typing import Any
 
 from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.modules.pqx_backbone import REPO_ROOT
 from spectrum_systems.modules.runtime.lineage_authenticity import LineageAuthenticityError, verify_authenticity
 
 
@@ -15,12 +18,49 @@ class RepoWriteLineageGuardError(ValueError):
 
 _CONSUMED_REPO_WRITE_LINEAGE_TOKENS: set[str] = set()
 _CONSUMED_REPO_WRITE_LINEAGE_LOCK = Lock()
+_REPO_WRITE_LINEAGE_TOKEN_REGISTRY = REPO_ROOT / "state" / "repo_write_lineage_consumed_tokens.json"
 
 
-def reset_repo_write_lineage_replay_state() -> None:
+def reset_repo_write_lineage_replay_state(*, clear_persistent_registry: bool = False) -> None:
     """Test helper to reset in-process replay state."""
     with _CONSUMED_REPO_WRITE_LINEAGE_LOCK:
         _CONSUMED_REPO_WRITE_LINEAGE_TOKENS.clear()
+    if clear_persistent_registry and _REPO_WRITE_LINEAGE_TOKEN_REGISTRY.exists():
+        _REPO_WRITE_LINEAGE_TOKEN_REGISTRY.unlink()
+
+
+def _read_consumed_registry(path: Path) -> set[str]:
+    if not path.exists():
+        return set()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RepoWriteLineageGuardError("repo_write_lineage_rejected:lineage_replay_registry_unreadable") from exc
+    if not isinstance(payload, dict):
+        raise RepoWriteLineageGuardError("repo_write_lineage_rejected:lineage_replay_registry_invalid")
+    values = payload.get("consumed_token_keys")
+    if not isinstance(values, list):
+        raise RepoWriteLineageGuardError("repo_write_lineage_rejected:lineage_replay_registry_invalid")
+    result: set[str] = set()
+    for item in values:
+        if not isinstance(item, str) or not item.strip():
+            raise RepoWriteLineageGuardError("repo_write_lineage_rejected:lineage_replay_registry_invalid")
+        result.add(item.strip())
+    return result
+
+
+def _write_consumed_registry(path: Path, consumed_tokens: set[str]) -> None:
+    payload = {
+        "schema_version": "1.0",
+        "consumed_token_keys": sorted(consumed_tokens),
+    }
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp_path = path.with_suffix(".tmp")
+        tmp_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        tmp_path.replace(path)
+    except OSError as exc:
+        raise RepoWriteLineageGuardError("repo_write_lineage_rejected:lineage_replay_registry_write_failed") from exc
 
 
 def _require_non_empty_string(value: Any, *, field: str) -> str:
@@ -33,8 +73,11 @@ def _consume_repo_write_lineage_tokens(tokens: list[str], *, replay_context: str
     token_key = "|".join(sorted(tokens))
     replay_key = f"{replay_context}:{token_key}" if replay_context else token_key
     with _CONSUMED_REPO_WRITE_LINEAGE_LOCK:
-        if replay_key in _CONSUMED_REPO_WRITE_LINEAGE_TOKENS:
+        persisted_tokens = _read_consumed_registry(_REPO_WRITE_LINEAGE_TOKEN_REGISTRY)
+        if replay_key in _CONSUMED_REPO_WRITE_LINEAGE_TOKENS or replay_key in persisted_tokens:
             raise RepoWriteLineageGuardError("repo_write_lineage_rejected:lineage_replay_detected")
+        persisted_tokens.add(replay_key)
+        _write_consumed_registry(_REPO_WRITE_LINEAGE_TOKEN_REGISTRY, persisted_tokens)
         _CONSUMED_REPO_WRITE_LINEAGE_TOKENS.add(replay_key)
 
 

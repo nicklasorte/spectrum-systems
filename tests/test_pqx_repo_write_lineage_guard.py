@@ -5,9 +5,14 @@ from pathlib import Path
 
 import pytest
 
-from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 from spectrum_systems.modules.runtime.pqx_sequence_runner import PQXSequenceRunnerError, execute_sequence_run
-from spectrum_systems.modules.runtime.repo_write_lineage_guard import RepoWriteLineageGuardError, validate_repo_write_lineage
+from spectrum_systems.modules.runtime.repo_write_lineage_guard import (
+    RepoWriteLineageGuardError,
+    _REPO_WRITE_LINEAGE_TOKEN_REGISTRY,
+    reset_repo_write_lineage_replay_state,
+    validate_repo_write_lineage,
+)
+from tests.helpers_repo_write_lineage import build_valid_repo_write_lineage
 
 
 def _slice_requests() -> list[dict[str, str]]:
@@ -71,13 +76,7 @@ def _base_lineage() -> dict[str, object]:
 
 
 def _lineage() -> dict[str, object]:
-    lineage = deepcopy(_base_lineage())
-    lineage["build_admission_record"]["authenticity"] = issue_authenticity(artifact=lineage["build_admission_record"], issuer="AEX")
-    lineage["normalized_execution_request"]["authenticity"] = issue_authenticity(
-        artifact=lineage["normalized_execution_request"], issuer="AEX"
-    )
-    lineage["tlc_handoff_record"]["authenticity"] = issue_authenticity(artifact=lineage["tlc_handoff_record"], issuer="TLC")
-    return lineage
+    return deepcopy(build_valid_repo_write_lineage())
 
 
 def test_pqx_rejects_repo_write_without_aex_tlc_lineage(tmp_path: Path) -> None:
@@ -176,6 +175,7 @@ def test_repo_write_lineage_rejects_forged_lineage_with_old_default_secret(monke
 
 
 def test_repo_write_lineage_rejects_replay() -> None:
+    reset_repo_write_lineage_replay_state(clear_persistent_registry=True)
     lineage = _lineage()
     validate_repo_write_lineage(
         build_admission_record=lineage["build_admission_record"],
@@ -183,6 +183,51 @@ def test_repo_write_lineage_rejects_replay() -> None:
         tlc_handoff_record=lineage["tlc_handoff_record"],
         expected_trace_id="trace-repo-write",
     )
+    with pytest.raises(RepoWriteLineageGuardError, match="lineage_replay_detected"):
+        validate_repo_write_lineage(
+            build_admission_record=lineage["build_admission_record"],
+            normalized_execution_request=lineage["normalized_execution_request"],
+            tlc_handoff_record=lineage["tlc_handoff_record"],
+            expected_trace_id="trace-repo-write",
+        )
+
+
+def test_repo_write_lineage_cannot_be_minted_from_non_authoritative_runtime_path() -> None:
+    from spectrum_systems.modules.runtime.lineage_authenticity import (
+        LineageAuthenticityError,
+        issue_authenticity,
+    )
+
+    with pytest.raises(LineageAuthenticityError, match="authenticity_boundary_issuer_forbidden"):
+        issue_authenticity(
+            artifact={
+                "artifact_type": "build_admission_record",
+                "admission_id": "adm-forged",
+                "request_id": "req-forged",
+                "execution_type": "repo_write",
+                "admission_status": "accepted",
+                "normalized_execution_request_ref": "normalized_execution_request:req-forged",
+                "trace_id": "trace-repo-write",
+                "created_at": "2026-04-08T00:00:00Z",
+                "produced_by": "non_authoritative_runtime",
+                "reason_codes": [],
+                "target_scope": {"repo": "spectrum-systems", "paths": ["x"]},
+            },
+            issuer="AEX",
+        )
+
+
+def test_repo_write_lineage_replay_rejected_across_process_like_boundary() -> None:
+    reset_repo_write_lineage_replay_state(clear_persistent_registry=True)
+    lineage = _lineage()
+    validate_repo_write_lineage(
+        build_admission_record=lineage["build_admission_record"],
+        normalized_execution_request=lineage["normalized_execution_request"],
+        tlc_handoff_record=lineage["tlc_handoff_record"],
+        expected_trace_id="trace-repo-write",
+    )
+    assert _REPO_WRITE_LINEAGE_TOKEN_REGISTRY.exists()
+    reset_repo_write_lineage_replay_state()
     with pytest.raises(RepoWriteLineageGuardError, match="lineage_replay_detected"):
         validate_repo_write_lineage(
             build_admission_record=lineage["build_admission_record"],

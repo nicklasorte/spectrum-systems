@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from spectrum_systems.modules.runtime.lineage_authenticity import issue_authenticity
 from spectrum_systems.orchestration import pqx_handoff_adapter
+from tests.helpers_repo_write_lineage import build_valid_repo_write_lineage
 
 
 def _write(path: Path, payload: dict) -> str:
@@ -158,72 +158,12 @@ def test_handoff_to_pqx_uses_none_when_preflight_artifact_not_provided(tmp_path:
 
 
 def _repo_write_lineage_payload() -> dict[str, object]:
-    payload = {
+    lineage = build_valid_repo_write_lineage(request_id="req-cycle-1", trace_id="trace-cycle-repo-write")
+    return {
         "repo_mutation_requested": True,
         "trace_id": "trace-cycle-repo-write",
-        "build_admission_record": {
-            "artifact_type": "build_admission_record",
-            "admission_id": "adm-cycle-1",
-            "request_id": "req-cycle-1",
-            "execution_type": "repo_write",
-            "admission_status": "accepted",
-            "normalized_execution_request_ref": "normalized_execution_request:req-cycle-1",
-            "trace_id": "trace-cycle-repo-write",
-            "created_at": "2026-04-08T00:00:00Z",
-            "produced_by": "AEXEngine",
-            "reason_codes": [],
-            "target_scope": {"repo": "spectrum-systems", "paths": ["spectrum_systems/orchestration/cycle_runner.py"]},
-        },
-        "normalized_execution_request": {
-            "artifact_type": "normalized_execution_request",
-            "request_id": "req-cycle-1",
-            "prompt_text": "Modify orchestration path",
-            "execution_type": "repo_write",
-            "repo_mutation_requested": True,
-            "target_paths": ["spectrum_systems/orchestration/cycle_runner.py"],
-            "requested_outputs": ["patch"],
-            "source_prompt_kind": "codex_build_request",
-            "trace_id": "trace-cycle-repo-write",
-            "created_at": "2026-04-08T00:00:00Z",
-            "produced_by": "AEXEngine",
-        },
-        "tlc_handoff_record": {
-            "artifact_type": "tlc_handoff_record",
-            "handoff_id": "tlc-handoff-cycle-1",
-            "request_id": "req-cycle-1",
-            "trace_id": "trace-cycle-repo-write",
-            "created_at": "2026-04-08T00:00:00Z",
-            "produced_by": "TLC",
-            "build_admission_record_ref": "build_admission_record:adm-cycle-1",
-            "normalized_execution_request_ref": "normalized_execution_request:req-cycle-1",
-            "handoff_status": "accepted",
-            "target_subsystems": ["TPA", "PQX"],
-            "execution_type": "repo_write",
-            "repo_mutation_requested": True,
-            "reason_codes": [],
-            "tlc_run_context": {
-                "run_id": "tlc-cycle-1",
-                "branch_ref": "refs/heads/main",
-                "objective": "repo mutating run",
-                "entry_boundary": "aex_to_tlc",
-            },
-            "lineage": {
-                "upstream_refs": [
-                    "build_admission_record:adm-cycle-1",
-                    "normalized_execution_request:req-cycle-1",
-                ],
-                "intended_path": ["TLC", "TPA", "PQX"],
-            },
-        },
+        **lineage,
     }
-    payload["build_admission_record"]["authenticity"] = issue_authenticity(
-        artifact=payload["build_admission_record"], issuer="AEX"
-    )
-    payload["normalized_execution_request"]["authenticity"] = issue_authenticity(
-        artifact=payload["normalized_execution_request"], issuer="AEX"
-    )
-    payload["tlc_handoff_record"]["authenticity"] = issue_authenticity(artifact=payload["tlc_handoff_record"], issuer="TLC")
-    return payload
 
 
 def test_handoff_to_pqx_repo_write_fails_closed_without_admission_lineage(tmp_path: Path) -> None:

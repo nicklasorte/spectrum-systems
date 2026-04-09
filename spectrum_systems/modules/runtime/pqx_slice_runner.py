@@ -221,7 +221,12 @@ def _requires_repo_write_lineage(*, execution_intent: str, state_path: Path, run
 def _is_repo_controlled_path(path: Path) -> bool:
     candidate = path if path.is_absolute() else (REPO_ROOT / path)
     try:
-        candidate.relative_to(REPO_ROOT)
+        resolved_repo_root = REPO_ROOT.resolve(strict=False)
+        resolved_candidate = candidate.resolve(strict=False)
+    except OSError:
+        return True
+    try:
+        resolved_candidate.relative_to(resolved_repo_root)
         return True
     except ValueError:
         return False
