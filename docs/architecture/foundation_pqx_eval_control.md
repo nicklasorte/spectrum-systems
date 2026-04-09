@@ -112,6 +112,7 @@ Any such divergence must trigger hardening-first roadmap sequencing.
 - The AEX→TLC seam is contractized via `tlc_handoff_record` to make admission-to-orchestration lineage explicit and replayable for repo-mutating execution.
 - Enforcement is fail-closed end-to-end: missing/invalid AEX artifacts block TLC entry, and missing/unknown execution intent or missing TLC lineage blocks PQX execution (`AEX → TLC → TPA → PQX` only).
 - Repo-write lineage authenticity issuance is boundary-owned: only authoritative AEX emission paths can sign `normalized_execution_request` / `build_admission_record`, and only authoritative TLC handoff emission paths can sign `tlc_handoff_record`.
+- Repo-write lineage acceptance at PQX now requires **both** valid authenticity and persisted authoritative issuance proof from the boundary-owned issuance registry; valid signatures alone are rejected when issuance records are missing or mismatched.
 - Repo-write lineage replay protection is persistent and system-wide (repo-native consumed-token registry), so replay is rejected across process boundaries, not only within one process.
 - PQX repo-write capability detection uses canonical resolved runtime paths (including symlink traversal) and fails closed when path classification is ambiguous, so lexical path tricks cannot bypass lineage requirements.
 
