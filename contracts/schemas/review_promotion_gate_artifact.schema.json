@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/review_promotion_gate_artifact.schema.json",
+  "title": "Review Promotion Gate Artifact",
+  "description": "Bounded fail-closed merge/promotion readiness gate decision derived from structured RQX review outcomes and unresolved handoff/disposition state.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "gate_id",
+    "source_review_result_ref",
+    "source_review_merge_readiness_ref",
+    "source_review_operator_handoff_ref",
+    "source_review_handoff_disposition_ref",
+    "gate_decision",
+    "gate_reason_code",
+    "blocking_refs",
+    "required_manual_action",
+    "promotion_eligible",
+    "provenance",
+    "trace_linkage",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "review_promotion_gate_artifact"},
+    "artifact_version": {"type": "string", "const": "1.0.0"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "standards_version": {"type": "string", "const": "1.0.0"},
+    "gate_id": {"type": "string", "pattern": "^rpga:.+"},
+    "source_review_result_ref": {"type": ["string", "null"], "pattern": "^review_result_artifact:.+"},
+    "source_review_merge_readiness_ref": {
+      "type": ["string", "null"],
+      "pattern": "^review_merge_readiness_artifact:.+"
+    },
+    "source_review_operator_handoff_ref": {
+      "type": ["string", "null"],
+      "pattern": "^review_operator_handoff_artifact:.+"
+    },
+    "source_review_handoff_disposition_ref": {
+      "type": ["string", "null"],
+      "pattern": "^review_handoff_disposition_artifact:.+"
+    },
+    "gate_decision": {
+      "type": "string",
+      "enum": ["allow", "block", "hold_manual_resolution"]
+    },
+    "gate_reason_code": {
+      "type": "string",
+      "enum": [
+        "safe_to_merge",
+        "unresolved_fix_required",
+        "unresolved_not_safe_to_merge",
+        "handoff_pending",
+        "disposition_requires_manual_review",
+        "disposition_escalated",
+        "policy_blocked",
+        "missing_required_review_artifact",
+        "ambiguous_review_state"
+      ]
+    },
+    "blocking_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "required_manual_action": {"type": "boolean"},
+    "promotion_eligible": {"type": "boolean"},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classified_by_system",
+        "automatic_promotion_triggered",
+        "automatic_merge_triggered",
+        "closure_authority_transferred"
+      ],
+      "properties": {
+        "classified_by_system": {"type": "string", "const": "TLC"},
+        "automatic_promotion_triggered": {"type": "boolean", "const": false},
+        "automatic_merge_triggered": {"type": "boolean", "const": false},
+        "closure_authority_transferred": {"type": "boolean", "const": false}
+      }
+    },
+    "trace_linkage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["review_id", "review_result_ref", "review_merge_readiness_ref"],
+      "properties": {
+        "review_id": {"type": "string", "minLength": 1},
+        "review_result_ref": {"type": ["string", "null"], "pattern": "^review_result_artifact:.+"},
+        "review_merge_readiness_ref": {
+          "type": ["string", "null"],
+          "pattern": "^review_merge_readiness_artifact:.+"
+        }
+      }
+    },
+    "emitted_at": {"type": "string", "format": "date-time"}
+  }
+}

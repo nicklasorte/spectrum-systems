@@ -232,6 +232,7 @@ These rules are hard boundaries for architecture, contracts, and validation.
   - subsystem_routing
   - bounded_cycle_coordination
   - unresolved_handoff_disposition_classification
+  - review_promotion_gate_evaluation
 - **consumes:**
   - build_admission_record
   - normalized_execution_request
@@ -239,11 +240,15 @@ These rules are hard boundaries for architecture, contracts, and validation.
   - tpa_slice_artifact
   - system_enforcement_result_artifact
   - closure_decision_artifact
+  - review_result_artifact
+  - review_merge_readiness_artifact
   - review_operator_handoff_artifact
+  - review_handoff_disposition_artifact
 - **produces:**
   - tlc_handoff_record
   - top_level_conductor_run_artifact
   - review_handoff_disposition_artifact
+  - review_promotion_gate_artifact
 - **must_not_do:**
   - execute work slice internals (PQX-owned)
   - perform repair diagnosis/planning (FRE-owned)
@@ -306,6 +311,7 @@ These rules are hard boundaries for architecture, contracts, and validation.
 - RQX → PQX (handoff only via TPA-approved artifacts; no direct execution)
 - RQX → TLC (operator handoff disposition classification only; no auto-recursion)
 - TLC → review_handoff_disposition_artifact (classification output only; no execution trigger)
+- TLC → review_promotion_gate_artifact (readiness classification signal only; no automatic merge/promotion and no closure authority override)
 - RIL → CDE
 
 ## Entry Invariant (Repo-Mutation Admission)
