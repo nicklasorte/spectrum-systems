@@ -27,6 +27,18 @@ _READ_PATTERNS = (
     r"\bread\b",
 )
 _REPO_SENSITIVE_PATH_HINTS = ("contracts/", "spectrum_systems/", "tests/", "docs/")
+_CONTEXT_CAPABILITY_HINTS = (
+    "context",
+    "recipe",
+    "admission",
+    "bundle",
+    "source",
+    "lineage",
+    "tpa",
+    "tlc",
+    "pqx",
+    "aex",
+)
 
 
 ExecutionType = str
@@ -49,3 +61,10 @@ def is_repo_sensitive_unknown(*, execution_type: str, repo_mutation_requested: b
     if repo_mutation_requested:
         return True
     return any(path.startswith(prefix) for path in target_paths for prefix in _REPO_SENSITIVE_PATH_HINTS)
+
+
+def is_context_capability_request(prompt_text: str, target_paths: list[str] | None = None) -> bool:
+    text = (prompt_text or "").lower()
+    paths = " ".join(str(item).lower() for item in (target_paths or []))
+    haystack = f"{text} {paths}"
+    return any(hint in haystack for hint in _CONTEXT_CAPABILITY_HINTS)

@@ -9,7 +9,7 @@ import hashlib
 from datetime import datetime, timezone
 from typing import Any, Callable, Mapping
 
-from spectrum_systems.aex.classifier import classify_execution_type, is_repo_sensitive_unknown
+from spectrum_systems.aex.classifier import classify_execution_type, is_context_capability_request, is_repo_sensitive_unknown
 from spectrum_systems.aex.errors import INVALID_REQUEST_SHAPE, MISSING_REQUIRED_FIELD, UNKNOWN_EXECUTION_TYPE
 from spectrum_systems.aex.models import AdmissionResult, CodexBuildRequest
 from spectrum_systems.contracts import validate_artifact
@@ -42,6 +42,7 @@ class AEXEngine:
 
         execution_type = classify_execution_type(normalized_input.prompt_text, normalized_input.target_paths)
         repo_mutation_requested = execution_type == "repo_write" or bool(normalized_input.target_paths)
+        context_capability_request = is_context_capability_request(normalized_input.prompt_text, normalized_input.target_paths)
 
         normalized = {
             "artifact_type": "normalized_execution_request",
@@ -64,10 +65,13 @@ class AEXEngine:
             repo_mutation_requested=repo_mutation_requested,
             target_paths=normalized_input.target_paths,
         ):
+            reason_codes = [UNKNOWN_EXECUTION_TYPE]
+            if context_capability_request:
+                reason_codes.append("context_capability_unclassifiable")
             return self._reject(
                 normalized_input.request_id,
                 normalized_input.trace_id,
-                [UNKNOWN_EXECUTION_TYPE],
+                reason_codes,
                 "execution type is unknown and repo mutation cannot be ruled out",
                 normalized=normalized,
             )
@@ -83,7 +87,7 @@ class AEXEngine:
             "trace_id": normalized_input.trace_id,
             "created_at": normalized_input.created_at,
             "produced_by": normalized_input.produced_by,
-            "reason_codes": [],
+            "reason_codes": ["context_capability_repo_mutation"] if (repo_mutation_requested and context_capability_request) else [],
             "target_scope": {
                 "repo": "spectrum-systems",
                 "paths": normalized_input.target_paths,
