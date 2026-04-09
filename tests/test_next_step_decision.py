@@ -122,6 +122,8 @@ def test_happy_path_progression(tmp_path: Path) -> None:
     eligibility_path = _write(tmp_path / "eligibility.json", _eligibility())
     decision = build_next_step_decision(str(path), str(eligibility_path))
     assert decision["recommendation_action"] == "submit_for_review"
+    assert decision["next_action"] == decision["recommendation_action"]
+    assert decision["allowed_actions"] == decision["recommendation_candidates"]
     assert decision["blocking"] is False
     assert decision["remediation_required"] is False
     assert decision["policy_id"] == "NEXT_STEP_DECISION_POLICY"
@@ -167,6 +169,7 @@ def test_drift_detected_forces_remediation(tmp_path: Path) -> None:
     assert decision["blocking_reason_category"] == "blocking_drift_finding"
     assert isinstance(decision["drift_remediation_artifact"], dict)
     assert decision["fre_fix_plan_artifact_ref"] == str(_REPO_ROOT / "contracts" / "examples" / "fix_plan_artifact.json")
+    assert decision["fix_plan_artifact_path"] == decision["fre_fix_plan_artifact_ref"]
 
 
 def test_blocking_recommendation_requires_fre_fix_plan_artifact(tmp_path: Path) -> None:
@@ -241,6 +244,5 @@ def test_eligibility_snapshot_is_stably_sorted(tmp_path: Path) -> None:
 def test_contract_example_cases_validate() -> None:
     schema = load_schema("next_step_decision_artifact")
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
-    cases = json.loads((_REPO_ROOT / "contracts" / "examples" / "next_step_decision_artifact.json").read_text())
-    for payload in cases.values():
-        validator.validate(payload)
+    payload = json.loads((_REPO_ROOT / "contracts" / "examples" / "next_step_decision_artifact.json").read_text())
+    validator.validate(payload)

@@ -51,7 +51,19 @@
       "type": "string",
       "minLength": 1
     },
+    "next_action": {
+      "type": "string",
+      "minLength": 1
+    },
     "recommendation_candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "allowed_actions": {
       "type": "array",
       "minItems": 1,
       "items": {
@@ -139,6 +151,12 @@
       ]
     },
     "fre_fix_plan_artifact_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fix_plan_artifact_path": {
       "type": [
         "string",
         "null"

@@ -318,7 +318,9 @@ def build_next_step_decision(cycle_manifest_path: str, roadmap_eligibility_artif
         "cycle_id": cycle_id,
         "current_state": state,
         "recommendation_action": recommendation_action,
+        "next_action": recommendation_action,
         "recommendation_candidates": recommendation_candidates,
+        "allowed_actions": recommendation_candidates,
         "blocking": blocking,
         "required_inputs_missing": sorted(set(missing_inputs)),
         "drift_detected": drift_detected,
@@ -337,7 +339,9 @@ def build_next_step_decision(cycle_manifest_path: str, roadmap_eligibility_artif
         "cycle_id": cycle_id,
         "current_state": state,
         "recommendation_action": recommendation_action,
+        "next_action": recommendation_action,
         "recommendation_candidates": recommendation_candidates,
+        "allowed_actions": recommendation_candidates,
         "blocking": blocking,
         "blocking_reasons": sorted(set(blocking_reasons)),
         "required_inputs_missing": sorted(set(missing_inputs)),
@@ -363,6 +367,7 @@ def build_next_step_decision(cycle_manifest_path: str, roadmap_eligibility_artif
         "blocking_reason_category": None,
         "drift_remediation_artifact_path": None,
         "fre_fix_plan_artifact_ref": None,
+        "fix_plan_artifact_path": None,
         "authority_level": "non_authoritative_recommendation",
     }
 
@@ -382,6 +387,7 @@ def build_next_step_decision(cycle_manifest_path: str, roadmap_eligibility_artif
         decision["blocking_reason_category"] = remediation_artifact["normalized_category"]
         decision["drift_remediation_artifact"] = remediation_artifact
         decision["fre_fix_plan_artifact_ref"] = str(fre_fix_plan_artifact_ref)
+        decision["fix_plan_artifact_path"] = str(fre_fix_plan_artifact_ref)
 
     schema = load_schema("next_step_decision_artifact")
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(decision)
