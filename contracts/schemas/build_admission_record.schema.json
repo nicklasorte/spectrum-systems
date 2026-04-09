@@ -96,6 +96,11 @@
         "issuer",
         "key_id",
         "payload_digest",
+        "audience",
+        "scope",
+        "issued_at",
+        "expires_at",
+        "lineage_token_id",
         "attestation"
       ],
       "properties": {
@@ -117,6 +122,26 @@
         "attestation": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
+        },
+        "audience": {
+          "type": "string",
+          "const": "pqx_repo_write_boundary"
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lineage_token_id": {
+          "type": "string",
+          "pattern": "^lin-[0-9a-f]{24}$"
         }
       }
     },
@@ -144,26 +169,51 @@
             "trigger"
           ],
           "properties": {
-            "workflow": {"type": "string", "minLength": 1},
-            "workflow_run_id": {"type": "string", "minLength": 1},
-            "head_branch": {"type": "string", "minLength": 1},
-            "trigger": {"type": "string", "minLength": 1}
+            "workflow": {
+              "type": "string",
+              "minLength": 1
+            },
+            "workflow_run_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "head_branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "trigger": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
         "repository": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["full_name"],
+          "required": [
+            "full_name"
+          ],
           "properties": {
-            "full_name": {"type": "string", "minLength": 1}
+            "full_name": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
         "pull_request": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["number"],
+          "required": [
+            "number"
+          ],
           "properties": {
-            "number": {"type": ["integer", "null"], "minimum": 1}
+            "number": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1
+            }
           }
         }
       }
@@ -177,31 +227,68 @@
         "execution_type"
       ],
       "properties": {
-        "owner": {"type": "string", "const": "AEX"},
-        "repo_mutation_requested": {"type": "boolean"},
+        "owner": {
+          "type": "string",
+          "const": "AEX"
+        },
+        "repo_mutation_requested": {
+          "type": "boolean"
+        },
         "execution_type": {
           "type": "string",
-          "enum": ["repo_write", "read_only", "analysis_only", "unknown"]
+          "enum": [
+            "repo_write",
+            "read_only",
+            "analysis_only",
+            "unknown"
+          ]
         }
       }
     },
     "admission_decision": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "rejection_reason"],
+      "required": [
+        "status",
+        "rejection_reason"
+      ],
       "properties": {
-        "status": {"type": "string", "enum": ["accepted", "rejected"]},
-        "rejection_reason": {"type": ["string", "null"]}
+        "status": {
+          "type": "string",
+          "enum": [
+            "accepted",
+            "rejected"
+          ]
+        },
+        "rejection_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "lineage": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["handoff_owner", "handoff_ref", "trace_id"],
+      "required": [
+        "handoff_owner",
+        "handoff_ref",
+        "trace_id"
+      ],
       "properties": {
-        "handoff_owner": {"type": "string", "const": "TLC"},
-        "handoff_ref": {"type": "string", "minLength": 1},
-        "trace_id": {"type": "string", "minLength": 1}
+        "handoff_owner": {
+          "type": "string",
+          "const": "TLC"
+        },
+        "handoff_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trace_id": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     }
   }

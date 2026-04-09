@@ -480,6 +480,20 @@ def test_fix_reentry_repo_write_succeeds_with_admission_lineage(tmp_path: Path) 
     fix_roadmap_result = cycle_runner.run_cycle(manifest_path)
     assert fix_roadmap_result["next_state"] == "fix_roadmap_ready"
 
+    after_fix_roadmap = _load(manifest_path)
+    refreshed_request_path = Path(after_fix_roadmap["pqx_execution_request_path"])
+    refreshed_request = _load(refreshed_request_path)
+    refreshed_request["build_admission_record"]["authenticity"] = issue_authenticity(
+        artifact=refreshed_request["build_admission_record"], issuer="AEX"
+    )
+    refreshed_request["normalized_execution_request"]["authenticity"] = issue_authenticity(
+        artifact=refreshed_request["normalized_execution_request"], issuer="AEX"
+    )
+    refreshed_request["tlc_handoff_record"]["authenticity"] = issue_authenticity(
+        artifact=refreshed_request["tlc_handoff_record"], issuer="TLC"
+    )
+    _write(refreshed_request_path, refreshed_request)
+
     reentry_result = cycle_runner.run_cycle(manifest_path)
     assert reentry_result["status"] == "ok"
     assert reentry_result["next_state"] == "fixes_in_progress"

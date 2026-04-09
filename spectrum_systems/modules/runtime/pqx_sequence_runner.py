@@ -1093,6 +1093,7 @@ def execute_sequence_run(
                 normalized_execution_request=lineage.get("normalized_execution_request"),
                 tlc_handoff_record=lineage.get("tlc_handoff_record"),
                 expected_trace_id=trace_id,
+                replay_context=run_id,
             )
         except (RepoWriteLineageGuardError, Exception) as exc:
             raise PQXSequenceRunnerError(f"direct_pqx_repo_write_forbidden:{exc}") from exc

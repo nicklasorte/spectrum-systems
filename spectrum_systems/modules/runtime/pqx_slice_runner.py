@@ -192,6 +192,8 @@ def _enforce_repo_write_lineage_boundary(
             build_admission_record=lineage.get("build_admission_record"),
             normalized_execution_request=lineage.get("normalized_execution_request"),
             tlc_handoff_record=lineage.get("tlc_handoff_record"),
+            enforce_replay_protection=False,
+            replay_context=run_id,
         )
     except (RepoWriteLineageGuardError, Exception) as exc:
         return _block_payload(

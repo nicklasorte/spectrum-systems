@@ -2,14 +2,25 @@
 
 from __future__ import annotations
 
+from threading import Lock
 from typing import Any
 
 from spectrum_systems.contracts import validate_artifact
-from spectrum_systems.modules.runtime.lineage_authenticity import verify_authenticity
+from spectrum_systems.modules.runtime.lineage_authenticity import LineageAuthenticityError, verify_authenticity
 
 
 class RepoWriteLineageGuardError(ValueError):
     """Raised when repo-write lineage requirements are missing or invalid."""
+
+
+_CONSUMED_REPO_WRITE_LINEAGE_TOKENS: set[str] = set()
+_CONSUMED_REPO_WRITE_LINEAGE_LOCK = Lock()
+
+
+def reset_repo_write_lineage_replay_state() -> None:
+    """Test helper to reset in-process replay state."""
+    with _CONSUMED_REPO_WRITE_LINEAGE_LOCK:
+        _CONSUMED_REPO_WRITE_LINEAGE_TOKENS.clear()
 
 
 def _require_non_empty_string(value: Any, *, field: str) -> str:
@@ -18,12 +29,23 @@ def _require_non_empty_string(value: Any, *, field: str) -> str:
     return value.strip()
 
 
+def _consume_repo_write_lineage_tokens(tokens: list[str], *, replay_context: str | None = None) -> None:
+    token_key = "|".join(sorted(tokens))
+    replay_key = f"{replay_context}:{token_key}" if replay_context else token_key
+    with _CONSUMED_REPO_WRITE_LINEAGE_LOCK:
+        if replay_key in _CONSUMED_REPO_WRITE_LINEAGE_TOKENS:
+            raise RepoWriteLineageGuardError("repo_write_lineage_rejected:lineage_replay_detected")
+        _CONSUMED_REPO_WRITE_LINEAGE_TOKENS.add(replay_key)
+
+
 def validate_repo_write_lineage(
     *,
     build_admission_record: Any,
     normalized_execution_request: Any,
     tlc_handoff_record: Any,
     expected_trace_id: str | None = None,
+    enforce_replay_protection: bool = True,
+    replay_context: str | None = None,
 ) -> dict[str, str]:
     """Validate strict AEX->TLC lineage requirements for repo-write execution."""
 
@@ -34,14 +56,18 @@ def validate_repo_write_lineage(
     if not isinstance(tlc_handoff_record, dict):
         raise RepoWriteLineageGuardError("repo_write_lineage_rejected:tlc_handoff_record_required")
 
-    validate_artifact(build_admission_record, "build_admission_record")
-    validate_artifact(normalized_execution_request, "normalized_execution_request")
-    validate_artifact(tlc_handoff_record, "tlc_handoff_record")
     try:
-        verify_authenticity(artifact=build_admission_record, expected_issuer="AEX")
-        verify_authenticity(artifact=normalized_execution_request, expected_issuer="AEX")
-        verify_authenticity(artifact=tlc_handoff_record, expected_issuer="TLC")
-    except ValueError as exc:
+        validate_artifact(build_admission_record, "build_admission_record")
+        validate_artifact(normalized_execution_request, "normalized_execution_request")
+        validate_artifact(tlc_handoff_record, "tlc_handoff_record")
+    except Exception as exc:
+        raise RepoWriteLineageGuardError(f"repo_write_lineage_rejected:schema_invalid:{exc}") from exc
+
+    try:
+        admission_auth = verify_authenticity(artifact=build_admission_record, expected_issuer="AEX")
+        normalized_auth = verify_authenticity(artifact=normalized_execution_request, expected_issuer="AEX")
+        handoff_auth = verify_authenticity(artifact=tlc_handoff_record, expected_issuer="TLC")
+    except (ValueError, LineageAuthenticityError) as exc:
         raise RepoWriteLineageGuardError(f"repo_write_lineage_rejected:{exc}") from exc
 
     admission_status = _require_non_empty_string(build_admission_record.get("admission_status"), field="admission_status")
@@ -106,6 +132,14 @@ def validate_repo_write_lineage(
 
     _require_non_empty_string(build_admission_record.get("produced_by"), field="build_admission_record.produced_by")
     _require_non_empty_string(normalized_execution_request.get("produced_by"), field="normalized_execution_request.produced_by")
+
+    if enforce_replay_protection:
+        _consume_repo_write_lineage_tokens(
+            [
+                _require_non_empty_string(handoff_auth["lineage_token_id"], field="tlc_handoff_record.authenticity.lineage_token_id"),
+            ],
+            replay_context=replay_context,
+        )
 
     return {
         "trace_id": admission_trace_id,
