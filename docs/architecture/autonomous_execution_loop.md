@@ -11,6 +11,8 @@ This slice extends the deterministic fail-closed control-plane from foundation s
 - PQX pre-execution is dual-gated and fail-closed: contract impact (G13) + execution change impact (G14) must both permit execution where applicable.
 - RQX is review-only and emits review artifacts; it does not execute fixes directly.
 - Review fix execution must flow through TPA before entering PQX (`RQX -> TPA -> PQX`).
+- PQX sequence completion now requires RQX review enforcement as part of completion semantics; caller inputs may supplement review context but cannot disable review execution.
+- Bundle fix execution is not a privileged bypass: pending fixes fail closed unless they carry authoritative TPA gate provenance that traces back to the governed `RQX -> TPA -> PQX` path.
 - Unresolved review outcomes terminate in operator handoff artifacts; no auto-execution recursion is allowed.
 - GOV-10 done certification is the required final gate.
 - Missing required artifact, invalid artifact, or failed handoff blocks progression.

@@ -50,7 +50,10 @@ def test_bundle_certification_failure_when_chain_not_certified(tmp_path: Path) -
         run_id="run-g4-002",
         trace_id="trace-g4-002",
         execute_slice=_success_executor,
-        review_results_by_slice={"PQX-QUEUE-02": {"review_id": "r2", "has_blocking_findings": False}},
+        review_results_by_slice={
+            "PQX-QUEUE-02": {"review_id": "r2", "has_blocking_findings": False},
+            "PQX-QUEUE-03": {"review_id": "r3", "overall_disposition": "rejected", "has_blocking_findings": True},
+        },
     )
     assert state["status"] == "blocked"
     assert state["chain_certification_status"] == "blocked"

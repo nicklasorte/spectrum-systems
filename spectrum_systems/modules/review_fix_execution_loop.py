@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -25,6 +26,52 @@ class ReviewFixExecutionLoopError(ValueError):
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _canonical_json(payload: Any) -> str:
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def compute_tpa_gate_provenance_token(tpa_slice_artifact: Mapping[str, Any]) -> str:
+    gate_artifact = tpa_slice_artifact.get("artifact")
+    if not isinstance(gate_artifact, Mapping):
+        raise ReviewFixExecutionLoopError("tpa_slice_artifact.artifact must be an object")
+    payload = {
+        "artifact_id": str(tpa_slice_artifact.get("artifact_id") or ""),
+        "run_id": str(tpa_slice_artifact.get("run_id") or ""),
+        "trace_id": str(tpa_slice_artifact.get("trace_id") or ""),
+        "slice_id": str(tpa_slice_artifact.get("slice_id") or ""),
+        "step_id": str(tpa_slice_artifact.get("step_id") or ""),
+        "phase": str(tpa_slice_artifact.get("phase") or ""),
+        "produced_at": str(tpa_slice_artifact.get("produced_at") or ""),
+        "artifact_kind": str(gate_artifact.get("artifact_kind") or ""),
+        "review_signal_refs": sorted(str(ref) for ref in (gate_artifact.get("review_signal_refs") or []) if str(ref)),
+        "selection_inputs": gate_artifact.get("selection_inputs") or {},
+    }
+    return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
+
+
+def validate_tpa_gate_authoritative_provenance(
+    *,
+    request_artifact: Mapping[str, Any],
+    repo_root: Path,
+) -> dict[str, Any]:
+    tpa_slice_artifact = request_artifact["tpa_slice_artifact"]
+    artifact_id = str(tpa_slice_artifact.get("artifact_id") or "").strip()
+    if not artifact_id:
+        raise ReviewFixExecutionLoopError("authoritative TPA provenance requires tpa_slice_artifact.artifact_id")
+    path = repo_root / "artifacts" / "tpa_authority" / f"{artifact_id}.json"
+    if not path.is_file():
+        raise ReviewFixExecutionLoopError("authoritative TPA provenance artifact_ref is missing")
+    recorded_artifact = json.loads(path.read_text(encoding="utf-8"))
+    recorded_payload = dict(recorded_artifact)
+    token = str(recorded_payload.pop("authoritative_integrity_token", "")).strip()
+    if recorded_payload != dict(tpa_slice_artifact):
+        raise ReviewFixExecutionLoopError("authoritative TPA provenance artifact mismatch")
+    expected = compute_tpa_gate_provenance_token(tpa_slice_artifact)
+    if token != expected:
+        raise ReviewFixExecutionLoopError("authoritative TPA provenance integrity_token mismatch")
+    return {"artifact_ref": str(path), "integrity_token": token, "issued_by_system": "TPA"}
 
 
 def _validate(instance: dict[str, Any], schema_name: str) -> None:
@@ -216,7 +263,7 @@ def _tpa_gate_decision(tpa_slice_artifact: Mapping[str, Any]) -> tuple[str, str 
     return "allow", None
 
 
-def _assert_tpa_gated_fix_flow(request_artifact: Mapping[str, Any]) -> None:
+def _assert_tpa_gated_fix_flow(request_artifact: Mapping[str, Any], *, repo_root: Path) -> None:
     fix_slice = request_artifact["fix_slices"][0]
     source_review_result_ref = request_artifact["source_review_result_ref"]
     if fix_slice.get("review_result_ref") != source_review_result_ref:
@@ -235,6 +282,10 @@ def _assert_tpa_gated_fix_flow(request_artifact: Mapping[str, Any]) -> None:
         raise ReviewFixExecutionLoopError(
             "tpa gate must bind to source_review_result_ref before PQX execution"
         )
+    validate_tpa_gate_authoritative_provenance(
+        request_artifact=request_artifact,
+        repo_root=repo_root,
+    )
 
 
 def _default_pqx_executor(request_artifact: Mapping[str, Any]) -> dict[str, Any]:
@@ -268,7 +319,7 @@ def run_review_fix_execution_cycle(
         )
 
     validate_review_fix_execution_request_artifact(request_artifact)
-    _assert_tpa_gated_fix_flow(request_artifact)
+    _assert_tpa_gated_fix_flow(request_artifact, repo_root=repo_root)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     request_id = str(request_artifact["request_id"])

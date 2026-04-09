@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from spectrum_systems.modules.runtime.pqx_bundle_orchestrator import execute_bundle_run
+from spectrum_systems.modules.review_fix_execution_loop import compute_tpa_gate_provenance_token
 from spectrum_systems.modules.runtime.pqx_bundle_state import (
     initialize_bundle_state,
     ingest_review_result,
@@ -96,6 +97,44 @@ def _state_with_pending_fix(tmp_path: Path, execution_plan_ref: str) -> tuple[di
     )
     save_bundle_state(updated, tmp_path / "bundle_state.json", bundle_plan=bundle_plan)
     return updated, bundle_plan
+
+
+def _tpa_gate_bundle_for_fix(tmp_path: Path, *, fix_id: str, review_result_ref: str) -> dict:
+    tpa_artifact = {
+        "artifact_type": "tpa_slice_artifact",
+        "schema_version": "1.2.0",
+        "artifact_id": f"tpa:{fix_id}:gate",
+        "run_id": "run-fix-001",
+        "trace_id": "trace-fix-001",
+        "slice_id": "AI-02-G",
+        "step_id": "AI-02",
+        "phase": "gate",
+        "produced_at": "2026-04-09T00:00:00Z",
+        "artifact": {
+            "artifact_kind": "gate",
+            "promotion_ready": True,
+            "high_risk_unmitigated": False,
+            "fail_closed_reason": None,
+            "review_signal_refs": [review_result_ref],
+            "selection_inputs": {"comparison_inputs_present": True},
+            "complexity_regression_gate": {"decision": "allow"},
+            "simplicity_review": {"decision": "allow"},
+        },
+    }
+    tpa_file = tmp_path / "artifacts/tpa_authority" / f"{tpa_artifact['artifact_id']}.json"
+    tpa_file.parent.mkdir(parents=True, exist_ok=True)
+    stored = dict(tpa_artifact)
+    stored["authoritative_integrity_token"] = compute_tpa_gate_provenance_token(tpa_artifact)
+    tpa_file.write_text(json.dumps(stored, indent=2) + "\n", encoding="utf-8")
+    return {
+        fix_id: {
+            "request_artifact": {
+                "source_review_result_ref": review_result_ref,
+                "fix_slices": [{"review_result_ref": review_result_ref}],
+                "tpa_slice_artifact": tpa_artifact,
+            }
+        }
+    }
 
 
 def test_fix_converts_to_step_correctly() -> None:
@@ -212,6 +251,11 @@ def test_bundle_resumes_correctly_after_fixes(tmp_path: Path) -> None:
         trace_id="trace-fix-001",
         bundle_plan_path=plan_path,
         execute_fixes=True,
+        tpa_gate_artifacts_by_fix_id=_tpa_gate_bundle_for_fix(
+            tmp_path,
+            fix_id="fix:REV-FIX-001:F-001",
+            review_result_ref="review_result_artifact:REV-FIX-001",
+        ),
     )
 
     assert result["status"] == "completed"
@@ -219,6 +263,51 @@ def test_bundle_resumes_correctly_after_fixes(tmp_path: Path) -> None:
     assert "fix:REV-FIX-001:F-001" in persisted["executed_fixes"]
     assert persisted["pending_fix_ids"][0]["status"] == "resolved"
     assert persisted["last_fix_gate_status"] == "passed"
+
+
+def test_bundle_fix_execution_requires_tpa_gate(tmp_path: Path) -> None:
+    plan_path = _bundle_plan(tmp_path / "execution_bundles.md")
+    state, bundle_plan = _state_with_pending_fix(tmp_path, str(plan_path))
+    save_bundle_state(state, tmp_path / "bundle_state.json", bundle_plan=bundle_plan)
+
+    with pytest.raises(Exception, match="missing authoritative TPA gate artifact"):
+        execute_bundle_run(
+            bundle_id="BUNDLE-T1",
+            bundle_state_path=tmp_path / "bundle_state.json",
+            output_dir=tmp_path / "out",
+            run_id="run-fix-001",
+            sequence_run_id="queue-run-fix-001",
+            trace_id="trace-fix-001",
+            bundle_plan_path=plan_path,
+            execute_fixes=True,
+        )
+
+
+def test_bundle_fix_execution_routes_through_rqx_tpa_pqx_contract(tmp_path: Path) -> None:
+    plan_path = _bundle_plan(tmp_path / "execution_bundles.md")
+    state, bundle_plan = _state_with_pending_fix(tmp_path, str(plan_path))
+    save_bundle_state(state, tmp_path / "bundle_state.json", bundle_plan=bundle_plan)
+    fix_id = "fix:REV-FIX-001:F-001"
+    review_ref = "review_result_artifact:REV-FIX-001"
+    tpa_gate = _tpa_gate_bundle_for_fix(tmp_path, fix_id=fix_id, review_result_ref=review_ref)
+
+    result = execute_bundle_run(
+        bundle_id="BUNDLE-T1",
+        bundle_state_path=tmp_path / "bundle_state.json",
+        output_dir=tmp_path / "out",
+        run_id="run-fix-001",
+        sequence_run_id="queue-run-fix-001",
+        trace_id="trace-fix-001",
+        bundle_plan_path=plan_path,
+        execute_fixes=True,
+        tpa_gate_artifacts_by_fix_id=tpa_gate,
+    )
+
+    assert result["status"] == "completed"
+    persisted = json.loads((tmp_path / "bundle_state.json").read_text(encoding="utf-8"))
+    assert fix_id in persisted["executed_fixes"]
+    assert tpa_gate[fix_id]["request_artifact"]["source_review_result_ref"] == review_ref
+    assert tpa_gate[fix_id]["request_artifact"]["tpa_slice_artifact"]["phase"] == "gate"
 
 
 def test_record_and_state_update_round_trip() -> None:
