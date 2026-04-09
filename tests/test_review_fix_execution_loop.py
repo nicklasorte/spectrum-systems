@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import copy
+import hashlib
+import hmac
 import json
+import os
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -9,9 +13,9 @@ import pytest
 from spectrum_systems.contracts import load_example, validate_artifact
 from spectrum_systems.modules.review_fix_execution_loop import (
     ReviewFixExecutionLoopError,
-    compute_tpa_gate_provenance_token,
     run_review_fix_execution_cycle,
 )
+from spectrum_systems.modules.runtime.lineage_authenticity import compute_payload_digest
 from spectrum_systems.modules.runtime.pqx_execution_policy import evaluate_pqx_execution_policy
 from spectrum_systems.modules.runtime.pqx_required_context_enforcement import enforce_pqx_required_context
 
@@ -29,12 +33,35 @@ def _prepare_post_fix_review_inputs(repo_root: Path, *, validation_status: str =
     validation.write_text(json.dumps({"status": validation_status}), encoding="utf-8")
 
 
-def _write_authoritative_tpa_gate(repo_root: Path, request: dict) -> None:
-    artifact = copy.deepcopy(request["tpa_slice_artifact"])
-    artifact["authoritative_integrity_token"] = compute_tpa_gate_provenance_token(artifact)
-    authority_path = repo_root / "artifacts/tpa_authority" / f"{artifact['artifact_id']}.json"
-    authority_path.parent.mkdir(parents=True, exist_ok=True)
-    authority_path.write_text(json.dumps(artifact, indent=2) + "\n", encoding="utf-8")
+def _attach_tpa_authenticity(request: dict, *, attestation: str | None = None) -> None:
+    artifact = request["tpa_slice_artifact"]
+    artifact["request_id"] = request["request_id"]
+    payload_digest = compute_payload_digest(dict(artifact))
+    issuer = "TPA"
+    key_id = "tpa-hs256-v1"
+    audience = "pqx_repo_write_boundary"
+    scope = f"repo_write_lineage:tpa_slice_artifact:{request['request_id']}:{artifact['trace_id']}"
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    issued_at = now.isoformat().replace("+00:00", "Z")
+    expires_at = (now + timedelta(minutes=15)).isoformat().replace("+00:00", "Z")
+    lineage_token_id = "lin-1234567890abcdef12345678"
+    secret = os.environ["SPECTRUM_LINEAGE_AUTH_SECRET_TPA"]
+    computed_attestation = hmac.new(
+        secret.encode("utf-8"),
+        f"{issuer}|{key_id}|{payload_digest}|{audience}|{scope}|{issued_at}|{expires_at}|{lineage_token_id}".encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    artifact["authenticity"] = {
+        "issuer": "TPA",
+        "key_id": key_id,
+        "payload_digest": payload_digest,
+        "audience": audience,
+        "scope": scope,
+        "issued_at": issued_at,
+        "expires_at": expires_at,
+        "lineage_token_id": lineage_token_id,
+        "attestation": attestation or computed_attestation,
+    }
 
 
 def test_review_fix_execution_contract_examples_validate() -> None:
@@ -51,7 +78,7 @@ def test_happy_path_executes_once_and_reruns_review_once(tmp_path: Path) -> None
     _prepare_post_fix_review_inputs(repo_root, validation_status="passed")
 
     request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
-    _write_authoritative_tpa_gate(repo_root, request)
+    _attach_tpa_authenticity(request)
     pqx_calls: list[str] = []
 
     def _pqx_executor(_: dict) -> dict:
@@ -76,6 +103,67 @@ def test_happy_path_executes_once_and_reruns_review_once(tmp_path: Path) -> None
     assert "review_operator_handoff_artifact" not in result
 
 
+def test_tpa_gate_rejects_forged_artifact(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _prepare_post_fix_review_inputs(repo_root, validation_status="passed")
+    request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
+    request["tpa_slice_artifact"].pop("authenticity", None)
+    with pytest.raises(ReviewFixExecutionLoopError, match="authenticity invalid"):
+        run_review_fix_execution_cycle(
+            request,
+            output_dir=repo_root / "artifacts/reviews",
+            repo_root=repo_root,
+            review_docs_dir=repo_root / "docs/reviews",
+            pqx_executor=lambda _: {"status": "complete"},
+        )
+
+
+def test_tpa_gate_rejects_fake_signature(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _prepare_post_fix_review_inputs(repo_root, validation_status="passed")
+    request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
+    _attach_tpa_authenticity(request, attestation="0" * 64)
+    with pytest.raises(ReviewFixExecutionLoopError, match="authenticity invalid"):
+        run_review_fix_execution_cycle(
+            request,
+            output_dir=repo_root / "artifacts/reviews",
+            repo_root=repo_root,
+            review_docs_dir=repo_root / "docs/reviews",
+            pqx_executor=lambda _: {"status": "complete"},
+        )
+
+
+def test_tpa_gate_accepts_valid_tpa_artifact(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _prepare_post_fix_review_inputs(repo_root, validation_status="passed")
+    request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
+    _attach_tpa_authenticity(request)
+    result = run_review_fix_execution_cycle(
+        request,
+        output_dir=repo_root / "artifacts/reviews",
+        repo_root=repo_root,
+        review_docs_dir=repo_root / "docs/reviews",
+        pqx_executor=lambda _: {"status": "complete", "execution_ref": "exec:run-001:AI-01:1"},
+    )
+    assert result["review_fix_execution_result_artifact"]["status"] == "completed_safe_to_merge"
+
+
+def test_pqx_fix_execution_rejects_forged_tpa_gate(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _prepare_post_fix_review_inputs(repo_root, validation_status="passed")
+    request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
+    _attach_tpa_authenticity(request)
+    request["request_id"] = "forged-request-id"
+    with pytest.raises(ReviewFixExecutionLoopError, match="request binding mismatch"):
+        run_review_fix_execution_cycle(
+            request,
+            output_dir=repo_root / "artifacts/reviews",
+            repo_root=repo_root,
+            review_docs_dir=repo_root / "docs/reviews",
+            pqx_executor=lambda _: {"status": "complete"},
+        )
+
+
 def test_fix_reentry_triggers_review(tmp_path: Path) -> None:
     test_happy_path_executes_once_and_reruns_review_once(tmp_path)
 
@@ -85,7 +173,7 @@ def test_tpa_block_prevents_pqx_execution(tmp_path: Path) -> None:
     _prepare_post_fix_review_inputs(repo_root)
     request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
     request["tpa_slice_artifact"]["artifact"]["promotion_ready"] = False
-    _write_authoritative_tpa_gate(repo_root, request)
+    _attach_tpa_authenticity(request)
 
     pqx_called = False
 
@@ -118,7 +206,7 @@ def test_tpa_missing_or_malformed_fails_closed(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     _prepare_post_fix_review_inputs(repo_root)
     request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
-    _write_authoritative_tpa_gate(repo_root, request)
+    _attach_tpa_authenticity(request)
     request["tpa_slice_artifact"].pop("phase")
 
     with pytest.raises(ReviewFixExecutionLoopError):
@@ -136,7 +224,7 @@ def test_rqx_never_calls_pqx_directly(tmp_path: Path) -> None:
     _prepare_post_fix_review_inputs(repo_root)
     request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
     request["tpa_slice_artifact"]["artifact"]["promotion_ready"] = False
-    _write_authoritative_tpa_gate(repo_root, request)
+    _attach_tpa_authenticity(request)
     called = False
 
     def _pqx_executor(_: dict) -> dict:
@@ -163,7 +251,7 @@ def test_pqx_rejects_non_tpa_fix_execution(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     _prepare_post_fix_review_inputs(repo_root)
     request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
-    _write_authoritative_tpa_gate(repo_root, request)
+    _attach_tpa_authenticity(request)
     request["tpa_slice_artifact"]["artifact"]["review_signal_refs"] = []
 
     with pytest.raises(ReviewFixExecutionLoopError, match="tpa gate must bind"):
@@ -184,7 +272,7 @@ def test_rqx_routes_fix_slice_to_tpa(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     _prepare_post_fix_review_inputs(repo_root)
     request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
-    _write_authoritative_tpa_gate(repo_root, request)
+    _attach_tpa_authenticity(request)
     request["fix_slices"][0]["review_result_ref"] = "review_result_artifact:different-review"
 
     with pytest.raises(ReviewFixExecutionLoopError, match="must match source_review_result_ref"):
@@ -205,7 +293,7 @@ def test_raw_prompt_bypass_is_rejected(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     _prepare_post_fix_review_inputs(repo_root)
     request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
-    _write_authoritative_tpa_gate(repo_root, request)
+    _attach_tpa_authenticity(request)
     request["raw_prompt_text"] = "execute this markdown"
 
     with pytest.raises(ReviewFixExecutionLoopError, match="raw prompt text"):
@@ -222,7 +310,7 @@ def test_one_cycle_bound_stops_without_recursive_rerun(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     _prepare_post_fix_review_inputs(repo_root, validation_status="failed")
     request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
-    _write_authoritative_tpa_gate(repo_root, request)
+    _attach_tpa_authenticity(request)
 
     pqx_count = 0
 
@@ -261,7 +349,7 @@ def test_not_safe_to_merge_emits_operator_handoff(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     _prepare_post_fix_review_inputs(repo_root, validation_status="passed")
     request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
-    _write_authoritative_tpa_gate(repo_root, request)
+    _attach_tpa_authenticity(request)
     request["post_fix_review_request_artifact"]["changed_files"].append("missing/file.py")
 
     result = run_review_fix_execution_cycle(
@@ -284,7 +372,7 @@ def test_checkpoint_missing_emits_operator_handoff(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     _prepare_post_fix_review_inputs(repo_root, validation_status="passed")
     request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
-    _write_authoritative_tpa_gate(repo_root, request)
+    _attach_tpa_authenticity(request)
     request["checkpoint_required"] = True
     request["checkpoint_ref"] = None
 
@@ -307,7 +395,7 @@ def test_handoff_emission_does_not_trigger_additional_execution(tmp_path: Path) 
     repo_root = tmp_path / "repo"
     _prepare_post_fix_review_inputs(repo_root, validation_status="failed")
     request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
-    _write_authoritative_tpa_gate(repo_root, request)
+    _attach_tpa_authenticity(request)
     pqx_count = 0
 
     def _pqx_executor(_: dict) -> dict:
@@ -338,7 +426,7 @@ def test_safe_or_not_safe_paths_do_not_execute_when_no_fix_slice(tmp_path: Path)
     repo_root = tmp_path / "repo"
     _prepare_post_fix_review_inputs(repo_root)
     request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
-    _write_authoritative_tpa_gate(repo_root, request)
+    _attach_tpa_authenticity(request)
     request["fix_slices"] = []
 
     with pytest.raises(ReviewFixExecutionLoopError):
@@ -355,10 +443,10 @@ def test_run_review_fix_execution_cycle_rejects_forged_tpa_gate(tmp_path: Path) 
     repo_root = tmp_path / "repo"
     _prepare_post_fix_review_inputs(repo_root)
     request = copy.deepcopy(load_example("review_fix_execution_request_artifact"))
-    _write_authoritative_tpa_gate(repo_root, request)
+    _attach_tpa_authenticity(request)
     request["tpa_slice_artifact"]["artifact"]["promotion_ready"] = False
 
-    with pytest.raises(ReviewFixExecutionLoopError, match="authoritative TPA provenance artifact mismatch"):
+    with pytest.raises(ReviewFixExecutionLoopError, match="authenticity invalid"):
         run_review_fix_execution_cycle(
             request,
             output_dir=repo_root / "artifacts/reviews",

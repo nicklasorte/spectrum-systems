@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import hmac
+import os
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
 
 from spectrum_systems.modules.runtime.pqx_bundle_orchestrator import execute_bundle_run
-from spectrum_systems.modules.review_fix_execution_loop import compute_tpa_gate_provenance_token
+from spectrum_systems.modules.runtime.lineage_authenticity import compute_payload_digest
 from spectrum_systems.modules.runtime.pqx_bundle_state import (
     initialize_bundle_state,
     ingest_review_result,
@@ -102,8 +106,9 @@ def _state_with_pending_fix(tmp_path: Path, execution_plan_ref: str) -> tuple[di
 def _tpa_gate_bundle_for_fix(tmp_path: Path, *, fix_id: str, review_result_ref: str) -> dict:
     tpa_artifact = {
         "artifact_type": "tpa_slice_artifact",
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "artifact_id": f"tpa:{fix_id}:gate",
+        "request_id": f"rfer:{fix_id}",
         "run_id": "run-fix-001",
         "trace_id": "trace-fix-001",
         "slice_id": "AI-02-G",
@@ -121,11 +126,30 @@ def _tpa_gate_bundle_for_fix(tmp_path: Path, *, fix_id: str, review_result_ref: 
             "simplicity_review": {"decision": "allow"},
         },
     }
-    tpa_file = tmp_path / "artifacts/tpa_authority" / f"{tpa_artifact['artifact_id']}.json"
-    tpa_file.parent.mkdir(parents=True, exist_ok=True)
-    stored = dict(tpa_artifact)
-    stored["authoritative_integrity_token"] = compute_tpa_gate_provenance_token(tpa_artifact)
-    tpa_file.write_text(json.dumps(stored, indent=2) + "\n", encoding="utf-8")
+    payload_digest = compute_payload_digest(dict(tpa_artifact))
+    secret = os.environ["SPECTRUM_LINEAGE_AUTH_SECRET_TPA"]
+    scope = f"repo_write_lineage:tpa_slice_artifact:{tpa_artifact['request_id']}:{tpa_artifact['trace_id']}"
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    issued_at = now.isoformat().replace("+00:00", "Z")
+    expires_at = (now + timedelta(minutes=15)).isoformat().replace("+00:00", "Z")
+    tpa_artifact["authenticity"] = {
+        "issuer": "TPA",
+        "key_id": "tpa-hs256-v1",
+        "payload_digest": payload_digest,
+        "audience": "pqx_repo_write_boundary",
+        "scope": scope,
+        "issued_at": issued_at,
+        "expires_at": expires_at,
+        "lineage_token_id": "lin-1234567890abcdef12345678",
+        "attestation": hmac.new(
+            secret.encode("utf-8"),
+            (
+                f"TPA|tpa-hs256-v1|{payload_digest}|pqx_repo_write_boundary|{scope}|"
+                f"{issued_at}|{expires_at}|lin-1234567890abcdef12345678"
+            ).encode("utf-8"),
+            hashlib.sha256,
+        ).hexdigest(),
+    }
     return {
         fix_id: {
             "request_artifact": {

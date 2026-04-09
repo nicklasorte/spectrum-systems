@@ -15,6 +15,7 @@ from spectrum_systems.contracts import load_schema, validate_artifact
 from spectrum_systems.modules.review_handoff_disposition import emit_review_handoff_disposition
 from spectrum_systems.modules.review_queue_executor import run_review_queue_executor
 from spectrum_systems.modules.runtime.codex_to_pqx_task_wrapper import run_wrapped_pqx_task
+from spectrum_systems.modules.runtime.lineage_authenticity import LineageAuthenticityError, verify_authenticity
 
 REQUEST_FILE_SUFFIX = "_review_fix_execution_request_artifact.json"
 RESULT_FILE_SUFFIX = "_review_fix_execution_result_artifact.json"
@@ -52,27 +53,43 @@ def compute_tpa_gate_provenance_token(tpa_slice_artifact: Mapping[str, Any]) -> 
     return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
 
 
-def validate_tpa_gate_authoritative_provenance(
-    *,
-    request_artifact: Mapping[str, Any],
-    repo_root: Path,
-) -> dict[str, Any]:
+def validate_tpa_slice_authority(*, request_artifact: Mapping[str, Any], repo_root: Path) -> dict[str, Any]:
     tpa_slice_artifact = request_artifact["tpa_slice_artifact"]
     artifact_id = str(tpa_slice_artifact.get("artifact_id") or "").strip()
     if not artifact_id:
         raise ReviewFixExecutionLoopError("authoritative TPA provenance requires tpa_slice_artifact.artifact_id")
+
+    try:
+        authenticity = verify_authenticity(artifact=dict(tpa_slice_artifact), expected_issuer="TPA")
+    except LineageAuthenticityError as exc:
+        raise ReviewFixExecutionLoopError(f"authoritative TPA provenance authenticity invalid:{exc}") from exc
+
+    expected_trace_id = str(request_artifact.get("trace_id") or tpa_slice_artifact.get("trace_id") or "").strip()
+    if not expected_trace_id or str(tpa_slice_artifact.get("trace_id") or "").strip() != expected_trace_id:
+        raise ReviewFixExecutionLoopError("authoritative TPA provenance trace_id mismatch")
+
+    expected_step_id = str((((request_artifact.get("pqx_task_wrapper") or {}).get("task_identity") or {}).get("step_id") or "")).strip()
+    if expected_step_id and str(tpa_slice_artifact.get("step_id") or "").strip() != expected_step_id:
+        raise ReviewFixExecutionLoopError("authoritative TPA provenance step_id mismatch")
+
+    request_id = str(request_artifact.get("request_id") or "").strip()
+    scope = str(authenticity.get("scope") or "")
+    if request_id and f":{request_id}:" not in scope:
+        raise ReviewFixExecutionLoopError("authoritative TPA provenance request binding mismatch")
+
+    # Local authority files remain optional audit/debug artifacts and are non-authoritative.
     path = repo_root / "artifacts" / "tpa_authority" / f"{artifact_id}.json"
-    if not path.is_file():
-        raise ReviewFixExecutionLoopError("authoritative TPA provenance artifact_ref is missing")
-    recorded_artifact = json.loads(path.read_text(encoding="utf-8"))
-    recorded_payload = dict(recorded_artifact)
-    token = str(recorded_payload.pop("authoritative_integrity_token", "")).strip()
-    if recorded_payload != dict(tpa_slice_artifact):
-        raise ReviewFixExecutionLoopError("authoritative TPA provenance artifact mismatch")
-    expected = compute_tpa_gate_provenance_token(tpa_slice_artifact)
-    if token != expected:
-        raise ReviewFixExecutionLoopError("authoritative TPA provenance integrity_token mismatch")
-    return {"artifact_ref": str(path), "integrity_token": token, "issued_by_system": "TPA"}
+    artifact_ref = str(path) if path.is_file() else None
+    return {
+        "artifact_ref": artifact_ref,
+        "issued_by_system": "TPA",
+        "authenticity": authenticity,
+    }
+
+
+def validate_tpa_gate_authoritative_provenance(*, request_artifact: Mapping[str, Any], repo_root: Path) -> dict[str, Any]:
+    """Backward-compatible wrapper; authority is enforced by authenticity verification only."""
+    return validate_tpa_slice_authority(request_artifact=request_artifact, repo_root=repo_root)
 
 
 def _validate(instance: dict[str, Any], schema_name: str) -> None:
@@ -287,7 +304,7 @@ def _assert_tpa_gated_fix_flow(request_artifact: Mapping[str, Any], *, repo_root
         raise ReviewFixExecutionLoopError(
             "tpa gate must bind to source_review_result_ref before PQX execution"
         )
-    validate_tpa_gate_authoritative_provenance(
+    validate_tpa_slice_authority(
         request_artifact=request_artifact,
         repo_root=repo_root,
     )

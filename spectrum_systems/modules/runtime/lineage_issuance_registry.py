@@ -22,12 +22,14 @@ _EXPECTED_ISSUER_BY_ARTIFACT = {
     "build_admission_record": "AEX",
     "normalized_execution_request": "AEX",
     "tlc_handoff_record": "TLC",
+    "tpa_slice_artifact": "TPA",
 }
 
 _ARTIFACT_ID_FIELD_BY_TYPE = {
     "build_admission_record": "admission_id",
     "normalized_execution_request": "request_id",
     "tlc_handoff_record": "handoff_id",
+    "tpa_slice_artifact": "artifact_id",
 }
 
 
