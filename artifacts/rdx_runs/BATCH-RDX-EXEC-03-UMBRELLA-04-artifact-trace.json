@@ -1,0 +1,253 @@
+{
+  "artifact_type": "rdx_serial_umbrella_execution_trace",
+  "run_id": "BATCH-RDX-EXEC-03-UMBRELLA-04",
+  "recorded_at": "2026-04-10T10:40:00Z",
+  "prompt_type": "VALIDATE",
+  "execution_mode": "serial",
+  "roadmap_authority_ref": "docs/roadmaps/system_roadmap.md",
+  "hierarchy": "slice_to_batch_to_umbrella",
+  "governance_preflight": {
+    "preflight_artifact": "outputs/contract_preflight_rdx_exec03/contract_preflight_result_artifact.json",
+    "strategy_gate_decision": "ALLOW",
+    "governance_signal_overdue": false
+  },
+  "decision_authority_constraints": {
+    "batch_decision_artifact_scope": "progression_only",
+    "umbrella_decision_artifact_scope": "progression_only",
+    "forbidden_authority_overlap": [
+      "closure_decision_artifact",
+      "promotion_readiness_decision",
+      "readiness_to_close"
+    ],
+    "cde_authority_status": "preserved"
+  },
+  "umbrella_execution_sequence": [
+    "EXECUTION_ENFORCEMENT",
+    "RDX_EXECUTION_CONTROL",
+    "REPAIR_CORE",
+    "SAFETY_GATE"
+  ],
+  "fail_closed_policy": {
+    "on_validation_failure": "STOP",
+    "on_missing_review": "STOP",
+    "on_missing_decision": "STOP",
+    "on_invalid_lineage": "STOP",
+    "on_governance_overdue": "STOP",
+    "on_contract_violation": "STOP",
+    "on_hierarchy_violation": "STOP",
+    "on_missing_required_artifact": "STOP"
+  },
+  "umbrellas": [
+    {
+      "umbrella_id": "EXECUTION_ENFORCEMENT",
+      "sequence_index": 1,
+      "batches": [
+        {
+          "batch_id": "EXECUTION_ENFORCEMENT-B01",
+          "brf_steps": ["Build", "Test", "Review", "Decision"],
+          "slice_count": 2,
+          "pqx_slice_execution_record": [
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.EXECUTION_ENFORCEMENT-B01.S01.json",
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.EXECUTION_ENFORCEMENT-B01.S02.json"
+          ],
+          "pqx_bundle_execution_record": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_bundle_execution_record.EXECUTION_ENFORCEMENT-B01.json",
+          "test_validation": {
+            "pytest": "PASS",
+            "review_artifact_validation": "PASS",
+            "contract_preflight": "ALLOW"
+          },
+          "review_result_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_result_artifact.EXECUTION_ENFORCEMENT-B01.json",
+          "review_merge_readiness_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_merge_readiness_artifact.EXECUTION_ENFORCEMENT-B01.json",
+          "review_fix_slice_artifact": null,
+          "tpa_slice_artifact": null,
+          "batch_decision_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/batch_decision_artifact.EXECUTION_ENFORCEMENT-B01.json",
+          "decision": "PASS"
+        },
+        {
+          "batch_id": "EXECUTION_ENFORCEMENT-B02",
+          "brf_steps": ["Build", "Test", "Review", "Decision"],
+          "slice_count": 2,
+          "pqx_slice_execution_record": [
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.EXECUTION_ENFORCEMENT-B02.S01.json",
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.EXECUTION_ENFORCEMENT-B02.S02.json"
+          ],
+          "pqx_bundle_execution_record": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_bundle_execution_record.EXECUTION_ENFORCEMENT-B02.json",
+          "test_validation": {
+            "pytest": "PASS",
+            "review_artifact_validation": "PASS",
+            "contract_preflight": "ALLOW"
+          },
+          "review_result_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_result_artifact.EXECUTION_ENFORCEMENT-B02.json",
+          "review_merge_readiness_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_merge_readiness_artifact.EXECUTION_ENFORCEMENT-B02.json",
+          "review_fix_slice_artifact": null,
+          "tpa_slice_artifact": null,
+          "batch_decision_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/batch_decision_artifact.EXECUTION_ENFORCEMENT-B02.json",
+          "decision": "PASS"
+        }
+      ],
+      "umbrella_decision_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/umbrella_decision_artifact.EXECUTION_ENFORCEMENT.json",
+      "rdx_decision": "PASS"
+    },
+    {
+      "umbrella_id": "RDX_EXECUTION_CONTROL",
+      "sequence_index": 2,
+      "batches": [
+        {
+          "batch_id": "RDX_EXECUTION_CONTROL-B01",
+          "brf_steps": ["Build", "Test", "Review", "Decision"],
+          "slice_count": 2,
+          "pqx_slice_execution_record": [
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.RDX_EXECUTION_CONTROL-B01.S01.json",
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.RDX_EXECUTION_CONTROL-B01.S02.json"
+          ],
+          "pqx_bundle_execution_record": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_bundle_execution_record.RDX_EXECUTION_CONTROL-B01.json",
+          "test_validation": {
+            "pytest": "PASS",
+            "review_artifact_validation": "PASS",
+            "contract_preflight": "ALLOW"
+          },
+          "review_result_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_result_artifact.RDX_EXECUTION_CONTROL-B01.json",
+          "review_merge_readiness_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_merge_readiness_artifact.RDX_EXECUTION_CONTROL-B01.json",
+          "review_fix_slice_artifact": null,
+          "tpa_slice_artifact": null,
+          "batch_decision_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/batch_decision_artifact.RDX_EXECUTION_CONTROL-B01.json",
+          "decision": "PASS"
+        },
+        {
+          "batch_id": "RDX_EXECUTION_CONTROL-B02",
+          "brf_steps": ["Build", "Test", "Review", "Decision"],
+          "slice_count": 2,
+          "pqx_slice_execution_record": [
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.RDX_EXECUTION_CONTROL-B02.S01.json",
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.RDX_EXECUTION_CONTROL-B02.S02.json"
+          ],
+          "pqx_bundle_execution_record": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_bundle_execution_record.RDX_EXECUTION_CONTROL-B02.json",
+          "test_validation": {
+            "pytest": "PASS",
+            "review_artifact_validation": "PASS",
+            "contract_preflight": "ALLOW"
+          },
+          "review_result_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_result_artifact.RDX_EXECUTION_CONTROL-B02.json",
+          "review_merge_readiness_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_merge_readiness_artifact.RDX_EXECUTION_CONTROL-B02.json",
+          "review_fix_slice_artifact": null,
+          "tpa_slice_artifact": null,
+          "batch_decision_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/batch_decision_artifact.RDX_EXECUTION_CONTROL-B02.json",
+          "decision": "PASS"
+        }
+      ],
+      "umbrella_decision_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/umbrella_decision_artifact.RDX_EXECUTION_CONTROL.json",
+      "rdx_decision": "PASS"
+    },
+    {
+      "umbrella_id": "REPAIR_CORE",
+      "sequence_index": 3,
+      "batches": [
+        {
+          "batch_id": "REPAIR_CORE-B01",
+          "brf_steps": ["Build", "Test", "Review", "Decision"],
+          "slice_count": 2,
+          "pqx_slice_execution_record": [
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.REPAIR_CORE-B01.S01.json",
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.REPAIR_CORE-B01.S02.json"
+          ],
+          "pqx_bundle_execution_record": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_bundle_execution_record.REPAIR_CORE-B01.json",
+          "test_validation": {
+            "pytest": "PASS",
+            "review_artifact_validation": "PASS",
+            "contract_preflight": "ALLOW"
+          },
+          "review_result_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_result_artifact.REPAIR_CORE-B01.json",
+          "review_merge_readiness_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_merge_readiness_artifact.REPAIR_CORE-B01.json",
+          "review_fix_slice_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_fix_slice_artifact.REPAIR_CORE-B01.A01.json",
+          "tpa_slice_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/tpa_slice_artifact.REPAIR_CORE-B01.A01.json",
+          "repair_loop": {
+            "trigger": "FIX",
+            "routing": ["RQX", "TPA", "PQX"],
+            "attempts": 1,
+            "max_attempts": 3,
+            "repair_validation": "PASS"
+          },
+          "batch_decision_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/batch_decision_artifact.REPAIR_CORE-B01.json",
+          "decision": "PASS"
+        },
+        {
+          "batch_id": "REPAIR_CORE-B02",
+          "brf_steps": ["Build", "Test", "Review", "Decision"],
+          "slice_count": 2,
+          "pqx_slice_execution_record": [
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.REPAIR_CORE-B02.S01.json",
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.REPAIR_CORE-B02.S02.json"
+          ],
+          "pqx_bundle_execution_record": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_bundle_execution_record.REPAIR_CORE-B02.json",
+          "test_validation": {
+            "pytest": "PASS",
+            "review_artifact_validation": "PASS",
+            "contract_preflight": "ALLOW"
+          },
+          "review_result_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_result_artifact.REPAIR_CORE-B02.json",
+          "review_merge_readiness_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_merge_readiness_artifact.REPAIR_CORE-B02.json",
+          "review_fix_slice_artifact": null,
+          "tpa_slice_artifact": null,
+          "batch_decision_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/batch_decision_artifact.REPAIR_CORE-B02.json",
+          "decision": "PASS"
+        }
+      ],
+      "umbrella_decision_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/umbrella_decision_artifact.REPAIR_CORE.json",
+      "rdx_decision": "PASS"
+    },
+    {
+      "umbrella_id": "SAFETY_GATE",
+      "sequence_index": 4,
+      "batches": [
+        {
+          "batch_id": "SAFETY_GATE-B01",
+          "brf_steps": ["Build", "Test", "Review", "Decision"],
+          "slice_count": 2,
+          "pqx_slice_execution_record": [
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.SAFETY_GATE-B01.S01.json",
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.SAFETY_GATE-B01.S02.json"
+          ],
+          "pqx_bundle_execution_record": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_bundle_execution_record.SAFETY_GATE-B01.json",
+          "test_validation": {
+            "pytest": "PASS",
+            "review_artifact_validation": "PASS",
+            "contract_preflight": "ALLOW"
+          },
+          "review_result_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_result_artifact.SAFETY_GATE-B01.json",
+          "review_merge_readiness_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_merge_readiness_artifact.SAFETY_GATE-B01.json",
+          "review_fix_slice_artifact": null,
+          "tpa_slice_artifact": null,
+          "batch_decision_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/batch_decision_artifact.SAFETY_GATE-B01.json",
+          "decision": "PASS"
+        },
+        {
+          "batch_id": "SAFETY_GATE-B02",
+          "brf_steps": ["Build", "Test", "Review", "Decision"],
+          "slice_count": 2,
+          "pqx_slice_execution_record": [
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.SAFETY_GATE-B02.S01.json",
+            "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_slice_execution_record.SAFETY_GATE-B02.S02.json"
+          ],
+          "pqx_bundle_execution_record": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/pqx_bundle_execution_record.SAFETY_GATE-B02.json",
+          "test_validation": {
+            "pytest": "PASS",
+            "review_artifact_validation": "PASS",
+            "contract_preflight": "ALLOW"
+          },
+          "review_result_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_result_artifact.SAFETY_GATE-B02.json",
+          "review_merge_readiness_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/review_merge_readiness_artifact.SAFETY_GATE-B02.json",
+          "review_fix_slice_artifact": null,
+          "tpa_slice_artifact": null,
+          "batch_decision_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/batch_decision_artifact.SAFETY_GATE-B02.json",
+          "decision": "PASS"
+        }
+      ],
+      "umbrella_decision_artifact": "artifacts/rdx_runs/BATCH-RDX-EXEC-03-UMBRELLA-04/umbrella_decision_artifact.SAFETY_GATE.json",
+      "rdx_decision": "PASS"
+    }
+  ],
+  "end_of_run_red_team_review": "docs/reviews/RVW-RDX-EXEC-03-UMBRELLA-04.md",
+  "delivery_report": "docs/reviews/BATCH-RDX-EXEC-03-UMBRELLA-04-DELIVERY-REPORT.md",
+  "final_status": "PASS",
+  "final_verdict": "SAFE TO MOVE ON"
+}
