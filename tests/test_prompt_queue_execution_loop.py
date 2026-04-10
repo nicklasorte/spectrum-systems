@@ -395,6 +395,62 @@ def test_governed_build_requires_review_before_decision(monkeypatch: pytest.Monk
         run_queue_once(queue_state=queue_state, manifest=manifest)
 
 
+def test_governed_build_requires_review_result_artifact_ref(monkeypatch: pytest.MonkeyPatch) -> None:
+    queue_state = _base_queue_state(total_steps=1)
+    manifest = _base_manifest(total_steps=1)
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.prompt_queue.execution_queue_integration.run_queue_step_execution_adapter",
+        lambda **kwargs: {"execution_status": "success", "output_reference": "artifacts/output.json"},
+    )
+    monkeypatch.setattr(
+        "spectrum_systems.modules.prompt_queue.review_parser.parse_queue_step_report",
+        lambda _result: {
+            "step_id": "step-001",
+            "queue_id": "queue-001",
+            "trace_linkage": "queue-001",
+            "source_execution_result_artifact_id": "execres-001",
+            "validation_status": "valid",
+            "review_evidence_ref": "review_note:rqx-step-001",
+            "validation_result_refs": ["validation_result_record:vr-001"],
+            "preflight_decision": "ALLOW",
+            "findings": [],
+            "severity_summary": {"error": 0, "ambiguous": 0, "warning": 0, "info": 0},
+        },
+    )
+
+    with pytest.raises(QueueLoopError, match="batch decision missing or invalid"):
+        run_queue_once(queue_state=queue_state, manifest=manifest)
+
+
+def test_governed_build_requires_validation_result_record_refs(monkeypatch: pytest.MonkeyPatch) -> None:
+    queue_state = _base_queue_state(total_steps=1)
+    manifest = _base_manifest(total_steps=1)
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.prompt_queue.execution_queue_integration.run_queue_step_execution_adapter",
+        lambda **kwargs: {"execution_status": "success", "output_reference": "artifacts/output.json"},
+    )
+    monkeypatch.setattr(
+        "spectrum_systems.modules.prompt_queue.review_parser.parse_queue_step_report",
+        lambda _result: {
+            "step_id": "step-001",
+            "queue_id": "queue-001",
+            "trace_linkage": "queue-001",
+            "source_execution_result_artifact_id": "execres-001",
+            "validation_status": "valid",
+            "review_evidence_ref": "review_result_artifact:rqx-step-001",
+            "validation_result_refs": ["validation_report:vr-001"],
+            "preflight_decision": "ALLOW",
+            "findings": [],
+            "severity_summary": {"error": 0, "ambiguous": 0, "warning": 0, "info": 0},
+        },
+    )
+
+    with pytest.raises(QueueLoopError, match="batch decision missing or invalid"):
+        run_queue_once(queue_state=queue_state, manifest=manifest)
+
+
 def test_governed_progression_requires_batch_decision_artifact() -> None:
     queue_state = _base_queue_state(total_steps=1)
     with pytest.raises(QueueLoopError, match="batch_decision_artifact_ref"):

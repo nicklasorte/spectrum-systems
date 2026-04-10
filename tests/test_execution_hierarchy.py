@@ -34,6 +34,19 @@ def test_invalid_single_batch_umbrella_fails() -> None:
         validate_execution_hierarchy(payload, label="roadmap_manifest")
 
 
+def test_invalid_single_batch_umbrella_using_embedded_batches_fails() -> None:
+    payload = {
+        "umbrellas": [
+            {
+                "umbrella_id": "UMB-B",
+                "batches": [{"batch_id": "BATCH-A"}],
+            }
+        ]
+    }
+    with pytest.raises(ExecutionHierarchyError, match="invalid umbrella cardinality"):
+        validate_execution_hierarchy(payload, label="roadmap_manifest")
+
+
 def test_valid_multi_slice_batch_passes() -> None:
     payload = {
         "batches": [

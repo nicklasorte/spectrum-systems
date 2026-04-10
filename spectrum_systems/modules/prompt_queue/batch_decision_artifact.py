@@ -41,10 +41,14 @@ def build_batch_decision_artifact(*, step_decision: dict, clock=utc_now) -> dict
     validation_refs = step_decision.get("validation_result_refs")
     if not isinstance(validation_refs, list) or not validation_refs:
         raise BatchDecisionArtifactError("validation_result_refs required before decision emission")
+    if any(not isinstance(ref, str) or not ref.startswith("validation_result_record:") for ref in validation_refs):
+        raise BatchDecisionArtifactError("validation_result_refs must reference validation_result_record artifacts")
 
     review_ref = step_decision.get("review_evidence_ref")
     if not isinstance(review_ref, str) or not review_ref:
         raise BatchDecisionArtifactError("review evidence required before decision emission")
+    if not review_ref.startswith("review_result_artifact:"):
+        raise BatchDecisionArtifactError("review evidence must reference review_result_artifact")
 
     preflight = step_decision.get("preflight_decision")
     if preflight != "ALLOW":
