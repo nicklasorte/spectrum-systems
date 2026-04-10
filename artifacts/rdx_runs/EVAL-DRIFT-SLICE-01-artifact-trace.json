@@ -1,0 +1,254 @@
+{
+  "artifact_type": "rdx_serial_umbrella_execution_trace",
+  "run_id": "EVAL-DRIFT-SLICE-01",
+  "batch_id": "EVAL-DRIFT-SLICE-01",
+  "recorded_at": "2026-04-10T12:00:00Z",
+  "prompt_type": "VALIDATE",
+  "execution_mode": "serial",
+  "roadmap_authority_ref": "docs/roadmaps/system_roadmap.md",
+  "hierarchy": "slice_to_batch_to_umbrella",
+  "decision_authority_constraints": {
+    "read_interpret_recommend_only": true,
+    "execution_authority_changes": "forbidden",
+    "cde_decision_authority_used": false,
+    "tpa_gating_authority_used": false,
+    "pqx_execution_authority_used": false,
+    "sel_enforcement_authority_used": false,
+    "forbidden_authority_overlap": [
+      "closure_decision_artifact",
+      "promotion_readiness_decision",
+      "readiness_to_close",
+      "policy_enforcement_decision"
+    ]
+  },
+  "ownership_enforcement": {
+    "ril_scope": [
+      "evaluation_interpretation",
+      "drift_interpretation"
+    ],
+    "prg_scope": [
+      "pattern_aggregation",
+      "recommendation_generation"
+    ],
+    "tlc_scope": [
+      "serial_orchestration",
+      "completion_routing"
+    ],
+    "unused_systems": [
+      "CDE",
+      "TPA",
+      "PQX",
+      "SEL"
+    ]
+  },
+  "fail_closed_policy": {
+    "on_missing_artifact": "STOP",
+    "on_invalid_schema": "STOP",
+    "on_aggregation_inconsistency": "STOP",
+    "on_missing_required_signal": "STOP",
+    "on_invalid_metrics": "STOP",
+    "on_missing_run_data": "STOP",
+    "on_invalid_slice_reference": "STOP",
+    "on_inconsistent_contract_logic": "STOP",
+    "on_serial_order_violation": "STOP"
+  },
+  "umbrella_execution_sequence": [
+    "EVALUATION_LAYER",
+    "DRIFT_LAYER",
+    "SLICE_IMPROVEMENT_LAYER"
+  ],
+  "umbrellas": [
+    {
+      "umbrella_id": "EVALUATION_LAYER",
+      "sequence_index": 1,
+      "batches": [
+        {
+          "batch_id": "EVALUATION_LAYER-B01",
+          "slice_ids": [
+            "EVAL-01",
+            "EVAL-02"
+          ],
+          "ril_outputs": {
+            "evaluation_summary_artifact": "artifacts/rdx_runs/EVAL-DRIFT-SLICE-01/evaluation_summary_artifact.EVAL-01.json",
+            "correctness_signals": [
+              "artifact_presence_rate=1.00",
+              "schema_validation_pass_rate=1.00"
+            ],
+            "quality_signals": [
+              "review_alignment_score=0.92",
+              "repair_reopen_rate=0.08"
+            ],
+            "failure_classifications": [
+              "schema_mismatch",
+              "missing_review_linkage",
+              "incomplete_test_evidence"
+            ]
+          },
+          "prg_outputs": {
+            "evaluation_pattern_report": "artifacts/rdx_runs/EVAL-DRIFT-SLICE-01/evaluation_pattern_report.EVAL-02.json",
+            "recurring_failure_types": [
+              "missing_review_linkage",
+              "incomplete_test_evidence"
+            ],
+            "hot_slices": [
+              "REPAIR_CORE-B01",
+              "RDX_EXECUTION_CONTROL-B02"
+            ],
+            "frequency_patterns": {
+              "missing_review_linkage": 3,
+              "incomplete_test_evidence": 2,
+              "schema_mismatch": 1
+            }
+          },
+          "validation": "PASS",
+          "decision": "PASS"
+        },
+        {
+          "batch_id": "EVALUATION_LAYER-B02",
+          "slice_ids": [
+            "EVAL-03",
+            "EVALUATION_COMPLETION"
+          ],
+          "prg_outputs": {
+            "policy_change_candidate": "artifacts/rdx_runs/EVAL-DRIFT-SLICE-01/policy_change_candidate.EVAL-03.json",
+            "recommendations": {
+              "tighter_gating": [
+                "require review_result_artifact linkage before batch decision",
+                "require schema digest check before umbrella progression"
+              ],
+              "new_required_artifacts": [
+                "evaluation_summary_artifact",
+                "evaluation_pattern_report"
+              ],
+              "slice_contract_updates": [
+                "add explicit failure_classification enum",
+                "add required evidence_count invariant"
+              ]
+            }
+          },
+          "umbrella_completion": {
+            "validation": "PASS",
+            "repair_loop_required": false,
+            "fail_open_path_detected": false,
+            "umbrella_decision_artifact": "artifacts/rdx_runs/EVAL-DRIFT-SLICE-01/umbrella_decision_artifact.EVALUATION_LAYER.json"
+          },
+          "decision": "PASS"
+        }
+      ],
+      "rdx_decision": "PASS"
+    },
+    {
+      "umbrella_id": "DRIFT_LAYER",
+      "sequence_index": 2,
+      "batches": [
+        {
+          "batch_id": "DRIFT_LAYER-B01",
+          "slice_ids": [
+            "DRIFT-01",
+            "DRIFT-01-NORMALIZATION-VALIDATION"
+          ],
+          "ril_outputs": {
+            "execution_observability_artifact": "artifacts/rdx_runs/EVAL-DRIFT-SLICE-01/execution_observability_artifact.DRIFT-01.json",
+            "normalized_metrics": {
+              "pass_rate": 0.91,
+              "repair_loop_rate": 0.14,
+              "artifact_completeness": 0.97
+            },
+            "time_based_signals": {
+              "window": "last_14_runs",
+              "latency_trend": "increasing",
+              "failure_rate_trend": "slight_increase"
+            }
+          },
+          "validation": "PASS",
+          "decision": "PASS"
+        },
+        {
+          "batch_id": "DRIFT_LAYER-B02",
+          "slice_ids": [
+            "DRIFT-02",
+            "DRIFT_COMPLETION"
+          ],
+          "ril_outputs": {
+            "drift_detection_record": "artifacts/rdx_runs/EVAL-DRIFT-SLICE-01/drift_detection_record.DRIFT-02.json",
+            "drift_score": 0.37,
+            "drift_classification": "warning",
+            "detected_changes": [
+              "performance_drift: moderate",
+              "failure_rate_change: +0.04",
+              "anomaly_pattern: repeated evidence_link omissions"
+            ]
+          },
+          "umbrella_completion": {
+            "control_decisions_made": false,
+            "detection_and_classification_only": true,
+            "umbrella_decision_artifact": "artifacts/rdx_runs/EVAL-DRIFT-SLICE-01/umbrella_decision_artifact.DRIFT_LAYER.json"
+          },
+          "decision": "PASS"
+        }
+      ],
+      "rdx_decision": "PASS"
+    },
+    {
+      "umbrella_id": "SLICE_IMPROVEMENT_LAYER",
+      "sequence_index": 3,
+      "batches": [
+        {
+          "batch_id": "SLICE_IMPROVEMENT_LAYER-B01",
+          "slice_ids": [
+            "SLICE-01",
+            "SLICE-01-PATTERN-VALIDATION"
+          ],
+          "ril_outputs": {
+            "slice_failure_pattern_record": "artifacts/rdx_runs/EVAL-DRIFT-SLICE-01/slice_failure_pattern_record.SLICE-01.json",
+            "recurring_slice_issues": [
+              "artifact lineage omissions in repair-focused slices",
+              "schema field drift across review artifacts"
+            ],
+            "contract_mismatch_patterns": [
+              "optional field interpreted as required at runtime",
+              "missing invariant for evidence_count"
+            ]
+          },
+          "validation": "PASS",
+          "decision": "PASS"
+        },
+        {
+          "batch_id": "SLICE_IMPROVEMENT_LAYER-B02",
+          "slice_ids": [
+            "SLICE-02",
+            "SLICE_IMPROVEMENT_COMPLETION"
+          ],
+          "prg_outputs": {
+            "slice_contract_update_candidate": "artifacts/rdx_runs/EVAL-DRIFT-SLICE-01/slice_contract_update_candidate.SLICE-02.json",
+            "recommended_required_artifacts": [
+              "evidence_link_map",
+              "failure_classification_histogram"
+            ],
+            "recommended_invariant_updates": [
+              "evidence_count must be >= linked_artifact_count",
+              "review_result_artifact must reference exact pqx_bundle_execution_record"
+            ],
+            "recommended_command_adjustments": [
+              "enforce schema lint step before review stage",
+              "add deterministic aggregation check before recommendation emission"
+            ]
+          },
+          "fail_closed_checks": {
+            "invalid_slice_references": false,
+            "inconsistent_contract_logic": false
+          },
+          "umbrella_completion": {
+            "umbrella_decision_artifact": "artifacts/rdx_runs/EVAL-DRIFT-SLICE-01/umbrella_decision_artifact.SLICE_IMPROVEMENT_LAYER.json"
+          },
+          "decision": "PASS"
+        }
+      ],
+      "rdx_decision": "PASS"
+    }
+  ],
+  "review_report": "docs/reviews/RVW-EVAL-DRIFT-SLICE-01.md",
+  "delivery_report": "docs/reviews/EVAL-DRIFT-SLICE-01-DELIVERY-REPORT.md",
+  "final_status": "PASS",
+  "final_verdict": "SYSTEM SAFE"
+}
