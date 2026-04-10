@@ -87,6 +87,7 @@ def test_executor_writes_markdown_and_structured_artifacts(tmp_path: Path) -> No
     assert result_artifact["artifact_type"] == "review_result_artifact"
     assert merge_artifact["artifact_type"] == "review_merge_readiness_artifact"
     assert merge_artifact["verdict"] in {"safe_to_merge", "fix_required", "not_safe_to_merge"}
+    assert merge_artifact["cde_decision_required"] is True
 
 
 def test_findings_and_severity_are_preserved_in_markdown(tmp_path: Path) -> None:
@@ -205,3 +206,20 @@ def test_unresolved_review_produces_operator_handoff(tmp_path: Path) -> None:
     validate_artifact(handoff, "review_operator_handoff_artifact")
     assert handoff["provenance"]["emitted_by_system"] == "RQX"
     assert Path(result["review_operator_handoff_artifact_path"]).exists()
+
+
+def test_rqx_outputs_are_non_authoritative(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    _write_repo_inputs(repo_root)
+    request = _request_payload(tmp_path)
+    result = run_review_queue_executor(
+        request,
+        repo_root=repo_root,
+        output_dir=repo_root / "artifacts/reviews",
+        review_docs_dir=repo_root / "docs/reviews",
+        generated_at="2026-04-09T00:10:00Z",
+    )
+    merge_artifact = result["review_merge_readiness_artifact"]
+    assert "merge_ready" not in merge_artifact
+    assert merge_artifact["readiness_signal"] in {"review_safe", "review_fix_required", "review_not_safe"}
+    assert merge_artifact["cde_decision_required"] is True

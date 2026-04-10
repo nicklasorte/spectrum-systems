@@ -36,6 +36,20 @@ def _request(tmp_path: Path) -> dict:
         "simulated_repair_files_touched": ["contracts/standards-manifest.json"],
         "repair_commands_run": ["pytest tests/test_contracts.py"],
         "repair_validation_passed_after_attempt": False,
+        "lineage": {
+            "review_projection_bundle_artifact": {
+                "artifact_type": "review_projection_bundle_artifact",
+                "artifact_ref": "review_projection_bundle_artifact:rpb-roadmap-signal",
+            },
+            "review_signal_artifact": {
+                "artifact_type": "review_signal_artifact",
+                "artifact_ref": "review_signal_artifact:rsa-roadmap-signal",
+            },
+            "review_action_tracker_artifact": {
+                "artifact_type": "review_action_tracker_artifact",
+                "artifact_ref": str(action_path),
+            },
+        },
     }
 
 

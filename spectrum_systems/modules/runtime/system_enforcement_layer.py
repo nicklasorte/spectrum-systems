@@ -8,7 +8,7 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
-from spectrum_systems.contracts import load_schema
+from spectrum_systems.contracts import load_schema, validate_artifact
 from spectrum_systems.modules.runtime.pqx_execution_authority import (
     PqxExecutionAuthorityError,
     validate_pqx_execution_authority_record,
@@ -414,28 +414,60 @@ def _check_closure_authority_boundaries(normalized: dict[str, Any], violations: 
     request = normalized["execution_request"]
     refs = normalized["artifact_references"]
 
-    closure_source = str(request.get("closure_decision_source") or "cde_only").strip().lower()
-    readiness_source = str(request.get("promotion_readiness_decisioning") or "cde_only").strip().lower()
-    if closure_source not in {"cde", "cde_only"}:
+    closure_source = request.get("closure_decision_source")
+    readiness_source = request.get("promotion_readiness_decisioning")
+    if _is_present(closure_source):
         _add_violation(
             violations,
             code="repair_decision_violation",
             boundary="CDE",
             field="execution_request.closure_decision_source",
-            message="closure decision authority must remain CDE-only",
+            message="raw closure source flags are non-authoritative; provide a real closure_decision_artifact",
         )
-    if readiness_source not in {"cde", "cde_only"}:
+    if _is_present(readiness_source):
         _add_violation(
             violations,
             code="repair_decision_violation",
             boundary="CDE",
             field="execution_request.promotion_readiness_decisioning",
-            message="promotion readiness decisioning must remain CDE-only",
+            message="raw readiness source flags are non-authoritative; provide a real closure_decision_artifact",
         )
 
     closure_artifact = refs.get("closure_decision_artifact")
     closure_ref = refs.get("closure_decision_artifact_ref")
-    if _is_present(closure_artifact) and not _is_present(closure_ref):
+    closure_state = str(request.get("closure_state") or "OPEN").strip().upper()
+
+    if (
+        closure_state == "OPEN"
+        and not _is_present(closure_artifact)
+        and not _is_present(closure_ref)
+        and not _is_present(closure_source)
+        and not _is_present(readiness_source)
+    ):
+        return
+
+    if not isinstance(closure_artifact, dict):
+        _add_violation(
+            violations,
+            code="missing_artifact_violation",
+            boundary="CDE",
+            field="artifact_references.closure_decision_artifact",
+            message="SEL enforcement requires a real closure_decision_artifact from CDE",
+        )
+        return
+    try:
+        validate_artifact(closure_artifact, "closure_decision_artifact")
+    except Exception as exc:
+        _add_violation(
+            violations,
+            code="missing_artifact_violation",
+            boundary="CDE",
+            field="artifact_references.closure_decision_artifact",
+            message=f"closure_decision_artifact is invalid: {exc}",
+        )
+        return
+
+    if not _is_present(closure_ref):
         _add_violation(
             violations,
             code="lineage_violation",
@@ -444,14 +476,21 @@ def _check_closure_authority_boundaries(normalized: dict[str, Any], violations: 
             message="closure decision artifact must include deterministic CDE reference",
         )
 
-    lock_state = str(request.get("closure_lock_state") or "open").strip().lower()
-    if lock_state == "locked":
+    if closure_state not in {"OPEN", "LOCKED", "CLOSED"}:
         _add_violation(
             violations,
             code="repair_budget_violation",
             boundary="SEL",
-            field="execution_request.closure_lock_state",
-            message="execution after closure lock is forbidden",
+            field="execution_request.closure_state",
+            message="closure_state must be one of OPEN, LOCKED, CLOSED",
+        )
+    elif closure_state != "OPEN":
+        _add_violation(
+            violations,
+            code="repair_budget_violation",
+            boundary="SEL",
+            field="execution_request.closure_state",
+            message="execution is blocked when closure_state is not OPEN",
         )
 
 

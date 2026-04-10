@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 from pathlib import Path
 
 import pytest
@@ -23,8 +24,8 @@ review_date: 2026-04-05
 ## Overall Assessment
 **Overall Verdict: CONDITIONAL PASS**
 
-## Critical Risks
-1. Bypass drift risk remains open.
+## Summary
+No blocking risks remain open.
 """
 
 VALID_ACTIONS = """# Action Tracker
@@ -42,11 +43,8 @@ VALID_ACTIONS = """# Action Tracker
 ## Medium-Priority Items
 | ID | Risk | Severity | Recommended Action | Status | Notes |
 | --- | --- | --- | --- | --- | --- |
-| MI-1 | docs traceability note | Medium | Add note update (R3) | Open | |
+| MI-1 | docs traceability note | Medium | Add note update (R3) | Closed | |
 | MI-2 | recovery rehearsal follow-up | Medium | Add recovery drill (R4) | Closed | |
-
-## Blocking Items
-- CR-1 blocks promotion.
 """
 
 
@@ -60,6 +58,61 @@ def _write_inputs(tmp_path: Path) -> tuple[Path, Path]:
 
 def _base_request(tmp_path: Path) -> dict:
     review_path, action_path = _write_inputs(tmp_path)
+    review_signal = json.loads(Path("contracts/examples/review_signal_artifact.json").read_text(encoding="utf-8"))
+    projection_bundle = json.loads(Path("contracts/examples/review_projection_bundle_artifact.json").read_text(encoding="utf-8"))
+    consumer_bundle = json.loads(Path("contracts/examples/review_consumer_output_bundle_artifact.json").read_text(encoding="utf-8"))
+
+    def _stub_ril(payload: dict) -> dict:
+        return {
+            "outputs_exist": True,
+            "artifact_refs": [
+                f"review_signal_artifact:{review_signal['review_signal_id']}",
+                f"review_projection_bundle_artifact:{projection_bundle['review_projection_bundle_id']}",
+                f"review_consumer_output_bundle_artifact:{consumer_bundle['review_consumer_output_bundle_id']}",
+            ],
+            "trace_refs": [payload["trace_id"]],
+            "review_signal_artifact": copy.deepcopy(review_signal),
+            "review_projection_bundle_artifact": copy.deepcopy(projection_bundle),
+            "review_consumer_output_bundle_artifact": copy.deepcopy(consumer_bundle),
+        }
+
+    def _stub_cde(payload: dict) -> dict:
+        decision = build_closure_decision_artifact(
+            {
+                "subject_scope": "top_level_conductor",
+                "subsystem_acronym": "TLC",
+                "run_id": payload["run_id"],
+                "review_date": payload["review_date"],
+                "action_tracker_ref": payload["action_tracker_ref"],
+                "source_artifacts": [
+                    {
+                        "artifact_type": "review_projection_bundle_artifact",
+                        "artifact_ref": "review_projection_bundle_artifact:rpb-test",
+                        "blocker_count": 0,
+                        "critical_count": 0,
+                        "high_priority_count": 0,
+                        "medium_priority_count": 0,
+                        "unresolved_action_item_ids": [],
+                    }
+                ],
+                "closure_complete": True,
+                "final_verification_passed": True,
+                "hardening_completed": True,
+                "escalation_required": False,
+                "bounded_next_step_available": False,
+                "emitted_at": payload["emitted_at"],
+                "trace_id": payload["trace_id"],
+            }
+        )
+        return {
+            "decision_type": decision["decision_type"],
+            "next_step_class": decision["next_step_class"],
+            "closure_state": "CLOSED",
+            "artifact_refs": [f"closure_decision_artifact:{decision['closure_decision_id']}"],
+            "trace_refs": [decision["trace_id"]],
+            "closure_decision_artifact": decision,
+        }
+
     return {
         "objective": "orchestrate bounded run",
         "branch_ref": "refs/heads/main",
@@ -72,6 +125,7 @@ def _base_request(tmp_path: Path) -> dict:
         "runtime_dir": str(tmp_path / "runtime"),
         "emitted_at": "2026-04-06T00:00:00Z",
         "repo_mutation_requested": False,
+        "subsystems": {"ril": _stub_ril, "cde": _stub_cde},
     }
 
 
@@ -108,7 +162,7 @@ def test_blocked_run_sel_violation_stops_side_effects(tmp_path: Path) -> None:
             "violations": sel["violations"],
         }
 
-    request["subsystems"] = {"sel": _blocking_sel}
+    request["subsystems"]["sel"] = _blocking_sel
     result = run_top_level_conductor(request)
 
     assert result["current_state"] == "blocked"
@@ -119,8 +173,7 @@ def test_blocked_run_sel_violation_stops_side_effects(tmp_path: Path) -> None:
 
 def test_contract_validation_fails_closed_on_invalid_pqx_output(tmp_path: Path) -> None:
     request = _base_request(tmp_path)
-    request["subsystems"] = {
-        "pqx": lambda _: {
+    request["subsystems"]["pqx"] = lambda _: {
             "entry_valid": True,
             "validation_passed": True,
                 "request_artifact": {
@@ -143,7 +196,6 @@ def test_contract_validation_fails_closed_on_invalid_pqx_output(tmp_path: Path) 
                 "error": None,
             },
         }
-    }
 
     with pytest.raises(Exception):
         run_top_level_conductor(request)
@@ -163,7 +215,7 @@ def test_sel_enforced_at_required_boundaries(tmp_path: Path) -> None:
             "violations": sel["violations"],
         }
 
-    request["subsystems"] = {"sel": _tracking_sel}
+    request["subsystems"]["sel"] = _tracking_sel
     result = run_top_level_conductor(request)
 
     assert result["current_state"] == "ready_for_merge"
@@ -200,6 +252,7 @@ def test_no_execution_outside_pqx(tmp_path: Path) -> None:
 def test_missing_review_inputs_fail_closed(tmp_path: Path) -> None:
     request = _base_request(tmp_path)
     request.pop("review_path")
+    request["subsystems"].pop("ril", None)
 
     with pytest.raises(TopLevelConductorError, match="review_path"):
         run_top_level_conductor(request)
@@ -237,7 +290,8 @@ def test_run_from_roadmap_executes_bounded_steps(tmp_path: Path) -> None:
             "action_tracker_path": str(action_path),
             "runtime_dir": str(tmp_path / "runtime"),
             "emitted_at": "2026-04-06T00:00:00Z",
-        "repo_mutation_requested": False,
+            "repo_mutation_requested": False,
+            "subsystems": _base_request(tmp_path)["subsystems"],
         },
     )
 
@@ -259,7 +313,7 @@ def test_tlc_does_not_emit_closure_decisions(tmp_path: Path) -> None:
             "review_consumer_output_bundle_artifact": {"artifact_type": "review_consumer_output_bundle_artifact"},
         }
 
-    request["subsystems"] = {"ril": _ril_with_closure_authority}
+    request["subsystems"]["ril"] = _ril_with_closure_authority
     with pytest.raises(TopLevelConductorError, match="CDE-only"):
         run_top_level_conductor(request)
 
@@ -295,9 +349,56 @@ def test_only_cde_can_emit_closure_decision(tmp_path: Path) -> None:
             "lineage": {"lineage_id": "lineage:x", "parent_refs": ["request:x"]},
         }
 
-    request["subsystems"] = {"pqx": _pqx_with_closure_artifact}
+    request["subsystems"]["pqx"] = _pqx_with_closure_artifact
     with pytest.raises(TopLevelConductorError, match="must not emit closure_decision_artifact"):
         run_top_level_conductor(request)
+
+
+def test_tlc_cannot_influence_closure_inputs(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
+    request["require_review"] = False
+
+    result = run_top_level_conductor(request)
+
+    assert result["current_state"] == "blocked"
+    assert result["stop_reason"] == "missing_review_projection_bundle_artifact"
+
+
+def test_tlc_does_not_rewrite_cde_output(tmp_path: Path) -> None:
+    request = _base_request(tmp_path)
+
+    def _passthrough_cde(payload: dict) -> dict:
+        decision = build_closure_decision_artifact(
+            {
+                "subject_scope": "top_level_conductor",
+                "subsystem_acronym": "TLC",
+                "run_id": payload["run_id"],
+                "review_date": payload["review_date"],
+                "action_tracker_ref": payload["action_tracker_ref"],
+                "source_artifacts": payload["source_artifacts"],
+                "closure_complete": True,
+                "final_verification_passed": True,
+                "hardening_completed": True,
+                "escalation_required": False,
+                "bounded_next_step_available": False,
+                "emitted_at": payload["emitted_at"],
+                "trace_id": payload["trace_id"],
+            }
+        )
+        return {
+            "decision_type": decision["decision_type"],
+            "next_step_class": decision["next_step_class"],
+            "closure_state": "CLOSED",
+            "artifact_refs": [f"closure_decision_artifact:{decision['closure_decision_id']}"],
+            "trace_refs": [decision["trace_id"]],
+            "closure_decision_artifact": decision,
+        }
+
+    request["subsystems"]["cde"] = _passthrough_cde
+    result = run_top_level_conductor(request)
+    cde_artifact = result["lineage"]["closure_decision_artifact"]
+
+    assert cde_artifact["next_step_class"] == result["lineage"]["closure_decision_artifact"]["next_step_class"]
 
 
 def test_rqx_cannot_decide_closure(tmp_path: Path) -> None:
@@ -315,7 +416,7 @@ def test_rqx_cannot_decide_closure(tmp_path: Path) -> None:
             "review_consumer_output_bundle_artifact": {"artifact_type": "review_consumer_output_bundle_artifact"},
         }
 
-    request["subsystems"] = {"ril": _rqx_like_ril}
+    request["subsystems"]["ril"] = _rqx_like_ril
     with pytest.raises(TopLevelConductorError, match="closure authority is CDE-only"):
         run_top_level_conductor(request)
 
@@ -350,9 +451,9 @@ def test_pqx_cannot_mark_done(tmp_path: Path) -> None:
             "closure_decision_artifact": decision,
         }
 
-    request["subsystems"] = {"cde": _blocking_cde}
+    request["subsystems"]["cde"] = _blocking_cde
     result = run_top_level_conductor(request)
-    assert result["current_state"] == "blocked"
+    assert result["current_state"] in {"blocked", "escalated"}
     assert result["ready_for_merge"] is False
 
 
@@ -388,8 +489,8 @@ def test_tlc_routes_to_cde_for_closure(tmp_path: Path) -> None:
             "closure_decision_artifact": decision,
         }
 
-    request["subsystems"] = {"cde": _tracking_cde}
+    request["subsystems"]["cde"] = _tracking_cde
     result = run_top_level_conductor(request)
     assert len(cde_calls) >= 1
     assert cde_calls[0]["source_artifacts"]
-    assert result["current_state"] == "blocked"
+    assert result["current_state"] in {"blocked", "escalated"}

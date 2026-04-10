@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/review_merge_readiness_artifact.schema.json",
   "title": "Review Merge Readiness Artifact",
-  "description": "Machine-readable merge readiness verdict from bounded RQX review output.",
+  "description": "Machine-readable review readiness signal from bounded RQX output. This artifact is a signal for CDE, not a closure or promotion decision.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -14,7 +14,8 @@
     "review_name",
     "review_result_ref",
     "verdict",
-    "merge_ready",
+    "readiness_signal",
+    "cde_decision_required",
     "rationale",
     "required_follow_up",
     "generated_at"
@@ -31,7 +32,11 @@
       "type": "string",
       "enum": ["safe_to_merge", "fix_required", "not_safe_to_merge"]
     },
-    "merge_ready": {"type": "boolean"},
+    "readiness_signal": {
+      "type": "string",
+      "enum": ["review_safe", "review_fix_required", "review_not_safe"]
+    },
+    "cde_decision_required": {"type": "boolean", "const": true},
     "rationale": {"type": "string", "minLength": 1},
     "required_follow_up": {
       "type": "array",

@@ -172,11 +172,39 @@ def test_traceability_violations_map_to_specific_input_fields() -> None:
 
 def test_sel_enforces_closure_decision() -> None:
     context = _valid_context()
-    context["execution_request"]["closure_lock_state"] = "locked"
-    context["execution_request"]["closure_decision_source"] = "CDE"
-    context["execution_request"]["promotion_readiness_decisioning"] = "CDE"
-    context["artifact_references"]["closure_decision_artifact"] = {"artifact_type": "closure_decision_artifact"}
-    context["artifact_references"]["closure_decision_artifact_ref"] = "closure_decision_artifact:cda-001"
+    closure = {
+        "artifact_type": "closure_decision_artifact",
+        "artifact_class": "coordination",
+        "schema_version": "1.0.0",
+        "closure_decision_id": "cda-0123456789abcdef",
+        "subject_scope": "scope",
+        "decision_type": "blocked",
+        "decision_reason_codes": ["blocking_items_present"],
+        "blocker_count": 1,
+        "critical_count": 0,
+        "high_priority_count": 0,
+        "medium_priority_count": 0,
+        "unresolved_action_item_ids": ["CR-1"],
+        "lock_status": "blocked",
+        "next_step_class": "none",
+        "next_step_ref": None,
+        "bounded_next_step_available": False,
+        "evidence_refs": ["review_projection_bundle_artifact:rpb-1"],
+        "source_artifact_refs": ["review_projection_bundle_artifact:rpb-1"],
+        "final_summary": "Blocked due to blocker.",
+        "emitted_at": "2026-04-06T00:00:00Z",
+        "trace_id": "trace-1",
+        "provenance": {
+            "engine": "closure_decision_engine",
+            "decision_rules_version": "cde-001-v1",
+            "deterministic_hash_basis": "canonical-json-sha256",
+            "source_artifact_types": ["review_projection_bundle_artifact"],
+            "source_artifact_refs": ["review_projection_bundle_artifact:rpb-1"],
+        },
+    }
+    context["execution_request"]["closure_state"] = "LOCKED"
+    context["artifact_references"]["closure_decision_artifact"] = closure
+    context["artifact_references"]["closure_decision_artifact_ref"] = "closure_decision_artifact:cda-0123456789abcdef"
 
     result = enforce_system_boundaries(context)
 
@@ -187,9 +215,60 @@ def test_sel_enforces_closure_decision() -> None:
 def test_only_cde_can_emit_closure_decision() -> None:
     context = _valid_context()
     context["execution_request"]["closure_decision_source"] = "PQX"
-    context["execution_request"]["promotion_readiness_decisioning"] = "RQX"
 
     result = enforce_system_boundaries(context)
 
     assert result["enforcement_status"] == "block"
     assert "repair_decision_violation" in _violation_codes(result)
+
+
+def test_sel_requires_real_cde_artifact() -> None:
+    context = _valid_context()
+    context["execution_request"]["closure_state"] = "OPEN"
+    context["artifact_references"]["closure_decision_artifact"] = "closure_decision_artifact:cda-fake"
+
+    result = enforce_system_boundaries(context)
+
+    assert result["enforcement_status"] == "block"
+    assert "missing_artifact_violation" in _violation_codes(result)
+
+
+def test_closed_state_blocks_execution() -> None:
+    context = _valid_context()
+    context["execution_request"]["closure_state"] = "CLOSED"
+    context["artifact_references"]["closure_decision_artifact"] = {
+        "artifact_type": "closure_decision_artifact",
+        "artifact_class": "coordination",
+        "schema_version": "1.0.0",
+        "closure_decision_id": "cda-0123456789abcdef",
+        "subject_scope": "scope",
+        "decision_type": "lock",
+        "decision_reason_codes": ["final_verification_passed"],
+        "blocker_count": 0,
+        "critical_count": 0,
+        "high_priority_count": 0,
+        "medium_priority_count": 0,
+        "unresolved_action_item_ids": [],
+        "lock_status": "locked",
+        "next_step_class": "none",
+        "next_step_ref": None,
+        "bounded_next_step_available": False,
+        "evidence_refs": ["review_projection_bundle_artifact:rpb-1"],
+        "source_artifact_refs": ["review_projection_bundle_artifact:rpb-1"],
+        "final_summary": "Closed.",
+        "emitted_at": "2026-04-06T00:00:00Z",
+        "trace_id": "trace-1",
+        "provenance": {
+            "engine": "closure_decision_engine",
+            "decision_rules_version": "cde-001-v1",
+            "deterministic_hash_basis": "canonical-json-sha256",
+            "source_artifact_types": ["review_projection_bundle_artifact"],
+            "source_artifact_refs": ["review_projection_bundle_artifact:rpb-1"],
+        },
+    }
+    context["artifact_references"]["closure_decision_artifact_ref"] = "closure_decision_artifact:cda-0123456789abcdef"
+
+    result = enforce_system_boundaries(context)
+
+    assert result["enforcement_status"] == "block"
+    assert "repair_budget_violation" in _violation_codes(result)

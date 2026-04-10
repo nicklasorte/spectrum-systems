@@ -7,7 +7,8 @@
   "review_name": "rqx_01_initial_build",
   "review_result_ref": "review_result_artifact:rqx-01-review-001",
   "verdict": "fix_required",
-  "merge_ready": false,
+  "readiness_signal": "review_fix_required",
+  "cde_decision_required": true,
   "rationale": "High-severity findings require remediation before merge readiness can be granted.",
   "required_follow_up": [
     "Resolve high-severity findings and regenerate review artifacts."

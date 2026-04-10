@@ -796,12 +796,8 @@ def _real_cde(payload: dict[str, Any]) -> dict[str, Any]:
     validate_artifact(decision, "closure_decision_artifact")
     return {
         "decision_type": decision["decision_type"],
-        "next_step_class": (
-            "continue_repair_bounded"
-            if decision["decision_type"] == "continue_repair_bounded"
-            else ("continue_bounded" if decision["decision_type"] == "continue_bounded" else "terminal")
-        ),
-        "closure_state": "closed" if decision["decision_type"] == "lock" else "open",
+        "next_step_class": decision["next_step_class"],
+        "closure_state": "CLOSED" if decision["decision_type"] == "lock" else ("LOCKED" if decision["decision_type"] in {"blocked", "escalate"} else "OPEN"),
         "artifact_refs": [f"closure_decision_artifact:{decision['closure_decision_id']}"],
         "trace_refs": [decision["trace_id"]],
         "closure_decision_artifact": decision,
@@ -914,9 +910,7 @@ def _enforce_sel(
             "queue_id": queue_id,
             "work_item_id": work_item_id,
             "step_id": step_id,
-            "closure_lock_state": state["lineage"].get("closure_lock_state", "open"),
-            "closure_decision_source": state["lineage"].get("closure_decision_source", "cde_only"),
-            "promotion_readiness_decisioning": state["lineage"].get("promotion_readiness_decisioning", "cde_only"),
+            "closure_state": state["lineage"].get("closure_state", "OPEN"),
         },
         "artifact_references": {
             "execution_artifact": state["produced_artifact_refs"][0] if state["produced_artifact_refs"] else "request_artifact",
@@ -1033,9 +1027,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
     lineage = deepcopy(run_request.get("lineage")) if isinstance(run_request.get("lineage"), dict) else {}
     lineage.setdefault("lineage_id", f"lineage-{run_id}")
     lineage.setdefault("parent_refs", [f"request:{run_id}"])
-    lineage.setdefault("closure_lock_state", "open")
-    lineage.setdefault("closure_decision_source", "cde_only")
-    lineage.setdefault("promotion_readiness_decisioning", "cde_only")
+    lineage.setdefault("closure_state", "OPEN")
     lineage.setdefault("repair_validation_passed", False)
     lineage.setdefault(
         "request_hash",
@@ -1063,7 +1055,7 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
         "phase_history": [],
         "active_subsystems": [],
         "retry_budget_remaining": retry_budget,
-        "closure_state": "pending",
+        "closure_state": "OPEN",
         "next_allowed_actions": ["admit"],
         "stop_reason": None,
         "ready_for_merge": False,
@@ -1286,14 +1278,32 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                 _transition(state=state, to_state="blocked", reason="review_outputs_missing")
                 state["stop_reason"] = "review_outputs_missing"
                 break
+            state["lineage"]["review_signal_artifact"] = ril_result["review_signal_artifact"]
+            state["lineage"]["review_projection_bundle_artifact"] = ril_result["review_projection_bundle_artifact"]
+            state["lineage"]["review_action_tracker_artifact"] = {
+                "artifact_type": "review_action_tracker_artifact",
+                "artifact_ref": _require_non_empty_str(run_request.get("action_tracker_path"), field="action_tracker_path"),
+            }
             _transition(state=state, to_state="closure_decision_pending", reason="review_outputs_available")
             continue
 
         if state["current_state"] == "closure_decision_pending":
             _enforce_registry_action(actor="TLC", action_type="orchestration", target_system="CDE", boundary="tlc_to_cde")
-            ril_ref = next((ref for ref in state["produced_artifact_refs"] if ref.startswith("review_projection_bundle_artifact:")), None)
-            if not isinstance(ril_ref, str) or not ril_ref:
-                ril_ref = f"review_projection_bundle_artifact:{state['run_id']}:synthetic"
+            review_projection_bundle_artifact = state["lineage"].get("review_projection_bundle_artifact")
+            review_signal_artifact = state["lineage"].get("review_signal_artifact")
+            review_action_tracker_artifact = state["lineage"].get("review_action_tracker_artifact")
+            if not isinstance(review_projection_bundle_artifact, dict):
+                _transition(state=state, to_state="blocked", reason="missing_review_projection_bundle_artifact")
+                state["stop_reason"] = "missing_review_projection_bundle_artifact"
+                break
+            if not isinstance(review_signal_artifact, dict):
+                _transition(state=state, to_state="blocked", reason="missing_review_signal_artifact")
+                state["stop_reason"] = "missing_review_signal_artifact"
+                break
+            if not isinstance(review_action_tracker_artifact, dict):
+                _transition(state=state, to_state="blocked", reason="missing_review_action_tracker_artifact")
+                state["stop_reason"] = "missing_review_action_tracker_artifact"
+                break
             repair_packet = state["lineage"].get("pending_failure_packet") if isinstance(state["lineage"].get("pending_failure_packet"), dict) else None
             repair_candidate = state["lineage"].get("failure_repair_candidate_artifact")
             if repair_packet is not None and not isinstance(repair_candidate, dict):
@@ -1334,15 +1344,9 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                     "review_date": "2026-04-05",
                     "action_tracker_ref": _require_non_empty_str(run_request.get("action_tracker_path"), field="action_tracker_path"),
                     "source_artifacts": [
-                        {
-                            "artifact_type": "review_projection_bundle_artifact",
-                            "artifact_ref": ril_ref,
-                            "blocker_count": 0,
-                            "critical_count": 0,
-                            "high_priority_count": 0,
-                            "medium_priority_count": 1,
-                            "unresolved_action_item_ids": [],
-                        }
+                        review_projection_bundle_artifact,
+                        review_signal_artifact,
+                        review_action_tracker_artifact,
                     ],
                     "closure_complete": closure_complete,
                     "final_verification_passed": closure_complete,
@@ -1376,15 +1380,29 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
                 subsystem="CDE",
                 boundary="closure_decision",
                 status="ok",
-                input_refs=[ril_ref] if isinstance(ril_ref, str) else [],
+                input_refs=[
+                    ref
+                    for ref in [
+                        str(review_action_tracker_artifact.get("artifact_ref") or ""),
+                        (
+                            f"review_projection_bundle_artifact:{review_projection_bundle_artifact.get('review_projection_bundle_id')}"
+                            if isinstance(review_projection_bundle_artifact.get("review_projection_bundle_id"), str)
+                            else ""
+                        ),
+                        (
+                            f"review_signal_artifact:{review_signal_artifact.get('review_signal_id')}"
+                            if isinstance(review_signal_artifact.get("review_signal_id"), str)
+                            else ""
+                        ),
+                    ]
+                    if ref
+                ],
                 output_refs=cde_result.get("artifact_refs", []) if isinstance(cde_result, dict) else [],
                 trace_refs=state["trace_refs"],
             )
             decision = cde_result.get("decision_type") if isinstance(cde_result, dict) else None
-            state["closure_state"] = str(cde_result.get("closure_state", "pending")) if isinstance(cde_result, dict) else "pending"
-            state["lineage"]["closure_decision_source"] = "CDE"
-            state["lineage"]["promotion_readiness_decisioning"] = "CDE"
-            state["lineage"]["closure_lock_state"] = "locked" if decision in {"lock", "blocked", "escalate"} else "open"
+            state["closure_state"] = str(cde_result.get("closure_state", "OPEN")).upper() if isinstance(cde_result, dict) else "OPEN"
+            state["lineage"]["closure_state"] = str(cde_result.get("closure_state", "OPEN")).upper()
 
             if decision == "lock":
                 _transition(state=state, to_state="ready_for_merge", reason="cde_lock")

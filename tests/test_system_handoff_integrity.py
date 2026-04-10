@@ -198,6 +198,20 @@ def test_tlc_fails_closed_on_missing_or_malformed_outputs(tmp_path: Path) -> Non
 
     request_malformed = copy.deepcopy(request)
     request_malformed["require_review"] = False
+    request_malformed["lineage"] = {
+        "review_projection_bundle_artifact": {
+            "artifact_type": "review_projection_bundle_artifact",
+            "artifact_ref": "review_projection_bundle_artifact:rpb-handoff",
+        },
+        "review_signal_artifact": {
+            "artifact_type": "review_signal_artifact",
+            "artifact_ref": "review_signal_artifact:rsa-handoff",
+        },
+        "review_action_tracker_artifact": {
+            "artifact_type": "review_action_tracker_artifact",
+            "artifact_ref": "tests/fixtures/system_handoff_action_tracker.md",
+        },
+    }
     request_malformed["subsystems"] = {
         "cde": lambda _: {
             "decision_type": "lock",
