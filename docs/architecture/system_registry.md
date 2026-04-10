@@ -219,6 +219,9 @@ CDE is the only system allowed to emit:
   - review_interpretation
   - review_integration
   - review_projection
+  - evaluation_interpretation
+  - drift_interpretation
+  - control_input_interpretation_support
 - **consumes:**
   - review_artifact
   - review_signal_artifact
@@ -230,6 +233,9 @@ CDE is the only system allowed to emit:
 - **must_not_do:**
   - enforce policy decisions (SEL-owned)
   - execute work or repairs (PQX-owned)
+  - generate repair plans (FRE-owned)
+  - prioritize adoption candidates (PRG-owned)
+  - issue policy authority decisions (TPA-owned)
   - decide closure state (CDE-owned)
 
 ### RQX
@@ -297,6 +303,7 @@ CDE is the only system allowed to emit:
   - review_signal_artifact
   - review_action_tracker_artifact
 - **produces:**
+  - cde_control_decision_output
   - closure_decision_artifact
 - **must_not_do:**
   - execute work (PQX-owned)
@@ -344,6 +351,10 @@ CDE is the only system allowed to emit:
   - program_governance
   - roadmap_alignment
   - program_drift_management
+  - evaluation_pattern_aggregation
+  - recommendation_generation
+  - adoption_candidate_prioritization
+  - adaptive_readiness_recommendation
 - **consumes:**
   - roadmap_signal_bundle
   - roadmap_review_view_artifact
@@ -351,12 +362,63 @@ CDE is the only system allowed to emit:
 - **produces:**
   - program_brief
   - program_feedback_record
+  - evaluation_pattern_report
+  - policy_change_candidate
+  - slice_contract_update_candidate
+  - program_alignment_assessment
+  - prioritized_adoption_candidate_set
+  - adaptive_readiness_record
   - program_roadmap_alignment_result
 - **must_not_do:**
   - execute bounded work (PQX-owned)
+  - gate execution admission (AEX/TPA-owned)
   - enforce runtime blocks (SEL-owned)
   - interpret review integration packets (RIL-owned)
+  - issue closure authority decisions (CDE-owned)
+  - issue policy authority decisions (TPA-owned)
   - influence runtime execution authority or admission decisions (PQX/AEX-owned)
+
+## Control-Prep Artifact Rule (Non-Authoritative)
+- The following artifacts are **preparatory only** and **MUST NOT** be treated as authoritative decisions:
+  - `control_signal_fusion_record`
+  - `prioritized_adoption_candidate_set`
+  - `cde_control_decision_input`
+  - `tpa_policy_update_input`
+  - `control_prep_readiness_record`
+- These preparatory artifacts may:
+  - fuse signals
+  - rank bounded options
+  - prepare future authority inputs
+  - assess readiness for a future governed cycle
+- These preparatory artifacts must **NOT**:
+  - authorize closure
+  - authorize enforcement
+  - authorize policy application
+  - substitute for CDE outputs
+  - substitute for TPA outputs
+
+## Learning / Detection / Recommendation Artifact Ownership
+| Artifact | Canonical owner | Constraint |
+| --- | --- | --- |
+| `evaluation_summary_artifact` | RIL | Interpretation artifact only; non-authoritative. |
+| `execution_observability_artifact` | RIL | Observation/interpretation only; no execution mutation authority. |
+| `drift_detection_record` | RIL | Detection artifact only; no direct runtime action. |
+| `slice_failure_pattern_record` | RIL | Pattern interpretation only; no repair execution authority. |
+| `evaluation_pattern_report` | PRG | Recommendation input only; non-authoritative. |
+| `policy_change_candidate` | PRG | Candidate artifact only; requires TPA authority output before policy application. |
+| `slice_contract_update_candidate` | PRG | Candidate artifact only; no direct execution effect. |
+| `program_alignment_assessment` | PRG | Governance assessment only; non-authoritative for closure/enforcement. |
+| `program_roadmap_alignment_result` | PRG | Program alignment output only; no closure authority. |
+| `adaptive_readiness_record` | PRG | Recommendation artifact only; cannot substitute for CDE closure/readiness decisions. |
+
+## CDE/TPA Authority Boundary: Prep vs Authority
+- **CDE boundary**
+  - `cde_control_decision_input` is a non-authoritative preparatory artifact.
+  - CDE decision outputs (including `closure_decision_artifact` and `cde_control_decision_output`) are authoritative.
+- **TPA boundary**
+  - `tpa_policy_update_input` is a non-authoritative preparatory artifact.
+  - TPA policy outputs (`allow`, `reject`, `narrow`, `evidence_required`) are authoritative.
+- Preparatory artifacts may be consumed by future governed cycles, but may not be treated as authority artifacts themselves.
 
 ## Anti-Duplication Table
 | Invalid behavior | Why invalid | Canonical owner |
@@ -377,6 +439,11 @@ CDE is the only system allowed to emit:
 | PQX accepts repo-writing requests directly | Execution system cannot be public repo-write entrypoint | AEX |
 | AEX executes work | Admission boundary cannot execute bounded work | PQX |
 | AEX decides trust/policy admissibility | Admission boundary cannot own trust-policy authority | TPA |
+| PRG emits authoritative closure or gating decisions | Recommendation/planning cannot become decision authority | CDE / TPA |
+| RIL ranks adoption candidates | Interpretation layer cannot own program prioritization | PRG |
+| TLC emits control decisions from prep artifacts | Orchestration cannot convert preparatory inputs into authority outputs | CDE / TPA |
+| Control-prep artifacts treated as final decisions | Preparatory artifacts cannot substitute for authority decisions | CDE / TPA |
+| Drift detection directly changes runtime behavior | Detection cannot directly mutate runtime behavior outside governed authority paths | TPA / SEL / PQX via governed cycle |
 
 ## Allowed Interaction Graph
 - AEX → TLC
@@ -417,6 +484,32 @@ CDE is the only system allowed to emit:
   - PQX is the only execution path for applying repairs and rerunning tests.
   - SEL enforces scope, retry budget, and decision-state boundaries for each repair attempt.
 
+## Serial Multi-Umbrella Execution Rule
+- When multiple umbrellas are executed in one governed serial cycle:
+  - each umbrella **MUST** fully complete before the next umbrella begins
+  - each umbrella **MUST** emit its own `umbrella_decision_artifact`
+  - later umbrellas may consume prior umbrella outputs
+  - later umbrellas **MUST NOT** mutate prior umbrella outputs
+  - any fail-closed stop condition halts the serial cycle unless a bounded permitted fix cycle is explicitly invoked
+
+## Roadmap Design Rules (Registry Alignment Constitution)
+1. Every roadmap row **MUST** map to one canonical system owner from this registry.
+2. No roadmap row may assign a responsibility to a non-owner.
+3. Preparatory rows that produce future authority inputs **MUST** be labeled non-authoritative.
+4. Decision rows **MUST** invoke the authoritative decision owner (CDE/TPA), never a recommendation/prep layer.
+5. Execution rows **MUST** route execution through PQX.
+6. Enforcement rows **MUST** route enforcement through SEL.
+7. Repo-mutating rows **MUST** preserve lineage `AEX → TLC → TPA → PQX`.
+8. Review-related rows **MUST** distinguish:
+   - RQX review-loop execution
+   - RIL interpretation/projection
+9. Roadmaps **MUST** separate:
+   - observe / interpret / recommend / prepare
+   - decide / gate / enforce / execute
+10. Multi-umbrella roadmap bundles **MUST** preserve complete per-umbrella completion boundaries.
+11. Batch and umbrella decision artifacts control progression only and **MUST NOT** substitute for CDE closure authority.
+12. New roadmap proposals **MUST** be duplication-checked against this registry before admission.
+
 ## System Invariants
 1. Execution is owned only by **PQX**.
 2. Recovery and repair planning are owned only by **FRE**.
@@ -427,6 +520,15 @@ CDE is the only system allowed to emit:
 7. Program governance is owned only by **PRG**.
 8. Review-loop execution is owned only by **RQX**.
 9. Repo-mutation admission is owned only by **AEX**.
+
+## Roadmap Alignment Checklist (Lightweight)
+- Does each roadmap row map to exactly one canonical owner?
+- Is any preparatory artifact being treated as an authority artifact?
+- Does any recommendation layer implicitly decide, gate, or enforce?
+- Does any orchestration layer perform execution or policy reasoning?
+- Are serial umbrella completion boundaries explicit?
+- Are repo-mutation paths preserving `AEX → TLC → TPA → PQX` lineage?
+- Are batch/umbrella decision artifacts being misused as closure authority?
 
 ## Canonical Repo-Mutation Path
 
