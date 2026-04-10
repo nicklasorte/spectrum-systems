@@ -39,11 +39,16 @@ _GENERIC_COMMAND_PATTERNS = (
     "pytest tests/test_roadmap_slice_registry.py -q",
     "pytest tests/test_execution_hierarchy.py -q",
 )
+_FAKE_SELF_REFERENTIAL_COMMAND_PATTERNS = (
+    "load_slice_registry",
+    "row['slice_id']",
+    "assert row[",
+)
 _EXECUTION_TYPE_COMMAND_HINTS = {
     "code": ("python", "scripts/", "module", "run_"),
     "validation": ("pytest", "validate", "validation", "assert"),
-    "repair": ("repair", "replay", "recovery", "retry"),
-    "governance": ("govern", "roadmap", "sequence", "gate", "registry"),
+    "repair": ("repair", "replay", "recovery", "retry", "gate", "red_team", "fix"),
+    "governance": ("govern", "roadmap", "sequence", "gate", "registry", "review", "authority", "promotion"),
 }
 
 
@@ -117,6 +122,11 @@ def _validate_slice_specific_execution_command(slice_id: str, commands: list[str
         raise RoadmapSliceRegistryError(
             f"slice {slice_id} has invalid commands: all commands are generic validation commands"
         )
+    first = commands[0].lower()
+    if "python -c" in first and any(pattern in first for pattern in _FAKE_SELF_REFERENTIAL_COMMAND_PATTERNS):
+        raise RoadmapSliceRegistryError(
+            f"slice {slice_id} has invalid commands: first command is self-referential registry metadata checking"
+        )
 
 
 def _validate_implementation_notes(slice_id: str, implementation_notes: str) -> None:
@@ -124,6 +134,11 @@ def _validate_implementation_notes(slice_id: str, implementation_notes: str) -> 
     if any(pattern in lowered for pattern in _GENERIC_IMPLEMENTATION_NOTE_PATTERNS):
         raise RoadmapSliceRegistryError(
             f"slice {slice_id} has invalid implementation_notes: notes are generic and not actionable"
+        )
+    required_markers = ("behavior exercised:", "artifact/module/flow touched:", "fail-closed condition:", "expected outcome:")
+    if not all(marker in lowered for marker in required_markers):
+        raise RoadmapSliceRegistryError(
+            f"slice {slice_id} has invalid implementation_notes: notes must include behavior, artifact flow, fail-closed condition, and expected outcome"
         )
 
 
@@ -137,7 +152,8 @@ def _validate_execution_type_command_alignment(slice_id: str, execution_type: st
 
 
 def validate_pqx_slice_execution_compatibility(slices: list[dict[str, Any]]) -> None:
-    first_command_to_slice: dict[str, str] = {}
+    family_command_sets: dict[tuple[str, tuple[str, ...]], str] = {}
+    family_note_fingerprints: dict[tuple[str, str], str] = {}
     for row in slices:
         slice_id = _as_non_empty_string(row.get("slice_id"), field="slice_id", slice_id="<unknown>")
         execution_type = _as_non_empty_string(row.get("execution_type"), field="execution_type", slice_id=slice_id)
@@ -151,21 +167,28 @@ def validate_pqx_slice_execution_compatibility(slices: list[dict[str, Any]]) -> 
             _validate_command_determinism(command, slice_id=slice_id)
         _validate_slice_specific_execution_command(slice_id, commands)
         _validate_execution_type_command_alignment(slice_id, execution_type, commands)
-        first_command = commands[0]
-        if first_command in first_command_to_slice:
-            prior_slice_id = first_command_to_slice[first_command]
+        family = slice_id.split("-", 1)[0]
+        command_key = (family, tuple(commands))
+        if command_key in family_command_sets:
+            prior_slice_id = family_command_sets[command_key]
             raise RoadmapSliceRegistryError(
-                f"slice {slice_id} has invalid commands: first execution command is duplicated with {prior_slice_id}"
+                f"slice {slice_id} has invalid commands: duplicated command set with {prior_slice_id} in family {family}"
             )
-        first_command_to_slice[first_command] = slice_id
+        family_command_sets[command_key] = slice_id
         if any(not criterion.strip() for criterion in success_criteria):
             raise RoadmapSliceRegistryError(
                 f"slice {slice_id} has invalid success_criteria: entries must be non-empty strings"
             )
-        _validate_implementation_notes(
-            slice_id,
-            _as_non_empty_string(row.get("implementation_notes"), field="implementation_notes", slice_id=slice_id),
-        )
+        notes = _as_non_empty_string(row.get("implementation_notes"), field="implementation_notes", slice_id=slice_id)
+        _validate_implementation_notes(slice_id, notes)
+        normalized_notes = " ".join(notes.lower().split())
+        note_key = (family, normalized_notes)
+        if note_key in family_note_fingerprints:
+            prior_slice_id = family_note_fingerprints[note_key]
+            raise RoadmapSliceRegistryError(
+                f"slice {slice_id} has invalid implementation_notes: duplicated boilerplate notes with {prior_slice_id} in family {family}"
+            )
+        family_note_fingerprints[note_key] = slice_id
 
 
 def validate_slice_registry(payload: dict[str, Any]) -> list[dict[str, Any]]:
