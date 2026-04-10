@@ -56,7 +56,7 @@
     "artifact_path": "docs/reviews/2026-03-15-governance-architecture-audit.md",
     "action_tracker_path": "docs/review-actions/2026-03-15-governance-architecture-audit.actions.json",
     "follow_up_trigger": "When A-1 (production code removal) is completed; when A-3 (Phase 1 enforcement) is operational; re-audit to assess advancement to maturity level 3 (Governed)",
-    "follow_up_due_date": "2026-04-01"
+    "follow_up_due_date": "2026-06-15"
   },
   {
     "review_id": "2026-03-16-operational-ai-systems-roadmap-review",
