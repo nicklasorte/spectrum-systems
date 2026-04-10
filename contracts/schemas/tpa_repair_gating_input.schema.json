@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_repair_gating_input.schema.json",
+  "title": "TPA Repair Gating Input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "gating_input_id",
+    "failure_packet_ref",
+    "repair_candidate_ref",
+    "repair_scope_refs",
+    "complexity_score",
+    "risk_level",
+    "retry_budget_remaining",
+    "allowed_artifact_refs"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "tpa_repair_gating_input"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "gating_input_id": {"type": "string", "minLength": 1},
+    "failure_packet_ref": {"type": "string", "pattern": "^execution_failure_packet:.+"},
+    "repair_candidate_ref": {"type": "string", "pattern": "^bounded_repair_candidate_artifact:.+"},
+    "repair_scope_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "complexity_score": {"type": "integer", "minimum": 0},
+    "risk_level": {"type": "string", "enum": ["low", "medium", "high"]},
+    "retry_budget_remaining": {"type": "integer", "minimum": 0},
+    "allowed_artifact_refs": {"type": "array", "items": {"type": "string", "minLength": 1}}
+  }
+}

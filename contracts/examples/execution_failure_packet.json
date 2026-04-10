@@ -1,0 +1,30 @@
+{
+  "artifact_type": "execution_failure_packet",
+  "schema_version": "1.0.0",
+  "failure_packet_id": "efp-f7fdb3f3746f877c",
+  "slice_id": "AUT-07",
+  "batch_id": "BATCH-AUT",
+  "umbrella_id": "AUTONOMY_EXECUTION",
+  "roadmap_context_ref": "contracts/roadmap/roadmap_structure.json",
+  "readiness_ref": "artifact_readiness_result:arr-8d64317d467cc920",
+  "execution_refs": [
+    "slice_execution:AUT-07"
+  ],
+  "trace_refs": [
+    "trace:aut-07-2026-04-10"
+  ],
+  "enforcement_refs": [
+    "system_enforcement_result_artifact:sel-001"
+  ],
+  "validation_refs": [
+    "pytest_failure:tests/test_repo_write_lineage_guard.py::test_authenticity_mismatch"
+  ],
+  "classified_failure_type": "authenticity_lineage_mismatch",
+  "explanation": "authenticity verification failed for contracts/examples/build_admission_record.example.json",
+  "affected_artifact_refs": [
+    "contracts/examples/build_admission_record.example.json",
+    "contracts/examples/normalized_execution_request.example.json",
+    "contracts/examples/tlc_handoff_record.example.json"
+  ],
+  "repairability_hint": "artifact_only"
+}

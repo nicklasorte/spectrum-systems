@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/bounded_repair_candidate_artifact.schema.json",
+  "title": "Bounded Repair Candidate Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "candidate_id",
+    "failure_packet_ref",
+    "failing_slice_ref",
+    "repairability_class",
+    "minimal_repair_scope",
+    "touched_artifact_intent",
+    "bounded_rationale",
+    "recurrence_prevention_note",
+    "explicit_no_go"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "bounded_repair_candidate_artifact"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "failure_packet_ref": {"type": "string", "pattern": "^execution_failure_packet:.+"},
+    "failing_slice_ref": {"type": "string", "pattern": "^slice:.+"},
+    "repairability_class": {"type": "string", "enum": ["artifact_only", "slice_metadata", "runtime_code", "escalate"]},
+    "minimal_repair_scope": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "touched_artifact_intent": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "bounded_rationale": {"type": "string", "minLength": 1},
+    "recurrence_prevention_note": {"type": "string", "minLength": 1},
+    "explicit_no_go": {"type": ["string", "null"]}
+  }
+}

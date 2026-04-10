@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/cde_repair_continuation_input.schema.json",
+  "title": "CDE Repair Continuation Input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "continuation_input_id",
+    "failure_packet_ref",
+    "repair_candidate_ref",
+    "failing_slice_ref",
+    "repairability_class",
+    "recommended_continuation",
+    "evidence_refs"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "cde_repair_continuation_input"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "continuation_input_id": {"type": "string", "minLength": 1},
+    "failure_packet_ref": {"type": "string", "pattern": "^execution_failure_packet:.+"},
+    "repair_candidate_ref": {"type": "string", "pattern": "^bounded_repair_candidate_artifact:.+"},
+    "failing_slice_ref": {"type": "string", "pattern": "^slice:.+"},
+    "repairability_class": {"type": "string", "enum": ["artifact_only", "slice_metadata", "runtime_code", "escalate"]},
+    "recommended_continuation": {"type": "string", "enum": ["continue_repair_bounded", "stop_escalate"]},
+    "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+  }
+}

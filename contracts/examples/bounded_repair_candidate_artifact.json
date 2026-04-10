@@ -1,0 +1,21 @@
+{
+  "artifact_type": "bounded_repair_candidate_artifact",
+  "schema_version": "1.0.0",
+  "candidate_id": "brc-3ba6433dd60d65f6",
+  "failure_packet_ref": "execution_failure_packet:efp-f7fdb3f3746f877c",
+  "failing_slice_ref": "slice:AUT-07",
+  "repairability_class": "artifact_only",
+  "minimal_repair_scope": [
+    "contracts/examples/build_admission_record.example.json",
+    "contracts/examples/normalized_execution_request.example.json",
+    "contracts/examples/tlc_handoff_record.example.json"
+  ],
+  "touched_artifact_intent": [
+    "contracts/examples/build_admission_record.example.json",
+    "contracts/examples/normalized_execution_request.example.json",
+    "contracts/examples/tlc_handoff_record.example.json"
+  ],
+  "bounded_rationale": "Classified authenticity_lineage_mismatch from canonical failure packet.",
+  "recurrence_prevention_note": "Preserve artifact-first validation and prevent recurrence by enforcing readiness invariants.",
+  "explicit_no_go": null
+}
