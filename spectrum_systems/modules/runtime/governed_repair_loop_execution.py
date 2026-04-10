@@ -246,6 +246,46 @@ def _pqx_execute(*, approved_slice: dict[str, Any], trace_id: str, gating_input_
     }
 
 
+def _build_canonical_execution_record(
+    *,
+    trace_id: str,
+    run_id: str,
+    approved_slice: dict[str, Any],
+    gating_input_ref: str,
+    decision_ref: str,
+) -> dict[str, Any]:
+    execution_record_id = deterministic_id(
+        prefix="pser",
+        namespace="grc_pqx_slice_execution_record",
+        payload=[trace_id, run_id, approved_slice["slice_id"], gating_input_ref, decision_ref],
+    )
+    return {
+        "artifact_type": "pqx_slice_execution_record",
+        "version": "2.0.0",
+        "trace_id": trace_id,
+        "run_id": run_id,
+        "slice_id": approved_slice["slice_id"],
+        "inputs": {
+            "scope_refs": list(approved_slice["scope_refs"]),
+            "allowed_artifact_refs": list(approved_slice["allowed_artifact_refs"]),
+        },
+        "outputs": {
+            "executed_scope_count": len(approved_slice["scope_refs"]),
+            "execution_record_id": execution_record_id,
+        },
+        "execution_status": "success",
+        "timestamps": {"started_at": _now_iso(), "completed_at": _now_iso()},
+        "lineage_refs": {
+            "failure_packet_ref": approved_slice["scope_refs"][0],
+            "repair_candidate_ref": approved_slice["scope_refs"][1],
+            "gating_input_ref": gating_input_ref,
+            "decision_ref": decision_ref,
+        },
+        "gating_input_ref": gating_input_ref,
+        "decision_ref": decision_ref,
+    }
+
+
 def _rqx_ril_review(*, case: FailureCase, trace_id: str, tmp_dir: Path | None, execution_record_ref: str) -> dict[str, Any]:
     repaired_required_artifacts, repaired_command = _load_repaired_readiness_inputs(case, tmp_dir=tmp_dir)
     repaired_readiness = evaluate_slice_artifact_readiness(
@@ -270,6 +310,69 @@ def _rqx_ril_review(*, case: FailureCase, trace_id: str, tmp_dir: Path | None, e
     }
 
 
+def _build_canonical_review_result(
+    *,
+    trace_id: str,
+    execution_record_ref: str,
+    repaired: bool,
+    interpretation_ref: str,
+) -> dict[str, Any]:
+    outcome = "approved" if repaired else "follow_up_required"
+    review_id = deterministic_id(
+        prefix="rqr",
+        namespace="grc_review_result_artifact",
+        payload=[trace_id, execution_record_ref, outcome],
+    )
+    review = {
+        "artifact_type": "review_result_artifact",
+        "version": "2.0.0",
+        "trace_id": trace_id,
+        "execution_record_ref": execution_record_ref,
+        "review_outcome": outcome,
+        "findings": [],
+        "evidence_refs": [execution_record_ref],
+        "interpretation_linkage": {"owner": "RIL", "interpretation_ref": interpretation_ref},
+        "review_id": review_id,
+    }
+    if not repaired:
+        review["findings"] = [
+            {
+                "finding_id": "F-1",
+                "severity": "high",
+                "summary": "Repair validation remained blocked during post-execution review.",
+            }
+        ]
+    return review
+
+
+def _enforce_artifact_envelope_consistency(
+    *,
+    trace_id: str,
+    packet: dict[str, Any],
+    candidate: dict[str, Any],
+    continuation_input: dict[str, Any],
+    gating_input: dict[str, Any],
+    execution_record: dict[str, Any],
+    review_result: dict[str, Any],
+) -> None:
+    if execution_record.get("trace_id") != trace_id or review_result.get("trace_id") != trace_id:
+        raise GovernedRepairLoopExecutionError("artifact envelope trace mismatch")
+    if execution_record.get("gating_input_ref") != f"tpa_repair_gating_input:{gating_input['gating_input_id']}":
+        raise GovernedRepairLoopExecutionError("artifact envelope gating linkage mismatch")
+    if execution_record.get("lineage_refs", {}).get("failure_packet_ref") != (
+        f"execution_failure_packet:{packet['failure_packet_id']}"
+    ):
+        raise GovernedRepairLoopExecutionError("artifact envelope failure packet linkage mismatch")
+    if execution_record.get("lineage_refs", {}).get("repair_candidate_ref") != (
+        f"bounded_repair_candidate_artifact:{candidate['candidate_id']}"
+    ):
+        raise GovernedRepairLoopExecutionError("artifact envelope repair candidate linkage mismatch")
+    if execution_record.get("decision_ref") != f"cde_repair_continuation_input:{continuation_input['continuation_input_id']}":
+        raise GovernedRepairLoopExecutionError("artifact envelope decision linkage mismatch")
+    if review_result.get("execution_record_ref") != f"pqx_slice_execution_record:{execution_record['outputs']['execution_record_id']}":
+        raise GovernedRepairLoopExecutionError("artifact envelope review linkage mismatch")
+
+
 def _build_resume_record(*, case: FailureCase, trace_id: str, run_id: str, trigger_ref: str) -> dict[str, Any]:
     record = {
         "artifact_type": "resume_record",
@@ -284,6 +387,31 @@ def _build_resume_record(*, case: FailureCase, trace_id: str, run_id: str, trigg
     }
     validate_artifact(record, "resume_record")
     return record
+
+
+def replay_governed_repair_loop_from_artifacts(*, artifacts: dict[str, Any]) -> dict[str, Any]:
+    required = {"packet", "candidate", "continuation_input", "gating_input", "execution_record", "review_result", "resume_record"}
+    missing = sorted(required - set(artifacts))
+    if missing:
+        raise GovernedRepairLoopExecutionError(f"replay missing artifacts: {', '.join(missing)}")
+
+    execution = artifacts["execution_record"]
+    review = artifacts["review_result"]
+    if execution.get("artifact_type") != "pqx_slice_execution_record":
+        raise GovernedRepairLoopExecutionError("replay invalid execution artifact_type")
+    if review.get("artifact_type") != "review_result_artifact":
+        raise GovernedRepairLoopExecutionError("replay invalid review artifact_type")
+    if execution.get("trace_id") != review.get("trace_id"):
+        raise GovernedRepairLoopExecutionError("replay trace linkage mismatch")
+    if review.get("execution_record_ref") != f"pqx_slice_execution_record:{execution['outputs']['execution_record_id']}":
+        raise GovernedRepairLoopExecutionError("replay execution linkage mismatch")
+    if execution.get("execution_status") != "success":
+        return {"status": "blocked", "explanation": "deterministic: execution_status was not success"}
+    if review.get("review_outcome") != "approved":
+        return {"status": "not_repaired", "explanation": "deterministic: review_outcome requires follow-up"}
+    if artifacts["resume_record"].get("trigger_ref") != f"pqx_slice_execution_record:{execution['outputs']['execution_record_id']}":
+        raise GovernedRepairLoopExecutionError("replay trigger linkage mismatch")
+    return {"status": "resumed", "explanation": "deterministic: canonical artifact chain is complete"}
 
 
 def run_governed_repair_loop(
@@ -384,11 +512,44 @@ def run_governed_repair_loop(
         trace_id=trace_id,
         gating_input_ref=tpa_decision["gating_input_ref"],
     )
+    decision_ref = f"cde_repair_continuation_input:{continuation_input['continuation_input_id']}"
+    execution_record = _build_canonical_execution_record(
+        trace_id=trace_id,
+        run_id=run_id,
+        approved_slice={
+            "slice_id": execution["approved_slice_ref"],
+            "scope_refs": [
+                f"execution_failure_packet:{packet['failure_packet_id']}",
+                f"bounded_repair_candidate_artifact:{candidate['candidate_id']}",
+            ],
+            "allowed_artifact_refs": list(gating_input["allowed_artifact_refs"]),
+        },
+        gating_input_ref=tpa_decision["gating_input_ref"],
+        decision_ref=decision_ref,
+    )
+    execution["canonical_artifact"] = execution_record
+    execution["pqx_slice_execution_record"] = f"pqx_slice_execution_record:{execution_record['outputs']['execution_record_id']}"
     review = _rqx_ril_review(
         case=case,
         trace_id=trace_id,
         tmp_dir=tmp_dir,
         execution_record_ref=execution["pqx_slice_execution_record"],
+    )
+    review_result = _build_canonical_review_result(
+        trace_id=trace_id,
+        execution_record_ref=execution["pqx_slice_execution_record"],
+        repaired=review["repaired"],
+        interpretation_ref=review["interpretation_ref"],
+    )
+    review["canonical_artifact"] = review_result
+    _enforce_artifact_envelope_consistency(
+        trace_id=trace_id,
+        packet=packet,
+        candidate=candidate,
+        continuation_input=continuation_input,
+        gating_input=gating_input,
+        execution_record=execution_record,
+        review_result=review_result,
     )
     if not review["repaired"]:
         return {
@@ -428,7 +589,7 @@ def run_governed_repair_loop(
             "review": review,
             "resume": {"owner": "TLC", "resume_record": resume_record},
         },
-    }
+}
 
 
-__all__ = ["GovernedRepairLoopExecutionError", "run_governed_repair_loop"]
+__all__ = ["GovernedRepairLoopExecutionError", "replay_governed_repair_loop_from_artifacts", "run_governed_repair_loop"]

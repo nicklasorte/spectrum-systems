@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.runtime import governed_repair_loop_execution as loop_module
 from spectrum_systems.modules.runtime.governed_repair_foundation import (
@@ -43,7 +45,9 @@ def test_schema_valid_stage_artifacts_and_linkage_for_aut05(tmp_path: Path) -> N
     continuation_input = trace["continuation_input"]
     gating_input = trace["gating_input"]
     execution = trace["execution"]
+    execution_artifact = execution["canonical_artifact"]
     review = trace["review"]
+    review_artifact = review["canonical_artifact"]
     resume = trace["resume"]["resume_record"]
 
     assert candidate["failure_packet_ref"] == f"execution_failure_packet:{packet['failure_packet_id']}"
@@ -60,6 +64,15 @@ def test_schema_valid_stage_artifacts_and_linkage_for_aut05(tmp_path: Path) -> N
     assert execution["approved_slice_ref"] == trace["gating_decision"]["approved_slice"]["slice_id"]
     assert execution["gating_input_ref"] == trace["gating_decision"]["gating_input_ref"]
     assert review["execution_record_ref"] == execution["pqx_slice_execution_record"]
+    assert execution_artifact["gating_input_ref"] == trace["gating_decision"]["gating_input_ref"]
+    assert execution_artifact["lineage_refs"]["failure_packet_ref"] == (
+        f"execution_failure_packet:{packet['failure_packet_id']}"
+    )
+    assert execution_artifact["lineage_refs"]["repair_candidate_ref"] == (
+        f"bounded_repair_candidate_artifact:{candidate['candidate_id']}"
+    )
+    assert review_artifact["execution_record_ref"] == execution["pqx_slice_execution_record"]
+    assert review_artifact["interpretation_linkage"]["owner"] == "RIL"
     assert resume["trigger_ref"] == execution["pqx_slice_execution_record"]
 
 
@@ -161,3 +174,40 @@ def test_owner_purity_across_delegated_stages(tmp_path: Path) -> None:
     assert trace["review"]["review_owner"] == "RQX"
     assert trace["review"]["interpretation_owner"] == "RIL"
     assert trace["resume"]["owner"] == "TLC"
+
+
+def test_replay_from_canonical_artifacts_is_deterministic(tmp_path: Path) -> None:
+    result = _run("AUT-07", tmp_path)
+    trace = result["trace"]
+    replay = loop_module.replay_governed_repair_loop_from_artifacts(
+        artifacts={
+            "packet": trace["packet"],
+            "candidate": trace["candidate"],
+            "continuation_input": trace["continuation_input"],
+            "gating_input": trace["gating_input"],
+            "execution_record": trace["execution"]["canonical_artifact"],
+            "review_result": trace["review"]["canonical_artifact"],
+            "resume_record": trace["resume"]["resume_record"],
+        }
+    )
+    assert replay["status"] == "resumed"
+    assert replay["explanation"].startswith("deterministic:")
+
+
+def test_integrity_corruption_fails_closed(tmp_path: Path) -> None:
+    result = _run("AUT-10", tmp_path)
+    trace = result["trace"]
+    corrupted = dict(trace["review"]["canonical_artifact"])
+    corrupted["trace_id"] = "trace-corrupted"
+    with pytest.raises(loop_module.GovernedRepairLoopExecutionError, match="trace linkage mismatch"):
+        loop_module.replay_governed_repair_loop_from_artifacts(
+            artifacts={
+                "packet": trace["packet"],
+                "candidate": trace["candidate"],
+                "continuation_input": trace["continuation_input"],
+                "gating_input": trace["gating_input"],
+                "execution_record": trace["execution"]["canonical_artifact"],
+                "review_result": corrupted,
+                "resume_record": trace["resume"]["resume_record"],
+            }
+        )
