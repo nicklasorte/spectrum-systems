@@ -31,6 +31,20 @@ _REQUIRED_SLICE_FIELDS = (
 )
 
 _ALLOWED_EXECUTION_TYPES = {"code", "validation", "repair", "governance"}
+_GENERIC_IMPLEMENTATION_NOTE_PATTERNS = (
+    "inferred from canonical roadmap",
+    "keep behavior artifact-first and fail-closed",
+)
+_GENERIC_COMMAND_PATTERNS = (
+    "pytest tests/test_roadmap_slice_registry.py -q",
+    "pytest tests/test_execution_hierarchy.py -q",
+)
+_EXECUTION_TYPE_COMMAND_HINTS = {
+    "code": ("python", "scripts/", "module", "run_"),
+    "validation": ("pytest", "validate", "validation", "assert"),
+    "repair": ("repair", "replay", "recovery", "retry"),
+    "governance": ("govern", "roadmap", "sequence", "gate", "registry"),
+}
 
 
 def _load_json_object(path: Path | str, *, label: str) -> dict[str, Any]:
@@ -93,7 +107,37 @@ def _validate_command_determinism(command: str, *, slice_id: str) -> None:
             )
 
 
+def _is_generic_command(command: str) -> bool:
+    lowered = command.lower().strip()
+    return lowered.startswith("pytest ") or lowered.startswith("python -m pytest ") or lowered in _GENERIC_COMMAND_PATTERNS
+
+
+def _validate_slice_specific_execution_command(slice_id: str, commands: list[str]) -> None:
+    if all(_is_generic_command(command) for command in commands):
+        raise RoadmapSliceRegistryError(
+            f"slice {slice_id} has invalid commands: all commands are generic validation commands"
+        )
+
+
+def _validate_implementation_notes(slice_id: str, implementation_notes: str) -> None:
+    lowered = implementation_notes.strip().lower()
+    if any(pattern in lowered for pattern in _GENERIC_IMPLEMENTATION_NOTE_PATTERNS):
+        raise RoadmapSliceRegistryError(
+            f"slice {slice_id} has invalid implementation_notes: notes are generic and not actionable"
+        )
+
+
+def _validate_execution_type_command_alignment(slice_id: str, execution_type: str, commands: list[str]) -> None:
+    hints = _EXECUTION_TYPE_COMMAND_HINTS[execution_type]
+    joined = " ".join(commands).lower()
+    if not any(hint in joined for hint in hints):
+        raise RoadmapSliceRegistryError(
+            f"slice {slice_id} has invalid commands: execution_type {execution_type!r} does not match command intent"
+        )
+
+
 def validate_pqx_slice_execution_compatibility(slices: list[dict[str, Any]]) -> None:
+    first_command_to_slice: dict[str, str] = {}
     for row in slices:
         slice_id = _as_non_empty_string(row.get("slice_id"), field="slice_id", slice_id="<unknown>")
         execution_type = _as_non_empty_string(row.get("execution_type"), field="execution_type", slice_id=slice_id)
@@ -105,10 +149,23 @@ def validate_pqx_slice_execution_compatibility(slices: list[dict[str, Any]]) -> 
         success_criteria = _as_string_list(row.get("success_criteria"), field="success_criteria", slice_id=slice_id)
         for command in commands:
             _validate_command_determinism(command, slice_id=slice_id)
+        _validate_slice_specific_execution_command(slice_id, commands)
+        _validate_execution_type_command_alignment(slice_id, execution_type, commands)
+        first_command = commands[0]
+        if first_command in first_command_to_slice:
+            prior_slice_id = first_command_to_slice[first_command]
+            raise RoadmapSliceRegistryError(
+                f"slice {slice_id} has invalid commands: first execution command is duplicated with {prior_slice_id}"
+            )
+        first_command_to_slice[first_command] = slice_id
         if any(not criterion.strip() for criterion in success_criteria):
             raise RoadmapSliceRegistryError(
                 f"slice {slice_id} has invalid success_criteria: entries must be non-empty strings"
             )
+        _validate_implementation_notes(
+            slice_id,
+            _as_non_empty_string(row.get("implementation_notes"), field="implementation_notes", slice_id=slice_id),
+        )
 
 
 def validate_slice_registry(payload: dict[str, Any]) -> list[dict[str, Any]]:
