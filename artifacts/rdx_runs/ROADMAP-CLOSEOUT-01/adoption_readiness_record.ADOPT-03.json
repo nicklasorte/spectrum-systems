@@ -1,0 +1,14 @@
+{
+  "artifact_type": "adoption_readiness_record",
+  "run_id": "ROADMAP-CLOSEOUT-01",
+  "umbrella_id": "CONTROLLED_ADOPTION_PREP_LAYER",
+  "slice_id": "ADOPT-03",
+  "owner": "TLC",
+  "verification": {
+    "all_items_bounded": true,
+    "authority_outputs_exist": true,
+    "package_contains_no_blocked_items": true,
+    "ready_for_future_governed_application_cycle": true
+  },
+  "status": "PASS"
+}

@@ -1,0 +1,28 @@
+{
+  "artifact_type": "program_alignment_assessment",
+  "run_id": "ROADMAP-CLOSEOUT-01",
+  "umbrella_id": "PROGRAM_ALIGNMENT_LAYER",
+  "slice_id": "ALIGN-01",
+  "owner": "PRG",
+  "consumed_inputs": [
+    "artifacts/rdx_runs/ROADMAP-CLOSEOUT-01/approved_change_surface_record.ADOPT-01.json",
+    "artifacts/rdx_runs/ROADMAP-CLOSEOUT-01/bounded_adoption_package.ADOPT-02.json",
+    "docs/roadmaps/system_roadmap.md"
+  ],
+  "aligned_changes": [
+    "PKG-REC-001 deterministic evidence-link-map requirement",
+    "PKG-CAND-002 test evidence coverage summary checkpoint"
+  ],
+  "weakly_aligned_changes": [
+    "REC-003 canonical failure classification schema pre-review (needs phased evidence before broad sequence placement)"
+  ],
+  "misaligned_changes": [
+    "global runtime gating rewrite"
+  ],
+  "rationale": {
+    "aligned": "Both package items improve governed evidence quality and fail-closed readiness without authority overlap.",
+    "weak": "REC-003 is directionally aligned but needs additional bounded proof before immediate inclusion.",
+    "misaligned": "Global rewrite exceeds bounded adoption scope in current cycle."
+  },
+  "status": "PASS"
+}

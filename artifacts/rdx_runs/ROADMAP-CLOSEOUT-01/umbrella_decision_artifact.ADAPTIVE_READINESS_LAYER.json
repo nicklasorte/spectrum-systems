@@ -1,0 +1,10 @@
+{
+  "artifact_type": "umbrella_decision_artifact",
+  "run_id": "ROADMAP-CLOSEOUT-01",
+  "umbrella_id": "ADAPTIVE_READINESS_LAYER",
+  "decision_scope": "progression_only",
+  "serial_order": 4,
+  "decision": "advance",
+  "required_artifacts_present": true,
+  "status": "PASS"
+}

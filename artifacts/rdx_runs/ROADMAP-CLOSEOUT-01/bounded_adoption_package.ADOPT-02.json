@@ -1,0 +1,38 @@
+{
+  "artifact_type": "bounded_adoption_package",
+  "run_id": "ROADMAP-CLOSEOUT-01",
+  "umbrella_id": "CONTROLLED_ADOPTION_PREP_LAYER",
+  "slice_id": "ADOPT-02",
+  "owner": "TLC",
+  "packaging_scope": "orchestration_only",
+  "included_items": [
+    {
+      "item_id": "PKG-REC-001",
+      "item_type": "slice_contract_update_candidate",
+      "content": "Add required evidence_link_map artifact in repair-adjacent slice completion checks",
+      "source_authority": "CDE adopt_now + TPA narrow_scope"
+    },
+    {
+      "item_id": "PKG-CAND-002",
+      "item_type": "required_artifact_addition",
+      "content": "Add test_evidence_coverage_summary at pre-umbrella decision checkpoint",
+      "source_authority": "TPA narrow_scope"
+    }
+  ],
+  "excluded_items": [
+    "REC-002",
+    "REC-003 global rollout",
+    "global runtime gating rewrite"
+  ],
+  "bounded_application_order": [
+    "PKG-REC-001",
+    "PKG-CAND-002"
+  ],
+  "forbidden_actions_performed": {
+    "execution": false,
+    "automatic_mutation": false,
+    "enforcement": false,
+    "closure_authority_used": false
+  },
+  "status": "PASS"
+}

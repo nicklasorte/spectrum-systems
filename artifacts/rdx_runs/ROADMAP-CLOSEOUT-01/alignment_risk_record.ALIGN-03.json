@@ -1,0 +1,27 @@
+{
+  "artifact_type": "alignment_risk_record",
+  "run_id": "ROADMAP-CLOSEOUT-01",
+  "umbrella_id": "PROGRAM_ALIGNMENT_LAYER",
+  "slice_id": "ALIGN-03",
+  "owner_alignment": [
+    "RIL"
+  ],
+  "detected_risks": [
+    {
+      "risk_id": "AR-001",
+      "type": "weak_evidence",
+      "applies_to": "REC-003",
+      "detail": "broad rollout justification remains moderate without new phased validation artifacts"
+    },
+    {
+      "risk_id": "AR-002",
+      "type": "local_drift_overfit",
+      "applies_to": "REC-002",
+      "detail": "AI-02/TRUST-01-specific mitigation may not generalize across program slices"
+    }
+  ],
+  "program_direction_conflicts": [
+    "global runtime gating rewrite conflicts with bounded adoption sequencing authority"
+  ],
+  "status": "PASS"
+}
