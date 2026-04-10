@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/execution_failure_packet.schema.json",
+  "title": "Execution Failure Packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "failure_packet_id",
+    "slice_id",
+    "readiness_ref",
+    "execution_refs",
+    "trace_refs",
+    "enforcement_refs",
+    "validation_refs",
+    "classified_failure_type",
+    "explanation",
+    "affected_artifact_refs",
+    "repairability_hint"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "execution_failure_packet"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "failure_packet_id": {"type": "string", "minLength": 1},
+    "slice_id": {"type": "string", "minLength": 1},
+    "batch_id": {"type": ["string", "null"]},
+    "umbrella_id": {"type": ["string", "null"]},
+    "roadmap_context_ref": {"type": ["string", "null"]},
+    "readiness_ref": {"type": "string", "pattern": "^artifact_readiness_result:.+"},
+    "execution_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "trace_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "enforcement_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "validation_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "classified_failure_type": {
+      "type": "string",
+      "enum": [
+        "missing_artifact",
+        "invalid_artifact_shape",
+        "cross_artifact_mismatch",
+        "authenticity_lineage_mismatch",
+        "slice_contract_mismatch",
+        "runtime_logic_defect",
+        "policy_blocked",
+        "retry_budget_exhausted"
+      ]
+    },
+    "explanation": {"type": "string", "minLength": 1},
+    "affected_artifact_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "repairability_hint": {"type": "string", "enum": ["artifact_only", "slice_metadata", "runtime_code", "escalate"]}
+  }
+}

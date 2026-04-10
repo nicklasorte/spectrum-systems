@@ -3,7 +3,7 @@
   "artifact_id": "STD-CONTRACTS",
   "artifact_version": "1.3.108",
   "schema_version": "1.3.98",
-  "standards_version": "1.3.108",
+  "standards_version": "1.3.109",
   "record_id": "REC-STD-2026-04-09-CTX-A",
   "run_id": "run-20260409T000000Z-ctx-a",
   "created_at": "2026-04-09T00:00:00Z",
@@ -223,6 +223,19 @@
       "notes": "BATCH-LTV-C deterministic artifact aging posture for brownfield control and trust/retrieval weighting."
     },
     {
+      "artifact_type": "artifact_readiness_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.109",
+      "last_updated_in": "1.3.109",
+      "example_path": "contracts/examples/artifact_readiness_result.json",
+      "notes": "Fail-closed pre-execution readiness result for governed slice failure-surface validation."
+    },
+    {
       "artifact_type": "artifact_validation_decision",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -378,6 +391,19 @@
       "notes": "Extracted strategic intelligence pack from book sources with evidence anchors."
     },
     {
+      "artifact_type": "bounded_repair_candidate_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.109",
+      "last_updated_in": "1.3.109",
+      "example_path": "contracts/examples/bounded_repair_candidate_artifact.json",
+      "notes": "FRE bounded repair candidate derived from canonical failure packet without execution authority."
+    },
+    {
       "artifact_type": "build_admission_record",
       "artifact_class": "coordination",
       "schema_version": "1.2.0",
@@ -454,6 +480,19 @@
       "last_updated_in": "1.3.58",
       "example_path": "contracts/examples/capability_readiness_record.json",
       "notes": "BATCH-A2 deterministic capability readiness posture signal for unattended-operation supervision gating."
+    },
+    {
+      "artifact_type": "cde_repair_continuation_input",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.109",
+      "last_updated_in": "1.3.109",
+      "example_path": "contracts/examples/cde_repair_continuation_input.json",
+      "notes": "CDE decision input derived from failure packet + bounded repair candidate."
     },
     {
       "artifact_type": "certification_integrity_result",
@@ -1484,6 +1523,19 @@
         "spectrum-systems"
       ],
       "artifact_class": "coordination"
+    },
+    {
+      "artifact_type": "execution_failure_packet",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.109",
+      "last_updated_in": "1.3.109",
+      "example_path": "contracts/examples/execution_failure_packet.json",
+      "notes": "Canonical RIL packetized blocked execution surface for downstream FRE/CDE/TPA consumption."
     },
     {
       "artifact_type": "execution_policy",
@@ -4469,6 +4521,19 @@
       "last_updated_in": "1.3.72",
       "example_path": "contracts/examples/tpa_policy_composition.json",
       "notes": "Contract-backed deterministic precedence/merge rules across tpa_scope_policy, complexity regression, simplicity review, cleanup-only, and schema-backed lightweight evidence omission allowlist constraints."
+    },
+    {
+      "artifact_type": "tpa_repair_gating_input",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.109",
+      "last_updated_in": "1.3.109",
+      "example_path": "contracts/examples/tpa_repair_gating_input.json",
+      "notes": "TPA repair gating input containing bounded scope, risk, complexity, and retry budget signals."
     },
     {
       "artifact_type": "tpa_scope_policy",

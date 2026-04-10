@@ -478,7 +478,25 @@
       "source_basis": [
         "roadmap",
         "inferred"
-      ]
+      ],
+      "failure_surface": {
+        "owning_system": "RIL",
+        "runtime_seam": "review_control_decision_projection",
+        "required_artifacts": [
+          "tests/fixtures/roadmaps/aut_reg_05a/repo_review_snapshot.json",
+          "tests/fixtures/roadmaps/aut_reg_05a/review_control_signal.json"
+        ],
+        "contract_invariants": [
+          "control_decision_shape",
+          "control_decision_payload_nested"
+        ],
+        "expected_failure_classes": [
+          "missing_artifact",
+          "invalid_artifact_shape",
+          "slice_contract_mismatch"
+        ],
+        "repairability_class": "artifact_only"
+      }
     },
     {
       "slice_id": "AUT-06",
@@ -546,7 +564,27 @@
       "source_basis": [
         "roadmap",
         "inferred"
-      ]
+      ],
+      "failure_surface": {
+        "owning_system": "TPA",
+        "runtime_seam": "repo_write_lineage_authenticity_guard",
+        "required_artifacts": [
+          "contracts/examples/build_admission_record.example.json",
+          "contracts/examples/normalized_execution_request.example.json",
+          "contracts/examples/tlc_handoff_record.example.json"
+        ],
+        "contract_invariants": [
+          "lineage_authenticity",
+          "lineage_trace_alignment"
+        ],
+        "expected_failure_classes": [
+          "missing_artifact",
+          "invalid_artifact_shape",
+          "cross_artifact_mismatch",
+          "authenticity_lineage_mismatch"
+        ],
+        "repairability_class": "artifact_only"
+      }
     },
     {
       "slice_id": "AUT-08",
@@ -648,7 +686,26 @@
       "source_basis": [
         "roadmap",
         "inferred"
-      ]
+      ],
+      "failure_surface": {
+        "owning_system": "RIL",
+        "runtime_seam": "review_control_decision_command_wiring",
+        "required_artifacts": [
+          "tests/fixtures/roadmaps/aut_reg_05a/repo_review_snapshot.json",
+          "tests/fixtures/roadmaps/aut_reg_05a/review_control_signal.json"
+        ],
+        "contract_invariants": [
+          "control_decision_shape",
+          "control_decision_payload_nested",
+          "program_artifact_presence"
+        ],
+        "expected_failure_classes": [
+          "missing_artifact",
+          "invalid_artifact_shape",
+          "slice_contract_mismatch"
+        ],
+        "repairability_class": "slice_metadata"
+      }
     },
     {
       "slice_id": "BRF-01",

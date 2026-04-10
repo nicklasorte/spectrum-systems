@@ -1,0 +1,16 @@
+{
+  "artifact_type": "cde_repair_continuation_input",
+  "schema_version": "1.0.0",
+  "continuation_input_id": "cri-5f604b8644e6f4db",
+  "failure_packet_ref": "execution_failure_packet:efp-f7fdb3f3746f877c",
+  "repair_candidate_ref": "bounded_repair_candidate_artifact:brc-3ba6433dd60d65f6",
+  "failing_slice_ref": "slice:AUT-07",
+  "repairability_class": "artifact_only",
+  "recommended_continuation": "continue_repair_bounded",
+  "evidence_refs": [
+    "slice_execution:AUT-07",
+    "trace:aut-07-2026-04-10",
+    "system_enforcement_result_artifact:sel-001",
+    "pytest_failure:tests/test_repo_write_lineage_guard.py::test_authenticity_mismatch"
+  ]
+}

@@ -29,6 +29,33 @@ _REQUIRED_SLICE_FIELDS = (
     "likely_tests",
     "invariants",
 )
+_REPAIRABILITY_CLASSES = {"artifact_only", "slice_metadata", "runtime_code", "escalate"}
+_EXPECTED_FAILURE_CLASSES = {
+    "missing_artifact",
+    "invalid_artifact_shape",
+    "cross_artifact_mismatch",
+    "authenticity_lineage_mismatch",
+    "slice_contract_mismatch",
+    "runtime_logic_defect",
+    "policy_blocked",
+    "retry_budget_exhausted",
+}
+_CANONICAL_SYSTEM_OWNERS = {
+    "AEX",
+    "PQX",
+    "HNX",
+    "TPA",
+    "MAP",
+    "RDX",
+    "FRE",
+    "RIL",
+    "RQX",
+    "SEL",
+    "CDE",
+    "TLC",
+    "PRG",
+}
+_FAILURE_SURFACE_REQUIRED_SLICE_IDS = {"AUT-05", "AUT-07", "AUT-10"}
 
 _ALLOWED_EXECUTION_TYPES = {"code", "validation", "repair", "governance"}
 _GENERIC_IMPLEMENTATION_NOTE_PATTERNS = (
@@ -211,6 +238,54 @@ def _validate_execution_type_command_alignment(slice_id: str, execution_type: st
         )
 
 
+def _validate_failure_surface_declaration(slice_id: str, declaration: Any) -> dict[str, Any]:
+    if not isinstance(declaration, dict):
+        raise RoadmapSliceRegistryError(f"slice {slice_id} has invalid failure_surface: expected object")
+    owning_system = _as_non_empty_string(
+        declaration.get("owning_system"), field="failure_surface.owning_system", slice_id=slice_id
+    )
+    if owning_system not in _CANONICAL_SYSTEM_OWNERS:
+        raise RoadmapSliceRegistryError(
+            f"slice {slice_id} has invalid failure_surface.owning_system: {owning_system!r} is not canonical"
+        )
+    runtime_seam = _as_non_empty_string(
+        declaration.get("runtime_seam"), field="failure_surface.runtime_seam", slice_id=slice_id
+    )
+    required_artifacts = _as_string_list(
+        declaration.get("required_artifacts"), field="failure_surface.required_artifacts", slice_id=slice_id
+    )
+    contract_invariants = _as_string_list(
+        declaration.get("contract_invariants"), field="failure_surface.contract_invariants", slice_id=slice_id
+    )
+    expected_failure_classes = _as_string_list(
+        declaration.get("expected_failure_classes"),
+        field="failure_surface.expected_failure_classes",
+        slice_id=slice_id,
+    )
+    invalid_failure_classes = [item for item in expected_failure_classes if item not in _EXPECTED_FAILURE_CLASSES]
+    if invalid_failure_classes:
+        raise RoadmapSliceRegistryError(
+            f"slice {slice_id} has invalid failure_surface.expected_failure_classes: "
+            f"{', '.join(sorted(invalid_failure_classes))}"
+        )
+    repairability_class = _as_non_empty_string(
+        declaration.get("repairability_class"), field="failure_surface.repairability_class", slice_id=slice_id
+    )
+    if repairability_class not in _REPAIRABILITY_CLASSES:
+        raise RoadmapSliceRegistryError(
+            f"slice {slice_id} has invalid failure_surface.repairability_class: "
+            f"{repairability_class!r} not in {sorted(_REPAIRABILITY_CLASSES)}"
+        )
+    return {
+        "owning_system": owning_system,
+        "runtime_seam": runtime_seam,
+        "required_artifacts": required_artifacts,
+        "contract_invariants": contract_invariants,
+        "expected_failure_classes": expected_failure_classes,
+        "repairability_class": repairability_class,
+    }
+
+
 def validate_pqx_slice_execution_compatibility(slices: list[dict[str, Any]]) -> None:
     family_command_sets: dict[tuple[str, tuple[str, ...]], str] = {}
     family_first_commands: dict[tuple[str, str], str] = {}
@@ -283,35 +358,42 @@ def validate_slice_registry(payload: dict[str, Any]) -> list[dict[str, Any]]:
             if field not in row:
                 raise RoadmapSliceRegistryError(f"slice {slice_id} missing required field: {field}")
 
-        normalized.append(
-            {
-                "slice_id": slice_id,
-                "what_it_does": _as_non_empty_string(row.get("what_it_does"), field="what_it_does", slice_id=slice_id),
-                "purpose": _as_non_empty_string(row.get("purpose"), field="purpose", slice_id=slice_id),
-                "why_it_matters": _as_non_empty_string(
-                    row.get("why_it_matters"), field="why_it_matters", slice_id=slice_id
-                ),
-                "execution_type": _as_non_empty_string(
-                    row.get("execution_type"), field="execution_type", slice_id=slice_id
-                ),
-                "commands": _as_string_list(row.get("commands"), field="commands", slice_id=slice_id),
-                "success_criteria": _as_string_list(
-                    row.get("success_criteria"), field="success_criteria", slice_id=slice_id
-                ),
-                "implementation_notes": _as_non_empty_string(
-                    row.get("implementation_notes"), field="implementation_notes", slice_id=slice_id
-                ),
-                "likely_entrypoints": _as_string_list(
-                    row.get("likely_entrypoints"), field="likely_entrypoints", slice_id=slice_id
-                ),
-                "likely_tests": _as_string_list(row.get("likely_tests"), field="likely_tests", slice_id=slice_id),
-                "invariants": _as_string_list(row.get("invariants"), field="invariants", slice_id=slice_id),
-                "status": _as_non_empty_string(row.get("status", "planned"), field="status", slice_id=slice_id),
-                "source_basis": _as_string_list(
-                    row.get("source_basis", ["inferred"]), field="source_basis", slice_id=slice_id
-                ),
-            }
-        )
+        failure_surface = row.get("failure_surface")
+        if slice_id in _FAILURE_SURFACE_REQUIRED_SLICE_IDS and not isinstance(failure_surface, dict):
+            raise RoadmapSliceRegistryError(
+                f"slice {slice_id} missing required field: failure_surface"
+            )
+
+        normalized_row = {
+            "slice_id": slice_id,
+            "what_it_does": _as_non_empty_string(row.get("what_it_does"), field="what_it_does", slice_id=slice_id),
+            "purpose": _as_non_empty_string(row.get("purpose"), field="purpose", slice_id=slice_id),
+            "why_it_matters": _as_non_empty_string(
+                row.get("why_it_matters"), field="why_it_matters", slice_id=slice_id
+            ),
+            "execution_type": _as_non_empty_string(
+                row.get("execution_type"), field="execution_type", slice_id=slice_id
+            ),
+            "commands": _as_string_list(row.get("commands"), field="commands", slice_id=slice_id),
+            "success_criteria": _as_string_list(
+                row.get("success_criteria"), field="success_criteria", slice_id=slice_id
+            ),
+            "implementation_notes": _as_non_empty_string(
+                row.get("implementation_notes"), field="implementation_notes", slice_id=slice_id
+            ),
+            "likely_entrypoints": _as_string_list(
+                row.get("likely_entrypoints"), field="likely_entrypoints", slice_id=slice_id
+            ),
+            "likely_tests": _as_string_list(row.get("likely_tests"), field="likely_tests", slice_id=slice_id),
+            "invariants": _as_string_list(row.get("invariants"), field="invariants", slice_id=slice_id),
+            "status": _as_non_empty_string(row.get("status", "planned"), field="status", slice_id=slice_id),
+            "source_basis": _as_string_list(
+                row.get("source_basis", ["inferred"]), field="source_basis", slice_id=slice_id
+            ),
+        }
+        if isinstance(failure_surface, dict):
+            normalized_row["failure_surface"] = _validate_failure_surface_declaration(slice_id, failure_surface)
+        normalized.append(normalized_row)
 
     validate_pqx_slice_execution_compatibility(normalized)
     return sorted(normalized, key=lambda item: item["slice_id"])

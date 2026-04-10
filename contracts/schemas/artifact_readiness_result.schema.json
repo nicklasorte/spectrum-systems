@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/artifact_readiness_result.schema.json",
+  "title": "Artifact Readiness Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "readiness_id",
+    "slice_id",
+    "owning_system",
+    "runtime_seam",
+    "status",
+    "blocking_reasons",
+    "checked_artifact_refs",
+    "contract_invariant_refs",
+    "expected_failure_classes"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "artifact_readiness_result"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "readiness_id": {"type": "string", "minLength": 1},
+    "slice_id": {"type": "string", "minLength": 1},
+    "owning_system": {"type": "string", "pattern": "^[A-Z0-9-]+$"},
+    "runtime_seam": {"type": "string", "minLength": 1},
+    "status": {"type": "string", "enum": ["ready", "blocked"]},
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["failure_class", "reason", "artifact_refs", "invariant_refs"],
+        "properties": {
+          "failure_class": {
+            "type": "string",
+            "enum": [
+              "missing_artifact",
+              "invalid_artifact_shape",
+              "cross_artifact_mismatch",
+              "authenticity_lineage_mismatch",
+              "slice_contract_mismatch",
+              "runtime_logic_defect",
+              "policy_blocked",
+              "retry_budget_exhausted"
+            ]
+          },
+          "reason": {"type": "string", "minLength": 1},
+          "artifact_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+          "invariant_refs": {"type": "array", "items": {"type": "string", "minLength": 1}}
+        }
+      }
+    },
+    "checked_artifact_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "contract_invariant_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "expected_failure_classes": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+  }
+}

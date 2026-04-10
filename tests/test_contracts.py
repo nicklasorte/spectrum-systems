@@ -544,6 +544,17 @@ class ContractSchemaTests(unittest.TestCase):
             instance = load_example(name)
             validate_artifact(instance, name)
 
+    def test_grc_foundation_contract_examples_validate(self) -> None:
+        for name in (
+            "artifact_readiness_result",
+            "execution_failure_packet",
+            "bounded_repair_candidate_artifact",
+            "cde_repair_continuation_input",
+            "tpa_repair_gating_input",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
 
     def test_prompt_registry_examples_validate(self) -> None:
         for name in ("prompt_registry_entry", "prompt_alias_map", "routing_policy", "routing_decision", "agent_execution_trace"):

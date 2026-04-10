@@ -1,0 +1,20 @@
+{
+  "artifact_type": "tpa_repair_gating_input",
+  "schema_version": "1.0.0",
+  "gating_input_id": "rgi-0aa4f0d83a16fc84",
+  "failure_packet_ref": "execution_failure_packet:efp-f7fdb3f3746f877c",
+  "repair_candidate_ref": "bounded_repair_candidate_artifact:brc-3ba6433dd60d65f6",
+  "repair_scope_refs": [
+    "contracts/examples/build_admission_record.example.json",
+    "contracts/examples/normalized_execution_request.example.json",
+    "contracts/examples/tlc_handoff_record.example.json"
+  ],
+  "complexity_score": 2,
+  "risk_level": "low",
+  "retry_budget_remaining": 1,
+  "allowed_artifact_refs": [
+    "contracts/examples/build_admission_record.example.json",
+    "contracts/examples/normalized_execution_request.example.json",
+    "contracts/examples/tlc_handoff_record.example.json"
+  ]
+}

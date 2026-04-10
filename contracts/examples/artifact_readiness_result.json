@@ -1,0 +1,34 @@
+{
+  "artifact_type": "artifact_readiness_result",
+  "schema_version": "1.0.0",
+  "readiness_id": "arr-8d64317d467cc920",
+  "slice_id": "AUT-05",
+  "owning_system": "RIL",
+  "runtime_seam": "review_control_decision_projection",
+  "status": "blocked",
+  "blocking_reasons": [
+    {
+      "failure_class": "invalid_artifact_shape",
+      "reason": "schema validation failed for tests/fixtures/roadmaps/aut_reg_05a/review_control_signal.json: 'system_response' is a required property",
+      "artifact_refs": [
+        "tests/fixtures/roadmaps/aut_reg_05a/review_control_signal.json"
+      ],
+      "invariant_refs": [
+        "control_decision_shape"
+      ]
+    }
+  ],
+  "checked_artifact_refs": [
+    "tests/fixtures/roadmaps/aut_reg_05a/repo_review_snapshot.json",
+    "tests/fixtures/roadmaps/aut_reg_05a/review_control_signal.json"
+  ],
+  "contract_invariant_refs": [
+    "control_decision_shape",
+    "control_decision_payload_nested"
+  ],
+  "expected_failure_classes": [
+    "missing_artifact",
+    "invalid_artifact_shape",
+    "slice_contract_mismatch"
+  ]
+}
