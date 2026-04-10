@@ -6,6 +6,76 @@
 
 These rules are hard boundaries for architecture, contracts, and validation.
 
+## Canonical Governed Execution Hierarchy
+
+The governed execution hierarchy is:
+
+**slice → batch → umbrella → roadmap**
+
+### Slice
+- Atomic unit of work.
+- Executed by PQX.
+- Reviewed by RQX.
+- Fixes gated by TPA.
+
+### Batch
+- Aggregation of slices representing one coherent system seam.
+- Must contain multiple slices.
+- Ends with:
+  - validation
+  - review
+  - `batch_decision_artifact`
+
+### Umbrella
+- Aggregation of batches representing a system phase.
+- Must contain multiple batches.
+- Ends with:
+  - `umbrella_decision_artifact`
+
+### Batch Constraint
+A batch **MUST** contain ≥2 slices.
+If a batch contains only one slice, it is invalid and must be collapsed into a slice.
+
+### Umbrella Constraint
+An umbrella **MUST** contain ≥2 batches.
+If an umbrella contains only one batch, it is invalid and must be collapsed into a batch.
+
+### Invariant
+All hierarchy levels must aggregate real work. No level may act as a pass-through wrapper.
+
+### BRF + Umbrella execution alignment
+- Batch execution flow:
+  - Slices → Test → Review → Decision → (Fix or Advance)
+- Umbrella execution flow:
+  - Batch → Decision
+  - Batch → Decision
+  - → Umbrella Decision
+- No batch advances without:
+  - validation
+  - review
+  - decision artifact
+- No umbrella advances without:
+  - all batches completed
+  - umbrella decision artifact
+
+### Execution Hierarchy Ownership Clarification
+- Slice execution → PQX
+- Review loop → RQX
+- Fix gating → TPA
+- Orchestration → TLC
+- Roadmap execution control → RDX
+- Closure / readiness / promotion → CDE
+
+Batch and umbrella decision artifacts:
+- control execution progression only
+- **MUST NOT** represent closure, readiness, or promotion authority
+- **MUST NOT** substitute for CDE decisions
+
+CDE is the only system allowed to emit:
+- `closure_decision_artifact`
+- `promotion_readiness_decision`
+- `readiness_to_close`
+
 ## System Map
 - **AEX** — admission and execution exchange boundary for repo-mutating Codex requests
 - **PQX** — bounded execution engine
