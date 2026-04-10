@@ -1,0 +1,155 @@
+{
+  "artifact_type": "rdx_run_artifact_trace",
+  "run_id": "ROADMAP-APPLY-01",
+  "batch_id": "ROADMAP-APPLY-01",
+  "umbrella_id": "GOVERNED_APPLICATION_LAYER",
+  "execution_mode": "SERIAL",
+  "executed_at": "2026-04-10T00:00:00Z",
+  "primary_prompt_type": "BUILD",
+  "input_artifacts": [
+    "artifacts/rdx_runs/ROADMAP-CLOSEOUT-01/bounded_adoption_package.ADOPT-02.json",
+    "artifacts/rdx_runs/ROADMAP-CLOSEOUT-01/adoption_readiness_record.ADOPT-03.json",
+    "artifacts/rdx_runs/ROADMAP-CLOSEOUT-01/program_roadmap_alignment_result.ALIGN-02.json",
+    "artifacts/rdx_runs/ROADMAP-CLOSEOUT-01/adaptive_readiness_record.ADAPT-03.json"
+  ],
+  "lineage": {
+    "aex": {
+      "owner": "AEX",
+      "build_admission_record": {
+        "artifact_id": "AEX-ADMISSION-01",
+        "request_class": "repo_mutating_codex_execution",
+        "bounded": true,
+        "scope": [
+          "PKG-REC-001",
+          "PKG-CAND-002",
+          "mandatory_review_and_delivery_artifacts"
+        ],
+        "status": "ALLOW"
+      },
+      "normalized_execution_request": {
+        "artifact_id": "AEX-NORMALIZED-01",
+        "mutation_targets": [
+          "docs/roadmaps/execution_bundles.md",
+          "docs/operational-evidence-standard.md",
+          "docs/reviews/RVW-ROADMAP-APPLY-01.md",
+          "docs/reviews/ROADMAP-APPLY-01-DELIVERY-REPORT.md",
+          "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json"
+        ],
+        "unbounded_mutation": false,
+        "status": "PASS"
+      }
+    },
+    "tlc_handoff": {
+      "owner": "TLC",
+      "tlc_handoff_record": {
+        "artifact_id": "TLC-HANDOFF-01",
+        "admission_verified": true,
+        "trace_continuity": "intact",
+        "routed_to": "TPA",
+        "status": "PASS"
+      }
+    },
+    "tpa": {
+      "owner": "TPA",
+      "tpa_slice_artifact": {
+        "artifact_id": "TPA-SLICE-01",
+        "decision": "allow",
+        "approved_scope": [
+          "PKG-REC-001 repair-adjacent slice completion requirement",
+          "PKG-CAND-002 pre-umbrella evidence checkpoint requirement",
+          "mandatory trace/review/delivery emission"
+        ],
+        "rejected_scope": [
+          "REC-002",
+          "REC-003",
+          "global runtime gating rewrite"
+        ],
+        "risk": "bounded_low",
+        "status": "PASS"
+      }
+    },
+    "pqx": {
+      "owner": "PQX",
+      "pqx_slice_execution_record": {
+        "artifact_id": "PQX-SLICE-01",
+        "executed_only_approved_scope": true,
+        "mutations": [
+          "docs/roadmaps/execution_bundles.md",
+          "docs/operational-evidence-standard.md"
+        ],
+        "deviation_detected": false,
+        "status": "PASS"
+      },
+      "pqx_bundle_execution_record": {
+        "artifact_id": "PQX-BUNDLE-01",
+        "deterministic_execution": true,
+        "full_trace_emitted": true,
+        "status": "PASS"
+      }
+    },
+    "rqx": {
+      "owner": "RQX",
+      "review_result_artifact": {
+        "artifact_id": "RQX-REVIEW-01",
+        "result": "pass",
+        "findings": [],
+        "bounded_repair_required": false,
+        "status": "PASS"
+      },
+      "review_merge_readiness_artifact": {
+        "artifact_id": "RQX-MERGE-01",
+        "merge_readiness": "ready",
+        "status": "PASS"
+      }
+    },
+    "cde": {
+      "owner": "CDE",
+      "closure_decision_artifact": {
+        "artifact_id": "CDE-CLOSURE-01",
+        "decision": "close",
+        "rationale": "All approved bounded changes applied with intact lineage and successful review.",
+        "status": "PASS"
+      }
+    },
+    "sel": {
+      "owner": "SEL",
+      "system_enforcement_result_artifact": {
+        "artifact_id": "SEL-ENFORCEMENT-01",
+        "action": "allow_progression",
+        "fail_closed_triggered": false,
+        "blocked_attempts": [],
+        "status": "PASS"
+      }
+    },
+    "tlc_application_result": {
+      "owner": "TLC",
+      "application_result_record": {
+        "artifact_id": "TLC-APPLICATION-RESULT-01",
+        "executed_changes": [
+          "PKG-REC-001",
+          "PKG-CAND-002"
+        ],
+        "blocked_changes": [],
+        "deferred_changes": [
+          "REC-002",
+          "REC-003"
+        ],
+        "enforcement_outcomes": [
+          "allow_progression"
+        ],
+        "final_system_state": "deterministic_auditable_closed",
+        "status": "PASS"
+      }
+    }
+  },
+  "fail_closed_checks": {
+    "missing_lineage": false,
+    "invalid_gating_decision": false,
+    "unbounded_scope_detected": false,
+    "artifact_mismatch_or_schema_failure": false,
+    "unauthorized_execution_attempt": false,
+    "review_failure_without_bounded_repair": false,
+    "authority_overlap_violation": false
+  },
+  "status": "PASS"
+}

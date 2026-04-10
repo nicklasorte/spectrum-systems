@@ -59,6 +59,7 @@ This bundle plan is authoritative for multi-slice execution orchestration design
   - `B3-06` Execute governed slice and emit normalized execution result.
   - `B3-07` Run control decision + enforcement decision emission.
   - `B3-08` Require done certification artifact for slice completion.
+  - `B3-08A` For repair-adjacent slices only, require deterministic `evidence_link_map` in completion evidence and fail closed when absent.
 - Flow:
   - Admission artifact → execution artifact → control/enforcement artifacts → certification artifact.
 - Artifacts:
@@ -143,6 +144,12 @@ This bundle plan is authoritative for multi-slice execution orchestration design
 - **Bypass prevention**
   - Bundle status cannot become `complete` without required review artifacts.
   - Review hash must match bundle artifact hash set; mismatch blocks advancement.
+
+## GOVERNED ADOPTION PACKAGE APPLICATION (ROADMAP-APPLY-01)
+- `PKG-REC-001` applied with bounded scope: only repair-adjacent slices are subject to `evidence_link_map` completion enforcement.
+- `evidence_link_map` must deterministically map each code mutation or document mutation to its supporting review/test artifacts before RQX merge-readiness emission.
+- PQX completion for repair-adjacent slices fails closed when `evidence_link_map` is missing, malformed, or non-deterministic.
+- Non-repair slices are unchanged by this adoption package and continue existing completion requirements.
 
 ## FIX INSERTION MODEL
 1. **Finding conversion rules**
