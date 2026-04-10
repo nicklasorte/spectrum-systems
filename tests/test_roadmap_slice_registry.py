@@ -102,3 +102,53 @@ def test_implementation_metadata_presence_is_enforced(tmp_path: Path) -> None:
             slice_registry_path=registry_path,
             roadmap_structure_path=_FIXTURE_ROOT / "roadmap_structure.json",
         )
+
+
+def test_missing_execution_type_fails(tmp_path: Path) -> None:
+    bad_registry = json.loads((_FIXTURE_ROOT / "slice_registry.json").read_text(encoding="utf-8"))
+    bad_registry["slices"][0].pop("execution_type", None)
+    registry_path = tmp_path / "slice_registry.json"
+    registry_path.write_text(json.dumps(bad_registry), encoding="utf-8")
+
+    with pytest.raises(RoadmapSliceRegistryError, match="missing required field: execution_type"):
+        load_governed_slice_registry_artifacts(
+            slice_registry_path=registry_path,
+            roadmap_structure_path=_FIXTURE_ROOT / "roadmap_structure.json",
+        )
+
+
+def test_empty_commands_fails(tmp_path: Path) -> None:
+    bad_registry = json.loads((_FIXTURE_ROOT / "slice_registry.json").read_text(encoding="utf-8"))
+    bad_registry["slices"][0]["commands"] = []
+    registry_path = tmp_path / "slice_registry.json"
+    registry_path.write_text(json.dumps(bad_registry), encoding="utf-8")
+
+    with pytest.raises(RoadmapSliceRegistryError, match="invalid commands"):
+        load_governed_slice_registry_artifacts(
+            slice_registry_path=registry_path,
+            roadmap_structure_path=_FIXTURE_ROOT / "roadmap_structure.json",
+        )
+
+
+def test_empty_success_criteria_fails(tmp_path: Path) -> None:
+    bad_registry = json.loads((_FIXTURE_ROOT / "slice_registry.json").read_text(encoding="utf-8"))
+    bad_registry["slices"][0]["success_criteria"] = []
+    registry_path = tmp_path / "slice_registry.json"
+    registry_path.write_text(json.dumps(bad_registry), encoding="utf-8")
+
+    with pytest.raises(RoadmapSliceRegistryError, match="invalid success_criteria"):
+        load_governed_slice_registry_artifacts(
+            slice_registry_path=registry_path,
+            roadmap_structure_path=_FIXTURE_ROOT / "roadmap_structure.json",
+        )
+
+
+def test_valid_execution_fields_pass() -> None:
+    slices, _ = load_governed_slice_registry_artifacts(
+        slice_registry_path=_FIXTURE_ROOT / "slice_registry.json",
+        roadmap_structure_path=_FIXTURE_ROOT / "roadmap_structure.json",
+    )
+    sample = slices[0]
+    assert sample["execution_type"]
+    assert sample["commands"]
+    assert sample["success_criteria"]

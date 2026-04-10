@@ -21,11 +21,16 @@ _REQUIRED_SLICE_FIELDS = (
     "what_it_does",
     "purpose",
     "why_it_matters",
+    "execution_type",
+    "commands",
+    "success_criteria",
     "implementation_notes",
     "likely_entrypoints",
     "likely_tests",
     "invariants",
 )
+
+_ALLOWED_EXECUTION_TYPES = {"code", "validation", "repair", "governance"}
 
 
 def _load_json_object(path: Path | str, *, label: str) -> dict[str, Any]:
@@ -59,6 +64,53 @@ def _as_string_list(value: Any, *, field: str, slice_id: str) -> list[str]:
     return cleaned
 
 
+def _validate_command_determinism(command: str, *, slice_id: str) -> None:
+    risky_tokens = (
+        "$RANDOM",
+        "uuidgen",
+        "$(date",
+        "`date`",
+        " time ",
+        " sleep ",
+    )
+    lowered = f" {command.lower()} "
+    if command.startswith("/"):
+        raise RoadmapSliceRegistryError(
+            f"slice {slice_id} has invalid commands: command must be repo-relative, got absolute path"
+        )
+    if "http://" in lowered or "https://" in lowered:
+        raise RoadmapSliceRegistryError(
+            f"slice {slice_id} has invalid commands: network-dependent command is not deterministic"
+        )
+    if " date " in lowered or " random " in lowered:
+        raise RoadmapSliceRegistryError(
+            f"slice {slice_id} has invalid commands: time/random dependent command is not deterministic"
+        )
+    for token in risky_tokens:
+        if token.lower() in lowered:
+            raise RoadmapSliceRegistryError(
+                f"slice {slice_id} has invalid commands: contains non-deterministic token {token!r}"
+            )
+
+
+def validate_pqx_slice_execution_compatibility(slices: list[dict[str, Any]]) -> None:
+    for row in slices:
+        slice_id = _as_non_empty_string(row.get("slice_id"), field="slice_id", slice_id="<unknown>")
+        execution_type = _as_non_empty_string(row.get("execution_type"), field="execution_type", slice_id=slice_id)
+        if execution_type not in _ALLOWED_EXECUTION_TYPES:
+            raise RoadmapSliceRegistryError(
+                f"slice {slice_id} has invalid execution_type: {execution_type!r} not in {sorted(_ALLOWED_EXECUTION_TYPES)}"
+            )
+        commands = _as_string_list(row.get("commands"), field="commands", slice_id=slice_id)
+        success_criteria = _as_string_list(row.get("success_criteria"), field="success_criteria", slice_id=slice_id)
+        for command in commands:
+            _validate_command_determinism(command, slice_id=slice_id)
+        if any(not criterion.strip() for criterion in success_criteria):
+            raise RoadmapSliceRegistryError(
+                f"slice {slice_id} has invalid success_criteria: entries must be non-empty strings"
+            )
+
+
 def validate_slice_registry(payload: dict[str, Any]) -> list[dict[str, Any]]:
     if payload.get("artifact_type") != "slice_registry":
         raise RoadmapSliceRegistryError("slice registry artifact_type must be 'slice_registry'")
@@ -90,6 +142,13 @@ def validate_slice_registry(payload: dict[str, Any]) -> list[dict[str, Any]]:
                 "why_it_matters": _as_non_empty_string(
                     row.get("why_it_matters"), field="why_it_matters", slice_id=slice_id
                 ),
+                "execution_type": _as_non_empty_string(
+                    row.get("execution_type"), field="execution_type", slice_id=slice_id
+                ),
+                "commands": _as_string_list(row.get("commands"), field="commands", slice_id=slice_id),
+                "success_criteria": _as_string_list(
+                    row.get("success_criteria"), field="success_criteria", slice_id=slice_id
+                ),
                 "implementation_notes": _as_non_empty_string(
                     row.get("implementation_notes"), field="implementation_notes", slice_id=slice_id
                 ),
@@ -99,10 +158,13 @@ def validate_slice_registry(payload: dict[str, Any]) -> list[dict[str, Any]]:
                 "likely_tests": _as_string_list(row.get("likely_tests"), field="likely_tests", slice_id=slice_id),
                 "invariants": _as_string_list(row.get("invariants"), field="invariants", slice_id=slice_id),
                 "status": _as_non_empty_string(row.get("status", "planned"), field="status", slice_id=slice_id),
-                "source_basis": _as_string_list(row.get("source_basis", ["inferred"]), field="source_basis", slice_id=slice_id),
+                "source_basis": _as_string_list(
+                    row.get("source_basis", ["inferred"]), field="source_basis", slice_id=slice_id
+                ),
             }
         )
 
+    validate_pqx_slice_execution_compatibility(normalized)
     return sorted(normalized, key=lambda item: item["slice_id"])
 
 
@@ -215,5 +277,6 @@ __all__ = [
     "load_slice_registry",
     "validate_registry_structure_consistency",
     "validate_roadmap_structure",
+    "validate_pqx_slice_execution_compatibility",
     "validate_slice_registry",
 ]

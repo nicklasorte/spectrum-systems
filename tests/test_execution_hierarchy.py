@@ -6,6 +6,10 @@ from spectrum_systems.modules.runtime.execution_hierarchy import (
     ExecutionHierarchyError,
     validate_execution_hierarchy,
 )
+from spectrum_systems.modules.runtime.roadmap_slice_registry import (
+    load_governed_slice_registry_artifacts,
+    validate_pqx_slice_execution_compatibility,
+)
 
 
 def test_invalid_single_slice_batch_fails() -> None:
@@ -73,3 +77,11 @@ def test_valid_multi_batch_umbrella_passes() -> None:
         ],
     }
     validate_execution_hierarchy(payload, label="roadmap_manifest")
+
+
+def test_registry_execution_contract_is_pqx_compatible() -> None:
+    slices, _ = load_governed_slice_registry_artifacts(
+        slice_registry_path="contracts/roadmap/slice_registry.json",
+        roadmap_structure_path="contracts/roadmap/roadmap_structure.json",
+    )
+    validate_pqx_slice_execution_compatibility(slices)
