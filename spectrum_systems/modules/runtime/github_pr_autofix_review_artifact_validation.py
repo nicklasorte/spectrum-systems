@@ -14,7 +14,7 @@ import os
 import re
 import subprocess
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -92,6 +92,66 @@ def _build_contract_preflight_result_artifact(
     }
 
 
+def _review_due_window(*, today: date, due_date: date | None) -> str:
+    if due_date is None:
+        return "missing"
+    delta = (due_date - today).days
+    if delta < 0:
+        return "overdue"
+    if delta <= 3:
+        return "due_soon"
+    return "future"
+
+
+def scan_review_governance_radar(*, repo_root: Path) -> dict[str, Any]:
+    registry_path = repo_root / "docs" / "reviews" / "review-registry.json"
+    if not registry_path.exists():
+        raise GovernedAutofixError("review_governance_registry_missing")
+    payload = json.loads(registry_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, list):
+        raise GovernedAutofixError("review_governance_registry_invalid")
+
+    today = date.today()
+    due_windows = {"overdue": 0, "due_soon": 0, "missing": 0, "future": 0}
+    affected_reviews: list[dict[str, Any]] = []
+    for entry in payload:
+        if not isinstance(entry, dict):
+            continue
+        status = str(entry.get("status") or "Unknown")
+        if status.lower() == "closed":
+            continue
+        review_id = str(entry.get("review_id") or "")
+        due_raw = entry.get("follow_up_due_date")
+        due_date = date.fromisoformat(str(due_raw)) if due_raw else None
+        due_window = _review_due_window(today=today, due_date=due_date)
+        due_windows[due_window] += 1
+        if due_window in {"overdue", "due_soon", "missing"}:
+            affected_reviews.append(
+                {
+                    "review_id": review_id,
+                    "status": status,
+                    "follow_up_due_date": due_date.isoformat() if due_date else None,
+                    "due_window": due_window,
+                }
+            )
+
+    risk_level = "OK"
+    if due_windows["overdue"] > 0:
+        risk_level = "OVERDUE"
+    elif due_windows["due_soon"] > 0 or due_windows["missing"] > 0:
+        risk_level = "WARNING"
+
+    return {
+        "artifact_type": "review_governance_signal_artifact",
+        "status": "blocked" if risk_level == "OVERDUE" else "ok",
+        "risk_level": risk_level,
+        "affected_reviews": affected_reviews,
+        "due_windows": due_windows,
+        "owner": "PRG",
+        "emitted_at": _utc_now(),
+    }
+
+
 def enforce_preflight_gate(preflight_artifact: dict[str, Any]) -> None:
     if preflight_artifact.get("artifact_type") != "contract_preflight_result_artifact":
         raise GovernedAutofixError("preflight_artifact_missing_or_ambiguous")
@@ -99,6 +159,14 @@ def enforce_preflight_gate(preflight_artifact: dict[str, Any]) -> None:
         raise GovernedAutofixError("preflight_strategy_gate_blocked")
     if preflight_artifact.get("status") != "passed":
         raise GovernedAutofixError("preflight_status_blocked")
+
+
+def enforce_governance_signal(gov_signal_artifact: dict[str, Any]) -> None:
+    if gov_signal_artifact.get("artifact_type") != "review_governance_signal_artifact":
+        raise GovernedAutofixError("review_governance_signal_missing_or_ambiguous")
+    risk_level = str(gov_signal_artifact.get("risk_level") or "")
+    if risk_level == "OVERDUE":
+        raise GovernedAutofixError("review_governance_signal_overdue_blocked")
 
 
 def enforce_artifact_spine(payload: dict[str, Any]) -> None:
@@ -510,12 +578,20 @@ def run_governed_autofix(
         invariant_violations.append("missing_tlc_handoff_record")
     if not governed_context.get("tpa_slice_artifact"):
         invariant_violations.append("missing_tpa_slice_artifact")
+    governance_signal = scan_review_governance_radar(repo_root=repo_root)
+    governed_context["review_governance_signal_artifact"] = governance_signal
+    if governance_signal.get("risk_level") == "OVERDUE":
+        invariant_violations.append("governance_reviews_overdue")
     preflight_artifact = _build_contract_preflight_result_artifact(
         request_id=request_id,
         trace_id=trace_id,
         emitted_at=emitted_at,
         invariant_violations=invariant_violations,
     )
+    preflight_artifact["review_governance_signal"] = governance_signal
+    if governance_signal.get("risk_level") == "WARNING":
+        preflight_artifact["governance_warning"] = "review_governance_warning_present"
+    enforce_governance_signal(governance_signal)
     enforce_preflight_gate(preflight_artifact)
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -532,6 +608,11 @@ def run_governed_autofix(
     _write_required_artifact(path=artifacts_dir / "tpa_slice_artifact.json", payload=tpa_slice, artifact_type="tpa_slice_artifact")
     _write_required_artifact(path=artifacts_dir / "ril_failure_signal.json", payload=governed_context["ril_failure_signal"], artifact_type="ril_failure_signal")
     _write_required_artifact(path=artifacts_dir / "fre_repair_plan.json", payload=governed_context["fre_repair_plan"], artifact_type="fre_repair_plan")
+    _write_required_artifact(
+        path=artifacts_dir / "review_governance_signal_artifact.json",
+        payload=governance_signal,
+        artifact_type="review_governance_signal_artifact",
+    )
     _write_required_artifact(
         path=artifacts_dir / "contract_preflight_result_artifact.json",
         payload=preflight_artifact,
