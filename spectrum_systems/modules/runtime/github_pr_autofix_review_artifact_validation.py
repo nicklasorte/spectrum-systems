@@ -70,6 +70,44 @@ def _write_required_artifact(*, path: Path, payload: dict[str, Any], artifact_ty
         raise GovernedAutofixError(f"artifact_write_failed:{artifact_type}") from exc
 
 
+def _build_contract_preflight_result_artifact(
+    *,
+    request_id: str,
+    trace_id: str,
+    emitted_at: str,
+    invariant_violations: list[str],
+) -> dict[str, Any]:
+    status = "passed" if not invariant_violations else "failed"
+    strategy_gate_decision = "ALLOW" if status == "passed" else "BLOCK"
+    return {
+        "artifact_type": "contract_preflight_result_artifact",
+        "preflight_result_id": f"preflight-{request_id}",
+        "status": status,
+        "invariant_violations": invariant_violations,
+        "strategy_gate_decision": strategy_gate_decision,
+        "control_owner": "TLC",
+        "request_id": request_id,
+        "trace_id": trace_id,
+        "emitted_at": emitted_at,
+    }
+
+
+def enforce_preflight_gate(preflight_artifact: dict[str, Any]) -> None:
+    if preflight_artifact.get("artifact_type") != "contract_preflight_result_artifact":
+        raise GovernedAutofixError("preflight_artifact_missing_or_ambiguous")
+    if preflight_artifact.get("strategy_gate_decision") != "ALLOW":
+        raise GovernedAutofixError("preflight_strategy_gate_blocked")
+    if preflight_artifact.get("status") != "passed":
+        raise GovernedAutofixError("preflight_status_blocked")
+
+
+def enforce_artifact_spine(payload: dict[str, Any]) -> None:
+    required = ("build_admission_record", "validation_result_record", "repair_attempt_record")
+    missing = [entry for entry in required if not isinstance(payload.get(entry), dict)]
+    if missing:
+        raise GovernedAutofixError(f"artifact_spine_missing:{','.join(missing)}")
+
+
 def _build_tlc_handoff(*, request_id: str, trace_id: str, branch_ref: str, admission_id: str, emitted_at: str) -> dict[str, Any]:
     artifact = {
         "artifact_type": "tlc_handoff_record",
@@ -304,48 +342,28 @@ def _push_with_governed_token(*, repo_root: Path, branch_ref: str, token: str) -
 
 def run_validation_replay(*, repo_root: Path, narrow_test_targets: list[str] | None = None) -> dict[str, Any]:
     """Run the same checks as review-artifact-validation before any push."""
-    commands: list[list[str]] = [
-        ["npm", "install", "--no-save", "--no-package-lock", "ajv@^8", "ajv-formats@^2"],
-        ["node", "scripts/validate-review-artifacts.js"],
-        ["python", "-m", "pip", "install", "-r", "requirements-dev.txt"],
-        ["python", "scripts/check_review_registry.py", "--fail-on-overdue"],
+    output_path = repo_root / ".autofix" / "runtime_validation_result.json"
+    cmd = [
+        "python",
+        "scripts/run_review_artifact_validation.py",
+        "--repo-root",
+        ".",
+        "--output-json",
+        str(output_path),
     ]
     if narrow_test_targets:
-        commands.append(["pytest", *narrow_test_targets])
-        validation_scope = "narrow"
+        cmd.extend(["--targets", ",".join(narrow_test_targets)])
     else:
-        commands.append(["pytest"])
-        validation_scope = "full"
-
-    results = [_run_command(cmd, cwd=repo_root) for cmd in commands]
-    passed = all(item.exit_code == 0 for item in results)
-
-    return {
-        "artifact_type": "validation_result_record",
-        "validation_result_id": "",
-        "attempt_id": "",
-        "admission_ref": "",
-        "trace_id": "",
-        "enforcement_owner": "SEL",
-        "workflow_equivalent": "review-artifact-validation",
-        "validation_scope": validation_scope,
-        "validation_target": {"type": "repo_branch", "value": ""},
-        "validation_path": "pre_push_replay",
-        "status": "passed" if passed else "failed",
-        "blocking_reason": None if passed else "validation_command_failed",
-        "failure_summary": None if passed else "One or more replay commands failed.",
-        "commands": [
-            {
-                "command": item.command,
-                "exit_code": item.exit_code,
-                "stdout_excerpt": item.stdout_excerpt,
-                "stderr_excerpt": item.stderr_excerpt,
-            }
-            for item in results
-        ],
-        "passed": passed,
-        "emitted_at": _utc_now(),
-    }
+        cmd.append("--allow-full-pytest")
+    result = _run_command(cmd, cwd=repo_root)
+    if result.exit_code not in (0, 2):
+        raise GovernedAutofixError("validation_entrypoint_execution_failed")
+    if not output_path.exists():
+        raise GovernedAutofixError("validation_entrypoint_missing_output")
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise GovernedAutofixError("validation_entrypoint_invalid_output")
+    return payload
 
 
 def enforce_entry_invariant(payload: dict[str, Any]) -> None:
@@ -485,6 +503,21 @@ def run_governed_autofix(
     }
     enforce_entry_invariant(governed_context)
 
+    invariant_violations: list[str] = []
+    if not governed_context.get("build_admission_record"):
+        invariant_violations.append("missing_build_admission_record")
+    if not governed_context.get("tlc_handoff_record"):
+        invariant_violations.append("missing_tlc_handoff_record")
+    if not governed_context.get("tpa_slice_artifact"):
+        invariant_violations.append("missing_tpa_slice_artifact")
+    preflight_artifact = _build_contract_preflight_result_artifact(
+        request_id=request_id,
+        trace_id=trace_id,
+        emitted_at=emitted_at,
+        invariant_violations=invariant_violations,
+    )
+    enforce_preflight_gate(preflight_artifact)
+
     output_dir.mkdir(parents=True, exist_ok=True)
     artifacts_dir = output_dir / "artifacts"
     artifacts_dir.mkdir(parents=True, exist_ok=True)
@@ -499,6 +532,11 @@ def run_governed_autofix(
     _write_required_artifact(path=artifacts_dir / "tpa_slice_artifact.json", payload=tpa_slice, artifact_type="tpa_slice_artifact")
     _write_required_artifact(path=artifacts_dir / "ril_failure_signal.json", payload=governed_context["ril_failure_signal"], artifact_type="ril_failure_signal")
     _write_required_artifact(path=artifacts_dir / "fre_repair_plan.json", payload=governed_context["fre_repair_plan"], artifact_type="fre_repair_plan")
+    _write_required_artifact(
+        path=artifacts_dir / "contract_preflight_result_artifact.json",
+        payload=preflight_artifact,
+        artifact_type="contract_preflight_result_artifact",
+    )
 
     # Fail closed when there is no bounded safe repair plan.
     if not governed_context["fre_repair_plan"].get("bounded_actions"):
@@ -523,6 +561,18 @@ def run_governed_autofix(
             path=artifacts_dir / "repair_attempt_record.json",
             payload=no_safe_repair_attempt,
             artifact_type="repair_attempt_record",
+        )
+        enforce_artifact_spine(
+            {
+                "build_admission_record": admission_record,
+                "validation_result_record": {
+                    "artifact_type": "validation_result_record",
+                    "status": "not_run",
+                    "passed": False,
+                    "blocking_reason": "no_safe_fix_found",
+                },
+                "repair_attempt_record": no_safe_repair_attempt,
+            }
         )
         summary = {
             "status": "blocked",
@@ -595,6 +645,13 @@ def run_governed_autofix(
     validate_artifact(repair_attempt_record, "repair_attempt_record")
     enforce_repair_validation_linkage(repair_attempt_record)
     _write_required_artifact(path=artifacts_dir / "repair_attempt_record.json", payload=repair_attempt_record, artifact_type="repair_attempt_record")
+    enforce_artifact_spine(
+        {
+            "build_admission_record": admission_record,
+            "validation_result_record": validation_record,
+            "repair_attempt_record": repair_attempt_record,
+        }
+    )
 
     summary = {
         "status": "pushed" if push else "validated_committed_no_push",

@@ -9,10 +9,13 @@ import pytest
 from spectrum_systems.modules.runtime.github_pr_autofix_review_artifact_validation import (
     GovernedAutofixError,
     _narrow_test_targets_if_safe,
+    enforce_artifact_spine,
     enforce_entry_invariant,
+    enforce_preflight_gate,
     enforce_repair_validation_linkage,
     enforce_replay_gate,
     run_governed_autofix,
+    run_validation_replay,
 )
 
 
@@ -151,6 +154,10 @@ def test_run_governed_autofix_applies_bounded_fix_and_commits(monkeypatch: pytes
     assert repair_attempt['owner'] == 'FRE'
     assert repair_attempt['validation_result_ref'].startswith('validation_result_record:')
     assert repair_attempt['push_outcome'] == 'blocked'
+    preflight = json.loads((repo_root / 'out' / 'artifacts' / 'contract_preflight_result_artifact.json').read_text(encoding='utf-8'))
+    assert preflight['artifact_type'] == 'contract_preflight_result_artifact'
+    assert preflight['status'] == 'passed'
+    assert preflight['strategy_gate_decision'] == 'ALLOW'
 
 
 def test_narrowing_is_blocked_when_multilayer_failure_signal_present() -> None:
@@ -276,3 +283,86 @@ def test_push_path_rejects_github_token_only(monkeypatch: pytest.MonkeyPatch, tm
             repo_root=repo_root,
             push=True,
         )
+
+
+def test_preflight_required_for_progression() -> None:
+    with pytest.raises(GovernedAutofixError, match='preflight_artifact_missing_or_ambiguous'):
+        enforce_preflight_gate({'artifact_type': 'wrong'})
+
+
+def test_preflight_block_fails_closed() -> None:
+    with pytest.raises(GovernedAutofixError, match='preflight_strategy_gate_blocked'):
+        enforce_preflight_gate(
+            {
+                'artifact_type': 'contract_preflight_result_artifact',
+                'status': 'failed',
+                'invariant_violations': ['missing_tlc_handoff_record'],
+                'strategy_gate_decision': 'BLOCK',
+            }
+        )
+
+
+def test_validation_entrypoint_consistency(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    repo_root = _init_git_repo(tmp_path)
+    expected = {
+        'artifact_type': 'validation_result_record',
+        'validation_result_id': '',
+        'attempt_id': '',
+        'admission_ref': '',
+        'trace_id': '',
+        'workflow_equivalent': 'review-artifact-validation',
+        'validation_target': {'type': 'repo_branch', 'value': ''},
+        'validation_scope': 'narrow',
+        'validation_path': 'pre_push_replay',
+        'commands': [],
+        'status': 'passed',
+        'blocking_reason': None,
+        'failure_summary': None,
+        'enforcement_owner': 'SEL',
+        'execution_owner': 'PQX',
+        'passed': True,
+        'emitted_at': '2026-04-10T00:00:00Z',
+    }
+    output_path = repo_root / '.autofix' / 'runtime_validation_result.json'
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(expected), encoding='utf-8')
+
+    seen: dict[str, object] = {}
+
+    def fake_run(command: list[str], *, cwd: Path) -> object:
+        seen['command'] = command
+        seen['cwd'] = cwd
+        return type('Res', (), {'command': ' '.join(command), 'exit_code': 0, 'stdout_excerpt': '', 'stderr_excerpt': ''})()
+
+    monkeypatch.setattr(
+        'spectrum_systems.modules.runtime.github_pr_autofix_review_artifact_validation._run_command',
+        fake_run,
+    )
+    payload = run_validation_replay(repo_root=repo_root, narrow_test_targets=['tests/test_demo.py'])
+    assert payload == expected
+    assert seen['cwd'] == repo_root
+    assert seen['command'] == [
+        'python',
+        'scripts/run_review_artifact_validation.py',
+        '--repo-root',
+        '.',
+        '--output-json',
+        str(output_path),
+        '--targets',
+        'tests/test_demo.py',
+    ]
+
+
+def test_artifact_spine_created_for_attempt() -> None:
+    enforce_artifact_spine(
+        {
+            'build_admission_record': {'artifact_type': 'build_admission_record'},
+            'validation_result_record': {'artifact_type': 'validation_result_record', 'passed': True},
+            'repair_attempt_record': {'artifact_type': 'repair_attempt_record'},
+        }
+    )
+
+
+def test_missing_artifact_fails_closed() -> None:
+    with pytest.raises(GovernedAutofixError, match='artifact_spine_missing'):
+        enforce_artifact_spine({'build_admission_record': {}, 'validation_result_record': {}})
