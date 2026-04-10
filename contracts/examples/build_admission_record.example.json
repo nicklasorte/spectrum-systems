@@ -1,59 +1,29 @@
 {
   "artifact_type": "build_admission_record",
-  "admission_id": "adm-123456789abc",
-  "request_id": "req-001",
+  "admission_id": "adm-a1e108452b9b",
+  "request_id": "req-1",
   "execution_type": "repo_write",
   "admission_status": "accepted",
-  "normalized_execution_request_ref": "normalized_execution_request:req-001",
-  "trace_id": "trace-req-001",
+  "normalized_execution_request_ref": "normalized_execution_request:req-1",
+  "trace_id": "trace-repo-write",
   "created_at": "2026-04-08T00:00:00Z",
   "produced_by": "AEXEngine",
   "reason_codes": [],
   "target_scope": {
     "repo": "spectrum-systems",
     "paths": [
-      "docs/architecture/system_registry.md",
-      "spectrum_systems/modules/runtime/top_level_conductor.py"
+      "x"
     ]
-  },
-  "request_source": {
-    "owner": "AEX",
-    "source_workflow": {
-      "workflow": "review-artifact-validation",
-      "workflow_run_id": "12345",
-      "head_branch": "feature/governed-autofix",
-      "trigger": "workflow_run"
-    },
-    "repository": {
-      "full_name": "nicklasorte/spectrum-systems"
-    },
-    "pull_request": {
-      "number": 42
-    }
-  },
-  "repo_mutation_classification": {
-    "owner": "AEX",
-    "repo_mutation_requested": true,
-    "execution_type": "repo_write"
-  },
-  "admission_decision": {
-    "status": "accepted",
-    "rejection_reason": null
-  },
-  "lineage": {
-    "handoff_owner": "TLC",
-    "handoff_ref": "tlc_handoff_record:tlc-handoff-req-001",
-    "trace_id": "trace-req-001"
   },
   "authenticity": {
     "issuer": "AEX",
     "key_id": "aex-hs256-v1",
-    "payload_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "payload_digest": "sha256:b6d55894f92036e878dc4f4f79cbb8bc5515225e21fbe5118505dcb774c6cbe5",
     "audience": "pqx_repo_write_boundary",
-    "scope": "repo_write_lineage:build_admission_record:req-001:trace-req-001",
-    "issued_at": "2026-04-08T00:00:00Z",
-    "expires_at": "2026-04-08T00:15:00Z",
-    "lineage_token_id": "lin-000000000000000000000000",
-    "attestation": "0000000000000000000000000000000000000000000000000000000000000000"
+    "scope": "repo_write_lineage:build_admission_record:req-1:trace-repo-write",
+    "issued_at": "2026-04-10T16:29:12Z",
+    "expires_at": "2026-04-10T16:44:12Z",
+    "lineage_token_id": "lin-4c45da8d768a4a1bbb53c375",
+    "attestation": "e73bed6b366672eb84ab437f99b890ed297297b6566f35fa34628b73b0d7d97f"
   }
 }
