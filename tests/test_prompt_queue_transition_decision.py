@@ -44,6 +44,11 @@ def _step_decision(decision: str, reason_codes: list[str]) -> dict:
     }
 
 
+
+
+def _batch_decision() -> dict:
+    return {"artifact_type": "batch_decision_artifact", "batch_id": "queue-001:step-001"}
+
 def _handoff(status: str = "handoff_completed") -> dict:
     return {
         "review_parsing_handoff_artifact_id": "review-parsing-handoff-wi-001-20260328T120000Z",
@@ -61,6 +66,7 @@ def test_transition_schema_example_validates():
 def test_allow_step_decision_maps_to_continue():
     artifact = build_queue_transition_decision(
         _step_decision("allow", ["clean_findings"]),
+        _batch_decision(),
         clock=FixedClock(["2026-03-28T12:00:01Z"]),
     )
     assert artifact["transition_action"] == "continue"
@@ -71,6 +77,7 @@ def test_allow_step_decision_maps_to_continue():
 def test_review_worthy_findings_map_to_request_review():
     artifact = build_queue_transition_decision(
         _step_decision("warn", ["warnings_detected"]),
+        _batch_decision(),
         clock=FixedClock(["2026-03-28T12:00:01Z"]),
     )
     assert artifact["transition_action"] == "request_review"
@@ -79,6 +86,7 @@ def test_review_worthy_findings_map_to_request_review():
 def test_findings_handoff_enables_reentry_with_findings():
     artifact = build_queue_transition_decision(
         _step_decision("block", ["errors_detected"]),
+        _batch_decision(),
         findings_handoff=_handoff("handoff_completed"),
         clock=FixedClock(["2026-03-28T12:00:01Z"]),
     )
@@ -88,6 +96,7 @@ def test_findings_handoff_enables_reentry_with_findings():
 def test_retry_eligible_path_maps_to_retry_allowed():
     artifact = build_queue_transition_decision(
         _step_decision("block", ["errors_detected"]),
+        _batch_decision(),
         clock=FixedClock(["2026-03-28T12:00:01Z"]),
     )
     assert artifact["transition_action"] == "retry_allowed"
@@ -97,6 +106,7 @@ def test_ambiguous_inputs_fail_closed():
     with pytest.raises(TransitionDecisionBuildError, match="more than one transition action inferred"):
         build_queue_transition_decision(
             _step_decision("block", ["errors_detected", "ambiguity_detected"]),
+            _batch_decision(),
             clock=FixedClock(["2026-03-28T12:00:01Z"]),
         )
 
@@ -105,13 +115,14 @@ def test_missing_lineage_fails_fast():
     decision = _step_decision("allow", ["clean_findings"])
     decision.pop("decision_id")
     with pytest.raises(TransitionDecisionBuildError, match="source decision reference"):
-        build_queue_transition_decision(decision, clock=FixedClock(["2026-03-28T12:00:01Z"]))
+        build_queue_transition_decision(decision, _batch_decision(), clock=FixedClock(["2026-03-28T12:00:01Z"]))
 
 
 def test_conflicting_findings_and_decision_inputs_fail_fast():
     with pytest.raises(TransitionDecisionBuildError, match="more than one transition action inferred"):
         build_queue_transition_decision(
             _step_decision("block", ["errors_detected", "invalid_report"]),
+            _batch_decision(),
             findings_handoff=_handoff("handoff_completed"),
             clock=FixedClock(["2026-03-28T12:00:01Z"]),
         )
@@ -120,10 +131,12 @@ def test_conflicting_findings_and_decision_inputs_fail_fast():
 def test_deterministic_output_is_stable_for_same_inputs():
     first = build_queue_transition_decision(
         _step_decision("warn", ["warnings_detected"]),
+        _batch_decision(),
         clock=FixedClock(["2026-03-28T12:00:01Z"]),
     )
     second = build_queue_transition_decision(
         _step_decision("warn", ["warnings_detected"]),
+        _batch_decision(),
         clock=FixedClock(["2026-03-28T12:00:01Z"]),
     )
     assert first == second
