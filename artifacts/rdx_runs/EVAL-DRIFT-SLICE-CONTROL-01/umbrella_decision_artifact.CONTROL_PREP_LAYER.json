@@ -1,0 +1,12 @@
+{
+  "artifact_type": "umbrella_decision_artifact",
+  "run_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "umbrella_id": "CONTROL_PREP_LAYER",
+  "owner": "TLC",
+  "control_prep_only": true,
+  "no_enforcement_occurred": true,
+  "execution_authority_changed": false,
+  "decision_authority_exercised": false,
+  "outputs_ready_for_future_governed_selection": true,
+  "decision": "PASS"
+}

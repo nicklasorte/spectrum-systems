@@ -1,0 +1,37 @@
+{
+  "artifact_type": "drift_detection_record",
+  "run_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "slice_id": "DRIFT-02",
+  "owner": "RIL",
+  "drift_score": 0.43,
+  "drift_classification": "moderate_drift",
+  "detected_changes": [
+    {
+      "type": "performance_drift",
+      "signal": "median_latency +4.2%",
+      "impact": "low"
+    },
+    {
+      "type": "failure_rate_change",
+      "signal": "+0.05 over baseline window",
+      "impact": "moderate"
+    },
+    {
+      "type": "evidence_link_drift",
+      "signal": "review_link_completeness -0.11",
+      "impact": "high"
+    },
+    {
+      "type": "review_link_drift",
+      "signal": "cross-run linkage inconsistency present in 2/4 runs",
+      "impact": "moderate"
+    }
+  ],
+  "anomaly_patterns": [
+    "paired occurrence of incomplete_test_evidence with missing_review_linkage",
+    "higher recurrence in AI-02 and TRUST-01 slices"
+  ],
+  "classification_rationale": "drift is material but bounded; strongest factor is evidence-link degradation rather than execution performance collapse",
+  "control_decision_made": false,
+  "status": "PASS"
+}

@@ -1,0 +1,33 @@
+{
+  "artifact_type": "policy_change_candidate",
+  "run_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "slice_id": "EVAL-03",
+  "owner": "PRG",
+  "recommendation_only": true,
+  "inputs": [
+    "evaluation_summary_artifact.EVAL-01.json",
+    "evaluation_pattern_report.EVAL-02.json"
+  ],
+  "tighter_future_gating_recommendations": [
+    "require explicit review_result_artifact pointer in each replay_result artifact",
+    "require deterministic evidence-link map before umbrella completion artifact emission"
+  ],
+  "new_required_artifact_recommendations": [
+    "evidence_link_map",
+    "test_evidence_coverage_summary"
+  ],
+  "slice_contract_update_recommendations": [
+    "add failure_classification enum invariants to evaluation summary contract",
+    "require trace lineage field coverage >= 0.95 for umbrella decision emission"
+  ],
+  "aggregation_prereview_validation_recommendations": [
+    "run deterministic recurrence check with stable dedup keys",
+    "fail closed when run-level signal coverage drops below required threshold"
+  ],
+  "forbidden_actions_confirmed": {
+    "direct_policy_application": false,
+    "direct_enforcement": false,
+    "direct_decision_authority_exercised": false
+  },
+  "status": "PASS"
+}

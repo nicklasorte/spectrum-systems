@@ -1,0 +1,47 @@
+{
+  "artifact_type": "cde_control_decision_input",
+  "run_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "slice_id": "CONTROL-03",
+  "owner_alignment": [
+    "RIL_interpretation_support",
+    "PRG_recommendation_support"
+  ],
+  "non_authoritative_input": true,
+  "fused_recommendations_ref": "control_signal_fusion_record.CONTROL-01.json",
+  "drift_severity_summary": {
+    "classification": "moderate_drift",
+    "score": 0.43,
+    "dominant_driver": "evidence_link_drift"
+  },
+  "slice_recommendation_priority_ref": "prioritized_adoption_candidate_set.CONTROL-02.json",
+  "bounded_next_step_options": [
+    "option_a: pilot REC-001 in repair-adjacent slices only",
+    "option_b: adopt REC-003 globally at pre-review phase with rollback-ready monitoring",
+    "option_c: defer REC-002 pending targeted slice validation"
+  ],
+  "risk_benefit_tradeoff_summaries": [
+    {
+      "option": "option_a",
+      "benefit": "fastest improvement on known high-impact gap",
+      "risk": "localized false positives if evidence-link schema mapping is incomplete"
+    },
+    {
+      "option": "option_b",
+      "benefit": "improves cross-run aggregation determinism",
+      "risk": "requires schema compatibility migration in legacy slices"
+    }
+  ],
+  "upstream_artifact_references": [
+    "policy_change_candidate.EVAL-03.json",
+    "drift_detection_record.DRIFT-02.json",
+    "slice_contract_update_candidate.SLICE-02.json",
+    "control_signal_fusion_record.CONTROL-01.json",
+    "prioritized_adoption_candidate_set.CONTROL-02.json"
+  ],
+  "authority_boundary_statement": "This package is input for a future CDE-governed decision cycle and does not represent a CDE decision.",
+  "fail_closed_checks": {
+    "implies_decision_already_made": false,
+    "authority_boundaries_ambiguous": false
+  },
+  "status": "PASS"
+}

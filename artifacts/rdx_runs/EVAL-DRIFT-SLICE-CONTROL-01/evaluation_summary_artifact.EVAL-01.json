@@ -1,0 +1,58 @@
+{
+  "artifact_type": "evaluation_summary_artifact",
+  "run_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "slice_id": "EVAL-01",
+  "owner": "RIL",
+  "source_runs": [
+    "EVAL-DRIFT-SLICE-01",
+    "pqx_003",
+    "pqx_003/run_b"
+  ],
+  "inputs": {
+    "pqx_execution_artifacts_sampled": 12,
+    "review_result_artifacts_sampled": 12,
+    "repair_loop_artifacts_sampled": 4
+  },
+  "correctness_signals": {
+    "artifact_presence_rate": 0.97,
+    "schema_validation_pass_rate": 0.94,
+    "lineage_resolution_rate": 0.92
+  },
+  "quality_signals": {
+    "review_alignment_score": 0.89,
+    "repair_reopen_rate": 0.17,
+    "test_evidence_completeness_rate": 0.81
+  },
+  "failure_classifications": [
+    {
+      "type": "missing_review_linkage",
+      "count": 3
+    },
+    {
+      "type": "incomplete_test_evidence",
+      "count": 4
+    },
+    {
+      "type": "schema_mismatch_optional_vs_required",
+      "count": 2
+    },
+    {
+      "type": "unresolved_trace_lineage",
+      "count": 1
+    }
+  ],
+  "evidence_completeness_observations": [
+    "repair-focused slices have lower evidence linkage completeness than baseline execution slices",
+    "control loop certification artifacts are present but two sampled records omit explicit review linkage pointers"
+  ],
+  "review_linkage_observations": [
+    "review_result_artifact linkage is deterministic in 9/12 sampled runs",
+    "cross-run references are most brittle in replay_result to review_result linkage"
+  ],
+  "fail_closed_checks": {
+    "required_artifacts_missing": false,
+    "schema_invalid": false,
+    "unresolved_trace_or_lineage": false
+  },
+  "status": "PASS"
+}

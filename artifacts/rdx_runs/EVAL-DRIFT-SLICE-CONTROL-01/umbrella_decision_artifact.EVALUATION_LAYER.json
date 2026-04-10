@@ -1,0 +1,11 @@
+{
+  "artifact_type": "umbrella_decision_artifact",
+  "run_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "umbrella_id": "EVALUATION_LAYER",
+  "owner": "TLC",
+  "outputs_validated": true,
+  "repair_loop_required": false,
+  "fail_open_detected": false,
+  "authority_bleed_detected": false,
+  "decision": "PASS"
+}

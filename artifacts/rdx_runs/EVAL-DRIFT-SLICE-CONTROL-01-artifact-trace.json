@@ -1,0 +1,95 @@
+{
+  "artifact_type": "rdx_serial_umbrella_execution_trace",
+  "run_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "batch_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "recorded_at": "2026-04-10T12:40:00Z",
+  "prompt_type": "BUILD",
+  "execution_mode": "serial",
+  "roadmap_authority_ref": "docs/roadmaps/system_roadmap.md",
+  "decision_authority_constraints": {
+    "read_interpret_recommend_prepare_only": true,
+    "runtime_mutations": "forbidden",
+    "policy_changes_applied": false,
+    "gating_changes_enforced": false,
+    "cde_decision_authority_used": false,
+    "tpa_gating_authority_used": false,
+    "pqx_execution_authority_used": false,
+    "sel_enforcement_authority_used": false,
+    "forbidden_outputs_not_emitted": [
+      "closure_decision_artifact",
+      "readiness_to_close",
+      "promotion_readiness_decision",
+      "policy_enforcement_decision"
+    ]
+  },
+  "umbrella_execution_sequence": [
+    "EVALUATION_LAYER",
+    "DRIFT_LAYER",
+    "SLICE_IMPROVEMENT_LAYER",
+    "CONTROL_PREP_LAYER"
+  ],
+  "serial_order_confirmed": true,
+  "fail_closed_policy": {
+    "on_missing_artifact": "STOP",
+    "on_invalid_schema": "STOP",
+    "on_aggregation_inconsistency": "STOP",
+    "on_missing_required_signal": "STOP",
+    "on_invalid_metrics": "STOP",
+    "on_missing_run_data": "STOP",
+    "on_invalid_slice_reference": "STOP",
+    "on_inconsistent_contract_logic": "STOP",
+    "on_serial_order_violation": "STOP",
+    "on_unsafe_authority_overlap": "STOP",
+    "on_wrong_owner_decision_artifact": "STOP"
+  },
+  "umbrellas": [
+    {
+      "umbrella_id": "EVALUATION_LAYER",
+      "sequence_index": 1,
+      "artifacts": [
+        "evaluation_summary_artifact.EVAL-01.json",
+        "evaluation_pattern_report.EVAL-02.json",
+        "policy_change_candidate.EVAL-03.json",
+        "umbrella_decision_artifact.EVALUATION_LAYER.json"
+      ],
+      "decision": "PASS"
+    },
+    {
+      "umbrella_id": "DRIFT_LAYER",
+      "sequence_index": 2,
+      "artifacts": [
+        "execution_observability_artifact.DRIFT-01.json",
+        "drift_detection_record.DRIFT-02.json",
+        "umbrella_decision_artifact.DRIFT_LAYER.json"
+      ],
+      "decision": "PASS"
+    },
+    {
+      "umbrella_id": "SLICE_IMPROVEMENT_LAYER",
+      "sequence_index": 3,
+      "artifacts": [
+        "slice_failure_pattern_record.SLICE-01.json",
+        "slice_contract_update_candidate.SLICE-02.json",
+        "umbrella_decision_artifact.SLICE_IMPROVEMENT_LAYER.json"
+      ],
+      "decision": "PASS"
+    },
+    {
+      "umbrella_id": "CONTROL_PREP_LAYER",
+      "sequence_index": 4,
+      "artifacts": [
+        "control_signal_fusion_record.CONTROL-01.json",
+        "prioritized_adoption_candidate_set.CONTROL-02.json",
+        "cde_control_decision_input.CONTROL-03.json",
+        "tpa_policy_update_input.CONTROL-04.json",
+        "control_prep_readiness_record.CONTROL-05.json",
+        "umbrella_decision_artifact.CONTROL_PREP_LAYER.json"
+      ],
+      "decision": "PASS"
+    }
+  ],
+  "review_report": "docs/reviews/RVW-EVAL-DRIFT-SLICE-CONTROL-01.md",
+  "delivery_report": "docs/reviews/EVAL-DRIFT-SLICE-CONTROL-01-DELIVERY-REPORT.md",
+  "final_status": "PASS",
+  "final_verdict": "SYSTEM SAFE"
+}
