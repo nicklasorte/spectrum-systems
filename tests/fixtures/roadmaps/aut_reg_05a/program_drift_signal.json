@@ -1,0 +1,14 @@
+{
+  "program_id": "PRG-ROADMAP-EXECUTION",
+  "drift_detected": true,
+  "drift_type": "priority_violation",
+  "affected_batches": [
+    "BATCH-K"
+  ],
+  "severity": "medium",
+  "evidence_refs": [
+    "execution_order_not_matching_priority_ordering"
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-prg-enforce-001"
+}

@@ -1,0 +1,13 @@
+{
+  "signals": [
+    "allow",
+    "lineage_ok"
+  ],
+  "control_loop": {
+    "eval_present": true,
+    "trace_present": true,
+    "schema_valid": true
+  },
+  "hard_gates": {},
+  "roadmap_signal_bundle_required": false
+}

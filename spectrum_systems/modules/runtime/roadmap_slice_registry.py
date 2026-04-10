@@ -44,6 +44,48 @@ _FAKE_SELF_REFERENTIAL_COMMAND_PATTERNS = (
     "row['slice_id']",
     "assert row[",
 )
+_WEAK_FAMILIES = ("AEX", "AUT", "SVA", "UMB")
+_WEAK_FAMILY_SLICE_IDS = {
+    "AEX-01",
+    "AEX-02",
+    "AUT-01",
+    "AUT-02",
+    "AUT-03",
+    "AUT-04",
+    "AUT-05",
+    "AUT-06",
+    "AUT-07",
+    "AUT-08",
+    "AUT-09",
+    "AUT-10",
+    "SVA-ADV-01",
+    "SVA-ADV-02",
+    "SVA-ADV-03",
+    "SVA-ADV-04",
+    "SVA-DRIFT-01",
+    "SVA-DRIFT-02",
+    "SVA-DRIFT-03",
+    "SVA-DRIFT-04",
+    "SVA-LOAD-01",
+    "SVA-LOAD-02",
+    "SVA-LOAD-03",
+    "SVA-LOAD-04",
+    "SVA-REC-01",
+    "SVA-REC-02",
+    "SVA-REC-03",
+    "SVA-REC-04",
+    "UMB-DEC-01",
+}
+_WEAK_FAMILY_GENERIC_HELPER_PATTERNS = (
+    "validate_execution_hierarchy",
+    "list_registered_validators",
+)
+_WEAK_FAMILY_NOTE_KEYWORDS = {
+    "AEX": ("build_admission_record", "normalized_execution_request", "fail-closed", "block"),
+    "AUT": ("behavior exercised:", "artifact/module/flow touched:", "fail-closed condition:", "expected outcome:"),
+    "SVA": ("stress class", "artifact", "fail-closed"),
+    "UMB": ("progression", "block", "closure authority"),
+}
 _EXECUTION_TYPE_COMMAND_HINTS = {
     "code": ("python", "scripts/", "module", "run_"),
     "validation": ("pytest", "validate", "validation", "assert"),
@@ -127,6 +169,16 @@ def _validate_slice_specific_execution_command(slice_id: str, commands: list[str
         raise RoadmapSliceRegistryError(
             f"slice {slice_id} has invalid commands: first command is self-referential registry metadata checking"
         )
+    if slice_id in _WEAK_FAMILY_SLICE_IDS:
+        first = commands[0].lower()
+        if any(pattern in first for pattern in _WEAK_FAMILY_GENERIC_HELPER_PATTERNS):
+            raise RoadmapSliceRegistryError(
+                f"slice {slice_id} has invalid commands: weak-family primary command uses a mislabeled generic helper seam"
+            )
+        if "python -c" in first and "open(" not in first and "json.load(" not in first and ".json" not in first:
+            raise RoadmapSliceRegistryError(
+                f"slice {slice_id} has invalid commands: weak-family primary command must use fixture/artifact-backed input"
+            )
 
 
 def _validate_implementation_notes(slice_id: str, implementation_notes: str) -> None:
@@ -140,6 +192,14 @@ def _validate_implementation_notes(slice_id: str, implementation_notes: str) -> 
         raise RoadmapSliceRegistryError(
             f"slice {slice_id} has invalid implementation_notes: notes must include behavior, artifact flow, fail-closed condition, and expected outcome"
         )
+    family = slice_id.split("-", 1)[0]
+    if family in _WEAK_FAMILY_NOTE_KEYWORDS:
+        required_tokens = _WEAK_FAMILY_NOTE_KEYWORDS[family]
+        missing = [token for token in required_tokens if token not in lowered]
+        if missing:
+            raise RoadmapSliceRegistryError(
+                f"slice {slice_id} has invalid implementation_notes: weak-family notes missing seam markers: {', '.join(missing)}"
+            )
 
 
 def _validate_execution_type_command_alignment(slice_id: str, execution_type: str, commands: list[str]) -> None:
@@ -153,6 +213,7 @@ def _validate_execution_type_command_alignment(slice_id: str, execution_type: st
 
 def validate_pqx_slice_execution_compatibility(slices: list[dict[str, Any]]) -> None:
     family_command_sets: dict[tuple[str, tuple[str, ...]], str] = {}
+    family_first_commands: dict[tuple[str, str], str] = {}
     family_note_fingerprints: dict[tuple[str, str], str] = {}
     for row in slices:
         slice_id = _as_non_empty_string(row.get("slice_id"), field="slice_id", slice_id="<unknown>")
@@ -175,6 +236,14 @@ def validate_pqx_slice_execution_compatibility(slices: list[dict[str, Any]]) -> 
                 f"slice {slice_id} has invalid commands: duplicated command set with {prior_slice_id} in family {family}"
             )
         family_command_sets[command_key] = slice_id
+        first_command = commands[0].strip().lower()
+        first_key = (family, first_command)
+        if family in _WEAK_FAMILIES and first_key in family_first_commands:
+            prior_slice_id = family_first_commands[first_key]
+            raise RoadmapSliceRegistryError(
+                f"slice {slice_id} has invalid commands: duplicated first command with {prior_slice_id} in weak family {family}"
+            )
+        family_first_commands[first_key] = slice_id
         if any(not criterion.strip() for criterion in success_criteria):
             raise RoadmapSliceRegistryError(
                 f"slice {slice_id} has invalid success_criteria: entries must be non-empty strings"

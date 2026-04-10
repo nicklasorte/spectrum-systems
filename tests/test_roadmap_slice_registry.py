@@ -152,3 +152,46 @@ def test_valid_execution_fields_pass() -> None:
     assert sample["execution_type"]
     assert sample["commands"]
     assert sample["success_criteria"]
+
+
+def test_weak_family_first_commands_are_fixture_backed() -> None:
+    slices, _ = load_governed_slice_registry_artifacts(
+        slice_registry_path=_FIXTURE_ROOT / "slice_registry.json",
+        roadmap_structure_path=_FIXTURE_ROOT / "roadmap_structure.json",
+    )
+    scoped = {
+        "AEX-01",
+        "AEX-02",
+        "AUT-01",
+        "AUT-02",
+        "AUT-03",
+        "AUT-04",
+        "AUT-05",
+        "AUT-06",
+        "AUT-07",
+        "AUT-08",
+        "AUT-09",
+        "AUT-10",
+        "SVA-ADV-01",
+        "SVA-ADV-02",
+        "SVA-ADV-03",
+        "SVA-ADV-04",
+        "SVA-DRIFT-01",
+        "SVA-DRIFT-02",
+        "SVA-DRIFT-03",
+        "SVA-DRIFT-04",
+        "SVA-LOAD-01",
+        "SVA-LOAD-02",
+        "SVA-LOAD-03",
+        "SVA-LOAD-04",
+        "SVA-REC-01",
+        "SVA-REC-02",
+        "SVA-REC-03",
+        "SVA-REC-04",
+        "UMB-DEC-01",
+    }
+    selected = [row for row in slices if row["slice_id"] in scoped]
+    assert selected
+    for row in selected:
+        first = row["commands"][0]
+        assert "open(" in first or "json.load(" in first or "contracts/examples/system_roadmap.json" in first

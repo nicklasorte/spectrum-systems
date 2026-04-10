@@ -1,0 +1,13 @@
+{
+  "request_id": "aut-reg-05a-aex-02",
+  "trace_id": "trace-aut-reg-05a-aex-02",
+  "created_at": "2026-04-10T00:00:00Z",
+  "produced_by": "slice_registry_fixture",
+  "target_paths": [
+    "docs/reviews/review-registry.json"
+  ],
+  "requested_outputs": [
+    "patch"
+  ],
+  "source_prompt_kind": "build"
+}

@@ -1,0 +1,30 @@
+{
+  "artifact_type": "judgment_progression_reinstatement_record",
+  "artifact_id": "JPR-42e76d749aa86162",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.97",
+  "reinstatement_id": "JPR-42e76d749aa86162",
+  "source_closure_id": "JRC-a8c2f2e8dbecf9b0",
+  "affected_scope": {
+    "run_id": "eval-run-0002",
+    "trace_id": "trace-0002",
+    "scope": "judgment_run",
+    "artifact_id": "judgment-control-escalation-eval-run-0002"
+  },
+  "reinstatement_type": "unfreeze",
+  "required_gates_satisfied": [
+    "remediation_closed",
+    "closure_approved",
+    "release_manager_approval_present"
+  ],
+  "approved_by_role": "release_manager",
+  "approved_at": "2026-03-30T01:18:00Z",
+  "resulting_next_allowed_state": "allowed",
+  "trace": {
+    "trace_id": "trace-0002",
+    "run_id": "eval-run-0002",
+    "closure_id": "JRC-a8c2f2e8dbecf9b0",
+    "remediation_id": "JOR-bbb70ebf32f9da31"
+  }
+}

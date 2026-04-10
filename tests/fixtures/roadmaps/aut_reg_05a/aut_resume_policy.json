@@ -1,0 +1,5 @@
+{
+  "allowed": true,
+  "max_resume_age_minutes": 120,
+  "validation_required": true
+}

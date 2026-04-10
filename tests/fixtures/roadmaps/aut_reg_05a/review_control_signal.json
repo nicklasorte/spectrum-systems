@@ -1,0 +1,19 @@
+{
+  "artifact_type": "review_control_signal",
+  "schema_version": "1.1.0",
+  "signal_id": "rcs-7f544f4f2cb8a109",
+  "review_id": "REV-2026-03-20-RELIABILITY-CONTROL-LOOP-REVIEW",
+  "review_type": "surgical",
+  "gate_assessment": "PASS",
+  "scale_recommendation": "YES",
+  "critical_findings": [
+    "No cross-repo governance enforcement exists",
+    "Constitution violates implementation boundary rule"
+  ],
+  "confidence": 0.98,
+  "trace_linkage": {
+    "review_markdown_path": "docs/reviews/2026-03-20-reliability-control-loop-review.md",
+    "source_digest_sha256": "f4e8b4f9f2a0e04230e96fde41b752fd38cb68303f011f16ef42f6f67706f4c1",
+    "review_artifact_path": "artifacts/reviews/review_artifacts/REV-2026-03-20-RELIABILITY-CONTROL-LOOP-REVIEW.json"
+  }
+}

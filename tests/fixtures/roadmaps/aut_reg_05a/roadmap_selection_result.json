@@ -1,0 +1,13 @@
+{
+  "roadmap_id": "RDX-CANVAS-2026-04-03",
+  "selected_batch_id": "BATCH-I",
+  "ready_to_run": true,
+  "reason_codes": [
+    "READY_TO_RUN"
+  ],
+  "blocking_conditions": [],
+  "evaluated_at": "2026-04-03T13:00:00Z",
+  "input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "stop_reason": null,
+  "stop_reason_codes": []
+}
