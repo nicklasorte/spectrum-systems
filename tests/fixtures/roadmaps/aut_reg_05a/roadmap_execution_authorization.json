@@ -1,0 +1,26 @@
+{
+  "authorization_id": "REA-0A1B2C3D4E5F",
+  "schema_version": "1.1.0",
+  "roadmap_id": "RDX-CANVAS-2026-04-03",
+  "selected_batch_id": "BATCH-I",
+  "selected_batch_title": "Control Authorization for Roadmap-Selected Batch",
+  "control_decision": "allow",
+  "authorized_to_run": true,
+  "reason_codes": [
+    "AUTHORIZED"
+  ],
+  "blocking_conditions": [],
+  "required_followups": [
+    "none"
+  ],
+  "evaluated_at": "2026-04-03T13:30:00Z",
+  "input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "trace_id": "trace-rdx-003-authorize-001",
+  "source_refs": [
+    "contracts/examples/roadmap_artifact.json",
+    "contracts/examples/roadmap_selection_result.json",
+    "contracts/examples/done_certification_record.json"
+  ],
+  "stop_reason": null,
+  "stop_reason_codes": []
+}

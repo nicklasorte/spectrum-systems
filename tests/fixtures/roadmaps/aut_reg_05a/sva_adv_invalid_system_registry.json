@@ -1,0 +1,381 @@
+{
+  "artifact_type": "system_registry_artifact",
+  "artifact_class": "coordination",
+  "schema_version": "1.0.0",
+  "registry_version": "v1.0.0",
+  "systems": [
+    {
+      "acronym": "AEX",
+      "full_name": "Admission & Execution eXchange",
+      "role": "Canonical entry point for all Codex execution requests that may mutate repository state.",
+      "owns": [
+        "execution_admission",
+        "request_validation",
+        "execution_classification",
+        "intake_artifact_creation",
+        "entrypoint_enforcement"
+      ],
+      "consumes": [
+        "codex_build_request",
+        "system_context"
+      ],
+      "produces": [
+        "build_admission_record",
+        "normalized_execution_request",
+        "admission_rejection_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "workflow_orchestration",
+        "trust_policy_adjudication",
+        "output_evaluation",
+        "closure_decisioning",
+        "runtime_enforcement"
+      ],
+      "upstream_dependencies": [
+        "PRG"
+      ],
+      "downstream_consumers": [
+        "TLC"
+      ],
+      "owner_system": "HAX"
+    },
+    {
+      "acronym": "PQX",
+      "full_name": "Prompt Queue Execution",
+      "role": "Executes bounded authorized work slices.",
+      "owns": [
+        "execution",
+        "execution_state_transitions",
+        "execution_trace_emission"
+      ],
+      "consumes": [
+        "codex_pqx_task_wrapper",
+        "tpa_slice_artifact",
+        "top_level_conductor_run_artifact"
+      ],
+      "produces": [
+        "pqx_slice_execution_record",
+        "pqx_bundle_execution_record",
+        "pqx_execution_closure_record"
+      ],
+      "prohibited_behaviors": [
+        "trust_policy_adjudication",
+        "repair_plan_generation",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC",
+        "TPA"
+      ],
+      "downstream_consumers": [
+        "FRE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "TPA",
+      "full_name": "Trust Policy Application",
+      "role": "Applies trust and policy gates to authorize execution scope.",
+      "owns": [
+        "trust_policy_application",
+        "scope_gating",
+        "complexity_budgeting"
+      ],
+      "consumes": [
+        "codex_pqx_task_wrapper",
+        "source_authority_refresh_receipt",
+        "complexity_trend"
+      ],
+      "produces": [
+        "tpa_scope_policy",
+        "tpa_slice_artifact",
+        "tpa_observability_summary"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "runtime_enforcement",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "PQX",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "FRE",
+      "full_name": "Failure Recovery Engine",
+      "role": "Diagnoses failures and emits bounded repair plans.",
+      "owns": [
+        "failure_diagnosis",
+        "repair_plan_generation",
+        "recurrence_prevention_recommendation"
+      ],
+      "consumes": [
+        "agent_failure_record",
+        "system_enforcement_result_artifact",
+        "review_signal_artifact"
+      ],
+      "produces": [
+        "failure_diagnosis_artifact",
+        "repair_prompt_artifact",
+        "recurrence_prevention_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "direct_enforcement_mutation",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "PQX",
+        "SEL",
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "TLC",
+        "PRG"
+      ]
+    },
+    {
+      "acronym": "RIL",
+      "full_name": "Review Integration Layer",
+      "role": "Interprets review outputs into deterministic integration payloads.",
+      "owns": [
+        "review_interpretation",
+        "review_integration",
+        "review_projection"
+      ],
+      "consumes": [
+        "review_artifact",
+        "review_signal_artifact",
+        "review_action_tracker_artifact"
+      ],
+      "produces": [
+        "review_integration_packet_artifact",
+        "review_projection_bundle_artifact",
+        "roadmap_review_projection_artifact"
+      ],
+      "prohibited_behaviors": [
+        "runtime_enforcement",
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "PRG"
+      ]
+    },
+    {
+      "acronym": "SEL",
+      "full_name": "System Enforcement Layer",
+      "role": "Applies fail-closed enforcement decisions across subsystem boundaries.",
+      "owns": [
+        "enforcement",
+        "fail_closed_blocking",
+        "promotion_guarding"
+      ],
+      "consumes": [
+        "tpa_slice_artifact",
+        "review_control_signal_artifact",
+        "closure_decision_artifact"
+      ],
+      "produces": [
+        "system_enforcement_result_artifact",
+        "enforcement_decision",
+        "action_trace_record"
+      ],
+      "prohibited_behaviors": [
+        "review_reinterpretation",
+        "repair_plan_generation",
+        "orchestration"
+      ],
+      "upstream_dependencies": [
+        "TLC",
+        "TPA",
+        "CDE"
+      ],
+      "downstream_consumers": [
+        "PQX",
+        "FRE",
+        "TLC"
+      ]
+    },
+    {
+      "acronym": "CDE",
+      "full_name": "Closure Decision Engine",
+      "role": "Determines closure state from governed evidence and review outputs.",
+      "owns": [
+        "closure_decisions",
+        "closure_lock_state",
+        "bounded_next_step_classification"
+      ],
+      "consumes": [
+        "review_projection_bundle_artifact",
+        "review_signal_artifact",
+        "review_action_tracker_artifact"
+      ],
+      "produces": [
+        "closure_decision_artifact"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "direct_enforcement_action",
+        "repair_plan_generation"
+      ],
+      "upstream_dependencies": [
+        "RIL",
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "SEL",
+        "TLC"
+      ]
+    },
+    {
+      "acronym": "TLC",
+      "full_name": "Top Level Conductor",
+      "role": "Orchestrates subsystem invocation order and interaction boundaries.",
+      "owns": [
+        "orchestration",
+        "subsystem_routing",
+        "bounded_cycle_coordination"
+      ],
+      "consumes": [
+        "tpa_slice_artifact",
+        "system_enforcement_result_artifact",
+        "closure_decision_artifact"
+      ],
+      "produces": [
+        "top_level_conductor_run_artifact"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "repair_plan_generation",
+        "closure_decision_override"
+      ],
+      "upstream_dependencies": [
+        "AEX",
+        "PRG"
+      ],
+      "downstream_consumers": [
+        "PQX",
+        "TPA",
+        "FRE",
+        "RIL",
+        "CDE",
+        "PRG",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "PRG",
+      "full_name": "Program Governance",
+      "role": "Owns program-level planning, drift management, and roadmap alignment.",
+      "owns": [
+        "program_governance",
+        "roadmap_alignment",
+        "program_drift_management"
+      ],
+      "consumes": [
+        "roadmap_signal_bundle",
+        "roadmap_review_view_artifact",
+        "batch_delivery_report"
+      ],
+      "produces": [
+        "program_brief",
+        "program_feedback_record",
+        "program_roadmap_alignment_result"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "runtime_enforcement",
+        "review_interpretation"
+      ],
+      "upstream_dependencies": [
+        "TLC",
+        "RIL",
+        "FRE"
+      ],
+      "downstream_consumers": [
+        "TLC"
+      ]
+    }
+  ],
+  "invariants": [
+    "closure_decisions_only_in_CDE",
+    "enforcement_only_in_SEL",
+    "execution_only_in_PQX",
+    "orchestration_only_in_TLC",
+    "recovery_only_in_FRE",
+    "repo_mutation_admission_only_in_AEX",
+    "review_interpretation_only_in_RIL"
+  ],
+  "interaction_edges": [
+    {
+      "from": "AEX",
+      "to": "TLC"
+    },
+    {
+      "from": "TLC",
+      "to": "PQX"
+    },
+    {
+      "from": "TLC",
+      "to": "TPA"
+    },
+    {
+      "from": "TLC",
+      "to": "FRE"
+    },
+    {
+      "from": "TLC",
+      "to": "RIL"
+    },
+    {
+      "from": "TLC",
+      "to": "CDE"
+    },
+    {
+      "from": "TLC",
+      "to": "PRG"
+    },
+    {
+      "from": "RIL",
+      "to": "CDE"
+    },
+    {
+      "from": "SEL",
+      "to": "PQX"
+    },
+    {
+      "from": "SEL",
+      "to": "TPA"
+    },
+    {
+      "from": "SEL",
+      "to": "FRE"
+    },
+    {
+      "from": "SEL",
+      "to": "RIL"
+    },
+    {
+      "from": "SEL",
+      "to": "CDE"
+    },
+    {
+      "from": "SEL",
+      "to": "TLC"
+    },
+    {
+      "from": "SEL",
+      "to": "PRG"
+    }
+  ]
+}

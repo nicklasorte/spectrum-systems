@@ -1,0 +1,50 @@
+{
+  "artifact_type": "judgment_control_escalation_record",
+  "artifact_id": "judgment-control-escalation-eval-run-0001",
+  "artifact_version": "1.1.0",
+  "schema_version": "1.1.0",
+  "standards_version": "1.1.0",
+  "decision": "allow",
+  "triggering_signals": {
+    "drift": "no_drift",
+    "calibration": "healthy",
+    "error_budget": "healthy"
+  },
+  "thresholds_used": {
+    "drift": {
+      "drift_warning_approval_rate_delta": 0.1,
+      "drift_warning_block_rate_delta": 0.1,
+      "drift_warning_error_rate_delta": 0.05,
+      "drift_warning_calibration_ece_delta": 0.05,
+      "drift_critical_approval_rate_delta": 0.2,
+      "drift_critical_block_rate_delta": 0.2,
+      "drift_critical_error_rate_delta": 0.1,
+      "drift_critical_calibration_ece_delta": 0.1
+    },
+    "calibration": {
+      "warn_if_expected_calibration_error_greater_than": 0.05,
+      "freeze_if_expected_calibration_error_greater_than": 0.1
+    },
+    "error_budget": {
+      "max_wrong_allow_rate": 0.2,
+      "max_wrong_block_rate": 0.15,
+      "max_override_rate": 0.25
+    }
+  },
+  "rationale": [
+    "all checks passed"
+  ],
+  "trace": {
+    "trace_id": "trace-0001",
+    "run_id": "eval-run-0001",
+    "judgment_eval_result_id": "judgment-eval-cycle-0001",
+    "judgment_calibration_result_id": "judgment-calibration-cycle-0001",
+    "judgment_drift_signal_id": "judgment-drift-cycle-0001",
+    "judgment_error_budget_status_id": "judgment-error-budget-cycle-0001",
+    "judgment_policy_id": "judgment-policy-artifact-release-readiness-v1",
+    "judgment_policy_version": "1.0.0",
+    "policy_lifecycle_status": "active",
+    "policy_rollout_id": "none"
+  },
+  "created_at": "2026-03-30T00:07:00Z"
+}

@@ -9,14 +9,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='aex01_admission')\"",
+        "python -c \"import json; from spectrum_systems.aex.engine import AEXEngine; req=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/aex_codex_request_repo_write.json')); result=AEXEngine().admit_codex_request(req); assert result.accepted and result.build_admission_record and result.normalized_execution_request\"",
         "pytest tests/test_prompt_queue_execution.py -q"
       ],
       "success_criteria": [
         "execution hierarchy validation passes",
         "slice registry validation tests pass with exit code 0"
       ],
-      "implementation_notes": "Behavior exercised: AEX-01 executes `python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='aex01_admission')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_prompt_queue_execution.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: AEX admission builds build_admission_record and normalized_execution_request from a repo-mutating Codex request fixture via AEXEngine.admit_codex_request. Artifact/module/flow touched: tests/fixtures/roadmaps/aut_reg_05a/aex_codex_request_repo_write.json enters AEX normalization, then emits build_admission_record + normalized_execution_request artifacts for TLC handoff prerequisites. Fail-closed condition: progression blocks when admission is rejected, required fields are missing, or artifact validation fails before repo write boundary handoff. Expected outcome: accepted admission artifacts are produced deterministically and ready for downstream TLC/PQX gating before pytest validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -44,14 +44,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; load_governed_slice_registry_artifacts('contracts/roadmap/slice_registry.json','contracts/roadmap/roadmap_structure.json')\"",
+        "python -c \"import json; from spectrum_systems.aex.engine import AEXEngine; req=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/aex_codex_request_invalid_missing_prompt.json')); result=AEXEngine().admit_codex_request(req); assert (not result.accepted) and result.admission_rejection_record\"",
         "pytest tests/test_prompt_queue_execution_gating.py -q"
       ],
       "success_criteria": [
         "execution hierarchy validation passes",
         "slice registry validation tests pass with exit code 0"
       ],
-      "implementation_notes": "Behavior exercised: AEX-02 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; load_governed_slice_registry_artifacts('contracts/roadmap/slice_registry.json','contracts/roadmap/roadmap_structure.json')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_prompt_queue_execution_gating.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: AEX fail-closed rejection path evaluates an invalid request fixture and emits an admission_rejection_record instead of build_admission_record/normalized_execution_request. Artifact/module/flow touched: tests/fixtures/roadmaps/aut_reg_05a/aex_codex_request_invalid_missing_prompt.json is normalized by AEX, then rejected before any repo write boundary or TLC progression. Fail-closed condition: missing admission fields force rejection and block progression because valid build_admission_record + normalized_execution_request are absent. Expected outcome: deterministic rejection evidence is produced and repo-mutating execution remains blocked until admission inputs are corrected.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -324,7 +324,7 @@
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: AUT-01 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_selector import load_active_roadmap; load_active_roadmap('contracts/examples/system_roadmap.json')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_selector.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: manifest authority seam loads the governed system_roadmap artifact as the autonomous source-of-truth before execution selection. Artifact/module/flow touched: contracts/examples/system_roadmap.json is validated through roadmap_selector.load_active_roadmap. Fail-closed condition: malformed or hierarchy-invalid roadmap artifacts block autonomous progression at manifest intake. Expected outcome: autonomous execution proceeds only when the canonical roadmap manifest validates deterministically.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -351,14 +351,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_checkpoint; create_checkpoint(cycle_id='aut02', stage_id='state_machine', context={'mode':'AUT'})\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.hnx_execution_state import create_checkpoint; c=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/checkpoint_record.json')); create_checkpoint(checkpoint_id=c['checkpoint_id'], workflow_id=c['workflow_id'], stage_contract_id=c['stage_contract_id'], stage_name=c['stage_name'], stage_sequence=c['stage_sequence'], execution_mode=c['execution_mode'], state_snapshot=c['state_snapshot'], execution_context=c['execution_context'], created_at=c['created_at'], trace=c['trace'], provenance=c['provenance'], parent_checkpoint_id=c.get('parent_checkpoint_id'))\"",
         "pytest tests/test_hnx_execution_state.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: AUT-02 executes `python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_checkpoint; create_checkpoint(cycle_id='aut02', stage_id='state_machine', context={'mode':'AUT'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_hnx_execution_state.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: state machine/checkpoint seam creates deterministic HNX checkpoint state from a realistic checkpoint artifact fixture. Artifact/module/flow touched: tests/fixtures/roadmaps/aut_reg_05a/checkpoint_record.json drives hnx_execution_state.create_checkpoint. Fail-closed condition: missing checkpoint fields or invalid state context blocks persistence of autonomous state continuity. Expected outcome: checkpoint creation returns stable content hash and freeze-safe continuity state.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -385,14 +385,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"import json; from spectrum_systems.modules.runtime.roadmap_selector import select_next_batch; select_next_batch(json.load(open('contracts/examples/system_roadmap.json')), {'control_loop':{'allow':True},'required_signals':['allow']})\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.roadmap_selector import build_roadmap_selection_result; roadmap=json.load(open('contracts/examples/roadmap_artifact.json')); signals=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/aut_selection_signals.json')); build_roadmap_selection_result(roadmap, signals, evaluated_at='2026-04-10T00:00:00Z')\"",
         "pytest tests/test_roadmap_selector.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: AUT-03 executes `python -c \"import json; from spectrum_systems.modules.runtime.roadmap_selector import select_next_batch; select_next_batch(json.load(open('contracts/examples/system_roadmap.json')), {'control_loop':{'allow':True},'required_signals':['allow']})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_selector.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: next-step selection seam computes deterministic roadmap_selection_result from roadmap artifact + governed system signals. Artifact/module/flow touched: contracts/examples/roadmap_artifact.json and tests/fixtures/roadmaps/aut_reg_05a/aut_selection_signals.json flow through roadmap_selector.build_roadmap_selection_result. Fail-closed condition: dependency/readiness/signal violations force stop_reason and prevent autonomous next-step selection. Expected outcome: selection output reflects governed ready/block state without bypassing signal gates.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -419,14 +419,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals={'loop':'continuous'}, roadmap_state={'active_batch_id':'AUT-04'})\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; run=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/roadmap_multi_batch_run_result.json')); should_continue_execution(last_control_decision='allow', program_constraint_signal=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/program_constraint_signal.json')), program_drift_signal=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/program_drift_signal.json')), failure_pattern_record=None, eval_summary=run.get('execution_efficiency_report'), risk_signals=run.get('continuation_policy', {}), roadmap_state={'active_batch_id': run.get('next_candidate_batch_id','AUT-04')})\"",
         "pytest tests/test_run_ops02_scheduled_autonomous_execution.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: AUT-04 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals={'loop':'continuous'}, roadmap_state={'active_batch_id':'AUT-04'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_run_ops02_scheduled_autonomous_execution.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: continuous loop control seam evaluates whether autonomous execution should continue using real multi-batch run context and program signals. Artifact/module/flow touched: roadmap_multi_batch_run_result/program_constraint_signal/program_drift_signal fixtures in tests/fixtures/roadmaps/aut_reg_05a feed roadmap_multi_batch_executor.should_continue_execution. Fail-closed condition: drift, control freeze/block, or unsafe continuation signals halt loop progression. Expected outcome: continuation decision is bounded by governed control signals rather than unconditional looping.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -453,14 +453,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; build_review_roadmap({'review_id':'AUT-05','summary':'auto-review trigger','findings':[]})\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; snapshot=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/repo_review_snapshot.json')); decision=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/review_control_signal.json')); build_review_roadmap(snapshot=snapshot, control_decision=decision)\"",
         "pytest tests/test_review_roadmap_generator.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: AUT-05 executes `python -c \"from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; build_review_roadmap({'review_id':'AUT-05','summary':'auto-review trigger','findings':[]})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_review_roadmap_generator.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: auto-review trigger seam derives review roadmap generation from review snapshot handoff plus control decision artifact. Artifact/module/flow touched: repo_review_snapshot and review_control_signal fixtures drive review_roadmap_generator.build_review_roadmap. Fail-closed condition: invalid snapshot handoff or unsafe control decision blocks review roadmap generation. Expected outcome: autonomous review triggering only proceeds with schema-valid review artifacts.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -487,14 +487,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_selector import validate_batch_readiness; validate_batch_readiness({'batch_id':'AUT-06','steps':[{'step_id':'S1','status':'ready'}]}, {'control_loop':{'allow':True},'required_signals':['allow']})\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.roadmap_selector import validate_batch_readiness; batch=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/aut_readiness_batch.json')); signals=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/aut_readiness_signals.json')); validate_batch_readiness(batch, signals)\"",
         "pytest tests/test_roadmap_selector.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: AUT-06 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_selector import validate_batch_readiness; validate_batch_readiness({'batch_id':'AUT-06','steps':[{'step_id':'S1','status':'ready'}]}, {'control_loop':{'allow':True},'required_signals':['allow']})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_selector.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: preflight/environment readiness normalization seam validates dependency, signal, and control-loop readiness before autonomous execution. Artifact/module/flow touched: aut_readiness_batch/aut_readiness_signals fixtures flow through roadmap_selector.validate_batch_readiness. Fail-closed condition: missing control-loop evidence or required signals marks batch not ready and blocks progression. Expected outcome: readiness normalization emits explicit blockers for unsafe autonomous starts.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -521,14 +521,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='aut07_no_pqx_without_aex_tlc_tpa')\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.repo_write_lineage_guard import validate_repo_write_lineage; adm=json.load(open('contracts/examples/build_admission_record.example.json')); req=json.load(open('contracts/examples/normalized_execution_request.example.json')); handoff=json.load(open('contracts/examples/tlc_handoff_record.example.json')); validate_repo_write_lineage(build_admission_record=adm, normalized_execution_request=req, tlc_handoff_record=handoff, expected_trace_id=adm['trace_id'])\"",
         "pytest tests/test_execution_hierarchy.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: AUT-07 executes `python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='aut07_no_pqx_without_aex_tlc_tpa')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_execution_hierarchy.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: no-PQX-without-AEX/TLC/TPA invariant seam validates repo_write lineage continuity requiring AEX admission + normalized request + TLC handoff. Artifact/module/flow touched: build_admission_record.example, normalized_execution_request.example, and tlc_handoff_record.example artifacts pass through repo_write_lineage_guard.validate_repo_write_lineage. Fail-closed condition: missing or mismatched lineage refs reject repo-write execution and block PQX progression. Expected outcome: autonomous execution cannot reach PQX repo mutation without valid upstream AEX/TLC lineage.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -555,14 +555,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'scaling':'bounded'}, program_drift_signal=None, failure_pattern_record=None, eval_summary={'budget':'healthy'}, risk_signals={'risk':'low'}, roadmap_state={'completed_batches':1})\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.adaptive_execution_observability import build_adaptive_execution_observability; runs=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_load_runs.json')); build_adaptive_execution_observability(runs, trace_id='trace-aut-08', source_refs=['tests/fixtures/roadmaps/aut_reg_05a/sva_load_runs.json'], created_at='2026-04-10T00:00:00Z')\"",
         "pytest tests/test_roadmap_multi_batch_executor.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: AUT-08 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'scaling':'bounded'}, program_drift_signal=None, failure_pattern_record=None, eval_summary={'budget':'healthy'}, risk_signals={'risk':'low'}, roadmap_state={'completed_batches':1})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_multi_batch_executor.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: stability/scaling policy seam computes adaptive execution observability from multi-run load history to enforce bounded scaling behavior. Artifact/module/flow touched: tests/fixtures/roadmaps/aut_reg_05a/sva_load_runs.json feeds adaptive_execution_observability.build_adaptive_execution_observability. Fail-closed condition: invalid run metrics or schema mismatch prevents scaling policy observability output. Expected outcome: autonomous scaling decisions rely on deterministic load telemetry instead of ad hoc heuristics.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -589,14 +589,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import validate_resume; validate_resume(resume_request={'resume':True,'reason':'operator'}, checkpoint_record={'cycle_id':'aut09','stage_id':'resume_entrypoint'})\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.hnx_execution_state import validate_resume; checkpoint=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_recovery_checkpoint.json')); policy=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/aut_resume_policy.json')); validate_resume(checkpoint_record=checkpoint, resume_policy=policy, checkpoint_age_minutes=30, has_validation_evidence=True)\"",
         "pytest tests/test_hnx_execution_state.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: AUT-09 executes `python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import validate_resume; validate_resume(resume_request={'resume':True,'reason':'operator'}, checkpoint_record={'cycle_id':'aut09','stage_id':'resume_entrypoint'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_hnx_execution_state.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: resume entrypoint seam validates checkpoint-based resume eligibility against governed resume policy. Artifact/module/flow touched: sva_recovery_checkpoint + aut_resume_policy fixtures drive hnx_execution_state.validate_resume. Fail-closed condition: stale checkpoints, missing validation evidence, or disallowed policy settings block resume progression. Expected outcome: autonomous resume only occurs when continuity and policy checks pass.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -623,14 +623,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; build_review_roadmap({'review_id':'AUT-10','summary':'roadmap projection','findings':[{'id':'P1','severity':'info'}]})\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; snapshot=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/repo_review_snapshot.json')); decision=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/review_control_signal.json')); program={'program_id':'PRG-AUT-10','allowed_targets':['modules/runtime'],'priority_rules':[],'blocked_patterns':[],'updated_at':'2026-04-10T00:00:00Z'}; build_review_roadmap(snapshot=snapshot, control_decision=decision, program_artifact=program)\"",
         "pytest tests/test_review_roadmap_generator.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: AUT-10 executes `python -c \"from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; build_review_roadmap({'review_id':'AUT-10','summary':'roadmap projection','findings':[{'id':'P1','severity':'info'}]})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_review_roadmap_generator.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: roadmap projection generation seam builds ordered review roadmap projection under program constraint input. Artifact/module/flow touched: repo_review_snapshot + review_control_signal fixtures plus in-command program artifact flow through review_roadmap_generator.build_review_roadmap. Fail-closed condition: invalid handoff or program constraint failure blocks projected roadmap emission. Expected outcome: autonomous projection remains program-aligned and deterministic.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1445,14 +1445,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.validator_engine import list_registered_validators; list_registered_validators()\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.system_integration_validator import validate_core_system_integration; payload=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_adv_invalid_system_registry.json')); validate_core_system_integration(payload)\"",
         "pytest tests/test_validator_engine.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-ADV-01 executes `python -c \"from spectrum_systems.modules.runtime.validator_engine import list_registered_validators; list_registered_validators()\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_validator_engine.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: adversarial stress class probes system-registry boundary tampering through core integration validation. Artifact/module/flow touched: sva_adv_invalid_system_registry fixture with ownership mutation is validated by system_integration_validator.validate_core_system_integration. Fail-closed condition: invalid registry ownership/boundary semantics block progression. Expected outcome: adversarial registry mutation is rejected deterministically.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1480,14 +1480,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"import json; from spectrum_systems.modules.runtime.run_bundle_validator import validate_run_bundle; validate_run_bundle('runs/RUN-01')\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.roadmap_signal_steering import steering_enforcement; bundle=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_adv_signal_bundle_attack.json')); steering_enforcement(bundle)\"",
         "pytest tests/test_run_bundle_validator.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-ADV-02 executes `python -c \"import json; from spectrum_systems.modules.runtime.run_bundle_validator import validate_run_bundle; validate_run_bundle('runs/RUN-01')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_run_bundle_validator.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: adversarial stress class attacks signal-steering boundary using an over-budget risk bundle. Artifact/module/flow touched: sva_adv_signal_bundle_attack fixture is consumed by roadmap_signal_steering.steering_enforcement. Fail-closed condition: high-risk or malformed steering inputs force freeze/block style enforcement outputs. Expected outcome: adversarial signal pressure cannot silently pass through steering controls.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1515,14 +1515,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"import json; from spectrum_systems.modules.runtime.system_integration_validator import validate_core_system_integration; validate_core_system_integration(json.load(open('contracts/examples/system_registry_artifact.json')))\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.run_bundle_validator import validate_run_bundle; run=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/roadmap_multi_batch_run_result.json')); validate_run_bundle('runs/RUN-01')\"",
         "pytest tests/test_system_integration_validator.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-ADV-03 executes `python -c \"import json; from spectrum_systems.modules.runtime.system_integration_validator import validate_core_system_integration; validate_core_system_integration(json.load(open('contracts/examples/system_registry_artifact.json')))\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_system_integration_validator.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: adversarial stress class validates run-bundle system-boundary checks against governed run artifacts while loading a fixture-backed run-result context. Artifact/module/flow touched: tests/fixtures/roadmaps/aut_reg_05a/roadmap_multi_batch_run_result.json is loaded and run_bundle_validator.validate_run_bundle evaluates RUN-01 boundary contracts. Fail-closed condition: missing or invalid run bundle evidence blocks acceptance and prevents progression. Expected outcome: bundle boundary validation catches adversarial contract drift before progression.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1550,14 +1550,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.system_registry_enforcer import validate_system_action; validate_system_action('CDE','enforce','PQX')\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.system_registry_enforcer import validate_system_action; payload=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_adv_invalid_system_registry.json')); validate_system_action('CDE','promote','PQX')\"",
         "pytest tests/test_system_registry_boundaries.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-ADV-04 executes `python -c \"from spectrum_systems.modules.runtime.system_registry_enforcer import validate_system_action; validate_system_action('CDE','enforce','PQX')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_system_registry_boundaries.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: adversarial stress class tests cross-system action enforcement at the registry authority boundary while loading a tampered registry artifact fixture. Artifact/module/flow touched: tests/fixtures/roadmaps/aut_reg_05a/sva_adv_invalid_system_registry.json is loaded and system_registry_enforcer.validate_system_action evaluates role action ownership constraints. Fail-closed condition: unauthorized system action patterns are denied and progression is blocked. Expected outcome: enforcement boundary rejects adversarial cross-role action attempts.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1585,14 +1585,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D1','drift_score':0.7}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-01')\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; before=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_drift_before.json')); build_drift_detection_record(**before)\"",
         "pytest tests/test_adaptive_execution_observability.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-DRIFT-01 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D1','drift_score':0.7}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-01')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_adaptive_execution_observability.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: drift stress class generates baseline drift detection record from before-state findings. Artifact/module/flow touched: sva_drift_before fixture enters roadmap_signal_steering.build_drift_detection_record. Fail-closed condition: invalid drift finding shape blocks drift signal generation. Expected outcome: baseline drift state is recorded deterministically for comparison paths.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1619,14 +1619,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D2','drift_score':0.8}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-02')\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; after=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_drift_after.json')); build_drift_detection_record(**after)\"",
         "pytest tests/test_roadmap_trigger_pipeline.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-DRIFT-02 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D2','drift_score':0.8}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-02')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_trigger_pipeline.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: drift stress class generates elevated after-state drift signal using changed drift-score artifact input. Artifact/module/flow touched: sva_drift_after fixture is processed by roadmap_signal_steering.build_drift_detection_record. Fail-closed condition: malformed drift payload or non-deterministic timestamps block signal emission. Expected outcome: changed-state drift severity is surfaced through governed drift artifact generation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1653,14 +1653,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D3','drift_score':0.9}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-03')\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.drift_detection_engine import detect_drift; replay=json.load(open('contracts/examples/replay_result.json')); detect_drift(replay)\"",
         "pytest tests/test_roadmap_signal_steering.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-DRIFT-03 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D3','drift_score':0.9}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-03')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_signal_steering.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: drift stress class runs replay drift detection against governed replay_result artifact semantics. Artifact/module/flow touched: contracts/examples/replay_result.json enters drift_detection_engine.detect_drift. Fail-closed condition: invalid replay structure or ambiguous status triggers deterministic drift failure classification. Expected outcome: replay drift detection emits controlled drift status for governance handling.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1687,14 +1687,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D4','drift_score':0.95}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-04')\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.adaptive_execution_observability import build_adaptive_execution_trend_report; runs=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_load_runs.json')); obs=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/adaptive_execution_observability.json')); build_adaptive_execution_trend_report(runs, observability=obs, trace_id='trace-sva-drift-04', created_at='2026-04-10T00:00:00Z')\"",
         "pytest tests/test_policy_registry.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-DRIFT-04 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D4','drift_score':0.95}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-04')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_policy_registry.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: drift stress class evaluates trend drift from adaptive execution telemetry across multi-run history. Artifact/module/flow touched: sva_load_runs and adaptive_execution_observability fixtures drive build_adaptive_execution_trend_report. Fail-closed condition: inconsistent observability schema or trend inputs block drift trend output. Expected outcome: controlled drift trend signals are produced for bounded corrective action.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1721,14 +1721,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test01'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':1})\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.adaptive_execution_observability import build_adaptive_execution_observability; runs=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_load_runs.json')); build_adaptive_execution_observability(runs[:1], trace_id='trace-sva-load-01', created_at='2026-04-10T00:00:00Z')\"",
         "pytest tests/test_roadmap_multi_batch_executor.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-LOAD-01 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test01'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':1})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_multi_batch_executor.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: load stress class validates single-run baseline throughput observability path. Artifact/module/flow touched: sva_load_runs fixture subset is processed by adaptive execution observability builder. Fail-closed condition: malformed run result blocks load observability generation. Expected outcome: baseline load telemetry artifact is emitted deterministically.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1756,14 +1756,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test02'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':2})\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.adaptive_execution_observability import build_adaptive_execution_observability; runs=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_load_runs.json')); build_adaptive_execution_observability(runs[:2], trace_id='trace-sva-load-02', created_at='2026-04-10T00:00:00Z')\"",
         "pytest tests/test_adaptive_execution_observability.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-LOAD-02 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test02'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':2})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_adaptive_execution_observability.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: load stress class validates two-run scaling pressure and distribution aggregation. Artifact/module/flow touched: two-run slice of sva_load_runs fixture enters adaptive execution observability aggregation. Fail-closed condition: aggregation anomalies or schema mismatch block continuation metrics output. Expected outcome: medium-load observability remains bounded and deterministic.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1791,14 +1791,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test03'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':3})\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.adaptive_execution_observability import build_adaptive_execution_observability; runs=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_load_runs.json')); build_adaptive_execution_observability(runs[:3], trace_id='trace-sva-load-03', created_at='2026-04-10T00:00:00Z')\"",
         "pytest tests/test_roadmap_signal_generation.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-LOAD-03 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test03'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':3})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_signal_generation.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: load stress class exercises three-run pressure path for multi-batch load accumulation visibility. Artifact/module/flow touched: three-run load fixture segment flows through adaptive execution observability builder. Fail-closed condition: unstable continuation distributions or invalid metrics block output. Expected outcome: higher-load observability is generated with controlled boundary semantics.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1826,14 +1826,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test04'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':4})\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.adaptive_execution_observability import build_adaptive_execution_observability; runs=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_load_runs.json')); build_adaptive_execution_observability(runs, trace_id='trace-sva-load-04', created_at='2026-04-10T00:00:00Z')\"",
         "pytest tests/test_roadmap_slice_registry.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-LOAD-04 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test04'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':4})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_slice_registry.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: load stress class executes full multi-run batch pressure aggregation for scaling policy visibility. Artifact/module/flow touched: full sva_load_runs fixture is consumed by adaptive execution observability aggregation. Fail-closed condition: any invalid run artifact in the batch blocks full-load observability computation. Expected outcome: full-load stress yields deterministic bounded telemetry for scaling gates.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1861,14 +1861,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-01', stage_id='recovery', wait_reason='checkpoint_restore')\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.hnx_execution_state import validate_resume; checkpoint=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_recovery_checkpoint.json')); policy=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/aut_resume_policy.json')); validate_resume(checkpoint_record=checkpoint, resume_policy=policy, checkpoint_age_minutes=5, has_validation_evidence=True)\"",
         "pytest tests/test_hnx_execution_state.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-REC-01 executes `python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-01', stage_id='recovery', wait_reason='checkpoint_restore')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_hnx_execution_state.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: recovery stress class validates fast resume continuity from checkpoint artifact under policy. Artifact/module/flow touched: sva_recovery_checkpoint and aut_resume_policy fixtures feed hnx_execution_state.validate_resume. Fail-closed condition: missing checkpoint lineage or policy violations block recovery resume. Expected outcome: recovery path allows controlled continuation only when resume policy passes.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1895,14 +1895,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-02', stage_id='recovery', wait_reason='handoff_resume')\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.hnx_execution_state import apply_resume, validate_resume; checkpoint=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_recovery_checkpoint.json')); policy=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/aut_resume_policy.json')); decision=validate_resume(checkpoint_record=checkpoint, resume_policy=policy, checkpoint_age_minutes=15, has_validation_evidence=True); apply_resume(resume_validation=decision, checkpoint_record=checkpoint)\"",
         "pytest tests/test_hnx_execution_state.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-REC-02 executes `python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-02', stage_id='recovery', wait_reason='handoff_resume')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_hnx_execution_state.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: recovery stress class exercises resume application seam after policy validation. Artifact/module/flow touched: checkpoint/policy fixtures are used to validate then apply resume state in hnx_execution_state. Fail-closed condition: denied resume validation prevents state rehydration application. Expected outcome: recovery apply step only succeeds after governed resume decision.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1929,14 +1929,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-03', stage_id='recovery', wait_reason='integrity_check')\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.hnx_execution_state import evaluate_long_running_policy; checkpoint=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/sva_recovery_checkpoint.json')); stage={'contract_id':'stage-rec-03','execution_mode':'reset_with_handoff','resume_policy':json.load(open('tests/fixtures/roadmaps/aut_reg_05a/aut_resume_policy.json')),'async_policy':{'allowed':True,'max_wait_minutes':60,'timeout_behavior':'freeze'}}; evaluate_long_running_policy(stage_contract=stage, checkpoint_record=checkpoint, handoff_artifact=None, request_resume=True, checkpoint_age_minutes=20, has_resume_validation_evidence=True, request_async_wait=False, wait_elapsed_minutes=0)\"",
         "pytest tests/test_roadmap_executor.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-REC-03 executes `python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-03', stage_id='recovery', wait_reason='integrity_check')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_executor.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: recovery stress class tests long-running continuity policy with reset/handoff recovery semantics. Artifact/module/flow touched: checkpoint fixture and governed stage policy input are evaluated by hnx_execution_state.evaluate_long_running_policy. Fail-closed condition: missing required handoff or policy failures keep state blocked/frozen. Expected outcome: continuity policy emits controlled recovery state instead of uncontrolled resume.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1963,14 +1963,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-04', stage_id='recovery', wait_reason='loop_resume')\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.judgment_enforcement import evaluate_judgment_enforcement_traceability; e=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/judgment_control_escalation_record.json')); a=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/judgment_enforcement_action_record.json')); o=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/judgment_enforcement_outcome_record.json')); r=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/judgment_operator_remediation_record.json')); c=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/judgment_remediation_closure_record.json')); j=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/judgment_progression_reinstatement_record.json')); evaluate_judgment_enforcement_traceability(escalation_record=e, action_record=a, outcome_record=o, remediation_record=r, closure_record=c, reinstatement_record=j)\"",
         "pytest tests/test_roadmap_execution_loop_validator.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: SVA-REC-04 executes `python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-04', stage_id='recovery', wait_reason='loop_resume')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_execution_loop_validator.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: recovery stress class verifies closure-to-reinstatement continuity before progression resumes. Artifact/module/flow touched: escalation/action/outcome/remediation/closure/reinstatement fixtures are consumed by judgment_enforcement traceability gate. Fail-closed condition: missing closure or reinstatement linkage blocks progression_allowed. Expected outcome: recovery progression resumes only with complete continuity evidence chain.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1997,14 +1997,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='umb_decision_enforcement')\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.judgment_enforcement import evaluate_judgment_enforcement_traceability; e=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/judgment_control_escalation_record.json')); a=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/judgment_enforcement_action_record.json')); o=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/judgment_enforcement_outcome_record.json')); r=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/judgment_operator_remediation_record.json')); c=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/judgment_remediation_closure_record.json')); j=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/judgment_progression_reinstatement_record.json')); gate=evaluate_judgment_enforcement_traceability(escalation_record=e, action_record=a, outcome_record=o, remediation_record=r, closure_record=c, reinstatement_record=j); assert gate['progression_allowed'] in {True, False}\"",
         "pytest tests/test_execution_hierarchy.py -q"
       ],
       "success_criteria": [
         "policy enforcement integrity validation exits with code 0",
         "control decision consistency validation exits with code 0"
       ],
-      "implementation_notes": "Behavior exercised: UMB-DEC-01 executes `python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='umb_decision_enforcement')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_execution_hierarchy.py -q` performs targeted validation.",
+      "implementation_notes": "Behavior exercised: umbrella decision/progression-control seam evaluates whether next umbrella progression is allowed based on escalation\u2192closure\u2192reinstatement evidence. Artifact/module/flow touched: judgment enforcement chain fixtures in tests/fixtures/roadmaps/aut_reg_05a are validated through evaluate_judgment_enforcement_traceability. Fail-closed condition: missing remediation closure or reinstatement artifacts blocks progression_allowed and halts next-umbrella movement. Expected outcome: umbrella progression control is enforced as gating logic only and does not assert closure authority (which remains CDE-owned).",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"

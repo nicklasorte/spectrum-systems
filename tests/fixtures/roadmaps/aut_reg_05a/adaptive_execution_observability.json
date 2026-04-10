@@ -1,0 +1,32 @@
+{
+  "observability_id": "AEO-8F3AB7C8D912",
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-03T23:59:00Z",
+  "trace_id": "trace-batch-x1-observability",
+  "source_refs": [
+    "roadmap_multi_batch_run_result:RMB-4A5A83BE3001",
+    "roadmap_multi_batch_run_result:RMB-9BC904AD7722",
+    "roadmap_multi_batch_run_result:RMB-A0D4ED2F1188"
+  ],
+  "runs_observed": 3,
+  "average_resolved_max_batches_per_run": 2.3333,
+  "average_batches_executed_per_run": 2.0,
+  "average_useful_batches_per_run": 1.6667,
+  "early_stop_rate": 0.3333,
+  "stop_reason_distribution": {
+    "max_batches_reached": 0.6667,
+    "risk_accumulation_threshold_exceeded": 0.3333
+  },
+  "continuation_decision_distribution": {
+    "continue": 0.75,
+    "stop": 0.25
+  },
+  "risk_level_distribution": {
+    "high": 0.3333,
+    "low": 0.3333,
+    "medium": 0.3333
+  },
+  "replay_integrity_rate": 1.0,
+  "determinism_integrity_rate": 1.0,
+  "control_boundary_integrity_status": "bounded"
+}

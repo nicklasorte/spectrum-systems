@@ -1,0 +1,26 @@
+{
+  "artifact_type": "judgment_enforcement_outcome_record",
+  "artifact_id": "JEO-6147f482d46f45d0",
+  "artifact_version": "1.1.0",
+  "schema_version": "1.1.0",
+  "standards_version": "1.1.0",
+  "outcome_id": "JEO-6147f482d46f45d0",
+  "action_id": "JEA-0c66be06a26ed311",
+  "final_outcome_status": "enforced",
+  "progression_status": "allowed",
+  "resulting_artifact_refs": [
+    "JEA-0c66be06a26ed311"
+  ],
+  "failure_reason": "",
+  "operator_action_required": false,
+  "trace": {
+    "trace_id": "trace-0001",
+    "run_id": "eval-run-0001",
+    "source_escalation_record_id": "judgment-control-escalation-eval-run-0001",
+    "action_id": "JEA-0c66be06a26ed311",
+    "judgment_policy_id": "judgment-policy-artifact-release-readiness-v1",
+    "judgment_policy_version": "1.0.0",
+    "policy_lifecycle_status": "active",
+    "policy_rollout_id": "none"
+  }
+}

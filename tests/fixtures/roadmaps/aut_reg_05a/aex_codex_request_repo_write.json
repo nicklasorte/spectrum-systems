@@ -1,0 +1,15 @@
+{
+  "request_id": "aut-reg-05a-aex-01",
+  "prompt_text": "Update docs/reviews/review-registry.json and commit governed fix",
+  "trace_id": "trace-aut-reg-05a-aex-01",
+  "created_at": "2026-04-10T00:00:00Z",
+  "produced_by": "slice_registry_fixture",
+  "target_paths": [
+    "docs/reviews/review-registry.json"
+  ],
+  "requested_outputs": [
+    "patch",
+    "validation_result_record"
+  ],
+  "source_prompt_kind": "build"
+}

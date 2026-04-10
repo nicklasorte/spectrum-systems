@@ -1,0 +1,49 @@
+{
+  "signal_bundle_id": "RSB-1A2B3C4D5E6F",
+  "schema_version": "1.0.0",
+  "roadmap_id": "RDX-CANVAS-2026-04-04",
+  "drift_detection_ref": "drift_detection_record:DDR-1A2B3C4D5E6F",
+  "top_block_reasons": [
+    "override_hotspot_policy_scope",
+    "replay_mismatch_sequence"
+  ],
+  "highest_risk_subsystems": [
+    "governance",
+    "replay"
+  ],
+  "missing_eval_coverage": [
+    "batch_i_replay_guard"
+  ],
+  "override_hotspots": [
+    "policy_scope"
+  ],
+  "drift_severity_summary": {
+    "none": 0,
+    "warning": 1,
+    "freeze_candidate": 1,
+    "block": 0
+  },
+  "replay_mismatch_refs": [
+    "replay_result:RPL-001"
+  ],
+  "judgment_conflict_refs": [
+    "precedent_conflict_record:PCF-001"
+  ],
+  "budget_burn_rate": 0.42,
+  "trust_posture_snapshot_ref": "trust_posture_snapshot:TPS-1A2B3C4D5E6F",
+  "recommended_priority_adjustments": [
+    {
+      "priority_class": "hardening",
+      "reason": "freeze_candidate_drift",
+      "weight": 80
+    },
+    {
+      "priority_class": "eval_coverage",
+      "reason": "missing_eval_coverage",
+      "weight": 60,
+      "target_batch_id": "BATCH-I"
+    }
+  ],
+  "created_at": "2026-04-04T00:00:00Z",
+  "trace_id": "trace-ltv-c-example"
+}

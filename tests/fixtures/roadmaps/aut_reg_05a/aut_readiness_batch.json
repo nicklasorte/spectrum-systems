@@ -1,0 +1,10 @@
+{
+  "batch_id": "AUT-06",
+  "dependency_status": {
+    "B0": "completed"
+  },
+  "required_signals": [
+    "allow"
+  ],
+  "prior_batches": []
+}

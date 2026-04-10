@@ -80,7 +80,7 @@ def test_mismatched_execution_type_fails(tmp_path: Path) -> None:
     payload = json.loads((_FIXTURE_ROOT / "slice_registry.json").read_text(encoding="utf-8"))
     payload["slices"][0]["execution_type"] = "repair"
     payload["slices"][0]["commands"] = [
-        "python -c \"print('validate only')\"",
+        "python -c \"import json; json.load(open('contracts/examples/system_roadmap.json'))\"",
         "pytest tests/test_execution_hierarchy.py -q",
     ]
 
@@ -92,15 +92,44 @@ def test_valid_slice_passes(tmp_path: Path) -> None:
     payload = json.loads((_FIXTURE_ROOT / "slice_registry.json").read_text(encoding="utf-8"))
     payload["slices"][0]["execution_type"] = "validation"
     payload["slices"][0]["commands"] = [
-        "python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='aex_valid')\"",
+        "python -c \"import json; from spectrum_systems.aex.engine import AEXEngine; req=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/aex_codex_request_repo_write.json')); result=AEXEngine().admit_codex_request(req); assert result.accepted\"",
         "pytest tests/test_execution_hierarchy.py -q",
     ]
     payload["slices"][0]["implementation_notes"] = (
-        "Behavior exercised: run admission structure validation. "
-        "Artifact/module/flow touched: execution hierarchy on roadmap_structure artifact. "
-        "Fail-closed condition: stop when hierarchy validation fails or required fields are missing. "
+        "Behavior exercised: AEX admission path validates and emits build_admission_record and normalized_execution_request. "
+        "Artifact/module/flow touched: fixture-backed codex request through AEX admission runtime. "
+        "Fail-closed condition: stop and block progression when admission artifacts are invalid. "
         "Expected outcome: deterministic behavior command passes before targeted pytest validation."
     )
 
     loaded = load_slice_registry(_write_registry(tmp_path, payload))
     assert loaded
+
+
+def test_weak_family_slice_rejects_generic_primary_helper(tmp_path: Path) -> None:
+    payload = json.loads((_FIXTURE_ROOT / "slice_registry.json").read_text(encoding="utf-8"))
+    payload["slices"][0]["commands"][0] = (
+        "python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import "
+        "validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='aex_generic')\""
+    )
+
+    with pytest.raises(RoadmapSliceRegistryError, match="mislabeled generic helper seam"):
+        load_slice_registry(_write_registry(tmp_path, payload))
+
+
+def test_weak_family_slice_requires_fixture_backed_primary_command(tmp_path: Path) -> None:
+    payload = json.loads((_FIXTURE_ROOT / "slice_registry.json").read_text(encoding="utf-8"))
+    payload["slices"][0]["commands"][0] = "python -c \"from spectrum_systems.aex.engine import AEXEngine; AEXEngine()\""
+
+    with pytest.raises(RoadmapSliceRegistryError, match="fixture/artifact-backed input"):
+        load_slice_registry(_write_registry(tmp_path, payload))
+
+
+def test_weak_family_duplicate_first_command_fails(tmp_path: Path) -> None:
+    payload = json.loads((_FIXTURE_ROOT / "slice_registry.json").read_text(encoding="utf-8"))
+    aex01 = next(row for row in payload["slices"] if row["slice_id"] == "AEX-01")
+    aex02 = next(row for row in payload["slices"] if row["slice_id"] == "AEX-02")
+    aex02["commands"][0] = aex01["commands"][0]
+
+    with pytest.raises(RoadmapSliceRegistryError, match="duplicated first command"):
+        load_slice_registry(_write_registry(tmp_path, payload))

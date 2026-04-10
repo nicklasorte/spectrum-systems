@@ -1,0 +1,11 @@
+{
+  "signals": [
+    "allow"
+  ],
+  "control_loop": {
+    "eval_present": true,
+    "trace_present": true,
+    "schema_valid": true
+  },
+  "hard_gates": {}
+}
