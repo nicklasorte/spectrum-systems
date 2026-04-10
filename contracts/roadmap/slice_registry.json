@@ -9,14 +9,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AEX-01'); assert row['slice_id']=='AEX-01' and row['execution_type']=='validation'\"",
-        "pytest tests/test_execution_hierarchy.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='aex01_admission')\"",
+        "pytest tests/test_prompt_queue_execution.py -q"
       ],
       "success_criteria": [
         "execution hierarchy validation passes",
         "slice registry validation tests pass with exit code 0"
       ],
-      "implementation_notes": "Execute AEX-01 by loading the canonical slice registry, resolving the AEX-01 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AEX-01 executes `python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='aex01_admission')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_prompt_queue_execution.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -44,14 +44,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AEX-02'); assert row['slice_id']=='AEX-02' and row['execution_type']=='validation'\"",
-        "pytest tests/test_execution_hierarchy.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; load_governed_slice_registry_artifacts('contracts/roadmap/slice_registry.json','contracts/roadmap/roadmap_structure.json')\"",
+        "pytest tests/test_prompt_queue_execution_gating.py -q"
       ],
       "success_criteria": [
         "execution hierarchy validation passes",
         "slice registry validation tests pass with exit code 0"
       ],
-      "implementation_notes": "Execute AEX-02 by loading the canonical slice registry, resolving the AEX-02 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AEX-02 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; load_governed_slice_registry_artifacts('contracts/roadmap/slice_registry.json','contracts/roadmap/roadmap_structure.json')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_prompt_queue_execution_gating.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -78,14 +78,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "repair",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AFX-01'); assert row['slice_id']=='AFX-01' and row['execution_type']=='repair'\"",
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='repair_required', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record={'artifact_type':'failure_pattern_record','classification':'retry'}, eval_summary=None, risk_signals=None, roadmap_state={'active_batch_id':'AFX-01'})\"",
         "pytest tests/test_prompt_queue_execution_loop.py -q"
       ],
       "success_criteria": [
         "replay execution command exits with code 0",
         "prompt queue replay exits with code 0"
       ],
-      "implementation_notes": "Execute AFX-01 by loading the canonical slice registry, resolving the AFX-01 row, and enforcing repair command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AFX-01 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='repair_required', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record={'artifact_type':'failure_pattern_record','classification':'retry'}, eval_summary=None, risk_signals=None, roadmap_state={'active_batch_id':'AFX-01'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_prompt_queue_execution_loop.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -112,14 +112,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "repair",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AFX-02'); assert row['slice_id']=='AFX-02' and row['execution_type']=='repair'\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='replay', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record={'artifact_type':'failure_pattern_record','classification':'replay'}, eval_summary=None, risk_signals=None, roadmap_state={'active_batch_id':'AFX-02'})\"",
+        "pytest tests/test_review_fix_execution_loop.py -q"
       ],
       "success_criteria": [
         "replay execution command exits with code 0",
         "prompt queue replay exits with code 0"
       ],
-      "implementation_notes": "Execute AFX-02 by loading the canonical slice registry, resolving the AFX-02 row, and enforcing repair command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AFX-02 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='replay', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record={'artifact_type':'failure_pattern_record','classification':'replay'}, eval_summary=None, risk_signals=None, roadmap_state={'active_batch_id':'AFX-02'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_review_fix_execution_loop.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -147,14 +147,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "repair",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AFX-03'); assert row['slice_id']=='AFX-03' and row['execution_type']=='repair'\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='repair_plan', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record={'artifact_type':'failure_pattern_record','classification':'repair_plan'}, eval_summary=None, risk_signals=None, roadmap_state={'active_batch_id':'AFX-03'})\"",
+        "pytest tests/test_fix_roadmap_generator.py -q"
       ],
       "success_criteria": [
         "replay execution command exits with code 0",
         "prompt queue replay exits with code 0"
       ],
-      "implementation_notes": "Execute AFX-03 by loading the canonical slice registry, resolving the AFX-03 row, and enforcing repair command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AFX-03 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='repair_plan', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record={'artifact_type':'failure_pattern_record','classification':'repair_plan'}, eval_summary=None, risk_signals=None, roadmap_state={'active_batch_id':'AFX-03'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_fix_roadmap_generator.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -181,14 +181,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "repair",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AFX-04'); assert row['slice_id']=='AFX-04' and row['execution_type']=='repair'\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='gate', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record={'artifact_type':'failure_pattern_record','classification':'gate'}, eval_summary=None, risk_signals={'approval_present':True}, roadmap_state={'active_batch_id':'AFX-04'})\"",
+        "pytest tests/test_prompt_queue_execution_gating.py -q"
       ],
       "success_criteria": [
         "replay execution command exits with code 0",
         "prompt queue replay exits with code 0"
       ],
-      "implementation_notes": "Execute AFX-04 by loading the canonical slice registry, resolving the AFX-04 row, and enforcing repair command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AFX-04 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='gate', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record={'artifact_type':'failure_pattern_record','classification':'gate'}, eval_summary=None, risk_signals={'approval_present':True}, roadmap_state={'active_batch_id':'AFX-04'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_prompt_queue_execution_gating.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -215,14 +215,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "repair",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AFX-05'); assert row['slice_id']=='AFX-05' and row['execution_type']=='repair'\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='post_repair', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record={'artifact_type':'failure_pattern_record','classification':'post_repair'}, eval_summary=None, risk_signals=None, roadmap_state={'active_batch_id':'AFX-05'})\"",
+        "pytest tests/test_prompt_queue_post_execution.py -q"
       ],
       "success_criteria": [
         "replay execution command exits with code 0",
         "prompt queue replay exits with code 0"
       ],
-      "implementation_notes": "Execute AFX-05 by loading the canonical slice registry, resolving the AFX-05 row, and enforcing repair command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AFX-05 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='post_repair', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record={'artifact_type':'failure_pattern_record','classification':'post_repair'}, eval_summary=None, risk_signals=None, roadmap_state={'active_batch_id':'AFX-05'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_prompt_queue_post_execution.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -249,14 +249,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "repair",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AFX-GATE-01'); assert row['slice_id']=='AFX-GATE-01' and row['execution_type']=='repair'\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"import json; from spectrum_systems.modules.review_fix_execution_loop import validate_review_fix_execution_request_artifact; validate_review_fix_execution_request_artifact(json.load(open('contracts/examples/review_fix_execution_request_artifact.json')))\"",
+        "pytest tests/test_review_fix_execution_loop.py -q"
       ],
       "success_criteria": [
         "replay execution command exits with code 0",
         "prompt queue replay exits with code 0"
       ],
-      "implementation_notes": "Execute AFX-GATE-01 by loading the canonical slice registry, resolving the AFX-GATE-01 row, and enforcing repair command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AFX-GATE-01 executes `python -c \"import json; from spectrum_systems.modules.review_fix_execution_loop import validate_review_fix_execution_request_artifact; validate_review_fix_execution_request_artifact(json.load(open('contracts/examples/review_fix_execution_request_artifact.json')))\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_review_fix_execution_loop.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -283,14 +283,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "repair",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AFX-RT-01'); assert row['slice_id']=='AFX-RT-01' and row['execution_type']=='repair'\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='red_team_repair', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record={'artifact_type':'failure_pattern_record','classification':'red_team'}, eval_summary=None, risk_signals={'risk_level':'critical'}, roadmap_state={'active_batch_id':'AFX-RT-01'})\"",
+        "pytest tests/test_prompt_queue_execution_gating.py -q"
       ],
       "success_criteria": [
         "replay execution command exits with code 0",
         "prompt queue replay exits with code 0"
       ],
-      "implementation_notes": "Execute AFX-RT-01 by loading the canonical slice registry, resolving the AFX-RT-01 row, and enforcing repair command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AFX-RT-01 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='red_team_repair', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record={'artifact_type':'failure_pattern_record','classification':'red_team'}, eval_summary=None, risk_signals={'risk_level':'critical'}, roadmap_state={'active_batch_id':'AFX-RT-01'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_prompt_queue_execution_gating.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -317,14 +317,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AUT-01'); assert row['slice_id']=='AUT-01' and row['execution_type']=='validation'\"",
-        "pytest tests/test_pqx_slice_runner.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_selector import load_active_roadmap; load_active_roadmap('contracts/examples/system_roadmap.json')\"",
+        "pytest tests/test_roadmap_selector.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Execute AUT-01 by loading the canonical slice registry, resolving the AUT-01 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AUT-01 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_selector import load_active_roadmap; load_active_roadmap('contracts/examples/system_roadmap.json')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_selector.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -351,14 +351,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AUT-02'); assert row['slice_id']=='AUT-02' and row['execution_type']=='validation'\"",
-        "pytest tests/test_pqx_slice_runner.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_checkpoint; create_checkpoint(cycle_id='aut02', stage_id='state_machine', context={'mode':'AUT'})\"",
+        "pytest tests/test_hnx_execution_state.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Execute AUT-02 by loading the canonical slice registry, resolving the AUT-02 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AUT-02 executes `python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_checkpoint; create_checkpoint(cycle_id='aut02', stage_id='state_machine', context={'mode':'AUT'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_hnx_execution_state.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -385,14 +385,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AUT-03'); assert row['slice_id']=='AUT-03' and row['execution_type']=='validation'\"",
-        "pytest tests/test_pqx_slice_runner.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.roadmap_selector import select_next_batch; select_next_batch(json.load(open('contracts/examples/system_roadmap.json')), {'control_loop':{'allow':True},'required_signals':['allow']})\"",
+        "pytest tests/test_roadmap_selector.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Execute AUT-03 by loading the canonical slice registry, resolving the AUT-03 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AUT-03 executes `python -c \"import json; from spectrum_systems.modules.runtime.roadmap_selector import select_next_batch; select_next_batch(json.load(open('contracts/examples/system_roadmap.json')), {'control_loop':{'allow':True},'required_signals':['allow']})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_selector.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -419,14 +419,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AUT-04'); assert row['slice_id']=='AUT-04' and row['execution_type']=='validation'\"",
-        "pytest tests/test_pqx_slice_runner.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals={'loop':'continuous'}, roadmap_state={'active_batch_id':'AUT-04'})\"",
+        "pytest tests/test_run_ops02_scheduled_autonomous_execution.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Execute AUT-04 by loading the canonical slice registry, resolving the AUT-04 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AUT-04 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal=None, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals={'loop':'continuous'}, roadmap_state={'active_batch_id':'AUT-04'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_run_ops02_scheduled_autonomous_execution.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -453,14 +453,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AUT-05'); assert row['slice_id']=='AUT-05' and row['execution_type']=='validation'\"",
-        "pytest tests/test_pqx_slice_runner.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; build_review_roadmap({'review_id':'AUT-05','summary':'auto-review trigger','findings':[]})\"",
+        "pytest tests/test_review_roadmap_generator.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Execute AUT-05 by loading the canonical slice registry, resolving the AUT-05 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AUT-05 executes `python -c \"from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; build_review_roadmap({'review_id':'AUT-05','summary':'auto-review trigger','findings':[]})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_review_roadmap_generator.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -487,14 +487,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AUT-06'); assert row['slice_id']=='AUT-06' and row['execution_type']=='validation'\"",
-        "pytest tests/test_pqx_slice_runner.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_selector import validate_batch_readiness; validate_batch_readiness({'batch_id':'AUT-06','steps':[{'step_id':'S1','status':'ready'}]}, {'control_loop':{'allow':True},'required_signals':['allow']})\"",
+        "pytest tests/test_roadmap_selector.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Execute AUT-06 by loading the canonical slice registry, resolving the AUT-06 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AUT-06 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_selector import validate_batch_readiness; validate_batch_readiness({'batch_id':'AUT-06','steps':[{'step_id':'S1','status':'ready'}]}, {'control_loop':{'allow':True},'required_signals':['allow']})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_selector.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -521,14 +521,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AUT-07'); assert row['slice_id']=='AUT-07' and row['execution_type']=='validation'\"",
-        "pytest tests/test_pqx_slice_runner.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='aut07_no_pqx_without_aex_tlc_tpa')\"",
+        "pytest tests/test_execution_hierarchy.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Execute AUT-07 by loading the canonical slice registry, resolving the AUT-07 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AUT-07 executes `python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='aut07_no_pqx_without_aex_tlc_tpa')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_execution_hierarchy.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -555,14 +555,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AUT-08'); assert row['slice_id']=='AUT-08' and row['execution_type']=='validation'\"",
-        "pytest tests/test_pqx_slice_runner.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'scaling':'bounded'}, program_drift_signal=None, failure_pattern_record=None, eval_summary={'budget':'healthy'}, risk_signals={'risk':'low'}, roadmap_state={'completed_batches':1})\"",
+        "pytest tests/test_roadmap_multi_batch_executor.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Execute AUT-08 by loading the canonical slice registry, resolving the AUT-08 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AUT-08 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'scaling':'bounded'}, program_drift_signal=None, failure_pattern_record=None, eval_summary={'budget':'healthy'}, risk_signals={'risk':'low'}, roadmap_state={'completed_batches':1})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_multi_batch_executor.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -589,14 +589,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AUT-09'); assert row['slice_id']=='AUT-09' and row['execution_type']=='validation'\"",
-        "pytest tests/test_pqx_slice_runner.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import validate_resume; validate_resume(resume_request={'resume':True,'reason':'operator'}, checkpoint_record={'cycle_id':'aut09','stage_id':'resume_entrypoint'})\"",
+        "pytest tests/test_hnx_execution_state.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Execute AUT-09 by loading the canonical slice registry, resolving the AUT-09 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AUT-09 executes `python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import validate_resume; validate_resume(resume_request={'resume':True,'reason':'operator'}, checkpoint_record={'cycle_id':'aut09','stage_id':'resume_entrypoint'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_hnx_execution_state.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -623,14 +623,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='AUT-10'); assert row['slice_id']=='AUT-10' and row['execution_type']=='validation'\"",
-        "pytest tests/test_pqx_slice_runner.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; build_review_roadmap({'review_id':'AUT-10','summary':'roadmap projection','findings':[{'id':'P1','severity':'info'}]})\"",
+        "pytest tests/test_review_roadmap_generator.py -q"
       ],
       "success_criteria": [
         "autonomous validation run exits with code 0",
         "runtime validation exits with code 0"
       ],
-      "implementation_notes": "Execute AUT-10 by loading the canonical slice registry, resolving the AUT-10 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: AUT-10 executes `python -c \"from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; build_review_roadmap({'review_id':'AUT-10','summary':'roadmap projection','findings':[{'id':'P1','severity':'info'}]})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_review_roadmap_generator.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -657,14 +657,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='BRF-01'); assert row['slice_id']=='BRF-01' and row['execution_type']=='validation'\"",
-        "pytest tests/test_contract_preflight.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'batch_flow':'enforced'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'active_batch_id':'BRF-01'})\"",
+        "pytest tests/test_roadmap_multi_batch_executor.py -q"
       ],
       "success_criteria": [
         "prompt queue execution loop tests pass",
         "review artifact validation reports no failures"
       ],
-      "implementation_notes": "Execute BRF-01 by loading the canonical slice registry, resolving the BRF-01 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: BRF-01 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'batch_flow':'enforced'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'active_batch_id':'BRF-01'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_multi_batch_executor.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -691,14 +691,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='BRF-ENFORCE-01'); assert row['slice_id']=='BRF-ENFORCE-01' and row['execution_type']=='validation'\"",
-        "pytest tests/test_contract_preflight.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'progression':'strict'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'active_batch_id':'BRF-ENFORCE-01'})\"",
+        "pytest tests/test_roadmap_execution_loop_validator.py -q"
       ],
       "success_criteria": [
         "prompt queue execution loop tests pass",
         "review artifact validation reports no failures"
       ],
-      "implementation_notes": "Execute BRF-ENFORCE-01 by loading the canonical slice registry, resolving the BRF-ENFORCE-01 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: BRF-ENFORCE-01 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'progression':'strict'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'active_batch_id':'BRF-ENFORCE-01'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_execution_loop_validator.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -726,14 +726,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='GOV-A-01'); assert row['slice_id']=='GOV-A-01' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; build_review_roadmap({'review_id':'GOV-A-01','summary':'review trigger enforcement','findings':[]})\"",
+        "pytest tests/test_prompt_queue_execution_gating.py -q"
       ],
       "success_criteria": [
         "policy enforcement integrity validation exits with code 0",
         "control decision consistency validation exits with code 0"
       ],
-      "implementation_notes": "Execute GOV-A-01 by loading the canonical slice registry, resolving the GOV-A-01 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: GOV-A-01 executes `python -c \"import json; from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; build_review_roadmap({'review_id':'GOV-A-01','summary':'review trigger enforcement','findings':[]})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_prompt_queue_execution_gating.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -760,14 +760,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='GOV-A-02'); assert row['slice_id']=='GOV-A-02' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"import json; from spectrum_systems.modules.review_fix_execution_loop import validate_review_fix_execution_request_artifact; validate_review_fix_execution_request_artifact(json.load(open('contracts/examples/review_fix_execution_request_artifact.json')))\"",
+        "pytest tests/test_review_fix_execution_loop.py -q"
       ],
       "success_criteria": [
         "policy enforcement integrity validation exits with code 0",
         "control decision consistency validation exits with code 0"
       ],
-      "implementation_notes": "Execute GOV-A-02 by loading the canonical slice registry, resolving the GOV-A-02 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: GOV-A-02 executes `python -c \"import json; from spectrum_systems.modules.review_fix_execution_loop import validate_review_fix_execution_request_artifact; validate_review_fix_execution_request_artifact(json.load(open('contracts/examples/review_fix_execution_request_artifact.json')))\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_review_fix_execution_loop.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -794,14 +794,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='GOV-B-01'); assert row['slice_id']=='GOV-B-01' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"import json; from spectrum_systems.modules.review_fix_execution_loop import validate_review_fix_execution_result_artifact; validate_review_fix_execution_result_artifact(json.load(open('contracts/examples/review_fix_execution_result_artifact.json')))\"",
+        "pytest tests/test_review_fix_execution_loop.py -q"
       ],
       "success_criteria": [
         "policy enforcement integrity validation exits with code 0",
         "control decision consistency validation exits with code 0"
       ],
-      "implementation_notes": "Execute GOV-B-01 by loading the canonical slice registry, resolving the GOV-B-01 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: GOV-B-01 executes `python -c \"import json; from spectrum_systems.modules.review_fix_execution_loop import validate_review_fix_execution_result_artifact; validate_review_fix_execution_result_artifact(json.load(open('contracts/examples/review_fix_execution_result_artifact.json')))\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_review_fix_execution_loop.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -828,14 +828,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='GOV-B-02'); assert row['slice_id']=='GOV-B-02' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.pqx_execution_authority import compute_authority_integrity; compute_authority_integrity(queue_id='Q1', work_item_id='W1', step_id='S1', trace={'trace_id':'gov-b-02'}, issued_at='2026-04-10T00:00:00Z', issuer='CDE', authority_scope='closure', source_refs=['artifact://closure'])\"",
+        "pytest tests/test_prompt_queue_execution_integration.py -q"
       ],
       "success_criteria": [
         "policy enforcement integrity validation exits with code 0",
         "control decision consistency validation exits with code 0"
       ],
-      "implementation_notes": "Execute GOV-B-02 by loading the canonical slice registry, resolving the GOV-B-02 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: GOV-B-02 executes `python -c \"from spectrum_systems.modules.runtime.pqx_execution_authority import compute_authority_integrity; compute_authority_integrity(queue_id='Q1', work_item_id='W1', step_id='S1', trace={'trace_id':'gov-b-02'}, issued_at='2026-04-10T00:00:00Z', issuer='CDE', authority_scope='closure', source_refs=['artifact://closure'])\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_prompt_queue_execution_integration.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -862,14 +862,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='GOV-C-01'); assert row['slice_id']=='GOV-C-01' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_selector import validate_roadmap_against_program; validate_roadmap_against_program({'batches':[{'batch_id':'B1'}]}, {'required_batch_ids':['B1']})\"",
+        "pytest tests/test_review_roadmap_generator.py -q"
       ],
       "success_criteria": [
         "policy enforcement integrity validation exits with code 0",
         "control decision consistency validation exits with code 0"
       ],
-      "implementation_notes": "Execute GOV-C-01 by loading the canonical slice registry, resolving the GOV-C-01 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: GOV-C-01 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_selector import validate_roadmap_against_program; validate_roadmap_against_program({'batches':[{'batch_id':'B1'}]}, {'required_batch_ids':['B1']})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_review_roadmap_generator.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -896,14 +896,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='GOV-C-02'); assert row['slice_id']=='GOV-C-02' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='gov-c-02_repair_planning_purity')\"",
+        "pytest tests/test_fix_roadmap_generator.py -q"
       ],
       "success_criteria": [
         "policy enforcement integrity validation exits with code 0",
         "control decision consistency validation exits with code 0"
       ],
-      "implementation_notes": "Execute GOV-C-02 by loading the canonical slice registry, resolving the GOV-C-02 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: GOV-C-02 executes `python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='gov-c-02_repair_planning_purity')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_fix_roadmap_generator.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -930,14 +930,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='GOV-D-01'); assert row['slice_id']=='GOV-D-01' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.system_integration_validator import validate_core_system_integration; validate_core_system_integration(json.load(open('contracts/examples/system_registry_artifact.json')))\"",
+        "pytest tests/test_system_integration_validator.py -q"
       ],
       "success_criteria": [
         "policy enforcement integrity validation exits with code 0",
         "control decision consistency validation exits with code 0"
       ],
-      "implementation_notes": "Execute GOV-D-01 by loading the canonical slice registry, resolving the GOV-D-01 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: GOV-D-01 executes `python -c \"import json; from spectrum_systems.modules.runtime.system_integration_validator import validate_core_system_integration; validate_core_system_integration(json.load(open('contracts/examples/system_registry_artifact.json')))\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_system_integration_validator.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -964,14 +964,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='GOV-D-02'); assert row['slice_id']=='GOV-D-02' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.roadmap_authorizer import validate_roadmap_execution_authorization; validate_roadmap_execution_authorization(json.load(open('contracts/examples/roadmap_execution_authorization.json')))\"",
+        "pytest tests/test_roadmap_authorizer.py -q"
       ],
       "success_criteria": [
         "policy enforcement integrity validation exits with code 0",
         "control decision consistency validation exits with code 0"
       ],
-      "implementation_notes": "Execute GOV-D-02 by loading the canonical slice registry, resolving the GOV-D-02 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: GOV-D-02 executes `python -c \"import json; from spectrum_systems.modules.runtime.roadmap_authorizer import validate_roadmap_execution_authorization; validate_roadmap_execution_authorization(json.load(open('contracts/examples/roadmap_execution_authorization.json')))\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_authorizer.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -998,14 +998,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='GOV-E-01'); assert row['slice_id']=='GOV-E-01' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.adaptive_execution_observability import build_adaptive_execution_observability; build_adaptive_execution_observability([json.load(open('runs/RUN-01/roadmap_execution_report.json'))])\"",
+        "pytest tests/test_adaptive_execution_observability.py -q"
       ],
       "success_criteria": [
         "policy enforcement integrity validation exits with code 0",
         "control decision consistency validation exits with code 0"
       ],
-      "implementation_notes": "Execute GOV-E-01 by loading the canonical slice registry, resolving the GOV-E-01 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: GOV-E-01 executes `python -c \"import json; from spectrum_systems.modules.runtime.adaptive_execution_observability import build_adaptive_execution_observability; build_adaptive_execution_observability([json.load(open('runs/RUN-01/roadmap_execution_report.json'))])\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_adaptive_execution_observability.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1032,14 +1032,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='GOV-E-02'); assert row['slice_id']=='GOV-E-02' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.adaptive_execution_observability import build_adaptive_execution_policy_review; obs=build_adaptive_execution_observability([json.load(open('runs/RUN-01/roadmap_execution_report.json'))]); build_adaptive_execution_policy_review(obs)\"",
+        "pytest tests/test_adaptive_execution_observability.py -q"
       ],
       "success_criteria": [
         "policy enforcement integrity validation exits with code 0",
         "control decision consistency validation exits with code 0"
       ],
-      "implementation_notes": "Execute GOV-E-02 by loading the canonical slice registry, resolving the GOV-E-02 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: GOV-E-02 executes `python -c \"import json; from spectrum_systems.modules.runtime.adaptive_execution_observability import build_adaptive_execution_policy_review; obs=build_adaptive_execution_observability([json.load(open('runs/RUN-01/roadmap_execution_report.json'))]); build_adaptive_execution_policy_review(obs)\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_adaptive_execution_observability.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1066,14 +1066,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='MBRF-01'); assert row['slice_id']=='MBRF-01' and row['execution_type']=='validation'\"",
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'multi_batch':'enabled'}, program_drift_signal=None, failure_pattern_record=None, eval_summary={'throughput':'scaled'}, risk_signals=None, roadmap_state={'completed_batches':3})\"",
         "pytest tests/test_roadmap_multi_batch_executor.py -q"
       ],
       "success_criteria": [
         "prompt queue execution loop tests pass",
         "review artifact validation reports no failures"
       ],
-      "implementation_notes": "Execute MBRF-01 by loading the canonical slice registry, resolving the MBRF-01 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: MBRF-01 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'multi_batch':'enabled'}, program_drift_signal=None, failure_pattern_record=None, eval_summary={'throughput':'scaled'}, risk_signals=None, roadmap_state={'completed_batches':3})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_multi_batch_executor.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1100,14 +1100,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='PFG-01'); assert row['slice_id']=='PFG-01' and row['execution_type']=='validation'\"",
-        "pytest tests/test_contract_preflight.py -q"
+        "python -c \"from spectrum_systems.orchestration.roadmap_eligibility import evaluate_roadmap_eligibility_to_path; evaluate_roadmap_eligibility_to_path(roadmap_path='contracts/examples/system_roadmap.json', output_path='/tmp/pfg01.json')\"",
+        "pytest tests/test_roadmap_eligibility.py -q"
       ],
       "success_criteria": [
         "contract preflight exits with code 0",
         "review artifact validation exits with code 0"
       ],
-      "implementation_notes": "Execute PFG-01 by loading the canonical slice registry, resolving the PFG-01 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: PFG-01 executes `python -c \"from spectrum_systems.orchestration.roadmap_eligibility import evaluate_roadmap_eligibility_to_path; evaluate_roadmap_eligibility_to_path(roadmap_path='contracts/examples/system_roadmap.json', output_path='/tmp/pfg01.json')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_eligibility.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1135,14 +1135,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='PFG-02'); assert row['slice_id']=='PFG-02' and row['execution_type']=='validation'\"",
-        "pytest tests/test_contract_preflight.py -q"
+        "python -c \"from spectrum_systems.orchestration.roadmap_eligibility import evaluate_roadmap_eligibility_to_path; evaluate_roadmap_eligibility_to_path(roadmap_path='contracts/examples/system_roadmap.json', output_path='/tmp/pfg02.json')\"",
+        "pytest tests/test_roadmap_eligibility.py -q"
       ],
       "success_criteria": [
         "contract preflight exits with code 0",
         "review artifact validation exits with code 0"
       ],
-      "implementation_notes": "Execute PFG-02 by loading the canonical slice registry, resolving the PFG-02 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: PFG-02 executes `python -c \"from spectrum_systems.orchestration.roadmap_eligibility import evaluate_roadmap_eligibility_to_path; evaluate_roadmap_eligibility_to_path(roadmap_path='contracts/examples/system_roadmap.json', output_path='/tmp/pfg02.json')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_eligibility.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1169,14 +1169,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='PRG-RGM-01'); assert row['slice_id']=='PRG-RGM-01' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.roadmap_selector import validate_roadmap_against_program; validate_roadmap_against_program(json.load(open('contracts/examples/system_roadmap.json')), {'required_batch_ids':['BATCH-001']})\"",
+        "pytest tests/test_roadmap_authority.py -q"
       ],
       "success_criteria": [
         "policy enforcement integrity validation exits with code 0",
         "control decision consistency validation exits with code 0"
       ],
-      "implementation_notes": "Execute PRG-RGM-01 by loading the canonical slice registry, resolving the PRG-RGM-01 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: PRG-RGM-01 executes `python -c \"import json; from spectrum_systems.modules.runtime.roadmap_selector import validate_roadmap_against_program; validate_roadmap_against_program(json.load(open('contracts/examples/system_roadmap.json')), {'required_batch_ids':['BATCH-001']})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_authority.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1204,14 +1204,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='PRG-RGM-02'); assert row['slice_id']=='PRG-RGM-02' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_prompt_queue_execution_loop.py -q"
+        "python scripts/check_roadmap_authority.py",
+        "pytest tests/test_roadmap_selector.py -q"
       ],
       "success_criteria": [
         "policy enforcement integrity validation exits with code 0",
         "control decision consistency validation exits with code 0"
       ],
-      "implementation_notes": "Execute PRG-RGM-02 by loading the canonical slice registry, resolving the PRG-RGM-02 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: PRG-RGM-02 executes `python scripts/check_roadmap_authority.py` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_selector.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1238,14 +1238,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='RDX-EXEC-01'); assert row['slice_id']=='RDX-EXEC-01' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_execution_hierarchy.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.roadmap_executor import validate_roadmap_progress_update; validate_roadmap_progress_update(json.load(open('contracts/examples/roadmap_progress_update.json')))\"",
+        "pytest tests/test_roadmap_executor.py -q"
       ],
       "success_criteria": [
         "roadmap authority validation exits with code 0",
         "roadmap eligibility evaluation exits with code 0"
       ],
-      "implementation_notes": "Execute RDX-EXEC-01 by loading the canonical slice registry, resolving the RDX-EXEC-01 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: RDX-EXEC-01 executes `python -c \"import json; from spectrum_systems.modules.runtime.roadmap_executor import validate_roadmap_progress_update; validate_roadmap_progress_update(json.load(open('contracts/examples/roadmap_progress_update.json')))\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_executor.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1272,14 +1272,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='RDX-EXEC-02'); assert row['slice_id']=='RDX-EXEC-02' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_execution_hierarchy.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.roadmap_authorizer import validate_roadmap_execution_authorization; validate_roadmap_execution_authorization(json.load(open('contracts/examples/roadmap_execution_authorization.json')))\"",
+        "pytest tests/test_roadmap_authorizer.py -q"
       ],
       "success_criteria": [
         "roadmap authority validation exits with code 0",
         "roadmap eligibility evaluation exits with code 0"
       ],
-      "implementation_notes": "Execute RDX-EXEC-02 by loading the canonical slice registry, resolving the RDX-EXEC-02 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: RDX-EXEC-02 executes `python -c \"import json; from spectrum_systems.modules.runtime.roadmap_authorizer import validate_roadmap_execution_authorization; validate_roadmap_execution_authorization(json.load(open('contracts/examples/roadmap_execution_authorization.json')))\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_authorizer.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1307,14 +1307,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='RDX-EXEC-03'); assert row['slice_id']=='RDX-EXEC-03' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_execution_hierarchy.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.roadmap_execution_loop_validator import validate_single_batch_execution_loop; before=json.load(open('runs/BATCH-OPS-01/inputs/roadmap_artifact.json')); after=json.load(open('runs/BATCH-OPS-01/system_cycle/roadmap_updated.json')); validate_single_batch_execution_loop(before, after, {'artifact_type':'roadmap_selection_result','selected_batch_id':'BATCH-OPS-01'})\"",
+        "pytest tests/test_roadmap_execution.py -q"
       ],
       "success_criteria": [
         "roadmap authority validation exits with code 0",
         "roadmap eligibility evaluation exits with code 0"
       ],
-      "implementation_notes": "Execute RDX-EXEC-03 by loading the canonical slice registry, resolving the RDX-EXEC-03 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: RDX-EXEC-03 executes `python -c \"import json; from spectrum_systems.modules.runtime.roadmap_execution_loop_validator import validate_single_batch_execution_loop; before=json.load(open('runs/BATCH-OPS-01/inputs/roadmap_artifact.json')); after=json.load(open('runs/BATCH-OPS-01/system_cycle/roadmap_updated.json')); validate_single_batch_execution_loop(before, after, {'artifact_type':'roadmap_selection_result','selected_batch_id':'BATCH-OPS-01'})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_execution.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1342,14 +1342,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='RDX-EXEC-04'); assert row['slice_id']=='RDX-EXEC-04' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_execution_hierarchy.py -q"
+        "python scripts/run_enforced_execution.py --bundle runs/RUN-01",
+        "pytest tests/test_roadmap_trigger_pipeline.py -q"
       ],
       "success_criteria": [
         "roadmap authority validation exits with code 0",
         "roadmap eligibility evaluation exits with code 0"
       ],
-      "implementation_notes": "Execute RDX-EXEC-04 by loading the canonical slice registry, resolving the RDX-EXEC-04 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: RDX-EXEC-04 executes `python scripts/run_enforced_execution.py --bundle runs/RUN-01` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_trigger_pipeline.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1376,14 +1376,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='RDX-REG-01'); assert row['slice_id']=='RDX-REG-01' and row['execution_type']=='governance' and structure['umbrellas']\"",
-        "pytest tests/test_execution_hierarchy.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; load_governed_slice_registry_artifacts('contracts/roadmap/slice_registry.json','contracts/roadmap/roadmap_structure.json')\"",
+        "pytest tests/test_roadmap_slice_registry.py -q"
       ],
       "success_criteria": [
         "roadmap authority validation exits with code 0",
         "roadmap eligibility evaluation exits with code 0"
       ],
-      "implementation_notes": "Execute RDX-REG-01 by loading the canonical slice registry, resolving the RDX-REG-01 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: RDX-REG-01 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; load_governed_slice_registry_artifacts('contracts/roadmap/slice_registry.json','contracts/roadmap/roadmap_structure.json')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_slice_registry.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1411,14 +1411,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='RDX-REG-02'); assert row['slice_id']=='RDX-REG-02' and row['execution_type']=='governance' and structure['umbrellas']\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='rdx_reg_02_cardinality')\"",
         "pytest tests/test_execution_hierarchy.py -q"
       ],
       "success_criteria": [
         "roadmap authority validation exits with code 0",
         "roadmap eligibility evaluation exits with code 0"
       ],
-      "implementation_notes": "Execute RDX-REG-02 by loading the canonical slice registry, resolving the RDX-REG-02 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: RDX-REG-02 executes `python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='rdx_reg_02_cardinality')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_execution_hierarchy.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1445,14 +1445,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-ADV-01'); assert row['slice_id']=='SVA-ADV-01' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.validator_engine import list_registered_validators; list_registered_validators()\"",
+        "pytest tests/test_validator_engine.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-ADV-01 by loading the canonical slice registry, resolving the SVA-ADV-01 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-ADV-01 executes `python -c \"from spectrum_systems.modules.runtime.validator_engine import list_registered_validators; list_registered_validators()\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_validator_engine.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1480,14 +1480,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-ADV-02'); assert row['slice_id']=='SVA-ADV-02' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.run_bundle_validator import validate_run_bundle; validate_run_bundle('runs/RUN-01')\"",
+        "pytest tests/test_run_bundle_validator.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-ADV-02 by loading the canonical slice registry, resolving the SVA-ADV-02 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-ADV-02 executes `python -c \"import json; from spectrum_systems.modules.runtime.run_bundle_validator import validate_run_bundle; validate_run_bundle('runs/RUN-01')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_run_bundle_validator.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1515,14 +1515,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-ADV-03'); assert row['slice_id']=='SVA-ADV-03' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"import json; from spectrum_systems.modules.runtime.system_integration_validator import validate_core_system_integration; validate_core_system_integration(json.load(open('contracts/examples/system_registry_artifact.json')))\"",
+        "pytest tests/test_system_integration_validator.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-ADV-03 by loading the canonical slice registry, resolving the SVA-ADV-03 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-ADV-03 executes `python -c \"import json; from spectrum_systems.modules.runtime.system_integration_validator import validate_core_system_integration; validate_core_system_integration(json.load(open('contracts/examples/system_registry_artifact.json')))\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_system_integration_validator.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1550,14 +1550,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-ADV-04'); assert row['slice_id']=='SVA-ADV-04' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.system_registry_enforcer import validate_system_action; validate_system_action('CDE','enforce','PQX')\"",
+        "pytest tests/test_system_registry_boundaries.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-ADV-04 by loading the canonical slice registry, resolving the SVA-ADV-04 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-ADV-04 executes `python -c \"from spectrum_systems.modules.runtime.system_registry_enforcer import validate_system_action; validate_system_action('CDE','enforce','PQX')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_system_registry_boundaries.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1585,14 +1585,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-DRIFT-01'); assert row['slice_id']=='SVA-DRIFT-01' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D1','drift_score':0.7}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-01')\"",
+        "pytest tests/test_adaptive_execution_observability.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-DRIFT-01 by loading the canonical slice registry, resolving the SVA-DRIFT-01 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-DRIFT-01 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D1','drift_score':0.7}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-01')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_adaptive_execution_observability.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1619,14 +1619,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-DRIFT-02'); assert row['slice_id']=='SVA-DRIFT-02' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D2','drift_score':0.8}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-02')\"",
+        "pytest tests/test_roadmap_trigger_pipeline.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-DRIFT-02 by loading the canonical slice registry, resolving the SVA-DRIFT-02 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-DRIFT-02 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D2','drift_score':0.8}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-02')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_trigger_pipeline.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1653,14 +1653,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-DRIFT-03'); assert row['slice_id']=='SVA-DRIFT-03' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D3','drift_score':0.9}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-03')\"",
+        "pytest tests/test_roadmap_signal_steering.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-DRIFT-03 by loading the canonical slice registry, resolving the SVA-DRIFT-03 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-DRIFT-03 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D3','drift_score':0.9}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-03')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_signal_steering.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1687,14 +1687,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-DRIFT-04'); assert row['slice_id']=='SVA-DRIFT-04' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D4','drift_score':0.95}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-04')\"",
+        "pytest tests/test_policy_registry.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-DRIFT-04 by loading the canonical slice registry, resolving the SVA-DRIFT-04 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-DRIFT-04 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_signal_steering import build_drift_detection_record; build_drift_detection_record(findings_input=[{'finding_id':'D4','drift_score':0.95}], created_at='2026-04-10T00:00:00Z', trace_id='SVA-DRIFT-04')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_policy_registry.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1721,14 +1721,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-LOAD-01'); assert row['slice_id']=='SVA-LOAD-01' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test01'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':1})\"",
+        "pytest tests/test_roadmap_multi_batch_executor.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-LOAD-01 by loading the canonical slice registry, resolving the SVA-LOAD-01 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-LOAD-01 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test01'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':1})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_multi_batch_executor.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1756,14 +1756,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-LOAD-02'); assert row['slice_id']=='SVA-LOAD-02' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test02'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':2})\"",
+        "pytest tests/test_adaptive_execution_observability.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-LOAD-02 by loading the canonical slice registry, resolving the SVA-LOAD-02 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-LOAD-02 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test02'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':2})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_adaptive_execution_observability.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1791,14 +1791,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-LOAD-03'); assert row['slice_id']=='SVA-LOAD-03' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test03'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':3})\"",
+        "pytest tests/test_roadmap_signal_generation.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-LOAD-03 by loading the canonical slice registry, resolving the SVA-LOAD-03 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-LOAD-03 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test03'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':3})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_signal_generation.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1826,14 +1826,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-LOAD-04'); assert row['slice_id']=='SVA-LOAD-04' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test04'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':4})\"",
+        "pytest tests/test_roadmap_slice_registry.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-LOAD-04 by loading the canonical slice registry, resolving the SVA-LOAD-04 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-LOAD-04 executes `python -c \"from spectrum_systems.modules.runtime.roadmap_multi_batch_executor import should_continue_execution; should_continue_execution(last_control_decision='allow', program_constraint_signal={'load':'test04'}, program_drift_signal=None, failure_pattern_record=None, eval_summary=None, risk_signals=None, roadmap_state={'batch_load':4})\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_slice_registry.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1861,14 +1861,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-REC-01'); assert row['slice_id']=='SVA-REC-01' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-01', stage_id='recovery', wait_reason='checkpoint_restore')\"",
+        "pytest tests/test_hnx_execution_state.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-REC-01 by loading the canonical slice registry, resolving the SVA-REC-01 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-REC-01 executes `python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-01', stage_id='recovery', wait_reason='checkpoint_restore')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_hnx_execution_state.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1895,14 +1895,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-REC-02'); assert row['slice_id']=='SVA-REC-02' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-02', stage_id='recovery', wait_reason='handoff_resume')\"",
+        "pytest tests/test_hnx_execution_state.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-REC-02 by loading the canonical slice registry, resolving the SVA-REC-02 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-REC-02 executes `python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-02', stage_id='recovery', wait_reason='handoff_resume')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_hnx_execution_state.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1929,14 +1929,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-REC-03'); assert row['slice_id']=='SVA-REC-03' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-03', stage_id='recovery', wait_reason='integrity_check')\"",
+        "pytest tests/test_roadmap_executor.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-REC-03 by loading the canonical slice registry, resolving the SVA-REC-03 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-REC-03 executes `python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-03', stage_id='recovery', wait_reason='integrity_check')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_executor.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1963,14 +1963,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry; rows=load_slice_registry('contracts/roadmap/slice_registry.json'); row=next(r for r in rows if r['slice_id']=='SVA-REC-04'); assert row['slice_id']=='SVA-REC-04' and row['execution_type']=='validation'\"",
-        "pytest tests/test_system_end_to_end_validator.py -q"
+        "python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-04', stage_id='recovery', wait_reason='loop_resume')\"",
+        "pytest tests/test_roadmap_execution_loop_validator.py -q"
       ],
       "success_criteria": [
         "adversarial stress testing exits with code 0",
         "adversarial summary generation exits with code 0"
       ],
-      "implementation_notes": "Execute SVA-REC-04 by loading the canonical slice registry, resolving the SVA-REC-04 row, and enforcing validation command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: SVA-REC-04 executes `python -c \"from spectrum_systems.modules.runtime.hnx_execution_state import create_async_wait; create_async_wait(cycle_id='SVA-REC-04', stage_id='recovery', wait_reason='loop_resume')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_roadmap_execution_loop_validator.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
@@ -1997,14 +1997,14 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "governance",
       "commands": [
-        "python -c \"from spectrum_systems.modules.runtime.roadmap_slice_registry import load_governed_slice_registry_artifacts; rows,structure=load_governed_slice_registry_artifacts(slice_registry_path='contracts/roadmap/slice_registry.json', roadmap_structure_path='contracts/roadmap/roadmap_structure.json'); row=next(r for r in rows if r['slice_id']=='UMB-DEC-01'); assert row['slice_id']=='UMB-DEC-01' and row['execution_type']=='governance' and structure['umbrellas']\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='umb_decision_enforcement')\"",
         "pytest tests/test_execution_hierarchy.py -q"
       ],
       "success_criteria": [
         "policy enforcement integrity validation exits with code 0",
         "control decision consistency validation exits with code 0"
       ],
-      "implementation_notes": "Execute UMB-DEC-01 by loading the canonical slice registry, resolving the UMB-DEC-01 row, and enforcing governance command compatibility before progression; fail closed when the slice row is missing, commands are non-deterministic, or registry/roadmap structure consistency checks reject placement. PQX should expect the slice metadata to load deterministically and produce a zero-exit execution path only when all invariants hold.",
+      "implementation_notes": "Behavior exercised: UMB-DEC-01 executes `python -c \"import json; from spectrum_systems.modules.runtime.execution_hierarchy import validate_execution_hierarchy; validate_execution_hierarchy(json.load(open('contracts/roadmap/roadmap_structure.json')), label='umb_decision_enforcement')\"` for its primary governed seam. Artifact/module/flow touched: runtime module or script in the command with its corresponding governed artifact path. Fail-closed condition: progression stops when execution exits non-zero, authority checks fail, or required artifact input is absent. Expected outcome: this behavior path completes deterministically before `pytest tests/test_execution_hierarchy.py -q` performs targeted validation.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
         "scripts"
