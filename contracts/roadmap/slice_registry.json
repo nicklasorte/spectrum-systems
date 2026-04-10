@@ -1,0 +1,1497 @@
+{
+  "artifact_type": "slice_registry",
+  "version": "1.0.0",
+  "slices": [
+    {
+      "slice_id": "AEX-01",
+      "what_it_does": "Implements governed AEX control behavior for execution slice AEX-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AEX-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "partial",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AEX-02",
+      "what_it_does": "Implements governed AEX control behavior for execution slice AEX-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AEX-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AFX-01",
+      "what_it_does": "Implements governed AFX control behavior for execution slice AFX-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AFX-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AFX-02",
+      "what_it_does": "Implements governed AFX control behavior for execution slice AFX-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AFX-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AFX-03",
+      "what_it_does": "Implements governed AFX control behavior for execution slice AFX-03.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AFX-03; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AFX-04",
+      "what_it_does": "Implements governed AFX control behavior for execution slice AFX-04.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AFX-04; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AFX-05",
+      "what_it_does": "Implements governed AFX control behavior for execution slice AFX-05.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AFX-05; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AFX-GATE-01",
+      "what_it_does": "Implements governed AFX control behavior for execution slice AFX-GATE-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AFX-GATE-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AFX-RT-01",
+      "what_it_does": "Implements governed AFX control behavior for execution slice AFX-RT-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AFX-RT-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AUT-01",
+      "what_it_does": "Implements governed AUT control behavior for execution slice AUT-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AUT-02",
+      "what_it_does": "Implements governed AUT control behavior for execution slice AUT-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AUT-03",
+      "what_it_does": "Implements governed AUT control behavior for execution slice AUT-03.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-03; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AUT-04",
+      "what_it_does": "Implements governed AUT control behavior for execution slice AUT-04.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-04; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AUT-05",
+      "what_it_does": "Implements governed AUT control behavior for execution slice AUT-05.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-05; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AUT-06",
+      "what_it_does": "Implements governed AUT control behavior for execution slice AUT-06.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-06; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AUT-07",
+      "what_it_does": "Implements governed AUT control behavior for execution slice AUT-07.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-07; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AUT-08",
+      "what_it_does": "Implements governed AUT control behavior for execution slice AUT-08.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-08; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AUT-09",
+      "what_it_does": "Implements governed AUT control behavior for execution slice AUT-09.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-09; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "AUT-10",
+      "what_it_does": "Implements governed AUT control behavior for execution slice AUT-10.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-10; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "BRF-01",
+      "what_it_does": "Implements governed BRF control behavior for execution slice BRF-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for BRF-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "BRF-ENFORCE-01",
+      "what_it_does": "Implements governed BRF control behavior for execution slice BRF-ENFORCE-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for BRF-ENFORCE-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "partial",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "GOV-A-01",
+      "what_it_does": "Implements governed GOV control behavior for execution slice GOV-A-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-A-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "GOV-A-02",
+      "what_it_does": "Implements governed GOV control behavior for execution slice GOV-A-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-A-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "GOV-B-01",
+      "what_it_does": "Implements governed GOV control behavior for execution slice GOV-B-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-B-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "GOV-B-02",
+      "what_it_does": "Implements governed GOV control behavior for execution slice GOV-B-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-B-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "GOV-C-01",
+      "what_it_does": "Implements governed GOV control behavior for execution slice GOV-C-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-C-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "GOV-C-02",
+      "what_it_does": "Implements governed GOV control behavior for execution slice GOV-C-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-C-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "GOV-D-01",
+      "what_it_does": "Implements governed GOV control behavior for execution slice GOV-D-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-D-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "GOV-D-02",
+      "what_it_does": "Implements governed GOV control behavior for execution slice GOV-D-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-D-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "GOV-E-01",
+      "what_it_does": "Implements governed GOV control behavior for execution slice GOV-E-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-E-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "GOV-E-02",
+      "what_it_does": "Implements governed GOV control behavior for execution slice GOV-E-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-E-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "MBRF-01",
+      "what_it_does": "Implements governed MBRF control behavior for execution slice MBRF-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for MBRF-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "PFG-01",
+      "what_it_does": "Implements governed PFG control behavior for execution slice PFG-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for PFG-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "PFG-02",
+      "what_it_does": "Implements governed PFG control behavior for execution slice PFG-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for PFG-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "PRG-RGM-01",
+      "what_it_does": "Implements governed PRG control behavior for execution slice PRG-RGM-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for PRG-RGM-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "PRG-RGM-02",
+      "what_it_does": "Implements governed PRG control behavior for execution slice PRG-RGM-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for PRG-RGM-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "RDX-EXEC-01",
+      "what_it_does": "Implements governed RDX control behavior for execution slice RDX-EXEC-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for RDX-EXEC-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "RDX-EXEC-02",
+      "what_it_does": "Implements governed RDX control behavior for execution slice RDX-EXEC-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for RDX-EXEC-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "partial",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "RDX-EXEC-03",
+      "what_it_does": "Implements governed RDX control behavior for execution slice RDX-EXEC-03.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for RDX-EXEC-03; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "partial",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "RDX-EXEC-04",
+      "what_it_does": "Implements governed RDX control behavior for execution slice RDX-EXEC-04.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for RDX-EXEC-04; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "RDX-REG-01",
+      "what_it_does": "Implements governed RDX control behavior for execution slice RDX-REG-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for RDX-REG-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "partial",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "RDX-REG-02",
+      "what_it_does": "Implements governed RDX control behavior for execution slice RDX-REG-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for RDX-REG-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-ADV-01",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-ADV-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-ADV-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "partial",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-ADV-02",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-ADV-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-ADV-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-ADV-03",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-ADV-03.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-ADV-03; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-ADV-04",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-ADV-04.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-ADV-04; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-DRIFT-01",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-DRIFT-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-DRIFT-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-DRIFT-02",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-DRIFT-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-DRIFT-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-DRIFT-03",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-DRIFT-03.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-DRIFT-03; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-DRIFT-04",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-DRIFT-04.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-DRIFT-04; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-LOAD-01",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-LOAD-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-LOAD-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "partial",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-LOAD-02",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-LOAD-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-LOAD-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-LOAD-03",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-LOAD-03.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-LOAD-03; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-LOAD-04",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-LOAD-04.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-LOAD-04; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-REC-01",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-REC-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-REC-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-REC-02",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-REC-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-REC-02; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-REC-03",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-REC-03.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-REC-03; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "SVA-REC-04",
+      "what_it_does": "Implements governed SVA control behavior for execution slice SVA-REC-04.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-REC-04; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "UMB-DEC-01",
+      "what_it_does": "Implements governed UMB control behavior for execution slice UMB-DEC-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "implementation_notes": "Inferred from canonical roadmap batch intent for UMB-DEC-01; keep behavior artifact-first and fail-closed.",
+      "likely_entrypoints": [
+        "spectrum_systems/modules/runtime",
+        "scripts"
+      ],
+      "likely_tests": [
+        "tests/test_execution_hierarchy.py",
+        "tests/test_prompt_queue_execution_loop.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "cde_closure_authority_preserved"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "inferred"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "artifact_type": "roadmap_structure",
+  "version": "1.0.0",
+  "umbrellas": [
+    {
+      "umbrella_id": "AUTONOMY_EXECUTION",
+      "batches": [
+        {
+          "batch_id": "BATCH-AEX",
+          "slice_ids": [
+            "AEX-01",
+            "AEX-02",
+            "AUT-01",
+            "AUT-02",
+            "AUT-03"
+          ]
+        },
+        {
+          "batch_id": "BATCH-AUT",
+          "slice_ids": [
+            "AUT-04",
+            "AUT-05",
+            "AUT-06",
+            "AUT-07",
+            "AUT-08",
+            "AUT-09",
+            "AUT-10"
+          ]
+        }
+      ]
+    },
+    {
+      "umbrella_id": "GOVERNANCE_HARDENING",
+      "batches": [
+        {
+          "batch_id": "BATCH-GOV-A",
+          "slice_ids": [
+            "GOV-A-01",
+            "GOV-A-02"
+          ]
+        },
+        {
+          "batch_id": "BATCH-GOV-B",
+          "slice_ids": [
+            "GOV-B-01",
+            "GOV-B-02"
+          ]
+        },
+        {
+          "batch_id": "BATCH-GOV-C",
+          "slice_ids": [
+            "GOV-C-01",
+            "GOV-C-02"
+          ]
+        },
+        {
+          "batch_id": "BATCH-GOV-D",
+          "slice_ids": [
+            "GOV-D-01",
+            "GOV-D-02"
+          ]
+        },
+        {
+          "batch_id": "BATCH-GOV-E",
+          "slice_ids": [
+            "GOV-E-01",
+            "GOV-E-02"
+          ]
+        }
+      ]
+    },
+    {
+      "umbrella_id": "PREFLIGHT_AND_REPAIR",
+      "batches": [
+        {
+          "batch_id": "BATCH-PFG",
+          "slice_ids": [
+            "PFG-01",
+            "PFG-02"
+          ]
+        },
+        {
+          "batch_id": "BATCH-AFX",
+          "slice_ids": [
+            "AFX-01",
+            "AFX-02",
+            "AFX-03",
+            "AFX-04",
+            "AFX-05"
+          ]
+        },
+        {
+          "batch_id": "BATCH-AFX-GATES",
+          "slice_ids": [
+            "AFX-GATE-01",
+            "AFX-RT-01"
+          ]
+        },
+        {
+          "batch_id": "BATCH-PRG-RGM",
+          "slice_ids": [
+            "PRG-RGM-01",
+            "PRG-RGM-02"
+          ]
+        },
+        {
+          "batch_id": "BATCH-MBRF",
+          "slice_ids": [
+            "MBRF-01",
+            "BRF-01"
+          ]
+        }
+      ]
+    },
+    {
+      "umbrella_id": "RDX_EXECUTION_CONTROL",
+      "batches": [
+        {
+          "batch_id": "BATCH-RDX-REG",
+          "slice_ids": [
+            "RDX-REG-01",
+            "RDX-REG-02"
+          ]
+        },
+        {
+          "batch_id": "BATCH-RDX-EXEC",
+          "slice_ids": [
+            "RDX-EXEC-01",
+            "RDX-EXEC-02",
+            "RDX-EXEC-03",
+            "RDX-EXEC-04"
+          ]
+        },
+        {
+          "batch_id": "BATCH-UMB-DEC",
+          "slice_ids": [
+            "UMB-DEC-01",
+            "BRF-ENFORCE-01"
+          ]
+        }
+      ]
+    },
+    {
+      "umbrella_id": "STRESS_VALIDATION",
+      "batches": [
+        {
+          "batch_id": "BATCH-SVA-ADV",
+          "slice_ids": [
+            "SVA-ADV-01",
+            "SVA-ADV-02",
+            "SVA-ADV-03",
+            "SVA-ADV-04"
+          ]
+        },
+        {
+          "batch_id": "BATCH-SVA-LOAD",
+          "slice_ids": [
+            "SVA-LOAD-01",
+            "SVA-LOAD-02",
+            "SVA-LOAD-03",
+            "SVA-LOAD-04"
+          ]
+        },
+        {
+          "batch_id": "BATCH-SVA-DRIFT",
+          "slice_ids": [
+            "SVA-DRIFT-01",
+            "SVA-DRIFT-02",
+            "SVA-DRIFT-03",
+            "SVA-DRIFT-04"
+          ]
+        },
+        {
+          "batch_id": "BATCH-SVA-REC",
+          "slice_ids": [
+            "SVA-REC-01",
+            "SVA-REC-02",
+            "SVA-REC-03",
+            "SVA-REC-04"
+          ]
+        }
+      ]
+    }
+  ],
+  "reserved_slice_ids": []
+}
