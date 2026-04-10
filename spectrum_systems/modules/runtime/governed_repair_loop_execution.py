@@ -183,24 +183,55 @@ def _cde_decide(continuation_input: dict[str, Any], *, force_stop: bool) -> dict
 
 
 def _tpa_gate(gating_input: dict[str, Any], *, policy_blocked: bool) -> dict[str, Any]:
+    gating_input_ref = f"tpa_repair_gating_input:{gating_input['gating_input_id']}"
     constraints_missing = not bool(gating_input.get("repair_scope_refs")) or not bool(gating_input.get("allowed_artifact_refs"))
     if constraints_missing:
-        return {"approved": False, "owner": "TPA", "reason": "missing_constraints", "approved_slice": None}
+        return {
+            "approved": False,
+            "owner": "TPA",
+            "reason": "missing_constraints",
+            "approved_slice": None,
+            "gating_input_ref": gating_input_ref,
+        }
     if policy_blocked:
-        return {"approved": False, "owner": "TPA", "reason": "policy_blocked", "approved_slice": None}
+        return {
+            "approved": False,
+            "owner": "TPA",
+            "reason": "policy_blocked",
+            "approved_slice": None,
+            "gating_input_ref": gating_input_ref,
+        }
     if gating_input["retry_budget_remaining"] <= 0:
-        return {"approved": False, "owner": "TPA", "reason": "retry_budget_exhausted", "approved_slice": None}
+        return {
+            "approved": False,
+            "owner": "TPA",
+            "reason": "retry_budget_exhausted",
+            "approved_slice": None,
+            "gating_input_ref": gating_input_ref,
+        }
     if gating_input["risk_level"] == "high" and gating_input["complexity_score"] > 3:
-        return {"approved": False, "owner": "TPA", "reason": "risk_budget_exceeded", "approved_slice": None}
+        return {
+            "approved": False,
+            "owner": "TPA",
+            "reason": "risk_budget_exceeded",
+            "approved_slice": None,
+            "gating_input_ref": gating_input_ref,
+        }
     approved_slice = {
         "slice_id": f"repair:{gating_input['gating_input_id']}",
         "scope_refs": list(gating_input["repair_scope_refs"]),
         "allowed_artifact_refs": list(gating_input["allowed_artifact_refs"]),
     }
-    return {"approved": True, "owner": "TPA", "reason": "approved", "approved_slice": approved_slice}
+    return {
+        "approved": True,
+        "owner": "TPA",
+        "reason": "approved",
+        "approved_slice": approved_slice,
+        "gating_input_ref": gating_input_ref,
+    }
 
 
-def _pqx_execute(*, approved_slice: dict[str, Any], trace_id: str) -> dict[str, Any]:
+def _pqx_execute(*, approved_slice: dict[str, Any], trace_id: str, gating_input_ref: str) -> dict[str, Any]:
     for ref in approved_slice["scope_refs"]:
         if ref not in set(approved_slice["allowed_artifact_refs"]):
             raise GovernedRepairLoopExecutionError("PQX attempted to execute outside TPA-approved scope")
@@ -208,12 +239,14 @@ def _pqx_execute(*, approved_slice: dict[str, Any], trace_id: str) -> dict[str, 
     return {
         "owner": "PQX",
         "pqx_slice_execution_record": f"pqx_slice_execution_record:{execution_id}",
+        "approved_slice_ref": approved_slice["slice_id"],
+        "gating_input_ref": gating_input_ref,
         "execution_status": "success",
         "trace_artifacts": [f"trace:{trace_id}:pqx_repair_execution", f"trace:{trace_id}:pqx_scope:{len(approved_slice['scope_refs'])}"],
     }
 
 
-def _rqx_ril_review(*, case: FailureCase, trace_id: str, tmp_dir: Path | None) -> dict[str, Any]:
+def _rqx_ril_review(*, case: FailureCase, trace_id: str, tmp_dir: Path | None, execution_record_ref: str) -> dict[str, Any]:
     repaired_required_artifacts, repaired_command = _load_repaired_readiness_inputs(case, tmp_dir=tmp_dir)
     repaired_readiness = evaluate_slice_artifact_readiness(
         slice_id=case.slice_id,
@@ -229,6 +262,7 @@ def _rqx_ril_review(*, case: FailureCase, trace_id: str, tmp_dir: Path | None) -
         "review_owner": "RQX",
         "interpretation_owner": "RIL",
         "repaired": repaired,
+        "execution_record_ref": execution_record_ref,
         "review_ref": f"review_result_artifact:{deterministic_id(prefix='rqr', namespace='grc_rqx_review', payload=[case.slice_id, repaired])}",
         "interpretation_ref": f"review_integration_packet_artifact:{deterministic_id(prefix='ril', namespace='grc_ril_interpret', payload=[case.slice_id, repaired])}",
         "follow_up_candidate_needed": not repaired,
@@ -236,7 +270,7 @@ def _rqx_ril_review(*, case: FailureCase, trace_id: str, tmp_dir: Path | None) -
     }
 
 
-def _build_resume_record(*, case: FailureCase, trace_id: str, run_id: str) -> dict[str, Any]:
+def _build_resume_record(*, case: FailureCase, trace_id: str, run_id: str, trigger_ref: str) -> dict[str, Any]:
     record = {
         "artifact_type": "resume_record",
         "schema_version": "1.0.0",
@@ -245,7 +279,7 @@ def _build_resume_record(*, case: FailureCase, trace_id: str, run_id: str) -> di
         "resume_reason": "repair_validated_resume_from_failed_slice",
         "resumed_at": _now_iso(),
         "validation_result": {"status": "valid", "reason_codes": ["RESUME_ALLOWED", "TRACE_CONTINUITY_CONFIRMED"]},
-        "trigger_ref": f"slice:{case.slice_id}",
+        "trigger_ref": trigger_ref,
         "trace": {"trace_id": trace_id, "agent_run_id": run_id},
     }
     validate_artifact(record, "resume_record")
@@ -316,6 +350,7 @@ def run_governed_repair_loop(
                 "failure": readiness,
                 "packet": packet,
                 "candidate": candidate,
+                "continuation_input": continuation_input,
                 "decision": cde_decision,
             },
         }
@@ -337,14 +372,24 @@ def run_governed_repair_loop(
                 "failure": readiness,
                 "packet": packet,
                 "candidate": candidate,
+                "continuation_input": continuation_input,
                 "decision": cde_decision,
                 "gating_input": gating_input,
                 "gating_decision": tpa_decision,
             },
         }
 
-    execution = _pqx_execute(approved_slice=tpa_decision["approved_slice"], trace_id=trace_id)
-    review = _rqx_ril_review(case=case, trace_id=trace_id, tmp_dir=tmp_dir)
+    execution = _pqx_execute(
+        approved_slice=tpa_decision["approved_slice"],
+        trace_id=trace_id,
+        gating_input_ref=tpa_decision["gating_input_ref"],
+    )
+    review = _rqx_ril_review(
+        case=case,
+        trace_id=trace_id,
+        tmp_dir=tmp_dir,
+        execution_record_ref=execution["pqx_slice_execution_record"],
+    )
     if not review["repaired"]:
         return {
             "status": "not_repaired",
@@ -353,6 +398,7 @@ def run_governed_repair_loop(
                 "failure": readiness,
                 "packet": packet,
                 "candidate": candidate,
+                "continuation_input": continuation_input,
                 "decision": cde_decision,
                 "gating_input": gating_input,
                 "gating_decision": tpa_decision,
@@ -361,7 +407,12 @@ def run_governed_repair_loop(
             },
         }
 
-    resume_record = _build_resume_record(case=case, trace_id=trace_id, run_id=run_id)
+    resume_record = _build_resume_record(
+        case=case,
+        trace_id=trace_id,
+        run_id=run_id,
+        trigger_ref=execution["pqx_slice_execution_record"],
+    )
     return {
         "status": "resumed",
         "stop_reason": None,
@@ -369,6 +420,7 @@ def run_governed_repair_loop(
             "failure": readiness,
             "packet": packet,
             "candidate": candidate,
+            "continuation_input": continuation_input,
             "decision": cde_decision,
             "gating_input": gating_input,
             "gating_decision": tpa_decision,
