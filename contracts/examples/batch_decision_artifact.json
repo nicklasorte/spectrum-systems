@@ -1,0 +1,14 @@
+{
+  "artifact_type": "batch_decision_artifact",
+  "batch_id": "queue-001:step-001",
+  "decision_status": "SAFE_TO_MOVE_ON",
+  "decision_reason": "Validation passed, preflight allowed, and review found clean findings.",
+  "decision_owner": "TLC",
+  "next_action": "ADVANCE",
+  "supporting_refs": [
+    "validation_result_record:vr-queue-001-step-001",
+    "review_result_artifact:rqx-queue-001-step-001",
+    "step-decision-step-001-20260328T115959Z"
+  ],
+  "emitted_at": "2026-03-28T12:00:01Z"
+}

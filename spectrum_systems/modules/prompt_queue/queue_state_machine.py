@@ -234,7 +234,7 @@ def apply_transition_to_queue_state(queue_state: dict, transition_decision: dict
     if not isinstance(transition_decision, dict):
         raise QueueLoopError("transition decision missing")
 
-    required = {"step_id", "source_decision_ref", "transition_action", "transition_status"}
+    required = {"step_id", "source_decision_ref", "transition_action", "transition_status", "batch_decision_artifact_ref"}
     missing = sorted(required - set(transition_decision))
     if missing:
         raise QueueLoopError(f"transition decision missing required fields: {', '.join(missing)}")
@@ -292,6 +292,10 @@ def run_queue_once(queue_state: dict, manifest: dict) -> dict:
     )
     from spectrum_systems.modules.prompt_queue.review_parser import ReviewParseError, parse_queue_step_report
     from spectrum_systems.modules.prompt_queue.step_decision import StepDecisionError, build_step_decision
+    from spectrum_systems.modules.prompt_queue.batch_decision_artifact import (
+        BatchDecisionArtifactError,
+        build_batch_decision_artifact,
+    )
 
     state, normalized_manifest = _validate_loop_inputs(queue_state, manifest)
     step = _select_next_eligible_step(state, normalized_manifest)
@@ -335,7 +339,12 @@ def run_queue_once(queue_state: dict, manifest: dict) -> dict:
         raise QueueLoopError(f"step decision failed closed: {exc}") from exc
 
     try:
-        transition_decision = build_queue_transition_decision(step_decision)
+        batch_decision_artifact = build_batch_decision_artifact(step_decision=step_decision)
+    except BatchDecisionArtifactError as exc:
+        raise QueueLoopError(f"batch decision missing or invalid: {exc}") from exc
+
+    try:
+        transition_decision = build_queue_transition_decision(step_decision, batch_decision_artifact)
     except TransitionDecisionBuildError as exc:
         raise QueueLoopError(f"transition decision missing or ambiguous: {exc}") from exc
 

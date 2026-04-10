@@ -96,6 +96,8 @@ def _normalize_transition_from_legacy(
         "trace_linkage": work_item.get("work_item_id") or "unknown",
         "source_decision_ref": post_execution_decision_artifact.get("post_execution_decision_artifact_id")
         or post_execution_decision_artifact_path,
+        "batch_decision_artifact_ref": post_execution_decision_artifact.get("post_execution_decision_artifact_id")
+        or post_execution_decision_artifact_path,
         "transition_action": transition_action,
         "transition_status": "blocked" if transition_action == "block" else "allowed",
         "reason_codes": [

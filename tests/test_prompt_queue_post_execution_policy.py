@@ -37,21 +37,36 @@ def _step_decision() -> dict:
         "reason_codes": ["clean_findings"],
         "blocking_reasons": [],
         "derived_from_artifacts": ["execres-wi-001-attempt-1"],
+        "validation_result_refs": ["validation_result_record:vr-001"],
+        "review_evidence_ref": "review_result_artifact:rqx-step-001",
+        "preflight_decision": "ALLOW",
         "timestamp": "2026-03-28T11:59:59Z",
         "generator_version": "prompt_queue_step_decision.v1",
     }
 
 
+def _batch_decision() -> dict:
+    return {
+        "artifact_type": "batch_decision_artifact",
+        "batch_id": "queue-001:step-001",
+    }
+
+
 def test_missing_prompt_queue_step_decision_fails_fast():
     with pytest.raises(TransitionDecisionBuildError, match="missing prompt_queue_step_decision"):
-        build_queue_transition_decision(None, clock=FixedClock(["2026-03-28T12:00:01Z"]))
+        build_queue_transition_decision(None, _batch_decision(), clock=FixedClock(["2026-03-28T12:00:01Z"]))
+
+
+def test_missing_batch_decision_fails_fast():
+    with pytest.raises(TransitionDecisionBuildError, match="missing batch_decision_artifact"):
+        build_queue_transition_decision(_step_decision(), None, clock=FixedClock(["2026-03-28T12:00:01Z"]))
 
 
 def test_missing_step_id_fails_fast():
     decision = _step_decision()
     decision.pop("step_id")
     with pytest.raises(TransitionDecisionBuildError, match="step_id"):
-        build_queue_transition_decision(decision, clock=FixedClock(["2026-03-28T12:00:01Z"]))
+        build_queue_transition_decision(decision, _batch_decision(), clock=FixedClock(["2026-03-28T12:00:01Z"]))
 
 
 def test_missing_queue_and_trace_lineage_fails_fast():
@@ -59,4 +74,4 @@ def test_missing_queue_and_trace_lineage_fails_fast():
     decision["queue_id"] = None
     decision["trace_linkage"] = None
     with pytest.raises(TransitionDecisionBuildError, match="queue_id or trace_linkage"):
-        build_queue_transition_decision(decision, clock=FixedClock(["2026-03-28T12:00:01Z"]))
+        build_queue_transition_decision(decision, _batch_decision(), clock=FixedClock(["2026-03-28T12:00:01Z"]))

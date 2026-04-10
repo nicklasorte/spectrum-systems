@@ -12,5 +12,10 @@
     "execres-wi-001-attempt-1"
   ],
   "timestamp": "2026-03-22T02:10:01Z",
-  "generator_version": "prompt_queue_step_decision.v1"
+  "generator_version": "prompt_queue_step_decision.v1",
+  "validation_result_refs": [
+    "validation_result_record:vr-queue-001-step-001"
+  ],
+  "review_evidence_ref": "review_result_artifact:rqx-step-001",
+  "preflight_decision": "ALLOW"
 }

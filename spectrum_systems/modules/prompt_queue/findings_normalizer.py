@@ -182,11 +182,40 @@ def normalize_queue_step_findings(execution_result: dict) -> dict:
     if validation_status not in _VALIDATION_STATUS_ENUM:
         raise ValueError("Unsupported validation_status during normalization.")
 
+    validation_refs = execution_result.get("validation_result_refs") or []
+    if not isinstance(validation_refs, list) or not validation_refs:
+        findings.append(
+            {
+                "finding_id": f"{step_id}-validation-missing",
+                "finding_type": "validation",
+                "severity": "error",
+                "summary": "validation_result_refs missing",
+                "details": "Decision cannot proceed without validation_result_record evidence.",
+            }
+        )
+        summary["error"] += 1
+
+    preflight_decision = execution_result.get("preflight_decision")
+    if preflight_decision != "ALLOW":
+        findings.append(
+            {
+                "finding_id": f"{step_id}-preflight-blocked",
+                "finding_type": "validation",
+                "severity": "error",
+                "summary": "preflight decision is not ALLOW",
+                "details": "Decision cannot proceed when preflight is BLOCK or missing.",
+            }
+        )
+        summary["error"] += 1
+
     return {
         "step_id": step_id,
         "queue_id": execution_result.get("queue_id"),
         "trace_linkage": execution_result.get("trace_linkage"),
         "source_execution_result_artifact_id": execution_result["execution_result_artifact_id"],
+        "review_evidence_ref": f"review_result_artifact:rqx-{step_id}",
+        "validation_result_refs": validation_refs,
+        "preflight_decision": preflight_decision,
         "findings": findings,
         "severity_summary": summary,
         "validation_status": validation_status,

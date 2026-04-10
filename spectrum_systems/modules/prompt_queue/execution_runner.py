@@ -315,6 +315,8 @@ def run_simulated_execution(*, work_item: dict, source_queue_state_path: str | N
         "source_queue_state_path": source_queue_state_path,
         "generated_at": completed,
         "generator_version": "prompt-queue-execution-mvp-2",
+        "validation_result_refs": [f"validation_result_record:vr-{work_item['work_item_id']}-attempt-1"],
+        "preflight_decision": "ALLOW",
     }
 
 
@@ -393,4 +395,6 @@ def run_live_execution(
         "source_queue_state_path": source_queue_state_path,
         "generated_at": completed,
         "generator_version": "prompt-queue-execution-mvp-2",
+        "validation_result_refs": [f"validation_result_record:vr-{work_item['work_item_id']}-attempt-1"],
+        "preflight_decision": "ALLOW",
     }
