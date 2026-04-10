@@ -27,11 +27,12 @@ def _run_command(command: list[str], *, cwd: Path) -> dict[str, Any]:
 
 def run_review_artifact_validation(*, repo_root: Path, narrow_test_targets: list[str] | None = None) -> dict[str, Any]:
     """Execute canonical review artifact validation commands."""
+    governance_signal_path = repo_root / ".autofix" / "review_governance_signal_artifact.json"
     commands: list[list[str]] = [
         ["npm", "install", "--no-save", "--no-package-lock", "ajv@^8", "ajv-formats@^2"],
         ["node", "scripts/validate-review-artifacts.js"],
         ["python", "-m", "pip", "install", "-r", "requirements-dev.txt"],
-        ["python", "scripts/check_review_registry.py", "--fail-on-overdue"],
+        ["python", "scripts/check_review_registry.py", "--fail-on-overdue", "--emit-signal-artifact", str(governance_signal_path)],
     ]
     if narrow_test_targets:
         commands.append(["pytest", *narrow_test_targets])
@@ -42,6 +43,20 @@ def run_review_artifact_validation(*, repo_root: Path, narrow_test_targets: list
 
     command_results = [_run_command(command, cwd=repo_root) for command in commands]
     passed = all(result["exit_code"] == 0 for result in command_results)
+
+    governance_signal: dict[str, Any] = {
+        "artifact_type": "review_governance_signal_artifact",
+        "status": "unknown",
+        "risk_level": "WARNING",
+        "affected_reviews": [],
+        "due_windows": {},
+        "owner": "PRG",
+        "emitted_at": _utc_now(),
+    }
+    if governance_signal_path.exists():
+        payload = json.loads(governance_signal_path.read_text(encoding="utf-8"))
+        if isinstance(payload, dict):
+            governance_signal = payload
 
     return {
         "artifact_type": "validation_result_record",
@@ -60,6 +75,7 @@ def run_review_artifact_validation(*, repo_root: Path, narrow_test_targets: list
         "failure_summary": None if passed else "One or more replay commands failed.",
         "commands": command_results,
         "passed": passed,
+        "governance_signal": governance_signal,
         "emitted_at": _utc_now(),
     }
 

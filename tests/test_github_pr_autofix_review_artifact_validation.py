@@ -11,10 +11,12 @@ from spectrum_systems.modules.runtime.github_pr_autofix_review_artifact_validati
     _narrow_test_targets_if_safe,
     enforce_artifact_spine,
     enforce_entry_invariant,
+    enforce_governance_signal,
     enforce_preflight_gate,
     enforce_repair_validation_linkage,
     enforce_replay_gate,
     run_governed_autofix,
+    scan_review_governance_radar,
     run_validation_replay,
 )
 
@@ -79,8 +81,10 @@ def _init_git_repo(tmp_path: Path) -> Path:
     subprocess.run(['git', 'remote', 'add', 'origin', 'https://github.com/nicklasorte/spectrum-systems.git'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
     (tmp_path / 'requirements-dev.txt').write_text('', encoding='utf-8')
     (tmp_path / 'scripts').mkdir(parents=True, exist_ok=True)
+    (tmp_path / 'docs' / 'reviews').mkdir(parents=True, exist_ok=True)
     (tmp_path / 'scripts' / 'validate-review-artifacts.js').write_text('console.log("ok")\n', encoding='utf-8')
     (tmp_path / 'scripts' / 'check_review_registry.py').write_text('print("ok")\n', encoding='utf-8')
+    (tmp_path / 'docs' / 'reviews' / 'review-registry.json').write_text('[]\n', encoding='utf-8')
     subprocess.run(['git', 'add', '.'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
     subprocess.run(['git', 'commit', '-m', 'initial'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
     return tmp_path
@@ -353,7 +357,7 @@ def test_validation_entrypoint_consistency(monkeypatch: pytest.MonkeyPatch, tmp_
     ]
 
 
-def test_artifact_spine_created_for_attempt() -> None:
+def test_artifact_spine_enforced() -> None:
     enforce_artifact_spine(
         {
             'build_admission_record': {'artifact_type': 'build_admission_record'},
@@ -366,3 +370,50 @@ def test_artifact_spine_created_for_attempt() -> None:
 def test_missing_artifact_fails_closed() -> None:
     with pytest.raises(GovernedAutofixError, match='artifact_spine_missing'):
         enforce_artifact_spine({'build_admission_record': {}, 'validation_result_record': {}})
+
+
+def test_governance_radar_detects_overdue(tmp_path: Path) -> None:
+    repo_root = _init_git_repo(tmp_path)
+    (repo_root / 'docs' / 'reviews' / 'review-registry.json').write_text(
+        json.dumps(
+            [
+                {
+                    'review_id': 'RVW-OVERDUE',
+                    'status': 'In Progress',
+                    'follow_up_due_date': '2026-04-01',
+                    'follow_up_trigger': 'pending fix verification',
+                }
+            ]
+        ),
+        encoding='utf-8',
+    )
+    signal = scan_review_governance_radar(repo_root=repo_root)
+    assert signal['artifact_type'] == 'review_governance_signal_artifact'
+    assert signal['risk_level'] == 'OVERDUE'
+    assert signal['status'] == 'blocked'
+    assert signal['affected_reviews'][0]['review_id'] == 'RVW-OVERDUE'
+
+
+def test_governance_signal_integrates_with_preflight() -> None:
+    enforce_governance_signal(
+        {
+            'artifact_type': 'review_governance_signal_artifact',
+            'status': 'ok',
+            'risk_level': 'WARNING',
+            'affected_reviews': [{'review_id': 'RVW-WARN'}],
+            'due_windows': {'overdue': 0, 'due_soon': 1, 'missing': 0, 'future': 0},
+        }
+    )
+
+
+def test_overdue_blocks_execution() -> None:
+    with pytest.raises(GovernedAutofixError, match='review_governance_signal_overdue_blocked'):
+        enforce_governance_signal(
+            {
+                'artifact_type': 'review_governance_signal_artifact',
+                'status': 'blocked',
+                'risk_level': 'OVERDUE',
+                'affected_reviews': [{'review_id': 'RVW-OVERDUE'}],
+                'due_windows': {'overdue': 1, 'due_soon': 0, 'missing': 0, 'future': 0},
+            }
+        )
