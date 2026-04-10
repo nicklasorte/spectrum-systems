@@ -65,7 +65,7 @@ def _deterministic_gate_id(
     seed_parts = [
         review_result_artifact["review_id"],
         review_result_artifact["verdict"],
-        str(merge_readiness_artifact["merge_ready"]),
+        str(merge_readiness_artifact["readiness_signal"]),
         merge_readiness_artifact["verdict"],
         handoff_artifact["handoff_id"] if handoff_artifact else "none",
         disposition_artifact["disposition_id"] if disposition_artifact else "none",
@@ -176,7 +176,7 @@ def build_review_promotion_gate_artifact(
     review_id = review_result_artifact["review_id"]
     review_verdict = review_result_artifact["verdict"]
     merge_verdict = review_merge_readiness_artifact["verdict"]
-    merge_ready = review_merge_readiness_artifact["merge_ready"]
+    readiness_signal = review_merge_readiness_artifact["readiness_signal"]
 
     if review_merge_readiness_artifact["review_id"] != review_id:
         gate_reason_code = "ambiguous_review_state"
@@ -184,7 +184,13 @@ def build_review_promotion_gate_artifact(
         gate_reason_code = "ambiguous_review_state"
     elif merge_verdict != review_verdict:
         gate_reason_code = "ambiguous_review_state"
-    elif (review_verdict == "safe_to_merge" and not merge_ready) or (review_verdict != "safe_to_merge" and merge_ready):
+    elif (
+        (review_verdict == "safe_to_merge" and readiness_signal != "review_safe")
+        or (review_verdict == "fix_required" and readiness_signal != "review_fix_required")
+        or (review_verdict == "not_safe_to_merge" and readiness_signal != "review_not_safe")
+    ):
+        gate_reason_code = "ambiguous_review_state"
+    elif review_merge_readiness_artifact["cde_decision_required"] is not True:
         gate_reason_code = "ambiguous_review_state"
     elif review_handoff_disposition_artifact is not None and review_operator_handoff_artifact is None:
         gate_reason_code = "ambiguous_review_state"

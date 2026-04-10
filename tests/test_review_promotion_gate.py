@@ -31,7 +31,8 @@ def _safe_review_pair() -> tuple[dict, dict]:
     merge_readiness["review_id"] = "rqx-02-review-002"
     merge_readiness["review_result_ref"] = "review_result_artifact:rqx-02-review-002"
     merge_readiness["verdict"] = "safe_to_merge"
-    merge_readiness["merge_ready"] = True
+    merge_readiness["readiness_signal"] = "review_safe"
+    merge_readiness["cde_decision_required"] = True
     merge_readiness["required_follow_up"] = []
     return review_result, merge_readiness
 
@@ -133,7 +134,7 @@ def test_disposition_outcomes_do_not_allow_promotion(
 
 def test_ambiguous_review_state_is_blocked(tmp_path) -> None:
     review_result, merge_readiness = _safe_review_pair()
-    merge_readiness["merge_ready"] = False
+    merge_readiness["readiness_signal"] = "review_fix_required"
 
     result = emit_review_promotion_gate(
         review_result_artifact=review_result,
