@@ -46,6 +46,7 @@ def _transition(action: str, status: str = "allowed") -> dict:
         "queue_id": "queue-001",
         "trace_linkage": "trace-001",
         "source_decision_ref": "step-decision-step-001-20260328T115959Z",
+        "batch_decision_artifact_ref": "queue-001:step-001",
         "transition_action": action,
         "transition_status": status,
         "reason_codes": ["allow_clean_findings_continue"] if status == "allowed" else ["block_invalid_report_fail_closed"],

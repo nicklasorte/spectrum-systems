@@ -74,6 +74,9 @@ def _transition_from_loop_control(loop_control_decision_artifact: dict) -> dict:
         "queue_id": None,
         "trace_linkage": loop_control_decision_artifact.get("work_item_id") or "unknown",
         "source_decision_ref": loop_control_decision_artifact.get("loop_control_decision_artifact_id") or "unknown",
+        "batch_decision_artifact_ref": loop_control_decision_artifact.get("post_execution_decision_artifact_path")
+        or loop_control_decision_artifact.get("loop_control_decision_artifact_id")
+        or "unknown",
         "transition_action": transition_action,
         "transition_status": "blocked" if transition_action == "block" else "allowed",
         "reason_codes": ["block_invalid_report_fail_closed"] if transition_action == "block" else ["warn_findings_request_review"],

@@ -112,6 +112,9 @@ def _transition_from_next_step_action(next_step_action_artifact: dict) -> dict:
         "source_decision_ref": next_step_action_artifact.get("execution_result_artifact_path")
         or next_step_action_artifact.get("post_execution_decision_artifact_path")
         or "unknown",
+        "batch_decision_artifact_ref": next_step_action_artifact.get("post_execution_decision_artifact_path")
+        or next_step_action_artifact.get("execution_result_artifact_path")
+        or "unknown",
         "transition_action": transition_action,
         "transition_status": "blocked" if transition_action == "block" else "allowed",
         "reason_codes": ["block_invalid_report_fail_closed"] if transition_action == "block" else ["warn_findings_request_review"],

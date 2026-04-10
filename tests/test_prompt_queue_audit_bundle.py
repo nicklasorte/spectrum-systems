@@ -132,6 +132,8 @@ def _execution_result() -> dict:
         "generator_version": "prompt-queue-execution-mvp-1",
         "source_queue_state_path": "artifacts/prompt_queue/queue_state.json",
         "execution_attempt_id": "wi-001-attempt-1",
+        "validation_result_refs": ["validation_result_record:vr-queue-audit-001-step-001"],
+        "preflight_decision": "ALLOW",
     }
 
 
@@ -147,6 +149,9 @@ def _step_decision() -> dict:
         "derived_from_artifacts": ["execres-wi-001-attempt-1"],
         "timestamp": "2026-03-28T00:05:10Z",
         "generator_version": "prompt_queue_step_decision.v1",
+        "validation_result_refs": ["validation_result_record:vr-queue-audit-001-step-001"],
+        "review_evidence_ref": "review_result_artifact:rqx-step-001",
+        "preflight_decision": "ALLOW",
     }
 
 
@@ -163,6 +168,7 @@ def _transition_decision(step_decision_ref: str) -> dict:
         "blocking_reasons": [],
         "derived_from_artifacts": ["execres-wi-001-attempt-1"],
         "timestamp": "2026-03-28T00:05:20Z",
+        "batch_decision_artifact_ref": "queue-audit-001:step-001",
     }
 
 

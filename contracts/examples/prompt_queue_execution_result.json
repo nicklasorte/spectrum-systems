@@ -22,5 +22,9 @@
   "generated_at": "2026-03-22T02:00:01Z",
   "generator_version": "prompt-queue-execution-mvp-2",
   "source_queue_state_path": "artifacts/prompt_queue/queue_state.json",
-  "execution_attempt_id": "wi-001-attempt-1"
+  "execution_attempt_id": "wi-001-attempt-1",
+  "validation_result_refs": [
+    "validation_result_record:vr-queue-001-step-001"
+  ],
+  "preflight_decision": "ALLOW"
 }

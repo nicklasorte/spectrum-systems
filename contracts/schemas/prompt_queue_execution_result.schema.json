@@ -24,67 +24,239 @@
     "output_reference",
     "error_summary",
     "generated_at",
-    "generator_version"
+    "generator_version",
+    "validation_result_refs",
+    "preflight_decision"
   ],
   "properties": {
-    "execution_result_artifact_id": {"type": "string", "minLength": 1},
-    "step_id": {"type": ["string", "null"], "pattern": "^step-[0-9]{3}$"},
-    "queue_id": {"type": ["string", "null"], "minLength": 1},
-    "trace_linkage": {"type": ["string", "null"], "minLength": 1},
-    "execution_type": {"type": "string", "enum": ["queue_step"]},
-    "work_item_id": {"type": "string", "minLength": 1},
-    "parent_work_item_id": {"type": ["string", "null"], "minLength": 1},
-    "repair_prompt_artifact_path": {"type": ["string", "null"], "minLength": 1},
-    "gating_decision_artifact_path": {"type": ["string", "null"], "minLength": 1},
-    "spawned_from_findings_artifact_path": {"type": ["string", "null"], "minLength": 1},
-    "spawned_from_review_artifact_path": {"type": ["string", "null"], "minLength": 1},
-    "execution_mode": {"type": "string", "enum": ["simulated", "live"]},
-    "execution_status": {"type": "string", "enum": ["success", "failure"]},
-    "started_at": {"type": "string", "format": "date-time"},
-    "completed_at": {"type": "string", "format": "date-time"},
-    "output_reference": {"type": ["string", "null"], "minLength": 1},
+    "execution_result_artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "step_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^step-[0-9]{3}$"
+    },
+    "queue_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "trace_linkage": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "execution_type": {
+      "type": "string",
+      "enum": [
+        "queue_step"
+      ]
+    },
+    "work_item_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_work_item_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "repair_prompt_artifact_path": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "gating_decision_artifact_path": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "spawned_from_findings_artifact_path": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "spawned_from_review_artifact_path": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "execution_mode": {
+      "type": "string",
+      "enum": [
+        "simulated",
+        "live"
+      ]
+    },
+    "execution_status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failure"
+      ]
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "output_reference": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
     "produced_artifact_refs": {
       "type": "array",
-      "items": {"type": "string", "minLength": 1}
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
     },
-    "error_summary": {"type": ["string", "null"], "minLength": 1},
-    "generated_at": {"type": "string", "format": "date-time"},
-    "generator_version": {"type": "string", "minLength": 1},
-    "source_queue_state_path": {"type": ["string", "null"], "minLength": 1},
-    "execution_attempt_id": {"type": ["string", "null"], "minLength": 1}
+    "error_summary": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "generator_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_queue_state_path": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "execution_attempt_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "validation_result_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "preflight_decision": {
+      "type": "string",
+      "enum": [
+        "ALLOW",
+        "BLOCK"
+      ]
+    }
   },
   "allOf": [
     {
-      "if": {"properties": {"execution_mode": {"const": "live"}}},
+      "if": {
+        "properties": {
+          "execution_mode": {
+            "const": "live"
+          }
+        }
+      },
       "then": {
         "properties": {
-          "execution_status": {"const": "success"},
-          "output_reference": {"type": "string", "minLength": 1},
-          "error_summary": {"type": "null"}
+          "execution_status": {
+            "const": "success"
+          },
+          "output_reference": {
+            "type": "string",
+            "minLength": 1
+          },
+          "error_summary": {
+            "type": "null"
+          }
         },
-        "required": ["output_reference"]
+        "required": [
+          "output_reference"
+        ]
       }
     },
     {
-      "if": {"properties": {"execution_mode": {"const": "simulated"}}},
+      "if": {
+        "properties": {
+          "execution_mode": {
+            "const": "simulated"
+          }
+        }
+      },
       "then": {
         "properties": {
           "output_reference": {
             "anyOf": [
-              {"type": "null"},
-              {"type": "string", "pattern": "^artifacts/prompt_queue/simulated_outputs/"}
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "pattern": "^artifacts/prompt_queue/simulated_outputs/"
+              }
             ]
           }
         }
       }
     },
     {
-      "if": {"properties": {"execution_status": {"const": "success"}}},
+      "if": {
+        "properties": {
+          "execution_status": {
+            "const": "success"
+          }
+        }
+      },
       "then": {
-        "properties": {"output_reference": {"type": "string", "minLength": 1}, "error_summary": {"type": "null"}}
+        "properties": {
+          "output_reference": {
+            "type": "string",
+            "minLength": 1
+          },
+          "error_summary": {
+            "type": "null"
+          }
+        }
       },
       "else": {
-        "properties": {"output_reference": {"type": "null"}}
+        "properties": {
+          "output_reference": {
+            "type": "null"
+          }
+        }
       }
     }
   ]

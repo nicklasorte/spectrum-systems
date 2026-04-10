@@ -217,10 +217,14 @@ def _as_sorted_unique(values: list[str]) -> list[str]:
     return sorted(dict.fromkeys(values))
 
 
-def build_queue_transition_decision(step_decision: dict, findings_handoff: dict | None = None, *, clock=utc_now) -> dict:
+def build_queue_transition_decision(step_decision: dict, batch_decision_artifact: dict, findings_handoff: dict | None = None, *, clock=utc_now) -> dict:
     """Build a unified fail-closed queue transition decision artifact from QUEUE-03 outputs."""
     if not isinstance(step_decision, dict):
         raise TransitionDecisionBuildError("missing prompt_queue_step_decision artifact")
+    if not isinstance(batch_decision_artifact, dict):
+        raise TransitionDecisionBuildError("missing batch_decision_artifact")
+    if batch_decision_artifact.get("artifact_type") != "batch_decision_artifact":
+        raise TransitionDecisionBuildError("invalid batch_decision_artifact type")
 
     step_id = step_decision.get("step_id")
     source_decision_ref = step_decision.get("decision_id")
@@ -299,6 +303,7 @@ def build_queue_transition_decision(step_decision: dict, findings_handoff: dict 
         "queue_id": queue_id,
         "trace_linkage": trace_linkage,
         "source_decision_ref": source_decision_ref,
+        "batch_decision_artifact_ref": batch_decision_artifact.get("batch_id"),
         "transition_action": transition_action,
         "transition_status": transition_status,
         "reason_codes": [transition_reason_code],

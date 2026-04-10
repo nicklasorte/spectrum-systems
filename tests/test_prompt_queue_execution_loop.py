@@ -138,13 +138,17 @@ def test_single_step_success_advances_and_completes(monkeypatch: pytest.MonkeyPa
             "reason_codes": ["clean_findings"],
             "blocking_reasons": [],
             "derived_from_artifacts": ["execres-001"],
+            "validation_result_refs": ["validation_result_record:vr-001"],
+            "review_evidence_ref": "review_result_artifact:rqx-step-001",
+            "preflight_decision": "ALLOW",
         },
     )
     monkeypatch.setattr(
         "spectrum_systems.modules.prompt_queue.post_execution_policy.build_queue_transition_decision",
-        lambda _step_decision: {
+        lambda _step_decision, _batch_decision: {
             "step_id": "step-001",
             "source_decision_ref": "step-decision-001",
+            "batch_decision_artifact_ref": "queue-001:step-001",
             "transition_action": "continue",
             "transition_status": "allowed",
             "reason_codes": ["allow_clean_findings_continue"],
@@ -227,6 +231,7 @@ def test_deterministic_state_transition_application() -> None:
     transition = {
         "step_id": "step-001",
         "source_decision_ref": "step-decision-001",
+        "batch_decision_artifact_ref": "queue-001:step-001",
         "transition_action": "continue",
         "transition_status": "allowed",
     }
@@ -295,11 +300,14 @@ def test_fail_fast_transition_decision_missing(monkeypatch: pytest.MonkeyPatch) 
             "reason_codes": ["clean_findings"],
             "blocking_reasons": [],
             "derived_from_artifacts": ["execres-001"],
+            "validation_result_refs": ["validation_result_record:vr-001"],
+            "review_evidence_ref": "review_result_artifact:rqx-step-001",
+            "preflight_decision": "ALLOW",
         },
     )
     monkeypatch.setattr(
         "spectrum_systems.modules.prompt_queue.post_execution_policy.build_queue_transition_decision",
-        lambda _step_decision: None,
+        lambda _step_decision, _batch_decision: None,
     )
 
     with pytest.raises(QueueLoopError, match="transition decision missing"):
@@ -329,3 +337,147 @@ def test_fail_fast_multiple_steps_executed_in_one_loop() -> None:
 
     with pytest.raises(QueueLoopError, match="no eligible next step"):
         run_queue_once(queue_state=queue_state, manifest=manifest)
+
+
+def test_governed_build_requires_validation_before_decision(monkeypatch: pytest.MonkeyPatch) -> None:
+    queue_state = _base_queue_state(total_steps=1)
+    manifest = _base_manifest(total_steps=1)
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.prompt_queue.execution_queue_integration.run_queue_step_execution_adapter",
+        lambda **kwargs: {"execution_status": "success", "output_reference": "artifacts/output.json"},
+    )
+    monkeypatch.setattr(
+        "spectrum_systems.modules.prompt_queue.review_parser.parse_queue_step_report",
+        lambda _result: {
+            "step_id": "step-001",
+            "queue_id": "queue-001",
+            "trace_linkage": "queue-001",
+            "source_execution_result_artifact_id": "execres-001",
+            "validation_status": "valid",
+            "review_evidence_ref": "review_result_artifact:rqx-step-001",
+            "validation_result_refs": [],
+            "preflight_decision": "ALLOW",
+            "findings": [],
+            "severity_summary": {"error": 0, "ambiguous": 0, "warning": 0, "info": 0},
+        },
+    )
+
+    with pytest.raises(QueueLoopError, match="step decision failed closed"):
+        run_queue_once(queue_state=queue_state, manifest=manifest)
+
+
+def test_governed_build_requires_review_before_decision(monkeypatch: pytest.MonkeyPatch) -> None:
+    queue_state = _base_queue_state(total_steps=1)
+    manifest = _base_manifest(total_steps=1)
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.prompt_queue.execution_queue_integration.run_queue_step_execution_adapter",
+        lambda **kwargs: {"execution_status": "success", "output_reference": "artifacts/output.json"},
+    )
+    monkeypatch.setattr(
+        "spectrum_systems.modules.prompt_queue.review_parser.parse_queue_step_report",
+        lambda _result: {
+            "step_id": "step-001",
+            "queue_id": "queue-001",
+            "trace_linkage": "queue-001",
+            "source_execution_result_artifact_id": "execres-001",
+            "validation_status": "valid",
+            "review_evidence_ref": "",
+            "validation_result_refs": ["validation_result_record:vr-001"],
+            "preflight_decision": "ALLOW",
+            "findings": [],
+            "severity_summary": {"error": 0, "ambiguous": 0, "warning": 0, "info": 0},
+        },
+    )
+
+    with pytest.raises(QueueLoopError, match="step decision failed closed"):
+        run_queue_once(queue_state=queue_state, manifest=manifest)
+
+
+def test_governed_progression_requires_batch_decision_artifact() -> None:
+    queue_state = _base_queue_state(total_steps=1)
+    with pytest.raises(QueueLoopError, match="batch_decision_artifact_ref"):
+        apply_transition_to_queue_state(
+            queue_state,
+            {
+                "step_id": "step-001",
+                "source_decision_ref": "step-decision-001",
+                "transition_action": "continue",
+                "transition_status": "allowed",
+            },
+        )
+
+
+def test_pqx_completion_does_not_imply_decision(monkeypatch: pytest.MonkeyPatch) -> None:
+    queue_state = _base_queue_state(total_steps=1)
+    manifest = _base_manifest(total_steps=1)
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.prompt_queue.execution_queue_integration.run_queue_step_execution_adapter",
+        lambda **kwargs: {"execution_status": "success", "output_reference": "artifacts/output.json"},
+    )
+    monkeypatch.setattr(
+        "spectrum_systems.modules.prompt_queue.review_parser.parse_queue_step_report",
+        lambda _result: (_ for _ in ()).throw(ReviewParseError("missing governed review output")),
+    )
+
+    with pytest.raises(QueueLoopError, match="parsing fails"):
+        run_queue_once(queue_state=queue_state, manifest=manifest)
+
+
+def test_batch_decision_artifact_allows_progression_when_complete(monkeypatch: pytest.MonkeyPatch) -> None:
+    queue_state = _base_queue_state(total_steps=1)
+    manifest = _base_manifest(total_steps=1)
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.prompt_queue.execution_queue_integration.run_queue_step_execution_adapter",
+        lambda **kwargs: {"execution_status": "success", "output_reference": "artifacts/output.json"},
+    )
+    monkeypatch.setattr(
+        "spectrum_systems.modules.prompt_queue.review_parser.parse_queue_step_report",
+        lambda _result: {
+            "step_id": "step-001",
+            "queue_id": "queue-001",
+            "trace_linkage": "queue-001",
+            "source_execution_result_artifact_id": "execres-001",
+            "validation_status": "valid",
+            "review_evidence_ref": "review_result_artifact:rqx-step-001",
+            "validation_result_refs": ["validation_result_record:vr-001"],
+            "preflight_decision": "ALLOW",
+            "findings": [],
+            "severity_summary": {"error": 0, "ambiguous": 0, "warning": 0, "info": 0},
+        },
+    )
+
+    updated = run_queue_once(queue_state=queue_state, manifest=manifest)
+    assert updated["queue_status"] == "completed"
+
+
+def test_fix_path_reenters_brf(monkeypatch: pytest.MonkeyPatch) -> None:
+    queue_state = _base_queue_state(total_steps=1)
+    queue_state["work_items"][0]["repair_loop_generation"] = 1
+    manifest = _base_manifest(total_steps=1)
+
+    monkeypatch.setattr(
+        "spectrum_systems.modules.prompt_queue.execution_queue_integration.run_queue_step_execution_adapter",
+        lambda **kwargs: {"execution_status": "failure", "output_reference": "artifacts/output-failed.json"},
+    )
+    monkeypatch.setattr(
+        "spectrum_systems.modules.prompt_queue.review_parser.parse_queue_step_report",
+        lambda _result: {
+            "step_id": "step-001",
+            "queue_id": "queue-001",
+            "trace_linkage": "queue-001",
+            "source_execution_result_artifact_id": "execres-001",
+            "validation_status": "valid",
+            "review_evidence_ref": "review_result_artifact:rqx-step-001",
+            "validation_result_refs": ["validation_result_record:vr-001"],
+            "preflight_decision": "ALLOW",
+            "findings": [{"finding_type": "execution_status", "severity": "error"}],
+            "severity_summary": {"error": 1, "ambiguous": 0, "warning": 0, "info": 0},
+        },
+    )
+
+    updated = run_queue_once(queue_state=queue_state, manifest=manifest)
+    assert updated["queue_status"] == "blocked"

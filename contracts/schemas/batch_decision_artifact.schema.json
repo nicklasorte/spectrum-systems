@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/batch_decision_artifact.schema.json",
+  "title": "Batch Decision Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "batch_id",
+    "decision_status",
+    "decision_reason",
+    "decision_owner",
+    "next_action",
+    "supporting_refs",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "batch_decision_artifact"},
+    "batch_id": {"type": "string", "minLength": 1},
+    "decision_status": {
+      "type": "string",
+      "enum": ["SAFE_TO_MOVE_ON", "MOVE_ON_AFTER_ONE_FIX_BATCH", "DO_NOT_MOVE_ON"]
+    },
+    "decision_reason": {"type": "string", "minLength": 1},
+    "decision_owner": {"type": "string", "enum": ["TLC"]},
+    "next_action": {"type": "string", "enum": ["ADVANCE", "FIX", "STOP"]},
+    "supporting_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "emitted_at": {"type": "string", "format": "date-time"}
+  }
+}

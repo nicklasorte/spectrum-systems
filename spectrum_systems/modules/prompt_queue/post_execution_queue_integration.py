@@ -62,6 +62,9 @@ def _transition_from_post_execution(post_execution_decision_artifact: dict) -> d
         "source_decision_ref": post_execution_decision_artifact.get("post_execution_decision_artifact_id")
         or post_execution_decision_artifact.get("execution_result_artifact_path")
         or "unknown",
+        "batch_decision_artifact_ref": post_execution_decision_artifact.get("post_execution_decision_artifact_id")
+        or post_execution_decision_artifact.get("execution_result_artifact_path")
+        or "unknown",
         "transition_action": transition_action,
         "transition_status": "blocked" if transition_action == "block" else "allowed",
         "reason_codes": ["block_invalid_report_fail_closed"] if transition_action == "block" else ["warn_findings_request_review"],

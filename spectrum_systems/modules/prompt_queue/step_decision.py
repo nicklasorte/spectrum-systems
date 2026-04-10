@@ -49,12 +49,24 @@ def build_step_decision(findings: dict, *, clock: Callable = utc_now) -> dict:
         "validation_status",
         "findings",
         "severity_summary",
+        "validation_result_refs",
+        "review_evidence_ref",
+        "preflight_decision",
     )
     missing = [field for field in required if field not in findings]
     if missing:
         raise StepDecisionError(f"Findings missing required fields: {', '.join(missing)}")
 
     if findings["validation_status"] != "valid":
+        decision = "block"
+        reason_codes = ["invalid_report"]
+    elif findings.get("preflight_decision") != "ALLOW":
+        decision = "block"
+        reason_codes = ["invalid_report"]
+    elif not findings.get("validation_result_refs"):
+        decision = "block"
+        reason_codes = ["invalid_report"]
+    elif not findings.get("review_evidence_ref"):
         decision = "block"
         reason_codes = ["invalid_report"]
     else:
@@ -100,7 +112,12 @@ def build_step_decision(findings: dict, *, clock: Callable = utc_now) -> dict:
         "blocking_reasons": blocking_reasons,
         "derived_from_artifacts": [
             findings["source_execution_result_artifact_id"],
+            findings["review_evidence_ref"],
+            *list(findings["validation_result_refs"]),
         ],
+        "review_evidence_ref": findings["review_evidence_ref"],
+        "validation_result_refs": list(findings["validation_result_refs"]),
+        "preflight_decision": findings["preflight_decision"],
         "timestamp": generated_at,
         "generator_version": DECISION_GENERATOR_VERSION,
     }
