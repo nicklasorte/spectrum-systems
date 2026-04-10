@@ -1,0 +1,67 @@
+{
+  "artifact_type": "control_signal_fusion_record",
+  "run_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "slice_id": "CONTROL-01",
+  "owner": "RIL",
+  "inputs": [
+    "policy_change_candidate.EVAL-03.json",
+    "drift_detection_record.DRIFT-02.json",
+    "slice_contract_update_candidate.SLICE-02.json"
+  ],
+  "fused_recommendation_set": [
+    {
+      "id": "REC-001",
+      "summary": "require deterministic evidence-link map as gating candidate",
+      "sources": [
+        "policy_change_candidate",
+        "slice_contract_update_candidate"
+      ]
+    },
+    {
+      "id": "REC-002",
+      "summary": "prioritize review-link drift mitigation for AI-02/TRUST-01",
+      "sources": [
+        "drift_detection_record",
+        "evaluation_pattern_report"
+      ]
+    },
+    {
+      "id": "REC-003",
+      "summary": "enforce canonical failure classification schema pre-review",
+      "sources": [
+        "policy_change_candidate",
+        "slice_contract_update_candidate"
+      ]
+    }
+  ],
+  "source_mapping": {
+    "policy_change_candidate": [
+      "REC-001",
+      "REC-003"
+    ],
+    "drift_detection_record": [
+      "REC-002"
+    ],
+    "slice_contract_update_candidate": [
+      "REC-001",
+      "REC-003"
+    ]
+  },
+  "conflict_list": [
+    {
+      "conflict_id": "CONFLICT-001",
+      "description": "REC-001 proposes immediate gating candidate while drift signal suggests phased rollout",
+      "resolution_strategy": "preserve both options as bounded-next-step alternatives"
+    }
+  ],
+  "rationale_references": [
+    "high recurrence of missing linkage and incomplete test evidence",
+    "moderate drift classification driven by evidence-link degradation"
+  ],
+  "fail_closed_checks": {
+    "upstream_refs_missing": false,
+    "conflict_representation_nondeterministic": false,
+    "source_provenance_lost": false
+  },
+  "status": "PASS"
+}

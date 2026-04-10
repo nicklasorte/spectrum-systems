@@ -1,0 +1,32 @@
+{
+  "artifact_type": "slice_contract_update_candidate",
+  "run_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "slice_id": "SLICE-02",
+  "owner": "PRG",
+  "recommendation_only": true,
+  "stronger_required_artifact_sets": [
+    "require evidence_link_map artifact for repair-adjacent slices",
+    "require test_evidence_coverage_summary artifact before review completion"
+  ],
+  "explicit_invariant_updates": [
+    "evidence_link_coverage_ratio must be >= 0.95",
+    "failure_classification keys must match canonical taxonomy"
+  ],
+  "bounded_command_adjustments": [
+    "add deterministic evidence-link normalization command before pattern aggregation",
+    "add pre-review schema compatibility check for regression_run_result artifacts"
+  ],
+  "deterministic_prereview_validation_additions": [
+    "block umbrella completion when test evidence schema version missing",
+    "block recommendation emission on unresolved lineage references"
+  ],
+  "bounded_evidence_link_consistency_requirements": [
+    "require stable run_id+slice_id+artifact_type composite key in linkage map"
+  ],
+  "forbidden_actions_confirmed": {
+    "direct_contract_mutation": false,
+    "direct_enforcement": false,
+    "runtime_execution_mutation": false
+  },
+  "status": "PASS"
+}

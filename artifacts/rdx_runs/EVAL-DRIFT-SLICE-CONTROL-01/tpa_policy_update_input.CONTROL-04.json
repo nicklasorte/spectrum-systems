@@ -1,0 +1,37 @@
+{
+  "artifact_type": "tpa_policy_update_input",
+  "run_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "slice_id": "CONTROL-04",
+  "owner_alignment": [
+    "RIL_interpretation_support",
+    "PRG_recommendation_support"
+  ],
+  "recommendation_only": true,
+  "recommended_tighter_gating_candidates": [
+    "candidate_1: require evidence_link_map for repair-adjacent slice completion",
+    "candidate_2: require test_evidence_coverage_summary before umbrella decision artifact creation"
+  ],
+  "required_artifact_additions": [
+    "evidence_link_map",
+    "test_evidence_coverage_summary"
+  ],
+  "proposed_invariant_checks": [
+    "check_1: evidence_link_coverage_ratio >= 0.95",
+    "check_2: failure_classification taxonomy keys are canonical"
+  ],
+  "bounded_scope_complexity_implications": [
+    "changes are artifact-contract level only",
+    "no runtime mutation or execution authority changes"
+  ],
+  "evidence_linked_rationale": [
+    "recurring missing linkage in 3/4 evaluated runs",
+    "moderate drift driven by evidence-link deterioration"
+  ],
+  "authority_boundary_statement": "This package prepares policy and gating inputs for a future TPA-governed cycle; it does not enforce policy or produce allow/deny outcomes.",
+  "fail_closed_checks": {
+    "implies_enforcement_occurred": false,
+    "scope_bounded": true,
+    "evidence_linkage_complete": true
+  },
+  "status": "PASS"
+}

@@ -1,0 +1,48 @@
+{
+  "artifact_type": "prioritized_adoption_candidate_set",
+  "run_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "slice_id": "CONTROL-02",
+  "owner": "PRG",
+  "ranked_recommendation_list": [
+    {
+      "rank": 1,
+      "recommendation_id": "REC-001",
+      "bounded_adoption_candidate": "require deterministic evidence-link map in repair-adjacent slices",
+      "why_now": "highest recurrence + strongest evidence-link drift signal",
+      "evidence_strength": "high"
+    },
+    {
+      "rank": 2,
+      "recommendation_id": "REC-003",
+      "bounded_adoption_candidate": "canonical failure classification schema pre-review",
+      "why_now": "reduces aggregation inconsistency and contract mismatch risk",
+      "evidence_strength": "high"
+    },
+    {
+      "rank": 3,
+      "recommendation_id": "REC-002",
+      "bounded_adoption_candidate": "targeted review-link drift mitigation for AI-02/TRUST-01",
+      "why_later": "requires slice-specific rollout planning to avoid over-broad scope",
+      "evidence_strength": "moderate"
+    }
+  ],
+  "deferred_items": [
+    {
+      "recommendation": "global runtime gating rewrite",
+      "reason": "unbounded scope and not supported by this prompt authority"
+    }
+  ],
+  "ranking_basis": {
+    "recurrence_severity": "weighted_high",
+    "drift_magnitude": "moderate",
+    "slice_criticality_hotspot_evidence": "AI-02/TRUST-01",
+    "boundedness_requirement": "strictly_enforced",
+    "evidence_strength_requirement": "met"
+  },
+  "determinism_checks": {
+    "justifiable_from_artifacts": true,
+    "scope_unbounded": false,
+    "ranking_nondeterministic": false
+  },
+  "status": "PASS"
+}

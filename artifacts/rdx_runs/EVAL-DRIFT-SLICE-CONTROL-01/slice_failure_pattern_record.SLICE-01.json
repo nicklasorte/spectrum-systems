@@ -1,0 +1,41 @@
+{
+  "artifact_type": "slice_failure_pattern_record",
+  "run_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "slice_id": "SLICE-01",
+  "owner": "RIL",
+  "inputs": [
+    "evaluation_pattern_report.EVAL-02.json",
+    "drift_detection_record.DRIFT-02.json"
+  ],
+  "recurring_slice_issues": [
+    {
+      "slice_id": "AI-02",
+      "issue": "incomplete_test_evidence recurrence",
+      "count": 3
+    },
+    {
+      "slice_id": "TRUST-01",
+      "issue": "review-link instability",
+      "count": 2
+    }
+  ],
+  "contract_mismatch_patterns": [
+    "optional evidence_link_map treated as required by downstream reviewers",
+    "non-uniform failure classification field names across run bundles"
+  ],
+  "evidence_linkage_deficiencies": [
+    "missing deterministic join key between replay_result and review_result in two runs"
+  ],
+  "invariant_gap_observations": [
+    "no invariant currently requires minimum evidence-link coverage ratio",
+    "no invariant enforces stable test evidence schema across runs"
+  ],
+  "command_shape_weakness_observations": [
+    "test evidence command provenance is not normalized before aggregation"
+  ],
+  "fail_closed_checks": {
+    "invalid_slice_reference": false,
+    "pattern_logic_inconsistent": false
+  },
+  "status": "PASS"
+}

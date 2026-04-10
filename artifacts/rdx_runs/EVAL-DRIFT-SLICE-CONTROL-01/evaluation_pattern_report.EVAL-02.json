@@ -1,0 +1,60 @@
+{
+  "artifact_type": "evaluation_pattern_report",
+  "run_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "slice_id": "EVAL-02",
+  "owner": "PRG",
+  "aggregation_window": "2026-04-03..2026-04-10",
+  "evaluated_run_count": 4,
+  "recurring_failure_types": [
+    {
+      "failure_type": "incomplete_test_evidence",
+      "recurrence_count": 4,
+      "affected_runs": [
+        "pqx_003",
+        "pqx_003/run_b",
+        "EVAL-DRIFT-SLICE-01",
+        "BATCH-RDX-EXEC-REAL-01"
+      ]
+    },
+    {
+      "failure_type": "missing_review_linkage",
+      "recurrence_count": 3,
+      "affected_runs": [
+        "pqx_003/run_b",
+        "EVAL-DRIFT-SLICE-01",
+        "BATCH-RDX-EXEC-REAL-01"
+      ]
+    },
+    {
+      "failure_type": "schema_mismatch_optional_vs_required",
+      "recurrence_count": 2,
+      "affected_runs": [
+        "pqx_003",
+        "EVAL-DRIFT-SLICE-01"
+      ]
+    }
+  ],
+  "hot_slices": [
+    "AI-02",
+    "TRUST-01",
+    "RDX_EXECUTION_CONTROL-B02"
+  ],
+  "hotspot_batches": [
+    "DRIFT_LAYER-B02",
+    "SLICE_IMPROVEMENT_LAYER-B01"
+  ],
+  "cross_run_evidence_linkage_issues": [
+    "replay_result to review_result mapping missing deterministic key in two runs",
+    "repair-loop artifact identifiers vary between run families and require normalization"
+  ],
+  "cross_run_incomplete_test_evidence_issues": [
+    "regression_run_result present without assertion granularity in three runs",
+    "test command provenance missing in one run bundle"
+  ],
+  "deterministic_aggregation_proof": {
+    "aggregation_method": "count_by_failure_type_with_run_dedup",
+    "nondeterministic_logic_detected": false,
+    "required_summary_signals_missing": false
+  },
+  "status": "PASS"
+}

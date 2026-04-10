@@ -1,0 +1,34 @@
+{
+  "artifact_type": "execution_observability_artifact",
+  "run_id": "EVAL-DRIFT-SLICE-CONTROL-01",
+  "slice_id": "DRIFT-01",
+  "owner": "RIL",
+  "time_window": {
+    "start": "2026-04-03T09:47:15Z",
+    "end": "2026-04-10T12:20:00Z",
+    "run_count": 4
+  },
+  "normalized_metrics": {
+    "pass_rate": 0.9,
+    "repair_loop_rate": 0.2,
+    "evidence_completeness_rate": 0.84,
+    "median_execution_latency_seconds": 47.5,
+    "review_link_completeness_rate": 0.82
+  },
+  "time_based_signals": {
+    "pass_rate_trend": "flat_to_slight_decline",
+    "failure_rate_trend": "increase_+0.05",
+    "evidence_link_trend": "declining",
+    "latency_trend": "stable"
+  },
+  "trend_ready_summaries": [
+    "highest drift pressure comes from evidence-link completeness",
+    "failure-rate increase is concentrated in repair-adjacent slices"
+  ],
+  "fail_closed_checks": {
+    "metrics_invalid": false,
+    "run_windows_incomplete": false,
+    "normalization_inconsistent": false
+  },
+  "status": "PASS"
+}
