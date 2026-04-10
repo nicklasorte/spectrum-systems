@@ -7,6 +7,15 @@
       "what_it_does": "Implements governed AEX control behavior for execution slice AEX-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "pytest tests/test_execution_hierarchy.py -q",
+        "pytest tests/test_roadmap_slice_registry.py -q"
+      ],
+      "success_criteria": [
+        "execution hierarchy validation passes",
+        "slice registry validation tests pass with exit code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AEX-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -33,6 +42,15 @@
       "what_it_does": "Implements governed AEX control behavior for execution slice AEX-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "pytest tests/test_execution_hierarchy.py -q",
+        "pytest tests/test_roadmap_slice_registry.py -q"
+      ],
+      "success_criteria": [
+        "execution hierarchy validation passes",
+        "slice registry validation tests pass with exit code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AEX-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -58,6 +76,15 @@
       "what_it_does": "Implements governed AFX control behavior for execution slice AFX-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "repair",
+      "commands": [
+        "python scripts/run_replay_execution.py",
+        "python scripts/run_prompt_queue_replay.py"
+      ],
+      "success_criteria": [
+        "replay execution command exits with code 0",
+        "prompt queue replay exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AFX-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -83,6 +110,15 @@
       "what_it_does": "Implements governed AFX control behavior for execution slice AFX-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "repair",
+      "commands": [
+        "python scripts/run_replay_execution.py",
+        "python scripts/run_prompt_queue_replay.py"
+      ],
+      "success_criteria": [
+        "replay execution command exits with code 0",
+        "prompt queue replay exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AFX-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -109,6 +145,15 @@
       "what_it_does": "Implements governed AFX control behavior for execution slice AFX-03.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "repair",
+      "commands": [
+        "python scripts/run_replay_execution.py",
+        "python scripts/run_prompt_queue_replay.py"
+      ],
+      "success_criteria": [
+        "replay execution command exits with code 0",
+        "prompt queue replay exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AFX-03; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -134,6 +179,15 @@
       "what_it_does": "Implements governed AFX control behavior for execution slice AFX-04.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "repair",
+      "commands": [
+        "python scripts/run_replay_execution.py",
+        "python scripts/run_prompt_queue_replay.py"
+      ],
+      "success_criteria": [
+        "replay execution command exits with code 0",
+        "prompt queue replay exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AFX-04; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -159,6 +213,15 @@
       "what_it_does": "Implements governed AFX control behavior for execution slice AFX-05.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "repair",
+      "commands": [
+        "python scripts/run_replay_execution.py",
+        "python scripts/run_prompt_queue_replay.py"
+      ],
+      "success_criteria": [
+        "replay execution command exits with code 0",
+        "prompt queue replay exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AFX-05; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -184,6 +247,15 @@
       "what_it_does": "Implements governed AFX control behavior for execution slice AFX-GATE-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "repair",
+      "commands": [
+        "python scripts/run_replay_execution.py",
+        "python scripts/run_prompt_queue_replay.py"
+      ],
+      "success_criteria": [
+        "replay execution command exits with code 0",
+        "prompt queue replay exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AFX-GATE-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -209,6 +281,15 @@
       "what_it_does": "Implements governed AFX control behavior for execution slice AFX-RT-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "repair",
+      "commands": [
+        "python scripts/run_replay_execution.py",
+        "python scripts/run_prompt_queue_replay.py"
+      ],
+      "success_criteria": [
+        "replay execution command exits with code 0",
+        "prompt queue replay exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AFX-RT-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -234,6 +315,15 @@
       "what_it_does": "Implements governed AUT control behavior for execution slice AUT-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_autonomous_validation_run.py",
+        "python scripts/run_runtime_validation.py"
+      ],
+      "success_criteria": [
+        "autonomous validation run exits with code 0",
+        "runtime validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -259,6 +349,15 @@
       "what_it_does": "Implements governed AUT control behavior for execution slice AUT-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_autonomous_validation_run.py",
+        "python scripts/run_runtime_validation.py"
+      ],
+      "success_criteria": [
+        "autonomous validation run exits with code 0",
+        "runtime validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -284,6 +383,15 @@
       "what_it_does": "Implements governed AUT control behavior for execution slice AUT-03.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_autonomous_validation_run.py",
+        "python scripts/run_runtime_validation.py"
+      ],
+      "success_criteria": [
+        "autonomous validation run exits with code 0",
+        "runtime validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-03; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -309,6 +417,15 @@
       "what_it_does": "Implements governed AUT control behavior for execution slice AUT-04.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_autonomous_validation_run.py",
+        "python scripts/run_runtime_validation.py"
+      ],
+      "success_criteria": [
+        "autonomous validation run exits with code 0",
+        "runtime validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-04; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -334,6 +451,15 @@
       "what_it_does": "Implements governed AUT control behavior for execution slice AUT-05.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_autonomous_validation_run.py",
+        "python scripts/run_runtime_validation.py"
+      ],
+      "success_criteria": [
+        "autonomous validation run exits with code 0",
+        "runtime validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-05; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -359,6 +485,15 @@
       "what_it_does": "Implements governed AUT control behavior for execution slice AUT-06.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_autonomous_validation_run.py",
+        "python scripts/run_runtime_validation.py"
+      ],
+      "success_criteria": [
+        "autonomous validation run exits with code 0",
+        "runtime validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-06; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -384,6 +519,15 @@
       "what_it_does": "Implements governed AUT control behavior for execution slice AUT-07.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_autonomous_validation_run.py",
+        "python scripts/run_runtime_validation.py"
+      ],
+      "success_criteria": [
+        "autonomous validation run exits with code 0",
+        "runtime validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-07; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -409,6 +553,15 @@
       "what_it_does": "Implements governed AUT control behavior for execution slice AUT-08.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_autonomous_validation_run.py",
+        "python scripts/run_runtime_validation.py"
+      ],
+      "success_criteria": [
+        "autonomous validation run exits with code 0",
+        "runtime validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-08; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -434,6 +587,15 @@
       "what_it_does": "Implements governed AUT control behavior for execution slice AUT-09.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_autonomous_validation_run.py",
+        "python scripts/run_runtime_validation.py"
+      ],
+      "success_criteria": [
+        "autonomous validation run exits with code 0",
+        "runtime validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-09; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -459,6 +621,15 @@
       "what_it_does": "Implements governed AUT control behavior for execution slice AUT-10.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_autonomous_validation_run.py",
+        "python scripts/run_runtime_validation.py"
+      ],
+      "success_criteria": [
+        "autonomous validation run exits with code 0",
+        "runtime validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for AUT-10; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -484,6 +655,15 @@
       "what_it_does": "Implements governed BRF control behavior for execution slice BRF-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "pytest tests/test_prompt_queue_execution_loop.py -q",
+        "python scripts/run_review_artifact_validation.py --allow-full-pytest"
+      ],
+      "success_criteria": [
+        "prompt queue execution loop tests pass",
+        "review artifact validation reports no failures"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for BRF-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -509,6 +689,15 @@
       "what_it_does": "Implements governed BRF control behavior for execution slice BRF-ENFORCE-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "pytest tests/test_prompt_queue_execution_loop.py -q",
+        "python scripts/run_review_artifact_validation.py --allow-full-pytest"
+      ],
+      "success_criteria": [
+        "prompt queue execution loop tests pass",
+        "review artifact validation reports no failures"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for BRF-ENFORCE-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -535,6 +724,15 @@
       "what_it_does": "Implements governed GOV control behavior for execution slice GOV-A-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/run_policy_enforcement_integrity_validation.py",
+        "python scripts/run_control_decision_consistency_validation.py"
+      ],
+      "success_criteria": [
+        "policy enforcement integrity validation exits with code 0",
+        "control decision consistency validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-A-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -560,6 +758,15 @@
       "what_it_does": "Implements governed GOV control behavior for execution slice GOV-A-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/run_policy_enforcement_integrity_validation.py",
+        "python scripts/run_control_decision_consistency_validation.py"
+      ],
+      "success_criteria": [
+        "policy enforcement integrity validation exits with code 0",
+        "control decision consistency validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-A-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -585,6 +792,15 @@
       "what_it_does": "Implements governed GOV control behavior for execution slice GOV-B-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/run_policy_enforcement_integrity_validation.py",
+        "python scripts/run_control_decision_consistency_validation.py"
+      ],
+      "success_criteria": [
+        "policy enforcement integrity validation exits with code 0",
+        "control decision consistency validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-B-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -610,6 +826,15 @@
       "what_it_does": "Implements governed GOV control behavior for execution slice GOV-B-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/run_policy_enforcement_integrity_validation.py",
+        "python scripts/run_control_decision_consistency_validation.py"
+      ],
+      "success_criteria": [
+        "policy enforcement integrity validation exits with code 0",
+        "control decision consistency validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-B-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -635,6 +860,15 @@
       "what_it_does": "Implements governed GOV control behavior for execution slice GOV-C-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/run_policy_enforcement_integrity_validation.py",
+        "python scripts/run_control_decision_consistency_validation.py"
+      ],
+      "success_criteria": [
+        "policy enforcement integrity validation exits with code 0",
+        "control decision consistency validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-C-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -660,6 +894,15 @@
       "what_it_does": "Implements governed GOV control behavior for execution slice GOV-C-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/run_policy_enforcement_integrity_validation.py",
+        "python scripts/run_control_decision_consistency_validation.py"
+      ],
+      "success_criteria": [
+        "policy enforcement integrity validation exits with code 0",
+        "control decision consistency validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-C-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -685,6 +928,15 @@
       "what_it_does": "Implements governed GOV control behavior for execution slice GOV-D-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/run_policy_enforcement_integrity_validation.py",
+        "python scripts/run_control_decision_consistency_validation.py"
+      ],
+      "success_criteria": [
+        "policy enforcement integrity validation exits with code 0",
+        "control decision consistency validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-D-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -710,6 +962,15 @@
       "what_it_does": "Implements governed GOV control behavior for execution slice GOV-D-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/run_policy_enforcement_integrity_validation.py",
+        "python scripts/run_control_decision_consistency_validation.py"
+      ],
+      "success_criteria": [
+        "policy enforcement integrity validation exits with code 0",
+        "control decision consistency validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-D-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -735,6 +996,15 @@
       "what_it_does": "Implements governed GOV control behavior for execution slice GOV-E-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/run_policy_enforcement_integrity_validation.py",
+        "python scripts/run_control_decision_consistency_validation.py"
+      ],
+      "success_criteria": [
+        "policy enforcement integrity validation exits with code 0",
+        "control decision consistency validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-E-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -760,6 +1030,15 @@
       "what_it_does": "Implements governed GOV control behavior for execution slice GOV-E-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/run_policy_enforcement_integrity_validation.py",
+        "python scripts/run_control_decision_consistency_validation.py"
+      ],
+      "success_criteria": [
+        "policy enforcement integrity validation exits with code 0",
+        "control decision consistency validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for GOV-E-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -785,6 +1064,15 @@
       "what_it_does": "Implements governed MBRF control behavior for execution slice MBRF-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "pytest tests/test_prompt_queue_execution_loop.py -q",
+        "python scripts/run_review_artifact_validation.py --allow-full-pytest"
+      ],
+      "success_criteria": [
+        "prompt queue execution loop tests pass",
+        "review artifact validation reports no failures"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for MBRF-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -810,6 +1098,15 @@
       "what_it_does": "Implements governed PFG control behavior for execution slice PFG-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_contract_preflight.py --output-dir outputs/preflight",
+        "python scripts/run_review_artifact_validation.py --allow-full-pytest"
+      ],
+      "success_criteria": [
+        "contract preflight exits with code 0",
+        "review artifact validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for PFG-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -836,6 +1133,15 @@
       "what_it_does": "Implements governed PFG control behavior for execution slice PFG-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_contract_preflight.py --output-dir outputs/preflight",
+        "python scripts/run_review_artifact_validation.py --allow-full-pytest"
+      ],
+      "success_criteria": [
+        "contract preflight exits with code 0",
+        "review artifact validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for PFG-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -861,6 +1167,15 @@
       "what_it_does": "Implements governed PRG control behavior for execution slice PRG-RGM-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/run_policy_enforcement_integrity_validation.py",
+        "python scripts/run_control_decision_consistency_validation.py"
+      ],
+      "success_criteria": [
+        "policy enforcement integrity validation exits with code 0",
+        "control decision consistency validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for PRG-RGM-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -887,6 +1202,15 @@
       "what_it_does": "Implements governed PRG control behavior for execution slice PRG-RGM-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/run_policy_enforcement_integrity_validation.py",
+        "python scripts/run_control_decision_consistency_validation.py"
+      ],
+      "success_criteria": [
+        "policy enforcement integrity validation exits with code 0",
+        "control decision consistency validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for PRG-RGM-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -912,6 +1236,15 @@
       "what_it_does": "Implements governed RDX control behavior for execution slice RDX-EXEC-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/check_roadmap_authority.py",
+        "python scripts/run_roadmap_eligibility.py"
+      ],
+      "success_criteria": [
+        "roadmap authority validation exits with code 0",
+        "roadmap eligibility evaluation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for RDX-EXEC-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -937,6 +1270,15 @@
       "what_it_does": "Implements governed RDX control behavior for execution slice RDX-EXEC-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/check_roadmap_authority.py",
+        "python scripts/run_roadmap_eligibility.py"
+      ],
+      "success_criteria": [
+        "roadmap authority validation exits with code 0",
+        "roadmap eligibility evaluation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for RDX-EXEC-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -963,6 +1305,15 @@
       "what_it_does": "Implements governed RDX control behavior for execution slice RDX-EXEC-03.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/check_roadmap_authority.py",
+        "python scripts/run_roadmap_eligibility.py"
+      ],
+      "success_criteria": [
+        "roadmap authority validation exits with code 0",
+        "roadmap eligibility evaluation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for RDX-EXEC-03; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -989,6 +1340,15 @@
       "what_it_does": "Implements governed RDX control behavior for execution slice RDX-EXEC-04.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/check_roadmap_authority.py",
+        "python scripts/run_roadmap_eligibility.py"
+      ],
+      "success_criteria": [
+        "roadmap authority validation exits with code 0",
+        "roadmap eligibility evaluation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for RDX-EXEC-04; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1014,6 +1374,15 @@
       "what_it_does": "Implements governed RDX control behavior for execution slice RDX-REG-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/check_roadmap_authority.py",
+        "python scripts/run_roadmap_eligibility.py"
+      ],
+      "success_criteria": [
+        "roadmap authority validation exits with code 0",
+        "roadmap eligibility evaluation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for RDX-REG-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1040,6 +1409,15 @@
       "what_it_does": "Implements governed RDX control behavior for execution slice RDX-REG-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/check_roadmap_authority.py",
+        "python scripts/run_roadmap_eligibility.py"
+      ],
+      "success_criteria": [
+        "roadmap authority validation exits with code 0",
+        "roadmap eligibility evaluation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for RDX-REG-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1065,6 +1443,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-ADV-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-ADV-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1091,6 +1478,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-ADV-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-ADV-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1117,6 +1513,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-ADV-03.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-ADV-03; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1143,6 +1548,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-ADV-04.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-ADV-04; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1169,6 +1583,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-DRIFT-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-DRIFT-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1194,6 +1617,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-DRIFT-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-DRIFT-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1219,6 +1651,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-DRIFT-03.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-DRIFT-03; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1244,6 +1685,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-DRIFT-04.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-DRIFT-04; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1269,6 +1719,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-LOAD-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-LOAD-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1295,6 +1754,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-LOAD-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-LOAD-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1321,6 +1789,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-LOAD-03.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-LOAD-03; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1347,6 +1824,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-LOAD-04.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-LOAD-04; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1373,6 +1859,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-REC-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-REC-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1398,6 +1893,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-REC-02.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-REC-02; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1423,6 +1927,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-REC-03.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-REC-03; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1448,6 +1961,15 @@
       "what_it_does": "Implements governed SVA control behavior for execution slice SVA-REC-04.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/run_ops03_adversarial_stress_testing.py",
+        "python scripts/run_ay_adversarial_summary.py"
+      ],
+      "success_criteria": [
+        "adversarial stress testing exits with code 0",
+        "adversarial summary generation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for SVA-REC-04; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",
@@ -1473,6 +1995,15 @@
       "what_it_does": "Implements governed UMB control behavior for execution slice UMB-DEC-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/run_policy_enforcement_integrity_validation.py",
+        "python scripts/run_control_decision_consistency_validation.py"
+      ],
+      "success_criteria": [
+        "policy enforcement integrity validation exits with code 0",
+        "control decision consistency validation exits with code 0"
+      ],
       "implementation_notes": "Inferred from canonical roadmap batch intent for UMB-DEC-01; keep behavior artifact-first and fail-closed.",
       "likely_entrypoints": [
         "spectrum_systems/modules/runtime",

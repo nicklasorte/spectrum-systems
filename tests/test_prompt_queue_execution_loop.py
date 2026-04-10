@@ -12,6 +12,7 @@ from spectrum_systems.modules.prompt_queue.queue_state_machine import (
     run_queue_once,
 )
 from spectrum_systems.modules.prompt_queue.review_parser import ReviewParseError
+from spectrum_systems.modules.runtime.roadmap_slice_registry import load_slice_registry
 
 
 def _base_manifest(*, total_steps: int = 1, allow_warn: bool = False) -> dict:
@@ -258,9 +259,17 @@ def test_no_step_skipping_fail_closed() -> None:
         }
     ]
     manifest = _base_manifest(total_steps=2)
-
     with pytest.raises(QueueLoopError, match="no step skipping permitted"):
         run_queue_once(queue_state=queue_state, manifest=manifest)
+
+
+def test_slice_registry_contains_prompt_independent_execution_contract() -> None:
+    slices = load_slice_registry("contracts/roadmap/slice_registry.json")
+    assert slices
+    for row in slices:
+        assert row["execution_type"] in {"code", "validation", "repair", "governance"}
+        assert row["commands"]
+        assert row["success_criteria"]
 
 
 def test_fail_fast_missing_manifest() -> None:
