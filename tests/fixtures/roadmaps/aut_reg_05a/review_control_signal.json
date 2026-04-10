@@ -15,5 +15,10 @@
     "review_markdown_path": "docs/reviews/2026-03-20-reliability-control-loop-review.md",
     "source_digest_sha256": "f4e8b4f9f2a0e04230e96fde41b752fd38cb68303f011f16ef42f6f67706f4c1",
     "review_artifact_path": "artifacts/reviews/review_artifacts/REV-2026-03-20-RELIABILITY-CONTROL-LOOP-REVIEW.json"
+  },
+  "control_decision": {
+    "decision": "allow",
+    "system_response": "allow",
+    "decision_id": "ECD-AUT-05A-FIX-ALLOW"
   }
 }

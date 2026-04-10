@@ -1,0 +1,71 @@
+{
+  "executed_at_utc": "2026-04-10T14:45:01Z",
+  "umbrella": "AUTONOMY_EXECUTION",
+  "batch": "BATCH-AUT",
+  "resume_from": "AUT-05",
+  "planned_slices": [
+    "AUT-05",
+    "AUT-06",
+    "AUT-07",
+    "AUT-08",
+    "AUT-09",
+    "AUT-10"
+  ],
+  "results": [
+    {
+      "slice_id": "AUT-05",
+      "status": "passed",
+      "commands": [
+        {
+          "command": "python -c \"import json; from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; snapshot=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/repo_review_snapshot.json')); decision=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/review_control_signal.json')); build_review_roadmap(snapshot=snapshot, control_decision=decision['control_decision'])\"",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "",
+          "duration_sec": 0.348
+        },
+        {
+          "command": "pytest tests/test_review_roadmap_generator.py -q",
+          "exit_code": 0,
+          "stdout": "......                                                                   [100%]\n6 passed in 0.11s\n",
+          "stderr": "",
+          "duration_sec": 0.704
+        }
+      ]
+    },
+    {
+      "slice_id": "AUT-06",
+      "status": "passed",
+      "commands": [
+        {
+          "command": "python -c \"import json; from spectrum_systems.modules.runtime.roadmap_selector import validate_batch_readiness; batch=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/aut_readiness_batch.json')); signals=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/aut_readiness_signals.json')); validate_batch_readiness(batch, signals)\"",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "",
+          "duration_sec": 0.376
+        },
+        {
+          "command": "pytest tests/test_roadmap_selector.py -q",
+          "exit_code": 0,
+          "stdout": ".....................                                                    [100%]\n21 passed in 0.38s\n",
+          "stderr": "",
+          "duration_sec": 1.014
+        }
+      ]
+    },
+    {
+      "slice_id": "AUT-07",
+      "status": "failed",
+      "commands": [
+        {
+          "command": "python -c \"import json; from spectrum_systems.modules.runtime.repo_write_lineage_guard import validate_repo_write_lineage; adm=json.load(open('contracts/examples/build_admission_record.example.json')); req=json.load(open('contracts/examples/normalized_execution_request.example.json')); handoff=json.load(open('contracts/examples/tlc_handoff_record.example.json')); validate_repo_write_lineage(build_admission_record=adm, normalized_execution_request=req, tlc_handoff_record=handoff, expected_trace_id=adm['trace_id'])\"",
+          "exit_code": 1,
+          "stdout": "",
+          "stderr": "Traceback (most recent call last):\n  File \"/workspace/spectrum-systems/spectrum_systems/modules/runtime/repo_write_lineage_guard.py\", line 114, in validate_repo_write_lineage\n    admission_auth = verify_authenticity(artifact=build_admission_record, expected_issuer=\"AEX\")\n  File \"/workspace/spectrum-systems/spectrum_systems/modules/runtime/lineage_authenticity.py\", line 228, in verify_authenticity\n    raise LineageAuthenticityError(\"authenticity_payload_digest_mismatch\")\nspectrum_systems.modules.runtime.lineage_authenticity.LineageAuthenticityError: authenticity_payload_digest_mismatch\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"/workspace/spectrum-systems/spectrum_systems/modules/runtime/repo_write_lineage_guard.py\", line 118, in validate_repo_write_lineage\n    raise RepoWriteLineageGuardError(f\"repo_write_lineage_rejected:{exc}\") from exc\nspectrum_systems.modules.runtime.repo_write_lineage_guard.RepoWriteLineageGuardError: repo_write_lineage_rejected:authenticity_payload_digest_mismatch\n",
+          "duration_sec": 0.341
+        }
+      ]
+    }
+  ],
+  "stopped_fail_closed": true,
+  "last_slice": "AUT-07"
+}

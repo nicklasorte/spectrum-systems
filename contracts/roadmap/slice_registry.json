@@ -453,7 +453,7 @@
       "why_it_matters": "Preserves artifact-first execution and fail-closed governance under RDX sequencing and PQX execution.",
       "execution_type": "validation",
       "commands": [
-        "python -c \"import json; from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; snapshot=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/repo_review_snapshot.json')); decision=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/review_control_signal.json')); build_review_roadmap(snapshot=snapshot, control_decision=decision)\"",
+        "python -c \"import json; from spectrum_systems.modules.runtime.review_roadmap_generator import build_review_roadmap; snapshot=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/repo_review_snapshot.json')); decision=json.load(open('tests/fixtures/roadmaps/aut_reg_05a/review_control_signal.json')); build_review_roadmap(snapshot=snapshot, control_decision=decision['control_decision'])\"",
         "pytest tests/test_review_roadmap_generator.py -q"
       ],
       "success_criteria": [
