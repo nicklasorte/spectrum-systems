@@ -12,6 +12,7 @@ from typing import Any, Callable
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.execution_hierarchy import ExecutionHierarchyError, validate_execution_hierarchy
 from spectrum_systems.modules.runtime.roadmap_authorizer import authorize_selected_batch
 from spectrum_systems.modules.runtime.roadmap_executor import execute_authorized_batch
 from spectrum_systems.modules.runtime.roadmap_selector import build_roadmap_selection_result
@@ -123,6 +124,10 @@ def validate_single_batch_execution_loop(
     pqx_execute_fn: Callable[..., dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Validate one governed roadmap loop: selection -> authorization -> (optional) execution -> progress consistency."""
+    try:
+        validate_execution_hierarchy(roadmap_artifact, label="roadmap_artifact")
+    except ExecutionHierarchyError as exc:
+        raise RoadmapExecutionLoopValidationError(f"roadmap_artifact hierarchy invalid: {exc}") from exc
     _validate_schema(roadmap_artifact, "roadmap_artifact", label="roadmap_artifact")
 
     reason_codes: set[str] = set()

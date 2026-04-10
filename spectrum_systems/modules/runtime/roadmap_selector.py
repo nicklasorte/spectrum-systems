@@ -11,6 +11,7 @@ from typing import Any
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.execution_hierarchy import ExecutionHierarchyError, validate_execution_hierarchy
 from spectrum_systems.modules.runtime.program_layer import validate_roadmap_against_program as validate_program_alignment
 from spectrum_systems.modules.runtime.roadmap_signal_steering import (
     select_priority_batch,
@@ -67,6 +68,10 @@ def load_active_roadmap(path: Path | str) -> dict[str, Any]:
         raise RoadmapSelectionError(f"roadmap artifact is not valid JSON: {roadmap_path}") from exc
     if not isinstance(payload, dict):
         raise RoadmapSelectionError("roadmap artifact root must be an object")
+    try:
+        validate_execution_hierarchy(payload, label="system_roadmap")
+    except ExecutionHierarchyError as exc:
+        raise RoadmapSelectionError(f"system_roadmap hierarchy invalid: {exc}") from exc
     _validate_schema(payload, "system_roadmap", label="system_roadmap")
     return payload
 
@@ -317,6 +322,10 @@ def select_next_batch(
 ) -> str | None:
     """Select the next roadmap batch allowed to run, or ``None`` when no batch is eligible."""
     if "version" in roadmap_artifact and "created_at" in roadmap_artifact and "trace_id" in roadmap_artifact:
+        try:
+            validate_execution_hierarchy(roadmap_artifact, label="system_roadmap")
+        except ExecutionHierarchyError as exc:
+            raise RoadmapSelectionError(f"system_roadmap hierarchy invalid: {exc}") from exc
         normalized_roadmap = _normalize_system_roadmap_for_selection(roadmap_artifact)
         _validate_schema(normalized_roadmap, "system_roadmap", label="system_roadmap")
         return _select_next_batch_from_system_roadmap(
@@ -326,6 +335,10 @@ def select_next_batch(
         )
 
     _validate_schema(roadmap_artifact, "roadmap_artifact", label="roadmap_artifact")
+    try:
+        validate_execution_hierarchy(roadmap_artifact, label="roadmap_artifact")
+    except ExecutionHierarchyError as exc:
+        raise RoadmapSelectionError(f"roadmap_artifact hierarchy invalid: {exc}") from exc
     if not isinstance(system_signals, dict):
         raise RoadmapSelectionError("system_signals must be an object")
 
