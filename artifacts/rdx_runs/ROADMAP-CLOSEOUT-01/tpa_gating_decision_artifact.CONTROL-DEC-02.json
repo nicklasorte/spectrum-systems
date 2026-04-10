@@ -1,0 +1,40 @@
+{
+  "artifact_type": "tpa_gating_decision_artifact",
+  "run_id": "ROADMAP-CLOSEOUT-01",
+  "umbrella_id": "GOVERNED_CONTROL_DECISION_LAYER",
+  "slice_id": "CONTROL-DEC-02",
+  "owner": "TPA",
+  "decision_scope": "policy_gating_only",
+  "consumed_inputs": [
+    "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/tpa_policy_update_input.CONTROL-04.json",
+    "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/control_prep_readiness_record.CONTROL-05.json"
+  ],
+  "gating_outcome": "narrow_scope",
+  "approved_candidates": [
+    {
+      "candidate_id": "candidate_1",
+      "approved_scope": "repair-adjacent slices only",
+      "required_artifacts": [
+        "evidence_link_map"
+      ]
+    },
+    {
+      "candidate_id": "candidate_2",
+      "approved_scope": "pre-umbrella-decision checkpoints only",
+      "required_artifacts": [
+        "test_evidence_coverage_summary"
+      ]
+    }
+  ],
+  "rejected_or_deferred_candidates": [],
+  "risk_bounding": {
+    "scope_unbounded": false,
+    "evidence_incomplete": false,
+    "risk_cannot_be_bounded": false
+  },
+  "authority_purity_checks": {
+    "executed_work": false,
+    "performed_enforcement": false
+  },
+  "status": "PASS"
+}

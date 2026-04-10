@@ -1,0 +1,54 @@
+{
+  "artifact_type": "approved_change_surface_record",
+  "run_id": "ROADMAP-CLOSEOUT-01",
+  "umbrella_id": "CONTROLLED_ADOPTION_PREP_LAYER",
+  "slice_id": "ADOPT-01",
+  "owner_alignment": [
+    "RIL",
+    "PRG"
+  ],
+  "consumed_inputs": [
+    "artifacts/rdx_runs/ROADMAP-CLOSEOUT-01/closure_decision_artifact.CONTROL-DEC-01.json",
+    "artifacts/rdx_runs/ROADMAP-CLOSEOUT-01/tpa_gating_decision_artifact.CONTROL-DEC-02.json",
+    "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/prioritized_adoption_candidate_set.CONTROL-02.json"
+  ],
+  "approved_now_items": [
+    {
+      "recommendation_id": "REC-001",
+      "change": "require deterministic evidence_link_map in repair-adjacent slices",
+      "evidence_refs": [
+        "prioritized_adoption_candidate_set.CONTROL-02.json#rank=1",
+        "cde_control_decision_input.CONTROL-03.json#drift_severity_summary"
+      ]
+    }
+  ],
+  "deferred_items": [
+    {
+      "recommendation_id": "REC-003",
+      "change": "canonical failure classification schema pre-review",
+      "defer_reason": "TPA narrowed scope and requested phased adoption evidence",
+      "evidence_refs": [
+        "tpa_gating_decision_artifact.CONTROL-DEC-02.json#gating_outcome"
+      ]
+    },
+    {
+      "recommendation_id": "REC-002",
+      "change": "targeted review-link drift mitigation for AI-02/TRUST-01",
+      "defer_reason": "requires targeted slice validation before broad uptake",
+      "evidence_refs": [
+        "prioritized_adoption_candidate_set.CONTROL-02.json#rank=3"
+      ]
+    }
+  ],
+  "blocked_items": [
+    {
+      "recommendation": "global runtime gating rewrite",
+      "block_reason": "unbounded scope and outside current authority",
+      "evidence_refs": [
+        "prioritized_adoption_candidate_set.CONTROL-02.json#deferred_items[0]"
+      ]
+    }
+  ],
+  "execution_or_enforcement_performed": false,
+  "status": "PASS"
+}

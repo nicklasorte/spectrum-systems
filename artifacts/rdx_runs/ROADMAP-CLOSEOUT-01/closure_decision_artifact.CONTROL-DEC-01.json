@@ -1,0 +1,34 @@
+{
+  "artifact_type": "closure_decision_artifact",
+  "run_id": "ROADMAP-CLOSEOUT-01",
+  "umbrella_id": "GOVERNED_CONTROL_DECISION_LAYER",
+  "slice_id": "CONTROL-DEC-01",
+  "owner": "CDE",
+  "decision_scope": "bounded_next_step_classification_only",
+  "consumed_inputs": [
+    "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/cde_control_decision_input.CONTROL-03.json",
+    "artifacts/rdx_runs/EVAL-DRIFT-SLICE-CONTROL-01/control_prep_readiness_record.CONTROL-05.json"
+  ],
+  "readiness_precondition": {
+    "ready_for_future_governed_decision_cycle": true,
+    "precondition_satisfied": true
+  },
+  "decision": "adopt_now",
+  "selected_recommendation_id": "REC-001",
+  "bounded_next_step": "adopt deterministic evidence-link map requirement in repair-adjacent slices only",
+  "evidence_basis": [
+    "moderate drift score 0.43 driven by evidence-link drift",
+    "prioritized candidate rank 1 with high evidence strength",
+    "bounded scope specified in CONTROL-03 options"
+  ],
+  "non_selected_options": [
+    "defer REC-002 pending targeted validation",
+    "require_more_evidence for global REC-003 rollout"
+  ],
+  "authority_purity_checks": {
+    "generated_repair_plan": false,
+    "executed_changes": false,
+    "enforced_runtime": false
+  },
+  "status": "PASS"
+}

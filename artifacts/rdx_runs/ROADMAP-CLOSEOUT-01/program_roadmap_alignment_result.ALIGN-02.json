@@ -1,0 +1,30 @@
+{
+  "artifact_type": "program_roadmap_alignment_result",
+  "run_id": "ROADMAP-CLOSEOUT-01",
+  "umbrella_id": "PROGRAM_ALIGNMENT_LAYER",
+  "slice_id": "ALIGN-02",
+  "owner": "PRG",
+  "apply_first": [
+    {
+      "item_id": "PKG-REC-001",
+      "why": "highest evidence strength and direct mitigation of dominant drift driver"
+    },
+    {
+      "item_id": "PKG-CAND-002",
+      "why": "raises decision evidence completeness at umbrella checkpoints"
+    }
+  ],
+  "wait": [
+    {
+      "item_id": "REC-003",
+      "why": "needs phased validation and compatibility evidence"
+    }
+  ],
+  "require_further_review": [
+    {
+      "item_id": "REC-002",
+      "why": "targeted local mitigation needs broader program fit analysis"
+    }
+  ],
+  "status": "PASS"
+}

@@ -1,0 +1,16 @@
+{
+  "artifact_type": "umbrella_decision_artifact",
+  "run_id": "ROADMAP-CLOSEOUT-01",
+  "umbrella_id": "GOVERNED_CONTROL_DECISION_LAYER",
+  "decision_scope": "progression_only",
+  "serial_order": 1,
+  "required_artifacts_present": true,
+  "decision": "advance",
+  "explicit_confirmations": {
+    "cde_only_decision_authority": true,
+    "tpa_only_gating_authority": true,
+    "pqx_execution_occurred": false,
+    "sel_enforcement_occurred": false
+  },
+  "status": "PASS"
+}
