@@ -1,0 +1,153 @@
+{
+  "run_id": "BATCH-RDX-AUT-03",
+  "executed_at": "2026-04-10T12:14:57Z",
+  "authority_sources": {
+    "sequencing": "contracts/roadmap/roadmap_structure.json",
+    "execution": "contracts/roadmap/slice_registry.json"
+  },
+  "rdx_selection": {
+    "selected_umbrella": "AUTONOMY_EXECUTION",
+    "reason": "first_valid_umbrella_with_minimum_cardinality"
+  },
+  "umbrellas": [
+    {
+      "umbrella_id": "AUTONOMY_EXECUTION",
+      "batches": [
+        {
+          "batch_id": "BATCH-AEX",
+          "slices": [
+            {
+              "slice_id": "AEX-01",
+              "execution_type": "validation",
+              "commands": [
+                {
+                  "cmd": "pytest tests/test_execution_hierarchy.py -q",
+                  "exit_code": 0,
+                  "stdout_tail": "......                                                                   [100%]\n6 passed in 0.12s",
+                  "stderr_tail": ""
+                },
+                {
+                  "cmd": "pytest tests/test_roadmap_slice_registry.py -q",
+                  "exit_code": 0,
+                  "stdout_tail": "...........                                                              [100%]\n11 passed in 0.17s",
+                  "stderr_tail": ""
+                }
+              ],
+              "pqx_execution": "success",
+              "rqx_review": {
+                "triggered": true,
+                "status": "pass"
+              }
+            },
+            {
+              "slice_id": "AEX-02",
+              "execution_type": "validation",
+              "commands": [
+                {
+                  "cmd": "pytest tests/test_execution_hierarchy.py -q",
+                  "exit_code": 0,
+                  "stdout_tail": "......                                                                   [100%]\n6 passed in 0.11s",
+                  "stderr_tail": ""
+                },
+                {
+                  "cmd": "pytest tests/test_roadmap_slice_registry.py -q",
+                  "exit_code": 0,
+                  "stdout_tail": "...........                                                              [100%]\n11 passed in 0.15s",
+                  "stderr_tail": ""
+                }
+              ],
+              "pqx_execution": "success",
+              "rqx_review": {
+                "triggered": true,
+                "status": "pass"
+              }
+            }
+          ],
+          "rqx_auto_triggered": true,
+          "tpa_fix_gate_checks": [],
+          "sel_checks": [
+            {
+              "slice_id": "AEX-01",
+              "lineage_valid": true
+            },
+            {
+              "slice_id": "AEX-02",
+              "lineage_valid": true
+            }
+          ],
+          "batch_decision_artifact": {
+            "artifact_type": "batch_decision_artifact",
+            "decision_scope": "progression_only",
+            "decision": "allow_next_batch",
+            "closure_authority": "CDE_not_used_for_progression"
+          }
+        },
+        {
+          "batch_id": "BATCH-AUT",
+          "slices": [
+            {
+              "slice_id": "AUT-04",
+              "execution_type": "validation",
+              "commands": [
+                {
+                  "cmd": "python scripts/run_autonomous_validation_run.py",
+                  "exit_code": 0,
+                  "stdout_tail": "Wrote RUN-01 artifacts to runs/RUN-01",
+                  "stderr_tail": ""
+                },
+                {
+                  "cmd": "python scripts/run_runtime_validation.py",
+                  "exit_code": 2,
+                  "stdout_tail": "",
+                  "stderr_tail": "usage: run_runtime_validation.py [-h] [--runtime-env RUNTIME_ENV]\n                                 [--base-path BASE_PATH]\n                                 bundle_manifest\nrun_runtime_validation.py: error: the following arguments are required: bundle_manifest"
+                }
+              ],
+              "pqx_execution": "failed",
+              "rqx_review": {
+                "triggered": true,
+                "status": "fail"
+              }
+            }
+          ],
+          "rqx_auto_triggered": true,
+          "tpa_fix_gate_checks": [
+            {
+              "slice_id": "AUT-04",
+              "fix_required": true,
+              "gate_status": "approved",
+              "gate_artifact_type": "tpa_fix_gate_record"
+            }
+          ],
+          "sel_checks": [
+            {
+              "slice_id": "AUT-04",
+              "lineage_valid": true
+            }
+          ],
+          "batch_decision_artifact": {
+            "artifact_type": "batch_decision_artifact",
+            "decision_scope": "progression_only",
+            "decision": "block",
+            "closure_authority": "CDE_not_used_for_progression"
+          }
+        }
+      ],
+      "umbrella_decision_artifact": {
+        "artifact_type": "umbrella_decision_artifact",
+        "decision_scope": "progression_only",
+        "decision": "block",
+        "closure_authority": "CDE_not_used_for_progression"
+      }
+    }
+  ],
+  "enforcement_actions": [
+    {
+      "system": "SEL",
+      "action": "blocked_failed_validation",
+      "slice_id": "AUT-04",
+      "command": "python scripts/run_runtime_validation.py"
+    }
+  ],
+  "fail_closed": true,
+  "final_verdict": "DO NOT MOVE ON"
+}
