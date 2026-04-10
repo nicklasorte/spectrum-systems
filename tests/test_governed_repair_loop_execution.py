@@ -31,8 +31,12 @@ def test_full_loop_executes_end_to_end_for_aut05(tmp_path: Path) -> None:
     assert result["trace"]["decision"]["decision_owner"] == "CDE"
     assert result["trace"]["gating_decision"]["owner"] == "TPA"
     assert result["trace"]["execution"]["owner"] == "PQX"
+    assert result["trace"]["execution"]["canonical_artifact"]["artifact_type"] == "pqx_slice_execution_record"
+    assert result["trace"]["execution"]["canonical_artifact"]["trace_id"] == "trace-aut-05"
     assert result["trace"]["review"]["review_owner"] == "RQX"
     assert result["trace"]["review"]["interpretation_owner"] == "RIL"
+    assert result["trace"]["review"]["canonical_artifact"]["artifact_type"] == "review_result_artifact"
+    assert result["trace"]["review"]["canonical_artifact"]["review_outcome"] == "approved"
     assert result["trace"]["resume"]["owner"] == "TLC"
 
 
