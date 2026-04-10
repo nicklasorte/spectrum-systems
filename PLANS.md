@@ -89,6 +89,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 ## Active plans
 
+| docs/review-actions/PLAN-BATCH-RDX-EXEC-02-UMBRELLA-03-2026-04-10.md | BATCH-RDX-EXEC-02-UMBRELLA-03 — Serial umbrella governed execution + mandatory red-team review | Active |
 | docs/review-actions/PLAN-BATCH-HR-C-FIX-01-2026-04-07.md | BATCH-HR-C-FIX-01 — Ecosystem registry / standards-manifest consumer mismatch repair | Active |
 | docs/review-actions/PLAN-BATCH-HR-C-2026-04-07.md | BATCH-HR-C — Pre-PR governance closure + human checkpoint + permission policy consolidation | Active |
 | docs/review-actions/PLAN-BATCH-GHA-02-2026-04-06.md | BATCH-GHA-02 — GitHub Closure + Continuation Pipeline (GHA-002) | Active |
