@@ -1,0 +1,209 @@
+{
+  "run_id": "BATCH-RDX-EXEC-REAL-01",
+  "executed_at": "2026-04-10T00:00:00Z",
+  "mode": "real_execution",
+  "final_decision": "progression_only",
+  "closure_authority": "CDE",
+  "umbrellas": [
+    {
+      "umbrella_id": "EXECUTION_ENFORCEMENT",
+      "batches": [
+        {
+          "batch_id": "BRF-CORE-A",
+          "brf": {
+            "build": "spectrum_systems/modules/prompt_queue/batch_decision_artifact.py",
+            "test": "pytest tests/test_prompt_queue_execution_loop.py tests/test_execution_hierarchy.py",
+            "review": "docs/reviews/RVW-RDX-EXEC-REAL-01.md#umbrella-01",
+            "decision": "pass"
+          },
+          "slices": [
+            {
+              "slice_id": "BRF-CORE-A-S1",
+              "type": "code_change",
+              "artifact": "validation_result_record prefix enforcement in batch decision builder"
+            },
+            {
+              "slice_id": "BRF-CORE-A-S2",
+              "type": "code_change",
+              "artifact": "review_result_artifact prefix enforcement in batch decision builder"
+            }
+          ]
+        },
+        {
+          "batch_id": "BRF-CORE-B",
+          "brf": {
+            "build": "tests/test_prompt_queue_execution_loop.py",
+            "test": "pytest tests/test_prompt_queue_execution_loop.py tests/test_execution_hierarchy.py",
+            "review": "docs/reviews/RVW-RDX-EXEC-REAL-01.md#umbrella-01",
+            "decision": "pass"
+          },
+          "slices": [
+            {
+              "slice_id": "BRF-CORE-B-S1",
+              "type": "test_change",
+              "artifact": "test_governed_build_requires_review_result_artifact_ref"
+            },
+            {
+              "slice_id": "BRF-CORE-B-S2",
+              "type": "test_change",
+              "artifact": "test_governed_build_requires_validation_result_record_refs"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "umbrella_id": "RDX_EXECUTION_CONTROL",
+      "batches": [
+        {
+          "batch_id": "RDX-RUNNER-A",
+          "brf": {
+            "build": "tests/test_execution_hierarchy.py",
+            "test": "pytest tests/test_prompt_queue_execution_loop.py tests/test_execution_hierarchy.py",
+            "review": "docs/reviews/RVW-RDX-EXEC-REAL-01.md#umbrella-02",
+            "decision": "pass"
+          },
+          "slices": [
+            {
+              "slice_id": "RDX-RUNNER-A-S1",
+              "type": "test_change",
+              "artifact": "test_invalid_single_batch_umbrella_using_embedded_batches_fails"
+            },
+            {
+              "slice_id": "RDX-RUNNER-A-S2",
+              "type": "validation_execution",
+              "artifact": "22 targeted tests passed"
+            }
+          ]
+        },
+        {
+          "batch_id": "RDX-RUNNER-B",
+          "brf": {
+            "build": "PLANS.md and docs/review-actions/PLAN-BATCH-RDX-EXEC-REAL-01-2026-04-10.md",
+            "test": "pytest tests/test_prompt_queue_execution_loop.py tests/test_execution_hierarchy.py",
+            "review": "docs/reviews/RVW-RDX-EXEC-REAL-01.md#umbrella-02",
+            "decision": "pass"
+          },
+          "slices": [
+            {
+              "slice_id": "RDX-RUNNER-B-S1",
+              "type": "governance_change",
+              "artifact": "plan-first governance record created"
+            },
+            {
+              "slice_id": "RDX-RUNNER-B-S2",
+              "type": "governance_change",
+              "artifact": "plan index updated"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "umbrella_id": "REPAIR_CORE",
+      "batches": [
+        {
+          "batch_id": "AFX-RETRY-A",
+          "brf": {
+            "build": "failing tests captured then repaired",
+            "test": "pytest tests/test_prompt_queue_execution_loop.py tests/test_execution_hierarchy.py",
+            "review": "docs/reviews/RVW-RDX-EXEC-REAL-01.md#umbrella-03",
+            "decision": "fix_then_pass"
+          },
+          "slices": [
+            {
+              "slice_id": "AFX-RETRY-A-S1",
+              "type": "failure_trigger",
+              "artifact": "initial pytest run failed with assertion mismatch"
+            },
+            {
+              "slice_id": "AFX-RETRY-A-S2",
+              "type": "repair_execution",
+              "artifact": "updated expected error assertions; rerun passed"
+            }
+          ]
+        },
+        {
+          "batch_id": "AFX-REPLAY-B",
+          "brf": {
+            "build": "validation replay commands executed",
+            "test": "python scripts/run_contract_preflight.py; python scripts/run_review_artifact_validation.py --allow-full-pytest",
+            "review": "docs/reviews/RVW-RDX-EXEC-REAL-01.md#umbrella-03",
+            "decision": "blocked_timeout"
+          },
+          "slices": [
+            {
+              "slice_id": "AFX-REPLAY-B-S1",
+              "type": "validation_execution",
+              "artifact": "run_contract_preflight timed out at 120s"
+            },
+            {
+              "slice_id": "AFX-REPLAY-B-S2",
+              "type": "validation_execution",
+              "artifact": "run_review_artifact_validation timed out at 180s"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "umbrella_id": "SAFETY_STRESS",
+      "batches": [
+        {
+          "batch_id": "SVA-STRESS-A",
+          "brf": {
+            "build": "negative-path queue tests",
+            "test": "pytest tests/test_prompt_queue_execution_loop.py tests/test_execution_hierarchy.py",
+            "review": "docs/reviews/RVW-RDX-EXEC-REAL-01.md#umbrella-04",
+            "decision": "pass"
+          },
+          "slices": [
+            {
+              "slice_id": "SVA-STRESS-A-S1",
+              "type": "stress_validation",
+              "artifact": "invalid review_result_artifact ref fails closed"
+            },
+            {
+              "slice_id": "SVA-STRESS-A-S2",
+              "type": "stress_validation",
+              "artifact": "invalid validation_result_record refs fail closed"
+            }
+          ]
+        },
+        {
+          "batch_id": "SVA-STRESS-B",
+          "brf": {
+            "build": "hierarchy guardrail tests",
+            "test": "pytest tests/test_execution_hierarchy.py",
+            "review": "docs/reviews/RVW-RDX-EXEC-REAL-01.md#umbrella-04",
+            "decision": "pass"
+          },
+          "slices": [
+            {
+              "slice_id": "SVA-STRESS-B-S1",
+              "type": "stress_validation",
+              "artifact": "invalid single-batch umbrella rejected"
+            },
+            {
+              "slice_id": "SVA-STRESS-B-S2",
+              "type": "stress_validation",
+              "artifact": "embedded single-batch umbrella rejected"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "fail_closed_events": [
+    "missing review_result_artifact lineage blocks batch decision emission",
+    "invalid validation_result_record lineage blocks batch decision emission",
+    "single-batch umbrella cardinality blocked"
+  ],
+  "repair_loops": [
+    {
+      "loop_id": "AFX-RETRY-A",
+      "failure": "test assertion expected wrong fail-closed stage",
+      "repair": "updated tests to expect batch decision fail-closed boundary"
+    }
+  ]
+}
