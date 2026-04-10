@@ -107,11 +107,34 @@ jobs:
 
           base_ref = "${{ steps.preflight-refs.outputs.base_ref }}"
           head_ref = "${{ steps.preflight-refs.outputs.head_ref }}"
-          changed = subprocess.check_output(
-              ["git", "diff", "--name-only", f"{base_ref}..{head_ref}"],
-              text=True,
-          ).splitlines()
-          changed = sorted({p.strip() for p in changed if p.strip()})
+          changed = []
+          refs_attempted = [(base_ref, head_ref)]
+          if head_ref != "HEAD":
+              refs_attempted.append((base_ref, "HEAD"))
+
+          for candidate_base, candidate_head in refs_attempted:
+              try:
+                  output = subprocess.check_output(
+                      ["git", "diff", "--name-only", f"{candidate_base}..{candidate_head}"],
+                      text=True,
+                  )
+              except subprocess.CalledProcessError:
+                  continue
+              changed = sorted({p.strip() for p in output.splitlines() if p.strip()})
+              break
+
+          if not changed:
+              status_output = subprocess.check_output(
+                  ["git", "status", "--porcelain"],
+                  text=True,
+              )
+              changed = sorted(
+                  {
+                      line[3:].strip()
+                      for line in status_output.splitlines()
+                      if line and len(line) > 3 and line[3:].strip()
+                  }
+              )
 
           wrapper_path = Path("outputs/contract_preflight/preflight_pqx_task_wrapper.json")
           wrapper_path.parent.mkdir(parents=True, exist_ok=True)

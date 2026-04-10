@@ -62,6 +62,20 @@ def _request(tmp_path: Path, *, retry_budget: int = 2, pass_after_attempt: bool 
         "repair_commands_run": ["pytest tests/test_contracts.py"],
         "repair_validation_passed_after_attempt": pass_after_attempt,
         "enforce_local_pre_pr_governance": False,
+        "lineage": {
+            "review_projection_bundle_artifact": {
+                "artifact_type": "review_projection_bundle_artifact",
+                "artifact_ref": "review_projection_bundle_artifact:rpb-pre-pr-loop",
+            },
+            "review_signal_artifact": {
+                "artifact_type": "review_signal_artifact",
+                "artifact_ref": "review_signal_artifact:rsa-pre-pr-loop",
+            },
+            "review_action_tracker_artifact": {
+                "artifact_type": "review_action_tracker_artifact",
+                "artifact_ref": str(action_path),
+            },
+        },
     }
 
 
