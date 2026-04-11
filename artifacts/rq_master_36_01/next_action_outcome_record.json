@@ -1,0 +1,11 @@
+{
+  "artifact_type": "next_action_outcome_record",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T11:22:36Z",
+  "recommendation_id": "RQ36-REC-001",
+  "outcome_classification": "correct",
+  "evaluation_basis": [
+    "post_cycle_result",
+    "hard_gate_delta"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "artifact_type": "stuck_loop_detector",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T11:22:36Z",
+  "detected": false,
+  "same_recommendation_repeats": 2,
+  "meaningful_progress_present": true
+}

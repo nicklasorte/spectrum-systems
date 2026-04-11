@@ -1,0 +1,14 @@
+{
+  "artifact_type": "next_action_recommendation_record",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T11:22:36Z",
+  "recommendation_id": "RQ36-REC-001",
+  "recommendation": "execute_next_governed_cycle_with_hard_gate_enforcement",
+  "confidence": 0.72,
+  "provenance": [
+    "hard_gate_state",
+    "cycle_comparator_03_05",
+    "recommendation_accuracy_tracker",
+    "judgment_application_artifact"
+  ]
+}
