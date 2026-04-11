@@ -1,0 +1,10 @@
+{
+  "artifact_type": "failed_first_pass_review_compression_record",
+  "slice_id": "SM-14",
+  "owner": "RQX",
+  "generated_at": "2026-04-11T18:06:02Z",
+  "bounded_classes": [
+    "schema_patch",
+    "fixture_alignment"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "artifact_type": "repeat_failure_closure_guard_result",
+  "slice_id": "SM-21",
+  "owner": "SEL",
+  "generated_at": "2026-04-11T18:06:02Z",
+  "guard": "active"
+}
