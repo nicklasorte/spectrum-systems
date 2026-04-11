@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import sys
+import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -129,9 +130,9 @@ def main() -> int:
 
     state = str(meta.get("data_source_state", "")).strip().lower()
     refreshed = str(meta.get("last_refreshed_time", "")).strip()
-    if state not in {"live", "fallback"}:
+    if state != "live":
         checks["freshness_metadata_valid"] = "fail"
-        return _fail("repo_snapshot_meta.data_source_state must be live or fallback", checks)
+        return _fail("repo_snapshot_meta.data_source_state must be live", checks)
     if not refreshed:
         checks["freshness_metadata_valid"] = "fail"
         return _fail("repo_snapshot_meta.last_refreshed_time is required", checks)
@@ -147,11 +148,11 @@ def main() -> int:
 
     freshness_state = str(freshness.get("status", "")).strip().lower()
     publication_state = str(freshness.get("publication_state", "")).strip().lower()
-    if freshness_state not in {"fresh", "stale", "fallback", "unknown"}:
-        return _fail("dashboard_freshness_status.status must be fresh/stale/fallback/unknown")
+    if freshness_state not in {"fresh", "stale", "unknown"}:
+        return _fail("dashboard_freshness_status.status must be fresh/stale/unknown")
 
-    if publication_state and publication_state not in {"live", "fallback"}:
-        return _fail("dashboard_freshness_status.publication_state must be live or fallback when present")
+    if publication_state and publication_state != "live":
+        return _fail("dashboard_freshness_status.publication_state must be live when present")
 
     if publication_state and publication_state != state:
         checks["fallback_live_ambiguity"] = "fail"
@@ -173,8 +174,8 @@ def main() -> int:
         return _fail(str(exc))
 
     audit_state = str(audit.get("publication_state", "")).strip().lower()
-    if audit_state not in {"live", "fallback"}:
-        return _fail("dashboard_publication_sync_audit.publication_state must be live or fallback")
+    if audit_state != "live":
+        return _fail("dashboard_publication_sync_audit.publication_state must be live")
     if audit_state != state:
         checks["fallback_live_ambiguity"] = "fail"
         return _fail("fallback/live ambiguity detected between repo_snapshot_meta and dashboard_publication_sync_audit", checks)
@@ -188,9 +189,44 @@ def main() -> int:
         checks["publication_atomic"] = "fail"
         return _fail("dashboard_publication_manifest.publication_mode must be atomic", checks)
 
-    if str(manifest.get("publication_state", "")).strip().lower() != state:
+    if str(manifest.get("publication_state", "")).strip().lower() != "live":
         checks["publication_atomic"] = "fail"
-        return _fail("dashboard_publication_manifest.publication_state must match repo_snapshot_meta", checks)
+        return _fail("dashboard_publication_manifest.publication_state must be live", checks)
+
+    required_files = manifest.get("required_files")
+    if not isinstance(required_files, list):
+        checks["publication_atomic"] = "fail"
+        return _fail("dashboard_publication_manifest.required_files must be a list", checks)
+
+    required_minimum = set(REQUIRED_PUBLIC + ["repo_snapshot_meta.json", "dashboard_freshness_status.json", "dashboard_publication_sync_audit.json", "dashboard_publication_manifest.json"])
+    missing_required = sorted(required_minimum - set(required_files))
+    if missing_required:
+        checks["publication_atomic"] = "fail"
+        return _fail(f"dashboard_publication_manifest.required_files missing required entries: {missing_required}", checks)
+
+    file_records = manifest.get("file_records")
+    if not isinstance(file_records, dict):
+        checks["publication_atomic"] = "fail"
+        return _fail("dashboard_publication_manifest.file_records must be an object", checks)
+
+    for required_name in required_files:
+        path = PUBLIC_ROOT / required_name
+        if not path.is_file():
+            checks["publication_atomic"] = "fail"
+            return _fail(f"manifest required file missing on disk: {required_name}", checks)
+        if required_name == "dashboard_publication_manifest.json":
+            continue
+        record = file_records.get(required_name)
+        if not isinstance(record, dict):
+            checks["publication_atomic"] = "fail"
+            return _fail(f"manifest missing file record for {required_name}", checks)
+        expected_hash = str(record.get("sha256", ""))
+        expected_size = int(record.get("size_bytes", -1))
+        actual_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+        actual_size = path.stat().st_size
+        if expected_hash != actual_hash or expected_size != actual_size:
+            checks["publication_atomic"] = "fail"
+            return _fail(f"manifest/file mismatch for {required_name}", checks)
 
     checks["publication_atomic"] = "pass"
     recommendation = _read_json(PUBLIC_ROOT / "next_action_recommendation_record.json")
@@ -212,9 +248,6 @@ def main() -> int:
     confidence = float(accuracy.get("accuracy", 0.0))
     if confidence < 0.0 or confidence > 1.0:
         return _fail("recommendation_accuracy_tracker.accuracy must be between 0 and 1")
-
-    if state == "fallback" and confidence > 0.6:
-        return _fail("fallback mode must degrade recommendation confidence (accuracy <= 0.6)")
 
     if is_stale and state == "live":
         checks["freshness_metadata_valid"] = "fail"

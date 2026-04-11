@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
@@ -79,7 +80,7 @@ def test_validator_fails_on_atomic_publication_break() -> None:
     _write_json(MANIFEST_PATH, original_manifest)
 
 
-def test_validator_fails_on_fallback_live_ambiguity() -> None:
+def test_validator_fails_when_fallback_state_is_declared() -> None:
     _run([sys.executable, str(RQ_SCRIPT)])
 
     original_freshness = _read_json(FRESHNESS_PATH)
@@ -89,7 +90,7 @@ def test_validator_fails_on_fallback_live_ambiguity() -> None:
 
     result = subprocess.run([sys.executable, str(VALIDATOR)], cwd=str(REPO_ROOT), capture_output=True, text=True)
     assert result.returncode != 0
-    assert "ambiguity" in result.stderr.lower()
+    assert "must be live" in result.stderr.lower()
 
     _write_json(FRESHNESS_PATH, original_freshness)
 
@@ -109,9 +110,36 @@ def test_validator_fails_when_promotion_overrides_readiness() -> None:
     invalid_promotion["promotion_decision"] = "bounded_promote"
     _write_json(PROMOTION_PATH, invalid_promotion)
 
+    manifest = _read_json(MANIFEST_PATH)
+    for name in ("readiness_to_expand_validator.json", "governed_promotion_discipline_gate.json"):
+        path = PUBLIC_ROOT / name
+        payload = manifest["file_records"][name]
+        payload["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+        payload["size_bytes"] = path.stat().st_size
+    _write_json(MANIFEST_PATH, manifest)
+
     result = subprocess.run([sys.executable, str(VALIDATOR)], cwd=str(REPO_ROOT), capture_output=True, text=True)
     assert result.returncode != 0
     assert "bounded_promote" in result.stderr
 
     _write_json(readiness_path, original_readiness)
     _write_json(PROMOTION_PATH, original_promotion)
+
+
+def test_validator_fails_on_manifest_file_mismatch() -> None:
+    _run([sys.executable, str(RQ_SCRIPT)])
+
+    original_manifest = _read_json(MANIFEST_PATH)
+    broken_manifest = dict(original_manifest)
+    file_records = dict(broken_manifest["file_records"])
+    repo_snapshot_record = dict(file_records["repo_snapshot.json"])
+    repo_snapshot_record["sha256"] = "0" * 64
+    file_records["repo_snapshot.json"] = repo_snapshot_record
+    broken_manifest["file_records"] = file_records
+    _write_json(MANIFEST_PATH, broken_manifest)
+
+    result = subprocess.run([sys.executable, str(VALIDATOR)], cwd=str(REPO_ROOT), capture_output=True, text=True)
+    assert result.returncode != 0
+    assert "manifest/file mismatch" in result.stderr.lower()
+
+    _write_json(MANIFEST_PATH, original_manifest)
