@@ -1,9 +1,10 @@
 {
   "artifact_type": "confidence_calibration_artifact",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-11T11:22:36Z",
-  "predicted_confidence": 0.72,
-  "observed_accuracy": 0.75,
-  "calibration_error": -0.03,
-  "status": "calibrated"
+  "generated_at": "2026-04-11T13:02:49Z",
+  "avg_stated_confidence": 0.6767,
+  "observed_quality": 0.8333,
+  "calibration_error": -0.1567,
+  "calibration_status": "under_confident",
+  "evidence_scope": "cycles_03_to_05_only"
 }

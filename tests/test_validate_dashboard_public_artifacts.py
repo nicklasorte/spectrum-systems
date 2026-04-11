@@ -15,6 +15,7 @@ VALIDATOR = REPO_ROOT / "scripts" / "validate_dashboard_public_artifacts.py"
 PUBLIC_ROOT = REPO_ROOT / "dashboard" / "public"
 META_PATH = PUBLIC_ROOT / "repo_snapshot_meta.json"
 FRESHNESS_PATH = PUBLIC_ROOT / "dashboard_freshness_status.json"
+PROMOTION_PATH = PUBLIC_ROOT / "governed_promotion_discipline_gate.json"
 
 
 def _run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
@@ -69,3 +70,27 @@ def test_validator_fails_on_fallback_live_ambiguity() -> None:
     assert "ambiguity" in result.stderr.lower()
 
     _write_json(FRESHNESS_PATH, original_freshness)
+
+
+def test_validator_fails_when_promotion_overrides_readiness() -> None:
+    _run([sys.executable, str(RQ_SCRIPT)])
+    _run(["bash", str(REFRESH_SCRIPT)])
+
+    readiness_path = PUBLIC_ROOT / "readiness_to_expand_validator.json"
+    original_readiness = _read_json(readiness_path)
+    original_promotion = _read_json(PROMOTION_PATH)
+
+    downgraded = dict(original_readiness)
+    downgraded["readiness_state"] = "Validate with another run"
+    _write_json(readiness_path, downgraded)
+
+    invalid_promotion = dict(original_promotion)
+    invalid_promotion["promotion_decision"] = "bounded_promote"
+    _write_json(PROMOTION_PATH, invalid_promotion)
+
+    result = subprocess.run([sys.executable, str(VALIDATOR)], cwd=str(REPO_ROOT), capture_output=True, text=True)
+    assert result.returncode != 0
+    assert "bounded_promote" in result.stderr
+
+    _write_json(readiness_path, original_readiness)
+    _write_json(PROMOTION_PATH, original_promotion)

@@ -1,13 +1,15 @@
 {
   "artifact_type": "deploy_ci_truth_gate",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-11T11:22:36Z",
+  "generated_at": "2026-04-11T13:02:49Z",
   "checks": {
     "build": "pass",
     "lint": "pass",
     "required_public_artifacts": "pass",
     "dashboard_truth_constraints": "pass",
-    "stale_fallback_ambiguity": "pass"
+    "stale_fallback_ambiguity": "pass",
+    "schema_contract_coverage": "pass",
+    "promotion_discipline_gate": "pass"
   },
   "result": "pass"
 }

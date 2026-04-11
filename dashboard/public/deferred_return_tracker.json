@@ -1,3 +1,12 @@
 {
-  "items": []
+  "artifact_type": "deferred_return_tracker",
+  "batch_id": "OPS-MASTER-01",
+  "generated_at": "2026-04-11T01:01:56Z",
+  "tracked_items": [
+    {
+      "item_id": "DEFER-OPS-001",
+      "status": "pending_evidence",
+      "next_review_after": "2026-04-18"
+    }
+  ]
 }

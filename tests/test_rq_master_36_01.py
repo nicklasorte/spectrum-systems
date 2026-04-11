@@ -29,6 +29,9 @@ REQUIRED_PUBLIC = [
     "judgment_application_artifact.json",
     "readiness_to_expand_validator.json",
     "operator_trust_closeout_artifact.json",
+    "compatibility_mirror_retirement_assessment.json",
+    "dashboard_public_contract_coverage.json",
+    "governed_promotion_discipline_gate.json",
     "operator_surface_snapshot_export.json",
     "deploy_ci_truth_gate.json",
 ]
@@ -95,3 +98,15 @@ def test_required_public_operator_artifacts_are_published() -> None:
 
     gate = _load_json(PUBLIC_ROOT / "deploy_ci_truth_gate.json")
     assert gate["result"] == "pass"
+    assert gate["checks"]["promotion_discipline_gate"] == "pass"
+
+    readiness = _load_json(PUBLIC_ROOT / "readiness_to_expand_validator.json")
+    assert readiness["readiness_state"] in {
+        "Tune instead",
+        "Validate with another run",
+        "Ready for bounded expansion",
+        "Unknown",
+    }
+
+    promotion = _load_json(PUBLIC_ROOT / "governed_promotion_discipline_gate.json")
+    assert promotion["promotion_decision"] in {"tune", "validate", "bounded_promote"}
