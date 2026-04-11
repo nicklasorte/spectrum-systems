@@ -151,17 +151,40 @@ audit_payload = {
 
 publication_manifest = {
     "artifact_type": "dashboard_publication_manifest",
+    "manifest_version": "1.0.0",
     "published_at": refreshed_at,
     "publication_mode": "atomic",
     "publication_state": "live",
-    "artifact_count": len(required_sources) + 3,
+    "publication_contract": "canonical_live_artifact_projection",
+    "artifact_count": len(required_sources) + 4,
     "surfaces": ["dashboard/public", "artifacts/dashboard", "artifacts/rq_master_36_01"],
-    "required_files": sorted(list(required_sources.keys()) + [
+    "required_files": sorted(set(list(required_sources.keys()) + [
         "repo_snapshot_meta.json",
         "dashboard_freshness_status.json",
         "dashboard_publication_sync_audit.json",
-    ]),
+        "dashboard_publication_manifest.json",
+    ])),
 }
+
+all_records = []
+for path in sorted(stage_dir.iterdir(), key=lambda item: item.name):
+    if path.is_file():
+        all_records.append(
+            {
+                "artifact": path.name,
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                "size_bytes": path.stat().st_size,
+                "source": str(required_sources[path.name].relative_to(repo_root)) if path.name in required_sources else f"generated:{path.name}",
+            }
+        )
+
+publication_manifest["file_records"] = {
+    row["artifact"]: {"sha256": row["sha256"], "size_bytes": row["size_bytes"], "source": row["source"]} for row in all_records
+}
+publication_manifest["completeness_sha256"] = hashlib.sha256(
+    "|".join(f"{row['artifact']}:{row['sha256']}" for row in all_records).encode("utf-8")
+).hexdigest()
+
 (stage_dir / "dashboard_publication_manifest.json").write_text(json.dumps(publication_manifest, indent=2) + "\n", encoding="utf-8")
 
 for entry in stage_dir.iterdir():

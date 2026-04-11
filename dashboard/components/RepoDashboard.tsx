@@ -105,7 +105,7 @@ type NextAction = {
   whatChanges: string[]
 }
 
-type RefreshState = 'Fresh' | 'Stale' | 'Fallback' | 'Unknown'
+type RefreshState = 'Fresh' | 'Stale' | 'Unknown'
 
 type ArtifactLoad = {
   label: string
@@ -113,13 +113,6 @@ type ArtifactLoad = {
 }
 
 type ArtifactPresence = Record<string, boolean>
-
-const fallbackSnapshot: Snapshot = {
-  repo_name: 'spectrum-systems',
-  root_counts: { files_total: 0, runtime_modules: 0, tests: 0, contracts_total: 0, docs: 0, run_artifacts: 0 },
-  runtime_hotspots: [],
-  operational_signals: []
-}
 
 const NOT_AVAILABLE = 'Not available yet'
 const HISTORY_NOT_AVAILABLE = 'History not available yet'
@@ -229,7 +222,7 @@ function deriveRefreshState(meta: SnapshotMeta | null): { state: RefreshState; s
   if (!meta) return { state: 'Unknown', stalenessNote: 'Snapshot metadata not available.' }
 
   const source = (meta.data_source_state ?? '').toLowerCase()
-  if (source.includes('fallback')) return { state: 'Fallback', stalenessNote: 'Fallback snapshot is active.' }
+  if (source.includes('fallback')) return { state: 'Unknown', stalenessNote: 'Invalid source state: fallback is not allowed.' }
 
   if (isUnavailableText(meta.last_refreshed_time)) {
     return { state: 'Unknown', stalenessNote: 'Refresh timestamp not available.' }
@@ -246,7 +239,7 @@ function deriveRefreshState(meta: SnapshotMeta | null): { state: RefreshState; s
 }
 
 export default function RepoDashboard() {
-  const [snapshot, setSnapshot] = useState<Snapshot>(fallbackSnapshot)
+  const [snapshot, setSnapshot] = useState<Snapshot | null>(null)
   const [snapshotMeta, setSnapshotMeta] = useState<SnapshotMeta | null>(null)
   const [bottleneck, setBottleneck] = useState<BottleneckRecord | null>(null)
   const [drift, setDrift] = useState<DriftRecord | null>(null)
@@ -282,62 +275,54 @@ export default function RepoDashboard() {
 
       const snapshotData = await retrieveArtifact<Snapshot>('/repo_snapshot.json')
       presence.repo_snapshot = snapshotData.loaded
-      if (!cancelled) setSnapshot(snapshotData.data ?? fallbackSnapshot)
+      if (!cancelled) setSnapshot(snapshotData.data)
 
       const snapshotMetaData = await retrieveArtifact<SnapshotMeta>('/repo_snapshot_meta.json')
       presence.repo_snapshot_meta = snapshotMetaData.loaded
       if (!cancelled) setSnapshotMeta(snapshotMetaData.data)
 
-      const bottleneckData = await retrieveArtifact<BottleneckRecord>('/current_bottleneck_record.json')
-      presence.current_bottleneck_record = bottleneckData.loaded
-      if (!cancelled) setBottleneck(bottleneckData.data)
+      const loaders = await Promise.all([
+        retrieveArtifact<BottleneckRecord>('/current_bottleneck_record.json'),
+        retrieveArtifact<DriftRecord>('/drift_trend_continuity_artifact.json'),
+        retrieveArtifact<DriftRecord>('/prior_drift_trend_continuity_artifact.json'),
+        retrieveArtifact<RoadmapState>('/canonical_roadmap_state_artifact.json'),
+        retrieveArtifact<MaturityTracker>('/maturity_phase_tracker.json'),
+        retrieveArtifact<HardGateState>('/hard_gate_status_record.json'),
+        retrieveArtifact<HardGateState>('/prior_hard_gate_status_record.json'),
+        retrieveArtifact<RunState>('/current_run_state_record.json'),
+        retrieveArtifact<RunState>('/prior_current_run_state_record.json'),
+        retrieveArtifact<{ items?: DeferredItem[] }>('/deferred_item_register.json'),
+        retrieveArtifact<{ items?: DeferredReadiness[] }>('/deferred_return_tracker.json'),
+        retrieveArtifact<ConstitutionResult>('/constitutional_drift_checker_result.json'),
+        retrieveArtifact<ConstitutionResult>('/roadmap_alignment_validator_result.json'),
+        retrieveArtifact<ConstitutionResult>('/serial_bundle_validator_result.json')
+      ])
 
-      const driftData = await retrieveArtifact<DriftRecord>('/drift_trend_continuity_artifact.json')
-      presence.drift_trend_continuity = driftData.loaded
-      if (!cancelled) setDrift(driftData.data)
-
-      const previousDriftData = await retrieveArtifact<DriftRecord>('/prior_drift_trend_continuity_artifact.json')
-      if (!cancelled) setPreviousDrift(previousDriftData.data)
-
-      const roadmapData = await retrieveArtifact<RoadmapState>('/canonical_roadmap_state_artifact.json')
-      if (!cancelled) setRoadmapState(roadmapData.data)
-
-      const maturityData = await retrieveArtifact<MaturityTracker>('/maturity_phase_tracker.json')
-      if (!cancelled) setMaturityState(maturityData.data)
-
-      const hardGateData = await retrieveArtifact<HardGateState>('/hard_gate_status_record.json')
-      presence.hard_gate_status = hardGateData.loaded
-      if (!cancelled) setHardGate(hardGateData.data)
-
-      const previousHardGateData = await retrieveArtifact<HardGateState>('/prior_hard_gate_status_record.json')
-      if (!cancelled) setPreviousHardGate(previousHardGateData.data)
-
-      const runData = await retrieveArtifact<RunState>('/current_run_state_record.json')
-      presence.current_run_state = runData.loaded
-      if (!cancelled) setRunState(runData.data)
-
-      const previousRunData = await retrieveArtifact<RunState>('/prior_current_run_state_record.json')
-      if (!cancelled) setPreviousRunState(previousRunData.data)
-
-      const deferredData = await retrieveArtifact<{ items?: DeferredItem[] }>('/deferred_item_register.json')
-      presence.deferred_item_register = deferredData.loaded
-      if (!cancelled) setDeferredItems(Array.isArray(deferredData.data?.items) ? deferredData.data.items : [])
-
-      const trackerData = await retrieveArtifact<{ items?: DeferredReadiness[] }>('/deferred_return_tracker.json')
-      presence.deferred_return_tracker = trackerData.loaded
-      if (!cancelled) setDeferredTracker(Array.isArray(trackerData.data?.items) ? trackerData.data.items : [])
-
-      const constitutionData = await retrieveArtifact<ConstitutionResult>('/constitutional_drift_checker_result.json')
-      presence.constitutional_drift_checker = constitutionData.loaded
-      if (!cancelled) setConstitutionDrift(constitutionData.data)
-
-      const alignmentData = await retrieveArtifact<ConstitutionResult>('/roadmap_alignment_validator_result.json')
-      presence.roadmap_alignment_validator = alignmentData.loaded
-      if (!cancelled) setRoadmapAlignment(alignmentData.data)
-
-      const serialData = await retrieveArtifact<ConstitutionResult>('/serial_bundle_validator_result.json')
-      presence.serial_bundle_validator = serialData.loaded
-      if (!cancelled) setSerialBundle(serialData.data)
+      if (!cancelled) {
+        presence.current_bottleneck_record = loaders[0].loaded
+        setBottleneck(loaders[0].data)
+        presence.drift_trend_continuity = loaders[1].loaded
+        setDrift(loaders[1].data)
+        setPreviousDrift(loaders[2].data)
+        setRoadmapState(loaders[3].data)
+        setMaturityState(loaders[4].data)
+        presence.hard_gate_status = loaders[5].loaded
+        setHardGate(loaders[5].data)
+        setPreviousHardGate(loaders[6].data)
+        presence.current_run_state = loaders[7].loaded
+        setRunState(loaders[7].data)
+        setPreviousRunState(loaders[8].data)
+        presence.deferred_item_register = loaders[9].loaded
+        setDeferredItems(Array.isArray(loaders[9].data?.items) ? loaders[9].data.items : [])
+        presence.deferred_return_tracker = loaders[10].loaded
+        setDeferredTracker(Array.isArray(loaders[10].data?.items) ? loaders[10].data.items : [])
+        presence.constitutional_drift_checker = loaders[11].loaded
+        setConstitutionDrift(loaders[11].data)
+        presence.roadmap_alignment_validator = loaders[12].loaded
+        setRoadmapAlignment(loaders[12].data)
+        presence.serial_bundle_validator = loaders[13].loaded
+        setSerialBundle(loaders[13].data)
+      }
 
       if (!cancelled) setArtifactPresence(presence)
     }
@@ -349,7 +334,7 @@ export default function RepoDashboard() {
     }
   }, [])
 
-  const counts = useMemo(() => snapshot.root_counts ?? {}, [snapshot.root_counts])
+  const counts = useMemo(() => snapshot?.root_counts ?? {}, [snapshot?.root_counts])
 
   const deferredSignalById = useMemo(() => {
     const map = new Map<string, string>()
@@ -370,7 +355,7 @@ export default function RepoDashboard() {
 
   const artifactLoads = useMemo<ArtifactLoad[]>(
     () => [
-      { label: 'repo_snapshot', loaded: artifactPresence.repo_snapshot ?? !!snapshot.root_counts },
+      { label: 'repo_snapshot', loaded: artifactPresence.repo_snapshot ?? !!snapshot },
       { label: 'repo_snapshot_meta', loaded: artifactPresence.repo_snapshot_meta ?? !!snapshotMeta },
       { label: 'current_bottleneck_record', loaded: artifactPresence.current_bottleneck_record ?? !!bottleneck },
       { label: 'drift_trend_continuity', loaded: artifactPresence.drift_trend_continuity ?? !!drift },
@@ -382,7 +367,7 @@ export default function RepoDashboard() {
       { label: 'roadmap_alignment_validator', loaded: artifactPresence.roadmap_alignment_validator ?? !!roadmapAlignment },
       { label: 'serial_bundle_validator', loaded: artifactPresence.serial_bundle_validator ?? !!serialBundle }
     ],
-    [snapshot.root_counts, snapshotMeta, bottleneck, drift, hardGate, runState, constitutionDrift, roadmapAlignment, serialBundle, artifactPresence]
+    [snapshot, snapshotMeta, bottleneck, drift, hardGate, runState, constitutionDrift, roadmapAlignment, serialBundle, artifactPresence]
   )
 
   const refresh = useMemo(() => deriveRefreshState(snapshotMeta), [snapshotMeta])
@@ -408,7 +393,6 @@ export default function RepoDashboard() {
   }, [drift])
 
   const runBlocked = useMemo(() => isBlockedStatus(runState?.current_run_status), [runState])
-  const fallbackMode = refresh.state === 'Fallback'
   const staleData = refresh.state === 'Stale'
 
   const keyMissingForGuidance = useMemo(() => {
@@ -422,15 +406,37 @@ export default function RepoDashboard() {
     if (driftWorsening) warnings.push('Drift trend is worsening.')
     if (runBlocked) warnings.push('Last run is blocked or in repair-needed state.')
     if (constitutionViolations) warnings.push('Constitutional alignment warning detected.')
-    if (fallbackMode) warnings.push('Fallback snapshot is in use.')
+    if (!snapshot) warnings.push('Repository snapshot artifact is missing.')
     if (staleData) warnings.push('Snapshot appears stale.')
     if (keyMissingForGuidance) warnings.push('Key artifacts are missing; recommendation quality is degraded.')
     return warnings
-  }, [hardGateUnsatisfied, driftWorsening, runBlocked, constitutionViolations, fallbackMode, staleData, keyMissingForGuidance])
+  }, [hardGateUnsatisfied, driftWorsening, runBlocked, constitutionViolations, snapshot, staleData, keyMissingForGuidance])
 
   const showWarningBanner = topWarnings.length > 0
 
+  const truthViolation = useMemo(() => {
+    if (!snapshot || !snapshotMeta) return true
+    if ((snapshotMeta.data_source_state ?? '').toLowerCase() !== 'live') return true
+    const missingCritical = artifactLoads
+      .filter((item) => ['hard_gate_status', 'current_run_state', 'drift_trend_continuity', 'current_bottleneck_record'].includes(item.label))
+      .some((item) => !item.loaded)
+    if (missingCritical) return true
+    if (refresh.state === 'Stale') return true
+    return false
+  }, [snapshot, snapshotMeta, artifactLoads, refresh.state])
+
   const nextAction = useMemo<NextAction>(() => {
+    if (truthViolation) {
+      return {
+        title: 'No recommendation: fail-closed truth gate active',
+        reason: 'Critical artifacts are missing, stale, or not live-backed. Retrieve fresh governed artifacts before action.',
+        confidence: 'Low',
+        sourceBasis: 'truth gate',
+        why: ['Dashboard cannot imply correctness without evidence.', 'Fail-closed mode blocks action guidance under truth violation.'],
+        whatChanges: ['Required live artifacts are available and complete.', 'Freshness gate passes with current timestamps.']
+      }
+    }
+
     if (hardGateUnsatisfied) {
       const evidence = safeArray(hardGate?.required_evidence)[0]
       return {
@@ -489,7 +495,7 @@ export default function RepoDashboard() {
       why: ['Current view does not show a stronger immediate blocker.', 'A governed cycle refreshes evidence and state.'],
       whatChanges: ['Hard gate becomes unsatisfied.', 'Run state becomes blocked or bottleneck clarity increases.']
     }
-  }, [hardGateUnsatisfied, hardGate, runBlocked, runState, bottleneck, deferredItems, deferredSignalById, keyMissingForGuidance])
+  }, [truthViolation, hardGateUnsatisfied, hardGate, runBlocked, runState, bottleneck, deferredItems, deferredSignalById, keyMissingForGuidance])
 
   const completeness = useMemo(() => {
     const loaded = artifactLoads.filter((item) => item.loaded).map((item) => item.label)
@@ -567,27 +573,47 @@ export default function RepoDashboard() {
   const caveats = useMemo(() => {
     const items: string[] = []
     if (completeness.degraded) items.push('Recommendations are partially degraded due to missing key artifacts.')
-    if (refresh.state === 'Fallback') items.push('Snapshot is currently fallback data.')
+    if (truthViolation) items.push('Fail-closed truth gate is active until live artifact completeness is restored.')
     if (Object.values(changeSummary).every((value) => value === HISTORY_NOT_AVAILABLE)) items.push('Comparison history is not available yet.')
     if (nextAction.confidence === 'Low') items.push('Confidence is reduced due to incomplete or inferred evidence.')
     return items
-  }, [completeness.degraded, refresh.state, changeSummary, nextAction.confidence])
+  }, [completeness.degraded, truthViolation, changeSummary, nextAction.confidence])
 
   const readinessToExpand = useMemo(() => {
-    if (completeness.degraded) return 'Unknown'
+    if (truthViolation) return 'Unknown'
     if (hardGateUnsatisfied || constitutionViolations || runBlocked) return 'Tune instead'
     if (driftWorsening || nextAction.confidence === 'Low') return 'Validate with another run'
     return 'Ready for bounded expansion'
-  }, [completeness.degraded, hardGateUnsatisfied, constitutionViolations, runBlocked, driftWorsening, nextAction.confidence])
+  }, [truthViolation, hardGateUnsatisfied, constitutionViolations, runBlocked, driftWorsening, nextAction.confidence])
+
+  const systemMap = useMemo(
+    () => [
+      { name: 'RIL', status: artifactPresence.repo_snapshot ? 'online' : 'missing', provenance: '/repo_snapshot.json' },
+      { name: 'CDE', status: artifactPresence.current_bottleneck_record ? 'online' : 'missing', provenance: '/current_bottleneck_record.json' },
+      { name: 'TLC', status: artifactPresence.current_run_state ? 'online' : 'missing', provenance: '/current_run_state_record.json' },
+      { name: 'PQX', status: artifactPresence.serial_bundle_validator ? 'online' : 'missing', provenance: '/serial_bundle_validator_result.json' },
+      { name: 'FRE', status: artifactPresence.drift_trend_continuity ? 'online' : 'missing', provenance: '/drift_trend_continuity_artifact.json' },
+      { name: 'SEL', status: artifactPresence.hard_gate_status ? 'online' : 'missing', provenance: '/hard_gate_status_record.json' },
+      { name: 'PRG', status: artifactPresence.roadmap_alignment_validator ? 'online' : 'missing', provenance: '/roadmap_alignment_validator_result.json' }
+    ],
+    [artifactPresence]
+  )
 
   return (
     <main style={pageStyle}>
       <header style={{ marginBottom: 10 }}>
         <h1 style={{ margin: 0, fontSize: 30, lineHeight: 1.15 }}>Operator Control Surface</h1>
         <p style={{ margin: '8px 0 0', color: '#475569', fontSize: 15 }}>
-          Live governed execution view for <strong>{snapshot.repo_name ?? NOT_AVAILABLE}</strong>. Focus on what matters now, what to do next, and artifact integrity.
+          Live governed execution view for <strong>{snapshot?.repo_name ?? NOT_AVAILABLE}</strong>. Focus on what matters now, what to do next, and artifact integrity.
         </p>
       </header>
+
+      {truthViolation ? (
+        <section style={{ ...cardStyle, border: '1px solid #dc2626', background: '#fef2f2', marginTop: 12 }}>
+          <h2 style={{ margin: 0, fontSize: 16, color: '#991b1b' }}>Fail-closed mode</h2>
+          <p style={{ margin: '8px 0 0', color: '#7f1d1d' }}>Truth violation detected. Dashboard guidance is intentionally degraded until live artifact integrity is restored.</p>
+        </section>
+      ) : null}
 
       {showWarningBanner ? (
         <section style={{ ...cardStyle, border: '1px solid #fecaca', background: '#fff7f7', marginTop: 12 }}>
@@ -619,6 +645,17 @@ export default function RepoDashboard() {
       </section>
 
       <section style={sectionStyle}>
+        <article style={cardStyle}>
+          <h2 style={{ margin: 0, fontSize: 17 }}>Canonical system map</h2>
+          {systemMap.map((node) => (
+            <div key={node.name} style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+              <span style={{ fontWeight: 700 }}>{node.name}</span>
+              <span style={{ color: node.status === 'online' ? '#166534' : '#b91c1c' }}>{node.status}</span>
+              <span style={{ color: '#64748b', fontSize: 12 }}>{node.provenance}</span>
+            </div>
+          ))}
+        </article>
+
         <article style={cardStyle}>
           <h2 style={{ margin: 0, fontSize: 17 }}>Trend strip</h2>
           <StringList items={trendStrip} emptyText={NOT_AVAILABLE} />
