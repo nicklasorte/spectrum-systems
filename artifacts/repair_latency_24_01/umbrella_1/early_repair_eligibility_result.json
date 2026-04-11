@@ -1,0 +1,15 @@
+{
+  "artifact_type": "early_repair_eligibility_result",
+  "slice_id": "RL-03",
+  "owner": "SEL",
+  "generated_at": "2026-04-11T16:01:04Z",
+  "eligible": [
+    "F-101",
+    "F-102",
+    "F-104"
+  ],
+  "blocked": [
+    "F-103"
+  ],
+  "reason": "ambiguous repair class requires manual review"
+}

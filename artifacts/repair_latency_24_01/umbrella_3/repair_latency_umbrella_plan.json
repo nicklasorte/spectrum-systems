@@ -1,0 +1,7 @@
+{
+  "artifact_type": "repair_latency_umbrella_plan",
+  "slice_id": "RL-18",
+  "owner": "RDX",
+  "generated_at": "2026-04-11T16:01:04Z",
+  "dominant_bottleneck_first": true
+}

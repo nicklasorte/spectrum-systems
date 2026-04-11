@@ -1,0 +1,8 @@
+{
+  "artifact_type": "auto_remediation_guardrail_result",
+  "slice_id": "RL-21",
+  "owner": "SEL",
+  "generated_at": "2026-04-11T16:01:04Z",
+  "rollback_ready": true,
+  "freeze_triggered": false
+}

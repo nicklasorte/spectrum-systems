@@ -1,0 +1,47 @@
+{
+  "artifact_type": "repair_latency_artifact_trace",
+  "batch_id": "REPAIR-LATENCY-24-01",
+  "generated_at": "2026-04-11T16:01:04Z",
+  "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
+  "checkpoint_progression": "stopped_on_first_failure_else_continue",
+  "umbrella_sequence": [
+    "UMBRELLA-1",
+    "UMBRELLA-2",
+    "UMBRELLA-3",
+    "UMBRELLA-4"
+  ],
+  "umbrella_checkpoint_status": {
+    "UMBRELLA-1": "pass",
+    "UMBRELLA-2": "pass",
+    "UMBRELLA-3": "pass",
+    "UMBRELLA-4": "pass"
+  },
+  "artifact_paths": [
+    "artifacts/repair_latency_24_01/umbrella_1/repairable_failure_interpretation_packet.json",
+    "artifacts/repair_latency_24_01/umbrella_1/repairability_classification_record.json",
+    "artifacts/repair_latency_24_01/umbrella_1/early_repair_eligibility_result.json",
+    "artifacts/repair_latency_24_01/umbrella_1/fast_path_fix_slice_request.json",
+    "artifacts/repair_latency_24_01/umbrella_1/fast_path_tpa_slice_artifact.json",
+    "artifacts/repair_latency_24_01/umbrella_1/fast_path_repair_execution_record.json",
+    "artifacts/repair_latency_24_01/umbrella_1/canonical_delivery_report_artifact.json",
+    "artifacts/repair_latency_24_01/umbrella_1/canonical_review_report_artifact.json",
+    "artifacts/repair_latency_24_01/umbrella_2/repair_plan_template_bundle.json",
+    "artifacts/repair_latency_24_01/umbrella_2/repair_shortcut_handoff_record.json",
+    "artifacts/repair_latency_24_01/umbrella_2/repair_retry_budget_result.json",
+    "artifacts/repair_latency_24_01/umbrella_2/repair_replay_input_packet.json",
+    "artifacts/repair_latency_24_01/umbrella_2/post_repair_replay_execution_record.json",
+    "artifacts/repair_latency_24_01/umbrella_2/repair_replay_review_result.json",
+    "artifacts/repair_latency_24_01/umbrella_3/repair_latency_scoreboard.json",
+    "artifacts/repair_latency_24_01/umbrella_3/repair_debt_register.json",
+    "artifacts/repair_latency_24_01/umbrella_3/repair_bottleneck_confidence_record.json",
+    "artifacts/repair_latency_24_01/umbrella_3/repair_priority_recommendation.json",
+    "artifacts/repair_latency_24_01/umbrella_3/repair_latency_batch_artifact.json",
+    "artifacts/repair_latency_24_01/umbrella_3/repair_latency_umbrella_plan.json",
+    "artifacts/repair_latency_24_01/umbrella_4/auto_remediation_candidate_bundle.json",
+    "artifacts/repair_latency_24_01/umbrella_4/auto_remediation_admissibility_record.json",
+    "artifacts/repair_latency_24_01/umbrella_4/auto_remediation_guardrail_result.json",
+    "artifacts/repair_latency_24_01/umbrella_4/repair_closure_strictness_decision.json",
+    "artifacts/repair_latency_24_01/umbrella_4/repair_loop_projection_bundle.json",
+    "artifacts/repair_latency_24_01/umbrella_4/repair_loop_program_closeout.json"
+  ]
+}
