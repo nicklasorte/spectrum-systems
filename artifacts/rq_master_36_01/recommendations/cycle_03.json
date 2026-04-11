@@ -1,0 +1,19 @@
+{
+  "artifact_type": "next_action_recommendation_record",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T12:14:48Z",
+  "cycle_id": "cycle_03",
+  "recommendation_id": "RQ36-REC-003",
+  "recommended_next_action": "stabilize_input_lineage_before_promoting_changes",
+  "confidence": 0.63,
+  "source_basis": [
+    "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-03-artifact-trace.json",
+    "artifacts/ops_master_01/hard_gate_status_record.json",
+    "artifacts/ops_master_01/current_run_state_record.json"
+  ],
+  "provenance_categories": [
+    "run_trace",
+    "hard_gate",
+    "run_state"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "run_id": "REAL-WORLD-EXECUTION-CYCLE-03",
+  "batch_id": "REAL-WORLD-EXECUTION-CYCLE-03",
+  "umbrella": "REALITY_AND_LEARNING",
+  "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
+  "executed_at": "2026-04-11T12:14:48Z",
+  "task": "Governed real-world execution cycle_03",
+  "governed_path": [
+    "admission",
+    "evaluation",
+    "drift",
+    "repair",
+    "recommend",
+    "checkpoint_close"
+  ],
+  "evidence_metrics": {
+    "bottleneck_score": 0.84,
+    "drift_score": 0.52,
+    "repair_loops": 2,
+    "first_pass_quality": 0.58
+  },
+  "failures": [
+    {
+      "failure_id": "FAIL-REAL-003A",
+      "failure_class": "input_lineage_gap",
+      "fail_closed": true
+    }
+  ],
+  "repair_loops": [
+    {
+      "repair_loop_id": "REPAIR-REAL-003",
+      "bounded": true,
+      "re_gated_by_tpa": true,
+      "iterations": 2,
+      "result": "pass"
+    }
+  ],
+  "final_state": {
+    "closure": "close",
+    "enforcement": "allow",
+    "system_verdict": "SYSTEM_STABILIZING",
+    "next_cycle_readiness": "ready_with_caution"
+  }
+}

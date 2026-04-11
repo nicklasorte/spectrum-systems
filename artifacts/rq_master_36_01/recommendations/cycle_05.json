@@ -1,0 +1,19 @@
+{
+  "artifact_type": "next_action_recommendation_record",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T12:14:48Z",
+  "cycle_id": "cycle_05",
+  "recommendation_id": "RQ36-REC-005",
+  "recommended_next_action": "continue bounded governed cycles and re-check calibration after each outcome",
+  "confidence": 0.72,
+  "source_basis": [
+    "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-05-artifact-trace.json",
+    "artifacts/rq_master_36_01/recommendation_accuracy_tracker.json",
+    "artifacts/rq_master_36_01/confidence_calibration_artifact.json"
+  ],
+  "provenance_categories": [
+    "run_trace",
+    "accuracy_tracker",
+    "confidence_calibration"
+  ]
+}

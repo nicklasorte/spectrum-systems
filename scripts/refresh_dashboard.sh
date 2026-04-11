@@ -55,6 +55,7 @@ required_sources = {
     "recommendation_accuracy_tracker.json": repo_root / "artifacts" / "rq_master_36_01" / "recommendation_accuracy_tracker.json",
     "confidence_calibration_artifact.json": repo_root / "artifacts" / "rq_master_36_01" / "confidence_calibration_artifact.json",
     "stuck_loop_detector.json": repo_root / "artifacts" / "rq_master_36_01" / "stuck_loop_detector.json",
+    "recommendation_review_surface.json": repo_root / "artifacts" / "rq_master_36_01" / "recommendation_review_surface.json",
     "readiness_to_expand_validator.json": repo_root / "artifacts" / "rq_master_36_01" / "readiness_to_expand_validator.json",
     "dashboard_freshness_status.json": repo_root / "artifacts" / "rq_master_36_01" / "dashboard_freshness_status.json",
     "deploy_ci_truth_gate.json": repo_root / "artifacts" / "rq_master_36_01" / "deploy_ci_truth_gate.json",

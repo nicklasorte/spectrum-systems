@@ -12,6 +12,7 @@ SCRIPT_PATH = REPO_ROOT / "scripts" / "run_rq_master_36_01.py"
 TRACE_PATH = REPO_ROOT / "artifacts" / "rdx_runs" / "RQ-MASTER-36-01-artifact-trace.json"
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "rq_master_36_01"
 PUBLIC_ROOT = REPO_ROOT / "dashboard" / "public"
+RDX_ROOT = REPO_ROOT / "artifacts" / "rdx_runs"
 
 UMBRELLA_CHECKPOINTS = [f"umbrella-{idx}_checkpoint.json" for idx in range(1, 10)]
 REQUIRED_PUBLIC = [
@@ -22,6 +23,7 @@ REQUIRED_PUBLIC = [
     "recommendation_accuracy_tracker.json",
     "confidence_calibration_artifact.json",
     "stuck_loop_detector.json",
+    "recommendation_review_surface.json",
     "error_budget_enforcement_outcome.json",
     "recurrence_prevention_status.json",
     "judgment_application_artifact.json",
@@ -46,6 +48,30 @@ def test_script_emits_all_umbrella_checkpoints_and_trace() -> None:
     assert TRACE_PATH.is_file()
     for checkpoint in UMBRELLA_CHECKPOINTS:
         assert (ARTIFACT_ROOT / checkpoint).is_file()
+
+
+def test_phase2_merged_cycles_and_learning_artifacts_exist() -> None:
+    _run_script()
+
+    for name in (
+        "REAL-WORLD-EXECUTION-CYCLE-03-artifact-trace.json",
+        "REAL-WORLD-EXECUTION-CYCLE-04-artifact-trace.json",
+        "REAL-WORLD-EXECUTION-CYCLE-05-artifact-trace.json",
+    ):
+        assert (RDX_ROOT / name).is_file()
+
+    comparator = _load_json(ARTIFACT_ROOT / "cycle_comparator_03_05.json")
+    assert comparator["cycles"] == ["cycle_03", "cycle_04", "cycle_05"]
+    assert comparator["trend_claim_policy"] == "history_is_too_thin_for_long_horizon_claims"
+
+    recommendations = _load_json(ARTIFACT_ROOT / "next_action_recommendation_record.json")
+    outcomes = _load_json(ARTIFACT_ROOT / "next_action_outcome_record.json")
+    assert len(recommendations["records"]) == 3
+    assert len(outcomes["records"]) == 3
+
+    accuracy = _load_json(ARTIFACT_ROOT / "recommendation_accuracy_tracker.json")
+    assert accuracy["evaluated_recommendations"] == 3
+    assert 0 <= accuracy["accuracy"] <= 1
 
 
 def test_delivery_contract_and_publication_gate_are_present() -> None:
