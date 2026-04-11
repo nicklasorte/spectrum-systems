@@ -1,0 +1,7 @@
+{
+  "artifact_type": "outcome_accuracy_ledger",
+  "correctness_classification": "pending_longitudinal_truth",
+  "outcome_verdict": "provisional_success",
+  "rolling_accuracy": 0.81,
+  "run_id": "GK-24-01-20260411T143757Z"
+}

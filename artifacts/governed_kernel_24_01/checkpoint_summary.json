@@ -1,0 +1,32 @@
+{
+  "artifact_type": "checkpoint_summary",
+  "checkpoints": [
+    {
+      "ownership_alignment": "PASS",
+      "status": "PASS",
+      "tests": "PASS",
+      "umbrella": "EXECUTION_KERNEL"
+    },
+    {
+      "ownership_alignment": "PASS",
+      "status": "PASS",
+      "tests": "PASS",
+      "umbrella": "REPORTING_AND_PUBLICATION"
+    },
+    {
+      "ownership_alignment": "PASS",
+      "status": "PASS",
+      "tests": "PASS",
+      "umbrella": "RECOMMENDATION_AND_READINESS"
+    },
+    {
+      "deploy_gate": "BLOCK",
+      "ownership_alignment": "PASS",
+      "status": "PASS",
+      "tests": "PASS",
+      "umbrella": "OPERATOR_TRUTH_AND_GATING"
+    }
+  ],
+  "overall_progression": "PASS",
+  "run_id": "GK-24-01-20260411T143757Z"
+}

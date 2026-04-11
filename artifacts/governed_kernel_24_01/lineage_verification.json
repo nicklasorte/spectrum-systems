@@ -1,0 +1,18 @@
+{
+  "artifact_type": "repo_mutation_lineage_verification",
+  "observed_chain": [
+    "AEX",
+    "TLC",
+    "TPA",
+    "PQX"
+  ],
+  "owner": "AEX",
+  "required_chain": [
+    "AEX",
+    "TLC",
+    "TPA",
+    "PQX"
+  ],
+  "run_id": "GK-24-01-20260411T143757Z",
+  "status": "PASS"
+}

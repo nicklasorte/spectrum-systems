@@ -1,0 +1,12 @@
+{
+  "artifact_type": "closure_readiness_authority_output",
+  "authority_basis": [
+    "delivery_report",
+    "review_report",
+    "closeout_artifact"
+  ],
+  "closure_state": "open",
+  "owner": "CDE",
+  "promotion_readiness": "not_authorized",
+  "run_id": "GK-24-01-20260411T143757Z"
+}

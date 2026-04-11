@@ -1,0 +1,19 @@
+{
+  "artifact_type": "deploy_promotion_gate",
+  "checked_constraints": {
+    "fallback_live_ambiguity": false,
+    "lineage_verification_pass": true,
+    "operator_truth_invariants": true,
+    "public_truth_valid": true,
+    "readiness_evidence_sufficient": false,
+    "reports_present": true,
+    "required_artifacts_present": true
+  },
+  "owner": "SEL",
+  "reasons": [
+    "readiness requires another run",
+    "promotion not authorized by CDE"
+  ],
+  "run_id": "GK-24-01-20260411T143757Z",
+  "status": "BLOCK"
+}

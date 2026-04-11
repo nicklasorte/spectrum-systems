@@ -1,0 +1,12 @@
+{
+  "artifact_type": "recommendation_ledger",
+  "confidence": 0.62,
+  "cycle_linkage": "GK-24-01-20260411T143757Z",
+  "next_action": "validate_with_another_run",
+  "provenance_basis": [
+    "review_report",
+    "checkpoint_summary",
+    "publication_audit_bundle"
+  ],
+  "run_id": "GK-24-01-20260411T143757Z"
+}

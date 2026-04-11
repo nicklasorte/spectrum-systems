@@ -1,0 +1,22 @@
+{
+  "artifact_type": "operator_truth_view",
+  "caveats": [
+    "bounded evidence depth",
+    "promotion not authorized by CDE"
+  ],
+  "confidence": 0.62,
+  "freshness": "valid",
+  "next_action": "validate_with_another_run",
+  "provenance_summary": [
+    "review_report",
+    "checkpoint_summary",
+    "publication_audit_bundle"
+  ],
+  "readiness_posture": "Validate with another run",
+  "run_id": "GK-24-01-20260411T143757Z",
+  "trust_signals": [
+    "reports_required_and_present",
+    "publication_audit_pass",
+    "lineage_verified"
+  ]
+}

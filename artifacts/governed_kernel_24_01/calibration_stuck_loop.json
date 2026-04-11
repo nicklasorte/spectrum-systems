@@ -1,0 +1,8 @@
+{
+  "artifact_type": "calibration_stuck_loop_analysis",
+  "calibration_drift_error": 0.07,
+  "confidence_calibration": 0.79,
+  "learning_summary": "confidence bounded below high-certainty threshold due to bounded evidence depth",
+  "run_id": "GK-24-01-20260411T143757Z",
+  "stuck_loop_detected": false
+}
