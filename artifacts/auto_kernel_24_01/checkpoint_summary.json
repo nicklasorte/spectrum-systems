@@ -1,0 +1,26 @@
+{
+  "artifact_type": "checkpoint_summary_artifact",
+  "batch_id": "AUTO-KERNEL-24-01",
+  "execution_mode": "serial_with_hard_checkpoints",
+  "umbrella_checkpoints": [
+    {
+      "umbrella": "AK-B1-B2",
+      "status": "pass"
+    },
+    {
+      "umbrella": "AK-B3-B4",
+      "status": "pass"
+    },
+    {
+      "umbrella": "AK-B5-B6",
+      "status": "pass"
+    },
+    {
+      "umbrella": "AK-B7-B8",
+      "status": "pass"
+    }
+  ],
+  "continuation_rule": "continue only when all criteria pass",
+  "human_confirmation_available": false,
+  "generated_at": "2026-04-11T00:00:00Z"
+}
