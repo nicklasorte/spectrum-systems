@@ -1,0 +1,12 @@
+{
+  "artifact_type": "stale_proof_interpretation_packet",
+  "batch_id": "CERTIFICATION-JUDGMENT-40-EXPLICIT",
+  "step": 34,
+  "owner": "RIL",
+  "generated_at": "2026-04-11T20:17:14Z",
+  "execution_mode": "STRICT SERIAL WITH HARD CHECKPOINTS",
+  "status": "pass",
+  "fail_closed": false,
+  "authority_boundaries_respected": true,
+  "interpretation_only": true
+}
