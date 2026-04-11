@@ -1,0 +1,22 @@
+{
+  "artifact_type": "registry_alignment_result",
+  "batch_id": "CERTIFICATION-JUDGMENT-40-EXPLICIT",
+  "generated_at": "2026-04-11T20:17:14Z",
+  "cross_checks": {
+    "each_step_single_canonical_owner": "pass",
+    "no_preparatory_artifact_as_authority": "pass",
+    "aex_admits_enriches_only": "pass",
+    "tpa_gates_only": "pass",
+    "pqx_executes_only": "pass",
+    "rqx_reviews_only": "pass",
+    "ril_interprets_only": "pass",
+    "sel_enforces_only": "pass",
+    "prg_recommends_scores_tracks_closes_only": "pass",
+    "rdx_sequences_roadmap_selected_work_only": "pass",
+    "cde_decides_only": "pass",
+    "map_projects_only": "pass",
+    "no_proof_surface_invents_semantics": "pass",
+    "promotion_path_requires_certification_evidence_judgment_drift_checks": "pass"
+  },
+  "status": "pass"
+}
