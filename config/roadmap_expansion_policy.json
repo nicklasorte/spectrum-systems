@@ -1,0 +1,141 @@
+{
+  "policy_id": "roadmap-expansion-policy",
+  "policy_version": "1.0.0",
+  "description": "Deterministic mapping surface for roadmap contract expansion. This file is configuration-only and carries no execution authority.",
+  "owner_defaults": {
+    "RIL": {
+      "allowed_module_prefixes": [
+        "spectrum_systems/modules/review/"
+      ],
+      "allowed_test_prefixes": [
+        "tests/test_review"
+      ],
+      "default_contract_locations": [
+        "contracts/schemas/"
+      ],
+      "default_acceptance_check_templates": [
+        "schema_validation_passes",
+        "consumer_wiring_declared"
+      ]
+    },
+    "CDE": {
+      "allowed_module_prefixes": [
+        "spectrum_systems/modules/closure/"
+      ],
+      "allowed_test_prefixes": [
+        "tests/test_done",
+        "tests/test_promotion"
+      ],
+      "default_contract_locations": [
+        "contracts/schemas/"
+      ],
+      "default_acceptance_check_templates": [
+        "decision_authority_preserved",
+        "promotion_gate_validation"
+      ]
+    },
+    "TLC": {
+      "allowed_module_prefixes": [
+        "spectrum_systems/modules/orchestration/"
+      ],
+      "allowed_test_prefixes": [
+        "tests/test_top_level",
+        "tests/test_cycle"
+      ],
+      "default_contract_locations": [
+        "contracts/schemas/"
+      ],
+      "default_acceptance_check_templates": [
+        "orchestration_contract_alignment",
+        "deterministic_route_selection"
+      ]
+    },
+    "PQX": {
+      "allowed_module_prefixes": [
+        "spectrum_systems/modules/runtime/",
+        "spectrum_systems/modules/agent_runtime/"
+      ],
+      "allowed_test_prefixes": [
+        "tests/test_pqx",
+        "tests/test_roadmap"
+      ],
+      "default_contract_locations": [
+        "contracts/schemas/"
+      ],
+      "default_acceptance_check_templates": [
+        "schema_validation_passes",
+        "deterministic_replay_compatibility"
+      ]
+    },
+    "FRE": {
+      "allowed_module_prefixes": [
+        "spectrum_systems/modules/failure/"
+      ],
+      "allowed_test_prefixes": [
+        "tests/test_failure"
+      ],
+      "default_contract_locations": [
+        "contracts/schemas/"
+      ],
+      "default_acceptance_check_templates": [
+        "failure_surface_preserved",
+        "repair_artifact_compatibility"
+      ]
+    },
+    "SEL": {
+      "allowed_module_prefixes": [
+        "spectrum_systems/modules/control/"
+      ],
+      "allowed_test_prefixes": [
+        "tests/test_control",
+        "tests/test_policy"
+      ],
+      "default_contract_locations": [
+        "contracts/schemas/"
+      ],
+      "default_acceptance_check_templates": [
+        "fail_closed_guards_present",
+        "enforcement_contract_alignment"
+      ]
+    },
+    "PRG": {
+      "allowed_module_prefixes": [
+        "spectrum_systems/modules/program/"
+      ],
+      "allowed_test_prefixes": [
+        "tests/test_program",
+        "tests/test_roadmap"
+      ],
+      "default_contract_locations": [
+        "contracts/schemas/"
+      ],
+      "default_acceptance_check_templates": [
+        "roadmap_authority_alignment",
+        "priority_contract_consistency"
+      ]
+    }
+  },
+  "forbidden_ownership_crossings": [
+    {
+      "from_owner": "PQX",
+      "to_owner": "CDE",
+      "reason": "Execution ownership must not emit closure authority artifacts."
+    },
+    {
+      "from_owner": "FRE",
+      "to_owner": "SEL",
+      "reason": "Failure diagnosis must not perform enforcement actions."
+    },
+    {
+      "from_owner": "PRG",
+      "to_owner": "PQX",
+      "reason": "Program governance must not directly execute bounded runtime slices."
+    }
+  ],
+  "default_forbidden_patterns": [
+    "implicit_owner_inference",
+    "missing_expansion_trace_ref",
+    "execution_without_contract_validation",
+    "cross_owner_module_write"
+  ]
+}

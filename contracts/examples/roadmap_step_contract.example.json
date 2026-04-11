@@ -1,0 +1,44 @@
+{
+  "artifact_type": "roadmap_step_contract",
+  "step_id": "RF-03",
+  "owner": "PQX",
+  "intent": "Establish deterministic roadmap expansion contract and trace validation artifacts for governed execution preparation.",
+  "depends_on": [
+    "RF-02"
+  ],
+  "target_modules": [
+    "spectrum_systems/modules/runtime/roadmap"
+  ],
+  "target_contracts": [
+    "contracts/schemas/roadmap_step_contract.schema.json",
+    "contracts/schemas/roadmap_expansion_trace.schema.json"
+  ],
+  "target_tests": [
+    "tests/test_roadmap_expansion_contracts.py"
+  ],
+  "runtime_entrypoints": [
+    "spectrum_systems/modules/runtime/system_cycle.py"
+  ],
+  "forbidden_patterns": [
+    "implicit_owner_inference",
+    "execution_without_contract_validation",
+    "cross_owner_module_write"
+  ],
+  "acceptance_checks": [
+    {
+      "check_id": "schema_validation_passes",
+      "description": "Roadmap contract and trace examples must validate against strict schemas.",
+      "required": true
+    },
+    {
+      "check_id": "policy_structure_valid",
+      "description": "Roadmap expansion policy must expose deterministic owner mapping structure.",
+      "required": true
+    }
+  ],
+  "realization_mode": "artifact_materialization",
+  "realization_status": "planned_only",
+  "expansion_version": "1.0.0",
+  "expansion_policy_hash": "152968011b794af977ccdfa9813025ef2271dbd6be90a48116d5a6b665b73839",
+  "expansion_trace_ref": "contracts/examples/roadmap_expansion_trace.example.json#RF-03"
+}

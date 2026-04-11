@@ -1,0 +1,29 @@
+{
+  "artifact_type": "roadmap_expansion_trace",
+  "step_id": "RF-03",
+  "expansion_version": "1.0.0",
+  "expansion_policy_hash": "152968011b794af977ccdfa9813025ef2271dbd6be90a48116d5a6b665b73839",
+  "field_trace": [
+    {
+      "field_name": "owner",
+      "source_type": "roadmap_artifact",
+      "source_ref": "docs/roadmaps/system_roadmap.md#RF-03",
+      "rule_id": "OWNER_FROM_ROADMAP",
+      "notes": "Owner copied exactly from compact roadmap artifact."
+    },
+    {
+      "field_name": "target_modules",
+      "source_type": "expansion_policy",
+      "source_ref": "config/roadmap_expansion_policy.json#owner_defaults.PQX.allowed_module_prefixes",
+      "rule_id": "MODULE_PREFIX_BY_OWNER",
+      "notes": "Module targets are constrained to policy-declared prefixes for owner PQX."
+    },
+    {
+      "field_name": "forbidden_patterns",
+      "source_type": "governance_rule",
+      "source_ref": "AGENTS.md#Canonical runtime rules",
+      "rule_id": "FAIL_CLOSED_DEFAULT_PATTERNS",
+      "notes": "Default forbidden patterns carried from deterministic policy baseline aligned to fail-closed behavior."
+    }
+  ]
+}

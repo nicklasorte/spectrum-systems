@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.109",
+  "artifact_version": "1.3.110",
   "schema_version": "1.3.98",
-  "standards_version": "1.3.110",
+  "standards_version": "1.3.111",
   "record_id": "REC-STD-2026-04-09-CTX-A",
   "run_id": "run-20260409T000000Z-ctx-a",
   "created_at": "2026-04-09T00:00:00Z",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.109",
+  "source_repo_version": "1.3.110",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -3691,6 +3691,19 @@
       "notes": "RIL-002 deterministic review signal classification artifact mapping review items into bounded operational signal classes with traceable source linkage."
     },
     {
+      "artifact_type": "review_cycle_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.109",
+      "last_updated_in": "1.3.109",
+      "example_path": "contracts/examples/review_cycle_record.json",
+      "notes": "RF-01-REAL runtime-owned review/fix/replay cycle state artifact emitted by RQX lifecycle functions with fail-closed transitions."
+    },
+    {
       "artifact_type": "review_eval_generation_report",
       "artifact_class": "review",
       "schema_version": "1.0.0",
@@ -4006,6 +4019,19 @@
       "notes": "BATCH-MVP-END-TO-END deterministic full-roadmap execution report with fail-closed control-loop continuation/stop semantics."
     },
     {
+      "artifact_type": "roadmap_expansion_trace",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.111",
+      "last_updated_in": "1.3.111",
+      "example_path": "contracts/examples/roadmap_expansion_trace.example.json",
+      "notes": "RAX-01-REAL deterministic field-level traceability contract for roadmap expansion auditability."
+    },
+    {
       "artifact_type": "roadmap_multi_batch_run_result",
       "artifact_class": "coordination",
       "schema_version": "1.4.0",
@@ -4121,6 +4147,19 @@
       "last_updated_in": "1.3.63",
       "example_path": "contracts/examples/roadmap_signal_bundle.json",
       "notes": "BATCH-LTV-C deterministic feeder bundle that steers roadmap priorities from drift/hotspot/coverage/replay/judgment/budget/trust signals."
+    },
+    {
+      "artifact_type": "roadmap_step_contract",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.111",
+      "last_updated_in": "1.3.111",
+      "example_path": "contracts/examples/roadmap_step_contract.example.json",
+      "notes": "RAX-01-REAL strict enriched roadmap step contract for deterministic artifact-first realization planning."
     },
     {
       "artifact_type": "roadmap_step_execution_artifact",
@@ -4678,19 +4717,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "review_cycle_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.109",
-      "last_updated_in": "1.3.109",
-      "example_path": "contracts/examples/review_cycle_record.json",
-      "notes": "RF-01-REAL runtime-owned review/fix/replay cycle state artifact emitted by RQX lifecycle functions with fail-closed transitions."
     }
   ]
 }
