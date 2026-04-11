@@ -114,6 +114,10 @@ type ArtifactLoad = {
 
 type ArtifactPresence = Record<string, boolean>
 
+type RenderGateResult =
+  | { kind: 'renderable'; reason: string; missing_artifacts: string[]; stale_artifacts: string[]; snapshot: Snapshot }
+  | { kind: 'no_data' | 'incomplete_publication' | 'stale' | 'truth_violation'; reason: string; missing_artifacts: string[]; stale_artifacts: string[] }
+
 const NOT_AVAILABLE = 'Not available yet'
 const HISTORY_NOT_AVAILABLE = 'History not available yet'
 const NO_DEFERRED_ITEMS = 'No deferred items'
@@ -507,6 +511,30 @@ export default function RepoDashboard() {
     }
   }, [artifactLoads])
 
+  const renderGate = useMemo<RenderGateResult>(() => {
+    if (!snapshot && !snapshotMeta) {
+      return { kind: 'no_data', reason: 'No publication artifacts are available for rendering.', missing_artifacts: ['repo_snapshot', 'repo_snapshot_meta'], stale_artifacts: [] }
+    }
+    const missingCritical = completeness.missing.filter((label) =>
+      ['repo_snapshot', 'repo_snapshot_meta', 'hard_gate_status', 'current_run_state', 'drift_trend_continuity', 'current_bottleneck_record'].includes(label)
+    )
+    if (missingCritical.length > 0) {
+      return { kind: 'incomplete_publication', reason: 'Required publication artifacts are incomplete.', missing_artifacts: missingCritical, stale_artifacts: [] }
+    }
+    if (refresh.state === 'Stale') {
+      return { kind: 'stale', reason: 'Dashboard publication is stale and blocked by freshness gate.', missing_artifacts: [], stale_artifacts: ['repo_snapshot'] }
+    }
+    if (!snapshot || (snapshotMeta?.data_source_state ?? '').toLowerCase() !== 'live' || truthViolation) {
+      return {
+        kind: 'truth_violation',
+        reason: 'Dashboard cannot prove live artifact truth for this render.',
+        missing_artifacts: snapshot ? [] : ['repo_snapshot'],
+        stale_artifacts: []
+      }
+    }
+    return { kind: 'renderable', reason: 'Dashboard publication is renderable.', missing_artifacts: [], stale_artifacts: [], snapshot }
+  }, [snapshot, snapshotMeta, completeness.missing, refresh.state, truthViolation])
+
   const integritySummary = useMemo(() => {
     const executionIntegrity = runBlocked ? 'At Risk' : runState ? 'Good' : 'Unknown'
     const reviewIntegrity = constitutionPanels.some(({ payload }) => payload) ? (constitutionViolations ? 'At Risk' : 'Good') : 'Unknown'
@@ -608,12 +636,19 @@ export default function RepoDashboard() {
         </p>
       </header>
 
-      {truthViolation ? (
+      {renderGate.kind !== 'renderable' ? (
         <section style={{ ...cardStyle, border: '1px solid #dc2626', background: '#fef2f2', marginTop: 12 }}>
-          <h2 style={{ margin: 0, fontSize: 16, color: '#991b1b' }}>Fail-closed mode</h2>
-          <p style={{ margin: '8px 0 0', color: '#7f1d1d' }}>Truth violation detected. Dashboard guidance is intentionally degraded until live artifact integrity is restored.</p>
+          <h2 style={{ margin: 0, fontSize: 16, color: '#991b1b' }}>Dashboard unavailable: {renderGate.kind}</h2>
+          <p style={{ margin: '8px 0 0', color: '#7f1d1d' }}>{renderGate.reason}</p>
+          <Field label='Missing artifacts' value='' />
+          <StringList items={renderGate.missing_artifacts} emptyText='No missing artifacts recorded.' />
+          <Field label='Stale artifacts' value='' />
+          <StringList items={renderGate.stale_artifacts} emptyText='No stale artifacts recorded.' />
         </section>
       ) : null}
+
+      {renderGate.kind !== 'renderable' ? null : (
+        <>
 
       {showWarningBanner ? (
         <section style={{ ...cardStyle, border: '1px solid #fecaca', background: '#fff7f7', marginTop: 12 }}>
@@ -882,8 +917,8 @@ export default function RepoDashboard() {
 
         <article style={cardStyle}>
           <h2 style={{ margin: 0, fontSize: 17 }}>Runtime hotspots</h2>
-          {snapshot.runtime_hotspots?.length ? (
-            snapshot.runtime_hotspots.map((hotspot, index) => (
+          {renderGate.snapshot.runtime_hotspots?.length ? (
+            renderGate.snapshot.runtime_hotspots.map((hotspot, index) => (
               <div key={`${hotspot.area ?? 'hotspot'}-${index}`} style={{ marginTop: index === 0 ? 10 : 14, paddingTop: index === 0 ? 0 : 12, borderTop: index === 0 ? 'none' : '1px solid #e2e8f0' }}>
                 <Field label='Area' value={hotspot.area} />
                 <Field label='Count' value={hotspot.count} />
@@ -899,8 +934,8 @@ export default function RepoDashboard() {
       <section style={sectionStyle}>
         <article style={cardStyle}>
           <h2 style={{ margin: 0, fontSize: 17 }}>Operational signals</h2>
-          {snapshot.operational_signals?.length ? (
-            snapshot.operational_signals.map((signal, index) => (
+          {renderGate.snapshot.operational_signals?.length ? (
+            renderGate.snapshot.operational_signals.map((signal, index) => (
               <div key={`${signal.title ?? 'signal'}-${index}`} style={{ marginTop: index === 0 ? 10 : 14, paddingTop: index === 0 ? 0 : 12, borderTop: index === 0 ? 'none' : '1px solid #e2e8f0' }}>
                 <Field label='Title' value={signal.title} />
                 <Field label='Status' value={signal.status} />
@@ -912,6 +947,8 @@ export default function RepoDashboard() {
           )}
         </article>
       </section>
+        </>
+      )}
     </main>
   )
 }
