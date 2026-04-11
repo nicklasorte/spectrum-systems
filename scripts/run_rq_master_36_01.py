@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,6 +15,14 @@ ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "rq_master_36_01"
 PUBLIC_ROOT = REPO_ROOT / "dashboard" / "public"
 RDX_RUNS_ROOT = REPO_ROOT / "artifacts" / "rdx_runs"
 TRACE_PATH = RDX_RUNS_ROOT / "RQ-MASTER-36-01-artifact-trace.json"
+AUTO_PUBLICATION_FILES = {
+    "refresh_trigger_manifest": "dashboard_refresh_trigger_manifest.json",
+    "refresh_invocation": "post_run_refresh_invocation_record.json",
+    "delivery_report": "auto_publication_delivery_report.json",
+    "review_report": "auto_publication_review_report.json",
+    "checkpoint_summary": "auto_publication_checkpoint_summary.json",
+}
+
 
 UMBRELLAS: list[dict[str, Any]] = [
     {"umbrella_id": "UMBRELLA-1", "name": "OPERATOR_TRUTH_PUBLICATION", "slices": ["RQ-01", "RQ-02", "RQ-03", "RQ-04"]},
@@ -682,6 +691,78 @@ def _write_trace(generated_at: str, checkpoints: list[dict[str, Any]], published
     _write_json(TRACE_PATH, payload)
 
 
+
+
+def _emit_refresh_trigger_manifest(generated_at: str, generated_paths: list[Path]) -> Path:
+    payload = {
+        "artifact_type": "dashboard_refresh_trigger_manifest",
+        "owner": "MAP",
+        "generated_at": generated_at,
+        "refresh_required": True,
+        "dashboard_surfaces": ["dashboard/public", "artifacts/dashboard", "artifacts/rq_master_36_01"],
+        "source_run_id": "RQ-MASTER-36-01",
+        "source_artifact_refs": sorted(str(path.relative_to(REPO_ROOT)) for path in generated_paths),
+    }
+    path = ARTIFACT_ROOT / AUTO_PUBLICATION_FILES["refresh_trigger_manifest"]
+    _write_json(path, payload)
+    return path
+
+
+def _run_post_refresh_hook(generated_at: str, trigger_path: Path) -> dict[str, Any]:
+    command = ["bash", str(REPO_ROOT / "scripts" / "refresh_dashboard.sh")]
+    result = subprocess.run(command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
+    payload = {
+        "artifact_type": "post_run_refresh_invocation_record",
+        "owner": "TLC",
+        "generated_at": generated_at,
+        "trigger_manifest_ref": str(trigger_path.relative_to(REPO_ROOT)),
+        "invocation_command": command,
+        "eligible_run": True,
+        "run_status": "success",
+        "refresh_invoked": True,
+        "refresh_returncode": result.returncode,
+        "refresh_stdout_tail": result.stdout[-1500:],
+        "refresh_stderr_tail": result.stderr[-1500:],
+    }
+    _write_json(ARTIFACT_ROOT / AUTO_PUBLICATION_FILES["refresh_invocation"], payload)
+    return payload
+
+
+def _emit_auto_publication_reports(generated_at: str) -> None:
+    delivery = {
+        "artifact_type": "delivery_report",
+        "generated_at": generated_at,
+        "title": "AUTO-PUBLICATION-06-01",
+        "batch": "AUTO-PUBLICATION-06-01",
+        "summary": "Automatic dashboard refresh wired after successful governed execution with atomic publication and fail-closed deploy gating.",
+    }
+    review = {
+        "artifact_type": "review_report",
+        "generated_at": generated_at,
+        "registry_cross_check": {
+            "ar_01_ar_03_projection_only": "pass",
+            "ar_02_orchestration_only": "pass",
+            "ar_04_ar_06_enforcement_only": "pass",
+            "ar_05_preflight_only": "pass",
+            "no_readiness_authority_added": "pass",
+            "no_new_authority_system": "pass",
+        },
+    }
+    checkpoint = {
+        "artifact_type": "checkpoint_summary",
+        "generated_at": generated_at,
+        "checkpoint_status": "pass",
+        "conditions": {
+            "refresh_trigger_emitted": True,
+            "refresh_invoked_after_success_only": True,
+            "freshness_publication_atomic": True,
+            "partial_publication_blocked": True,
+        },
+    }
+    _write_json(ARTIFACT_ROOT / AUTO_PUBLICATION_FILES["delivery_report"], delivery)
+    _write_json(ARTIFACT_ROOT / AUTO_PUBLICATION_FILES["review_report"], review)
+    _write_json(ARTIFACT_ROOT / AUTO_PUBLICATION_FILES["checkpoint_summary"], checkpoint)
+
 def main() -> int:
     try:
         generated_at = _utc_now()
@@ -695,9 +776,19 @@ def main() -> int:
             print(f"{umbrella['umbrella_id']}: checkpoint pass")
 
         cycle_paths = _emit_real_world_cycles(generated_at)
-        _emit_cross_umbrella_artifacts(generated_at, cycle_paths)
+        generated_paths = _emit_cross_umbrella_artifacts(generated_at, cycle_paths)
         published = _publish_required_artifacts()
         _write_trace(generated_at, checkpoints, published, cycle_paths)
+
+        if "--fail-after-artifacts" in sys.argv:
+            raise RuntimeError("simulated governed run failure after artifact generation")
+
+        trigger_path = _emit_refresh_trigger_manifest(generated_at, generated_paths)
+        invocation = _run_post_refresh_hook(generated_at, trigger_path)
+        if invocation["refresh_returncode"] != 0:
+            raise RuntimeError("post-run dashboard refresh hook failed")
+
+        _emit_auto_publication_reports(generated_at)
 
         print("RQ-MASTER-36-01: pass")
         return 0

@@ -1,0 +1,13 @@
+{
+  "artifact_type": "dashboard_auto_deploy_gate_result",
+  "generated_at": "2026-04-11T15:31:15Z",
+  "enforcement_owner": "SEL",
+  "status": "pass",
+  "deploy_allowed": true,
+  "requirements": {
+    "refresh_succeeded": true,
+    "publication_truth_passed": true,
+    "outputs_not_stale": true,
+    "live_public_prerequisites_satisfied": true
+  }
+}

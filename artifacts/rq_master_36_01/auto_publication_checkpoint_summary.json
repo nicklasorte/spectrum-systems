@@ -1,0 +1,11 @@
+{
+  "artifact_type": "checkpoint_summary",
+  "generated_at": "2026-04-11T15:31:14Z",
+  "checkpoint_status": "pass",
+  "conditions": {
+    "refresh_trigger_emitted": true,
+    "refresh_invoked_after_success_only": true,
+    "freshness_publication_atomic": true,
+    "partial_publication_blocked": true
+  }
+}

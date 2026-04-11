@@ -1,0 +1,32 @@
+{
+  "artifact_type": "dashboard_refresh_trigger_manifest",
+  "owner": "MAP",
+  "generated_at": "2026-04-11T15:31:14Z",
+  "refresh_required": true,
+  "dashboard_surfaces": [
+    "dashboard/public",
+    "artifacts/dashboard",
+    "artifacts/rq_master_36_01"
+  ],
+  "source_run_id": "RQ-MASTER-36-01",
+  "source_artifact_refs": [
+    "artifacts/rq_master_36_01/compatibility_mirror_retirement_assessment.json",
+    "artifacts/rq_master_36_01/confidence_calibration_artifact.json",
+    "artifacts/rq_master_36_01/cycle_comparator_03_05.json",
+    "artifacts/rq_master_36_01/dashboard_freshness_status.json",
+    "artifacts/rq_master_36_01/dashboard_public_contract_coverage.json",
+    "artifacts/rq_master_36_01/deploy_ci_truth_gate.json",
+    "artifacts/rq_master_36_01/error_budget_enforcement_outcome.json",
+    "artifacts/rq_master_36_01/governed_promotion_discipline_gate.json",
+    "artifacts/rq_master_36_01/judgment_application_artifact.json",
+    "artifacts/rq_master_36_01/next_action_outcome_record.json",
+    "artifacts/rq_master_36_01/next_action_recommendation_record.json",
+    "artifacts/rq_master_36_01/operator_surface_snapshot_export.json",
+    "artifacts/rq_master_36_01/operator_trust_closeout_artifact.json",
+    "artifacts/rq_master_36_01/readiness_to_expand_validator.json",
+    "artifacts/rq_master_36_01/recommendation_accuracy_tracker.json",
+    "artifacts/rq_master_36_01/recommendation_review_surface.json",
+    "artifacts/rq_master_36_01/recurrence_prevention_status.json",
+    "artifacts/rq_master_36_01/stuck_loop_detector.json"
+  ]
+}
