@@ -1,0 +1,16 @@
+{
+  "artifact_type": "meta_governance_registry_cross_check",
+  "checks": {
+    "10_batch_or_umbrella_not_closure_authority": true,
+    "1_each_slice_has_exactly_one_owner": true,
+    "2_prep_artifacts_not_authority": true,
+    "3_recommendation_layer_non_enforcing": true,
+    "4_interpretation_layer_non_enforcing": true,
+    "5_projection_layer_non_deciding": true,
+    "6_enforcement_only_sel": true,
+    "7_closure_readiness_only_cde": true,
+    "8_policy_admissibility_only_tpa": true,
+    "9_repo_mutation_preserves_aex_tlc_tpa_pqx": true
+  },
+  "status": "PASS"
+}

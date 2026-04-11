@@ -1,0 +1,34 @@
+{
+  "artifact_type": "learning_and_debt_bundle",
+  "change_to_outcome_attribution": {
+    "owner": "PRG",
+    "status": "PASS"
+  },
+  "execution_realism": {
+    "green_low_value_detected": false,
+    "owner": "PRG"
+  },
+  "experiment_ledger": {
+    "attribution_coverage": 1.0,
+    "experiments_recorded": 3,
+    "owner": "PRG"
+  },
+  "governance_debt_register": {
+    "manual_residue_steps": 2,
+    "non_zero_when_manual_work_remains": true,
+    "owner": "PRG",
+    "prompt_residue_ratio": 0.2667
+  },
+  "knowledge_persistence": {
+    "owner": "PRG",
+    "patterns_persisted": 5
+  },
+  "layered_explainability": {
+    "levels": [
+      "operator",
+      "reviewer",
+      "audit"
+    ],
+    "owner": "MAP"
+  }
+}

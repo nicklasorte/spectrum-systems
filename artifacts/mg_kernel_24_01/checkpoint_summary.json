@@ -1,0 +1,55 @@
+{
+  "artifact_type": "meta_governance_checkpoint_summary",
+  "checkpoints": [
+    {
+      "artifact_type": "umbrella_checkpoint",
+      "checkpoint_artifact": "roadmap_admission_bundle",
+      "registry_alignment": "PASS",
+      "reports": "PASS",
+      "run_id": "MG-KERNEL-24-01-20260411T145237Z",
+      "schemas": "PASS",
+      "status": "PASS",
+      "tests": "PASS",
+      "truth_publication": "PASS",
+      "umbrella": "ROADMAP_AND_PROMPT_BURDEN"
+    },
+    {
+      "artifact_type": "umbrella_checkpoint",
+      "checkpoint_artifact": "report_evidence_quality_bundle",
+      "registry_alignment": "PASS",
+      "reports": "PASS",
+      "run_id": "MG-KERNEL-24-01-20260411T145237Z",
+      "schemas": "PASS",
+      "status": "PASS",
+      "tests": "PASS",
+      "truth_publication": "PASS",
+      "umbrella": "REPORT_AND_EVIDENCE_QUALITY"
+    },
+    {
+      "artifact_type": "umbrella_checkpoint",
+      "checkpoint_artifact": "live_truth_and_risk_bundle",
+      "registry_alignment": "PASS",
+      "reports": "PASS",
+      "run_id": "MG-KERNEL-24-01-20260411T145237Z",
+      "schemas": "PASS",
+      "status": "PASS",
+      "tests": "PASS",
+      "truth_publication": "PASS",
+      "umbrella": "LIVE_TRUTH_AND_OPERATIONAL_RISK"
+    },
+    {
+      "artifact_type": "umbrella_checkpoint",
+      "checkpoint_artifact": "learning_and_debt_bundle",
+      "registry_alignment": "PASS",
+      "reports": "PASS",
+      "run_id": "MG-KERNEL-24-01-20260411T145237Z",
+      "schemas": "PASS",
+      "status": "PASS",
+      "tests": "PASS",
+      "truth_publication": "PASS",
+      "umbrella": "LEARNING_AND_GOVERNANCE_DEBT"
+    }
+  ],
+  "run_id": "MG-KERNEL-24-01-20260411T145237Z",
+  "status": "PASS"
+}
