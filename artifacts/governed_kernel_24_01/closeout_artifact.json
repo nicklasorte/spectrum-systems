@@ -1,0 +1,10 @@
+{
+  "artifact_type": "governance_closeout",
+  "authority_boundaries_intact": true,
+  "closeout_artifacts_present": true,
+  "closeout_status": "complete_without_promotion",
+  "owner": "CDE",
+  "readiness_evidence_present": true,
+  "required_reports_present": true,
+  "run_id": "GK-24-01-20260411T143757Z"
+}

@@ -1,0 +1,18 @@
+{
+  "artifact_type": "review_report",
+  "required": true,
+  "review_results": {
+    "batch_review_spine": "PASS",
+    "fix_request": null,
+    "merge_readiness": "ready"
+  },
+  "run_id": "GK-24-01-20260411T143757Z",
+  "status": "PASS",
+  "validation_scope": [
+    "run contract validation",
+    "checkpoint registry behavior",
+    "public truth gate",
+    "governance closeout enforcement",
+    "deploy/promotion gate"
+  ]
+}

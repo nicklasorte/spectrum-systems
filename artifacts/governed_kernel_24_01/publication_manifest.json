@@ -1,0 +1,18 @@
+{
+  "artifact_type": "publication_manifest",
+  "freshness_status": "valid",
+  "publication_completeness": "complete",
+  "published_artifacts": [
+    "delivery_report",
+    "review_report",
+    "checkpoint_summary",
+    "closeout_artifact"
+  ],
+  "run_id": "GK-24-01-20260411T143757Z",
+  "source_path_hash_evidence": {
+    "execution_manifest": "4db1021907cd9d68",
+    "review_report": "5e9f3e57620483fc",
+    "run_contract": "d79dda990c14cbbf"
+  },
+  "status": "PASS"
+}

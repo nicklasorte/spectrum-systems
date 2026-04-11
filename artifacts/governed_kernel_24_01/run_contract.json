@@ -1,0 +1,211 @@
+{
+  "artifact_type": "governed_run_contract",
+  "authority_inputs": [
+    "docs/architecture/system_registry.md",
+    "docs/architecture/strategy-control.md",
+    "docs/architecture/foundation_pqx_eval_control.md",
+    "docs/roadmaps/system_roadmap.md",
+    "docs/roadmaps/roadmap_authority.md"
+  ],
+  "batch_id": "GOVERNED-KERNEL-24-01",
+  "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
+  "expected_artifacts": [
+    "run_contract",
+    "umbrella_execution_plan",
+    "execution_manifest",
+    "checkpoint_summary",
+    "delivery_report",
+    "review_report",
+    "publication_manifest",
+    "closeout_artifact"
+  ],
+  "generated_at": "2026-04-11T14:37:57Z",
+  "publication_requirements": [
+    "freshness_audit",
+    "source_hash_evidence",
+    "publication_completeness"
+  ],
+  "required_reports": [
+    "delivery_report",
+    "review_report",
+    "checkpoint_summary"
+  ],
+  "required_validations": [
+    "contract_shape_validation",
+    "checkpoint_registry_validation",
+    "batch_review_validation",
+    "public_truth_validation",
+    "operator_truth_validation",
+    "deploy_gate_validation"
+  ],
+  "run_id": "GK-24-01-20260411T143757Z",
+  "scope_boundaries": [
+    "no authority duplication",
+    "no enforcement outside SEL",
+    "no policy admissibility outside TPA",
+    "no closure authority outside CDE",
+    "no execution outside PQX"
+  ],
+  "stop_conditions": [
+    ">20 files modified in single umbrella without justification",
+    "required artifacts missing",
+    "checkpoint status != PASS",
+    "dashboard truth outruns governed artifacts",
+    "readiness confidence outruns evidence",
+    "lineage invariant breaks"
+  ],
+  "umbrella_structure": {
+    "EXECUTION_KERNEL": [
+      {
+        "batch_id": "GK-B1",
+        "owner": "AEX",
+        "slice_id": "GK-01",
+        "title": "Run contract artifact"
+      },
+      {
+        "batch_id": "GK-B1",
+        "owner": "TLC",
+        "slice_id": "GK-02",
+        "title": "Umbrella execution plan artifact"
+      },
+      {
+        "batch_id": "GK-B1",
+        "owner": "PQX",
+        "slice_id": "GK-03",
+        "title": "Execution manifest emission"
+      },
+      {
+        "batch_id": "GK-B2",
+        "owner": "TLC",
+        "slice_id": "GK-04",
+        "title": "Checkpoint registry"
+      },
+      {
+        "batch_id": "GK-B2",
+        "owner": "RQX",
+        "slice_id": "GK-05",
+        "title": "Batch validation + review spine"
+      },
+      {
+        "batch_id": "GK-B2",
+        "owner": "SEL",
+        "slice_id": "GK-06",
+        "title": "Progression block enforcement"
+      }
+    ],
+    "OPERATOR_TRUTH_AND_GATING": [
+      {
+        "batch_id": "GK-B7",
+        "owner": "MAP",
+        "slice_id": "GK-19",
+        "title": "Operator truth view model"
+      },
+      {
+        "batch_id": "GK-B7",
+        "owner": "RIL",
+        "slice_id": "GK-20",
+        "title": "Truth validator input interpretation"
+      },
+      {
+        "batch_id": "GK-B7",
+        "owner": "SEL",
+        "slice_id": "GK-21",
+        "title": "Operator truth fail-closed mode"
+      },
+      {
+        "batch_id": "GK-B8",
+        "owner": "TPA",
+        "slice_id": "GK-22",
+        "title": "Operator action admissibility gate"
+      },
+      {
+        "batch_id": "GK-B8",
+        "owner": "AEX",
+        "slice_id": "GK-23",
+        "title": "Repo-mutation lineage verifier"
+      },
+      {
+        "batch_id": "GK-B8",
+        "owner": "SEL",
+        "slice_id": "GK-24",
+        "title": "Deploy/promotion gate"
+      }
+    ],
+    "RECOMMENDATION_AND_READINESS": [
+      {
+        "batch_id": "GK-B5",
+        "owner": "PRG",
+        "slice_id": "GK-13",
+        "title": "Recommendation ledger"
+      },
+      {
+        "batch_id": "GK-B5",
+        "owner": "PRG",
+        "slice_id": "GK-14",
+        "title": "Outcome + accuracy ledger"
+      },
+      {
+        "batch_id": "GK-B5",
+        "owner": "PRG",
+        "slice_id": "GK-15",
+        "title": "Calibration + stuck-loop analysis"
+      },
+      {
+        "batch_id": "GK-B6",
+        "owner": "PRG",
+        "slice_id": "GK-16",
+        "title": "Readiness recommendation engine"
+      },
+      {
+        "batch_id": "GK-B6",
+        "owner": "CDE",
+        "slice_id": "GK-17",
+        "title": "Closure/readiness authority output"
+      },
+      {
+        "batch_id": "GK-B6",
+        "owner": "SEL",
+        "slice_id": "GK-18",
+        "title": "Governance closeout enforcement"
+      }
+    ],
+    "REPORTING_AND_PUBLICATION": [
+      {
+        "batch_id": "GK-B3",
+        "owner": "RIL",
+        "slice_id": "GK-07",
+        "title": "Delivery summary input packet"
+      },
+      {
+        "batch_id": "GK-B3",
+        "owner": "PRG",
+        "slice_id": "GK-08",
+        "title": "Delivery report generator"
+      },
+      {
+        "batch_id": "GK-B3",
+        "owner": "RQX",
+        "slice_id": "GK-09",
+        "title": "Review report generator"
+      },
+      {
+        "batch_id": "GK-B4",
+        "owner": "MAP",
+        "slice_id": "GK-10",
+        "title": "Publication manifest projection"
+      },
+      {
+        "batch_id": "GK-B4",
+        "owner": "MAP",
+        "slice_id": "GK-11",
+        "title": "Freshness + audit publication bundle"
+      },
+      {
+        "batch_id": "GK-B4",
+        "owner": "SEL",
+        "slice_id": "GK-12",
+        "title": "Public truth fail gate"
+      }
+    ]
+  }
+}

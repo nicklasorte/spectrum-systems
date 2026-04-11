@@ -1,0 +1,73 @@
+{
+  "artifact_type": "execution_manifest",
+  "artifacts_emitted": [
+    "run_contract.json",
+    "run_contract_validation.json",
+    "umbrella_execution_plan.json",
+    "checkpoint_registry.json",
+    "delivery_report.json",
+    "review_report.json",
+    "checkpoint_summary.json",
+    "publication_manifest.json",
+    "publication_audit_bundle.json",
+    "recommendation_ledger.json",
+    "outcome_accuracy_ledger.json",
+    "calibration_stuck_loop.json",
+    "readiness_recommendation.json",
+    "cde_authority_output.json",
+    "operator_truth_view.json",
+    "truth_interpreter_inputs.json",
+    "action_admissibility.json",
+    "lineage_verification.json",
+    "deploy_promotion_gate.json",
+    "closeout_artifact.json",
+    "registry_cross_check.json"
+  ],
+  "execution_lineage_refs": [
+    {
+      "from": "AEX",
+      "to": "TLC"
+    },
+    {
+      "from": "TLC",
+      "to": "TPA"
+    },
+    {
+      "from": "TPA",
+      "to": "PQX"
+    }
+  ],
+  "files_touched": [
+    "spectrum_systems/modules/runtime/governed_execution_kernel.py",
+    "scripts/run_governed_kernel_24_01.py"
+  ],
+  "generated_at": "2026-04-11T14:37:57Z",
+  "manifest_hash": "21e07a379a75e3a4",
+  "run_id": "GK-24-01-20260411T143757Z",
+  "slices_executed": [
+    "GK-01",
+    "GK-02",
+    "GK-03",
+    "GK-04",
+    "GK-05",
+    "GK-06",
+    "GK-07",
+    "GK-08",
+    "GK-09",
+    "GK-10",
+    "GK-11",
+    "GK-12",
+    "GK-13",
+    "GK-14",
+    "GK-15",
+    "GK-16",
+    "GK-17",
+    "GK-18",
+    "GK-19",
+    "GK-20",
+    "GK-21",
+    "GK-22",
+    "GK-23",
+    "GK-24"
+  ]
+}

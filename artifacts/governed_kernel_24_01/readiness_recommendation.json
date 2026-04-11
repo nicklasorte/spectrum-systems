@@ -1,0 +1,16 @@
+{
+  "artifact_type": "readiness_recommendation",
+  "authoritative": false,
+  "factors": {
+    "accuracy": 0.81,
+    "calibration": 0.79,
+    "data_completeness": "complete",
+    "drift": "controlled",
+    "evidence_depth": "moderate",
+    "hard_gate_state": "pass",
+    "integrity_truth_status": "pass"
+  },
+  "owner": "PRG",
+  "readiness_output": "Validate with another run",
+  "run_id": "GK-24-01-20260411T143757Z"
+}

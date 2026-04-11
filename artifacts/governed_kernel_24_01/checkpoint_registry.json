@@ -1,0 +1,97 @@
+{
+  "artifact_type": "checkpoint_registry",
+  "checkpoint_registry_id": "GK-24-01-checkpoint-registry",
+  "checkpoints": [
+    {
+      "checkpoint_id": "U1_EXECUTION_KERNEL",
+      "progression_criteria": "all_required_present_and_passed",
+      "publication_requirements": [],
+      "required_artifacts": [
+        "run_contract",
+        "umbrella_execution_plan",
+        "execution_manifest"
+      ],
+      "required_reports": [
+        "checkpoint_summary"
+      ],
+      "required_validations": [
+        "run_contract_schema",
+        "checkpoint_registry",
+        "batch_review_spine",
+        "fail_closed_progression"
+      ]
+    },
+    {
+      "checkpoint_id": "U2_REPORTING_AND_PUBLICATION",
+      "progression_criteria": "all_required_present_and_passed",
+      "publication_requirements": [
+        "freshness_pass",
+        "source_hash_evidence",
+        "completeness_evidence"
+      ],
+      "required_artifacts": [
+        "publication_manifest",
+        "publication_audit_bundle"
+      ],
+      "required_reports": [
+        "delivery_report",
+        "review_report",
+        "checkpoint_summary"
+      ],
+      "required_validations": [
+        "report_generation",
+        "publication_manifest",
+        "public_truth_gate"
+      ]
+    },
+    {
+      "checkpoint_id": "U3_RECOMMENDATION_AND_READINESS",
+      "progression_criteria": "all_required_present_and_passed",
+      "publication_requirements": [],
+      "required_artifacts": [
+        "recommendation_ledger",
+        "outcome_accuracy_ledger",
+        "readiness_recommendation",
+        "cde_authority_output"
+      ],
+      "required_reports": [
+        "delivery_report",
+        "review_report",
+        "checkpoint_summary"
+      ],
+      "required_validations": [
+        "recommendation_ledger",
+        "outcome_accuracy",
+        "calibration",
+        "cde_boundary",
+        "closeout_gate"
+      ]
+    },
+    {
+      "checkpoint_id": "U4_OPERATOR_TRUTH_AND_GATING",
+      "progression_criteria": "all_required_present_and_passed",
+      "publication_requirements": [
+        "public_truth_constraints_hold"
+      ],
+      "required_artifacts": [
+        "operator_truth_view",
+        "action_admissibility",
+        "lineage_verification",
+        "deploy_promotion_gate"
+      ],
+      "required_reports": [
+        "delivery_report",
+        "review_report",
+        "checkpoint_summary",
+        "closeout_artifact"
+      ],
+      "required_validations": [
+        "operator_truth_projection",
+        "truth_interpreter",
+        "admissibility_gate",
+        "lineage_verifier",
+        "deploy_promotion_gate"
+      ]
+    }
+  ]
+}

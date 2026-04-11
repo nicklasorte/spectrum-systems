@@ -1,0 +1,9 @@
+{
+  "artifact_type": "truth_interpreter_inputs",
+  "fallback_live_distinction": "clear",
+  "freshness_state": "valid",
+  "missing_data_signals": "none",
+  "provenance_sufficiency": "sufficient",
+  "recommendation_support_sufficiency": "sufficient",
+  "run_id": "GK-24-01-20260411T143757Z"
+}

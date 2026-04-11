@@ -1,0 +1,18 @@
+{
+  "artifact_type": "delivery_report",
+  "delivery_items": [
+    "run contract spine automated",
+    "checkpoint and progression gating automated",
+    "report/publication automation enforced",
+    "recommendation/readiness governance automated",
+    "operator truth and deploy gating automated"
+  ],
+  "required": true,
+  "run_id": "GK-24-01-20260411T143757Z",
+  "source_basis": [
+    "execution_manifest",
+    "checkpoint_summary",
+    "registry_cross_check"
+  ],
+  "status": "PASS"
+}

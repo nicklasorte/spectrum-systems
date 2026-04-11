@@ -1,0 +1,35 @@
+{
+  "artifact_type": "umbrella_execution_plan",
+  "batch_order": {
+    "EXECUTION_KERNEL": [
+      "GK-B1",
+      "GK-B2"
+    ],
+    "OPERATOR_TRUTH_AND_GATING": [
+      "GK-B7",
+      "GK-B8"
+    ],
+    "RECOMMENDATION_AND_READINESS": [
+      "GK-B5",
+      "GK-B6"
+    ],
+    "REPORTING_AND_PUBLICATION": [
+      "GK-B3",
+      "GK-B4"
+    ]
+  },
+  "checkpoint_boundaries": {
+    "EXECUTION_KERNEL": "after_GK-B2",
+    "OPERATOR_TRUTH_AND_GATING": "after_GK-B8",
+    "RECOMMENDATION_AND_READINESS": "after_GK-B6",
+    "REPORTING_AND_PUBLICATION": "after_GK-B4"
+  },
+  "progression_conditions": "all_required_validations_reports_artifacts_publication_requirements_pass",
+  "run_id": "GK-24-01-20260411T143757Z",
+  "umbrella_order": [
+    "EXECUTION_KERNEL",
+    "REPORTING_AND_PUBLICATION",
+    "RECOMMENDATION_AND_READINESS",
+    "OPERATOR_TRUTH_AND_GATING"
+  ]
+}
