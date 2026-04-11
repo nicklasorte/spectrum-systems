@@ -101,18 +101,20 @@ type NextAction = {
   reason: string
   confidence: 'High' | 'Medium' | 'Low'
   sourceBasis: string
+  why: string[]
+  whatChanges: string[]
+}
+
+type RefreshState = 'Fresh' | 'Stale' | 'Fallback' | 'Unknown'
+
+type ArtifactLoad = {
+  label: string
+  loaded: boolean
 }
 
 const fallbackSnapshot: Snapshot = {
   repo_name: 'spectrum-systems',
-  root_counts: {
-    files_total: 0,
-    runtime_modules: 0,
-    tests: 0,
-    contracts_total: 0,
-    docs: 0,
-    run_artifacts: 0
-  },
+  root_counts: { files_total: 0, runtime_modules: 0, tests: 0, contracts_total: 0, docs: 0, run_artifacts: 0 },
   runtime_hotspots: [],
   operational_signals: []
 }
@@ -150,32 +152,40 @@ const prominentCardStyle: CSSProperties = {
 }
 
 function safeArray(value: unknown): string[] {
-  return Array.isArray(value) ? value.map(String) : []
+  return Array.isArray(value) ? value.map(String).filter((item) => item.trim().length > 0) : []
+}
+
+function isUnavailableText(value?: string | null): boolean {
+  if (!value) return true
+  return value.trim().length === 0 || value.toLowerCase().includes('not available yet') || value.toLowerCase() === 'unknown'
 }
 
 function isTruthyStatus(value?: string): boolean {
+  if (isUnavailableText(value)) return false
   const normalized = (value ?? '').toLowerCase()
-  return ['pass', 'passed', 'ok', 'ready', 'healthy', 'satisfied', 'true'].some((token) => normalized.includes(token))
+  return ['pass', 'passed', 'ok', 'ready', 'healthy', 'satisfied', 'true', 'good'].some((token) => normalized.includes(token))
 }
 
 function isBlockedStatus(value?: string): boolean {
   const normalized = (value ?? '').toLowerCase()
-  return ['block', 'repair', 'fail', 'stuck', 'degraded'].some((token) => normalized.includes(token))
+  return ['block', 'repair', 'fail', 'stuck', 'degraded', 'risk'].some((token) => normalized.includes(token))
 }
 
 function statusTone(value: string): { color: string; border: string; bg: string } {
   const v = value.toLowerCase()
   if (v.includes('at risk')) return { color: '#b91c1c', border: '#fecaca', bg: '#fef2f2' }
   if (v.includes('watch')) return { color: '#92400e', border: '#fde68a', bg: '#fffbeb' }
-  if (v.includes('healthy')) return { color: '#166534', border: '#bbf7d0', bg: '#f0fdf4' }
+  if (v.includes('good') || v.includes('healthy') || v.includes('fresh')) return { color: '#166534', border: '#bbf7d0', bg: '#f0fdf4' }
+  if (v.includes('fallback') || v.includes('stale')) return { color: '#92400e', border: '#fde68a', bg: '#fffbeb' }
   return { color: '#475569', border: '#cbd5e1', bg: '#f8fafc' }
 }
 
 function Field({ label, value }: { label: string; value?: string | number | null }) {
+  const rendered = typeof value === 'string' && isUnavailableText(value) ? NOT_AVAILABLE : value
   return (
     <div style={{ marginTop: 8 }}>
       <p style={{ margin: 0, fontSize: 12, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.3 }}>{label}</p>
-      <p style={{ margin: '2px 0 0', fontSize: 15, color: '#0f172a' }}>{value ?? NOT_AVAILABLE}</p>
+      <p style={{ margin: '2px 0 0', fontSize: 15, color: '#0f172a' }}>{rendered ?? NOT_AVAILABLE}</p>
     </div>
   )
 }
@@ -196,38 +206,8 @@ function StringList({ items, emptyText = NOT_AVAILABLE }: { items: string[]; emp
   )
 }
 
-function computeHealthStatus({ runState, drift, hardGate, repairLoops, constitutionPanels }: {
-  runState: RunState | null
-  drift: DriftRecord | null
-  hardGate: HardGateState | null
-  repairLoops: number
-  constitutionPanels: ConstitutionResult[]
-}) {
-  const runHealth = isBlockedStatus(runState?.current_run_status) ? 'At Risk' : runState?.current_run_status ? 'Healthy' : 'Unknown'
-
-  const driftText = (drift?.drift_classification ?? '').toLowerCase()
-  const driftState = !drift?.drift_classification ? 'Unknown' : driftText.includes('high') || driftText.includes('severe') ? 'At Risk' : driftText.includes('moderate') ? 'Watch' : 'Healthy'
-
-  const fpq = (runState?.first_pass_quality ?? '').toLowerCase()
-  const firstPassQuality = !runState?.first_pass_quality ? 'Unknown' : fpq.includes('low') || fpq.includes('poor') ? 'At Risk' : fpq.includes('medium') || fpq.includes('fair') ? 'Watch' : 'Healthy'
-
-  const repairLoopPressure = repairLoops > 2 ? 'At Risk' : repairLoops > 0 ? 'Watch' : runState ? 'Healthy' : 'Unknown'
-
-  const constitutionFail = constitutionPanels.some((panel) => isBlockedStatus(panel.status) || safeArray(panel.violations).length > 0)
-  const constitutionalStatus = constitutionFail ? 'At Risk' : constitutionPanels.some((panel) => panel.status || panel.summary) ? 'Healthy' : 'Unknown'
-
-  const hardGateReady = isTruthyStatus(hardGate?.readiness_status)
-  const hardGateMissing = !!hardGate?.gate_name && !hardGateReady
-
-  if (hardGateMissing && runHealth === 'Healthy') {
-    return { runHealth: 'Watch', driftState, firstPassQuality, repairLoopPressure, constitutionalStatus }
-  }
-
-  return { runHealth, driftState, firstPassQuality, repairLoopPressure, constitutionalStatus }
-}
-
 function compareText(current?: string, previous?: string, labels?: { up: string; down: string; equal: string }): string {
-  if (!current || !previous) return HISTORY_NOT_AVAILABLE
+  if (!current || !previous || isUnavailableText(current) || isUnavailableText(previous)) return HISTORY_NOT_AVAILABLE
   if (current === previous) return labels?.equal ?? 'Unchanged'
 
   const parseTrend = (value: string) => {
@@ -237,13 +217,30 @@ function compareText(current?: string, previous?: string, labels?: { up: string;
     return 0
   }
 
-  const currentScore = parseTrend(current)
-  const previousScore = parseTrend(previous)
-  const delta = currentScore - previousScore
-
+  const delta = parseTrend(current) - parseTrend(previous)
   if (delta > 0) return labels?.up ?? 'Increased'
   if (delta < 0) return labels?.down ?? 'Decreased'
   return labels?.equal ?? 'Changed'
+}
+
+function deriveRefreshState(meta: SnapshotMeta | null): { state: RefreshState; stalenessNote: string } {
+  if (!meta) return { state: 'Unknown', stalenessNote: 'Snapshot metadata not available.' }
+
+  const source = (meta.data_source_state ?? '').toLowerCase()
+  if (source.includes('fallback')) return { state: 'Fallback', stalenessNote: 'Fallback snapshot is active.' }
+
+  if (isUnavailableText(meta.last_refreshed_time)) {
+    return { state: 'Unknown', stalenessNote: 'Refresh timestamp not available.' }
+  }
+
+  const refreshedAt = Date.parse(meta.last_refreshed_time ?? '')
+  if (Number.isNaN(refreshedAt)) {
+    return { state: 'Unknown', stalenessNote: 'Refresh timestamp format is not parseable.' }
+  }
+
+  const ageHours = (Date.now() - refreshedAt) / (1000 * 60 * 60)
+  if (ageHours > 6) return { state: 'Stale', stalenessNote: `Snapshot age is ${Math.floor(ageHours)}h.` }
+  return { state: 'Fresh', stalenessNote: `Snapshot age is ${Math.max(0, Math.floor(ageHours))}h.` }
 }
 
 export default function RepoDashboard() {
@@ -270,9 +267,7 @@ export default function RepoDashboard() {
     const retrieveArtifact = async <T,>(path: string): Promise<T | null> => {
       try {
         const response = await fetch(path)
-        if (!response.ok) {
-          return null
-        }
+        if (!response.ok) return null
         return (await response.json()) as T
       } catch {
         return null
@@ -355,34 +350,100 @@ export default function RepoDashboard() {
     [constitutionDrift, roadmapAlignment, serialBundle]
   )
 
-  const nextAction = useMemo<NextAction | null>(() => {
-    const readiness = (hardGate?.readiness_status ?? '').toLowerCase()
-    const gateNotSatisfied = hardGate?.gate_name && !isTruthyStatus(readiness)
-    if (gateNotSatisfied) {
-      const missingEvidence = safeArray(hardGate?.required_evidence)[0]
+  const artifactLoads = useMemo<ArtifactLoad[]>(
+    () => [
+      { label: 'repo_snapshot', loaded: !!snapshot.root_counts },
+      { label: 'repo_snapshot_meta', loaded: !!snapshotMeta },
+      { label: 'current_bottleneck_record', loaded: !!bottleneck },
+      { label: 'drift_trend_continuity', loaded: !!drift },
+      { label: 'hard_gate_status', loaded: !!hardGate },
+      { label: 'current_run_state', loaded: !!runState },
+      { label: 'deferred_item_register', loaded: deferredItems.length > 0 },
+      { label: 'deferred_return_tracker', loaded: deferredTracker.length > 0 },
+      { label: 'constitutional_drift_checker', loaded: !!constitutionDrift },
+      { label: 'roadmap_alignment_validator', loaded: !!roadmapAlignment },
+      { label: 'serial_bundle_validator', loaded: !!serialBundle }
+    ],
+    [snapshot.root_counts, snapshotMeta, bottleneck, drift, hardGate, runState, deferredItems.length, deferredTracker.length, constitutionDrift, roadmapAlignment, serialBundle]
+  )
+
+  const refresh = useMemo(() => deriveRefreshState(snapshotMeta), [snapshotMeta])
+
+  const hardGateUnsatisfied = useMemo(() => {
+    if (!hardGate?.gate_name || isUnavailableText(hardGate.gate_name)) return false
+    return !isTruthyStatus(hardGate?.readiness_status)
+  }, [hardGate])
+
+  const constitutionViolations = useMemo(
+    () =>
+      constitutionPanels.some(({ payload }) => {
+        const violations = safeArray(payload?.violations)
+        return violations.length > 0 || isBlockedStatus(payload?.status)
+      }),
+    [constitutionPanels]
+  )
+
+  const driftWorsening = useMemo(() => {
+    const trend = (drift?.trend ?? '').toLowerCase()
+    const classification = (drift?.drift_classification ?? '').toLowerCase()
+    return trend.includes('worsen') || trend.includes('up') || (classification.includes('moderate') && trend.includes('increase')) || classification.includes('high')
+  }, [drift])
+
+  const runBlocked = useMemo(() => isBlockedStatus(runState?.current_run_status), [runState])
+  const fallbackMode = refresh.state === 'Fallback'
+  const staleData = refresh.state === 'Stale'
+
+  const keyMissingForGuidance = useMemo(() => {
+    const critical = [hardGate, runState, drift, bottleneck]
+    return critical.filter((item) => !item).length >= 2
+  }, [hardGate, runState, drift, bottleneck])
+
+  const topWarnings = useMemo(() => {
+    const warnings: string[] = []
+    if (hardGateUnsatisfied) warnings.push('Hard gate unsatisfied.')
+    if (driftWorsening) warnings.push('Drift trend is worsening.')
+    if (runBlocked) warnings.push('Last run is blocked or in repair-needed state.')
+    if (constitutionViolations) warnings.push('Constitutional alignment warning detected.')
+    if (fallbackMode) warnings.push('Fallback snapshot is in use.')
+    if (staleData) warnings.push('Snapshot appears stale.')
+    if (keyMissingForGuidance) warnings.push('Key artifacts are missing; recommendation quality is degraded.')
+    return warnings
+  }, [hardGateUnsatisfied, driftWorsening, runBlocked, constitutionViolations, fallbackMode, staleData, keyMissingForGuidance])
+
+  const showWarningBanner = topWarnings.length > 0
+
+  const nextAction = useMemo<NextAction>(() => {
+    if (hardGateUnsatisfied) {
+      const evidence = safeArray(hardGate?.required_evidence)[0]
       return {
-        title: `Satisfy hard gate: ${hardGate?.gate_name}`,
-        reason: missingEvidence ? `Missing evidence: ${missingEvidence}` : 'Hard gate readiness is not yet satisfied.',
+        title: `Satisfy hard gate: ${hardGate?.gate_name ?? 'active gate'}`,
+        reason: evidence ? `Missing evidence: ${evidence}` : 'Hard gate readiness is not yet satisfied.',
         confidence: 'High',
-        sourceBasis: 'hard gate'
+        sourceBasis: 'hard gate',
+        why: ['Hard gate is unsatisfied in current artifact state.', 'Promotion requires certification before expansion.'],
+        whatChanges: ['Hard gate is satisfied with required evidence.', 'Control integrity returns to Good.']
       }
     }
 
-    if (isBlockedStatus(runState?.current_run_status)) {
+    if (runBlocked) {
       return {
-        title: `Run bounded repair for ${bottleneck?.bottleneck_name ?? 'active bottleneck'}`,
-        reason: `Current run status is ${runState?.current_run_status ?? 'blocked'} with repair pressure present.`,
+        title: `Run bounded repair for ${bottleneck?.bottleneck_name ?? 'best available target'}`,
+        reason: `Current run state is ${runState?.current_run_status ?? 'blocked'} and requires recovery.`,
         confidence: 'High',
-        sourceBasis: 'run state'
+        sourceBasis: 'run state',
+        why: ['Current run status indicates blocked or repair-needed execution.', 'Repair loop pressure should be reduced before advancing.'],
+        whatChanges: ['Run state clears from blocked/repair-needed.', 'Repair loop pressure stabilizes.']
       }
     }
 
-    if (bottleneck?.bottleneck_name) {
+    if (bottleneck?.bottleneck_name && !isUnavailableText(bottleneck.bottleneck_name)) {
       return {
         title: `Address bottleneck: ${bottleneck.bottleneck_name}`,
-        reason: bottleneck.explanation ?? 'Current bottleneck is defined and should be reduced before progressing phases.',
-        confidence: 'Medium',
-        sourceBasis: 'bottleneck'
+        reason: bottleneck.explanation ?? 'Clear bottleneck evidence exists in current artifacts.',
+        confidence: keyMissingForGuidance ? 'Low' : 'Medium',
+        sourceBasis: 'bottleneck',
+        why: ['A current bottleneck is explicitly identified.', 'Reducing bottleneck pressure improves execution integrity.'],
+        whatChanges: ['A new bottleneck becomes primary.', 'Run state changes to blocked and requires repair first.']
       }
     }
 
@@ -394,121 +455,262 @@ export default function RepoDashboard() {
     if (readyDeferred) {
       return {
         title: `Revisit deferred item: ${readyDeferred.item_name ?? readyDeferred.item_id ?? 'deferred item'}`,
-        reason: `Deferred readiness indicates return conditions are approaching satisfaction.`,
-        confidence: 'Medium',
-        sourceBasis: 'deferred'
+        reason: 'Deferred readiness signal indicates near-term re-entry potential.',
+        confidence: keyMissingForGuidance ? 'Low' : 'Medium',
+        sourceBasis: 'deferred readiness',
+        why: ['Deferred tracker indicates a near-actionable item.', 'Return conditions are closest for this item.'],
+        whatChanges: ['Readiness signal weakens or missing evidence grows.', 'Higher-priority gate/run blocking appears.']
       }
     }
 
-    if (drift || runState || roadmapState) {
-      return {
-        title: 'Run next governed execution cycle',
-        reason: 'No blocking gate or urgent bottleneck is active in current artifacts.',
-        confidence: 'Low',
-        sourceBasis: 'drift / run state'
-      }
+    return {
+      title: 'Run next governed execution cycle',
+      reason: 'No explicit blocking gate, blocked run, or actionable deferred target is present.',
+      confidence: keyMissingForGuidance ? 'Low' : 'Medium',
+      sourceBasis: 'run state / drift / roadmap state',
+      why: ['Current view does not show a stronger immediate blocker.', 'A governed cycle refreshes evidence and state.'],
+      whatChanges: ['Hard gate becomes unsatisfied.', 'Run state becomes blocked or bottleneck clarity increases.']
     }
+  }, [hardGateUnsatisfied, hardGate, runBlocked, runState, bottleneck, deferredItems, deferredSignalById, keyMissingForGuidance])
 
-    return null
-  }, [hardGate, runState, bottleneck, deferredItems, deferredSignalById, drift, roadmapState])
+  const completeness = useMemo(() => {
+    const loaded = artifactLoads.filter((item) => item.loaded).map((item) => item.label)
+    const missing = artifactLoads.filter((item) => !item.loaded).map((item) => item.label)
+    return {
+      loaded,
+      missing,
+      degraded: missing.some((label) => ['hard_gate_status', 'current_run_state', 'drift_trend_continuity', 'current_bottleneck_record'].includes(label))
+    }
+  }, [artifactLoads])
 
-  const health = useMemo(
-    () =>
-      computeHealthStatus({
-        runState,
-        drift,
-        hardGate,
-        repairLoops: runState?.repair_loop_count ?? 0,
-        constitutionPanels: [constitutionDrift, roadmapAlignment, serialBundle].filter(Boolean) as ConstitutionResult[]
-      }),
-    [runState, drift, hardGate, constitutionDrift, roadmapAlignment, serialBundle]
-  )
+  const integritySummary = useMemo(() => {
+    const executionIntegrity = runBlocked ? 'At Risk' : runState ? 'Good' : 'Unknown'
+    const reviewIntegrity = constitutionPanels.some(({ payload }) => payload) ? (constitutionViolations ? 'At Risk' : 'Good') : 'Unknown'
+    const controlIntegrity = hardGateUnsatisfied || driftWorsening ? 'Watch' : hardGate ? 'Good' : 'Unknown'
+    const constitutionalIntegrity = constitutionViolations ? 'At Risk' : constitutionPanels.some(({ payload }) => payload) ? 'Good' : 'Unknown'
+    return { executionIntegrity, reviewIntegrity, controlIntegrity, constitutionalIntegrity }
+  }, [runBlocked, runState, constitutionPanels, constitutionViolations, hardGateUnsatisfied, driftWorsening, hardGate])
 
   const changeSummary = useMemo(
     () => ({
-      bottleneck: compareText(bottleneck?.bottleneck_name, undefined, { equal: 'Unchanged' }),
-      drift: compareText(drift?.trend, previousDrift?.trend, {
-        up: 'Worsened',
-        down: 'Improved',
-        equal: 'Stable'
-      }),
+      bottleneck:
+        bottleneck?.bottleneck_name && previousDrift
+          ? 'Changed / check prior bottleneck artifact'
+          : HISTORY_NOT_AVAILABLE,
+      drift: compareText(drift?.trend, previousDrift?.trend, { up: 'Worsened', down: 'Improved', equal: 'Stable' }),
       repairLoops:
         typeof runState?.repair_loop_count === 'number' && typeof previousRunState?.repair_loop_count === 'number'
           ? runState.repair_loop_count > previousRunState.repair_loop_count
             ? 'Increased'
             : runState.repair_loop_count < previousRunState.repair_loop_count
               ? 'Decreased'
-              : 'Flat'
+              : 'Unchanged'
           : HISTORY_NOT_AVAILABLE,
-      hardGate: compareText(hardGate?.readiness_status, previousHardGate?.readiness_status, { equal: 'Unchanged' })
+      hardGate: compareText(hardGate?.readiness_status, previousHardGate?.readiness_status, { equal: 'Unchanged', up: 'Changed', down: 'Changed' }),
+      deferredReadiness: deferredTracker.length ? 'Current readiness available; prior comparison not available.' : HISTORY_NOT_AVAILABLE
     }),
-    [bottleneck, drift, previousDrift, runState, previousRunState, hardGate, previousHardGate]
+    [bottleneck?.bottleneck_name, previousDrift, drift?.trend, runState?.repair_loop_count, previousRunState?.repair_loop_count, hardGate?.readiness_status, previousHardGate?.readiness_status, deferredTracker.length]
   )
 
-  const metaMissing = !snapshotMeta?.last_refreshed_time || !snapshotMeta?.snapshot_size || !snapshotMeta?.data_source_state
+  const criticalPath = useMemo(() => {
+    if (hardGateUnsatisfied) return ['Satisfy hard gate', 'Address active bottleneck', 'Run next governed cycle', 'Review outcome artifacts']
+    if (runBlocked) return ['Run bounded repair', 'Stabilize run state', 'Run next governed cycle', 'Review outcome artifacts']
+    if (bottleneck?.bottleneck_name && !isUnavailableText(bottleneck.bottleneck_name)) return ['Address bottleneck', 'Run next governed cycle', 'Review outcome artifacts']
+    return ['Run next governed cycle', 'Review outcome artifacts', 'Tune based on new evidence']
+  }, [hardGateUnsatisfied, runBlocked, bottleneck?.bottleneck_name])
+
+  const deferredReactivation = useMemo(() => {
+    const candidates = deferredItems.map((item) => {
+      const signal = item.item_id ? deferredSignalById.get(item.item_id) ?? NOT_AVAILABLE : NOT_AVAILABLE
+      const normalized = signal.toLowerCase()
+      const score = normalized.includes('ready') ? 3 : normalized.includes('revisit') || normalized.includes('soon') ? 2 : 1
+      return { item, signal, score }
+    })
+
+    return candidates.sort((a, b) => b.score - a.score).slice(0, 3)
+  }, [deferredItems, deferredSignalById])
+
+  const trendStrip = useMemo(() => {
+    const driftTrend = isUnavailableText(drift?.trend) ? 'Unknown' : drift?.trend
+    const repairTrend =
+      typeof runState?.repair_loop_count === 'number' && typeof previousRunState?.repair_loop_count === 'number'
+        ? runState.repair_loop_count > previousRunState.repair_loop_count
+          ? 'up'
+          : runState.repair_loop_count < previousRunState.repair_loop_count
+            ? 'down'
+            : 'unchanged'
+        : 'Unknown'
+    const fpq = isUnavailableText(runState?.first_pass_quality) ? 'Unknown' : runState?.first_pass_quality
+    const bottleneckStability = previousDrift ? 'check change card' : 'Not available yet'
+
+    return [`Drift: ${driftTrend ?? 'Unknown'}`, `Repair loops: ${repairTrend}`, `First-pass quality: ${fpq ?? 'Unknown'}`, `Bottleneck stability: ${bottleneckStability}`]
+  }, [drift?.trend, runState?.repair_loop_count, previousRunState?.repair_loop_count, runState?.first_pass_quality, previousDrift])
+
+  const caveats = useMemo(() => {
+    const items: string[] = []
+    if (completeness.degraded) items.push('Recommendations are partially degraded due to missing key artifacts.')
+    if (refresh.state === 'Fallback') items.push('Snapshot is currently fallback data.')
+    if (Object.values(changeSummary).every((value) => value === HISTORY_NOT_AVAILABLE)) items.push('Comparison history is not available yet.')
+    if (nextAction.confidence === 'Low') items.push('Confidence is reduced due to incomplete or inferred evidence.')
+    return items
+  }, [completeness.degraded, refresh.state, changeSummary, nextAction.confidence])
+
+  const readinessToExpand = useMemo(() => {
+    if (completeness.degraded) return 'Unknown'
+    if (hardGateUnsatisfied || constitutionViolations || runBlocked) return 'Tune instead'
+    if (driftWorsening || nextAction.confidence === 'Low') return 'Validate with another run'
+    return 'Ready for bounded expansion'
+  }, [completeness.degraded, hardGateUnsatisfied, constitutionViolations, runBlocked, driftWorsening, nextAction.confidence])
 
   return (
     <main style={pageStyle}>
       <header style={{ marginBottom: 10 }}>
         <h1 style={{ margin: 0, fontSize: 30, lineHeight: 1.15 }}>Operator Control Surface</h1>
         <p style={{ margin: '8px 0 0', color: '#475569', fontSize: 15 }}>
-          Live governed execution view for <strong>{snapshot.repo_name ?? NOT_AVAILABLE}</strong>. Focus on current risk, next action, and artifact health.
+          Live governed execution view for <strong>{snapshot.repo_name ?? NOT_AVAILABLE}</strong>. Focus on what matters now, what to do next, and artifact integrity.
         </p>
       </header>
 
-      <section style={{ ...sectionStyle, gridTemplateColumns: '1fr' }}>
+      {showWarningBanner ? (
+        <section style={{ ...cardStyle, border: '1px solid #fecaca', background: '#fff7f7', marginTop: 12 }}>
+          <h2 style={{ margin: 0, fontSize: 16, color: '#991b1b' }}>Operator warning</h2>
+          <StringList items={topWarnings} />
+        </section>
+      ) : null}
+
+      <section style={{ ...sectionStyle, gridTemplateColumns: '1fr', marginTop: 12 }}>
         <article style={prominentCardStyle}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Next Action</h2>
-          {nextAction ? (
-            <>
-              <p style={{ margin: '10px 0 0', fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{nextAction.title}</p>
-              <p style={{ margin: '6px 0 0', color: '#334155' }}>{nextAction.reason}</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
-                <span style={{ padding: '4px 10px', borderRadius: 999, border: '1px solid #cbd5e1', fontSize: 12, fontWeight: 600 }}>
-                  Confidence: {nextAction.confidence}
-                </span>
-                <span style={{ padding: '4px 10px', borderRadius: 999, border: '1px solid #cbd5e1', fontSize: 12, color: '#475569' }}>
-                  Source basis: {nextAction.sourceBasis}
-                </span>
-              </div>
-            </>
-          ) : (
-            <p style={{ margin: '8px 0 0', color: '#64748b' }}>{NOT_AVAILABLE}</p>
-          )}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+            <h2 style={{ margin: 0, fontSize: 18 }}>Next Action</h2>
+            <span style={{ padding: '4px 10px', borderRadius: 999, border: `1px solid ${statusTone(refresh.state).border}`, background: statusTone(refresh.state).bg, color: statusTone(refresh.state).color, fontSize: 12, fontWeight: 700 }}>
+              Refresh: {refresh.state}
+            </span>
+            <span style={{ padding: '4px 10px', borderRadius: 999, border: '1px solid #cbd5e1', fontSize: 12, color: '#475569' }}>{refresh.stalenessNote}</span>
+          </div>
+          <p style={{ margin: '10px 0 0', fontSize: 20, fontWeight: 700, color: '#0f172a' }}>{nextAction.title}</p>
+          <p style={{ margin: '6px 0 0', color: '#334155' }}>{nextAction.reason}</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+            <span style={{ padding: '4px 10px', borderRadius: 999, border: '1px solid #cbd5e1', fontSize: 12, fontWeight: 600 }}>Confidence: {nextAction.confidence}</span>
+            <span style={{ padding: '4px 10px', borderRadius: 999, border: '1px solid #cbd5e1', fontSize: 12, color: '#475569' }}>Source basis: {nextAction.sourceBasis}</span>
+          </div>
+          <Field label='Why this action?' value='' />
+          <StringList items={nextAction.why} />
+          <Field label='What would change this recommendation?' value='' />
+          <StringList items={nextAction.whatChanges} />
         </article>
       </section>
 
       <section style={sectionStyle}>
         <article style={cardStyle}>
-          <h2 style={{ margin: 0, fontSize: 17 }}>System Health</h2>
+          <h2 style={{ margin: 0, fontSize: 17 }}>Trend strip</h2>
+          <StringList items={trendStrip} emptyText={NOT_AVAILABLE} />
+        </article>
+        <article style={cardStyle}>
+          <h2 style={{ margin: 0, fontSize: 17 }}>Top warnings</h2>
+          <StringList items={topWarnings} emptyText='No active warnings.' />
+        </article>
+      </section>
+
+      <section style={sectionStyle}>
+        <article style={cardStyle}>
+          <h2 style={{ margin: 0, fontSize: 17 }}>System integrity summary</h2>
           {[
-            ['Current run health', health.runHealth],
-            ['Drift state', health.driftState],
-            ['First-pass quality', health.firstPassQuality],
-            ['Repair loop pressure', health.repairLoopPressure],
-            ['Constitutional status', health.constitutionalStatus]
+            ['Execution integrity', integritySummary.executionIntegrity],
+            ['Review integrity', integritySummary.reviewIntegrity],
+            ['Control integrity', integritySummary.controlIntegrity],
+            ['Constitutional integrity', integritySummary.constitutionalIntegrity]
           ].map(([label, value]) => {
             const tone = statusTone(value)
             return (
               <div key={label} style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
                 <span style={{ color: '#334155', fontSize: 14 }}>{label}</span>
-                <span style={{ color: tone.color, border: `1px solid ${tone.border}`, background: tone.bg, borderRadius: 999, padding: '3px 10px', fontSize: 12, fontWeight: 600 }}>
-                  {value}
-                </span>
+                <span style={{ color: tone.color, border: `1px solid ${tone.border}`, background: tone.bg, borderRadius: 999, padding: '3px 10px', fontSize: 12, fontWeight: 600 }}>{value}</span>
               </div>
             )
           })}
         </article>
 
         <article style={cardStyle}>
-          <h2 style={{ margin: 0, fontSize: 17 }}>What Changed</h2>
+          <h2 style={{ margin: 0, fontSize: 17 }}>Data completeness</h2>
+          <Field label='Recommendation quality' value={completeness.degraded ? 'Degraded' : 'Sufficient'} />
+          <Field label='Loaded key artifacts' value='' />
+          <StringList items={completeness.loaded} />
+          <Field label='Missing key artifacts' value='' />
+          <StringList items={completeness.missing} emptyText='No key artifacts missing.' />
+        </article>
+      </section>
+
+      <section style={sectionStyle}>
+        <article style={cardStyle}>
+          <h2 style={{ margin: 0, fontSize: 17 }}>What changed since last cycle</h2>
           <Field label='Bottleneck' value={changeSummary.bottleneck} />
-          <Field label='Drift trend' value={changeSummary.drift} />
-          <Field label='Repair loops' value={changeSummary.repairLoops} />
+          <Field label='Drift' value={changeSummary.drift} />
+          <Field label='Repair loop pressure' value={changeSummary.repairLoops} />
           <Field label='Hard gate' value={changeSummary.hardGate} />
-          {Object.values(changeSummary).every((v) => v === HISTORY_NOT_AVAILABLE) ? (
-            <p style={{ margin: '10px 0 0', color: '#64748b' }}>{HISTORY_NOT_AVAILABLE}</p>
-          ) : null}
+          <Field label='Deferred readiness' value={changeSummary.deferredReadiness} />
+          {Object.values(changeSummary).every((value) => value === HISTORY_NOT_AVAILABLE) ? <p style={{ margin: '10px 0 0', color: '#64748b' }}>{HISTORY_NOT_AVAILABLE}</p> : null}
+        </article>
+
+        <article style={cardStyle}>
+          <h2 style={{ margin: 0, fontSize: 17 }}>Critical path</h2>
+          <ol style={{ margin: '10px 0 0', paddingLeft: 18 }}>
+            {criticalPath.map((step, index) => (
+              <li key={`${step}-${index}`} style={{ marginBottom: 6, color: '#1e293b' }}>
+                {step}
+              </li>
+            ))}
+          </ol>
+        </article>
+      </section>
+
+      <section style={sectionStyle}>
+        <article style={cardStyle}>
+          <h2 style={{ margin: 0, fontSize: 17 }}>Decision provenance</h2>
+          <Field label='Contributing artifacts' value='' />
+          <StringList
+            items={[
+              'hard_gate_status_record',
+              'current_run_state_record',
+              'current_bottleneck_record',
+              'drift_trend_continuity_artifact',
+              'deferred_return_tracker',
+              'canonical_roadmap_state_artifact'
+            ]}
+          />
+          <Field label='Contributing system surfaces' value='' />
+          <StringList items={['hard gate', 'run state', 'bottleneck', 'drift', 'deferred tracker', 'roadmap state']} />
+        </article>
+
+        <article style={cardStyle}>
+          <h2 style={{ margin: 0, fontSize: 17 }}>Deferred reactivation</h2>
+          {deferredReactivation.length ? (
+            deferredReactivation.map(({ item, signal }, index) => (
+              <div key={`${item.item_id ?? item.item_name ?? 'deferred'}-${index}`} style={{ marginTop: index === 0 ? 10 : 14, paddingTop: index === 0 ? 0 : 12, borderTop: index === 0 ? 'none' : '1px solid #e2e8f0' }}>
+                <p style={{ margin: 0, fontWeight: 700 }}>{item.item_name ?? item.item_id ?? NOT_AVAILABLE}</p>
+                <Field label='Readiness signal' value={signal} />
+                <Field label='Missing evidence' value='' />
+                <StringList items={safeArray(item.missing_evidence)} emptyText={NOT_AVAILABLE} />
+                <Field label='Return condition' value={item.return_condition} />
+              </div>
+            ))
+          ) : (
+            <p style={{ margin: '8px 0 0', color: '#64748b' }}>No deferred items close to reactivation.</p>
+          )}
+        </article>
+      </section>
+
+      <section style={sectionStyle}>
+        <article style={cardStyle}>
+          <h2 style={{ margin: 0, fontSize: 17 }}>Readiness to expand</h2>
+          <p style={{ margin: '10px 0 0', fontSize: 20, fontWeight: 700 }}>{readinessToExpand}</p>
+          <p style={{ margin: '6px 0 0', color: '#475569' }}>
+            Conservative recommendation based on drift, hard gate state, run state, constitutional alignment, confidence, and completeness.
+          </p>
+        </article>
+
+        <article style={cardStyle}>
+          <h2 style={{ margin: 0, fontSize: 17 }}>Operator notes / caveats</h2>
+          <StringList items={caveats} emptyText='No active caveats.' />
         </article>
       </section>
 
@@ -523,12 +725,11 @@ export default function RepoDashboard() {
           <Field label='Run artifacts' value={counts.run_artifacts ?? 0} />
         </article>
 
-        <article style={{ ...cardStyle, border: metaMissing ? '1px solid #f59e0b' : cardStyle.border }}>
+        <article style={cardStyle}>
           <h2 style={{ margin: 0, fontSize: 17 }}>Snapshot metadata</h2>
           <Field label='Last refreshed' value={snapshotMeta?.last_refreshed_time} />
           <Field label='Snapshot size' value={snapshotMeta?.snapshot_size} />
           <Field label='Source state' value={snapshotMeta?.data_source_state} />
-          {metaMissing ? <p style={{ margin: '10px 0 0', color: '#92400e' }}>Staleness risk: metadata incomplete.</p> : null}
         </article>
       </section>
 
