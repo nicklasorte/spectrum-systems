@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-04-11T13:02:50Z",
+  "generated_at": "2026-04-11T15:31:15Z",
   "repo_name": "spectrum-systems",
   "root_counts": {
-    "files_total": 3812,
-    "runtime_modules": 152,
-    "tests": 350,
+    "files_total": 3924,
+    "runtime_modules": 154,
+    "tests": 354,
     "contracts_total": 758,
     "schemas": 410,
     "examples": 348,
-    "docs": 1032,
+    "docs": 1040,
     "run_artifacts": 151
   },
   "core_areas": [
@@ -99,17 +99,17 @@
     {
       "title": "Evidence and review density",
       "status": "Strong",
-      "detail": "Review artifacts detected: 771 markdown files."
+      "detail": "Review artifacts detected: 779 markdown files."
     },
     {
       "title": "Roadmap sprawl risk",
       "status": "Watch",
-      "detail": "Docs-to-runtime ratio: 6.79."
+      "detail": "Docs-to-runtime ratio: 6.75."
     },
     {
       "title": "Runtime concentration",
       "status": "Strong",
-      "detail": "Distinct runtime filename prefixes: 68."
+      "detail": "Distinct runtime filename prefixes: 69."
     },
     {
       "title": "Constitutional center coverage",

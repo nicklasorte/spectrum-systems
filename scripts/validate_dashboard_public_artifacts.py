@@ -19,6 +19,7 @@ REQUIRED_PUBLIC = [
     "repo_snapshot_meta.json",
     "dashboard_freshness_status.json",
     "dashboard_publication_sync_audit.json",
+    "dashboard_publication_manifest.json",
     "next_action_recommendation_record.json",
     "next_action_outcome_record.json",
     "recommendation_accuracy_tracker.json",
@@ -41,10 +42,26 @@ def _read_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _fail(message: str) -> int:
+def _fail(message: str, checks: dict[str, str] | None = None) -> int:
     print(f"ERROR: {message}", file=sys.stderr)
+    _emit_enforcement_result("fail", checks or {}, reason=message)
     return 1
 
+
+
+
+def _emit_enforcement_result(status: str, checks: dict[str, str], reason: str | None = None) -> None:
+    out = REPO_ROOT / "artifacts" / "rq_master_36_01" / "dashboard_refresh_enforcement_result.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "artifact_type": "dashboard_refresh_enforcement_result",
+        "enforcement_owner": "SEL",
+        "status": status,
+        "checks": checks,
+    }
+    if reason:
+        payload["reason"] = reason
+    out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 def _parse_utc(value: str, field_name: str) -> datetime:
     try:
@@ -54,13 +71,22 @@ def _parse_utc(value: str, field_name: str) -> datetime:
 
 
 def main() -> int:
+    checks = {
+        "required_public_artifacts_present": "pending",
+        "freshness_metadata_valid": "pending",
+        "publication_atomic": "pending",
+        "fallback_live_ambiguity": "pending",
+        "truth_constraints": "pending",
+    }
     if not SCHEMA_SET_PATH.is_file():
         return _fail("missing dashboard/public schema set")
 
     for name in REQUIRED_PUBLIC:
         path = PUBLIC_ROOT / name
         if not path.is_file():
-            return _fail(f"missing required dashboard artifact: {name}")
+            checks["required_public_artifacts_present"] = "fail"
+            return _fail(f"missing required dashboard artifact: {name}", checks)
+    checks["required_public_artifacts_present"] = "pass"
 
     schema_set = _read_json(SCHEMA_SET_PATH)
     try:
@@ -99,17 +125,22 @@ def main() -> int:
     freshness = _read_json(PUBLIC_ROOT / "dashboard_freshness_status.json")
     audit = _read_json(PUBLIC_ROOT / "dashboard_publication_sync_audit.json")
 
+    manifest = _read_json(PUBLIC_ROOT / "dashboard_publication_manifest.json")
+
     state = str(meta.get("data_source_state", "")).strip().lower()
     refreshed = str(meta.get("last_refreshed_time", "")).strip()
     if state not in {"live", "fallback"}:
-        return _fail("repo_snapshot_meta.data_source_state must be live or fallback")
+        checks["freshness_metadata_valid"] = "fail"
+        return _fail("repo_snapshot_meta.data_source_state must be live or fallback", checks)
     if not refreshed:
-        return _fail("repo_snapshot_meta.last_refreshed_time is required")
+        checks["freshness_metadata_valid"] = "fail"
+        return _fail("repo_snapshot_meta.last_refreshed_time is required", checks)
 
     try:
         ts = _parse_utc(refreshed, "repo_snapshot_meta.last_refreshed_time")
     except ValueError as exc:
-        return _fail(str(exc))
+        checks["freshness_metadata_valid"] = "fail"
+        return _fail(str(exc), checks)
 
     age_hours = (datetime.now(timezone.utc) - ts).total_seconds() / 3600
     is_stale = age_hours > MAX_STALE_HOURS
@@ -123,12 +154,15 @@ def main() -> int:
         return _fail("dashboard_freshness_status.publication_state must be live or fallback when present")
 
     if publication_state and publication_state != state:
-        return _fail("fallback/live ambiguity detected between repo_snapshot_meta and dashboard_freshness_status")
+        checks["fallback_live_ambiguity"] = "fail"
+        return _fail("fallback/live ambiguity detected between repo_snapshot_meta and dashboard_freshness_status", checks)
 
     if freshness_state == "fresh" and is_stale:
-        return _fail("freshness artifact says fresh but snapshot meta is stale")
+        checks["freshness_metadata_valid"] = "fail"
+        return _fail("freshness artifact says fresh but snapshot meta is stale", checks)
     if freshness_state == "stale" and not is_stale:
-        return _fail("freshness artifact says stale but snapshot meta is fresh")
+        checks["freshness_metadata_valid"] = "fail"
+        return _fail("freshness artifact says stale but snapshot meta is fresh", checks)
 
     published_at = str(audit.get("published_at", "")).strip()
     if not published_at:
@@ -142,12 +176,23 @@ def main() -> int:
     if audit_state not in {"live", "fallback"}:
         return _fail("dashboard_publication_sync_audit.publication_state must be live or fallback")
     if audit_state != state:
-        return _fail("fallback/live ambiguity detected between repo_snapshot_meta and dashboard_publication_sync_audit")
+        checks["fallback_live_ambiguity"] = "fail"
+        return _fail("fallback/live ambiguity detected between repo_snapshot_meta and dashboard_publication_sync_audit", checks)
 
     records = audit.get("records")
     if not isinstance(records, list) or not records:
-        return _fail("dashboard_publication_sync_audit.records must be a non-empty list")
+        checks["publication_atomic"] = "fail"
+        return _fail("dashboard_publication_sync_audit.records must be a non-empty list", checks)
 
+    if manifest.get("publication_mode") != "atomic":
+        checks["publication_atomic"] = "fail"
+        return _fail("dashboard_publication_manifest.publication_mode must be atomic", checks)
+
+    if str(manifest.get("publication_state", "")).strip().lower() != state:
+        checks["publication_atomic"] = "fail"
+        return _fail("dashboard_publication_manifest.publication_state must match repo_snapshot_meta", checks)
+
+    checks["publication_atomic"] = "pass"
     recommendation = _read_json(PUBLIC_ROOT / "next_action_recommendation_record.json")
     accuracy = _read_json(PUBLIC_ROOT / "recommendation_accuracy_tracker.json")
 
@@ -172,7 +217,8 @@ def main() -> int:
         return _fail("fallback mode must degrade recommendation confidence (accuracy <= 0.6)")
 
     if is_stale and state == "live":
-        return _fail(f"dashboard snapshot is stale ({age_hours:.1f}h > {MAX_STALE_HOURS}h)")
+        checks["freshness_metadata_valid"] = "fail"
+        return _fail(f"dashboard snapshot is stale ({age_hours:.1f}h > {MAX_STALE_HOURS}h)", checks)
 
     readiness = _read_json(PUBLIC_ROOT / "readiness_to_expand_validator.json")
     closeout = _read_json(PUBLIC_ROOT / "operator_trust_closeout_artifact.json")
@@ -189,6 +235,10 @@ def main() -> int:
     if closeout.get("expansion_posture") in {"bounded_expand", "expand_now"}:
         return _fail("operator closeout expansion posture is not conservative")
 
+    checks["freshness_metadata_valid"] = "pass"
+    checks["fallback_live_ambiguity"] = "pass"
+    checks["truth_constraints"] = "pass"
+    _emit_enforcement_result("pass", checks)
     print("dashboard-public-artifacts: pass")
     return 0
 

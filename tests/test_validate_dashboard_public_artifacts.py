@@ -16,6 +16,10 @@ PUBLIC_ROOT = REPO_ROOT / "dashboard" / "public"
 META_PATH = PUBLIC_ROOT / "repo_snapshot_meta.json"
 FRESHNESS_PATH = PUBLIC_ROOT / "dashboard_freshness_status.json"
 PROMOTION_PATH = PUBLIC_ROOT / "governed_promotion_discipline_gate.json"
+MANIFEST_PATH = PUBLIC_ROOT / "dashboard_publication_manifest.json"
+ENFORCEMENT_PATH = REPO_ROOT / "artifacts" / "rq_master_36_01" / "dashboard_refresh_enforcement_result.json"
+DEPLOY_GATE_PATH = REPO_ROOT / "artifacts" / "rq_master_36_01" / "dashboard_auto_deploy_gate_result.json"
+PREFLIGHT_PATH = REPO_ROOT / "artifacts" / "rq_master_36_01" / "dashboard_refresh_preflight_report.json"
 
 
 def _run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
@@ -32,13 +36,17 @@ def _write_json(path: Path, payload: dict) -> None:
 
 def test_validator_passes_for_fresh_public_artifacts() -> None:
     _run([sys.executable, str(RQ_SCRIPT)])
-    _run(["bash", str(REFRESH_SCRIPT)])
     _run([sys.executable, str(VALIDATOR)])
+    enforcement = _read_json(ENFORCEMENT_PATH)
+    preflight = _read_json(PREFLIGHT_PATH)
+    deploy_gate = _read_json(DEPLOY_GATE_PATH)
+    assert enforcement["status"] == "pass"
+    assert preflight["status"] == "pass"
+    assert deploy_gate["status"] == "pass"
 
 
 def test_validator_fails_on_stale_snapshot_meta() -> None:
     _run([sys.executable, str(RQ_SCRIPT)])
-    _run(["bash", str(REFRESH_SCRIPT)])
 
     original_meta = _read_json(META_PATH)
     original_freshness = _read_json(FRESHNESS_PATH)
@@ -56,9 +64,23 @@ def test_validator_fails_on_stale_snapshot_meta() -> None:
     _write_json(FRESHNESS_PATH, original_freshness)
 
 
+def test_validator_fails_on_atomic_publication_break() -> None:
+    _run([sys.executable, str(RQ_SCRIPT)])
+
+    original_manifest = _read_json(MANIFEST_PATH)
+    broken_manifest = dict(original_manifest)
+    broken_manifest["publication_mode"] = "non_atomic"
+    _write_json(MANIFEST_PATH, broken_manifest)
+
+    result = subprocess.run([sys.executable, str(VALIDATOR)], cwd=str(REPO_ROOT), capture_output=True, text=True)
+    assert result.returncode != 0
+    assert "atomic" in result.stderr.lower()
+
+    _write_json(MANIFEST_PATH, original_manifest)
+
+
 def test_validator_fails_on_fallback_live_ambiguity() -> None:
     _run([sys.executable, str(RQ_SCRIPT)])
-    _run(["bash", str(REFRESH_SCRIPT)])
 
     original_freshness = _read_json(FRESHNESS_PATH)
     ambiguous = dict(original_freshness)
@@ -74,7 +96,6 @@ def test_validator_fails_on_fallback_live_ambiguity() -> None:
 
 def test_validator_fails_when_promotion_overrides_readiness() -> None:
     _run([sys.executable, str(RQ_SCRIPT)])
-    _run(["bash", str(REFRESH_SCRIPT)])
 
     readiness_path = PUBLIC_ROOT / "readiness_to_expand_validator.json"
     original_readiness = _read_json(readiness_path)

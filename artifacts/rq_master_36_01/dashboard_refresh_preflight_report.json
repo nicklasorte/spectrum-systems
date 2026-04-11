@@ -1,0 +1,13 @@
+{
+  "artifact_type": "dashboard_refresh_preflight_report",
+  "generated_at": "2026-04-11T15:31:15Z",
+  "owner": "AEX",
+  "status": "pass",
+  "deploy_safe": true,
+  "required_refs": [
+    "dashboard/public/repo_snapshot.json",
+    "dashboard/public/repo_snapshot_meta.json",
+    "dashboard/public/dashboard_freshness_status.json",
+    "dashboard/public/dashboard_publication_sync_audit.json"
+  ]
+}

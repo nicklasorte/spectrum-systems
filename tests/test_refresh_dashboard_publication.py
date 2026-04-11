@@ -13,6 +13,8 @@ RQ_SCRIPT = REPO_ROOT / "scripts" / "run_rq_master_36_01.py"
 REFRESH_SCRIPT = REPO_ROOT / "scripts" / "refresh_dashboard.sh"
 PUBLIC_ROOT = REPO_ROOT / "dashboard" / "public"
 RUNTIME_ARTIFACT = REPO_ROOT / "artifacts" / "rq_master_36_01" / "next_action_recommendation_record.json"
+TRIGGER_PATH = REPO_ROOT / "artifacts" / "rq_master_36_01" / "dashboard_refresh_trigger_manifest.json"
+INVOKE_PATH = REPO_ROOT / "artifacts" / "rq_master_36_01" / "post_run_refresh_invocation_record.json"
 
 
 def _run(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -21,10 +23,12 @@ def _run(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess[str]
 
 def test_refresh_publishes_audit_and_freshness_state() -> None:
     _run([sys.executable, str(RQ_SCRIPT)])
-    _run(["bash", str(REFRESH_SCRIPT)])
 
     audit = json.loads((PUBLIC_ROOT / "dashboard_publication_sync_audit.json").read_text(encoding="utf-8"))
     freshness = json.loads((PUBLIC_ROOT / "dashboard_freshness_status.json").read_text(encoding="utf-8"))
+    manifest = json.loads((PUBLIC_ROOT / "dashboard_publication_manifest.json").read_text(encoding="utf-8"))
+    trigger = json.loads(TRIGGER_PATH.read_text(encoding="utf-8"))
+    invoke = json.loads(INVOKE_PATH.read_text(encoding="utf-8"))
 
     assert audit["publication_state"] == "live"
     assert isinstance(audit.get("records"), list)
@@ -33,6 +37,11 @@ def test_refresh_publishes_audit_and_freshness_state() -> None:
     assert freshness["publication_state"] == "live"
     assert freshness["status"] in {"fresh", "stale"}
     assert freshness.get("snapshot_last_refreshed_time")
+
+    assert manifest["publication_mode"] == "atomic"
+    assert trigger["refresh_required"] is True
+    assert invoke["refresh_invoked"] is True
+    assert invoke["refresh_returncode"] == 0
 
 
 def test_refresh_fails_closed_when_required_source_missing() -> None:
@@ -47,3 +56,15 @@ def test_refresh_fails_closed_when_required_source_missing() -> None:
         assert "required governed publication sources missing" in result.stderr
     finally:
         shutil.move(backup, RUNTIME_ARTIFACT)
+
+
+def test_failed_run_does_not_auto_refresh() -> None:
+    if TRIGGER_PATH.exists():
+        TRIGGER_PATH.unlink()
+    if INVOKE_PATH.exists():
+        INVOKE_PATH.unlink()
+
+    result = _run([sys.executable, str(RQ_SCRIPT), "--fail-after-artifacts"], check=False)
+    assert result.returncode != 0
+    assert not TRIGGER_PATH.exists()
+    assert not INVOKE_PATH.exists()
