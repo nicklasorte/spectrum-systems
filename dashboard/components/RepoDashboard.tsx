@@ -2,11 +2,41 @@
 
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 
+type RootCounts = {
+  files_total?: number
+  runtime_modules?: number
+  tests?: number
+  contracts_total?: number
+  schemas?: number
+  examples?: number
+  docs?: number
+  run_artifacts?: number
+}
+
+type RuntimeHotspot = {
+  area?: string
+  count?: number
+  note?: string
+}
+
+type OperationalSignal = {
+  title?: string
+  status?: string
+  detail?: string
+}
+
+type CoreArea = {
+  name?: string
+  description?: string
+}
+
 type Snapshot = {
   repo_name?: string
-  root_counts?: Record<string, number>
-  runtime_hotspots?: string[]
-  operational_signals?: string[]
+  root_counts?: RootCounts
+  core_areas?: CoreArea[]
+  constitutional_center?: string[]
+  runtime_hotspots?: RuntimeHotspot[]
+  operational_signals?: OperationalSignal[]
 }
 
 type SnapshotMeta = {
@@ -77,7 +107,18 @@ type ConstitutionResult = {
 
 const fallbackSnapshot: Snapshot = {
   repo_name: 'spectrum-systems',
-  root_counts: { files: 0, modules: 0, tests: 0, contracts: 0 },
+  root_counts: {
+    files_total: 0,
+    runtime_modules: 0,
+    tests: 0,
+    contracts_total: 0,
+    schemas: 0,
+    examples: 0,
+    docs: 0,
+    run_artifacts: 0
+  },
+  core_areas: [],
+  constitutional_center: [],
   runtime_hotspots: [],
   operational_signals: []
 }
@@ -253,10 +294,12 @@ export default function RepoDashboard() {
       <section style={{ ...gridStyle, marginBottom: 12 }}>
         <article style={cardStyle}>
           <h2 style={sectionTitleStyle}>Repository snapshot</h2>
-          <Field label='Files' value={counts.files ?? 0} />
-          <Field label='Modules' value={counts.modules ?? 0} />
+          <Field label='Files' value={counts.files_total ?? 0} />
+          <Field label='Runtime modules' value={counts.runtime_modules ?? 0} />
           <Field label='Tests' value={counts.tests ?? 0} />
-          <Field label='Contracts' value={counts.contracts ?? 0} />
+          <Field label='Contracts' value={counts.contracts_total ?? 0} />
+          <Field label='Docs' value={counts.docs ?? 0} />
+          <Field label='Run artifacts' value={counts.run_artifacts ?? 0} />
         </article>
 
         <article style={cardStyle}>
@@ -368,11 +411,31 @@ export default function RepoDashboard() {
       <section style={gridStyle}>
         <article style={cardStyle}>
           <h2 style={sectionTitleStyle}>Runtime hotspots</h2>
-          <StringList items={safeArray(snapshot.runtime_hotspots)} />
+          {snapshot.runtime_hotspots?.length ? (
+            snapshot.runtime_hotspots.map((hotspot, index) => (
+              <div key={`${hotspot.area ?? 'hotspot'}-${index}`} style={{ marginBottom: 10 }}>
+                <Field label='Area' value={hotspot.area} />
+                <Field label='Count' value={hotspot.count} />
+                <Field label='Note' value={hotspot.note} />
+              </div>
+            ))
+          ) : (
+            <p style={{ margin: '6px 0', color: '#64748b' }}>{notAvailable}</p>
+          )}
         </article>
         <article style={cardStyle}>
           <h2 style={sectionTitleStyle}>Operational signals</h2>
-          <StringList items={safeArray(snapshot.operational_signals)} />
+          {snapshot.operational_signals?.length ? (
+            snapshot.operational_signals.map((signal, index) => (
+              <div key={`${signal.title ?? 'signal'}-${index}`} style={{ marginBottom: 10 }}>
+                <Field label='Title' value={signal.title} />
+                <Field label='Status' value={signal.status} />
+                <Field label='Detail' value={signal.detail} />
+              </div>
+            ))
+          ) : (
+            <p style={{ margin: '6px 0', color: '#64748b' }}>{notAvailable}</p>
+          )}
         </article>
       </section>
     </main>
