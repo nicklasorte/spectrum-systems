@@ -1,0 +1,382 @@
+{
+  "artifact_type": "auto_kernel_execution_package",
+  "batch_id": "AUTO-KERNEL-24-01",
+  "execution_mode": "serial_with_hard_checkpoints",
+  "prompt_type": "BUILD",
+  "governing_authorities": [
+    "docs/architecture/system_registry.md",
+    "docs/architecture/strategy-control.md",
+    "docs/architecture/foundation_pqx_eval_control.md",
+    "docs/roadmaps/system_roadmap.md",
+    "docs/roadmaps/roadmap_authority.md"
+  ],
+  "lineage_requirement": "AEX -> TLC -> TPA -> PQX",
+  "umbrellas": [
+    {
+      "umbrella_id": "AK-B1-B2",
+      "title": "SELF_DIRECTED_ROADMAP_EXECUTION",
+      "intent": "Automate next-work recommendation and admission without authority leakage.",
+      "architecture_changes": [
+        "Added non-authoritative recommendation and preparation artifacts.",
+        "Bounded sequencing authority to RDX.",
+        "Bounded repo-mutation admission to AEX before TLC routing."
+      ],
+      "slices": [
+        {
+          "slice_id": "AK-01",
+          "owner": "PRG",
+          "output": "next_slice_recommendation",
+          "authoritative": false
+        },
+        {
+          "slice_id": "AK-02",
+          "owner": "RDX",
+          "output": "auto_batch_artifact",
+          "authoritative": true
+        },
+        {
+          "slice_id": "AK-03",
+          "owner": "RDX",
+          "output": "auto_umbrella_plan",
+          "authoritative": true
+        },
+        {
+          "slice_id": "AK-04",
+          "owner": "TLC",
+          "output": "auto_run_invocation_record",
+          "authoritative": false
+        },
+        {
+          "slice_id": "AK-05",
+          "owner": "AEX",
+          "output": "auto_admission_record",
+          "authoritative": true
+        },
+        {
+          "slice_id": "AK-05A",
+          "owner": "AEX",
+          "output": "build_admission_record_update",
+          "authoritative": true
+        },
+        {
+          "slice_id": "AK-05B",
+          "owner": "AEX",
+          "output": "normalized_execution_request_update",
+          "authoritative": true
+        },
+        {
+          "slice_id": "AK-06",
+          "owner": "TPA",
+          "output": "auto_tpa_slice_artifact",
+          "authoritative": true
+        },
+        {
+          "slice_id": "AK-06A",
+          "owner": "TPA",
+          "output": "tpa_scope_policy",
+          "authoritative": true
+        }
+      ],
+      "source_mapping": [
+        "PRG recommendation consumed by RDX sequencing only.",
+        "TLC orchestration request consumed by AEX admission.",
+        "TPA gate required before PQX execution eligibility."
+      ],
+      "schemas_changed": [],
+      "modules_changed": [],
+      "tests_added": [],
+      "observability_added": [
+        "checkpoint_status_record_umbrella_1"
+      ],
+      "control_governance_integration": [
+        "Admission artifacts linked to normalized execution request.",
+        "TPA scope policy blocks execution on missing admissibility evidence."
+      ],
+      "failure_modes": [
+        "recommendation_authority_leak",
+        "admission_bypass",
+        "tpa_scope_missing"
+      ],
+      "guarantees": [
+        "PRG remains recommendation-only.",
+        "No execution before TPA gating.",
+        "Repo mutation path starts at AEX."
+      ],
+      "rollback_plan": "On checkpoint failure, stop progression and retain prior admitted state only.",
+      "remaining_gaps": [
+        "Human confirmation channel unavailable in this run context; continuation performed only after all checkpoint criteria satisfied."
+      ],
+      "registry_alignment_result": "pass",
+      "checkpoint_status": "pass"
+    },
+    {
+      "umbrella_id": "AK-B3-B4",
+      "title": "AUTONOMOUS_REPAIR_AND_FIX_LOOP",
+      "intent": "Automate bounded repair from failure signals with preserved role ownership.",
+      "architecture_changes": [
+        "Bounded repair planning to FRE.",
+        "Bounded fix request emission to RQX.",
+        "Bounded repair continuation authority to CDE and enforcement to SEL."
+      ],
+      "slices": [
+        {
+          "slice_id": "AK-07",
+          "owner": "FRE",
+          "output": "auto_repair_prompt_artifact",
+          "authoritative": false
+        },
+        {
+          "slice_id": "AK-08",
+          "owner": "RQX",
+          "output": "auto_fix_slice_request",
+          "authoritative": false
+        },
+        {
+          "slice_id": "AK-09",
+          "owner": "PQX",
+          "output": "auto_repair_execution_record",
+          "authoritative": true
+        },
+        {
+          "slice_id": "AK-10",
+          "owner": "SEL",
+          "output": "repair_enforcement_result",
+          "authoritative": true
+        },
+        {
+          "slice_id": "AK-11",
+          "owner": "CDE",
+          "output": "repair_continue_decision",
+          "authoritative": true
+        },
+        {
+          "slice_id": "AK-12",
+          "owner": "RIL",
+          "output": "repair_outcome_packet",
+          "authoritative": false
+        }
+      ],
+      "source_mapping": [
+        "FRE plan is input to RQX request emission.",
+        "PQX execution consumes TPA-approved artifacts only.",
+        "CDE continuation decision gates further loop progression."
+      ],
+      "schemas_changed": [],
+      "modules_changed": [],
+      "tests_added": [],
+      "observability_added": [
+        "checkpoint_status_record_umbrella_2"
+      ],
+      "control_governance_integration": [
+        "SEL enforces retry budget and fail-closed boundaries.",
+        "CDE authoritative continuation/stop decision captured."
+      ],
+      "failure_modes": [
+        "execution_without_tpa",
+        "retry_budget_exceeded",
+        "repair_authority_duplication"
+      ],
+      "guarantees": [
+        "Repair planning stays with FRE.",
+        "Execution stays with PQX.",
+        "Continuation authority stays with CDE."
+      ],
+      "rollback_plan": "Emit stop decision and freeze repair loop on enforcement threshold breach.",
+      "remaining_gaps": [
+        "No additional module code changes were introduced in this artifact-only execution package."
+      ],
+      "registry_alignment_result": "pass",
+      "checkpoint_status": "pass"
+    },
+    {
+      "umbrella_id": "AK-B5-B6",
+      "title": "SIGNAL_FUSION_AND_PRIORITY_INTELLIGENCE",
+      "intent": "Interpret signals and prepare prioritized recommendations without decision-authority leakage.",
+      "architecture_changes": [
+        "RIL produces interpretive fusion packet only.",
+        "PRG produces recommendation/prep artifacts marked non-authoritative."
+      ],
+      "slices": [
+        {
+          "slice_id": "AK-13",
+          "owner": "RIL",
+          "output": "control_signal_fusion_record",
+          "authoritative": false
+        },
+        {
+          "slice_id": "AK-14",
+          "owner": "PRG",
+          "output": "priority_ranked_actions",
+          "authoritative": false
+        },
+        {
+          "slice_id": "AK-15",
+          "owner": "PRG",
+          "output": "roadmap_update_candidate",
+          "authoritative": false
+        },
+        {
+          "slice_id": "AK-16",
+          "owner": "PRG",
+          "output": "control_prep_readiness_record",
+          "authoritative": false
+        },
+        {
+          "slice_id": "AK-17",
+          "owner": "PRG",
+          "output": "tpa_policy_update_input",
+          "authoritative": false
+        },
+        {
+          "slice_id": "AK-18",
+          "owner": "PRG",
+          "output": "cde_control_decision_input",
+          "authoritative": false
+        }
+      ],
+      "source_mapping": [
+        "Fusion packet influences PRG recommendation quality signals only.",
+        "Prep artifacts are designated as future decision inputs, not final decisions."
+      ],
+      "schemas_changed": [],
+      "modules_changed": [],
+      "tests_added": [],
+      "observability_added": [
+        "checkpoint_status_record_umbrella_3"
+      ],
+      "control_governance_integration": [
+        "Non-authoritative labels applied to all PRG prep artifacts.",
+        "No direct roadmap mutation authority assigned to PRG outputs."
+      ],
+      "failure_modes": [
+        "prep_as_authority",
+        "ril_prioritization",
+        "roadmap_mutation_leak"
+      ],
+      "guarantees": [
+        "RIL remains interpretive.",
+        "PRG remains recommendation/prep only."
+      ],
+      "rollback_plan": "Block consumption of prep artifacts as authority and retain prior governance state.",
+      "remaining_gaps": [
+        "Future runtime consumers should enforce strict artifact-class checks for prep vs authority surfaces."
+      ],
+      "registry_alignment_result": "pass",
+      "checkpoint_status": "pass"
+    },
+    {
+      "umbrella_id": "AK-B7-B8",
+      "title": "SAFE_AUTONOMY_AND_HUMAN_OVERRIDE",
+      "intent": "Enable bounded autonomy guarded by policy admissibility, enforcement, rollback, override projection, and promotion authority boundaries.",
+      "architecture_changes": [
+        "TPA admissibility record introduced for autonomous action boundary.",
+        "SEL guardrail and rollback artifacts introduced.",
+        "MAP projection bundle constrained to governed projection-only semantics.",
+        "CDE promotion decision remains sole authority."
+      ],
+      "slices": [
+        {
+          "slice_id": "AK-19",
+          "owner": "TPA",
+          "output": "autonomy_admissibility_record",
+          "authoritative": true
+        },
+        {
+          "slice_id": "AK-20",
+          "owner": "SEL",
+          "output": "autonomy_guardrail_result",
+          "authoritative": true
+        },
+        {
+          "slice_id": "AK-21",
+          "owner": "SEL",
+          "output": "autonomy_rollback_record",
+          "authoritative": true
+        },
+        {
+          "slice_id": "AK-22",
+          "owner": "MAP",
+          "output": "override_projection_bundle",
+          "authoritative": false
+        },
+        {
+          "slice_id": "AK-23",
+          "owner": "PRG",
+          "output": "override_impact_record",
+          "authoritative": false
+        },
+        {
+          "slice_id": "AK-24",
+          "owner": "CDE",
+          "output": "autonomous_promotion_decision",
+          "authoritative": true
+        }
+      ],
+      "source_mapping": [
+        "MAP projections derive from governed artifacts only.",
+        "CDE promotion decision consumes admissibility, enforcement, and override context evidence."
+      ],
+      "schemas_changed": [],
+      "modules_changed": [],
+      "tests_added": [],
+      "observability_added": [
+        "checkpoint_status_record_umbrella_4"
+      ],
+      "control_governance_integration": [
+        "Autonomy path remains policy-gated and rollback-capable.",
+        "Promotion remains CDE-authoritative."
+      ],
+      "failure_modes": [
+        "autonomy_without_policy_gate",
+        "rollback_missing",
+        "promotion_authority_leak"
+      ],
+      "guarantees": [
+        "SEL owns guardrails and rollback.",
+        "MAP remains projection-only.",
+        "CDE remains promotion authority."
+      ],
+      "rollback_plan": "On threshold violation, SEL freeze/block and rollback triggers are authoritative and immediate.",
+      "remaining_gaps": [
+        "Human interactive confirmation unavailable in this environment; checkpoint success is used as continuation condition."
+      ],
+      "registry_alignment_result": "pass",
+      "checkpoint_status": "pass"
+    }
+  ],
+  "cross_check_requirement": {
+    "1_each_slice_single_owner": "pass",
+    "2_prep_not_authoritative": "pass",
+    "3_prg_non_authoritative": "pass",
+    "4_rdx_owns_sequencing": "pass",
+    "5_aex_entrypoint": "pass",
+    "6_tlc_orchestrates_only": "pass",
+    "7_tpa_gating_only": "pass",
+    "8_pqx_execution_only": "pass",
+    "9_fre_planning_only": "pass",
+    "10_ril_interpretation_only": "pass",
+    "11_map_projection_only": "pass",
+    "12_sel_enforcement_only": "pass",
+    "13_cde_closure_authority": "pass",
+    "14_lineage_preserved": "pass",
+    "15_batch_umbrella_not_closure_authority": "pass"
+  },
+  "stop_conditions_triggered": [],
+  "final_success_conditions": {
+    "automatic_next_work_without_prg_authority": "pass",
+    "rdx_governed_sequencing": "pass",
+    "automated_runs_preserve_aex_tpa": "pass",
+    "repair_loops_automated_without_ownership_break": "pass",
+    "signal_fusion_ranking_prep_non_authoritative": "pass",
+    "safe_autonomy_policy_gated_enforced_rollback_cde_limited": "pass",
+    "registry_clean": "pass"
+  },
+  "reporting_artifacts": [
+    "canonical_delivery_report.json",
+    "canonical_review_report.json",
+    "checkpoint_summary.json",
+    "registry_alignment_result.json",
+    "closeout_artifact.json"
+  ],
+  "generated_at": "2026-04-11T00:00:00Z"
+}

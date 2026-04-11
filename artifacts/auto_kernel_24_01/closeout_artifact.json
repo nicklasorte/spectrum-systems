@@ -1,0 +1,8 @@
+{
+  "artifact_type": "closeout_artifact",
+  "batch_id": "AUTO-KERNEL-24-01",
+  "completion_status": "success",
+  "success_gate": "all required reporting artifacts present and non-empty",
+  "required_artifacts_present": true,
+  "generated_at": "2026-04-11T00:00:00Z"
+}
