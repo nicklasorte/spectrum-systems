@@ -9,11 +9,12 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-RQ_SCRIPT = REPO_ROOT / "scripts" / "run_rq_master_01.py"
+RQ_SCRIPT = REPO_ROOT / "scripts" / "run_rq_master_36_01.py"
 REFRESH_SCRIPT = REPO_ROOT / "scripts" / "refresh_dashboard.sh"
 VALIDATOR = REPO_ROOT / "scripts" / "validate_dashboard_public_artifacts.py"
 PUBLIC_ROOT = REPO_ROOT / "dashboard" / "public"
 META_PATH = PUBLIC_ROOT / "repo_snapshot_meta.json"
+FRESHNESS_PATH = PUBLIC_ROOT / "dashboard_freshness_status.json"
 
 
 def _run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
@@ -38,14 +39,33 @@ def test_validator_fails_on_stale_snapshot_meta() -> None:
     _run([sys.executable, str(RQ_SCRIPT)])
     _run(["bash", str(REFRESH_SCRIPT)])
 
-    original = _read_json(META_PATH)
-    stale = dict(original)
+    original_meta = _read_json(META_PATH)
+    original_freshness = _read_json(FRESHNESS_PATH)
+
+    stale = dict(original_meta)
     stale["last_refreshed_time"] = (datetime.now(timezone.utc) - timedelta(hours=8)).strftime("%Y-%m-%dT%H:%M:%SZ")
     stale["data_source_state"] = "live"
     _write_json(META_PATH, stale)
 
     result = subprocess.run([sys.executable, str(VALIDATOR)], cwd=str(REPO_ROOT), capture_output=True, text=True)
     assert result.returncode != 0
-    assert "stale" in result.stderr.lower()
+    assert "stale" in result.stderr.lower() or "freshness" in result.stderr.lower()
 
-    _write_json(META_PATH, original)
+    _write_json(META_PATH, original_meta)
+    _write_json(FRESHNESS_PATH, original_freshness)
+
+
+def test_validator_fails_on_fallback_live_ambiguity() -> None:
+    _run([sys.executable, str(RQ_SCRIPT)])
+    _run(["bash", str(REFRESH_SCRIPT)])
+
+    original_freshness = _read_json(FRESHNESS_PATH)
+    ambiguous = dict(original_freshness)
+    ambiguous["publication_state"] = "fallback"
+    _write_json(FRESHNESS_PATH, ambiguous)
+
+    result = subprocess.run([sys.executable, str(VALIDATOR)], cwd=str(REPO_ROOT), capture_output=True, text=True)
+    assert result.returncode != 0
+    assert "ambiguity" in result.stderr.lower()
+
+    _write_json(FRESHNESS_PATH, original_freshness)
