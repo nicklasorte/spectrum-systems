@@ -26,7 +26,7 @@
   ],
   "lightweight_mode_allowed": true,
   "source_authority_refresh": {
-    "refresh_id": "SRC-AUTH-REFRESH-2026-04-11-SRC-01B",
+    "refresh_id": "SRC-AUTH-REFRESH-2026-04-11-SRC-01C",
     "refreshed_at": "2026-04-11T00:00:00Z",
     "source_index_path": "docs/architecture/system_source_index.md",
     "source_inventory_digest_sha256": "32013f32e1623e9d089c86b675c9d059107b20cabe3e7783c96ea54c1d4145a2",
