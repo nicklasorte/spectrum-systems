@@ -1,0 +1,52 @@
+name: dashboard-deploy-gate
+
+on:
+  pull_request:
+    paths:
+      - 'dashboard/**'
+      - 'scripts/run_rq_master_01.py'
+      - 'scripts/refresh_dashboard.sh'
+      - 'scripts/validate_dashboard_public_artifacts.py'
+      - 'tests/test_rq_master_01.py'
+      - 'tests/test_validate_dashboard_public_artifacts.py'
+      - '.github/workflows/dashboard-deploy-gate.yml'
+
+jobs:
+  dashboard-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Python deps
+        run: pip install -r requirements-dev.txt
+
+      - name: Run RQ-MASTER-01 artifact build
+        run: python scripts/run_rq_master_01.py
+
+      - name: Refresh dashboard artifacts
+        run: bash scripts/refresh_dashboard.sh
+
+      - name: Validate dashboard public artifact contract
+        run: python scripts/validate_dashboard_public_artifacts.py
+
+      - name: Dashboard lint
+        run: |
+          cd dashboard
+          npm install
+          npm run lint
+
+      - name: Dashboard build
+        run: |
+          cd dashboard
+          npm run build

@@ -48,7 +48,9 @@ import sys
 
 meta_path = pathlib.Path(sys.argv[1])
 meta = {
-    "refreshed_at": sys.argv[2],
+    "last_refreshed_time": sys.argv[2],
+    "snapshot_size": f"{int(sys.argv[4])} bytes",
+    "data_source_state": "live",
     "snapshot_source_path": sys.argv[3],
     "snapshot_size_bytes": int(sys.argv[4]),
 }
