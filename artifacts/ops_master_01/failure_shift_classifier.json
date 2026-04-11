@@ -1,0 +1,18 @@
+{
+  "artifact_type": "failure_shift_classifier",
+  "batch_id": "OPS-MASTER-01",
+  "generated_at": "2026-04-11T01:01:56Z",
+  "failure_events": [
+    {
+      "failure_type": "schema_missing_field",
+      "occurred_at": "RQX",
+      "should_occur_at": "AEX"
+    },
+    {
+      "failure_type": "lineage_gap",
+      "occurred_at": "PQX",
+      "should_occur_at": "TPA"
+    }
+  ],
+  "prevent_before_repair": true
+}

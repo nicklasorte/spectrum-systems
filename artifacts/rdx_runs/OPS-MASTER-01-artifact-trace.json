@@ -1,0 +1,70 @@
+{
+  "artifact_type": "rdx_run_artifact_trace",
+  "batch_id": "OPS-MASTER-01",
+  "generated_at": "2026-04-11T01:01:56Z",
+  "umbrella_sequence": [
+    "VISIBILITY_LAYER",
+    "SHIFT_LEFT_HARDENING_LAYER",
+    "OPERATIONAL_MEMORY_LAYER",
+    "ROADMAP_STATE_LAYER",
+    "CONSTITUTION_PROTECTION_LAYER"
+  ],
+  "umbrella_outputs": [
+    {
+      "umbrella": "VISIBILITY_LAYER",
+      "artifact_paths": [
+        "artifacts/ops_master_01/current_run_state_record.json",
+        "artifacts/ops_master_01/current_bottleneck_record.json",
+        "artifacts/ops_master_01/deferred_item_register.json",
+        "artifacts/ops_master_01/hard_gate_status_record.json"
+      ]
+    },
+    {
+      "umbrella": "SHIFT_LEFT_HARDENING_LAYER",
+      "artifact_paths": [
+        "artifacts/ops_master_01/aex_evidence_completeness_enforcement.json",
+        "artifacts/ops_master_01/tpa_lineage_completeness_enforcement.json",
+        "artifacts/ops_master_01/pre_pqx_contract_readiness_artifact.json",
+        "artifacts/ops_master_01/failure_shift_classifier.json",
+        "artifacts/ops_master_01/first_pass_quality_artifact.json",
+        "artifacts/ops_master_01/repair_loop_reduction_tracker.json"
+      ]
+    },
+    {
+      "umbrella": "OPERATIONAL_MEMORY_LAYER",
+      "artifact_paths": [
+        "artifacts/ops_master_01/repeated_failure_memory_registry.json",
+        "artifacts/ops_master_01/fix_outcome_registry.json",
+        "artifacts/ops_master_01/deferred_return_tracker.json",
+        "artifacts/ops_master_01/drift_trend_continuity_artifact.json",
+        "artifacts/ops_master_01/adoption_outcome_history.json",
+        "artifacts/ops_master_01/policy_change_outcome_tracker.json"
+      ]
+    },
+    {
+      "umbrella": "ROADMAP_STATE_LAYER",
+      "artifact_paths": [
+        "artifacts/ops_master_01/canonical_roadmap_state_artifact.json",
+        "artifacts/ops_master_01/hard_gate_tracker_artifact.json",
+        "artifacts/ops_master_01/maturity_phase_tracker.json",
+        "artifacts/ops_master_01/bottleneck_tracker.json",
+        "artifacts/ops_master_01/roadmap_delta_artifact.json"
+      ]
+    },
+    {
+      "umbrella": "CONSTITUTION_PROTECTION_LAYER",
+      "artifact_paths": [
+        "artifacts/ops_master_01/constitutional_drift_checker_result.json",
+        "artifacts/ops_master_01/roadmap_alignment_validator_result.json",
+        "artifacts/ops_master_01/serial_bundle_validator_result.json"
+      ]
+    }
+  ],
+  "fail_open_detected": false,
+  "fail_closed_checks": {
+    "missing_artifacts": "pass",
+    "invalid_schema": "pass",
+    "broken_lineage": "pass",
+    "authority_misuse": "pass"
+  }
+}

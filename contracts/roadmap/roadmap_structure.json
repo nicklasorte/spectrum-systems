@@ -180,6 +180,31 @@
           ]
         }
       ]
+    },
+    {
+      "umbrella_id": "OPS_MASTER_01",
+      "batches": [
+        {
+          "batch_id": "BATCH-OPS-VIS-HARDEN",
+          "slice_ids": [
+            "OPS-VIS-01",
+            "OPS-VIS-02",
+            "OPS-HARD-01",
+            "OPS-HARD-02"
+          ]
+        },
+        {
+          "batch_id": "BATCH-OPS-MEM-STATE-CONST",
+          "slice_ids": [
+            "OPS-MEM-01",
+            "OPS-MEM-02",
+            "OPS-STATE-01",
+            "OPS-STATE-02",
+            "OPS-CONST-01",
+            "OPS-CONST-02"
+          ]
+        }
+      ]
     }
   ],
   "reserved_slice_ids": []

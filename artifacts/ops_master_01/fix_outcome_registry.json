@@ -1,0 +1,27 @@
+{
+  "artifact_type": "fix_outcome_registry",
+  "batch_id": "OPS-MASTER-01",
+  "generated_at": "2026-04-11T01:01:56Z",
+  "fixes": [
+    {
+      "fix_id": "FIX-001",
+      "targets": [
+        "PATTERN-001"
+      ],
+      "outcome": "effective",
+      "evidence": [
+        "first_pass_quality_artifact"
+      ]
+    },
+    {
+      "fix_id": "FIX-002",
+      "targets": [
+        "PATTERN-002"
+      ],
+      "outcome": "effective",
+      "evidence": [
+        "tpa_lineage_completeness_enforcement"
+      ]
+    }
+  ]
+}

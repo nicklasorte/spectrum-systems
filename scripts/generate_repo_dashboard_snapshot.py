@@ -252,6 +252,17 @@ def build_snapshot(surface: RepoSurface) -> dict[str, object]:
         "run_artifacts": run_artifacts_count,
     }
 
+    key_state_path = surface.repo_root / "artifacts/ops_master_01/current_run_state_record.json"
+    key_bottleneck_path = surface.repo_root / "artifacts/ops_master_01/current_bottleneck_record.json"
+    key_hard_gate_path = surface.repo_root / "artifacts/ops_master_01/hard_gate_status_record.json"
+    key_state: dict[str, object] = {}
+    if key_state_path.is_file():
+        key_state["current_run_state_record"] = json.loads(key_state_path.read_text(encoding="utf-8"))
+    if key_bottleneck_path.is_file():
+        key_state["current_bottleneck_record"] = json.loads(key_bottleneck_path.read_text(encoding="utf-8"))
+    if key_hard_gate_path.is_file():
+        key_state["hard_gate_status_record"] = json.loads(key_hard_gate_path.read_text(encoding="utf-8"))
+
     return {
         "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "repo_name": surface.repo_root.name,
@@ -265,6 +276,7 @@ def build_snapshot(surface: RepoSurface) -> dict[str, object]:
             runtime_files,
             constitutional_center,
         ),
+        "key_state": key_state,
     }
 
 

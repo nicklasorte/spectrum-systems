@@ -1,0 +1,16 @@
+{
+  "artifact_type": "drift_trend_continuity_artifact",
+  "batch_id": "OPS-MASTER-01",
+  "generated_at": "2026-04-11T01:01:56Z",
+  "drift_series": [
+    {
+      "run_id": "OPS-MASTER-00",
+      "drift_score": 0.44
+    },
+    {
+      "run_id": "OPS-MASTER-01",
+      "drift_score": 0.33
+    }
+  ],
+  "trend": "improving"
+}
