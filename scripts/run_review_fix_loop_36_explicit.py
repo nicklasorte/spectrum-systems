@@ -4,11 +4,17 @@
 from __future__ import annotations
 
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from spectrum_systems.modules.runtime.review_cycle_record import create_review_cycle
+
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "review_fix_loop_36_explicit"
 TRACE_PATH = REPO_ROOT / "artifacts" / "rdx_runs" / "REVIEW-FIX-LOOP-36-EXPLICIT-artifact-trace.json"
 BATCH_ID = "REVIEW-FIX-LOOP-36-EXPLICIT"
@@ -93,6 +99,16 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
 
 
 def _base_payload(step: dict[str, Any], generated_at: str) -> dict[str, Any]:
+    if step["file"] == "review_cycle_record.json":
+        return create_review_cycle(
+            parent_batch_id=BATCH_ID,
+            parent_umbrella_id="UMBRELLA-REVIEW-FIX-36",
+            max_iterations=3,
+            review_request_ref="review_request_artifact:REVIEW-FIX-LOOP-36-EXPLICIT:initial",
+            lineage=["review_loop_entry:REVIEW-FIX-LOOP-36-EXPLICIT", "owner:RQX"],
+            created_at=generated_at,
+        )
+
     payload: dict[str, Any] = {
         "artifact_type": step["file"].removesuffix(".json"),
         "batch_id": BATCH_ID,
@@ -102,18 +118,7 @@ def _base_payload(step: dict[str, Any], generated_at: str) -> dict[str, Any]:
         "generated_at": generated_at,
     }
 
-    if step["file"] == "review_cycle_record.json":
-        payload.update(
-            {
-                "cycle_id": "RFCYCLE-36-01",
-                "iteration_number": 1,
-                "max_iterations": 3,
-                "termination_state": "continue_until_checkpoint_failure_or_completion",
-                "parent_batch_id": BATCH_ID,
-                "parent_umbrella_id": "UMBRELLA-REVIEW-FIX-36",
-            }
-        )
-    elif step["file"] == "review_pass_classification.json":
+    if step["file"] == "review_pass_classification.json":
         payload.update(
             {
                 "first_pass": True,
