@@ -1,13 +1,5 @@
 #!/usr/bin/env python3
-"""Sync project-design source authority artifacts into spectrum-systems.
-
-This script performs a narrow ingestion slice:
-- discover project-design markdown/PDF/manifests in an upstream repo checkout,
-- copy raw authority files into docs/source_raw/project_design,
-- emit one structured JSON artifact per normalized source,
-- rebuild project-design sections of source indexes,
-- validate completeness with fail-closed behavior.
-"""
+"""Sync project-design source authority artifacts into spectrum-systems."""
 
 from __future__ import annotations
 
@@ -26,6 +18,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 RAW_ROOT = REPO_ROOT / "docs" / "source_raw" / "project_design"
 STRUCTURED_ROOT = REPO_ROOT / "docs" / "source_structured"
 INDEX_ROOT = REPO_ROOT / "docs" / "source_indexes"
+TPA_POLICY_PATH = REPO_ROOT / "config" / "policy" / "tpa_scope_policy.json"
 
 REQUIRED_SOURCES = [
     "strategy_control_document",
@@ -50,19 +43,7 @@ SOURCE_SCAN_DIRS = [
     "raw/strategic_sources",
 ]
 
-DOMAIN_BUCKETS = [
-    "strategy",
-    "foundation",
-    "governance",
-    "control",
-    "evaluation",
-    "judgment",
-    "context",
-    "adapter",
-    "durability",
-    "substrate",
-    "harness",
-]
+DOMAIN_BUCKETS = ["strategy", "foundation", "governance", "control", "evaluation", "judgment", "context", "adapter", "durability", "substrate", "harness"]
 
 KEYWORD_DOMAIN_MAP = {
     "strategy": ["strategy"],
@@ -237,6 +218,12 @@ def _component_tags(source_key: str, text: str) -> list[str]:
     return sorted(set(tags))
 
 
+def _to_component_id(tags: list[str]) -> str:
+    if not tags:
+        return "COMP-PROJECT-DESIGN-GOVERNANCE"
+    return f"COMP-PROJECT-DESIGN-{tags[0].upper().replace('-', '_')}"
+
+
 def build_structured_record(
     source_key: str,
     files: list[CandidateFile],
@@ -266,60 +253,112 @@ def build_structured_record(
     preferred = next((p for p in raw_paths if p.endswith(".md")), raw_paths[0] if raw_paths else "")
 
     source_id = f"SRC-PROJECT-DESIGN-{source_key.upper().replace('-', '_')}"
+    pdf_raw = next((p for p in raw_paths if p.endswith(".pdf")), f"docs/source_raw/project_design/{source_key}.pdf")
+    source_status = "available" if any(p.endswith(".pdf") for p in raw_paths) else "missing"
+
     record = {
         "schema_version": "1.0.0",
-        "source_id": source_id,
-        "title": title,
-        "normalized_name": source_key,
-        "upstream_repo": upstream_repo,
-        "upstream_paths": sorted(set(upstream_paths)),
-        "upstream_ref": upstream_ref,
-        "local_raw_paths": sorted(set(raw_paths)),
-        "preferred_readable_source": preferred,
-        "file_types_present": sorted(file_types),
-        "document_type": "project_design",
-        "summary": summary,
-        "key_directives_or_obligations": obligation_lines,
-        "component_tags": component_tags,
-        "canonical_status": "available",
-        "ingested_at": ingestion_time,
+        "source_document": {
+            "source_id": source_id,
+            "title": title,
+            "file_path": pdf_raw,
+            "status": source_status,
+            "notes": (
+                f"project_design sync from {upstream_repo}; upstream_ref={upstream_ref or 'unavailable'}; "
+                f"upstream_paths={sorted(set(upstream_paths))}; local_raw_paths={sorted(set(raw_paths))}; "
+                f"preferred_readable_source={preferred}; file_types_present={sorted(file_types)}; "
+                f"ingested_at={ingestion_time}; summary={summary}"
+            ),
+        },
+        "extraction": {
+            "key_components": [{"id": f"KEY-{source_key.upper()}-01", "statement": summary}],
+            "architectural_invariants": [{"id": f"INV-{source_key.upper()}-01", "statement": "Source obligations remain traceable to structured rows."}],
+            "authority_boundaries": [{"id": f"AUTH-{source_key.upper()}-01", "statement": "Raw inputs remain authority inputs; structured rows are derived governance artifacts."}],
+            "artifact_families": [{"id": f"ART-{source_key.upper()}-01", "statement": "This source contributes to source inventory, obligation index, and component map."}],
+            "required_schemas": [{"id": f"SCHEMA-{source_key.upper()}-01", "statement": "Structured source artifact must satisfy source_design_extraction schema."}],
+            "sequencing_constraints": [{"id": f"SEQ-{source_key.upper()}-01", "statement": "Index and digest refresh must run after structured-source sync."}],
+            "failure_modes": [{"id": f"FAIL-{source_key.upper()}-01", "statement": "Missing required source evidence blocks governance progression."}],
+            "fail_closed_requirements": [{"id": f"FC-{source_key.upper()}-01", "statement": "Completeness validation fails closed for missing required sources."}],
+            "replayability_requirements": [{"id": f"REPLAY-{source_key.upper()}-01", "statement": "Repeat sync over unchanged inputs produces stable raw filenames and deterministic indexes."}],
+            "observability_requirements": [{"id": f"OBS-{source_key.upper()}-01", "statement": "Inventory/index entries must expose source availability and obligation linkage."}],
+            "certification_requirements": [{"id": f"CERT-{source_key.upper()}-01", "statement": "Downstream governance consumes refreshed source indexes and matching policy digests."}],
+            "sre_alignment": [{"id": f"SRE-{source_key.upper()}-01", "statement": "Fail-closed authority checks reduce silent drift and stale-policy risk."}],
+            "explicit_non_goals": [{"id": f"NG-{source_key.upper()}-01", "statement": "This ingestion slice does not implement roadmap compilation or execution automation."}],
+            "roadmap_implications": [{"id": f"RM-{source_key.upper()}-01", "statement": "Roadmap planning must reference refreshed source authority indexes."}],
+        },
+        "source_traceability_rows": [],
     }
 
     obligations = []
+    component_id = _to_component_id(component_tags)
     for idx, line in enumerate(obligation_lines, start=1):
-        obligations.append(
-            {
-                "obligation_id": f"OBL-{source_key.upper().replace('-', '_')}-{idx:02d}",
-                "source_id": source_id,
-                "source_path": preferred,
-                "directive": line,
-                "conservative_extraction": True,
-            }
-        )
+        obligation_id = f"OBL-{source_key.upper().replace('-', '_')}-{idx:02d}"
+        trace_row = {
+            "trace_id": f"TRACE-{source_key.upper().replace('-', '_')}-{idx:03d}",
+            "obligation_id": obligation_id,
+            "component_id": component_id,
+            "obligation_statement": line,
+            "source_section": "first_pass_extraction",
+            "source_excerpt": line,
+        }
+        record["source_traceability_rows"].append(trace_row)
+        obligations.append(trace_row)
+
+    if not record["source_traceability_rows"]:
+        placeholder = {
+            "trace_id": f"TRACE-{source_key.upper().replace('-', '_')}-000",
+            "obligation_id": f"OBL-{source_key.upper().replace('-', '_')}-PLACEHOLDER",
+            "component_id": component_id,
+            "obligation_statement": "No explicit modal directive extracted; preserve source for governed retrieve.",
+            "source_section": "placeholder",
+            "source_excerpt": "",
+        }
+        record["source_traceability_rows"].append(placeholder)
+        obligations.append(placeholder)
+
     return record, obligations
 
 
 def build_missing_record(source_key: str, upstream_repo: str, ingestion_time: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     source_id = f"SRC-PROJECT-DESIGN-{source_key.upper()}"
+    component_id = _to_component_id(_component_tags(source_key, source_key))
     record = {
         "schema_version": "1.0.0",
-        "source_id": source_id,
-        "title": source_key.replace("_", " ").title(),
-        "normalized_name": source_key,
-        "upstream_repo": upstream_repo,
-        "upstream_paths": [],
-        "upstream_ref": None,
-        "local_raw_paths": [],
-        "preferred_readable_source": "",
-        "file_types_present": [],
-        "document_type": "project_design",
-        "summary": "Required source not discovered in upstream scan.",
-        "key_directives_or_obligations": [],
-        "component_tags": _component_tags(source_key, source_key),
-        "canonical_status": "missing_upstream",
-        "ingested_at": ingestion_time,
+        "source_document": {
+            "source_id": source_id,
+            "title": source_key.replace("_", " ").title(),
+            "file_path": f"docs/source_raw/project_design/{source_key}.pdf",
+            "status": "missing",
+            "notes": f"Required source missing during sync from {upstream_repo}; ingested_at={ingestion_time}",
+        },
+        "extraction": {
+            "key_components": [{"id": f"KEY-{source_key.upper()}-01", "statement": "Missing source placeholder."}],
+            "architectural_invariants": [{"id": f"INV-{source_key.upper()}-01", "statement": "Fail closed on missing required source."}],
+            "authority_boundaries": [{"id": f"AUTH-{source_key.upper()}-01", "statement": "Do not infer obligations beyond explicit placeholders."}],
+            "artifact_families": [{"id": f"ART-{source_key.upper()}-01", "statement": "Placeholder source authority artifact."}],
+            "required_schemas": [{"id": f"SCHEMA-{source_key.upper()}-01", "statement": "Artifact conforms to source schema despite missing upstream source."}],
+            "sequencing_constraints": [{"id": f"SEQ-{source_key.upper()}-01", "statement": "Missing source must block downstream progression."}],
+            "failure_modes": [{"id": f"FAIL-{source_key.upper()}-01", "statement": "Required source unavailable."}],
+            "fail_closed_requirements": [{"id": f"FC-{source_key.upper()}-01", "statement": "Validation fails closed for this missing source."}],
+            "replayability_requirements": [{"id": f"REPLAY-{source_key.upper()}-01", "statement": "Missing placeholder persists deterministically until source is available."}],
+            "observability_requirements": [{"id": f"OBS-{source_key.upper()}-01", "statement": "Missing status must be visible in inventory."}],
+            "certification_requirements": [{"id": f"CERT-{source_key.upper()}-01", "statement": "Certification cannot proceed with missing required sources."}],
+            "sre_alignment": [{"id": f"SRE-{source_key.upper()}-01", "statement": "Missing source detection is explicit and non-silent."}],
+            "explicit_non_goals": [{"id": f"NG-{source_key.upper()}-01", "statement": "No fabricated source content."}],
+            "roadmap_implications": [{"id": f"RM-{source_key.upper()}-01", "statement": "Roadmap operations remain blocked until source is ingested."}],
+        },
+        "source_traceability_rows": [
+            {
+                "trace_id": f"TRACE-{source_key.upper()}-000",
+                "obligation_id": f"OBL-{source_key.upper()}-MISSING",
+                "component_id": component_id,
+                "obligation_statement": "Required source is missing; fail closed.",
+                "source_section": "missing_source",
+                "source_excerpt": "",
+            }
+        ],
     }
-    return record, []
+    return record, record["source_traceability_rows"]
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -327,74 +366,120 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def refresh_tpa_scope_policy_digests(*, refresh_id: str | None = None, refreshed_at: str | None = None) -> None:
+    if not TPA_POLICY_PATH.exists():
+        return
+    payload = json.loads(TPA_POLICY_PATH.read_text(encoding="utf-8"))
+    refresh = payload.get("source_authority_refresh")
+    if not isinstance(refresh, dict):
+        return
+    refresh["source_inventory_digest_sha256"] = hashlib.sha256((INDEX_ROOT / "source_inventory.json").read_bytes()).hexdigest()
+    refresh["obligation_index_digest_sha256"] = hashlib.sha256((INDEX_ROOT / "obligation_index.json").read_bytes()).hexdigest()
+    refresh["component_source_map_digest_sha256"] = hashlib.sha256((INDEX_ROOT / "component_source_map.json").read_bytes()).hexdigest()
+    if refresh_id:
+        refresh["refresh_id"] = refresh_id
+    if refreshed_at:
+        refresh["refreshed_at"] = refreshed_at
+    TPA_POLICY_PATH.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+
 def update_indexes(records: list[dict[str, Any]], obligations: list[dict[str, Any]]) -> None:
-    required_set = set(REQUIRED_SOURCES)
     inventory_rows = []
-    component_map = {bucket: [] for bucket in DOMAIN_BUCKETS}
-    for row in sorted(records, key=lambda r: r["source_id"]):
-        normalized = row["normalized_name"]
+    component_map: dict[str, dict[str, set[str]]] = {}
+    obligation_rows = []
+    for row in sorted(records, key=lambda r: r["source_document"]["source_id"]):
+        document = row["source_document"]
+        source_id = document["source_id"]
+        normalized = source_id.replace("SRC-PROJECT-DESIGN-", "").lower()
         structured_path = f"docs/source_structured/project_design_{normalized}.json"
-        completeness = row["canonical_status"] == "available"
         inventory_rows.append(
             {
-                "source_id": row["source_id"],
-                "normalized_name": normalized,
-                "title": row["title"],
-                "required": normalized in required_set,
-                "completeness_status": "complete" if completeness else "missing",
-                "upstream_repo": row["upstream_repo"],
-                "upstream_ref": row["upstream_ref"],
-                "upstream_paths": row["upstream_paths"],
-                "local_raw_paths": row["local_raw_paths"],
-                "structured_path": structured_path,
+                "source_id": source_id,
+                "title": document["title"],
+                "file_path": document["file_path"],
+                "status": document["status"],
+                "structured_artifact": structured_path,
+                "notes": document.get("notes", ""),
             }
         )
-        for tag in row["component_tags"]:
-            if tag in component_map:
-                component_map[tag].append(row["source_id"])
+        for trace_row in row["source_traceability_rows"]:
+            component_id = trace_row["component_id"]
+            component_entry = component_map.setdefault(component_id, {"source_ids": set(), "obligation_ids": set()})
+            component_entry["source_ids"].add(source_id)
+            component_entry["obligation_ids"].add(trace_row["obligation_id"])
+            obligation_rows.append(
+                {
+                    "obligation_id": trace_row["obligation_id"],
+                    "source_id": source_id,
+                    "trace_id": trace_row["trace_id"],
+                    "component_id": component_id,
+                    "category": "project_design",
+                    "description": trace_row["obligation_statement"],
+                    "layer": "governance",
+                    "required_artifacts": [],
+                    "required_gates": [],
+                    "status": "planned",
+                    "source_section": trace_row["source_section"],
+                    "duplicate_allowed": False,
+                    "duplicate_reason": "",
+                }
+            )
 
-    write_json(
-        INDEX_ROOT / "source_inventory.json",
-        {"index_name": "source_inventory", "schema_version": "2.0.0", "sources": inventory_rows},
-    )
+    write_json(INDEX_ROOT / "source_inventory.json", {"index_name": "source_inventory", "schema_version": "1.0.0", "sources": inventory_rows})
     write_json(
         INDEX_ROOT / "component_source_map.json",
         {
             "index_name": "component_source_map",
-            "schema_version": "2.0.0",
-            "domains": [{"domain": d, "source_ids": sorted(set(ids))} for d, ids in component_map.items()],
+            "schema_version": "1.0.0",
+            "components": [
+                {
+                    "component_id": cid,
+                    "source_ids": sorted(values["source_ids"]),
+                    "obligation_ids": sorted(values["obligation_ids"]),
+                }
+                for cid, values in sorted(component_map.items())
+            ],
         },
     )
     write_json(
         INDEX_ROOT / "obligation_index.json",
-        {"index_name": "obligation_index", "schema_version": "2.0.0", "obligations": sorted(obligations, key=lambda o: o["obligation_id"])},
+        {"index_name": "obligation_index", "schema_version": "1.0.0", "obligations": sorted(obligation_rows, key=lambda o: (o["obligation_id"], o["source_id"], o["trace_id"]))},
     )
 
 
 def validate_completeness(records: list[dict[str, Any]]) -> list[str]:
     errors: list[str] = []
-    by_name = {row["normalized_name"]: row for row in records}
+    by_name = {
+        row["source_document"]["source_id"].replace("SRC-PROJECT-DESIGN-", "").lower(): row
+        for row in records
+    }
     for required in REQUIRED_SOURCES:
         row = by_name.get(required)
         if row is None:
             errors.append(f"missing structured entry for required source: {required}")
             continue
-        if row["canonical_status"] != "available":
+        if row["source_document"]["status"] != "available":
             errors.append(f"required source unavailable: {required}")
             continue
-        for local_raw in row["local_raw_paths"]:
-            if not (REPO_ROOT / local_raw).exists():
-                errors.append(f"missing local raw path for required source {required}: {local_raw}")
+        if not (REPO_ROOT / row["source_document"]["file_path"]).exists():
+            errors.append(f"missing local raw path for required source {required}: {row['source_document']['file_path']}")
 
     for row in records:
-        structured_path = STRUCTURED_ROOT / f"project_design_{row['normalized_name']}.json"
+        normalized = row["source_document"]["source_id"].replace("SRC-PROJECT-DESIGN-", "").lower()
+        structured_path = STRUCTURED_ROOT / f"project_design_{normalized}.json"
         if not structured_path.exists():
             errors.append(f"missing structured file: {structured_path}")
 
     return errors
 
 
-def run_sync(upstream_root: Path, upstream_repo: str, allow_missing_required: bool, validate_only: bool) -> int:
+def run_sync(
+    upstream_root: Path,
+    upstream_repo: str,
+    allow_missing_required: bool,
+    validate_only: bool,
+    refresh_tpa_digests: bool = False,
+) -> int:
     ingestion_time = datetime.now(timezone.utc).isoformat()
     upstream_ref = _get_upstream_ref(upstream_root)
     discovered = discover_candidates(upstream_root)
@@ -418,9 +503,15 @@ def run_sync(upstream_root: Path, upstream_repo: str, allow_missing_required: bo
 
     if not validate_only:
         for row in records:
-            path = STRUCTURED_ROOT / f"project_design_{row['normalized_name']}.json"
+            normalized = row["source_document"]["source_id"].replace("SRC-PROJECT-DESIGN-", "").lower()
+            path = STRUCTURED_ROOT / f"project_design_{normalized}.json"
             write_json(path, row)
         update_indexes(records, obligations)
+        if refresh_tpa_digests:
+            refresh_tpa_scope_policy_digests(
+                refresh_id="SRC-AUTH-REFRESH-2026-04-11-SRC-01B",
+                refreshed_at="2026-04-11T00:00:00Z",
+            )
 
     failures = validate_completeness(records)
     if failures and not allow_missing_required:
@@ -445,6 +536,7 @@ def main() -> int:
     parser.add_argument("--upstream-repo", default="nicklasorte/spectrum-data-lake")
     parser.add_argument("--allow-missing-required", action="store_true")
     parser.add_argument("--validate-only", action="store_true")
+    parser.add_argument("--refresh-tpa-digests", action="store_true")
     args = parser.parse_args()
 
     if not args.upstream_root.exists():
@@ -456,6 +548,7 @@ def main() -> int:
             upstream_repo=args.upstream_repo,
             allow_missing_required=args.allow_missing_required,
             validate_only=args.validate_only,
+            refresh_tpa_digests=args.refresh_tpa_digests,
         )
     except RuntimeError as exc:
         print(str(exc))

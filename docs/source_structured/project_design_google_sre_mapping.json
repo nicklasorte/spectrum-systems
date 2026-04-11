@@ -1,29 +1,122 @@
 {
-  "canonical_status": "available",
-  "component_tags": [
-    "governance"
-  ],
-  "document_type": "project_design",
-  "file_types_present": [
-    "md"
-  ],
-  "ingested_at": "2026-04-11T11:13:23.317581+00:00",
-  "key_directives_or_obligations": [
-    "This source must preserve artifact authority.",
-    "The runtime shall fail closed when evidence is missing."
-  ],
-  "local_raw_paths": [
-    "docs/source_raw/project_design/google_sre_mapping__5ea16e49af.md"
-  ],
-  "normalized_name": "google_sre_mapping",
-  "preferred_readable_source": "docs/source_raw/project_design/google_sre_mapping__5ea16e49af.md",
+  "extraction": {
+    "architectural_invariants": [
+      {
+        "id": "INV-GOOGLE_SRE_MAPPING-01",
+        "statement": "Source obligations remain traceable to structured rows."
+      }
+    ],
+    "artifact_families": [
+      {
+        "id": "ART-GOOGLE_SRE_MAPPING-01",
+        "statement": "This source contributes to source inventory, obligation index, and component map."
+      }
+    ],
+    "authority_boundaries": [
+      {
+        "id": "AUTH-GOOGLE_SRE_MAPPING-01",
+        "statement": "Raw inputs remain authority inputs; structured rows are derived governance artifacts."
+      }
+    ],
+    "certification_requirements": [
+      {
+        "id": "CERT-GOOGLE_SRE_MAPPING-01",
+        "statement": "Downstream governance consumes refreshed source indexes and matching policy digests."
+      }
+    ],
+    "explicit_non_goals": [
+      {
+        "id": "NG-GOOGLE_SRE_MAPPING-01",
+        "statement": "This ingestion slice does not implement roadmap compilation or execution automation."
+      }
+    ],
+    "fail_closed_requirements": [
+      {
+        "id": "FC-GOOGLE_SRE_MAPPING-01",
+        "statement": "Completeness validation fails closed for missing required sources."
+      }
+    ],
+    "failure_modes": [
+      {
+        "id": "FAIL-GOOGLE_SRE_MAPPING-01",
+        "statement": "Missing required source evidence blocks governance progression."
+      }
+    ],
+    "key_components": [
+      {
+        "id": "KEY-GOOGLE_SRE_MAPPING-01",
+        "statement": "# Google Sre Mapping This source must preserve artifact authority."
+      }
+    ],
+    "observability_requirements": [
+      {
+        "id": "OBS-GOOGLE_SRE_MAPPING-01",
+        "statement": "Inventory/index entries must expose source availability and obligation linkage."
+      }
+    ],
+    "replayability_requirements": [
+      {
+        "id": "REPLAY-GOOGLE_SRE_MAPPING-01",
+        "statement": "Repeat sync over unchanged inputs produces stable raw filenames and deterministic indexes."
+      }
+    ],
+    "required_schemas": [
+      {
+        "id": "SCHEMA-GOOGLE_SRE_MAPPING-01",
+        "statement": "Structured source artifact must satisfy source_design_extraction schema."
+      }
+    ],
+    "roadmap_implications": [
+      {
+        "id": "RM-GOOGLE_SRE_MAPPING-01",
+        "statement": "Roadmap planning must reference refreshed source authority indexes."
+      }
+    ],
+    "sequencing_constraints": [
+      {
+        "id": "SEQ-GOOGLE_SRE_MAPPING-01",
+        "statement": "Index and digest refresh must run after structured-source sync."
+      }
+    ],
+    "sre_alignment": [
+      {
+        "id": "SRE-GOOGLE_SRE_MAPPING-01",
+        "statement": "Fail-closed authority checks reduce silent drift and stale-policy risk."
+      }
+    ]
+  },
   "schema_version": "1.0.0",
-  "source_id": "SRC-PROJECT-DESIGN-GOOGLE_SRE_MAPPING",
-  "summary": "# Google Sre Mapping This source must preserve artifact authority.",
-  "title": "Google Sre Mapping",
-  "upstream_paths": [
-    "docs/architecture/project_design/google_sre_mapping.md"
-  ],
-  "upstream_ref": null,
-  "upstream_repo": "nicklasorte/spectrum-data-lake"
+  "source_document": {
+    "file_path": "docs/source_raw/project_design/google_sre_mapping__8ba54bdc61.pdf",
+    "notes": "project_design sync from nicklasorte/spectrum-data-lake; upstream_ref=unavailable; upstream_paths=['docs/architecture/project_design/google_sre_mapping.md', 'raw/strategic_sources/project_design/google_sre_mapping.pdf']; local_raw_paths=['docs/source_raw/project_design/google_sre_mapping__5ea16e49af.md', 'docs/source_raw/project_design/google_sre_mapping__8ba54bdc61.pdf']; preferred_readable_source=docs/source_raw/project_design/google_sre_mapping__5ea16e49af.md; file_types_present=['md', 'pdf']; ingested_at=2026-04-11T15:19:08.451359+00:00; summary=# Google Sre Mapping This source must preserve artifact authority.",
+    "source_id": "SRC-PROJECT-DESIGN-GOOGLE_SRE_MAPPING",
+    "status": "available",
+    "title": "Google Sre Mapping"
+  },
+  "source_traceability_rows": [
+    {
+      "component_id": "COMP-PROJECT-DESIGN-CONTROL",
+      "obligation_id": "OBL-GOOGLE_SRE_MAPPING-01",
+      "obligation_statement": "This source must preserve artifact authority.",
+      "source_excerpt": "This source must preserve artifact authority.",
+      "source_section": "first_pass_extraction",
+      "trace_id": "TRACE-GOOGLE_SRE_MAPPING-001"
+    },
+    {
+      "component_id": "COMP-PROJECT-DESIGN-CONTROL",
+      "obligation_id": "OBL-GOOGLE_SRE_MAPPING-02",
+      "obligation_statement": "The runtime shall fail closed when evidence is missing.",
+      "source_excerpt": "The runtime shall fail closed when evidence is missing.",
+      "source_section": "first_pass_extraction",
+      "trace_id": "TRACE-GOOGLE_SRE_MAPPING-002"
+    },
+    {
+      "component_id": "COMP-PROJECT-DESIGN-CONTROL",
+      "obligation_id": "OBL-GOOGLE_SRE_MAPPING-03",
+      "obligation_statement": "google_sre_mapping PDF source must govern control decisions.",
+      "source_excerpt": "google_sre_mapping PDF source must govern control decisions.",
+      "source_section": "first_pass_extraction",
+      "trace_id": "TRACE-GOOGLE_SRE_MAPPING-003"
+    }
+  ]
 }

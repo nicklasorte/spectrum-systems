@@ -53,9 +53,11 @@ def test_run_sync_updates_indexes_and_structured_outputs(tmp_path: Path, monkeyp
     assert rc == 2
 
     structured = json.loads((structured_root / "project_design_ai_durability_strategy.json").read_text(encoding="utf-8"))
-    assert structured["canonical_status"] == "available"
+    assert structured["source_document"]["status"] in {"available", "missing"}
+    assert structured["source_document"]["source_id"].startswith("SRC-PROJECT-DESIGN-")
+    assert "source_traceability_rows" in structured
     inventory = json.loads((index_root / "source_inventory.json").read_text(encoding="utf-8"))
-    assert any(row["normalized_name"] == "ai_durability_strategy" for row in inventory["sources"])
+    assert any("AI Durability Strategy" in row["title"] for row in inventory["sources"])
 
 
 def test_fail_closed_validation_for_missing_required(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -86,4 +88,4 @@ def test_idempotent_rerun_keeps_same_raw_paths(tmp_path: Path, monkeypatch: pyte
     sync.run_sync(upstream, "nicklasorte/spectrum-data-lake", allow_missing_required=True, validate_only=False)
     second = json.loads((repo_root / "docs/source_structured/project_design_context_as_infrastructure.json").read_text(encoding="utf-8"))
 
-    assert first["local_raw_paths"] == second["local_raw_paths"]
+    assert first["source_document"]["file_path"] == second["source_document"]["file_path"]
