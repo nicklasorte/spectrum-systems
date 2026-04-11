@@ -1,0 +1,28 @@
+{
+  "artifact_type": "recommendation_error_pattern_registry",
+  "batch_id": "RQ-NEXT-24-01",
+  "generated_at": "2026-04-11T13:16:36Z",
+  "window": "cycles_03_to_06",
+  "patterns": [
+    {
+      "class": "artifact_basis_missing",
+      "count": 2
+    },
+    {
+      "class": "confidence_overstated",
+      "count": 1
+    },
+    {
+      "class": "drift_unaccounted",
+      "count": 1
+    },
+    {
+      "class": "timing_window_shift",
+      "count": 1
+    }
+  ],
+  "recurring_threshold": 2,
+  "recurring_classes": [
+    "artifact_basis_missing"
+  ]
+}

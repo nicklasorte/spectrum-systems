@@ -1,0 +1,14 @@
+{
+  "artifact_type": "counterfactual_recommendation_evaluator",
+  "batch_id": "RQ-NEXT-24-01",
+  "generated_at": "2026-04-11T13:16:36Z",
+  "evaluations": [
+    {
+      "scenario_id": "REPLAY-002",
+      "actual_recommendation": "hold",
+      "counterfactual": "canary",
+      "counterfactual_outcome": "increased_failure_risk"
+    }
+  ],
+  "conclusion": "actual recommendation remained safer under evaluated alternatives"
+}

@@ -1,0 +1,44 @@
+{
+  "artifact_type": "recommendation_failure_taxonomy",
+  "batch_id": "RQ-NEXT-24-01",
+  "generated_at": "2026-04-11T13:16:36Z",
+  "taxonomy_version": "1.0.0",
+  "entries": [
+    {
+      "id": "F-001",
+      "class": "artifact_basis_missing",
+      "severity": "critical",
+      "verdict": "wrong"
+    },
+    {
+      "id": "F-002",
+      "class": "confidence_overstated",
+      "severity": "major",
+      "verdict": "partially_correct"
+    },
+    {
+      "id": "F-003",
+      "class": "drift_unaccounted",
+      "severity": "major",
+      "verdict": "wrong"
+    },
+    {
+      "id": "F-004",
+      "class": "artifact_basis_missing",
+      "severity": "critical",
+      "verdict": "wrong"
+    },
+    {
+      "id": "F-005",
+      "class": "timing_window_shift",
+      "severity": "minor",
+      "verdict": "partially_correct"
+    }
+  ],
+  "classes": [
+    "artifact_basis_missing",
+    "confidence_overstated",
+    "drift_unaccounted",
+    "timing_window_shift"
+  ]
+}
