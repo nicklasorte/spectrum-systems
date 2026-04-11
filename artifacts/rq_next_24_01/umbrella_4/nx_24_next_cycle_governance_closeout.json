@@ -1,0 +1,18 @@
+{
+  "artifact_type": "next_cycle_governance_closeout",
+  "batch_id": "RQ-NEXT-24-01",
+  "generated_at": "2026-04-11T13:16:36Z",
+  "allowed_recommendations": [
+    "tune",
+    "validate",
+    "canary",
+    "hold"
+  ],
+  "final_recommendation": "validate",
+  "rationale": "recommendation quality improved but remains constrained by short historical window",
+  "artifact_backing": [
+    "artifacts/rq_next_24_01/umbrella_1/nx_06_recommendation_learning_summary.json",
+    "artifacts/rq_next_24_01/umbrella_3/nx_18_simulation_outcome_summary.json",
+    "artifacts/rq_next_24_01/umbrella_4/nx_21_promotion_readiness_trend_artifact.json"
+  ]
+}

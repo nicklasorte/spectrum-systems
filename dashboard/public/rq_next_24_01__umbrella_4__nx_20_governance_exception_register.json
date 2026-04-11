@@ -1,0 +1,13 @@
+{
+  "artifact_type": "governance_exception_register",
+  "batch_id": "RQ-NEXT-24-01",
+  "generated_at": "2026-04-11T13:16:36Z",
+  "exceptions": [
+    {
+      "exception_id": "EX-001",
+      "reason": "manual hold applied while confidence policy tightened",
+      "resolved": true,
+      "resolution": "captured in override and closure artifacts"
+    }
+  ]
+}

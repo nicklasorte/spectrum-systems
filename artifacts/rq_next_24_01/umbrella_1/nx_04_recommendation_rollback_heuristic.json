@@ -1,0 +1,17 @@
+{
+  "artifact_type": "recommendation_rollback_heuristic",
+  "batch_id": "RQ-NEXT-24-01",
+  "generated_at": "2026-04-11T13:16:36Z",
+  "trigger_conditions": {
+    "critical_failure_rate_ge": 0.3,
+    "calibration_error_abs_ge": 0.1,
+    "recurring_failure_classes_ge": 1
+  },
+  "current_signals": {
+    "critical_failure_rate": 0.4,
+    "calibration_error_abs": 0.53,
+    "recurring_failure_classes": 1
+  },
+  "rollback_state": "engaged",
+  "fallback_profile": "simple_artifact_weighted_recommendation"
+}

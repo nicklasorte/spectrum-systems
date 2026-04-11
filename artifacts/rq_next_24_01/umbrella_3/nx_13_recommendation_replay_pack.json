@@ -1,0 +1,11 @@
+{
+  "artifact_type": "recommendation_replay_pack",
+  "batch_id": "RQ-NEXT-24-01",
+  "generated_at": "2026-04-11T13:16:36Z",
+  "scenario_ids": [
+    "REPLAY-001",
+    "REPLAY-002",
+    "REPLAY-003"
+  ],
+  "scenario_basis": "historical recommendation cases with governed artifacts"
+}

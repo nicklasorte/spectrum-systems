@@ -1,0 +1,16 @@
+{
+  "artifact_type": "promotion_readiness_trend_artifact",
+  "batch_id": "RQ-NEXT-24-01",
+  "generated_at": "2026-04-11T13:16:36Z",
+  "trend_window": [
+    "cycle_04",
+    "cycle_05",
+    "cycle_06"
+  ],
+  "trend": "improving",
+  "signal": {
+    "accuracy": "up",
+    "calibration_honesty": "up",
+    "operator_divergence": "down"
+  }
+}

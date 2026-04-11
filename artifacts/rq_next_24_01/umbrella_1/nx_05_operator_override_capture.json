@@ -1,0 +1,14 @@
+{
+  "artifact_type": "operator_override_capture",
+  "batch_id": "RQ-NEXT-24-01",
+  "generated_at": "2026-04-11T13:16:36Z",
+  "overrides": [
+    {
+      "override_id": "OVR-001",
+      "recommendation_id": "REC-006",
+      "operator_action": "hold",
+      "reason": "source artifact missing admissibility proof",
+      "captured_as_learning_signal": true
+    }
+  ]
+}
