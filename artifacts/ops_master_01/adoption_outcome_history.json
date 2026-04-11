@@ -1,0 +1,14 @@
+{
+  "artifact_type": "adoption_outcome_history",
+  "batch_id": "OPS-MASTER-01",
+  "generated_at": "2026-04-11T01:01:56Z",
+  "adoption_events": [
+    {
+      "change_id": "ADOPT-001",
+      "result": "retained",
+      "impacted_patterns": [
+        "PATTERN-001"
+      ]
+    }
+  ]
+}

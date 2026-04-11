@@ -1151,6 +1151,357 @@
       ]
     },
     {
+      "slice_id": "OPS-CONST-01",
+      "what_it_does": "Implements governed OPS-MASTER-01 behavior for execution slice OPS-CONST-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance for operational system hardening.",
+      "execution_type": "validation",
+      "commands": [
+        "python scripts/validate_system_registry_boundaries.py"
+      ],
+      "success_criteria": [
+        "command exits with code 0",
+        "required artifacts remain schema-valid and deterministic"
+      ],
+      "implementation_notes": "Behavior exercised: OPS-CONST-01 runs `python scripts/validate_system_registry_boundaries.py` for its bounded operational seam. Artifact/module/flow touched: artifacts/ops_master_01 and dashboard state artifacts are retrieved through deterministic file-backed checks. Fail-closed condition: missing required artifact, invalid schema, broken lineage, or authority misuse stops progression with non-zero execution. Expected outcome: deterministic artifact generation and validation complete before downstream roadmap progression.",
+      "likely_entrypoints": [
+        "scripts",
+        "artifacts",
+        "docs/governance-reports"
+      ],
+      "likely_tests": [
+        "tests/test_ops_master_01.py",
+        "tests/test_generate_repo_dashboard_snapshot.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "no_pass_through_layers"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "OPS-CONST-02",
+      "what_it_does": "Implements governed OPS-MASTER-01 behavior for execution slice OPS-CONST-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance for operational system hardening.",
+      "execution_type": "governance",
+      "commands": [
+        "python scripts/run_next_roadmap_batch.py --help"
+      ],
+      "success_criteria": [
+        "command exits with code 0",
+        "required artifacts remain schema-valid and deterministic"
+      ],
+      "implementation_notes": "Behavior exercised: OPS-CONST-02 runs `python scripts/run_next_roadmap_batch.py --help` for its bounded operational seam. Artifact/module/flow touched: artifacts/ops_master_01 and dashboard state artifacts are retrieved through deterministic file-backed checks. Fail-closed condition: missing required artifact, invalid schema, broken lineage, or authority misuse stops progression with non-zero execution. Expected outcome: deterministic artifact generation and validation complete before downstream roadmap progression.",
+      "likely_entrypoints": [
+        "scripts",
+        "artifacts",
+        "docs/governance-reports"
+      ],
+      "likely_tests": [
+        "tests/test_ops_master_01.py",
+        "tests/test_generate_repo_dashboard_snapshot.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "no_pass_through_layers"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "OPS-HARD-01",
+      "what_it_does": "Implements governed OPS-MASTER-01 behavior for execution slice OPS-HARD-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance for operational system hardening.",
+      "execution_type": "code",
+      "commands": [
+        "python -c \"import json; p=json.load(open('artifacts/ops_master_01/aex_evidence_completeness_enforcement.json')); assert p['pass'] is True\""
+      ],
+      "success_criteria": [
+        "command exits with code 0",
+        "required artifacts remain schema-valid and deterministic"
+      ],
+      "implementation_notes": "Behavior exercised: OPS-HARD-01 runs `python -c \"import json; p=json.load(open('artifacts/ops_master_01/aex_evidence_completeness_enforcement.json')); assert p['pass'] is True\"` for its bounded operational seam. Artifact/module/flow touched: artifacts/ops_master_01 and dashboard state artifacts are retrieved through deterministic file-backed checks. Fail-closed condition: missing required artifact, invalid schema, broken lineage, or authority misuse stops progression with non-zero execution. Expected outcome: deterministic artifact generation and validation complete before downstream roadmap progression.",
+      "likely_entrypoints": [
+        "scripts",
+        "artifacts",
+        "docs/governance-reports"
+      ],
+      "likely_tests": [
+        "tests/test_ops_master_01.py",
+        "tests/test_generate_repo_dashboard_snapshot.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "no_pass_through_layers"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "OPS-HARD-02",
+      "what_it_does": "Implements governed OPS-MASTER-01 behavior for execution slice OPS-HARD-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance for operational system hardening.",
+      "execution_type": "validation",
+      "commands": [
+        "python -c \"import json; p=json.load(open('artifacts/ops_master_01/first_pass_quality_artifact.json')); assert 'first_pass_rate' in p\"",
+        "pytest tests/test_ops_master_01.py -q"
+      ],
+      "success_criteria": [
+        "command exits with code 0",
+        "required artifacts remain schema-valid and deterministic"
+      ],
+      "implementation_notes": "Behavior exercised: OPS-HARD-02 runs `python -c \"import json; p=json.load(open('artifacts/ops_master_01/first_pass_quality_artifact.json')); assert 'first_pass_rate' in p\"` for its bounded operational seam. Artifact/module/flow touched: artifacts/ops_master_01 and dashboard state artifacts are retrieved through deterministic file-backed checks. Fail-closed condition: missing required artifact, invalid schema, broken lineage, or authority misuse stops progression with non-zero execution. Expected outcome: deterministic artifact generation and validation complete before downstream roadmap progression.",
+      "likely_entrypoints": [
+        "scripts",
+        "artifacts",
+        "docs/governance-reports"
+      ],
+      "likely_tests": [
+        "tests/test_ops_master_01.py",
+        "tests/test_generate_repo_dashboard_snapshot.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "no_pass_through_layers"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "OPS-MEM-01",
+      "what_it_does": "Implements governed OPS-MASTER-01 behavior for execution slice OPS-MEM-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance for operational system hardening.",
+      "execution_type": "code",
+      "commands": [
+        "python -c \"import json; p=json.load(open('artifacts/ops_master_01/repeated_failure_memory_registry.json')); assert len(p['patterns'])>=1\""
+      ],
+      "success_criteria": [
+        "command exits with code 0",
+        "required artifacts remain schema-valid and deterministic"
+      ],
+      "implementation_notes": "Behavior exercised: OPS-MEM-01 runs `python -c \"import json; p=json.load(open('artifacts/ops_master_01/repeated_failure_memory_registry.json')); assert len(p['patterns'])>=1\"` for its bounded operational seam. Artifact/module/flow touched: artifacts/ops_master_01 and dashboard state artifacts are retrieved through deterministic file-backed checks. Fail-closed condition: missing required artifact, invalid schema, broken lineage, or authority misuse stops progression with non-zero execution. Expected outcome: deterministic artifact generation and validation complete before downstream roadmap progression.",
+      "likely_entrypoints": [
+        "scripts",
+        "artifacts",
+        "docs/governance-reports"
+      ],
+      "likely_tests": [
+        "tests/test_ops_master_01.py",
+        "tests/test_generate_repo_dashboard_snapshot.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "no_pass_through_layers"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "OPS-MEM-02",
+      "what_it_does": "Implements governed OPS-MASTER-01 behavior for execution slice OPS-MEM-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance for operational system hardening.",
+      "execution_type": "code",
+      "commands": [
+        "python -c \"import json; p=json.load(open('artifacts/ops_master_01/deferred_return_tracker.json')); assert 'tracked_items' in p\""
+      ],
+      "success_criteria": [
+        "command exits with code 0",
+        "required artifacts remain schema-valid and deterministic"
+      ],
+      "implementation_notes": "Behavior exercised: OPS-MEM-02 runs `python -c \"import json; p=json.load(open('artifacts/ops_master_01/deferred_return_tracker.json')); assert 'tracked_items' in p\"` for its bounded operational seam. Artifact/module/flow touched: artifacts/ops_master_01 and dashboard state artifacts are retrieved through deterministic file-backed checks. Fail-closed condition: missing required artifact, invalid schema, broken lineage, or authority misuse stops progression with non-zero execution. Expected outcome: deterministic artifact generation and validation complete before downstream roadmap progression.",
+      "likely_entrypoints": [
+        "scripts",
+        "artifacts",
+        "docs/governance-reports"
+      ],
+      "likely_tests": [
+        "tests/test_ops_master_01.py",
+        "tests/test_generate_repo_dashboard_snapshot.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "no_pass_through_layers"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "OPS-STATE-01",
+      "what_it_does": "Implements governed OPS-MASTER-01 behavior for execution slice OPS-STATE-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance for operational system hardening.",
+      "execution_type": "code",
+      "commands": [
+        "python -c \"import json; p=json.load(open('artifacts/ops_master_01/canonical_roadmap_state_artifact.json')); assert p['active_batch']=='OPS-MASTER-01'\""
+      ],
+      "success_criteria": [
+        "command exits with code 0",
+        "required artifacts remain schema-valid and deterministic"
+      ],
+      "implementation_notes": "Behavior exercised: OPS-STATE-01 runs `python -c \"import json; p=json.load(open('artifacts/ops_master_01/canonical_roadmap_state_artifact.json')); assert p['active_batch']=='OPS-MASTER-01'\"` for its bounded operational seam. Artifact/module/flow touched: artifacts/ops_master_01 and dashboard state artifacts are retrieved through deterministic file-backed checks. Fail-closed condition: missing required artifact, invalid schema, broken lineage, or authority misuse stops progression with non-zero execution. Expected outcome: deterministic artifact generation and validation complete before downstream roadmap progression.",
+      "likely_entrypoints": [
+        "scripts",
+        "artifacts",
+        "docs/governance-reports"
+      ],
+      "likely_tests": [
+        "tests/test_ops_master_01.py",
+        "tests/test_generate_repo_dashboard_snapshot.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "no_pass_through_layers"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "OPS-STATE-02",
+      "what_it_does": "Implements governed OPS-MASTER-01 behavior for execution slice OPS-STATE-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance for operational system hardening.",
+      "execution_type": "code",
+      "commands": [
+        "python -c \"import json; p=json.load(open('artifacts/ops_master_01/roadmap_delta_artifact.json')); assert 'changes' in p\""
+      ],
+      "success_criteria": [
+        "command exits with code 0",
+        "required artifacts remain schema-valid and deterministic"
+      ],
+      "implementation_notes": "Behavior exercised: OPS-STATE-02 runs `python -c \"import json; p=json.load(open('artifacts/ops_master_01/roadmap_delta_artifact.json')); assert 'changes' in p\"` for its bounded operational seam. Artifact/module/flow touched: artifacts/ops_master_01 and dashboard state artifacts are retrieved through deterministic file-backed checks. Fail-closed condition: missing required artifact, invalid schema, broken lineage, or authority misuse stops progression with non-zero execution. Expected outcome: deterministic artifact generation and validation complete before downstream roadmap progression.",
+      "likely_entrypoints": [
+        "scripts",
+        "artifacts",
+        "docs/governance-reports"
+      ],
+      "likely_tests": [
+        "tests/test_ops_master_01.py",
+        "tests/test_generate_repo_dashboard_snapshot.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "no_pass_through_layers"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "OPS-VIS-01",
+      "what_it_does": "Implements governed OPS-MASTER-01 behavior for execution slice OPS-VIS-01.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance for operational system hardening.",
+      "execution_type": "code",
+      "commands": [
+        "python -c \"import json; p=json.load(open('artifacts/ops_master_01/current_run_state_record.json')); assert p['artifact_type']=='current_run_state_record'\""
+      ],
+      "success_criteria": [
+        "command exits with code 0",
+        "required artifacts remain schema-valid and deterministic"
+      ],
+      "implementation_notes": "Behavior exercised: OPS-VIS-01 runs `python -c \"import json; p=json.load(open('artifacts/ops_master_01/current_run_state_record.json')); assert p['artifact_type']=='current_run_state_record'\"` for its bounded operational seam. Artifact/module/flow touched: artifacts/ops_master_01 and dashboard state artifacts are retrieved through deterministic file-backed checks. Fail-closed condition: missing required artifact, invalid schema, broken lineage, or authority misuse stops progression with non-zero execution. Expected outcome: deterministic artifact generation and validation complete before downstream roadmap progression.",
+      "likely_entrypoints": [
+        "scripts",
+        "artifacts",
+        "docs/governance-reports"
+      ],
+      "likely_tests": [
+        "tests/test_ops_master_01.py",
+        "tests/test_generate_repo_dashboard_snapshot.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "no_pass_through_layers"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
+      "slice_id": "OPS-VIS-02",
+      "what_it_does": "Implements governed OPS-MASTER-01 behavior for execution slice OPS-VIS-02.",
+      "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",
+      "why_it_matters": "Preserves artifact-first execution and fail-closed governance for operational system hardening.",
+      "execution_type": "code",
+      "commands": [
+        "python -c \"import json; p=json.load(open('artifacts/dashboard/repo_snapshot.json')); assert 'root_counts' in p\""
+      ],
+      "success_criteria": [
+        "command exits with code 0",
+        "required artifacts remain schema-valid and deterministic"
+      ],
+      "implementation_notes": "Behavior exercised: OPS-VIS-02 runs `python -c \"import json; p=json.load(open('artifacts/dashboard/repo_snapshot.json')); assert 'root_counts' in p\"` for its bounded operational seam. Artifact/module/flow touched: artifacts/ops_master_01 and dashboard state artifacts are retrieved through deterministic file-backed checks. Fail-closed condition: missing required artifact, invalid schema, broken lineage, or authority misuse stops progression with non-zero execution. Expected outcome: deterministic artifact generation and validation complete before downstream roadmap progression.",
+      "likely_entrypoints": [
+        "scripts",
+        "artifacts",
+        "docs/governance-reports"
+      ],
+      "likely_tests": [
+        "tests/test_ops_master_01.py",
+        "tests/test_generate_repo_dashboard_snapshot.py"
+      ],
+      "invariants": [
+        "fail_closed_on_missing_artifacts",
+        "deterministic_execution_order",
+        "no_pass_through_layers"
+      ],
+      "status": "planned",
+      "source_basis": [
+        "roadmap",
+        "repo",
+        "inferred"
+      ]
+    },
+    {
       "slice_id": "PFG-01",
       "what_it_does": "Implements governed PFG control behavior for execution slice PFG-01.",
       "purpose": "Provide deterministic, machine-consumable execution intent without relying on prompt prose.",

@@ -20,6 +20,7 @@ REQUIRED_TOP_LEVEL_KEYS = {
     "constitutional_center",
     "runtime_hotspots",
     "operational_signals",
+    "key_state",
 }
 
 REQUIRED_ROOT_COUNT_KEYS = {

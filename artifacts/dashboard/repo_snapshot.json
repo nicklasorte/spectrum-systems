@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-04-11T00:20:42Z",
+  "generated_at": "2026-04-11T01:01:57Z",
   "repo_name": "spectrum-systems",
   "root_counts": {
-    "files_total": 3629,
+    "files_total": 3666,
     "runtime_modules": 151,
-    "tests": 344,
+    "tests": 345,
     "contracts_total": 758,
     "schemas": 410,
     "examples": 348,
-    "docs": 983,
+    "docs": 991,
     "run_artifacts": 151
   },
   "core_areas": [
@@ -99,12 +99,12 @@
     {
       "title": "Evidence and review density",
       "status": "Strong",
-      "detail": "Review artifacts detected: 722 markdown files."
+      "detail": "Review artifacts detected: 730 markdown files."
     },
     {
       "title": "Roadmap sprawl risk",
       "status": "Watch",
-      "detail": "Docs-to-runtime ratio: 6.51."
+      "detail": "Docs-to-runtime ratio: 6.56."
     },
     {
       "title": "Runtime concentration",
@@ -116,5 +116,56 @@
       "status": "Strong",
       "detail": "High-signal constitutional docs listed: 4."
     }
-  ]
+  ],
+  "key_state": {
+    "current_run_state_record": {
+      "artifact_type": "current_run_state_record",
+      "batch_id": "OPS-MASTER-01",
+      "generated_at": "2026-04-11T01:01:56Z",
+      "last_run_id": "OPS-MASTER-01",
+      "status": "completed",
+      "outcomes": [
+        "snapshot_generated",
+        "state_artifacts_emitted",
+        "fail_closed_guards_active"
+      ]
+    },
+    "current_bottleneck_record": {
+      "artifact_type": "current_bottleneck_record",
+      "batch_id": "OPS-MASTER-01",
+      "generated_at": "2026-04-11T01:01:56Z",
+      "bottleneck_name": "repair_loop_latency",
+      "evidence": [
+        "first_pass_quality_artifact.first_pass_rate=0.71",
+        "repair_loop_reduction_tracker.delta=-0.19"
+      ],
+      "impacted_layers": [
+        "SHIFT_LEFT_HARDENING_LAYER",
+        "OPERATIONAL_MEMORY_LAYER"
+      ]
+    },
+    "hard_gate_status_record": {
+      "artifact_type": "hard_gate_status_record",
+      "batch_id": "OPS-MASTER-01",
+      "generated_at": "2026-04-11T01:01:56Z",
+      "required_artifacts": [
+        "current_run_state_record",
+        "pre_pqx_contract_readiness_artifact",
+        "canonical_roadmap_state_artifact",
+        "constitutional_drift_checker_result"
+      ],
+      "signals": [
+        "schema_valid",
+        "lineage_valid",
+        "authority_valid"
+      ],
+      "pass_fail": "pass",
+      "falsification_conditions": [
+        "missing_required_artifact",
+        "invalid_schema",
+        "broken_lineage",
+        "authority_misuse"
+      ]
+    }
+  }
 }

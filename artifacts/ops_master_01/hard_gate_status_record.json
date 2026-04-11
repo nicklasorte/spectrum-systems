@@ -1,0 +1,23 @@
+{
+  "artifact_type": "hard_gate_status_record",
+  "batch_id": "OPS-MASTER-01",
+  "generated_at": "2026-04-11T01:01:56Z",
+  "required_artifacts": [
+    "current_run_state_record",
+    "pre_pqx_contract_readiness_artifact",
+    "canonical_roadmap_state_artifact",
+    "constitutional_drift_checker_result"
+  ],
+  "signals": [
+    "schema_valid",
+    "lineage_valid",
+    "authority_valid"
+  ],
+  "pass_fail": "pass",
+  "falsification_conditions": [
+    "missing_required_artifact",
+    "invalid_schema",
+    "broken_lineage",
+    "authority_misuse"
+  ]
+}

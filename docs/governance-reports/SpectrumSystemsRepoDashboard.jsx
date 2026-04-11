@@ -21,6 +21,7 @@ const exampleSnapshot = {
   ],
   runtime_hotspots: [],
   operational_signals: [],
+  key_state: {},
 };
 
 const SNAPSHOT_SOURCE = {
@@ -98,6 +99,9 @@ export function SpectrumSystemsRepoDashboard() {
   const rootCountEntries = parsedSnapshot?.root_counts
     ? Object.entries(parsedSnapshot.root_counts)
     : [];
+  const keyStateEntries = parsedSnapshot?.key_state
+    ? Object.entries(parsedSnapshot.key_state)
+    : [];
 
   return (
     <section>
@@ -130,6 +134,19 @@ export function SpectrumSystemsRepoDashboard() {
               </li>
             ))}
           </ul>
+
+          {keyStateEntries.length > 0 ? (
+            <>
+              <h4>Operational key state</h4>
+              <ul>
+                {keyStateEntries.map(([key, value]) => (
+                  <li key={key}>
+                    <strong>{key}:</strong> {JSON.stringify(value)}
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
         </>
       ) : null}
     </section>

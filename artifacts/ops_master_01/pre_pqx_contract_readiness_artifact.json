@@ -1,0 +1,12 @@
+{
+  "artifact_type": "pre_pqx_contract_readiness_artifact",
+  "batch_id": "OPS-MASTER-01",
+  "generated_at": "2026-04-11T01:01:56Z",
+  "required_contracts": [
+    "codex_pqx_task_wrapper",
+    "tpa_slice_artifact",
+    "top_level_conductor_run_artifact"
+  ],
+  "missing_contracts": [],
+  "ready": true
+}

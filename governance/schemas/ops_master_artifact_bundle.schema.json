@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum.systems/schemas/ops_master_artifact_bundle.schema.json",
+  "title": "OPS Master 01 Artifact Bundle",
+  "type": "object",
+  "required": ["batch_id", "generated_at", "artifacts"],
+  "properties": {
+    "batch_id": {"const": "OPS-MASTER-01"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "artifacts": {
+      "type": "array",
+      "minItems": 20,
+      "items": {
+        "type": "object",
+        "required": ["artifact_type", "umbrella", "path", "payload"],
+        "properties": {
+          "artifact_type": {"type": "string", "minLength": 1},
+          "umbrella": {"type": "string", "minLength": 1},
+          "path": {"type": "string", "minLength": 1},
+          "payload": {"type": "object"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

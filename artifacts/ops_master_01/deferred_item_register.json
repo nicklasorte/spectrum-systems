@@ -1,0 +1,16 @@
+{
+  "artifact_type": "deferred_item_register",
+  "batch_id": "OPS-MASTER-01",
+  "generated_at": "2026-04-11T01:01:56Z",
+  "items": [
+    {
+      "item_id": "DEFER-OPS-001",
+      "reason": "await two-cycle stability on lineage completeness",
+      "required_evidence": [
+        "tpa_lineage_completeness_enforcement.pass_rate>=0.98",
+        "roadmap_delta_artifact.net_unblocked_items>=2"
+      ],
+      "return_condition": "two consecutive runs meet all evidence thresholds"
+    }
+  ]
+}

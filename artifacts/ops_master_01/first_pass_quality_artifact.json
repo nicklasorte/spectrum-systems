@@ -1,0 +1,11 @@
+{
+  "artifact_type": "first_pass_quality_artifact",
+  "batch_id": "OPS-MASTER-01",
+  "generated_at": "2026-04-11T01:01:56Z",
+  "first_pass_rate": 0.71,
+  "failure_types": {
+    "schema_missing_field": 2,
+    "lineage_gap": 1,
+    "authority_scope_error": 0
+  }
+}
