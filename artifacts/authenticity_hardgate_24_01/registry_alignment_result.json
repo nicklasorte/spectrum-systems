@@ -1,0 +1,30 @@
+{
+  "artifact_type": "registry_alignment_result",
+  "batch_id": "AUTHENTICITY-HARDGATE-24-01",
+  "generated_at": "2026-04-11T18:59:57Z",
+  "authorities": [
+    "README.md",
+    "docs/architecture/system_registry.md",
+    "docs/architecture/strategy-control.md",
+    "docs/architecture/foundation_pqx_eval_control.md",
+    "docs/roadmaps/system_roadmap.md",
+    "docs/roadmaps/roadmap_authority.md"
+  ],
+  "cross_checks": {
+    "1_each_slice_maps_to_exactly_one_canonical_owner": "pass",
+    "2_no_preparatory_artifact_treated_as_authority": "pass",
+    "3_aex_admission_and_entrypoint_enforcement_only": "pass",
+    "4_tlc_orchestration_handoff_only": "pass",
+    "5_tpa_policy_scope_gating_only": "pass",
+    "6_pqx_execution_edge_validation_classification_only": "pass",
+    "7_rqx_review_loop_verification_only": "pass",
+    "8_fre_repair_planning_only": "pass",
+    "9_ril_interpretation_only": "pass",
+    "10_sel_enforcement_blocking_only": "pass",
+    "11_prg_recommend_scoring_closeout_only": "pass",
+    "12_cde_readiness_certification_promotion_authority_only": "pass",
+    "13_map_projection_only": "pass",
+    "14_repo_mutating_lineage_aex_tlc_tpa_pqx_preserved": "pass",
+    "15_batch_umbrella_decisions_not_used_as_closure_authority": "pass"
+  }
+}

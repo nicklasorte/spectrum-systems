@@ -1,0 +1,8 @@
+{
+  "artifact_type": "replay_safe_repair_candidate_bundle",
+  "slice_id": "AH-16",
+  "owner": "FRE",
+  "generated_at": "2026-04-11T18:59:57Z",
+  "repair_planning_only": true,
+  "lineage_and_replay_constraints_preserved": true
+}

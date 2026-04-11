@@ -1,0 +1,8 @@
+{
+  "artifact_type": "direct_caller_bypass_enforcement_result",
+  "slice_id": "AH-09",
+  "owner": "SEL",
+  "generated_at": "2026-04-11T18:59:57Z",
+  "fail_closed": true,
+  "legacy_direct_caller_repo_write": "blocked"
+}

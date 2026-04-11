@@ -1,0 +1,48 @@
+{
+  "artifact_type": "authenticity_hardgate_artifact_trace",
+  "batch_id": "AUTHENTICITY-HARDGATE-24-01",
+  "generated_at": "2026-04-11T18:59:57Z",
+  "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
+  "checkpoint_progression": "stopped_on_first_failure_else_continue",
+  "umbrella_sequence": [
+    "UMBRELLA-1",
+    "UMBRELLA-2",
+    "UMBRELLA-3",
+    "UMBRELLA-4"
+  ],
+  "umbrella_checkpoint_status": {
+    "UMBRELLA-1": "pass",
+    "UMBRELLA-2": "pass",
+    "UMBRELLA-3": "pass",
+    "UMBRELLA-4": "pass"
+  },
+  "artifact_paths": [
+    "artifacts/authenticity_hardgate_24_01/umbrella_1/admission_authenticity_envelope_spec.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_1/attested_build_admission_record.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_1/attested_normalized_execution_request.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_1/attested_tlc_handoff_record.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_1/repo_write_authenticity_validation_result.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_1/forged_lineage_enforcement_result.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_1/authenticity_regression_review_result.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_1/canonical_delivery_report_artifact.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_1/canonical_review_report_artifact.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_2/repo_write_ingress_manifest.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_2/mandatory_ingress_handoff_record.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_2/direct_caller_bypass_enforcement_result.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_2/repo_write_capability_classification_record.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_2/repo_write_capability_scope_policy.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_2/repo_write_ingress_allowlist_record.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_3/fix_reentry_lineage_forwarding_record.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_3/repo_write_replay_protection_result.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_3/replayed_lineage_enforcement_result.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_3/replay_safe_repair_candidate_bundle.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_3/reentry_review_tightening_record.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_3/reentry_continuation_decision.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_4/hard_gate_evidence_completeness_packet.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_4/hard_gate_evidence_gap_scoreboard.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_4/certification_readiness_decision.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_4/hard_gate_proof_projection_bundle.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_4/promotion_evidence_closure_guard_result.json",
+    "artifacts/authenticity_hardgate_24_01/umbrella_4/boundary_hardening_program_closeout.json"
+  ]
+}
