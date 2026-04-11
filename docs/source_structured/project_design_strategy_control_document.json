@@ -1,0 +1,35 @@
+{
+  "canonical_status": "available",
+  "component_tags": [
+    "control",
+    "governance",
+    "strategy"
+  ],
+  "document_type": "project_design",
+  "file_types_present": [
+    "md",
+    "pdf"
+  ],
+  "ingested_at": "2026-04-11T11:13:23.317581+00:00",
+  "key_directives_or_obligations": [
+    "This source must preserve artifact authority.",
+    "The runtime shall fail closed when evidence is missing.",
+    "strategy_control_document PDF source must govern control decisions."
+  ],
+  "local_raw_paths": [
+    "docs/source_raw/project_design/strategy_control_document__b0a45da3a5.pdf",
+    "docs/source_raw/project_design/strategy_control_document__c07415978b.md"
+  ],
+  "normalized_name": "strategy_control_document",
+  "preferred_readable_source": "docs/source_raw/project_design/strategy_control_document__c07415978b.md",
+  "schema_version": "1.0.0",
+  "source_id": "SRC-PROJECT-DESIGN-STRATEGY_CONTROL_DOCUMENT",
+  "summary": "# Strategy Control Document This source must preserve artifact authority.",
+  "title": "Strategy Control Document",
+  "upstream_paths": [
+    "docs/architecture/project_design/strategy_control_document.md",
+    "raw/strategic_sources/project_design/strategy_control_document.pdf"
+  ],
+  "upstream_ref": null,
+  "upstream_repo": "nicklasorte/spectrum-data-lake"
+}

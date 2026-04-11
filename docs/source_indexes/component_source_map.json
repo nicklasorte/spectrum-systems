@@ -1,87 +1,89 @@
 {
-  "components": [
+  "domains": [
     {
-      "component_id": "COMP-ARTIFACT-AUTHORITY",
-      "obligation_ids": [
-        "OBL-AIDUR-ARTIFACT-SOR"
-      ],
+      "domain": "strategy",
       "source_ids": [
-        "SRC-AI-DURABILITY-STRATEGY"
+        "SRC-PROJECT-DESIGN-AI_DURABILITY_STRATEGY",
+        "SRC-PROJECT-DESIGN-STRATEGY_CONTROL_DOCUMENT"
       ]
     },
     {
-      "component_id": "COMP-CONTROL-AUTHORITY",
-      "obligation_ids": [
-        "OBL-AIDUR-CONTROL-EXTERNALIZED"
-      ],
+      "domain": "foundation",
       "source_ids": [
-        "SRC-AI-DURABILITY-STRATEGY"
+        "SRC-PROJECT-DESIGN-FOUNDATION_DESIGN"
       ]
     },
     {
-      "component_id": "COMP-DOWNSTREAM-CONSUMPTION",
-      "obligation_ids": [
-        "OBL-AIDUR-SCHEMA-BEFORE-CONSUME"
-      ],
+      "domain": "governance",
       "source_ids": [
-        "SRC-AI-DURABILITY-STRATEGY"
+        "SRC-PROJECT-DESIGN-AGENT_EVAL_INTEGRATION_DESIGN",
+        "SRC-PROJECT-DESIGN-AI_OPERATING_SUBSTRATE",
+        "SRC-PROJECT-DESIGN-CANONICAL_HARNESS_ARCHITECTURE_FOR_LONG_RUNNING_GOVERNED_AI_WORK",
+        "SRC-PROJECT-DESIGN-DONE_CERTIFICATION_GATE_GOV10",
+        "SRC-PROJECT-DESIGN-FOUNDATION_DESIGN",
+        "SRC-PROJECT-DESIGN-GOOGLE_SRE_MAPPING",
+        "SRC-PROJECT-DESIGN-GOVERNED_API_ADAPTER_DESIGN",
+        "SRC-PROJECT-DESIGN-PRODUCTION_AI_WORKFLOW_BEST_PRACTICES",
+        "SRC-PROJECT-DESIGN-SBGE_DESIGN",
+        "SRC-PROJECT-DESIGN-STRATEGY_CONTROL_DOCUMENT"
       ]
     },
     {
-      "component_id": "COMP-EVAL-POLICY-GATING",
-      "obligation_ids": [
-        "OBL-AIDUR-EVAL-POLICY-BEFORE-PROMOTION"
-      ],
+      "domain": "control",
       "source_ids": [
-        "SRC-AI-DURABILITY-STRATEGY"
+        "SRC-PROJECT-DESIGN-AGENT_EVAL_INTEGRATION_DESIGN",
+        "SRC-PROJECT-DESIGN-AI_OPERATING_SUBSTRATE",
+        "SRC-PROJECT-DESIGN-DONE_CERTIFICATION_GATE_GOV10",
+        "SRC-PROJECT-DESIGN-FOUNDATION_DESIGN",
+        "SRC-PROJECT-DESIGN-GOVERNED_API_ADAPTER_DESIGN",
+        "SRC-PROJECT-DESIGN-PRODUCTION_AI_WORKFLOW_BEST_PRACTICES",
+        "SRC-PROJECT-DESIGN-STRATEGY_CONTROL_DOCUMENT"
       ]
     },
     {
-      "component_id": "COMP-FAIL-CLOSED-ENFORCEMENT",
-      "obligation_ids": [
-        "OBL-AIDUR-FAIL-CLOSED-MISSING-EVIDENCE"
-      ],
+      "domain": "evaluation",
       "source_ids": [
-        "SRC-AI-DURABILITY-STRATEGY"
+        "SRC-PROJECT-DESIGN-AGENT_EVAL_INTEGRATION_DESIGN"
       ]
     },
     {
-      "component_id": "COMP-LEARNING-LOOP",
-      "obligation_ids": [
-        "OBL-AIDUR-LEARNING-PREVENTION-CLOSURE"
-      ],
+      "domain": "judgment",
       "source_ids": [
-        "SRC-AI-DURABILITY-STRATEGY"
+        "SRC-PROJECT-DESIGN-JUDGMENT_CAPTURE_REUSE_SYSTEM"
       ]
     },
     {
-      "component_id": "COMP-MODEL-ADAPTER",
-      "obligation_ids": [
-        "OBL-AIDUR-MODEL-REPLACEABLE"
-      ],
+      "domain": "context",
       "source_ids": [
-        "SRC-AI-DURABILITY-STRATEGY"
+        "SRC-PROJECT-DESIGN-CONTEXT_AS_INFRASTRUCTURE"
       ]
     },
     {
-      "component_id": "COMP-PROMOTION-CONTROL",
-      "obligation_ids": [
-        "OBL-AIDUR-LINEAGE-BEFORE-PROMOTION"
-      ],
+      "domain": "adapter",
       "source_ids": [
-        "SRC-AI-DURABILITY-STRATEGY"
+        "SRC-PROJECT-DESIGN-GOVERNED_API_ADAPTER_DESIGN"
       ]
     },
     {
-      "component_id": "COMP-ROLLOUT-GOVERNANCE",
-      "obligation_ids": [
-        "OBL-AIDUR-MEASURABLE-PROMOTION-ROLLOUT"
-      ],
+      "domain": "durability",
       "source_ids": [
-        "SRC-AI-DURABILITY-STRATEGY"
+        "SRC-PROJECT-DESIGN-AI_DURABILITY_STRATEGY",
+        "SRC-PROJECT-DESIGN-DURABILITY_ENTROPY_ANALYSIS"
+      ]
+    },
+    {
+      "domain": "substrate",
+      "source_ids": [
+        "SRC-PROJECT-DESIGN-AI_OPERATING_SUBSTRATE"
+      ]
+    },
+    {
+      "domain": "harness",
+      "source_ids": [
+        "SRC-PROJECT-DESIGN-CANONICAL_HARNESS_ARCHITECTURE_FOR_LONG_RUNNING_GOVERNED_AI_WORK"
       ]
     }
   ],
   "index_name": "component_source_map",
-  "schema_version": "1.0.0"
+  "schema_version": "2.0.0"
 }

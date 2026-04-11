@@ -1,0 +1,29 @@
+{
+  "canonical_status": "available",
+  "component_tags": [
+    "governance"
+  ],
+  "document_type": "project_design",
+  "file_types_present": [
+    "md"
+  ],
+  "ingested_at": "2026-04-11T11:13:23.317581+00:00",
+  "key_directives_or_obligations": [
+    "This source must preserve artifact authority.",
+    "The runtime shall fail closed when evidence is missing."
+  ],
+  "local_raw_paths": [
+    "docs/source_raw/project_design/sbge_design__c28059b3be.md"
+  ],
+  "normalized_name": "sbge_design",
+  "preferred_readable_source": "docs/source_raw/project_design/sbge_design__c28059b3be.md",
+  "schema_version": "1.0.0",
+  "source_id": "SRC-PROJECT-DESIGN-SBGE_DESIGN",
+  "summary": "# Sbge Design This source must preserve artifact authority.",
+  "title": "Sbge Design",
+  "upstream_paths": [
+    "docs/architecture/project_design/sbge_design.md"
+  ],
+  "upstream_ref": null,
+  "upstream_repo": "nicklasorte/spectrum-data-lake"
+}

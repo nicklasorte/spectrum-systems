@@ -1,0 +1,35 @@
+{
+  "canonical_status": "available",
+  "component_tags": [
+    "control",
+    "foundation",
+    "governance"
+  ],
+  "document_type": "project_design",
+  "file_types_present": [
+    "md",
+    "pdf"
+  ],
+  "ingested_at": "2026-04-11T11:13:23.317581+00:00",
+  "key_directives_or_obligations": [
+    "This source must preserve artifact authority.",
+    "The runtime shall fail closed when evidence is missing.",
+    "foundation_design PDF source must govern control decisions."
+  ],
+  "local_raw_paths": [
+    "docs/source_raw/project_design/foundation_design__e0c988d443.pdf",
+    "docs/source_raw/project_design/foundation_design__e31a923dd4.md"
+  ],
+  "normalized_name": "foundation_design",
+  "preferred_readable_source": "docs/source_raw/project_design/foundation_design__e31a923dd4.md",
+  "schema_version": "1.0.0",
+  "source_id": "SRC-PROJECT-DESIGN-FOUNDATION_DESIGN",
+  "summary": "# Foundation Design This source must preserve artifact authority.",
+  "title": "Foundation Design",
+  "upstream_paths": [
+    "docs/architecture/project_design/foundation_design.md",
+    "raw/strategic_sources/project_design/foundation_design.pdf"
+  ],
+  "upstream_ref": null,
+  "upstream_repo": "nicklasorte/spectrum-data-lake"
+}

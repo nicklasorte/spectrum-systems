@@ -1,0 +1,35 @@
+{
+  "canonical_status": "available",
+  "component_tags": [
+    "control",
+    "governance",
+    "substrate"
+  ],
+  "document_type": "project_design",
+  "file_types_present": [
+    "md",
+    "pdf"
+  ],
+  "ingested_at": "2026-04-11T11:13:23.317581+00:00",
+  "key_directives_or_obligations": [
+    "This source must preserve artifact authority.",
+    "The runtime shall fail closed when evidence is missing.",
+    "ai_operating_substrate PDF source must govern control decisions."
+  ],
+  "local_raw_paths": [
+    "docs/source_raw/project_design/ai_operating_substrate__8555986323.md",
+    "docs/source_raw/project_design/ai_operating_substrate__b59c6c4434.pdf"
+  ],
+  "normalized_name": "ai_operating_substrate",
+  "preferred_readable_source": "docs/source_raw/project_design/ai_operating_substrate__8555986323.md",
+  "schema_version": "1.0.0",
+  "source_id": "SRC-PROJECT-DESIGN-AI_OPERATING_SUBSTRATE",
+  "summary": "# Ai Operating Substrate This source must preserve artifact authority.",
+  "title": "Ai Operating Substrate",
+  "upstream_paths": [
+    "docs/architecture/project_design/ai_operating_substrate.md",
+    "raw/strategic_sources/project_design/ai_operating_substrate.pdf"
+  ],
+  "upstream_ref": null,
+  "upstream_repo": "nicklasorte/spectrum-data-lake"
+}

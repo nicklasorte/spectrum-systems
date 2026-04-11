@@ -1,0 +1,34 @@
+{
+  "canonical_status": "available",
+  "component_tags": [
+    "control",
+    "governance"
+  ],
+  "document_type": "project_design",
+  "file_types_present": [
+    "md",
+    "pdf"
+  ],
+  "ingested_at": "2026-04-11T11:13:23.317581+00:00",
+  "key_directives_or_obligations": [
+    "This source must preserve artifact authority.",
+    "The runtime shall fail closed when evidence is missing.",
+    "done_certification_gate_gov10 PDF source must govern control decisions."
+  ],
+  "local_raw_paths": [
+    "docs/source_raw/project_design/done_certification_gate_gov10__93572cde2a.pdf",
+    "docs/source_raw/project_design/done_certification_gate_gov10__a47050d99d.md"
+  ],
+  "normalized_name": "done_certification_gate_gov10",
+  "preferred_readable_source": "docs/source_raw/project_design/done_certification_gate_gov10__a47050d99d.md",
+  "schema_version": "1.0.0",
+  "source_id": "SRC-PROJECT-DESIGN-DONE_CERTIFICATION_GATE_GOV10",
+  "summary": "# Done Certification Gate Gov10 This source must preserve artifact authority.",
+  "title": "Done Certification Gate Gov10",
+  "upstream_paths": [
+    "docs/architecture/project_design/done_certification_gate_gov10.md",
+    "raw/strategic_sources/project_design/done_certification_gate_gov10.pdf"
+  ],
+  "upstream_ref": null,
+  "upstream_repo": "nicklasorte/spectrum-data-lake"
+}

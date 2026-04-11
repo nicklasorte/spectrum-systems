@@ -1,0 +1,35 @@
+{
+  "canonical_status": "available",
+  "component_tags": [
+    "adapter",
+    "control",
+    "governance"
+  ],
+  "document_type": "project_design",
+  "file_types_present": [
+    "md",
+    "pdf"
+  ],
+  "ingested_at": "2026-04-11T11:13:23.317581+00:00",
+  "key_directives_or_obligations": [
+    "This source must preserve artifact authority.",
+    "The runtime shall fail closed when evidence is missing.",
+    "governed_api_adapter_design PDF source must govern control decisions."
+  ],
+  "local_raw_paths": [
+    "docs/source_raw/project_design/governed_api_adapter_design__340af2d6ae.md",
+    "docs/source_raw/project_design/governed_api_adapter_design__6e0cfe85d5.pdf"
+  ],
+  "normalized_name": "governed_api_adapter_design",
+  "preferred_readable_source": "docs/source_raw/project_design/governed_api_adapter_design__340af2d6ae.md",
+  "schema_version": "1.0.0",
+  "source_id": "SRC-PROJECT-DESIGN-GOVERNED_API_ADAPTER_DESIGN",
+  "summary": "# Governed Api Adapter Design This source must preserve artifact authority.",
+  "title": "Governed Api Adapter Design",
+  "upstream_paths": [
+    "docs/architecture/project_design/governed_api_adapter_design.md",
+    "raw/strategic_sources/project_design/governed_api_adapter_design.pdf"
+  ],
+  "upstream_ref": null,
+  "upstream_repo": "nicklasorte/spectrum-data-lake"
+}

@@ -1,0 +1,30 @@
+{
+  "canonical_status": "available",
+  "component_tags": [
+    "governance",
+    "harness"
+  ],
+  "document_type": "project_design",
+  "file_types_present": [
+    "md"
+  ],
+  "ingested_at": "2026-04-11T11:13:23.317581+00:00",
+  "key_directives_or_obligations": [
+    "This source must preserve artifact authority.",
+    "The runtime shall fail closed when evidence is missing."
+  ],
+  "local_raw_paths": [
+    "docs/source_raw/project_design/canonical_harness_architecture_for_long_running_governed_ai_work__989bdcc0f9.md"
+  ],
+  "normalized_name": "canonical_harness_architecture_for_long_running_governed_ai_work",
+  "preferred_readable_source": "docs/source_raw/project_design/canonical_harness_architecture_for_long_running_governed_ai_work__989bdcc0f9.md",
+  "schema_version": "1.0.0",
+  "source_id": "SRC-PROJECT-DESIGN-CANONICAL_HARNESS_ARCHITECTURE_FOR_LONG_RUNNING_GOVERNED_AI_WORK",
+  "summary": "# Canonical Harness Architecture For Long Running Governed Ai Work This source must preserve artifact authority.",
+  "title": "Canonical Harness Architecture For Long Running Governed Ai Work",
+  "upstream_paths": [
+    "docs/architecture/project_design/canonical_harness_architecture_for_long_running_governed_ai_work.md"
+  ],
+  "upstream_ref": null,
+  "upstream_repo": "nicklasorte/spectrum-data-lake"
+}

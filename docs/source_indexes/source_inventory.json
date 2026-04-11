@@ -1,14 +1,244 @@
 {
   "index_name": "source_inventory",
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "sources": [
     {
-      "file_path": "docs/source_structured/ai_durability_strategy.source.md",
-      "notes": "",
-      "source_id": "SRC-AI-DURABILITY-STRATEGY",
-      "status": "active",
-      "structured_artifact": "docs/source_structured/ai_durability_strategy.source.md",
-      "title": "AI Durability Strategy"
+      "completeness_status": "complete",
+      "local_raw_paths": [
+        "docs/source_raw/project_design/agent_eval_integration_design__1c85bd4f6b.md",
+        "docs/source_raw/project_design/agent_eval_integration_design__d328684dd3.pdf"
+      ],
+      "normalized_name": "agent_eval_integration_design",
+      "required": true,
+      "source_id": "SRC-PROJECT-DESIGN-AGENT_EVAL_INTEGRATION_DESIGN",
+      "structured_path": "docs/source_structured/project_design_agent_eval_integration_design.json",
+      "title": "Agent Eval Integration Design",
+      "upstream_paths": [
+        "docs/architecture/project_design/agent_eval_integration_design.md",
+        "raw/strategic_sources/project_design/agent_eval_integration_design.pdf"
+      ],
+      "upstream_ref": null,
+      "upstream_repo": "nicklasorte/spectrum-data-lake"
+    },
+    {
+      "completeness_status": "complete",
+      "local_raw_paths": [
+        "docs/source_raw/project_design/ai_durability_strategy__cffac91282.md"
+      ],
+      "normalized_name": "ai_durability_strategy",
+      "required": true,
+      "source_id": "SRC-PROJECT-DESIGN-AI_DURABILITY_STRATEGY",
+      "structured_path": "docs/source_structured/project_design_ai_durability_strategy.json",
+      "title": "Ai Durability Strategy",
+      "upstream_paths": [
+        "docs/architecture/project_design/ai_durability_strategy.md"
+      ],
+      "upstream_ref": null,
+      "upstream_repo": "nicklasorte/spectrum-data-lake"
+    },
+    {
+      "completeness_status": "complete",
+      "local_raw_paths": [
+        "docs/source_raw/project_design/ai_operating_substrate__8555986323.md",
+        "docs/source_raw/project_design/ai_operating_substrate__b59c6c4434.pdf"
+      ],
+      "normalized_name": "ai_operating_substrate",
+      "required": true,
+      "source_id": "SRC-PROJECT-DESIGN-AI_OPERATING_SUBSTRATE",
+      "structured_path": "docs/source_structured/project_design_ai_operating_substrate.json",
+      "title": "Ai Operating Substrate",
+      "upstream_paths": [
+        "docs/architecture/project_design/ai_operating_substrate.md",
+        "raw/strategic_sources/project_design/ai_operating_substrate.pdf"
+      ],
+      "upstream_ref": null,
+      "upstream_repo": "nicklasorte/spectrum-data-lake"
+    },
+    {
+      "completeness_status": "complete",
+      "local_raw_paths": [
+        "docs/source_raw/project_design/canonical_harness_architecture_for_long_running_governed_ai_work__989bdcc0f9.md"
+      ],
+      "normalized_name": "canonical_harness_architecture_for_long_running_governed_ai_work",
+      "required": true,
+      "source_id": "SRC-PROJECT-DESIGN-CANONICAL_HARNESS_ARCHITECTURE_FOR_LONG_RUNNING_GOVERNED_AI_WORK",
+      "structured_path": "docs/source_structured/project_design_canonical_harness_architecture_for_long_running_governed_ai_work.json",
+      "title": "Canonical Harness Architecture For Long Running Governed Ai Work",
+      "upstream_paths": [
+        "docs/architecture/project_design/canonical_harness_architecture_for_long_running_governed_ai_work.md"
+      ],
+      "upstream_ref": null,
+      "upstream_repo": "nicklasorte/spectrum-data-lake"
+    },
+    {
+      "completeness_status": "complete",
+      "local_raw_paths": [
+        "docs/source_raw/project_design/context_as_infrastructure__bf29847817.md"
+      ],
+      "normalized_name": "context_as_infrastructure",
+      "required": true,
+      "source_id": "SRC-PROJECT-DESIGN-CONTEXT_AS_INFRASTRUCTURE",
+      "structured_path": "docs/source_structured/project_design_context_as_infrastructure.json",
+      "title": "Context As Infrastructure",
+      "upstream_paths": [
+        "docs/architecture/project_design/context_as_infrastructure.md"
+      ],
+      "upstream_ref": null,
+      "upstream_repo": "nicklasorte/spectrum-data-lake"
+    },
+    {
+      "completeness_status": "complete",
+      "local_raw_paths": [
+        "docs/source_raw/project_design/done_certification_gate_gov10__93572cde2a.pdf",
+        "docs/source_raw/project_design/done_certification_gate_gov10__a47050d99d.md"
+      ],
+      "normalized_name": "done_certification_gate_gov10",
+      "required": true,
+      "source_id": "SRC-PROJECT-DESIGN-DONE_CERTIFICATION_GATE_GOV10",
+      "structured_path": "docs/source_structured/project_design_done_certification_gate_gov10.json",
+      "title": "Done Certification Gate Gov10",
+      "upstream_paths": [
+        "docs/architecture/project_design/done_certification_gate_gov10.md",
+        "raw/strategic_sources/project_design/done_certification_gate_gov10.pdf"
+      ],
+      "upstream_ref": null,
+      "upstream_repo": "nicklasorte/spectrum-data-lake"
+    },
+    {
+      "completeness_status": "complete",
+      "local_raw_paths": [
+        "docs/source_raw/project_design/durability_entropy_analysis__d33237f63f.md"
+      ],
+      "normalized_name": "durability_entropy_analysis",
+      "required": true,
+      "source_id": "SRC-PROJECT-DESIGN-DURABILITY_ENTROPY_ANALYSIS",
+      "structured_path": "docs/source_structured/project_design_durability_entropy_analysis.json",
+      "title": "Durability Entropy Analysis",
+      "upstream_paths": [
+        "docs/architecture/project_design/durability_entropy_analysis.md"
+      ],
+      "upstream_ref": null,
+      "upstream_repo": "nicklasorte/spectrum-data-lake"
+    },
+    {
+      "completeness_status": "complete",
+      "local_raw_paths": [
+        "docs/source_raw/project_design/foundation_design__e0c988d443.pdf",
+        "docs/source_raw/project_design/foundation_design__e31a923dd4.md"
+      ],
+      "normalized_name": "foundation_design",
+      "required": true,
+      "source_id": "SRC-PROJECT-DESIGN-FOUNDATION_DESIGN",
+      "structured_path": "docs/source_structured/project_design_foundation_design.json",
+      "title": "Foundation Design",
+      "upstream_paths": [
+        "docs/architecture/project_design/foundation_design.md",
+        "raw/strategic_sources/project_design/foundation_design.pdf"
+      ],
+      "upstream_ref": null,
+      "upstream_repo": "nicklasorte/spectrum-data-lake"
+    },
+    {
+      "completeness_status": "complete",
+      "local_raw_paths": [
+        "docs/source_raw/project_design/google_sre_mapping__5ea16e49af.md"
+      ],
+      "normalized_name": "google_sre_mapping",
+      "required": true,
+      "source_id": "SRC-PROJECT-DESIGN-GOOGLE_SRE_MAPPING",
+      "structured_path": "docs/source_structured/project_design_google_sre_mapping.json",
+      "title": "Google Sre Mapping",
+      "upstream_paths": [
+        "docs/architecture/project_design/google_sre_mapping.md"
+      ],
+      "upstream_ref": null,
+      "upstream_repo": "nicklasorte/spectrum-data-lake"
+    },
+    {
+      "completeness_status": "complete",
+      "local_raw_paths": [
+        "docs/source_raw/project_design/governed_api_adapter_design__340af2d6ae.md",
+        "docs/source_raw/project_design/governed_api_adapter_design__6e0cfe85d5.pdf"
+      ],
+      "normalized_name": "governed_api_adapter_design",
+      "required": true,
+      "source_id": "SRC-PROJECT-DESIGN-GOVERNED_API_ADAPTER_DESIGN",
+      "structured_path": "docs/source_structured/project_design_governed_api_adapter_design.json",
+      "title": "Governed Api Adapter Design",
+      "upstream_paths": [
+        "docs/architecture/project_design/governed_api_adapter_design.md",
+        "raw/strategic_sources/project_design/governed_api_adapter_design.pdf"
+      ],
+      "upstream_ref": null,
+      "upstream_repo": "nicklasorte/spectrum-data-lake"
+    },
+    {
+      "completeness_status": "complete",
+      "local_raw_paths": [
+        "docs/source_raw/project_design/judgment_capture_reuse_system__4a5d5b58d7.md"
+      ],
+      "normalized_name": "judgment_capture_reuse_system",
+      "required": true,
+      "source_id": "SRC-PROJECT-DESIGN-JUDGMENT_CAPTURE_REUSE_SYSTEM",
+      "structured_path": "docs/source_structured/project_design_judgment_capture_reuse_system.json",
+      "title": "Judgment Capture Reuse System",
+      "upstream_paths": [
+        "docs/architecture/project_design/judgment_capture_reuse_system.md"
+      ],
+      "upstream_ref": null,
+      "upstream_repo": "nicklasorte/spectrum-data-lake"
+    },
+    {
+      "completeness_status": "complete",
+      "local_raw_paths": [
+        "docs/source_raw/project_design/production_ai_workflow_best_practices__70eaa33a7c.md",
+        "docs/source_raw/project_design/production_ai_workflow_best_practices__d31bb4ae2e.pdf"
+      ],
+      "normalized_name": "production_ai_workflow_best_practices",
+      "required": true,
+      "source_id": "SRC-PROJECT-DESIGN-PRODUCTION_AI_WORKFLOW_BEST_PRACTICES",
+      "structured_path": "docs/source_structured/project_design_production_ai_workflow_best_practices.json",
+      "title": "Production Ai Workflow Best Practices",
+      "upstream_paths": [
+        "docs/architecture/project_design/production_ai_workflow_best_practices.md",
+        "raw/strategic_sources/project_design/production_ai_workflow_best_practices.pdf"
+      ],
+      "upstream_ref": null,
+      "upstream_repo": "nicklasorte/spectrum-data-lake"
+    },
+    {
+      "completeness_status": "complete",
+      "local_raw_paths": [
+        "docs/source_raw/project_design/sbge_design__c28059b3be.md"
+      ],
+      "normalized_name": "sbge_design",
+      "required": true,
+      "source_id": "SRC-PROJECT-DESIGN-SBGE_DESIGN",
+      "structured_path": "docs/source_structured/project_design_sbge_design.json",
+      "title": "Sbge Design",
+      "upstream_paths": [
+        "docs/architecture/project_design/sbge_design.md"
+      ],
+      "upstream_ref": null,
+      "upstream_repo": "nicklasorte/spectrum-data-lake"
+    },
+    {
+      "completeness_status": "complete",
+      "local_raw_paths": [
+        "docs/source_raw/project_design/strategy_control_document__b0a45da3a5.pdf",
+        "docs/source_raw/project_design/strategy_control_document__c07415978b.md"
+      ],
+      "normalized_name": "strategy_control_document",
+      "required": true,
+      "source_id": "SRC-PROJECT-DESIGN-STRATEGY_CONTROL_DOCUMENT",
+      "structured_path": "docs/source_structured/project_design_strategy_control_document.json",
+      "title": "Strategy Control Document",
+      "upstream_paths": [
+        "docs/architecture/project_design/strategy_control_document.md",
+        "raw/strategic_sources/project_design/strategy_control_document.pdf"
+      ],
+      "upstream_ref": null,
+      "upstream_repo": "nicklasorte/spectrum-data-lake"
     }
   ]
 }

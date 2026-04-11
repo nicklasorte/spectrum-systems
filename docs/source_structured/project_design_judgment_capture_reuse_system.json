@@ -1,0 +1,29 @@
+{
+  "canonical_status": "available",
+  "component_tags": [
+    "judgment"
+  ],
+  "document_type": "project_design",
+  "file_types_present": [
+    "md"
+  ],
+  "ingested_at": "2026-04-11T11:13:23.317581+00:00",
+  "key_directives_or_obligations": [
+    "This source must preserve artifact authority.",
+    "The runtime shall fail closed when evidence is missing."
+  ],
+  "local_raw_paths": [
+    "docs/source_raw/project_design/judgment_capture_reuse_system__4a5d5b58d7.md"
+  ],
+  "normalized_name": "judgment_capture_reuse_system",
+  "preferred_readable_source": "docs/source_raw/project_design/judgment_capture_reuse_system__4a5d5b58d7.md",
+  "schema_version": "1.0.0",
+  "source_id": "SRC-PROJECT-DESIGN-JUDGMENT_CAPTURE_REUSE_SYSTEM",
+  "summary": "# Judgment Capture Reuse System This source must preserve artifact authority.",
+  "title": "Judgment Capture Reuse System",
+  "upstream_paths": [
+    "docs/architecture/project_design/judgment_capture_reuse_system.md"
+  ],
+  "upstream_ref": null,
+  "upstream_repo": "nicklasorte/spectrum-data-lake"
+}
