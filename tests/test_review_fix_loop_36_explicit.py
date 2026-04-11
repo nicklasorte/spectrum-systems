@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from importlib import util
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -95,3 +96,39 @@ def test_registry_alignment_cross_checks_all_pass() -> None:
     summary = _load_json(ARTIFACT_ROOT / "checkpoint_summary.json")
     assert len(summary["checkpoints"]) == 12
     assert all(status == "pass" for status in summary["checkpoints"].values())
+
+
+def test_step_1_uses_runtime_review_cycle_creation(monkeypatch) -> None:
+    spec = util.spec_from_file_location("rf36_runner", SCRIPT_PATH)
+    assert spec and spec.loader
+    module = util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    called = {"value": False}
+
+    def _fake_create_review_cycle(**kwargs):
+        called["value"] = True
+        return {
+            "artifact_type": "review_cycle_record",
+            "artifact_version": "1.0.0",
+            "schema_version": "1.0.0",
+            "standards_version": "1.0.0",
+            "cycle_id": "rcy-aaaaaaaaaaaaaaaa",
+            "parent_batch_id": kwargs["parent_batch_id"],
+            "parent_umbrella_id": kwargs["parent_umbrella_id"],
+            "iteration_number": 1,
+            "max_iterations": kwargs["max_iterations"],
+            "termination_state": "open",
+            "status": "active",
+            "review_request_ref": kwargs["review_request_ref"],
+            "review_result_refs": [],
+            "fix_slice_refs": [],
+            "replay_result_refs": [],
+            "lineage": list(kwargs["lineage"]),
+            "created_at": kwargs["created_at"],
+            "updated_at": kwargs["created_at"],
+        }
+
+    monkeypatch.setattr(module, "create_review_cycle", _fake_create_review_cycle)
+    module.main()
+    assert called["value"] is True
