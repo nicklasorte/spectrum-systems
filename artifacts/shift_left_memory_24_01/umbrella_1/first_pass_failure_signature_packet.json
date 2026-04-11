@@ -1,0 +1,12 @@
+{
+  "artifact_type": "first_pass_failure_signature_packet",
+  "slice_id": "SM-01",
+  "owner": "RIL",
+  "generated_at": "2026-04-11T18:06:02Z",
+  "failure_signatures": [
+    "lineage_gap",
+    "schema_mismatch",
+    "missing_preflight_evidence"
+  ],
+  "interpretation_boundary": "interpretation_only"
+}

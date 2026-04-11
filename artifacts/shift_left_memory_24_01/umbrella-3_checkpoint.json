@@ -1,0 +1,131 @@
+{
+  "artifact_type": "shift_left_memory_umbrella_checkpoint",
+  "batch_id": "SHIFT-LEFT-MEMORY-24-01",
+  "generated_at": "2026-04-11T18:06:02Z",
+  "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
+  "umbrella_id": "UMBRELLA-3",
+  "umbrella_name": "FIRST_PASS_QUALITY_HARDENING",
+  "slices": [
+    "SM-13",
+    "SM-14",
+    "SM-15",
+    "SM-16",
+    "SM-17",
+    "SM-18"
+  ],
+  "checkpoint_status": "pass",
+  "tests": {
+    "status": "pass",
+    "command": "pytest tests/test_shift_left_memory_24_01.py -k umbrella_3"
+  },
+  "schema_validation": {
+    "status": "pass",
+    "scope": [
+      "SM-13",
+      "SM-14",
+      "SM-15",
+      "SM-16",
+      "SM-17",
+      "SM-18"
+    ]
+  },
+  "review_eval_control_validation": {
+    "status": "pass",
+    "scope": "review/eval/control surfaces in governed bounds"
+  },
+  "registry_ownership_alignment": {
+    "status": "pass",
+    "scope": "single owner per slice; no authority drift"
+  },
+  "repo_mutation_lineage_validation": {
+    "status": "pass",
+    "lineage": [
+      "AEX",
+      "TLC",
+      "TPA",
+      "PQX"
+    ],
+    "bypass_detected": false
+  },
+  "stop_conditions": {
+    "max_files_modified_guard": "pass",
+    "contract_break_guard": "pass",
+    "tests_recoverability_guard": "pass",
+    "admission_enrichment_authority_guard": "pass",
+    "memory_scoring_authority_guard": "pass",
+    "tlc_non_orchestration_guard": "pass",
+    "rqx_non_planner_enforcer_guard": "pass",
+    "prg_non_authority_guard": "pass",
+    "map_semantic_invention_guard": "pass",
+    "ownership_duplication_guard": "pass",
+    "closure_conservatism_guard": "pass"
+  },
+  "delivery_contract": {
+    "intent": "Execute FIRST_PASS_QUALITY_HARDENING to reduce repair_loop_latency via shift-left hardening and operational memory.",
+    "architecture_changes": [
+      "shift-left failure signature and admission-risk enrichment seam",
+      "operational memory retrieval and memory-backed planning seam",
+      "first-pass quality hard gate and repair-pressure closure strictness seam"
+    ],
+    "source_mapping": [
+      "SM-13",
+      "SM-14",
+      "SM-15",
+      "SM-16",
+      "SM-17",
+      "SM-18"
+    ],
+    "schemas_changed": [],
+    "modules_changed": [
+      "scripts/run_shift_left_memory_24_01.py"
+    ],
+    "tests_added": [
+      "tests/test_shift_left_memory_24_01.py"
+    ],
+    "observability_added": [
+      "umbrella checkpoints",
+      "repair pressure + first-pass quality scoreboards",
+      "memory effectiveness + recurrence cost tracking"
+    ],
+    "control_governance_integration": [
+      "RIL interprets only",
+      "AEX admits and enriches only",
+      "TPA gates policy/scope only",
+      "FRE diagnoses and plans repair only",
+      "TLC orchestrates only",
+      "PQX executes only",
+      "RQX review-loop execution only",
+      "SEL enforces only",
+      "PRG recommends/scores/tracks/aggregates/closeout only",
+      "RDX sequences roadmap work only",
+      "CDE closure/readiness/promotion authority only",
+      "MAP projects only",
+      "repo mutation lineage AEX -> TLC -> TPA -> PQX preserved"
+    ],
+    "failure_modes": [
+      "missing required artifact",
+      "ownership boundary violation",
+      "lineage bypass",
+      "authoritative misuse of non-authoritative output"
+    ],
+    "guarantees": [
+      "artifact-first execution",
+      "fail-closed behavior",
+      "promotion requires certification"
+    ],
+    "rollback_plan": [
+      "remove artifacts/shift_left_memory_24_01 outputs",
+      "remove SHIFT-LEFT-MEMORY-24-01 trace artifact"
+    ],
+    "remaining_gaps": [
+      "requires live runtime telemetry to calibrate actual latency deltas",
+      "memory retrieval confidence should be tuned with future replay evidence"
+    ],
+    "registry_alignment_result": "pass"
+  },
+  "checkpoint_status_output": "UMBRELLA-3: pass",
+  "human_confirmation": {
+    "available": false,
+    "status": "not_available_auto_continue_when_all_criteria_pass"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "artifact_type": "rdx_execution_artifact_trace",
+  "batch_id": "SHIFT-LEFT-MEMORY-24-01",
+  "generated_at": "2026-04-11T18:06:02Z",
+  "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
+  "umbrella_sequence": [
+    "UMBRELLA-1",
+    "UMBRELLA-2",
+    "UMBRELLA-3",
+    "UMBRELLA-4"
+  ],
+  "artifacts_written": {
+    "UMBRELLA-1": [
+      "artifacts/shift_left_memory_24_01/umbrella_1/first_pass_failure_signature_packet.json",
+      "artifacts/shift_left_memory_24_01/umbrella_1/admission_risk_enrichment_record.json",
+      "artifacts/shift_left_memory_24_01/umbrella_1/known_risk_scope_policy.json",
+      "artifacts/shift_left_memory_24_01/umbrella_1/preemptive_repair_recipe_bundle.json",
+      "artifacts/shift_left_memory_24_01/umbrella_1/hardening_handoff_record.json",
+      "artifacts/shift_left_memory_24_01/umbrella_1/shift_left_hardening_enforcement_result.json",
+      "artifacts/shift_left_memory_24_01/umbrella_1/canonical_delivery_report_artifact.json",
+      "artifacts/shift_left_memory_24_01/umbrella_1/canonical_review_report_artifact.json"
+    ],
+    "UMBRELLA-2": [
+      "artifacts/shift_left_memory_24_01/umbrella_2/memory_match_interpretation_packet.json",
+      "artifacts/shift_left_memory_24_01/umbrella_2/repair_memory_retrieval_score_record.json",
+      "artifacts/shift_left_memory_24_01/umbrella_2/memory_backed_repair_plan.json",
+      "artifacts/shift_left_memory_24_01/umbrella_2/repair_memory_effectiveness_record.json",
+      "artifacts/shift_left_memory_24_01/umbrella_2/recurrence_cost_register.json",
+      "artifacts/shift_left_memory_24_01/umbrella_2/memory_priority_batch_artifact.json"
+    ],
+    "UMBRELLA-3": [
+      "artifacts/shift_left_memory_24_01/umbrella_3/pre_execution_validation_bundle_record.json",
+      "artifacts/shift_left_memory_24_01/umbrella_3/failed_first_pass_review_compression_record.json",
+      "artifacts/shift_left_memory_24_01/umbrella_3/first_pass_quality_enforcement_result.json",
+      "artifacts/shift_left_memory_24_01/umbrella_3/first_pass_quality_scoreboard.json",
+      "artifacts/shift_left_memory_24_01/umbrella_3/first_pass_quality_trend_artifact.json",
+      "artifacts/shift_left_memory_24_01/umbrella_3/first_pass_hardening_umbrella_plan.json"
+    ],
+    "UMBRELLA-4": [
+      "artifacts/shift_left_memory_24_01/umbrella_4/repair_pressure_closure_input_bundle.json",
+      "artifacts/shift_left_memory_24_01/umbrella_4/repair_pressure_closure_decision.json",
+      "artifacts/shift_left_memory_24_01/umbrella_4/repeat_failure_closure_guard_result.json",
+      "artifacts/shift_left_memory_24_01/umbrella_4/repair_pressure_projection_bundle.json",
+      "artifacts/shift_left_memory_24_01/umbrella_4/hardening_focus_recommendation.json",
+      "artifacts/shift_left_memory_24_01/umbrella_4/shift_left_memory_program_closeout.json"
+    ]
+  },
+  "checkpoint_summary": "artifacts/shift_left_memory_24_01/checkpoint_summary.json",
+  "registry_alignment_result": "artifacts/shift_left_memory_24_01/registry_alignment_result.json",
+  "closeout_artifact": "artifacts/shift_left_memory_24_01/closeout_artifact.json"
+}
