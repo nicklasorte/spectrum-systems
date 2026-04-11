@@ -1,8 +1,29 @@
 {
   "artifact_type": "operator_trust_closeout_artifact",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-11T11:22:36Z",
-  "operator_truth_status": "closed_for_covered_surfaces",
-  "confidence_accountability": "active",
-  "promotion_discipline": "certification_required"
+  "generated_at": "2026-04-11T13:02:49Z",
+  "dashboard_trust_level": "guarded",
+  "recommendation_trust_level": "measured_but_bounded",
+  "key_blockers": [
+    "history_depth_limited_to_three_real_cycles",
+    "calibration_baseline_still_short_horizon"
+  ],
+  "drift_status": {
+    "trend": "improving",
+    "stability": "bounded_improvement",
+    "history_window_cycles": 3,
+    "history_quality": "thin_but_real"
+  },
+  "hard_gate_status": "satisfied",
+  "confidence_calibration_summary": {
+    "avg_stated_confidence": 0.6767,
+    "observed_quality": 0.8333,
+    "calibration_error": -0.1567
+  },
+  "expansion_posture": "validate_before_expand",
+  "traceability": {
+    "readiness_artifact": "artifacts/rq_master_36_01/readiness_to_expand_validator.json",
+    "accuracy_artifact": "artifacts/rq_master_36_01/recommendation_accuracy_tracker.json",
+    "calibration_artifact": "artifacts/rq_master_36_01/confidence_calibration_artifact.json"
+  }
 }

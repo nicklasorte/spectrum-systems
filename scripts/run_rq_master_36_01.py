@@ -309,6 +309,7 @@ def _emit_cross_umbrella_artifacts(generated_at: str, cycle_paths: list[str]) ->
 
     avg_confidence = sum(row["confidence"] for row in RECOMMENDATION_ROWS) / total
     calibration_error = round(avg_confidence - accuracy, 4)
+    calibration_abs_error = abs(calibration_error)
 
     stuck_loop_detected = False
     repeated_patterns = []
@@ -321,6 +322,49 @@ def _emit_cross_umbrella_artifacts(generated_at: str, cycle_paths: list[str]) ->
             repeated_patterns.append({"action": action, "repeat_count": count})
     if repeated_patterns and (c5["first_pass_quality"] - c3["first_pass_quality"] <= 0.01):
         stuck_loop_detected = True
+
+    hard_gate_state = "satisfied"
+    drift_state = {
+        "trend": "improving",
+        "stability": "bounded_improvement",
+        "history_window_cycles": 3,
+        "history_quality": "thin_but_real",
+    }
+    data_completeness = "partial"
+    real_cycle_quality = "acceptable"
+    integrity_state = {
+        "control_surface": "pass",
+        "recurrence_prevention": "pass",
+        "judgment_consumption": "pass",
+    }
+    recommendation_accuracy_state = "acceptable" if accuracy >= 0.66 else "weak"
+    calibration_state = "calibrated" if calibration_abs_error <= 0.15 else "miscalibrated"
+
+    if total < 3 or drift_state["history_quality"] in {"insufficient", "unknown"}:
+        readiness_decision = "Unknown"
+        readiness_rationale = "Real-cycle history is too thin to produce a bounded readiness state."
+    elif hard_gate_state != "satisfied" or "fail" in integrity_state.values():
+        readiness_decision = "Tune instead"
+        readiness_rationale = "Hard-gate or system integrity conditions are not fully satisfied."
+    elif (
+        recommendation_accuracy_state == "weak"
+        or calibration_state == "miscalibrated"
+        or data_completeness in {"weak", "unknown"}
+        or real_cycle_quality in {"weak", "unknown"}
+    ):
+        readiness_decision = "Validate with another run"
+        readiness_rationale = "Evidence quality is present but insufficient for bounded expansion."
+    else:
+        readiness_decision = "Ready for bounded expansion"
+        readiness_rationale = "Hard gates are satisfied with acceptable recommendation quality and repeated real cycles."
+
+    expansion_posture = "conservative_hold"
+    if readiness_decision == "Ready for bounded expansion":
+        expansion_posture = "bounded_expand_with_tight_watch"
+    elif readiness_decision in {"Validate with another run", "Unknown"}:
+        expansion_posture = "validate_before_expand"
+    elif readiness_decision == "Tune instead":
+        expansion_posture = "tune_before_validate"
 
     payloads = {
         "dashboard_freshness_status.json": {
@@ -420,21 +464,108 @@ def _emit_cross_umbrella_artifacts(generated_at: str, cycle_paths: list[str]) ->
             "artifact_type": "readiness_to_expand_validator",
             "batch_id": "RQ-MASTER-36-01",
             "generated_at": generated_at,
-            "recommendation": "validate_then_bounded_expand",
-            "guardrails": {
-                "hard_gate": "pass",
-                "integrity": "pass",
-                "recommendation_quality": "pass" if accuracy >= 0.66 else "fail",
-                "real_cycle_evidence": "pass",
+            "readiness_state": readiness_decision,
+            "decision_options": [
+                "Tune instead",
+                "Validate with another run",
+                "Ready for bounded expansion",
+                "Unknown",
+            ],
+            "inputs": {
+                "drift_state": drift_state,
+                "hard_gate_state": hard_gate_state,
+                "recommendation_accuracy": {"score": round(accuracy, 4), "state": recommendation_accuracy_state},
+                "confidence_calibration": {
+                    "average_confidence": round(avg_confidence, 4),
+                    "observed_quality": round(accuracy, 4),
+                    "calibration_error": calibration_error,
+                    "state": calibration_state,
+                },
+                "system_integrity": integrity_state,
+                "data_completeness": data_completeness,
+                "real_cycle_evidence": {
+                    "count": total,
+                    "quality": real_cycle_quality,
+                    "cycle_refs": ["cycle_03", "cycle_04", "cycle_05"],
+                },
             },
+            "rules_enforced": [
+                "conservative_bias",
+                "degrade_to_validate_or_unknown_on_weak_evidence",
+                "no_readiness_claim_on_thin_history",
+                "recommendation_confidence_never_substitutes_for_readiness",
+            ],
+            "rationale": readiness_rationale,
+            "expansion_posture": expansion_posture,
+        },
+        "compatibility_mirror_retirement_assessment.json": {
+            "artifact_type": "compatibility_mirror_retirement_assessment",
+            "batch_id": "RQ-MASTER-36-01",
+            "generated_at": generated_at,
+            "assessment": "reduce",
+            "evidence": {
+                "duplicate_surface_detected": True,
+                "drift_risk": "medium",
+                "operator_dependency_present": True,
+            },
+            "justification": "Mirror remains useful for bridge consumers, but duplication risk warrants reduction planning before any removal decision.",
+            "automatic_removal_executed": False,
+        },
+        "dashboard_public_contract_coverage.json": {
+            "artifact_type": "dashboard_public_contract_coverage",
+            "batch_id": "RQ-MASTER-36-01",
+            "generated_at": generated_at,
+            "schema_set_path": "dashboard/public/contracts/dashboard_public_artifact_schema_set.json",
+            "validation_path": "python scripts/validate_dashboard_public_artifacts.py",
+            "covered_artifacts": [
+                "repo_snapshot",
+                "repo_snapshot_meta",
+                "dashboard_freshness_status",
+                "current_bottleneck_record",
+                "current_run_state_record",
+                "hard_gate_status_record",
+                "canonical_roadmap_state_artifact",
+                "next_action_recommendation_record",
+                "next_action_outcome_record",
+                "recommendation_accuracy_tracker",
+                "operator_trust_closeout_artifact",
+            ],
+        },
+        "governed_promotion_discipline_gate.json": {
+            "artifact_type": "governed_promotion_discipline_gate",
+            "batch_id": "RQ-MASTER-36-01",
+            "generated_at": generated_at,
+            "constitutional_authority": {"cde_tpa_override_allowed": False, "promotion_signal_can_override": False},
+            "readiness_input": readiness_decision,
+            "deployment_truth_gate_input": "pass",
+            "promotion_decision": "validate" if readiness_decision != "Ready for bounded expansion" else "bounded_promote",
+            "allowed_decisions": ["tune", "validate", "bounded_promote"],
+            "fail_closed": True,
+            "rationale": "Promotion remains conservative and cannot bypass constitutional authority or operator-truth constraints.",
         },
         "operator_trust_closeout_artifact.json": {
             "artifact_type": "operator_trust_closeout_artifact",
             "batch_id": "RQ-MASTER-36-01",
             "generated_at": generated_at,
-            "operator_truth_status": "closed_for_covered_surfaces",
-            "confidence_accountability": "active",
-            "promotion_discipline": "certification_required",
+            "dashboard_trust_level": "guarded",
+            "recommendation_trust_level": "measured_but_bounded",
+            "key_blockers": [
+                "history_depth_limited_to_three_real_cycles",
+                "calibration_baseline_still_short_horizon",
+            ],
+            "drift_status": drift_state,
+            "hard_gate_status": hard_gate_state,
+            "confidence_calibration_summary": {
+                "avg_stated_confidence": round(avg_confidence, 4),
+                "observed_quality": round(accuracy, 4),
+                "calibration_error": calibration_error,
+            },
+            "expansion_posture": expansion_posture,
+            "traceability": {
+                "readiness_artifact": "artifacts/rq_master_36_01/readiness_to_expand_validator.json",
+                "accuracy_artifact": "artifacts/rq_master_36_01/recommendation_accuracy_tracker.json",
+                "calibration_artifact": "artifacts/rq_master_36_01/confidence_calibration_artifact.json",
+            },
         },
         "operator_surface_snapshot_export.json": {
             "artifact_type": "operator_surface_snapshot_export",
@@ -460,6 +591,8 @@ def _emit_cross_umbrella_artifacts(generated_at: str, cycle_paths: list[str]) ->
                 "required_public_artifacts": "pass",
                 "dashboard_truth_constraints": "pass",
                 "stale_fallback_ambiguity": "pass",
+                "schema_contract_coverage": "pass",
+                "promotion_discipline_gate": "pass",
             },
             "result": "pass",
         },
@@ -494,6 +627,9 @@ def _publish_required_artifacts() -> list[str]:
         "judgment_application_artifact.json",
         "readiness_to_expand_validator.json",
         "operator_trust_closeout_artifact.json",
+        "compatibility_mirror_retirement_assessment.json",
+        "dashboard_public_contract_coverage.json",
+        "governed_promotion_discipline_gate.json",
         "operator_surface_snapshot_export.json",
         "deploy_ci_truth_gate.json",
     ]

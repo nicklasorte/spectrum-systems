@@ -1,0 +1,20 @@
+{
+  "artifact_type": "dashboard_public_contract_coverage",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T13:02:49Z",
+  "schema_set_path": "dashboard/public/contracts/dashboard_public_artifact_schema_set.json",
+  "validation_path": "python scripts/validate_dashboard_public_artifacts.py",
+  "covered_artifacts": [
+    "repo_snapshot",
+    "repo_snapshot_meta",
+    "dashboard_freshness_status",
+    "current_bottleneck_record",
+    "current_run_state_record",
+    "hard_gate_status_record",
+    "canonical_roadmap_state_artifact",
+    "next_action_recommendation_record",
+    "next_action_outcome_record",
+    "recommendation_accuracy_tracker",
+    "operator_trust_closeout_artifact"
+  ]
+}

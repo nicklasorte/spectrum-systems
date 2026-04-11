@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/dashboard/public/contracts/dashboard_public_artifact_schema_set.json",
+  "title": "Dashboard Public Artifact Schema Set",
+  "type": "object",
+  "required": ["schema_set_version", "validation_targets", "$defs"],
+  "properties": {
+    "schema_set_version": {"type": "string", "const": "1.0.0"},
+    "validation_targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["artifact_file", "schema_ref", "example_file"],
+        "properties": {
+          "artifact_file": {"type": "string"},
+          "schema_ref": {"type": "string", "pattern": "^#\\/\\$defs\\/"},
+          "example_file": {"type": "string"}
+        },
+        "additionalProperties": false
+      },
+      "minItems": 13
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "repo_snapshot": {"type": "object", "required": ["generated_at", "repo_name", "root_counts", "core_areas"], "properties": {"generated_at": {"type": "string"}, "repo_name": {"type": "string"}, "root_counts": {"type": "object"}, "core_areas": {"type": "array"}}, "additionalProperties": true},
+    "repo_snapshot_meta": {"type": "object", "required": ["last_refreshed_time", "snapshot_size", "data_source_state"], "properties": {"last_refreshed_time": {"type": "string"}, "snapshot_size": {"type": "string"}, "data_source_state": {"type": "string", "enum": ["live", "fallback"]}}, "additionalProperties": true},
+    "dashboard_freshness_status": {"type": "object", "required": ["artifact_type", "status"], "properties": {"artifact_type": {"const": "dashboard_freshness_status"}, "status": {"type": "string", "enum": ["fresh", "stale", "fallback", "unknown"]}}, "additionalProperties": true},
+    "current_bottleneck_record": {"type": "object", "required": ["artifact_type", "bottleneck_name", "evidence"], "properties": {"artifact_type": {"const": "current_bottleneck_record"}, "bottleneck_name": {"type": "string"}, "evidence": {"type": "array"}}, "additionalProperties": true},
+    "current_run_state_record": {"type": "object", "required": ["artifact_type", "status"], "properties": {"artifact_type": {"const": "current_run_state_record"}, "status": {"type": "string"}}, "additionalProperties": true},
+    "hard_gate_status_record": {"type": "object", "required": ["artifact_type"], "properties": {"artifact_type": {"const": "hard_gate_status_record"}, "pass_fail": {"type": "string"}}, "additionalProperties": true},
+    "canonical_roadmap_state_artifact": {"type": "object", "required": ["artifact_type"], "properties": {"artifact_type": {"const": "canonical_roadmap_state_artifact"}}, "additionalProperties": true},
+    "next_action_recommendation_record": {"type": "object", "required": ["artifact_type"], "properties": {"artifact_type": {"enum": ["next_action_recommendation_record", "next_action_recommendation_record_collection"]}}, "additionalProperties": true},
+    "next_action_outcome_record": {"type": "object", "required": ["artifact_type"], "properties": {"artifact_type": {"enum": ["next_action_outcome_record", "next_action_outcome_record_collection"]}}, "additionalProperties": true},
+    "recommendation_accuracy_tracker": {"type": "object", "required": ["artifact_type", "accuracy"], "properties": {"artifact_type": {"const": "recommendation_accuracy_tracker"}, "accuracy": {"type": "number", "minimum": 0, "maximum": 1}}, "additionalProperties": true},
+    "operator_trust_closeout_artifact": {"type": "object", "required": ["artifact_type", "dashboard_trust_level", "recommendation_trust_level", "expansion_posture"], "properties": {"artifact_type": {"const": "operator_trust_closeout_artifact"}, "dashboard_trust_level": {"type": "string"}, "recommendation_trust_level": {"type": "string"}, "expansion_posture": {"type": "string"}}, "additionalProperties": true},
+    "readiness_to_expand_validator": {"type": "object", "required": ["artifact_type", "readiness_state"], "properties": {"artifact_type": {"const": "readiness_to_expand_validator"}, "readiness_state": {"type": "string", "enum": ["Tune instead", "Validate with another run", "Ready for bounded expansion", "Unknown"]}}, "additionalProperties": true},
+    "deploy_ci_truth_gate": {"type": "object", "required": ["artifact_type", "checks", "result"], "properties": {"artifact_type": {"const": "deploy_ci_truth_gate"}, "checks": {"type": "object"}, "result": {"type": "string"}}, "additionalProperties": true}
+  },
+  "validation_targets": [
+    {"artifact_file": "repo_snapshot.json", "schema_ref": "#/$defs/repo_snapshot", "example_file": "contracts/examples/repo_snapshot.json"},
+    {"artifact_file": "repo_snapshot_meta.json", "schema_ref": "#/$defs/repo_snapshot_meta", "example_file": "contracts/examples/repo_snapshot_meta.json"},
+    {"artifact_file": "dashboard_freshness_status.json", "schema_ref": "#/$defs/dashboard_freshness_status", "example_file": "contracts/examples/dashboard_freshness_status.json"},
+    {"artifact_file": "current_bottleneck_record.json", "schema_ref": "#/$defs/current_bottleneck_record", "example_file": "contracts/examples/current_bottleneck_record.json"},
+    {"artifact_file": "current_run_state_record.json", "schema_ref": "#/$defs/current_run_state_record", "example_file": "contracts/examples/current_run_state_record.json"},
+    {"artifact_file": "hard_gate_status_record.json", "schema_ref": "#/$defs/hard_gate_status_record", "example_file": "contracts/examples/hard_gate_status_record.json"},
+    {"artifact_file": "canonical_roadmap_state_artifact.json", "schema_ref": "#/$defs/canonical_roadmap_state_artifact", "example_file": "contracts/examples/canonical_roadmap_state_artifact.json"},
+    {"artifact_file": "next_action_recommendation_record.json", "schema_ref": "#/$defs/next_action_recommendation_record", "example_file": "contracts/examples/next_action_recommendation_record.json"},
+    {"artifact_file": "next_action_outcome_record.json", "schema_ref": "#/$defs/next_action_outcome_record", "example_file": "contracts/examples/next_action_outcome_record.json"},
+    {"artifact_file": "recommendation_accuracy_tracker.json", "schema_ref": "#/$defs/recommendation_accuracy_tracker", "example_file": "contracts/examples/recommendation_accuracy_tracker.json"},
+    {"artifact_file": "operator_trust_closeout_artifact.json", "schema_ref": "#/$defs/operator_trust_closeout_artifact", "example_file": "contracts/examples/operator_trust_closeout_artifact.json"},
+    {"artifact_file": "readiness_to_expand_validator.json", "schema_ref": "#/$defs/readiness_to_expand_validator", "example_file": "contracts/examples/readiness_to_expand_validator.json"},
+    {"artifact_file": "deploy_ci_truth_gate.json", "schema_ref": "#/$defs/deploy_ci_truth_gate", "example_file": "contracts/examples/deploy_ci_truth_gate.json"}
+  ]
+}

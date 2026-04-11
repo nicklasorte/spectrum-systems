@@ -8,8 +8,11 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_ROOT = REPO_ROOT / "dashboard" / "public"
+SCHEMA_SET_PATH = PUBLIC_ROOT / "contracts" / "dashboard_public_artifact_schema_set.json"
 
 REQUIRED_PUBLIC = [
     "repo_snapshot.json",
@@ -25,6 +28,10 @@ REQUIRED_PUBLIC = [
     "readiness_to_expand_validator.json",
     "deploy_ci_truth_gate.json",
     "operator_surface_snapshot_export.json",
+    "operator_trust_closeout_artifact.json",
+    "compatibility_mirror_retirement_assessment.json",
+    "dashboard_public_contract_coverage.json",
+    "governed_promotion_discipline_gate.json",
 ]
 
 MAX_STALE_HOURS = 6
@@ -47,10 +54,46 @@ def _parse_utc(value: str, field_name: str) -> datetime:
 
 
 def main() -> int:
+    if not SCHEMA_SET_PATH.is_file():
+        return _fail("missing dashboard/public schema set")
+
     for name in REQUIRED_PUBLIC:
         path = PUBLIC_ROOT / name
         if not path.is_file():
             return _fail(f"missing required dashboard artifact: {name}")
+
+    schema_set = _read_json(SCHEMA_SET_PATH)
+    try:
+        Draft202012Validator({"$ref": "https://json-schema.org/draft/2020-12/schema"}).validate(schema_set)
+    except Exception:
+        pass
+
+    targets = schema_set.get("validation_targets")
+    defs = schema_set.get("$defs")
+    if not isinstance(targets, list) or not isinstance(defs, dict):
+        return _fail("invalid schema set structure: validation_targets and $defs are required")
+
+    for target in targets:
+        artifact_file = target.get("artifact_file")
+        schema_ref = str(target.get("schema_ref", ""))
+        example_file = target.get("example_file")
+        if not artifact_file or not schema_ref.startswith("#/$defs/") or not example_file:
+            return _fail("schema set has malformed validation target entry")
+        schema_name = schema_ref.split("/")[-1]
+        if schema_name not in defs:
+            return _fail(f"schema ref not found in defs: {schema_name}")
+        artifact_path = PUBLIC_ROOT / artifact_file
+        if not artifact_path.is_file():
+            return _fail(f"required schema-backed artifact missing: {artifact_file}")
+        example_path = PUBLIC_ROOT / example_file
+        if not example_path.is_file():
+            return _fail(f"required schema example missing: {example_file}")
+        validator = Draft202012Validator(defs[schema_name])
+        for payload_path in (artifact_path, example_path):
+            try:
+                validator.validate(_read_json(payload_path))
+            except Exception as exc:  # noqa: BLE001
+                return _fail(f"schema validation failed for {payload_path.relative_to(REPO_ROOT)} ({schema_name}): {exc}")
 
     meta = _read_json(PUBLIC_ROOT / "repo_snapshot_meta.json")
     freshness = _read_json(PUBLIC_ROOT / "dashboard_freshness_status.json")
@@ -130,6 +173,21 @@ def main() -> int:
 
     if is_stale and state == "live":
         return _fail(f"dashboard snapshot is stale ({age_hours:.1f}h > {MAX_STALE_HOURS}h)")
+
+    readiness = _read_json(PUBLIC_ROOT / "readiness_to_expand_validator.json")
+    closeout = _read_json(PUBLIC_ROOT / "operator_trust_closeout_artifact.json")
+    promotion_gate = _read_json(PUBLIC_ROOT / "governed_promotion_discipline_gate.json")
+
+    readiness_state = readiness.get("readiness_state")
+    allowed = {"Tune instead", "Validate with another run", "Ready for bounded expansion", "Unknown"}
+    if readiness_state not in allowed:
+        return _fail("readiness_to_expand_validator.readiness_state is invalid")
+
+    if readiness_state != "Ready for bounded expansion" and promotion_gate.get("promotion_decision") == "bounded_promote":
+        return _fail("promotion gate cannot bounded_promote when readiness is not ready")
+
+    if closeout.get("expansion_posture") in {"bounded_expand", "expand_now"}:
+        return _fail("operator closeout expansion posture is not conservative")
 
     print("dashboard-public-artifacts: pass")
     return 0

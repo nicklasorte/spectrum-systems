@@ -1,7 +1,7 @@
 {
   "artifact_type": "rq_master_artifact_trace",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-11T12:14:48Z",
+  "generated_at": "2026-04-11T13:02:49Z",
   "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
   "umbrella_sequence": [
     "UMBRELLA-1",
@@ -54,6 +54,9 @@
       "dashboard/public/judgment_application_artifact.json",
       "dashboard/public/readiness_to_expand_validator.json",
       "dashboard/public/operator_trust_closeout_artifact.json",
+      "dashboard/public/compatibility_mirror_retirement_assessment.json",
+      "dashboard/public/dashboard_public_contract_coverage.json",
+      "dashboard/public/governed_promotion_discipline_gate.json",
       "dashboard/public/operator_surface_snapshot_export.json",
       "dashboard/public/deploy_ci_truth_gate.json"
     ],
