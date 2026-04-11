@@ -1,0 +1,14 @@
+{
+  "artifact_type": "repo_write_ingress_manifest",
+  "slice_id": "AH-07",
+  "owner": "AEX",
+  "generated_at": "2026-04-11T18:59:57Z",
+  "approved_ingress_seams": [
+    "aex_repo_write_ingress_wrapper"
+  ],
+  "required_admission_artifacts": [
+    "attested_build_admission_record",
+    "attested_normalized_execution_request",
+    "attested_tlc_handoff_record"
+  ]
+}

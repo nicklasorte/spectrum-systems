@@ -1,0 +1,13 @@
+{
+  "artifact_type": "fix_reentry_lineage_forwarding_record",
+  "slice_id": "AH-13",
+  "owner": "TLC",
+  "generated_at": "2026-04-11T18:59:57Z",
+  "orchestration_only": true,
+  "lineage_forwarded": [
+    "AEX",
+    "TLC",
+    "TPA",
+    "PQX"
+  ]
+}
