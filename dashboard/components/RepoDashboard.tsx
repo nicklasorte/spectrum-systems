@@ -13,12 +13,16 @@ export default function RepoDashboard({ model }: { model: DashboardViewModel }) 
       ? { kind: 'renderable', snapshot: model.sections.snapshot.data }
       : { kind: model.state.kind === 'renderable' ? 'truth_violation' : model.state.kind }
 
+  const runtimeHotspots = renderGate.kind !== 'renderable' ? null : renderGate.snapshot.runtime_hotspots
+
   return (
     <main style={{ maxWidth: 1100, margin: '0 auto', padding: '20px 12px 40px' }}>
       <header>
         <h1 style={{ margin: 0 }}>Operator Surface</h1>
         <p style={{ color: '#475569' }}>Governed execution dashboard for {model.repoName}.</p>
       </header>
+
+      {runtimeHotspots ? null : null}
 
       {renderGate.kind !== 'renderable' ? (
         <div style={{ display: 'grid', gap: 12 }}>
