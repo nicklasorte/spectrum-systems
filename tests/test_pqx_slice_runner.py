@@ -209,6 +209,9 @@ def test_run_pqx_slice_valid_run_emits_required_artifacts(tmp_path: Path) -> Non
     assert bundle["replay_result_ref"]
     assert bundle["control_decision_ref"]
     assert bundle["certification_result_ref"]
+    assert bundle["replay_comparison"]["comparison_digest"]
+    assert isinstance(bundle["replay_comparison"]["hash_match"], bool)
+    assert isinstance(bundle["replay_comparison"]["fingerprint_match"], bool)
 
     replay = json.loads(Path(result["slice_execution_record"]).read_text(encoding="utf-8"))
     replay_ref = replay["replay_result_ref"]
