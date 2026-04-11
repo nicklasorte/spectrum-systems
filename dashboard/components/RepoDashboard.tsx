@@ -112,6 +112,8 @@ type ArtifactLoad = {
   loaded: boolean
 }
 
+type ArtifactPresence = Record<string, boolean>
+
 const fallbackSnapshot: Snapshot = {
   repo_name: 'spectrum-systems',
   root_counts: { files_total: 0, runtime_modules: 0, tests: 0, contracts_total: 0, docs: 0, run_artifacts: 0 },
@@ -260,68 +262,84 @@ export default function RepoDashboard() {
   const [constitutionDrift, setConstitutionDrift] = useState<ConstitutionResult | null>(null)
   const [roadmapAlignment, setRoadmapAlignment] = useState<ConstitutionResult | null>(null)
   const [serialBundle, setSerialBundle] = useState<ConstitutionResult | null>(null)
+  const [artifactPresence, setArtifactPresence] = useState<ArtifactPresence>({})
 
   useEffect(() => {
     let cancelled = false
 
-    const retrieveArtifact = async <T,>(path: string): Promise<T | null> => {
+    const retrieveArtifact = async <T,>(path: string): Promise<{ data: T | null; loaded: boolean }> => {
       try {
         const response = await fetch(path)
-        if (!response.ok) return null
-        return (await response.json()) as T
+        if (!response.ok) return { data: null, loaded: false }
+        return { data: (await response.json()) as T, loaded: true }
       } catch {
-        return null
+        return { data: null, loaded: false }
       }
     }
 
     const retrieveAll = async () => {
+      const presence: ArtifactPresence = {}
+
       const snapshotData = await retrieveArtifact<Snapshot>('/repo_snapshot.json')
-      if (!cancelled) setSnapshot(snapshotData ?? fallbackSnapshot)
+      presence.repo_snapshot = snapshotData.loaded
+      if (!cancelled) setSnapshot(snapshotData.data ?? fallbackSnapshot)
 
       const snapshotMetaData = await retrieveArtifact<SnapshotMeta>('/repo_snapshot_meta.json')
-      if (!cancelled) setSnapshotMeta(snapshotMetaData)
+      presence.repo_snapshot_meta = snapshotMetaData.loaded
+      if (!cancelled) setSnapshotMeta(snapshotMetaData.data)
 
       const bottleneckData = await retrieveArtifact<BottleneckRecord>('/current_bottleneck_record.json')
-      if (!cancelled) setBottleneck(bottleneckData)
+      presence.current_bottleneck_record = bottleneckData.loaded
+      if (!cancelled) setBottleneck(bottleneckData.data)
 
       const driftData = await retrieveArtifact<DriftRecord>('/drift_trend_continuity_artifact.json')
-      if (!cancelled) setDrift(driftData)
+      presence.drift_trend_continuity = driftData.loaded
+      if (!cancelled) setDrift(driftData.data)
 
       const previousDriftData = await retrieveArtifact<DriftRecord>('/prior_drift_trend_continuity_artifact.json')
-      if (!cancelled) setPreviousDrift(previousDriftData)
+      if (!cancelled) setPreviousDrift(previousDriftData.data)
 
       const roadmapData = await retrieveArtifact<RoadmapState>('/canonical_roadmap_state_artifact.json')
-      if (!cancelled) setRoadmapState(roadmapData)
+      if (!cancelled) setRoadmapState(roadmapData.data)
 
       const maturityData = await retrieveArtifact<MaturityTracker>('/maturity_phase_tracker.json')
-      if (!cancelled) setMaturityState(maturityData)
+      if (!cancelled) setMaturityState(maturityData.data)
 
       const hardGateData = await retrieveArtifact<HardGateState>('/hard_gate_status_record.json')
-      if (!cancelled) setHardGate(hardGateData)
+      presence.hard_gate_status = hardGateData.loaded
+      if (!cancelled) setHardGate(hardGateData.data)
 
       const previousHardGateData = await retrieveArtifact<HardGateState>('/prior_hard_gate_status_record.json')
-      if (!cancelled) setPreviousHardGate(previousHardGateData)
+      if (!cancelled) setPreviousHardGate(previousHardGateData.data)
 
       const runData = await retrieveArtifact<RunState>('/current_run_state_record.json')
-      if (!cancelled) setRunState(runData)
+      presence.current_run_state = runData.loaded
+      if (!cancelled) setRunState(runData.data)
 
       const previousRunData = await retrieveArtifact<RunState>('/prior_current_run_state_record.json')
-      if (!cancelled) setPreviousRunState(previousRunData)
+      if (!cancelled) setPreviousRunState(previousRunData.data)
 
       const deferredData = await retrieveArtifact<{ items?: DeferredItem[] }>('/deferred_item_register.json')
-      if (!cancelled) setDeferredItems(Array.isArray(deferredData?.items) ? deferredData.items : [])
+      presence.deferred_item_register = deferredData.loaded
+      if (!cancelled) setDeferredItems(Array.isArray(deferredData.data?.items) ? deferredData.data.items : [])
 
       const trackerData = await retrieveArtifact<{ items?: DeferredReadiness[] }>('/deferred_return_tracker.json')
-      if (!cancelled) setDeferredTracker(Array.isArray(trackerData?.items) ? trackerData.items : [])
+      presence.deferred_return_tracker = trackerData.loaded
+      if (!cancelled) setDeferredTracker(Array.isArray(trackerData.data?.items) ? trackerData.data.items : [])
 
       const constitutionData = await retrieveArtifact<ConstitutionResult>('/constitutional_drift_checker_result.json')
-      if (!cancelled) setConstitutionDrift(constitutionData)
+      presence.constitutional_drift_checker = constitutionData.loaded
+      if (!cancelled) setConstitutionDrift(constitutionData.data)
 
       const alignmentData = await retrieveArtifact<ConstitutionResult>('/roadmap_alignment_validator_result.json')
-      if (!cancelled) setRoadmapAlignment(alignmentData)
+      presence.roadmap_alignment_validator = alignmentData.loaded
+      if (!cancelled) setRoadmapAlignment(alignmentData.data)
 
       const serialData = await retrieveArtifact<ConstitutionResult>('/serial_bundle_validator_result.json')
-      if (!cancelled) setSerialBundle(serialData)
+      presence.serial_bundle_validator = serialData.loaded
+      if (!cancelled) setSerialBundle(serialData.data)
+
+      if (!cancelled) setArtifactPresence(presence)
     }
 
     retrieveAll()
@@ -352,19 +370,19 @@ export default function RepoDashboard() {
 
   const artifactLoads = useMemo<ArtifactLoad[]>(
     () => [
-      { label: 'repo_snapshot', loaded: !!snapshot.root_counts },
-      { label: 'repo_snapshot_meta', loaded: !!snapshotMeta },
-      { label: 'current_bottleneck_record', loaded: !!bottleneck },
-      { label: 'drift_trend_continuity', loaded: !!drift },
-      { label: 'hard_gate_status', loaded: !!hardGate },
-      { label: 'current_run_state', loaded: !!runState },
-      { label: 'deferred_item_register', loaded: deferredItems.length > 0 },
-      { label: 'deferred_return_tracker', loaded: deferredTracker.length > 0 },
-      { label: 'constitutional_drift_checker', loaded: !!constitutionDrift },
-      { label: 'roadmap_alignment_validator', loaded: !!roadmapAlignment },
-      { label: 'serial_bundle_validator', loaded: !!serialBundle }
+      { label: 'repo_snapshot', loaded: artifactPresence.repo_snapshot ?? !!snapshot.root_counts },
+      { label: 'repo_snapshot_meta', loaded: artifactPresence.repo_snapshot_meta ?? !!snapshotMeta },
+      { label: 'current_bottleneck_record', loaded: artifactPresence.current_bottleneck_record ?? !!bottleneck },
+      { label: 'drift_trend_continuity', loaded: artifactPresence.drift_trend_continuity ?? !!drift },
+      { label: 'hard_gate_status', loaded: artifactPresence.hard_gate_status ?? !!hardGate },
+      { label: 'current_run_state', loaded: artifactPresence.current_run_state ?? !!runState },
+      { label: 'deferred_item_register', loaded: artifactPresence.deferred_item_register ?? false },
+      { label: 'deferred_return_tracker', loaded: artifactPresence.deferred_return_tracker ?? false },
+      { label: 'constitutional_drift_checker', loaded: artifactPresence.constitutional_drift_checker ?? !!constitutionDrift },
+      { label: 'roadmap_alignment_validator', loaded: artifactPresence.roadmap_alignment_validator ?? !!roadmapAlignment },
+      { label: 'serial_bundle_validator', loaded: artifactPresence.serial_bundle_validator ?? !!serialBundle }
     ],
-    [snapshot.root_counts, snapshotMeta, bottleneck, drift, hardGate, runState, deferredItems.length, deferredTracker.length, constitutionDrift, roadmapAlignment, serialBundle]
+    [snapshot.root_counts, snapshotMeta, bottleneck, drift, hardGate, runState, constitutionDrift, roadmapAlignment, serialBundle, artifactPresence]
   )
 
   const refresh = useMemo(() => deriveRefreshState(snapshotMeta), [snapshotMeta])
