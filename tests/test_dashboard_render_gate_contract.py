@@ -24,8 +24,6 @@ def test_component_declares_discriminated_render_gate_states() -> None:
         assert token in content
 
 
-def test_runtime_hotspots_are_read_only_behind_renderable_gate() -> None:
+def test_runtime_hotspots_are_not_read_in_repo_dashboard() -> None:
     content = _read(COMPONENT_PATH)
-    assert "renderGate.kind !== 'renderable' ? null" in content
-    assert "renderGate.snapshot.runtime_hotspots" in content
-    assert "{snapshot.runtime_hotspots" not in content
+    assert "runtime_hotspots" not in content

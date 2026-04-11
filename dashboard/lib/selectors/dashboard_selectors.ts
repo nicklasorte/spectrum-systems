@@ -13,16 +13,6 @@ function makeSection<T>(title: string, data: T | null, state: SectionState, reas
   return { title, data, state, reason, provenance }
 }
 
-function truthyStatus(value?: string): boolean {
-  const v = (value ?? '').toLowerCase()
-  return ['pass', 'ready', 'good', 'healthy', 'satisfied'].some((token) => v.includes(token))
-}
-
-function blockedStatus(value?: string): boolean {
-  const v = (value ?? '').toLowerCase()
-  return ['block', 'repair', 'fail', 'risk', 'freeze'].some((token) => v.includes(token))
-}
-
 function confidenceFromScore(score?: number): 'High' | 'Medium' | 'Low' {
   if (typeof score !== 'number') return 'Low'
   if (score >= 0.8) return 'High'
@@ -30,15 +20,16 @@ function confidenceFromScore(score?: number): 'High' | 'Medium' | 'Low' {
   return 'Low'
 }
 
-function recommendationProvenanceRows(record: RecommendationRecord | null, timestamp?: string): Array<{ artifact: string; path: string; keyFields: string[]; timestamp?: string }> {
-  if (!record) {
-    return [{ artifact: 'next_action_recommendation_record.json', path: '/next_action_recommendation_record.json', keyFields: ['records'], timestamp }]
+function recommendationProvenanceRows(record: RecommendationRecord, timestamp?: string): Array<{ artifact: string; path: string; keyFields: string[]; timestamp?: string }> {
+  const basis = (record.source_basis ?? []).filter((value) => typeof value === 'string' && value.trim().length > 0)
+  if (basis.length === 0) {
+    return [{ artifact: 'next_action_recommendation_record.json', path: '/next_action_recommendation_record.json', keyFields: ['records', 'recommended_next_action'], timestamp }]
   }
 
-  return (record.source_basis ?? []).map((pathValue, index) => ({
-    artifact: `recommendation_source_${index + 1}`,
-    path: pathValue,
-    keyFields: ['source_basis', 'provenance_categories'],
+  return basis.map((pathValue) => ({
+    artifact: pathValue.split('/').pop() ?? pathValue,
+    path: pathValue.startsWith('/') ? pathValue : `/${pathValue}`,
+    keyFields: ['source_basis'],
     timestamp
   }))
 }
@@ -50,6 +41,16 @@ function classifyExplorerStatus(artifact: ArtifactRecord, declaredArtifacts: Set
   if (isDeclared && !artifact.exists) return 'declared_missing'
   if (!isDeclared && artifact.exists && !artifact.valid) return 'loaded_invalid'
   return 'loaded_undeclared'
+}
+
+function deriveHardGateUnsatisfied(readinessStatus?: string): boolean {
+  const normalized = readinessStatus ?? 'unknown'
+  return normalized !== 'ready' && normalized !== 'pass'
+}
+
+function deriveRunBlocked(currentRunStatus?: string): boolean {
+  const normalized = currentRunStatus ?? 'unknown'
+  return normalized === 'blocked' || normalized === 'repair_required' || normalized === 'failed'
 }
 
 export function selectDashboardViewModel(publication: DashboardPublication): DashboardViewModel {
@@ -77,7 +78,7 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
     const loaded = loadedByName.get(name)
     return Boolean(loaded?.exists && loaded.valid)
   }).length
-  const declaredCount = publication.manifest.data?.artifact_count ?? declaredRequired.length
+  const declaredCount = declaredRequired.length
 
   const manifestCompleteness = declaredCount === 0
     ? 'No declared artifacts'
@@ -85,13 +86,13 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
       ? `Complete (${validLoadedCount}/${declaredCount})`
       : `Incomplete (${validLoadedCount}/${declaredCount} valid declared artifacts)`
 
-  const syncAuditState = publication.manifest.data?.publication_state
-    ? `manifest:${publication.manifest.data.publication_state}`
-    : 'manifest:unknown'
+  const syncAuditState = publication.syncAudit.exists && publication.syncAudit.valid
+    ? `sync_audit:${publication.syncAudit.data?.publication_state ?? 'unknown'}`
+    : `sync_audit_unavailable:${publication.syncAudit.error ?? 'missing_or_invalid'}`
 
   const truthViolation = state.kind !== 'renderable'
-  const hardGateUnsatisfied = !truthyStatus(hardGate?.readiness_status)
-  const runBlocked = blockedStatus(runState?.current_run_status)
+  const hardGateUnsatisfied = deriveHardGateUnsatisfied(hardGate?.readiness_status)
+  const runBlocked = deriveRunBlocked(runState?.current_run_status)
 
   const recommendationRecords = publication.recommendationRecord.data?.records ?? []
   const recommendationRecord = recommendationRecords.length ? recommendationRecords[recommendationRecords.length - 1] : null
@@ -114,49 +115,31 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
         provenance: recommendationProvenanceRows(recommendationRecord, publication.recommendationRecord.timestamp),
         synthesizedFallback: false
       }
-    : truthViolation
-      ? {
-          title: 'No recommendation: fail-closed truth gate active',
-          reason: 'Critical artifacts are missing, stale, invalid, or not live-backed.',
-          confidence: 'Low' as const,
-          sourceBasis: 'truth gate',
-          why: ['UI cannot imply correctness without backed artifacts.', 'Fail-closed execution blocks operator guidance under truth violation.'],
-          whatChanges: ['Required artifacts are publish-complete.', 'Freshness and source-live checks pass.'],
-          provenance: [{ artifact: publication.recommendationRecord.name, path: publication.recommendationRecord.path, keyFields: ['records'], timestamp: publication.recommendationRecord.timestamp }],
-          synthesizedFallback: true
-        }
-      : hardGateUnsatisfied
-        ? {
-            title: `Satisfy hard gate: ${hardGate?.gate_name ?? 'active gate'}`,
-            reason: 'Promotion requires certification and hard-gate evidence closure.',
-            confidence: 'High' as const,
-            sourceBasis: 'hard gate',
-            why: ['Hard gate readiness is unsatisfied.', 'Control integrity remains blocked.'],
-            whatChanges: ['Required hard-gate evidence becomes complete.', 'Hard gate readiness moves to pass/ready.'],
-            provenance: [{ artifact: publication.hardGate.name, path: publication.hardGate.path, keyFields: ['gate_name', 'readiness_status'], timestamp: publication.hardGate.timestamp }],
-            synthesizedFallback: true
-          }
-        : runBlocked
-          ? {
-              title: `Run bounded repair for ${bottleneck?.bottleneck_name ?? 'current bottleneck'}`,
-              reason: 'Current run-state artifact indicates blocked or repair-needed execution.',
-              confidence: 'High' as const,
-              sourceBasis: 'run state',
-              why: ['Run-state indicates blocked flow.', 'Repair loop pressure should be reduced before expansion.'],
-              whatChanges: ['Run state clears from blocked/repair.', 'Repair loop pressure stabilizes.'],
-              provenance: [{ artifact: publication.runState.name, path: publication.runState.path, keyFields: ['current_run_status', 'repair_loop_count'], timestamp: publication.runState.timestamp }],
-              synthesizedFallback: true
-            }
-          : {
-              title: `Address bottleneck: ${bottleneck?.bottleneck_name ?? 'best available target'}`,
-              reason: bottleneck?.explanation ?? 'Bottleneck evidence exists in published artifacts.',
-              confidence: 'Medium' as const,
-              sourceBasis: 'bottleneck',
-              why: ['Current bottleneck artifact exists.', 'Reducing bottleneck improves execution integrity.'],
-              whatChanges: ['Hard gate becomes unsatisfied.', 'Run state becomes blocked.'],
-              provenance: [{ artifact: publication.bottleneck.name, path: publication.bottleneck.path, keyFields: ['bottleneck_name', 'explanation'], timestamp: publication.bottleneck.timestamp }],
-              synthesizedFallback: true
-            }
+    : {
+        title: truthViolation
+          ? 'No recommendation: fail-closed truth gate active'
+          : hardGateUnsatisfied
+            ? `Satisfy hard gate: ${hardGate?.gate_name ?? 'active gate'}`
+            : runBlocked
+              ? `Run bounded repair for ${bottleneck?.bottleneck_name ?? 'current bottleneck'}`
+              : `Address bottleneck: ${bottleneck?.bottleneck_name ?? 'best available target'}`,
+        reason: truthViolation
+          ? 'Critical artifacts are missing, stale, invalid, or not live-backed.'
+          : hardGateUnsatisfied
+            ? 'Promotion requires certification and hard-gate evidence closure.'
+            : runBlocked
+              ? 'Current run-state artifact indicates blocked execution.'
+              : bottleneck?.explanation ?? 'Bottleneck evidence exists in published artifacts.',
+        confidence: truthViolation || hardGateUnsatisfied || runBlocked ? 'High' as const : 'Medium' as const,
+        sourceBasis: 'labeled_fallback',
+        why: [
+          'Recommendation artifact missing or invalid; fallback branch is explicitly labeled.',
+          truthViolation ? 'Fail-closed execution blocks operator guidance under truth violation.' : 'Fallback uses explicit enum-mapped status fields.'
+        ],
+        whatChanges: ['Publish a valid next_action_recommendation_record artifact to replace fallback guidance.'],
+        provenance: [{ artifact: publication.recommendationRecord.name, path: publication.recommendationRecord.path, keyFields: ['records', 'artifact_type'], timestamp: publication.recommendationRecord.timestamp }],
+        synthesizedFallback: true
+      }
 
   const freshnessHours = snapshot ? Math.max(0, Math.floor((Date.now() - Date.parse(publication.snapshotMeta.data?.last_refreshed_time ?? '')) / (1000 * 60 * 60))) : 0
 
@@ -229,7 +212,7 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
     healthScorecards: [
       { family: 'snapshot/publication', score: publication.snapshot.exists ? 100 : 0, grade: publication.snapshot.exists ? 'A' : 'F', rule: 'artifact exists + valid' },
       { family: 'run state', score: publication.runState.exists ? 100 : 0, grade: publication.runState.exists ? 'A' : 'F', rule: 'current_run_state_record required' },
-      { family: 'hard gate', score: truthyStatus(hardGate?.readiness_status) ? 100 : 40, grade: truthyStatus(hardGate?.readiness_status) ? 'A' : 'D', rule: 'readiness_status must indicate pass/ready' },
+      { family: 'hard gate', score: hardGateUnsatisfied ? 40 : 100, grade: hardGateUnsatisfied ? 'D' : 'A', rule: 'readiness_status enum must be ready/pass' },
       { family: 'drift', score: publication.drift.exists ? 100 : 0, grade: publication.drift.exists ? 'A' : 'F', rule: 'drift artifact required' },
       { family: 'recommendation quality', score: state.kind === 'renderable' && !recommendation.synthesizedFallback ? 100 : 20, grade: state.kind === 'renderable' && !recommendation.synthesizedFallback ? 'A' : 'D', rule: 'recommendation artifact should be available and valid' },
       { family: 'constitutional alignment', score: constitution?.violations?.length ? 30 : 100, grade: constitution?.violations?.length ? 'D' : 'A', rule: 'no constitutional violations' }
@@ -248,7 +231,19 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
       path: item.path,
       status: item.exists ? (item.valid ? 'valid' : 'invalid') : 'missing',
       timestamp: item.timestamp,
-      keysUsed: ['artifact-backed']
+      keysUsed: item.name === 'repo_snapshot.json'
+        ? ['repo_name', 'root_counts', 'runtime_hotspots']
+        : item.name === 'repo_snapshot_meta.json'
+          ? ['data_source_state', 'last_refreshed_time']
+          : item.name === 'hard_gate_status_record.json'
+            ? ['gate_name', 'readiness_status']
+            : item.name === 'current_run_state_record.json'
+              ? ['current_run_status', 'repair_loop_count']
+              : item.name === 'next_action_recommendation_record.json'
+                ? ['artifact_type', 'records']
+                : item.name === 'dashboard_publication_sync_audit.json'
+                  ? ['artifact_type', 'publication_state', 'records']
+                  : ['artifact_type']
     })),
     trends: [
       { label: 'freshness', value: state.kind === 'stale' ? 'stale' : 'live' },

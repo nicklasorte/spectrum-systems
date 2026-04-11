@@ -4,35 +4,96 @@ function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v)
 }
 
-function hasRequiredFields(data: Record<string, unknown>, fields: string[]): boolean {
-  return fields.every((field) => data[field] !== undefined && data[field] !== null)
+function isString(v: unknown): v is string {
+  return typeof v === 'string' && v.trim().length > 0
+}
+
+function isStringArray(v: unknown): v is string[] {
+  return Array.isArray(v) && v.every((item) => typeof item === 'string')
+}
+
+function isNumber(v: unknown): v is number {
+  return typeof v === 'number' && Number.isFinite(v)
+}
+
+function requireField(data: Record<string, unknown>, field: string, check: (value: unknown) => boolean, message: string): string | null {
+  if (!check(data[field])) return message
+  return null
 }
 
 export function validateArtifactShape(name: string, data: unknown): { valid: boolean; error?: string } {
   if (data === null || data === undefined) return { valid: false, error: `${name} is null` }
-
   if (!isObject(data)) return { valid: false, error: `${name} must be object` }
 
-  if (name === 'deferred_item_register.json' || name === 'deferred_return_tracker.json') {
-    return { valid: true }
+  if (name === 'repo_snapshot_meta.json') {
+    const err = requireField(data, 'data_source_state', (value) => value === 'live' || value === 'stale' || value === 'offline', `${name} invalid data_source_state enum`) ??
+      requireField(data, 'last_refreshed_time', isString, `${name} missing last_refreshed_time string`)
+    return err ? { valid: false, error: err } : { valid: true }
   }
 
-  if (name === 'next_action_recommendation_record.json') {
-    if (!Array.isArray(data.records)) {
-      return { valid: false, error: `${name} missing required discriminator field: records` }
+  if (name === 'hard_gate_status_record.json') {
+    const err = requireField(data, 'readiness_status', (value) => ['ready', 'pass', 'blocked', 'failed', 'unknown'].includes(String(value)), `${name} invalid readiness_status enum`)
+    return err ? { valid: false, error: err } : { valid: true }
+  }
+
+  if (name === 'current_run_state_record.json') {
+    const statusErr = requireField(data, 'current_run_status', (value) => ['healthy', 'ready', 'blocked', 'repair_required', 'failed', 'unknown'].includes(String(value)), `${name} invalid current_run_status enum`)
+    if (statusErr) return { valid: false, error: statusErr }
+    if (data.repair_loop_count !== undefined && !isNumber(data.repair_loop_count)) {
+      return { valid: false, error: `${name} repair_loop_count must be number when provided` }
     }
     return { valid: true }
   }
 
-  const requiredDiscriminatorFields: Record<string, string[]> = {
-    'repo_snapshot_meta.json': ['data_source_state', 'last_refreshed_time'],
-    'hard_gate_status_record.json': ['readiness_status'],
-    'current_run_state_record.json': ['current_run_status']
+  if (name === 'next_action_recommendation_record.json') {
+    if (data.artifact_type !== 'next_action_recommendation_record_collection') {
+      return { valid: false, error: `${name} invalid artifact_type` }
+    }
+    if (!Array.isArray(data.records) || data.records.length === 0) {
+      return { valid: false, error: `${name} records must be non-empty array` }
+    }
+    for (const [idx, record] of data.records.entries()) {
+      if (!isObject(record)) return { valid: false, error: `${name} records[${idx}] must be object` }
+      if (record.artifact_type !== 'next_action_recommendation_record') {
+        return { valid: false, error: `${name} records[${idx}] invalid artifact_type` }
+      }
+      if (!isString(record.recommended_next_action)) {
+        return { valid: false, error: `${name} records[${idx}] missing recommended_next_action string` }
+      }
+      if (record.confidence !== undefined && !isNumber(record.confidence)) {
+        return { valid: false, error: `${name} records[${idx}] confidence must be number when provided` }
+      }
+      if (record.source_basis !== undefined && !isStringArray(record.source_basis)) {
+        return { valid: false, error: `${name} records[${idx}] source_basis must be string[] when provided` }
+      }
+      if (record.provenance_categories !== undefined && !isStringArray(record.provenance_categories)) {
+        return { valid: false, error: `${name} records[${idx}] provenance_categories must be string[] when provided` }
+      }
+    }
+    return { valid: true }
   }
 
-  const required = requiredDiscriminatorFields[name]
-  if (required && !hasRequiredFields(data, required)) {
-    return { valid: false, error: `${name} missing required discriminator fields: ${required.join(', ')}` }
+  if (name === 'dashboard_publication_sync_audit.json') {
+    const err = requireField(data, 'artifact_type', (value) => value === 'dashboard_publication_sync_audit', `${name} invalid artifact_type`) ??
+      requireField(data, 'publication_state', isString, `${name} missing publication_state string`) ??
+      requireField(data, 'required_artifact_count', isNumber, `${name} missing required_artifact_count number`) ??
+      requireField(data, 'records', Array.isArray, `${name} missing records array`)
+    if (err) return { valid: false, error: err }
+    const records = data.records as unknown[]
+    for (const [idx, row] of records.entries()) {
+      if (!isObject(row)) return { valid: false, error: `${name} records[${idx}] must be object` }
+      if (!isString(row.artifact) || !isString(row.source)) {
+        return { valid: false, error: `${name} records[${idx}] missing artifact/source string` }
+      }
+    }
+    return { valid: true }
+  }
+
+  if (name === 'deferred_item_register.json' || name === 'deferred_return_tracker.json') {
+    if (data.items !== undefined && !Array.isArray(data.items)) {
+      return { valid: false, error: `${name} items must be array when provided` }
+    }
+    return { valid: true }
   }
 
   return { valid: true }
