@@ -1,7 +1,7 @@
 {
   "artifact_type": "operator_trust_closeout_artifact",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-11T11:22:36Z",
+  "generated_at": "2026-04-11T12:14:48Z",
   "operator_truth_status": "closed_for_covered_surfaces",
   "confidence_accountability": "active",
   "promotion_discipline": "certification_required"

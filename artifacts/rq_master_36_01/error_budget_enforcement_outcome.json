@@ -1,7 +1,7 @@
 {
   "artifact_type": "error_budget_enforcement_outcome_artifact",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-11T11:22:36Z",
+  "generated_at": "2026-04-11T12:14:48Z",
   "budget_state": "warn",
   "control_decision_consumed_budget": true,
   "enforcement_outcome": "warn_applied"

@@ -1,0 +1,17 @@
+{
+  "artifact_type": "recommendation_review_surface",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T12:14:48Z",
+  "recommendation_quality": {
+    "accuracy": 0.8333,
+    "coverage": 3,
+    "note": "Measured from real cycles 03-05 only."
+  },
+  "confidence_quality": {
+    "average_confidence": 0.6767,
+    "calibration_error": -0.1567,
+    "note": "Calibration evidence is baseline-only due to short history."
+  },
+  "repeated_weak_patterns": [],
+  "current_guidance_trust_level": "measured_but_bounded"
+}

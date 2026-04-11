@@ -21,6 +21,7 @@ REQUIRED_PUBLIC = [
     "recommendation_accuracy_tracker.json",
     "confidence_calibration_artifact.json",
     "stuck_loop_detector.json",
+    "recommendation_review_surface.json",
     "readiness_to_expand_validator.json",
     "deploy_ci_truth_gate.json",
     "operator_surface_snapshot_export.json",
@@ -107,9 +108,18 @@ def main() -> int:
     recommendation = _read_json(PUBLIC_ROOT / "next_action_recommendation_record.json")
     accuracy = _read_json(PUBLIC_ROOT / "recommendation_accuracy_tracker.json")
 
-    provenance = recommendation.get("provenance")
-    if not isinstance(provenance, list) or not provenance:
-        return _fail("next_action_recommendation_record requires non-empty provenance")
+    records = recommendation.get("records")
+    if isinstance(records, list):
+        if not records:
+            return _fail("next_action_recommendation_record.records must be non-empty")
+        for row in records:
+            provenance = row.get("provenance_categories")
+            if not isinstance(provenance, list) or not provenance:
+                return _fail("each recommendation record requires non-empty provenance_categories")
+    else:
+        provenance = recommendation.get("provenance")
+        if not isinstance(provenance, list) or not provenance:
+            return _fail("next_action_recommendation_record requires non-empty provenance")
 
     confidence = float(accuracy.get("accuracy", 0.0))
     if confidence < 0.0 or confidence > 1.0:

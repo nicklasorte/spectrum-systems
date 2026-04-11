@@ -1,7 +1,7 @@
 {
   "artifact_type": "rq_master_umbrella_checkpoint",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-11T11:22:36Z",
+  "generated_at": "2026-04-11T12:14:48Z",
   "umbrella_id": "UMBRELLA-1",
   "umbrella_name": "OPERATOR_TRUTH_PUBLICATION",
   "intent": "Execute OPERATOR_TRUTH_PUBLICATION with serial hard checkpoint enforcement",

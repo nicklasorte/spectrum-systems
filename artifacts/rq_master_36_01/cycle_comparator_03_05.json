@@ -1,12 +1,56 @@
 {
   "artifact_type": "cycle_comparator_baseline",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-11T11:22:36Z",
+  "generated_at": "2026-04-11T12:14:48Z",
   "cycles": [
     "cycle_03",
     "cycle_04",
     "cycle_05"
   ],
-  "history_sufficiency": "sufficient_for_baseline_only",
-  "trend_claim_policy": "no_strong_trend_claims_until_extended_history"
+  "evidence_paths": [
+    "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-03-artifact-trace.json",
+    "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-04-artifact-trace.json",
+    "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-05-artifact-trace.json"
+  ],
+  "history_sufficiency": {
+    "bottleneck_movement": "baseline_only_three_cycles",
+    "drift_movement": "baseline_only_three_cycles",
+    "repair_loop_movement": "baseline_only_three_cycles",
+    "first_pass_quality_movement": "baseline_only_three_cycles"
+  },
+  "movement": {
+    "bottleneck_movement": {
+      "values": [
+        0.84,
+        0.69,
+        0.61
+      ],
+      "direction_03_to_05": "down"
+    },
+    "drift_movement": {
+      "values": [
+        0.52,
+        0.39,
+        0.34
+      ],
+      "direction_03_to_05": "down"
+    },
+    "repair_loop_movement": {
+      "values": [
+        2,
+        1,
+        1
+      ],
+      "direction_03_to_05": "down"
+    },
+    "first_pass_quality_movement": {
+      "values": [
+        0.58,
+        0.71,
+        0.77
+      ],
+      "direction_03_to_05": "up"
+    }
+  },
+  "trend_claim_policy": "history_is_too_thin_for_long_horizon_claims"
 }
