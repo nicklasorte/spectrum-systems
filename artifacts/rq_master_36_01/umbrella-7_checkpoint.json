@@ -1,0 +1,94 @@
+{
+  "artifact_type": "rq_master_umbrella_checkpoint",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T11:22:36Z",
+  "umbrella_id": "UMBRELLA-7",
+  "umbrella_name": "JUDGMENT_ACTIVATION",
+  "intent": "Execute JUDGMENT_ACTIVATION with serial hard checkpoint enforcement",
+  "slices": [
+    "RQ-29",
+    "RQ-30",
+    "RQ-31",
+    "RQ-32"
+  ],
+  "checkpoint_status": "pass",
+  "tests": {
+    "status": "pass",
+    "command": "umbrella_7_validation_suite"
+  },
+  "schema_validation": {
+    "status": "pass",
+    "scope": [
+      "RQ-29",
+      "RQ-30",
+      "RQ-31",
+      "RQ-32"
+    ]
+  },
+  "eval_control_validation": {
+    "status": "pass",
+    "scope": "control + evaluation coupling where applicable"
+  },
+  "dashboard_truth_validation": {
+    "status": "pass",
+    "scope": "public artifact truth + fallback/live distinction"
+  },
+  "stop_conditions": {
+    "max_files_modified_guard": "pass",
+    "contract_break_guard": "pass",
+    "control_bypass_guard": "pass",
+    "truth_regression_guard": "pass",
+    "confidence_without_evidence_guard": "pass",
+    "fallback_live_ambiguity_guard": "pass",
+    "trend_history_guard": "pass",
+    "ownership_duplication_guard": "pass"
+  },
+  "delivery_contract": {
+    "intent": "JUDGMENT_ACTIVATION",
+    "architecture_changes": [
+      "serial umbrella checkpoint layer + fail-closed publication gate"
+    ],
+    "source_mapping": [
+      "RQ-29",
+      "RQ-30",
+      "RQ-31",
+      "RQ-32"
+    ],
+    "schemas_changed": [],
+    "modules_changed": [
+      "scripts/run_rq_master_36_01.py"
+    ],
+    "tests_added": [
+      "tests/test_rq_master_36_01.py"
+    ],
+    "observability_added": [
+      "umbrella checkpoints",
+      "artifact trace",
+      "operator control snapshot export"
+    ],
+    "dashboard_publication_changes": [
+      "deterministic publication to dashboard/public with completeness gate"
+    ],
+    "control_integration": [
+      "hard stop on checkpoint or stop-condition failure"
+    ],
+    "failure_modes": [
+      "missing required artifact",
+      "invalid checkpoint",
+      "publication incompleteness",
+      "non-pass umbrella"
+    ],
+    "guarantees": [
+      "artifact-first execution",
+      "fail-closed behavior",
+      "promotion requires certification"
+    ],
+    "rollback_plan": [
+      "remove rq_master_36_01 artifacts and revert publication changes"
+    ],
+    "remaining_gaps": [
+      "continue collecting additional real-cycle evidence beyond cycle_05 baseline"
+    ],
+    "certification_readiness_impact": "increases operator truth, recommendation accountability, and promotion discipline evidence"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "artifact_type": "cycle_comparator_baseline",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T11:22:36Z",
+  "cycles": [
+    "cycle_03",
+    "cycle_04",
+    "cycle_05"
+  ],
+  "history_sufficiency": "sufficient_for_baseline_only",
+  "trend_claim_policy": "no_strong_trend_claims_until_extended_history"
+}
