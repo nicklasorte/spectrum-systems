@@ -1,0 +1,8 @@
+{
+  "artifact_type": "repair_loop_program_closeout",
+  "slice_id": "RL-24",
+  "owner": "PRG",
+  "generated_at": "2026-04-11T16:01:04Z",
+  "authoritative": false,
+  "latency_direction": "improving_guarded"
+}

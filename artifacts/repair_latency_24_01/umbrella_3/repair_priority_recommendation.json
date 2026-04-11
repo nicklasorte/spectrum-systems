@@ -1,0 +1,12 @@
+{
+  "artifact_type": "repair_priority_recommendation",
+  "slice_id": "RL-16",
+  "owner": "PRG",
+  "generated_at": "2026-04-11T16:01:04Z",
+  "authoritative": false,
+  "focus": [
+    "replay setup",
+    "template coverage",
+    "retry thrash"
+  ]
+}

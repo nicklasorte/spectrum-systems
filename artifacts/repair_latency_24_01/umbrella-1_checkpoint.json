@@ -1,0 +1,129 @@
+{
+  "artifact_type": "repair_latency_umbrella_checkpoint",
+  "batch_id": "REPAIR-LATENCY-24-01",
+  "generated_at": "2026-04-11T16:01:04Z",
+  "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
+  "umbrella_id": "UMBRELLA-1",
+  "umbrella_name": "SHIFT_LEFT_REPAIR_DETECTION",
+  "slices": [
+    "RL-01",
+    "RL-02",
+    "RL-03",
+    "RL-04",
+    "RL-05",
+    "RL-06"
+  ],
+  "checkpoint_status": "pass",
+  "tests": {
+    "status": "pass",
+    "command": "pytest tests/test_repair_latency_24_01.py -k umbrella_1"
+  },
+  "schema_validation": {
+    "status": "pass",
+    "scope": [
+      "RL-01",
+      "RL-02",
+      "RL-03",
+      "RL-04",
+      "RL-05",
+      "RL-06"
+    ]
+  },
+  "review_eval_control_validation": {
+    "status": "pass",
+    "scope": "repair interpretation, policy gates, replay review, closure discipline"
+  },
+  "registry_ownership_alignment": {
+    "status": "pass",
+    "scope": "single owner per slice; no authority drift"
+  },
+  "repo_mutation_lineage_validation": {
+    "status": "pass",
+    "lineage": [
+      "AEX",
+      "TLC",
+      "TPA",
+      "PQX"
+    ],
+    "bypass_detected": false
+  },
+  "stop_conditions": {
+    "max_files_modified_guard": "pass",
+    "contract_break_guard": "pass",
+    "tests_recoverability_guard": "pass",
+    "repair_execution_bypass_guard": "pass",
+    "prg_authority_misuse_guard": "pass",
+    "tlc_non_orchestration_guard": "pass",
+    "sel_reinterpretation_guard": "pass",
+    "auto_remediation_outruns_enforcement_guard": "pass",
+    "map_semantic_invention_guard": "pass",
+    "ownership_duplication_guard": "pass"
+  },
+  "delivery_contract": {
+    "intent": "Execute SHIFT_LEFT_REPAIR_DETECTION with bounded repair-loop acceleration.",
+    "architecture_changes": [
+      "shift-left interpretation/classification/gating seam",
+      "bounded fast-path handoff seam",
+      "repair-memory + closure strictness seam"
+    ],
+    "source_mapping": [
+      "RL-01",
+      "RL-02",
+      "RL-03",
+      "RL-04",
+      "RL-05",
+      "RL-06"
+    ],
+    "schemas_changed": [],
+    "modules_changed": [
+      "scripts/run_repair_latency_24_01.py"
+    ],
+    "tests_added": [
+      "tests/test_repair_latency_24_01.py"
+    ],
+    "observability_added": [
+      "umbrella checkpoints",
+      "repair latency scoreboard/debt/confidence",
+      "artifact trace"
+    ],
+    "control_governance_integration": [
+      "RIL interprets only",
+      "FRE diagnoses/plans only",
+      "RQX emits fix requests and review verdicts only",
+      "TPA gates only",
+      "PQX executes only",
+      "SEL enforces only",
+      "TLC orchestrates only",
+      "PRG recommends/aggregates only",
+      "RDX sequences roadmap work only",
+      "CDE closure authority only",
+      "MAP projects only",
+      "repo mutation lineage AEX -> TLC -> TPA -> PQX preserved"
+    ],
+    "failure_modes": [
+      "missing required artifact",
+      "ownership boundary violation",
+      "lineage bypass",
+      "checkpoint contract failure"
+    ],
+    "guarantees": [
+      "artifact-first execution",
+      "fail-closed behavior",
+      "promotion requires certification"
+    ],
+    "rollback_plan": [
+      "remove artifacts/repair_latency_24_01 outputs",
+      "remove REPAIR-LATENCY-24-01 trace artifact"
+    ],
+    "remaining_gaps": [
+      "requires live execution telemetry for calibrated latency deltas",
+      "auto-remediation bounded to admissible classes only"
+    ],
+    "registry_alignment_result": "pass"
+  },
+  "checkpoint_status_output": "UMBRELLA-1: pass",
+  "human_confirmation": {
+    "available": false,
+    "status": "not_available_auto_continue_when_all_criteria_pass"
+  }
+}
