@@ -2,7 +2,7 @@ import "./globals.css";
 
 export const metadata = {
   title: "Spectrum Systems Dashboard",
-  description: "Live operational dashboard for Spectrum Systems",
+  description: "Live operational dashboard",
 };
 
 export default function RootLayout({
@@ -12,7 +12,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body style={{ margin: 0 }}>{children}</body>
     </html>
   );
 }

@@ -128,7 +128,10 @@ const notAvailable = 'Not available yet'
 const pageStyle: CSSProperties = {
   maxWidth: 1024,
   margin: '0 auto',
-  padding: '16px 12px 32px'
+  padding: '16px 12px 32px',
+  minHeight: '100vh',
+  position: 'relative',
+  isolation: 'isolate'
 }
 
 const gridStyle: CSSProperties = {
