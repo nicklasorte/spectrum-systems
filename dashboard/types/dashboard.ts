@@ -10,6 +10,12 @@ export type ArtifactRecord<T = unknown> = {
   timestamp?: string
 }
 
+export type DashboardManifest = {
+  publication_state?: string
+  artifact_count?: number
+  required_files?: string[]
+}
+
 export type Snapshot = {
   repo_name?: string
   root_counts?: {
@@ -75,8 +81,31 @@ export type DeferredItem = {
 
 export type DeferredReadiness = { item_id?: string; readiness_signal?: string }
 
+export type RecommendationRecord = {
+  recommendation_id?: string
+  cycle_id?: string
+  recommended_next_action?: string
+  confidence?: number
+  source_basis?: string[]
+  provenance_categories?: string[]
+}
+
+export type RecommendationRecordCollection = {
+  records?: RecommendationRecord[]
+}
+
+export type RecommendationAccuracyTracker = {
+  evaluated_recommendations?: number
+  correct?: number
+  partially_correct?: number
+  wrong?: number
+  accuracy?: number
+}
+
+export type ExplorerCoverageStatus = 'declared_loaded_valid' | 'declared_not_loaded' | 'declared_missing' | 'loaded_invalid' | 'loaded_undeclared'
+
 export type DashboardPublication = {
-  manifest: ArtifactRecord<Record<string, unknown>>
+  manifest: ArtifactRecord<DashboardManifest>
   snapshot: ArtifactRecord<Snapshot>
   snapshotMeta: ArtifactRecord<SnapshotMeta>
   drift: ArtifactRecord<DriftRecord>
@@ -86,6 +115,8 @@ export type DashboardPublication = {
   constitution: ArtifactRecord<ConstitutionResult>
   deferredRegister: ArtifactRecord<{ items?: DeferredItem[] }>
   deferredTracker: ArtifactRecord<{ items?: DeferredReadiness[] }>
+  recommendationRecord: ArtifactRecord<RecommendationRecordCollection>
+  recommendationAccuracyTracker: ArtifactRecord<RecommendationAccuracyTracker>
   allArtifacts: ArtifactRecord[]
 }
 
@@ -109,7 +140,14 @@ export type DashboardViewModel = {
   }
   repoName: string
   freshness: { status: 'Fresh' | 'Stale' | 'Unknown'; lastRefresh: string; note: string }
-  integrity: { manifestCompleteness: string; publicationState: string; syncAuditState: string }
+  integrity: {
+    manifestCompleteness: string
+    publicationState: string
+    syncAuditState: string
+    declaredCount: number
+    loadedCount: number
+    validLoadedCount: number
+  }
   recommendation: {
     title: string
     reason: string
@@ -117,10 +155,12 @@ export type DashboardViewModel = {
     sourceBasis: string
     why: string[]
     whatChanges: string[]
+    provenance: Array<{ artifact: string; path: string; keyFields: string[]; timestamp?: string }>
+    synthesizedFallback: boolean
   }
   comparison: Record<string, string>
   topology: Array<{ node: string; status: 'online' | 'missing' | 'degraded'; provenance: string }>
-  artifactExplorer: Array<{ family: string; name: string; path: string; status: string }>
+  artifactExplorer: Array<{ family: string; name: string; path: string; status: ExplorerCoverageStatus }>
   reviewQueue: Array<{ kind: 'warn' | 'freeze' | 'require_human_review' | 'governance_exception'; reason: string }>
   healthScorecards: Array<{ family: string; score: number; grade: string; rule: string }>
   sections: {

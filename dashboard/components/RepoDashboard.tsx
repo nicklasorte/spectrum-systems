@@ -1,6 +1,7 @@
 import type { DashboardViewModel, Snapshot } from '../types/dashboard'
 import { DashboardSections } from './sections/DashboardSections'
-import { BlockedState } from './primitives/ui'
+import { BlockedState, Card, SectionHeader } from './primitives/ui'
+import { StateStrip } from './primitives/data_views'
 
 type RepoDashboardRenderGate =
   | { kind: 'renderable'; snapshot: Snapshot }
@@ -20,12 +21,25 @@ export default function RepoDashboard({ model }: { model: DashboardViewModel }) 
       </header>
 
       {renderGate.kind !== 'renderable' ? (
-        <BlockedState title={`Dashboard unavailable: ${model.state.kind}`} reason={model.state.reason} />
-      ) : null}
+        <div style={{ display: 'grid', gap: 12 }}>
+          <BlockedState title={`Dashboard unavailable: ${model.state.kind}`} reason={model.state.reason} />
 
-      {renderGate.kind !== 'renderable' ? null : renderGate.snapshot.runtime_hotspots ? null : null}
+          <StateStrip items={[
+            { label: 'publication', value: model.integrity.publicationState },
+            { label: 'freshness', value: model.freshness.status },
+            { label: 'integrity', value: model.integrity.manifestCompleteness },
+            { label: 'reason codes', value: model.state.truthViolationReasons.join(', ') || 'none' }
+          ]} />
 
-      <DashboardSections model={model} />
+          <Card tone='muted'>
+            <SectionHeader title='Blocked-state provenance/debug (non-operational)' subtitle='Surface intentionally excludes operational sections while truth gates are blocked.' />
+            <p style={{ margin: 0, color: '#334155' }}>Missing artifacts: {model.state.missingArtifacts.join(', ') || 'none'}</p>
+            <p style={{ margin: '6px 0 0', color: '#334155' }}>Stale artifacts: {model.state.staleArtifacts.join(', ') || 'none'}</p>
+          </Card>
+        </div>
+      ) : (
+        <DashboardSections model={model} />
+      )}
     </main>
   )
 }

@@ -45,7 +45,7 @@ export function DashboardSections({ model }: { model: DashboardViewModel }) {
         <p>{model.recommendation.title}</p>
         <Timeline title='Why this' items={model.recommendation.why} />
         <Timeline title='What changes' items={model.recommendation.whatChanges} />
-        <ProvenanceDrawer title='recommendation' rows={model.sections.hardGate.provenance} />
+        <ProvenanceDrawer title='recommendation' rows={model.recommendation.provenance} />
       </Card>
 
       <TopologyPanel nodes={model.topology} />
@@ -76,7 +76,7 @@ export function DashboardSections({ model }: { model: DashboardViewModel }) {
 
       <Card>
         <SectionHeader title='Publication integrity' subtitle='Manifest completeness, stale/missing artifacts, and sync audit visibility.' />
-        <KeyValueList pairs={[{ key: 'manifest completeness', value: model.integrity.manifestCompleteness }, { key: 'publication state', value: model.integrity.publicationState }, { key: 'sync audit state', value: model.integrity.syncAuditState }]} />
+        <KeyValueList pairs={[{ key: 'manifest completeness', value: model.integrity.manifestCompleteness }, { key: 'publication state', value: model.integrity.publicationState }, { key: 'sync audit state', value: model.integrity.syncAuditState }, { key: 'declared artifacts', value: model.integrity.declaredCount }, { key: 'loaded declared artifacts', value: model.integrity.loadedCount }, { key: 'valid loaded declared artifacts', value: model.integrity.validLoadedCount }]} />
         <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {model.provenance.map((p) => <ArtifactChip key={p.name} name={p.name} status={p.status} />)}
         </div>
