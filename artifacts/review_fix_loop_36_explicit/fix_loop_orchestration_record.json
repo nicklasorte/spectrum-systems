@@ -1,0 +1,17 @@
+{
+  "artifact_type": "fix_loop_orchestration_record",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 7,
+  "phase": 3,
+  "owner": "TLC",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "loop_start": "2026-04-11T19:42:05Z",
+  "loop_iteration": 1,
+  "handoff_state": "rqx_to_pqx_via_tlc",
+  "bounded_retry_path": [
+    "retry_1",
+    "retry_2",
+    "stop"
+  ],
+  "orchestration_only": true
+}

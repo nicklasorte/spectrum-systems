@@ -1,0 +1,10 @@
+{
+  "artifact_type": "loop_termination_decision",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 29,
+  "phase": 10,
+  "owner": "CDE",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "decision": "continue_within_bound_then_close",
+  "authoritative": true
+}

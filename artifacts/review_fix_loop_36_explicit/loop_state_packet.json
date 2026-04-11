@@ -1,0 +1,13 @@
+{
+  "artifact_type": "loop_state_packet",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 26,
+  "phase": 9,
+  "owner": "RIL",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "current_phase": 12,
+  "unresolved_loop_pressure": "low",
+  "iteration_severity": "bounded",
+  "stalled_indicators": [],
+  "interpretation_only": true
+}
