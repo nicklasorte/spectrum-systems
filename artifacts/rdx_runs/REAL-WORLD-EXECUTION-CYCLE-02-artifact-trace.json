@@ -1,0 +1,290 @@
+{
+  "run_id": "REAL-WORLD-EXECUTION-CYCLE-02",
+  "batch_id": "REAL-WORLD-EXECUTION-CYCLE-02",
+  "umbrella": "GOVERNED_OPERATION_LAYER",
+  "execution_mode": "serial",
+  "executed_at": "2026-04-10T00:00:00Z",
+  "task": {
+    "task_id": "REAL-002",
+    "task_type": "analysis",
+    "objective": "Assess CI validation bottlenecks and produce bounded reliability recommendations",
+    "inputs": [
+      "scripts/run_contract_preflight.py",
+      "scripts/run_review_artifact_validation.py",
+      "artifacts/rdx_runs/BATCH-RDX-EXEC-REAL-01-artifact-trace.json",
+      "docs/reviews/RVW-RDX-EXEC-REAL-01.md"
+    ],
+    "constraints": [
+      "serial_execution_only",
+      "fail_closed_on_missing_evidence",
+      "no_runtime_code_mutation",
+      "bounded_to_single_governed_cycle",
+      "evidence_completeness_required_pre_execution"
+    ],
+    "success_criteria": [
+      "complete_aex_tlc_tpa_pqx_rqx_cde_sel_path",
+      "prefer_zero_repair_loops_with_early_gating",
+      "learning_and_drift_artifacts_produced",
+      "traceable_closure_and_enforcement_decision"
+    ]
+  },
+  "governed_path": [
+    {
+      "step": 1,
+      "owner": "AEX",
+      "artifact": "build_admission_record",
+      "artifact_id": "BAR-REAL-002",
+      "status": "pass",
+      "notes": "task bounded, serial mode enforced, non-mutating analysis scope accepted"
+    },
+    {
+      "step": 1,
+      "owner": "AEX",
+      "artifact": "normalized_execution_request",
+      "artifact_id": "NER-REAL-002",
+      "status": "pass",
+      "normalization": {
+        "primary_type": "VALIDATE",
+        "runtime_mutation_allowed": false,
+        "authority_path": [
+          "AEX",
+          "TLC",
+          "TPA",
+          "PQX",
+          "RQX",
+          "CDE",
+          "SEL"
+        ]
+      }
+    },
+    {
+      "step": 2,
+      "owner": "TLC",
+      "artifact": "tlc_handoff_record",
+      "artifact_id": "TLC-HANDOFF-REAL-002",
+      "status": "pass",
+      "route": "TPA",
+      "checks": [
+        "aex_admission_ref_present",
+        "serial_execution_path_locked",
+        "no_bypass_paths_declared"
+      ]
+    },
+    {
+      "step": 3,
+      "owner": "TPA",
+      "artifact": "tpa_slice_artifact",
+      "artifact_id": "TPA-SLICE-REAL-002-S1",
+      "status": "require_more_evidence",
+      "scope": "analysis_only",
+      "risk": "medium",
+      "required_evidence_surface": {
+        "latency_distribution_summary": "missing",
+        "evidence_link_map": "present",
+        "test_evidence_coverage_summary": "missing",
+        "schema_valid_execution_payloads": "present",
+        "lineage_references_resolvable": "present"
+      },
+      "decision_reason": "pre_execution_evidence_surface_incomplete",
+      "pqx_execution_authorized": false
+    },
+    {
+      "step": 3,
+      "owner": "TPA",
+      "artifact": "tpa_slice_artifact",
+      "artifact_id": "TPA-SLICE-REAL-002-S2",
+      "status": "allow",
+      "scope": "analysis_only",
+      "risk": "low",
+      "required_evidence_surface": {
+        "latency_distribution_summary": "present",
+        "evidence_link_map": "present",
+        "test_evidence_coverage_summary": "present",
+        "schema_valid_execution_payloads": "present",
+        "lineage_references_resolvable": "present"
+      },
+      "decision_reason": "evidence_surface_complete_and_resolvable",
+      "pqx_execution_authorized": true
+    },
+    {
+      "step": 4,
+      "owner": "PQX",
+      "artifact": "pqx_slice_execution_record",
+      "artifact_id": "PQX-SLICE-REAL-002-S2",
+      "status": "pass",
+      "authorization_ref": "TPA-SLICE-REAL-002-S2",
+      "work_summary": "analysis of CI bottlenecks and bounded recommendations generated without runtime mutation"
+    },
+    {
+      "step": 4,
+      "owner": "PQX",
+      "artifact": "pqx_bundle_execution_record",
+      "artifact_id": "PQX-BUNDLE-REAL-002-R1",
+      "status": "pass",
+      "included_evidence": [
+        "latency_distribution_summary",
+        "evidence_link_map",
+        "test_evidence_coverage_summary",
+        "schema_validation_receipts",
+        "lineage_resolution_map"
+      ]
+    },
+    {
+      "step": 5,
+      "owner": "RQX",
+      "artifact": "review_result_artifact",
+      "artifact_id": "RVW-RESULT-REAL-002-R1",
+      "status": "pass",
+      "critical_findings": []
+    },
+    {
+      "step": 5,
+      "owner": "RQX",
+      "artifact": "review_merge_readiness_artifact",
+      "artifact_id": "RVW-MERGE-REAL-002-R1",
+      "status": "ready_for_merge"
+    },
+    {
+      "step": 5,
+      "owner": "RIL",
+      "artifact": "review_integration_packet_artifact",
+      "artifact_id": "RIL-PACKET-REAL-002-R1",
+      "status": "pass"
+    },
+    {
+      "step": 6,
+      "owner": "CDE",
+      "artifact": "closure_decision_artifact",
+      "artifact_id": "CDE-CLOSE-REAL-002-R1",
+      "status": "close",
+      "decision_basis": "first_pass_review_pass_with_complete_pre_execution_evidence"
+    },
+    {
+      "step": 7,
+      "owner": "SEL",
+      "artifact": "system_enforcement_result_artifact",
+      "artifact_id": "SEL-ENFORCE-REAL-002",
+      "status": "allow",
+      "gate_checks": [
+        "cde_closure_present",
+        "review_readiness_present",
+        "no_open_fail_closed_events"
+      ]
+    }
+  ],
+  "early_gating_outcomes": {
+    "pre_pqx_rejections_or_holds": [
+      {
+        "artifact_id": "TPA-SLICE-REAL-002-S1",
+        "outcome": "require_more_evidence",
+        "missing_fields": [
+          "latency_distribution_summary",
+          "test_evidence_coverage_summary"
+        ]
+      }
+    ],
+    "pqx_blocked_until_tpa_allow": true,
+    "late_stage_missing_evidence_failures": 0
+  },
+  "learning_layer": {
+    "evaluation_summary_artifact": {
+      "artifact_id": "EVAL-SUM-REAL-002",
+      "result": "early TPA evidence enforcement reduced late-stage failure incidence",
+      "status": "produced"
+    },
+    "evaluation_pattern_report": {
+      "artifact_id": "EVAL-PATTERN-REAL-002",
+      "result": "evidence completeness defects shifted from RQX detection to TPA detection",
+      "status": "produced"
+    },
+    "execution_observability_artifact": {
+      "artifact_id": "OBS-REAL-002",
+      "result": "latency variance stable, no new execution instability introduced",
+      "status": "produced"
+    },
+    "drift_detection_record": {
+      "artifact_id": "DRIFT-REAL-002",
+      "classification": "moderate_drift_improving",
+      "comparison_to_cycle_01": {
+        "pre_gating_failures_cycle_01": 0,
+        "post_gating_failures_cycle_01": 1,
+        "pre_gating_failures_cycle_02": 1,
+        "post_gating_failures_cycle_02": 0,
+        "repair_loops_cycle_01": 1,
+        "repair_loops_cycle_02": 0
+      },
+      "status": "produced"
+    }
+  },
+  "improvement_layer": {
+    "slice_failure_pattern_record": {
+      "artifact_id": "SFP-REAL-002",
+      "pattern": "missing observability/evidence fields are best handled as pre-execution TPA failures",
+      "status": "produced"
+    },
+    "slice_contract_update_candidate": {
+      "artifact_id": "SCU-REAL-002",
+      "proposal": [
+        "move latency_distribution_summary requirement from RQX expectation to TPA mandatory precheck",
+        "make test_evidence_coverage_summary a required pre-execution field",
+        "require evidence_link_map lineage resolvability before PQX authorization"
+      ],
+      "status": "produced"
+    }
+  },
+  "control_prep_layer": {
+    "control_signal_fusion_record": {
+      "artifact_id": "CSF-REAL-002",
+      "inputs": [
+        "DRIFT-REAL-002",
+        "EVAL-PATTERN-REAL-002",
+        "SFP-REAL-002"
+      ],
+      "drift_weighting": "elevated"
+    },
+    "prioritized_adoption_candidate_set": {
+      "artifact_id": "PACS-REAL-002",
+      "ranking_before_drift": [
+        "expand_optional_apply_window",
+        "add_tpa_evidence_gate_policy",
+        "increase_parallelism_for_analysis_runs"
+      ],
+      "ranking_after_drift": [
+        "add_tpa_evidence_gate_policy",
+        "tighten_lineage_resolvability_gate",
+        "expand_optional_apply_window"
+      ],
+      "drift_influence_explained": "moderate_drift_improving favored tighter gating over throughput expansion"
+    },
+    "cde_control_decision_input": {
+      "artifact_id": "CDE-CDI-REAL-002",
+      "recommended_closure_policy": "close_with_policy_update_followthrough"
+    },
+    "tpa_policy_update_input": {
+      "artifact_id": "TPA-PUI-REAL-002",
+      "recommended_updates": [
+        "hard require latency_distribution_summary",
+        "hard require test_evidence_coverage_summary",
+        "block PQX when lineage references are not resolvable"
+      ]
+    },
+    "control_prep_readiness_record": {
+      "artifact_id": "CPR-REAL-002",
+      "status": "ready"
+    }
+  },
+  "optional_apply": {
+    "attempted": false,
+    "gating_decision": "skip_application",
+    "reason": "operational_cycle_analysis_only_scope",
+    "status": "not_executed"
+  },
+  "failures": [],
+  "repair_loops": [],
+  "final_state": {
+    "closure": "close",
+    "enforcement": "allow",
+    "system_verdict": "SYSTEM_IMPROVED",
+    "next_cycle_readiness": "ready"
+  }
+}
