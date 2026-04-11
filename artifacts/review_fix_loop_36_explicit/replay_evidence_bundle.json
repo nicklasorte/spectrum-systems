@@ -1,0 +1,14 @@
+{
+  "artifact_type": "replay_evidence_bundle",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 19,
+  "phase": 7,
+  "owner": "RIL",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "proof_inputs": [
+    "post_fix_replay_record",
+    "fix_replay_review_result",
+    "cross_run_consistency_record"
+  ],
+  "interpretation_only": true
+}

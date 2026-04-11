@@ -1,0 +1,14 @@
+{
+  "artifact_type": "review_fix_projection_bundle",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 25,
+  "phase": 9,
+  "owner": "MAP",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "current_loop_state": "projected",
+  "operator_projection_channels": [
+    "dashboard",
+    "checkpoint_summary"
+  ],
+  "projection_only": true
+}

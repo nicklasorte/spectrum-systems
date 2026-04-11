@@ -1,0 +1,18 @@
+{
+  "artifact_type": "weak_review_enforcement_result",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 5,
+  "phase": 2,
+  "owner": "SEL",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "fail_closed": true,
+  "blocked_conditions": [
+    "review_incomplete",
+    "critical_checks_missing",
+    "unresolved_signal_threshold"
+  ],
+  "threshold": {
+    "unresolved_signals_max": 0
+  },
+  "status": "pass"
+}

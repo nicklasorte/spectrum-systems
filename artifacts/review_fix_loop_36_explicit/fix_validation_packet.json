@@ -1,0 +1,13 @@
+{
+  "artifact_type": "fix_validation_packet",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 13,
+  "phase": 5,
+  "owner": "RIL",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "resolved": true,
+  "partially_resolved": false,
+  "unresolved": false,
+  "regressed": false,
+  "interpretation_only": true
+}

@@ -1,0 +1,21 @@
+{
+  "artifact_type": "checkpoint_summary",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "execution_mode": "STRICT SERIAL WITH HARD CHECKPOINTS",
+  "checkpoints": {
+    "CHECKPOINT-1": "pass",
+    "CHECKPOINT-2": "pass",
+    "CHECKPOINT-3": "pass",
+    "CHECKPOINT-4": "pass",
+    "CHECKPOINT-5": "pass",
+    "CHECKPOINT-6": "pass",
+    "CHECKPOINT-7": "pass",
+    "CHECKPOINT-8": "pass",
+    "CHECKPOINT-9": "pass",
+    "CHECKPOINT-10": "pass",
+    "CHECKPOINT-11": "pass",
+    "CHECKPOINT-12": "pass"
+  },
+  "progression_rule": "STOP on failure"
+}

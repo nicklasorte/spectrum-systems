@@ -1,0 +1,25 @@
+{
+  "artifact_type": "registry_alignment_result",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "authorities": [
+    "README.md",
+    "docs/architecture/system_registry.md",
+    "docs/roadmaps/system_roadmap.md"
+  ],
+  "cross_checks": {
+    "1_each_step_maps_to_exactly_one_canonical_owner": "pass",
+    "2_no_preparatory_artifact_treated_as_authority": "pass",
+    "3_rqx_reviews_only": "pass",
+    "4_pqx_executes_only": "pass",
+    "5_tpa_gates_only": "pass",
+    "6_sel_enforces_only": "pass",
+    "7_cde_decides_only": "pass",
+    "8_ril_interprets_only": "pass",
+    "9_map_projects_only": "pass",
+    "10_prg_recommends_scores_tracks_only": "pass",
+    "11_tlc_orchestrates_only": "pass",
+    "12_no_branch_merge_path_bypasses_required_governed_artifacts": "pass",
+    "13_no_pr_path_bypasses_replay_or_authenticity_validation": "pass"
+  }
+}

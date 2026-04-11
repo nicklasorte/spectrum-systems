@@ -1,0 +1,13 @@
+{
+  "artifact_type": "review_pass_classification",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 2,
+  "phase": 1,
+  "owner": "RQX",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "first_pass": true,
+  "re_review": true,
+  "final_review": true,
+  "replay_review": true,
+  "regression_review": true
+}

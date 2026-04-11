@@ -1,0 +1,19 @@
+{
+  "artifact_type": "branch_merge_block_result",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 36,
+  "phase": 12,
+  "owner": "SEL",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "fail_closed": true,
+  "blocked_when": [
+    "replay_weak",
+    "authenticity_invalid",
+    "required_artifacts_missing",
+    "merge_readiness_not_satisfied",
+    "contracts_drifted",
+    "unresolved_critical_findings"
+  ],
+  "explicit_reason_output": "enabled",
+  "status": "blocked_until_all_requirements_pass"
+}

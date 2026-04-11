@@ -1,0 +1,13 @@
+{
+  "artifact_type": "fix_loop_admissibility_record",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 8,
+  "phase": 3,
+  "owner": "TPA",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "scope": "bounded_fix_slice",
+  "policy": "within_trust_boundary",
+  "complexity": "low",
+  "boundedness": "hard_limited",
+  "policy_scope_only": true
+}

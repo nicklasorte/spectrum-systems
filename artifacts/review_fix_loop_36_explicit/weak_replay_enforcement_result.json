@@ -1,0 +1,11 @@
+{
+  "artifact_type": "weak_replay_enforcement_result",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 21,
+  "phase": 7,
+  "owner": "SEL",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "fail_closed": true,
+  "weak_replay_evidence": "blocked",
+  "status": "pass"
+}
