@@ -1,0 +1,38 @@
+{
+  "anomaly_interpretation": {
+    "owner": "RIL",
+    "status": "PASS",
+    "unexpected_combinations": []
+  },
+  "artifact_type": "live_truth_and_risk_bundle",
+  "escalation_trigger_engine": {
+    "defined_conditions": [
+      "repeated_failure",
+      "drift_spike",
+      "confidence_collapse"
+    ],
+    "owner": "SEL",
+    "status": "PASS",
+    "triggered": false
+  },
+  "frontend_deploy_preflight": {
+    "blocking_issues": [],
+    "owner": "AEX",
+    "status": "PASS"
+  },
+  "live_deploy_truth_verification": {
+    "owner": "SEL",
+    "repo_live_divergence": false,
+    "status": "PASS"
+  },
+  "production_dashboard_truth_probe": {
+    "matches_artifact_truth": true,
+    "owner": "SEL",
+    "status": "PASS"
+  },
+  "stability_score": {
+    "bottleneck_persistence": 0.18,
+    "owner": "PRG",
+    "stability": 0.84
+  }
+}

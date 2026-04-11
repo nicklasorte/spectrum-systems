@@ -1,0 +1,15 @@
+{
+  "artifact_type": "roadmap_admission_bundle",
+  "exact_owner_per_row": "PASS",
+  "prg_recommendations_non_authoritative": true,
+  "prompt_burden": {
+    "prompt_defined_controls": 8,
+    "residual_prompt_burden_ratio": 0.2667,
+    "runtime_automated_controls": 22
+  },
+  "prompt_optimizer": {
+    "authoritative": false,
+    "recommendation": "merge_low_risk_phases"
+  },
+  "registry_alignment": "PASS"
+}
