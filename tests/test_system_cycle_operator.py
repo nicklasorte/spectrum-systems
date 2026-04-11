@@ -396,6 +396,32 @@ def test_failure_surface_exposes_root_cause_and_action() -> None:
     assert summary["artifact_index"]["downstream_refs"]
 
 
+def test_hard_gate_recommendation_is_prioritized_over_other_paths() -> None:
+    action = sco._next_action("hard_gate_stop", ["AUTH_CERTIFICATION_BLOCK"])
+    assert action.startswith("resolve hard gate")
+
+
+def test_missing_data_forces_degraded_guidance_mode() -> None:
+    integration_inputs = copy.deepcopy(_integration_inputs())
+    integration_inputs["control_decision"]["review_eval_ingested"] = False
+    result = run_system_cycle(
+        roadmap_artifact=_roadmap(),
+        selection_signals=_selection_signals(),
+        authorization_signals=_authorization_signals(),
+        integration_inputs=integration_inputs,
+        pqx_state_path=Path("tests/fixtures/pqx_runs/state.json"),
+        pqx_runs_root=Path("tests/fixtures/pqx_runs"),
+        execution_policy={"max_batches_per_run": 1, "max_continuation_depth": 3},
+        created_at="2026-04-03T23:59:00Z",
+        pqx_execute_fn=_pqx_stub,
+    )
+
+    recommendation = result["next_step_recommendation"]
+    assert any(item == "guidance_degraded_data=true" for item in recommendation["why"])
+    assert "degraded_data_mode=true" in recommendation["next_step"]["watchouts"]
+    assert recommendation["next_step"]["action"] != "execute next governed cycle for batch BATCH-J"
+
+
 def test_cycle_applies_roadmap_adjustments_and_exposes_artifacts() -> None:
     result = run_system_cycle(
         roadmap_artifact=_roadmap(),

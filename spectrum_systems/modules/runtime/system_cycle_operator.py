@@ -858,6 +858,14 @@ def _root_cause_chain(stop_reason: str, blocking_conditions: list[str]) -> list[
 
 
 def _next_action(stop_reason: str, blocking_conditions: list[str]) -> str:
+    hard_gate_blockers = [
+        item
+        for item in blocking_conditions
+        if item.startswith("HARD_GATE_") or item.startswith("CERTIFICATION_") or item.startswith("AUTH_")
+    ]
+    if stop_reason == "hard_gate_stop" or hard_gate_blockers:
+        target = hard_gate_blockers[0] if hard_gate_blockers else "hard_gate_stop"
+        return f"resolve hard gate {target} before any further governed execution"
     if blocking_conditions:
         return f"resolve blocker {blocking_conditions[0]} and rerun bounded governed cycle"
     if stop_reason == "max_batches_reached":
@@ -867,6 +875,49 @@ def _next_action(stop_reason: str, blocking_conditions: list[str]) -> str:
     if stop_reason == "no_eligible_batch":
         return "refresh roadmap and signal readiness before rerun"
     return "inspect run artifacts and remediate before rerun"
+
+
+def _guidance_hardening_state(
+    *,
+    stop_reason: str,
+    blocking_conditions: list[str],
+    unknown_state_blockers: list[str],
+    required_validations_next: list[str],
+    failure_keys: list[str],
+) -> dict[str, Any]:
+    normalized_failure_keys = [str(item).upper() for item in failure_keys]
+    hard_gate_blockers = sorted(
+        {
+            item
+            for item in blocking_conditions
+            if item.startswith("HARD_GATE_") or item.startswith("CERTIFICATION_") or item.startswith("AUTH_")
+        }
+    )
+    if stop_reason == "hard_gate_stop" or any("HARD_GATE" in item for item in normalized_failure_keys):
+        if "HARD_GATE_STOP" not in hard_gate_blockers:
+            hard_gate_blockers.append("HARD_GATE_STOP")
+        hard_gate_blockers = sorted(set(hard_gate_blockers))
+    blocked_run = bool(blocking_conditions) or stop_reason in {
+        "hard_gate_stop",
+        "authorization_block",
+        "authorization_freeze",
+        "execution_blocked",
+        "control_block",
+        "control_freeze",
+        "program_blocking_condition",
+        "unresolved_blocker_persists",
+    }
+    degraded_data = bool(
+        unknown_state_blockers
+        or required_validations_next
+        or any(item.startswith("PROP_") or item.startswith("missing_") for item in blocking_conditions)
+        or stop_reason in {"missing_required_signal", "replay_not_ready"}
+    )
+    return {
+        "hard_gate_blockers": hard_gate_blockers,
+        "blocked_run": blocked_run,
+        "degraded_data": degraded_data,
+    }
 
 
 def _watchouts(stop_reason: str, blocking_conditions: list[str], required_reviews: list[str]) -> list[str]:
@@ -2059,6 +2110,24 @@ def run_system_cycle(
     _validate_schema(next_cycle_decision, "next_cycle_decision")
     next_cycle_decision_ref = f"next_cycle_decision:{next_cycle_decision['cycle_decision_id']}"
     next_cycle_input_bundle_ref = f"next_cycle_input_bundle:{next_cycle_input_bundle['bundle_id']}"
+    guidance_state = _guidance_hardening_state(
+        stop_reason=stop_reason,
+        blocking_conditions=blocking_conditions,
+        unknown_state_blockers=unknown_state_blockers,
+        required_validations_next=required_validations_next,
+        failure_keys=list(run_result.get("reason_codes", [])),
+    )
+    guidance_forced_action = None
+    if guidance_state["hard_gate_blockers"] or stop_reason == "hard_gate_stop":
+        target = guidance_state["hard_gate_blockers"][0] if guidance_state["hard_gate_blockers"] else "hard_gate_stop"
+        guidance_forced_action = f"resolve hard gate {target}"
+    elif guidance_state["blocked_run"]:
+        primary = blocking_conditions[0] if blocking_conditions else stop_reason
+        guidance_forced_action = f"resolve blocker {primary}"
+    elif guidance_state["degraded_data"]:
+        guidance_forced_action = "retrieve missing required artifacts before escalation"
+    if guidance_forced_action:
+        failure_next_action = f"{guidance_forced_action} and rerun bounded governed cycle"
 
     recommendation = {
         "recommendation_id": f"NSR-{_canonical_hash({'run_id': run_result['run_id'], 'at': timestamp})[:12].upper()}",
@@ -2078,6 +2147,9 @@ def run_system_cycle(
             set(
                 why
                 + [
+                    f"guidance_hard_gate_blockers={len(guidance_state['hard_gate_blockers'])}",
+                    f"guidance_blocked_run={str(guidance_state['blocked_run']).lower()}",
+                    f"guidance_degraded_data={str(guidance_state['degraded_data']).lower()}",
                     f"adaptive_guardrail_status={adaptive_trend_report['guardrail_status']}",
                     f"adaptive_useful_batches_per_run={adaptive_observability['average_useful_batches_per_run']}",
                     f"adaptive_policy_review={adaptive_policy_review['review_id']}",
@@ -2101,16 +2173,25 @@ def run_system_cycle(
             ),
         },
         "next_step": {
-            "action": selected_candidate["action"],
+            "action": guidance_forced_action or selected_candidate["action"],
             "why_now": (
-                f"selected {selected_candidate['candidate_id']} via deterministic ranking: "
-                f"program_alignment={selected_factors['program_alignment']}, "
-                f"unblock_potential={selected_factors['unblock_potential']}, "
-                f"risk_reduction={selected_factors['risk_reduction']}, "
-                f"dependency_readiness={selected_factors['dependency_readiness']}, "
-                f"review_readiness={selected_factors['review_readiness']}"
+                (
+                    f"forced guidance path selected via hardening policy: action={guidance_forced_action}; "
+                    f"hard_gate_blockers={len(guidance_state['hard_gate_blockers'])}; "
+                    f"blocked_run={str(guidance_state['blocked_run']).lower()}; "
+                    f"degraded_data={str(guidance_state['degraded_data']).lower()}"
+                )
+                if guidance_forced_action
+                else (
+                    f"selected {selected_candidate['candidate_id']} via deterministic ranking: "
+                    f"program_alignment={selected_factors['program_alignment']}, "
+                    f"unblock_potential={selected_factors['unblock_potential']}, "
+                    f"risk_reduction={selected_factors['risk_reduction']}, "
+                    f"dependency_readiness={selected_factors['dependency_readiness']}, "
+                    f"review_readiness={selected_factors['review_readiness']}"
+                )
             ),
-            "blocked_by": selected_candidate["blockers"],
+            "blocked_by": sorted(set(list(selected_candidate["blockers"]) + blocking_conditions + guidance_state["hard_gate_blockers"])),
             "watchouts": sorted(
                 set(
                     _watchouts(str(run_result["stop_reason"]), blocking_conditions, required_reviews)
@@ -2119,9 +2200,15 @@ def run_system_cycle(
                         f"program_caused_stop={str(program_caused_stop).lower()}",
                     ]
                     + [f"required_validation:{item}" for item in required_validations_next]
+                    + (["degraded_data_mode=true"] if guidance_state["degraded_data"] else [])
                 )
             ),
-            "required_artifacts": selected_candidate["required_artifacts"],
+            "required_artifacts": sorted(
+                set(
+                    list(selected_candidate["required_artifacts"])
+                    + [f"required_validation:{item}" for item in required_validations_next]
+                )
+            ),
         },
         "remediation_plan_ref": remediation_plan_ref,
         "remediation_steps": remediation_plan["remediation_steps"],
