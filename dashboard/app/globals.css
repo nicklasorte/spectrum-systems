@@ -8,12 +8,14 @@ html,
 body {
   margin: 0;
   padding: 0;
-  width: 100%;
-  min-height: 100%;
+  background: #f8fafc;
+  color: #0f172a;
 }
 
 body {
-  font-family: system-ui, sans-serif;
-  background: #f8fafc;
-  overflow-x: hidden;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
