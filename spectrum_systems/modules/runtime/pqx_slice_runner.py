@@ -44,6 +44,10 @@ from spectrum_systems.modules.runtime.enforcement_engine import (
     EnforcementError,
     enforce_control_decision,
 )
+from spectrum_systems.modules.runtime.governance_chain_guard import (
+    GovernanceChainGuardError,
+    validate_governance_chain,
+)
 from spectrum_systems.modules.runtime.repo_write_lineage_guard import (
     RepoWriteLineageGuardError,
     validate_repo_write_lineage,
@@ -1035,6 +1039,25 @@ def run_pqx_slice(
         execution_record["artifacts_emitted"].append(str(contract_preflight_result_artifact_path))
     validate_artifact(execution_record, "pqx_slice_execution_record")
     execution_record_path = _write_json(step_dir / f"{run_id}.pqx_slice_execution_record.json", execution_record)
+
+    try:
+        governance_chain = validate_governance_chain(
+            run_id=run_id,
+            trace_id=trace_id,
+            replay_result_path=replay_path,
+            replay_baseline_path=REPO_ROOT / "contracts" / "examples" / "replay_result.json",
+            regression_result_path=regression_path,
+            control_decision_path=control_path,
+            execution_record_path=execution_record_path,
+        )
+    except GovernanceChainGuardError as exc:
+        return _block_payload(
+            step_id=normalized_step_id,
+            run_id=run_id,
+            reason=f"governance_chain_invalid:{exc}",
+            block_type="GOVERNANCE_CHAIN_BLOCKED",
+        )
+
     review_summary = _emit_post_execution_review(
         step_id=normalized_step_id,
         run_id=run_id,
@@ -1054,6 +1077,7 @@ def run_pqx_slice(
         "eval_artifact_refs": [_relative(regression_path)],
         "control_decision_ref": _relative(control_path),
         "certification_result_ref": _relative(certification_path),
+        "replay_comparison": governance_chain,
     }
     audit_bundle_path = _write_json(step_dir / f"{run_id}.pqx_slice_audit_bundle.json", audit_bundle)
 
