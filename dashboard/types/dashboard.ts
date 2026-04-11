@@ -43,15 +43,19 @@ export type DriftRecord = {
   short_recommendation?: string
 }
 
+export type HardGateReadinessStatus = 'ready' | 'pass' | 'blocked' | 'failed' | 'unknown'
+
 export type HardGateState = {
   gate_name?: string
-  readiness_status?: string
+  readiness_status?: HardGateReadinessStatus
   required_evidence?: string[]
   falsification_risks?: string[]
 }
 
+export type RunExecutionStatus = 'healthy' | 'ready' | 'blocked' | 'repair_required' | 'failed' | 'unknown'
+
 export type RunState = {
-  current_run_status?: string
+  current_run_status?: RunExecutionStatus
   last_successful_cycle?: string
   last_blocked_cycle?: string
   repair_loop_count?: number
@@ -102,6 +106,13 @@ export type RecommendationAccuracyTracker = {
   accuracy?: number
 }
 
+export type DashboardPublicationSyncAudit = {
+  artifact_type?: 'dashboard_publication_sync_audit'
+  publication_state?: string
+  required_artifact_count?: number
+  records?: Array<{ artifact?: string; source?: string; sha256?: string; size_bytes?: number }>
+}
+
 export type ExplorerCoverageStatus = 'declared_loaded_valid' | 'declared_not_loaded' | 'declared_missing' | 'loaded_invalid' | 'loaded_undeclared'
 
 export type DashboardPublication = {
@@ -116,6 +127,7 @@ export type DashboardPublication = {
   deferredRegister: ArtifactRecord<{ items?: DeferredItem[] }>
   deferredTracker: ArtifactRecord<{ items?: DeferredReadiness[] }>
   recommendationRecord: ArtifactRecord<RecommendationRecordCollection>
+  syncAudit: ArtifactRecord<DashboardPublicationSyncAudit>
   recommendationAccuracyTracker: ArtifactRecord<RecommendationAccuracyTracker>
   allArtifacts: ArtifactRecord[]
 }

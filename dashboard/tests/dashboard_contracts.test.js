@@ -54,11 +54,11 @@ test('render-state guard uses manifest coverage and prioritizes source_not_live 
   assert.ok(src.indexOf('source_not_live') < src.indexOf('stale_publication'))
 })
 
-test('manifest completeness and sync audit state are manifest-data derived', () => {
+test('manifest completeness and sync audit state are truthfully derived', () => {
   const src = read('lib/selectors/dashboard_selectors.ts')
-  assert.ok(src.includes('publication.manifest.data?.artifact_count'.replace('publication.', '')))
-  assert.ok(src.includes('manifest:'))
-  assert.ok(src.includes('publication.manifest.data?.publication_state'.replace('publication.', '')))
+  assert.ok(src.includes('const declaredCount = declaredRequired.length'))
+  assert.ok(src.includes('publication.syncAudit.exists && publication.syncAudit.valid'))
+  assert.ok(src.includes('sync_audit:'))
 })
 
 test('recommendation provenance drawer binds to recommendation provenance', () => {
@@ -68,9 +68,10 @@ test('recommendation provenance drawer binds to recommendation provenance', () =
 
 test('discriminator-aware validation rules exist for critical artifacts', () => {
   const src = read('lib/validation/dashboard_validation.ts')
-  assert.ok(src.includes("'repo_snapshot_meta.json': ['data_source_state', 'last_refreshed_time']"))
-  assert.ok(src.includes("'hard_gate_status_record.json': ['readiness_status']"))
-  assert.ok(src.includes("'current_run_state_record.json': ['current_run_status']"))
+  assert.ok(src.includes("if (name === 'repo_snapshot_meta.json')"))
+  assert.ok(src.includes("if (name === 'hard_gate_status_record.json')"))
+  assert.ok(src.includes("if (name === 'current_run_state_record.json')"))
+  assert.ok(src.includes("if (name === 'next_action_recommendation_record.json')"))
 })
 
 test('artifact explorer distinguishes declared/loaded/missing/invalid states', () => {
@@ -80,6 +81,42 @@ test('artifact explorer distinguishes declared/loaded/missing/invalid states', (
   }
 })
 
+
+
+test('selector does not use token heuristics for policy-significant status', () => {
+  const src = read('lib/selectors/dashboard_selectors.ts')
+  assert.ok(!src.includes('truthyStatus'))
+  assert.ok(!src.includes('blockedStatus'))
+  assert.ok(src.includes('deriveHardGateUnsatisfied'))
+  assert.ok(src.includes('deriveRunBlocked'))
+})
+
+test('provenance no longer uses artifact-backed placeholders', () => {
+  const src = read('lib/selectors/dashboard_selectors.ts')
+  assert.ok(!src.includes("keysUsed: ['artifact-backed']"))
+  assert.ok(src.includes("item.name === 'next_action_recommendation_record.json'"))
+})
+
+test('recommendation path is artifact-first with explicit fallback labeling', () => {
+  const src = read('lib/selectors/dashboard_selectors.ts')
+  assert.ok(src.includes('const recommendationIsArtifactBacked'))
+  assert.ok(src.includes("sourceBasis: 'recommendation artifact'"))
+  assert.ok(src.includes("sourceBasis: 'labeled_fallback'"))
+  assert.ok(src.includes('synthesizedFallback: true'))
+})
+
+test('runtime hotspots are not read before renderable branch', () => {
+  const src = read('components/RepoDashboard.tsx')
+  assert.ok(!src.includes('runtime_hotspots'))
+})
+
+test('validation rejects malformed critical artifact fields', () => {
+  const src = read('lib/validation/dashboard_validation.ts')
+  assert.ok(src.includes('invalid data_source_state enum'))
+  assert.ok(src.includes('invalid readiness_status enum'))
+  assert.ok(src.includes('invalid current_run_status enum'))
+  assert.ok(src.includes('records must be non-empty array'))
+})
 test('artifact set exists for critical publication files', () => {
   const pubDir = path.join(__dirname, '..', 'public')
   for (const artifact of ['repo_snapshot.json', 'repo_snapshot_meta.json', 'hard_gate_status_record.json', 'current_run_state_record.json', 'next_action_recommendation_record.json']) {

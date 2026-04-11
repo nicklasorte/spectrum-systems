@@ -7,6 +7,7 @@ import type {
   DeferredItem,
   DeferredReadiness,
   DriftRecord,
+  DashboardPublicationSyncAudit,
   HardGateState,
   RecommendationAccuracyTracker,
   RecommendationRecordCollection,
@@ -43,6 +44,7 @@ export async function loadDashboardPublication(): Promise<DashboardPublication> 
     deferredRegister,
     deferredTracker,
     recommendationRecord,
+    syncAudit,
     recommendationAccuracyTracker
   ] = await Promise.all([
     fetchJsonArtifact<Snapshot>('repo_snapshot.json'),
@@ -55,6 +57,7 @@ export async function loadDashboardPublication(): Promise<DashboardPublication> 
     fetchJsonArtifact<{ items?: DeferredItem[] }>('deferred_item_register.json'),
     fetchJsonArtifact<{ items?: DeferredReadiness[] }>('deferred_return_tracker.json'),
     fetchJsonArtifact<RecommendationRecordCollection>('next_action_recommendation_record.json'),
+    fetchJsonArtifact<DashboardPublicationSyncAudit>('dashboard_publication_sync_audit.json'),
     declaredArtifacts.has('recommendation_accuracy_tracker.json')
       ? fetchJsonArtifact<RecommendationAccuracyTracker>('recommendation_accuracy_tracker.json')
       : Promise.resolve(notLoadedArtifact('recommendation_accuracy_tracker.json') as ArtifactRecord<RecommendationAccuracyTracker>)
@@ -71,6 +74,7 @@ export async function loadDashboardPublication(): Promise<DashboardPublication> 
     deferredRegister,
     deferredTracker,
     recommendationRecord,
+    syncAudit,
     recommendationAccuracyTracker
   ].map(markValidated)
 
@@ -86,7 +90,8 @@ export async function loadDashboardPublication(): Promise<DashboardPublication> 
     deferredRegister: validatedArtifacts[7] as ArtifactRecord<{ items?: DeferredItem[] }>,
     deferredTracker: validatedArtifacts[8] as ArtifactRecord<{ items?: DeferredReadiness[] }>,
     recommendationRecord: validatedArtifacts[9] as ArtifactRecord<RecommendationRecordCollection>,
-    recommendationAccuracyTracker: validatedArtifacts[10] as ArtifactRecord<RecommendationAccuracyTracker>,
+    syncAudit: validatedArtifacts[10] as ArtifactRecord<DashboardPublicationSyncAudit>,
+    recommendationAccuracyTracker: validatedArtifacts[11] as ArtifactRecord<RecommendationAccuracyTracker>,
     allArtifacts: [manifest, ...validatedArtifacts]
   }
 }
