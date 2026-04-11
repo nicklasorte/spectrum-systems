@@ -1,0 +1,46 @@
+{
+  "artifact_type": "roadmap_step_contract",
+  "step_id": "RF-03",
+  "owner": "PQX",
+  "intent": "Realize dependency-aware runtime checks and behavioral test gating for RF-03 under fail-closed execution.",
+  "depends_on": [
+    "RF-01",
+    "RF-02"
+  ],
+  "target_modules": [
+    "spectrum_systems/modules/runtime/roadmap_realization_runtime.py"
+  ],
+  "target_contracts": [
+    "contracts/schemas/roadmap_step_contract.schema.json",
+    "contracts/schemas/roadmap_expansion_trace.schema.json"
+  ],
+  "target_tests": [
+    "pytest tests/test_roadmap_realization_runner.py -k rf03 -q"
+  ],
+  "runtime_entrypoints": [
+    "spectrum_systems.modules.runtime.roadmap_realization_runtime:enforce_realization_dependencies",
+    "spectrum_systems.modules.runtime.roadmap_realization_runtime:next_realization_status"
+  ],
+  "forbidden_patterns": [
+    "_write_json",
+    "artifact-only success",
+    "direct static payload"
+  ],
+  "acceptance_checks": [
+    {
+      "check_id": "rf03_dependency_gate",
+      "description": "Dependency order must be enforced before RF-03 realization.",
+      "required": true
+    },
+    {
+      "check_id": "rf03_behavioral_gate",
+      "description": "Behavioral tests must pass before runtime realization is accepted.",
+      "required": true
+    }
+  ],
+  "realization_mode": "runtime_realization",
+  "realization_status": "verified",
+  "expansion_version": "1.0.0",
+  "expansion_policy_hash": "152968011b794af977ccdfa9813025ef2271dbd6be90a48116d5a6b665b73839",
+  "expansion_trace_ref": "contracts/examples/roadmap_expansion_trace.example.json#RF-03"
+}

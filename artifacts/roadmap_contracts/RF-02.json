@@ -1,0 +1,45 @@
+{
+  "artifact_type": "roadmap_step_contract",
+  "step_id": "RF-02",
+  "owner": "PQX",
+  "intent": "Realize roadmap contract validation and guarded dependency enforcement through runtime-backed realization checks.",
+  "depends_on": [
+    "RF-01"
+  ],
+  "target_modules": [
+    "spectrum_systems/modules/runtime/roadmap_realization_runtime.py"
+  ],
+  "target_contracts": [
+    "contracts/schemas/roadmap_step_contract.schema.json",
+    "contracts/schemas/roadmap_expansion_trace.schema.json"
+  ],
+  "target_tests": [
+    "pytest tests/test_roadmap_realization_runner.py -k rf02 -q"
+  ],
+  "runtime_entrypoints": [
+    "spectrum_systems.modules.runtime.review_cycle_record:create_review_cycle",
+    "spectrum_systems.modules.runtime.roadmap_realization_runtime:next_realization_status"
+  ],
+  "forbidden_patterns": [
+    "_write_json",
+    "artifact-only success",
+    "direct static payload"
+  ],
+  "acceptance_checks": [
+    {
+      "check_id": "rf02_contract_validation",
+      "description": "Step contract validates and target schema paths remain available.",
+      "required": true
+    },
+    {
+      "check_id": "rf02_runtime_gate",
+      "description": "Runtime gate only advances status when behavior checks pass.",
+      "required": true
+    }
+  ],
+  "realization_mode": "runtime_realization",
+  "realization_status": "verified",
+  "expansion_version": "1.0.0",
+  "expansion_policy_hash": "152968011b794af977ccdfa9813025ef2271dbd6be90a48116d5a6b665b73839",
+  "expansion_trace_ref": "contracts/examples/roadmap_expansion_trace.example.json#RF-02"
+}
