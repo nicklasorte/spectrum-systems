@@ -1,0 +1,120 @@
+{
+  "generated_at": "2026-04-11T00:20:42Z",
+  "repo_name": "spectrum-systems",
+  "root_counts": {
+    "files_total": 3629,
+    "runtime_modules": 151,
+    "tests": 344,
+    "contracts_total": 758,
+    "schemas": 410,
+    "examples": 348,
+    "docs": 983,
+    "run_artifacts": 151
+  },
+  "core_areas": [
+    {
+      "name": "artifacts",
+      "description": "Generated artifacts for governed execution."
+    },
+    {
+      "name": "contracts",
+      "description": "Schema and example contract artifacts."
+    },
+    {
+      "name": "docs",
+      "description": "Governance, architecture, and operating documentation."
+    },
+    {
+      "name": "runs",
+      "description": "Run artifacts and execution records."
+    },
+    {
+      "name": "spectrum_systems/modules/runtime",
+      "description": "Governed runtime module surface."
+    },
+    {
+      "name": "tests",
+      "description": "Deterministic validation and conformance coverage."
+    }
+  ],
+  "constitutional_center": [
+    "docs/architecture/system_registry.md",
+    "README.md",
+    "docs/review-actions/README.md",
+    "docs/roadmaps/system_roadmap.md"
+  ],
+  "runtime_hotspots": [
+    {
+      "area": "PQX",
+      "count": 17,
+      "note": "PQX orchestration and execution pathways."
+    },
+    {
+      "area": "Control",
+      "count": 21,
+      "note": "Control-layer and runtime gating logic."
+    },
+    {
+      "area": "Roadmap",
+      "count": 13,
+      "note": "Roadmap-linked execution and sequencing support."
+    },
+    {
+      "area": "Review",
+      "count": 11,
+      "note": "Review ingestion and projection interfaces."
+    },
+    {
+      "area": "Judgment",
+      "count": 6,
+      "note": "Judgment and policy decision logic."
+    },
+    {
+      "area": "Evaluation",
+      "count": 12,
+      "note": "Evaluation and quality validation modules."
+    },
+    {
+      "area": "Replay",
+      "count": 3,
+      "note": "Replay and rerun execution support."
+    },
+    {
+      "area": "Governed repair",
+      "count": 7,
+      "note": "Governed repair and remediation pathways."
+    }
+  ],
+  "operational_signals": [
+    {
+      "title": "Constitution present",
+      "status": "Strong",
+      "detail": "System registry foundation is present."
+    },
+    {
+      "title": "Governed execution surface",
+      "status": "Strong",
+      "detail": "Runtime and contract surfaces are both present."
+    },
+    {
+      "title": "Evidence and review density",
+      "status": "Strong",
+      "detail": "Review artifacts detected: 722 markdown files."
+    },
+    {
+      "title": "Roadmap sprawl risk",
+      "status": "Watch",
+      "detail": "Docs-to-runtime ratio: 6.51."
+    },
+    {
+      "title": "Runtime concentration",
+      "status": "Strong",
+      "detail": "Distinct runtime filename prefixes: 67."
+    },
+    {
+      "title": "Constitutional center coverage",
+      "status": "Strong",
+      "detail": "High-signal constitutional docs listed: 4."
+    }
+  ]
+}
