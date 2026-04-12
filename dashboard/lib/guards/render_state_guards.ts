@@ -1,5 +1,15 @@
 import type { DashboardPublication, RenderStateKind } from '../../types/dashboard'
 
+const DEFAULT_FRESHNESS_WINDOW_HOURS = 6
+
+function parseIsoUtcTimestamp(raw: unknown): number | null {
+  if (typeof raw !== 'string') return null
+  const trimmed = raw.trim()
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(trimmed)) return null
+  const parsed = Date.parse(trimmed)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 export function deriveRenderState(publication: DashboardPublication): {
   kind: RenderStateKind
   reason: string
@@ -49,8 +59,32 @@ export function deriveRenderState(publication: DashboardPublication): {
     }
   }
 
-  const refreshed = publication.snapshotMeta.data?.last_refreshed_time
-  const stale = refreshed ? (Date.now() - Date.parse(refreshed)) / (1000 * 60 * 60) > 6 : true
+  const freshnessPublicationState = String(publication.freshnessStatus.data?.publication_state ?? '').toLowerCase()
+  if (freshnessPublicationState && freshnessPublicationState !== 'live') {
+    return {
+      kind: 'truth_violation',
+      reason: 'Publication freshness state is not live.',
+      missingArtifacts: [],
+      staleArtifacts: [],
+      truthViolationReasons: ['source_not_live']
+    }
+  }
+
+  const freshnessWindow = publication.freshnessStatus.data?.freshness_window_hours
+  const thresholdHours = Number.isFinite(freshnessWindow) && Number(freshnessWindow) > 0
+    ? Number(freshnessWindow)
+    : DEFAULT_FRESHNESS_WINDOW_HOURS
+  const freshnessTimestampMs = parseIsoUtcTimestamp(publication.freshnessStatus.data?.snapshot_last_refreshed_time)
+  const metaTimestampMs = parseIsoUtcTimestamp(publication.snapshotMeta.data?.last_refreshed_time)
+  const normalizedFreshnessStatus = String(publication.freshnessStatus.data?.status ?? '').toLowerCase()
+  const staleByTime = freshnessTimestampMs === null ? true : (Date.now() - freshnessTimestampMs) / (1000 * 60 * 60) > thresholdHours
+  const stale = freshnessTimestampMs === null ||
+    metaTimestampMs === null ||
+    freshnessTimestampMs !== metaTimestampMs ||
+    (normalizedFreshnessStatus !== 'fresh' && normalizedFreshnessStatus !== 'stale') ||
+    (normalizedFreshnessStatus === 'fresh' && staleByTime) ||
+    (normalizedFreshnessStatus === 'stale' && !staleByTime)
+
   if (stale) {
     return {
       kind: 'stale',

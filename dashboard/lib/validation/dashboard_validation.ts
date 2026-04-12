@@ -35,6 +35,14 @@ export function validateArtifactShape(name: string, data: unknown): { valid: boo
     return err ? { valid: false, error: err } : { valid: true }
   }
 
+  if (name === 'dashboard_freshness_status.json') {
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
+    const err = requireField(data, 'status', (value) => value === 'fresh' || value === 'stale' || value === 'unknown', `${name} invalid status enum`) ??
+      requireField(data, 'snapshot_last_refreshed_time', isString, `${name} missing snapshot_last_refreshed_time string`) ??
+      requireField(data, 'freshness_window_hours', isNumber, `${name} missing freshness_window_hours number`)
+    return err ? { valid: false, error: err } : { valid: true }
+  }
+
   if (name === 'dashboard_publication_manifest.json') {
     if (!isObject(data)) return { valid: false, error: `${name} must be object` }
     const validPublicationStates = ['live', 'stale', 'offline']

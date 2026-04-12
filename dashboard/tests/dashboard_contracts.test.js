@@ -54,6 +54,14 @@ test('render-state guard uses manifest coverage and prioritizes source_not_live 
   assert.ok(src.indexOf('source_not_live') < src.indexOf('stale_publication'))
 })
 
+test('render-state stale gate enforces explicit freshness contract and freshness-vs-time consistency', () => {
+  const src = read('lib/guards/render_state_guards.ts')
+  assert.ok(src.includes('DEFAULT_FRESHNESS_WINDOW_HOURS = 6'))
+  assert.ok(src.includes("normalizedFreshnessStatus !== 'fresh' && normalizedFreshnessStatus !== 'stale'"))
+  assert.ok(src.includes("(normalizedFreshnessStatus === 'fresh' && staleByTime)"))
+  assert.ok(src.includes("(normalizedFreshnessStatus === 'stale' && !staleByTime)"))
+})
+
 test('manifest completeness and sync audit state are truthfully derived', () => {
   const src = read('lib/selectors/dashboard_selectors.ts')
   assert.ok(src.includes('const declaredCount = declaredRequired.length'))
@@ -69,6 +77,7 @@ test('recommendation provenance drawer binds to recommendation provenance', () =
 test('discriminator-aware validation rules exist for critical artifacts', () => {
   const src = read('lib/validation/dashboard_validation.ts')
   assert.ok(src.includes("if (name === 'repo_snapshot_meta.json')"))
+  assert.ok(src.includes("if (name === 'dashboard_freshness_status.json')"))
   assert.ok(src.includes("if (name === 'hard_gate_status_record.json')"))
   assert.ok(src.includes("if (name === 'current_run_state_record.json')"))
   assert.ok(src.includes("if (name === 'next_action_recommendation_record.json')"))
@@ -95,6 +104,7 @@ test('provenance no longer uses artifact-backed placeholders', () => {
   const src = read('lib/selectors/dashboard_selectors.ts')
   assert.ok(!src.includes("keysUsed: ['artifact-backed']"))
   assert.ok(src.includes("item.name === 'next_action_recommendation_record.json'"))
+  assert.ok(src.includes("item.name === 'dashboard_freshness_status.json'"))
 })
 
 test('recommendation path is artifact-first with explicit fallback labeling', () => {
