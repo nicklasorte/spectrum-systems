@@ -1,0 +1,338 @@
+{
+  "artifact_type": "rax_redteam_arch_report",
+  "batch": "RAX-REDTEAM-ARCH-01",
+  "execution_mode": "FORENSIC + INVARIANT-DRIVEN + FAIL-FAST",
+  "attacks_attempted": [
+    "01:no_readiness_artifact_present",
+    "02:readiness_missing_required_eval_signals",
+    "03:readiness_contradictory_eval_signals",
+    "04:externally_forged_readiness_inputs",
+    "05:eval_passes_but_readiness_missing",
+    "06:eval_partial_readiness_claims_complete",
+    "07:eval_failure_readiness_says_ready",
+    "08:eval_indeterminate_cannot_be_ready",
+    "09:missing_trace_evidence",
+    "10:missing_lineage_evidence",
+    "11:missing_dependency_integrity",
+    "12:missing_version_authority",
+    "13:unknown_state_missing_signal",
+    "14:schema_valid_meaningless_intent",
+    "15:owner_intent_contradiction",
+    "16:semantically_wrong_target_modules",
+    "17:over_expanded_output",
+    "18:weak_acceptance_checks",
+    "19:rax_implies_promotion_or_advancement",
+    "20:rax_emits_decision_beyond_readiness",
+    "21:rax_bypasses_control_layer",
+    "22:same_input_different_readiness",
+    "23:same_tests_different_eval_signals",
+    "24:same_eval_different_readiness",
+    "25:schema_valid_but_semantic_contract_invalid",
+    "26:artifact_not_fully_trace_linked",
+    "27:artifact_lineage_incomplete",
+    "28:novel_adversarial_pattern",
+    "29:combined_weak_signals_simulate_valid",
+    "30:edge_case_schema_valid_borderline_semantics"
+  ],
+  "attacks_blocked": [
+    "no_readiness_artifact_present",
+    "readiness_missing_required_eval_signals",
+    "readiness_contradictory_eval_signals",
+    "externally_forged_readiness_inputs",
+    "eval_passes_but_readiness_missing",
+    "eval_partial_readiness_claims_complete",
+    "eval_failure_readiness_says_ready",
+    "eval_indeterminate_cannot_be_ready",
+    "missing_trace_evidence",
+    "missing_lineage_evidence",
+    "missing_dependency_integrity",
+    "missing_version_authority",
+    "unknown_state_missing_signal",
+    "schema_valid_meaningless_intent",
+    "owner_intent_contradiction",
+    "semantically_wrong_target_modules",
+    "over_expanded_output",
+    "weak_acceptance_checks",
+    "rax_implies_promotion_or_advancement",
+    "rax_emits_decision_beyond_readiness",
+    "rax_bypasses_control_layer",
+    "same_input_different_readiness",
+    "same_tests_different_eval_signals",
+    "same_eval_different_readiness",
+    "schema_valid_but_semantic_contract_invalid",
+    "artifact_not_fully_trace_linked",
+    "artifact_lineage_incomplete",
+    "combined_weak_signals_simulate_valid",
+    "edge_case_schema_valid_borderline_semantics"
+  ],
+  "attacks_that_succeeded": [
+    "novel_adversarial_pattern"
+  ],
+  "invariant_violations": [],
+  "readiness_gate_failures": [],
+  "eval_chain_failures": [],
+  "semantic_failures": [
+    "novel_adversarial_pattern"
+  ],
+  "trace_lineage_failures": [],
+  "replay_failures": [],
+  "control_boundary_violations": [],
+  "overall_verdict": "FAIL",
+  "strongest_blocked_attacks": [
+    "no_readiness_artifact_present",
+    "externally_forged_readiness_inputs",
+    "missing_trace_evidence",
+    "same_tests_different_eval_signals",
+    "rax_bypasses_control_layer"
+  ],
+  "remaining_weak_seams": [
+    "novel_adversarial_pattern"
+  ],
+  "next_required_fixes": [
+    "Harden readiness enforcement for every succeeded attack before control consumption.",
+    "Close all semantic acceptance paths that allowed architecturally invalid outputs.",
+    "Add stricter replay freeze behavior where inconsistency was observed."
+  ],
+  "attack_results": [
+    {
+      "attack_id": 1,
+      "name": "no_readiness_artifact_present",
+      "blocked": true,
+      "succeeded": false,
+      "category": "readiness_gate_failures",
+      "evidence": "{'allowed': False, 'decision': 'block', 'ready_for_control': False, 'blocking_reasons': ['missing_control_readiness_artifact']}"
+    },
+    {
+      "attack_id": 2,
+      "name": "readiness_missing_required_eval_signals",
+      "blocked": true,
+      "succeeded": false,
+      "category": "readiness_gate_failures",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['missing_eval:rax_trace_integrity', 'missing_required_eval_types'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+    },
+    {
+      "attack_id": 3,
+      "name": "readiness_contradictory_eval_signals",
+      "blocked": true,
+      "succeeded": false,
+      "category": "readiness_gate_failures",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['contradictory_eval_signals', 'eval_summary_contradicts_eval_results', 'missing_eval:rax_trace_integrity', 'missing_required_eval_types', 'required_eval_failed:rax_input_semantic_sufficiency', 'semantic_intent_insufficient'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+    },
+    {
+      "attack_id": 4,
+      "name": "externally_forged_readiness_inputs",
+      "blocked": true,
+      "succeeded": false,
+      "category": "readiness_gate_failures",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['missing_eval:rax_trace_integrity', 'missing_required_eval_types', 'required_eval_coverage_missing_set_mismatch', 'required_eval_coverage_overall_result_mismatch', 'required_eval_coverage_summary_mismatch'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+    },
+    {
+      "attack_id": 5,
+      "name": "eval_passes_but_readiness_missing",
+      "blocked": true,
+      "succeeded": false,
+      "category": "eval_chain_failures",
+      "evidence": "{'allowed': False, 'decision': 'block', 'ready_for_control': False, 'blocking_reasons': ['missing_control_readiness_artifact']}"
+    },
+    {
+      "attack_id": 6,
+      "name": "eval_partial_readiness_claims_complete",
+      "blocked": true,
+      "succeeded": false,
+      "category": "eval_chain_failures",
+      "evidence": "{'blocked': True, 'reasons': ['eval_summary_missing_required_eval_reference', 'eval_summary_not_pass', 'missing_required_eval_artifact'], 'missing_from_results': ['rax_trace_integrity'], 'missing_from_summary': ['rax_owner_intent_alignment', 'rax_trace_integrity']}"
+    },
+    {
+      "attack_id": 7,
+      "name": "eval_failure_readiness_says_ready",
+      "blocked": true,
+      "succeeded": false,
+      "category": "eval_chain_failures",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['contradictory_eval_signals', 'eval_summary_contradicts_eval_results', 'required_eval_coverage_overall_result_mismatch', 'required_eval_failed:rax_control_readiness', 'required_eval_failed:rax_input_semantic_sufficiency', 'semantic_intent_insufficient', 'tests_pass_eval_fail'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_trace_integrity', 'rax_version_authority_alignment'], 'missing_required_eval_types': [], 'trace_complete': True, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+    },
+    {
+      "attack_id": 8,
+      "name": "eval_indeterminate_cannot_be_ready",
+      "blocked": true,
+      "succeeded": false,
+      "category": "eval_chain_failures",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['contradictory_eval_signals', 'missing_eval:rax_trace_integrity', 'missing_required_eval_types', 'required_eval_failed:rax_input_semantic_sufficiency'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+    },
+    {
+      "attack_id": 9,
+      "name": "missing_trace_evidence",
+      "blocked": true,
+      "succeeded": false,
+      "category": "trace_lineage_failures",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['missing_eval:rax_trace_integrity', 'missing_required_eval_types', 'missing_trace_integrity_evidence'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+    },
+    {
+      "attack_id": 10,
+      "name": "missing_lineage_evidence",
+      "blocked": true,
+      "succeeded": false,
+      "category": "trace_lineage_failures",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['missing_eval:rax_trace_integrity', 'missing_lineage_provenance_evidence', 'missing_required_eval_types'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+    },
+    {
+      "attack_id": 11,
+      "name": "missing_dependency_integrity",
+      "blocked": true,
+      "succeeded": false,
+      "category": "invariant_violations",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['dependency_graph_corrupt', 'missing_eval:rax_trace_integrity', 'missing_required_eval_types'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+    },
+    {
+      "attack_id": 12,
+      "name": "missing_version_authority",
+      "blocked": true,
+      "succeeded": false,
+      "category": "invariant_violations",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['missing_eval:rax_trace_integrity', 'missing_required_eval_types', 'missing_version_authority_evidence'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': False}"
+    },
+    {
+      "attack_id": 13,
+      "name": "unknown_state_missing_signal",
+      "blocked": true,
+      "succeeded": false,
+      "category": "invariant_violations",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['missing_eval:rax_trace_integrity', 'missing_required_eval_types', 'required_eval_coverage_overall_result_mismatch'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+    },
+    {
+      "attack_id": 14,
+      "name": "schema_valid_meaningless_intent",
+      "blocked": true,
+      "succeeded": false,
+      "category": "semantic_failures",
+      "evidence": "{'passed': False, 'details': ['upstream schema validation passed', 'semantic_intent_insufficient: intent content is placeholder-like or too weak'], 'failure_classification': 'invalid_input', 'stop_condition_triggered': True}"
+    },
+    {
+      "attack_id": 15,
+      "name": "owner_intent_contradiction",
+      "blocked": true,
+      "succeeded": false,
+      "category": "semantic_failures",
+      "evidence": "{'passed': False, 'details': ['upstream schema validation passed', \"owner_intent_contradiction: owner-intent contradiction: owner=PRG cannot claim 'execute runtime'\"], 'failure_classification': 'ownership_violation', 'stop_condition_triggered': True}"
+    },
+    {
+      "attack_id": 16,
+      "name": "semantically_wrong_target_modules",
+      "blocked": true,
+      "succeeded": false,
+      "category": "semantic_failures",
+      "evidence": "{'passed': False, 'details': ['downstream schema validation passed', 'owner_target_contradiction: all target_modules must satisfy owner policy prefixes'], 'failure_classification': 'downstream_incompatible', 'stop_condition_triggered': True}"
+    },
+    {
+      "attack_id": 17,
+      "name": "over_expanded_output",
+      "blocked": true,
+      "succeeded": false,
+      "category": "semantic_failures",
+      "evidence": "{'passed': False, 'details': ['downstream schema validation passed', 'owner_target_contradiction: all target_modules must satisfy owner policy prefixes'], 'failure_classification': 'downstream_incompatible', 'stop_condition_triggered': True}"
+    },
+    {
+      "attack_id": 18,
+      "name": "weak_acceptance_checks",
+      "blocked": true,
+      "succeeded": false,
+      "category": "semantic_failures",
+      "evidence": "{'passed': False, 'details': ['downstream schema validation passed', 'weak_acceptance_check[0]: description too short', 'weak_acceptance_check[0]: weak language detected', 'weak_acceptance_check[0]: missing verification semantics'], 'failure_classification': 'invalid_output', 'stop_condition_triggered': True}"
+    },
+    {
+      "attack_id": 19,
+      "name": "rax_implies_promotion_or_advancement",
+      "blocked": true,
+      "succeeded": false,
+      "category": "control_boundary_violations",
+      "evidence": "{'artifact_type': 'rax_assurance_audit_record', 'roadmap_id': 'SYSTEM-ROADMAP-2026', 'step_id': 'RAX-INTERFACE-24-01', 'input_validation_result': {'passed': True, 'details': ['semantic_intent_sufficient']}, 'output_validation_result': {'passed': True, 'details': ['output_semantically_aligned']}, 'counter_evidence': [], 'freshness_result': {'passed': True, 'details': ['freshness evaluated as part of input assurance']}, 'provenance_result': {'passed': True, 'details': ['provenance evaluated as part of input assurance']}, 'failure_classification': 'none', 'repairability_classification': 'none', 'stop_condition_triggered': False, 'acceptance_decision': 'accept_candidate', 'status_transition_result': 'legal'}"
+    },
+    {
+      "attack_id": 20,
+      "name": "rax_emits_decision_beyond_readiness",
+      "blocked": true,
+      "succeeded": false,
+      "category": "control_boundary_violations",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['missing_eval:rax_trace_integrity', 'missing_required_eval_types'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+    },
+    {
+      "attack_id": 21,
+      "name": "rax_bypasses_control_layer",
+      "blocked": true,
+      "succeeded": false,
+      "category": "control_boundary_violations",
+      "evidence": "{'allowed': False, 'decision': 'block', 'ready_for_control': False, 'blocking_reasons': ['missing_control_readiness_artifact']}"
+    },
+    {
+      "attack_id": 22,
+      "name": "same_input_different_readiness",
+      "blocked": true,
+      "succeeded": false,
+      "category": "replay_failures",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'hold', 'blocking_reasons': ['contradictory_eval_signals', 'cross_run_eval_signal_inconsistency', 'missing_eval:rax_trace_integrity', 'missing_required_eval_types', 'required_eval_failed:rax_input_semantic_sufficiency', 'semantic_intent_insufficient'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+    },
+    {
+      "attack_id": 23,
+      "name": "same_tests_different_eval_signals",
+      "blocked": true,
+      "succeeded": false,
+      "category": "replay_failures",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'hold', 'blocking_reasons': ['contradictory_eval_signals', 'cross_run_eval_signal_inconsistency', 'missing_eval:rax_trace_integrity', 'missing_required_eval_types', 'required_eval_failed:rax_input_semantic_sufficiency', 'semantic_intent_insufficient'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+    },
+    {
+      "attack_id": 24,
+      "name": "same_eval_different_readiness",
+      "blocked": true,
+      "succeeded": false,
+      "category": "replay_failures",
+      "evidence": "{'first': {'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['missing_eval:rax_trace_integrity', 'missing_required_eval_types'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}, 'second': {'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['missing_eval:rax_trace_integrity', 'missing_required_eval_types'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}}"
+    },
+    {
+      "attack_id": 25,
+      "name": "schema_valid_but_semantic_contract_invalid",
+      "blocked": true,
+      "succeeded": false,
+      "category": "invariant_violations",
+      "evidence": "{'passed': False, 'details': ['downstream schema validation passed', 'weak_acceptance_check[0]: non-operational acceptance language detected'], 'failure_classification': 'invalid_output', 'stop_condition_triggered': True}"
+    },
+    {
+      "attack_id": 26,
+      "name": "artifact_not_fully_trace_linked",
+      "blocked": true,
+      "succeeded": false,
+      "category": "trace_lineage_failures",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['artifact_not_trace_linked', 'missing_eval:rax_trace_integrity', 'missing_required_eval_types', 'trace_incomplete'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+    },
+    {
+      "attack_id": 27,
+      "name": "artifact_lineage_incomplete",
+      "blocked": true,
+      "succeeded": false,
+      "category": "trace_lineage_failures",
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-REDTEAM-ARCH-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['artifact_lineage_invalid', 'missing_eval:rax_trace_integrity', 'missing_required_eval_types'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+    },
+    {
+      "attack_id": 28,
+      "name": "novel_adversarial_pattern",
+      "blocked": false,
+      "succeeded": true,
+      "category": "semantic_failures",
+      "evidence": "{'passed': True, 'details': ['upstream schema validation passed'], 'failure_classification': 'none', 'stop_condition_triggered': False}"
+    },
+    {
+      "attack_id": 29,
+      "name": "combined_weak_signals_simulate_valid",
+      "blocked": true,
+      "succeeded": false,
+      "category": "invariant_violations",
+      "evidence": "{'passed': False, 'details': ['upstream schema validation passed', 'forged_authority_override_detected', 'source_version_drift: supplied_authority=9.9.9 immutable_authority=1.3.112'], 'failure_classification': 'stale_reference', 'stop_condition_triggered': True}"
+    },
+    {
+      "attack_id": 30,
+      "name": "edge_case_schema_valid_borderline_semantics",
+      "blocked": true,
+      "succeeded": false,
+      "category": "semantic_failures",
+      "evidence": "{'passed': False, 'details': ['downstream schema validation passed', 'weak_acceptance_check[0]: weak language detected', 'weak_acceptance_check[0]: missing verification semantics', 'weak_acceptance_check[0]: non-operational acceptance language detected'], 'failure_classification': 'invalid_output', 'stop_condition_triggered': True}"
+    }
+  ]
+}
