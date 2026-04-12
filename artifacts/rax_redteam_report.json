@@ -1,0 +1,273 @@
+{
+  "artifact_type": "rax_redteam_report",
+  "batch": "RAX-REDTEAM-REVIEW-02",
+  "execution_mode": "FORENSIC ADVERSARIAL REVIEW WITH FAIL-FAST REPORTING",
+  "attacks_attempted": [
+    "invalid_contract_attack_result",
+    "dependency_bypass_attack_result",
+    "forbidden_pattern_evasion_attack_result",
+    "fake_test_success_attack_result",
+    "status_forging_attack_result",
+    "ownership_boundary_attack_result",
+    "expansion_trace_tampering_attack_result",
+    "fail_closed_result_semantics_review"
+  ],
+  "attacks_blocked": [
+    "invalid_contract_attack_result",
+    "dependency_bypass_attack_result",
+    "forbidden_pattern_evasion_attack_result",
+    "status_forging_attack_result",
+    "ownership_boundary_attack_result",
+    "expansion_trace_tampering_attack_result",
+    "fail_closed_result_semantics_review"
+  ],
+  "attacks_that_succeeded": [
+    "fake_test_success_attack_result"
+  ],
+  "severity_by_attack": {
+    "invalid_contract_attack_result": "none",
+    "dependency_bypass_attack_result": "none",
+    "forbidden_pattern_evasion_attack_result": "none",
+    "fake_test_success_attack_result": "critical",
+    "status_forging_attack_result": "none",
+    "ownership_boundary_attack_result": "none",
+    "expansion_trace_tampering_attack_result": "none",
+    "fail_closed_result_semantics_review": "none"
+  },
+  "boundary_violations_found": [
+    "disallowed_module_prefix",
+    "wrong_target_readme",
+    "disallowed_test_prefix"
+  ],
+  "status_forging_possible": false,
+  "overall_verdict": "FAIL",
+  "attack_results": {
+    "invalid_contract_attack_result": {
+      "blocked": true,
+      "cases": [
+        {
+          "attack": "missing_target_modules",
+          "blocked": true,
+          "overall_status": "fail"
+        },
+        {
+          "attack": "empty_target_modules",
+          "blocked": true,
+          "overall_status": "fail"
+        },
+        {
+          "attack": "missing_acceptance_checks",
+          "blocked": true,
+          "overall_status": "fail"
+        },
+        {
+          "attack": "empty_acceptance_checks",
+          "blocked": true,
+          "overall_status": "fail"
+        },
+        {
+          "attack": "empty_target_tests_runtime",
+          "blocked": true,
+          "overall_status": "fail"
+        },
+        {
+          "attack": "empty_runtime_entrypoints_runtime",
+          "blocked": true,
+          "overall_status": "fail"
+        },
+        {
+          "attack": "invalid_enum_value",
+          "blocked": true,
+          "overall_status": "fail"
+        },
+        {
+          "attack": "malformed_step_id",
+          "blocked": true,
+          "overall_status": "fail"
+        },
+        {
+          "attack": "malformed_expansion_trace_ref",
+          "blocked": true,
+          "overall_status": "fail"
+        }
+      ]
+    },
+    "dependency_bypass_attack_result": {
+      "blocked": true,
+      "cases": [
+        {
+          "attack": "RF-03 before RF-02",
+          "blocked": true
+        },
+        {
+          "attack": "RF-03 with RF-02 planned_only",
+          "blocked": true
+        },
+        {
+          "attack": "RF-03 with RF-02 artifact_materialized",
+          "blocked": true
+        }
+      ]
+    },
+    "forbidden_pattern_evasion_attack_result": {
+      "blocked": true,
+      "cases": [
+        {
+          "attack": "direct_write_json",
+          "blocked": true,
+          "hits": 4
+        },
+        {
+          "attack": "helper_wrapper_write",
+          "blocked": true,
+          "hits": 3
+        },
+        {
+          "attack": "static_payload_helper",
+          "blocked": true,
+          "hits": 2
+        },
+        {
+          "attack": "indirect_status_pass",
+          "blocked": true,
+          "hits": 3
+        },
+        {
+          "attack": "artifact_only_helper",
+          "blocked": true,
+          "hits": 3
+        }
+      ]
+    },
+    "fake_test_success_attack_result": {
+      "blocked": false,
+      "cases": [
+        {
+          "attack": "python_c_exit0",
+          "blocked": true,
+          "policy_approved": false
+        },
+        {
+          "attack": "file_existence_only",
+          "blocked": true,
+          "policy_approved": false
+        },
+        {
+          "attack": "string_match_only",
+          "blocked": false,
+          "policy_approved": true
+        },
+        {
+          "attack": "non_behavioral_smoke_only",
+          "blocked": false,
+          "policy_approved": true
+        }
+      ]
+    },
+    "status_forging_attack_result": {
+      "blocked": true,
+      "cases": [
+        {
+          "attack": "forge_runtime_realized",
+          "blocked": true,
+          "status_updates": [
+            {
+              "step_id": "RF-02",
+              "from": "planned_only",
+              "to": "runtime_realized"
+            },
+            {
+              "step_id": "RF-02",
+              "from": "runtime_realized",
+              "to": "verified"
+            }
+          ]
+        },
+        {
+          "attack": "forge_verified",
+          "blocked": true,
+          "status_updates": [
+            {
+              "step_id": "RF-02",
+              "from": "planned_only",
+              "to": "runtime_realized"
+            },
+            {
+              "step_id": "RF-02",
+              "from": "runtime_realized",
+              "to": "verified"
+            }
+          ]
+        }
+      ]
+    },
+    "ownership_boundary_attack_result": {
+      "blocked": true,
+      "cases": [
+        {
+          "attack": "disallowed_module_prefix",
+          "blocked": true,
+          "invalid_modules": [
+            "spectrum_systems/modules/control/illegal.py"
+          ],
+          "invalid_tests": []
+        },
+        {
+          "attack": "wrong_target_readme",
+          "blocked": true,
+          "invalid_modules": [
+            "README.md"
+          ],
+          "invalid_tests": []
+        },
+        {
+          "attack": "disallowed_test_prefix",
+          "blocked": true,
+          "invalid_modules": [],
+          "invalid_tests": [
+            "pytest tests/test_done.py -q"
+          ]
+        }
+      ]
+    },
+    "expansion_trace_tampering_attack_result": {
+      "blocked": true,
+      "cases": [
+        {
+          "attack": "mismatched_expansion_policy_hash",
+          "blocked": true,
+          "failure": "expansion_policy_hash mismatch for RF-02"
+        },
+        {
+          "attack": "fake_expansion_trace_reference",
+          "blocked": true,
+          "failure": "'contracts/examples/does_not_exist.json#RF-02' does not match '^contracts/examples/roadmap_expansion_trace\\\\.example\\\\.json#[A-Za-z0-9._:-]+$'\n\nFailed validating 'pattern' in schema['properties']['expansion_trace_ref']:\n    {'type': 'string',\n     'pattern': '^contracts/examples/roadmap_expansion_trace\\\\.example\\\\.json#[A-Za-z0-9._:-]+$'}\n\nOn instance['expansion_trace_ref']:\n    'contracts/examples/does_not_exist.json#RF-02'"
+        },
+        {
+          "attack": "inconsistent_version_hash_combo",
+          "blocked": true,
+          "failure": "expansion_version mismatch for RF-02"
+        }
+      ]
+    },
+    "fail_closed_result_semantics_review": {
+      "blocked": true,
+      "observed": {
+        "overall_status": "fail",
+        "passed_steps": [],
+        "status_updates": []
+      }
+    }
+  },
+  "strongest_blocked_attacks": [
+    "dependency_bypass_attack_result",
+    "status_forging_attack_result",
+    "expansion_trace_tampering_attack_result"
+  ],
+  "remaining_weak_seams": [
+    "Critical bypass remains."
+  ],
+  "next_required_fixes": [
+    "Close critical bypasses before production use."
+  ]
+}
