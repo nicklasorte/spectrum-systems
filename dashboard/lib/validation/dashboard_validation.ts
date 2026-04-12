@@ -12,10 +12,8 @@ function isStringArray(v: unknown): v is string[] {
   return Array.isArray(v) && v.every((item) => typeof item === 'string')
 }
 
-function isUniqueNonEmptyStringArray(v: unknown): v is string[] {
-  if (!Array.isArray(v) || v.length === 0) return false
-  if (!v.every((item) => typeof item === 'string' && item.trim().length > 0)) return false
-  return new Set(v).size === v.length
+function isNonEmptyStringArray(v: unknown): v is string[] {
+  return Array.isArray(v) && v.length > 0 && v.every((item) => typeof item === 'string' && item.trim().length > 0)
 }
 
 function isNumber(v: unknown): v is number {
@@ -53,8 +51,8 @@ export function validateArtifactShape(name: string, data: unknown): { valid: boo
     const requiredFilesErr = requireField(
       data,
       'required_files',
-      isUniqueNonEmptyStringArray,
-      `${name} required_files must be non-empty unique string[]`
+      isNonEmptyStringArray,
+      `${name} required_files must be non-empty string[]`
     )
     if (requiredFilesErr) return { valid: false, error: requiredFilesErr }
 

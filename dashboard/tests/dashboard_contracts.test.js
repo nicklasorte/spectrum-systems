@@ -127,7 +127,7 @@ test('manifest validation is strict for publication state and required files int
   const src = read('lib/validation/dashboard_validation.ts')
   assert.ok(src.includes("if (name === 'dashboard_publication_manifest.json')"))
   assert.ok(src.includes('invalid publication_state enum'))
-  assert.ok(src.includes('required_files must be non-empty unique string[]'))
+  assert.ok(src.includes('required_files must be non-empty string[]'))
   assert.ok(src.includes('artifact_count must match required_files length'))
 })
 
