@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.dev/contracts/foundation_roadmap_execution_record.schema.json",
+  "title": "Foundation Roadmap Execution Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "trace_id",
+    "run_id",
+    "governed_family",
+    "roadmap_steps",
+    "primary_control_decision",
+    "judgment",
+    "error_budget",
+    "derived_artifacts",
+    "promotion_gates"
+  ],
+  "properties": {
+    "artifact_type": {"const": "foundation_roadmap_execution_record"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "artifact_version": {"type": "string", "const": "1.0.0"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "standards_version": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "governed_family": {"type": "string", "minLength": 1},
+    "roadmap_steps": {
+      "type": "array",
+      "minItems": 24,
+      "maxItems": 24,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["step_id", "status", "detail"],
+        "properties": {
+          "step_id": {"type": "string", "pattern": "^(JUD|CL|GOV|OBS|INT|SUB)-[0-9]{2,3}[A-Z]?$"},
+          "status": {"type": "string", "enum": ["completed"]},
+          "detail": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "primary_control_decision": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]},
+    "judgment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "judgment_type",
+        "required_eval_types",
+        "provided_eval_types",
+        "policy_deviation_detected",
+        "precedent_ids",
+        "policy_conflict_strategy",
+        "candidate_policy_version",
+        "active_policy_version"
+      ],
+      "properties": {
+        "judgment_type": {"type": "string", "minLength": 1},
+        "required_eval_types": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "provided_eval_types": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "policy_deviation_detected": {"type": "boolean"},
+        "precedent_ids": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "policy_conflict_strategy": {"type": "string", "enum": ["no_conflict", "conservative_tie_break", "escalate_to_governance"]},
+        "candidate_policy_version": {"type": "string", "minLength": 1},
+        "active_policy_version": {"type": "string", "minLength": 1}
+      }
+    },
+    "error_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "triggered_conditions", "burn_rates"],
+      "properties": {
+        "status": {"type": "string", "enum": ["healthy", "warning", "exhausted", "invalid"]},
+        "triggered_conditions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "burn_rates": {
+          "type": "object",
+          "additionalProperties": {"type": "number", "minimum": 0}
+        }
+      }
+    },
+    "derived_artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "failure_eval_cases",
+        "trust_posture_snapshot",
+        "override_hotspot_report",
+        "evidence_gap_hotspot_report",
+        "policy_regression_report",
+        "slice_canary",
+        "champion_challenger"
+      ],
+      "properties": {
+        "failure_eval_cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["case_id", "source"],
+            "properties": {
+              "case_id": {"type": "string", "minLength": 1},
+              "source": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "trust_posture_snapshot": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["trust_score", "control_decision", "certification_ready"],
+          "properties": {
+            "trust_score": {"type": "number", "minimum": 0, "maximum": 1},
+            "control_decision": {"type": "string", "enum": ["allow", "warn", "freeze", "block"]},
+            "certification_ready": {"type": "boolean"}
+          }
+        },
+        "override_hotspot_report": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["route_id", "override_count"],
+          "properties": {
+            "route_id": {"type": "string", "minLength": 1},
+            "override_count": {"type": "integer", "minimum": 0}
+          }
+        },
+        "evidence_gap_hotspot_report": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["route_id", "evidence_gap_count"],
+          "properties": {
+            "route_id": {"type": "string", "minLength": 1},
+            "evidence_gap_count": {"type": "integer", "minimum": 0}
+          }
+        },
+        "policy_regression_report": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["policy_version", "regression_detected"],
+          "properties": {
+            "policy_version": {"type": "string", "minLength": 1},
+            "regression_detected": {"type": "boolean"}
+          }
+        },
+        "slice_canary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["prompt_version", "route_id", "policy_version"],
+          "properties": {
+            "prompt_version": {"type": "string", "minLength": 1},
+            "route_id": {"type": "string", "minLength": 1},
+            "policy_version": {"type": "string", "minLength": 1}
+          }
+        },
+        "champion_challenger": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["champion_policy_version", "challenger_policy_versions", "calibration_error"],
+          "properties": {
+            "champion_policy_version": {"type": "string", "minLength": 1},
+            "challenger_policy_versions": {
+              "type": "array",
+              "items": {"type": "string", "minLength": 1}
+            },
+            "calibration_error": {"type": "number", "minimum": 0}
+          }
+        }
+      }
+    },
+    "promotion_gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["certification_ready", "certification_layers", "signed_provenance_present", "trace_complete", "replay_hash_match"],
+      "properties": {
+        "certification_ready": {"type": "boolean"},
+        "certification_layers": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["replay_integrity", "contract_integrity", "fail_closed", "control_enforcement"],
+          "properties": {
+            "replay_integrity": {"type": "boolean"},
+            "contract_integrity": {"type": "boolean"},
+            "fail_closed": {"type": "boolean"},
+            "control_enforcement": {"type": "boolean"}
+          }
+        },
+        "signed_provenance_present": {"type": "boolean"},
+        "trace_complete": {"type": "boolean"},
+        "replay_hash_match": {"type": "boolean"}
+      }
+    }
+  }
+}

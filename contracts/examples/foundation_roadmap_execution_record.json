@@ -1,0 +1,103 @@
+{
+  "artifact_type": "foundation_roadmap_execution_record",
+  "artifact_id": "foundation-01-example",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.3.118",
+  "trace_id": "trace-foundation-001",
+  "run_id": "run-foundation-001",
+  "governed_family": "roadmap_execution_report",
+  "roadmap_steps": [
+    {"step_id": "JUD-013A", "status": "completed", "detail": "judgment artifacts bound as required control inputs"},
+    {"step_id": "JUD-013B", "status": "completed", "detail": "judgment contract authority is canonicalized via strict manifest + schema"},
+    {"step_id": "JUD-013C", "status": "completed", "detail": "required eval matrix enforced for judgment type"},
+    {"step_id": "JUD-013D", "status": "completed", "detail": "control precedence resolved to allow"},
+    {"step_id": "JUD-014", "status": "completed", "detail": "candidate/canary/active lifecycle fields emitted"},
+    {"step_id": "JUD-015", "status": "completed", "detail": "active in-scope precedents retrieved: 2"},
+    {"step_id": "JUD-016", "status": "completed", "detail": "policy conflict strategy: no_conflict"},
+    {"step_id": "CL-02A", "status": "completed", "detail": "budget artifact spine emitted"},
+    {"step_id": "CL-02B", "status": "completed", "detail": "rolling burn computed with budget_status=healthy"},
+    {"step_id": "CL-02C", "status": "completed", "detail": "budget-to-control applied with response=allow"},
+    {"step_id": "CL-03A", "status": "completed", "detail": "failure-to-eval cases generated=2"},
+    {"step_id": "CL-03B", "status": "completed", "detail": "slice coverage checked for family/route/policy dimensions"},
+    {"step_id": "GOV-10A", "status": "completed", "detail": "certification hard gate wired"},
+    {"step_id": "GOV-10B", "status": "completed", "detail": "certification layers expanded across replay/contracts/fail-closed/control"},
+    {"step_id": "GOV-10C", "status": "completed", "detail": "signed promotion provenance enforced"},
+    {"step_id": "OBS-01", "status": "completed", "detail": "trace completeness required"},
+    {"step_id": "OBS-02", "status": "completed", "detail": "replay integrity fingerprints compared"},
+    {"step_id": "INT-01", "status": "completed", "detail": "trust posture snapshot emitted"},
+    {"step_id": "INT-02", "status": "completed", "detail": "override hotspot report emitted"},
+    {"step_id": "INT-03", "status": "completed", "detail": "evidence gap hotspot report emitted"},
+    {"step_id": "INT-04", "status": "completed", "detail": "policy regression report emitted"},
+    {"step_id": "SUB-01", "status": "completed", "detail": "minimal governed intelligence slice produced"},
+    {"step_id": "SUB-02", "status": "completed", "detail": "prompt/route/policy canary plumbing emitted"},
+    {"step_id": "SUB-03", "status": "completed", "detail": "champion/challenger calibration emitted"}
+  ],
+  "primary_control_decision": "allow",
+  "judgment": {
+    "judgment_type": "promotion_judgment",
+    "required_eval_types": ["evidence_coverage", "policy_alignment", "replay_consistency"],
+    "provided_eval_types": ["evidence_coverage", "policy_alignment", "replay_consistency"],
+    "policy_deviation_detected": false,
+    "precedent_ids": ["prec-001", "prec-002"],
+    "policy_conflict_strategy": "no_conflict",
+    "candidate_policy_version": "2.1.0-canary.1",
+    "active_policy_version": "2.0.5"
+  },
+  "error_budget": {
+    "status": "healthy",
+    "triggered_conditions": [],
+    "burn_rates": {
+      "cost": 0.41,
+      "latency": 0.42,
+      "override_pressure": 0.2,
+      "quality": 0.31,
+      "replay_stability": 0.08
+    }
+  },
+  "derived_artifacts": {
+    "failure_eval_cases": [
+      {"case_id": "eval-a1", "source": "override"},
+      {"case_id": "eval-a2", "source": "evidence_gap"}
+    ],
+    "trust_posture_snapshot": {
+      "trust_score": 0.94,
+      "control_decision": "allow",
+      "certification_ready": true
+    },
+    "override_hotspot_report": {
+      "route_id": "route-main",
+      "override_count": 1
+    },
+    "evidence_gap_hotspot_report": {
+      "route_id": "route-main",
+      "evidence_gap_count": 1
+    },
+    "policy_regression_report": {
+      "policy_version": "2.1.0-canary.1",
+      "regression_detected": false
+    },
+    "slice_canary": {
+      "prompt_version": "prompt-v7",
+      "route_id": "route-main",
+      "policy_version": "2.1.0-canary.1"
+    },
+    "champion_challenger": {
+      "champion_policy_version": "2.0.5",
+      "challenger_policy_versions": ["2.1.0-canary.1"],
+      "calibration_error": 0.04
+    }
+  },
+  "promotion_gates": {
+    "certification_ready": true,
+    "certification_layers": {
+      "replay_integrity": true,
+      "contract_integrity": true,
+      "fail_closed": true,
+      "control_enforcement": true
+    },
+    "signed_provenance_present": true,
+    "trace_complete": true,
+    "replay_hash_match": true
+  }
+}

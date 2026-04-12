@@ -205,6 +205,7 @@ class ContractSchemaTests(unittest.TestCase):
             "pqx_execution_bundle",
             "pqx_execution_effectiveness_record",
             "pqx_execution_recurrence_record",
+            "foundation_roadmap_execution_record",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)
