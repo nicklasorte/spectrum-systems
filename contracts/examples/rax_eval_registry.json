@@ -1,0 +1,90 @@
+{
+  "artifact_type": "rax_eval_registry",
+  "schema_version": "1.0.0",
+  "batch": "RAX-EVAL-01",
+  "registry_version": "1.0.0",
+  "runner_kind": "deterministic_policy_runner",
+  "eval_definitions": [
+    {
+      "eval_type": "rax_input_semantic_sufficiency",
+      "required": true,
+      "target_artifacts": ["rax_upstream_input_envelope"],
+      "pass_criteria": ["intent is semantically sufficient and non-placeholder"],
+      "runner_kind": "deterministic_policy_runner",
+      "expected_signals": ["semantic_intent_sufficient"],
+      "example_case_refs": ["rax-case-semantic-empty-intent", "rax-case-baseline-input"]
+    },
+    {
+      "eval_type": "rax_owner_intent_alignment",
+      "required": true,
+      "target_artifacts": ["rax_upstream_input_envelope"],
+      "pass_criteria": ["owner scope does not contradict intent"],
+      "runner_kind": "deterministic_policy_runner",
+      "expected_signals": ["owner_intent_aligned"],
+      "example_case_refs": ["rax-case-owner-intent-contradiction", "rax-case-baseline-input"]
+    },
+    {
+      "eval_type": "rax_normalization_integrity",
+      "required": true,
+      "target_artifacts": ["rax_upstream_input_envelope"],
+      "pass_criteria": ["normalization does not collapse distinct source values"],
+      "runner_kind": "deterministic_policy_runner",
+      "expected_signals": ["normalization_unambiguous"],
+      "example_case_refs": ["rax-case-normalization-collapse", "rax-case-baseline-input"]
+    },
+    {
+      "eval_type": "rax_output_semantic_alignment",
+      "required": true,
+      "target_artifacts": ["roadmap_step_contract"],
+      "pass_criteria": ["output target modules and checks match stated intent and owner scope"],
+      "runner_kind": "deterministic_policy_runner",
+      "expected_signals": ["output_semantically_aligned"],
+      "example_case_refs": ["rax-case-wrong-target", "rax-case-output-overexpanded", "rax-case-baseline-output"]
+    },
+    {
+      "eval_type": "rax_acceptance_check_strength",
+      "required": true,
+      "target_artifacts": ["roadmap_step_contract"],
+      "pass_criteria": ["acceptance checks are strong, deterministic, and required"],
+      "runner_kind": "deterministic_policy_runner",
+      "expected_signals": ["acceptance_checks_strong"],
+      "example_case_refs": ["rax-case-weak-acceptance-checks", "rax-case-baseline-output"]
+    },
+    {
+      "eval_type": "rax_trace_integrity",
+      "required": true,
+      "target_artifacts": ["roadmap_expansion_trace"],
+      "pass_criteria": ["trace exists and contains required field derivation coverage"],
+      "runner_kind": "deterministic_policy_runner",
+      "expected_signals": ["trace_complete"],
+      "example_case_refs": ["rax-case-missing-trace", "rax-case-baseline-trace"]
+    },
+    {
+      "eval_type": "rax_version_authority_alignment",
+      "required": true,
+      "target_artifacts": ["rax_upstream_input_envelope"],
+      "pass_criteria": ["source_version matches source authority mapping"],
+      "runner_kind": "deterministic_policy_runner",
+      "expected_signals": ["source_version_aligned"],
+      "example_case_refs": ["rax-case-source-version-drift", "rax-case-baseline-input"]
+    },
+    {
+      "eval_type": "rax_regression_against_baseline",
+      "required": true,
+      "target_artifacts": ["roadmap_step_contract"],
+      "pass_criteria": ["candidate does not regress against accepted baseline quality"],
+      "runner_kind": "deterministic_policy_runner",
+      "expected_signals": ["baseline_regression_absent"],
+      "example_case_refs": ["rax-case-regression-missing-baseline-guard", "rax-case-baseline-output"]
+    },
+    {
+      "eval_type": "rax_control_readiness",
+      "required": true,
+      "target_artifacts": ["rax_control_readiness_record"],
+      "pass_criteria": ["required eval set complete and no blocking semantic failures"],
+      "runner_kind": "deterministic_policy_runner",
+      "expected_signals": ["control_readiness_true"],
+      "example_case_refs": ["rax-case-missing-control-readiness-evidence", "rax-case-baseline-readiness"]
+    }
+  ]
+}

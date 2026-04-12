@@ -1,0 +1,30 @@
+{
+  "artifact_type": "rax_eval_policy",
+  "schema_version": "1.0.0",
+  "batch": "RAX-EVAL-01",
+  "missing_required_eval_handling": "fail_closed",
+  "required_eval_types": [
+    "rax_input_semantic_sufficiency",
+    "rax_owner_intent_alignment",
+    "rax_normalization_integrity",
+    "rax_output_semantic_alignment",
+    "rax_acceptance_check_strength",
+    "rax_trace_integrity",
+    "rax_version_authority_alignment",
+    "rax_regression_against_baseline",
+    "rax_control_readiness"
+  ],
+  "blocking_failure_reason_codes": [
+    "semantic_intent_insufficient",
+    "owner_intent_contradiction",
+    "normalization_ambiguity",
+    "semantic_target_mismatch",
+    "output_over_expanded",
+    "weak_acceptance_check",
+    "missing_required_expansion_trace",
+    "source_version_drift",
+    "baseline_regression_detected",
+    "missing_required_eval_artifact",
+    "tests_pass_eval_fail"
+  ]
+}

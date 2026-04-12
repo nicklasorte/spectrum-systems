@@ -418,3 +418,24 @@ def build_rax_assurance_audit_record(
     }
     validate_artifact(audit, "rax_assurance_audit_record")
     return audit
+
+
+
+def evaluate_rax_control_readiness(
+    *,
+    batch: str,
+    target_ref: str,
+    eval_summary: dict[str, Any],
+    eval_results: list[dict[str, Any]],
+    required_eval_coverage: dict[str, Any],
+) -> dict[str, Any]:
+    """Build bounded RAX control-readiness artifact from governed eval artifacts."""
+    from spectrum_systems.modules.runtime.rax_eval_runner import build_rax_control_readiness_record
+
+    return build_rax_control_readiness_record(
+        batch=batch,
+        target_ref=target_ref,
+        eval_summary=eval_summary,
+        eval_results=eval_results,
+        required_eval_coverage=required_eval_coverage,
+    )

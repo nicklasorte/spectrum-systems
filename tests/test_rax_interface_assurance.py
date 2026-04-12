@@ -9,6 +9,7 @@ from spectrum_systems.modules.runtime.rax_assurance import (
     assure_rax_input,
     assure_rax_output,
     build_rax_assurance_audit_record,
+    evaluate_rax_control_readiness,
 )
 from spectrum_systems.modules.runtime.rax_expander import expand_to_step_contract
 from spectrum_systems.modules.runtime.rax_model import RAXModelError, load_compact_roadmap_step, normalize_compact_roadmap_step
@@ -283,3 +284,21 @@ def test_weak_output_fails_closed() -> None:
     result = assure_rax_output(step_contract, repo_root=REPO_ROOT, policy=_load_policy())
     assert result["passed"] is False
     assert result["stop_condition_triggered"] is True
+
+
+
+def test_assurance_control_readiness_wrapper_emits_record() -> None:
+    readiness = evaluate_rax_control_readiness(
+        batch="RAX-EVAL-01",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        eval_summary={
+            "required_eval_types": ["rax_trace_integrity"],
+            "present_eval_types": [],
+            "missing_required_eval_types": ["rax_trace_integrity"],
+            "overall_result": "fail",
+        },
+        eval_results=[],
+        required_eval_coverage={"required_eval_types": ["rax_trace_integrity"], "present_eval_types": [], "missing_required_eval_types": ["rax_trace_integrity"], "overall_result": "fail"},
+    )
+    assert readiness["artifact_type"] == "rax_control_readiness_record"
+    assert readiness["ready_for_control"] is False
