@@ -201,9 +201,10 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("system_roadmap")
         validate_artifact(instance, "system_roadmap")
 
-    def test_ril_and_cde_foundation_examples_validate(self) -> None:
+    def test_ril_cde_sel_foundation_examples_validate(self) -> None:
         for name in (
             "ril_closeout_gate_record",
+            "cde_closeout_gate_record",
             "decision_evidence_pack",
             "decision_conflict_record",
             "continuation_decision_record",
@@ -212,6 +213,13 @@ class ContractSchemaTests(unittest.TestCase):
             "decision_bundle",
             "decision_replay_validation_record",
             "decision_effectiveness_record",
+            "enforcement_action_record",
+            "enforcement_result_record",
+            "enforcement_eval_result",
+            "enforcement_readiness_record",
+            "enforcement_conflict_record",
+            "enforcement_effectiveness_record",
+            "enforcement_bundle",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)

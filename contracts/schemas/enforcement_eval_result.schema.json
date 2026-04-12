@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/enforcement_eval_result.schema.json",
+  "title": "Enforcement Eval Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "eval_id",
+    "trace_id",
+    "enforcement_action_record_ref",
+    "scope_compliance_passed",
+    "decision_alignment_passed",
+    "policy_compliance_passed",
+    "evidence_completeness_passed",
+    "non_decision_assertion_passed",
+    "result",
+    "fail_reasons"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "enforcement_eval_result"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "eval_id": {
+      "type": "string",
+      "pattern": "^sel-eval-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "enforcement_action_record_ref": {
+      "type": "string",
+      "pattern": "^enforcement_action_record:.+"
+    },
+    "scope_compliance_passed": {
+      "type": "boolean"
+    },
+    "decision_alignment_passed": {
+      "type": "boolean"
+    },
+    "policy_compliance_passed": {
+      "type": "boolean"
+    },
+    "evidence_completeness_passed": {
+      "type": "boolean"
+    },
+    "non_decision_assertion_passed": {
+      "type": "boolean"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "fail_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

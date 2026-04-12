@@ -668,3 +668,21 @@ def test_standards_manifest_registers_ltv_a_governance_contracts() -> None:
     assert "precedent_selection_record" in artifact_types
     assert "precedent_conflict_record" in artifact_types
     assert "override_governance_record" in artifact_types
+
+
+def test_standards_manifest_registers_cde_closeout_and_sel_enforcement_contracts() -> None:
+    standards = load_standards_contracts()
+    assert standards["cde_closeout_gate_record"]["schema_version"] == "1.0.0"
+    assert standards["cde_closeout_gate_record"]["example_path"] == "contracts/examples/cde_closeout_gate_record.json"
+
+    for artifact_type in (
+        "enforcement_action_record",
+        "enforcement_result_record",
+        "enforcement_eval_result",
+        "enforcement_readiness_record",
+        "enforcement_conflict_record",
+        "enforcement_effectiveness_record",
+        "enforcement_bundle",
+    ):
+        assert standards[artifact_type]["schema_version"] == "1.0.0"
+        assert standards[artifact_type]["example_path"] == f"contracts/examples/{artifact_type}.json"

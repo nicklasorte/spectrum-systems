@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/enforcement_readiness_record.schema.json",
+  "title": "Enforcement Readiness Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "readiness_id",
+    "trace_id",
+    "enforcement_action_record_ref",
+    "enforcement_eval_result_ref",
+    "candidate_ready",
+    "blocking_reasons",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "enforcement_readiness_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "readiness_id": {
+      "type": "string",
+      "pattern": "^sel-ready-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "enforcement_action_record_ref": {
+      "type": "string",
+      "pattern": "^enforcement_action_record:.+"
+    },
+    "enforcement_eval_result_ref": {
+      "type": "string",
+      "pattern": "^enforcement_eval_result:.+"
+    },
+    "candidate_ready": {
+      "type": "boolean"
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

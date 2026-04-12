@@ -1,0 +1,17 @@
+{
+  "artifact_type": "cde_closeout_gate_record",
+  "schema_version": "1.0.0",
+  "gate_id": "cde-close-0123456789abcdef",
+  "decision_bundle_ref": "decision_bundle:cde-bundle-0123456789abcdef",
+  "decision_eval_result_ref": "decision_eval_result:cde-eval-0123456789abcdef",
+  "decision_replay_validation_record_ref": "decision_replay_validation_record:cde-replay-0123456789abcdef",
+  "decision_effectiveness_record_ref": "decision_effectiveness_record:cde-eff-0123456789abcdef",
+  "cde_operational": true,
+  "closeout_status": "closed",
+  "blocking_reasons": [],
+  "non_authority_assertions": [
+    "cde_emits_decision_artifacts_only",
+    "cde_is_not_execution_authority",
+    "cde_is_not_enforcement_authority"
+  ]
+}

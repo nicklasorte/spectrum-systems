@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/enforcement_action_record.schema.json",
+  "title": "Enforcement Action Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "action_id",
+    "trace_id",
+    "continuation_decision_record_ref",
+    "decision_bundle_ref",
+    "action",
+    "action_reason_codes",
+    "evidence_refs",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "enforcement_action_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "action_id": {
+      "type": "string",
+      "pattern": "^sel-act-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_decision_record_ref": {
+      "type": "string",
+      "pattern": "^continuation_decision_record:.+"
+    },
+    "decision_bundle_ref": {
+      "type": "string",
+      "pattern": "^decision_bundle:.+"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "continue_repair_path",
+        "quarantine",
+        "require_human_review",
+        "halt",
+        "none"
+      ]
+    },
+    "action_reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

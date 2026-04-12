@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/enforcement_effectiveness_record.schema.json",
+  "title": "Enforcement Effectiveness Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "trace_id",
+    "continuation_decision_record_ref",
+    "enforcement_action_record_ref",
+    "enforcement_result_record_ref",
+    "observed_outcome_ref",
+    "effectiveness_state",
+    "success"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "enforcement_effectiveness_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^sel-eff-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_decision_record_ref": {
+      "type": "string",
+      "pattern": "^continuation_decision_record:.+"
+    },
+    "enforcement_action_record_ref": {
+      "type": "string",
+      "pattern": "^enforcement_action_record:.+"
+    },
+    "enforcement_result_record_ref": {
+      "type": "string",
+      "pattern": "^enforcement_result_record:.+"
+    },
+    "observed_outcome_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "effectiveness_state": {
+      "type": "string",
+      "enum": [
+        "effective",
+        "ineffective",
+        "pending"
+      ]
+    },
+    "success": {
+      "type": "boolean"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "artifact_type": "enforcement_effectiveness_record",
+  "schema_version": "1.0.0",
+  "record_id": "sel-eff-0123456789abcdef",
+  "trace_id": "trace-sel-001",
+  "continuation_decision_record_ref": "continuation_decision_record:cde-dec-0123456789abcdef",
+  "enforcement_action_record_ref": "enforcement_action_record:sel-act-0123456789abcdef",
+  "enforcement_result_record_ref": "enforcement_result_record:sel-res-0123456789abcdef",
+  "observed_outcome_ref": "outcome:sel-001",
+  "effectiveness_state": "effective",
+  "success": true
+}
