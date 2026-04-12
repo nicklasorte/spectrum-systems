@@ -48,6 +48,7 @@ export type HardGateReadinessStatus = 'ready' | 'pass' | 'blocked' | 'failed' | 
 export type HardGateState = {
   gate_name?: string
   readiness_status?: HardGateReadinessStatus
+  pass_fail?: string
   required_evidence?: string[]
   falsification_risks?: string[]
 }
@@ -56,6 +57,7 @@ export type RunExecutionStatus = 'healthy' | 'ready' | 'blocked' | 'repair_requi
 
 export type RunState = {
   current_run_status?: RunExecutionStatus
+  status?: string
   last_successful_cycle?: string
   last_blocked_cycle?: string
   repair_loop_count?: number
@@ -129,6 +131,7 @@ export type DashboardPublication = {
   recommendationRecord: ArtifactRecord<RecommendationRecordCollection>
   syncAudit: ArtifactRecord<DashboardPublicationSyncAudit>
   recommendationAccuracyTracker: ArtifactRecord<RecommendationAccuracyTracker>
+  declaredArtifactMap: Record<string, ArtifactRecord>
   allArtifacts: ArtifactRecord[]
 }
 

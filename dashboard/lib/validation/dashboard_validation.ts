@@ -27,15 +27,16 @@ function requireField(data: Record<string, unknown>, field: string, check: (valu
 
 export function validateArtifactShape(name: string, data: unknown): { valid: boolean; error?: string } {
   if (data === null || data === undefined) return { valid: false, error: `${name} is null` }
-  if (!isObject(data)) return { valid: false, error: `${name} must be object` }
 
   if (name === 'repo_snapshot_meta.json') {
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
     const err = requireField(data, 'data_source_state', (value) => value === 'live' || value === 'stale' || value === 'offline', `${name} invalid data_source_state enum`) ??
       requireField(data, 'last_refreshed_time', isString, `${name} missing last_refreshed_time string`)
     return err ? { valid: false, error: err } : { valid: true }
   }
 
   if (name === 'dashboard_publication_manifest.json') {
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
     const validPublicationStates = ['live', 'stale', 'offline']
     const publicationStateErr = requireField(
       data,
@@ -57,21 +58,33 @@ export function validateArtifactShape(name: string, data: unknown): { valid: boo
     if (requiredFilesErr) return { valid: false, error: requiredFilesErr }
 
     const requiredFiles = data.required_files as string[]
-    if ((data.artifact_count as number) !== requiredFiles.length) {
-      return { valid: false, error: `${name} artifact_count must match required_files length` }
+    const artifactCount = data.artifact_count as number
+    const allowsManifestSelfCount = requiredFiles.includes('dashboard_publication_manifest.json')
+      ? requiredFiles.length + 1
+      : requiredFiles.length
+
+    if (artifactCount !== requiredFiles.length && artifactCount !== allowsManifestSelfCount) {
+      return { valid: false, error: `${name} artifact_count must match required_files length (or +1 when manifest self-counted)` }
     }
 
     return { valid: true }
   }
 
   if (name === 'hard_gate_status_record.json') {
-    const err = requireField(data, 'readiness_status', (value) => ['ready', 'pass', 'blocked', 'failed', 'unknown'].includes(String(value)), `${name} invalid readiness_status enum`)
-    return err ? { valid: false, error: err } : { valid: true }
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
+    const readinessStatus = data.readiness_status ?? data.pass_fail
+    if (!['ready', 'pass', 'blocked', 'failed', 'fail', 'unknown'].includes(String(readinessStatus))) {
+      return { valid: false, error: `${name} invalid readiness_status/pass_fail enum` }
+    }
+    return { valid: true }
   }
 
   if (name === 'current_run_state_record.json') {
-    const statusErr = requireField(data, 'current_run_status', (value) => ['healthy', 'ready', 'blocked', 'repair_required', 'failed', 'unknown'].includes(String(value)), `${name} invalid current_run_status enum`)
-    if (statusErr) return { valid: false, error: statusErr }
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
+    const runStatus = data.current_run_status ?? data.status
+    if (!['healthy', 'ready', 'blocked', 'repair_required', 'failed', 'fail', 'completed', 'running', 'unknown'].includes(String(runStatus))) {
+      return { valid: false, error: `${name} invalid current_run_status/status enum` }
+    }
     if (data.repair_loop_count !== undefined && !isNumber(data.repair_loop_count)) {
       return { valid: false, error: `${name} repair_loop_count must be number when provided` }
     }
@@ -79,6 +92,7 @@ export function validateArtifactShape(name: string, data: unknown): { valid: boo
   }
 
   if (name === 'next_action_recommendation_record.json') {
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
     if (data.artifact_type !== 'next_action_recommendation_record_collection') {
       return { valid: false, error: `${name} invalid artifact_type` }
     }
@@ -107,6 +121,7 @@ export function validateArtifactShape(name: string, data: unknown): { valid: boo
   }
 
   if (name === 'dashboard_publication_sync_audit.json') {
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
     const err = requireField(data, 'artifact_type', (value) => value === 'dashboard_publication_sync_audit', `${name} invalid artifact_type`) ??
       requireField(data, 'publication_state', isString, `${name} missing publication_state string`) ??
       requireField(data, 'required_artifact_count', isNumber, `${name} missing required_artifact_count number`) ??
@@ -123,13 +138,18 @@ export function validateArtifactShape(name: string, data: unknown): { valid: boo
   }
 
   if (name === 'deferred_item_register.json' || name === 'deferred_return_tracker.json') {
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
     if (data.items !== undefined && !Array.isArray(data.items)) {
       return { valid: false, error: `${name} items must be array when provided` }
     }
     return { valid: true }
   }
 
-  return { valid: true }
+  if (Array.isArray(data) || isObject(data)) {
+    return { valid: true }
+  }
+
+  return { valid: false, error: `${name} must be JSON object or array` }
 }
 
 export function markValidated<T>(artifact: ArtifactRecord<T>): ArtifactRecord<T> {

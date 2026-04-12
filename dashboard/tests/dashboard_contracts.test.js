@@ -118,8 +118,8 @@ test('runtime hotspots are not read before renderable branch', () => {
 test('validation rejects malformed critical artifact fields', () => {
   const src = read('lib/validation/dashboard_validation.ts')
   assert.ok(src.includes('invalid data_source_state enum'))
-  assert.ok(src.includes('invalid readiness_status enum'))
-  assert.ok(src.includes('invalid current_run_status enum'))
+  assert.ok(src.includes('invalid readiness_status/pass_fail enum'))
+  assert.ok(src.includes('invalid current_run_status/status enum'))
   assert.ok(src.includes('records must be non-empty array'))
 })
 
@@ -128,7 +128,7 @@ test('manifest validation is strict for publication state and required files int
   assert.ok(src.includes("if (name === 'dashboard_publication_manifest.json')"))
   assert.ok(src.includes('invalid publication_state enum'))
   assert.ok(src.includes('required_files must be non-empty string[]'))
-  assert.ok(src.includes('artifact_count must match required_files length'))
+  assert.ok(src.includes('artifact_count must match required_files length (or +1 when manifest self-counted)'))
 })
 
 test('provenance explicitly marks unknown fields as low confidence when necessary', () => {
