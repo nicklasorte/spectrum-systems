@@ -140,6 +140,7 @@ class ChangedPathDetectionResult:
     ref_resolution_records: list[dict[str, str]] = field(default_factory=list)
     trust_level: str = "normal"
     bounded_runtime: bool = True
+    reason_codes: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -297,9 +298,19 @@ class _RefAttemptTracker:
         return [dict(row) for row in self._records]
 
 
+def _looks_like_invalid_revision(error: str | None) -> bool:
+    text = str(error or "").lower()
+    return "invalid revision range" in text or "bad object" in text or "ambiguous argument" in text
+
+
+def _normalize_changed_paths(values: list[Any]) -> list[str]:
+    return sorted({str(value).strip() for value in values if str(value).strip()})
+
+
 def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit: list[str] | None = None) -> ChangedPathDetectionResult:
     ref_tracker = _RefAttemptTracker()
     warnings: list[str] = []
+    reason_codes: list[str] = []
 
     if explicit:
         return ChangedPathDetectionResult(
@@ -311,6 +322,7 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
             ref_resolution_records=[],
             trust_level="normal",
             bounded_runtime=True,
+            reason_codes=[],
         )
 
     # B: explicit base/head refs when resolvable.
@@ -330,6 +342,8 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
             bounded_runtime=True,
         )
     ref_tracker.record(primary_ref, "failed_invalid_revision")
+    if _looks_like_invalid_revision(error):
+        reason_codes.append("invalid_git_ref_range")
     warnings.append(f"base/head diff unavailable: {error}")
 
     if head_ref != "HEAD":
@@ -349,6 +363,8 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
                 bounded_runtime=True,
             )
         ref_tracker.record(current_head_ref, "failed_invalid_revision")
+        if _looks_like_invalid_revision(current_head_error):
+            reason_codes.append("invalid_git_ref_range")
         warnings.append(f"base..HEAD fallback unavailable: {current_head_error}")
 
     # C: GitHub event-aware refs (PR base/head SHA; push before/current SHA).
@@ -371,6 +387,8 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
                 bounded_runtime=True,
             )
         ref_tracker.record(github_ref, "failed_invalid_revision")
+        if _looks_like_invalid_revision(gh_error):
+            reason_codes.append("invalid_git_ref_range")
         warnings.append(f"github event ref diff unavailable: {gh_error}")
 
     # D: safe local fallback paths.
@@ -387,6 +405,7 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
             ref_resolution_records=ref_tracker.records,
             trust_level="degraded",
             bounded_runtime=True,
+            reason_codes=_stable_unique_strings(reason_codes + ["degraded_changed_path_mode"]),
         )
     if local_changes:
         warnings.append("local workspace fallback had no governed contract paths; continuing to deeper fallback")
@@ -409,9 +428,12 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
                 bounded_runtime=True,
             )
         if paths:
+            reason_codes.append("empty_changed_path_surface")
             warnings.append("working tree fallback had no governed contract paths; marking diff evidence insufficient")
     else:
         ref_tracker.record("working_tree_vs_HEAD", "failed_invalid_revision")
+        if _looks_like_invalid_revision(working_tree.combined_output):
+            reason_codes.append("invalid_git_ref_range")
         warnings.append(f"working tree fallback unavailable: {working_tree.combined_output}")
 
     # E: bounded fail-closed stop: no broad full-surface scan.
@@ -425,6 +447,7 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
         ref_resolution_records=ref_tracker.records,
         trust_level="insufficient",
         bounded_runtime=True,
+        reason_codes=_stable_unique_strings(reason_codes + ["degraded_changed_path_mode", "insufficient_changed_path_evidence"]),
     )
 
 
@@ -1015,6 +1038,66 @@ def _bootstrap_missing_pqx_wrapper(
     return wrapper
 
 
+def _resolve_changed_paths_with_wrapper_fallback(
+    *,
+    detection: ChangedPathDetectionResult,
+    wrapper_payload: dict[str, Any] | None,
+) -> ChangedPathDetectionResult:
+    if detection.trust_level != "insufficient":
+        return detection
+    if not isinstance(wrapper_payload, dict):
+        return detection
+    wrapper_paths_raw = wrapper_payload.get("changed_paths")
+    if not isinstance(wrapper_paths_raw, list):
+        return detection
+    wrapper_paths = _normalize_changed_paths(wrapper_paths_raw)
+    if not wrapper_paths:
+        return ChangedPathDetectionResult(
+            changed_paths=[],
+            changed_path_detection_mode=detection.changed_path_detection_mode,
+            refs_attempted=detection.refs_attempted,
+            fallback_used=detection.fallback_used,
+            warnings=list(detection.warnings) + ["wrapper changed_paths present but empty"],
+            ref_resolution_records=detection.ref_resolution_records,
+            trust_level="insufficient",
+            bounded_runtime=detection.bounded_runtime,
+            reason_codes=_stable_unique_strings(list(detection.reason_codes) + ["empty_changed_path_surface"]),
+        )
+    return ChangedPathDetectionResult(
+        changed_paths=wrapper_paths,
+        changed_path_detection_mode="degraded_wrapper_changed_paths",
+        refs_attempted=detection.refs_attempted,
+        fallback_used=True,
+        warnings=list(detection.warnings) + ["using wrapper changed_paths degraded fallback"],
+        ref_resolution_records=detection.ref_resolution_records,
+        trust_level="degraded",
+        bounded_runtime=detection.bounded_runtime,
+        reason_codes=_stable_unique_strings(list(detection.reason_codes) + ["degraded_changed_path_mode"]),
+    )
+
+
+def _synchronize_wrapper_changed_paths(
+    *,
+    wrapper_payload: dict[str, Any] | None,
+    changed_paths: list[str],
+) -> tuple[dict[str, Any] | None, bool]:
+    if not isinstance(wrapper_payload, dict):
+        return wrapper_payload, False
+    current_raw = wrapper_payload.get("changed_paths")
+    if not isinstance(current_raw, list):
+        return wrapper_payload, False
+    desired = _normalize_changed_paths(changed_paths)
+    if not desired:
+        return wrapper_payload, False
+    current = _normalize_changed_paths(current_raw)
+    if set(desired).issubset(set(current)):
+        return wrapper_payload, False
+    merged = _normalize_changed_paths(current + desired)
+    updated = dict(wrapper_payload)
+    updated["changed_paths"] = merged
+    return updated, True
+
+
 def evaluate_control_surface_gap_bridge(output_dir: Path) -> dict[str, Any]:
     if not (
         _CONTROL_SURFACE_MANIFEST_PATH.is_file()
@@ -1297,33 +1380,6 @@ def main() -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     detection = detect_changed_paths(REPO_ROOT, args.base_ref, args.head_ref, args.changed_path)
-    control_surface_gap_bridge = evaluate_control_surface_gap_bridge(output_dir)
-    trust_spine_cohesion = evaluate_trust_spine_cohesion(detection.changed_paths, output_dir)
-    classified = classify_changed_contracts(detection.changed_paths)
-    surface_classification = classify_evaluation_surfaces(detection.changed_paths, classified)
-
-    changed_contract_paths = classified["changed_contract_paths"]
-    changed_governed_definitions = classified["changed_governed_definitions"]
-    changed_contracts = changed_contract_paths + changed_governed_definitions
-    changed_examples = classified["changed_example_paths"]
-    refs_attempted = _stable_unique_strings(list(detection.refs_attempted))
-    ref_records = list(detection.ref_resolution_records)
-    successful_modes = [row.get("ref", "") for row in ref_records if row.get("status") == "succeeded"]
-    failed_modes = [row.get("ref", "") for row in ref_records if row.get("status") == "failed_invalid_revision"]
-    detection_meta = {
-        "changed_path_detection_mode": detection.changed_path_detection_mode,
-        "changed_paths_resolved": detection.changed_paths,
-        "refs_attempted": refs_attempted,
-        "ref_resolution_records": ref_records,
-        "successful_modes": _stable_unique_strings(successful_modes),
-        "failed_modes": _stable_unique_strings(failed_modes),
-        "trust_level": detection.trust_level,
-        "bounded_runtime": detection.bounded_runtime,
-        "fallback_used": detection.fallback_used,
-        "warnings": detection.warnings,
-        "evaluation_mode": surface_classification["evaluation_mode"],
-        "evaluated_surfaces": surface_classification["evaluated_surfaces"],
-    }
     preflight_mode = (
         "commit_range_inspection"
         if not list(getattr(args, "changed_path", []) or [])
@@ -1331,10 +1387,10 @@ def main() -> int:
         and bool(getattr(args, "head_ref", None))
         else "explicit_or_local_inspection"
     )
-    detection_meta["preflight_mode"] = preflight_mode
     pqx_execution_policy: dict[str, Any] | None = None
     pqx_required_context_enforcement: dict[str, Any] | None = None
     wrapper_payload: dict[str, Any] | None = None
+    wrapper_path: Path | None = None
     explicit_authority_resolution = _resolve_explicit_authority_evidence_ref(
         REPO_ROOT,
         getattr(args, "authority_evidence_ref", None),
@@ -1367,6 +1423,43 @@ def main() -> int:
                     "blocking_reasons": ["MALFORMED_PQX_TASK_WRAPPER"],
                     "error": str(exc),
                 }
+    detection = _resolve_changed_paths_with_wrapper_fallback(detection=detection, wrapper_payload=wrapper_payload)
+    wrapper_payload, wrapper_synced = _synchronize_wrapper_changed_paths(
+        wrapper_payload=wrapper_payload,
+        changed_paths=detection.changed_paths,
+    )
+    if wrapper_synced and wrapper_path is not None:
+        wrapper_path.parent.mkdir(parents=True, exist_ok=True)
+        wrapper_path.write_text(json.dumps(wrapper_payload, indent=2) + "\n", encoding="utf-8")
+    control_surface_gap_bridge = evaluate_control_surface_gap_bridge(output_dir)
+    trust_spine_cohesion = evaluate_trust_spine_cohesion(detection.changed_paths, output_dir)
+    classified = classify_changed_contracts(detection.changed_paths)
+    surface_classification = classify_evaluation_surfaces(detection.changed_paths, classified)
+
+    changed_contract_paths = classified["changed_contract_paths"]
+    changed_governed_definitions = classified["changed_governed_definitions"]
+    changed_contracts = changed_contract_paths + changed_governed_definitions
+    changed_examples = classified["changed_example_paths"]
+    refs_attempted = _stable_unique_strings(list(detection.refs_attempted))
+    ref_records = list(detection.ref_resolution_records)
+    successful_modes = [row.get("ref", "") for row in ref_records if row.get("status") == "succeeded"]
+    failed_modes = [row.get("ref", "") for row in ref_records if row.get("status") == "failed_invalid_revision"]
+    detection_meta = {
+        "changed_path_detection_mode": detection.changed_path_detection_mode,
+        "changed_paths_resolved": detection.changed_paths,
+        "refs_attempted": refs_attempted,
+        "ref_resolution_records": ref_records,
+        "successful_modes": _stable_unique_strings(successful_modes),
+        "failed_modes": _stable_unique_strings(failed_modes),
+        "trust_level": detection.trust_level,
+        "bounded_runtime": detection.bounded_runtime,
+        "resolution_reason_codes": _stable_unique_strings(list(detection.reason_codes)),
+        "fallback_used": detection.fallback_used,
+        "warnings": detection.warnings,
+        "evaluation_mode": surface_classification["evaluation_mode"],
+        "evaluated_surfaces": surface_classification["evaluated_surfaces"],
+        "preflight_mode": preflight_mode,
+    }
     try:
         pqx_execution_policy = evaluate_pqx_execution_policy(
             changed_paths=detection.changed_paths,
@@ -1466,6 +1559,7 @@ def main() -> int:
             pqx_execution_policy["blocking_reasons"] = authority_resolution["blocking_reasons"]
 
     if detection.changed_path_detection_mode in {"detection_failed_no_governed_paths", "insufficient_diff_evidence"}:
+        reason_codes = _stable_unique_strings(list(detection.reason_codes))
         report = {
             "status": "failed",
             "changed_contracts": [],
@@ -1483,11 +1577,15 @@ def main() -> int:
             "consumer_failures": [],
             "masked_failures": [],
             "recommended_repair_areas": ["contracts/", "diff-resolution"],
-            "bootstrap_failures": ["changed-path detection failed: insufficient bounded diff evidence"],
+            "bootstrap_failures": [
+                "changed-path detection failed: insufficient bounded diff evidence",
+                *([f"reason_code:{code}" for code in reason_codes] if reason_codes else []),
+            ],
             "evaluation_classification": surface_classification["path_classifications"],
             "missing_required_surface": [],
             "skip_reason": None,
-            "invariant_violations": ["changed-path detection failed before evaluation", "INSUFFICIENT_DIFF_EVIDENCE"],
+            "invariant_violations": ["changed-path detection failed before evaluation", "INSUFFICIENT_DIFF_EVIDENCE"]
+            + [code.upper() for code in reason_codes],
             "control_surface_enforcement": None,
             "control_surface_gap_result": control_surface_gap_bridge["gap_result"],
             "control_surface_gap_pqx_work_items": control_surface_gap_bridge["pqx_work_items"],

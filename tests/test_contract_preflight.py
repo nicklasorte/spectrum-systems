@@ -1267,6 +1267,158 @@ def test_main_normalizes_duplicate_refs_attempted_before_artifact_validation(tmp
     assert artifact["trace"]["refs_attempted"] == ["origin/main..HEAD"]
 
 
+def test_main_invalid_refs_with_empty_wrapper_changed_paths_blocks_clearly(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    wrapper_path = tmp_path / "wrapper.json"
+    wrapper = _governed_wrapper_payload()
+    wrapper["changed_paths"] = []
+    wrapper_path.write_text(json.dumps(wrapper), encoding="utf-8")
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "bad-base",
+                "head_ref": "bad-head",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": str(wrapper_path),
+                "authority_evidence_ref": "data/pqx_runs/AI-01/example.pqx_slice_execution_record.json",
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=[],
+            changed_path_detection_mode="insufficient_diff_evidence",
+            refs_attempted=["bad-base..bad-head"],
+            fallback_used=True,
+            warnings=["invalid refs"],
+            trust_level="insufficient",
+            bounded_runtime=True,
+            reason_codes=["invalid_git_ref_range", "insufficient_changed_path_evidence"],
+        ),
+    )
+    monkeypatch.setattr(preflight, "build_impact_map", lambda *_args, **_kwargs: {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": [], "contract_impact_artifact": {}})
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["changed_path_detection"]["trust_level"] == "insufficient"
+    assert "reason_code:empty_changed_path_surface" in report["bootstrap_failures"]
+
+
+def test_main_invalid_refs_with_wrapper_changed_paths_proceeds_in_degraded_mode(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    wrapper_path = tmp_path / "wrapper.json"
+    wrapper_path.write_text(
+        json.dumps(_governed_wrapper_payload(["contracts/schemas/roadmap_eligibility_artifact.schema.json"])),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "bad-base",
+                "head_ref": "bad-head",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": str(wrapper_path),
+                "authority_evidence_ref": "data/pqx_runs/AI-01/example.pqx_slice_execution_record.json",
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=[],
+            changed_path_detection_mode="insufficient_diff_evidence",
+            refs_attempted=["bad-base..bad-head"],
+            fallback_used=True,
+            warnings=["invalid refs"],
+            trust_level="insufficient",
+            bounded_runtime=True,
+            reason_codes=["invalid_git_ref_range", "insufficient_changed_path_evidence"],
+        ),
+    )
+    monkeypatch.setattr(preflight, "build_impact_map", lambda *_args, **_kwargs: {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": [], "contract_impact_artifact": {}})
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 0
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["changed_path_detection"]["changed_path_detection_mode"] == "degraded_wrapper_changed_paths"
+    assert report["changed_path_detection"]["trust_level"] == "degraded"
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["control_signal"]["strategy_gate_decision"] in {"WARN", "ALLOW"}
+
+
+def test_main_syncs_wrapper_changed_paths_to_avoid_mismatch_block(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    wrapper_path = tmp_path / "wrapper.json"
+    wrapper_path.write_text(json.dumps(_governed_wrapper_payload(["docs/README.md"])), encoding="utf-8")
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": str(wrapper_path),
+                "authority_evidence_ref": "data/pqx_runs/AI-01/example.pqx_slice_execution_record.json",
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+            changed_path_detection_mode="base_head_diff",
+            refs_attempted=["origin/main..HEAD"],
+            fallback_used=False,
+            warnings=[],
+            trust_level="normal",
+            bounded_runtime=True,
+            reason_codes=[],
+        ),
+    )
+    monkeypatch.setattr(preflight, "build_impact_map", lambda *_args, **_kwargs: {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": [], "contract_impact_artifact": {}})
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 0
+    wrapper_after = json.loads(wrapper_path.read_text(encoding="utf-8"))
+    assert "contracts/schemas/roadmap_eligibility_artifact.schema.json" in wrapper_after["changed_paths"]
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["pqx_required_context_enforcement"]["status"] == "allow"
+
+
 def test_main_explicit_changed_paths_without_context_blocks_as_non_pqx_direct(tmp_path: Path, monkeypatch) -> None:
     output_dir = tmp_path / "out"
     monkeypatch.setattr(
