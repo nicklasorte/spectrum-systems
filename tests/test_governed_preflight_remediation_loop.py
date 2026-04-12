@@ -103,6 +103,15 @@ def test_preflight_block_bridge_emits_canonical_packet_and_candidate() -> None:
     assert trace["terminal"]["terminal_classification"] == "pass_continue"
     assert trace["ril_detection"]["authority_state"] == "non_authoritative"
     assert trace["prg_recommendation"]["authority_state"] == "non_authoritative"
+    assert trace["failure_eval_inputs"]["authority_state"] == "non_authoritative"
+    assert trace["policy_candidate"]["auto_apply"] is False
+    assert trace["consistency"]["drift_detected"] is False
+    assert trace["intent_eval"]["intent_preserved"] is True
+    assert trace["ops_report"]["authority_state"] == "non_authoritative"
+    assert trace["roadmap_inputs"]["authority_state"] == "non_authoritative"
+    assert trace["trust_signal"]["authority_state"] == "non_authoritative"
+    assert trace["fused_signals"]["authority_state"] == "non_authoritative"
+    assert trace["escalation_audit"]["authority_state"] == "non_authoritative"
     assert result["status"] == "completed"
 
 
@@ -297,3 +306,93 @@ def test_stale_tpa_gating_input_fails_closed() -> None:
     messages = "\n".join(row["message"] for row in blocked["violations"])
     assert "stale" in messages
     assert "digest mismatch" in messages
+
+
+def test_repeated_failures_emit_failure_derived_eval_candidate_non_authoritative() -> None:
+    historical = [
+        {
+            "classified_failure_type": "runtime_logic_defect",
+            "failure_packet_id": "old-1",
+        }
+    ]
+    result = run_preflight_remediation_loop(
+        preflight_artifact=copy.deepcopy(BASE_PREFLIGHT_BLOCK),
+        admission_lineage=copy.deepcopy(BASE_LINEAGE),
+        batch_id="PF-U5",
+        umbrella_id="PF-B7",
+        run_id="run-5",
+        trace_id="trace-preflight-123",
+        retry_budget=3,
+        complexity_score=2,
+        risk_level="medium",
+        contract_preflight_runner=_rerun_allow,
+        historical_failures=historical,
+    )
+    eval_inputs = result["trace"]["failure_eval_inputs"]
+    assert eval_inputs["recurrence_count"] >= 2
+    assert eval_inputs["eval_case_candidate"] is not None
+    assert eval_inputs["eval_case_candidate"]["authority_state"] == "non_authoritative"
+    assert result["trace"]["promotion_guard"]["enforcement_status"] == "allow"
+
+
+def test_consistency_drift_blocks_via_sel_enforcement_path() -> None:
+    result = run_preflight_remediation_loop(
+        preflight_artifact=copy.deepcopy(BASE_PREFLIGHT_BLOCK),
+        admission_lineage=copy.deepcopy(BASE_LINEAGE),
+        batch_id="PF-U6",
+        umbrella_id="PF-B8",
+        run_id="run-6",
+        trace_id="trace-preflight-123",
+        retry_budget=3,
+        complexity_score=2,
+        risk_level="medium",
+        contract_preflight_runner=_rerun_allow,
+        prior_outcome_digests=["deadbeef"],
+    )
+    assert result["trace"]["consistency"]["drift_detected"] is True
+    assert result["status"] == "blocked"
+    messages = "\n".join(row["message"] for row in result["trace"]["promotion_guard"]["violations"])
+    assert "divergent remediation outcome digest" in messages
+
+
+def test_ordering_and_dependency_bypass_attempt_is_blocked() -> None:
+    blocked = enforce_preflight_remediation_boundaries(
+        remediation_context={
+            "lineage": copy.deepcopy(BASE_LINEAGE),
+            "failure_packet": {"artifact_type": "execution_failure_packet", "a": 1},
+            "repair_candidate": {"artifact_type": "bounded_repair_candidate_artifact", "b": 2},
+            "continuation_decision": {"owner": "CDE"},
+            "continuation_input": {
+                "failure_packet_digest": "deadbeef",
+                "repair_candidate_digest": "deadbeef",
+                "issued_at": "2026-04-12T00:00:00Z",
+                "freshness_window_seconds": 1800,
+            },
+            "gating_input": {
+                "approved_scope_digest": "mismatch",
+                "issued_at": "2026-04-12T00:00:00Z",
+                "freshness_window_seconds": 1800,
+            },
+            "retry_budget_remaining": 1,
+            "approved_scope_refs": ["a"],
+            "execution_scope_refs": ["a"],
+            "rerun_preflight_result": copy.deepcopy(BASE_PREFLIGHT_BLOCK),
+            "rerun_execution_record": {
+                "artifact_type": "preflight_execution_record",
+                "evidence_digest": "x",
+                "completed_at": "2026-04-12T00:00:00Z",
+            },
+            "diagnosis_artifact": {"artifact_type": "failure_diagnosis_artifact"},
+            "terminal_classification": {"owner": "CDE", "terminal_classification": "pass_continue"},
+            "policy_version": "1.0.0",
+            "authority_sequence": ["AEX", "TLC", "PQX", "TPA", "SEL"],
+            "expected_dependency_refs": ["a", "b"],
+            "dependency_chain_refs": ["a"],
+            "bypass_signals": ["skip_tpa_gate"],
+        }
+    )
+    assert blocked["enforcement_status"] == "block"
+    messages = "\n".join(row["message"] for row in blocked["violations"])
+    assert "authority ordering must be AEX -> TLC -> TPA -> PQX -> SEL" in messages
+    assert "missing upstream dependency refs: b" in messages
+    assert "bypass attempt detected" in messages

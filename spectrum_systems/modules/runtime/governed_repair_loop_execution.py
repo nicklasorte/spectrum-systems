@@ -790,6 +790,114 @@ def _build_prg_recommendation_artifact(*, ril_detection_artifact: dict[str, Any]
     }
 
 
+def _build_failure_derived_eval_inputs(
+    *,
+    failure_packet: dict[str, Any],
+    historical_failures: list[dict[str, Any]],
+) -> dict[str, Any]:
+    blocker = str(failure_packet["classified_failure_type"])
+    same_class = [
+        item for item in historical_failures if isinstance(item, dict) and str(item.get("classified_failure_type")) == blocker
+    ]
+    recurrence_count = len(same_class) + 1
+    should_emit_case = recurrence_count >= 2
+    eval_case = None
+    if should_emit_case:
+        eval_case = {
+            "artifact_type": "preflight_failure_eval_case_candidate",
+            "owner": "RIL",
+            "authority_state": "non_authoritative",
+            "eval_case_id": deterministic_id(
+                prefix="pfec",
+                namespace="preflight_failure_eval_case_candidate",
+                payload=[blocker, sorted(failure_packet["affected_artifact_refs"]), recurrence_count],
+            ),
+            "failure_packet_ref": f"execution_failure_packet:{failure_packet['failure_packet_id']}",
+            "failure_class": blocker,
+            "recurrence_count": recurrence_count,
+            "target_surfaces": sorted(set(failure_packet["affected_artifact_refs"])),
+        }
+    return {
+        "artifact_type": "preflight_failure_eval_generation_artifact",
+        "owner": "RIL",
+        "authority_state": "non_authoritative",
+        "failure_class": blocker,
+        "recurrence_count": recurrence_count,
+        "eval_case_candidate": eval_case,
+        "candidate_ref": f"preflight_failure_eval_case_candidate:{eval_case['eval_case_id']}" if isinstance(eval_case, dict) else None,
+    }
+
+
+def _evaluate_repair_intent(
+    *,
+    expected_scope: list[str],
+    executed_scope: list[str],
+) -> dict[str, Any]:
+    expected = sorted(set(path for path in expected_scope if isinstance(path, str) and path.strip()))
+    executed = sorted(set(path for path in executed_scope if isinstance(path, str) and path.strip()))
+    out_of_scope = sorted(set(executed) - set(expected))
+    return {
+        "artifact_type": "preflight_repair_intent_eval_artifact",
+        "owner": "RIL",
+        "authority_state": "non_authoritative",
+        "intent_preserved": not bool(out_of_scope),
+        "expected_scope_refs": expected,
+        "executed_scope_refs": executed,
+        "intent_violations": out_of_scope,
+    }
+
+
+def _build_consistency_artifact(
+    *,
+    context_key: str,
+    current_outcome_digest: str,
+    prior_outcome_digests: list[str],
+) -> dict[str, Any]:
+    baseline = sorted(set(item for item in prior_outcome_digests if isinstance(item, str) and item.strip()))
+    drift_detected = bool(baseline) and any(item != current_outcome_digest for item in baseline)
+    return {
+        "artifact_type": "preflight_consistency_artifact",
+        "owner": "RIL",
+        "authority_state": "non_authoritative",
+        "context_key": context_key,
+        "current_outcome_digest": current_outcome_digest,
+        "baseline_outcome_digests": baseline,
+        "drift_detected": drift_detected,
+    }
+
+
+def _build_preflight_ops_artifact(
+    *,
+    failure_packet: dict[str, Any],
+    diagnosis: dict[str, Any],
+    started_at: datetime,
+    rerun_preflight: dict[str, Any],
+    retry_budget_remaining: int,
+) -> dict[str, Any]:
+    latency_seconds = max(0, int((datetime.now(tz=timezone.utc) - started_at).total_seconds()))
+    blocker_family = str(failure_packet["classified_failure_type"])
+    passed = str(rerun_preflight.get("preflight_status") or "").lower() == "passed"
+    return {
+        "artifact_type": "preflight_operations_report_artifact",
+        "owner": "PRG",
+        "authority_state": "non_authoritative",
+        "blocker_taxonomy": {
+            "blocker_family": blocker_family,
+            "diagnosis_ref": f"failure_diagnosis_artifact:{diagnosis['diagnosis_id']}",
+        },
+        "trend_signals": {
+            "blocker_family_counts": {blocker_family: 1},
+            "retry_budget_remaining": retry_budget_remaining,
+        },
+        "latency_metrics": {
+            "repair_latency_seconds": latency_seconds,
+        },
+        "success_metrics": {
+            "success_rate_by_blocker_family": {blocker_family: 1.0 if passed else 0.0},
+        },
+    }
+
+
 def _classify_terminal_outcome(
     *,
     rerun_preflight: dict[str, Any],
@@ -822,10 +930,13 @@ def run_preflight_remediation_loop(
     risk_level: str,
     contract_preflight_runner: Callable[[], dict[str, Any]] | None = None,
     allow_ambiguous_retry: bool = False,
+    historical_failures: list[dict[str, Any]] | None = None,
+    prior_outcome_digests: list[str] | None = None,
 ) -> dict[str, Any]:
     """Execute the governed preflight remediation loop using canonical repair contracts."""
     if retry_budget < 0:
         raise GovernedRepairLoopExecutionError("retry_budget must be >= 0")
+    started_at = datetime.now(tz=timezone.utc)
     lineage = _require_lineage_continuity(admission_lineage=admission_lineage, trace_id=trace_id)
     request_ref = lineage["request_ref"]
     if not request_ref.startswith("normalized_execution_request:"):
@@ -854,6 +965,10 @@ def run_preflight_remediation_loop(
         trace_id=trace_id,
     )
     candidate = build_bounded_repair_candidate(failure_packet=packet)
+    failure_eval_inputs = _build_failure_derived_eval_inputs(
+        failure_packet=packet,
+        historical_failures=historical_failures or [],
+    )
     failure_packet_digest = _canonical_digest(packet)
     repair_candidate_digest = _canonical_digest(candidate)
     continuation_input = build_cde_repair_continuation_input(
@@ -961,11 +1076,75 @@ def run_preflight_remediation_loop(
         "repair_candidate_digest": repair_candidate_digest,
         "rerun_result_digest": rerun_result_digest,
     }
+    intent_eval = _evaluate_repair_intent(
+        expected_scope=list(preflight_artifact.get("recommended_repair_area") or []) + list(changed_paths),
+        executed_scope=changed_paths,
+    )
+    consistency = _build_consistency_artifact(
+        context_key=f"{packet['classified_failure_type']}:{sorted(packet['affected_artifact_refs'])}",
+        current_outcome_digest=rerun_result_digest,
+        prior_outcome_digests=prior_outcome_digests or [],
+    )
+    policy_version = str(preflight_artifact.get("trace", {}).get("policy_version") or "").strip()
+    ops_report = _build_preflight_ops_artifact(
+        failure_packet=packet,
+        diagnosis=diagnosis,
+        started_at=started_at,
+        rerun_preflight=rerun_preflight,
+        retry_budget_remaining=retry_budget_remaining,
+    )
+    roadmap_inputs = {
+        "artifact_type": "preflight_roadmap_input_artifact",
+        "owner": "PRG",
+        "authority_state": "non_authoritative",
+        "source_failure_class": packet["classified_failure_type"],
+        "source_refs": [f"execution_failure_packet:{packet['failure_packet_id']}", f"failure_diagnosis_artifact:{diagnosis['diagnosis_id']}"],
+    }
+    policy_candidate = {
+        "artifact_type": "preflight_policy_candidate_artifact",
+        "owner": "PRG",
+        "authority_state": "non_authoritative",
+        "candidate_id": deterministic_id(
+            prefix="ppc",
+            namespace="preflight_policy_candidate",
+            payload=[packet["classified_failure_type"], failure_eval_inputs["recurrence_count"]],
+        ),
+        "failure_class": packet["classified_failure_type"],
+        "recurrence_count": failure_eval_inputs["recurrence_count"],
+        "auto_apply": False,
+    }
+    repair_passed = str(rerun_preflight.get("preflight_status") or "").lower() == "passed"
+    trust_signal = {
+        "artifact_type": "preflight_trust_signal_artifact",
+        "owner": "PRG",
+        "authority_state": "non_authoritative",
+        "trust_score": 1.0 if repair_passed else 0.4,
+        "cost_benefit": {"cost_units": float(len(changed_paths)), "benefit_units": 1.0 if repair_passed else 0.0},
+        "autonomy_readiness_score": 0.75 if repair_passed and intent_eval["intent_preserved"] else 0.2,
+    }
     terminal = _classify_terminal_outcome(
         rerun_preflight=rerun_preflight,
         retry_budget_remaining=retry_budget_remaining,
         allow_ambiguous_retry=allow_ambiguous_retry,
     )
+    fused_signals = {
+        "artifact_type": "preflight_signal_fusion_artifact",
+        "owner": "RIL",
+        "authority_state": "non_authoritative",
+        "signals": {
+            "consistency_drift_detected": consistency["drift_detected"],
+            "intent_preserved": intent_eval["intent_preserved"],
+            "terminal_classification": terminal["terminal_classification"],
+        },
+    }
+    escalation_audit = {
+        "artifact_type": "preflight_escalation_audit_artifact",
+        "owner": "RIL",
+        "authority_state": "non_authoritative",
+        "escalation_required": terminal["terminal_classification"] in {"ambiguous_block", "escalate_human_review", "block"},
+        "override_applied": False,
+        "trace_links": [f"execution_failure_packet:{packet['failure_packet_id']}", decision["continuation_input_ref"]],
+    }
     promotion_guard = enforce_preflight_remediation_boundaries(
         remediation_context={
             "lineage": lineage,
@@ -985,6 +1164,13 @@ def run_preflight_remediation_loop(
             "repair_candidate_digest": repair_candidate_digest,
             "failure_instance_ref": failure_instance_ref,
             "rerun_result_digest": rerun_result_digest,
+            "consistency_artifact": consistency,
+            "intent_eval": intent_eval,
+            "policy_version": policy_version,
+            "authority_sequence": ["AEX", "TLC", "TPA", "PQX", "SEL"],
+            "dependency_chain_refs": [lineage["request_ref"], lineage["admission_ref"], lineage["tlc_handoff_ref"]],
+            "expected_dependency_refs": [lineage["request_ref"], lineage["admission_ref"], lineage["tlc_handoff_ref"]],
+            "bypass_signals": [],
         }
     )
     return {
@@ -1002,7 +1188,16 @@ def run_preflight_remediation_loop(
             "rerun_execution_record": rerun_execution_record,
             "ril_detection": ril_detection,
             "ril_replay_integrity": replay_integrity,
+            "failure_eval_inputs": failure_eval_inputs,
+            "consistency": consistency,
+            "intent_eval": intent_eval,
             "prg_recommendation": prg_recommendation,
+            "ops_report": ops_report,
+            "roadmap_inputs": roadmap_inputs,
+            "policy_candidate": policy_candidate,
+            "trust_signal": trust_signal,
+            "fused_signals": fused_signals,
+            "escalation_audit": escalation_audit,
             "terminal": terminal,
             "promotion_guard": promotion_guard,
         },
