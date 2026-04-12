@@ -40,11 +40,22 @@ BASE_FORBIDDEN_PATTERNS = [
 ]
 
 APPROVED_TEST_PREFIXES = ("pytest tests/", "python -m pytest tests/")
+APPROVED_PYTEST_TARGET_PATTERNS = (
+    re.compile(r"^tests/test_[\w/.-]+\.py$"),
+    re.compile(r"^tests/[\w./-]+::[\w.\[\]-]+$"),
+)
 REJECTED_TEST_PATTERNS = [
     re.compile(r"\bpython\s+-c\b"),
     re.compile(r"\bpython\s+<<"),
     re.compile(r"\btest\s+-f\b"),
     re.compile(r"\bPath\([^)]*\)\.is_file\("),
+]
+WEAK_TEST_PATTERNS = [
+    re.compile(r"(?:string[_-]?match|regex|contains?)", flags=re.IGNORECASE),
+    re.compile(r"\bsmoke\b", flags=re.IGNORECASE),
+    re.compile(r"\b(?:exists?|is_file|is_dir|file[_-]?exists?)\b", flags=re.IGNORECASE),
+    re.compile(r"\b(?:true|echo|printf)\b", flags=re.IGNORECASE),
+    re.compile(r"\b(?:raise\s+SystemExit\(0\)|exit\s+0)\b", flags=re.IGNORECASE),
 ]
 
 CRITICAL_FAILURE_CATEGORIES = [
@@ -161,30 +172,146 @@ def _scan_forbidden_patterns(contract: dict[str, Any], repo_root: Path) -> list[
     return hits
 
 
-def _validate_behavioral_test_commands(test_commands: list[str]) -> tuple[bool, list[dict[str, Any]]]:
-    checks: list[dict[str, Any]] = []
-    approved_count = 0
-    for command in test_commands:
-        approved_prefix = any(command.startswith(prefix) for prefix in APPROVED_TEST_PREFIXES)
-        rejected_reason = ""
-        for pattern in REJECTED_TEST_PATTERNS:
-            if pattern.search(command):
-                rejected_reason = f"rejected by policy pattern: {pattern.pattern}"
-                break
-        pytest_target_ok = "tests/" in command and ("-k" in command or "::" in command or "-q" in command)
-        is_approved = approved_prefix and pytest_target_ok and rejected_reason == ""
-        if is_approved:
-            approved_count += 1
-        checks.append(
-            {
-                "command": command,
-                "approved": is_approved,
-                "rejected_reason": rejected_reason,
-                "approved_prefix": approved_prefix,
-                "pytest_target_ok": pytest_target_ok,
-            }
-        )
-    return approved_count > 0 and all(item["approved"] for item in checks), checks
+def _extract_pytest_targets(command: str) -> list[str]:
+    tokens = shlex.split(command)
+    return [token for token in tokens if token.startswith("tests/")]
+
+
+def _command_has_weak_k_expression(command: str) -> bool:
+    tokens = shlex.split(command)
+    if "-k" not in tokens:
+        return False
+    k_index = tokens.index("-k")
+    if k_index + 1 >= len(tokens):
+        return True
+    k_expr = tokens[k_index + 1]
+    return bool(WEAK_TEST_PATTERNS[0].search(k_expr) or WEAK_TEST_PATTERNS[1].search(k_expr))
+
+
+def _classify_behavioral_test_command(command: str) -> dict[str, Any]:
+    approved_prefix = any(command.startswith(prefix) for prefix in APPROVED_TEST_PREFIXES)
+    rejected_reason = ""
+    for pattern in REJECTED_TEST_PATTERNS:
+        if pattern.search(command):
+            rejected_reason = f"rejected by policy pattern: {pattern.pattern}"
+            break
+
+    pytest_targets = _extract_pytest_targets(command)
+    target_pattern_ok = bool(pytest_targets) and all(
+        any(pattern.match(target) for pattern in APPROVED_PYTEST_TARGET_PATTERNS) for target in pytest_targets
+    )
+    has_selector = "-k" in shlex.split(command) or any("::" in target for target in pytest_targets)
+    weak_reasons: list[str] = []
+    for pattern in WEAK_TEST_PATTERNS:
+        if pattern.search(command):
+            weak_reasons.append(f"matched weak pattern: {pattern.pattern}")
+    if _command_has_weak_k_expression(command):
+        weak_reasons.append("weak pytest -k expression indicates non-behavioral string/smoke filtering")
+
+    classification = "behavioral"
+    approved = False
+    if not approved_prefix or rejected_reason or not target_pattern_ok or not has_selector:
+        classification = "invalid"
+    elif weak_reasons:
+        classification = "weak"
+    else:
+        approved = True
+
+    return {
+        "command": command,
+        "classification": classification,
+        "approved": approved,
+        "approved_prefix": approved_prefix,
+        "pytest_target_patterns_ok": target_pattern_ok,
+        "has_selector": has_selector,
+        "pytest_targets": pytest_targets,
+        "rejected_reason": rejected_reason,
+        "weak_reasons": weak_reasons,
+    }
+
+
+def _relevance_tokens_for_contract(contract: dict[str, Any]) -> dict[str, set[str]]:
+    module_tokens: set[str] = set()
+    entrypoint_tokens: set[str] = set()
+    acceptance_tokens: set[str] = set()
+    for module_path in contract["target_modules"]:
+        stem = Path(module_path).stem
+        normalized = stem.lower()
+        module_tokens.add(normalized)
+        if normalized.endswith("_runtime"):
+            module_tokens.add(normalized[: -len("_runtime")])
+    for entrypoint in contract["runtime_entrypoints"]:
+        module_name, _, symbol = entrypoint.partition(":")
+        module_leaf = module_name.split(".")[-1].lower()
+        entrypoint_tokens.add(module_leaf)
+        if module_leaf.endswith("_runtime"):
+            entrypoint_tokens.add(module_leaf[: -len("_runtime")])
+        entrypoint_tokens.add(symbol.lower())
+    for check in contract["acceptance_checks"]:
+        check_id = str(check.get("check_id", "")).lower()
+        acceptance_tokens.add(check_id)
+        acceptance_tokens.update(piece for piece in check_id.split("_") if len(piece) > 3)
+    return {
+        "module_tokens": module_tokens,
+        "entrypoint_tokens": entrypoint_tokens,
+        "acceptance_tokens": acceptance_tokens,
+    }
+
+
+def _validate_behavioral_test_integrity(contract: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+    classifications = [_classify_behavioral_test_command(command) for command in contract["target_tests"]]
+    behavioral_commands = [item for item in classifications if item["classification"] == "behavioral"]
+    weak_commands = [item for item in classifications if item["classification"] == "weak"]
+    invalid_commands = [item for item in classifications if item["classification"] == "invalid"]
+
+    tokens = _relevance_tokens_for_contract(contract)
+    relevant_behavioral: list[dict[str, Any]] = []
+    entrypoint_covered = False
+    acceptance_covered = False
+    for command in behavioral_commands:
+        target_surface = " ".join(command.get("pytest_targets", [])).lower()
+        module_match = any(token and token in target_surface for token in tokens["module_tokens"])
+        entrypoint_match = any(token and token in target_surface for token in tokens["entrypoint_tokens"])
+        acceptance_match = any(token and token in target_surface for token in tokens["acceptance_tokens"])
+        command["coverage"] = {
+            "module_match": module_match,
+            "entrypoint_match": entrypoint_match,
+            "acceptance_match": acceptance_match,
+        }
+        if module_match or entrypoint_match or acceptance_match:
+            relevant_behavioral.append(command)
+        entrypoint_covered = entrypoint_covered or entrypoint_match
+        acceptance_covered = acceptance_covered or acceptance_match
+
+    failure_reasons: list[str] = []
+    if not behavioral_commands:
+        failure_reasons.append("zero behavioral tests declared")
+    if weak_commands:
+        failure_reasons.append("weak test command(s) declared; ambiguous behavioral proof rejected")
+    if invalid_commands:
+        failure_reasons.append("invalid test command(s) declared")
+    if weak_commands and not behavioral_commands:
+        failure_reasons.append("weak-only proof set rejected")
+    if behavioral_commands and not relevant_behavioral:
+        failure_reasons.append("behavioral tests do not cover target modules/runtime entrypoints/acceptance checks")
+
+    runtime_realization_passed = not failure_reasons
+    verified_strict_passed = runtime_realization_passed and entrypoint_covered and acceptance_covered
+    if runtime_realization_passed and not verified_strict_passed:
+        failure_reasons.append("verified proof requires behavioral coverage for both runtime entrypoints and acceptance checks")
+
+    return runtime_realization_passed, {
+        "commands": classifications,
+        "behavioral_count": len(behavioral_commands),
+        "weak_count": len(weak_commands),
+        "invalid_count": len(invalid_commands),
+        "relevant_behavioral_count": len(relevant_behavioral),
+        "entrypoint_coverage_met": entrypoint_covered,
+        "acceptance_coverage_met": acceptance_covered,
+        "runtime_realization_passed": runtime_realization_passed,
+        "verified_strict_passed": verified_strict_passed,
+        "failure_reasons": failure_reasons,
+    }
 
 
 def _run_behavioral_tests(test_commands: list[str], repo_root: Path) -> list[dict[str, Any]]:
@@ -287,7 +414,7 @@ def realize_steps(
     forbidden_pattern_hits: dict[str, list[dict[str, Any]]] = {}
     runtime_entrypoint_checks: dict[str, list[dict[str, Any]]] = {}
     behavioral_test_results: dict[str, list[dict[str, Any]]] = {}
-    behavioral_test_policy_checks: dict[str, list[dict[str, Any]]] = {}
+    behavioral_test_policy_checks: dict[str, dict[str, Any]] = {}
     ownership_checks: dict[str, dict[str, Any]] = {}
     dependency_failures: dict[str, str] = {}
     status_updates: list[dict[str, str]] = []
@@ -338,17 +465,19 @@ def realize_steps(
         if not entrypoints_passed:
             critical_failures[step_id]["runtime_entrypoint_validation"] = True
 
-        test_policy_passed, test_policy_checks = _validate_behavioral_test_commands(contract["target_tests"])
+        test_policy_passed, test_policy_checks = _validate_behavioral_test_integrity(contract)
         behavioral_test_policy_checks[step_id] = test_policy_checks
         behavioral_results: list[dict[str, Any]] = []
         if test_policy_passed:
-            behavioral_results = _run_behavioral_tests(contract["target_tests"], repo_root)
+            approved_commands = [item["command"] for item in test_policy_checks["commands"] if item["classification"] == "behavioral"]
+            behavioral_results = _run_behavioral_tests(approved_commands, repo_root)
         behavioral_test_results[step_id] = behavioral_results
         behavioral_passed = test_policy_passed and all(result["passed"] for result in behavioral_results)
         if not behavioral_passed:
             critical_failures[step_id]["behavioral_test_validation"] = True
 
         verification = _verification_checks(contract, repo_root)
+        verification["passed"] = verification["passed"] and test_policy_checks["verified_strict_passed"]
         prior_status = status_by_step[step_id]
         next_status = next_realization_status(
             current_status=prior_status,

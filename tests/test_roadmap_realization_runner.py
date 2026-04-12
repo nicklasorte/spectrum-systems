@@ -105,7 +105,7 @@ def test_fake_test_success_attack_blocked(tmp_path: Path) -> None:
     contract_dir = _write_contracts(tmp_path, rf02=rf02)
     result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
     assert result["overall_status"] == "fail"
-    assert result["behavioral_test_policy_checks"]["RF-02"][0]["approved"] is False
+    assert result["behavioral_test_policy_checks"]["RF-02"]["commands"][0]["approved"] is False
 
 
 def test_status_forging_attack_blocked(tmp_path: Path) -> None:
@@ -116,7 +116,7 @@ def test_status_forging_attack_blocked(tmp_path: Path) -> None:
     assert result["overall_status"] == "pass"
     updates = result["status_updates"]
     assert updates[0]["from"] == "planned_only"
-    assert json.loads((contract_dir / "RF-02.json").read_text())["realization_status"] == "verified"
+    assert json.loads((contract_dir / "RF-02.json").read_text())["realization_status"] == "runtime_realized"
 
 
 def test_ownership_boundary_attack_blocked(tmp_path: Path) -> None:
@@ -136,3 +136,66 @@ def test_fail_closed_result_semantics_on_critical_failure(tmp_path: Path) -> Non
     assert result["overall_status"] == "fail"
     assert result["passed_steps"] == []
     assert result["status_updates"] == []
+
+
+def test_string_match_only_attack_blocked(tmp_path: Path) -> None:
+    rf02 = _base_contract("RF-02")
+    rf02["target_tests"] = ["pytest tests/test_roadmap_realization_runner.py -k string_match_only -q"]
+    contract_dir = _write_contracts(tmp_path, rf02=rf02)
+    result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
+    checks = result["behavioral_test_policy_checks"]["RF-02"]
+    assert result["overall_status"] == "fail"
+    assert checks["weak_count"] == 1
+    assert any("weak" in reason for reason in checks["failure_reasons"])
+
+
+def test_non_behavioral_smoke_only_attack_blocked(tmp_path: Path) -> None:
+    rf02 = _base_contract("RF-02")
+    rf02["target_tests"] = ["pytest tests/test_roadmap_realization_runner.py -k smoke -q"]
+    contract_dir = _write_contracts(tmp_path, rf02=rf02)
+    result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
+    checks = result["behavioral_test_policy_checks"]["RF-02"]
+    assert result["overall_status"] == "fail"
+    assert checks["weak_count"] == 1
+    assert checks["runtime_realization_passed"] is False
+
+
+def test_mixed_weak_and_irrelevant_approved_proof_rejected(tmp_path: Path) -> None:
+    rf02 = _base_contract("RF-02")
+    rf02["target_tests"] = [
+        "pytest tests/test_roadmap_realization_runner.py -k smoke -q",
+        "pytest tests/test_roadmap_authority.py -k authority -q",
+    ]
+    contract_dir = _write_contracts(tmp_path, rf02=rf02)
+    result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
+    checks = result["behavioral_test_policy_checks"]["RF-02"]
+    assert result["overall_status"] == "fail"
+    assert checks["weak_count"] == 1
+    assert checks["relevant_behavioral_count"] == 0
+    assert any("do not cover target modules" in reason for reason in checks["failure_reasons"])
+
+
+def test_false_behavioral_labeling_attack_blocked(tmp_path: Path) -> None:
+    rf02 = _base_contract("RF-02")
+    rf02["target_tests"] = ["pytest tests/test_roadmap_authority.py -k roadmap_realization_runtime -q"]
+    contract_dir = _write_contracts(tmp_path, rf02=rf02)
+    result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
+    checks = result["behavioral_test_policy_checks"]["RF-02"]
+    assert result["overall_status"] == "fail"
+    assert checks["behavioral_count"] == 1
+    assert checks["relevant_behavioral_count"] == 0
+    assert checks["runtime_realization_passed"] is False
+    assert any("do not cover target modules" in reason for reason in checks["failure_reasons"])
+
+
+def test_verified_requires_stricter_behavioral_coverage_than_runtime_realized(tmp_path: Path) -> None:
+    rf02 = _base_contract("RF-02")
+    rf02["target_tests"] = ["pytest tests/test_roadmap_realization_runner.py::test_rf_contract_schema -q"]
+    contract_dir = _write_contracts(tmp_path, rf02=rf02)
+    result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
+    persisted = json.loads((contract_dir / "RF-02.json").read_text())
+    checks = result["behavioral_test_policy_checks"]["RF-02"]
+    assert result["overall_status"] == "pass"
+    assert checks["runtime_realization_passed"] is True
+    assert checks["verified_strict_passed"] is False
+    assert persisted["realization_status"] == "runtime_realized"
