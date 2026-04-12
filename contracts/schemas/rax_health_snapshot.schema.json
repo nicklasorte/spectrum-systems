@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_health_snapshot.schema.json",
+  "title": "RAX Health Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "snapshot_id",
+    "window_ref",
+    "readiness_pass_rate",
+    "eval_coverage_rate",
+    "semantic_failure_rate",
+    "readiness_bypass_attempt_rate",
+    "replay_consistency_rate",
+    "trace_completeness_rate",
+    "lineage_validity_rate",
+    "contradiction_rate",
+    "candidate_posture",
+    "threshold_violations"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "rax_health_snapshot"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "snapshot_id": {
+      "type": "string"
+    },
+    "window_ref": {
+      "type": "string"
+    },
+    "readiness_pass_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "eval_coverage_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "semantic_failure_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "readiness_bypass_attempt_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "replay_consistency_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "trace_completeness_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "lineage_validity_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "contradiction_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "candidate_posture": {
+      "type": "string",
+      "enum": [
+        "healthy",
+        "warn",
+        "freeze_candidate",
+        "block_candidate"
+      ]
+    },
+    "threshold_violations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

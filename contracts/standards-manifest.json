@@ -4779,9 +4779,113 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
+      "last_updated_in": "1.3.114",
       "example_path": "contracts/examples/rax_control_readiness_record.json",
-      "notes": "RAX-EVAL-01 bounded readiness artifact for downstream control consumption; fail-closed on missing required evals."
+      "notes": "RAX-FEEDBACK-LOOP-10 bounded readiness artifact with structured readiness-change conditions, unknown-state linkage, and pre-certification alignment references."
+    },
+    {
+      "artifact_type": "rax_failure_pattern_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_failure_pattern_record.json",
+      "notes": "RAX feedback-loop failure capture artifact linking classified failures to reproducibility and trace references."
+    },
+    {
+      "artifact_type": "rax_failure_eval_candidate",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_failure_eval_candidate.json",
+      "notes": "RAX failure-derived eval candidate artifact generated deterministically from governed failure classes."
+    },
+    {
+      "artifact_type": "rax_feedback_loop_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_feedback_loop_record.json",
+      "notes": "RAX closure artifact linking failure, fix, eval coverage additions, and recurrence outcomes."
+    },
+    {
+      "artifact_type": "rax_health_snapshot",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_health_snapshot.json",
+      "notes": "RAX health metrics snapshot with SLO-style threshold posture as candidate signal only."
+    },
+    {
+      "artifact_type": "rax_drift_signal_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_drift_signal_record.json",
+      "notes": "RAX drift signal artifact comparing current and baseline windows across governed drift surfaces."
+    },
+    {
+      "artifact_type": "rax_unknown_state_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_unknown_state_record.json",
+      "notes": "RAX explicit unknown-state artifact enforcing fail-closed non-readiness when basis is incomplete or contradictory."
+    },
+    {
+      "artifact_type": "rax_pre_certification_alignment_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_pre_certification_alignment_record.json",
+      "notes": "RAX pre-certification alignment artifact for downstream promotion rigor checks without granting certification authority."
+    },
+    {
+      "artifact_type": "rax_adversarial_pattern_candidate",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_adversarial_pattern_candidate.json",
+      "notes": "RAX deterministic adversarial pattern candidate artifact for governed eval/regression consumption."
     }
   ]
 }
