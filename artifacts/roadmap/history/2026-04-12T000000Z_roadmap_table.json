@@ -1,0 +1,288 @@
+{
+  "artifact_type": "roadmap_compiler_roadmap_table",
+  "timestamp": "2026-04-12T000000Z",
+  "step_count": 24,
+  "steps": [
+    {
+      "id": "RC-01",
+      "what": "Freeze and hash all authority inputs.",
+      "why": "Create deterministic run boundary.",
+      "dependencies": [],
+      "trust_gain": "Prevents source drift.",
+      "failure_prevention": "Fail closed on hash change.",
+      "system_layer_impacted": "foundation"
+    },
+    {
+      "id": "RC-02",
+      "what": "Build source inventory completeness checker.",
+      "why": "Ensure required source docs are present.",
+      "dependencies": [
+        "RC-01"
+      ],
+      "trust_gain": "Guarantees authority coverage.",
+      "failure_prevention": "Stop if any required source missing.",
+      "system_layer_impacted": "foundation"
+    },
+    {
+      "id": "RC-03",
+      "what": "Build structured artifact linkage checker.",
+      "why": "Ensure each source has structured representation.",
+      "dependencies": [
+        "RC-02"
+      ],
+      "trust_gain": "Preserves source-to-structure traceability.",
+      "failure_prevention": "Stop if structured artifact missing.",
+      "system_layer_impacted": "foundation"
+    },
+    {
+      "id": "RC-04",
+      "what": "Define roadmap_table output schema.",
+      "why": "Validate roadmap structure deterministically.",
+      "dependencies": [
+        "RC-01"
+      ],
+      "trust_gain": "Removes ambiguity in steps.",
+      "failure_prevention": "Reject missing fields.",
+      "system_layer_impacted": "schemas"
+    },
+    {
+      "id": "RC-05",
+      "what": "Define system_state output schema.",
+      "why": "Validate domain state output.",
+      "dependencies": [
+        "RC-01"
+      ],
+      "trust_gain": "Normalizes trust posture reporting.",
+      "failure_prevention": "Reject unknown statuses.",
+      "system_layer_impacted": "schemas"
+    },
+    {
+      "id": "RC-06",
+      "what": "Define gap_analysis output schema.",
+      "why": "Validate bottleneck/risk taxonomy output.",
+      "dependencies": [
+        "RC-01"
+      ],
+      "trust_gain": "Makes risk outputs comparable.",
+      "failure_prevention": "Reject uncategorized gaps.",
+      "system_layer_impacted": "schemas"
+    },
+    {
+      "id": "RC-07",
+      "what": "Define provenance output schema.",
+      "why": "Require reproducibility metadata.",
+      "dependencies": [
+        "RC-01"
+      ],
+      "trust_gain": "Improves auditability.",
+      "failure_prevention": "Reject incomplete lineage data.",
+      "system_layer_impacted": "trace"
+    },
+    {
+      "id": "RC-08",
+      "what": "Implement fail-closed authority precheck gate.",
+      "why": "Block processing on invalid authority state.",
+      "dependencies": [
+        "RC-02",
+        "RC-03"
+      ],
+      "trust_gain": "Prevents untrusted roadmap generation.",
+      "failure_prevention": "No outputs on precheck failure.",
+      "system_layer_impacted": "control"
+    },
+    {
+      "id": "RC-09",
+      "what": "Implement implemented-vs-docs-only classifier.",
+      "why": "Ground roadmap in repo reality.",
+      "dependencies": [
+        "RC-08"
+      ],
+      "trust_gain": "Avoids overestimating readiness.",
+      "failure_prevention": "Prevents docs=implementation assumption.",
+      "system_layer_impacted": "application"
+    },
+    {
+      "id": "RC-10",
+      "what": "Implement schema-backed component detector.",
+      "why": "Measure contract governance coverage.",
+      "dependencies": [
+        "RC-08"
+      ],
+      "trust_gain": "Clarifies governed interfaces.",
+      "failure_prevention": "Flags components without schema backing.",
+      "system_layer_impacted": "schemas"
+    },
+    {
+      "id": "RC-11",
+      "what": "Implement test-backed system detector.",
+      "why": "Measure verification support by system.",
+      "dependencies": [
+        "RC-08"
+      ],
+      "trust_gain": "Exposes validation debt.",
+      "failure_prevention": "Prevents untested systems from full trust label.",
+      "system_layer_impacted": "eval"
+    },
+    {
+      "id": "RC-12",
+      "what": "Implement dead-surface detector.",
+      "why": "Identify stale or unused governance surfaces.",
+      "dependencies": [
+        "RC-09"
+      ],
+      "trust_gain": "Reduces attack/entropy surface.",
+      "failure_prevention": "Flags likely orphan modules.",
+      "system_layer_impacted": "hardening"
+    },
+    {
+      "id": "RC-13",
+      "what": "Classify domain states across seven domains.",
+      "why": "Produce explicit trust state model.",
+      "dependencies": [
+        "RC-09",
+        "RC-10",
+        "RC-11"
+      ],
+      "trust_gain": "Enables targeted remediation.",
+      "failure_prevention": "Blocks roadmap without full domain labels.",
+      "system_layer_impacted": "control"
+    },
+    {
+      "id": "RC-14",
+      "what": "Bind every classification to evidence.",
+      "why": "Keep report claims traceable.",
+      "dependencies": [
+        "RC-13"
+      ],
+      "trust_gain": "Improves audit confidence.",
+      "failure_prevention": "Reject unsupported claims.",
+      "system_layer_impacted": "trace"
+    },
+    {
+      "id": "RC-15",
+      "what": "Score and select dominant bottleneck.",
+      "why": "Prioritize highest leverage constraint.",
+      "dependencies": [
+        "RC-14"
+      ],
+      "trust_gain": "Focuses investment on core limiter.",
+      "failure_prevention": "Prevents subjective bottleneck choice.",
+      "system_layer_impacted": "control"
+    },
+    {
+      "id": "RC-16",
+      "what": "Score and select highest-risk trust gap.",
+      "why": "Prioritize highest blast-radius trust failure.",
+      "dependencies": [
+        "RC-14"
+      ],
+      "trust_gain": "Improves risk triage quality.",
+      "failure_prevention": "Prevents low-risk distractions.",
+      "system_layer_impacted": "enforcement"
+    },
+    {
+      "id": "RC-17",
+      "what": "Classify gaps into A\u2013G taxonomy.",
+      "why": "Standardize remediation framing.",
+      "dependencies": [
+        "RC-15",
+        "RC-16"
+      ],
+      "trust_gain": "Ensures complete coverage.",
+      "failure_prevention": "Reject uncategorized gaps.",
+      "system_layer_impacted": "governance"
+    },
+    {
+      "id": "RC-18",
+      "what": "Generate exactly 24 roadmap steps.",
+      "why": "Conform to governed delivery contract.",
+      "dependencies": [
+        "RC-17"
+      ],
+      "trust_gain": "Guarantees bounded plan scope.",
+      "failure_prevention": "Fail if step count not 24.",
+      "system_layer_impacted": "application"
+    },
+    {
+      "id": "RC-19",
+      "what": "Validate roadmap dependency graph.",
+      "why": "Ensure coherent sequencing.",
+      "dependencies": [
+        "RC-18"
+      ],
+      "trust_gain": "Improves execution safety.",
+      "failure_prevention": "Fail on cycles/missing deps.",
+      "system_layer_impacted": "control"
+    },
+    {
+      "id": "RC-20",
+      "what": "Apply trust-value quality filter to steps.",
+      "why": "Exclude cosmetic/non-trust work.",
+      "dependencies": [
+        "RC-18"
+      ],
+      "trust_gain": "Maximizes trust gain density.",
+      "failure_prevention": "Reject UI-only and vanity work.",
+      "system_layer_impacted": "governance"
+    },
+    {
+      "id": "RC-21",
+      "what": "Render deterministic markdown report.",
+      "why": "Produce human-readable governed artifact.",
+      "dependencies": [
+        "RC-19",
+        "RC-20"
+      ],
+      "trust_gain": "Supports review reproducibility.",
+      "failure_prevention": "Prevents section-order drift.",
+      "system_layer_impacted": "trace"
+    },
+    {
+      "id": "RC-22",
+      "what": "Write latest and history artifact snapshots.",
+      "why": "Enable current use plus audit trail.",
+      "dependencies": [
+        "RC-21"
+      ],
+      "trust_gain": "Strengthens reproducibility.",
+      "failure_prevention": "Prevents history loss on rerun.",
+      "system_layer_impacted": "foundation"
+    },
+    {
+      "id": "RC-23",
+      "what": "Run schema+required-field validation.",
+      "why": "Ensure output contract compliance.",
+      "dependencies": [
+        "RC-04",
+        "RC-05",
+        "RC-06",
+        "RC-07",
+        "RC-22"
+      ],
+      "trust_gain": "Prevents invalid artifacts.",
+      "failure_prevention": "Block publication on failure.",
+      "system_layer_impacted": "enforcement"
+    },
+    {
+      "id": "RC-24",
+      "what": "Emit final provenance verdict.",
+      "why": "Close loop with auditable status.",
+      "dependencies": [
+        "RC-23"
+      ],
+      "trust_gain": "Enables certification intake.",
+      "failure_prevention": "Prevents unverifiable reports.",
+      "system_layer_impacted": "certification"
+    }
+  ],
+  "not_to_build": [
+    "Do not execute roadmap steps.",
+    "Do not generate patches or PR autofix logic.",
+    "Do not add control-bypass overrides.",
+    "Do not prioritize UI-only work.",
+    "Do not expand into speculative multi-repo orchestration early.",
+    "Do not add non-deterministic ranking logic.",
+    "Do not treat docs as implementation evidence.",
+    "Do not add non-trust-building cosmetic tasks."
+  ]
+}
