@@ -1018,8 +1018,12 @@ def _bootstrap_missing_pqx_wrapper(
     if payload.get("artifact_type") != "codex_pqx_task_wrapper":
         return None
 
+    normalized_changed_paths = sorted(set(str(path) for path in changed_paths if str(path).strip()))
+    if not normalized_changed_paths:
+        return None
+
     wrapper = dict(payload)
-    wrapper["changed_paths"] = sorted(set(str(path) for path in changed_paths if str(path).strip()))
+    wrapper["changed_paths"] = normalized_changed_paths
     execution_intent = dict(wrapper.get("execution_intent") or {})
     execution_intent["execution_context"] = "pqx_governed"
     execution_intent["mode"] = "governed"
