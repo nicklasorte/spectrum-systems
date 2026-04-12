@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tlc_routing_bundle.schema.json",
+  "title": "TLC Routing Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "bundle_id",
+    "run_id",
+    "trace_id",
+    "route_class",
+    "target_system",
+    "route_reason_codes",
+    "input_refs",
+    "lineage_path",
+    "handoff_disposition",
+    "non_authority_assertions",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "tlc_routing_bundle"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "bundle_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "route_class": {
+      "enum": [
+        "repo_write_governed",
+        "review_disposition",
+        "closure_progression",
+        "enforcement_hold",
+        "operator_handoff"
+      ]
+    },
+    "target_system": {
+      "enum": [
+        "TPA",
+        "PQX",
+        "RQX",
+        "RIL",
+        "FRE",
+        "CDE",
+        "SEL",
+        "PRG"
+      ]
+    },
+    "route_reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "input_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "lineage_path": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string",
+        "enum": [
+          "AEX",
+          "TLC",
+          "TPA",
+          "PQX",
+          "RQX",
+          "RIL",
+          "FRE",
+          "CDE",
+          "SEL",
+          "PRG"
+        ]
+      }
+    },
+    "handoff_disposition": {
+      "enum": [
+        "route",
+        "hold",
+        "block",
+        "escalate"
+      ]
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

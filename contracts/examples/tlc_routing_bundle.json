@@ -1,0 +1,31 @@
+{
+  "artifact_type": "tlc_routing_bundle",
+  "schema_version": "1.0.0",
+  "bundle_id": "trb-001",
+  "run_id": "tlc-run-001",
+  "trace_id": "trace-tlc-run-001",
+  "route_class": "repo_write_governed",
+  "target_system": "TPA",
+  "route_reason_codes": [
+    "aex_admission_verified",
+    "repo_write_requires_tpa_policy_gate"
+  ],
+  "input_refs": [
+    "build_admission_record:adm-001",
+    "normalized_execution_request:req-001",
+    "tlc_handoff_record:handoff-001"
+  ],
+  "lineage_path": [
+    "AEX",
+    "TLC",
+    "TPA",
+    "PQX"
+  ],
+  "handoff_disposition": "route",
+  "non_authority_assertions": [
+    "tlc_not_policy_authority",
+    "tlc_not_execution_authority",
+    "tlc_not_closure_authority"
+  ],
+  "created_at": "2026-04-12T00:00:00Z"
+}

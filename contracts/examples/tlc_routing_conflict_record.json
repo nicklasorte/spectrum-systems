@@ -1,0 +1,11 @@
+{
+  "artifact_type": "tlc_routing_conflict_record",
+  "schema_version": "1.0.0",
+  "conflict_id": "trc-001",
+  "route_id": "trb-001",
+  "trace_id": "trace-tlc-run-001",
+  "conflict_type": "authority_leakage",
+  "severity": "high",
+  "detected_at": "2026-04-12T00:00:00Z",
+  "details": "prep artifact attempted to substitute closure authority"
+}

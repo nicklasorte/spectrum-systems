@@ -1,0 +1,16 @@
+{
+  "artifact_type": "tlc_routing_eval_result",
+  "schema_version": "1.0.0",
+  "eval_id": "tre-001",
+  "bundle_ref": "tlc_routing_bundle:trb-001",
+  "evaluated_at": "2026-04-12T00:00:00Z",
+  "evaluation_status": "pass",
+  "checks": {
+    "handoff_completeness": true,
+    "route_validity": true,
+    "authority_boundary_correct": true,
+    "required_artifacts_present": true
+  },
+  "fail_reasons": [],
+  "trace_id": "trace-tlc-run-001"
+}

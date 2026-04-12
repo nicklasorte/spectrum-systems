@@ -43,6 +43,20 @@ from spectrum_systems.modules.runtime.review_signal_classifier import classify_r
 from spectrum_systems.modules.runtime.review_signal_consumer import build_review_integration_packet
 from spectrum_systems.modules.runtime.system_registry_enforcer import validate_system_action, validate_system_handoff
 from spectrum_systems.modules.runtime.system_enforcement_layer import enforce_system_boundaries
+from spectrum_systems.modules.runtime.tlc_hardening import (
+    build_tlc_orchestration_readiness,
+    build_tlc_routing_bundle,
+    compute_tlc_orchestration_effectiveness,
+    detect_handoff_dead_loop,
+    detect_owner_boundary_leakage,
+    enforce_prep_vs_authority_integrity,
+    evaluate_tlc_routing_bundle,
+    track_handoff_debt,
+    validate_cross_system_handoff_integrity,
+    validate_route_to_closure_integrity,
+    validate_route_to_review_integrity,
+    validate_tlc_routing_replay,
+)
 
 
 TERMINAL_STATES = {"ready_for_merge", "blocked", "exhausted", "escalated"}
@@ -1582,6 +1596,87 @@ def run_top_level_conductor(run_request: dict[str, Any]) -> dict[str, Any]:
     state["lineage"]["run_summary_artifact"] = run_summary
     state["lineage"]["run_summary_artifact_ref"] = run_summary_ref
     state["produced_artifact_refs"] = sorted(set(state["produced_artifact_refs"] + [run_summary_ref]))
+    if repo_mutation_requested and has_admission_inputs and isinstance(tlc_handoff_record, dict):
+        routing_bundle = build_tlc_routing_bundle(
+            run_id=state["run_id"],
+            trace_id=state["trace_id"],
+            governed_inputs={
+                "build_admission_record": build_admission_record,
+                "normalized_execution_request": normalized_execution_request,
+                "tlc_handoff_record": tlc_handoff_record,
+            },
+            created_at=state["emitted_at"],
+        )
+        routing_eval = evaluate_tlc_routing_bundle(
+            routing_bundle=routing_bundle,
+            required_artifacts={
+                "build_admission_record": build_admission_record,
+                "normalized_execution_request": normalized_execution_request,
+                "tlc_handoff_record": tlc_handoff_record,
+            },
+            created_at=state["emitted_at"],
+        )
+        handoff_failures = validate_cross_system_handoff_integrity(routing_bundle=routing_bundle, expected_trace_id=state["trace_id"])
+        handoff_failures.extend(
+            enforce_prep_vs_authority_integrity(
+                artifact_refs=state["produced_artifact_refs"],
+                non_authority_assertions=routing_bundle["non_authority_assertions"],
+            )
+        )
+        handoff_failures.extend(
+            detect_owner_boundary_leakage(
+                claimed_owner_actions=list(run_request.get("claimed_owner_actions", [])),
+            )
+        )
+        handoff_failures.extend(detect_handoff_dead_loop(route_sequence=list(run_request.get("handoff_route_sequence", []))))
+        handoff_failures.extend(
+            validate_route_to_review_integrity(
+                routing_bundle=routing_bundle,
+                handoff_payload=dict(run_request.get("review_handoff_payload", {})),
+            )
+        )
+        handoff_failures.extend(
+            validate_route_to_closure_integrity(
+                progression_refs=list(run_request.get("progression_refs", [])),
+                closure_authority_present=bool(state["lineage"].get("closure_decision_artifact")),
+            )
+        )
+        replay_match, replay_failures = validate_tlc_routing_replay(
+            prior_bundle=routing_bundle,
+            replay_bundle=deepcopy(routing_bundle),
+            prior_eval=routing_eval,
+            replay_eval=deepcopy(routing_eval),
+        )
+        handoff_failures.extend(replay_failures)
+        readiness = build_tlc_orchestration_readiness(
+            run_id=state["run_id"],
+            trace_id=state["trace_id"],
+            routing_eval=routing_eval,
+            handoff_failures=handoff_failures,
+            created_at=state["emitted_at"],
+        )
+        debt = track_handoff_debt(
+            dispositions=[routing_bundle],
+            trace_id=state["trace_id"],
+            created_at=state["emitted_at"],
+        )
+        effectiveness = compute_tlc_orchestration_effectiveness(
+            run_outcomes=[
+                {
+                    "progressed": state["current_state"] in {"ready_for_merge", "closure_decision_pending"},
+                    "dead_loop": "handoff_dead_loop_detected" in handoff_failures,
+                    "bypass": any(code.startswith("owner_boundary_leakage:") for code in handoff_failures),
+                }
+            ],
+            window_id=f"run:{state['run_id']}",
+            created_at=state["emitted_at"],
+        )
+        state["lineage"]["tlc_routing_bundle"] = routing_bundle
+        state["lineage"]["tlc_routing_eval_result"] = routing_eval
+        state["lineage"]["tlc_orchestration_readiness_record"] = readiness
+        state["lineage"]["tlc_handoff_debt_record"] = debt
+        state["lineage"]["tlc_orchestration_effectiveness_record"] = effectiveness
+        state["lineage"]["tlc_replay_match"] = replay_match
 
     output = {k: v for k, v in state.items() if k not in {"trace_id", "emitted_at"}}
     validate_artifact(output, "top_level_conductor_run_artifact")
