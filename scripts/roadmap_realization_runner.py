@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import importlib
 import json
 import re
@@ -38,6 +39,14 @@ BASE_FORBIDDEN_PATTERNS = [
     r"artifact[-_ ]only",
     r"direct static payload",
 ]
+FORGED_REALIZATION_STATUSES = {"runtime_realized", "verified"}
+NORMALIZED_FORBIDDEN_SIGNATURES = (
+    "writejson",
+    "jsondump",
+    "statuspass",
+    "artifactonly",
+    "directstaticpayload",
+)
 
 APPROVED_TEST_PREFIXES = ("pytest tests/", "python -m pytest tests/")
 APPROVED_PYTEST_TARGET_PATTERNS = (
@@ -155,21 +164,86 @@ def _check_runtime_entrypoints(runtime_entrypoints: list[str]) -> list[dict[str,
 
 def _scan_forbidden_patterns(contract: dict[str, Any], repo_root: Path) -> list[dict[str, Any]]:
     caller_patterns = [re.escape(pattern) for pattern in contract["forbidden_patterns"]]
-    patterns = [re.compile(pattern, flags=re.IGNORECASE | re.MULTILINE) for pattern in sorted(set(BASE_FORBIDDEN_PATTERNS + caller_patterns))]
+    regex_patterns = [
+        re.compile(pattern, flags=re.IGNORECASE | re.MULTILINE) for pattern in sorted(set(BASE_FORBIDDEN_PATTERNS + caller_patterns))
+    ]
+    normalized_signatures = set(NORMALIZED_FORBIDDEN_SIGNATURES)
+    normalized_signatures.update(_normalize_forbidden_text(pattern) for pattern in contract["forbidden_patterns"])
+    normalized_signatures.discard("")
 
-    scoped_files = sorted(set(contract["target_modules"]))
+    scoped_files = _resolve_forbidden_scan_scope(contract=contract, repo_root=repo_root)
 
     hits: list[dict[str, Any]] = []
     for rel_path in scoped_files:
         path = repo_root / rel_path
         if not path.is_file():
-            raise FileNotFoundError(f"missing target module path: {path}")
+            raise FileNotFoundError(f"missing target/helper module path: {path}")
         text = path.read_text(encoding="utf-8")
-        for pattern in patterns:
+        normalized_text = _normalize_forbidden_text(text)
+        for pattern in regex_patterns:
             if pattern.search(text):
-                hits.append({"step_id": contract["step_id"], "path": rel_path, "pattern": pattern.pattern})
+                hits.append({"step_id": contract["step_id"], "path": rel_path, "pattern": pattern.pattern, "match_mode": "regex"})
+        for signature in sorted(normalized_signatures):
+            if signature and signature in normalized_text:
+                hits.append(
+                    {
+                        "step_id": contract["step_id"],
+                        "path": rel_path,
+                        "pattern": signature,
+                        "match_mode": "normalized_signature",
+                    }
+                )
 
-    return hits
+    deduped_hits = {
+        (item["step_id"], item["path"], item["pattern"], item["match_mode"]): item for item in hits
+    }
+    return list(deduped_hits.values())
+
+
+def _normalize_forbidden_text(text: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", text.lower())
+
+
+def _entrypoint_to_repo_path(entrypoint: str) -> str | None:
+    module_name, sep, _symbol = entrypoint.partition(":")
+    if not sep or not module_name.startswith("spectrum_systems."):
+        return None
+    return f"{module_name.replace('.', '/')}.py"
+
+
+def _extract_local_import_paths(path: Path, repo_root: Path) -> set[str]:
+    text = path.read_text(encoding="utf-8")
+    tree = ast.parse(text)
+    imports: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                module_name = alias.name
+                if module_name.startswith("spectrum_systems."):
+                    imports.add(f"{module_name.replace('.', '/')}.py")
+        elif isinstance(node, ast.ImportFrom):
+            module_name = node.module or ""
+            if module_name.startswith("spectrum_systems."):
+                imports.add(f"{module_name.replace('.', '/')}.py")
+    return {candidate for candidate in imports if (repo_root / candidate).is_file()}
+
+
+def _resolve_forbidden_scan_scope(*, contract: dict[str, Any], repo_root: Path) -> list[str]:
+    scoped_files: set[str] = set(contract["target_modules"])
+    for entrypoint in contract["runtime_entrypoints"]:
+        entrypoint_path = _entrypoint_to_repo_path(entrypoint)
+        if entrypoint_path:
+            scoped_files.add(entrypoint_path)
+
+    helper_files: set[str] = set()
+    for rel_path in sorted(scoped_files):
+        path = repo_root / rel_path
+        if not path.is_file():
+            raise FileNotFoundError(f"missing target/helper module path: {path}")
+        helper_files.update(_extract_local_import_paths(path, repo_root))
+
+    scoped_files.update(helper_files)
+    return sorted(scoped_files)
 
 
 def _extract_pytest_targets(command: str) -> list[str]:
@@ -394,14 +468,23 @@ def realize_steps(
     policy = _load_expansion_policy()
     contracts: dict[str, dict[str, Any]] = {}
     contract_validation_failures: dict[str, str] = {}
+    forged_status_failures: dict[str, str] = {}
     for step_id in step_ids:
         try:
             contract = _load_contract(contract_dir, step_id)
             _validate_expansion_trace(contract, repo_root)
+            incoming_status = contract["realization_status"]
+            if incoming_status in FORGED_REALIZATION_STATUSES:
+                raise RoadmapRealizationRuntimeError(
+                    "incoming realization_status is forged for standard realization execution "
+                    f"({incoming_status}); authoritative prior-run verification artifact required"
+                )
             contract["_authoritative_status"] = authoritative_start_status(contract["realization_status"])
             contracts[step_id] = contract
         except Exception as exc:
             contract_validation_failures[step_id] = str(exc)
+            if "incoming realization_status is forged" in str(exc):
+                forged_status_failures[step_id] = str(exc)
 
     status_by_step = dict(BASELINE_REALIZATION_STATUS)
     for step_id, contract in contracts.items():
@@ -524,8 +607,12 @@ def realize_steps(
             failed_steps.append(step_id)
 
     any_critical_failure = any(any(categories.values()) for categories in critical_failures.values())
-    if any_critical_failure:
-        passed_steps = [step for step in passed_steps if not any(critical_failures[step].values())]
+    invocation_dependency_blocked = len(dependency_failures) > 0 and len(step_ids) > 1
+    if any_critical_failure or invocation_dependency_blocked:
+        if invocation_dependency_blocked:
+            for step_id in attempted_steps:
+                critical_failures[step_id]["dependency_validation"] = True
+        passed_steps = []
         status_updates = []
 
     overall_status = "pass" if len(step_ids) > 0 and not any_critical_failure and len(failed_steps) == 0 else "fail"
@@ -538,6 +625,7 @@ def realize_steps(
         "failed_steps": sorted(set(failed_steps)),
         "contract_validation_failures": contract_validation_failures,
         "dependency_failures": dependency_failures,
+        "forged_status_failures": forged_status_failures,
         "ownership_checks": ownership_checks,
         "forbidden_pattern_hits": forbidden_pattern_hits,
         "runtime_entrypoint_checks": runtime_entrypoint_checks,

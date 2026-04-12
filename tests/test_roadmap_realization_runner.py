@@ -100,15 +100,77 @@ def test_dependency_bypass_attack_blocked(tmp_path: Path) -> None:
     assert "RF-03" in result["failed_steps"]
     assert "RF-03" in result["dependency_failures"]
     assert result["overall_status"] == "fail"
+    assert result["passed_steps"] == []
+    assert result["status_updates"] == []
+
+
+def test_dependency_bypass_with_rf02_planned_only_blocked(tmp_path: Path) -> None:
+    rf02 = _base_contract("RF-02")
+    rf02["realization_status"] = "planned_only"
+    contract_dir = _write_contracts(tmp_path, rf02=rf02)
+    result = realize_steps(step_ids=["RF-03"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
+    assert result["overall_status"] == "fail"
+    assert result["passed_steps"] == []
+    assert result["status_updates"] == []
+
+
+def test_dependency_bypass_with_rf02_artifact_materialized_blocked(tmp_path: Path) -> None:
+    rf02 = _base_contract("RF-02")
+    rf02["realization_status"] = "artifact_materialized"
+    contract_dir = _write_contracts(tmp_path, rf02=rf02)
+    result = realize_steps(step_ids=["RF-03"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
+    assert result["overall_status"] == "fail"
+    assert result["passed_steps"] == []
+    assert result["status_updates"] == []
 
 
 def test_forbidden_pattern_evasion_attack_blocked(tmp_path: Path) -> None:
     rf02 = _base_contract("RF-02")
-    rf02["forbidden_patterns"] = ["ALLOWED_STATUSES"]
-    contract_dir = _write_contracts(tmp_path, rf02=rf02)
-    result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
-    assert result["overall_status"] == "fail"
-    assert result["forbidden_pattern_hits"]["RF-02"]
+    helper_path = Path("spectrum_systems/modules/runtime/_rax_forbidden_pattern_helper.py")
+    helper_content = """
+def helper_wrapper_write(payload):
+    status = {"status" : "pass"}
+    return status
+
+def direct_writer(payload):
+    return _write_json(payload)
+
+def static_payload_helper():
+    return "direct static payload"
+
+def artifact_only_helper():
+    return "artifact-only success"
+"""
+    try:
+        helper_path.write_text(helper_content, encoding="utf-8")
+        rf02["target_modules"] = [
+            "spectrum_systems/modules/runtime/roadmap_realization_runtime.py",
+            helper_path.as_posix(),
+        ]
+        contract_dir = _write_contracts(tmp_path, rf02=rf02)
+        variants = [
+            "  _ WRITE __ JSON  ",
+            "helper wrapper write",
+            "static payload helper",
+            "\"status\" : \"pass\"",
+            "artifact only helper",
+        ]
+        for variant in variants:
+            rf02["forbidden_patterns"] = [variant]
+            _write_json(contract_dir / "RF-02.json", rf02)
+            result = realize_steps(
+                step_ids=["RF-02"],
+                contract_dir=contract_dir,
+                result_path=tmp_path / f"result-{variant}.json",
+                repo_root=Path("."),
+            )
+            assert result["overall_status"] == "fail"
+            assert result["forbidden_pattern_hits"]["RF-02"]
+            assert result["passed_steps"] == []
+            assert result["status_updates"] == []
+    finally:
+        if helper_path.exists():
+            helper_path.unlink()
 
 
 def test_fake_test_success_attack_blocked(tmp_path: Path) -> None:
@@ -125,10 +187,23 @@ def test_status_forging_attack_blocked(tmp_path: Path) -> None:
     rf02["realization_status"] = "verified"
     contract_dir = _write_contracts(tmp_path, rf02=rf02)
     result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
-    assert result["overall_status"] == "pass"
-    updates = result["status_updates"]
-    assert updates[0]["from"] == "planned_only"
-    assert json.loads((contract_dir / "RF-02.json").read_text())["realization_status"] == "runtime_realized"
+    assert result["overall_status"] == "fail"
+    assert result["passed_steps"] == []
+    assert result["status_updates"] == []
+    assert "RF-02" in result["forged_status_failures"]
+    assert "incoming realization_status is forged" in result["forged_status_failures"]["RF-02"]
+
+
+def test_status_forging_attack_with_runtime_realized_blocked(tmp_path: Path) -> None:
+    rf02 = _base_contract("RF-02")
+    rf02["realization_status"] = "runtime_realized"
+    contract_dir = _write_contracts(tmp_path, rf02=rf02)
+    result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
+    assert result["overall_status"] == "fail"
+    assert result["passed_steps"] == []
+    assert result["status_updates"] == []
+    assert "RF-02" in result["forged_status_failures"]
+    assert "incoming realization_status is forged" in result["forged_status_failures"]["RF-02"]
 
 
 def test_ownership_boundary_attack_blocked(tmp_path: Path) -> None:
