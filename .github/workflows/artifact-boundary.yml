@@ -100,48 +100,10 @@ jobs:
           GITHUB_BEFORE_SHA: ${{ github.event.before || '' }}
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          python - <<'PY'
-          import json
-          import subprocess
-          from pathlib import Path
-
-          base_ref = "${{ steps.preflight-refs.outputs.base_ref }}"
-          head_ref = "${{ steps.preflight-refs.outputs.head_ref }}"
-          changed = []
-          refs_attempted = [(base_ref, head_ref)]
-          if head_ref != "HEAD":
-              refs_attempted.append((base_ref, "HEAD"))
-
-          for candidate_base, candidate_head in refs_attempted:
-              try:
-                  output = subprocess.check_output(
-                      ["git", "diff", "--name-only", f"{candidate_base}..{candidate_head}"],
-                      text=True,
-                  )
-              except subprocess.CalledProcessError:
-                  continue
-              changed = sorted({p.strip() for p in output.splitlines() if p.strip()})
-              break
-
-          if not changed:
-              status_output = subprocess.check_output(
-                  ["git", "status", "--porcelain"],
-                  text=True,
-              )
-              changed = sorted(
-                  {
-                      line[3:].strip()
-                      for line in status_output.splitlines()
-                      if line and len(line) > 3 and line[3:].strip()
-                  }
-              )
-
-          wrapper_path = Path("outputs/contract_preflight/preflight_pqx_task_wrapper.json")
-          wrapper_path.parent.mkdir(parents=True, exist_ok=True)
-          wrapper = json.loads(Path("contracts/examples/codex_pqx_task_wrapper.json").read_text(encoding="utf-8"))
-          wrapper["changed_paths"] = changed
-          Path(wrapper_path).write_text(json.dumps(wrapper, indent=2) + "\n", encoding="utf-8")
-          PY
+          python scripts/build_preflight_pqx_wrapper.py \
+            --base-ref "${{ steps.preflight-refs.outputs.base_ref }}" \
+            --head-ref "${{ steps.preflight-refs.outputs.head_ref }}" \
+            --output outputs/contract_preflight/preflight_pqx_task_wrapper.json
 
           python scripts/run_contract_preflight.py \
             --base-ref "${{ steps.preflight-refs.outputs.base_ref }}" \
