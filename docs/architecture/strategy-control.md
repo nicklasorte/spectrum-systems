@@ -172,3 +172,9 @@ Correction actions:
 
 ## Definition of Success
 Success means Spectrum Systems can demonstrate, with governed artifacts, that failures are converted into enforced prevention and policy/control updates over time, with replayable certification-grade evidence, foundation-first sequencing compliance, and no authority ambiguity.
+
+## NEXT24 serial governance foundation execution (2026-04-12)
+
+A deterministic serial execution surface now hard-gates the 24-step governance foundation build for the primary `artifact_release_readiness` family. The runtime module `spectrum_systems/modules/runtime/next24_serial_execution.py` enforces strict step order and fail-closed requirements for judgment artifacts/evals, control precedence, budget enforcement, certification, trace completeness, replay integrity, and narrow-slice canary/champion-challenger calibration wiring.
+
+Execution output is persisted as the governed artifact `next24_serial_execution_record` (`contracts/schemas/next24_serial_execution_record.schema.json`) and validates contract-first authority before completion.
