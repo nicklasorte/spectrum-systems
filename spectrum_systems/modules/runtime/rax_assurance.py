@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -43,6 +44,15 @@ _WEAK_ACCEPTANCE_LANGUAGE = (
 )
 
 _VERIFICATION_TERMS = ("must", "verify", "validated", "enforce", "deterministic", "fail", "prove")
+_NON_OPERATIONAL_ACCEPTANCE_PHRASES = (
+    "non-operational",
+    "non operational",
+    "non-falsifiable",
+    "non falsifiable",
+    "formatting consistency",
+    "documentation only",
+)
+_DEPENDENCY_ID_PATTERN = re.compile(r"^RAX-INTERFACE-\d{2}-\d{2}$")
 
 _DEFAULT_SOURCE_VERSION_AUTHORITY = {
     "docs/roadmaps/system_roadmap.md#RAX-INTERFACE-24-01": "1.3.112",
@@ -179,6 +189,12 @@ def assure_rax_input(
             failure_classification = "invalid_input"
             details.append("normalization_ambiguity: depends_on would collapse during canonical normalization")
 
+    if failure_classification == "none":
+        invalid_dependencies = [dep for dep in payload["depends_on"] if not _DEPENDENCY_ID_PATTERN.match(dep.strip())]
+        if invalid_dependencies:
+            failure_classification = "dependency_blocked"
+            details.append(f"dependency_graph_corruption: invalid depends_on entries {sorted(invalid_dependencies)}")
+
     if failure_classification == "none" and freshness_records is not None:
         fresh = freshness_records.get(payload["input_freshness_ref"], {}).get("is_fresh", False)
         if not fresh:
@@ -192,10 +208,15 @@ def assure_rax_input(
             details.append("provenance reference missing or untrusted")
 
     if failure_classification == "none":
-        authoritative_versions = source_version_authority
-        if authoritative_versions is None:
-            root = repo_root or Path(__file__).resolve().parents[3]
-            authoritative_versions = _load_authoritative_source_versions(root)
+        root = repo_root or Path(__file__).resolve().parents[3]
+        authoritative_versions = _load_authoritative_source_versions(root)
+        if source_version_authority is not None:
+            immutable_version = authoritative_versions.get(payload["source_authority_ref"])
+            supplied_version = source_version_authority.get(payload["source_authority_ref"])
+            if immutable_version and supplied_version and supplied_version != immutable_version:
+                failure_classification = "stale_reference"
+                details.append("forged_authority_override_detected")
+                details.append(f"source_version_drift: supplied_authority={supplied_version} immutable_authority={immutable_version}")
         expected_source_version = authoritative_versions.get(payload["source_authority_ref"])
         if expected_source_version is None:
             failure_classification = "stale_reference"
@@ -252,14 +273,19 @@ def _check_acceptance_strength(step_contract: dict[str, Any], policy: dict[str, 
         if not any(term in description_lower for term in _VERIFICATION_TERMS):
             failures.append(f"weak_acceptance_check[{index}]: missing verification semantics")
 
+        if any(phrase in description_lower for phrase in _NON_OPERATIONAL_ACCEPTANCE_PHRASES):
+            failures.append(f"weak_acceptance_check[{index}]: non-operational acceptance language detected")
+
         if check.get("required") is not True:
             failures.append(f"weak_acceptance_check[{index}]: check must be required=true")
 
     return failures
 
 
-def _is_target_in_allowed_prefixes(targets: list[str], allowed_prefixes: list[str]) -> bool:
-    return any(any(target.startswith(prefix) for prefix in allowed_prefixes) for target in targets)
+def _targets_within_allowed_prefixes(targets: list[str], allowed_prefixes: list[str]) -> bool:
+    if not targets:
+        return False
+    return all(any(target.startswith(prefix) for prefix in allowed_prefixes) for target in targets)
 
 
 def assure_rax_output(
@@ -318,15 +344,15 @@ def assure_rax_output(
         allowed_module_prefixes = owner_policy.get("allowed_module_prefixes", [])
         allowed_test_prefixes = owner_policy.get("allowed_test_prefixes", [])
 
-        if allowed_module_prefixes and not _is_target_in_allowed_prefixes(step_contract.get("target_modules", []), allowed_module_prefixes):
+        if allowed_module_prefixes and not _targets_within_allowed_prefixes(step_contract.get("target_modules", []), allowed_module_prefixes):
             failure_classification = "downstream_incompatible"
-            details.append("owner_target_contradiction: target_modules inconsistent with owner policy")
+            details.append("owner_target_contradiction: all target_modules must satisfy owner policy prefixes")
 
-        if failure_classification == "none" and allowed_test_prefixes and not _is_target_in_allowed_prefixes(
+        if failure_classification == "none" and allowed_test_prefixes and not _targets_within_allowed_prefixes(
             step_contract.get("target_tests", []), allowed_test_prefixes
         ):
             failure_classification = "downstream_incompatible"
-            details.append("owner_target_contradiction: target_tests inconsistent with owner policy")
+            details.append("owner_target_contradiction: all target_tests must satisfy owner policy prefixes")
 
     if failure_classification == "none":
         acceptance_failures = _check_acceptance_strength(step_contract, policy)
@@ -428,6 +454,13 @@ def evaluate_rax_control_readiness(
     eval_summary: dict[str, Any],
     eval_results: list[dict[str, Any]],
     required_eval_coverage: dict[str, Any],
+    assurance_audit: dict[str, Any] | None = None,
+    trace_integrity_evidence: dict[str, Any] | None = None,
+    lineage_provenance_evidence: dict[str, Any] | None = None,
+    dependency_state: dict[str, Any] | None = None,
+    authority_records: dict[str, Any] | None = None,
+    replay_baseline_store: dict[str, Any] | None = None,
+    replay_key: str | None = None,
 ) -> dict[str, Any]:
     """Build bounded RAX control-readiness artifact from governed eval artifacts."""
     from spectrum_systems.modules.runtime.rax_eval_runner import build_rax_control_readiness_record
@@ -438,4 +471,11 @@ def evaluate_rax_control_readiness(
         eval_summary=eval_summary,
         eval_results=eval_results,
         required_eval_coverage=required_eval_coverage,
+        assurance_audit=assurance_audit,
+        trace_integrity_evidence=trace_integrity_evidence,
+        lineage_provenance_evidence=lineage_provenance_evidence,
+        dependency_state=dependency_state,
+        authority_records=authority_records,
+        replay_baseline_store=replay_baseline_store,
+        replay_key=replay_key,
     )
