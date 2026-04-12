@@ -1,0 +1,11 @@
+{
+  "artifact_type": "repair_budget_signal",
+  "schema_version": "1.0.0",
+  "signal_id": "fre-signal-0123456789abcdef",
+  "sample_size": 4,
+  "success_rate": 0.75,
+  "recurrence_rate": 0.25,
+  "override_rate": 0.25,
+  "repair_latency_ms": 1800,
+  "repair_cost_units": 9
+}

@@ -4,17 +4,21 @@
   "title": "Repair Candidate",
   "type": "object",
   "additionalProperties": false,
-  "required": ["artifact_type", "schema_version", "candidate_id", "trace_id", "failure_packet_ref", "lineage_refs", "scope_refs", "bounded_actions", "required_evidence_refs", "non_authority_assertions"],
+  "required": ["artifact_type", "schema_version", "candidate_id", "trace_id", "replay_id", "input_digest", "failure_packet_ref", "lineage_refs", "scope_refs", "repair_class", "bounded_actions", "expected_post_condition", "required_evidence_refs", "non_authority_assertions"],
   "properties": {
     "artifact_type": {"const": "repair_candidate"},
-    "schema_version": {"const": "1.0.0"},
-    "candidate_id": {"type": "string", "minLength": 1},
+    "schema_version": {"const": "1.1.0"},
+    "candidate_id": {"type": "string", "pattern": "^fre-rc-[a-f0-9]{16}$"},
     "trace_id": {"type": "string", "minLength": 1},
+    "replay_id": {"type": "string", "pattern": "^replay-.+"},
+    "input_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
     "failure_packet_ref": {"type": "string", "pattern": "^execution_failure_packet:.+"},
-    "lineage_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "lineage_refs": {"type": "array", "minItems": 2, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
     "scope_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "repair_class": {"type": "string", "enum": ["artifact_only", "schema_adjustment", "test_only", "runtime_code"]},
     "bounded_actions": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^update_artifact:.+"}, "uniqueItems": true},
+    "expected_post_condition": {"type": "string", "minLength": 1},
     "required_evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
-    "non_authority_assertions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+    "non_authority_assertions": {"type": "array", "minItems": 3, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
   }
 }

@@ -1,12 +1,16 @@
 {
   "artifact_type": "repair_candidate",
-  "schema_version": "1.0.0",
-  "candidate_id": "fre-rc-01",
+  "schema_version": "1.1.0",
+  "candidate_id": "fre-rc-0123456789abcdef",
   "trace_id": "trace-fre-001",
+  "replay_id": "replay-efp-01",
+  "input_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "failure_packet_ref": "execution_failure_packet:efp-01",
   "lineage_refs": ["execution_failure_packet:efp-01", "trace:trace-fre-001"],
   "scope_refs": ["contracts/examples/review_control_signal_artifact.json"],
+  "repair_class": "artifact_only",
   "bounded_actions": ["update_artifact:contracts/examples/review_control_signal_artifact.json"],
+  "expected_post_condition": "failure_type:slice_contract_mismatch:resolved_without_execution",
   "required_evidence_refs": ["trace:trace-fre-001", "pytest_failure:tests/test_review_roadmap_generator.py::test_requires_nested_control_decision"],
-  "non_authority_assertions": ["candidate_only_non_authoritative", "fre_must_not_execute_repairs", "fre_must_not_authorize_continuation"]
+  "non_authority_assertions": ["candidate_only_non_authoritative", "fre_must_not_execute_repairs", "fre_must_not_authorize_continuation", "fre_must_not_decide_control_outcome"]
 }

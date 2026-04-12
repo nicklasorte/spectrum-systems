@@ -1,0 +1,9 @@
+{
+  "artifact_type": "repair_policy_candidate",
+  "schema_version": "1.0.0",
+  "policy_candidate_id": "fre-pol-0123456789abcdef",
+  "template_refs": ["repair_template_candidate:fre-tmpl-0123456789abcdef"],
+  "candidate_policy_primitives": ["primitive:1"],
+  "compilation_state": "candidate_only",
+  "non_authority_assertions": ["policy_candidate_non_authoritative"]
+}

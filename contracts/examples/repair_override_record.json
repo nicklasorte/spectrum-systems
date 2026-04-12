@@ -1,0 +1,10 @@
+{
+  "artifact_type": "repair_override_record",
+  "schema_version": "1.0.0",
+  "override_id": "fre-ovr-0123456789abcdef",
+  "review_ref": "repair_review_record:fre-rvw-0123456789abcdef",
+  "override_by": "operator-001",
+  "expires_at": "2026-04-20T00:00:00Z",
+  "justification": "Temporary replay lag requires time-bound override record.",
+  "non_authority_assertions": ["override_record_is_replayable", "override_not_execution_authority"]
+}

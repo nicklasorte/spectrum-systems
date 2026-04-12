@@ -1,0 +1,11 @@
+{
+  "artifact_type": "repair_template_candidate",
+  "schema_version": "1.0.0",
+  "template_id": "fre-tmpl-0123456789abcdef",
+  "cluster_key": "slice_contract_mismatch::review_control_signal",
+  "version": 1,
+  "dedupe_key": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "successful_repair_refs": ["repair_candidate:fre-rc-0123456789abcdef", "repair_candidate:fre-rc-fedcba9876543210"],
+  "admission_state": "candidate_admitted",
+  "non_authority_assertions": ["template_is_candidate_only"]
+}

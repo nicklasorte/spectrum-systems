@@ -4,16 +4,17 @@
   "title": "Repair Readiness Candidate",
   "type": "object",
   "additionalProperties": false,
-  "required": ["artifact_type", "schema_version", "readiness_id", "trace_id", "repair_candidate_ref", "repair_eval_result_ref", "candidate_ready", "blocking_reasons", "non_authority_assertions"],
+  "required": ["artifact_type", "schema_version", "readiness_id", "trace_id", "replay_id", "repair_candidate_ref", "repair_eval_result_ref", "candidate_ready", "blocking_reasons", "non_authority_assertions"],
   "properties": {
     "artifact_type": {"const": "repair_readiness_candidate"},
-    "schema_version": {"const": "1.0.0"},
-    "readiness_id": {"type": "string", "minLength": 1},
+    "schema_version": {"const": "1.1.0"},
+    "readiness_id": {"type": "string", "pattern": "^fre-ready-[a-f0-9]{16}$"},
     "trace_id": {"type": "string", "minLength": 1},
+    "replay_id": {"type": "string", "pattern": "^replay-.+"},
     "repair_candidate_ref": {"type": "string", "pattern": "^repair_candidate:.+"},
     "repair_eval_result_ref": {"type": "string", "pattern": "^repair_eval_result:.+"},
     "candidate_ready": {"type": "boolean"},
     "blocking_reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
-    "non_authority_assertions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+    "non_authority_assertions": {"type": "array", "minItems": 3, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
   }
 }

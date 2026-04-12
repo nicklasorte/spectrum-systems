@@ -1,0 +1,11 @@
+{
+  "artifact_type": "fre_promotion_gate_record",
+  "schema_version": "1.0.0",
+  "gate_record_id": "fre-prom-0123456789abcdef",
+  "repair_bundle_ref": "repair_bundle:fre-bundle-0123456789abcdef",
+  "budget_signal_ref": "repair_budget_signal:fre-signal-0123456789abcdef",
+  "policy_gate_ref": "repair_scope_policy_gate:fre-gate-0123456789abcdef",
+  "judgment_slice_ref": "repair_judgment_slice:fre-judge-0123456789abcdef",
+  "promotion_ready": true,
+  "blocking_reasons": []
+}
