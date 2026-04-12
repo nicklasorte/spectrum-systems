@@ -166,6 +166,51 @@ def test_input_assurance_rejects_owner_intent_contradiction() -> None:
     assert any("owner_intent_contradiction" in detail for detail in result["details"])
 
 
+def test_input_assurance_rejects_novel_adversarial_pattern_intent() -> None:
+    upstream = load_example("rax_upstream_input_envelope")
+    upstream["owner"] = "PQX"
+    upstream["intent"] = "execute exactly what seems useful quickly with minimal proof"
+    result = assure_rax_input(upstream, **_valid_input_assurance_kwargs(upstream))
+    assert result["passed"] is False
+    assert result["failure_classification"] == "invalid_input"
+    assert result["stop_condition_triggered"] is True
+    assert any(
+        "execution intent missing governed verification/evidence anchors" in detail
+        or "ambiguous_or_evidence_avoiding_intent_phrase" in detail
+        for detail in result["details"]
+    )
+
+
+def test_input_assurance_rejects_nearby_ambiguous_execution_variant() -> None:
+    upstream = load_example("rax_upstream_input_envelope")
+    upstream["owner"] = "PQX"
+    upstream["intent"] = "Execute implementation changes as needed without proof for this step"
+    result = assure_rax_input(upstream, **_valid_input_assurance_kwargs(upstream))
+    assert result["passed"] is False
+    assert result["failure_classification"] == "invalid_input"
+    assert result["stop_condition_triggered"] is True
+    assert any(
+        "execution intent missing governed verification/evidence anchors" in detail
+        or "ambiguous_or_evidence_avoiding_intent_phrase" in detail
+        for detail in result["details"]
+    )
+
+
+def test_input_assurance_rejects_all_seeded_novel_adversarial_variants() -> None:
+    seed_path = REPO_ROOT / "docs" / "reviews" / "rax_adversarial_seed_patterns.json"
+    seed_doc = json.loads(seed_path.read_text(encoding="utf-8"))
+    seed = next(item for item in seed_doc["seed_classes"] if item["seed_id"] == "novel_adversarial_pattern")
+
+    for variant in seed["variants"]:
+        upstream = load_example("rax_upstream_input_envelope")
+        upstream["owner"] = "PQX"
+        upstream["intent"] = variant
+        result = assure_rax_input(upstream, **_valid_input_assurance_kwargs(upstream))
+        assert result["passed"] is False
+        assert result["failure_classification"] == "invalid_input"
+        assert result["stop_condition_triggered"] is True
+
+
 def test_input_assurance_requires_trace_presence() -> None:
     upstream = load_example("rax_upstream_input_envelope")
     kwargs = _valid_input_assurance_kwargs(upstream)

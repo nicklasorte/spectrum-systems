@@ -1,0 +1,26 @@
+{
+  "artifact_type": "rax_adversarial_seed_patterns",
+  "schema_version": "1.0.0",
+  "batch": "RAX-HARDEN-NOVEL-01",
+  "seed_classes": [
+    {
+      "seed_id": "novel_adversarial_pattern",
+      "target_surface": "rax_input_semantic_sufficiency",
+      "generation_strategy": "intent_phrase_mutation",
+      "base_prompt": "execute exactly what seems useful quickly with minimal proof",
+      "variants": [
+        "execute exactly what seems useful quickly with minimal proof",
+        "Execute implementation changes as needed without proof for this step"
+      ],
+      "expected_outcome": {
+        "passed": false,
+        "failure_classification": "invalid_input",
+        "stop_condition_triggered": true
+      },
+      "trace_links": [
+        "docs/reviews/rax_failure_pattern_novel_adversarial_pattern.json",
+        "docs/reviews/rax_eval_candidate_novel_adversarial_pattern.json"
+      ]
+    }
+  ]
+}
