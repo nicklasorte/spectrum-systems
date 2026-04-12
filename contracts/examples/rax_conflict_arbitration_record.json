@@ -1,0 +1,16 @@
+{
+  "artifact_type": "rax_conflict_arbitration_record",
+  "schema_version": "1.0.0",
+  "arbitration_id": "conflict:RAX-EVAL-01:12121212-1212-4121-8121-121212121212",
+  "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+  "trace_id": "12121212-1212-4121-8121-121212121212",
+  "signal_status": {
+    "rax_control_readiness": "pass",
+    "rax_output_semantic_alignment": "fail"
+  },
+  "material_conflicts": [
+    "readiness_vs_required_eval"
+  ],
+  "resolution_status": "unresolved_fail_closed",
+  "fail_closed": true
+}

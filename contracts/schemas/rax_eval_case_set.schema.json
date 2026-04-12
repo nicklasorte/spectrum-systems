@@ -5,12 +5,30 @@
   "description": "Governed deterministic RAX eval cases across adversarial, baseline, and failure-class coverage.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["artifact_type", "schema_version", "batch", "case_set_version", "cases"],
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "batch",
+    "case_set_version",
+    "cases"
+  ],
   "properties": {
-    "artifact_type": {"type": "string", "const": "rax_eval_case_set"},
-    "schema_version": {"type": "string", "const": "1.0.0"},
-    "batch": {"type": "string", "minLength": 1},
-    "case_set_version": {"type": "string", "minLength": 1},
+    "artifact_type": {
+      "type": "string",
+      "const": "rax_eval_case_set"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.1.0"
+    },
+    "batch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "case_set_version": {
+      "type": "string",
+      "minLength": 1
+    },
     "cases": {
       "type": "array",
       "minItems": 1,
@@ -28,14 +46,56 @@
           "trace_id"
         ],
         "properties": {
-          "eval_case_id": {"type": "string", "minLength": 1},
-          "eval_type": {"type": "string", "minLength": 1},
-          "case_class": {"type": "string", "enum": ["baseline", "adversarial", "failure_class"]},
-          "target_ref": {"type": "string", "minLength": 1},
-          "expected_status": {"type": "string", "enum": ["pass", "fail", "indeterminate"]},
-          "reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
-          "signals": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
-          "trace_id": {"type": "string", "format": "uuid"}
+          "eval_case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "eval_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "case_class": {
+            "type": "string",
+            "enum": [
+              "baseline",
+              "adversarial",
+              "failure_class",
+              "discovery_mutation",
+              "discovery_combo"
+            ]
+          },
+          "target_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expected_status": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail",
+              "indeterminate"
+            ]
+          },
+          "reason_codes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "signals": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "trace_id": {
+            "type": "string",
+            "format": "uuid"
+          }
         }
       }
     }

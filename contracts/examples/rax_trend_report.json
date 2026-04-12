@@ -1,0 +1,14 @@
+{
+  "artifact_type": "rax_trend_report",
+  "schema_version": "1.0.0",
+  "report_id": "trend-001",
+  "window_ref": "window://rax/2026-w15",
+  "exploit_hit_rate": 0.2,
+  "block_rate": 0.4,
+  "contradiction_rate": 0.1,
+  "override_escalation_proxy_rate": 0.05,
+  "false_block_proxy_rate": 0.03,
+  "false_allow_proxy_rate": 0.01,
+  "confidence_mean": 0.79,
+  "sample_size": 40
+}

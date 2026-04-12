@@ -1,0 +1,7 @@
+{
+  "artifact_type": "rax_eval_candidate_admission_record",
+  "schema_version": "1.0.0",
+  "candidate_id": "rax-failure-abc123:eval-candidate",
+  "admitted": true,
+  "denial_reasons": []
+}

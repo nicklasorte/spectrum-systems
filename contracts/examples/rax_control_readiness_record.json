@@ -1,6 +1,6 @@
 {
   "artifact_type": "rax_control_readiness_record",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "batch": "RAX-EVAL-01",
   "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
   "ready_for_control": false,
@@ -47,5 +47,18 @@
     }
   ],
   "unknown_state_ref": "unknown-001",
-  "pre_certification_alignment_ref": "precert-001"
+  "pre_certification_alignment_ref": "precert-001",
+  "conflict_arbitration_ref": "conflict-001",
+  "non_authority_assertions": [
+    "readiness_is_non_authoritative",
+    "no_promotion_or_release_authority",
+    "control_transition_requires_downstream_control_artifact"
+  ],
+  "replay_identity": {
+    "policy_version": "1.0.0",
+    "semantic_rule_version": "1.0.0",
+    "eval_config_version": "1.0.0",
+    "contradiction_logic_version": "1.0.0",
+    "fingerprint": "abc12345def67890"
+  }
 }

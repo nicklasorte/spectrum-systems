@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_eval_candidate_admission_record.schema.json",
+  "title": "RAX Eval Candidate Admission Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "candidate_id",
+    "admitted",
+    "denial_reasons"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "rax_eval_candidate_admission_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "admitted": {"type": "boolean"},
+    "denial_reasons": {"type": "array", "items": {"type": "string", "minLength": 1}}
+  }
+}

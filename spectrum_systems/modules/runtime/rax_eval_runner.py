@@ -11,7 +11,7 @@ from typing import Any
 from spectrum_systems.contracts import load_example, validate_artifact
 
 RUNNER_NAME = "rax_eval_runner"
-RUNNER_VERSION = "1.1.0"
+RUNNER_VERSION = "1.2.0"
 
 _FAILURE_TO_EVAL_TYPE = {
     "semantic_contradiction": "rax_output_semantic_alignment",
@@ -375,6 +375,244 @@ def build_rax_drift_signal_record(
     return record
 
 
+def build_rax_conflict_arbitration_record(
+    *,
+    arbitration_id: str,
+    target_ref: str,
+    trace_id: str,
+    eval_results: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Build deterministic cross-eval conflict arbitration artifact."""
+    statuses: dict[str, str] = {}
+    reasons_by_type: dict[str, set[str]] = {}
+    for item in eval_results:
+        eval_type = _eval_type_from_result(item) or "unknown"
+        statuses[eval_type] = str(item.get("result_status", "unknown"))
+        reasons_by_type[eval_type] = {
+            mode for mode in item.get("failure_modes", []) if isinstance(mode, str) and mode and ":" not in mode
+        }
+
+    material_conflicts: list[str] = []
+    if statuses.get("rax_control_readiness") == "pass" and any(
+        statuses.get(name) == "fail"
+        for name in (
+            "rax_input_semantic_sufficiency",
+            "rax_owner_intent_alignment",
+            "rax_output_semantic_alignment",
+            "rax_trace_integrity",
+            "rax_version_authority_alignment",
+        )
+    ):
+        material_conflicts.append("readiness_vs_required_eval")
+
+    if "source_version_drift" in reasons_by_type.get("rax_version_authority_alignment", set()) and statuses.get("rax_control_readiness") == "pass":
+        material_conflicts.append("version_authority_vs_readiness")
+
+    if "contradiction_unresolved" in reasons_by_type.get("rax_control_readiness", set()) and statuses.get("rax_output_semantic_alignment") == "pass":
+        material_conflicts.append("contradiction_vs_semantic_alignment")
+
+    if "missing_required_expansion_trace" in reasons_by_type.get("rax_trace_integrity", set()) and statuses.get("rax_control_readiness") == "pass":
+        material_conflicts.append("trace_integrity_vs_readiness")
+
+    record = {
+        "artifact_type": "rax_conflict_arbitration_record",
+        "schema_version": "1.0.0",
+        "arbitration_id": arbitration_id,
+        "target_ref": target_ref,
+        "trace_id": trace_id,
+        "signal_status": {k: statuses[k] for k in sorted(statuses)},
+        "material_conflicts": sorted(set(material_conflicts)),
+        "resolution_status": "unresolved_fail_closed" if material_conflicts else "no_conflict",
+        "fail_closed": bool(material_conflicts),
+    }
+    validate_artifact(record, "rax_conflict_arbitration_record")
+    return record
+
+
+def build_rax_trend_report(*, report_id: str, window_ref: str, run_records: list[dict[str, Any]]) -> dict[str, Any]:
+    total = max(len(run_records), 1)
+    exploit_hits = sum(1 for run in run_records if run.get("exploit_hit"))
+    blocks = sum(1 for run in run_records if run.get("blocked"))
+    contradictions = sum(1 for run in run_records if run.get("contradiction"))
+    overrides = sum(1 for run in run_records if run.get("override_or_escalation"))
+    false_blocks = sum(1 for run in run_records if run.get("false_block_proxy"))
+    false_allows = sum(1 for run in run_records if run.get("false_allow_proxy"))
+    confidence_values = [float(run["confidence"]) for run in run_records if isinstance(run.get("confidence"), (int, float))]
+    confidence_mean = (sum(confidence_values) / len(confidence_values)) if confidence_values else 0.0
+
+    report = {
+        "artifact_type": "rax_trend_report",
+        "schema_version": "1.0.0",
+        "report_id": report_id,
+        "window_ref": window_ref,
+        "exploit_hit_rate": exploit_hits / total,
+        "block_rate": blocks / total,
+        "contradiction_rate": contradictions / total,
+        "override_escalation_proxy_rate": overrides / total,
+        "false_block_proxy_rate": false_blocks / total,
+        "false_allow_proxy_rate": false_allows / total,
+        "confidence_mean": confidence_mean,
+        "sample_size": len(run_records),
+    }
+    validate_artifact(report, "rax_trend_report")
+    return report
+
+
+def build_rax_trust_posture_snapshot(*, snapshot_id: str, trend_report: dict[str, Any]) -> dict[str, Any]:
+    posture = "stable"
+    if trend_report["block_rate"] > 0.4 or trend_report["contradiction_rate"] > 0.2:
+        posture = "degraded"
+    if trend_report["false_allow_proxy_rate"] > 0.1:
+        posture = "critical"
+
+    snapshot = {
+        "artifact_type": "rax_trust_posture_snapshot",
+        "schema_version": "1.0.0",
+        "snapshot_id": snapshot_id,
+        "trend_report_ref": trend_report["report_id"],
+        "posture": posture,
+        "primary_signals": [
+            f"block_rate:{trend_report['block_rate']:.3f}",
+            f"contradiction_rate:{trend_report['contradiction_rate']:.3f}",
+            f"false_allow_proxy_rate:{trend_report['false_allow_proxy_rate']:.3f}",
+        ],
+    }
+    validate_artifact(snapshot, "rax_trust_posture_snapshot")
+    return snapshot
+
+
+def build_rax_improvement_recommendation_record(
+    *,
+    recommendation_id: str,
+    posture_snapshot: dict[str, Any],
+    trend_report: dict[str, Any],
+) -> dict[str, Any]:
+    recs: list[str] = []
+    if trend_report["contradiction_rate"] > 0:
+        recs.append("tighten_conflict_arbitration_eval_coverage")
+    if trend_report["false_allow_proxy_rate"] > 0:
+        recs.append("increase_semantic_blocking_regression_cases")
+    if trend_report["exploit_hit_rate"] > 0.2:
+        recs.append("expand_mutation_combinatorial_discovery_pack")
+
+    record = {
+        "artifact_type": "rax_improvement_recommendation_record",
+        "schema_version": "1.0.0",
+        "recommendation_id": recommendation_id,
+        "posture_snapshot_ref": posture_snapshot["snapshot_id"],
+        "trend_report_ref": trend_report["report_id"],
+        "recommendations": sorted(set(recs)) or ["maintain_current_hardening"],
+        "authority_note": "non_authoritative_advisory_only",
+    }
+    validate_artifact(record, "rax_improvement_recommendation_record")
+    return record
+
+
+def admit_failure_eval_candidate(
+    *,
+    candidate: dict[str, Any],
+    admission_policy: dict[str, Any],
+    canonical_registry: dict[str, Any],
+) -> dict[str, Any]:
+    validate_artifact(candidate, "rax_failure_eval_candidate")
+    min_reasons = int(admission_policy.get("min_reason_codes", 1))
+    allowed_eval_types = set(admission_policy.get("allowed_eval_types") or [])
+
+    reasons = candidate.get("reason_codes", [])
+    admitted = True
+    denial_reasons: list[str] = []
+    if len(reasons) < min_reasons:
+        admitted = False
+        denial_reasons.append("insufficient_reason_codes")
+    if allowed_eval_types and candidate.get("eval_type") not in allowed_eval_types:
+        admitted = False
+        denial_reasons.append("eval_type_not_admissible")
+
+    existing_ids = {item.get("candidate_id") for item in canonical_registry.get("admitted_candidates", [])}
+    if candidate["candidate_id"] in existing_ids:
+        admitted = False
+        denial_reasons.append("duplicate_candidate")
+
+    if admitted:
+        canonical_registry.setdefault("admitted_candidates", []).append({
+            "candidate_id": candidate["candidate_id"],
+            "eval_case_id": candidate["eval_case_id"],
+            "eval_type": candidate["eval_type"],
+            "version": candidate.get("version", "1.0.0"),
+        })
+
+    record = {
+        "artifact_type": "rax_eval_candidate_admission_record",
+        "schema_version": "1.0.0",
+        "candidate_id": candidate["candidate_id"],
+        "admitted": admitted,
+        "denial_reasons": sorted(set(denial_reasons)),
+    }
+    validate_artifact(record, "rax_eval_candidate_admission_record")
+    return record
+
+
+def compile_rax_judgment_record(
+    *,
+    judgment_id: str,
+    target_ref: str,
+    conflict_record: dict[str, Any],
+    readiness_record: dict[str, Any],
+) -> dict[str, Any]:
+    if conflict_record.get("fail_closed"):
+        outcome = "more_evidence_needed"
+    elif readiness_record.get("ready_for_control"):
+        outcome = "ready"
+    else:
+        outcome = "revise"
+
+    record = {
+        "artifact_type": "rax_judgment_record",
+        "schema_version": "1.0.0",
+        "judgment_id": judgment_id,
+        "target_ref": target_ref,
+        "judgment_outcome": outcome,
+        "rationale": sorted(set(readiness_record.get("blocking_reasons", [])))[:10],
+        "conflict_ref": conflict_record["arbitration_id"],
+        "authority_note": "judgment_only_non_authoritative",
+    }
+    validate_artifact(record, "rax_judgment_record")
+    return record
+
+
+def enforce_rax_promotion_hard_gate(
+    *,
+    gate_id: str,
+    readiness_record: dict[str, Any],
+    replay_evidence_present: bool,
+    eval_evidence_present: bool,
+    observability_evidence_present: bool,
+    policy_regression_evidence_present: bool,
+) -> dict[str, Any]:
+    missing: list[str] = []
+    if not replay_evidence_present:
+        missing.append("replay_evidence_missing")
+    if not eval_evidence_present:
+        missing.append("eval_evidence_missing")
+    if not observability_evidence_present:
+        missing.append("observability_evidence_missing")
+    if not policy_regression_evidence_present:
+        missing.append("policy_regression_evidence_missing")
+    if readiness_record.get("ready_for_control") is not True:
+        missing.append("readiness_not_ready")
+
+    out = {
+        "artifact_type": "rax_promotion_hard_gate_record",
+        "schema_version": "1.0.0",
+        "gate_id": gate_id,
+        "passed": len(missing) == 0,
+        "missing_evidence": sorted(set(missing)),
+        "decision": "promote" if len(missing) == 0 else "block",
+    }
+    validate_artifact(out, "rax_promotion_hard_gate_record")
+    return out
+
+
 def build_rax_unknown_state_record(
     *,
     record_id: str,
@@ -398,13 +636,20 @@ def build_rax_unknown_state_record(
     return record
 
 
-def generate_adversarial_pattern_candidates(*, seed: str, target_ref: str, count: int = 5) -> list[dict[str, Any]]:
+def generate_adversarial_pattern_candidates(*, seed: str, target_ref: str, count: int = 10) -> list[dict[str, Any]]:
     classes = [
         "schema_valid_semantic_boundary",
         "mutated_literal_variant",
         "nested_variant",
         "cross_step_contamination_variant",
         "partial_signal_contradiction",
+        "semantic_drift_variant",
+        "provenance_weakness_variant",
+        "replay_weakness_variant",
+        "ambiguity_variant",
+        "weak_counter_evidence_variant",
+        "hidden_scope_expansion_variant",
+        "multi_signal_exploit_combo",
     ]
     base = int(hashlib.sha256(seed.encode("utf-8")).hexdigest(), 16)
     out: list[dict[str, Any]] = []
@@ -600,6 +845,10 @@ def build_rax_control_readiness_record(
     drift_signal_record: dict[str, Any] | None = None,
     unknown_state_record: dict[str, Any] | None = None,
     pre_certification_alignment_record: dict[str, Any] | None = None,
+    policy_version: str = "1.0.0",
+    semantic_rule_version: str = "1.0.0",
+    eval_config_version: str = "1.0.0",
+    contradiction_logic_version: str = "1.0.0",
 ) -> dict[str, Any]:
     policy = _load_policy()
     required_eval_types = list(policy.get("required_eval_types", []))
@@ -742,6 +991,19 @@ def build_rax_control_readiness_record(
     if unknown_state_record.get("status") == "unknown_blocking":
         blocking_reasons.append("unknown_state_detected")
 
+    conflict_arbitration_record = build_rax_conflict_arbitration_record(
+        arbitration_id=f"conflict:{batch}:{eval_summary.get('trace_id', 'missing')}",
+        target_ref=target_ref,
+        trace_id=str(eval_summary.get("trace_id", "missing")),
+        eval_results=eval_results,
+    )
+    if conflict_arbitration_record["fail_closed"]:
+        blocking_reasons.append("material_conflict_unresolved")
+
+    replay_identity_fingerprint = hashlib.sha256(
+        f"{target_ref}|{policy_version}|{semantic_rule_version}|{eval_config_version}|{contradiction_logic_version}".encode("utf-8")
+    ).hexdigest()[:24]
+
     trace_complete = (
         "rax_trace_integrity" in present_eval_types
         and "rax_trace_integrity" not in missing_required_eval_types
@@ -817,7 +1079,7 @@ def build_rax_control_readiness_record(
 
     record = {
         "artifact_type": "rax_control_readiness_record",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "batch": batch,
         "target_ref": target_ref,
         "ready_for_control": ready_for_control,
@@ -832,6 +1094,19 @@ def build_rax_control_readiness_record(
         "conditions_under_which_ready_changes": readiness_conditions,
         "unknown_state_ref": unknown_state_record["record_id"],
         "pre_certification_alignment_ref": pre_certification_alignment_record["record_id"],
+        "conflict_arbitration_ref": conflict_arbitration_record["arbitration_id"],
+        "non_authority_assertions": [
+            "readiness_is_non_authoritative",
+            "no_promotion_or_release_authority",
+            "control_transition_requires_downstream_control_artifact",
+        ],
+        "replay_identity": {
+            "policy_version": policy_version,
+            "semantic_rule_version": semantic_rule_version,
+            "eval_config_version": eval_config_version,
+            "contradiction_logic_version": contradiction_logic_version,
+            "fingerprint": replay_identity_fingerprint,
+        },
     }
     validate_artifact(record, "rax_control_readiness_record")
 
@@ -839,6 +1114,7 @@ def build_rax_control_readiness_record(
         **record,
         "unknown_state_record": deepcopy(unknown_state_record),
         "pre_certification_alignment_record": deepcopy(pre_certification_alignment_record),
+        "conflict_arbitration_record": deepcopy(conflict_arbitration_record),
     }
 
 

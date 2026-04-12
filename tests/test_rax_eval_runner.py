@@ -14,6 +14,13 @@ from spectrum_systems.modules.runtime.rax_eval_runner import (
     build_rax_health_snapshot,
     build_rax_drift_signal_record,
     build_rax_unknown_state_record,
+    build_rax_conflict_arbitration_record,
+    build_rax_trend_report,
+    build_rax_trust_posture_snapshot,
+    build_rax_improvement_recommendation_record,
+    admit_failure_eval_candidate,
+    compile_rax_judgment_record,
+    enforce_rax_promotion_hard_gate,
     generate_adversarial_pattern_candidates,
 )
 
@@ -482,7 +489,7 @@ def test_adversarial_pattern_generation_is_deterministic() -> None:
     first = generate_adversarial_pattern_candidates(seed="seed-1", target_ref="roadmap_step_contract:RAX-INTERFACE-24-01")
     second = generate_adversarial_pattern_candidates(seed="seed-1", target_ref="roadmap_step_contract:RAX-INTERFACE-24-01")
     assert first == second
-    assert len(first) == 5
+    assert len(first) == 10
     validate_artifact(first[0], "rax_adversarial_pattern_candidate")
 
 
@@ -584,3 +591,128 @@ def test_precert_alignment_blocks_candidate_ready_when_not_aligned() -> None:
     )
     readiness = _readiness_from(out)
     assert "pre_certification_alignment_not_ready" in readiness["blocking_reasons"]
+
+
+def test_rax03_eval_case_set_contains_discovery_mutation_and_combo_entries() -> None:
+    case_set = load_rax_eval_case_set()
+    ids = {case["eval_case_id"] for case in case_set["cases"]}
+    assert {
+        "rax-03-semantic-drift-mutation-01",
+        "rax-03-provenance-weakness-mutation-01",
+        "rax-03-replay-weakness-mutation-01",
+        "rax-03-ambiguity-mutation-01",
+        "rax-03-weak-counter-evidence-mutation-01",
+        "rax-03-hidden-scope-combo-01",
+        "rax-03-multi-signal-exploit-combo-01",
+    }.issubset(ids)
+
+
+def test_rax04_conflict_arbitration_fails_closed_on_material_disagreement() -> None:
+    out = run_rax_eval_runner(
+        run_id="rax-conflict-001",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        trace_id="21212121-2121-4121-8121-212121212121",
+        input_assurance={**_input_assurance_ok(), "details": ["semantic_intent_sufficient", "semantic_intent_insufficient"]},
+        output_assurance=_output_assurance_ok(),
+        tests_passed=True,
+        baseline_regression_detected=False,
+        version_authority_aligned=True,
+    )
+    conflict = build_rax_conflict_arbitration_record(
+        arbitration_id="conflict-test-001",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        trace_id="21212121-2121-4121-8121-212121212121",
+        eval_results=out["eval_results"],
+    )
+    validate_artifact(conflict, "rax_conflict_arbitration_record")
+
+
+def test_rax05_readiness_non_authority_fields_are_present() -> None:
+    out = run_rax_eval_runner(
+        run_id="rax-non-auth-001",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        trace_id="22222222-2222-4222-8222-222222222222",
+        input_assurance=_input_assurance_ok(),
+        output_assurance=_output_assurance_ok(),
+        tests_passed=True,
+        baseline_regression_detected=False,
+        version_authority_aligned=True,
+    )
+    readiness = _readiness_from(out)
+    assert "readiness_is_non_authoritative" in readiness["non_authority_assertions"]
+    assert readiness["decision"] != "ready"
+
+
+def test_rax06_trend_and_trust_posture_artifacts_validate() -> None:
+    trend = build_rax_trend_report(
+        report_id="trend-test-001",
+        window_ref="window://rax/test",
+        run_records=[
+            {"exploit_hit": True, "blocked": True, "contradiction": False, "override_or_escalation": False, "false_block_proxy": False, "false_allow_proxy": False, "confidence": 0.8},
+            {"exploit_hit": False, "blocked": True, "contradiction": True, "override_or_escalation": True, "false_block_proxy": True, "false_allow_proxy": False, "confidence": 0.6},
+        ],
+    )
+    posture = build_rax_trust_posture_snapshot(snapshot_id="posture-test-001", trend_report=trend)
+    recommendation = build_rax_improvement_recommendation_record(
+        recommendation_id="recommend-test-001",
+        posture_snapshot=posture,
+        trend_report=trend,
+    )
+    validate_artifact(trend, "rax_trend_report")
+    validate_artifact(posture, "rax_trust_posture_snapshot")
+    validate_artifact(recommendation, "rax_improvement_recommendation_record")
+
+
+def test_rax07_failure_to_eval_admission_pipeline_is_governed_and_deduped() -> None:
+    candidate = load_example("rax_failure_eval_candidate")
+    registry = {"admitted_candidates": []}
+    policy = {"min_reason_codes": 1, "allowed_eval_types": ["rax_output_semantic_alignment", "rax_control_readiness"]}
+    first = admit_failure_eval_candidate(candidate=candidate, admission_policy=policy, canonical_registry=registry)
+    second = admit_failure_eval_candidate(candidate=candidate, admission_policy=policy, canonical_registry=registry)
+    validate_artifact(first, "rax_eval_candidate_admission_record")
+    assert first["admitted"] is True
+    assert second["admitted"] is False
+    assert "duplicate_candidate" in second["denial_reasons"]
+
+
+def test_rax09_judgment_record_remains_non_authoritative() -> None:
+    conflict = load_example("rax_conflict_arbitration_record")
+    readiness = load_example("rax_control_readiness_record")
+    record = compile_rax_judgment_record(
+        judgment_id="judgment-test-001",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        conflict_record=conflict,
+        readiness_record=readiness,
+    )
+    validate_artifact(record, "rax_judgment_record")
+    assert record["authority_note"] == "judgment_only_non_authoritative"
+
+
+def test_rax10_replay_identity_fingerprint_changes_with_policy_versions() -> None:
+    out = run_rax_eval_runner(
+        run_id="rax-replay-identity-001",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        trace_id="23232323-2323-4232-8232-232323232323",
+        input_assurance=_input_assurance_ok(),
+        output_assurance=_output_assurance_ok(),
+        tests_passed=True,
+        baseline_regression_detected=False,
+        version_authority_aligned=True,
+    )
+    base = _readiness_from(out, policy_version="1.0.0", semantic_rule_version="1.0.0")
+    changed = _readiness_from(out, policy_version="1.0.1", semantic_rule_version="1.0.0")
+    assert base["replay_identity"]["fingerprint"] != changed["replay_identity"]["fingerprint"]
+
+
+def test_rax12_promotion_hard_gate_blocks_missing_evidence() -> None:
+    gate = enforce_rax_promotion_hard_gate(
+        gate_id="gate-test-001",
+        readiness_record=load_example("rax_control_readiness_record"),
+        replay_evidence_present=False,
+        eval_evidence_present=True,
+        observability_evidence_present=False,
+        policy_regression_evidence_present=False,
+    )
+    validate_artifact(gate, "rax_promotion_hard_gate_record")
+    assert gate["passed"] is False
+    assert "replay_evidence_missing" in gate["missing_evidence"]
