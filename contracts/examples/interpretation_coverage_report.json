@@ -1,0 +1,18 @@
+{
+  "artifact_type": "interpretation_coverage_report",
+  "schema_version": "1.0.0",
+  "report_id": "ril-cov-001",
+  "required_failure_classes": [
+    "slice_contract_mismatch",
+    "runtime_logic_defect"
+  ],
+  "covered_failure_classes": [
+    "slice_contract_mismatch"
+  ],
+  "missing_failure_classes": [
+    "runtime_logic_defect"
+  ],
+  "coverage_complete": false,
+  "fail_closed_triggered": true,
+  "result": "fail"
+}

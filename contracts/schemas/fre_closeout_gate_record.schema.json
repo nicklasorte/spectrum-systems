@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/fre_closeout_gate_record.schema.json",
+  "title": "fre_closeout_gate_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "gate_id",
+    "repair_bundle_ref",
+    "repair_readiness_candidate_ref",
+    "repair_effectiveness_record_ref",
+    "repair_recurrence_record_ref",
+    "fre_promotion_gate_record_ref",
+    "fre_operational",
+    "closeout_status",
+    "blocking_reasons",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "fre_closeout_gate_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "gate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repair_bundle_ref": {
+      "type": "string",
+      "pattern": "^repair_bundle:.+"
+    },
+    "repair_readiness_candidate_ref": {
+      "type": "string",
+      "pattern": "^repair_readiness_candidate:.+"
+    },
+    "repair_effectiveness_record_ref": {
+      "type": "string",
+      "pattern": "^repair_effectiveness_record:.+"
+    },
+    "repair_recurrence_record_ref": {
+      "type": "string",
+      "pattern": "^repair_recurrence_record:.+"
+    },
+    "fre_promotion_gate_record_ref": {
+      "type": "string",
+      "pattern": "^fre_promotion_gate_record:.+"
+    },
+    "fre_operational": {
+      "type": "boolean"
+    },
+    "closeout_status": {
+      "type": "string",
+      "enum": [
+        "closed",
+        "blocked"
+      ]
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

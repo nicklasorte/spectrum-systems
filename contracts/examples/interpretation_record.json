@@ -1,0 +1,18 @@
+{
+  "artifact_type": "interpretation_record",
+  "schema_version": "1.0.0",
+  "interpretation_id": "ril-int-001",
+  "trace_id": "trace-ril-001",
+  "failure_packet_ref": "failure_packet:ril-fp-001",
+  "conflict_record_ref": "interpretation_conflict_record:ril-conf-001",
+  "normalized_failure_class": "slice_contract_mismatch",
+  "reason_code": "reason_slice_contract_violation",
+  "interpretation_notes": [
+    "normalized from governed evidence"
+  ],
+  "ambiguity_score": 0.3333,
+  "contains_material_conflict": true,
+  "non_authority_assertions": [
+    "candidate_only_interpretation"
+  ]
+}

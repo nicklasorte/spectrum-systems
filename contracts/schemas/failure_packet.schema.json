@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/failure_packet.schema.json",
+  "title": "failure_packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "failure_packet_id",
+    "trace_id",
+    "source_artifact_type",
+    "source_artifact_ref",
+    "failure_class",
+    "reason_code",
+    "owner_surface",
+    "source_evidence_refs",
+    "ambiguity_markers",
+    "contradiction_markers",
+    "lineage_refs",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "failure_packet"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "failure_packet_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_artifact_type": {
+      "type": "string",
+      "enum": [
+        "execution_failure_packet",
+        "review_findings_artifact",
+        "eval_failure_artifact",
+        "runtime_anomaly_artifact"
+      ]
+    },
+    "source_artifact_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failure_class": {
+      "type": "string",
+      "enum": [
+        "missing_artifact",
+        "invalid_artifact_shape",
+        "cross_artifact_mismatch",
+        "authenticity_lineage_mismatch",
+        "slice_contract_mismatch",
+        "runtime_logic_defect",
+        "policy_blocked",
+        "retry_budget_exhausted"
+      ]
+    },
+    "reason_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner_surface": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "ambiguity_markers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "contradiction_markers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "lineage_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

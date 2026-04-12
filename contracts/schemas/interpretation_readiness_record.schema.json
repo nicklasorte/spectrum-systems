@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/interpretation_readiness_record.schema.json",
+  "title": "interpretation_readiness_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "readiness_id",
+    "trace_id",
+    "interpretation_record_ref",
+    "interpretation_eval_result_ref",
+    "candidate_ready",
+    "blocking_reasons",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "interpretation_readiness_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "readiness_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "interpretation_record_ref": {
+      "type": "string",
+      "pattern": "^interpretation_record:.+"
+    },
+    "interpretation_eval_result_ref": {
+      "type": "string",
+      "pattern": "^interpretation_eval_result:.+"
+    },
+    "candidate_ready": {
+      "type": "boolean"
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

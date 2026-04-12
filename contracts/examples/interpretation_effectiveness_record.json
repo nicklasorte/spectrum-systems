@@ -1,0 +1,10 @@
+{
+  "artifact_type": "interpretation_effectiveness_record",
+  "schema_version": "1.0.0",
+  "record_id": "ril-eff-001",
+  "interpretation_record_ref": "interpretation_record:ril-int-001",
+  "alignment_record_ref": "interpretation_repair_alignment_record:ril-align-001",
+  "downstream_outcome": "improved",
+  "effective": true,
+  "effectiveness_state": "effective"
+}

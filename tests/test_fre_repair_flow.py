@@ -5,6 +5,7 @@ from spectrum_systems.modules.runtime.fre_repair_flow import (
     FRERepairFlowError,
     apply_repair_scope_policy_gate,
     build_fre_promotion_gate_record,
+    build_fre_closeout_gate_record,
     build_override_record,
     build_repair_budget_signal,
     build_repair_bundle,
@@ -188,3 +189,45 @@ def test_policy_gate_fail_closed_and_template_admission_fail_closed() -> None:
         raise AssertionError("expected FRERepairFlowError")
     except FRERepairFlowError as exc:
         assert "insufficient" in str(exc)
+
+
+def test_fre_closeout_gate_record_requires_operational_fre_outputs() -> None:
+    candidate = generate_repair_candidate(failure_packet=_packet(), trace_id="trace-fre-001")
+    result = evaluate_repair_candidate(repair_candidate=candidate)
+    eff = build_repair_effectiveness_record(repair_candidate=candidate, repair_eval_result=result)
+    rec = build_repair_recurrence_record(repair_candidate=candidate, recurrence_count=1, cluster_key="slice_contract_mismatch::review")
+    ready = build_repair_readiness_candidate(repair_candidate=candidate, repair_eval_result=result)
+    bundle = build_repair_bundle(
+        repair_candidate=candidate,
+        repair_eval_result=result,
+        repair_effectiveness_record=eff,
+        repair_recurrence_record=rec,
+        repair_readiness_candidate=ready,
+    )
+    judgment = build_repair_judgment_slice(
+        candidate_scores={f"repair_candidate:{candidate['candidate_id']}": 0.7},
+        eval_refs={f"repair_candidate:{candidate['candidate_id']}": f"repair_eval_result:{result['eval_id']}"},
+        trace_id="trace-fre-001",
+    )
+    gate = apply_repair_scope_policy_gate(
+        repair_candidate=candidate,
+        policy={"allowed_classes": ["artifact_only"], "blocked_classes": [], "review_required_classes": []},
+    )
+    signal = build_repair_budget_signal(
+        effectiveness_records=[eff],
+        recurrence_records=[rec],
+        override_records=[],
+        total_latency_ms=100,
+        total_cost_units=1,
+    )
+    promotion = build_fre_promotion_gate_record(bundle=bundle, budget_signal=signal, policy_gate=gate, judgment_slice=judgment)
+    closeout = build_fre_closeout_gate_record(
+        repair_bundle=bundle,
+        repair_readiness_candidate=ready,
+        repair_effectiveness_record=eff,
+        repair_recurrence_record=rec,
+        fre_promotion_gate_record=promotion,
+    )
+    validate_artifact(closeout, "fre_closeout_gate_record")
+    assert closeout["fre_operational"] is True
+    assert closeout["closeout_status"] == "closed"

@@ -1644,6 +1644,19 @@
       "notes": "VAL-02 deterministic seam-failure matrix artifact proving fail-closed behavior and explicit silent-success/ambiguous-outcome detection."
     },
     {
+      "artifact_type": "failure_class_drift_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.38",
+      "last_updated_in": "1.3.38",
+      "example_path": "contracts/examples/failure_class_drift_record.json",
+      "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
+    },
+    {
       "artifact_type": "failure_class_registry",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1694,6 +1707,19 @@
       "last_updated_in": "1.3.89",
       "example_path": "contracts/examples/failure_learning_record_artifact.json",
       "notes": "BATCH-GHA-08 recurring failure class learning artifact with eval and hardening recommendations."
+    },
+    {
+      "artifact_type": "failure_packet",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.38",
+      "last_updated_in": "1.3.38",
+      "example_path": "contracts/examples/failure_packet.json",
+      "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
     },
     {
       "artifact_type": "failure_pattern_record",
@@ -1759,6 +1785,19 @@
       "last_updated_in": "1.0.88",
       "example_path": "contracts/examples/fix_roadmap_artifact.json",
       "notes": "AUTONOMOUS-LOOP-01 machine-readable grouped remediation roadmap generated from review findings."
+    },
+    {
+      "artifact_type": "fre_closeout_gate_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.38",
+      "last_updated_in": "1.3.38",
+      "example_path": "contracts/examples/fre_closeout_gate_record.json",
+      "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
     },
     {
       "artifact_class": "coordination",
@@ -1941,6 +1980,149 @@
       "last_updated_in": "1.0.88",
       "example_path": "contracts/examples/implementation_review_artifact.json",
       "notes": "AUTONOMOUS-LOOP-01 dual implementation review artifact for Claude/Codex findings ingestion."
+    },
+    {
+      "artifact_type": "interpretation_ambiguity_signal",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.38",
+      "last_updated_in": "1.3.38",
+      "example_path": "contracts/examples/interpretation_ambiguity_signal.json",
+      "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
+    },
+    {
+      "artifact_type": "interpretation_bundle",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.38",
+      "last_updated_in": "1.3.38",
+      "example_path": "contracts/examples/interpretation_bundle.json",
+      "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
+    },
+    {
+      "artifact_type": "interpretation_conflict_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.38",
+      "last_updated_in": "1.3.38",
+      "example_path": "contracts/examples/interpretation_conflict_record.json",
+      "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
+    },
+    {
+      "artifact_type": "interpretation_control_signal_validation",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.38",
+      "last_updated_in": "1.3.38",
+      "example_path": "contracts/examples/interpretation_control_signal_validation.json",
+      "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
+    },
+    {
+      "artifact_type": "interpretation_coverage_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.38",
+      "last_updated_in": "1.3.38",
+      "example_path": "contracts/examples/interpretation_coverage_report.json",
+      "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
+    },
+    {
+      "artifact_type": "interpretation_effectiveness_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.38",
+      "last_updated_in": "1.3.38",
+      "example_path": "contracts/examples/interpretation_effectiveness_record.json",
+      "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
+    },
+    {
+      "artifact_type": "interpretation_eval_result",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.38",
+      "last_updated_in": "1.3.38",
+      "example_path": "contracts/examples/interpretation_eval_result.json",
+      "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
+    },
+    {
+      "artifact_type": "interpretation_readiness_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.38",
+      "last_updated_in": "1.3.38",
+      "example_path": "contracts/examples/interpretation_readiness_record.json",
+      "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
+    },
+    {
+      "artifact_type": "interpretation_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.38",
+      "last_updated_in": "1.3.38",
+      "example_path": "contracts/examples/interpretation_record.json",
+      "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
+    },
+    {
+      "artifact_type": "interpretation_repair_alignment_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.38",
+      "last_updated_in": "1.3.38",
+      "example_path": "contracts/examples/interpretation_repair_alignment_record.json",
+      "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
+    },
+    {
+      "artifact_type": "interpretation_replay_validation_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.38",
+      "last_updated_in": "1.3.38",
+      "example_path": "contracts/examples/interpretation_replay_validation_record.json",
+      "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
     },
     {
       "artifact_type": "judgment_application_record",

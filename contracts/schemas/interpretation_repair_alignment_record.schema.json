@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/interpretation_repair_alignment_record.schema.json",
+  "title": "interpretation_repair_alignment_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "alignment_id",
+    "interpretation_record_ref",
+    "repair_candidate_ref",
+    "alignment_passed",
+    "expected_action_prefix",
+    "observed_actions",
+    "result",
+    "fail_reasons"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "interpretation_repair_alignment_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "alignment_id": {
+      "type": "string"
+    },
+    "interpretation_record_ref": {
+      "type": "string",
+      "pattern": "^interpretation_record:.+"
+    },
+    "repair_candidate_ref": {
+      "type": "string",
+      "pattern": "^repair_candidate:.+"
+    },
+    "alignment_passed": {
+      "type": "boolean"
+    },
+    "expected_action_prefix": {
+      "type": "string"
+    },
+    "observed_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "fail_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

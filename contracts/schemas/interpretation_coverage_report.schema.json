@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/interpretation_coverage_report.schema.json",
+  "title": "interpretation_coverage_report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "report_id",
+    "required_failure_classes",
+    "covered_failure_classes",
+    "missing_failure_classes",
+    "coverage_complete",
+    "fail_closed_triggered",
+    "result"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "interpretation_coverage_report"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "report_id": {
+      "type": "string"
+    },
+    "required_failure_classes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "covered_failure_classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "missing_failure_classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "coverage_complete": {
+      "type": "boolean"
+    },
+    "fail_closed_triggered": {
+      "type": "boolean"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    }
+  }
+}

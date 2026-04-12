@@ -1,0 +1,12 @@
+{
+  "artifact_type": "interpretation_replay_validation_record",
+  "schema_version": "1.0.0",
+  "validation_id": "ril-replay-001",
+  "input_fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "first_output_fingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "replay_output_fingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "schema_version_checked": "1.0.0",
+  "deterministic_match": true,
+  "result": "pass",
+  "fail_reasons": []
+}

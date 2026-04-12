@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/interpretation_replay_validation_record.schema.json",
+  "title": "interpretation_replay_validation_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "validation_id",
+    "input_fingerprint",
+    "first_output_fingerprint",
+    "replay_output_fingerprint",
+    "schema_version_checked",
+    "deterministic_match",
+    "result",
+    "fail_reasons"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "interpretation_replay_validation_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "validation_id": {
+      "type": "string"
+    },
+    "input_fingerprint": {
+      "type": "string"
+    },
+    "first_output_fingerprint": {
+      "type": "string"
+    },
+    "replay_output_fingerprint": {
+      "type": "string"
+    },
+    "schema_version_checked": {
+      "type": "string"
+    },
+    "deterministic_match": {
+      "type": "boolean"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "fail_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

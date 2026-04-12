@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/interpretation_eval_result.schema.json",
+  "title": "interpretation_eval_result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "eval_id",
+    "trace_id",
+    "interpretation_record_ref",
+    "completeness_passed",
+    "evidence_sufficiency_passed",
+    "contradiction_handling_passed",
+    "normalization_passed",
+    "required_field_coverage_passed",
+    "result",
+    "fail_reasons"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "interpretation_eval_result"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "eval_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "interpretation_record_ref": {
+      "type": "string",
+      "pattern": "^interpretation_record:.+"
+    },
+    "completeness_passed": {
+      "type": "boolean"
+    },
+    "evidence_sufficiency_passed": {
+      "type": "boolean"
+    },
+    "contradiction_handling_passed": {
+      "type": "boolean"
+    },
+    "normalization_passed": {
+      "type": "boolean"
+    },
+    "required_field_coverage_passed": {
+      "type": "boolean"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "fail_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -444,3 +444,50 @@ def build_fre_promotion_gate_record(*, bundle: Mapping[str, Any], budget_signal:
     }
     validate_artifact(record, "fre_promotion_gate_record")
     return record
+
+
+def build_fre_closeout_gate_record(
+    *,
+    repair_bundle: Mapping[str, Any],
+    repair_readiness_candidate: Mapping[str, Any],
+    repair_effectiveness_record: Mapping[str, Any],
+    repair_recurrence_record: Mapping[str, Any],
+    fre_promotion_gate_record: Mapping[str, Any],
+) -> dict[str, Any]:
+    """FRE-16 closeout gate proving FRE outputs are operationally consumable by downstream RIL."""
+    validate_artifact(dict(repair_bundle), "repair_bundle")
+    validate_artifact(dict(repair_readiness_candidate), "repair_readiness_candidate")
+    validate_artifact(dict(repair_effectiveness_record), "repair_effectiveness_record")
+    validate_artifact(dict(repair_recurrence_record), "repair_recurrence_record")
+    validate_artifact(dict(fre_promotion_gate_record), "fre_promotion_gate_record")
+
+    blocking_reasons: list[str] = []
+    if not repair_bundle.get("lineage_complete"):
+        blocking_reasons.append("bundle_lineage_incomplete")
+    if repair_readiness_candidate.get("candidate_ready") is not True:
+        blocking_reasons.append("readiness_not_candidate_ready")
+    if repair_effectiveness_record.get("effectiveness_state") != "candidate_effective":
+        blocking_reasons.append("effectiveness_not_candidate_effective")
+    if fre_promotion_gate_record.get("promotion_ready") is not True:
+        blocking_reasons.append("promotion_gate_not_ready")
+
+    record = {
+        "artifact_type": "fre_closeout_gate_record",
+        "schema_version": "1.0.0",
+        "gate_id": f"fre-close-{_canonical_digest([repair_bundle['bundle_id'], fre_promotion_gate_record['gate_record_id'], blocking_reasons])[:16]}",
+        "repair_bundle_ref": f"repair_bundle:{repair_bundle['bundle_id']}",
+        "repair_readiness_candidate_ref": f"repair_readiness_candidate:{repair_readiness_candidate['readiness_id']}",
+        "repair_effectiveness_record_ref": f"repair_effectiveness_record:{repair_effectiveness_record['record_id']}",
+        "repair_recurrence_record_ref": f"repair_recurrence_record:{repair_recurrence_record['record_id']}",
+        "fre_promotion_gate_record_ref": f"fre_promotion_gate_record:{fre_promotion_gate_record['gate_record_id']}",
+        "fre_operational": len(blocking_reasons) == 0,
+        "closeout_status": "closed" if len(blocking_reasons) == 0 else "blocked",
+        "blocking_reasons": blocking_reasons,
+        "non_authority_assertions": [
+            "fre_non_authoritative",
+            "fre_must_not_execute_repairs",
+            "fre_must_not_authorize_continuation",
+        ],
+    }
+    validate_artifact(record, "fre_closeout_gate_record")
+    return record

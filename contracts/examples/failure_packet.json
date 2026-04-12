@@ -1,0 +1,26 @@
+{
+  "artifact_type": "failure_packet",
+  "schema_version": "1.0.0",
+  "failure_packet_id": "ril-fp-001",
+  "trace_id": "trace-ril-001",
+  "source_artifact_type": "execution_failure_packet",
+  "source_artifact_ref": "execution_failure_packet:efp-001",
+  "failure_class": "slice_contract_mismatch",
+  "reason_code": "reason_slice_contract_violation",
+  "owner_surface": "RIL",
+  "source_evidence_refs": [
+    "trace:trace-ril-001"
+  ],
+  "ambiguity_markers": [
+    "ambiguous_stacktrace"
+  ],
+  "contradiction_markers": [
+    "contradicting_test_outcome"
+  ],
+  "lineage_refs": [
+    "lineage:abc"
+  ],
+  "non_authority_assertions": [
+    "interpretation_only_not_repair_generation"
+  ]
+}

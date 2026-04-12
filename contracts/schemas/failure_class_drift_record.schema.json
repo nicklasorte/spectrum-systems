@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/failure_class_drift_record.schema.json",
+  "title": "failure_class_drift_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "baseline_classes",
+    "observed_classes",
+    "novel_classes",
+    "novel_rate",
+    "novelty_threshold",
+    "drift_detected",
+    "result"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "failure_class_drift_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string"
+    },
+    "baseline_classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "observed_classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "novel_classes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "novel_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "novelty_threshold": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1
+    },
+    "drift_detected": {
+      "type": "boolean"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    }
+  }
+}

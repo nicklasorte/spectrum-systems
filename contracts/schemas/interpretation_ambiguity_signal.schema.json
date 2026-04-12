@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/interpretation_ambiguity_signal.schema.json",
+  "title": "interpretation_ambiguity_signal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "signal_id",
+    "sample_size",
+    "ambiguity_count",
+    "ambiguity_rate",
+    "ambiguity_budget",
+    "threshold_exceeded",
+    "freeze_ready",
+    "policy_signal"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "interpretation_ambiguity_signal"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "signal_id": {
+      "type": "string"
+    },
+    "sample_size": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "ambiguity_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "ambiguity_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "ambiguity_budget": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1
+    },
+    "threshold_exceeded": {
+      "type": "boolean"
+    },
+    "freeze_ready": {
+      "type": "boolean"
+    },
+    "policy_signal": {
+      "type": "string",
+      "enum": [
+        "freeze_candidate",
+        "within_budget"
+      ]
+    }
+  }
+}

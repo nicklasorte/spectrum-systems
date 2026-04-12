@@ -583,6 +583,7 @@ def test_standards_manifest_registers_rax_operational_gate_and_fre_repair_contra
     assert standards["rax_operational_gate_record"]["schema_version"] == "1.0.0"
     assert standards["rax_operational_gate_record"]["example_path"] == "contracts/examples/rax_operational_gate_record.json"
     for artifact_type, version in (
+        ("fre_closeout_gate_record", "1.0.0"),
         ("repair_candidate", "1.1.0"),
         ("repair_eval_result", "1.1.0"),
         ("repair_effectiveness_record", "1.1.0"),
@@ -599,6 +600,27 @@ def test_standards_manifest_registers_rax_operational_gate_and_fre_repair_contra
         ("fre_promotion_gate_record", "1.0.0"),
     ):
         assert standards[artifact_type]["schema_version"] == version
+        assert standards[artifact_type]["example_path"] == f"contracts/examples/{artifact_type}.json"
+
+
+def test_standards_manifest_registers_ril_foundation_and_hardening_contracts() -> None:
+    standards = load_standards_contracts()
+    for artifact_type in (
+        "failure_packet",
+        "interpretation_record",
+        "interpretation_eval_result",
+        "interpretation_readiness_record",
+        "interpretation_conflict_record",
+        "interpretation_bundle",
+        "interpretation_replay_validation_record",
+        "interpretation_ambiguity_signal",
+        "interpretation_control_signal_validation",
+        "interpretation_repair_alignment_record",
+        "interpretation_effectiveness_record",
+        "interpretation_coverage_report",
+        "failure_class_drift_record",
+    ):
+        assert standards[artifact_type]["schema_version"] == "1.0.0"
         assert standards[artifact_type]["example_path"] == f"contracts/examples/{artifact_type}.json"
 
 
