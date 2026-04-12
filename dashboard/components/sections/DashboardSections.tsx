@@ -82,7 +82,20 @@ export function DashboardSections({ model }: { model: DashboardViewModel }) {
         </div>
       </Card>
 
-      <Table title='History + replay' rows={model.history.entries.map((entry) => [model.history.status, entry])} />
+
+      <Card tone={model.certificationGate.status === 'pass' ? 'default' : 'danger'}>
+        <SectionHeader title='Dashboard certification gate' subtitle={`status: ${model.certificationGate.status}`} />
+        <Timeline title='Gate reasons' items={model.certificationGate.reasons.length ? model.certificationGate.reasons : ['all panel contracts satisfied']} />
+      </Card>
+
+      {model.operatorPanels.map((panel) => (
+        <Card key={panel.panelId} tone={panel.status === 'renderable' ? 'default' : 'danger'}>
+          <SectionHeader title={panel.title} subtitle={`${panel.status}: ${panel.summary}`} />
+          <Table title={panel.panelId} rows={panel.rows.length ? panel.rows : [[panel.blockedReason ?? 'blocked']]} />
+        </Card>
+      ))}
+
+            <Table title='History + replay' rows={model.history.entries.map((entry) => [model.history.status, entry])} />
     </div>
   )
 }

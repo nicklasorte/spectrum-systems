@@ -8,6 +8,8 @@ import type {
   SectionState
 } from '../../types/dashboard'
 import { deriveRenderState } from '../guards/render_state_guards'
+import { compileDashboardReadModel } from '../read_model/dashboard_read_model_compiler'
+import { evaluateDashboardCertificationGate } from '../guards/dashboard_certification_gate'
 
 function makeSection<T>(title: string, data: T | null, state: SectionState, reason: string, provenance: SectionInput<T>['provenance']): SectionInput<T> {
   return { title, data, state, reason, provenance }
@@ -177,6 +179,9 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
     provenance: artifact.path
   }))
 
+  const operatorPanels = compileDashboardReadModel(publication)
+  const certificationGate = evaluateDashboardCertificationGate()
+
   const explorerRows = [
     ...publication.allArtifacts
       .filter((artifact) => declaredArtifacts.has(artifact.name) || artifact.exists)
@@ -248,6 +253,8 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
       deferred: makeSection('Deferred items', { items: deferredItems, readiness: deferredReadiness }, publication.deferredRegister.exists ? sectionState : 'unavailable', publication.deferredRegister.exists ? state.reason : 'Deferred artifact unavailable.', [{ artifact: publication.deferredRegister.name, path: publication.deferredRegister.path, keyFields: ['items'], timestamp: publication.deferredRegister.timestamp }]),
       constitutional: makeSection('Constitutional checks', constitution ?? null, publication.constitution.exists ? sectionState : 'unavailable', publication.constitution.exists ? state.reason : 'Constitutional artifact unavailable.', [{ artifact: publication.constitution.name, path: publication.constitution.path, keyFields: ['status', 'violations'] }])
     },
+    operatorPanels,
+    certificationGate,
     provenance: publication.allArtifacts.map((item) => ({
       name: item.name,
       path: item.path,

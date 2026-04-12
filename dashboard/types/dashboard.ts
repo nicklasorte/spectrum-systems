@@ -155,6 +155,55 @@ export type PublicationAttemptRecord = {
   timestamp?: string
 }
 
+export type JudgmentApplicationArtifact = {
+  artifact_type?: 'judgment_application_artifact'
+  decision_id?: string
+  judgment_ids?: string[]
+  consumed_by_control?: boolean
+  generated_at?: string
+}
+
+export type OperatorOverrideCaptureArtifact = {
+  artifact_type?: 'operator_override_capture'
+  generated_at?: string
+  overrides?: Array<{
+    override_id?: string
+    recommendation_id?: string
+    operator_action?: string
+    reason?: string
+    captured_as_learning_signal?: boolean
+  }>
+}
+
+export type RecommendationReplayPack = {
+  artifact_type?: 'recommendation_replay_pack'
+  generated_at?: string
+  scenario_ids?: string[]
+  scenario_basis?: string
+}
+
+export type SerialBundleValidatorResult = {
+  artifact_type?: 'serial_bundle_validator_result'
+  generated_at?: string
+  pass?: boolean
+  pass_through_umbrellas?: string[]
+  empty_batches?: string[]
+}
+
+export type DashboardPublicContractCoverage = {
+  artifact_type?: 'dashboard_public_contract_coverage'
+  generated_at?: string
+  covered_artifacts?: string[]
+}
+
+export type GovernedPromotionDisciplineGate = {
+  artifact_type?: 'governed_promotion_discipline_gate'
+  generated_at?: string
+  promotion_decision?: string
+  allowed_decisions?: string[]
+  fail_closed?: boolean
+}
+
 export type ExplorerCoverageStatus = 'declared_loaded_valid' | 'declared_not_loaded' | 'declared_missing' | 'loaded_invalid' | 'loaded_undeclared'
 
 export type DashboardPublication = {
@@ -174,6 +223,12 @@ export type DashboardPublication = {
   recommendationAccuracyTracker: ArtifactRecord<RecommendationAccuracyTracker>
   refreshRunRecord: ArtifactRecord<RefreshRunRecord>
   publicationAttemptRecord: ArtifactRecord<PublicationAttemptRecord>
+  judgmentApplication: ArtifactRecord<JudgmentApplicationArtifact>
+  overrideCapture: ArtifactRecord<OperatorOverrideCaptureArtifact>
+  replayPack: ArtifactRecord<RecommendationReplayPack>
+  serialValidator: ArtifactRecord<SerialBundleValidatorResult>
+  contractCoverage: ArtifactRecord<DashboardPublicContractCoverage>
+  promotionGate: ArtifactRecord<GovernedPromotionDisciplineGate>
   declaredArtifactMap: Record<string, ArtifactRecord>
   allArtifacts: ArtifactRecord[]
 }
@@ -186,6 +241,15 @@ export type SectionInput<T> = {
   data: T | null
   reason?: string
   provenance: Array<{ artifact: string; path: string; keyFields: string[]; timestamp?: string; provenanceConfidence?: 'high' | 'low' }>
+}
+
+export type DashboardPanelSurface = {
+  panelId: string
+  title: string
+  status: 'renderable' | 'blocked'
+  summary: string
+  rows: Array<Array<string>>
+  blockedReason?: string
 }
 
 export type DashboardViewModel = {
@@ -233,4 +297,6 @@ export type DashboardViewModel = {
   provenance: Array<{ name: string; path: string; status: string; timestamp?: string; keysUsed: string[]; provenanceConfidence?: 'high' | 'low' }>
   trends: Array<{ label: string; value: string }>
   history: { status: string; entries: string[] }
+  operatorPanels: DashboardPanelSurface[]
+  certificationGate: { status: 'pass' | 'blocked'; reasons: string[] }
 }

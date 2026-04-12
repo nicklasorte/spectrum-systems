@@ -16,7 +16,13 @@ import type {
   RecommendationRecordCollection,
   RunState,
   Snapshot,
-  SnapshotMeta
+  SnapshotMeta,
+  JudgmentApplicationArtifact,
+  OperatorOverrideCaptureArtifact,
+  RecommendationReplayPack,
+  SerialBundleValidatorResult,
+  DashboardPublicContractCoverage,
+  GovernedPromotionDisciplineGate
 } from '../../types/dashboard'
 import { fetchJsonArtifact } from './fetch_json_artifact'
 import { markValidated } from '../validation/dashboard_validation'
@@ -62,6 +68,12 @@ export async function loadDashboardPublication(): Promise<DashboardPublication> 
     recommendationAccuracyTracker: artifactByName<RecommendationAccuracyTracker>(declaredArtifactsByName, 'recommendation_accuracy_tracker.json'),
     refreshRunRecord: artifactByName<RefreshRunRecord>(declaredArtifactsByName, 'refresh_run_record.json'),
     publicationAttemptRecord: artifactByName<PublicationAttemptRecord>(declaredArtifactsByName, 'publication_attempt_record.json'),
+    judgmentApplication: artifactByName<JudgmentApplicationArtifact>(declaredArtifactsByName, 'judgment_application_artifact.json'),
+    overrideCapture: artifactByName<OperatorOverrideCaptureArtifact>(declaredArtifactsByName, 'rq_next_24_01__umbrella_1__nx_05_operator_override_capture.json'),
+    replayPack: artifactByName<RecommendationReplayPack>(declaredArtifactsByName, 'rq_next_24_01__umbrella_3__nx_13_recommendation_replay_pack.json'),
+    serialValidator: artifactByName<SerialBundleValidatorResult>(declaredArtifactsByName, 'serial_bundle_validator_result.json'),
+    contractCoverage: artifactByName<DashboardPublicContractCoverage>(declaredArtifactsByName, 'dashboard_public_contract_coverage.json'),
+    promotionGate: artifactByName<GovernedPromotionDisciplineGate>(declaredArtifactsByName, 'governed_promotion_discipline_gate.json'),
     declaredArtifactMap: Object.fromEntries(validatedDeclaredArtifacts.map((artifact) => [artifact.name, artifact])),
     allArtifacts: [manifest, ...validatedDeclaredArtifacts]
   }
