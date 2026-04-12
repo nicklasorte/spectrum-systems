@@ -103,6 +103,9 @@ _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS = [
     "tests/test_pqx_slice_runner.py",
 ]
 _GOVERNED_PROMPT_SURFACE_REGISTRY = REPO_ROOT / "docs" / "governance" / "governed_prompt_surfaces.json"
+_DIFF_COMMAND_TIMEOUT_SECONDS = 6
+_STATUS_COMMAND_TIMEOUT_SECONDS = 4
+_WORKING_TREE_DIFF_TIMEOUT_SECONDS = 4
 
 _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "scripts/run_autonomous_validation_run.py": ["tests/test_run_autonomous_validation_run.py"],
@@ -135,6 +138,8 @@ class ChangedPathDetectionResult:
     fallback_used: bool
     warnings: list[str]
     ref_resolution_records: list[dict[str, str]] = field(default_factory=list)
+    trust_level: str = "normal"
+    bounded_runtime: bool = True
 
 
 @dataclass
@@ -146,9 +151,24 @@ class EvaluationSurfaceClassification:
     surface: str
 
 
-def _run(command: list[str], cwd: Path) -> CommandResult:
-    proc = subprocess.run(command, cwd=cwd, check=False, capture_output=True, text=True)
-    return CommandResult(command=command, returncode=proc.returncode, stdout=proc.stdout, stderr=proc.stderr)
+def _run(command: list[str], cwd: Path, timeout_seconds: int | None = None) -> CommandResult:
+    try:
+        proc = subprocess.run(
+            command,
+            cwd=cwd,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+        )
+        return CommandResult(command=command, returncode=proc.returncode, stdout=proc.stdout, stderr=proc.stderr)
+    except subprocess.TimeoutExpired as exc:
+        return CommandResult(
+            command=command,
+            returncode=124,
+            stdout=(exc.stdout or ""),
+            stderr=f"command timed out after {timeout_seconds}s",
+        )
 
 
 def _parse_args() -> argparse.Namespace:
@@ -196,7 +216,7 @@ def _all_governed_paths(repo_root: Path) -> list[str]:
 
 
 def _diff_name_only(repo_root: Path, base_ref: str, head_ref: str) -> tuple[list[str], str | None]:
-    diff = _run(["git", "diff", "--name-only", f"{base_ref}..{head_ref}"], cwd=repo_root)
+    diff = _run(["git", "diff", "--name-only", f"{base_ref}..{head_ref}"], cwd=repo_root, timeout_seconds=_DIFF_COMMAND_TIMEOUT_SECONDS)
     if diff.returncode != 0:
         return [], diff.combined_output
     paths = sorted({line.strip() for line in diff.stdout.splitlines() if line.strip()})
@@ -218,7 +238,7 @@ def _github_sha_pair() -> tuple[str, str, str] | None:
 
 
 def _local_workspace_changes(repo_root: Path) -> list[str]:
-    changes = _run(["git", "status", "--porcelain"], cwd=repo_root)
+    changes = _run(["git", "status", "--porcelain"], cwd=repo_root, timeout_seconds=_STATUS_COMMAND_TIMEOUT_SECONDS)
     if changes.returncode != 0:
         return []
     paths = []
@@ -289,6 +309,8 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
             fallback_used=False,
             warnings=[],
             ref_resolution_records=[],
+            trust_level="normal",
+            bounded_runtime=True,
         )
 
     # B: explicit base/head refs when resolvable.
@@ -304,6 +326,8 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
             fallback_used=False,
             warnings=[],
             ref_resolution_records=ref_tracker.records,
+            trust_level="normal",
+            bounded_runtime=True,
         )
     ref_tracker.record(primary_ref, "failed_invalid_revision")
     warnings.append(f"base/head diff unavailable: {error}")
@@ -321,6 +345,8 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
                 fallback_used=True,
                 warnings=warnings + ["head ref unavailable; used current HEAD fallback"],
                 ref_resolution_records=ref_tracker.records,
+                trust_level="normal",
+                bounded_runtime=True,
             )
         ref_tracker.record(current_head_ref, "failed_invalid_revision")
         warnings.append(f"base..HEAD fallback unavailable: {current_head_error}")
@@ -341,6 +367,8 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
                 fallback_used=False,
                 warnings=warnings,
                 ref_resolution_records=ref_tracker.records,
+                trust_level="normal",
+                bounded_runtime=True,
             )
         ref_tracker.record(github_ref, "failed_invalid_revision")
         warnings.append(f"github event ref diff unavailable: {gh_error}")
@@ -357,12 +385,14 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
             fallback_used=True,
             warnings=warnings + ["using git status porcelain fallback"],
             ref_resolution_records=ref_tracker.records,
+            trust_level="degraded",
+            bounded_runtime=True,
         )
     if local_changes:
         warnings.append("local workspace fallback had no governed contract paths; continuing to deeper fallback")
 
     ref_tracker.record("working_tree_vs_HEAD", "attempted")
-    working_tree = _run(["git", "diff", "--name-only", "HEAD"], cwd=repo_root)
+    working_tree = _run(["git", "diff", "--name-only", "HEAD"], cwd=repo_root, timeout_seconds=_WORKING_TREE_DIFF_TIMEOUT_SECONDS)
     if working_tree.returncode == 0:
         ref_tracker.record("working_tree_vs_HEAD", "succeeded")
         paths = sorted({line.strip() for line in working_tree.stdout.splitlines() if line.strip()})
@@ -375,34 +405,26 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
                 fallback_used=True,
                 warnings=warnings + ["using working tree diff fallback"],
                 ref_resolution_records=ref_tracker.records,
+                trust_level="degraded",
+                bounded_runtime=True,
             )
         if paths:
-            warnings.append("working tree fallback had no governed contract paths; degrading to full governed scan")
+            warnings.append("working tree fallback had no governed contract paths; marking diff evidence insufficient")
     else:
         ref_tracker.record("working_tree_vs_HEAD", "failed_invalid_revision")
         warnings.append(f"working tree fallback unavailable: {working_tree.combined_output}")
 
-    # E: fail-closed degraded full governed scan.
-    governed = _all_governed_paths(repo_root)
-    if governed:
-        ref_tracker.record("degraded_full_governed_scan", "fallback_used")
-        return ChangedPathDetectionResult(
-            changed_paths=governed,
-            changed_path_detection_mode="degraded_full_governed_scan",
-            refs_attempted=ref_tracker.refs,
-            fallback_used=True,
-            warnings=warnings + ["changed-path detection degraded; running full governed contract scan"],
-            ref_resolution_records=ref_tracker.records,
-        )
-
-    ref_tracker.record("detection_failed_no_governed_paths", "fallback_used")
+    # E: bounded fail-closed stop: no broad full-surface scan.
+    ref_tracker.record("insufficient_diff_evidence", "fallback_used")
     return ChangedPathDetectionResult(
         changed_paths=[],
-        changed_path_detection_mode="detection_failed_no_governed_paths",
+        changed_path_detection_mode="insufficient_diff_evidence",
         refs_attempted=ref_tracker.refs,
         fallback_used=True,
-        warnings=warnings + ["changed-path detection failed and no governed paths were available"],
+        warnings=warnings + ["bounded diff-resolution exhausted; changed-path evidence is insufficient"],
         ref_resolution_records=ref_tracker.records,
+        trust_level="insufficient",
+        bounded_runtime=True,
     )
 
 
@@ -1111,7 +1133,8 @@ def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool
     changed_path_detection = report.get("changed_path_detection", {})
     detection_mode = str(changed_path_detection.get("changed_path_detection_mode", "unknown"))
     preflight_mode = str(changed_path_detection.get("preflight_mode", "explicit_or_local_inspection"))
-    degraded = detection_mode == "degraded_full_governed_scan"
+    trust_level = str(changed_path_detection.get("trust_level", "normal"))
+    degraded = trust_level != "normal" or detection_mode == "degraded_full_governed_scan"
     masking_detected = bool(report.get("masked_failures"))
     has_propagation_failures = bool(report.get("schema_example_failures") or report.get("producer_failures"))
     impacted_downstream = bool(report.get("fixture_failures") or report.get("consumer_failures"))
@@ -1144,6 +1167,7 @@ def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool
         masking_detected
         or has_propagation_failures
         or invariant_violations
+        or trust_level == "insufficient"
         or (missing_required_surface and not (inspection_only_commit_range or governed_commit_range_with_authority))
         or pqx_policy_blocking
     ):
@@ -1283,11 +1307,18 @@ def main() -> int:
     changed_contracts = changed_contract_paths + changed_governed_definitions
     changed_examples = classified["changed_example_paths"]
     refs_attempted = _stable_unique_strings(list(detection.refs_attempted))
+    ref_records = list(detection.ref_resolution_records)
+    successful_modes = [row.get("ref", "") for row in ref_records if row.get("status") == "succeeded"]
+    failed_modes = [row.get("ref", "") for row in ref_records if row.get("status") == "failed_invalid_revision"]
     detection_meta = {
         "changed_path_detection_mode": detection.changed_path_detection_mode,
         "changed_paths_resolved": detection.changed_paths,
         "refs_attempted": refs_attempted,
-        "ref_resolution_records": detection.ref_resolution_records,
+        "ref_resolution_records": ref_records,
+        "successful_modes": _stable_unique_strings(successful_modes),
+        "failed_modes": _stable_unique_strings(failed_modes),
+        "trust_level": detection.trust_level,
+        "bounded_runtime": detection.bounded_runtime,
         "fallback_used": detection.fallback_used,
         "warnings": detection.warnings,
         "evaluation_mode": surface_classification["evaluation_mode"],
@@ -1434,7 +1465,7 @@ def main() -> int:
             )
             pqx_execution_policy["blocking_reasons"] = authority_resolution["blocking_reasons"]
 
-    if detection.changed_path_detection_mode == "detection_failed_no_governed_paths":
+    if detection.changed_path_detection_mode in {"detection_failed_no_governed_paths", "insufficient_diff_evidence"}:
         report = {
             "status": "failed",
             "changed_contracts": [],
@@ -1451,12 +1482,12 @@ def main() -> int:
             "fixture_failures": [],
             "consumer_failures": [],
             "masked_failures": [],
-            "recommended_repair_areas": ["contracts/"],
-            "bootstrap_failures": ["changed-path detection failed and no governed paths were available"],
+            "recommended_repair_areas": ["contracts/", "diff-resolution"],
+            "bootstrap_failures": ["changed-path detection failed: insufficient bounded diff evidence"],
             "evaluation_classification": surface_classification["path_classifications"],
             "missing_required_surface": [],
             "skip_reason": None,
-            "invariant_violations": ["changed-path detection failed before evaluation"],
+            "invariant_violations": ["changed-path detection failed before evaluation", "INSUFFICIENT_DIFF_EVIDENCE"],
             "control_surface_enforcement": None,
             "control_surface_gap_result": control_surface_gap_bridge["gap_result"],
             "control_surface_gap_pqx_work_items": control_surface_gap_bridge["pqx_work_items"],

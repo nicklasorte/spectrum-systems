@@ -280,7 +280,7 @@ def test_detect_changed_paths_uses_current_head_fallback_when_explicit_head_is_m
     assert detected.changed_paths == ["contracts/schemas/roadmap_eligibility_artifact.schema.json"]
 
 
-def test_detect_changed_paths_degrades_to_full_governed_scan(monkeypatch) -> None:
+def test_detect_changed_paths_fails_fast_with_insufficient_diff_evidence(monkeypatch) -> None:
     monkeypatch.setattr(preflight, "_diff_name_only", lambda *_args, **_kwargs: ([], "fatal: unavailable"))
     monkeypatch.setattr(preflight, "_github_sha_pair", lambda: None)
     monkeypatch.setattr(preflight, "_local_workspace_changes", lambda _repo: [])
@@ -290,14 +290,13 @@ def test_detect_changed_paths_degrades_to_full_governed_scan(monkeypatch) -> Non
         combined_output = "fatal: bad revision"
 
     monkeypatch.setattr(preflight, "_run", lambda *_args, **_kwargs: _Result())
-    monkeypatch.setattr(preflight, "_all_governed_paths", lambda _repo: ["contracts/schemas/roadmap_eligibility_artifact.schema.json"])
-
     detected = preflight.detect_changed_paths(repo_root=Path("."), base_ref="origin/main", head_ref="HEAD", explicit=[])
 
-    assert detected.changed_path_detection_mode == "degraded_full_governed_scan"
-    assert detected.changed_paths == ["contracts/schemas/roadmap_eligibility_artifact.schema.json"]
+    assert detected.changed_path_detection_mode == "insufficient_diff_evidence"
+    assert detected.changed_paths == []
+    assert detected.trust_level == "insufficient"
     assert detected.fallback_used is True
-    assert any("degraded" in warning for warning in detected.warnings)
+    assert any("insufficient" in warning for warning in detected.warnings)
 
 
 def test_detect_changed_paths_refs_attempted_are_unique_and_stable(monkeypatch) -> None:
@@ -330,12 +329,10 @@ def test_detect_changed_paths_complete_git_failure_still_emits_schema_safe_refs(
         combined_output = "fatal: bad revision"
 
     monkeypatch.setattr(preflight, "_run", lambda *_args, **_kwargs: _Result())
-    monkeypatch.setattr(preflight, "_all_governed_paths", lambda _repo: ["contracts/schemas/roadmap_eligibility_artifact.schema.json"])
-
     detected = preflight.detect_changed_paths(repo_root=Path("."), base_ref="base", head_ref="missing-head", explicit=[])
 
-    assert detected.changed_path_detection_mode == "degraded_full_governed_scan"
-    assert detected.refs_attempted == ["base..missing-head", "base..HEAD", "working_tree_vs_HEAD", "degraded_full_governed_scan"]
+    assert detected.changed_path_detection_mode == "insufficient_diff_evidence"
+    assert detected.refs_attempted == ["base..missing-head", "base..HEAD", "working_tree_vs_HEAD", "insufficient_diff_evidence"]
     assert len(detected.refs_attempted) == len(set(detected.refs_attempted))
 
 
@@ -350,11 +347,9 @@ def test_detect_changed_paths_skips_non_governed_local_fallback(monkeypatch) -> 
         combined_output = ""
 
     monkeypatch.setattr(preflight, "_run", lambda *_args, **_kwargs: _Result())
-    monkeypatch.setattr(preflight, "_all_governed_paths", lambda _repo: ["contracts/schemas/roadmap_eligibility_artifact.schema.json"])
-
     detected = preflight.detect_changed_paths(repo_root=Path("."), base_ref="origin/main", head_ref="HEAD", explicit=[])
-    assert detected.changed_path_detection_mode == "degraded_full_governed_scan"
-    assert detected.changed_paths == ["contracts/schemas/roadmap_eligibility_artifact.schema.json"]
+    assert detected.changed_path_detection_mode == "insufficient_diff_evidence"
+    assert detected.changed_paths == []
 
 
 def test_detect_changed_paths_skips_non_governed_working_tree_fallback(monkeypatch) -> None:
@@ -368,11 +363,9 @@ def test_detect_changed_paths_skips_non_governed_working_tree_fallback(monkeypat
         combined_output = ""
 
     monkeypatch.setattr(preflight, "_run", lambda *_args, **_kwargs: _Result())
-    monkeypatch.setattr(preflight, "_all_governed_paths", lambda _repo: ["contracts/schemas/roadmap_eligibility_artifact.schema.json"])
-
     detected = preflight.detect_changed_paths(repo_root=Path("."), base_ref="origin/main", head_ref="HEAD", explicit=[])
-    assert detected.changed_path_detection_mode == "degraded_full_governed_scan"
-    assert detected.changed_paths == ["contracts/schemas/roadmap_eligibility_artifact.schema.json"]
+    assert detected.changed_path_detection_mode == "insufficient_diff_evidence"
+    assert detected.changed_paths == []
 
 
 def test_masking_detection_labels_contract_masking() -> None:
@@ -667,6 +660,30 @@ def test_map_preflight_control_signal_blocks_skipped_status() -> None:
         hardening_flow=False,
     )
     assert signal["strategy_gate_decision"] == "BLOCK"
+
+
+def test_map_preflight_control_signal_blocks_insufficient_diff_evidence() -> None:
+    signal = preflight.map_preflight_control_signal(
+        report={
+            "status": "failed",
+            "changed_path_detection": {
+                "changed_path_detection_mode": "insufficient_diff_evidence",
+                "preflight_mode": "commit_range_inspection",
+                "trust_level": "insufficient",
+            },
+            "masked_failures": [],
+            "schema_example_failures": [],
+            "producer_failures": [],
+            "fixture_failures": [],
+            "consumer_failures": [],
+            "invariant_violations": [],
+            "missing_required_surface": [],
+            "pqx_execution_policy": {"status": "allow", "execution_context": "pqx_governed"},
+        },
+        hardening_flow=False,
+    )
+    assert signal["strategy_gate_decision"] == "BLOCK"
+    assert signal["degraded_detection"] is True
 
 
 def test_main_irrelevant_changed_file_reports_explicit_no_op(tmp_path: Path, monkeypatch) -> None:
