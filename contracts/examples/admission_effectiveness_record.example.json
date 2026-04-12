@@ -1,0 +1,12 @@
+{
+  "artifact_type": "admission_effectiveness_record",
+  "effectiveness_id": "aef-1111111111111111",
+  "created_at": "2026-04-12T00:00:00Z",
+  "produced_by": "AEXHardening",
+  "total_cases": 10,
+  "blocked_bad_requests": 5,
+  "accepted_valid_requests": 4,
+  "false_rejections": 1,
+  "false_acceptances": 0,
+  "strictness_proxy": 0.6
+}

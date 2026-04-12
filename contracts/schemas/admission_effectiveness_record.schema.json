@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/admission_effectiveness_record.schema.json",
+  "title": "Admission Effectiveness Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "effectiveness_id", "created_at", "produced_by", "total_cases", "blocked_bad_requests", "accepted_valid_requests", "false_rejections", "false_acceptances", "strictness_proxy"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "admission_effectiveness_record"},
+    "effectiveness_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "produced_by": {"type": "string", "minLength": 1},
+    "total_cases": {"type": "integer", "minimum": 0},
+    "blocked_bad_requests": {"type": "integer", "minimum": 0},
+    "accepted_valid_requests": {"type": "integer", "minimum": 0},
+    "false_rejections": {"type": "integer", "minimum": 0},
+    "false_acceptances": {"type": "integer", "minimum": 0},
+    "strictness_proxy": {"type": "number", "minimum": 0}
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "artifact_type": "admission_rejection_debt_record",
+  "debt_record_id": "ardebt-1111111111111111",
+  "created_at": "2026-04-12T00:00:00Z",
+  "produced_by": "AEXHardening",
+  "reason_code_counts": {
+    "unknown_execution_type": 2
+  },
+  "repeated_reason_codes": [
+    "unknown_execution_type"
+  ],
+  "debt_status": "elevated"
+}

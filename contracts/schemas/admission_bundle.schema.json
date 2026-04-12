@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/admission_bundle.schema.json",
+  "title": "Admission Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "bundle_id", "request_id", "trace_id", "created_at", "produced_by", "admission_artifacts", "execution_type", "repo_mutation_requested", "bundle_hash"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "admission_bundle"},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "request_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "produced_by": {"type": "string", "minLength": 1},
+    "admission_artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["build_admission_record_ref", "normalized_execution_request_ref", "admission_authenticity_record_ref", "admission_rejection_record_ref"],
+      "properties": {
+        "build_admission_record_ref": {"type": "string", "minLength": 1},
+        "normalized_execution_request_ref": {"type": "string", "minLength": 1},
+        "admission_authenticity_record_ref": {"type": "string", "minLength": 1},
+        "admission_rejection_record_ref": {"type": ["string", "null"]}
+      }
+    },
+    "execution_type": {"type": "string", "enum": ["repo_write", "read_only", "analysis_only", "unknown"]},
+    "repo_mutation_requested": {"type": "boolean"},
+    "bundle_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}

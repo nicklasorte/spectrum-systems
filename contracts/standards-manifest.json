@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.117",
+  "artifact_version": "1.3.118",
   "schema_version": "1.3.98",
-  "standards_version": "1.3.117",
+  "standards_version": "1.3.118",
   "record_id": "REC-STD-2026-04-12-PQX-001",
   "run_id": "run-20260412T210000Z-pqx-001",
   "created_at": "2026-04-12T00:00:00Z",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.117",
+  "source_repo_version": "1.3.118",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -67,6 +67,84 @@
       "notes": "BATCH-X1 deterministic guardrail and trend report for bounded adaptive execution operator tuning decisions."
     },
     {
+      "artifact_type": "admission_authenticity_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.118",
+      "last_updated_in": "1.3.118",
+      "example_path": "contracts/examples/admission_authenticity_record.example.json",
+      "notes": "AEX authenticity verification artifact binding issuer/key_id/digest/attestation checks to admission lineage."
+    },
+    {
+      "artifact_type": "admission_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.118",
+      "last_updated_in": "1.3.118",
+      "example_path": "contracts/examples/admission_bundle.example.json",
+      "notes": "AEX bundle artifact linking admission, normalization, authenticity, and optional rejection records."
+    },
+    {
+      "artifact_type": "admission_effectiveness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.118",
+      "last_updated_in": "1.3.118",
+      "example_path": "contracts/examples/admission_effectiveness_record.example.json",
+      "notes": "AEX effectiveness tracking artifact for blocked bad requests, valid accepts, and strictness proxies."
+    },
+    {
+      "artifact_type": "admission_eval_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.118",
+      "last_updated_in": "1.3.118",
+      "example_path": "contracts/examples/admission_eval_record.example.json",
+      "notes": "AEX admission evaluation artifact for completeness, classifier integrity, authenticity, and lineage readiness."
+    },
+    {
+      "artifact_type": "admission_readiness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.118",
+      "last_updated_in": "1.3.118",
+      "example_path": "contracts/examples/admission_readiness_record.example.json",
+      "notes": "Candidate-only AEX readiness artifact with explicit non-authority assertions and fail-closed evidence requirements."
+    },
+    {
+      "artifact_type": "admission_rejection_debt_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.118",
+      "last_updated_in": "1.3.118",
+      "example_path": "contracts/examples/admission_rejection_debt_record.example.json",
+      "notes": "AEX rejection debt tracker artifact surfacing repeated rejection motifs and unresolved pressure."
+    },
+    {
       "artifact_type": "admission_rejection_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -78,6 +156,32 @@
       "last_updated_in": "1.3.99",
       "example_path": "contracts/examples/admission_rejection_record.example.json",
       "notes": "AEX fail-closed rejection artifact emitted when request validation/admission fails."
+    },
+    {
+      "artifact_type": "admission_replay_validation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.118",
+      "last_updated_in": "1.3.118",
+      "example_path": "contracts/examples/admission_replay_validation_record.example.json",
+      "notes": "AEX deterministic replay validation artifact for same-input same-output verification and drift detection."
+    },
+    {
+      "artifact_type": "aex_tlc_handoff_integrity_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.118",
+      "last_updated_in": "1.3.118",
+      "example_path": "contracts/examples/aex_tlc_handoff_integrity_record.example.json",
+      "notes": "AEX-to-TLC handoff integrity artifact ensuring normalized request and admission semantics remain stable across handoff."
     },
     {
       "artifact_type": "agent_execution_trace",
@@ -3240,6 +3344,19 @@
       "last_updated_in": "1.0.85",
       "example_path": "contracts/examples/pqx_chain_certification_record.json",
       "notes": "G3 B22 three-slice chain certification aggregation for certification/review/fix closure invariants."
+    },
+    {
+      "artifact_type": "pqx_closeout_gate_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.118",
+      "last_updated_in": "1.3.118",
+      "example_path": "contracts/examples/pqx_closeout_gate_record.example.json",
+      "notes": "PQX closeout verification artifact proving execution-only boundary readiness and hardening bundle coverage."
     },
     {
       "artifact_type": "pqx_execution_authority_record",

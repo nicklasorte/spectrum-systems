@@ -1,11 +1,9 @@
-"""Deterministic request classification for AEX.
-
-This classifier intentionally uses simple lexical rules and defaults to `unknown` for ambiguity.
-"""
+"""Deterministic request classification for AEX."""
 
 from __future__ import annotations
 
 import re
+from typing import Any
 
 _WRITE_PATTERNS = (
     r"\bcreate\b",
@@ -50,9 +48,26 @@ def classify_execution_type(prompt_text: str, target_paths: list[str] | None = N
 
     if any(re.search(pattern, text) for pattern in _WRITE_PATTERNS):
         return "repo_write"
-    if any(re.search(pattern, text) for pattern in _READ_PATTERNS) and not paths:
+    if any(re.search(pattern, text) for pattern in _READ_PATTERNS):
         return "analysis_only"
     return "unknown"
+
+
+def classify_with_reasons(prompt_text: str, target_paths: list[str] | None = None) -> dict[str, Any]:
+    execution_type = classify_execution_type(prompt_text, target_paths)
+    reasons: list[str] = []
+    if execution_type == "repo_write":
+        reasons.append("repo_write_signal_detected")
+    elif execution_type == "analysis_only":
+        reasons.append("analysis_signal_detected")
+    else:
+        reasons.append("classification_ambiguous")
+    normalization_outcome = "normalized" if execution_type != "unknown" else "normalized_with_ambiguity"
+    return {
+        "execution_type": execution_type,
+        "reason_codes": reasons,
+        "normalization_outcome": normalization_outcome,
+    }
 
 
 def is_repo_sensitive_unknown(*, execution_type: str, repo_mutation_requested: bool, target_paths: list[str]) -> bool:

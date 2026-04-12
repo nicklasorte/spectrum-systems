@@ -16,7 +16,9 @@
     "trace_id",
     "created_at",
     "produced_by",
-    "authenticity"
+    "authenticity",
+    "classification_reason_codes",
+    "normalization_outcome"
   ],
   "properties": {
     "artifact_type": {
@@ -126,6 +128,21 @@
           "pattern": "^lin-[0-9a-f]{24}$"
         }
       }
+    },
+    "classification_reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "normalization_outcome": {
+      "type": "string",
+      "enum": [
+        "normalized",
+        "normalized_with_ambiguity"
+      ]
     }
   }
 }
