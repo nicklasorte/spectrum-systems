@@ -1,0 +1,136 @@
+{
+  "artifact_type": "rax_redteam_report_system",
+  "batch": "RAX-REDTEAM-SYSTEM-24-01",
+  "execution_mode": "FORENSIC ADVERSARIAL REVIEW WITH FAIL-FAST REPORTING",
+  "generated_on": "2026-04-12",
+  "attacks_attempted": 18,
+  "attacks_blocked": 8,
+  "attacks_that_succeeded": [
+    {
+      "attack_id": 1,
+      "name": "minimal_valid_input",
+      "finding": "Schema-minimal payload with intent=10-char filler and empty depends_on was accepted end-to-end (input assurance pass + expansion + output assurance pass), so semantically insufficient intent is not blocked."
+    },
+    {
+      "attack_id": 2,
+      "name": "contradictory_input_owner_vs_intent",
+      "finding": "Owner/intent semantic contradiction is accepted when owner remains schema-valid (for example owner=PRG with PQX runtime-execution intent). No intent-owner consistency check exists in input assurance."
+    },
+    {
+      "attack_id": 5,
+      "name": "ambiguous_normalization",
+      "finding": "Distinct dependency lists collapse to the same canonical model because normalization deduplicates and sorts depends_on without ambiguity signaling."
+    },
+    {
+      "attack_id": 8,
+      "name": "over_expanded_output",
+      "finding": "Extra irrelevant modules in target_modules are not rejected; output assurance does not enforce owner-prefix or relevance constraints."
+    },
+    {
+      "attack_id": 9,
+      "name": "semantically_wrong_targets",
+      "finding": "Wrong but syntactically valid module targets are accepted because output assurance validates schema and path traversal only, not semantic alignment."
+    },
+    {
+      "attack_id": 12,
+      "name": "weak_acceptance_checks",
+      "finding": "Meaningless but schema-valid acceptance checks pass output assurance; no quality/strength rubric is enforced."
+    },
+    {
+      "attack_id": 15,
+      "name": "missing_expansion_trace",
+      "finding": "Input assurance accepts payloads without any supplied expansion trace; trace integrity is checked only when trace is provided."
+    },
+    {
+      "attack_id": 16,
+      "name": "version_drift",
+      "finding": "source_version drift is accepted if schema format is valid; no authority-version comparison is performed."
+    }
+  ],
+  "interface_failures": [
+    "Input contract enforces syntax but not semantic sufficiency of intent.",
+    "Input assurance does not verify owner-intent consistency or role-target alignment.",
+    "Freshness/provenance failures are coalesced into stale_reference, reducing failure specificity."
+  ],
+  "transformation_failures": [
+    "Canonical normalization is lossy for dependency ordering/duplication, enabling ambiguity collapse.",
+    "Expansion/output path accepts semantically wrong and over-expanded targets when schema-valid.",
+    "No mandatory trace presence guard in assure_rax_input."
+  ],
+  "assurance_failures": [
+    "Acceptance-check quality is not assessed beyond non-empty and schema shape.",
+    "Regression detection is absent in RAX assurance surface.",
+    "Counter-evidence list in audit artifact is always empty and not materially populated by checks.",
+    "Contradictory signal handling can produce hold_candidate with stop_condition_triggered=false if caller provides inconsistent assurance payloads."
+  ],
+  "downstream_compatibility_failures": [
+    "Entrypoint resolvability check allows semantically unrelated call targets (for example json:loads) to pass as downstream-compatible.",
+    "No enforcement that target_modules/target_tests remain within owner policy prefixes during assurance."
+  ],
+  "learning_layer_violations": [],
+  "status_forging_possible": true,
+  "overall_verdict": "FAIL",
+  "strongest_blocked_attacks": [
+    {
+      "attack_id": 3,
+      "name": "stale_input",
+      "evidence": "assure_rax_input returns failure_classification=stale_reference and stop_condition_triggered=true when freshness reference is stale or missing."
+    },
+    {
+      "attack_id": 4,
+      "name": "provenance_spoofing",
+      "evidence": "assure_rax_input fail-closes when provenance ref is untrusted/missing."
+    },
+    {
+      "attack_id": 6,
+      "name": "missing_canonical_fields",
+      "evidence": "schema validation/normalization rejects payload missing required fields."
+    },
+    {
+      "attack_id": 7,
+      "name": "under_specified_output",
+      "evidence": "schema + assurance block empty target_modules and malformed downstream contract surfaces."
+    },
+    {
+      "attack_id": 10,
+      "name": "valid_but_unusable_contract",
+      "evidence": "unresolvable runtime entrypoint is blocked as downstream_incompatible."
+    },
+    {
+      "attack_id": 13,
+      "name": "contradictory_signals",
+      "evidence": "audit builder maps downstream_incompatible to hold_candidate and not_attempted status transition."
+    },
+    {
+      "attack_id": 17,
+      "name": "learning_attempts_runtime_mutation",
+      "evidence": "RAX interface surface contains no learning mutator path or direct runtime mutation API."
+    },
+    {
+      "attack_id": 18,
+      "name": "learning_authority_outputs",
+      "evidence": "RAX output/audit contracts do not grant promotion authority; decisions are candidate-local."
+    }
+  ],
+  "remaining_weak_seams": [
+    "semantic intent sufficiency",
+    "owner-intent contradiction detection",
+    "semantic target validation against owner policy",
+    "acceptance-check strength scoring",
+    "mandatory trace presence and verification",
+    "version drift authority checks",
+    "regression baseline enforcement",
+    "counter-evidence population completeness"
+  ],
+  "next_required_fixes": [
+    "Require intent quality floor beyond minLength (structured intent fields + prohibited generic placeholders).",
+    "Add owner-intent-target consistency assertions in input and output assurance (fail-closed).",
+    "Make expansion trace mandatory input to assurance and block on absence.",
+    "Validate source_version against authoritative version registry/provenance source.",
+    "Enforce target_modules/target_tests prefix and semantic relevance checks in assure_rax_output.",
+    "Enforce acceptance_check strength policy (required=true + recognized check IDs + bounded weak-language detector).",
+    "Add regression gate using prior accepted contract baseline and fail on quality regression.",
+    "Populate counter_evidence with concrete failing evidence references and disallow empty when failures exist.",
+    "Set stop_condition_triggered as derived invariant from failure_classification to prevent status forging."
+  ]
+}
