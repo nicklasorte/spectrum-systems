@@ -40,6 +40,15 @@ _REASON_TO_SEMANTIC_CATEGORY = {
     "cross_run_eval_signal_inconsistency": "replay_inconsistency",
     "tests_pass_eval_fail": "readiness_contradiction",
     "contradictory_eval_signals": "readiness_contradiction",
+    "priority_inversion_detected": "semantic_contradiction",
+    "dependency_omission_detected": "dependency_corruption",
+    "owner_intent_mismatch_detected": "semantic_contradiction",
+    "weak_counter_evidence_detected": "readiness_contradiction",
+    "contradiction_unresolved": "readiness_contradiction",
+    "semantic_expansion_mismatch": "over_expansion",
+    "policy_meaning_drift_detected": "semantic_contradiction",
+    "ambiguous_source_intent_detected": "semantic_contradiction",
+    "hidden_scope_expansion_detected": "over_expansion",
 }
 
 
@@ -126,6 +135,28 @@ def _critical_failure_classification(value: Any) -> bool:
         return False
     normalized = value.strip().lower()
     return bool(normalized and normalized not in {"none", "pass", "ok"})
+
+
+def _counter_evidence_is_material(counter_evidence: Any) -> bool:
+    if not isinstance(counter_evidence, list) or not counter_evidence:
+        return False
+    weak_markers = {
+        "irrelevant",
+        "non-material",
+        "non material",
+        "weak",
+        "placeholder",
+        "todo",
+        "tbd",
+    }
+    for item in counter_evidence:
+        text = str(item).strip().lower()
+        if not text:
+            continue
+        if any(marker in text for marker in weak_markers):
+            continue
+        return True
+    return False
 
 
 def _make_failure_id(*, run_id: str, semantic_category: str, reason_codes: list[str], target_ref: str) -> str:
@@ -440,12 +471,30 @@ def run_rax_eval_runner(
             reason_map["rax_trace_integrity"].append("missing_required_expansion_trace")
         if "source_version_drift" in detail:
             reason_map["rax_version_authority_alignment"].append("source_version_drift")
+        if "priority_inversion" in detail:
+            reason_map["rax_normalization_integrity"].append("priority_inversion_detected")
+        if "dependency_omission" in detail:
+            reason_map["rax_control_readiness"].append("dependency_omission_detected")
+        if "owner_intent_mismatch" in detail:
+            reason_map["rax_owner_intent_alignment"].append("owner_intent_mismatch_detected")
+        if "ambiguous_source_intent" in detail:
+            reason_map["rax_input_semantic_sufficiency"].append("ambiguous_source_intent_detected")
+        if "policy_meaning_drift" in detail:
+            reason_map["rax_output_semantic_alignment"].append("policy_meaning_drift_detected")
 
     for detail in output_assurance.get("details", []):
         if "owner_target_contradiction" in detail:
             reason_map["rax_output_semantic_alignment"].append("semantic_target_mismatch")
         if "weak_acceptance_check" in detail:
             reason_map["rax_acceptance_check_strength"].append("weak_acceptance_check")
+        if "semantic_expansion_mismatch" in detail:
+            reason_map["rax_output_semantic_alignment"].append("semantic_expansion_mismatch")
+        if "hidden_scope_expansion" in detail:
+            reason_map["rax_output_semantic_alignment"].append("hidden_scope_expansion_detected")
+        if "contradiction_unresolved" in detail:
+            reason_map["rax_control_readiness"].append("contradiction_unresolved")
+        if "weak_counter_evidence" in detail:
+            reason_map["rax_control_readiness"].append("weak_counter_evidence_detected")
 
     if not tests_passed:
         reason_map["rax_control_readiness"].append("tests_failed")
@@ -608,6 +657,8 @@ def build_rax_control_readiness_record(
             blocking_reasons.append("critical_failure_classification_present")
         if assurance_audit.get("counter_evidence") == [] and _critical_failure_classification(assurance_audit.get("failure_classification")):
             blocking_reasons.append("failure_without_counter_evidence")
+        if not _counter_evidence_is_material(assurance_audit.get("counter_evidence")):
+            blocking_reasons.append("weak_counter_evidence_detected")
 
     derived_trace = _trace_lineage_from_eval_results(
         eval_results=eval_results,

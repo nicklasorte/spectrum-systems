@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+
 from spectrum_systems.contracts import load_example, validate_artifact
 from spectrum_systems.modules.runtime.rax_assurance import evaluate_rax_control_readiness
 from spectrum_systems.modules.runtime.rax_eval_runner import (
@@ -96,6 +98,58 @@ def test_eval_case_set_contains_rax_red_01_adversarial_pack_entries() -> None:
         "rax-red-01-feedback-poison",
         "rax-red-01-unknown-state",
     }.issubset(ids)
+
+
+def test_eval_case_set_contains_rax_red_02_adversarial_pack_entries() -> None:
+    case_set = load_rax_eval_case_set()
+    ids = {case["eval_case_id"] for case in case_set["cases"]}
+    assert {
+        "rax-red-02-priority-inversion",
+        "rax-red-02-dependency-omission",
+        "rax-red-02-owner-intent-mismatch",
+        "rax-red-02-weak-counter-evidence",
+        "rax-red-02-contradiction-unresolved",
+        "rax-red-02-semantic-expansion-mismatch",
+        "rax-red-02-policy-meaning-drift",
+        "rax-red-02-ambiguous-intent",
+        "rax-red-02-hidden-scope-expansion",
+    }.issubset(ids)
+
+
+def test_red02_semantic_adversarial_classes_fail_closed() -> None:
+    scenarios = [
+        ("priority_inversion", "priority_inversion_detected"),
+        ("dependency_omission", "dependency_omission_detected"),
+        ("owner_intent_mismatch", "owner_intent_mismatch_detected"),
+        ("weak_counter_evidence", "weak_counter_evidence_detected"),
+        ("contradiction_unresolved", "contradiction_unresolved"),
+        ("semantic_expansion_mismatch", "semantic_expansion_mismatch"),
+        ("policy_meaning_drift", "policy_meaning_drift_detected"),
+        ("ambiguous_source_intent", "ambiguous_source_intent_detected"),
+        ("hidden_scope_expansion", "hidden_scope_expansion_detected"),
+    ]
+    for marker, expected_reason in scenarios:
+        out = run_rax_eval_runner(
+            run_id=f"red02-{marker}",
+            target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+            trace_id=f"00000000-0000-4000-8000-{int(hashlib.sha256(marker.encode('utf-8')).hexdigest()[:12], 16) % 10**12:012d}",
+            input_assurance={
+                **_input_assurance_ok(),
+                "details": ["semantic_intent_sufficient", marker],
+            },
+            output_assurance={
+                **_output_assurance_ok(),
+                "details": ["output_semantically_aligned", marker],
+            },
+            tests_passed=True,
+            baseline_regression_detected=False,
+            version_authority_aligned=True,
+        )
+        reason_codes = {mode for item in out["eval_results"] for mode in item["failure_modes"] if ":" not in mode}
+        assert expected_reason in reason_codes
+        readiness = _readiness_from(out)
+        assert readiness["ready_for_control"] is False
+        assert expected_reason in readiness["blocking_reasons"]
 
 def test_runner_emits_structured_eval_results_and_summary() -> None:
     out = run_rax_eval_runner(
