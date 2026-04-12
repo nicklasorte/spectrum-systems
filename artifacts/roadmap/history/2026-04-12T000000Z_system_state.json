@@ -1,0 +1,197 @@
+{
+  "artifact_type": "roadmap_compiler_system_state",
+  "timestamp": "2026-04-12T000000Z",
+  "authority_precheck": {
+    "status": "pass",
+    "missing_required_paths": [],
+    "missing_source_files": [],
+    "missing_structured_artifacts": [],
+    "digest_mismatches": [],
+    "authority_gaps": []
+  },
+  "repo_reality": {
+    "implemented_modules": [],
+    "schema_backed_components": [
+      {
+        "system_id": "SYS-001",
+        "system": "Comment Resolution Engine",
+        "schema_files": [
+          "contracts/schemas/comment_resolution_matrix.schema.json",
+          "contracts/schemas/comment_resolution_matrix_spreadsheet_contract.schema.json"
+        ]
+      },
+      {
+        "system_id": "SYS-006",
+        "system": "Meeting Minutes Engine",
+        "schema_files": [
+          "contracts/schemas/meeting_minutes_record.schema.json"
+        ]
+      },
+      {
+        "system_id": "SYS-008",
+        "system": "DOCX Comment Injection Engine",
+        "schema_files": [
+          "contracts/schemas/pdf_anchored_docx_comment_injection_contract.schema.json"
+        ]
+      }
+    ],
+    "test_backed_systems": [
+      {
+        "system_id": "SYS-001",
+        "system": "Comment Resolution Engine",
+        "evidence": "eval/comment-resolution"
+      },
+      {
+        "system_id": "SYS-002",
+        "system": "Transcript-to-Issue Engine",
+        "evidence": "eval/transcript-to-issue"
+      },
+      {
+        "system_id": "SYS-003",
+        "system": "Study Artifact Generator",
+        "evidence": "systems/study-artifact-generator/evaluation.md"
+      },
+      {
+        "system_id": "SYS-004",
+        "system": "Spectrum Study Compiler",
+        "evidence": "eval/spectrum-study-compiler"
+      },
+      {
+        "system_id": "SYS-005",
+        "system": "Spectrum Program Advisor",
+        "evidence": "systems/spectrum-program-advisor/evaluation.md"
+      },
+      {
+        "system_id": "SYS-006",
+        "system": "Meeting Minutes Engine",
+        "evidence": "systems/meeting-minutes-engine/evaluation.md"
+      },
+      {
+        "system_id": "SYS-007",
+        "system": "Working Paper Review Engine",
+        "evidence": "systems/working-paper-review-engine/evaluation.md"
+      },
+      {
+        "system_id": "SYS-008",
+        "system": "DOCX Comment Injection Engine",
+        "evidence": "systems/docx-comment-injection-engine/evaluation.md"
+      },
+      {
+        "system_id": "SYS-009",
+        "system": "Spectrum Pipeline Engine",
+        "evidence": "systems/spectrum-pipeline-engine/evaluation.md"
+      }
+    ],
+    "docs_only_systems": [
+      {
+        "system_id": "SYS-001",
+        "system": "Comment Resolution Engine",
+        "evidence": "No .py files under systems/comment-resolution"
+      },
+      {
+        "system_id": "SYS-002",
+        "system": "Transcript-to-Issue Engine",
+        "evidence": "No .py files under systems/transcript-to-issue"
+      },
+      {
+        "system_id": "SYS-003",
+        "system": "Study Artifact Generator",
+        "evidence": "No .py files under systems/study-artifact-generator"
+      },
+      {
+        "system_id": "SYS-004",
+        "system": "Spectrum Study Compiler",
+        "evidence": "No .py files under systems/spectrum-study-compiler"
+      },
+      {
+        "system_id": "SYS-005",
+        "system": "Spectrum Program Advisor",
+        "evidence": "No .py files under systems/spectrum-program-advisor"
+      },
+      {
+        "system_id": "SYS-006",
+        "system": "Meeting Minutes Engine",
+        "evidence": "No .py files under systems/meeting-minutes-engine"
+      },
+      {
+        "system_id": "SYS-007",
+        "system": "Working Paper Review Engine",
+        "evidence": "No .py files under systems/working-paper-review-engine"
+      },
+      {
+        "system_id": "SYS-008",
+        "system": "DOCX Comment Injection Engine",
+        "evidence": "No .py files under systems/docx-comment-injection-engine"
+      },
+      {
+        "system_id": "SYS-009",
+        "system": "Spectrum Pipeline Engine",
+        "evidence": "No .py files under systems/spectrum-pipeline-engine"
+      }
+    ],
+    "dead_or_unused_surfaces": [
+      {
+        "path": "modules/slide_intelligence",
+        "status": "candidate_unused_surface",
+        "reason": "Not in canonical system catalog (docs/system-map.md).",
+        "file_count": 1
+      },
+      {
+        "path": "modules/meeting_minutes",
+        "status": "candidate_unused_surface",
+        "reason": "Not in canonical system catalog (docs/system-map.md).",
+        "file_count": 1
+      }
+    ]
+  },
+  "domain_state": {
+    "schemas": {
+      "status": "present_and_governed",
+      "evidence": [
+        "contracts/standards-manifest.json",
+        "contracts/schemas/",
+        "schemas/"
+      ]
+    },
+    "eval": {
+      "status": "partial",
+      "evidence": [
+        "eval/ covers subset; some systems rely on evaluation.md plans"
+      ]
+    },
+    "control": {
+      "status": "present_and_governed",
+      "evidence": [
+        "spectrum_systems/modules/runtime/control_*.py",
+        "control_plane/"
+      ]
+    },
+    "enforcement": {
+      "status": "present_and_governed",
+      "evidence": [
+        "spectrum_systems/modules/runtime/enforcement_engine.py",
+        "spectrum_systems/modules/runtime/system_enforcement_layer.py"
+      ]
+    },
+    "replay": {
+      "status": "present_and_governed",
+      "evidence": [
+        "spectrum_systems/modules/runtime/replay_engine.py",
+        "SYSTEMS.md replay invariant"
+      ]
+    },
+    "trace": {
+      "status": "present_and_governed",
+      "evidence": [
+        "data/traces/",
+        "spectrum_systems/modules/runtime/trace_engine.py"
+      ]
+    },
+    "certification": {
+      "status": "partial",
+      "evidence": [
+        "artifacts/certification_judgment_40_explicit/ present; no single cert gate test in tests/"
+      ]
+    }
+  }
+}

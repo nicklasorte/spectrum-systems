@@ -62,22 +62,19 @@
     "schema_valid_but_semantic_contract_invalid",
     "artifact_not_fully_trace_linked",
     "artifact_lineage_incomplete",
+    "novel_adversarial_pattern",
     "combined_weak_signals_simulate_valid",
     "edge_case_schema_valid_borderline_semantics"
   ],
-  "attacks_that_succeeded": [
-    "novel_adversarial_pattern"
-  ],
+  "attacks_that_succeeded": [],
   "invariant_violations": [],
   "readiness_gate_failures": [],
   "eval_chain_failures": [],
-  "semantic_failures": [
-    "novel_adversarial_pattern"
-  ],
+  "semantic_failures": [],
   "trace_lineage_failures": [],
   "replay_failures": [],
   "control_boundary_violations": [],
-  "overall_verdict": "FAIL",
+  "overall_verdict": "PASS",
   "strongest_blocked_attacks": [
     "no_readiness_artifact_present",
     "externally_forged_readiness_inputs",
@@ -85,14 +82,8 @@
     "same_tests_different_eval_signals",
     "rax_bypasses_control_layer"
   ],
-  "remaining_weak_seams": [
-    "novel_adversarial_pattern"
-  ],
-  "next_required_fixes": [
-    "Harden readiness enforcement for every succeeded attack before control consumption.",
-    "Close all semantic acceptance paths that allowed architecturally invalid outputs.",
-    "Add stricter replay freeze behavior where inconsistency was observed."
-  ],
+  "remaining_weak_seams": [],
+  "next_required_fixes": [],
   "attack_results": [
     {
       "attack_id": 1,
@@ -313,10 +304,10 @@
     {
       "attack_id": 28,
       "name": "novel_adversarial_pattern",
-      "blocked": false,
-      "succeeded": true,
+      "blocked": true,
+      "succeeded": false,
       "category": "semantic_failures",
-      "evidence": "{'passed': True, 'details': ['upstream schema validation passed'], 'failure_classification': 'none', 'stop_condition_triggered': False}"
+      "evidence": "{'passed': False, 'details': ['upstream schema validation passed', 'semantic_intent_insufficient: execution intent missing governed verification/evidence anchors'], 'failure_classification': 'invalid_input', 'stop_condition_triggered': True}"
     },
     {
       "attack_id": 29,

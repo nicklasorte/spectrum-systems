@@ -1,0 +1,38 @@
+{
+  "artifact_type": "roadmap_compiler_provenance",
+  "timestamp": "2026-04-12T000000Z",
+  "mode": "report_only",
+  "deterministic_ordering": true,
+  "input_hashes": [
+    {
+      "path": "SYSTEMS.md",
+      "sha256": "ab00830c63e6dfe5bd9e00392336ea9f037143db1a1075d65960d0a886f7fda9"
+    },
+    {
+      "path": "contracts/standards-manifest.json",
+      "sha256": "4f71d14bbcc94327378e845fd1f236f51e9b9033463a233f1b8a791e0cfbaee5"
+    },
+    {
+      "path": "docs/source_indexes/component_source_map.json",
+      "sha256": "01efab8cdbe1ec52544e651baedb5282ba40e59a96b5a11be131b93bd2afa76a"
+    },
+    {
+      "path": "docs/source_indexes/obligation_index.json",
+      "sha256": "6d418fab30d57780e66684a3a6ad997eff2d2cdf0d40b70871f209a93f436c3e"
+    },
+    {
+      "path": "docs/source_indexes/source_inventory.json",
+      "sha256": "32013f32e1623e9d089c86b675c9d059107b20cabe3e7783c96ea54c1d4145a2"
+    },
+    {
+      "path": "docs/system-map.md",
+      "sha256": "4d85896a187808cff51146a10b6ecb3493c7aab652610b54e0ee253668cca200"
+    }
+  ],
+  "validation": {
+    "authority_precheck_valid": true,
+    "required_fields_present": true,
+    "step_count_exactly_24": true
+  },
+  "notes": "No execution logic added; report-only slice."
+}
