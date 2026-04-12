@@ -543,3 +543,16 @@ flowchart LR
     THR --> TPA[TPA]
     TPA --> PQX[PQX]
 ```
+
+
+## RAX governed boundary note
+- RAX is a bounded runtime interface surface that can emit candidate artifacts only:
+  - `rax_failure_pattern_record`
+  - `rax_failure_eval_candidate`
+  - `rax_feedback_loop_record`
+  - `rax_health_snapshot`
+  - `rax_drift_signal_record`
+  - `rax_unknown_state_record`
+  - `rax_pre_certification_alignment_record`
+  - `rax_control_readiness_record`
+- RAX must remain non-authoritative; downstream control and certification ownership remains unchanged (SEL/CDE/PQX/TLC by existing registry boundaries).

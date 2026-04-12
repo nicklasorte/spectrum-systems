@@ -148,3 +148,24 @@ def test_roadmap_step_contract_schema_is_strict_no_additional_properties() -> No
     instance["non_canonical"] = "unexpected"
     with pytest.raises(ValidationError):
         validator.validate(instance)
+
+
+def test_rax_feedback_loop_contract_examples_validate() -> None:
+    for name in (
+        "rax_failure_pattern_record",
+        "rax_failure_eval_candidate",
+        "rax_feedback_loop_record",
+        "rax_health_snapshot",
+        "rax_drift_signal_record",
+        "rax_unknown_state_record",
+        "rax_pre_certification_alignment_record",
+        "rax_adversarial_pattern_candidate",
+    ):
+        validate_artifact(load_example(name), name)
+
+
+def test_rax_control_readiness_requires_structured_change_conditions() -> None:
+    instance = load_example("rax_control_readiness_record")
+    instance.pop("conditions_under_which_ready_changes", None)
+    with pytest.raises(ValidationError):
+        validate_artifact(instance, "rax_control_readiness_record")

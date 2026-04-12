@@ -110,6 +110,18 @@ The runtime enforces hard constraints:
 3. **No duplicate responsibilities**: each responsibility has one canonical owner.
 4. **Bounded execution only**: work is scoped, routed, and controlled.
 
+## Prompt Contract Constraint
+
+Governed prompts must declare exactly one primary prompt type:
+
+- `PLAN`
+- `BUILD`
+- `WIRE`
+- `VALIDATE`
+- `REVIEW`
+
+Prompts that omit this declaration or declare multiple primary types are non-compliant and must be corrected before promotion.
+
 ## What This Enables
 
 Spectrum Systems enables:
