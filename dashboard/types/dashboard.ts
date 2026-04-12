@@ -36,6 +36,16 @@ export type SnapshotMeta = {
   data_source_state?: string
 }
 
+export type DashboardFreshnessStatus = {
+  artifact_type?: 'dashboard_freshness_status'
+  freshness_window_hours?: number
+  status?: 'fresh' | 'stale' | 'unknown'
+  publication_state?: string
+  snapshot_last_refreshed_time?: string
+  snapshot_age_hours?: number
+  evidence_basis?: string[]
+}
+
 export type DriftRecord = {
   drift_classification?: string
   trend?: string
@@ -121,6 +131,7 @@ export type DashboardPublication = {
   manifest: ArtifactRecord<DashboardManifest>
   snapshot: ArtifactRecord<Snapshot>
   snapshotMeta: ArtifactRecord<SnapshotMeta>
+  freshnessStatus: ArtifactRecord<DashboardFreshnessStatus>
   drift: ArtifactRecord<DriftRecord>
   runState: ArtifactRecord<RunState>
   hardGate: ArtifactRecord<HardGateState>

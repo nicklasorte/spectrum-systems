@@ -158,7 +158,10 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
         synthesizedFallback: true
       }
 
-  const freshnessHours = snapshot ? Math.max(0, Math.floor((Date.now() - Date.parse(publication.snapshotMeta.data?.last_refreshed_time ?? '')) / (1000 * 60 * 60))) : 0
+  const freshnessRefTimestamp = publication.freshnessStatus.data?.snapshot_last_refreshed_time ?? publication.snapshotMeta.data?.last_refreshed_time
+  const freshnessHours = snapshot && freshnessRefTimestamp
+    ? Math.max(0, Math.floor((Date.now() - Date.parse(freshnessRefTimestamp)) / (1000 * 60 * 60)))
+    : 0
 
   const topology = [
     { node: 'RIL', artifact: publication.snapshot },
@@ -198,7 +201,7 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
     repoName: snapshot?.repo_name ?? 'Not available yet',
     freshness: {
       status: state.kind === 'stale' ? 'Stale' : state.kind === 'renderable' ? 'Fresh' : 'Unknown',
-      lastRefresh: publication.snapshotMeta.data?.last_refreshed_time ?? 'Not available yet',
+      lastRefresh: freshnessRefTimestamp ?? 'Not available yet',
       note: `Snapshot age is ${freshnessHours}h.`
     },
     integrity: {
@@ -252,6 +255,8 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
         ? ['repo_name', 'root_counts', 'runtime_hotspots']
         : item.name === 'repo_snapshot_meta.json'
           ? ['data_source_state', 'last_refreshed_time']
+          : item.name === 'dashboard_freshness_status.json'
+            ? ['status', 'freshness_window_hours', 'snapshot_last_refreshed_time', 'publication_state']
           : item.name === 'hard_gate_status_record.json'
             ? ['gate_name', 'readiness_status']
             : item.name === 'current_run_state_record.json'
@@ -265,6 +270,7 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
                     : ['unknown'],
       provenanceConfidence: item.name === 'repo_snapshot.json' ||
         item.name === 'repo_snapshot_meta.json' ||
+        item.name === 'dashboard_freshness_status.json' ||
         item.name === 'hard_gate_status_record.json' ||
         item.name === 'current_run_state_record.json' ||
         item.name === 'next_action_recommendation_record.json' ||

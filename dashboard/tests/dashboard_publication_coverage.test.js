@@ -44,3 +44,20 @@ test('render gate retains fail-closed incomplete_manifest_coverage behavior', ()
   assert.ok(guardSrc.includes("truthViolationReasons: ['incomplete_manifest_coverage']"))
   assert.ok(guardSrc.includes('const incompleteArtifacts = [...new Set([...missingDeclared, ...invalidLoaded])]'))
 })
+
+test('loader and guard wire freshness source-of-truth through dashboard_freshness_status', () => {
+  const loaderSrc = read('lib/loaders/dashboard_publication_loader.ts')
+  const guardSrc = read('lib/guards/render_state_guards.ts')
+  assert.ok(loaderSrc.includes("dashboard_freshness_status.json"))
+  assert.ok(guardSrc.includes('snapshot_last_refreshed_time'))
+  assert.ok(guardSrc.includes('freshness_window_hours'))
+  assert.ok(guardSrc.includes('freshnessTimestampMs !== metaTimestampMs'))
+})
+
+test('freshness parsing is explicit UTC and fail-closed on malformed timestamps', () => {
+  const guardSrc = read('lib/guards/render_state_guards.ts')
+  assert.ok(guardSrc.includes('function parseIsoUtcTimestamp'))
+  assert.ok(guardSrc.includes('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$'))
+  assert.ok(guardSrc.includes('freshnessTimestampMs === null'))
+  assert.ok(guardSrc.includes('metaTimestampMs === null'))
+})
