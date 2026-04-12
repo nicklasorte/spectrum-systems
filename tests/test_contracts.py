@@ -249,6 +249,18 @@ class ContractSchemaTests(unittest.TestCase):
             instance = load_example(name)
             validate_artifact(instance, name)
 
+    def test_tlc_hardening_contract_examples_validate(self) -> None:
+        for name in (
+            "tlc_routing_bundle",
+            "tlc_routing_eval_result",
+            "tlc_routing_conflict_record",
+            "tlc_orchestration_readiness_record",
+            "tlc_orchestration_effectiveness_record",
+            "tlc_handoff_debt_record",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
 
     def test_system_roadmap_batches_have_required_governed_fields(self) -> None:
         instance = load_example("system_roadmap")

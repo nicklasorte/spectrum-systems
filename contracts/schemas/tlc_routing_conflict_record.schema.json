@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tlc_routing_conflict_record.schema.json",
+  "title": "TLC Routing Conflict Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "conflict_id",
+    "route_id",
+    "trace_id",
+    "conflict_type",
+    "severity",
+    "detected_at",
+    "details"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "tlc_routing_conflict_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "conflict_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "route_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "conflict_type": {
+      "enum": [
+        "boundary_violation",
+        "missing_lineage",
+        "owner_leakage",
+        "authority_leakage",
+        "replay_mismatch",
+        "dead_loop"
+      ]
+    },
+    "severity": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "detected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "details": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tlc_orchestration_effectiveness_record.schema.json",
+  "title": "TLC Orchestration Effectiveness Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "effectiveness_id",
+    "window_id",
+    "created_at",
+    "runs_evaluated",
+    "progression_rate",
+    "dead_loop_rate",
+    "bypass_rate",
+    "value_status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "tlc_orchestration_effectiveness_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "effectiveness_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "window_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "runs_evaluated": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "progression_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "dead_loop_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "bypass_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "value_status": {
+      "enum": [
+        "improving",
+        "flat",
+        "degraded"
+      ]
+    }
+  }
+}

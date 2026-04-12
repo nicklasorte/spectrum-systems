@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tlc_routing_eval_result.schema.json",
+  "title": "TLC Routing Eval Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "eval_id",
+    "bundle_ref",
+    "evaluated_at",
+    "evaluation_status",
+    "checks",
+    "fail_reasons",
+    "trace_id"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "tlc_routing_eval_result"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "eval_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "bundle_ref": {
+      "type": "string",
+      "pattern": "^tlc_routing_bundle:.+"
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evaluation_status": {
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "fail_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

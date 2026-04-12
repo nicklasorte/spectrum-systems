@@ -1,0 +1,16 @@
+{
+  "artifact_type": "tlc_orchestration_readiness_record",
+  "schema_version": "1.0.0",
+  "readiness_id": "tor-001",
+  "run_id": "tlc-run-001",
+  "trace_id": "trace-tlc-run-001",
+  "readiness_status": "candidate_only",
+  "fail_reasons": [],
+  "non_authority_assertions": [
+    "does_not_replace_cde_closure_authority",
+    "does_not_replace_tpa_policy_authority",
+    "does_not_replace_pqx_execution_authority",
+    "candidate_only_non_authoritative"
+  ],
+  "created_at": "2026-04-12T00:00:00Z"
+}

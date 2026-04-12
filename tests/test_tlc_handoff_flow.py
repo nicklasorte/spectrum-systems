@@ -87,6 +87,9 @@ def test_valid_repo_write_path_uses_tlc_handoff_record(tmp_path: Path) -> None:
     assert handoff["lineage"]["upstream_refs"][1] == "normalized_execution_request:req-flow-1"
     assert handoff["lineage"]["intended_path"] == ["TLC", "TPA", "PQX"]
     assert "trace-tlc-handoff-flow" in result["trace_refs"]
+    assert result["lineage"]["tlc_routing_bundle"]["artifact_type"] == "tlc_routing_bundle"
+    assert result["lineage"]["tlc_routing_eval_result"]["evaluation_status"] == "pass"
+    assert result["lineage"]["tlc_orchestration_readiness_record"]["readiness_status"] == "candidate_only"
 
 
 def test_repo_write_path_fails_closed_when_handoff_missing(tmp_path: Path) -> None:

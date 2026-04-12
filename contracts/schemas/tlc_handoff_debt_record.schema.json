@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tlc_handoff_debt_record.schema.json",
+  "title": "TLC Handoff Debt Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "debt_id",
+    "trace_id",
+    "created_at",
+    "unresolved_count",
+    "operator_handoff_count",
+    "debt_status",
+    "reason_codes"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "tlc_handoff_debt_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "debt_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "unresolved_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "operator_handoff_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "debt_status": {
+      "enum": [
+        "normal",
+        "elevated",
+        "critical"
+      ]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}
