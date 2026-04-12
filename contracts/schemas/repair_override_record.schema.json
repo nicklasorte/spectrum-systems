@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/repair_override_record.schema.json",
+  "title": "Repair Override Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "override_id", "review_ref", "override_by", "expires_at", "justification", "non_authority_assertions"],
+  "properties": {
+    "artifact_type": {"const": "repair_override_record"},
+    "schema_version": {"const": "1.0.0"},
+    "override_id": {"type": "string", "pattern": "^fre-ovr-[a-f0-9]{16}$"},
+    "review_ref": {"type": "string", "pattern": "^repair_review_record:.+"},
+    "override_by": {"type": "string", "minLength": 1},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "justification": {"type": "string", "minLength": 1},
+    "non_authority_assertions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+  }
+}

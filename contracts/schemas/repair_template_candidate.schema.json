@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/repair_template_candidate.schema.json",
+  "title": "Repair Template Candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "template_id", "cluster_key", "version", "dedupe_key", "successful_repair_refs", "admission_state", "non_authority_assertions"],
+  "properties": {
+    "artifact_type": {"const": "repair_template_candidate"},
+    "schema_version": {"const": "1.0.0"},
+    "template_id": {"type": "string", "pattern": "^fre-tmpl-[a-f0-9]{16}$"},
+    "cluster_key": {"type": "string", "minLength": 1},
+    "version": {"type": "integer", "minimum": 1},
+    "dedupe_key": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "successful_repair_refs": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"type": "string", "pattern": "^repair_candidate:.+"}},
+    "admission_state": {"type": "string", "enum": ["candidate_admitted", "candidate_rejected"]},
+    "non_authority_assertions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+  }
+}

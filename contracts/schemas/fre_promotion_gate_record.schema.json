@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/fre_promotion_gate_record.schema.json",
+  "title": "FRE Promotion Gate Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "gate_record_id", "repair_bundle_ref", "budget_signal_ref", "policy_gate_ref", "judgment_slice_ref", "promotion_ready", "blocking_reasons"],
+  "properties": {
+    "artifact_type": {"const": "fre_promotion_gate_record"},
+    "schema_version": {"const": "1.0.0"},
+    "gate_record_id": {"type": "string", "pattern": "^fre-prom-[a-f0-9]{16}$"},
+    "repair_bundle_ref": {"type": "string", "pattern": "^repair_bundle:.+"},
+    "budget_signal_ref": {"type": "string", "pattern": "^repair_budget_signal:.+"},
+    "policy_gate_ref": {"type": "string", "pattern": "^repair_scope_policy_gate:.+"},
+    "judgment_slice_ref": {"type": "string", "pattern": "^repair_judgment_slice:.+"},
+    "promotion_ready": {"type": "boolean"},
+    "blocking_reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+  }
+}

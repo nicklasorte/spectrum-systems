@@ -210,6 +210,32 @@
       "notes": "BATCH-12 ST-18 artifact-family health signal for trust observability and readiness gating."
     },
     {
+      "artifact_type": "artifact_intelligence_index",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/artifact_intelligence_index.json",
+      "notes": "RIL-owned deterministic index over governed artifact telemetry for non-authoritative retrieval and analysis."
+    },
+    {
+      "artifact_type": "artifact_intelligence_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/artifact_intelligence_report.json",
+      "notes": "RIL-owned non-authoritative artifact intelligence report."
+    },
+    {
       "artifact_type": "artifact_lifecycle_status_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -285,6 +311,19 @@
       "last_updated_in": "1.3.54",
       "example_path": "contracts/examples/autonomy_decision_record.json",
       "notes": "BATCH-A1 deterministic replayable autonomy guardrail decision artifact emitted per cycle with explicit reason codes and supporting signals."
+    },
+    {
+      "artifact_type": "autonomy_expansion_gate_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/autonomy_expansion_gate_result.json",
+      "notes": "NX preparatory autonomy expansion gate result artifact."
     },
     {
       "artifact_type": "autonomy_policy",
@@ -964,6 +1003,19 @@
       "last_updated_in": "1.3.15",
       "example_path": "contracts/examples/cycle_status_artifact.json",
       "notes": "CTRL-LOOP-01 grouped observability extension: deterministic per-cycle status projection with normalized blocked reasons and artifact references."
+    },
+    {
+      "artifact_type": "decision_explainability_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/decision_explainability_artifact.json",
+      "notes": "RIL explainability linkage artifact for governed traceability."
     },
     {
       "artifact_type": "decision_log",
@@ -1709,6 +1761,32 @@
       "notes": "AUTONOMOUS-LOOP-01 machine-readable grouped remediation roadmap generated from review findings."
     },
     {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "artifact_type": "fre_promotion_gate_record",
+      "example_path": "contracts/examples/fre_promotion_gate_record.json",
+      "notes": "Fail-closed FRE promotion hard gate evidence record."
+    },
+    {
+      "artifact_type": "fused_signal_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/fused_signal_record.json",
+      "notes": "RIL preparatory fused signal artifact for downstream CDE/TPA consumption."
+    },
+    {
       "artifact_type": "github_review_handoff_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2223,6 +2301,19 @@
       "notes": "HS-20: deterministic grounding_control_decision artifact attached from HS-19 grounding_factcheck_eval for runtime enforcement wiring."
     },
     {
+      "artifact_type": "multi_run_aggregate",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/multi_run_aggregate.json",
+      "notes": "RIL multi-run deterministic aggregate artifact."
+    },
+    {
       "artifact_type": "mvp_20_slice_execution_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2355,6 +2446,32 @@
       "notes": "AEX normalized execution request authenticity now carries issuer-scoped key binding plus freshness/audience/scope/token fields required for fail-closed PQX repo-write lineage verification."
     },
     {
+      "artifact_type": "nx_review_intelligence_link_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/nx_review_intelligence_link_artifact.json",
+      "notes": "RQX-completed review-cycle integration feed into NX intelligence."
+    },
+    {
+      "artifact_type": "nx_roadmap_candidate_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/nx_roadmap_candidate_artifact.json",
+      "notes": "PRG-owned recommendation-only roadmap candidate persistence artifact from NX feedback."
+    },
+    {
       "artifact_type": "observability_metrics",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2444,6 +2561,19 @@
       "last_updated_in": "1.3.61",
       "example_path": "contracts/examples/override_hotspot_report.json",
       "notes": "BATCH-12 ST-18 deterministic override concentration hotspots for governance attention."
+    },
+    {
+      "artifact_type": "pattern_mining_recommendation",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/pattern_mining_recommendation.json",
+      "notes": "RIL recommendation-only recurring pattern mining output."
     },
     {
       "artifact_type": "pdf_anchored_docx_comment_injection_contract",
@@ -2564,6 +2694,19 @@
       "last_updated_in": "1.0.85",
       "example_path": "contracts/examples/policy_enforcement_integrity_result.json",
       "notes": "VAL-10 governed validation artifact proving policy enforcement integrity, bypass detection, and fail-closed handling across policy-driven seams."
+    },
+    {
+      "artifact_type": "policy_evolution_candidate_set",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/policy_evolution_candidate_set.json",
+      "notes": "NX recommendation candidate set for TPA policy evolution intake."
     },
     {
       "artifact_type": "pqx_block_record",
@@ -3495,6 +3638,32 @@
       "notes": "RAX deterministic adversarial pattern candidate artifact for governed eval/regression consumption."
     },
     {
+      "artifact_type": "rax_adversarial_pattern_candidate",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_adversarial_pattern_candidate.json",
+      "notes": "RAX deterministic adversarial pattern candidate artifact for governed eval/regression consumption."
+    },
+    {
+      "artifact_type": "rax_assurance_audit_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.112",
+      "last_updated_in": "1.3.112",
+      "example_path": "contracts/examples/rax_assurance_audit_record.example.json",
+      "notes": "RAX-INTERFACE-24-01 fail-closed assurance audit artifact for local accept/hold/block candidate decisions."
+    },
+    {
       "artifact_type": "rax_assurance_audit_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -3532,6 +3701,32 @@
       "last_updated_in": "1.3.113",
       "example_path": "contracts/examples/rax_control_readiness_record.json",
       "notes": "RAX-FEEDBACK-LOOP-10 bounded readiness artifact with structured readiness-change conditions, unknown-state linkage, and pre-certification alignment references."
+    },
+    {
+      "artifact_type": "rax_control_readiness_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_control_readiness_record.json",
+      "notes": "RAX-FEEDBACK-LOOP-10 bounded readiness artifact with structured readiness-change conditions, unknown-state linkage, and pre-certification alignment references."
+    },
+    {
+      "artifact_type": "rax_drift_signal_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_drift_signal_record.json",
+      "notes": "RAX drift signal artifact comparing current and baseline windows across governed drift surfaces."
     },
     {
       "artifact_type": "rax_drift_signal_record",
@@ -3573,6 +3768,19 @@
       "notes": "RAX-EVAL-01 governed deterministic eval case set across baseline, adversarial, and failure classes."
     },
     {
+      "artifact_type": "rax_eval_case_set",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/rax_eval_case_set.json",
+      "notes": "RAX-EVAL-01 governed deterministic eval case set across baseline, adversarial, and failure classes."
+    },
+    {
       "artifact_type": "rax_eval_registry",
       "artifact_class": "governance",
       "schema_version": "1.1.0",
@@ -3584,6 +3792,32 @@
       "last_updated_in": "1.3.113",
       "example_path": "contracts/examples/rax_eval_registry.json",
       "notes": "RAX-EVAL-01 governed registry of required deterministic RAX eval definitions."
+    },
+    {
+      "artifact_type": "rax_eval_registry",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/rax_eval_registry.json",
+      "notes": "RAX-EVAL-01 governed registry of required deterministic RAX eval definitions."
+    },
+    {
+      "artifact_type": "rax_failure_eval_candidate",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_failure_eval_candidate.json",
+      "notes": "RAX failure-derived eval candidate artifact generated deterministically from governed failure classes."
     },
     {
       "artifact_type": "rax_failure_eval_candidate",
@@ -3612,6 +3846,19 @@
       "notes": "RAX feedback-loop failure capture artifact linking classified failures to reproducibility and trace references."
     },
     {
+      "artifact_type": "rax_failure_pattern_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_failure_pattern_record.json",
+      "notes": "RAX feedback-loop failure capture artifact linking classified failures to reproducibility and trace references."
+    },
+    {
       "artifact_type": "rax_feedback_loop_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -3623,6 +3870,32 @@
       "last_updated_in": "1.3.114",
       "example_path": "contracts/examples/rax_feedback_loop_record.json",
       "notes": "RAX closure artifact linking failure, fix, eval coverage additions, and recurrence outcomes."
+    },
+    {
+      "artifact_type": "rax_feedback_loop_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_feedback_loop_record.json",
+      "notes": "RAX closure artifact linking failure, fix, eval coverage additions, and recurrence outcomes."
+    },
+    {
+      "artifact_type": "rax_health_snapshot",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_health_snapshot.json",
+      "notes": "RAX health metrics snapshot with SLO-style threshold posture as candidate signal only."
     },
     {
       "artifact_type": "rax_health_snapshot",
@@ -3662,6 +3935,32 @@
       "last_updated_in": "1.3.113",
       "example_path": "contracts/examples/rax_judgment_record.json",
       "notes": "Non-authoritative judgment compilation for semantic conflict outcomes."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "artifact_type": "rax_operational_gate_record",
+      "example_path": "contracts/examples/rax_operational_gate_record.json",
+      "notes": "Operational RAX hard gate record used by promotion gating path."
+    },
+    {
+      "artifact_type": "rax_pre_certification_alignment_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_pre_certification_alignment_record.json",
+      "notes": "RAX pre-certification alignment artifact for downstream promotion rigor checks without granting certification authority."
     },
     {
       "artifact_type": "rax_pre_certification_alignment_record",
@@ -3727,6 +4026,32 @@
       "last_updated_in": "1.3.114",
       "example_path": "contracts/examples/rax_unknown_state_record.json",
       "notes": "RAX explicit unknown-state artifact enforcing fail-closed non-readiness when basis is incomplete or contradictory."
+    },
+    {
+      "artifact_type": "rax_unknown_state_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/rax_unknown_state_record.json",
+      "notes": "RAX explicit unknown-state artifact enforcing fail-closed non-readiness when basis is incomplete or contradictory."
+    },
+    {
+      "artifact_type": "rax_upstream_input_envelope",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.112",
+      "last_updated_in": "1.3.112",
+      "example_path": "contracts/examples/rax_upstream_input_envelope.example.json",
+      "notes": "RAX-INTERFACE-24-01 strict compact upstream roadmap envelope consumed by RAX for deterministic contract expansion."
     },
     {
       "artifact_type": "rax_upstream_input_envelope",
@@ -3807,6 +4132,110 @@
       "notes": "BATCH-GHA-08 TLC/PQX bounded repair attempt record for each governed retry iteration."
     },
     {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "artifact_type": "repair_budget_signal",
+      "example_path": "contracts/examples/repair_budget_signal.json",
+      "notes": "Deterministic FRE operational metrics signal for repair success/recurrence/override/latency/cost."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.114",
+      "artifact_type": "repair_bundle",
+      "example_path": "contracts/examples/repair_bundle.json",
+      "notes": "FRE bundle linking candidate, eval, recurrence, effectiveness, and readiness candidate refs."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.114",
+      "artifact_type": "repair_candidate",
+      "example_path": "contracts/examples/repair_candidate.json",
+      "notes": "FRE bounded non-authoritative repair candidate artifact."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.114",
+      "artifact_type": "repair_effectiveness_record",
+      "example_path": "contracts/examples/repair_effectiveness_record.json",
+      "notes": "FRE observational effectiveness record for candidate outcomes."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.114",
+      "artifact_type": "repair_eval_result",
+      "example_path": "contracts/examples/repair_eval_result.json",
+      "notes": "FRE evaluation result for bounded repair candidate viability."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "artifact_type": "repair_judgment_slice",
+      "example_path": "contracts/examples/repair_judgment_slice.json",
+      "notes": "Non-authoritative bounded judgment slice choosing among repair candidates."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "artifact_type": "repair_override_record",
+      "example_path": "contracts/examples/repair_override_record.json",
+      "notes": "Governed replayable override artifact with expiry for FRE repair review."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "artifact_type": "repair_policy_candidate",
+      "example_path": "contracts/examples/repair_policy_candidate.json",
+      "notes": "Candidate-only compiled repair policy primitives from admitted templates."
+    },
+    {
       "artifact_type": "repair_prompt_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -3818,6 +4247,71 @@
       "last_updated_in": "1.3.77",
       "example_path": "contracts/examples/repair_prompt_artifact.json",
       "notes": "BATCH-FRE-02 deterministic diagnosis\u2192repair bridge artifact defining bounded Codex-ready repair instructions, validation commands, constraints, and success criteria."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.114",
+      "artifact_type": "repair_readiness_candidate",
+      "example_path": "contracts/examples/repair_readiness_candidate.json",
+      "notes": "FRE candidate-only readiness artifact explicitly non-authoritative."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.114",
+      "artifact_type": "repair_recurrence_record",
+      "example_path": "contracts/examples/repair_recurrence_record.json",
+      "notes": "FRE recurrence tracking record linked to repair candidate lineage."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "artifact_type": "repair_review_record",
+      "example_path": "contracts/examples/repair_review_record.json",
+      "notes": "Governed replayable human review artifact for risky repair candidates."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "artifact_type": "repair_scope_policy_gate",
+      "example_path": "contracts/examples/repair_scope_policy_gate.json",
+      "notes": "FRE policy gate result for allowed/blocked/review-required repair classes."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "artifact_type": "repair_template_candidate",
+      "example_path": "contracts/examples/repair_template_candidate.json",
+      "notes": "FRE template admission candidate artifact from repeated effective repairs."
     },
     {
       "artifact_type": "replay_execution_record",
@@ -4705,6 +5199,19 @@
       "schema_ref": "contracts/schemas/system_roadmap.schema.json"
     },
     {
+      "artifact_type": "system_trust_score_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/system_trust_score_artifact.json",
+      "notes": "NX recommendation-only trust posture score artifact."
+    },
+    {
       "artifact_type": "tactic_register",
       "artifact_class": "work",
       "schema_version": "1.0.0",
@@ -4977,409 +5484,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "rax_upstream_input_envelope",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.112",
-      "last_updated_in": "1.3.112",
-      "example_path": "contracts/examples/rax_upstream_input_envelope.example.json",
-      "notes": "RAX-INTERFACE-24-01 strict compact upstream roadmap envelope consumed by RAX for deterministic contract expansion."
-    },
-    {
-      "artifact_type": "rax_assurance_audit_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.112",
-      "last_updated_in": "1.3.112",
-      "example_path": "contracts/examples/rax_assurance_audit_record.example.json",
-      "notes": "RAX-INTERFACE-24-01 fail-closed assurance audit artifact for local accept/hold/block candidate decisions."
-    },
-    {
-      "artifact_type": "rax_eval_registry",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/rax_eval_registry.json",
-      "notes": "RAX-EVAL-01 governed registry of required deterministic RAX eval definitions."
-    },
-    {
-      "artifact_type": "rax_eval_case_set",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/rax_eval_case_set.json",
-      "notes": "RAX-EVAL-01 governed deterministic eval case set across baseline, adversarial, and failure classes."
-    },
-    {
-      "artifact_type": "rax_control_readiness_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_control_readiness_record.json",
-      "notes": "RAX-FEEDBACK-LOOP-10 bounded readiness artifact with structured readiness-change conditions, unknown-state linkage, and pre-certification alignment references."
-    },
-    {
-      "artifact_type": "rax_failure_pattern_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_failure_pattern_record.json",
-      "notes": "RAX feedback-loop failure capture artifact linking classified failures to reproducibility and trace references."
-    },
-    {
-      "artifact_type": "rax_failure_eval_candidate",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_failure_eval_candidate.json",
-      "notes": "RAX failure-derived eval candidate artifact generated deterministically from governed failure classes."
-    },
-    {
-      "artifact_type": "rax_feedback_loop_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_feedback_loop_record.json",
-      "notes": "RAX closure artifact linking failure, fix, eval coverage additions, and recurrence outcomes."
-    },
-    {
-      "artifact_type": "rax_health_snapshot",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_health_snapshot.json",
-      "notes": "RAX health metrics snapshot with SLO-style threshold posture as candidate signal only."
-    },
-    {
-      "artifact_type": "rax_drift_signal_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_drift_signal_record.json",
-      "notes": "RAX drift signal artifact comparing current and baseline windows across governed drift surfaces."
-    },
-    {
-      "artifact_type": "rax_unknown_state_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_unknown_state_record.json",
-      "notes": "RAX explicit unknown-state artifact enforcing fail-closed non-readiness when basis is incomplete or contradictory."
-    },
-    {
-      "artifact_type": "rax_pre_certification_alignment_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_pre_certification_alignment_record.json",
-      "notes": "RAX pre-certification alignment artifact for downstream promotion rigor checks without granting certification authority."
-    },
-    {
-      "artifact_type": "rax_adversarial_pattern_candidate",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_adversarial_pattern_candidate.json",
-      "notes": "RAX deterministic adversarial pattern candidate artifact for governed eval/regression consumption."
-    },
-    {
-      "artifact_type": "artifact_intelligence_index",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/artifact_intelligence_index.json",
-      "notes": "RIL-owned deterministic index over governed artifact telemetry for non-authoritative retrieval and analysis."
-    },
-    {
-      "artifact_type": "artifact_intelligence_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/artifact_intelligence_report.json",
-      "notes": "RIL-owned non-authoritative artifact intelligence report."
-    },
-    {
-      "artifact_type": "fused_signal_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/fused_signal_record.json",
-      "notes": "RIL preparatory fused signal artifact for downstream CDE/TPA consumption."
-    },
-    {
-      "artifact_type": "multi_run_aggregate",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/multi_run_aggregate.json",
-      "notes": "RIL multi-run deterministic aggregate artifact."
-    },
-    {
-      "artifact_type": "pattern_mining_recommendation",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/pattern_mining_recommendation.json",
-      "notes": "RIL recommendation-only recurring pattern mining output."
-    },
-    {
-      "artifact_type": "decision_explainability_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/decision_explainability_artifact.json",
-      "notes": "RIL explainability linkage artifact for governed traceability."
-    },
-    {
-      "artifact_type": "system_trust_score_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/system_trust_score_artifact.json",
-      "notes": "NX recommendation-only trust posture score artifact."
-    },
-    {
-      "artifact_type": "policy_evolution_candidate_set",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/policy_evolution_candidate_set.json",
-      "notes": "NX recommendation candidate set for TPA policy evolution intake."
-    },
-    {
-      "artifact_type": "autonomy_expansion_gate_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/autonomy_expansion_gate_result.json",
-      "notes": "NX preparatory autonomy expansion gate result artifact."
-    },
-    {
-      "artifact_type": "nx_review_intelligence_link_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/nx_review_intelligence_link_artifact.json",
-      "notes": "RQX-completed review-cycle integration feed into NX intelligence."
-    },
-    {
-      "artifact_type": "nx_roadmap_candidate_artifact",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/nx_roadmap_candidate_artifact.json",
-      "notes": "PRG-owned recommendation-only roadmap candidate persistence artifact from NX feedback."
-    },
-    {
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "artifact_type": "rax_operational_gate_record",
-      "example_path": "contracts/examples/rax_operational_gate_record.json",
-      "notes": "Operational RAX hard gate record used by promotion gating path."
-    },
-    {
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "artifact_type": "repair_candidate",
-      "example_path": "contracts/examples/repair_candidate.json",
-      "notes": "FRE bounded non-authoritative repair candidate artifact."
-    },
-    {
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "artifact_type": "repair_eval_result",
-      "example_path": "contracts/examples/repair_eval_result.json",
-      "notes": "FRE evaluation result for bounded repair candidate viability."
-    },
-    {
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "artifact_type": "repair_effectiveness_record",
-      "example_path": "contracts/examples/repair_effectiveness_record.json",
-      "notes": "FRE observational effectiveness record for candidate outcomes."
-    },
-    {
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "artifact_type": "repair_recurrence_record",
-      "example_path": "contracts/examples/repair_recurrence_record.json",
-      "notes": "FRE recurrence tracking record linked to repair candidate lineage."
-    },
-    {
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "artifact_type": "repair_bundle",
-      "example_path": "contracts/examples/repair_bundle.json",
-      "notes": "FRE bundle linking candidate, eval, recurrence, effectiveness, and readiness candidate refs."
-    },
-    {
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "artifact_type": "repair_readiness_candidate",
-      "example_path": "contracts/examples/repair_readiness_candidate.json",
-      "notes": "FRE candidate-only readiness artifact explicitly non-authoritative."
     }
   ]
 }

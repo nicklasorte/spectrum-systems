@@ -4,14 +4,17 @@
   "title": "Repair Effectiveness Record",
   "type": "object",
   "additionalProperties": false,
-  "required": ["artifact_type", "schema_version", "record_id", "trace_id", "repair_candidate_ref", "repair_eval_result_ref", "effectiveness_state", "non_authority_assertions"],
+  "required": ["artifact_type", "schema_version", "record_id", "trace_id", "replay_id", "failure_packet_ref", "repair_candidate_ref", "repair_eval_result_ref", "observed_outcome", "effectiveness_state", "non_authority_assertions"],
   "properties": {
     "artifact_type": {"const": "repair_effectiveness_record"},
-    "schema_version": {"const": "1.0.0"},
-    "record_id": {"type": "string", "minLength": 1},
+    "schema_version": {"const": "1.1.0"},
+    "record_id": {"type": "string", "pattern": "^fre-eff-[a-f0-9]{16}$"},
     "trace_id": {"type": "string", "minLength": 1},
+    "replay_id": {"type": "string", "pattern": "^replay-.+"},
+    "failure_packet_ref": {"type": "string", "pattern": "^execution_failure_packet:.+"},
     "repair_candidate_ref": {"type": "string", "pattern": "^repair_candidate:.+"},
     "repair_eval_result_ref": {"type": "string", "pattern": "^repair_eval_result:.+"},
+    "observed_outcome": {"type": "string", "enum": ["resolved", "unresolved", "regressed"]},
     "effectiveness_state": {"type": "string", "enum": ["candidate_effective", "candidate_not_effective"]},
     "non_authority_assertions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
   }

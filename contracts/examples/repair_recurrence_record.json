@@ -1,9 +1,12 @@
 {
   "artifact_type": "repair_recurrence_record",
-  "schema_version": "1.0.0",
-  "record_id": "fre-rec-01",
+  "schema_version": "1.1.0",
+  "record_id": "fre-rec-0123456789abcdef",
   "trace_id": "trace-fre-001",
-  "repair_candidate_ref": "repair_candidate:fre-rc-01",
+  "replay_id": "replay-efp-01",
+  "repair_candidate_ref": "repair_candidate:fre-rc-0123456789abcdef",
+  "cluster_key": "slice_contract_mismatch::review_control_signal",
   "recurrence_count": 0,
+  "hotspot": false,
   "recurrence_state": "not_recurring"
 }

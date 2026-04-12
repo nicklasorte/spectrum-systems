@@ -582,15 +582,23 @@ def test_standards_manifest_registers_rax_operational_gate_and_fre_repair_contra
     standards = load_standards_contracts()
     assert standards["rax_operational_gate_record"]["schema_version"] == "1.0.0"
     assert standards["rax_operational_gate_record"]["example_path"] == "contracts/examples/rax_operational_gate_record.json"
-    for artifact_type in (
-        "repair_candidate",
-        "repair_eval_result",
-        "repair_effectiveness_record",
-        "repair_recurrence_record",
-        "repair_bundle",
-        "repair_readiness_candidate",
+    for artifact_type, version in (
+        ("repair_candidate", "1.1.0"),
+        ("repair_eval_result", "1.1.0"),
+        ("repair_effectiveness_record", "1.1.0"),
+        ("repair_recurrence_record", "1.1.0"),
+        ("repair_bundle", "1.1.0"),
+        ("repair_readiness_candidate", "1.1.0"),
+        ("repair_template_candidate", "1.0.0"),
+        ("repair_scope_policy_gate", "1.0.0"),
+        ("repair_review_record", "1.0.0"),
+        ("repair_override_record", "1.0.0"),
+        ("repair_budget_signal", "1.0.0"),
+        ("repair_judgment_slice", "1.0.0"),
+        ("repair_policy_candidate", "1.0.0"),
+        ("fre_promotion_gate_record", "1.0.0"),
     ):
-        assert standards[artifact_type]["schema_version"] == "1.0.0"
+        assert standards[artifact_type]["schema_version"] == version
         assert standards[artifact_type]["example_path"] == f"contracts/examples/{artifact_type}.json"
 
 

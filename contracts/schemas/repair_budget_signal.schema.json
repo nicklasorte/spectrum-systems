@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/repair_budget_signal.schema.json",
+  "title": "Repair Budget Signal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "signal_id", "sample_size", "success_rate", "recurrence_rate", "override_rate", "repair_latency_ms", "repair_cost_units"],
+  "properties": {
+    "artifact_type": {"const": "repair_budget_signal"},
+    "schema_version": {"const": "1.0.0"},
+    "signal_id": {"type": "string", "pattern": "^fre-signal-[a-f0-9]{16}$"},
+    "sample_size": {"type": "integer", "minimum": 0},
+    "success_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "recurrence_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "override_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "repair_latency_ms": {"type": "integer", "minimum": 0},
+    "repair_cost_units": {"type": "integer", "minimum": 0}
+  }
+}

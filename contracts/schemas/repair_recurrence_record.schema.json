@@ -4,14 +4,17 @@
   "title": "Repair Recurrence Record",
   "type": "object",
   "additionalProperties": false,
-  "required": ["artifact_type", "schema_version", "record_id", "trace_id", "repair_candidate_ref", "recurrence_count", "recurrence_state"],
+  "required": ["artifact_type", "schema_version", "record_id", "trace_id", "replay_id", "repair_candidate_ref", "cluster_key", "recurrence_count", "hotspot", "recurrence_state"],
   "properties": {
     "artifact_type": {"const": "repair_recurrence_record"},
-    "schema_version": {"const": "1.0.0"},
-    "record_id": {"type": "string", "minLength": 1},
+    "schema_version": {"const": "1.1.0"},
+    "record_id": {"type": "string", "pattern": "^fre-rec-[a-f0-9]{16}$"},
     "trace_id": {"type": "string", "minLength": 1},
+    "replay_id": {"type": "string", "pattern": "^replay-.+"},
     "repair_candidate_ref": {"type": "string", "pattern": "^repair_candidate:.+"},
+    "cluster_key": {"type": "string", "minLength": 1},
     "recurrence_count": {"type": "integer", "minimum": 0},
+    "hotspot": {"type": "boolean"},
     "recurrence_state": {"type": "string", "enum": ["recurring", "not_recurring"]}
   }
 }
