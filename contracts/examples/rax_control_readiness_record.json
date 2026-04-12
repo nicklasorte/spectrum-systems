@@ -5,7 +5,10 @@
   "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
   "ready_for_control": false,
   "decision": "block",
-  "blocking_reasons": ["missing_required_eval_artifact", "tests_pass_eval_fail"],
+  "blocking_reasons": [
+    "missing_required_eval_artifact",
+    "tests_pass_eval_fail"
+  ],
   "required_eval_types": [
     "rax_input_semantic_sufficiency",
     "rax_owner_intent_alignment",
@@ -32,5 +35,17 @@
   ],
   "trace_complete": false,
   "baseline_regression_detected": true,
-  "version_authority_aligned": false
+  "version_authority_aligned": false,
+  "conditions_under_which_ready_changes": [
+    {
+      "condition_category": "missing_eval_becomes_present",
+      "blocking_reason": "missing_required_eval_types",
+      "evidence_refs": [
+        "roadmap_step_contract:RAX-INTERFACE-24-01"
+      ],
+      "required_signal": "missing_required_eval_types"
+    }
+  ],
+  "unknown_state_ref": "unknown-001",
+  "pre_certification_alignment_ref": "precert-001"
 }

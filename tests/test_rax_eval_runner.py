@@ -8,6 +8,11 @@ from spectrum_systems.modules.runtime.rax_eval_runner import (
     load_rax_eval_case_set,
     load_rax_eval_registry,
     run_rax_eval_runner,
+    build_feedback_loop_record,
+    build_rax_health_snapshot,
+    build_rax_drift_signal_record,
+    build_rax_unknown_state_record,
+    generate_adversarial_pattern_candidates,
 )
 
 
@@ -352,3 +357,128 @@ def test_readiness_example_contract_validates() -> None:
     validate_artifact(load_example("rax_control_readiness_record"), "rax_control_readiness_record")
     validate_artifact(load_example("rax_eval_registry"), "rax_eval_registry")
     validate_artifact(load_example("rax_eval_case_set"), "rax_eval_case_set")
+
+
+def test_failure_to_eval_autogeneration_emits_pattern_and_candidate() -> None:
+    out = run_rax_eval_runner(
+        run_id="rax-eval-run-005",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        trace_id="16161616-1616-4161-8161-161616161616",
+        input_assurance={"passed": False, "details": ["semantic_intent_insufficient"], "failure_classification": "invalid_input"},
+        output_assurance=_output_assurance_ok(),
+        tests_passed=True,
+        baseline_regression_detected=False,
+        version_authority_aligned=True,
+    )
+    assert out["failure_pattern_records"]
+    assert out["eval_case_candidates"]
+    validate_artifact(out["failure_pattern_records"][0], "rax_failure_pattern_record")
+    validate_artifact(out["eval_case_candidates"][0], "rax_failure_eval_candidate")
+
+
+def test_adversarial_pattern_generation_is_deterministic() -> None:
+    first = generate_adversarial_pattern_candidates(seed="seed-1", target_ref="roadmap_step_contract:RAX-INTERFACE-24-01")
+    second = generate_adversarial_pattern_candidates(seed="seed-1", target_ref="roadmap_step_contract:RAX-INTERFACE-24-01")
+    assert first == second
+    assert len(first) == 5
+    validate_artifact(first[0], "rax_adversarial_pattern_candidate")
+
+
+def test_feedback_loop_record_tracks_recurrence() -> None:
+    record = build_feedback_loop_record(
+        record_id="feedback-loop-test",
+        originating_failure_pattern_ref="rax-failure-x",
+        fix_artifact_refs=["fix://rax/1"],
+        eval_artifact_refs_added=["rax-failure-x:eval-candidate"],
+        historical_failure_classes=["invalid_input", "dependency_blocked"],
+        current_failure_class="invalid_input",
+        recurrence_window="P14D",
+        readiness_delta=-0.2,
+        confidence_delta=-0.1,
+    )
+    assert record["recurrence_detected"] is True
+    validate_artifact(record, "rax_feedback_loop_record")
+
+
+def test_health_snapshot_threshold_degradation_sets_candidate_posture() -> None:
+    thresholds = {
+        "readiness_pass_rate": {"warn_min": 0.9, "freeze_candidate_min": 0.8, "block_candidate_min": 0.7},
+        "eval_coverage_rate": {"warn_min": 0.95, "freeze_candidate_min": 0.9, "block_candidate_min": 0.8},
+        "semantic_failure_rate": {"warn_min": 0.0, "freeze_candidate_min": 0.0, "block_candidate_min": 0.0},
+        "readiness_bypass_attempt_rate": {"warn_min": 0.0, "freeze_candidate_min": 0.0, "block_candidate_min": 0.0},
+        "replay_consistency_rate": {"warn_min": 0.95, "freeze_candidate_min": 0.9, "block_candidate_min": 0.8},
+        "trace_completeness_rate": {"warn_min": 0.95, "freeze_candidate_min": 0.9, "block_candidate_min": 0.8},
+        "lineage_validity_rate": {"warn_min": 0.95, "freeze_candidate_min": 0.9, "block_candidate_min": 0.8},
+        "contradiction_rate": {"warn_min": 0.0, "freeze_candidate_min": 0.0, "block_candidate_min": 0.0},
+    }
+    snapshot = build_rax_health_snapshot(
+        snapshot_id="health-test",
+        window_ref="window://current",
+        metrics={
+            "readiness_pass_rate": 0.6,
+            "eval_coverage_rate": 1.0,
+            "semantic_failure_rate": 0.0,
+            "readiness_bypass_attempt_rate": 0.0,
+            "replay_consistency_rate": 1.0,
+            "trace_completeness_rate": 1.0,
+            "lineage_validity_rate": 1.0,
+            "contradiction_rate": 0.0,
+        },
+        thresholds=thresholds,
+    )
+    assert snapshot["candidate_posture"] == "block_candidate"
+
+
+def test_drift_signal_detection_blocks_when_exceeding_threshold() -> None:
+    drift = build_rax_drift_signal_record(
+        signal_id="drift-test",
+        baseline_window_ref="window://baseline",
+        current_window_ref="window://current",
+        baseline_metrics={"eval_coverage_rate": 1.0, "readiness_pass_rate": 1.0, "semantic_failure_rate": 0.0, "lineage_validity_rate": 1.0, "trace_completeness_rate": 1.0},
+        current_metrics={"eval_coverage_rate": 0.5, "readiness_pass_rate": 0.5, "semantic_failure_rate": 0.4, "lineage_validity_rate": 0.4, "trace_completeness_rate": 0.6},
+        drift_thresholds={"eval_signal_drift": 0.1, "readiness_outcome_drift": 0.1, "semantic_classification_drift": 0.1, "version_authority_drift": 0.1, "trace_lineage_completeness_drift": 0.1},
+    )
+    assert drift["candidate_posture"] == "block_candidate"
+
+
+def test_unknown_state_record_never_allows_advancement() -> None:
+    unknown = build_rax_unknown_state_record(
+        record_id="unknown-test",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        unknown_reasons=["required_signal_missing"],
+        evidence_refs=["roadmap_step_contract:RAX-INTERFACE-24-01"],
+    )
+    assert unknown["candidate_ready"] is False
+    assert unknown["advancement_allowed"] is False
+
+
+def test_readiness_record_populates_conditions_under_which_ready_changes() -> None:
+    out = run_rax_eval_runner(
+        run_id="rax-eval-run-006",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        trace_id="17171717-1717-4171-8171-171717171717",
+        input_assurance=_input_assurance_ok(),
+        output_assurance=_output_assurance_ok(),
+        tests_passed=True,
+        baseline_regression_detected=False,
+        version_authority_aligned=True,
+        omit_eval_types=["rax_trace_integrity"],
+    )
+    readiness = _readiness_from(out)
+    assert readiness["ready_for_control"] is False
+    assert readiness["conditions_under_which_ready_changes"]
+
+
+def test_precert_alignment_blocks_candidate_ready_when_not_aligned() -> None:
+    out = run_rax_eval_runner(
+        run_id="rax-eval-run-007",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        trace_id="18181818-1818-4181-8181-181818181818",
+        input_assurance=_input_assurance_ok(),
+        output_assurance=_output_assurance_ok(),
+        tests_passed=True,
+        baseline_regression_detected=False,
+        version_authority_aligned=True,
+    )
+    readiness = _readiness_from(out)
+    assert "pre_certification_alignment_not_ready" in readiness["blocking_reasons"]

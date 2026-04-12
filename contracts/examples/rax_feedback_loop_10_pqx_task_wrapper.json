@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "codex_pqx_task_wrapper",
+  "wrapper_id": "rax-feedback-loop-10-preflight-wrapper",
+  "task_identity": {
+    "task_id": "RAX-FEEDBACK-LOOP-10",
+    "run_id": "RAX-PREFLIGHT-FIX-02",
+    "step_id": "RAX-PREFLIGHT-FIX-02",
+    "step_name": "Clear contract preflight block for RAX feedback-loop batch"
+  },
+  "task_source": {
+    "source_type": "codex_prompt",
+    "prompt": "RAX-PREFLIGHT-FIX-02 preflight wrapper alignment"
+  },
+  "execution_intent": {
+    "execution_context": "pqx_governed",
+    "mode": "governed"
+  },
+  "governance": {
+    "classification": "governed_pqx_required",
+    "pqx_required": true,
+    "authority_state": "authoritative_governed_pqx",
+    "authority_resolution": "explicit_pqx_context",
+    "authority_evidence_ref": "outputs/test-preflight-authority/run-1.pqx_slice_execution_record.json",
+    "contract_preflight_result_artifact_path": "outputs/contract_preflight/contract_preflight_result_artifact.json"
+  },
+  "changed_paths": [
+    "config/policy/rax_eval_policy.json",
+    "contracts/examples/rax_adversarial_pattern_candidate.json",
+    "contracts/examples/rax_control_readiness_record.json",
+    "contracts/examples/rax_drift_signal_record.json",
+    "contracts/examples/rax_failure_eval_candidate.json",
+    "contracts/examples/rax_failure_pattern_record.json",
+    "contracts/examples/rax_feedback_loop_record.json",
+    "contracts/examples/rax_health_snapshot.json",
+    "contracts/examples/rax_pre_certification_alignment_record.json",
+    "contracts/examples/rax_unknown_state_record.json",
+    "contracts/schemas/rax_adversarial_pattern_candidate.schema.json",
+    "contracts/schemas/rax_control_readiness_record.schema.json",
+    "contracts/schemas/rax_drift_signal_record.schema.json",
+    "contracts/schemas/rax_failure_eval_candidate.schema.json",
+    "contracts/schemas/rax_failure_pattern_record.schema.json",
+    "contracts/schemas/rax_feedback_loop_record.schema.json",
+    "contracts/schemas/rax_health_snapshot.schema.json",
+    "contracts/schemas/rax_pre_certification_alignment_record.schema.json",
+    "contracts/schemas/rax_unknown_state_record.schema.json",
+    "contracts/standards-manifest.json",
+    "docs/architecture/rax_feedback_loop_hardening.md",
+    "docs/architecture/system_registry.md",
+    "docs/governance-reports/contract-enforcement-report.md",
+    "docs/review-actions/PLAN-RAX-FEEDBACK-LOOP-10-2026-04-12.md",
+    "governance/reports/contract-dependency-graph.json",
+    "spectrum_systems/modules/runtime/rax_assurance.py",
+    "spectrum_systems/modules/runtime/rax_eval_runner.py",
+    "tests/test_rax_eval_runner.py",
+    "tests/test_roadmap_expansion_contracts.py"
+  ],
+  "metadata": {
+    "requested_at": "2026-04-02T00:00:00Z",
+    "dependencies": [
+      "AI-00"
+    ],
+    "policy_version": "1.0.0",
+    "authority_notes": "governed wrapper example"
+  },
+  "pqx_execution_request": {
+    "schema_version": "1.1.0",
+    "run_id": "con-038-example",
+    "step_id": "AI-01",
+    "step_name": "Implement governed wrapper seam",
+    "dependencies": [
+      "AI-00"
+    ],
+    "requested_at": "2026-04-02T00:00:00Z",
+    "prompt": "Implement CON-038 deterministic wrapper layer",
+    "roadmap_version": "docs/roadmaps/system_roadmap.md",
+    "row_snapshot": {
+      "row_index": 0,
+      "step_id": "AI-01",
+      "step_name": "Implement governed wrapper seam",
+      "dependencies": [
+        "AI-00"
+      ],
+      "status": "ready"
+    }
+  }
+}

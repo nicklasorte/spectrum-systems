@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_drift_signal_record.schema.json",
+  "title": "RAX Drift Signal Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "signal_id",
+    "baseline_window_ref",
+    "current_window_ref",
+    "eval_signal_drift",
+    "readiness_outcome_drift",
+    "semantic_classification_drift",
+    "version_authority_drift",
+    "trace_lineage_completeness_drift",
+    "candidate_posture",
+    "threshold_exceeded"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "rax_drift_signal_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "signal_id": {
+      "type": "string"
+    },
+    "baseline_window_ref": {
+      "type": "string"
+    },
+    "current_window_ref": {
+      "type": "string"
+    },
+    "eval_signal_drift": {
+      "type": "number",
+      "minimum": 0
+    },
+    "readiness_outcome_drift": {
+      "type": "number",
+      "minimum": 0
+    },
+    "semantic_classification_drift": {
+      "type": "number",
+      "minimum": 0
+    },
+    "version_authority_drift": {
+      "type": "number",
+      "minimum": 0
+    },
+    "trace_lineage_completeness_drift": {
+      "type": "number",
+      "minimum": 0
+    },
+    "candidate_posture": {
+      "type": "string",
+      "enum": [
+        "healthy",
+        "freeze_candidate",
+        "block_candidate"
+      ]
+    },
+    "threshold_exceeded": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
