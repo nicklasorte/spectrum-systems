@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/contracts/schemas/dashboard_freshness_status_record.schema.json",
+  "title": "dashboard_freshness_status_record",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "contract_version",
+    "trace_id",
+    "refresh_run_id",
+    "timestamp",
+    "overall_verdict",
+    "artifacts"
+  ],
+  "properties": {
+    "artifact_type": {"const": "dashboard_freshness_status_record"},
+    "contract_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "trace_id": {"type": "string", "minLength": 1},
+    "refresh_run_id": {"type": "string", "minLength": 1},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "overall_verdict": {"type": "string", "enum": ["pass", "block"]},
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["artifact", "verdict", "age_seconds", "threshold_seconds", "reason_codes"],
+        "properties": {
+          "artifact": {"type": "string"},
+          "verdict": {"type": "string", "enum": ["fresh", "stale", "invalid", "missing"]},
+          "age_seconds": {"type": "number", "minimum": 0},
+          "threshold_seconds": {"type": "integer", "minimum": 1},
+          "reason_codes": {"type": "array", "items": {"type": "string"}, "minItems": 1}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

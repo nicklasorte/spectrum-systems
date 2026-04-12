@@ -17,6 +17,8 @@ export type DashboardManifest = {
 }
 
 export type Snapshot = {
+  generated_at?: string
+  freshness_timestamp_utc?: string
   repo_name?: string
   root_counts?: {
     files_total?: number
@@ -38,6 +40,8 @@ export type SnapshotMeta = {
 
 export type DashboardFreshnessStatus = {
   artifact_type?: 'dashboard_freshness_status'
+  trace_id?: string
+  refresh_run_id?: string
   freshness_window_hours?: number
   status?: 'fresh' | 'stale' | 'unknown'
   publication_state?: string
@@ -125,6 +129,32 @@ export type DashboardPublicationSyncAudit = {
   records?: Array<{ artifact?: string; source?: string; sha256?: string; size_bytes?: number }>
 }
 
+export type RefreshRunRecord = {
+  artifact_type?: 'refresh_run_record'
+  refresh_run_id?: string
+  trace_id?: string
+  run_id?: string
+  target_artifact_family?: string
+  start_time?: string
+  end_time?: string
+  outcome?: 'success' | 'failed' | 'skipped' | 'partial'
+  refreshed_artifacts?: string[]
+  stale_artifacts_found?: string[]
+  failure_class?: string
+  trigger_mode?: 'scheduled' | 'manual' | 'repair' | 'test'
+}
+
+export type PublicationAttemptRecord = {
+  artifact_type?: 'publication_attempt_record'
+  publish_attempt_id?: string
+  refresh_run_id?: string
+  trace_id?: string
+  decision?: 'allow' | 'block' | 'freeze'
+  reason_codes?: string[]
+  trigger_mode?: 'scheduled' | 'manual' | 'repair' | 'test'
+  timestamp?: string
+}
+
 export type ExplorerCoverageStatus = 'declared_loaded_valid' | 'declared_not_loaded' | 'declared_missing' | 'loaded_invalid' | 'loaded_undeclared'
 
 export type DashboardPublication = {
@@ -142,6 +172,8 @@ export type DashboardPublication = {
   recommendationRecord: ArtifactRecord<RecommendationRecordCollection>
   syncAudit: ArtifactRecord<DashboardPublicationSyncAudit>
   recommendationAccuracyTracker: ArtifactRecord<RecommendationAccuracyTracker>
+  refreshRunRecord: ArtifactRecord<RefreshRunRecord>
+  publicationAttemptRecord: ArtifactRecord<PublicationAttemptRecord>
   declaredArtifactMap: Record<string, ArtifactRecord>
   allArtifacts: ArtifactRecord[]
 }

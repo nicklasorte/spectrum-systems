@@ -81,6 +81,8 @@ test('discriminator-aware validation rules exist for critical artifacts', () => 
   assert.ok(src.includes("if (name === 'hard_gate_status_record.json')"))
   assert.ok(src.includes("if (name === 'current_run_state_record.json')"))
   assert.ok(src.includes("if (name === 'next_action_recommendation_record.json')"))
+  assert.ok(src.includes("if (name === 'refresh_run_record.json')"))
+  assert.ok(src.includes("if (name === 'publication_attempt_record.json')"))
 })
 
 test('artifact explorer distinguishes declared/loaded/missing/invalid states', () => {
@@ -139,6 +141,7 @@ test('manifest validation is strict for publication state and required files int
   assert.ok(src.includes('invalid publication_state enum'))
   assert.ok(src.includes('required_files must be non-empty string[]'))
   assert.ok(src.includes('artifact_count must match required_files length (or +1 when manifest self-counted)'))
+  assert.ok(src.includes('required_files must contain unique entries'))
 })
 
 test('provenance explicitly marks unknown fields as low confidence when necessary', () => {

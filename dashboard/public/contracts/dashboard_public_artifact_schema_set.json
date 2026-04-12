@@ -18,7 +18,7 @@
         },
         "additionalProperties": false
       },
-      "minItems": 13
+      "minItems": 15
     }
   },
   "additionalProperties": false,
@@ -36,6 +36,8 @@
     "operator_trust_closeout_artifact": {"type": "object", "required": ["artifact_type", "dashboard_trust_level", "recommendation_trust_level", "expansion_posture"], "properties": {"artifact_type": {"const": "operator_trust_closeout_artifact"}, "dashboard_trust_level": {"type": "string"}, "recommendation_trust_level": {"type": "string"}, "expansion_posture": {"type": "string"}}, "additionalProperties": true},
     "readiness_to_expand_validator": {"type": "object", "required": ["artifact_type", "readiness_state"], "properties": {"artifact_type": {"const": "readiness_to_expand_validator"}, "readiness_state": {"type": "string", "enum": ["Tune instead", "Validate with another run", "Ready for bounded expansion", "Unknown"]}}, "additionalProperties": true},
     "deploy_ci_truth_gate": {"type": "object", "required": ["artifact_type", "checks", "result"], "properties": {"artifact_type": {"const": "deploy_ci_truth_gate"}, "checks": {"type": "object"}, "result": {"type": "string"}}, "additionalProperties": true}
+    ,"refresh_run_record": {"type": "object", "required": ["artifact_type", "refresh_run_id", "trace_id", "trigger_mode"], "properties": {"artifact_type": {"const": "refresh_run_record"}, "refresh_run_id": {"type": "string"}, "trace_id": {"type": "string"}, "trigger_mode": {"type": "string", "enum": ["scheduled", "manual", "repair", "test"]}}, "additionalProperties": true}
+    ,"publication_attempt_record": {"type": "object", "required": ["artifact_type", "publish_attempt_id", "trace_id", "decision"], "properties": {"artifact_type": {"const": "publication_attempt_record"}, "publish_attempt_id": {"type": "string"}, "trace_id": {"type": "string"}, "decision": {"type": "string", "enum": ["allow", "block", "freeze"]}}, "additionalProperties": true}
   },
   "validation_targets": [
     {"artifact_file": "repo_snapshot.json", "schema_ref": "#/$defs/repo_snapshot", "example_file": "contracts/examples/repo_snapshot.json"},
@@ -50,6 +52,8 @@
     {"artifact_file": "recommendation_accuracy_tracker.json", "schema_ref": "#/$defs/recommendation_accuracy_tracker", "example_file": "contracts/examples/recommendation_accuracy_tracker.json"},
     {"artifact_file": "operator_trust_closeout_artifact.json", "schema_ref": "#/$defs/operator_trust_closeout_artifact", "example_file": "contracts/examples/operator_trust_closeout_artifact.json"},
     {"artifact_file": "readiness_to_expand_validator.json", "schema_ref": "#/$defs/readiness_to_expand_validator", "example_file": "contracts/examples/readiness_to_expand_validator.json"},
-    {"artifact_file": "deploy_ci_truth_gate.json", "schema_ref": "#/$defs/deploy_ci_truth_gate", "example_file": "contracts/examples/deploy_ci_truth_gate.json"}
+    {"artifact_file": "deploy_ci_truth_gate.json", "schema_ref": "#/$defs/deploy_ci_truth_gate", "example_file": "contracts/examples/deploy_ci_truth_gate.json"},
+    {"artifact_file": "refresh_run_record.json", "schema_ref": "#/$defs/refresh_run_record", "example_file": "contracts/examples/refresh_run_record.json"},
+    {"artifact_file": "publication_attempt_record.json", "schema_ref": "#/$defs/publication_attempt_record", "example_file": "contracts/examples/publication_attempt_record.json"}
   ]
 }

@@ -52,6 +52,14 @@ test('loader and guard wire freshness source-of-truth through dashboard_freshnes
   assert.ok(guardSrc.includes('snapshot_last_refreshed_time'))
   assert.ok(guardSrc.includes('freshness_window_hours'))
   assert.ok(guardSrc.includes('freshnessTimestampMs !== metaTimestampMs'))
+  assert.ok(guardSrc.includes('publicationAttemptRecord'))
+  assert.ok(guardSrc.includes('trace_linkage_missing'))
+})
+
+test('loader includes refresh and publication attempt artifacts', () => {
+  const loaderSrc = read('lib/loaders/dashboard_publication_loader.ts')
+  assert.ok(loaderSrc.includes('refresh_run_record.json'))
+  assert.ok(loaderSrc.includes('publication_attempt_record.json'))
 })
 
 test('freshness parsing is explicit UTC and fail-closed on malformed timestamps', () => {

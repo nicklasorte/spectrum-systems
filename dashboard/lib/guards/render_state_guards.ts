@@ -95,5 +95,29 @@ export function deriveRenderState(publication: DashboardPublication): {
     }
   }
 
+  const attemptDecision = String(publication.publicationAttemptRecord.data?.decision ?? '').toLowerCase()
+  if (attemptDecision && attemptDecision !== 'allow') {
+    return {
+      kind: 'truth_violation',
+      reason: 'Governed publication attempt decision is not allow.',
+      missingArtifacts: [],
+      staleArtifacts: [],
+      truthViolationReasons: ['publication_blocked']
+    }
+  }
+
+  const refreshTrace = String(publication.refreshRunRecord.data?.trace_id ?? '')
+  const freshnessTrace = String(publication.freshnessStatus.data?.trace_id ?? '')
+  const publicationTrace = String(publication.publicationAttemptRecord.data?.trace_id ?? '')
+  if (refreshTrace && freshnessTrace && publicationTrace && (refreshTrace !== freshnessTrace || refreshTrace !== publicationTrace)) {
+    return {
+      kind: 'truth_violation',
+      reason: 'Trace linkage mismatch across refresh/freshness/publication artifacts.',
+      missingArtifacts: [],
+      staleArtifacts: [],
+      truthViolationReasons: ['trace_linkage_missing']
+    }
+  }
+
   return { kind: 'renderable', reason: 'Publication is renderable.', missingArtifacts: [], staleArtifacts: [], truthViolationReasons: [] }
 }

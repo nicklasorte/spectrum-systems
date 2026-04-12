@@ -202,7 +202,7 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
     freshness: {
       status: state.kind === 'stale' ? 'Stale' : state.kind === 'renderable' ? 'Fresh' : 'Unknown',
       lastRefresh: freshnessRefTimestamp ?? 'Not available yet',
-      note: `Snapshot age is ${freshnessHours}h.`
+      note: `Snapshot age is ${freshnessHours}h. Last success: ${publication.refreshRunRecord.data?.end_time ?? 'unknown'}. Last failure class: ${publication.refreshRunRecord.data?.failure_class ?? 'none'}.`
     },
     integrity: {
       manifestCompleteness,
@@ -219,7 +219,9 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
       hardGate: hardGateStatus ?? 'Not available yet',
       runState: runStatus ?? 'Not available yet',
       recommendation: recommendation.title,
-      warningReasons: state.truthViolationReasons.join(', ') || 'No truth-violation reason codes'
+      warningReasons: state.truthViolationReasons.join(', ') || 'No truth-violation reason codes',
+      publishBlockReason: (publication.publicationAttemptRecord.data?.reason_codes ?? []).join(', ') || 'none',
+      manualRefreshMode: publication.refreshRunRecord.data?.trigger_mode ?? 'unknown'
     },
     topology,
     artifactExplorer: explorerRows,

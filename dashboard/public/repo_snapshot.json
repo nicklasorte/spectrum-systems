@@ -1,15 +1,16 @@
 {
-  "generated_at": "2026-04-11T15:31:15Z",
+  "generated_at": "2026-04-12T18:57:32Z",
+  "freshness_timestamp_utc": "2026-04-12T18:57:32Z",
   "repo_name": "spectrum-systems",
   "root_counts": {
-    "files_total": 3924,
-    "runtime_modules": 154,
-    "tests": 354,
-    "contracts_total": 758,
-    "schemas": 410,
-    "examples": 348,
-    "docs": 1040,
-    "run_artifacts": 151
+    "files_total": 4526,
+    "runtime_modules": 166,
+    "tests": 379,
+    "contracts_total": 917,
+    "schemas": 495,
+    "examples": 422,
+    "docs": 1121,
+    "run_artifacts": 152
   },
   "core_areas": [
     {
@@ -56,12 +57,12 @@
     },
     {
       "area": "Roadmap",
-      "count": 13,
+      "count": 14,
       "note": "Roadmap-linked execution and sequencing support."
     },
     {
       "area": "Review",
-      "count": 11,
+      "count": 12,
       "note": "Review ingestion and projection interfaces."
     },
     {
@@ -71,7 +72,7 @@
     },
     {
       "area": "Evaluation",
-      "count": 12,
+      "count": 13,
       "note": "Evaluation and quality validation modules."
     },
     {
@@ -81,7 +82,7 @@
     },
     {
       "area": "Governed repair",
-      "count": 7,
+      "count": 8,
       "note": "Governed repair and remediation pathways."
     }
   ],
@@ -99,7 +100,7 @@
     {
       "title": "Evidence and review density",
       "status": "Strong",
-      "detail": "Review artifacts detected: 779 markdown files."
+      "detail": "Review artifacts detected: 843 markdown files."
     },
     {
       "title": "Roadmap sprawl risk",
@@ -109,7 +110,7 @@
     {
       "title": "Runtime concentration",
       "status": "Strong",
-      "detail": "Distinct runtime filename prefixes: 69."
+      "detail": "Distinct runtime filename prefixes: 75."
     },
     {
       "title": "Constitutional center coverage",

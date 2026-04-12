@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/contracts/schemas/refresh_run_record.schema.json",
+  "title": "refresh_run_record",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "refresh_run_id",
+    "trace_id",
+    "run_id",
+    "target_artifact_family",
+    "start_time",
+    "end_time",
+    "outcome",
+    "refreshed_artifacts",
+    "stale_artifacts_found",
+    "trigger_mode"
+  ],
+  "properties": {
+    "artifact_type": {"const": "refresh_run_record"},
+    "refresh_run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "target_artifact_family": {"type": "string", "minLength": 1},
+    "start_time": {"type": "string", "format": "date-time"},
+    "end_time": {"type": "string", "format": "date-time"},
+    "outcome": {"type": "string", "enum": ["success", "failed", "skipped", "partial"]},
+    "refreshed_artifacts": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "stale_artifacts_found": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "failure_class": {
+      "type": "string",
+      "enum": [
+        "refresh_failed",
+        "refresh_skipped",
+        "refresh_partial",
+        "stale_inputs",
+        "publication_blocked",
+        "freshness_contract_violation",
+        "manifest_coherence_failure"
+      ]
+    },
+    "trigger_mode": {"type": "string", "enum": ["scheduled", "manual", "repair", "test"]}
+  },
+  "additionalProperties": false
+}

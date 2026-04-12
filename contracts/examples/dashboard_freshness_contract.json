@@ -1,0 +1,45 @@
+{
+  "artifact_type": "dashboard_freshness_contract",
+  "contract_version": "1.0.0",
+  "freshness_source_of_truth": {
+    "artifact": "repo_snapshot.json",
+    "authoritative_timestamp_field": "generated_at",
+    "stale_threshold_seconds": 21600
+  },
+  "required_artifacts": [
+    "repo_snapshot.json",
+    "repo_snapshot_meta.json",
+    "dashboard_freshness_status.json",
+    "dashboard_publication_manifest.json",
+    "dashboard_publication_sync_audit.json",
+    "refresh_run_record.json",
+    "publication_attempt_record.json"
+  ],
+  "reason_codes": [
+    "freshness_ok",
+    "stale_snapshot",
+    "missing_required_artifact",
+    "invalid_required_artifact",
+    "timestamp_missing",
+    "timestamp_unparseable",
+    "manifest_coherence_failure",
+    "trace_linkage_missing",
+    "error_budget_exhausted"
+  ],
+  "pass_block_semantics": {
+    "pass_requires": [
+      "all_required_artifacts_present",
+      "all_required_artifacts_valid",
+      "freshness_verdict_pass",
+      "trace_linkage_complete"
+    ],
+    "block_on_any": [
+      "stale_snapshot",
+      "missing_required_artifact",
+      "invalid_required_artifact",
+      "manifest_coherence_failure",
+      "trace_linkage_missing",
+      "error_budget_exhausted"
+    ]
+  }
+}

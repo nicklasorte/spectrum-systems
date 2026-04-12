@@ -223,6 +223,7 @@ def build_operational_signals(
 
 
 def build_snapshot(surface: RepoSurface) -> dict[str, object]:
+    generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     all_files = list(iter_repo_files(surface.repo_root))
     runtime_files = sorted([p for p in surface.runtime_root.rglob("*.py") if p.is_file()]) if surface.runtime_root.exists() else []
 
@@ -264,7 +265,8 @@ def build_snapshot(surface: RepoSurface) -> dict[str, object]:
         key_state["hard_gate_status_record"] = json.loads(key_hard_gate_path.read_text(encoding="utf-8"))
 
     return {
-        "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "generated_at": generated_at,
+        "freshness_timestamp_utc": generated_at,
         "repo_name": surface.repo_root.name,
         "root_counts": root_counts,
         "core_areas": build_core_areas(surface.repo_root, surface.runtime_root),
