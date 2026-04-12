@@ -225,6 +225,19 @@ class ContractSchemaTests(unittest.TestCase):
             validate_artifact(instance, name)
 
 
+    def test_rqx_redteam_contract_examples_validate(self) -> None:
+        for name in (
+            "redteam_review_request",
+            "redteam_round_config",
+            "redteam_finding_record",
+            "redteam_exploit_bundle",
+            "redteam_fix_slice_request",
+            "redteam_closure_request",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
+
     def test_system_roadmap_batches_have_required_governed_fields(self) -> None:
         instance = load_example("system_roadmap")
         required = {

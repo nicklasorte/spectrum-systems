@@ -98,6 +98,35 @@ jobs:
           name: eval-ci-gate-artifacts
           path: outputs/eval_ci_gate/
 
+
+  sel-replay-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Verify dependency bootstrap contract
+        run: python scripts/verify_environment.py --python-only
+
+      - name: Build SEL orchestration artifacts from governed CDE examples
+        run: |
+          mkdir -p outputs/sel_replay_gate/cde_bundle
+          cp contracts/examples/continuation_decision_record.json outputs/sel_replay_gate/cde_bundle/continuation_decision_record.json
+          cp contracts/examples/decision_bundle.json outputs/sel_replay_gate/cde_bundle/decision_bundle.json
+          cp contracts/examples/decision_evidence_pack.json outputs/sel_replay_gate/cde_bundle/decision_evidence_pack.json
+          python scripts/run_sel_orchestration.py             --cde-bundle-dir outputs/sel_replay_gate/cde_bundle             --output-dir outputs/sel_replay_gate/sel_output
+
+      - name: Enforce SEL replay gate
+        run: python scripts/run_sel_replay_gate.py           --output-dir outputs/sel_replay_gate/sel_output           --decision-record outputs/sel_replay_gate/cde_bundle/continuation_decision_record.json           --action-record outputs/sel_replay_gate/sel_output/enforcement_action_record.json
+
   governed-failure-injection-gate:
     runs-on: ubuntu-latest
     steps:

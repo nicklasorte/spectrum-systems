@@ -20,6 +20,7 @@ SCHEMAS_DIR="$REPO_ROOT/contracts/schemas"
 MANIFEST="$REPO_ROOT/contracts/standards-manifest.json"
 ERRORS=0
 WARNINGS=0
+CLASSIFIED_WARNINGS=0
 
 if [ ! -f "$MANIFEST" ]; then
   echo "[ERROR] standards-manifest.json not found at $MANIFEST" >&2
@@ -31,6 +32,34 @@ echo "  Schemas dir : $SCHEMAS_DIR"
 echo "  Manifest    : $MANIFEST"
 echo "  Strict mode : $STRICT_MODE"
 echo ""
+
+CLASSIFIED_WARN_PATH="$REPO_ROOT/.codex/skills/contract-boundary-audit/classified_warnings.txt"
+if [ -f "$CLASSIFIED_WARN_PATH" ]; then
+  CLASSIFIED_PATTERNS=$(cat "$CLASSIFIED_WARN_PATH")
+else
+  CLASSIFIED_PATTERNS=""
+fi
+
+classify_or_warn() {
+  local message="$1"
+  local matched=0
+  while IFS= read -r pattern; do
+    [ -z "$pattern" ] && continue
+    case "$message" in
+      *"$pattern"*) matched=1; break;;
+    esac
+  done <<EOF_PATTERNS
+$CLASSIFIED_PATTERNS
+EOF_PATTERNS
+
+  if [ "$matched" -eq 1 ]; then
+    echo "[WARN-CLASSIFIED] $message"
+    CLASSIFIED_WARNINGS=$((CLASSIFIED_WARNINGS + 1))
+  else
+    echo "[WARN] $message"
+    WARNINGS=$((WARNINGS + 1))
+  fi
+}
 
 # Collect schema files to audit
 if [ -n "$CONTRACT_NAME" ]; then
@@ -59,8 +88,7 @@ for schema_file in "${SCHEMA_FILES[@]}"; do
 
   # Check manifest has this contract (proper JSON key lookup)
   if ! printf '%s\n' "$MANIFEST_ARTIFACT_TYPES" | grep -qx "$contract"; then
-    echo "[WARN] $contract — not referenced in standards-manifest.json (may be unpublished)"
-    WARNINGS=$((WARNINGS + 1))
+    classify_or_warn "$contract — not referenced in standards-manifest.json (may be unpublished)"
   fi
 
   # List consumers
@@ -74,21 +102,19 @@ done
 # Global checks executed once to avoid noisy duplicated output.
 local_defs=$(grep -rl '"\$schema"' "$REPO_ROOT/spectrum_systems/" --include="*.py" 2>/dev/null | head -10 || true)
 if [ -n "$local_defs" ]; then
-  echo "[WARN] inline JSON Schema (\$schema) found in Python source:"
+  classify_or_warn "inline JSON Schema (\$schema) found in Python source"
   echo "$local_defs" | sed 's/^/    /'
-  WARNINGS=$((WARNINGS + 1))
 fi
 
 direct_reads=$(grep -rl "\.schema\.json" "$REPO_ROOT/spectrum_systems/" --include="*.py" 2>/dev/null | \
   xargs grep -l "open\|read\|load" 2>/dev/null | head -10 || true)
 if [ -n "$direct_reads" ]; then
-  echo "[WARN] direct schema file reads detected (use load_schema instead):"
+  classify_or_warn "direct schema file reads detected (use load_schema instead)"
   echo "$direct_reads" | sed 's/^/    /'
-  WARNINGS=$((WARNINGS + 1))
 fi
 
 echo ""
-echo "[contract-boundary-audit] summary: errors=$ERRORS warnings=$WARNINGS"
+echo "[contract-boundary-audit] summary: errors=$ERRORS warnings=$WARNINGS classified_warnings=$CLASSIFIED_WARNINGS"
 if [ "$ERRORS" -gt 0 ]; then
   echo "[contract-boundary-audit] FAIL — $ERRORS error(s) found."
   exit 1
