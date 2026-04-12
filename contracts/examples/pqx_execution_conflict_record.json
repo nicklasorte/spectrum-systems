@@ -1,0 +1,12 @@
+{
+  "artifact_type": "pqx_execution_conflict_record",
+  "schema_version": "1.0.0",
+  "conflict_id": "pqx-conflict-abc123def456",
+  "eval_result_ref": "pqx_execution_eval_result:pqx-eval-abc123def456",
+  "conflict_type": "execution_integrity_violation",
+  "reason_codes": [
+    "scope_compliant"
+  ],
+  "materiality": "material",
+  "generated_at": "2026-04-12T00:00:00Z"
+}

@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_execution_bundle.schema.json",
+  "title": "Pqx Execution Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "bundle_id",
+    "run_id",
+    "trace_id",
+    "wrapper_ref",
+    "tpa_slice_artifact_ref",
+    "top_level_conductor_run_artifact_ref",
+    "eval_result_ref",
+    "readiness_ref",
+    "replay_validation",
+    "effectiveness_ref",
+    "recurrence_ref",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "pqx_execution_bundle"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "bundle_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "wrapper_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tpa_slice_artifact_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "top_level_conductor_run_artifact_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eval_result_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "readiness_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "replay_validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "is_match",
+        "baseline_fingerprint",
+        "replay_fingerprint",
+        "reason_codes"
+      ],
+      "properties": {
+        "is_match": {
+          "type": "boolean"
+        },
+        "baseline_fingerprint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "replay_fingerprint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "effectiveness_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "recurrence_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

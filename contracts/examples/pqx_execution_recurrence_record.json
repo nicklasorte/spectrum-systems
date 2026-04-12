@@ -1,0 +1,17 @@
+{
+  "artifact_type": "pqx_execution_recurrence_record",
+  "schema_version": "1.0.0",
+  "record_id": "pqx-recurrence-abc123def456",
+  "run_id": "run-pqx-001",
+  "motif_groups": [
+    {
+      "motif": "retry_loop",
+      "count": 2
+    },
+    {
+      "motif": "failure:wrapper_stale",
+      "count": 1
+    }
+  ],
+  "generated_at": "2026-04-12T00:00:00Z"
+}

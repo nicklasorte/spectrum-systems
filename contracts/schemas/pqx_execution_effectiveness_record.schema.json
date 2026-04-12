@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_execution_effectiveness_record.schema.json",
+  "title": "Pqx Execution Effectiveness Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "slice_id",
+    "intended_outcome_ref",
+    "outcome_status",
+    "fallout_level",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "pqx_execution_effectiveness_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "slice_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "intended_outcome_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "outcome_status": {
+      "type": "string",
+      "enum": [
+        "effective",
+        "ineffective"
+      ]
+    },
+    "fallout_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "elevated"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

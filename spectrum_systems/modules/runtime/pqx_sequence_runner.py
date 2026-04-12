@@ -20,6 +20,9 @@ from spectrum_systems.modules.runtime.pqx_slice_runner import (
     confirm_slice_completion_after_enforcement_allow,
     run_pqx_slice,
 )
+from spectrum_systems.modules.runtime.pqx_execution_hardening import (
+    build_pqx_execution_eval_result,
+)
 from spectrum_systems.modules.runtime.repo_write_lineage_guard import RepoWriteLineageGuardError, validate_repo_write_lineage
 from spectrum_systems.modules.runtime.lineage_authenticity import LineageAuthenticityError, issue_authenticity
 from spectrum_systems.modules.runtime.tpa_complexity_governance import (
@@ -1511,6 +1514,66 @@ def execute_sequence_run(
         result = executor(deepcopy(payload))
         if not isinstance(result, dict):
             raise PQXSequenceRunnerError("slice executor must return an object result")
+
+        wrapper_artifact = request.get("codex_pqx_task_wrapper")
+        if not isinstance(wrapper_artifact, dict):
+            wrapper_artifact = {
+                "artifact_type": "codex_pqx_task_wrapper",
+                "lineage_path": request.get("lineage_path") or ["AEX", "TLC", "TPA", "PQX"],
+                "freshness": request.get("freshness") or {"status": "fresh", "age_hours": 1},
+                "fix_slice_ref": request.get("fix_slice_ref"),
+            }
+        tpa_artifact = request.get("tpa_slice_artifact")
+        if not isinstance(tpa_artifact, dict):
+            tpa_artifact = {
+                "artifact_type": "tpa_slice_artifact",
+                "allowed_scope": list(request.get("changed_paths") or []),
+                "complexity_budget": {"max_units": max(len(list(request.get("changed_paths") or [])) * 2, 1)},
+            }
+        tlc_artifact = request.get("top_level_conductor_run_artifact")
+        if not isinstance(tlc_artifact, dict):
+            tlc_artifact = {"artifact_type": "top_level_conductor_run_artifact", "run_id": run_id}
+
+        should_run_hardening_eval = bool(
+            list(request.get("changed_paths") or [])
+            or result.get("slice_execution_record")
+            or result.get("pqx_slice_audit_bundle")
+        )
+        if result.get("execution_status") == "success" and should_run_hardening_eval:
+            hardening_eval = build_pqx_execution_eval_result(
+                run_id=run_id,
+                trace_id=request["trace_id"],
+                slice_id=next_slice_id,
+                wrapper=wrapper_artifact,
+                tpa_slice_artifact=tpa_artifact,
+                top_level_conductor_run_artifact=tlc_artifact,
+                execution_result={
+                    "execution_status": result.get("execution_status"),
+                    "changed_paths": list(request.get("changed_paths") or []),
+                    "complexity_units": int(result.get("complexity_units", len(list(request.get("changed_paths") or [])) * 2) or 0),
+                    "slice_execution_record_ref": result.get("slice_execution_record"),
+                    "audit_bundle_ref": result.get("pqx_slice_audit_bundle"),
+                    "replay_result_ref": result.get("replay_result_ref") or result.get("slice_execution_record"),
+                    "trace_refs": list(result.get("trace_refs") or [result.get("slice_execution_record"), result.get("done_certification_record")]),
+                    "execution_path": result.get("execution_path") or "bounded",
+                    "closure_authority_requested": bool(result.get("closure_authority_requested")),
+                    "meaningful_output_count": int(result.get("meaningful_output_count", 1) or 0),
+                },
+                review_handoff=request.get("review_handoff") if isinstance(request.get("review_handoff"), dict) else None,
+                prior_attempts=[
+                    {
+                        "slice_id": row.get("slice_id"),
+                        "result_fingerprint": _canonical_hash(
+                            [row.get("slice_execution_record_ref"), row.get("status"), row.get("error")]
+                        ),
+                    }
+                    for row in state.get("execution_history", [])
+                    if isinstance(row, dict)
+                ],
+            )
+            if hardening_eval["status"] == "fail":
+                result["execution_status"] = "failed"
+                result["error"] = "pqx_execution_hardening_failed:" + ",".join(hardening_eval["fail_reasons"])
 
         child_queue_run_id = result.get("queue_run_id", queue_run_id)
         child_run_id = result.get("run_id", run_id)

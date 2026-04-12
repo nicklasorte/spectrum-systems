@@ -1,0 +1,15 @@
+{
+  "artifact_type": "pqx_execution_eval_result",
+  "schema_version": "1.0.0",
+  "eval_id": "pqx-eval-abc123def456",
+  "run_id": "run-pqx-001",
+  "trace_id": "trace:pqx:001",
+  "slice_id": "PQX-QUEUE-01",
+  "status": "pass",
+  "checks": {
+    "lineage_valid": true,
+    "scope_compliant": true
+  },
+  "fail_reasons": [],
+  "generated_at": "2026-04-12T00:00:00Z"
+}

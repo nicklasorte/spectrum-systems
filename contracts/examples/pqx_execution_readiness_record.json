@@ -1,0 +1,13 @@
+{
+  "artifact_type": "pqx_execution_readiness_record",
+  "schema_version": "1.0.0",
+  "readiness_id": "pqx-readiness-abc123def456",
+  "eval_result_ref": "pqx_execution_eval_result:pqx-eval-abc123def456",
+  "status": "candidate_ready",
+  "non_authority_assertions": [
+    "no_closure_authority",
+    "no_promotion_authority",
+    "no_enforcement_authority"
+  ],
+  "generated_at": "2026-04-12T00:00:00Z"
+}

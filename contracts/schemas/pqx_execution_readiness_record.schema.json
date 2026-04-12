@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_execution_readiness_record.schema.json",
+  "title": "Pqx Execution Readiness Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "readiness_id",
+    "eval_result_ref",
+    "status",
+    "non_authority_assertions",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "pqx_execution_readiness_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "readiness_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eval_result_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "candidate_ready",
+        "not_ready"
+      ]
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
