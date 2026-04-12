@@ -12,5 +12,10 @@
     "trace:aut-07-2026-04-10",
     "system_enforcement_result_artifact:sel-001",
     "pytest_failure:tests/test_repo_write_lineage_guard.py::test_authenticity_mismatch"
-  ]
+  ],
+  "failure_packet_digest": "1111111111111111111111111111111111111111111111111111111111111111",
+  "repair_candidate_digest": "2222222222222222222222222222222222222222222222222222222222222222",
+  "evidence_digest": "3333333333333333333333333333333333333333333333333333333333333333",
+  "issued_at": "2026-04-12T00:00:00Z",
+  "freshness_window_seconds": 1800
 }
