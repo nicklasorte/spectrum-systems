@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/schemas/operator_action_resolution_artifact.schema.json",
+  "title": "operator_action_resolution_artifact",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "resolution_id",
+    "action_request_id",
+    "status",
+    "resolved_by_owner"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "standards_version": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "resolution_id": {
+      "type": "string"
+    },
+    "action_request_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "resolved_by_owner": {
+      "type": "string"
+    },
+    "enforcement_owner": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bounded": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": true
+}

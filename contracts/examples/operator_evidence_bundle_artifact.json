@@ -1,0 +1,23 @@
+{
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.3.121",
+  "trace_id": "trace-opx-003",
+  "artifact_type": "operator_evidence_bundle_artifact",
+  "bundle_hash": "abc123",
+  "why_now": "evidence_shift",
+  "changed_since_prior": [
+    "confidence"
+  ],
+  "moved_by_evidence": [
+    "prov:2"
+  ],
+  "invalidate_conditions": [
+    "policy_revoked"
+  ],
+  "provenance_refs": [
+    "prov:1",
+    "prov:2"
+  ],
+  "trust_decomposition_ref": "trust:1"
+}

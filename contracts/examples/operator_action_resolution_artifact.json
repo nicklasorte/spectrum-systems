@@ -1,0 +1,13 @@
+{
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.3.121",
+  "trace_id": "trace-opx-003",
+  "artifact_type": "operator_action_resolution_artifact",
+  "resolution_id": "oar-res:1",
+  "action_request_id": "oar:1",
+  "status": "resolved",
+  "resolved_by_owner": "RQX",
+  "enforcement_owner": null,
+  "bounded": true
+}

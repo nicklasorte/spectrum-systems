@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/schemas/reuse_record_artifact.schema.json",
+  "title": "reuse_record_artifact",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "cache_key",
+    "trust_metric",
+    "payload_ref",
+    "reused"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "standards_version": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "cache_key": {
+      "type": "string"
+    },
+    "trust_metric": {
+      "type": "number"
+    },
+    "payload_ref": {
+      "type": "string"
+    },
+    "reused": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": true
+}
