@@ -378,3 +378,5 @@ Closed plans are not deleted — they remain as execution history.
 | docs/review-actions/PLAN-BATCH-RDX-EXEC-REAL-01-2026-04-10.md | BATCH-RDX-EXEC-REAL-01 — Governed Multi-Umbrella REAL Execution (4 Umbrellas) | Active |
 
 | docs/review-actions/PLAN-DASHBOARD-UI-FIX-TRUTH-BOUNDARY-02-2026-04-12.md | DASHBOARD-UI-FIX-TRUTH-BOUNDARY-02 — UI truth-boundary surgical hardening | Active |
+
+| docs/review-actions/PLAN-DASHBOARD-NEXT-PHASE-SERIAL-04-2026-04-12.md | DASHBOARD-NEXT-PHASE-SERIAL-04 — Governed operator coordination surface | Active |

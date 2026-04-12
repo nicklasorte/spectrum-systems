@@ -14,6 +14,20 @@ function needsValidDecision(value: unknown): boolean {
   return normalizeDecisionStatus(value) !== 'unknown_blocked'
 }
 
+
+function artifactRecord(publication: DashboardPublication, name: string) {
+  return publication.declaredArtifactMap[name]
+}
+
+function requireArtifact(publication: DashboardPublication, name: string): boolean {
+  const artifact = artifactRecord(publication, name)
+  return Boolean(artifact?.exists && artifact.valid)
+}
+
+function safeRows(rows: Array<Array<string>>): Array<Array<string>> {
+  return rows.length > 0 ? rows : [['no_rows']]
+}
+
 export function compileDashboardReadModel(publication: DashboardPublication): DashboardPanelSurface[] {
   if (PANEL_CAPABILITY_MAP.some((capability) => capability.decision_authority !== 'read_only')) {
     return [blocked('dashboard_read_model', 'Capability map violated read-only contract.')]
@@ -316,6 +330,231 @@ export function compileDashboardReadModel(publication: DashboardPublication): Da
       ['uncertainty_label', lowEvidence ? 'unverified_or_disputed' : 'verified']
     ]
   })
+
+
+  const changeConditions = (publication.judgmentApplication.data as { change_conditions?: string[] } | null)?.change_conditions
+  const hasChangeConditions = Array.isArray(changeConditions) && changeConditions.length > 0
+  panels.push(hasChangeConditions
+    ? {
+        panelId: 'decision_change_conditions',
+        title: 'Decision change conditions',
+        status: 'renderable',
+        summary: 'Judgment artifact conditions under which decision changes.',
+        rows: changeConditions.map((condition: string) => ['condition', condition])
+      }
+    : blocked('decision_change_conditions', 'Judgment change conditions are missing; fail closed.'))
+
+  const gapEvidence = publication.declaredArtifactMap['readiness_to_expand_validator.json']
+  const gapRows = (gapEvidence?.data as { missing_evidence_refs?: string[]; affected_claims?: string[]; materiality_basis?: string; certification_relevant?: boolean } | undefined)
+  const missingEvidence = gapRows?.missing_evidence_refs ?? []
+  const affectedClaims = gapRows?.affected_claims ?? []
+  const materialityBasis = gapRows?.materiality_basis ?? 'unknown'
+  const materialityScore = (gapRows?.certification_relevant ? 100 : 40) + (missingEvidence.length * 10)
+  panels.push(gapEvidence?.exists && gapEvidence.valid
+    ? {
+        panelId: 'evidence_gap_hotspots',
+        title: 'Evidence gap hotspots',
+        status: 'renderable',
+        summary: 'Materiality-aware ranking of certification-relevant evidence gaps with drill-down.',
+        rows: safeRows([
+          ['materiality_score', String(materialityScore), materialityBasis],
+          ['missing_evidence_refs', missingEvidence.join(', ') || 'none'],
+          ['affected_claims', affectedClaims.join(', ') || 'none'],
+          ['source_artifact', gapEvidence.name]
+        ])
+      }
+    : blocked('evidence_gap_hotspots', 'Evidence gap source artifact missing/invalid.'))
+
+  panels.push(requireValidated(publication.overrideCapture)
+    ? {
+        panelId: 'override_hotspots',
+        title: 'Override hotspots',
+        status: 'renderable',
+        summary: 'Override concentration/recurrence ranked by artifact family, route, and policy scope.',
+        rows: safeRows((publication.overrideCapture.data?.overrides ?? []).map((override) => [
+          override.override_id ?? 'override',
+          override.operator_action ?? 'unknown_route',
+          override.reason ?? 'unknown_policy_scope',
+          override.captured_as_learning_signal ? 'recurrent' : 'single'
+        ]))
+      }
+    : blocked('override_hotspots', 'Override hotspot source artifact missing/invalid.'))
+
+  const trustCloseout = artifactRecord(publication, 'operator_trust_closeout_artifact.json')
+  const trustTimeline = (trustCloseout?.data as { snapshots?: Array<{ timestamp?: string; freshness?: string; provenance_completeness?: string; validation_coverage?: string; replay_status?: string; trace_completeness?: string }> } | undefined)?.snapshots ?? []
+  panels.push(trustCloseout?.exists && trustCloseout.valid && trustTimeline.length > 0
+    ? {
+        panelId: 'trust_posture_timeline',
+        title: 'Trust posture snapshot timeline',
+        status: 'renderable',
+        summary: 'Per-dimension trust posture snapshots over time (no lossy aggregate score).',
+        rows: trustTimeline.map((snapshot) => [snapshot.timestamp ?? 'unknown', snapshot.freshness ?? 'unknown', snapshot.provenance_completeness ?? 'unknown', snapshot.validation_coverage ?? 'unknown', snapshot.replay_status ?? 'unknown', snapshot.trace_completeness ?? 'unknown'])
+      }
+    : blocked('trust_posture_timeline', 'Trust timeline snapshots missing/invalid.'))
+
+  const comparator = artifactRecord(publication, 'cycle_comparator_03_05.json')
+  const comparisonRows = (comparator?.data as { disagreements?: Array<{ dimension?: string; status?: string; linked_review_id?: string }> } | undefined)?.disagreements ?? []
+  panels.push(comparator?.exists && comparator.valid
+    ? {
+        panelId: 'judge_disagreement',
+        title: 'Judge disagreement surface',
+        status: 'renderable',
+        summary: 'Governed disagreement artifacts with unresolved divergence and linked review/judgment artifacts.',
+        rows: safeRows(comparisonRows.map((row) => [row.dimension ?? 'dimension', row.status ?? 'unknown', row.linked_review_id ?? 'none']))
+      }
+    : blocked('judge_disagreement', 'Disagreement artifact missing/invalid.'))
+
+  panels.push(comparator?.exists && comparator.valid
+    ? {
+        panelId: 'policy_regression',
+        title: 'Policy regression surface',
+        status: 'renderable',
+        summary: 'Read-only visibility of policy drift/regression candidates with linked evidence.',
+        rows: safeRows([
+          ['policy_drift', String((comparator?.data as { policy_drift?: string } | undefined)?.policy_drift ?? 'unknown')],
+          ['candidate_regressions', String((comparator?.data as { candidate_regressions?: number } | undefined)?.candidate_regressions ?? 'unknown')],
+          ['changed_outcomes', String((comparator?.data as { changed_outcomes?: number } | undefined)?.changed_outcomes ?? 'unknown')],
+          ['linked_evidence', comparator.name]
+        ])
+      }
+    : blocked('policy_regression', 'Policy regression source missing/invalid.'))
+
+  const readiness = artifactRecord(publication, 'readiness_to_expand_validator.json')
+  const readinessData = readiness?.data as { readiness_state?: string; evidence_basis?: string[]; confidence?: string; missing_data_indicators?: string[] } | undefined
+  panels.push(readiness?.exists && readiness.valid && Array.isArray(readinessData?.evidence_basis) && readinessData.evidence_basis.length > 0
+    ? {
+        panelId: 'capability_readiness',
+        title: 'Capability readiness surface',
+        status: 'renderable',
+        summary: 'Readiness from governed readiness artifacts only.',
+        rows: safeRows([
+          ['readiness_state', readinessData?.readiness_state ?? 'unknown'],
+          ['evidence_basis', (readinessData?.evidence_basis ?? []).join(', ') || 'none'],
+          ['confidence', readinessData?.confidence ?? 'unknown'],
+          ['missing_data_indicators', (readinessData?.missing_data_indicators ?? []).join(', ') || 'none']
+        ])
+      }
+    : blocked('capability_readiness', 'Readiness evidence missing; fail closed.'))
+
+  const trust = artifactRecord(publication, 'operator_trust_closeout_artifact.json')
+  const trustData = trust?.data as { route_efficiency?: Array<{ route?: string; quality?: string; cost?: string; latency?: string; uncertainty?: string }> } | undefined
+  const routeRows = trustData?.route_efficiency ?? []
+  panels.push(trust?.exists && trust.valid && routeRows.length > 0
+    ? {
+        panelId: 'route_efficiency',
+        title: 'Route efficiency surface',
+        status: 'renderable',
+        summary: 'Artifact-backed route quality/cost/latency with explicit uncertainty indicators.',
+        rows: routeRows.map((row) => [row.route ?? 'route', row.quality ?? 'unknown', row.cost ?? 'unknown', row.latency ?? 'unknown', row.uncertainty ?? 'unknown'])
+      }
+    : blocked('route_efficiency', 'Route efficiency evidence incomplete; no inference from partial data.'))
+
+  const outcomes = artifactRecord(publication, 'next_action_outcome_record.json')
+  const outcomeRows = ((outcomes?.data as { outcomes?: Array<{ failure_id?: string; eval_case_id?: string; operationalized?: boolean }> } | undefined)?.outcomes ?? [])
+  panels.push(outcomes?.exists && outcomes.valid
+    ? {
+        panelId: 'failure_derived_eval',
+        title: 'Failure-derived eval surface',
+        status: 'renderable',
+        summary: 'Traceable linkage of failures to eval operationalization status.',
+        rows: safeRows(outcomeRows.map((row) => [row.failure_id ?? 'failure', row.eval_case_id ?? 'missing_eval_case', row.operationalized ? 'operationalized' : 'not_operationalized']))
+      }
+    : blocked('failure_derived_eval', 'Failure outcome artifact missing/invalid.'))
+
+  panels.push(requireValidated(publication.overrideCapture)
+    ? {
+        panelId: 'correction_patterns',
+        title: 'Correction pattern surface',
+        status: 'renderable',
+        summary: 'Repeated human correction patterns and absorption status from override artifacts.',
+        rows: safeRows((publication.overrideCapture.data?.overrides ?? []).map((row) => [row.reason ?? 'unknown_pattern', row.operator_action ?? 'unknown_action', row.captured_as_learning_signal ? 'absorbed' : 'pending_absorption']))
+      }
+    : blocked('correction_patterns', 'Correction pattern evidence unavailable.'))
+
+  panels.push(reviewSurfaceArtifact?.exists && reviewSurfaceArtifact.valid
+    ? {
+        panelId: 'review_outcomes',
+        title: 'Review outcome surface',
+        status: 'renderable',
+        summary: 'Review dispositions, debt, unresolved concentrations, and linked queue outcomes.',
+        rows: safeRows((reviewSurface.pending_reviews ?? []).map((row) => [row.review_id ?? 'review', row.status ?? 'pending', row.checkpoint ?? 'checkpoint']))
+      }
+    : blocked('review_outcomes', 'Review outcome artifact missing/invalid.'))
+
+  const gateData = publication.hardGate.data as { warn_threshold?: number; freeze_threshold?: number; block_threshold?: number; current_risk_score?: number } | undefined
+  const currentRisk = gateData?.current_risk_score ?? 0
+  panels.push(requireValidated(publication.hardGate)
+    ? {
+        panelId: 'escalation_triggers',
+        title: 'Escalation trigger surface',
+        status: 'renderable',
+        summary: 'Approaching warn/freeze/block thresholds (separate from actual control decisions).',
+        rows: [
+          ['warn_threshold_proximity', `${currentRisk}/${gateData?.warn_threshold ?? 'unknown'}`, 'approaching_threshold_only'],
+          ['freeze_threshold_proximity', `${currentRisk}/${gateData?.freeze_threshold ?? 'unknown'}`, 'approaching_threshold_only'],
+          ['block_threshold_proximity', `${currentRisk}/${gateData?.block_threshold ?? 'unknown'}`, 'approaching_threshold_only'],
+          ['actual_control_decision', publication.publicationAttemptRecord.data?.decision ?? 'unknown', 'decision_artifact_separate']
+        ]
+      }
+    : blocked('escalation_triggers', 'Escalation thresholds unavailable.'))
+
+  panels.push(comparator?.exists && comparator.valid
+    ? {
+        panelId: 'cross_run_intelligence',
+        title: 'Cross-run intelligence view',
+        status: 'renderable',
+        summary: 'Artifact-backed convergence/instability/disagreement/failure-pattern comparisons.',
+        rows: safeRows([
+          ['convergence', String((comparator?.data as { convergence?: string } | undefined)?.convergence ?? 'unknown')],
+          ['instability', String((comparator?.data as { instability?: string } | undefined)?.instability ?? 'unknown')],
+          ['recurring_disagreement', String((comparator?.data as { recurring_disagreement?: string } | undefined)?.recurring_disagreement ?? 'unknown')],
+          ['repeating_failure_patterns', String((comparator?.data as { repeating_failure_patterns?: string } | undefined)?.repeating_failure_patterns ?? 'unknown')]
+        ])
+      }
+    : blocked('cross_run_intelligence', 'Cross-run comparison artifact missing/invalid.'))
+
+  const highRiskRows = missingEvidence.map((evidenceRef) => ['claim', evidenceRef, 'certification_relevant_high_materiality'])
+  panels.push(gapEvidence?.exists && gapEvidence.valid
+    ? {
+        panelId: 'high_risk_claim_board',
+        title: 'High-risk claim board',
+        status: 'renderable',
+        summary: 'Certification-relevant and high-materiality claims only with drillable evidence.',
+        rows: safeRows(highRiskRows)
+      }
+    : blocked('high_risk_claim_board', 'High-risk claim artifact basis missing/invalid.'))
+
+  const exportArtifact = artifactRecord(publication, 'operator_surface_snapshot_export.json')
+  const exportData = exportArtifact?.data as { export_status?: string; projection_only?: boolean; verification_state?: string } | undefined
+  panels.push(exportArtifact?.exists && exportArtifact.valid && exportData?.projection_only === true
+    ? {
+        panelId: 'governed_exports',
+        title: 'Governed export surface',
+        status: 'renderable',
+        summary: 'Audit/review/management projections with inherited render gates and verification states.',
+        rows: [
+          ['export_status', exportData?.export_status ?? 'unknown'],
+          ['projection_only', String(exportData?.projection_only ?? false)],
+          ['verification_state', exportData?.verification_state ?? 'unknown'],
+          ['render_gate_dependency', publication.manifest.valid ? 'satisfied' : 'blocked']
+        ]
+      }
+    : blocked('governed_exports', 'Export surface blocked: projection-only + verification constraints not met.'))
+
+  panels.push({
+    panelId: 'operator_coordination_layer',
+    title: 'Operator coordination layer',
+    status: 'renderable',
+    summary: 'Coordination-oriented grouping for diagnose, verify, review, recover, and certify jobs with read-only ownership mapping.',
+    rows: [
+      ['diagnose', 'trust_posture_timeline, evidence_gap_hotspots, override_hotspots', 'read_only'],
+      ['verify', 'decision_change_conditions, judge_disagreement, policy_regression', 'read_only'],
+      ['review', 'review_queue_surface, review_outcomes, high_risk_claim_board', 'read_only'],
+      ['recover', 'failure_derived_eval, correction_patterns, escalation_triggers', 'read_only'],
+      ['certify', 'capability_readiness, route_efficiency, governed_exports', 'read_only']
+    ]
+  })
+
 
   return panels
 }

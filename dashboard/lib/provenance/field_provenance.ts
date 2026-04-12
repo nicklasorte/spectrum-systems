@@ -57,5 +57,22 @@ export const PANEL_FIELD_PROVENANCE_MAP: PanelFieldProvenance[] = [
   { panel_id: 'review_queue_surface', artifact: 'hard_gate_status_record.json', fields: ['readiness_status'] },
   { panel_id: 'misinterpretation_guard', artifact: 'dashboard_freshness_status.json', fields: ['status', 'snapshot_age_hours'] },
   { panel_id: 'misinterpretation_guard', artifact: 'serial_bundle_validator_result.json', fields: ['pass'] },
-  { panel_id: 'misinterpretation_guard', artifact: 'publication_attempt_record.json', fields: ['decision', 'reason_codes'] }
+  { panel_id: 'misinterpretation_guard', artifact: 'publication_attempt_record.json', fields: ['decision', 'reason_codes'] },
+  { panel_id: 'operator_coordination_layer', artifact: 'dashboard_publication_manifest.json', fields: ['required_files', 'publication_state'] },
+  { panel_id: 'decision_change_conditions', artifact: 'judgment_application_artifact.json', fields: ['change_conditions'] },
+  { panel_id: 'evidence_gap_hotspots', artifact: 'readiness_to_expand_validator.json', fields: ['missing_evidence_refs', 'affected_claims', 'materiality_basis', 'certification_relevant'] },
+  { panel_id: 'override_hotspots', artifact: 'rq_next_24_01__umbrella_1__nx_05_operator_override_capture.json', fields: ['overrides.override_id', 'overrides.operator_action', 'overrides.reason'] },
+  { panel_id: 'trust_posture_timeline', artifact: 'operator_trust_closeout_artifact.json', fields: ['snapshots.timestamp', 'snapshots.freshness', 'snapshots.provenance_completeness', 'snapshots.validation_coverage', 'snapshots.replay_status', 'snapshots.trace_completeness'] },
+  { panel_id: 'judge_disagreement', artifact: 'cycle_comparator_03_05.json', fields: ['disagreements.dimension', 'disagreements.status', 'disagreements.linked_review_id'] },
+  { panel_id: 'policy_regression', artifact: 'cycle_comparator_03_05.json', fields: ['policy_drift', 'candidate_regressions', 'changed_outcomes'] },
+  { panel_id: 'capability_readiness', artifact: 'readiness_to_expand_validator.json', fields: ['readiness_state', 'evidence_basis', 'confidence', 'missing_data_indicators'] },
+  { panel_id: 'route_efficiency', artifact: 'operator_trust_closeout_artifact.json', fields: ['route_efficiency.route', 'route_efficiency.quality', 'route_efficiency.cost', 'route_efficiency.latency', 'route_efficiency.uncertainty'] },
+  { panel_id: 'failure_derived_eval', artifact: 'next_action_outcome_record.json', fields: ['outcomes.failure_id', 'outcomes.eval_case_id', 'outcomes.operationalized'] },
+  { panel_id: 'correction_patterns', artifact: 'rq_next_24_01__umbrella_1__nx_05_operator_override_capture.json', fields: ['overrides.reason', 'overrides.operator_action', 'overrides.captured_as_learning_signal'] },
+  { panel_id: 'review_outcomes', artifact: 'recommendation_review_surface.json', fields: ['pending_reviews.review_id', 'pending_reviews.status', 'pending_reviews.checkpoint'] },
+  { panel_id: 'escalation_triggers', artifact: 'hard_gate_status_record.json', fields: ['warn_threshold', 'freeze_threshold', 'block_threshold', 'current_risk_score'] },
+  { panel_id: 'escalation_triggers', artifact: 'publication_attempt_record.json', fields: ['decision'], uncertainty: 'Threshold proximity is advisory and separate from decision artifact.' },
+  { panel_id: 'cross_run_intelligence', artifact: 'cycle_comparator_03_05.json', fields: ['convergence', 'instability', 'recurring_disagreement', 'repeating_failure_patterns'] },
+  { panel_id: 'high_risk_claim_board', artifact: 'readiness_to_expand_validator.json', fields: ['missing_evidence_refs', 'affected_claims'], uncertainty: 'Panel scope restricted to certification-relevant high-materiality refs.' },
+  { panel_id: 'governed_exports', artifact: 'operator_surface_snapshot_export.json', fields: ['export_status', 'projection_only', 'verification_state'] }
 ]
