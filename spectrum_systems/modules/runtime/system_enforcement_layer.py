@@ -755,6 +755,47 @@ def enforce_preflight_remediation_boundaries(*, remediation_context: dict[str, A
                 field="terminal_classification",
                 message="ambiguous terminal classification blocks by default",
             )
+        intent_eval = remediation_context.get("intent_eval")
+        if isinstance(intent_eval, dict) and intent_eval.get("intent_preserved") is False:
+            _add_violation(
+                violations,
+                code="repair_scope_violation",
+                boundary="RIL",
+                field="intent_eval.intent_violations",
+                message="repair cleared preflight but violated original repair intent scope",
+            )
+        consistency = remediation_context.get("consistency_artifact")
+        if isinstance(consistency, dict) and bool(consistency.get("drift_detected")):
+            _add_violation(
+                violations,
+                code="governance_evidence_violation",
+                boundary="RIL",
+                field="consistency_artifact",
+                message="same governed input produced divergent remediation outcome digest",
+            )
+        policy_version = remediation_context.get("policy_version")
+        if not isinstance(policy_version, str) or not policy_version.strip():
+            _add_violation(
+                violations,
+                code="tpa_boundary_violation",
+                boundary="TPA",
+                field="policy_version",
+                message="policy version binding is required for remediation replay/governance",
+            )
+        rerun_issued = _parse_dt(rerun_execution_record.get("completed_at") if isinstance(rerun_execution_record, dict) else None, field="rerun_execution_record.completed_at", violations=violations)
+        if isinstance(gating_input, dict):
+            issued = _parse_dt(gating_input.get("issued_at"), field="gating_input.issued_at", violations=violations)
+            freshness = gating_input.get("freshness_window_seconds")
+            if issued is not None and rerun_issued is not None and isinstance(freshness, int) and freshness > 0:
+                age = (rerun_issued.astimezone(timezone.utc) - issued.astimezone(timezone.utc)).total_seconds()
+                if age > freshness:
+                    _add_violation(
+                        violations,
+                        code="governance_evidence_violation",
+                        boundary="TPA",
+                        field="gating_input",
+                        message="rerun evidence occurred after gating authority TTL expired",
+                    )
     elif remediation_context.get("missing_evidence_branch") or remediation_context.get("ambiguous_state_branch"):
         _add_violation(
             violations,
@@ -772,6 +813,67 @@ def enforce_preflight_remediation_boundaries(*, remediation_context: dict[str, A
             field="repeated_retry_branch",
             message="repeated bounded retry branch exhausted deterministic retry stop",
         )
+    authority_sequence = remediation_context.get("authority_sequence")
+    if authority_sequence is not None:
+        if not isinstance(authority_sequence, list):
+            _add_violation(
+                violations,
+                code="lineage_violation",
+                boundary="SEL",
+                field="authority_sequence",
+                message="authority sequence must be an ordered list",
+            )
+        else:
+            observed = [str(item).strip() for item in authority_sequence if isinstance(item, str) and item.strip()]
+            canonical = ["AEX", "TLC", "TPA", "PQX", "SEL"]
+            if observed != canonical:
+                _add_violation(
+                    violations,
+                    code="lineage_violation",
+                    boundary="SEL",
+                    field="authority_sequence",
+                    message="authority ordering must be AEX -> TLC -> TPA -> PQX -> SEL",
+                )
+
+    expected_deps = remediation_context.get("expected_dependency_refs")
+    provided_deps = remediation_context.get("dependency_chain_refs")
+    if expected_deps is not None or provided_deps is not None:
+        expected = set(str(item).strip() for item in (expected_deps or []) if isinstance(item, str) and item.strip())
+        provided = set(str(item).strip() for item in (provided_deps or []) if isinstance(item, str) and item.strip())
+        missing = sorted(expected - provided)
+        if missing:
+            _add_violation(
+                violations,
+                code="lineage_violation",
+                boundary="SEL",
+                field="dependency_chain_refs",
+                message=f"missing upstream dependency refs: {', '.join(missing)}",
+            )
+
+    bypass_signals = remediation_context.get("bypass_signals")
+    if isinstance(bypass_signals, list):
+        active = [str(item).strip() for item in bypass_signals if isinstance(item, str) and str(item).strip()]
+        if active:
+            _add_violation(
+                violations,
+                code="pqx_entry_violation",
+                boundary="SEL",
+                field="bypass_signals",
+                message=f"preflight bypass attempt detected: {', '.join(sorted(active))}",
+            )
+
+    terminal = remediation_context.get("terminal_classification")
+    if isinstance(terminal, dict):
+        classification = str(terminal.get("terminal_classification") or "").strip()
+        allowed_terminal = {"pass_continue", "bounded_retry_allowed", "escalate_human_review", "ambiguous_block", "block"}
+        if classification and classification not in allowed_terminal:
+            _add_violation(
+                violations,
+                code="repair_decision_violation",
+                boundary="SEL",
+                field="terminal_classification.terminal_classification",
+                message="unknown terminal classification state is not allowed",
+            )
 
     return {
         "artifact_type": "system_enforcement_result_artifact",
