@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_feedback_loop_record.schema.json",
+  "title": "RAX Feedback Loop Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "originating_failure_pattern_ref",
+    "fix_artifact_refs",
+    "eval_artifact_refs_added",
+    "recurrence_detected",
+    "recurrence_window",
+    "readiness_delta",
+    "confidence_delta",
+    "outcome_status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "rax_feedback_loop_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "originating_failure_pattern_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fix_artifact_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "eval_artifact_refs_added": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "recurrence_detected": {
+      "type": "boolean"
+    },
+    "recurrence_window": {
+      "type": "string",
+      "minLength": 1
+    },
+    "readiness_delta": {
+      "type": "number"
+    },
+    "confidence_delta": {
+      "type": "number"
+    },
+    "outcome_status": {
+      "type": "string",
+      "enum": [
+        "recurrence_detected",
+        "non_recurrence_recorded"
+      ]
+    }
+  }
+}

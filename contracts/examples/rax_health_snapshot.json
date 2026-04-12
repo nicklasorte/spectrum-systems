@@ -1,0 +1,16 @@
+{
+  "artifact_type": "rax_health_snapshot",
+  "schema_version": "1.0.0",
+  "snapshot_id": "health-001",
+  "window_ref": "window://rax/2026-04-12",
+  "readiness_pass_rate": 0.95,
+  "eval_coverage_rate": 1.0,
+  "semantic_failure_rate": 0.0,
+  "readiness_bypass_attempt_rate": 0.0,
+  "replay_consistency_rate": 1.0,
+  "trace_completeness_rate": 1.0,
+  "lineage_validity_rate": 1.0,
+  "contradiction_rate": 0.0,
+  "candidate_posture": "healthy",
+  "threshold_violations": []
+}

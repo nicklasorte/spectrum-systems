@@ -1,0 +1,17 @@
+{
+  "artifact_type": "rax_feedback_loop_record",
+  "schema_version": "1.0.0",
+  "record_id": "feedback-loop-001",
+  "originating_failure_pattern_ref": "rax-failure-1111222233334444",
+  "fix_artifact_refs": [
+    "fix://rax/patch-01"
+  ],
+  "eval_artifact_refs_added": [
+    "rax-failure-1111222233334444:eval-candidate"
+  ],
+  "recurrence_detected": false,
+  "recurrence_window": "P14D",
+  "readiness_delta": 0.2,
+  "confidence_delta": 0.1,
+  "outcome_status": "non_recurrence_recorded"
+}
