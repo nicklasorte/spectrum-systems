@@ -632,6 +632,8 @@ def build_rax_control_readiness_record(
     else:
         if lineage_provenance_evidence.get("lineage_valid") is not True:
             blocking_reasons.append("artifact_lineage_invalid")
+        if lineage_provenance_evidence.get("lineage_chain_complete") is not True:
+            blocking_reasons.append("artifact_lineage_incomplete")
 
     if dependency_state is None:
         blocking_reasons.append("missing_dependency_state")
@@ -652,6 +654,8 @@ def build_rax_control_readiness_record(
     version_authority_aligned = "source_version_drift" not in reason_codes and "missing_version_authority_evidence" not in blocking_reasons
 
     cross_run_inconsistency = False
+    if (replay_baseline_store is None) ^ (replay_key is None):
+        blocking_reasons.append("replay_consistency_evidence_incomplete")
     if replay_baseline_store is not None and replay_key:
         signal = _canonical_eval_signal(eval_results)
         previous = replay_baseline_store.get(replay_key)
@@ -669,6 +673,8 @@ def build_rax_control_readiness_record(
         unknown_reasons.append("contradictory_derived_fields")
     if authority_records is None or not authority_records:
         unknown_reasons.append("incomplete_authority_evidence")
+    if (replay_baseline_store is None) ^ (replay_key is None):
+        unknown_reasons.append("partial_replay_evidence")
     if cross_run_inconsistency:
         unknown_reasons.append("inconsistent_replay_state")
     if not derived_trace["trace_complete"]:

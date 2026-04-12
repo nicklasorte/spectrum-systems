@@ -38,7 +38,7 @@ def _governed_evidence_ok() -> dict:
     return {
         "assurance_audit": {"acceptance_decision": "accept_candidate", "failure_classification": "none"},
         "trace_integrity_evidence": {"trace_linked": True, "trace_complete": True},
-        "lineage_provenance_evidence": {"lineage_valid": True},
+        "lineage_provenance_evidence": {"lineage_valid": True, "lineage_chain_complete": True},
         "dependency_state": {"graph_integrity": True, "unresolved_dependencies": []},
         "authority_records": {"docs/roadmaps/system_roadmap.md#RAX-INTERFACE-24-01": "1.3.112"},
     }
@@ -81,6 +81,21 @@ def test_eval_case_set_contains_novel_adversarial_semantic_case() -> None:
     assert case["case_class"] == "adversarial"
     assert case["eval_type"] == "rax_input_semantic_sufficiency"
     assert "semantic_intent_insufficient" in case["reason_codes"]
+
+
+def test_eval_case_set_contains_rax_red_01_adversarial_pack_entries() -> None:
+    case_set = load_rax_eval_case_set()
+    ids = {case["eval_case_id"] for case in case_set["cases"]}
+    assert {
+        "rax-red-01-semantic-drift",
+        "rax-red-01-readiness-inflation",
+        "rax-red-01-counter-evidence",
+        "rax-red-01-provenance-gap",
+        "rax-red-01-replay-inconsistency",
+        "rax-red-01-policy-drift",
+        "rax-red-01-feedback-poison",
+        "rax-red-01-unknown-state",
+    }.issubset(ids)
 
 def test_runner_emits_structured_eval_results_and_summary() -> None:
     out = run_rax_eval_runner(
@@ -286,9 +301,25 @@ def test_artifact_present_but_not_lineage_valid_fails_closed() -> None:
         baseline_regression_detected=False,
         version_authority_aligned=True,
     )
-    readiness = _readiness_from(out, lineage_provenance_evidence={"lineage_valid": False})
+    readiness = _readiness_from(out, lineage_provenance_evidence={"lineage_valid": False, "lineage_chain_complete": True})
     assert readiness["ready_for_control"] is False
     assert "artifact_lineage_invalid" in readiness["blocking_reasons"]
+
+
+def test_lineage_chain_incomplete_fails_closed() -> None:
+    out = run_rax_eval_runner(
+        run_id="redteam-25b",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        trace_id="00000000-0000-4000-8000-000000000255",
+        input_assurance=_input_assurance_ok(),
+        output_assurance=_output_assurance_ok(),
+        tests_passed=True,
+        baseline_regression_detected=False,
+        version_authority_aligned=True,
+    )
+    readiness = _readiness_from(out, lineage_provenance_evidence={"lineage_valid": True, "lineage_chain_complete": False})
+    assert readiness["ready_for_control"] is False
+    assert "artifact_lineage_incomplete" in readiness["blocking_reasons"]
 
 
 def test_fake_authority_version_alignment_fails_closed() -> None:
@@ -351,6 +382,23 @@ def test_cross_run_inconsistency_triggers_hold_not_ready() -> None:
     assert second["ready_for_control"] is False
     assert second["decision"] == "hold"
     assert "cross_run_eval_signal_inconsistency" in second["blocking_reasons"]
+
+
+def test_partial_replay_evidence_fails_closed() -> None:
+    out = run_rax_eval_runner(
+        run_id="redteam-22-partial",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        trace_id="00000000-0000-4000-8000-000000002229",
+        input_assurance=_input_assurance_ok(),
+        output_assurance=_output_assurance_ok(),
+        tests_passed=True,
+        baseline_regression_detected=False,
+        version_authority_aligned=True,
+    )
+    readiness = _readiness_from(out, replay_key="same-input-only")
+    assert readiness["ready_for_control"] is False
+    assert "replay_consistency_evidence_incomplete" in readiness["blocking_reasons"]
+    assert readiness["unknown_state_record"]["status"] == "unknown_blocking"
 
 
 def test_readiness_example_contract_validates() -> None:
