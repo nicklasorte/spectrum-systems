@@ -1,0 +1,14 @@
+{
+  "artifact_type": "rax_drift_signal_record",
+  "schema_version": "1.0.0",
+  "signal_id": "drift-001",
+  "baseline_window_ref": "window://rax/baseline",
+  "current_window_ref": "window://rax/current",
+  "eval_signal_drift": 0.02,
+  "readiness_outcome_drift": 0.03,
+  "semantic_classification_drift": 0.01,
+  "version_authority_drift": 0.0,
+  "trace_lineage_completeness_drift": 0.02,
+  "candidate_posture": "healthy",
+  "threshold_exceeded": []
+}

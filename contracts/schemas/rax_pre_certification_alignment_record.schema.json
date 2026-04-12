@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_pre_certification_alignment_record.schema.json",
+  "title": "RAX Pre Certification Alignment Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "target_ref",
+    "eval_completeness_aligned",
+    "replay_consistency_aligned",
+    "trace_completeness_aligned",
+    "lineage_validity_aligned",
+    "fail_closed_aligned",
+    "semantic_correctness_aligned",
+    "ready_candidate_allowed",
+    "blocking_reasons"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "rax_pre_certification_alignment_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string"
+    },
+    "target_ref": {
+      "type": "string"
+    },
+    "eval_completeness_aligned": {
+      "type": "boolean"
+    },
+    "replay_consistency_aligned": {
+      "type": "boolean"
+    },
+    "trace_completeness_aligned": {
+      "type": "boolean"
+    },
+    "lineage_validity_aligned": {
+      "type": "boolean"
+    },
+    "fail_closed_aligned": {
+      "type": "boolean"
+    },
+    "semantic_correctness_aligned": {
+      "type": "boolean"
+    },
+    "ready_candidate_allowed": {
+      "type": "boolean"
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

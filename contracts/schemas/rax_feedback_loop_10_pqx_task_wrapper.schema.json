@@ -1,0 +1,271 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_feedback_loop_10_pqx_task_wrapper.schema.json",
+  "title": "RAX Feedback Loop 10 PQX Task Wrapper",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "wrapper_id",
+    "task_identity",
+    "task_source",
+    "execution_intent",
+    "governance",
+    "changed_paths",
+    "metadata",
+    "pqx_execution_request"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "artifact_type": {
+      "type": "string",
+      "const": "codex_pqx_task_wrapper"
+    },
+    "wrapper_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "run_id",
+        "step_id",
+        "step_name"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "step_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "step_name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "task_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_type",
+        "prompt"
+      ],
+      "properties": {
+        "source_type": {
+          "type": "string",
+          "const": "codex_prompt"
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "execution_intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "execution_context",
+        "mode"
+      ],
+      "properties": {
+        "execution_context": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "governed",
+            "exploration_only"
+          ]
+        }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classification",
+        "pqx_required",
+        "authority_state",
+        "authority_resolution",
+        "authority_evidence_ref",
+        "contract_preflight_result_artifact_path"
+      ],
+      "properties": {
+        "classification": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pqx_required": {
+          "type": "boolean"
+        },
+        "authority_state": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authority_resolution": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authority_evidence_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contract_preflight_result_artifact_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "changed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requested_at",
+        "dependencies",
+        "policy_version",
+        "authority_notes"
+      ],
+      "properties": {
+        "requested_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authority_notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "pqx_execution_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "run_id",
+        "step_id",
+        "step_name",
+        "dependencies",
+        "requested_at",
+        "prompt",
+        "roadmap_version",
+        "row_snapshot"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "const": "1.1.0"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "step_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "step_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "requested_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "roadmap_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "row_snapshot": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "row_index",
+            "step_id",
+            "step_name",
+            "dependencies",
+            "status"
+          ],
+          "properties": {
+            "row_index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "step_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "step_name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "dependencies": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "status": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

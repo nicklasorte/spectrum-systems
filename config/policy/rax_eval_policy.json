@@ -1,7 +1,7 @@
 {
   "artifact_type": "rax_eval_policy",
-  "schema_version": "1.0.0",
-  "batch": "RAX-EVAL-01",
+  "schema_version": "1.1.0",
+  "batch": "RAX-FEEDBACK-LOOP-10",
   "missing_required_eval_handling": "fail_closed",
   "required_eval_types": [
     "rax_input_semantic_sufficiency",
@@ -26,5 +26,58 @@
     "baseline_regression_detected",
     "missing_required_eval_artifact",
     "tests_pass_eval_fail"
-  ]
+  ],
+  "health_thresholds": {
+    "readiness_pass_rate": {
+      "warn_min": 0.85,
+      "freeze_candidate_min": 0.75,
+      "block_candidate_min": 0.6
+    },
+    "eval_coverage_rate": {
+      "warn_min": 0.95,
+      "freeze_candidate_min": 0.9,
+      "block_candidate_min": 0.8
+    },
+    "semantic_failure_rate": {
+      "warn_max": 0.1,
+      "freeze_candidate_max": 0.2,
+      "block_candidate_max": 0.3
+    },
+    "readiness_bypass_attempt_rate": {
+      "warn_max": 0.01,
+      "freeze_candidate_max": 0.03,
+      "block_candidate_max": 0.05
+    },
+    "replay_consistency_rate": {
+      "warn_min": 0.95,
+      "freeze_candidate_min": 0.9,
+      "block_candidate_min": 0.8
+    },
+    "trace_completeness_rate": {
+      "warn_min": 0.95,
+      "freeze_candidate_min": 0.9,
+      "block_candidate_min": 0.8
+    },
+    "lineage_validity_rate": {
+      "warn_min": 0.95,
+      "freeze_candidate_min": 0.9,
+      "block_candidate_min": 0.8
+    },
+    "contradiction_rate": {
+      "warn_max": 0.02,
+      "freeze_candidate_max": 0.05,
+      "block_candidate_max": 0.1
+    }
+  },
+  "drift_thresholds": {
+    "eval_signal_drift": 0.1,
+    "readiness_outcome_drift": 0.1,
+    "semantic_classification_drift": 0.05,
+    "version_authority_drift": 0.05,
+    "trace_lineage_completeness_drift": 0.1
+  },
+  "adversarial_generation": {
+    "enabled": true,
+    "default_count": 5
+  }
 }

@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_failure_pattern_record.schema.json",
+  "title": "RAX Failure Pattern Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "failure_id",
+    "source_artifact_refs",
+    "failure_classification",
+    "failure_details",
+    "semantic_category",
+    "trace_linkage",
+    "reproducibility_inputs",
+    "candidate_eval_generation_status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "rax_failure_pattern_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "failure_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_artifact_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "failure_classification": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failure_details": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "semantic_category": {
+      "type": "string",
+      "enum": [
+        "semantic_contradiction",
+        "weak_acceptance_check",
+        "missing_trace",
+        "lineage_invalid",
+        "dependency_corruption",
+        "over_expansion",
+        "replay_inconsistency",
+        "readiness_contradiction"
+      ]
+    },
+    "trace_linkage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target_ref",
+        "trace_id",
+        "linked_refs"
+      ],
+      "properties": {
+        "target_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trace_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "linked_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "reproducibility_inputs": {
+      "type": "object"
+    },
+    "candidate_eval_generation_status": {
+      "type": "string",
+      "enum": [
+        "generated",
+        "already_exists"
+      ]
+    }
+  }
+}

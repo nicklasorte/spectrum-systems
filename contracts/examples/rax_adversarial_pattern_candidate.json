@@ -1,0 +1,13 @@
+{
+  "artifact_type": "rax_adversarial_pattern_candidate",
+  "schema_version": "1.0.0",
+  "variant_id": "rax-adv-000000000001",
+  "seed": "rax-eval-run-001",
+  "variant_class": "schema_valid_semantic_boundary",
+  "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+  "payload": {
+    "mutator_index": 0,
+    "deterministic_token": 42
+  },
+  "consumable_by_eval": true
+}
