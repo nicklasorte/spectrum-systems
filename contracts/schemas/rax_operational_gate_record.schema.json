@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_operational_gate_record.schema.json",
+  "title": "RAX Operational Gate Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "gate_id",
+    "passed",
+    "decision",
+    "blocking_reasons",
+    "conflict_zero_enforced",
+    "policy_regression_required",
+    "replay_binding_required",
+    "signed_provenance_required"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "rax_operational_gate_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "gate_id": {"type": "string", "minLength": 1},
+    "passed": {"type": "boolean"},
+    "decision": {"type": "string", "enum": ["promote_candidate", "block_candidate"]},
+    "blocking_reasons": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "conflict_zero_enforced": {"type": "boolean", "const": true},
+    "policy_regression_required": {"type": "boolean", "const": true},
+    "replay_binding_required": {"type": "boolean", "const": true},
+    "signed_provenance_required": {"type": "boolean", "const": true}
+  }
+}

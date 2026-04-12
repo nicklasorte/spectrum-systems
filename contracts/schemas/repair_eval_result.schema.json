@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/repair_eval_result.schema.json",
+  "title": "Repair Eval Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "eval_id", "trace_id", "repair_candidate_ref", "boundedness_passed", "scope_compliance_passed", "evidence_presence_passed", "replay_provenance_compatible", "structural_viability_passed", "result", "fail_reasons"],
+  "properties": {
+    "artifact_type": {"const": "repair_eval_result"},
+    "schema_version": {"const": "1.0.0"},
+    "eval_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "repair_candidate_ref": {"type": "string", "pattern": "^repair_candidate:.+"},
+    "boundedness_passed": {"type": "boolean"},
+    "scope_compliance_passed": {"type": "boolean"},
+    "evidence_presence_passed": {"type": "boolean"},
+    "replay_provenance_compatible": {"type": "boolean"},
+    "structural_viability_passed": {"type": "boolean"},
+    "result": {"type": "string", "enum": ["pass", "fail", "indeterminate"]},
+    "fail_reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+  }
+}

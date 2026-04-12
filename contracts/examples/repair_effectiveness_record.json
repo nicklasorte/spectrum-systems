@@ -1,0 +1,10 @@
+{
+  "artifact_type": "repair_effectiveness_record",
+  "schema_version": "1.0.0",
+  "record_id": "fre-eff-01",
+  "trace_id": "trace-fre-001",
+  "repair_candidate_ref": "repair_candidate:fre-rc-01",
+  "repair_eval_result_ref": "repair_eval_result:fre-reval-01",
+  "effectiveness_state": "candidate_effective",
+  "non_authority_assertions": ["effectiveness_record_is_observational_only"]
+}

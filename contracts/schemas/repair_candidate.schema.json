@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/repair_candidate.schema.json",
+  "title": "Repair Candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "candidate_id", "trace_id", "failure_packet_ref", "lineage_refs", "scope_refs", "bounded_actions", "required_evidence_refs", "non_authority_assertions"],
+  "properties": {
+    "artifact_type": {"const": "repair_candidate"},
+    "schema_version": {"const": "1.0.0"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "failure_packet_ref": {"type": "string", "pattern": "^execution_failure_packet:.+"},
+    "lineage_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "scope_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "bounded_actions": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^update_artifact:.+"}, "uniqueItems": true},
+    "required_evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "non_authority_assertions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+  }
+}

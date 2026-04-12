@@ -12,14 +12,19 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from spectrum_systems.contracts import load_example
+from spectrum_systems.contracts import load_example, validate_artifact
 from spectrum_systems.modules.runtime.rax_eval_runner import (
     apply_admission_quality_filters,
     build_policy_regression_evidence_bundle,
     build_replay_evidence_binding,
     compile_judgment_patterns_to_policy_candidates,
+    compile_rax_judgment_record,
     enforce_rax_operational_hard_gate,
+    enforce_rax_promotion_hard_gate,
     evaluate_drift_threshold_semantics,
+    build_rax_improvement_recommendation_record,
+    build_rax_trend_report,
+    build_rax_trust_posture_snapshot,
     sign_rax_evidence_bundle,
     verify_rax_evidence_bundle_signature,
 )
@@ -28,6 +33,7 @@ from spectrum_systems.modules.runtime.rax_eval_runner import (
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run RAX operational gate and emit artifact")
     parser.add_argument("--output", type=Path, default=Path("outputs/rax_operational_gate_record.json"))
+    parser.add_argument("--output-dir", type=Path, default=Path("outputs/rax_operational"))
     parser.add_argument("--fail-freeze", action="store_true", help="Inject freeze-worthy drift signal")
     args = parser.parse_args()
 
@@ -105,9 +111,55 @@ def main() -> None:
         admission_record=admission,
         signature_verified=signature_verified,
     )
+    validate_artifact(gate, "rax_operational_gate_record")
+
+    trend = build_rax_trend_report(
+        report_id="rax-trend-operational-001",
+        window_ref="window://rax/operational",
+        run_records=[
+            {
+                "exploit_hit": False,
+                "blocked": not gate["passed"],
+                "contradiction": bool(conflict["material_conflicts"]),
+                "override_or_escalation": False,
+                "false_block_proxy": False,
+                "false_allow_proxy": False,
+                "confidence": 0.9 if gate["passed"] else 0.2,
+            }
+        ],
+    )
+    posture = build_rax_trust_posture_snapshot(snapshot_id="rax-posture-operational-001", trend_report=trend)
+    recommendation = build_rax_improvement_recommendation_record(
+        recommendation_id="rax-rec-operational-001",
+        posture_snapshot=posture,
+        trend_report=trend,
+    )
+    judgment = compile_rax_judgment_record(
+        judgment_id="rax-judgment-operational-001",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        conflict_record=conflict,
+        readiness_record=readiness,
+    )
+    hard_gate = enforce_rax_promotion_hard_gate(
+        gate_id="rax-promotion-hard-gate-001",
+        readiness_record=readiness,
+        replay_evidence_present=bool(replay_binding.get("bound")),
+        eval_evidence_present=admission.get("admitted") is True,
+        observability_evidence_present=True,
+        policy_regression_evidence_present=bool(policy_bundle.get("regression_passed")),
+    )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output_dir.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(gate, indent=2) + "\n", encoding="utf-8")
+    for name, artifact in (
+        ("rax_trend_report.json", trend),
+        ("rax_trust_posture_snapshot.json", posture),
+        ("rax_improvement_recommendation_record.json", recommendation),
+        ("rax_judgment_record.json", judgment),
+        ("rax_promotion_hard_gate_record.json", hard_gate),
+    ):
+        (args.output_dir / name).write_text(json.dumps(artifact, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"output": str(args.output), "passed": gate["passed"], "decision": gate["decision"]}))
 
     raise SystemExit(0 if gate["passed"] else 2)

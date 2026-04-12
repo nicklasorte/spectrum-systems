@@ -578,6 +578,22 @@ def test_standards_manifest_registers_capability_readiness_contract() -> None:
     assert standards["capability_readiness_record"]["example_path"] == "contracts/examples/capability_readiness_record.json"
 
 
+def test_standards_manifest_registers_rax_operational_gate_and_fre_repair_contracts() -> None:
+    standards = load_standards_contracts()
+    assert standards["rax_operational_gate_record"]["schema_version"] == "1.0.0"
+    assert standards["rax_operational_gate_record"]["example_path"] == "contracts/examples/rax_operational_gate_record.json"
+    for artifact_type in (
+        "repair_candidate",
+        "repair_eval_result",
+        "repair_effectiveness_record",
+        "repair_recurrence_record",
+        "repair_bundle",
+        "repair_readiness_candidate",
+    ):
+        assert standards[artifact_type]["schema_version"] == "1.0.0"
+        assert standards[artifact_type]["example_path"] == f"contracts/examples/{artifact_type}.json"
+
+
 def test_system_roadmap_invalid_missing_required_field_fails_validation() -> None:
     roadmap = load_example("system_roadmap")
     roadmap.pop("trace_id", None)

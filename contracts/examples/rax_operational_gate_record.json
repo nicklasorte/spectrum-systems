@@ -1,0 +1,12 @@
+{
+  "artifact_type": "rax_operational_gate_record",
+  "schema_version": "1.0.0",
+  "gate_id": "rax-operational-gate-001",
+  "passed": true,
+  "decision": "promote_candidate",
+  "blocking_reasons": [],
+  "conflict_zero_enforced": true,
+  "policy_regression_required": true,
+  "replay_binding_required": true,
+  "signed_provenance_required": true
+}
