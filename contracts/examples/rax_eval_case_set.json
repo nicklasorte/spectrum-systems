@@ -4,23 +4,271 @@
   "batch": "RAX-EVAL-01",
   "case_set_version": "1.0.0",
   "cases": [
-    {"eval_case_id": "rax-case-semantic-empty-intent", "eval_type": "rax_input_semantic_sufficiency", "case_class": "failure_class", "target_ref": "upstream:semantic-empty", "expected_status": "fail", "reason_codes": ["semantic_intent_insufficient"], "signals": ["intent_placeholder_detected"], "trace_id": "11111111-1111-4111-8111-111111111111"},
-    {"eval_case_id": "rax-case-owner-intent-contradiction", "eval_type": "rax_owner_intent_alignment", "case_class": "failure_class", "target_ref": "upstream:owner-intent-contradiction", "expected_status": "fail", "reason_codes": ["owner_intent_contradiction"], "signals": ["owner_intent_misaligned"], "trace_id": "22222222-2222-4222-8222-222222222222"},
-    {"eval_case_id": "rax-case-normalization-collapse", "eval_type": "rax_normalization_integrity", "case_class": "failure_class", "target_ref": "upstream:normalization-collapse", "expected_status": "fail", "reason_codes": ["normalization_ambiguity"], "signals": ["normalization_lossy"], "trace_id": "33333333-3333-4333-8333-333333333333"},
-    {"eval_case_id": "rax-case-wrong-target", "eval_type": "rax_output_semantic_alignment", "case_class": "adversarial", "target_ref": "contract:wrong-target", "expected_status": "fail", "reason_codes": ["semantic_target_mismatch"], "signals": ["target_module_semantically_wrong"], "trace_id": "44444444-4444-4444-8444-444444444444"},
-    {"eval_case_id": "rax-case-output-overexpanded", "eval_type": "rax_output_semantic_alignment", "case_class": "adversarial", "target_ref": "contract:over-expanded", "expected_status": "fail", "reason_codes": ["output_over_expanded"], "signals": ["downstream_unusable"], "trace_id": "55555555-5555-4555-8555-555555555555"},
-    {"eval_case_id": "rax-case-weak-acceptance-checks", "eval_type": "rax_acceptance_check_strength", "case_class": "failure_class", "target_ref": "contract:weak-acceptance", "expected_status": "fail", "reason_codes": ["weak_acceptance_check"], "signals": ["acceptance_strength_below_policy"], "trace_id": "66666666-6666-4666-8666-666666666666"},
-    {"eval_case_id": "rax-case-missing-trace", "eval_type": "rax_trace_integrity", "case_class": "failure_class", "target_ref": "trace:missing", "expected_status": "fail", "reason_codes": ["missing_required_expansion_trace"], "signals": ["trace_incomplete"], "trace_id": "77777777-7777-4777-8777-777777777777"},
-    {"eval_case_id": "rax-case-source-version-drift", "eval_type": "rax_version_authority_alignment", "case_class": "failure_class", "target_ref": "upstream:source-version-drift", "expected_status": "fail", "reason_codes": ["source_version_drift"], "signals": ["version_authority_mismatch"], "trace_id": "88888888-8888-4888-8888-888888888888"},
-    {"eval_case_id": "rax-case-missing-control-readiness-evidence", "eval_type": "rax_control_readiness", "case_class": "failure_class", "target_ref": "readiness:missing-evidence", "expected_status": "fail", "reason_codes": ["control_readiness_evidence_missing"], "signals": ["control_readiness_false"], "trace_id": "99999999-9999-4999-8999-999999999999"},
-    {"eval_case_id": "rax-case-missing-required-eval-artifact", "eval_type": "rax_control_readiness", "case_class": "failure_class", "target_ref": "summary:missing-required-eval", "expected_status": "fail", "reason_codes": ["missing_required_eval_artifact"], "signals": ["fail_closed_missing_eval"], "trace_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"},
-    {"eval_case_id": "rax-case-schema-valid-semantically-wrong", "eval_type": "rax_output_semantic_alignment", "case_class": "adversarial", "target_ref": "contract:schema-valid-semantic-wrong", "expected_status": "fail", "reason_codes": ["schema_valid_semantic_failure"], "signals": ["semantic_contradiction_detected"], "trace_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"},
-    {"eval_case_id": "rax-case-trace-linked-incomplete-output", "eval_type": "rax_trace_integrity", "case_class": "adversarial", "target_ref": "trace:linked-incomplete", "expected_status": "fail", "reason_codes": ["trace_linked_output_incomplete"], "signals": ["trace_not_sufficient"], "trace_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc"},
-    {"eval_case_id": "rax-case-test-pass-eval-fail", "eval_type": "rax_control_readiness", "case_class": "adversarial", "target_ref": "flow:test-pass-eval-fail", "expected_status": "fail", "reason_codes": ["tests_pass_eval_fail"], "signals": ["tests_not_sufficient_for_readiness"], "trace_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd"},
-    {"eval_case_id": "rax-case-regression-missing-baseline-guard", "eval_type": "rax_regression_against_baseline", "case_class": "failure_class", "target_ref": "contract:baseline-regression", "expected_status": "fail", "reason_codes": ["baseline_regression_detected"], "signals": ["regression_blocking"], "trace_id": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"},
-    {"eval_case_id": "rax-case-baseline-input", "eval_type": "rax_input_semantic_sufficiency", "case_class": "baseline", "target_ref": "upstream:baseline", "expected_status": "pass", "reason_codes": ["baseline_ok"], "signals": ["semantic_intent_sufficient"], "trace_id": "f1111111-1111-4111-8111-111111111111"},
-    {"eval_case_id": "rax-case-baseline-output", "eval_type": "rax_output_semantic_alignment", "case_class": "baseline", "target_ref": "contract:baseline", "expected_status": "pass", "reason_codes": ["baseline_ok"], "signals": ["output_semantically_aligned"], "trace_id": "f2222222-2222-4222-8222-222222222222"},
-    {"eval_case_id": "rax-case-baseline-trace", "eval_type": "rax_trace_integrity", "case_class": "baseline", "target_ref": "trace:baseline", "expected_status": "pass", "reason_codes": ["baseline_ok"], "signals": ["trace_complete"], "trace_id": "f3333333-3333-4333-8333-333333333333"},
-    {"eval_case_id": "rax-case-baseline-readiness", "eval_type": "rax_control_readiness", "case_class": "baseline", "target_ref": "readiness:baseline", "expected_status": "pass", "reason_codes": ["baseline_ok"], "signals": ["control_readiness_true"], "trace_id": "f4444444-4444-4444-8444-444444444444"}
+    {
+      "eval_case_id": "rax-case-semantic-empty-intent",
+      "eval_type": "rax_input_semantic_sufficiency",
+      "case_class": "failure_class",
+      "target_ref": "upstream:semantic-empty",
+      "expected_status": "fail",
+      "reason_codes": [
+        "semantic_intent_insufficient"
+      ],
+      "signals": [
+        "intent_placeholder_detected"
+      ],
+      "trace_id": "11111111-1111-4111-8111-111111111111"
+    },
+    {
+      "eval_case_id": "rax-case-owner-intent-contradiction",
+      "eval_type": "rax_owner_intent_alignment",
+      "case_class": "failure_class",
+      "target_ref": "upstream:owner-intent-contradiction",
+      "expected_status": "fail",
+      "reason_codes": [
+        "owner_intent_contradiction"
+      ],
+      "signals": [
+        "owner_intent_misaligned"
+      ],
+      "trace_id": "22222222-2222-4222-8222-222222222222"
+    },
+    {
+      "eval_case_id": "rax-case-normalization-collapse",
+      "eval_type": "rax_normalization_integrity",
+      "case_class": "failure_class",
+      "target_ref": "upstream:normalization-collapse",
+      "expected_status": "fail",
+      "reason_codes": [
+        "normalization_ambiguity"
+      ],
+      "signals": [
+        "normalization_lossy"
+      ],
+      "trace_id": "33333333-3333-4333-8333-333333333333"
+    },
+    {
+      "eval_case_id": "rax-case-wrong-target",
+      "eval_type": "rax_output_semantic_alignment",
+      "case_class": "adversarial",
+      "target_ref": "contract:wrong-target",
+      "expected_status": "fail",
+      "reason_codes": [
+        "semantic_target_mismatch"
+      ],
+      "signals": [
+        "target_module_semantically_wrong"
+      ],
+      "trace_id": "44444444-4444-4444-8444-444444444444"
+    },
+    {
+      "eval_case_id": "rax-case-output-overexpanded",
+      "eval_type": "rax_output_semantic_alignment",
+      "case_class": "adversarial",
+      "target_ref": "contract:over-expanded",
+      "expected_status": "fail",
+      "reason_codes": [
+        "output_over_expanded"
+      ],
+      "signals": [
+        "downstream_unusable"
+      ],
+      "trace_id": "55555555-5555-4555-8555-555555555555"
+    },
+    {
+      "eval_case_id": "rax-case-weak-acceptance-checks",
+      "eval_type": "rax_acceptance_check_strength",
+      "case_class": "failure_class",
+      "target_ref": "contract:weak-acceptance",
+      "expected_status": "fail",
+      "reason_codes": [
+        "weak_acceptance_check"
+      ],
+      "signals": [
+        "acceptance_strength_below_policy"
+      ],
+      "trace_id": "66666666-6666-4666-8666-666666666666"
+    },
+    {
+      "eval_case_id": "rax-case-missing-trace",
+      "eval_type": "rax_trace_integrity",
+      "case_class": "failure_class",
+      "target_ref": "trace:missing",
+      "expected_status": "fail",
+      "reason_codes": [
+        "missing_required_expansion_trace"
+      ],
+      "signals": [
+        "trace_incomplete"
+      ],
+      "trace_id": "77777777-7777-4777-8777-777777777777"
+    },
+    {
+      "eval_case_id": "rax-case-source-version-drift",
+      "eval_type": "rax_version_authority_alignment",
+      "case_class": "failure_class",
+      "target_ref": "upstream:source-version-drift",
+      "expected_status": "fail",
+      "reason_codes": [
+        "source_version_drift"
+      ],
+      "signals": [
+        "version_authority_mismatch"
+      ],
+      "trace_id": "88888888-8888-4888-8888-888888888888"
+    },
+    {
+      "eval_case_id": "rax-case-missing-control-readiness-evidence",
+      "eval_type": "rax_control_readiness",
+      "case_class": "failure_class",
+      "target_ref": "readiness:missing-evidence",
+      "expected_status": "fail",
+      "reason_codes": [
+        "control_readiness_evidence_missing"
+      ],
+      "signals": [
+        "control_readiness_false"
+      ],
+      "trace_id": "99999999-9999-4999-8999-999999999999"
+    },
+    {
+      "eval_case_id": "rax-case-missing-required-eval-artifact",
+      "eval_type": "rax_control_readiness",
+      "case_class": "failure_class",
+      "target_ref": "summary:missing-required-eval",
+      "expected_status": "fail",
+      "reason_codes": [
+        "missing_required_eval_artifact"
+      ],
+      "signals": [
+        "fail_closed_missing_eval"
+      ],
+      "trace_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    },
+    {
+      "eval_case_id": "rax-case-schema-valid-semantically-wrong",
+      "eval_type": "rax_output_semantic_alignment",
+      "case_class": "adversarial",
+      "target_ref": "contract:schema-valid-semantic-wrong",
+      "expected_status": "fail",
+      "reason_codes": [
+        "schema_valid_semantic_failure"
+      ],
+      "signals": [
+        "semantic_contradiction_detected"
+      ],
+      "trace_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+    },
+    {
+      "eval_case_id": "rax-case-trace-linked-incomplete-output",
+      "eval_type": "rax_trace_integrity",
+      "case_class": "adversarial",
+      "target_ref": "trace:linked-incomplete",
+      "expected_status": "fail",
+      "reason_codes": [
+        "trace_linked_output_incomplete"
+      ],
+      "signals": [
+        "trace_not_sufficient"
+      ],
+      "trace_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc"
+    },
+    {
+      "eval_case_id": "rax-case-test-pass-eval-fail",
+      "eval_type": "rax_control_readiness",
+      "case_class": "adversarial",
+      "target_ref": "flow:test-pass-eval-fail",
+      "expected_status": "fail",
+      "reason_codes": [
+        "tests_pass_eval_fail"
+      ],
+      "signals": [
+        "tests_not_sufficient_for_readiness"
+      ],
+      "trace_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd"
+    },
+    {
+      "eval_case_id": "rax-case-regression-missing-baseline-guard",
+      "eval_type": "rax_regression_against_baseline",
+      "case_class": "failure_class",
+      "target_ref": "contract:baseline-regression",
+      "expected_status": "fail",
+      "reason_codes": [
+        "baseline_regression_detected"
+      ],
+      "signals": [
+        "regression_blocking"
+      ],
+      "trace_id": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"
+    },
+    {
+      "eval_case_id": "rax-case-novel-adversarial-semantic-ambiguity",
+      "eval_type": "rax_input_semantic_sufficiency",
+      "case_class": "adversarial",
+      "target_ref": "upstream:novel-adversarial-semantic-ambiguity",
+      "expected_status": "fail",
+      "reason_codes": [
+        "semantic_intent_insufficient"
+      ],
+      "signals": [
+        "ambiguous_or_evidence_avoiding_intent"
+      ],
+      "trace_id": "e1212121-1212-4121-8121-121212121212"
+    },
+    {
+      "eval_case_id": "rax-case-baseline-input",
+      "eval_type": "rax_input_semantic_sufficiency",
+      "case_class": "baseline",
+      "target_ref": "upstream:baseline",
+      "expected_status": "pass",
+      "reason_codes": [
+        "baseline_ok"
+      ],
+      "signals": [
+        "semantic_intent_sufficient"
+      ],
+      "trace_id": "f1111111-1111-4111-8111-111111111111"
+    },
+    {
+      "eval_case_id": "rax-case-baseline-output",
+      "eval_type": "rax_output_semantic_alignment",
+      "case_class": "baseline",
+      "target_ref": "contract:baseline",
+      "expected_status": "pass",
+      "reason_codes": [
+        "baseline_ok"
+      ],
+      "signals": [
+        "output_semantically_aligned"
+      ],
+      "trace_id": "f2222222-2222-4222-8222-222222222222"
+    },
+    {
+      "eval_case_id": "rax-case-baseline-trace",
+      "eval_type": "rax_trace_integrity",
+      "case_class": "baseline",
+      "target_ref": "trace:baseline",
+      "expected_status": "pass",
+      "reason_codes": [
+        "baseline_ok"
+      ],
+      "signals": [
+        "trace_complete"
+      ],
+      "trace_id": "f3333333-3333-4333-8333-333333333333"
+    },
+    {
+      "eval_case_id": "rax-case-baseline-readiness",
+      "eval_type": "rax_control_readiness",
+      "case_class": "baseline",
+      "target_ref": "readiness:baseline",
+      "expected_status": "pass",
+      "reason_codes": [
+        "baseline_ok"
+      ],
+      "signals": [
+        "control_readiness_true"
+      ],
+      "trace_id": "f4444444-4444-4444-8444-444444444444"
+    }
   ]
 }

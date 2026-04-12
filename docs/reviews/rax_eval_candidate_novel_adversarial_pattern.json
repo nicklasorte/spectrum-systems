@@ -1,0 +1,39 @@
+{
+  "artifact_type": "eval_case",
+  "schema_version": "1.0.0",
+  "run_id": "run-d1c2740c3f044efa",
+  "trace_id": "fede4b1b-0b68-5aa1-bdc9-8eb68aadee28",
+  "eval_case_id": "ec-2da521ef728ab4ac",
+  "input_artifact_refs": [
+    "failure_pattern_record:fpr-d999743b2d7efb4b"
+  ],
+  "expected_output_spec": {
+    "pass_condition": "future_runs_must_not_repeat_normalized_failure_key",
+    "normalized_failure_key": "254e6c8bf84a437555b25e83cb20d3834bcb74e6bba843aabcd59cfd8d0a5b00",
+    "max_allowed_recurrence_count": 0,
+    "anchor_trace_id": "novel-adversarial-pattern-2026-04-12"
+  },
+  "scoring_rubric": {
+    "metric": "failure_pattern_recurrence_count",
+    "pass_if_lte": 0,
+    "fail_if_gte": 1,
+    "failure_action": "freeze_or_block"
+  },
+  "evaluation_type": "deterministic",
+  "created_from": "failure_trace",
+  "slice_tags": [
+    "batch_l_failure_learning",
+    "recurrence_prevention"
+  ],
+  "risk_class": "high",
+  "priority": "p0",
+  "provenance": {
+    "source_failure_pattern_record": "fpr-d999743b2d7efb4b",
+    "source_normalized_failure_key": "254e6c8bf84a437555b25e83cb20d3834bcb74e6bba843aabcd59cfd8d0a5b00",
+    "source_failure_pattern_ref": "failure_pattern_record:fpr-d999743b2d7efb4b",
+    "provenance_refs": [
+      "failure_pattern_record:fpr-d999743b2d7efb4b",
+      "trace:novel-adversarial-pattern-2026-04-12"
+    ]
+  }
+}

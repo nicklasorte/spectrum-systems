@@ -54,6 +54,41 @@ _NON_OPERATIONAL_ACCEPTANCE_PHRASES = (
 )
 _DEPENDENCY_ID_PATTERN = re.compile(r"^RAX-INTERFACE-\d{2}-\d{2}$")
 
+
+_EXECUTION_INTENT_VERBS = (
+    "execute",
+    "apply",
+    "change",
+    "modify",
+    "update",
+    "ship",
+    "deploy",
+    "implement",
+)
+
+_INTENT_HEDGE_PHRASES = (
+    "seems useful",
+    "whatever seems useful",
+    "as needed",
+    "if needed",
+    "quickly",
+    "minimal proof",
+    "without proof",
+    "best effort",
+)
+
+_REQUIRED_GOVERNANCE_INTENT_TERMS = (
+    "artifact",
+    "trace",
+    "evidence",
+    "acceptance",
+    "verify",
+    "validated",
+    "deterministic",
+    "fail-closed",
+    "contract",
+)
+
 _DEFAULT_SOURCE_VERSION_AUTHORITY = {
     "docs/roadmaps/system_roadmap.md#RAX-INTERFACE-24-01": "1.3.112",
 }
@@ -91,6 +126,21 @@ def _is_semantically_sufficient_intent(intent: str) -> bool:
     meaningful_tokens = [token for token in tokens if len(token) >= 4 and token not in generic_placeholders]
     return len(meaningful_tokens) >= 3
 
+
+
+
+def _semantic_intent_gap_reason(intent: str) -> str | None:
+    normalized = " ".join(intent.lower().split())
+
+    has_execution_language = any(verb in normalized for verb in _EXECUTION_INTENT_VERBS)
+    has_governance_anchor = any(term in normalized for term in _REQUIRED_GOVERNANCE_INTENT_TERMS)
+    if has_execution_language and not has_governance_anchor:
+        return "semantic_intent_insufficient: execution intent missing governed verification/evidence anchors"
+
+    for phrase in _INTENT_HEDGE_PHRASES:
+        if phrase in normalized:
+            return f"semantic_intent_insufficient: ambiguous_or_evidence_avoiding_intent_phrase='{phrase}'"
+    return None
 
 def _validate_owner_intent_semantics(owner: str, intent: str) -> str | None:
     lowered = intent.lower()
@@ -172,6 +222,12 @@ def assure_rax_input(
         if owner_contradiction:
             failure_classification = "ownership_violation"
             details.append(f"owner_intent_contradiction: {owner_contradiction}")
+
+    if failure_classification == "none":
+        semantic_gap = _semantic_intent_gap_reason(payload["intent"])
+        if semantic_gap:
+            failure_classification = "invalid_input"
+            details.append(semantic_gap)
 
     if failure_classification == "none":
         if payload["owner"] not in policy.get("owner_defaults", {}):
