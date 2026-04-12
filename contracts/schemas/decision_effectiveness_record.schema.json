@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/decision_effectiveness_record.schema.json",
+  "title": "Decision Effectiveness Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "trace_id",
+    "continuation_decision_record_ref",
+    "downstream_outcome_ref",
+    "effectiveness_state",
+    "precision_proxy",
+    "strictness_proxy"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "decision_effectiveness_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string",
+      "pattern": "^cde-eff-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_decision_record_ref": {
+      "type": "string",
+      "pattern": "^continuation_decision_record:.+"
+    },
+    "downstream_outcome_ref": {
+      "type": "string",
+      "pattern": "^downstream_outcome:.+"
+    },
+    "effectiveness_state": {
+      "type": "string",
+      "enum": [
+        "effective",
+        "too_permissive",
+        "too_strict",
+        "noisy"
+      ]
+    },
+    "precision_proxy": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "strictness_proxy": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  }
+}

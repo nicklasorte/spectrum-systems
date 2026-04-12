@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/decision_bundle.schema.json",
+  "title": "Decision Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "bundle_id",
+    "trace_id",
+    "decision_evidence_pack_ref",
+    "continuation_decision_record_ref",
+    "decision_eval_result_ref",
+    "decision_readiness_record_ref",
+    "decision_conflict_record_ref",
+    "lineage_complete",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "decision_bundle"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "bundle_id": {
+      "type": "string",
+      "pattern": "^cde-bundle-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision_evidence_pack_ref": {
+      "type": "string",
+      "pattern": "^decision_evidence_pack:.+"
+    },
+    "continuation_decision_record_ref": {
+      "type": "string",
+      "pattern": "^continuation_decision_record:.+"
+    },
+    "decision_eval_result_ref": {
+      "type": "string",
+      "pattern": "^decision_eval_result:.+"
+    },
+    "decision_readiness_record_ref": {
+      "type": "string",
+      "pattern": "^decision_readiness_record:.+"
+    },
+    "decision_conflict_record_ref": {
+      "type": "string",
+      "pattern": "^decision_conflict_record:.+"
+    },
+    "lineage_complete": {
+      "type": "boolean"
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

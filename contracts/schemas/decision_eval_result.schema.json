@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/decision_eval_result.schema.json",
+  "title": "Decision Eval Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "eval_id",
+    "trace_id",
+    "continuation_decision_record_ref",
+    "evidence_sufficiency_passed",
+    "policy_alignment_passed",
+    "contradiction_handling_passed",
+    "decision_completeness_passed",
+    "required_field_coverage_passed",
+    "result",
+    "fail_reasons"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "decision_eval_result"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "eval_id": {
+      "type": "string",
+      "pattern": "^cde-eval-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_decision_record_ref": {
+      "type": "string",
+      "pattern": "^continuation_decision_record:.+"
+    },
+    "evidence_sufficiency_passed": {
+      "type": "boolean"
+    },
+    "policy_alignment_passed": {
+      "type": "boolean"
+    },
+    "contradiction_handling_passed": {
+      "type": "boolean"
+    },
+    "decision_completeness_passed": {
+      "type": "boolean"
+    },
+    "required_field_coverage_passed": {
+      "type": "boolean"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "fail_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

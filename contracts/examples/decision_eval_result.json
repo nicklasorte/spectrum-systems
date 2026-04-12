@@ -1,0 +1,14 @@
+{
+  "artifact_type": "decision_eval_result",
+  "schema_version": "1.0.0",
+  "eval_id": "cde-eval-0123456789abcdef",
+  "trace_id": "trace-cde-001",
+  "continuation_decision_record_ref": "continuation_decision_record:cde-dec-0123456789abcdef",
+  "evidence_sufficiency_passed": true,
+  "policy_alignment_passed": true,
+  "contradiction_handling_passed": true,
+  "decision_completeness_passed": true,
+  "required_field_coverage_passed": true,
+  "result": "pass",
+  "fail_reasons": []
+}

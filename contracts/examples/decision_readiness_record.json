@@ -1,0 +1,15 @@
+{
+  "artifact_type": "decision_readiness_record",
+  "schema_version": "1.0.0",
+  "readiness_id": "cde-ready-0123456789abcdef",
+  "trace_id": "trace-cde-001",
+  "continuation_decision_record_ref": "continuation_decision_record:cde-dec-0123456789abcdef",
+  "decision_eval_result_ref": "decision_eval_result:cde-eval-0123456789abcdef",
+  "candidate_ready": true,
+  "blocking_reasons": [],
+  "non_authority_assertions": [
+    "candidate_only",
+    "cannot_trigger_execution",
+    "cannot_trigger_enforcement"
+  ]
+}

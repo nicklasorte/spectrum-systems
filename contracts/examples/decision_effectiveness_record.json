@@ -1,0 +1,11 @@
+{
+  "artifact_type": "decision_effectiveness_record",
+  "schema_version": "1.0.0",
+  "record_id": "cde-eff-0123456789abcdef",
+  "trace_id": "trace-cde-001",
+  "continuation_decision_record_ref": "continuation_decision_record:cde-dec-0123456789abcdef",
+  "downstream_outcome_ref": "downstream_outcome:tlc-merge-001",
+  "effectiveness_state": "effective",
+  "precision_proxy": 0.9,
+  "strictness_proxy": 0.6
+}

@@ -1,0 +1,25 @@
+{
+  "artifact_type": "continuation_decision_record",
+  "schema_version": "1.0.0",
+  "decision_id": "cde-dec-0123456789abcdef",
+  "trace_id": "trace-cde-001",
+  "evidence_pack_ref": "decision_evidence_pack:cde-ep-0123456789abcdef",
+  "decision_outcome": "continue_repair_bounded",
+  "reason_codes": [
+    "evidence_sufficient",
+    "policy_allows_bounded_continue"
+  ],
+  "evidence_refs": [
+    "interpretation_record:ril-int-0123",
+    "repair_eval_result:fre-reval-0123"
+  ],
+  "change_conditions": [
+    "material_conflict_detected",
+    "evidence_budget_exceeded"
+  ],
+  "non_authority_assertions": [
+    "decision_artifact_only",
+    "cde_must_not_execute",
+    "cde_must_not_enforce"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "artifact_type": "decision_evidence_pack",
+  "schema_version": "1.0.0",
+  "evidence_pack_id": "cde-ep-0123456789abcdef",
+  "trace_id": "trace-cde-001",
+  "interpretation_bundle_ref": "interpretation_bundle:ril-bundle-0123456789abcdef",
+  "repair_bundle_ref": "repair_bundle:fre-bundle-0123456789abcdef",
+  "policy_constraints_ref": "policy:repair_continuation_v1",
+  "provenance_refs": [
+    "provenance_record:prv-001"
+  ],
+  "replay_refs": [
+    "interpretation_replay_validation_record:ril-replay-001"
+  ],
+  "evidence_refs": [
+    "failure_packet:ril-fp-001",
+    "repair_eval_result:fre-reval-001"
+  ],
+  "input_fingerprint": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+}

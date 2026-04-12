@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.113",
+  "artifact_version": "1.3.114",
   "schema_version": "1.3.98",
-  "standards_version": "1.3.113",
+  "standards_version": "1.3.114",
   "record_id": "REC-STD-2026-04-12-RAX-ROADMAP",
   "run_id": "run-20260412T120000Z-rax-roadmap-serial-01",
   "created_at": "2026-04-12T00:00:00Z",
@@ -760,6 +760,19 @@
       "notes": "TRUST-01 deterministic fail-closed pre-execution context validation artifact for bundle/schema/trust/source/policy checks."
     },
     {
+      "artifact_type": "continuation_decision_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/continuation_decision_record.json",
+      "notes": "CDE-001 bounded decision authority and RIL closeout contract."
+    },
+    {
       "artifact_type": "continuous_eval_run_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1005,6 +1018,71 @@
       "notes": "CTRL-LOOP-01 grouped observability extension: deterministic per-cycle status projection with normalized blocked reasons and artifact references."
     },
     {
+      "artifact_type": "decision_bundle",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/decision_bundle.json",
+      "notes": "CDE-001 bounded decision authority and RIL closeout contract."
+    },
+    {
+      "artifact_type": "decision_conflict_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/decision_conflict_record.json",
+      "notes": "CDE-001 bounded decision authority and RIL closeout contract."
+    },
+    {
+      "artifact_type": "decision_effectiveness_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/decision_effectiveness_record.json",
+      "notes": "CDE-001 bounded decision authority and RIL closeout contract."
+    },
+    {
+      "artifact_type": "decision_eval_result",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/decision_eval_result.json",
+      "notes": "CDE-001 bounded decision authority and RIL closeout contract."
+    },
+    {
+      "artifact_type": "decision_evidence_pack",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/decision_evidence_pack.json",
+      "notes": "CDE-001 bounded decision authority and RIL closeout contract."
+    },
+    {
       "artifact_type": "decision_explainability_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1056,6 +1134,32 @@
       "last_updated_in": "1.3.63",
       "example_path": "contracts/examples/decision_quality_budget_status.json",
       "notes": "LT-05 deterministic decision-quality budget status with explicit thresholds and fail-closed exhaustion semantics."
+    },
+    {
+      "artifact_type": "decision_readiness_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/decision_readiness_record.json",
+      "notes": "CDE-001 bounded decision authority and RIL closeout contract."
+    },
+    {
+      "artifact_type": "decision_replay_validation_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/decision_replay_validation_record.json",
+      "notes": "CDE-001 bounded decision authority and RIL closeout contract."
     },
     {
       "artifact_type": "done_certification_error",
@@ -3815,35 +3919,9 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/rax_adversarial_pattern_candidate.json",
-      "notes": "RAX deterministic adversarial pattern candidate artifact for governed eval/regression consumption."
-    },
-    {
-      "artifact_type": "rax_adversarial_pattern_candidate",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
       "last_updated_in": "1.3.114",
       "example_path": "contracts/examples/rax_adversarial_pattern_candidate.json",
       "notes": "RAX deterministic adversarial pattern candidate artifact for governed eval/regression consumption."
-    },
-    {
-      "artifact_type": "rax_assurance_audit_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.112",
-      "last_updated_in": "1.3.112",
-      "example_path": "contracts/examples/rax_assurance_audit_record.example.json",
-      "notes": "RAX-INTERFACE-24-01 fail-closed assurance audit artifact for local accept/hold/block candidate decisions."
     },
     {
       "artifact_type": "rax_assurance_audit_record",
@@ -3874,19 +3952,6 @@
     {
       "artifact_type": "rax_control_readiness_record",
       "artifact_class": "governance",
-      "schema_version": "1.1.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/rax_control_readiness_record.json",
-      "notes": "RAX-FEEDBACK-LOOP-10 bounded readiness artifact with structured readiness-change conditions, unknown-state linkage, and pre-certification alignment references."
-    },
-    {
-      "artifact_type": "rax_control_readiness_record",
-      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "active",
       "intended_consumers": [
@@ -3896,19 +3961,6 @@
       "last_updated_in": "1.3.114",
       "example_path": "contracts/examples/rax_control_readiness_record.json",
       "notes": "RAX-FEEDBACK-LOOP-10 bounded readiness artifact with structured readiness-change conditions, unknown-state linkage, and pre-certification alignment references."
-    },
-    {
-      "artifact_type": "rax_drift_signal_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_drift_signal_record.json",
-      "notes": "RAX drift signal artifact comparing current and baseline windows across governed drift surfaces."
     },
     {
       "artifact_type": "rax_drift_signal_record",
@@ -3939,19 +3991,6 @@
     {
       "artifact_type": "rax_eval_case_set",
       "artifact_class": "governance",
-      "schema_version": "1.1.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/rax_eval_case_set.json",
-      "notes": "RAX-EVAL-01 governed deterministic eval case set across baseline, adversarial, and failure classes."
-    },
-    {
-      "artifact_type": "rax_eval_case_set",
-      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "active",
       "intended_consumers": [
@@ -3961,19 +4000,6 @@
       "last_updated_in": "1.3.113",
       "example_path": "contracts/examples/rax_eval_case_set.json",
       "notes": "RAX-EVAL-01 governed deterministic eval case set across baseline, adversarial, and failure classes."
-    },
-    {
-      "artifact_type": "rax_eval_registry",
-      "artifact_class": "governance",
-      "schema_version": "1.1.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.113",
-      "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/rax_eval_registry.json",
-      "notes": "RAX-EVAL-01 governed registry of required deterministic RAX eval definitions."
     },
     {
       "artifact_type": "rax_eval_registry",
@@ -4002,32 +4028,6 @@
       "notes": "RAX failure-derived eval candidate artifact generated deterministically from governed failure classes."
     },
     {
-      "artifact_type": "rax_failure_eval_candidate",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_failure_eval_candidate.json",
-      "notes": "RAX failure-derived eval candidate artifact generated deterministically from governed failure classes."
-    },
-    {
-      "artifact_type": "rax_failure_pattern_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_failure_pattern_record.json",
-      "notes": "RAX feedback-loop failure capture artifact linking classified failures to reproducibility and trace references."
-    },
-    {
       "artifact_type": "rax_failure_pattern_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -4052,32 +4052,6 @@
       "last_updated_in": "1.3.114",
       "example_path": "contracts/examples/rax_feedback_loop_record.json",
       "notes": "RAX closure artifact linking failure, fix, eval coverage additions, and recurrence outcomes."
-    },
-    {
-      "artifact_type": "rax_feedback_loop_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_feedback_loop_record.json",
-      "notes": "RAX closure artifact linking failure, fix, eval coverage additions, and recurrence outcomes."
-    },
-    {
-      "artifact_type": "rax_health_snapshot",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_health_snapshot.json",
-      "notes": "RAX health metrics snapshot with SLO-style threshold posture as candidate signal only."
     },
     {
       "artifact_type": "rax_health_snapshot",
@@ -4145,19 +4119,6 @@
       "notes": "RAX pre-certification alignment artifact for downstream promotion rigor checks without granting certification authority."
     },
     {
-      "artifact_type": "rax_pre_certification_alignment_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_pre_certification_alignment_record.json",
-      "notes": "RAX pre-certification alignment artifact for downstream promotion rigor checks without granting certification authority."
-    },
-    {
       "artifact_type": "rax_promotion_hard_gate_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -4208,32 +4169,6 @@
       "last_updated_in": "1.3.114",
       "example_path": "contracts/examples/rax_unknown_state_record.json",
       "notes": "RAX explicit unknown-state artifact enforcing fail-closed non-readiness when basis is incomplete or contradictory."
-    },
-    {
-      "artifact_type": "rax_unknown_state_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.114",
-      "last_updated_in": "1.3.114",
-      "example_path": "contracts/examples/rax_unknown_state_record.json",
-      "notes": "RAX explicit unknown-state artifact enforcing fail-closed non-readiness when basis is incomplete or contradictory."
-    },
-    {
-      "artifact_type": "rax_upstream_input_envelope",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "active",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.112",
-      "last_updated_in": "1.3.112",
-      "example_path": "contracts/examples/rax_upstream_input_envelope.example.json",
-      "notes": "RAX-INTERFACE-24-01 strict compact upstream roadmap envelope consumed by RAX for deterministic contract expansion."
     },
     {
       "artifact_type": "rax_upstream_input_envelope",
@@ -4861,6 +4796,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/reviewer_comment_set.json",
       "notes": "Normalized reviewer comments with provenance links; payloads should be wrapped in the artifact envelope standard."
+    },
+    {
+      "artifact_type": "ril_closeout_gate_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.114",
+      "last_updated_in": "1.3.114",
+      "example_path": "contracts/examples/ril_closeout_gate_record.json",
+      "notes": "CDE-001 bounded decision authority and RIL closeout contract."
     },
     {
       "artifact_type": "risk_register",
