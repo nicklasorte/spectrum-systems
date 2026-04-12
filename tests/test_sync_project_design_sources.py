@@ -89,3 +89,12 @@ def test_idempotent_rerun_keeps_same_raw_paths(tmp_path: Path, monkeypatch: pyte
     second = json.loads((repo_root / "docs/source_structured/project_design_context_as_infrastructure.json").read_text(encoding="utf-8"))
 
     assert first["source_document"]["file_path"] == second["source_document"]["file_path"]
+
+
+def test_run_sync_blocks_canonical_repo_writes_without_override(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    upstream = tmp_path / "upstream"
+    _write_text(upstream / "docs/architecture/project_design/ai_durability_strategy.md", "# AI Durability Strategy\nSystem must fail closed.")
+    monkeypatch.delenv("SPECTRUM_ALLOW_SOURCE_AUTHORITY_WRITE", raising=False)
+
+    with pytest.raises(PermissionError, match="Refusing to mutate canonical source authority path"):
+        sync.run_sync(upstream, "nicklasorte/spectrum-data-lake", allow_missing_required=True, validate_only=False)

@@ -129,3 +129,12 @@ def test_build_source_indexes_allows_documented_duplicate_obligation_id(tmp_path
     obligation_index = _load(indexes_dir / "obligation_index.json")
     obligations = [row for row in obligation_index["obligations"] if row["obligation_id"] == duplicate_obligation_id]
     assert len(obligations) == 2
+
+
+def test_build_source_indexes_blocks_canonical_repo_writes_without_override(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("SPECTRUM_ALLOW_SOURCE_AUTHORITY_WRITE", raising=False)
+    monkeypatch.setattr(build_source_indexes, "SOURCE_STRUCTURED_DIR", REPO_ROOT / "docs" / "source_structured")
+    monkeypatch.setattr(build_source_indexes, "SOURCE_INDEXES_DIR", REPO_ROOT / "docs" / "source_indexes")
+
+    with pytest.raises(PermissionError, match="Refusing to mutate canonical source authority path"):
+        build_source_indexes.build_indexes()

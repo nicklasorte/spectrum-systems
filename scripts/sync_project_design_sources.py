@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -14,11 +15,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+_CANONICAL_REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = _CANONICAL_REPO_ROOT
 RAW_ROOT = REPO_ROOT / "docs" / "source_raw" / "project_design"
 STRUCTURED_ROOT = REPO_ROOT / "docs" / "source_structured"
 INDEX_ROOT = REPO_ROOT / "docs" / "source_indexes"
 TPA_POLICY_PATH = REPO_ROOT / "config" / "policy" / "tpa_scope_policy.json"
+_WRITE_OVERRIDE_ENV = "SPECTRUM_ALLOW_SOURCE_AUTHORITY_WRITE"
 
 REQUIRED_SOURCES = [
     "strategy_control_document",
@@ -158,8 +161,23 @@ def _copy_raw_file(source: CandidateFile, source_key: str) -> str:
     ext = source.absolute_path.suffix.lower()
     local_name = f"{source_key}__{digest}{ext}"
     destination = RAW_ROOT / local_name
+    _assert_canonical_write_allowed(destination)
     shutil.copy2(source.absolute_path, destination)
     return str(destination.relative_to(REPO_ROOT)).replace("\\", "/")
+
+
+def _assert_canonical_write_allowed(path: Path) -> None:
+    canonical_roots = (
+        (_CANONICAL_REPO_ROOT / "docs" / "source_indexes").resolve(),
+        (_CANONICAL_REPO_ROOT / "docs" / "source_raw").resolve(),
+        (_CANONICAL_REPO_ROOT / "docs" / "source_structured").resolve(),
+    )
+    path_resolved = path.resolve()
+    if any(path_resolved.is_relative_to(root) for root in canonical_roots):
+        if os.getenv(_WRITE_OVERRIDE_ENV) != "1":
+            raise PermissionError(
+                f"Refusing to mutate canonical source authority path without {_WRITE_OVERRIDE_ENV}=1: {path}"
+            )
 
 
 def _extract_pdf_text(path: Path) -> str:
@@ -362,6 +380,7 @@ def build_missing_record(source_key: str, upstream_repo: str, ingestion_time: st
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
+    _assert_canonical_write_allowed(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
