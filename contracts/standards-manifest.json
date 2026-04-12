@@ -4327,6 +4327,84 @@
       "notes": "BATCH-FRE-03 deterministic bounded recovery-loop outcome artifact linking diagnosis, repair prompt, execution evidence, validation outcomes, and retry guidance."
     },
     {
+      "artifact_type": "redteam_closure_request",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.105",
+      "last_updated_in": "1.3.105",
+      "example_path": "contracts/examples/redteam_closure_request.json",
+      "notes": "RQX bounded closure proof request artifact for governed red-team findings."
+    },
+    {
+      "artifact_type": "redteam_exploit_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.105",
+      "last_updated_in": "1.3.105",
+      "example_path": "contracts/examples/redteam_exploit_bundle.json",
+      "notes": "RQX bounded exploit bundle artifact for a red-team round."
+    },
+    {
+      "artifact_type": "redteam_finding_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.105",
+      "last_updated_in": "1.3.105",
+      "example_path": "contracts/examples/redteam_finding_record.json",
+      "notes": "RQX governed finding record emitted from bounded red-team review."
+    },
+    {
+      "artifact_type": "redteam_fix_slice_request",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.105",
+      "last_updated_in": "1.3.105",
+      "example_path": "contracts/examples/redteam_fix_slice_request.json",
+      "notes": "RQX owner-routed bounded fix-slice request artifact."
+    },
+    {
+      "artifact_type": "redteam_review_request",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.105",
+      "last_updated_in": "1.3.105",
+      "example_path": "contracts/examples/redteam_review_request.json",
+      "notes": "RQX red-team orchestration request artifact."
+    },
+    {
+      "artifact_type": "redteam_round_config",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.105",
+      "last_updated_in": "1.3.105",
+      "example_path": "contracts/examples/redteam_round_config.json",
+      "notes": "RQX red-team round configuration artifact with bounded schedule/deadline data."
+    },
+    {
       "artifact_type": "repair_attempt_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",

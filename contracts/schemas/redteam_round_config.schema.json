@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/redteam_round_config.schema.json",
+  "title": "Redteam Round Config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "round_id",
+    "trace_id",
+    "review_request_ref",
+    "round_number",
+    "deadline_ref",
+    "max_findings"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "redteam_round_config"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "round_id": {
+      "type": "string",
+      "pattern": "^rqx-round-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_request_ref": {
+      "type": "string",
+      "pattern": "^redteam_review_request:.+"
+    },
+    "round_number": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "deadline_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "max_findings": {
+      "type": "integer",
+      "minimum": 1
+    }
+  }
+}
