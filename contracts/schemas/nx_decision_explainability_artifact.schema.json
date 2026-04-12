@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "$id": "https://spectrum-systems.org/contracts/nx_decision_explainability_artifact.schema.json",
+  "title": "nx_decision_explainability_artifact",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "authority_scope",
+    "machine_readable",
+    "human_readable_summary",
+    "trace_id",
+    "lineage"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "decision_explainability_artifact"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "authority_scope": {
+      "const": "non_authoritative"
+    },
+    "machine_readable": {
+      "type": "object"
+    },
+    "human_readable_summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage": {
+      "type": "object"
+    }
+  }
+}

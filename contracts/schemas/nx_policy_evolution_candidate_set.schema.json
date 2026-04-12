@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "$id": "https://spectrum-systems.org/contracts/nx_policy_evolution_candidate_set.schema.json",
+  "title": "nx_policy_evolution_candidate_set",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "authority_scope",
+    "candidates",
+    "trace_id",
+    "lineage"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "policy_evolution_candidate_set"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "authority_scope": {
+      "const": "recommendation_only"
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage": {
+      "type": "object"
+    }
+  }
+}

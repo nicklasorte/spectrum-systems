@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "$id": "https://spectrum-systems.org/contracts/nx_system_trust_score_artifact.schema.json",
+  "title": "nx_system_trust_score_artifact",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "authority_scope",
+    "trust_score",
+    "trace_id",
+    "lineage"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "system_trust_score_artifact"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "authority_scope": {
+      "const": "recommendation_only"
+    },
+    "trust_score": {
+      "type": "number"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage": {
+      "type": "object"
+    }
+  }
+}

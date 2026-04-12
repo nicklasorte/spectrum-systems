@@ -278,3 +278,87 @@ def test_advanced_certification_and_autonomy_gate_block_without_authority() -> N
     )
     assert gate["eligible"] is False
     assert "missing_cde_authority" in gate["blocked_reasons"]
+
+from spectrum_systems.modules.runtime.nx_governed_system import (
+    NXGovernedSystemError,
+    resolve_nx_contract,
+    validate_nx_artifact,
+)
+
+
+def _with_trace(payload: dict[str, object]) -> dict[str, object]:
+    out = dict(payload)
+    out.setdefault("schema_version", "1.0.0")
+    out.setdefault("trace_id", "trace-nx-001")
+    if out.get("artifact_type") != "artifact_intelligence_index":
+        out.setdefault("lineage", {"trace_id": "trace-nx-001", "producer": "RIL"})
+    return out
+
+
+def test_nx_runtime_outputs_validate_against_published_contracts() -> None:
+    index = _with_trace(build_artifact_intelligence_index(_artifact_rows()))
+    report = _with_trace(build_artifact_intelligence_report(index))
+    fused = _with_trace(
+        fuse_signals(
+            {
+                "preflight": {"ok": True},
+                "eval_summary": {"pass_rate": 0.9},
+                "runtime_observability": {"latency": 100},
+                "judgment_eval": {"all_required_passed": True},
+                "replay_drift": {"drift": False},
+                "certification_state": {"certified": True},
+            }
+        )
+    )
+    aggregate = _with_trace(
+        aggregate_multi_run(
+            [
+                {"status": "pass", "repair_outcome": "fixed", "blocker_class": "none", "latency_ms": 100, "drift_detected": False, "promotion_blocked": False}
+            ]
+        )
+    )
+    pattern = _with_trace(mine_patterns([{"category": "failure", "motif": "policy_conflict"}, {"category": "failure", "motif": "policy_conflict"}]))
+    explain = _with_trace(
+        build_explainability_artifact(
+            {
+                "trace": "trace-1",
+                "input_artifacts": ["a-1"],
+                "eval_results": ["e-1"],
+                "judgment_records": ["j-1"],
+                "policy_refs": ["p-1"],
+                "control_decisions": ["cde:hold"],
+                "enforcement_actions": ["sel:block"],
+            }
+        )
+    )
+    trust = _with_trace(
+        compute_trust_score(
+            {
+                "eval_pass_rate": 0.9,
+                "replay_consistency": 1.0,
+                "drift": 0.1,
+                "judgment_calibration": 0.8,
+                "certification": 1.0,
+                "blocker_trend": 0.2,
+            }
+        )
+    )
+    candidates = _with_trace(evolve_policy_candidates(pattern_report=pattern, overrides=[], precedents=[]))
+    autonomy = _with_trace(evaluate_autonomy_expansion_gate(readiness={"eligible": True, "recommendation_only": False}, authority_inputs={"cde_authorized": True}))
+
+    for artifact in [index, report, fused, aggregate, pattern, explain, trust, candidates, autonomy]:
+        validate_nx_artifact(artifact)
+        assert resolve_nx_contract(str(artifact["artifact_type"]))["schema_version"] == "1.0.0"
+
+
+def test_nx_contract_resolution_fails_on_version_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
+    from spectrum_systems.modules.runtime import nx_governed_system as nxs
+
+    manifest = nxs._load_manifest()
+    for row in manifest["contracts"]:
+        if row.get("artifact_type") == "fused_signal_record":
+            row["schema_version"] = "9.9.9"
+    monkeypatch.setattr(nxs, "_load_manifest", lambda: manifest)
+
+    with pytest.raises(NXGovernedSystemError, match="schema mismatch"):
+        resolve_nx_contract("fused_signal_record")

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "$id": "https://spectrum-systems.org/contracts/nx_multi_run_aggregate.schema.json",
+  "title": "nx_multi_run_aggregate",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "authority_scope",
+    "run_count",
+    "trace_id",
+    "lineage"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "multi_run_aggregate"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "authority_scope": {
+      "const": "non_authoritative"
+    },
+    "run_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "pass_frequency": {
+      "type": "number"
+    },
+    "repair_outcomes": {
+      "type": "object"
+    },
+    "blocker_class_rates": {
+      "type": "object"
+    },
+    "latency_distribution_ms": {
+      "type": "object"
+    },
+    "drift_frequency": {
+      "type": "number"
+    },
+    "promotion_guard_block_rate": {
+      "type": "number"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage": {
+      "type": "object"
+    }
+  }
+}

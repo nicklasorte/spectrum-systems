@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.112",
+  "artifact_version": "1.3.113",
   "schema_version": "1.3.98",
-  "standards_version": "1.3.112",
+  "standards_version": "1.3.113",
   "record_id": "REC-STD-2026-04-12-RAX",
   "run_id": "run-20260412T000000Z-rax-interface",
   "created_at": "2026-04-12T00:00:00Z",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.112",
+  "source_repo_version": "1.3.113",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -4886,6 +4886,149 @@
       "last_updated_in": "1.3.114",
       "example_path": "contracts/examples/rax_adversarial_pattern_candidate.json",
       "notes": "RAX deterministic adversarial pattern candidate artifact for governed eval/regression consumption."
+    },
+    {
+      "artifact_type": "artifact_intelligence_index",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/nx_artifact_intelligence_index.json",
+      "notes": "RIL-owned deterministic index over governed artifact telemetry for non-authoritative retrieval and analysis."
+    },
+    {
+      "artifact_type": "artifact_intelligence_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/nx_artifact_intelligence_report.json",
+      "notes": "RIL-owned non-authoritative artifact intelligence report."
+    },
+    {
+      "artifact_type": "fused_signal_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/nx_fused_signal_record.json",
+      "notes": "RIL preparatory fused signal artifact for downstream CDE/TPA consumption."
+    },
+    {
+      "artifact_type": "multi_run_aggregate",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/nx_multi_run_aggregate.json",
+      "notes": "RIL multi-run deterministic aggregate artifact."
+    },
+    {
+      "artifact_type": "pattern_mining_recommendation",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/nx_pattern_mining_recommendation.json",
+      "notes": "RIL recommendation-only recurring pattern mining output."
+    },
+    {
+      "artifact_type": "decision_explainability_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/nx_decision_explainability_artifact.json",
+      "notes": "RIL explainability linkage artifact for governed traceability."
+    },
+    {
+      "artifact_type": "system_trust_score_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/nx_system_trust_score_artifact.json",
+      "notes": "NX recommendation-only trust posture score artifact."
+    },
+    {
+      "artifact_type": "policy_evolution_candidate_set",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/nx_policy_evolution_candidate_set.json",
+      "notes": "NX recommendation candidate set for TPA policy evolution intake."
+    },
+    {
+      "artifact_type": "autonomy_expansion_gate_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/nx_autonomy_expansion_gate_result.json",
+      "notes": "NX preparatory autonomy expansion gate result artifact."
+    },
+    {
+      "artifact_type": "nx_review_intelligence_link_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/nx_review_intelligence_link_artifact.json",
+      "notes": "RQX-completed review-cycle integration feed into NX intelligence."
+    },
+    {
+      "artifact_type": "nx_roadmap_candidate_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/nx_roadmap_candidate_artifact.json",
+      "notes": "PRG-owned recommendation-only roadmap candidate persistence artifact from NX feedback."
     }
   ]
 }

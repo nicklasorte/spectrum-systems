@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "$id": "https://spectrum-systems.org/contracts/nx_review_intelligence_link_artifact.schema.json",
+  "title": "nx_review_intelligence_link_artifact",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "authority_scope",
+    "trace_id",
+    "review_cycle_ref",
+    "pattern_support",
+    "trust_inputs",
+    "judgment_support",
+    "roadmap_candidates"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "nx_review_intelligence_link_artifact"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "authority_scope": {
+      "const": "non_authoritative"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_cycle_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pattern_support": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "trust_inputs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "judgment_support": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "roadmap_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}
