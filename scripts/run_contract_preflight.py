@@ -21,6 +21,9 @@ if str(REPO_ROOT) not in sys.path:
 
 from spectrum_systems.contracts import load_schema  # noqa: E402
 from spectrum_systems.governance.contract_impact import analyze_contract_impact  # noqa: E402
+from spectrum_systems.modules.runtime.changed_path_resolution import (  # noqa: E402
+    resolve_changed_paths,
+)
 from spectrum_systems.modules.runtime.control_surface_enforcement import (  # noqa: E402
     ControlSurfaceEnforcementError,
     run_control_surface_enforcement,
@@ -328,13 +331,17 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
             warnings=warnings + ["changed-path detection degraded; running full governed contract scan"],
         )
 
+    # Canonical resolver fallback for explicit insufficient-context metadata surface.
+    resolved = resolve_changed_paths(repo_root=repo_root, base_ref=base_ref, head_ref=head_ref, explicit=explicit)
     return ChangedPathDetectionResult(
-        changed_paths=[],
+        changed_paths=resolved.changed_paths,
         changed_path_detection_mode="detection_failed_no_governed_paths",
         refs_attempted=refs_attempted,
         fallback_used=True,
         warnings=warnings + ["changed-path detection failed and no governed paths were available"],
     )
+
+
 
 
 def classify_changed_contracts(changed_paths: list[str]) -> dict[str, list[str]]:
