@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
+
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.runtime.cde_decision_flow import (
     CDEDecisionFlowError,
+    build_cde_closeout_gate_record,
     build_decision_bundle,
     build_decision_effectiveness_record,
     build_decision_evidence_pack,
@@ -139,6 +142,13 @@ def test_cde_flow_end_to_end() -> None:
         downstream_outcome="improved",
     )
 
+    closeout = build_cde_closeout_gate_record(
+        decision_bundle=bundle,
+        decision_eval_result=eval_result,
+        decision_replay_validation_record=replay,
+        decision_effectiveness_record=effectiveness,
+    )
+
     for artifact_type, artifact in (
         ("decision_evidence_pack", evidence_pack),
         ("decision_conflict_record", conflict_record),
@@ -148,12 +158,14 @@ def test_cde_flow_end_to_end() -> None:
         ("decision_bundle", bundle),
         ("decision_replay_validation_record", replay),
         ("decision_effectiveness_record", effectiveness),
+        ("cde_closeout_gate_record", closeout),
     ):
         validate_artifact(artifact, artifact_type)
 
     assert decision["decision_outcome"] == "continue_repair_bounded"
     assert readiness["candidate_ready"] is True
     assert replay["result"] == "pass"
+    assert closeout["closeout_status"] == "closed"
 
 
 def test_cde_boundary_and_fail_closed_behaviors() -> None:
@@ -200,3 +212,52 @@ def test_cde_boundary_and_fail_closed_behaviors() -> None:
     )
     assert replay_drift["result"] == "fail"
     assert "decision_replay_mismatch" in replay_drift["fail_reasons"]
+
+
+def test_cde_closeout_gate_artifacts_are_operationally_real_on_repo_paths(tmp_path) -> None:
+    interpretation_bundle, repair_bundle, _ = _build_ril_fre_artifacts()
+    evidence_pack = build_decision_evidence_pack(
+        trace_id="trace-cde-closeout-001",
+        interpretation_bundle=interpretation_bundle,
+        repair_bundle=repair_bundle,
+        policy_constraints_ref="policy:cde_bounded_decision_v1",
+        provenance_refs=["provenance_record:prv-closeout-001"],
+        replay_refs=["interpretation_replay_validation_record:ril-replay-closeout-001"],
+        evidence_refs=["failure_packet:ril-fp-closeout-001", "repair_eval_result:fre-reval-closeout-001", "policy:cde_bounded_decision_v1"],
+    )
+    conflict_record = detect_decision_conflicts(evidence_pack=evidence_pack, conflict_refs=["interpretation_conflict_record:ril-conf-closeout-001"], material_threshold=2)
+    decision = make_continuation_decision(evidence_pack=evidence_pack, conflict_record=conflict_record, evidence_budget_min=2, ambiguity_rate=0.1)
+    eval_result = evaluate_decision(decision_record=decision, conflict_record=conflict_record, evidence_pack=evidence_pack)
+    readiness = build_decision_readiness(decision_record=decision, eval_result=eval_result)
+    bundle = build_decision_bundle(
+        evidence_pack=evidence_pack,
+        decision_record=decision,
+        eval_result=eval_result,
+        readiness_record=readiness,
+        conflict_record=conflict_record,
+    )
+    replay = validate_decision_replay(evidence_pack=evidence_pack, first_decision=decision, replay_decision=dict(decision))
+    effectiveness = build_decision_effectiveness_record(
+        decision_record=decision,
+        downstream_outcome_ref="downstream_outcome:tlc-closeout-001",
+        downstream_outcome="improved",
+    )
+    closeout = build_cde_closeout_gate_record(
+        decision_bundle=bundle,
+        decision_eval_result=eval_result,
+        decision_replay_validation_record=replay,
+        decision_effectiveness_record=effectiveness,
+    )
+
+    output_dir = tmp_path / "artifacts" / "cde_closeout"
+    output_dir.mkdir(parents=True)
+    (output_dir / "decision_bundle.json").write_text(json.dumps(bundle), encoding="utf-8")
+    (output_dir / "continuation_decision_record.json").write_text(json.dumps(decision), encoding="utf-8")
+    (output_dir / "decision_eval_result.json").write_text(json.dumps(eval_result), encoding="utf-8")
+    (output_dir / "decision_replay_validation_record.json").write_text(json.dumps(replay), encoding="utf-8")
+    (output_dir / "decision_effectiveness_record.json").write_text(json.dumps(effectiveness), encoding="utf-8")
+    (output_dir / "cde_closeout_gate_record.json").write_text(json.dumps(closeout), encoding="utf-8")
+
+    assert (output_dir / "cde_closeout_gate_record.json").exists()
+    assert closeout["closeout_status"] == "closed"
+    assert closeout["cde_operational"] is True

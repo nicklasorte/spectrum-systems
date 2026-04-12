@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/enforcement_bundle.schema.json",
+  "title": "Enforcement Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "bundle_id",
+    "trace_id",
+    "enforcement_action_record_ref",
+    "enforcement_result_record_ref",
+    "enforcement_eval_result_ref",
+    "enforcement_readiness_record_ref",
+    "enforcement_conflict_record_ref",
+    "lineage_complete"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "enforcement_bundle"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "bundle_id": {
+      "type": "string",
+      "pattern": "^sel-bundle-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "enforcement_action_record_ref": {
+      "type": "string",
+      "pattern": "^enforcement_action_record:.+"
+    },
+    "enforcement_result_record_ref": {
+      "type": "string",
+      "pattern": "^enforcement_result_record:.+"
+    },
+    "enforcement_eval_result_ref": {
+      "type": "string",
+      "pattern": "^enforcement_eval_result:.+"
+    },
+    "enforcement_readiness_record_ref": {
+      "type": "string",
+      "pattern": "^enforcement_readiness_record:.+"
+    },
+    "enforcement_conflict_record_ref": {
+      "type": "string",
+      "pattern": "^enforcement_conflict_record:.+"
+    },
+    "lineage_complete": {
+      "type": "boolean"
+    }
+  }
+}

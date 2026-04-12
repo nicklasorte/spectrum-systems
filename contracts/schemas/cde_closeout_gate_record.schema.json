@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/cde_closeout_gate_record.schema.json",
+  "title": "CDE Closeout Gate Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "gate_id",
+    "decision_bundle_ref",
+    "decision_eval_result_ref",
+    "decision_replay_validation_record_ref",
+    "decision_effectiveness_record_ref",
+    "cde_operational",
+    "closeout_status",
+    "blocking_reasons",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "cde_closeout_gate_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "gate_id": {
+      "type": "string",
+      "pattern": "^cde-close-[a-f0-9]{16}$"
+    },
+    "decision_bundle_ref": {
+      "type": "string",
+      "pattern": "^decision_bundle:.+"
+    },
+    "decision_eval_result_ref": {
+      "type": "string",
+      "pattern": "^decision_eval_result:.+"
+    },
+    "decision_replay_validation_record_ref": {
+      "type": "string",
+      "pattern": "^decision_replay_validation_record:.+"
+    },
+    "decision_effectiveness_record_ref": {
+      "type": "string",
+      "pattern": "^decision_effectiveness_record:.+"
+    },
+    "cde_operational": {
+      "type": "boolean"
+    },
+    "closeout_status": {
+      "type": "string",
+      "enum": [
+        "closed",
+        "blocked"
+      ]
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

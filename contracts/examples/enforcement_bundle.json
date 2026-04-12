@@ -1,0 +1,12 @@
+{
+  "artifact_type": "enforcement_bundle",
+  "schema_version": "1.0.0",
+  "bundle_id": "sel-bundle-0123456789abcdef",
+  "trace_id": "trace-sel-001",
+  "enforcement_action_record_ref": "enforcement_action_record:sel-act-0123456789abcdef",
+  "enforcement_result_record_ref": "enforcement_result_record:sel-res-0123456789abcdef",
+  "enforcement_eval_result_ref": "enforcement_eval_result:sel-eval-0123456789abcdef",
+  "enforcement_readiness_record_ref": "enforcement_readiness_record:sel-ready-0123456789abcdef",
+  "enforcement_conflict_record_ref": "enforcement_conflict_record:sel-conf-0123456789abcdef",
+  "lineage_complete": true
+}

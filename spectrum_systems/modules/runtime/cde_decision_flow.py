@@ -332,3 +332,45 @@ def verify_cde_boundary_inputs(*, upstream_artifacts: Sequence[Mapping[str, Any]
             raise CDEDecisionFlowError("CDE upstream boundary rejected non-governed artifact")
         if any(field in artifact for field in _FORBIDDEN_EXECUTION_FIELDS):
             raise CDEDecisionFlowError("CDE fail-closed: execution/enforcement fields are forbidden")
+
+
+def build_cde_closeout_gate_record(
+    *,
+    decision_bundle: Mapping[str, Any],
+    decision_eval_result: Mapping[str, Any],
+    decision_replay_validation_record: Mapping[str, Any],
+    decision_effectiveness_record: Mapping[str, Any],
+) -> dict[str, Any]:
+    """CDE-10 closeout gate proving CDE artifacts are operational for SEL downstream use."""
+    validate_artifact(dict(decision_bundle), "decision_bundle")
+    validate_artifact(dict(decision_eval_result), "decision_eval_result")
+    validate_artifact(dict(decision_replay_validation_record), "decision_replay_validation_record")
+    validate_artifact(dict(decision_effectiveness_record), "decision_effectiveness_record")
+
+    blocking_reasons: list[str] = []
+    if decision_eval_result.get("result") != "pass":
+        blocking_reasons.append("decision_eval_not_pass")
+    if decision_replay_validation_record.get("result") != "pass":
+        blocking_reasons.append("decision_replay_not_deterministic")
+    if decision_effectiveness_record.get("effectiveness_state") in {"too_permissive", "too_strict"}:
+        blocking_reasons.append("decision_effectiveness_out_of_bounds")
+
+    record = {
+        "artifact_type": "cde_closeout_gate_record",
+        "schema_version": "1.0.0",
+        "gate_id": f"cde-close-{_digest([decision_bundle['bundle_id'], decision_eval_result['eval_id'], decision_replay_validation_record['validation_id']])[:16]}",
+        "decision_bundle_ref": f"decision_bundle:{decision_bundle['bundle_id']}",
+        "decision_eval_result_ref": f"decision_eval_result:{decision_eval_result['eval_id']}",
+        "decision_replay_validation_record_ref": f"decision_replay_validation_record:{decision_replay_validation_record['validation_id']}",
+        "decision_effectiveness_record_ref": f"decision_effectiveness_record:{decision_effectiveness_record['record_id']}",
+        "cde_operational": len(blocking_reasons) == 0,
+        "closeout_status": "closed" if len(blocking_reasons) == 0 else "blocked",
+        "blocking_reasons": sorted(set(blocking_reasons)),
+        "non_authority_assertions": [
+            "cde_emits_decision_artifacts_only",
+            "cde_is_not_execution_authority",
+            "cde_is_not_enforcement_authority",
+        ],
+    }
+    validate_artifact(record, "cde_closeout_gate_record")
+    return record

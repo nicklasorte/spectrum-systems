@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/enforcement_conflict_record.schema.json",
+  "title": "Enforcement Conflict Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "conflict_id",
+    "trace_id",
+    "continuation_decision_record_ref",
+    "enforcement_action_record_ref",
+    "conflict_refs",
+    "integrity_passed",
+    "result"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "enforcement_conflict_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "conflict_id": {
+      "type": "string",
+      "pattern": "^sel-conf-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_decision_record_ref": {
+      "type": "string",
+      "pattern": "^continuation_decision_record:.+"
+    },
+    "enforcement_action_record_ref": {
+      "type": "string",
+      "pattern": "^enforcement_action_record:.+"
+    },
+    "conflict_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "integrity_passed": {
+      "type": "boolean"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    }
+  }
+}
