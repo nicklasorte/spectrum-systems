@@ -49,7 +49,7 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     payload = json.loads(template_path.read_text(encoding="utf-8"))
     payload["changed_paths"] = resolution.changed_paths
-    payload["changed_path_resolution"] = {
+    resolution_payload = {
         "changed_path_detection_mode": resolution.changed_path_detection_mode,
         "resolution_mode": resolution.resolution_mode,
         "trust_level": resolution.trust_level,
@@ -61,6 +61,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     output_path = _REPO_ROOT / args.output
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    resolution_path = output_path.with_name("preflight_changed_path_resolution.json")
+    resolution_path.write_text(json.dumps(resolution_payload, indent=2) + "\n", encoding="utf-8")
     print(str(output_path.relative_to(_REPO_ROOT)))
     return 0
 
