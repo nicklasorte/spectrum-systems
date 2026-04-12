@@ -125,5 +125,40 @@ export const PANEL_CAPABILITY_MAP: PanelCapability[] = [
     owning_system: 'TLC',
     decision_authority: 'read_only',
     prohibited_local_authority: ['control', 'judgment', 'replay', 'override', 'eval', 'publication']
+  },
+  {
+    panel_id: 'policy_visibility',
+    reads_from_artifacts: ['hard_gate_status_record.json', 'governed_promotion_discipline_gate.json'],
+    owning_system: 'SEL',
+    decision_authority: 'read_only',
+    prohibited_local_authority: ['control', 'judgment', 'replay', 'override', 'eval', 'publication']
+  },
+  {
+    panel_id: 'audit_trail',
+    reads_from_artifacts: ['publication_attempt_record.json', 'judgment_application_artifact.json', 'refresh_run_record.json', 'serial_bundle_validator_result.json'],
+    owning_system: 'CDE',
+    decision_authority: 'read_only',
+    prohibited_local_authority: ['control', 'judgment', 'replay', 'override', 'eval', 'publication']
+  },
+  {
+    panel_id: 'action_surface',
+    reads_from_artifacts: ['refresh_run_record.json', 'rq_next_24_01__umbrella_3__nx_13_recommendation_replay_pack.json', 'recommendation_review_surface.json'],
+    owning_system: 'TLC',
+    decision_authority: 'read_only',
+    prohibited_local_authority: ['control', 'judgment', 'replay', 'override', 'eval', 'publication']
+  },
+  {
+    panel_id: 'review_queue_surface',
+    reads_from_artifacts: ['recommendation_review_surface.json', 'hard_gate_status_record.json'],
+    owning_system: 'RIL',
+    decision_authority: 'read_only',
+    prohibited_local_authority: ['control', 'judgment', 'replay', 'override', 'eval', 'publication']
+  },
+  {
+    panel_id: 'misinterpretation_guard',
+    reads_from_artifacts: ['dashboard_freshness_status.json', 'serial_bundle_validator_result.json', 'publication_attempt_record.json'],
+    owning_system: 'FRE',
+    decision_authority: 'read_only',
+    prohibited_local_authority: ['control', 'judgment', 'replay', 'override', 'eval', 'publication']
   }
 ]
