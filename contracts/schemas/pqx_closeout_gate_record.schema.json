@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pqx_closeout_gate_record.schema.json",
+  "title": "PQX Closeout Gate Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "closeout_status", "missing_artifacts", "fail_reasons", "execution_only_assertion"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "pqx_closeout_gate_record"},
+    "closeout_status": {"type": "string", "enum": ["pass", "fail"]},
+    "missing_artifacts": {"type": "array", "items": {"type": "string"}},
+    "fail_reasons": {"type": "array", "items": {"type": "string"}},
+    "execution_only_assertion": {"type": "boolean", "const": true}
+  }
+}

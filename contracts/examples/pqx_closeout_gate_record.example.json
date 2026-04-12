@@ -1,0 +1,7 @@
+{
+  "artifact_type": "pqx_closeout_gate_record",
+  "closeout_status": "pass",
+  "missing_artifacts": [],
+  "fail_reasons": [],
+  "execution_only_assertion": true
+}

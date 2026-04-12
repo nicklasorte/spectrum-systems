@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/admission_rejection_debt_record.schema.json",
+  "title": "Admission Rejection Debt Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "debt_record_id", "created_at", "produced_by", "reason_code_counts", "repeated_reason_codes", "debt_status"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "admission_rejection_debt_record"},
+    "debt_record_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "produced_by": {"type": "string", "minLength": 1},
+    "reason_code_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}},
+    "repeated_reason_codes": {"type": "array", "items": {"type": "string"}},
+    "debt_status": {"type": "string", "enum": ["normal", "elevated"]}
+  }
+}

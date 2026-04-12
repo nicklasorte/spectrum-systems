@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/admission_eval_record.schema.json",
+  "title": "Admission Eval Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "admission_eval_id", "request_id", "trace_id", "created_at", "produced_by", "evaluation_status", "lineage_readiness", "fail_reasons"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "admission_eval_record"},
+    "admission_eval_id": {"type": "string", "minLength": 1},
+    "request_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "produced_by": {"type": "string", "minLength": 1},
+    "evaluation_status": {"type": "string", "enum": ["pass", "fail"]},
+    "lineage_readiness": {"type": "string", "enum": ["ready", "incomplete", "invalid", "not_required"]},
+    "fail_reasons": {"type": "array", "items": {"type": "string"}}
+  }
+}

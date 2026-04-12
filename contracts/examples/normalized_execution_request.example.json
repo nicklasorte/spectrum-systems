@@ -24,5 +24,9 @@
     "expires_at": "2026-04-10T16:44:12Z",
     "lineage_token_id": "lin-7385e27f3cfa436294d234a1",
     "attestation": "7f20b2b784446ee632b376e0684a532c0ea3a1bfe0d326f1430a80c8e5689091"
-  }
+  },
+  "classification_reason_codes": [
+    "repo_write_signal_detected"
+  ],
+  "normalization_outcome": "normalized"
 }

@@ -9,7 +9,7 @@ import hashlib
 from datetime import datetime, timezone
 from typing import Any, Callable, Mapping
 
-from spectrum_systems.aex.classifier import classify_execution_type, is_context_capability_request, is_repo_sensitive_unknown
+from spectrum_systems.aex.classifier import classify_with_reasons, is_context_capability_request, is_repo_sensitive_unknown
 from spectrum_systems.aex.errors import INVALID_REQUEST_SHAPE, MISSING_REQUIRED_FIELD, UNKNOWN_EXECUTION_TYPE
 from spectrum_systems.aex.models import AdmissionResult, CodexBuildRequest
 from spectrum_systems.contracts import validate_artifact
@@ -40,7 +40,8 @@ class AEXEngine:
             source_prompt_kind=str(request.get("source_prompt_kind") or "codex_build_request"),
         )
 
-        execution_type = classify_execution_type(normalized_input.prompt_text, normalized_input.target_paths)
+        classification = classify_with_reasons(normalized_input.prompt_text, normalized_input.target_paths)
+        execution_type = classification["execution_type"]
         repo_mutation_requested = execution_type == "repo_write" or bool(normalized_input.target_paths)
         context_capability_request = is_context_capability_request(normalized_input.prompt_text, normalized_input.target_paths)
 
@@ -53,6 +54,8 @@ class AEXEngine:
             "target_paths": normalized_input.target_paths,
             "requested_outputs": normalized_input.requested_outputs,
             "source_prompt_kind": normalized_input.source_prompt_kind,
+            "classification_reason_codes": classification["reason_codes"],
+            "normalization_outcome": classification["normalization_outcome"],
             "trace_id": normalized_input.trace_id,
             "created_at": normalized_input.created_at,
             "produced_by": normalized_input.produced_by,
@@ -87,7 +90,7 @@ class AEXEngine:
             "trace_id": normalized_input.trace_id,
             "created_at": normalized_input.created_at,
             "produced_by": normalized_input.produced_by,
-            "reason_codes": ["context_capability_repo_mutation"] if (repo_mutation_requested and context_capability_request) else [],
+            "reason_codes": classification["reason_codes"] + (["context_capability_repo_mutation"] if (repo_mutation_requested and context_capability_request) else []),
             "target_scope": {
                 "repo": "spectrum-systems",
                 "paths": normalized_input.target_paths,

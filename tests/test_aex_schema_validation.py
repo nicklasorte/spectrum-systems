@@ -14,6 +14,14 @@ from spectrum_systems.contracts import load_example, load_schema, validate_artif
         ("build_admission_record", "build_admission_record.example"),
         ("normalized_execution_request", "normalized_execution_request.example"),
         ("admission_rejection_record", "admission_rejection_record.example"),
+        ("admission_authenticity_record", "admission_authenticity_record.example"),
+        ("admission_bundle", "admission_bundle.example"),
+        ("admission_eval_record", "admission_eval_record.example"),
+        ("admission_replay_validation_record", "admission_replay_validation_record.example"),
+        ("admission_readiness_record", "admission_readiness_record.example"),
+        ("admission_effectiveness_record", "admission_effectiveness_record.example"),
+        ("admission_rejection_debt_record", "admission_rejection_debt_record.example"),
+        ("aex_tlc_handoff_integrity_record", "aex_tlc_handoff_integrity_record.example"),
     ],
 )
 def test_aex_examples_validate(schema_name: str, example_name: str) -> None:
@@ -27,6 +35,14 @@ def test_aex_examples_validate(schema_name: str, example_name: str) -> None:
         ("build_admission_record", "build_admission_record.example"),
         ("normalized_execution_request", "normalized_execution_request.example"),
         ("admission_rejection_record", "admission_rejection_record.example"),
+        ("admission_authenticity_record", "admission_authenticity_record.example"),
+        ("admission_bundle", "admission_bundle.example"),
+        ("admission_eval_record", "admission_eval_record.example"),
+        ("admission_replay_validation_record", "admission_replay_validation_record.example"),
+        ("admission_readiness_record", "admission_readiness_record.example"),
+        ("admission_effectiveness_record", "admission_effectiveness_record.example"),
+        ("admission_rejection_debt_record", "admission_rejection_debt_record.example"),
+        ("aex_tlc_handoff_integrity_record", "aex_tlc_handoff_integrity_record.example"),
     ],
 )
 def test_aex_schemas_reject_unknown_top_level_fields(schema_name: str, example_name: str) -> None:
