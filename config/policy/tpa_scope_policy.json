@@ -26,11 +26,11 @@
   ],
   "lightweight_mode_allowed": true,
   "source_authority_refresh": {
-    "refresh_id": "SRC-AUTH-REFRESH-2026-04-05-TPA-SCOPE",
-    "refreshed_at": "2026-04-05T00:00:00Z",
+    "refresh_id": "SRC-AUTH-REFRESH-2026-04-11-SRC-01C",
+    "refreshed_at": "2026-04-11T00:00:00Z",
     "source_index_path": "docs/architecture/system_source_index.md",
-    "source_inventory_digest_sha256": "86116ebfad412cdd95810df15fe4f0eb6a27ffbcc0cd1475930cf3cf02a5c3fd",
-    "obligation_index_digest_sha256": "9d98576fe5ad367ac3df825d9d8cf008aea7067fc28652d399a2401d4abe3c15",
-    "component_source_map_digest_sha256": "f0508a709b82b19e06fe203bf25fd96a6452673acf68e0aaa54aeb3d219c38df"
+    "source_inventory_digest_sha256": "32013f32e1623e9d089c86b675c9d059107b20cabe3e7783c96ea54c1d4145a2",
+    "obligation_index_digest_sha256": "6d418fab30d57780e66684a3a6ad997eff2d2cdf0d40b70871f209a93f436c3e",
+    "component_source_map_digest_sha256": "01efab8cdbe1ec52544e651baedb5282ba40e59a96b5a11be131b93bd2afa76a"
   }
 }

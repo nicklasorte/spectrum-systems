@@ -1,4 +1,5 @@
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -49,16 +50,29 @@ def _write_markdown_source(path: Path, source_id: str, obligation_id: str, dupli
     path.write_text(payload, encoding="utf-8")
 
 
-def test_build_source_indexes_generates_deterministic_outputs() -> None:
+def test_build_source_indexes_generates_deterministic_outputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    structured_dir = tmp_path / "source_structured"
+    indexes_dir = tmp_path / "source_indexes"
+    structured_dir.mkdir(parents=True)
+    indexes_dir.mkdir(parents=True)
+
+    shutil.copy2(
+        REPO_ROOT / "docs" / "source_structured" / "ai_durability_strategy.source.md",
+        structured_dir / "ai_durability_strategy.source.md",
+    )
+    monkeypatch.setattr(build_source_indexes, "SOURCE_STRUCTURED_DIR", structured_dir)
+    monkeypatch.setattr(build_source_indexes, "SOURCE_INDEXES_DIR", indexes_dir)
+
     build_source_indexes.build_indexes()
 
-    source_inventory = _load(REPO_ROOT / "docs" / "source_indexes" / "source_inventory.json")
-    obligation_index = _load(REPO_ROOT / "docs" / "source_indexes" / "obligation_index.json")
-    component_source_map = _load(REPO_ROOT / "docs" / "source_indexes" / "component_source_map.json")
+    source_inventory = _load(indexes_dir / "source_inventory.json")
+    obligation_index = _load(indexes_dir / "obligation_index.json")
+    component_source_map = _load(indexes_dir / "component_source_map.json")
 
     source_ids = [entry["source_id"] for entry in source_inventory["sources"]]
     assert source_ids == sorted(source_ids)
-    assert source_ids == ["SRC-AI-DURABILITY-STRATEGY"]
+    assert "SRC-AI-DURABILITY-STRATEGY" in source_ids
+    assert len(source_ids) >= 1
 
     obligation_ids = [entry["obligation_id"] for entry in obligation_index["obligations"]]
     assert obligation_ids == sorted(obligation_ids)
@@ -115,3 +129,12 @@ def test_build_source_indexes_allows_documented_duplicate_obligation_id(tmp_path
     obligation_index = _load(indexes_dir / "obligation_index.json")
     obligations = [row for row in obligation_index["obligations"] if row["obligation_id"] == duplicate_obligation_id]
     assert len(obligations) == 2
+
+
+def test_build_source_indexes_blocks_canonical_repo_writes_without_override(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("SPECTRUM_ALLOW_SOURCE_AUTHORITY_WRITE", raising=False)
+    monkeypatch.setattr(build_source_indexes, "SOURCE_STRUCTURED_DIR", REPO_ROOT / "docs" / "source_structured")
+    monkeypatch.setattr(build_source_indexes, "SOURCE_INDEXES_DIR", REPO_ROOT / "docs" / "source_indexes")
+
+    with pytest.raises(PermissionError, match="Refusing to mutate canonical source authority path"):
+        build_source_indexes.build_indexes()

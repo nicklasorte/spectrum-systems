@@ -16,7 +16,7 @@ def _load(path: Path):
 def test_all_structured_source_files_validate_against_schema() -> None:
     validator = Draft202012Validator(_load(SCHEMA_PATH))
     files = sorted(STRUCTURED_DIR.glob("*.json"))
-    assert len(files) == 6
+    assert len(files) >= 20
 
     for path in files:
         payload = _load(path)

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -15,6 +16,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = REPO_ROOT / "contracts" / "schemas" / "source_design_extraction.schema.json"
 SOURCE_STRUCTURED_DIR = REPO_ROOT / "docs" / "source_structured"
 SOURCE_INDEXES_DIR = REPO_ROOT / "docs" / "source_indexes"
+_CANONICAL_SOURCE_INDEXES_DIR = REPO_ROOT / "docs" / "source_indexes"
+_WRITE_OVERRIDE_ENV = "SPECTRUM_ALLOW_SOURCE_AUTHORITY_WRITE"
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -222,6 +225,14 @@ def _emit_component_source_map(artifacts: list[dict[str, Any]]) -> dict[str, Any
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
+    try:
+        is_canonical_target = path.resolve().is_relative_to(_CANONICAL_SOURCE_INDEXES_DIR.resolve())
+    except FileNotFoundError:
+        is_canonical_target = str(path).startswith(str(_CANONICAL_SOURCE_INDEXES_DIR))
+    if is_canonical_target and os.getenv(_WRITE_OVERRIDE_ENV) != "1":
+        raise PermissionError(
+            f"Refusing to mutate canonical source authority path without {_WRITE_OVERRIDE_ENV}=1: {path}"
+        )
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         json.dump(payload, handle, indent=2, sort_keys=True)
