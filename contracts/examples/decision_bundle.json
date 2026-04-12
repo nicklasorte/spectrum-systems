@@ -1,0 +1,16 @@
+{
+  "artifact_type": "decision_bundle",
+  "schema_version": "1.0.0",
+  "bundle_id": "cde-bundle-0123456789abcdef",
+  "trace_id": "trace-cde-001",
+  "decision_evidence_pack_ref": "decision_evidence_pack:cde-ep-0123456789abcdef",
+  "continuation_decision_record_ref": "continuation_decision_record:cde-dec-0123456789abcdef",
+  "decision_eval_result_ref": "decision_eval_result:cde-eval-0123456789abcdef",
+  "decision_readiness_record_ref": "decision_readiness_record:cde-ready-0123456789abcdef",
+  "decision_conflict_record_ref": "decision_conflict_record:cde-conf-0123456789abcdef",
+  "lineage_complete": true,
+  "non_authority_assertions": [
+    "bundle_is_decision_only",
+    "bundle_not_execution_authority"
+  ]
+}

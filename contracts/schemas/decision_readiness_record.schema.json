@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/decision_readiness_record.schema.json",
+  "title": "Decision Readiness Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "readiness_id",
+    "trace_id",
+    "continuation_decision_record_ref",
+    "decision_eval_result_ref",
+    "candidate_ready",
+    "blocking_reasons",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "decision_readiness_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "readiness_id": {
+      "type": "string",
+      "pattern": "^cde-ready-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_decision_record_ref": {
+      "type": "string",
+      "pattern": "^continuation_decision_record:.+"
+    },
+    "decision_eval_result_ref": {
+      "type": "string",
+      "pattern": "^decision_eval_result:.+"
+    },
+    "candidate_ready": {
+      "type": "boolean"
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

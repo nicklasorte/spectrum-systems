@@ -23,6 +23,7 @@ from spectrum_systems.modules.runtime.ril_interpretation import (
     validate_control_signal_integrity,
     validate_interpretation_repair_alignment,
     validate_replay,
+    verify_ril_closeout,
     validate_required_coverage,
 )
 
@@ -199,3 +200,33 @@ def test_alignment_surface_uses_real_fre_outputs() -> None:
         repair_readiness_candidate=readiness,
     )
     assert bundle["artifact_type"] == "repair_bundle"
+
+
+def test_ril_closeout_gate_is_operationally_real() -> None:
+    packet = normalize_failure_packet(evidence=_evidence(), trace_id="trace-ril-001")
+    conflict = detect_contradictions(failure_packet=packet, evidence_refs=["trace:conflict-a"], material_threshold=2)
+    interpretation = build_interpretation_record(
+        failure_packet=packet,
+        conflict_record=conflict,
+        interpretation_notes=["bounded normalization complete"],
+    )
+    evaluation = evaluate_interpretation(interpretation_record=interpretation, conflict_record=conflict)
+    readiness = build_readiness_record(interpretation_record=interpretation, eval_result=evaluation)
+    replay = validate_replay(source_inputs=[_evidence()], first_outputs=[packet], replay_outputs=[dict(packet)], schema_version="1.0.0")
+
+    candidate = generate_repair_candidate(failure_packet=_fre_packet(), trace_id="trace-ril-001")
+    alignment = validate_interpretation_repair_alignment(interpretation_record=interpretation, repair_candidate=candidate)
+    ambiguity = build_ambiguity_signal(interpretation_records=[interpretation], ambiguity_budget=0.5)
+
+    closeout = verify_ril_closeout(
+        failure_packet=packet,
+        interpretation_record=interpretation,
+        eval_result=evaluation,
+        readiness_record=readiness,
+        replay_validation_record=replay,
+        conflict_record=conflict,
+        alignment_record=alignment,
+        ambiguity_signal=ambiguity,
+    )
+    validate_artifact(closeout, "ril_closeout_gate_record")
+    assert closeout["ril_operational"] is True

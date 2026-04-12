@@ -1,0 +1,14 @@
+{
+  "artifact_type": "decision_conflict_record",
+  "schema_version": "1.0.0",
+  "conflict_id": "cde-conf-0123456789abcdef",
+  "trace_id": "trace-cde-001",
+  "decision_evidence_pack_ref": "decision_evidence_pack:cde-ep-0123456789abcdef",
+  "conflict_refs": [
+    "interpretation_conflict_record:ril-conf-0123"
+  ],
+  "material_conflict": false,
+  "resolved": true,
+  "resolution_state": "resolved",
+  "resolution_notes": "no material contradiction across governed evidence"
+}

@@ -201,6 +201,21 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("system_roadmap")
         validate_artifact(instance, "system_roadmap")
 
+    def test_ril_and_cde_foundation_examples_validate(self) -> None:
+        for name in (
+            "ril_closeout_gate_record",
+            "decision_evidence_pack",
+            "decision_conflict_record",
+            "continuation_decision_record",
+            "decision_eval_result",
+            "decision_readiness_record",
+            "decision_bundle",
+            "decision_replay_validation_record",
+            "decision_effectiveness_record",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
 
     def test_system_roadmap_batches_have_required_governed_fields(self) -> None:
         instance = load_example("system_roadmap")

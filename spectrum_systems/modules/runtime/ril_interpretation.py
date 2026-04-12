@@ -476,3 +476,62 @@ def build_interpretation_bundle(
     }
     validate_artifact(artifact, "interpretation_bundle")
     return artifact
+
+
+def verify_ril_closeout(
+    *,
+    failure_packet: Mapping[str, Any],
+    interpretation_record: Mapping[str, Any],
+    eval_result: Mapping[str, Any],
+    readiness_record: Mapping[str, Any],
+    replay_validation_record: Mapping[str, Any],
+    conflict_record: Mapping[str, Any],
+    alignment_record: Mapping[str, Any],
+    ambiguity_signal: Mapping[str, Any],
+) -> dict[str, Any]:
+    """RIL-09 closeout verification proving RIL seams are operational for CDE downstream use."""
+
+    validate_artifact(dict(failure_packet), "failure_packet")
+    validate_artifact(dict(interpretation_record), "interpretation_record")
+    validate_artifact(dict(eval_result), "interpretation_eval_result")
+    validate_artifact(dict(readiness_record), "interpretation_readiness_record")
+    validate_artifact(dict(replay_validation_record), "interpretation_replay_validation_record")
+    validate_artifact(dict(conflict_record), "interpretation_conflict_record")
+    validate_artifact(dict(alignment_record), "interpretation_repair_alignment_record")
+    validate_artifact(dict(ambiguity_signal), "interpretation_ambiguity_signal")
+
+    blocking_reasons: list[str] = []
+    if eval_result.get("result") != "pass":
+        blocking_reasons.append("interpretation_eval_not_pass")
+    if replay_validation_record.get("result") != "pass":
+        blocking_reasons.append("replay_validation_failed")
+    if conflict_record.get("material_conflict") and conflict_record.get("resolved") is not True:
+        blocking_reasons.append("material_conflict_unresolved")
+    if alignment_record.get("alignment_passed") is not True:
+        blocking_reasons.append("interpretation_repair_alignment_failed")
+    if not isinstance(ambiguity_signal.get("threshold_exceeded"), bool):
+        blocking_reasons.append("ambiguity_signal_incomplete")
+
+    artifact = {
+        "artifact_type": "ril_closeout_gate_record",
+        "schema_version": "1.0.0",
+        "gate_id": f"ril-close-{_digest([failure_packet['failure_packet_id'], interpretation_record['interpretation_id'], blocking_reasons])[:16]}",
+        "failure_packet_ref": f"failure_packet:{failure_packet['failure_packet_id']}",
+        "interpretation_record_ref": f"interpretation_record:{interpretation_record['interpretation_id']}",
+        "interpretation_eval_result_ref": f"interpretation_eval_result:{eval_result['eval_id']}",
+        "interpretation_readiness_record_ref": f"interpretation_readiness_record:{readiness_record['readiness_id']}",
+        "interpretation_replay_validation_record_ref": f"interpretation_replay_validation_record:{replay_validation_record['validation_id']}",
+        "interpretation_conflict_record_ref": f"interpretation_conflict_record:{conflict_record['conflict_id']}",
+        "interpretation_repair_alignment_record_ref": f"interpretation_repair_alignment_record:{alignment_record['alignment_id']}",
+        "interpretation_ambiguity_signal_ref": f"interpretation_ambiguity_signal:{ambiguity_signal['signal_id']}",
+        "ril_operational": len(blocking_reasons) == 0,
+        "closeout_status": "closed" if not blocking_reasons else "blocked",
+        "blocking_reasons": sorted(set(blocking_reasons)),
+        "non_authority_assertions": [
+            "ril_interpretation_only",
+            "ril_not_decision_authority",
+            "ril_not_execution_authority",
+        ],
+    }
+    validate_artifact(artifact, "ril_closeout_gate_record")
+    return artifact

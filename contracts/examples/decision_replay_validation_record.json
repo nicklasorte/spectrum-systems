@@ -1,0 +1,11 @@
+{
+  "artifact_type": "decision_replay_validation_record",
+  "schema_version": "1.0.0",
+  "validation_id": "cde-replay-0123456789abcdef",
+  "input_fingerprint": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "first_decision_fingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+  "replay_decision_fingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+  "deterministic_match": true,
+  "result": "pass",
+  "fail_reasons": []
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/ril_closeout_gate_record.schema.json",
+  "title": "RIL Closeout Gate Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "gate_id",
+    "failure_packet_ref",
+    "interpretation_record_ref",
+    "interpretation_eval_result_ref",
+    "interpretation_readiness_record_ref",
+    "interpretation_replay_validation_record_ref",
+    "interpretation_conflict_record_ref",
+    "interpretation_repair_alignment_record_ref",
+    "interpretation_ambiguity_signal_ref",
+    "ril_operational",
+    "closeout_status",
+    "blocking_reasons",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {"const": "ril_closeout_gate_record"},
+    "schema_version": {"const": "1.0.0"},
+    "gate_id": {"type": "string", "pattern": "^ril-close-[a-f0-9]{16}$"},
+    "failure_packet_ref": {"type": "string", "pattern": "^failure_packet:.+"},
+    "interpretation_record_ref": {"type": "string", "pattern": "^interpretation_record:.+"},
+    "interpretation_eval_result_ref": {"type": "string", "pattern": "^interpretation_eval_result:.+"},
+    "interpretation_readiness_record_ref": {"type": "string", "pattern": "^interpretation_readiness_record:.+"},
+    "interpretation_replay_validation_record_ref": {"type": "string", "pattern": "^interpretation_replay_validation_record:.+"},
+    "interpretation_conflict_record_ref": {"type": "string", "pattern": "^interpretation_conflict_record:.+"},
+    "interpretation_repair_alignment_record_ref": {"type": "string", "pattern": "^interpretation_repair_alignment_record:.+"},
+    "interpretation_ambiguity_signal_ref": {"type": "string", "pattern": "^interpretation_ambiguity_signal:.+"},
+    "ril_operational": {"type": "boolean"},
+    "closeout_status": {"type": "string", "enum": ["closed", "blocked"]},
+    "blocking_reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "non_authority_assertions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+  }
+}

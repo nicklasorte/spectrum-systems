@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/decision_evidence_pack.schema.json",
+  "title": "Decision Evidence Pack",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "evidence_pack_id",
+    "trace_id",
+    "interpretation_bundle_ref",
+    "repair_bundle_ref",
+    "policy_constraints_ref",
+    "provenance_refs",
+    "replay_refs",
+    "evidence_refs",
+    "input_fingerprint"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "decision_evidence_pack"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "evidence_pack_id": {
+      "type": "string",
+      "pattern": "^cde-ep-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "interpretation_bundle_ref": {
+      "type": "string",
+      "pattern": "^interpretation_bundle:.+"
+    },
+    "repair_bundle_ref": {
+      "type": "string",
+      "pattern": "^repair_bundle:.+"
+    },
+    "policy_constraints_ref": {
+      "type": "string",
+      "pattern": "^policy:.+"
+    },
+    "provenance_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "replay_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "input_fingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

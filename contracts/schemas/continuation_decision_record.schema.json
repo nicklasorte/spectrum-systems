@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/continuation_decision_record.schema.json",
+  "title": "Continuation Decision Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "decision_id",
+    "trace_id",
+    "evidence_pack_ref",
+    "decision_outcome",
+    "reason_codes",
+    "evidence_refs",
+    "change_conditions",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "continuation_decision_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^cde-dec-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_pack_ref": {
+      "type": "string",
+      "pattern": "^decision_evidence_pack:.+"
+    },
+    "decision_outcome": {
+      "type": "string",
+      "enum": [
+        "continue_repair_bounded",
+        "block",
+        "human_review_required"
+      ]
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "change_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}
