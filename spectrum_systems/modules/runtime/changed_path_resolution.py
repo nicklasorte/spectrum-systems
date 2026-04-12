@@ -52,6 +52,56 @@ def _diff_name_only(repo_root: Path, base_ref: str, head_ref: str) -> tuple[list
     return paths, None
 
 
+def _ref_exists(repo_root: Path, ref: str) -> bool:
+    if not ref or ref == "HEAD":
+        return True
+    probe = _run(["git", "cat-file", "-e", f"{ref}^{{commit}}"], cwd=repo_root)
+    return probe.returncode == 0
+
+
+def _fetch_ref(repo_root: Path, ref: str) -> bool:
+    if not ref or ref == "HEAD":
+        return True
+    if _ref_exists(repo_root, ref):
+        return True
+    fetch = _run(["git", "fetch", "--no-tags", "--depth=1", "origin", ref], cwd=repo_root)
+    if fetch.returncode != 0:
+        return False
+    return _ref_exists(repo_root, ref)
+
+
+def _try_diff_with_ref_fetch(
+    *,
+    repo_root: Path,
+    base_ref: str,
+    head_ref: str,
+    refs_attempted: list[str],
+    warnings: list[str],
+) -> tuple[list[str] | None, str | None]:
+    refs_attempted.append(f"{base_ref}..{head_ref}")
+    exact_paths, exact_error = _diff_name_only(repo_root, base_ref, head_ref)
+    if not exact_error:
+        return exact_paths, "base_head_diff"
+
+    warnings.append(f"base/head diff unavailable: {exact_error}")
+    fetched_base = _fetch_ref(repo_root, base_ref)
+    fetched_head = _fetch_ref(repo_root, head_ref)
+    if fetched_base and fetched_head:
+        refs_attempted.append(f"{base_ref}..{head_ref} (post_fetch)")
+        retried_paths, retry_error = _diff_name_only(repo_root, base_ref, head_ref)
+        if not retry_error:
+            return retried_paths, "base_head_fetch_retry"
+        warnings.append(f"base/head diff still unavailable after fetch: {retry_error}")
+    else:
+        missing = []
+        if not fetched_base:
+            missing.append(base_ref)
+        if not fetched_head:
+            missing.append(head_ref)
+        warnings.append(f"unable to fetch required refs: {', '.join(missing)}")
+    return None, None
+
+
 def _github_sha_pair() -> tuple[str, str, str] | None:
     event_name = (os.environ.get("GITHUB_EVENT_NAME") or "").strip()
     base_sha = (os.environ.get("GITHUB_BASE_SHA") or "").strip()
@@ -103,23 +153,49 @@ def resolve_changed_paths(
             insufficient_context=False,
         )
 
-    refs_attempted.append(f"{base_ref}..{head_ref}")
-    exact_paths, exact_error = _diff_name_only(repo_root, base_ref, head_ref)
-    if not exact_error:
+    exact_paths, exact_mode = _try_diff_with_ref_fetch(
+        repo_root=repo_root,
+        base_ref=base_ref,
+        head_ref=head_ref,
+        refs_attempted=refs_attempted,
+        warnings=warnings,
+    )
+    if exact_mode is not None and exact_paths is not None:
         return ChangedPathResolutionResult(
             changed_paths=exact_paths,
-            changed_path_detection_mode="base_head_diff",
+            changed_path_detection_mode=exact_mode,
             refs_attempted=refs_attempted,
-            fallback_used=False,
+            fallback_used=exact_mode != "base_head_diff",
             warnings=[],
-            trust_level="authoritative",
+            trust_level="authoritative" if exact_mode == "base_head_diff" else "bounded",
             resolution_mode="exact_diff",
             bounded_runtime=True,
             insufficient_context=False,
         )
-    warnings.append(f"base/head diff unavailable: {exact_error}")
+
+    sha_pair = _github_sha_pair()
+    if sha_pair:
+        gh_base, gh_head, mode = sha_pair
+        fetched_gh_base = _fetch_ref(repo_root, gh_base)
+        fetched_gh_head = _fetch_ref(repo_root, gh_head)
+        refs_attempted.append(f"{gh_base}..{gh_head}")
+        gh_paths, gh_error = _diff_name_only(repo_root, gh_base, gh_head)
+        if not gh_error:
+            return ChangedPathResolutionResult(
+                changed_paths=gh_paths,
+                changed_path_detection_mode=mode,
+                refs_attempted=refs_attempted,
+                fallback_used=True,
+                warnings=warnings if (fetched_gh_base and fetched_gh_head) else warnings + ["github refs required fetch"],
+                trust_level="bounded",
+                resolution_mode="fetched_diff",
+                bounded_runtime=True,
+                insufficient_context=False,
+            )
+        warnings.append(f"github event ref diff unavailable: {gh_error}")
 
     if head_ref != "HEAD":
+        fetched_base = _fetch_ref(repo_root, base_ref)
         refs_attempted.append(f"{base_ref}..HEAD")
         fetched_paths, fetched_error = _diff_name_only(repo_root, base_ref, "HEAD")
         if not fetched_error:
@@ -135,25 +211,6 @@ def resolve_changed_paths(
                 insufficient_context=False,
             )
         warnings.append(f"base..HEAD fallback unavailable: {fetched_error}")
-
-    sha_pair = _github_sha_pair()
-    if sha_pair:
-        gh_base, gh_head, mode = sha_pair
-        refs_attempted.append(f"{gh_base}..{gh_head}")
-        gh_paths, gh_error = _diff_name_only(repo_root, gh_base, gh_head)
-        if not gh_error:
-            return ChangedPathResolutionResult(
-                changed_paths=gh_paths,
-                changed_path_detection_mode=mode,
-                refs_attempted=refs_attempted,
-                fallback_used=True,
-                warnings=warnings,
-                trust_level="bounded",
-                resolution_mode="fetched_diff",
-                bounded_runtime=True,
-                insufficient_context=False,
-            )
-        warnings.append(f"github event ref diff unavailable: {gh_error}")
 
     local_changes = _local_workspace_changes(repo_root)
     if local_changes:
