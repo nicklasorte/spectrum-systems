@@ -18,7 +18,12 @@
     "artifacts/pqx_runs/pqx_003/pqx_slice_runs/AI-01/pqx-slice-20260403T094715Z.control_decision.json",
     "artifacts/pqx_runs/pqx_003/pqx_slice_runs/AI-01/pqx-slice-20260403T094715Z.control_loop_certification_pack.json",
     "artifacts/pqx_runs/pqx_003/pqx_slice_runs/AI-01/pqx-slice-20260403T094715Z.error_budget_status.json",
-    "artifacts/pqx_runs/pqx_003/pqx_slice_runs/AI-01/pqx-slice-20260403T094715Z.done_certification_record.json"
+    "artifacts/pqx_runs/pqx_003/pqx_slice_runs/AI-01/pqx-slice-20260403T094715Z.done_certification_record.json",
+    "outputs/contract_preflight/preflight.pqx_execution_eval_result.json",
+    "outputs/contract_preflight/preflight.pqx_execution_readiness_record.json",
+    "outputs/contract_preflight/preflight.pqx_execution_effectiveness_record.json",
+    "outputs/contract_preflight/preflight.pqx_execution_recurrence_record.json",
+    "outputs/contract_preflight/preflight.pqx_execution_bundle.json"
   ],
   "certification_status": "certified",
   "replay_result_ref": "artifacts/pqx_runs/pqx_003/pqx_slice_runs/AI-01/pqx-slice-20260403T094715Z.replay_result.json",

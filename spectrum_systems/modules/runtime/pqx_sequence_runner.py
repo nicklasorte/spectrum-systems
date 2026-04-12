@@ -1539,7 +1539,8 @@ def execute_sequence_run(
             or result.get("slice_execution_record")
             or result.get("pqx_slice_audit_bundle")
         )
-        if result.get("execution_status") == "success" and should_run_hardening_eval:
+        success_outputs_complete = bool(result.get("certification_complete")) and bool(result.get("audit_complete"))
+        if result.get("execution_status") == "success" and should_run_hardening_eval and success_outputs_complete:
             hardening_eval = build_pqx_execution_eval_result(
                 run_id=run_id,
                 trace_id=request["trace_id"],
