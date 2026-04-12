@@ -1,0 +1,13 @@
+{
+  "artifact_type": "redteam_review_request",
+  "schema_version": "1.0.0",
+  "request_id": "rqx-req-0123456789abcdef",
+  "trace_id": "trace-rqx-001",
+  "batch_id": "SEL-002",
+  "requested_by": "RQX",
+  "target_refs": [
+    "bundle:sel-002-run-a"
+  ],
+  "objective": "Execute bounded red-team review rounds and emit governed findings.",
+  "bounded_scope": "review_only"
+}

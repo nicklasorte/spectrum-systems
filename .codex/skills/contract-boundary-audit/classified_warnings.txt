@@ -1,0 +1,2 @@
+legacy_tmp_contract
+legacy_test_contract

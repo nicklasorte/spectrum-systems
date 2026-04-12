@@ -1,0 +1,13 @@
+{
+  "artifact_type": "redteam_closure_request",
+  "schema_version": "1.0.0",
+  "closure_request_id": "rqx-close-0123456789abcdef",
+  "trace_id": "trace-rqx-001",
+  "finding_ref": "redteam_finding_record:rqx-find-0123456789abcdef",
+  "fix_slice_request_ref": "redteam_fix_slice_request:rqx-fix-0123456789abcdef",
+  "proof_refs": [
+    "eval_case:eval-sel-001",
+    "regression_test:test_sel_runner_replay_gate",
+    "hardened_contract_path:contracts/schemas/enforcement_action_record.schema.json"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/redteam_closure_request.schema.json",
+  "title": "Redteam Closure Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "closure_request_id",
+    "trace_id",
+    "finding_ref",
+    "fix_slice_request_ref",
+    "proof_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "redteam_closure_request"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "closure_request_id": {
+      "type": "string",
+      "pattern": "^rqx-close-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "finding_ref": {
+      "type": "string",
+      "pattern": "^redteam_finding_record:.+"
+    },
+    "fix_slice_request_ref": {
+      "type": "string",
+      "pattern": "^redteam_fix_slice_request:.+"
+    },
+    "proof_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

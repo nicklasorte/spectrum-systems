@@ -1,0 +1,21 @@
+{
+  "artifact_type": "tpa_policy_decision_record",
+  "schema_version": "1.0.0",
+  "decision_id": "tpa-decision-001",
+  "trace_id": "trace-tpa-001",
+  "input_bundle_ref": "tpa_policy_input_bundle:tpa-input-001",
+  "decision": "allow",
+  "reason_codes": ["policy_input_valid"],
+  "evidence_refs": ["source_authority_refresh_receipt:src-001"],
+  "allowed_scope": ["spectrum_systems/modules/runtime/tpa_policy_authority.py"],
+  "complexity_budget": {
+    "max_units": 8,
+    "allocated_units": 5,
+    "status": "within_budget"
+  },
+  "non_authority_assertions": [
+    "no_closure_decision",
+    "no_runtime_enforcement",
+    "no_review_semantics_reinterpretation"
+  ]
+}

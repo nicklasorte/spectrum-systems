@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_policy_bundle.schema.json",
+  "title": "TPA Policy Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "bundle_id", "trace_id", "input_bundle_ref", "decision_ref", "eval_result_ref", "conflict_refs", "evidence_requirement_ref", "replay_fingerprint", "effectiveness"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "tpa_policy_bundle"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "input_bundle_ref": {"type": "string", "pattern": "^tpa_policy_input_bundle:.+"},
+    "decision_ref": {"type": "string", "pattern": "^tpa_policy_decision_record:.+"},
+    "eval_result_ref": {"type": "string", "pattern": "^tpa_policy_eval_result:.+"},
+    "conflict_refs": {"type": "array", "items": {"type": "string", "pattern": "^tpa_conflict_record:.+"}, "uniqueItems": true},
+    "evidence_requirement_ref": {"type": "string", "pattern": "^tpa_evidence_requirement_record:.+"},
+    "replay_fingerprint": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "effectiveness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prevented_bad_execution", "unnecessary_blocking", "precision_score"],
+      "properties": {
+        "prevented_bad_execution": {"type": "boolean"},
+        "unnecessary_blocking": {"type": "boolean"},
+        "precision_score": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "artifact_type": "redteam_finding_record",
+  "schema_version": "1.0.0",
+  "finding_id": "rqx-find-0123456789abcdef",
+  "trace_id": "trace-rqx-001",
+  "finding_class": "enforcement_mismatch",
+  "finding_statement": "Observed mismatch between expected halt action and emitted no-op action path.",
+  "exploit_refs": [
+    "redteam_exploit_bundle:rqx-exp-0123456789abcdef#exp-01"
+  ],
+  "bounded_scope": "align SEL action mapping with CDE outcome",
+  "severity": "high"
+}

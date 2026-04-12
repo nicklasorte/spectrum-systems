@@ -1,0 +1,11 @@
+{
+  "artifact_type": "tpa_conflict_record",
+  "schema_version": "1.0.0",
+  "conflict_id": "tpa-conflict-001",
+  "trace_id": "trace-tpa-001",
+  "input_bundle_ref": "tpa_policy_input_bundle:tpa-input-001",
+  "conflict_type": "scope_budget_mismatch",
+  "materiality": "material",
+  "resolution_status": "unresolved",
+  "reason_codes": ["scope_exceeds_budget"]
+}

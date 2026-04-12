@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_conflict_record.schema.json",
+  "title": "TPA Conflict Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "conflict_id", "trace_id", "input_bundle_ref", "conflict_type", "materiality", "resolution_status", "reason_codes"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "tpa_conflict_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "conflict_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "input_bundle_ref": {"type": "string", "pattern": "^tpa_policy_input_bundle:.+"},
+    "conflict_type": {"type": "string", "enum": ["upstream_boundary_violation", "scope_budget_mismatch", "source_authority_stale", "policy_semantic_mismatch"]},
+    "materiality": {"type": "string", "enum": ["non_material", "material"]},
+    "resolution_status": {"type": "string", "enum": ["resolved", "unresolved"]},
+    "reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true}
+  }
+}

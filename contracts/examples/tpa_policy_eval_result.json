@@ -1,0 +1,16 @@
+{
+  "artifact_type": "tpa_policy_eval_result",
+  "schema_version": "1.0.0",
+  "eval_id": "tpa-eval-001",
+  "trace_id": "trace-tpa-001",
+  "decision_ref": "tpa_policy_decision_record:tpa-decision-001",
+  "status": "pass",
+  "checks": {
+    "evidence_sufficiency": true,
+    "policy_completeness": true,
+    "boundary_correctness": true,
+    "scope_correctness": true,
+    "replay_consistency": true
+  },
+  "fail_reasons": []
+}

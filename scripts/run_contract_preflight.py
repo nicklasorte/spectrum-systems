@@ -21,6 +21,9 @@ if str(REPO_ROOT) not in sys.path:
 
 from spectrum_systems.contracts import load_schema  # noqa: E402
 from spectrum_systems.governance.contract_impact import analyze_contract_impact  # noqa: E402
+from spectrum_systems.modules.runtime.changed_path_resolution import (  # noqa: E402
+    resolve_changed_paths,
+)
 from spectrum_systems.modules.runtime.control_surface_enforcement import (  # noqa: E402
     ControlSurfaceEnforcementError,
     run_control_surface_enforcement,
@@ -108,6 +111,7 @@ _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "scripts/run_autonomous_validation_run.py": ["tests/test_run_autonomous_validation_run.py"],
     "scripts/run_ops03_adversarial_stress_testing.py": ["tests/test_run_ops03_adversarial_stress_testing.py"],
     "scripts/run_trust_spine_evidence_cohesion.py": ["tests/test_trust_spine_evidence_cohesion.py"],
+    "scripts/run_enforced_execution.py": ["tests/test_execution_contracts.py", "tests/test_control_executor.py"],
     "spectrum_systems/modules/runtime/control_surface_gap_loader.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
     "spectrum_systems/modules/runtime/control_surface_gap_to_pqx.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
     "spectrum_systems/modules/runtime/pqx_slice_runner.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
@@ -328,13 +332,17 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
             warnings=warnings + ["changed-path detection degraded; running full governed contract scan"],
         )
 
+    # Canonical resolver fallback for explicit insufficient-context metadata surface.
+    resolved = resolve_changed_paths(repo_root=repo_root, base_ref=base_ref, head_ref=head_ref, explicit=explicit)
     return ChangedPathDetectionResult(
-        changed_paths=[],
+        changed_paths=resolved.changed_paths,
         changed_path_detection_mode="detection_failed_no_governed_paths",
         refs_attempted=refs_attempted,
         fallback_used=True,
         warnings=warnings + ["changed-path detection failed and no governed paths were available"],
     )
+
+
 
 
 def classify_changed_contracts(changed_paths: list[str]) -> dict[str, list[str]]:

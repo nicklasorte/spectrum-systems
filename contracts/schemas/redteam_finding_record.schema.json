@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/redteam_finding_record.schema.json",
+  "title": "Redteam Finding Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "finding_id",
+    "trace_id",
+    "finding_class",
+    "finding_statement",
+    "exploit_refs",
+    "bounded_scope",
+    "severity"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "redteam_finding_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "finding_id": {
+      "type": "string",
+      "pattern": "^rqx-find-[a-f0-9]{16}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "finding_class": {
+      "type": "string",
+      "enum": [
+        "interpretation",
+        "repair_planning",
+        "decision_quality",
+        "enforcement_mismatch",
+        "execution_trace",
+        "trust_policy"
+      ]
+    },
+    "finding_statement": {
+      "type": "string",
+      "minLength": 1
+    },
+    "exploit_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "bounded_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    }
+  }
+}

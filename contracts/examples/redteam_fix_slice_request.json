@@ -1,0 +1,20 @@
+{
+  "artifact_type": "redteam_fix_slice_request",
+  "schema_version": "1.0.0",
+  "request_id": "rqx-fix-0123456789abcdef",
+  "trace_id": "trace-rqx-001",
+  "finding_ref": "redteam_finding_record:rqx-find-0123456789abcdef",
+  "owner": "SEL",
+  "owner_routing_reason": "class:enforcement_mismatch",
+  "bounded_scope": "align SEL action mapping with CDE outcome",
+  "required_proof_types": [
+    "eval_case",
+    "regression_test",
+    "hardened_contract_path"
+  ],
+  "deadline_ref": "deadline:2026-04-16",
+  "non_authority_assertions": [
+    "rqx_orchestration_only",
+    "rqx_must_not_reinterpret_semantics"
+  ]
+}

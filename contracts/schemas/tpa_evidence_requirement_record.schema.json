@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_evidence_requirement_record.schema.json",
+  "title": "TPA Evidence Requirement Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "record_id", "trace_id", "decision_ref", "required_evidence", "escalation_level", "debt_counter"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "tpa_evidence_requirement_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "record_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "decision_ref": {"type": "string", "pattern": "^tpa_policy_decision_record:.+"},
+    "required_evidence": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+    "escalation_level": {"type": "string", "enum": ["none", "warning", "required"]},
+    "debt_counter": {"type": "integer", "minimum": 0}
+  }
+}

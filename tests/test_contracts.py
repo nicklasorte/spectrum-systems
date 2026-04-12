@@ -193,6 +193,12 @@ class ContractSchemaTests(unittest.TestCase):
             "precedent_conflict_record",
             "override_governance_record",
             "tpa_policy_candidate",
+            "tpa_policy_input_bundle",
+            "tpa_policy_decision_record",
+            "tpa_evidence_requirement_record",
+            "tpa_conflict_record",
+            "tpa_policy_eval_result",
+            "tpa_policy_bundle",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)
@@ -220,6 +226,19 @@ class ContractSchemaTests(unittest.TestCase):
             "enforcement_conflict_record",
             "enforcement_effectiveness_record",
             "enforcement_bundle",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
+
+    def test_rqx_redteam_contract_examples_validate(self) -> None:
+        for name in (
+            "redteam_review_request",
+            "redteam_round_config",
+            "redteam_finding_record",
+            "redteam_exploit_bundle",
+            "redteam_fix_slice_request",
+            "redteam_closure_request",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)
