@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from importlib import util
 from pathlib import Path
@@ -14,6 +15,7 @@ assert _SPEC and _SPEC.loader
 _RUNNER = util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(_RUNNER)
 realize_steps = _RUNNER.realize_steps
+POLICY_HASH = hashlib.sha256(Path("config/roadmap_expansion_policy.json").read_bytes()).hexdigest()
 
 
 def _write_json(path: Path, payload: dict) -> None:
@@ -30,10 +32,16 @@ def _base_contract(step_id: str) -> dict:
 
     return {
         "artifact_type": "roadmap_step_contract",
+        "roadmap_id": "SYSTEM-ROADMAP-2026",
+        "roadmap_group": "RAX_INTERFACE",
         "step_id": step_id,
         "owner": "PQX",
         "intent": f"Runtime realization checks for {step_id} with fail-closed gating.",
         "depends_on": depends,
+        "source_authority_ref": f"docs/roadmaps/system_roadmap.md#{step_id}",
+        "source_version": "1.3.112",
+        "input_freshness_ref": f"freshness/roadmap_inputs.json#{step_id}",
+        "input_provenance_ref": f"provenance/roadmap_inputs.json#{step_id}",
         "target_modules": ["spectrum_systems/modules/runtime/roadmap_realization_runtime.py"],
         "target_contracts": [
             "contracts/schemas/roadmap_step_contract.schema.json",
@@ -51,8 +59,12 @@ def _base_contract(step_id: str) -> dict:
         ],
         "realization_mode": "runtime_realization",
         "realization_status": "planned_only",
-        "expansion_version": "1.0.0",
-        "expansion_policy_hash": "152968011b794af977ccdfa9813025ef2271dbd6be90a48116d5a6b665b73839",
+        "downstream_compatibility": {
+            "prg_rdx_step_metadata": True,
+            "realization_runner_contract_complete": True,
+        },
+        "expansion_version": "1.1.0",
+        "expansion_policy_hash": POLICY_HASH,
         "expansion_trace_ref": "contracts/examples/roadmap_expansion_trace.example.json#RF-03",
     }
 

@@ -1,0 +1,37 @@
+{
+  "artifact_type": "rax_assurance_audit_record",
+  "roadmap_id": "SYSTEM-ROADMAP-2026",
+  "step_id": "RAX-INTERFACE-24-01",
+  "input_validation_result": {
+    "passed": true,
+    "details": [
+      "upstream schema validation passed",
+      "owner and dependency references are valid"
+    ]
+  },
+  "output_validation_result": {
+    "passed": true,
+    "details": [
+      "downstream contract validation passed",
+      "compatibility fields satisfy realization runner requirements"
+    ]
+  },
+  "counter_evidence": [],
+  "freshness_result": {
+    "passed": true,
+    "details": [
+      "input_freshness_ref points to freshness status fresh"
+    ]
+  },
+  "provenance_result": {
+    "passed": true,
+    "details": [
+      "input_provenance_ref resolves to trusted upstream artifact"
+    ]
+  },
+  "failure_classification": "none",
+  "repairability_classification": "none",
+  "stop_condition_triggered": false,
+  "acceptance_decision": "accept_candidate",
+  "status_transition_result": "legal"
+}
