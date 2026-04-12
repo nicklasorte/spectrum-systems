@@ -36,7 +36,14 @@
         "mutated_literal_variant",
         "nested_variant",
         "cross_step_contamination_variant",
-        "partial_signal_contradiction"
+        "partial_signal_contradiction",
+        "semantic_drift_variant",
+        "provenance_weakness_variant",
+        "replay_weakness_variant",
+        "ambiguity_variant",
+        "weak_counter_evidence_variant",
+        "hidden_scope_expansion_variant",
+        "multi_signal_exploit_combo"
       ]
     },
     "target_ref": {

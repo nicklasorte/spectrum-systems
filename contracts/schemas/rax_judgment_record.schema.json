@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_judgment_record.schema.json",
+  "title": "RAX Judgment Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "judgment_id",
+    "target_ref",
+    "judgment_outcome",
+    "rationale",
+    "conflict_ref",
+    "authority_note"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "rax_judgment_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "judgment_id": {"type": "string", "minLength": 1},
+    "target_ref": {"type": "string", "minLength": 1},
+    "judgment_outcome": {"type": "string", "enum": ["ready", "revise", "more_evidence_needed"]},
+    "rationale": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "conflict_ref": {"type": "string", "minLength": 1},
+    "authority_note": {"type": "string", "const": "judgment_only_non_authoritative"}
+  }
+}

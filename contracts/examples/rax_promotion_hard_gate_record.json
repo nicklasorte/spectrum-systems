@@ -1,0 +1,11 @@
+{
+  "artifact_type": "rax_promotion_hard_gate_record",
+  "schema_version": "1.0.0",
+  "gate_id": "promote-gate-001",
+  "passed": false,
+  "missing_evidence": [
+    "replay_evidence_missing",
+    "policy_regression_evidence_missing"
+  ],
+  "decision": "block"
+}

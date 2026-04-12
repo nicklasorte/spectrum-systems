@@ -1,0 +1,13 @@
+{
+  "artifact_type": "rax_judgment_record",
+  "schema_version": "1.0.0",
+  "judgment_id": "judgment-001",
+  "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+  "judgment_outcome": "more_evidence_needed",
+  "rationale": [
+    "material_conflict_unresolved",
+    "missing_required_eval_types"
+  ],
+  "conflict_ref": "conflict:RAX-EVAL-01:12121212-1212-4121-8121-121212121212",
+  "authority_note": "judgment_only_non_authoritative"
+}

@@ -552,6 +552,10 @@ def evaluate_rax_control_readiness(
     authority_records: dict[str, Any] | None = None,
     replay_baseline_store: dict[str, Any] | None = None,
     replay_key: str | None = None,
+    policy_version: str = "1.0.0",
+    semantic_rule_version: str = "1.0.0",
+    eval_config_version: str = "1.0.0",
+    contradiction_logic_version: str = "1.0.0",
 ) -> dict[str, Any]:
     """Build bounded RAX control-readiness artifact from governed eval artifacts."""
     from spectrum_systems.modules.runtime.rax_eval_runner import build_rax_control_readiness_record
@@ -569,4 +573,8 @@ def evaluate_rax_control_readiness(
         authority_records=authority_records,
         replay_baseline_store=replay_baseline_store,
         replay_key=replay_key,
+        policy_version=policy_version,
+        semantic_rule_version=semantic_rule_version,
+        eval_config_version=eval_config_version,
+        contradiction_logic_version=contradiction_logic_version,
     )

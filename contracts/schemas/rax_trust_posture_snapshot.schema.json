@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_trust_posture_snapshot.schema.json",
+  "title": "RAX Trust Posture Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "snapshot_id",
+    "trend_report_ref",
+    "posture",
+    "primary_signals"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "rax_trust_posture_snapshot"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "snapshot_id": {"type": "string", "minLength": 1},
+    "trend_report_ref": {"type": "string", "minLength": 1},
+    "posture": {"type": "string", "enum": ["stable", "degraded", "critical"]},
+    "primary_signals": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1}
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_trend_report.schema.json",
+  "title": "RAX Trend Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "report_id",
+    "window_ref",
+    "exploit_hit_rate",
+    "block_rate",
+    "contradiction_rate",
+    "override_escalation_proxy_rate",
+    "false_block_proxy_rate",
+    "false_allow_proxy_rate",
+    "confidence_mean",
+    "sample_size"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "rax_trend_report"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "report_id": {"type": "string", "minLength": 1},
+    "window_ref": {"type": "string", "minLength": 1},
+    "exploit_hit_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "block_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "contradiction_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "override_escalation_proxy_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "false_block_proxy_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "false_allow_proxy_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "confidence_mean": {"type": "number", "minimum": 0, "maximum": 1},
+    "sample_size": {"type": "integer", "minimum": 0}
+  }
+}

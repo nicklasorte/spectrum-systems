@@ -1,9 +1,116 @@
 {
   "artifact_type": "rax_eval_case_set",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "batch": "RAX-EVAL-01",
   "case_set_version": "1.0.0",
   "cases": [
+    {
+      "eval_case_id": "rax-03-ambiguity-mutation-01",
+      "eval_type": "rax_input_semantic_sufficiency",
+      "case_class": "discovery_mutation",
+      "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+      "expected_status": "fail",
+      "reason_codes": [
+        "ambiguous_source_intent_detected"
+      ],
+      "signals": [
+        "ambiguity",
+        "mutation"
+      ],
+      "trace_id": "7742cc59-a6b8-44bd-9156-ce086c41b928"
+    },
+    {
+      "eval_case_id": "rax-03-hidden-scope-combo-01",
+      "eval_type": "rax_output_semantic_alignment",
+      "case_class": "discovery_combo",
+      "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+      "expected_status": "fail",
+      "reason_codes": [
+        "hidden_scope_expansion_detected",
+        "semantic_expansion_mismatch"
+      ],
+      "signals": [
+        "hidden_scope_expansion",
+        "multi_signal"
+      ],
+      "trace_id": "f24314a3-77ed-4e28-a3a2-993a2da89e69"
+    },
+    {
+      "eval_case_id": "rax-03-multi-signal-exploit-combo-01",
+      "eval_type": "rax_control_readiness",
+      "case_class": "discovery_combo",
+      "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+      "expected_status": "fail",
+      "reason_codes": [
+        "contradiction_unresolved",
+        "dependency_omission_detected"
+      ],
+      "signals": [
+        "multi_signal",
+        "combinatorial"
+      ],
+      "trace_id": "b904ff1f-748d-4444-93f5-0618dcb31162"
+    },
+    {
+      "eval_case_id": "rax-03-provenance-weakness-mutation-01",
+      "eval_type": "rax_version_authority_alignment",
+      "case_class": "discovery_mutation",
+      "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+      "expected_status": "fail",
+      "reason_codes": [
+        "source_version_drift"
+      ],
+      "signals": [
+        "provenance_weakness",
+        "mutation"
+      ],
+      "trace_id": "ed6cfc24-9cf1-4d16-bcb6-a20db9210bda"
+    },
+    {
+      "eval_case_id": "rax-03-replay-weakness-mutation-01",
+      "eval_type": "rax_control_readiness",
+      "case_class": "discovery_mutation",
+      "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+      "expected_status": "fail",
+      "reason_codes": [
+        "cross_run_eval_signal_inconsistency"
+      ],
+      "signals": [
+        "replay_weakness",
+        "mutation"
+      ],
+      "trace_id": "74b0cda5-4e8f-4ea7-9aa5-11fede724b7c"
+    },
+    {
+      "eval_case_id": "rax-03-semantic-drift-mutation-01",
+      "eval_type": "rax_input_semantic_sufficiency",
+      "case_class": "discovery_mutation",
+      "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+      "expected_status": "fail",
+      "reason_codes": [
+        "semantic_intent_insufficient"
+      ],
+      "signals": [
+        "semantic_drift",
+        "mutation"
+      ],
+      "trace_id": "ffafef6b-8850-4e5f-859f-0b664d498dbf"
+    },
+    {
+      "eval_case_id": "rax-03-weak-counter-evidence-mutation-01",
+      "eval_type": "rax_control_readiness",
+      "case_class": "discovery_mutation",
+      "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+      "expected_status": "fail",
+      "reason_codes": [
+        "weak_counter_evidence_detected"
+      ],
+      "signals": [
+        "weak_counter_evidence",
+        "mutation"
+      ],
+      "trace_id": "eef27ded-78a5-4d4c-962f-b44b7caf6fdc"
+    },
     {
       "eval_case_id": "rax-case-baseline-input",
       "eval_type": "rax_input_semantic_sufficiency",
@@ -391,64 +498,19 @@
       "trace_id": "20000000-0000-4000-8000-000000000001"
     },
     {
-      "eval_case_id": "rax-red-02-priority-inversion",
-      "eval_type": "rax_normalization_integrity",
+      "eval_case_id": "rax-red-02-ambiguous-intent",
+      "eval_type": "rax_input_semantic_sufficiency",
       "case_class": "adversarial",
       "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
       "expected_status": "fail",
       "reason_codes": [
-        "priority_inversion_detected"
+        "ambiguous_source_intent_detected"
       ],
       "signals": [
         "RAX-RED-02",
         "semantic_adversarial_pack"
       ],
-      "trace_id": "30000000-0000-4000-8000-000000000021"
-    },
-    {
-      "eval_case_id": "rax-red-02-dependency-omission",
-      "eval_type": "rax_control_readiness",
-      "case_class": "adversarial",
-      "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
-      "expected_status": "fail",
-      "reason_codes": [
-        "dependency_omission_detected"
-      ],
-      "signals": [
-        "RAX-RED-02",
-        "semantic_adversarial_pack"
-      ],
-      "trace_id": "30000000-0000-4000-8000-000000000022"
-    },
-    {
-      "eval_case_id": "rax-red-02-owner-intent-mismatch",
-      "eval_type": "rax_owner_intent_alignment",
-      "case_class": "adversarial",
-      "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
-      "expected_status": "fail",
-      "reason_codes": [
-        "owner_intent_mismatch_detected"
-      ],
-      "signals": [
-        "RAX-RED-02",
-        "semantic_adversarial_pack"
-      ],
-      "trace_id": "30000000-0000-4000-8000-000000000023"
-    },
-    {
-      "eval_case_id": "rax-red-02-weak-counter-evidence",
-      "eval_type": "rax_control_readiness",
-      "case_class": "adversarial",
-      "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
-      "expected_status": "fail",
-      "reason_codes": [
-        "weak_counter_evidence_detected"
-      ],
-      "signals": [
-        "RAX-RED-02",
-        "semantic_adversarial_pack"
-      ],
-      "trace_id": "30000000-0000-4000-8000-000000000024"
+      "trace_id": "30000000-0000-4000-8000-000000000028"
     },
     {
       "eval_case_id": "rax-red-02-contradiction-unresolved",
@@ -466,19 +528,49 @@
       "trace_id": "30000000-0000-4000-8000-000000000025"
     },
     {
-      "eval_case_id": "rax-red-02-semantic-expansion-mismatch",
-      "eval_type": "rax_output_semantic_alignment",
+      "eval_case_id": "rax-red-02-dependency-omission",
+      "eval_type": "rax_control_readiness",
       "case_class": "adversarial",
       "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
       "expected_status": "fail",
       "reason_codes": [
-        "semantic_expansion_mismatch"
+        "dependency_omission_detected"
       ],
       "signals": [
         "RAX-RED-02",
         "semantic_adversarial_pack"
       ],
-      "trace_id": "30000000-0000-4000-8000-000000000026"
+      "trace_id": "30000000-0000-4000-8000-000000000022"
+    },
+    {
+      "eval_case_id": "rax-red-02-hidden-scope-expansion",
+      "eval_type": "rax_output_semantic_alignment",
+      "case_class": "adversarial",
+      "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+      "expected_status": "fail",
+      "reason_codes": [
+        "hidden_scope_expansion_detected"
+      ],
+      "signals": [
+        "RAX-RED-02",
+        "semantic_adversarial_pack"
+      ],
+      "trace_id": "30000000-0000-4000-8000-000000000029"
+    },
+    {
+      "eval_case_id": "rax-red-02-owner-intent-mismatch",
+      "eval_type": "rax_owner_intent_alignment",
+      "case_class": "adversarial",
+      "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+      "expected_status": "fail",
+      "reason_codes": [
+        "owner_intent_mismatch_detected"
+      ],
+      "signals": [
+        "RAX-RED-02",
+        "semantic_adversarial_pack"
+      ],
+      "trace_id": "30000000-0000-4000-8000-000000000023"
     },
     {
       "eval_case_id": "rax-red-02-policy-meaning-drift",
@@ -496,34 +588,49 @@
       "trace_id": "30000000-0000-4000-8000-000000000027"
     },
     {
-      "eval_case_id": "rax-red-02-ambiguous-intent",
-      "eval_type": "rax_input_semantic_sufficiency",
+      "eval_case_id": "rax-red-02-priority-inversion",
+      "eval_type": "rax_normalization_integrity",
       "case_class": "adversarial",
       "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
       "expected_status": "fail",
       "reason_codes": [
-        "ambiguous_source_intent_detected"
+        "priority_inversion_detected"
       ],
       "signals": [
         "RAX-RED-02",
         "semantic_adversarial_pack"
       ],
-      "trace_id": "30000000-0000-4000-8000-000000000028"
+      "trace_id": "30000000-0000-4000-8000-000000000021"
     },
     {
-      "eval_case_id": "rax-red-02-hidden-scope-expansion",
+      "eval_case_id": "rax-red-02-semantic-expansion-mismatch",
       "eval_type": "rax_output_semantic_alignment",
       "case_class": "adversarial",
       "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
       "expected_status": "fail",
       "reason_codes": [
-        "hidden_scope_expansion_detected"
+        "semantic_expansion_mismatch"
       ],
       "signals": [
         "RAX-RED-02",
         "semantic_adversarial_pack"
       ],
-      "trace_id": "30000000-0000-4000-8000-000000000029"
+      "trace_id": "30000000-0000-4000-8000-000000000026"
+    },
+    {
+      "eval_case_id": "rax-red-02-weak-counter-evidence",
+      "eval_type": "rax_control_readiness",
+      "case_class": "adversarial",
+      "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+      "expected_status": "fail",
+      "reason_codes": [
+        "weak_counter_evidence_detected"
+      ],
+      "signals": [
+        "RAX-RED-02",
+        "semantic_adversarial_pack"
+      ],
+      "trace_id": "30000000-0000-4000-8000-000000000024"
     }
   ]
 }

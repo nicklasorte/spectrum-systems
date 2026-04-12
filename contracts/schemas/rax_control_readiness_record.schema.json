@@ -21,7 +21,10 @@
     "version_authority_aligned",
     "conditions_under_which_ready_changes",
     "unknown_state_ref",
-    "pre_certification_alignment_ref"
+    "pre_certification_alignment_ref",
+    "conflict_arbitration_ref",
+    "non_authority_assertions",
+    "replay_identity"
   ],
   "properties": {
     "artifact_type": {
@@ -30,7 +33,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "batch": {
       "type": "string",
@@ -131,6 +134,51 @@
     "pre_certification_alignment_ref": {
       "type": "string",
       "minLength": 1
+    },
+    "conflict_arbitration_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "replay_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_version",
+        "semantic_rule_version",
+        "eval_config_version",
+        "contradiction_logic_version",
+        "fingerprint"
+      ],
+      "properties": {
+        "policy_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "semantic_rule_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "eval_config_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contradiction_logic_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fingerprint": {
+          "type": "string",
+          "minLength": 8
+        }
+      }
     }
   }
 }

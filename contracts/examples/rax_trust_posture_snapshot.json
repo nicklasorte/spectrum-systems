@@ -1,0 +1,12 @@
+{
+  "artifact_type": "rax_trust_posture_snapshot",
+  "schema_version": "1.0.0",
+  "snapshot_id": "trust-posture-001",
+  "trend_report_ref": "trend-001",
+  "posture": "stable",
+  "primary_signals": [
+    "block_rate:0.400",
+    "contradiction_rate:0.100",
+    "false_allow_proxy_rate:0.010"
+  ]
+}
