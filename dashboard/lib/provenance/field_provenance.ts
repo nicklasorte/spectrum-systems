@@ -2,12 +2,29 @@ export type PanelFieldProvenance = {
   panel_id: string
   artifact: string
   fields: string[]
+  transformation_path?: string[]
   uncertainty?: string
 }
 
 export const PANEL_FIELD_PROVENANCE_MAP: PanelFieldProvenance[] = [
   { panel_id: 'trust_posture', artifact: 'dashboard_freshness_status.json', fields: ['status', 'freshness_window_hours', 'snapshot_last_refreshed_time', 'trace_id'] },
   { panel_id: 'trust_posture', artifact: 'dashboard_publication_sync_audit.json', fields: ['publication_state', 'required_artifact_count', 'records'] },
+  { panel_id: 'causal_chain', artifact: 'judgment_application_artifact.json', fields: ['decision_id', 'judgment_ids'], transformation_path: ['judgment_application_artifact.decision_id -> causal_chain.judgment_node'] },
+  { panel_id: 'causal_chain', artifact: 'publication_attempt_record.json', fields: ['decision', 'reason_codes', 'timestamp'], transformation_path: ['publication_attempt_record.decision -> causal_chain.control_node'] },
+  { panel_id: 'causal_chain', artifact: 'hard_gate_status_record.json', fields: ['readiness_status', 'pass_fail'], transformation_path: ['hard_gate_status_record.readiness_status -> causal_chain.eval_node'] },
+  { panel_id: 'causal_chain', artifact: 'serial_bundle_validator_result.json', fields: ['pass'], transformation_path: ['serial_bundle_validator_result.pass -> causal_chain.outcome_node'] },
+  { panel_id: 'decision_trace', artifact: 'publication_attempt_record.json', fields: ['decision', 'reason_codes', 'trace_id'] },
+  { panel_id: 'decision_trace', artifact: 'judgment_application_artifact.json', fields: ['decision_id', 'judgment_ids'] },
+  { panel_id: 'decision_trace', artifact: 'hard_gate_status_record.json', fields: ['gate_name', 'readiness_status'] },
+  { panel_id: 'multi_artifact_correlation', artifact: 'current_bottleneck_record.json', fields: ['bottleneck_name', 'impacted_layers'] },
+  { panel_id: 'multi_artifact_correlation', artifact: 'current_run_state_record.json', fields: ['current_run_status', 'repair_loop_count'] },
+  { panel_id: 'multi_artifact_correlation', artifact: 'hard_gate_status_record.json', fields: ['readiness_status'] },
+  { panel_id: 'multi_artifact_correlation', artifact: 'judgment_application_artifact.json', fields: ['decision_id'] },
+  { panel_id: 'multi_artifact_correlation', artifact: 'serial_bundle_validator_result.json', fields: ['pass'] },
+  { panel_id: 'evidence_strength', artifact: 'dashboard_publication_sync_audit.json', fields: ['records', 'required_artifact_count'] },
+  { panel_id: 'evidence_strength', artifact: 'dashboard_freshness_status.json', fields: ['status', 'snapshot_age_hours'] },
+  { panel_id: 'evidence_strength', artifact: 'serial_bundle_validator_result.json', fields: ['pass'] },
+  { panel_id: 'evidence_strength', artifact: 'dashboard_public_contract_coverage.json', fields: ['covered_artifacts'], uncertainty: 'Coverage artifact does not include uncovered severity by slice; panel computes count only.' },
   { panel_id: 'control_decisions', artifact: 'publication_attempt_record.json', fields: ['decision', 'reason_codes', 'timestamp', 'trace_id'] },
   { panel_id: 'control_decisions', artifact: 'hard_gate_status_record.json', fields: ['gate_name', 'readiness_status', 'pass_fail'] },
   { panel_id: 'judgment_records', artifact: 'judgment_application_artifact.json', fields: ['decision_id', 'judgment_ids', 'consumed_by_control'] },
@@ -18,7 +35,7 @@ export const PANEL_FIELD_PROVENANCE_MAP: PanelFieldProvenance[] = [
   { panel_id: 'weighted_coverage', artifact: 'dashboard_public_contract_coverage.json', fields: ['covered_artifacts'] },
   { panel_id: 'weighted_coverage', artifact: 'dashboard_publication_manifest.json', fields: ['required_files'] },
   { panel_id: 'trend_control_charts', artifact: 'dashboard_freshness_status.json', fields: ['snapshot_age_hours', 'freshness_window_hours'], uncertainty: 'No historical series artifact published; single-sample chart only.' },
-  { panel_id: 'trend_control_charts', artifact: 'publication_attempt_record.json', fields: ['validation_summary.overall_verdict', 'freshness_summary.overall_verdict'] },
+  { panel_id: 'trend_control_charts', artifact: 'publication_attempt_record.json', fields: ['decision'] },
   { panel_id: 'reconciliation', artifact: 'dashboard_freshness_status.json', fields: ['status'] },
   { panel_id: 'reconciliation', artifact: 'publication_attempt_record.json', fields: ['decision'] },
   { panel_id: 'postmortem_outage', artifact: 'refresh_run_record.json', fields: ['outcome', 'failure_class', 'trace_id'] },

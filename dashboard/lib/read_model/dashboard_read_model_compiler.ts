@@ -6,8 +6,12 @@ function blocked(panelId: string, summary: string): DashboardPanelSurface {
   return { panelId, title: panelId, status: 'blocked', summary, rows: [], blockedReason: summary }
 }
 
-function requireValidated(panelId: string, artifact: { exists: boolean; valid: boolean }): boolean {
+function requireValidated(artifact: { exists: boolean; valid: boolean }): boolean {
   return artifact.exists && artifact.valid
+}
+
+function needsValidDecision(value: unknown): boolean {
+  return normalizeDecisionStatus(value) !== 'unknown_blocked'
 }
 
 export function compileDashboardReadModel(publication: DashboardPublication): DashboardPanelSurface[] {
@@ -17,7 +21,7 @@ export function compileDashboardReadModel(publication: DashboardPublication): Da
 
   const panels: DashboardPanelSurface[] = []
 
-  if (!requireValidated('trust_posture', publication.freshnessStatus) || !requireValidated('trust_posture', publication.syncAudit)) {
+  if (!requireValidated(publication.freshnessStatus) || !requireValidated(publication.syncAudit)) {
     panels.push(blocked('trust_posture', 'Freshness/sync artifacts missing or invalid.'))
   } else {
     const freshness = publication.freshnessStatus.data
@@ -38,8 +42,80 @@ export function compileDashboardReadModel(publication: DashboardPublication): Da
     })
   }
 
+  const hardGateStatus = normalizeDecisionStatus(publication.hardGate.data?.readiness_status)
+  const judgmentDecisionId = publication.judgmentApplication.data?.decision_id ?? 'unknown'
   const controlStatus = normalizeDecisionStatus(publication.publicationAttemptRecord.data?.decision)
-  if (!requireValidated('control_decisions', publication.publicationAttemptRecord) || controlStatus === 'unknown_blocked') {
+  const outcomeStatus = publication.serialValidator.data?.pass ? 'pass' : 'failed'
+  const causalReady = requireValidated(publication.publicationAttemptRecord) && requireValidated(publication.judgmentApplication) && requireValidated(publication.hardGate) && requireValidated(publication.serialValidator) && hardGateStatus !== 'unknown_blocked' && controlStatus !== 'unknown_blocked'
+
+  panels.push(causalReady
+    ? {
+        panelId: 'causal_chain',
+        title: 'Causal chain',
+        status: 'renderable',
+        summary: 'Artifact-backed eval → judgment → control → outcome chain.',
+        rows: [
+          ['eval', publication.hardGate.data?.gate_name ?? 'hard_gate', hardGateStatus],
+          ['judgment', judgmentDecisionId, (publication.judgmentApplication.data?.judgment_ids ?? []).join(', ') || 'none'],
+          ['control', controlStatus, (publication.publicationAttemptRecord.data?.reason_codes ?? []).join(', ') || 'none'],
+          ['outcome', outcomeStatus, publication.serialValidator.data?.pass ? 'validator_passed' : 'validator_failed']
+        ]
+      }
+    : blocked('causal_chain', 'Causal chain artifacts missing/invalid or include unknown status enums.'))
+
+  const decisionTraceReady = requireValidated(publication.publicationAttemptRecord) && requireValidated(publication.judgmentApplication) && requireValidated(publication.hardGate) && needsValidDecision(publication.publicationAttemptRecord.data?.decision)
+  panels.push(decisionTraceReady
+    ? {
+        panelId: 'decision_trace',
+        title: 'Decision trace',
+        status: 'renderable',
+        summary: 'Decision state traceable to governed artifacts only.',
+        rows: [
+          ['control_decision', publication.publicationAttemptRecord.data?.decision ?? 'unknown', publication.publicationAttemptRecord.data?.trace_id ?? 'trace-missing'],
+          ['reason_codes', (publication.publicationAttemptRecord.data?.reason_codes ?? []).join(', ') || 'none', publication.publicationAttemptRecord.data?.timestamp ?? 'unknown'],
+          ['judgment_link', publication.judgmentApplication.data?.decision_id ?? 'unknown', (publication.judgmentApplication.data?.judgment_ids ?? []).join(', ') || 'none'],
+          ['gate_state', publication.hardGate.data?.readiness_status ?? publication.hardGate.data?.pass_fail ?? 'unknown', publication.hardGate.data?.gate_name ?? 'unknown']
+        ]
+      }
+    : blocked('decision_trace', 'Decision trace unavailable: missing artifact linkage or unknown decision enum.'))
+
+  const correlationReady = requireValidated(publication.bottleneck) && requireValidated(publication.runState) && requireValidated(publication.hardGate) && requireValidated(publication.judgmentApplication) && requireValidated(publication.serialValidator)
+  panels.push(correlationReady
+    ? {
+        panelId: 'multi_artifact_correlation',
+        title: 'Multi-artifact correlation',
+        status: 'renderable',
+        summary: 'Correlation-only surface across bottleneck/run/gate/judgment/replay artifacts.',
+        rows: [
+          ['bottleneck', publication.bottleneck.data?.bottleneck_name ?? 'unknown', (publication.bottleneck.data?.impacted_layers ?? []).join(', ') || 'none'],
+          ['run_state', publication.runState.data?.current_run_status ?? publication.runState.data?.status ?? 'unknown', String(publication.runState.data?.repair_loop_count ?? 'unknown')],
+          ['hard_gate', publication.hardGate.data?.readiness_status ?? publication.hardGate.data?.pass_fail ?? 'unknown', publication.hardGate.data?.gate_name ?? 'unknown'],
+          ['judgment', publication.judgmentApplication.data?.decision_id ?? 'unknown', String(Boolean(publication.judgmentApplication.data?.consumed_by_control))],
+          ['replay_cert', publication.serialValidator.data?.pass ? 'match' : 'mismatch', publication.promotionGate.data?.promotion_decision ?? 'unknown']
+        ]
+      }
+    : blocked('multi_artifact_correlation', 'Correlation surface blocked because one or more source artifacts are missing/invalid.'))
+
+  const coverageCount = publication.contractCoverage.data?.covered_artifacts?.length ?? 0
+  const expectedCount = publication.manifest.data?.required_files?.length ?? 0
+  const evidenceReady = requireValidated(publication.syncAudit) && requireValidated(publication.freshnessStatus) && requireValidated(publication.serialValidator) && requireValidated(publication.contractCoverage)
+  panels.push(evidenceReady
+    ? {
+        panelId: 'evidence_strength',
+        title: 'Evidence strength',
+        status: 'renderable',
+        summary: 'Dimensional evidence quality view with explicit provenance and uncertainty.',
+        rows: [
+          ['provenance_depth', String(publication.syncAudit.data?.records?.length ?? 0), 'audit.records'],
+          ['cross_source_agreement', publication.serialValidator.data?.pass ? 'agree' : 'disagree', 'validator + publication artifacts'],
+          ['freshness', publication.freshnessStatus.data?.status ?? 'unknown', String(publication.freshnessStatus.data?.snapshot_age_hours ?? 'unknown')],
+          ['validation_status', publication.serialValidator.data?.pass ? 'pass' : 'failed', 'serial_bundle_validator_result.pass'],
+          ['replay_certification_support', publication.replayPack.data?.scenario_ids?.length ? 'present' : 'missing', `coverage ${coverageCount}/${expectedCount}`]
+        ]
+      }
+    : blocked('evidence_strength', 'Evidence dimensions blocked due to missing/invalid source artifacts.'))
+
+  if (!requireValidated(publication.publicationAttemptRecord) || controlStatus === 'unknown_blocked') {
     panels.push(blocked('control_decisions', 'Control decision artifact missing/invalid or unknown decision code.'))
   } else {
     panels.push({
@@ -52,7 +128,7 @@ export function compileDashboardReadModel(publication: DashboardPublication): Da
   }
 
   const judgment = publication.judgmentApplication.data
-  panels.push(requireValidated('judgment_records', publication.judgmentApplication)
+  panels.push(requireValidated(publication.judgmentApplication)
     ? {
         panelId: 'judgment_records',
         title: 'Judgment records',
@@ -63,7 +139,7 @@ export function compileDashboardReadModel(publication: DashboardPublication): Da
     : blocked('judgment_records', 'Judgment artifact missing or invalid.'))
 
   const overrides = publication.overrideCapture.data?.overrides ?? []
-  panels.push(requireValidated('override_lifecycle', publication.overrideCapture)
+  panels.push(requireValidated(publication.overrideCapture)
     ? {
         panelId: 'override_lifecycle',
         title: 'Override lifecycle',
@@ -73,7 +149,7 @@ export function compileDashboardReadModel(publication: DashboardPublication): Da
       }
     : blocked('override_lifecycle', 'Override artifact missing or invalid.'))
 
-  const replayReady = requireValidated('replay_certification', publication.replayPack) && requireValidated('replay_certification', publication.serialValidator)
+  const replayReady = requireValidated(publication.replayPack) && requireValidated(publication.serialValidator)
   panels.push(replayReady
     ? {
         panelId: 'replay_certification',
@@ -88,7 +164,7 @@ export function compileDashboardReadModel(publication: DashboardPublication): Da
   const required = publication.manifest.data?.required_files ?? []
   const uncovered = required.filter((name) => !covered.has(name.replace('.json', '')))
   const severityScore = uncovered.length * 5 + (publication.overrideCapture.data?.overrides?.length ?? 0) * 10
-  panels.push(requireValidated('weighted_coverage', publication.contractCoverage)
+  panels.push(requireValidated(publication.contractCoverage)
     ? {
         panelId: 'weighted_coverage',
         title: 'Weighted coverage',
@@ -123,7 +199,7 @@ export function compileDashboardReadModel(publication: DashboardPublication): Da
   panels.push({
     panelId: 'postmortem_outage',
     title: 'Postmortem and outage',
-    status: requireValidated('postmortem_outage', publication.refreshRunRecord) ? 'renderable' : 'blocked',
+    status: requireValidated(publication.refreshRunRecord) ? 'renderable' : 'blocked',
     summary: 'Stale trips/publication failures/incident trace links.',
     rows: [[publication.refreshRunRecord.data?.failure_class ?? 'none', publication.refreshRunRecord.data?.trace_id ?? 'none', publication.publicationAttemptRecord.data?.decision ?? 'unknown']]
   })

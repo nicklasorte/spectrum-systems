@@ -15,6 +15,34 @@ export const PANEL_CAPABILITY_MAP: PanelCapability[] = [
     prohibited_local_authority: ['control', 'judgment', 'replay', 'override', 'eval', 'publication']
   },
   {
+    panel_id: 'causal_chain',
+    reads_from_artifacts: ['publication_attempt_record.json', 'judgment_application_artifact.json', 'hard_gate_status_record.json', 'serial_bundle_validator_result.json'],
+    owning_system: 'TLC',
+    decision_authority: 'read_only',
+    prohibited_local_authority: ['control', 'judgment', 'replay', 'override', 'eval', 'publication']
+  },
+  {
+    panel_id: 'decision_trace',
+    reads_from_artifacts: ['publication_attempt_record.json', 'judgment_application_artifact.json', 'hard_gate_status_record.json'],
+    owning_system: 'RIL',
+    decision_authority: 'read_only',
+    prohibited_local_authority: ['control', 'judgment', 'replay', 'override', 'eval', 'publication']
+  },
+  {
+    panel_id: 'multi_artifact_correlation',
+    reads_from_artifacts: ['current_bottleneck_record.json', 'current_run_state_record.json', 'hard_gate_status_record.json', 'judgment_application_artifact.json', 'serial_bundle_validator_result.json'],
+    owning_system: 'PRG',
+    decision_authority: 'read_only',
+    prohibited_local_authority: ['control', 'judgment', 'replay', 'override', 'eval', 'publication']
+  },
+  {
+    panel_id: 'evidence_strength',
+    reads_from_artifacts: ['dashboard_freshness_status.json', 'dashboard_publication_sync_audit.json', 'serial_bundle_validator_result.json', 'dashboard_public_contract_coverage.json'],
+    owning_system: 'CDE',
+    decision_authority: 'read_only',
+    prohibited_local_authority: ['control', 'judgment', 'replay', 'override', 'eval', 'publication']
+  },
+  {
     panel_id: 'control_decisions',
     reads_from_artifacts: ['publication_attempt_record.json', 'hard_gate_status_record.json'],
     owning_system: 'SEL',
