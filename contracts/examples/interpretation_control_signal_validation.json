@@ -1,0 +1,12 @@
+{
+  "artifact_type": "interpretation_control_signal_validation",
+  "schema_version": "1.0.0",
+  "validation_id": "ril-ctrl-001",
+  "interpretation_record_ref": "interpretation_record:ril-int-001",
+  "allowed_influence_fields": [
+    "normalized_failure_class"
+  ],
+  "forbidden_fields_detected": [],
+  "hidden_authority_detected": false,
+  "result": "pass"
+}

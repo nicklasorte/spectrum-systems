@@ -1,0 +1,19 @@
+{
+  "artifact_type": "failure_class_drift_record",
+  "schema_version": "1.0.0",
+  "record_id": "ril-drift-001",
+  "baseline_classes": [
+    "slice_contract_mismatch"
+  ],
+  "observed_classes": [
+    "slice_contract_mismatch",
+    "novel_new_class"
+  ],
+  "novel_classes": [
+    "novel_new_class"
+  ],
+  "novel_rate": 0.25,
+  "novelty_threshold": 0.2,
+  "drift_detected": true,
+  "result": "fail"
+}

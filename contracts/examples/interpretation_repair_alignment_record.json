@@ -1,0 +1,14 @@
+{
+  "artifact_type": "interpretation_repair_alignment_record",
+  "schema_version": "1.0.0",
+  "alignment_id": "ril-align-001",
+  "interpretation_record_ref": "interpretation_record:ril-int-001",
+  "repair_candidate_ref": "repair_candidate:fre-rc-001",
+  "alignment_passed": true,
+  "expected_action_prefix": "update_artifact:",
+  "observed_actions": [
+    "update_artifact:contracts/examples/review_control_signal_artifact.json"
+  ],
+  "result": "pass",
+  "fail_reasons": []
+}

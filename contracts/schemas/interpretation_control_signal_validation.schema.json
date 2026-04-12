@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/interpretation_control_signal_validation.schema.json",
+  "title": "interpretation_control_signal_validation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "validation_id",
+    "interpretation_record_ref",
+    "allowed_influence_fields",
+    "forbidden_fields_detected",
+    "hidden_authority_detected",
+    "result"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "interpretation_control_signal_validation"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "validation_id": {
+      "type": "string"
+    },
+    "interpretation_record_ref": {
+      "type": "string",
+      "pattern": "^interpretation_record:.+"
+    },
+    "allowed_influence_fields": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "forbidden_fields_detected": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "hidden_authority_detected": {
+      "type": "boolean"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    }
+  }
+}

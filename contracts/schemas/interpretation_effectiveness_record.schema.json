@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/interpretation_effectiveness_record.schema.json",
+  "title": "interpretation_effectiveness_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "interpretation_record_ref",
+    "alignment_record_ref",
+    "downstream_outcome",
+    "effective",
+    "effectiveness_state"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "interpretation_effectiveness_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string"
+    },
+    "interpretation_record_ref": {
+      "type": "string",
+      "pattern": "^interpretation_record:.+"
+    },
+    "alignment_record_ref": {
+      "type": "string",
+      "pattern": "^interpretation_repair_alignment_record:.+"
+    },
+    "downstream_outcome": {
+      "type": "string",
+      "enum": [
+        "improved",
+        "unchanged",
+        "regressed"
+      ]
+    },
+    "effective": {
+      "type": "boolean"
+    },
+    "effectiveness_state": {
+      "type": "string",
+      "enum": [
+        "effective",
+        "not_effective"
+      ]
+    }
+  }
+}

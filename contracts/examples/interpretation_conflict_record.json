@@ -1,0 +1,15 @@
+{
+  "artifact_type": "interpretation_conflict_record",
+  "schema_version": "1.0.0",
+  "conflict_id": "ril-conf-001",
+  "trace_id": "trace-ril-001",
+  "failure_packet_ref": "failure_packet:ril-fp-001",
+  "conflict_refs": [
+    "trace:1",
+    "trace:2"
+  ],
+  "material_conflict": true,
+  "resolved": false,
+  "resolution_state": "unresolved",
+  "resolution_notes": "material conflict unresolved"
+}

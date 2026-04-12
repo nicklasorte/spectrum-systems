@@ -1,0 +1,16 @@
+{
+  "artifact_type": "interpretation_eval_result",
+  "schema_version": "1.0.0",
+  "eval_id": "ril-eval-001",
+  "trace_id": "trace-ril-001",
+  "interpretation_record_ref": "interpretation_record:ril-int-001",
+  "completeness_passed": true,
+  "evidence_sufficiency_passed": true,
+  "contradiction_handling_passed": false,
+  "normalization_passed": true,
+  "required_field_coverage_passed": false,
+  "result": "fail",
+  "fail_reasons": [
+    "material_conflict_unresolved"
+  ]
+}

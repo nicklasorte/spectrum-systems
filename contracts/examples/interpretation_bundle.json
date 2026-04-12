@@ -1,0 +1,15 @@
+{
+  "artifact_type": "interpretation_bundle",
+  "schema_version": "1.0.0",
+  "bundle_id": "ril-bundle-001",
+  "trace_id": "trace-ril-001",
+  "failure_packet_ref": "failure_packet:ril-fp-001",
+  "interpretation_record_ref": "interpretation_record:ril-int-001",
+  "interpretation_eval_result_ref": "interpretation_eval_result:ril-eval-001",
+  "interpretation_readiness_record_ref": "interpretation_readiness_record:ril-ready-001",
+  "interpretation_conflict_record_ref": "interpretation_conflict_record:ril-conf-001",
+  "lineage_complete": true,
+  "non_authority_assertions": [
+    "bundle_not_control_authority"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "artifact_type": "interpretation_readiness_record",
+  "schema_version": "1.0.0",
+  "readiness_id": "ril-ready-001",
+  "trace_id": "trace-ril-001",
+  "interpretation_record_ref": "interpretation_record:ril-int-001",
+  "interpretation_eval_result_ref": "interpretation_eval_result:ril-eval-001",
+  "candidate_ready": false,
+  "blocking_reasons": [
+    "eval_not_pass"
+  ],
+  "non_authority_assertions": [
+    "candidate_only"
+  ]
+}

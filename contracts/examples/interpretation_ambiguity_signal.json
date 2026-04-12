@@ -1,0 +1,12 @@
+{
+  "artifact_type": "interpretation_ambiguity_signal",
+  "schema_version": "1.0.0",
+  "signal_id": "ril-amb-001",
+  "sample_size": 4,
+  "ambiguity_count": 2,
+  "ambiguity_rate": 0.5,
+  "ambiguity_budget": 0.4,
+  "threshold_exceeded": true,
+  "freeze_ready": true,
+  "policy_signal": "freeze_candidate"
+}

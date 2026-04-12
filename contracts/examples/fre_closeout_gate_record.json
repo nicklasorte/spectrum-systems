@@ -1,0 +1,16 @@
+{
+  "artifact_type": "fre_closeout_gate_record",
+  "schema_version": "1.0.0",
+  "gate_id": "fre-close-001",
+  "repair_bundle_ref": "repair_bundle:fre-bundle-001",
+  "repair_readiness_candidate_ref": "repair_readiness_candidate:fre-ready-001",
+  "repair_effectiveness_record_ref": "repair_effectiveness_record:fre-eff-001",
+  "repair_recurrence_record_ref": "repair_recurrence_record:fre-rec-001",
+  "fre_promotion_gate_record_ref": "fre_promotion_gate_record:fre-prom-001",
+  "fre_operational": true,
+  "closeout_status": "closed",
+  "blocking_reasons": [],
+  "non_authority_assertions": [
+    "fre_non_authoritative"
+  ]
+}
