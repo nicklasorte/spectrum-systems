@@ -35,58 +35,42 @@
   "attacks_blocked": [
     "tests_pass_but_no_required_evals",
     "tests_pass_but_eval_summary_missing",
+    "tests_pass_but_control_readiness_missing",
     "schema_valid_but_semantically_empty_intent",
     "schema_valid_but_owner_intent_contradiction",
     "schema_valid_but_wrong_target_modules",
+    "over_expanded_output",
     "meaningless_acceptance_checks",
     "recognized_shape_but_non_behavioral_checks",
     "missing_expansion_trace",
     "partial_trace_only",
     "source_version_drift",
+    "fake_authority_version_alignment",
     "ambiguous_normalization_collapse",
+    "dependency_graph_corruption",
     "partial_success_leak",
+    "fake_readiness_from_partial_eval_set",
+    "readiness_with_contradictory_signals",
     "readiness_without_counter_evidence_population",
     "stop_condition_forgery",
     "same_input_different_output",
-    "missing_required_artifact_in_chain",
-    "nested_variant_of_known_exploit",
-    "cross_step_contamination_variant"
-  ],
-  "attacks_that_succeeded": [
-    "tests_pass_but_control_readiness_missing",
-    "over_expanded_output",
-    "fake_authority_version_alignment",
-    "dependency_graph_corruption",
-    "fake_readiness_from_partial_eval_set",
-    "readiness_with_contradictory_signals",
     "same_input_same_tests_different_eval_signals",
+    "missing_required_artifact_in_chain",
     "artifact_present_but_not_trace_linked",
     "artifact_present_but_not_lineage-valid",
+    "nested_variant_of_known_exploit",
+    "cross_step_contamination_variant",
     "adversarial_literal_variant_not_in_regression_tests"
   ],
-  "test_authority_bypass_failures": [
-    "tests_pass_but_control_readiness_missing"
-  ],
-  "semantic_failures": [
-    "over_expanded_output",
-    "dependency_graph_corruption",
-    "adversarial_literal_variant_not_in_regression_tests"
-  ],
-  "trace_failures": [
-    "fake_authority_version_alignment",
-    "artifact_present_but_not_trace_linked",
-    "artifact_present_but_not_lineage-valid"
-  ],
-  "readiness_failures": [
-    "fake_readiness_from_partial_eval_set",
-    "readiness_with_contradictory_signals"
-  ],
-  "replay_failures": [
-    "same_input_same_tests_different_eval_signals"
-  ],
+  "attacks_that_succeeded": [],
+  "test_authority_bypass_failures": [],
+  "semantic_failures": [],
+  "trace_failures": [],
+  "readiness_failures": [],
+  "replay_failures": [],
   "partial_success_leaks": [],
-  "control_readiness_bypass_possible": true,
-  "overall_verdict": "FAIL",
+  "control_readiness_bypass_possible": false,
+  "overall_verdict": "PASS",
   "strongest_blocked_attacks": [
     "tests_pass_but_no_required_evals",
     "missing_expansion_trace",
@@ -94,18 +78,7 @@
     "stop_condition_forgery",
     "same_input_different_output"
   ],
-  "remaining_weak_seams": [
-    "tests_pass_but_control_readiness_missing",
-    "over_expanded_output",
-    "fake_authority_version_alignment",
-    "dependency_graph_corruption",
-    "fake_readiness_from_partial_eval_set",
-    "readiness_with_contradictory_signals",
-    "same_input_same_tests_different_eval_signals",
-    "artifact_present_but_not_trace_linked",
-    "artifact_present_but_not_lineage-valid",
-    "adversarial_literal_variant_not_in_regression_tests"
-  ],
+  "remaining_weak_seams": [],
   "next_required_fixes": [
     "Make control-readiness artifact mandatory gate before any advancement decision.",
     "Bind source-version authority to immutable governed authority records; reject caller-supplied overrides.",
@@ -136,10 +109,10 @@
     {
       "attack_id": 3,
       "name": "tests_pass_but_control_readiness_missing",
-      "blocked": false,
-      "succeeded": true,
+      "blocked": true,
+      "succeeded": false,
       "category": "test_authority",
-      "evidence": "No built-in gate enforces existence of control-readiness artifact."
+      "evidence": "{'allowed': False, 'decision': 'block', 'ready_for_control': False, 'blocking_reasons': ['missing_control_readiness_artifact']}"
     },
     {
       "attack_id": 4,
@@ -163,15 +136,15 @@
       "blocked": true,
       "succeeded": false,
       "category": "semantic",
-      "evidence": "{'passed': False, 'details': ['downstream schema validation passed', 'owner_target_contradiction: target_modules inconsistent with owner policy'], 'failure_classification': 'downstream_incompatible', 'stop_condition_triggered': True}"
+      "evidence": "{'passed': False, 'details': ['downstream schema validation passed', 'owner_target_contradiction: all target_modules must satisfy owner policy prefixes'], 'failure_classification': 'downstream_incompatible', 'stop_condition_triggered': True}"
     },
     {
       "attack_id": 7,
       "name": "over_expanded_output",
-      "blocked": false,
-      "succeeded": true,
+      "blocked": true,
+      "succeeded": false,
       "category": "semantic",
-      "evidence": "{'passed': True, 'details': ['downstream schema validation passed'], 'failure_classification': 'none', 'stop_condition_triggered': False}"
+      "evidence": "{'passed': False, 'details': ['downstream schema validation passed', 'owner_target_contradiction: all target_modules must satisfy owner policy prefixes'], 'failure_classification': 'downstream_incompatible', 'stop_condition_triggered': True}"
     },
     {
       "attack_id": 8,
@@ -187,7 +160,7 @@
       "blocked": true,
       "succeeded": false,
       "category": "semantic",
-      "evidence": "{'passed': False, 'details': ['downstream schema validation passed', 'weak_acceptance_check[0]: missing verification semantics'], 'failure_classification': 'invalid_output', 'stop_condition_triggered': True}"
+      "evidence": "{'passed': False, 'details': ['downstream schema validation passed', 'weak_acceptance_check[0]: missing verification semantics', 'weak_acceptance_check[0]: non-operational acceptance language detected'], 'failure_classification': 'invalid_output', 'stop_condition_triggered': True}"
     },
     {
       "attack_id": 10,
@@ -211,15 +184,15 @@
       "blocked": true,
       "succeeded": false,
       "category": "trace",
-      "evidence": "{'passed': False, 'details': ['upstream schema validation passed', 'source_version_drift: payload=1.3.112 authority=9.9.9'], 'failure_classification': 'stale_reference', 'stop_condition_triggered': True}"
+      "evidence": "{'passed': False, 'details': ['upstream schema validation passed', 'forged_authority_override_detected', 'source_version_drift: supplied_authority=9.9.9 immutable_authority=1.3.112'], 'failure_classification': 'stale_reference', 'stop_condition_triggered': True}"
     },
     {
       "attack_id": 13,
       "name": "fake_authority_version_alignment",
-      "blocked": false,
-      "succeeded": true,
+      "blocked": true,
+      "succeeded": false,
       "category": "trace",
-      "evidence": "{'passed': True, 'details': ['upstream schema validation passed'], 'failure_classification': 'none', 'stop_condition_triggered': False}"
+      "evidence": "{'passed': False, 'details': ['upstream schema validation passed', 'forged_authority_override_detected', 'source_version_drift: supplied_authority=9.9.9 immutable_authority=1.3.112', 'source_version_drift: payload=9.9.9 authority=1.3.112'], 'failure_classification': 'stale_reference', 'stop_condition_triggered': True}"
     },
     {
       "attack_id": 14,
@@ -232,10 +205,10 @@
     {
       "attack_id": 15,
       "name": "dependency_graph_corruption",
-      "blocked": false,
-      "succeeded": true,
+      "blocked": true,
+      "succeeded": false,
       "category": "semantic",
-      "evidence": "{'passed': True, 'details': ['upstream schema validation passed'], 'failure_classification': 'none', 'stop_condition_triggered': False}"
+      "evidence": "{'passed': False, 'details': ['upstream schema validation passed', \"dependency_graph_corruption: invalid depends_on entries ['MISSING-STEP-01']\"], 'failure_classification': 'dependency_blocked', 'stop_condition_triggered': True}"
     },
     {
       "attack_id": 16,
@@ -248,18 +221,18 @@
     {
       "attack_id": 17,
       "name": "fake_readiness_from_partial_eval_set",
-      "blocked": false,
-      "succeeded": true,
+      "blocked": true,
+      "succeeded": false,
       "category": "readiness",
-      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-EVAL-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': True, 'decision': 'ready', 'blocking_reasons': [], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'missing_required_eval_types': [], 'trace_complete': True, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-EVAL-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['missing_eval:rax_owner_intent_alignment', 'missing_eval:rax_trace_integrity', 'missing_required_eval_types', 'required_eval_coverage_missing_set_mismatch', 'required_eval_coverage_overall_result_mismatch', 'required_eval_coverage_summary_mismatch'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_regression_against_baseline', 'rax_version_authority_alignment'], 'missing_required_eval_types': ['rax_owner_intent_alignment', 'rax_trace_integrity'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
     },
     {
       "attack_id": 18,
       "name": "readiness_with_contradictory_signals",
-      "blocked": false,
-      "succeeded": true,
+      "blocked": true,
+      "succeeded": false,
       "category": "readiness",
-      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-EVAL-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': True, 'decision': 'ready', 'blocking_reasons': ['semantic_intent_insufficient'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'missing_required_eval_types': [], 'trace_complete': True, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-EVAL-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['contradictory_eval_signals', 'eval_summary_contradicts_eval_results', 'missing_eval:rax_acceptance_check_strength', 'missing_eval:rax_control_readiness', 'missing_eval:rax_normalization_integrity', 'missing_eval:rax_output_semantic_alignment', 'missing_eval:rax_owner_intent_alignment', 'missing_eval:rax_regression_against_baseline', 'missing_eval:rax_trace_integrity', 'missing_eval:rax_version_authority_alignment', 'missing_required_eval_types', 'required_eval_coverage_missing_set_mismatch', 'required_eval_coverage_overall_result_mismatch', 'required_eval_coverage_summary_mismatch', 'required_eval_failed:rax_input_semantic_sufficiency', 'semantic_intent_insufficient', 'trace_incomplete'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_input_semantic_sufficiency'], 'missing_required_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_trace_integrity', 'rax_version_authority_alignment'], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
     },
     {
       "attack_id": 19,
@@ -288,10 +261,10 @@
     {
       "attack_id": 22,
       "name": "same_input_same_tests_different_eval_signals",
-      "blocked": false,
-      "succeeded": true,
+      "blocked": true,
+      "succeeded": false,
       "category": "replay",
-      "evidence": "Runner is stateless and performs no cross-run freeze/diff check."
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-EVAL-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'hold', 'blocking_reasons': ['contradictory_eval_signals', 'cross_run_eval_signal_inconsistency', 'required_eval_failed:rax_control_readiness', 'required_eval_failed:rax_input_semantic_sufficiency', 'semantic_intent_insufficient', 'tests_pass_eval_fail'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_trace_integrity', 'rax_version_authority_alignment'], 'missing_required_eval_types': [], 'trace_complete': True, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
     },
     {
       "attack_id": 23,
@@ -304,18 +277,18 @@
     {
       "attack_id": 24,
       "name": "artifact_present_but_not_trace_linked",
-      "blocked": false,
-      "succeeded": true,
+      "blocked": true,
+      "succeeded": false,
       "category": "trace",
-      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-EVAL-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': True, 'decision': 'ready', 'blocking_reasons': [], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_trace_integrity', 'rax_version_authority_alignment'], 'missing_required_eval_types': [], 'trace_complete': True, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-EVAL-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['artifact_not_trace_linked', 'trace_incomplete'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_trace_integrity', 'rax_version_authority_alignment'], 'missing_required_eval_types': [], 'trace_complete': False, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
     },
     {
       "attack_id": 25,
       "name": "artifact_present_but_not_lineage-valid",
-      "blocked": false,
-      "succeeded": true,
+      "blocked": true,
+      "succeeded": false,
       "category": "trace",
-      "evidence": "No lineage validation hook in control readiness computation."
+      "evidence": "{'artifact_type': 'rax_control_readiness_record', 'schema_version': '1.0.0', 'batch': 'RAX-EVAL-01', 'target_ref': 'roadmap_step_contract:RAX-INTERFACE-24-01', 'ready_for_control': False, 'decision': 'block', 'blocking_reasons': ['artifact_lineage_invalid'], 'required_eval_types': ['rax_input_semantic_sufficiency', 'rax_owner_intent_alignment', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_acceptance_check_strength', 'rax_trace_integrity', 'rax_version_authority_alignment', 'rax_regression_against_baseline', 'rax_control_readiness'], 'present_eval_types': ['rax_acceptance_check_strength', 'rax_control_readiness', 'rax_input_semantic_sufficiency', 'rax_normalization_integrity', 'rax_output_semantic_alignment', 'rax_owner_intent_alignment', 'rax_regression_against_baseline', 'rax_trace_integrity', 'rax_version_authority_alignment'], 'missing_required_eval_types': [], 'trace_complete': True, 'baseline_regression_detected': False, 'version_authority_aligned': True}"
     },
     {
       "attack_id": 26,
@@ -336,10 +309,10 @@
     {
       "attack_id": 28,
       "name": "adversarial_literal_variant_not_in_regression_tests",
-      "blocked": false,
-      "succeeded": true,
+      "blocked": true,
+      "succeeded": false,
       "category": "semantic",
-      "evidence": "{'passed': True, 'details': ['downstream schema validation passed'], 'failure_classification': 'none', 'stop_condition_triggered': False}"
+      "evidence": "{'passed': False, 'details': ['downstream schema validation passed', 'weak_acceptance_check[0]: non-operational acceptance language detected'], 'failure_classification': 'invalid_output', 'stop_condition_triggered': True}"
     }
   ]
 }

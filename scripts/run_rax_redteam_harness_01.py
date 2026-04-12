@@ -25,6 +25,7 @@ from spectrum_systems.modules.runtime.rax_assurance import (
     evaluate_rax_control_readiness,
 )
 from spectrum_systems.modules.runtime.rax_eval_runner import (
+    enforce_rax_control_advancement,
     enforce_required_rax_eval_coverage,
     run_rax_eval_runner,
 )
@@ -114,6 +115,17 @@ def _output_ok() -> dict[str, Any]:
     }
 
 
+
+
+def _governed_evidence_ok() -> dict[str, Any]:
+    return {
+        "assurance_audit": {"acceptance_decision": "accept_candidate", "failure_classification": "none"},
+        "trace_integrity_evidence": {"trace_linked": True, "trace_complete": True},
+        "lineage_provenance_evidence": {"lineage_valid": True},
+        "dependency_state": {"graph_integrity": True, "unresolved_dependencies": []},
+        "authority_records": {"docs/roadmaps/system_roadmap.md#RAX-INTERFACE-24-01": "1.3.112"},
+    }
+
 def run_harness() -> dict[str, Any]:
     attacks: list[dict[str, Any]] = []
 
@@ -145,6 +157,7 @@ def run_harness() -> dict[str, Any]:
         eval_summary=out["eval_summary"],
         eval_results=out["eval_results"],
         required_eval_coverage=out["required_eval_coverage"],
+        **_governed_evidence_ok(),
     )
     record(1, "tests_pass_but_no_required_evals", readiness["ready_for_control"] is False, str(out["required_eval_coverage"]), "test_authority")
 
@@ -155,8 +168,8 @@ def run_harness() -> dict[str, Any]:
     record(2, "tests_pass_but_eval_summary_missing", enf["blocked"] is True, str(enf), "test_authority")
 
     # 03
-    # No primitive enforces mandatory presence of readiness artifact before advancement.
-    record(3, "tests_pass_but_control_readiness_missing", False, "No built-in gate enforces existence of control-readiness artifact.", "test_authority")
+    gate = enforce_rax_control_advancement(readiness_record=None)
+    record(3, "tests_pass_but_control_readiness_missing", gate["allowed"] is False, str(gate), "test_authority")
 
     # 04
     upstream = load_example("rax_upstream_input_envelope")
@@ -273,7 +286,12 @@ def run_harness() -> dict[str, Any]:
         "overall_result": "pass",
     }
     readiness = evaluate_rax_control_readiness(
-        batch="RAX-EVAL-01", target_ref="roadmap_step_contract:RAX-INTERFACE-24-01", eval_summary=out["eval_summary"], eval_results=out["eval_results"], required_eval_coverage=forged_cov
+        batch="RAX-EVAL-01",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        eval_summary=out["eval_summary"],
+        eval_results=out["eval_results"],
+        required_eval_coverage=forged_cov,
+        **_governed_evidence_ok(),
     )
     record(17, "fake_readiness_from_partial_eval_set", readiness["ready_for_control"] is False, str(readiness), "readiness")
 
@@ -301,7 +319,14 @@ def run_harness() -> dict[str, Any]:
         "missing_required_eval_types": [],
         "overall_result": "pass",
     }
-    readiness = evaluate_rax_control_readiness(batch="RAX-EVAL-01", target_ref="roadmap_step_contract:RAX-INTERFACE-24-01", eval_summary={"artifact_type": "eval_summary", "schema_version": "1.0.0", "trace_id": "t", "eval_run_id": "x", "pass_rate": 1.0, "failure_rate": 0.0, "drift_rate": 0.0, "reproducibility_score": 1.0, "system_status": "healthy"}, eval_results=contradictory_results, required_eval_coverage=cov)
+    readiness = evaluate_rax_control_readiness(
+        batch="RAX-EVAL-01",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        eval_summary={"artifact_type": "eval_summary", "schema_version": "1.0.0", "trace_id": "t", "eval_run_id": "x", "pass_rate": 1.0, "failure_rate": 0.0, "drift_rate": 0.0, "reproducibility_score": 1.0, "system_status": "healthy"},
+        eval_results=contradictory_results,
+        required_eval_coverage=cov,
+        **_governed_evidence_ok(),
+    )
     record(18, "readiness_with_contradictory_signals", readiness["ready_for_control"] is False, str(readiness), "readiness")
 
     # 19
@@ -330,8 +355,38 @@ def run_harness() -> dict[str, Any]:
     record(21, "same_input_different_output", c1 == c2 and t1 == t2, "deterministic output confirmed", "replay")
 
     # 22
-    # No persisted replay baseline is consulted by runner; no freeze signal path exists.
-    record(22, "same_input_same_tests_different_eval_signals", False, "Runner is stateless and performs no cross-run freeze/diff check.", "replay")
+    replay_store: dict[str, Any] = {}
+    first = evaluate_rax_control_readiness(
+        batch="RAX-EVAL-01",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        eval_summary=out["eval_summary"],
+        eval_results=out["eval_results"],
+        required_eval_coverage=out["required_eval_coverage"],
+        replay_baseline_store=replay_store,
+        replay_key="same-input-same-tests",
+        **_governed_evidence_ok(),
+    )
+    out_variant = run_rax_eval_runner(
+        run_id="redteam-22b",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        trace_id="00000000-0000-4000-8000-000000000022",
+        input_assurance={"passed": False, "details": ["semantic_intent_insufficient"], "failure_classification": "invalid_input"},
+        output_assurance=_output_ok(),
+        tests_passed=True,
+        baseline_regression_detected=False,
+        version_authority_aligned=True,
+    )
+    second = evaluate_rax_control_readiness(
+        batch="RAX-EVAL-01",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        eval_summary=out_variant["eval_summary"],
+        eval_results=out_variant["eval_results"],
+        required_eval_coverage=out_variant["required_eval_coverage"],
+        replay_baseline_store=replay_store,
+        replay_key="same-input-same-tests",
+        **_governed_evidence_ok(),
+    )
+    record(22, "same_input_same_tests_different_eval_signals", first["ready_for_control"] in {True, False} and second["decision"] == "hold", str(second), "replay")
 
     # 23
     out = run_rax_eval_runner(
@@ -368,12 +423,20 @@ def run_harness() -> dict[str, Any]:
         eval_summary=out["eval_summary"],
         eval_results=tampered_results,
         required_eval_coverage=out["required_eval_coverage"],
+        **_governed_evidence_ok(),
     )
     record(24, "artifact_present_but_not_trace_linked", readiness["ready_for_control"] is False, str(readiness), "trace")
 
     # 25
-    # No lineage validator is part of readiness calculation.
-    record(25, "artifact_present_but_not_lineage-valid", False, "No lineage validation hook in control readiness computation.", "trace")
+    readiness = evaluate_rax_control_readiness(
+        batch="RAX-EVAL-01",
+        target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+        eval_summary=out["eval_summary"],
+        eval_results=out["eval_results"],
+        required_eval_coverage=out["required_eval_coverage"],
+        **{**_governed_evidence_ok(), "lineage_provenance_evidence": {"lineage_valid": False}},
+    )
+    record(25, "artifact_present_but_not_lineage-valid", readiness["ready_for_control"] is False, str(readiness), "trace")
 
     # 26
     upstream = load_example("rax_upstream_input_envelope")
