@@ -7,7 +7,7 @@ import argparse
 import json
 import sys
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterable
 
@@ -284,6 +284,24 @@ def build_snapshot(surface: RepoSurface) -> dict[str, object]:
 
 def write_snapshot(snapshot: dict[str, object], output_path: Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    previous_generated_at: str | None = None
+    if output_path.is_file():
+        try:
+            previous_generated_at = str(json.loads(output_path.read_text(encoding="utf-8")).get("generated_at", "")).strip() or None
+        except Exception:  # noqa: BLE001
+            previous_generated_at = None
+
+    if previous_generated_at:
+        try:
+            previous_dt = datetime.strptime(previous_generated_at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            current_dt = datetime.strptime(str(snapshot["generated_at"]), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            if current_dt <= previous_dt:
+                current_dt = previous_dt + timedelta(seconds=1)
+                snapshot["generated_at"] = current_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+                snapshot["freshness_timestamp_utc"] = snapshot["generated_at"]
+        except (ValueError, KeyError):
+            pass
+
     output_path.write_text(json.dumps(snapshot, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
