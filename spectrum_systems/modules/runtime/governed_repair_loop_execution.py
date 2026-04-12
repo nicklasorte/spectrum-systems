@@ -12,7 +12,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.runtime.governed_repair_foundation import (
@@ -23,6 +23,10 @@ from spectrum_systems.modules.runtime.governed_repair_foundation import (
     build_tpa_repair_gating_input,
     evaluate_slice_artifact_readiness,
 )
+from spectrum_systems.modules.runtime.failure_diagnosis_engine import (
+    build_failure_diagnosis_artifact,
+)
+from spectrum_systems.modules.runtime.system_enforcement_layer import enforce_preflight_remediation_boundaries
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
 
@@ -592,4 +596,263 @@ def run_governed_repair_loop(
 }
 
 
-__all__ = ["GovernedRepairLoopExecutionError", "replay_governed_repair_loop_from_artifacts", "run_governed_repair_loop"]
+def _normalize_lineage_ref(value: Any, *, field: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise GovernedRepairLoopExecutionError(f"{field} must be a non-empty string")
+    return value.strip()
+
+
+def _require_lineage_continuity(*, admission_lineage: dict[str, Any], trace_id: str) -> dict[str, str]:
+    if not isinstance(admission_lineage, dict):
+        raise GovernedRepairLoopExecutionError("admission_lineage must be an object")
+    request_ref = _normalize_lineage_ref(admission_lineage.get("request_ref"), field="admission_lineage.request_ref")
+    admission_ref = _normalize_lineage_ref(admission_lineage.get("admission_ref"), field="admission_lineage.admission_ref")
+    tlc_handoff_ref = _normalize_lineage_ref(admission_lineage.get("tlc_handoff_ref"), field="admission_lineage.tlc_handoff_ref")
+    lineage_trace = _normalize_lineage_ref(admission_lineage.get("trace_id"), field="admission_lineage.trace_id")
+    if lineage_trace != trace_id:
+        raise GovernedRepairLoopExecutionError("admission lineage trace continuity mismatch")
+    return {
+        "request_ref": request_ref,
+        "admission_ref": admission_ref,
+        "tlc_handoff_ref": tlc_handoff_ref,
+        "trace_id": lineage_trace,
+    }
+
+
+def _map_preflight_to_failure_class(preflight_artifact: dict[str, Any]) -> str:
+    status = str(preflight_artifact.get("preflight_status") or "").strip().lower()
+    gate = str(preflight_artifact.get("control_signal", {}).get("strategy_gate_decision") or "").strip().upper()
+    if status == "failed":
+        return "runtime_logic_defect" if gate in {"BLOCK", "FREEZE"} else "invalid_artifact_shape"
+    if status == "skipped":
+        return "policy_blocked"
+    raise GovernedRepairLoopExecutionError("preflight remediation bridge requires failed or skipped preflight status")
+
+
+def _build_preflight_readiness_result(
+    *,
+    preflight_artifact: dict[str, Any],
+    trace_id: str,
+) -> dict[str, Any]:
+    if preflight_artifact.get("artifact_type") != "contract_preflight_result_artifact":
+        raise GovernedRepairLoopExecutionError("preflight_artifact must be contract_preflight_result_artifact")
+    gate = str(preflight_artifact.get("control_signal", {}).get("strategy_gate_decision") or "").strip().upper()
+    if gate not in {"BLOCK", "FREEZE"}:
+        raise GovernedRepairLoopExecutionError("preflight bridge only applies to BLOCK/FREEZE strategy gate decision")
+    failure_class = _map_preflight_to_failure_class(preflight_artifact)
+    impacted_paths = sorted(
+        {
+            str(path).strip()
+            for path in (
+                list(preflight_artifact.get("changed_contracts", []))
+                + list(preflight_artifact.get("recommended_repair_area", []))
+                + list(preflight_artifact.get("impacted_consumers", []))
+            )
+            if isinstance(path, str) and path.strip()
+        }
+    )
+    if not impacted_paths:
+        impacted_paths = ["outputs/contract_preflight/contract_preflight_result_artifact.json"]
+    return {
+        "artifact_type": "artifact_readiness_result",
+        "schema_version": "1.0.0",
+        "readiness_id": deterministic_id(
+            prefix="arr",
+            namespace="preflight_readiness_bridge",
+            payload=[trace_id, gate, preflight_artifact.get("generated_at"), impacted_paths],
+        ),
+        "slice_id": "CONTRACT_PREFLIGHT",
+        "owning_system": "RIL",
+        "runtime_seam": "contract_preflight_result_artifact_bridge",
+        "status": "blocked",
+        "blocking_reasons": [
+            {
+                "failure_class": failure_class,
+                "reason": str(preflight_artifact.get("control_signal", {}).get("rationale") or "preflight gate blocked progression"),
+                "artifact_refs": impacted_paths,
+                "invariant_refs": ["contract_preflight_result_artifact", f"strategy_gate_decision:{gate}"],
+            }
+        ],
+        "checked_artifact_refs": impacted_paths,
+        "contract_invariant_refs": ["artifact_first_execution", "fail_closed_behavior", "promotion_requires_certification"],
+        "expected_failure_classes": [failure_class],
+    }
+
+
+def _build_ril_detection_artifact(*, failure_packet: dict[str, Any], rerun_preflight: dict[str, Any]) -> dict[str, Any]:
+    blocker = str(failure_packet["classified_failure_type"])
+    rerun_gate = str(rerun_preflight.get("control_signal", {}).get("strategy_gate_decision") or "UNKNOWN")
+    recurrence_surface = sorted(set(failure_packet["affected_artifact_refs"]))
+    trace_gap = not bool(failure_packet.get("trace_refs"))
+    return {
+        "artifact_type": "preflight_remediation_detection_artifact",
+        "artifact_class": "observability_non_authoritative",
+        "owner": "RIL",
+        "detection_id": deterministic_id(
+            prefix="rild",
+            namespace="preflight_remediation_detection",
+            payload=[failure_packet["failure_packet_id"], rerun_preflight.get("generated_at"), rerun_gate],
+        ),
+        "failure_packet_ref": f"execution_failure_packet:{failure_packet['failure_packet_id']}",
+        "blocker_family": blocker,
+        "rerun_outcome": {"preflight_status": rerun_preflight.get("preflight_status"), "strategy_gate_decision": rerun_gate},
+        "trace_completeness_gap": trace_gap,
+        "recurrence_surfaces": recurrence_surface,
+        "authority_state": "non_authoritative",
+    }
+
+
+def _build_prg_recommendation_artifact(*, ril_detection_artifact: dict[str, Any]) -> dict[str, Any]:
+    recurrence = ril_detection_artifact["recurrence_surfaces"]
+    family = ril_detection_artifact["blocker_family"]
+    return {
+        "artifact_type": "preflight_remediation_recommendation_artifact",
+        "artifact_class": "recommendation_non_authoritative",
+        "owner": "PRG",
+        "recommendation_id": deterministic_id(
+            prefix="prgr",
+            namespace="preflight_remediation_recommendation",
+            payload=[family, recurrence],
+        ),
+        "evaluation_pattern_report": {
+            "pattern_family": family,
+            "recurrence_surface_count": len(recurrence),
+        },
+        "policy_change_candidate": {"candidate_key": f"policy:{family}", "priority": "medium"},
+        "slice_contract_update_candidate": {"slice_ref": "slice:CONTRACT_PREFLIGHT", "candidate_paths": recurrence[:3]},
+        "program_roadmap_alignment_result": {
+            "alignment": "update_recommended",
+            "roadmap_ref": "docs/roadmaps/system_roadmap.md",
+        },
+        "authority_state": "non_authoritative",
+    }
+
+
+def _classify_terminal_outcome(*, rerun_preflight: dict[str, Any], retry_budget_remaining: int) -> dict[str, Any]:
+    status = str(rerun_preflight.get("preflight_status") or "").lower()
+    gate = str(rerun_preflight.get("control_signal", {}).get("strategy_gate_decision") or "").upper()
+    if status == "passed" and gate in {"ALLOW", "WARN"}:
+        return {"owner": "CDE", "terminal_classification": "pass_continue", "next_step": "continue"}
+    if retry_budget_remaining > 0 and gate in {"BLOCK", "FREEZE"}:
+        return {"owner": "CDE", "terminal_classification": "bounded_retry_allowed", "next_step": "continue_repair_bounded"}
+    if gate in {"BLOCK", "FREEZE"}:
+        return {"owner": "CDE", "terminal_classification": "escalate_human_review", "next_step": "stop_escalate"}
+    return {"owner": "CDE", "terminal_classification": "block", "next_step": "block"}
+
+
+def run_preflight_remediation_loop(
+    *,
+    preflight_artifact: dict[str, Any],
+    admission_lineage: dict[str, Any],
+    batch_id: str,
+    umbrella_id: str,
+    run_id: str,
+    trace_id: str,
+    retry_budget: int,
+    complexity_score: int,
+    risk_level: str,
+    contract_preflight_runner: Callable[[], dict[str, Any]],
+) -> dict[str, Any]:
+    """Execute the governed preflight remediation loop using canonical repair contracts."""
+    if retry_budget < 0:
+        raise GovernedRepairLoopExecutionError("retry_budget must be >= 0")
+    lineage = _require_lineage_continuity(admission_lineage=admission_lineage, trace_id=trace_id)
+    readiness = _build_preflight_readiness_result(preflight_artifact=preflight_artifact, trace_id=trace_id)
+    packet = build_execution_failure_packet(
+        readiness_result=readiness,
+        execution_refs=[lineage["request_ref"]],
+        trace_refs=[f"trace:{trace_id}:preflight_bridge"],
+        enforcement_refs=[lineage["tlc_handoff_ref"]],
+        validation_refs=[lineage["admission_ref"]],
+        batch_id=batch_id,
+        umbrella_id=umbrella_id,
+        roadmap_context_ref="docs/roadmaps/system_roadmap.md",
+    )
+    diagnosis = build_failure_diagnosis_artifact(
+        failure_source_type="contract_preflight",
+        source_artifact_refs=[f"execution_failure_packet:{packet['failure_packet_id']}"],
+        failure_payload={
+            "observed_failure_summary": packet["explanation"],
+            "preflight_status": str(preflight_artifact.get("control_signal", {}).get("strategy_gate_decision") or "BLOCK"),
+            "missing_control_inputs": list(preflight_artifact.get("recommended_repair_area") or []),
+            "invariant_violations": list(packet.get("validation_refs") or []),
+        },
+        run_id=run_id,
+        trace_id=trace_id,
+    )
+    candidate = build_bounded_repair_candidate(failure_packet=packet)
+    continuation_input = build_cde_repair_continuation_input(failure_packet=packet, repair_candidate=candidate)
+    decision = {
+        "owner": "CDE",
+        "decision": continuation_input["recommended_continuation"],
+        "continuation_input_ref": f"cde_repair_continuation_input:{continuation_input['continuation_input_id']}",
+    }
+    if decision["decision"] != "continue_repair_bounded":
+        return {"status": "stopped", "trace": {"packet": packet, "diagnosis": diagnosis, "candidate": candidate, "decision": decision}}
+    retry_budget_remaining = max(retry_budget - 1, 0)
+    gating_input = build_tpa_repair_gating_input(
+        failure_packet=packet,
+        repair_candidate=candidate,
+        retry_budget_remaining=retry_budget_remaining,
+        complexity_score=complexity_score,
+        risk_level=risk_level,
+    )
+    sel_guard = enforce_preflight_remediation_boundaries(
+        remediation_context={
+            "lineage": lineage,
+            "failure_packet": packet,
+            "repair_candidate": candidate,
+            "continuation_decision": decision,
+            "gating_input": gating_input,
+            "retry_budget_remaining": retry_budget_remaining,
+            "approved_scope_refs": gating_input["repair_scope_refs"],
+            "execution_scope_refs": gating_input["repair_scope_refs"],
+        }
+    )
+    if sel_guard["enforcement_status"] != "allow":
+        return {"status": "blocked", "stop_reason": "sel_block", "trace": {"packet": packet, "candidate": candidate, "sel": sel_guard}}
+    rerun_preflight = contract_preflight_runner()
+    ril_detection = _build_ril_detection_artifact(failure_packet=packet, rerun_preflight=rerun_preflight)
+    prg_recommendation = _build_prg_recommendation_artifact(ril_detection_artifact=ril_detection)
+    terminal = _classify_terminal_outcome(rerun_preflight=rerun_preflight, retry_budget_remaining=retry_budget_remaining)
+    promotion_guard = enforce_preflight_remediation_boundaries(
+        remediation_context={
+            "lineage": lineage,
+            "failure_packet": packet,
+            "repair_candidate": candidate,
+            "continuation_decision": decision,
+            "gating_input": gating_input,
+            "retry_budget_remaining": retry_budget_remaining,
+            "approved_scope_refs": gating_input["repair_scope_refs"],
+            "execution_scope_refs": gating_input["repair_scope_refs"],
+            "rerun_preflight_result": rerun_preflight,
+            "diagnosis_artifact": diagnosis,
+            "terminal_classification": terminal,
+        }
+    )
+    return {
+        "status": "completed" if terminal["terminal_classification"] == "pass_continue" else "blocked",
+        "trace": {
+            "lineage": lineage,
+            "packet": packet,
+            "diagnosis": diagnosis,
+            "candidate": candidate,
+            "continuation_input": continuation_input,
+            "decision": decision,
+            "gating_input": gating_input,
+            "sel": sel_guard,
+            "rerun_preflight_result": rerun_preflight,
+            "ril_detection": ril_detection,
+            "prg_recommendation": prg_recommendation,
+            "terminal": terminal,
+            "promotion_guard": promotion_guard,
+        },
+    }
+
+
+__all__ = [
+    "GovernedRepairLoopExecutionError",
+    "replay_governed_repair_loop_from_artifacts",
+    "run_governed_repair_loop",
+    "run_preflight_remediation_loop",
+]

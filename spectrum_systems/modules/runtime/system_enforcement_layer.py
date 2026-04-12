@@ -494,6 +494,152 @@ def _check_closure_authority_boundaries(normalized: dict[str, Any], violations: 
         )
 
 
+def enforce_preflight_remediation_boundaries(*, remediation_context: dict[str, Any]) -> dict[str, Any]:
+    """Enforce SEL fail-closed preflight remediation constraints."""
+    if not isinstance(remediation_context, dict):
+        raise SystemEnforcementLayerError("remediation_context must be an object")
+
+    violations: list[dict[str, Any]] = []
+    lineage = remediation_context.get("lineage")
+    if not isinstance(lineage, dict):
+        _add_violation(
+            violations,
+            code="lineage_violation",
+            boundary="AEX",
+            field="lineage",
+            message="repair attempt requires AEX/TLC lineage continuity",
+        )
+    else:
+        required_lineage = ("request_ref", "admission_ref", "tlc_handoff_ref", "trace_id")
+        missing_lineage = [key for key in required_lineage if not _is_present(lineage.get(key))]
+        if missing_lineage:
+            _add_violation(
+                violations,
+                code="lineage_violation",
+                boundary="AEX",
+                field="lineage",
+                message=f"lineage missing required refs: {', '.join(sorted(missing_lineage))}",
+            )
+
+    packet = remediation_context.get("failure_packet")
+    candidate = remediation_context.get("repair_candidate")
+    continuation_decision = remediation_context.get("continuation_decision")
+    gating_input = remediation_context.get("gating_input")
+    if not isinstance(packet, dict) or not isinstance(candidate, dict):
+        _add_violation(
+            violations,
+            code="missing_artifact_violation",
+            boundary="ARTIFACT",
+            field="failure_packet/repair_candidate",
+            message="canonical failure packet and bounded repair candidate are required",
+        )
+    if not isinstance(continuation_decision, dict) or str(continuation_decision.get("owner")) != "CDE":
+        _add_violation(
+            violations,
+            code="repair_decision_violation",
+            boundary="CDE",
+            field="continuation_decision",
+            message="bounded repair continuation requires authoritative CDE decision",
+        )
+    if not isinstance(gating_input, dict):
+        _add_violation(
+            violations,
+            code="tpa_boundary_violation",
+            boundary="TPA",
+            field="gating_input",
+            message="TPA gating input is required for bounded repair execution",
+        )
+
+    retry_budget_remaining = remediation_context.get("retry_budget_remaining")
+    if not isinstance(retry_budget_remaining, int) or retry_budget_remaining < 0:
+        _add_violation(
+            violations,
+            code="repair_budget_violation",
+            boundary="SEL",
+            field="retry_budget_remaining",
+            message="retry budget must be a non-negative integer",
+        )
+    elif retry_budget_remaining <= 0:
+        _add_violation(
+            violations,
+            code="repair_budget_violation",
+            boundary="SEL",
+            field="retry_budget_remaining",
+            message="retry budget exhausted",
+        )
+
+    approved_scope_refs = remediation_context.get("approved_scope_refs")
+    execution_scope_refs = remediation_context.get("execution_scope_refs")
+    approved = set(str(item).strip() for item in (approved_scope_refs or []) if isinstance(item, str) and item.strip())
+    executed = set(str(item).strip() for item in (execution_scope_refs or []) if isinstance(item, str) and item.strip())
+    if not approved:
+        _add_violation(
+            violations,
+            code="repair_scope_violation",
+            boundary="TPA",
+            field="approved_scope_refs",
+            message="TPA-approved bounded scope is required",
+        )
+    if executed - approved:
+        _add_violation(
+            violations,
+            code="repair_scope_violation",
+            boundary="PQX",
+            field="execution_scope_refs",
+            message="execution attempted beyond TPA-approved bounded scope",
+        )
+
+    rerun_preflight = remediation_context.get("rerun_preflight_result")
+    if rerun_preflight is not None:
+        if not isinstance(rerun_preflight, dict):
+            _add_violation(
+                violations,
+                code="governance_evidence_violation",
+                boundary="RIL",
+                field="rerun_preflight_result",
+                message="rerun preflight evidence must be a structured artifact",
+            )
+        elif not _is_present(rerun_preflight.get("control_signal")):
+            _add_violation(
+                violations,
+                code="governance_evidence_violation",
+                boundary="RIL",
+                field="rerun_preflight_result.control_signal",
+                message="rerun preflight evidence missing control_signal",
+            )
+        diagnosis_artifact = remediation_context.get("diagnosis_artifact")
+        terminal = remediation_context.get("terminal_classification")
+        if not isinstance(diagnosis_artifact, dict) or diagnosis_artifact.get("artifact_type") != "failure_diagnosis_artifact":
+            _add_violation(
+                violations,
+                code="fre_boundary_violation",
+                boundary="FRE",
+                field="diagnosis_artifact",
+                message="promotion/continuation requires FRE diagnosis artifact",
+            )
+        if not isinstance(terminal, dict) or str(terminal.get("owner")) != "CDE":
+            _add_violation(
+                violations,
+                code="repair_decision_violation",
+                boundary="CDE",
+                field="terminal_classification",
+                message="promotion/continuation requires CDE terminal classification",
+            )
+
+    return {
+        "artifact_type": "system_enforcement_result_artifact",
+        "schema_version": "1.0.0",
+        "enforcement_result_id": f"sel-rem-{_hash16({'violations': violations, 'lineage': lineage, 'scope': sorted(approved)})}",
+        "enforcement_status": "block" if violations else "allow",
+        "violations": violations,
+        "violated_boundaries": sorted({str(item['boundary']) for item in violations}),
+        "source_context": {"source_module": "preflight_remediation_loop", "caller_identity": "TLC"},
+        "required_artifacts_present": not violations,
+        "trace_refs": [str(lineage.get("trace_id"))] if isinstance(lineage, dict) and _is_present(lineage.get("trace_id")) else [],
+        "emitted_at": "1970-01-01T00:00:00Z",
+    }
+
+
 def enforce_system_boundaries(context: dict[str, Any]) -> dict[str, Any]:
     """Enforce SEL governed boundaries; fail closed when any boundary violation exists."""
 
