@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from datetime import datetime, timezone
 from typing import Any
 
 from jsonschema import Draft202012Validator
@@ -494,6 +495,29 @@ def _check_closure_authority_boundaries(normalized: dict[str, Any], violations: 
         )
 
 
+def _parse_dt(value: Any, *, field: str, violations: list[dict[str, Any]]) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        _add_violation(
+            violations,
+            code="governance_evidence_violation",
+            boundary="SEL",
+            field=field,
+            message=f"{field} must be a non-empty RFC3339 timestamp",
+        )
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        _add_violation(
+            violations,
+            code="governance_evidence_violation",
+            boundary="SEL",
+            field=field,
+            message=f"{field} must be a valid RFC3339 timestamp",
+        )
+        return None
+
+
 def enforce_preflight_remediation_boundaries(*, remediation_context: dict[str, Any]) -> dict[str, Any]:
     """Enforce SEL fail-closed preflight remediation constraints."""
     if not isinstance(remediation_context, dict):
@@ -524,6 +548,7 @@ def enforce_preflight_remediation_boundaries(*, remediation_context: dict[str, A
     packet = remediation_context.get("failure_packet")
     candidate = remediation_context.get("repair_candidate")
     continuation_decision = remediation_context.get("continuation_decision")
+    continuation_input = remediation_context.get("continuation_input")
     gating_input = remediation_context.get("gating_input")
     if not isinstance(packet, dict) or not isinstance(candidate, dict):
         _add_violation(
@@ -541,6 +566,14 @@ def enforce_preflight_remediation_boundaries(*, remediation_context: dict[str, A
             field="continuation_decision",
             message="bounded repair continuation requires authoritative CDE decision",
         )
+    if not isinstance(continuation_input, dict):
+        _add_violation(
+            violations,
+            code="repair_decision_violation",
+            boundary="CDE",
+            field="continuation_input",
+            message="CDE continuation input artifact is required",
+        )
     if not isinstance(gating_input, dict):
         _add_violation(
             violations,
@@ -549,6 +582,45 @@ def enforce_preflight_remediation_boundaries(*, remediation_context: dict[str, A
             field="gating_input",
             message="TPA gating input is required for bounded repair execution",
         )
+    if isinstance(continuation_input, dict) and isinstance(packet, dict) and isinstance(candidate, dict):
+        expected_failure_digest = _hash16(packet)
+        expected_candidate_digest = _hash16(candidate)
+        if not str(continuation_input.get("failure_packet_digest", "")).startswith(expected_failure_digest):
+            _add_violation(
+                violations,
+                code="governance_evidence_violation",
+                boundary="CDE",
+                field="continuation_input.failure_packet_digest",
+                message="continuation input failure digest does not bind to failure packet",
+            )
+        if not str(continuation_input.get("repair_candidate_digest", "")).startswith(expected_candidate_digest):
+            _add_violation(
+                violations,
+                code="governance_evidence_violation",
+                boundary="CDE",
+                field="continuation_input.repair_candidate_digest",
+                message="continuation input candidate digest does not bind to repair candidate",
+            )
+        issued_at = _parse_dt(continuation_input.get("issued_at"), field="continuation_input.issued_at", violations=violations)
+        freshness = continuation_input.get("freshness_window_seconds")
+        if not isinstance(freshness, int) or freshness < 1:
+            _add_violation(
+                violations,
+                code="repair_budget_violation",
+                boundary="CDE",
+                field="continuation_input.freshness_window_seconds",
+                message="continuation input freshness_window_seconds must be >= 1",
+            )
+        elif issued_at is not None:
+            elapsed = (datetime.now(tz=timezone.utc) - issued_at.astimezone(timezone.utc)).total_seconds()
+            if elapsed > freshness:
+                _add_violation(
+                    violations,
+                    code="governance_evidence_violation",
+                    boundary="CDE",
+                    field="continuation_input",
+                    message="continuation authority evidence is stale",
+                )
 
     retry_budget_remaining = remediation_context.get("retry_budget_remaining")
     if not isinstance(retry_budget_remaining, int) or retry_budget_remaining < 0:
@@ -588,6 +660,39 @@ def enforce_preflight_remediation_boundaries(*, remediation_context: dict[str, A
             field="execution_scope_refs",
             message="execution attempted beyond TPA-approved bounded scope",
         )
+    if isinstance(gating_input, dict):
+        scope_digest = gating_input.get("approved_scope_digest")
+        expected_scope_digest = hashlib.sha256(
+            json.dumps(sorted(approved), sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        ).hexdigest()
+        if not isinstance(scope_digest, str) or scope_digest != expected_scope_digest:
+            _add_violation(
+                violations,
+                code="repair_scope_violation",
+                boundary="TPA",
+                field="gating_input.approved_scope_digest",
+                message="approved scope digest mismatch; overscope or path drift detected",
+            )
+        issued_at = _parse_dt(gating_input.get("issued_at"), field="gating_input.issued_at", violations=violations)
+        freshness = gating_input.get("freshness_window_seconds")
+        if not isinstance(freshness, int) or freshness < 1:
+            _add_violation(
+                violations,
+                code="repair_budget_violation",
+                boundary="TPA",
+                field="gating_input.freshness_window_seconds",
+                message="TPA gating freshness_window_seconds must be >= 1",
+            )
+        elif issued_at is not None:
+            elapsed = (datetime.now(tz=timezone.utc) - issued_at.astimezone(timezone.utc)).total_seconds()
+            if elapsed > freshness:
+                _add_violation(
+                    violations,
+                    code="governance_evidence_violation",
+                    boundary="TPA",
+                    field="gating_input",
+                    message="TPA gating evidence is stale",
+                )
 
     rerun_preflight = remediation_context.get("rerun_preflight_result")
     if rerun_preflight is not None:
@@ -607,6 +712,23 @@ def enforce_preflight_remediation_boundaries(*, remediation_context: dict[str, A
                 field="rerun_preflight_result.control_signal",
                 message="rerun preflight evidence missing control_signal",
             )
+        rerun_execution_record = remediation_context.get("rerun_execution_record")
+        if not isinstance(rerun_execution_record, dict):
+            _add_violation(
+                violations,
+                code="governance_evidence_violation",
+                boundary="PQX",
+                field="rerun_execution_record",
+                message="rerun requires PQX preflight execution record",
+            )
+        elif not _is_present(rerun_execution_record.get("evidence_digest")):
+            _add_violation(
+                violations,
+                code="governance_evidence_violation",
+                boundary="PQX",
+                field="rerun_execution_record.evidence_digest",
+                message="rerun execution record missing evidence digest",
+            )
         diagnosis_artifact = remediation_context.get("diagnosis_artifact")
         terminal = remediation_context.get("terminal_classification")
         if not isinstance(diagnosis_artifact, dict) or diagnosis_artifact.get("artifact_type") != "failure_diagnosis_artifact":
@@ -625,6 +747,31 @@ def enforce_preflight_remediation_boundaries(*, remediation_context: dict[str, A
                 field="terminal_classification",
                 message="promotion/continuation requires CDE terminal classification",
             )
+        if isinstance(terminal, dict) and terminal.get("terminal_classification") in {"ambiguous_block", "block"}:
+            _add_violation(
+                violations,
+                code="repair_decision_violation",
+                boundary="CDE",
+                field="terminal_classification",
+                message="ambiguous terminal classification blocks by default",
+            )
+    elif remediation_context.get("missing_evidence_branch") or remediation_context.get("ambiguous_state_branch"):
+        _add_violation(
+            violations,
+            code="governance_evidence_violation",
+            boundary="SEL",
+            field="rerun_preflight_result",
+            message="retry branch without rerun evidence is blocked",
+        )
+
+    if remediation_context.get("repeated_retry_branch"):
+        _add_violation(
+            violations,
+            code="repair_budget_violation",
+            boundary="SEL",
+            field="repeated_retry_branch",
+            message="repeated bounded retry branch exhausted deterministic retry stop",
+        )
 
     return {
         "artifact_type": "system_enforcement_result_artifact",

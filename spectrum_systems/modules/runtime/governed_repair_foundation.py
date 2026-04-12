@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any, Mapping
@@ -47,6 +48,10 @@ def _normalize_ref_list(values: Any, *, field: str) -> list[str]:
     if not normalized:
         raise GovernedRepairFoundationError(f"{field} must include at least one non-empty entry")
     return normalized
+
+
+def _digest(payload: Any) -> str:
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")).hexdigest()
 
 
 def _classify_repairability(*, failure_class: str, touched_refs: list[str]) -> str:
@@ -304,11 +309,18 @@ def build_cde_repair_continuation_input(
     *,
     failure_packet: dict[str, Any],
     repair_candidate: dict[str, Any],
+    issued_at: str = "1970-01-01T00:00:00Z",
+    freshness_window_seconds: int = 3600,
 ) -> dict[str, Any]:
     """Derive CDE continuation input without generating repair content in CDE."""
     _validate(failure_packet, "execution_failure_packet")
     _validate(repair_candidate, "bounded_repair_candidate_artifact")
 
+    if freshness_window_seconds < 1:
+        raise GovernedRepairFoundationError("freshness_window_seconds must be >= 1")
+
+    failure_packet_digest = _digest(failure_packet)
+    repair_candidate_digest = _digest(repair_candidate)
     continuation = {
         "artifact_type": "cde_repair_continuation_input",
         "schema_version": "1.0.0",
@@ -335,6 +347,24 @@ def build_cde_repair_continuation_input(
                 + failure_packet["validation_refs"]
             )
         ),
+        "failure_packet_digest": failure_packet_digest,
+        "repair_candidate_digest": repair_candidate_digest,
+        "evidence_digest": _digest(
+            {
+                "failure_packet_digest": failure_packet_digest,
+                "repair_candidate_digest": repair_candidate_digest,
+                "evidence_refs": sorted(
+                    set(
+                        failure_packet["execution_refs"]
+                        + failure_packet["trace_refs"]
+                        + failure_packet["enforcement_refs"]
+                        + failure_packet["validation_refs"]
+                    )
+                ),
+            }
+        ),
+        "issued_at": issued_at,
+        "freshness_window_seconds": freshness_window_seconds,
     }
     _validate(continuation, "cde_repair_continuation_input")
     return continuation
@@ -347,6 +377,8 @@ def build_tpa_repair_gating_input(
     retry_budget_remaining: int,
     complexity_score: int,
     risk_level: str,
+    issued_at: str = "1970-01-01T00:00:00Z",
+    freshness_window_seconds: int = 3600,
 ) -> dict[str, Any]:
     """Derive TPA repair gating input without planning or executing the repair."""
     _validate(failure_packet, "execution_failure_packet")
@@ -357,6 +389,12 @@ def build_tpa_repair_gating_input(
         raise GovernedRepairFoundationError("complexity_score must be >= 0")
     if risk_level not in {"low", "medium", "high"}:
         raise GovernedRepairFoundationError("risk_level must be one of low|medium|high")
+    if freshness_window_seconds < 1:
+        raise GovernedRepairFoundationError("freshness_window_seconds must be >= 1")
+
+    failure_packet_digest = _digest(failure_packet)
+    repair_candidate_digest = _digest(repair_candidate)
+    approved_scope_digest = _digest(sorted(set(repair_candidate["minimal_repair_scope"])))
 
     gating = {
         "artifact_type": "tpa_repair_gating_input",
@@ -377,6 +415,21 @@ def build_tpa_repair_gating_input(
         "risk_level": risk_level,
         "retry_budget_remaining": retry_budget_remaining,
         "allowed_artifact_refs": repair_candidate["touched_artifact_intent"],
+        "failure_packet_digest": failure_packet_digest,
+        "repair_candidate_digest": repair_candidate_digest,
+        "approved_scope_digest": approved_scope_digest,
+        "evidence_digest": _digest(
+            {
+                "failure_packet_digest": failure_packet_digest,
+                "repair_candidate_digest": repair_candidate_digest,
+                "approved_scope_digest": approved_scope_digest,
+                "retry_budget_remaining": retry_budget_remaining,
+                "complexity_score": complexity_score,
+                "risk_level": risk_level,
+            }
+        ),
+        "issued_at": issued_at,
+        "freshness_window_seconds": freshness_window_seconds,
     }
     _validate(gating, "tpa_repair_gating_input")
     return gating

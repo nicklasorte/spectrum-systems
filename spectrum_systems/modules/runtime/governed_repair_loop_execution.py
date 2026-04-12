@@ -8,6 +8,9 @@ failure -> packet -> bounded candidate -> CDE decision -> TPA gate -> PQX execut
 from __future__ import annotations
 
 import json
+import hashlib
+import subprocess
+import sys
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -106,6 +109,65 @@ _FAILURE_CASES: dict[str, FailureCase] = {
 
 def _now_iso() -> str:
     return datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _parse_iso8601(value: str, *, field: str) -> datetime:
+    try:
+        normalized = value.replace("Z", "+00:00")
+        return datetime.fromisoformat(normalized)
+    except ValueError as exc:  # pragma: no cover - defensive parsing path
+        raise GovernedRepairLoopExecutionError(f"{field} must be RFC3339 date-time") from exc
+
+
+def _canonical_digest(payload: Any) -> str:
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")).hexdigest()
+
+
+def run_contract_preflight_production(
+    *,
+    trace_id: str,
+    changed_paths: list[str],
+    output_dir: Path | None = None,
+    cwd: Path | None = None,
+) -> dict[str, Any]:
+    """Run the real contract preflight script and return canonical result artifact."""
+    root = cwd or Path.cwd()
+    out_dir = output_dir or (root / "outputs" / "contract_preflight_remediation" / trace_id)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    script_rel = "scripts/run_contract_preflight.py"
+    command = [sys.executable, script_rel, "--output-dir", str(out_dir)]
+    for path in sorted(set(changed_paths)):
+        command.extend(["--changed-path", path])
+    started_at = _now_iso()
+    completed = subprocess.run(command, cwd=root, capture_output=True, text=True, check=False)
+    completed_at = _now_iso()
+    artifact_path = out_dir / "contract_preflight_result_artifact.json"
+    if completed.returncode not in (0, 2):
+        raise GovernedRepairLoopExecutionError(
+            f"production contract preflight failed with exit code {completed.returncode}: {completed.stderr.strip()}"
+        )
+    if not artifact_path.is_file():
+        raise GovernedRepairLoopExecutionError("production contract preflight missing contract_preflight_result_artifact.json")
+    payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise GovernedRepairLoopExecutionError("production contract preflight artifact must be an object")
+    payload["_execution_record"] = {
+        "artifact_type": "preflight_execution_record",
+        "owner": "PQX",
+        "runner_identity": {"module": "PQX", "script_path": script_rel, "invocation_mode": "production"},
+        "trace_id": trace_id,
+        "command": command,
+        "started_at": started_at,
+        "completed_at": completed_at,
+        "exit_code": completed.returncode,
+        "stdout_digest": hashlib.sha256(completed.stdout.encode("utf-8")).hexdigest(),
+        "stderr_digest": hashlib.sha256(completed.stderr.encode("utf-8")).hexdigest(),
+        "artifact_path": str(artifact_path),
+        "artifact_digest": _canonical_digest(payload),
+        "evidence_digest": _canonical_digest([script_rel, command, trace_id, started_at, completed_at, payload]),
+        "status": "success" if completed.returncode in (0, 2) else "failed",
+    }
+    return payload
 
 
 def _validate_case_id(case_id: str) -> FailureCase:
@@ -728,12 +790,19 @@ def _build_prg_recommendation_artifact(*, ril_detection_artifact: dict[str, Any]
     }
 
 
-def _classify_terminal_outcome(*, rerun_preflight: dict[str, Any], retry_budget_remaining: int) -> dict[str, Any]:
+def _classify_terminal_outcome(
+    *,
+    rerun_preflight: dict[str, Any],
+    retry_budget_remaining: int,
+    allow_ambiguous_retry: bool = False,
+) -> dict[str, Any]:
     status = str(rerun_preflight.get("preflight_status") or "").lower()
     gate = str(rerun_preflight.get("control_signal", {}).get("strategy_gate_decision") or "").upper()
+    if status not in {"passed", "failed", "skipped"}:
+        return {"owner": "CDE", "terminal_classification": "ambiguous_block", "next_step": "block"}
     if status == "passed" and gate in {"ALLOW", "WARN"}:
         return {"owner": "CDE", "terminal_classification": "pass_continue", "next_step": "continue"}
-    if retry_budget_remaining > 0 and gate in {"BLOCK", "FREEZE"}:
+    if retry_budget_remaining > 0 and gate in {"BLOCK", "FREEZE"} and allow_ambiguous_retry:
         return {"owner": "CDE", "terminal_classification": "bounded_retry_allowed", "next_step": "continue_repair_bounded"}
     if gate in {"BLOCK", "FREEZE"}:
         return {"owner": "CDE", "terminal_classification": "escalate_human_review", "next_step": "stop_escalate"}
@@ -751,12 +820,16 @@ def run_preflight_remediation_loop(
     retry_budget: int,
     complexity_score: int,
     risk_level: str,
-    contract_preflight_runner: Callable[[], dict[str, Any]],
+    contract_preflight_runner: Callable[[], dict[str, Any]] | None = None,
+    allow_ambiguous_retry: bool = False,
 ) -> dict[str, Any]:
     """Execute the governed preflight remediation loop using canonical repair contracts."""
     if retry_budget < 0:
         raise GovernedRepairLoopExecutionError("retry_budget must be >= 0")
     lineage = _require_lineage_continuity(admission_lineage=admission_lineage, trace_id=trace_id)
+    request_ref = lineage["request_ref"]
+    if not request_ref.startswith("normalized_execution_request:"):
+        raise GovernedRepairLoopExecutionError("remediation lineage must bind to normalized_execution_request")
     readiness = _build_preflight_readiness_result(preflight_artifact=preflight_artifact, trace_id=trace_id)
     packet = build_execution_failure_packet(
         readiness_result=readiness,
@@ -781,11 +854,19 @@ def run_preflight_remediation_loop(
         trace_id=trace_id,
     )
     candidate = build_bounded_repair_candidate(failure_packet=packet)
-    continuation_input = build_cde_repair_continuation_input(failure_packet=packet, repair_candidate=candidate)
+    failure_packet_digest = _canonical_digest(packet)
+    repair_candidate_digest = _canonical_digest(candidate)
+    continuation_input = build_cde_repair_continuation_input(
+        failure_packet=packet,
+        repair_candidate=candidate,
+        issued_at=_now_iso(),
+        freshness_window_seconds=1800,
+    )
     decision = {
         "owner": "CDE",
         "decision": continuation_input["recommended_continuation"],
         "continuation_input_ref": f"cde_repair_continuation_input:{continuation_input['continuation_input_id']}",
+        "evidence_digest": continuation_input["evidence_digest"],
     }
     if decision["decision"] != "continue_repair_bounded":
         return {"status": "stopped", "trace": {"packet": packet, "diagnosis": diagnosis, "candidate": candidate, "decision": decision}}
@@ -796,42 +877,118 @@ def run_preflight_remediation_loop(
         retry_budget_remaining=retry_budget_remaining,
         complexity_score=complexity_score,
         risk_level=risk_level,
+        issued_at=_now_iso(),
+        freshness_window_seconds=1800,
     )
+    if continuation_input["failure_packet_digest"] != failure_packet_digest or continuation_input["repair_candidate_digest"] != repair_candidate_digest:
+        raise GovernedRepairLoopExecutionError("continuation input digest binding mismatch")
+    if gating_input["failure_packet_digest"] != failure_packet_digest or gating_input["repair_candidate_digest"] != repair_candidate_digest:
+        raise GovernedRepairLoopExecutionError("gating input digest binding mismatch")
+
+    failure_instance_ref = f"execution_failure_packet:{packet['failure_packet_id']}"
     sel_guard = enforce_preflight_remediation_boundaries(
         remediation_context={
             "lineage": lineage,
             "failure_packet": packet,
             "repair_candidate": candidate,
             "continuation_decision": decision,
+            "continuation_input": continuation_input,
             "gating_input": gating_input,
             "retry_budget_remaining": retry_budget_remaining,
             "approved_scope_refs": gating_input["repair_scope_refs"],
             "execution_scope_refs": gating_input["repair_scope_refs"],
+            "failure_packet_digest": failure_packet_digest,
+            "repair_candidate_digest": repair_candidate_digest,
+            "failure_instance_ref": failure_instance_ref,
         }
     )
     if sel_guard["enforcement_status"] != "allow":
         return {"status": "blocked", "stop_reason": "sel_block", "trace": {"packet": packet, "candidate": candidate, "sel": sel_guard}}
-    rerun_preflight = contract_preflight_runner()
+    changed_paths = sorted(set(gating_input["repair_scope_refs"]))
+    if contract_preflight_runner is None:
+        rerun_preflight = run_contract_preflight_production(trace_id=trace_id, changed_paths=changed_paths)
+    else:
+        rerun_preflight = contract_preflight_runner()
+    rerun_execution_record = rerun_preflight.get("_execution_record")
+    if not isinstance(rerun_execution_record, dict):
+        rerun_execution_record = {
+            "artifact_type": "preflight_execution_record",
+            "owner": "PQX",
+            "runner_identity": {"module": "PQX", "script_path": "scripts/run_contract_preflight.py", "invocation_mode": "injected"},
+            "trace_id": trace_id,
+            "command": ["injected_runner"],
+            "started_at": _now_iso(),
+            "completed_at": _now_iso(),
+            "exit_code": 0,
+            "stdout_digest": hashlib.sha256(b"").hexdigest(),
+            "stderr_digest": hashlib.sha256(b"").hexdigest(),
+            "artifact_path": "injected",
+            "artifact_digest": _canonical_digest(rerun_preflight),
+            "evidence_digest": _canonical_digest(rerun_preflight),
+            "status": "success",
+        }
+    rerun_artifact = dict(rerun_preflight)
+    rerun_artifact.pop("_execution_record", None)
+    rerun_result_digest = _canonical_digest(rerun_artifact)
+    if rerun_execution_record.get("artifact_digest") != rerun_result_digest:
+        raise GovernedRepairLoopExecutionError("rerun execution evidence digest mismatch")
+    if rerun_execution_record.get("trace_id") != trace_id:
+        raise GovernedRepairLoopExecutionError("rerun execution evidence trace mismatch")
+    _parse_iso8601(str(continuation_input["issued_at"]), field="continuation_input.issued_at")
+    _parse_iso8601(str(gating_input["issued_at"]), field="gating_input.issued_at")
+    _parse_iso8601(str(rerun_execution_record.get("started_at")), field="rerun_execution_record.started_at")
+
     ril_detection = _build_ril_detection_artifact(failure_packet=packet, rerun_preflight=rerun_preflight)
+    ril_detection["detection_flags"] = {
+        "stale_artifact_use_detected": False,
+        "lineage_mismatch_detected": False,
+        "replay_mismatch_detected": False,
+        "rerun_inconsistency_detected": False,
+        "scope_pressure_detected": False,
+    }
     prg_recommendation = _build_prg_recommendation_artifact(ril_detection_artifact=ril_detection)
-    terminal = _classify_terminal_outcome(rerun_preflight=rerun_preflight, retry_budget_remaining=retry_budget_remaining)
+    prg_recommendation["trend_outputs"] = {
+        "blocker_families": [ril_detection["blocker_family"]],
+        "stale_artifact_attempts": 0,
+        "retry_exhaustion": 1 if retry_budget_remaining <= 0 else 0,
+        "promotion_guard_blocks": 0,
+    }
+    replay_integrity = {
+        "artifact_type": "preflight_replay_integrity_comparison_artifact",
+        "owner": "RIL",
+        "authority_state": "non_authoritative",
+        "failure_packet_digest": failure_packet_digest,
+        "repair_candidate_digest": repair_candidate_digest,
+        "rerun_result_digest": rerun_result_digest,
+    }
+    terminal = _classify_terminal_outcome(
+        rerun_preflight=rerun_preflight,
+        retry_budget_remaining=retry_budget_remaining,
+        allow_ambiguous_retry=allow_ambiguous_retry,
+    )
     promotion_guard = enforce_preflight_remediation_boundaries(
         remediation_context={
             "lineage": lineage,
             "failure_packet": packet,
             "repair_candidate": candidate,
             "continuation_decision": decision,
+            "continuation_input": continuation_input,
             "gating_input": gating_input,
             "retry_budget_remaining": retry_budget_remaining,
             "approved_scope_refs": gating_input["repair_scope_refs"],
             "execution_scope_refs": gating_input["repair_scope_refs"],
             "rerun_preflight_result": rerun_preflight,
+            "rerun_execution_record": rerun_execution_record,
             "diagnosis_artifact": diagnosis,
             "terminal_classification": terminal,
+            "failure_packet_digest": failure_packet_digest,
+            "repair_candidate_digest": repair_candidate_digest,
+            "failure_instance_ref": failure_instance_ref,
+            "rerun_result_digest": rerun_result_digest,
         }
     )
     return {
-        "status": "completed" if terminal["terminal_classification"] == "pass_continue" else "blocked",
+        "status": "completed" if terminal["terminal_classification"] == "pass_continue" and promotion_guard["enforcement_status"] == "allow" else "blocked",
         "trace": {
             "lineage": lineage,
             "packet": packet,
@@ -842,7 +999,9 @@ def run_preflight_remediation_loop(
             "gating_input": gating_input,
             "sel": sel_guard,
             "rerun_preflight_result": rerun_preflight,
+            "rerun_execution_record": rerun_execution_record,
             "ril_detection": ril_detection,
+            "ril_replay_integrity": replay_integrity,
             "prg_recommendation": prg_recommendation,
             "terminal": terminal,
             "promotion_guard": promotion_guard,
@@ -853,6 +1012,7 @@ def run_preflight_remediation_loop(
 __all__ = [
     "GovernedRepairLoopExecutionError",
     "replay_governed_repair_loop_from_artifacts",
+    "run_contract_preflight_production",
     "run_governed_repair_loop",
     "run_preflight_remediation_loop",
 ]

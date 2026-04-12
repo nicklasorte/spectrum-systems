@@ -14,7 +14,13 @@
     "complexity_score",
     "risk_level",
     "retry_budget_remaining",
-    "allowed_artifact_refs"
+    "allowed_artifact_refs",
+    "failure_packet_digest",
+    "repair_candidate_digest",
+    "approved_scope_digest",
+    "evidence_digest",
+    "issued_at",
+    "freshness_window_seconds"
   ],
   "properties": {
     "artifact_type": {"type": "string", "const": "tpa_repair_gating_input"},
@@ -26,6 +32,12 @@
     "complexity_score": {"type": "integer", "minimum": 0},
     "risk_level": {"type": "string", "enum": ["low", "medium", "high"]},
     "retry_budget_remaining": {"type": "integer", "minimum": 0},
-    "allowed_artifact_refs": {"type": "array", "items": {"type": "string", "minLength": 1}}
+    "allowed_artifact_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "failure_packet_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "repair_candidate_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "approved_scope_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "evidence_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "freshness_window_seconds": {"type": "integer", "minimum": 1}
   }
 }
