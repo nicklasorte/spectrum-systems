@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_eval_registry.schema.json",
+  "title": "RAX Eval Registry",
+  "description": "Governed registry of deterministic RAX eval definitions with required-vs-optional classification.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "batch",
+    "registry_version",
+    "runner_kind",
+    "eval_definitions"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "rax_eval_registry"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "batch": {"type": "string", "minLength": 1},
+    "registry_version": {"type": "string", "minLength": 1},
+    "runner_kind": {"type": "string", "const": "deterministic_policy_runner"},
+    "eval_definitions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "eval_type",
+          "required",
+          "target_artifacts",
+          "pass_criteria",
+          "runner_kind",
+          "expected_signals",
+          "example_case_refs"
+        ],
+        "properties": {
+          "eval_type": {"type": "string", "minLength": 1},
+          "required": {"type": "boolean"},
+          "target_artifacts": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+          "pass_criteria": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+          "runner_kind": {"type": "string", "const": "deterministic_policy_runner"},
+          "expected_signals": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+          "example_case_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1}
+        }
+      }
+    }
+  }
+}

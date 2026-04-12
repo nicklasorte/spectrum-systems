@@ -4743,6 +4743,45 @@
       "last_updated_in": "1.3.112",
       "example_path": "contracts/examples/rax_assurance_audit_record.example.json",
       "notes": "RAX-INTERFACE-24-01 fail-closed assurance audit artifact for local accept/hold/block candidate decisions."
+    },
+    {
+      "artifact_type": "rax_eval_registry",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/rax_eval_registry.json",
+      "notes": "RAX-EVAL-01 governed registry of required deterministic RAX eval definitions."
+    },
+    {
+      "artifact_type": "rax_eval_case_set",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/rax_eval_case_set.json",
+      "notes": "RAX-EVAL-01 governed deterministic eval case set across baseline, adversarial, and failure classes."
+    },
+    {
+      "artifact_type": "rax_control_readiness_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/rax_control_readiness_record.json",
+      "notes": "RAX-EVAL-01 bounded readiness artifact for downstream control consumption; fail-closed on missing required evals."
     }
   ]
 }
