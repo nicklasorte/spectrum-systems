@@ -1,0 +1,109 @@
+{
+  "artifact_type": "rax_adversarial_eval_pack",
+  "batch": "RAX-RED-01",
+  "version": "1.0.0",
+  "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+  "cases": [
+    {
+      "case_id": "A_semantic_drift",
+      "failure_class": "semantic_drift",
+      "run_id": "rax-red-01-a",
+      "trace_id": "10000000-0000-4000-8000-000000000001",
+      "input_assurance": {"passed": false, "details": ["semantic_intent_insufficient"], "failure_classification": "invalid_input", "stop_condition_triggered": true},
+      "output_assurance": {"passed": true, "details": ["output_semantically_aligned"], "failure_classification": "none", "stop_condition_triggered": false},
+      "tests_passed": true,
+      "baseline_regression_detected": false,
+      "version_authority_aligned": true,
+      "expected_blocking_reason": "semantic_intent_insufficient"
+    },
+    {
+      "case_id": "B_readiness_inflation",
+      "failure_class": "readiness_inflation",
+      "run_id": "rax-red-01-b",
+      "trace_id": "10000000-0000-4000-8000-000000000002",
+      "omit_eval_types": ["rax_trace_integrity"],
+      "input_assurance": {"passed": true, "details": ["semantic_intent_sufficient"], "failure_classification": "none", "stop_condition_triggered": false},
+      "output_assurance": {"passed": true, "details": ["output_semantically_aligned"], "failure_classification": "none", "stop_condition_triggered": false},
+      "tests_passed": true,
+      "baseline_regression_detected": false,
+      "version_authority_aligned": true,
+      "expected_blocking_reason": "missing_required_eval_types"
+    },
+    {
+      "case_id": "C_counter_evidence_weak",
+      "failure_class": "missing_weak_counter_evidence",
+      "run_id": "rax-red-01-c",
+      "trace_id": "10000000-0000-4000-8000-000000000003",
+      "input_assurance": {"passed": false, "details": ["owner_intent_contradiction: owner=PRG cannot claim runtime execution"], "failure_classification": "ownership_violation", "stop_condition_triggered": true},
+      "output_assurance": {"passed": true, "details": [], "failure_classification": "none", "stop_condition_triggered": false},
+      "tests_passed": true,
+      "baseline_regression_detected": false,
+      "version_authority_aligned": true,
+      "expected_blocking_reason": "critical_failure_classification_present"
+    },
+    {
+      "case_id": "D_provenance_gap",
+      "failure_class": "provenance_gaps",
+      "run_id": "rax-red-01-d",
+      "trace_id": "10000000-0000-4000-8000-000000000004",
+      "input_assurance": {"passed": true, "details": ["semantic_intent_sufficient"], "failure_classification": "none", "stop_condition_triggered": false},
+      "output_assurance": {"passed": true, "details": ["output_semantically_aligned"], "failure_classification": "none", "stop_condition_triggered": false},
+      "tests_passed": true,
+      "baseline_regression_detected": false,
+      "version_authority_aligned": true,
+      "lineage_provenance_evidence": {"lineage_valid": true, "lineage_chain_complete": false},
+      "expected_blocking_reason": "artifact_lineage_incomplete"
+    },
+    {
+      "case_id": "E_replay_inconsistency",
+      "failure_class": "replay_inconsistency",
+      "run_id": "rax-red-01-e",
+      "trace_id": "10000000-0000-4000-8000-000000000005",
+      "input_assurance": {"passed": true, "details": ["semantic_intent_sufficient"], "failure_classification": "none", "stop_condition_triggered": false},
+      "output_assurance": {"passed": true, "details": ["output_semantically_aligned"], "failure_classification": "none", "stop_condition_triggered": false},
+      "tests_passed": true,
+      "baseline_regression_detected": false,
+      "version_authority_aligned": true,
+      "replay_key_only": true,
+      "expected_blocking_reason": "replay_consistency_evidence_incomplete"
+    },
+    {
+      "case_id": "F_policy_drift_mismatch",
+      "failure_class": "policy_drift_mismatch",
+      "run_id": "rax-red-01-f",
+      "trace_id": "10000000-0000-4000-8000-000000000006",
+      "input_assurance": {"passed": true, "details": ["semantic_intent_sufficient"], "failure_classification": "none", "stop_condition_triggered": false},
+      "output_assurance": {"passed": true, "details": ["output_semantically_aligned"], "failure_classification": "none", "stop_condition_triggered": false},
+      "tests_passed": true,
+      "baseline_regression_detected": false,
+      "version_authority_aligned": true,
+      "tamper_required_coverage": true,
+      "expected_blocking_reason": "required_eval_types_mismatch_with_governed_policy"
+    },
+    {
+      "case_id": "G_feedback_loop_poisoning",
+      "failure_class": "feedback_loop_poisoning",
+      "run_id": "rax-red-01-g",
+      "trace_id": "10000000-0000-4000-8000-000000000007",
+      "input_assurance": {"passed": false, "details": ["semantic_intent_insufficient"], "failure_classification": "invalid_input", "stop_condition_triggered": true},
+      "output_assurance": {"passed": true, "details": ["output_semantically_aligned"], "failure_classification": "none", "stop_condition_triggered": false},
+      "tests_passed": true,
+      "baseline_regression_detected": false,
+      "version_authority_aligned": true,
+      "expect_failure_candidate": true
+    },
+    {
+      "case_id": "H_unknown_state_partial_signals",
+      "failure_class": "unknown_state_partial_signals",
+      "run_id": "rax-red-01-h",
+      "trace_id": "10000000-0000-4000-8000-000000000008",
+      "input_assurance": {"passed": true, "details": ["semantic_intent_sufficient"], "failure_classification": "none", "stop_condition_triggered": false},
+      "output_assurance": {"passed": true, "details": ["output_semantically_aligned"], "failure_classification": "none", "stop_condition_triggered": false},
+      "tests_passed": true,
+      "baseline_regression_detected": false,
+      "version_authority_aligned": true,
+      "drop_trace_integrity_evidence": true,
+      "expected_blocking_reason": "missing_trace_integrity_evidence"
+    }
+  ]
+}
