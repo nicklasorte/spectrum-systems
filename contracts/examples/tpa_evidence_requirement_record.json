@@ -1,0 +1,10 @@
+{
+  "artifact_type": "tpa_evidence_requirement_record",
+  "schema_version": "1.0.0",
+  "record_id": "tpa-evidence-001",
+  "trace_id": "trace-tpa-001",
+  "decision_ref": "tpa_policy_decision_record:tpa-decision-001",
+  "required_evidence": ["eval_case:tpa-rt1-001"],
+  "escalation_level": "warning",
+  "debt_counter": 1
+}

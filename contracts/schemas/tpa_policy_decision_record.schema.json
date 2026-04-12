@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_policy_decision_record.schema.json",
+  "title": "TPA Policy Decision Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "decision_id",
+    "trace_id",
+    "input_bundle_ref",
+    "decision",
+    "reason_codes",
+    "evidence_refs",
+    "allowed_scope",
+    "complexity_budget",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "tpa_policy_decision_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "decision_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "input_bundle_ref": {"type": "string", "pattern": "^tpa_policy_input_bundle:.+"},
+    "decision": {"type": "string", "enum": ["allow", "reject", "narrow", "evidence_required"]},
+    "reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+    "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+    "allowed_scope": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+    "complexity_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_units", "allocated_units", "status"],
+      "properties": {
+        "max_units": {"type": "integer", "minimum": 1},
+        "allocated_units": {"type": "integer", "minimum": 0},
+        "status": {"type": "string", "enum": ["within_budget", "exceeded"]}
+      }
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {"type": "string", "enum": ["no_closure_decision", "no_runtime_enforcement", "no_review_semantics_reinterpretation"]},
+      "minItems": 3,
+      "uniqueItems": true
+    }
+  }
+}

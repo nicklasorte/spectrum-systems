@@ -1,0 +1,21 @@
+{
+  "artifact_type": "tpa_policy_input_bundle",
+  "schema_version": "1.0.0",
+  "bundle_id": "tpa-input-001",
+  "trace_id": "trace-tpa-001",
+  "task_wrapper_ref": "codex_pqx_task_wrapper:task-001",
+  "source_authority_refresh_receipt": {
+    "receipt_ref": "source_authority_refresh_receipt:src-001",
+    "refreshed_at": "2026-04-12T00:00:00Z",
+    "age_hours": 4,
+    "max_age_hours": 24,
+    "freshness_status": "fresh"
+  },
+  "complexity_trend_ref": "complexity_trend:run-1:AI-01",
+  "requested_scope": [
+    "spectrum_systems/modules/runtime/tpa_policy_authority.py",
+    "tests/test_tpa_policy_authority.py"
+  ],
+  "proposed_action": "allow",
+  "lineage_path": ["AEX", "TLC", "TPA", "PQX"]
+}
