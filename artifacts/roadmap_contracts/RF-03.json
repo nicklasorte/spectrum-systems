@@ -40,7 +40,17 @@
   ],
   "realization_mode": "runtime_realization",
   "realization_status": "verified",
-  "expansion_version": "1.0.0",
-  "expansion_policy_hash": "152968011b794af977ccdfa9813025ef2271dbd6be90a48116d5a6b665b73839",
-  "expansion_trace_ref": "contracts/examples/roadmap_expansion_trace.example.json#RF-03"
+  "expansion_version": "1.1.0",
+  "expansion_policy_hash": "25a3ad696f7ef1ebc5ce5da1843b01929a64131b13c3321d1f2d7b5e05b6573e",
+  "expansion_trace_ref": "contracts/examples/roadmap_expansion_trace.example.json#RF-03",
+  "roadmap_id": "SYSTEM-ROADMAP-2026",
+  "roadmap_group": "RAX_INTERFACE",
+  "source_authority_ref": "docs/roadmaps/system_roadmap.md#RF-03",
+  "source_version": "1.3.112",
+  "input_freshness_ref": "freshness/roadmap_inputs.json#RF-03",
+  "input_provenance_ref": "provenance/roadmap_inputs.json#RF-03",
+  "downstream_compatibility": {
+    "prg_rdx_step_metadata": true,
+    "realization_runner_contract_complete": true
+  }
 }

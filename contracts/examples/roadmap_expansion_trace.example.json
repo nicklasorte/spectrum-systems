@@ -1,8 +1,8 @@
 {
   "artifact_type": "roadmap_expansion_trace",
   "step_id": "RF-03",
-  "expansion_version": "1.0.0",
-  "expansion_policy_hash": "152968011b794af977ccdfa9813025ef2271dbd6be90a48116d5a6b665b73839",
+  "expansion_version": "1.1.0",
+  "expansion_policy_hash": "25a3ad696f7ef1ebc5ce5da1843b01929a64131b13c3321d1f2d7b5e05b6573e",
   "field_trace": [
     {
       "field_name": "owner",

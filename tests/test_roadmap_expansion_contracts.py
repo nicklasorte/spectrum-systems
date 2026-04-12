@@ -61,6 +61,8 @@ def test_roadmap_expansion_policy_has_required_top_level_structure() -> None:
         "owner_defaults",
         "forbidden_ownership_crossings",
         "default_forbidden_patterns",
+        "default_downstream_compatibility",
+        "acceptance_check_templates",
     }
     assert required_keys.issubset(policy.keys())
 
@@ -93,6 +95,50 @@ def test_examples_are_consistent_with_schema_and_policy_hash() -> None:
     expected_hash = _policy_sha256()
     assert step["expansion_policy_hash"] == expected_hash
     assert trace["expansion_policy_hash"] == expected_hash
+
+
+def test_rax_upstream_input_schema_validates_example() -> None:
+    validate_artifact(load_example("rax_upstream_input_envelope"), "rax_upstream_input_envelope")
+
+
+def test_rax_upstream_input_rejects_missing_required_field() -> None:
+    instance = load_example("rax_upstream_input_envelope")
+    instance.pop("source_authority_ref", None)
+    with pytest.raises(ValidationError):
+        validate_artifact(instance, "rax_upstream_input_envelope")
+
+
+def test_rax_upstream_input_rejects_invalid_owner_enum() -> None:
+    instance = load_example("rax_upstream_input_envelope")
+    instance["owner"] = "UNKNOWN"
+    with pytest.raises(ValidationError):
+        validate_artifact(instance, "rax_upstream_input_envelope")
+
+
+def test_rax_upstream_input_rejects_malformed_step_id() -> None:
+    instance = load_example("rax_upstream_input_envelope")
+    instance["step_id"] = "invalid step"
+    with pytest.raises(ValidationError):
+        validate_artifact(instance, "rax_upstream_input_envelope")
+
+
+def test_rax_assurance_audit_record_schema_validates_example() -> None:
+    validate_artifact(load_example("rax_assurance_audit_record"), "rax_assurance_audit_record")
+
+
+def test_roadmap_step_contract_rejects_empty_acceptance_checks() -> None:
+    instance = load_example("roadmap_step_contract")
+    instance["acceptance_checks"] = []
+    with pytest.raises(ValidationError):
+        validate_artifact(instance, "roadmap_step_contract")
+
+
+def test_roadmap_step_contract_rejects_runtime_realization_without_entrypoints() -> None:
+    instance = load_example("roadmap_step_contract")
+    instance["realization_mode"] = "runtime_realization"
+    instance["runtime_entrypoints"] = []
+    with pytest.raises(ValidationError):
+        validate_artifact(instance, "roadmap_step_contract")
 
 
 def test_roadmap_step_contract_schema_is_strict_no_additional_properties() -> None:

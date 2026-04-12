@@ -1,6 +1,6 @@
 {
   "policy_id": "roadmap-expansion-policy",
-  "policy_version": "1.0.0",
+  "policy_version": "1.1.0",
   "description": "Deterministic mapping surface for roadmap contract expansion. This file is configuration-only and carries no execution authority.",
   "owner_defaults": {
     "RIL": {
@@ -137,5 +137,16 @@
     "missing_expansion_trace_ref",
     "execution_without_contract_validation",
     "cross_owner_module_write"
-  ]
+  ],
+  "expansion_version": "1.1.0",
+  "default_downstream_compatibility": {
+    "prg_rdx_step_metadata": true,
+    "realization_runner_contract_complete": true
+  },
+  "acceptance_check_templates": {
+    "schema_validation_passes": "Roadmap contract and related examples validate against strict schemas.",
+    "deterministic_replay_compatibility": "Expansion output must remain deterministic for identical input and policy hash.",
+    "consumer_wiring_declared": "Downstream consumer compatibility metadata is explicit and complete.",
+    "runtime_entrypoints_resolvable": "Runtime entrypoints resolve to importable module call targets."
+  }
 }
