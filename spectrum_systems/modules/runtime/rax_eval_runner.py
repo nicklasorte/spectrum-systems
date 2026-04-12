@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
+import base64
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -539,6 +541,8 @@ def admit_failure_eval_candidate(
             "eval_case_id": candidate["eval_case_id"],
             "eval_type": candidate["eval_type"],
             "version": candidate.get("version", "1.0.0"),
+            "target_ref": candidate.get("target_ref", ""),
+            "dedupe_key": candidate.get("dedupe_key", ""),
         })
 
     record = {
@@ -611,6 +615,229 @@ def enforce_rax_promotion_hard_gate(
     }
     validate_artifact(out, "rax_promotion_hard_gate_record")
     return out
+
+
+def build_policy_regression_evidence_bundle(
+    *,
+    bundle_id: str,
+    policy_version: str,
+    rule_version: str,
+    eval_version: str,
+    regression_passed: bool,
+    evidence_refs: list[str],
+) -> dict[str, Any]:
+    return {
+        "artifact_type": "rax_policy_regression_evidence_bundle",
+        "schema_version": "1.0.0",
+        "bundle_id": bundle_id,
+        "policy_version": policy_version,
+        "rule_version": rule_version,
+        "eval_version": eval_version,
+        "regression_passed": bool(regression_passed),
+        "evidence_refs": sorted(set(evidence_refs)),
+    }
+
+
+def build_replay_evidence_binding(
+    *,
+    bundle_id: str,
+    replay_identity: dict[str, Any],
+    expected_policy_version: str,
+    expected_semantic_rule_version: str,
+) -> dict[str, Any]:
+    identity = dict(replay_identity)
+    policy_version = str(identity.get("policy_version", ""))
+    semantic_rule_version = str(identity.get("semantic_rule_version", ""))
+    bound = bool(
+        identity.get("fingerprint")
+        and policy_version == expected_policy_version
+        and semantic_rule_version == expected_semantic_rule_version
+    )
+    mismatch_reasons: list[str] = []
+    if not identity.get("fingerprint"):
+        mismatch_reasons.append("replay_identity_fingerprint_missing")
+    if policy_version != expected_policy_version:
+        mismatch_reasons.append("replay_policy_version_mismatch")
+    if semantic_rule_version != expected_semantic_rule_version:
+        mismatch_reasons.append("replay_semantic_rule_version_mismatch")
+    return {
+        "artifact_type": "rax_replay_evidence_binding",
+        "schema_version": "1.0.0",
+        "bundle_id": bundle_id,
+        "bound": bound,
+        "replay_identity": identity,
+        "expected_policy_version": expected_policy_version,
+        "expected_semantic_rule_version": expected_semantic_rule_version,
+        "mismatch_reasons": sorted(set(mismatch_reasons)),
+    }
+
+
+def evaluate_drift_threshold_semantics(
+    *,
+    health_snapshot: dict[str, Any],
+    drift_signal_record: dict[str, Any],
+) -> dict[str, Any]:
+    posture = str(health_snapshot.get("candidate_posture", "warn"))
+    drift_posture = str(drift_signal_record.get("candidate_posture", "warn"))
+    posture_rank = {"healthy": 0, "warn": 1, "freeze_candidate": 2, "block_candidate": 3}
+    freeze_worthy = posture_rank.get(posture, 1) >= 2 or posture_rank.get(drift_posture, 1) >= 2
+    return {
+        "artifact_type": "rax_drift_threshold_decision",
+        "schema_version": "1.0.0",
+        "health_snapshot_ref": health_snapshot.get("snapshot_id"),
+        "drift_signal_ref": drift_signal_record.get("signal_id"),
+        "threshold_state": "freeze_worthy" if freeze_worthy else "warn_only",
+        "freeze_worthy": freeze_worthy,
+        "reasons": sorted(
+            set(
+                [f"health_posture:{posture}", f"drift_posture:{drift_posture}"]
+                + list(health_snapshot.get("threshold_violations", []))
+                + list(drift_signal_record.get("violations", []))
+            )
+        ),
+    }
+
+
+def apply_admission_quality_filters(
+    *,
+    candidate: dict[str, Any],
+    admission_policy: dict[str, Any],
+    canonical_registry: dict[str, Any],
+) -> dict[str, Any]:
+    base = admit_failure_eval_candidate(
+        candidate=candidate,
+        admission_policy=admission_policy,
+        canonical_registry=canonical_registry,
+    )
+    denied = list(base["denial_reasons"])
+    if not base["admitted"]:
+        return base
+
+    max_per_target = int(admission_policy.get("max_candidates_per_target_per_window", 5))
+    max_same_dedupe = int(admission_policy.get("max_same_dedupe_key_per_window", 2))
+    min_reason_code_length = int(admission_policy.get("min_reason_code_length", 4))
+
+    admitted_rows = canonical_registry.get("admitted_candidates", [])
+    same_target = [row for row in admitted_rows if row.get("target_ref") == candidate.get("target_ref")]
+    same_dedupe = [row for row in admitted_rows if row.get("dedupe_key") == candidate.get("dedupe_key")]
+    short_reason = any(len(str(code).strip()) < min_reason_code_length for code in candidate.get("reason_codes", []))
+
+    if len(same_target) > max_per_target:
+        denied.append("rate_limit_target_window_exceeded")
+    if len(same_dedupe) > max_same_dedupe:
+        denied.append("cluster_dedupe_key_window_exceeded")
+    if short_reason:
+        denied.append("low_quality_reason_code")
+
+    admitted = len(denied) == 0
+    if not admitted:
+        canonical_registry["admitted_candidates"] = [row for row in admitted_rows if row.get("candidate_id") != candidate["candidate_id"]]
+
+    return {
+        "artifact_type": "rax_eval_candidate_admission_record",
+        "schema_version": "1.0.0",
+        "candidate_id": candidate["candidate_id"],
+        "admitted": admitted,
+        "denial_reasons": sorted(set(denied)),
+    }
+
+
+def compile_judgment_patterns_to_policy_candidates(
+    *,
+    compilation_id: str,
+    judgment_records: list[dict[str, Any]],
+    min_pattern_count: int = 3,
+) -> dict[str, Any]:
+    pattern_counts: dict[tuple[str, ...], int] = {}
+    for record in judgment_records:
+        rationale = tuple(sorted(set(record.get("rationale", []))))
+        if not rationale:
+            continue
+        pattern_counts[rationale] = pattern_counts.get(rationale, 0) + 1
+
+    candidates: list[dict[str, Any]] = []
+    for rationale, count in sorted(pattern_counts.items(), key=lambda item: (-item[1], item[0])):
+        if count < min_pattern_count:
+            continue
+        candidate_id = hashlib.sha256(f"{compilation_id}|{','.join(rationale)}".encode("utf-8")).hexdigest()[:16]
+        candidates.append(
+            {
+                "candidate_id": f"rax-policy-candidate-{candidate_id}",
+                "source_pattern": list(rationale),
+                "occurrence_count": count,
+                "candidate_type": "non_authoritative_policy_candidate",
+            }
+        )
+    return {
+        "artifact_type": "rax_judgment_policy_candidate_set",
+        "schema_version": "1.0.0",
+        "compilation_id": compilation_id,
+        "candidates": candidates,
+        "authority_note": "candidate_only_requires_governed_review",
+    }
+
+
+def sign_rax_evidence_bundle(*, bundle: dict[str, Any], signing_key: str) -> dict[str, Any]:
+    canonical = json.dumps(bundle, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    digest = hmac.new(signing_key.encode("utf-8"), canonical, hashlib.sha256).digest()
+    return {
+        "bundle_digest_sha256": hashlib.sha256(canonical).hexdigest(),
+        "signature_hmac_sha256": base64.b64encode(digest).decode("ascii"),
+        "signature_algorithm": "hmac-sha256",
+    }
+
+
+def verify_rax_evidence_bundle_signature(*, bundle: dict[str, Any], signature_record: dict[str, Any], signing_key: str) -> bool:
+    expected = sign_rax_evidence_bundle(bundle=bundle, signing_key=signing_key)
+    return bool(
+        signature_record.get("signature_algorithm") == expected["signature_algorithm"]
+        and signature_record.get("bundle_digest_sha256") == expected["bundle_digest_sha256"]
+        and hmac.compare_digest(
+            str(signature_record.get("signature_hmac_sha256", "")),
+            expected["signature_hmac_sha256"],
+        )
+    )
+
+
+def enforce_rax_operational_hard_gate(
+    *,
+    gate_id: str,
+    readiness_record: dict[str, Any],
+    conflict_record: dict[str, Any],
+    policy_regression_bundle: dict[str, Any] | None,
+    replay_binding: dict[str, Any] | None,
+    drift_threshold_decision: dict[str, Any] | None,
+    admission_record: dict[str, Any] | None,
+    signature_verified: bool,
+) -> dict[str, Any]:
+    blocking_reasons: list[str] = []
+    if conflict_record.get("material_conflicts"):
+        blocking_reasons.append("material_conflicts_unresolved")
+    if not policy_regression_bundle or not policy_regression_bundle.get("regression_passed"):
+        blocking_reasons.append("policy_regression_evidence_missing_or_failed")
+    if not replay_binding or not replay_binding.get("bound"):
+        blocking_reasons.append("replay_evidence_unbound_or_stale")
+    if drift_threshold_decision and drift_threshold_decision.get("freeze_worthy"):
+        blocking_reasons.append("drift_threshold_freeze")
+    if admission_record and not admission_record.get("admitted"):
+        blocking_reasons.append("admission_quality_filter_denied")
+    if readiness_record.get("ready_for_control") is not True:
+        blocking_reasons.append("readiness_not_ready")
+    if not signature_verified:
+        blocking_reasons.append("promotion_evidence_signature_missing_or_invalid")
+
+    return {
+        "artifact_type": "rax_operational_gate_record",
+        "schema_version": "1.0.0",
+        "gate_id": gate_id,
+        "passed": len(blocking_reasons) == 0,
+        "decision": "promote_candidate" if len(blocking_reasons) == 0 else "block_candidate",
+        "blocking_reasons": sorted(set(blocking_reasons)),
+        "conflict_zero_enforced": True,
+        "policy_regression_required": True,
+        "replay_binding_required": True,
+        "signed_provenance_required": True,
+    }
 
 
 def build_rax_unknown_state_record(

@@ -22,6 +22,14 @@ from spectrum_systems.modules.runtime.rax_eval_runner import (
     compile_rax_judgment_record,
     enforce_rax_promotion_hard_gate,
     generate_adversarial_pattern_candidates,
+    build_policy_regression_evidence_bundle,
+    build_replay_evidence_binding,
+    evaluate_drift_threshold_semantics,
+    apply_admission_quality_filters,
+    compile_judgment_patterns_to_policy_candidates,
+    sign_rax_evidence_bundle,
+    verify_rax_evidence_bundle_signature,
+    enforce_rax_operational_hard_gate,
 )
 
 
@@ -716,3 +724,92 @@ def test_rax12_promotion_hard_gate_blocks_missing_evidence() -> None:
     validate_artifact(gate, "rax_promotion_hard_gate_record")
     assert gate["passed"] is False
     assert "replay_evidence_missing" in gate["missing_evidence"]
+
+
+def test_rax15_policy_regression_evidence_bundle_requires_pass() -> None:
+    bundle = build_policy_regression_evidence_bundle(
+        bundle_id="bundle-001",
+        policy_version="1.0.0",
+        rule_version="1.0.0",
+        eval_version="1.2.0",
+        regression_passed=False,
+        evidence_refs=["eval_summary://x"],
+    )
+    assert bundle["regression_passed"] is False
+
+
+def test_rax16_replay_binding_rejects_version_mismatch() -> None:
+    binding = build_replay_evidence_binding(
+        bundle_id="run-001",
+        replay_identity={"fingerprint": "fp", "policy_version": "1.0.1", "semantic_rule_version": "1.0.0"},
+        expected_policy_version="1.0.0",
+        expected_semantic_rule_version="1.0.0",
+    )
+    assert binding["bound"] is False
+    assert "replay_policy_version_mismatch" in binding["mismatch_reasons"]
+
+
+def test_rax19_drift_threshold_decision_marks_freeze_worthy() -> None:
+    decision = evaluate_drift_threshold_semantics(
+        health_snapshot={"snapshot_id": "h1", "candidate_posture": "warn", "threshold_violations": []},
+        drift_signal_record={"signal_id": "d1", "candidate_posture": "freeze_candidate", "violations": ["eval_signal_drift"]},
+    )
+    assert decision["freeze_worthy"] is True
+    assert decision["threshold_state"] == "freeze_worthy"
+
+
+def test_rax20_admission_quality_filters_rate_limit_and_cluster() -> None:
+    candidate = load_example("rax_failure_eval_candidate")
+    registry = {
+        "admitted_candidates": [
+            {"candidate_id": "c1", "target_ref": candidate["target_ref"], "dedupe_key": candidate["dedupe_key"]},
+            {"candidate_id": "c2", "target_ref": candidate["target_ref"], "dedupe_key": candidate["dedupe_key"]},
+        ]
+    }
+    result = apply_admission_quality_filters(
+        candidate=candidate,
+        admission_policy={
+            "min_reason_codes": 1,
+            "allowed_eval_types": [candidate["eval_type"]],
+            "max_candidates_per_target_per_window": 1,
+            "max_same_dedupe_key_per_window": 1,
+        },
+        canonical_registry=registry,
+    )
+    assert result["admitted"] is False
+    assert "cluster_dedupe_key_window_exceeded" in result["denial_reasons"]
+
+
+def test_rax21_compile_judgment_patterns_to_non_authoritative_candidates() -> None:
+    compiled = compile_judgment_patterns_to_policy_candidates(
+        compilation_id="compile-01",
+        judgment_records=[
+            {"rationale": ["missing_required_eval_types", "trace_incomplete"]},
+            {"rationale": ["trace_incomplete", "missing_required_eval_types"]},
+            {"rationale": ["missing_required_eval_types", "trace_incomplete"]},
+        ],
+    )
+    assert compiled["authority_note"] == "candidate_only_requires_governed_review"
+    assert compiled["candidates"]
+
+
+def test_rax22_signed_provenance_verification_fail_closed() -> None:
+    bundle = {"artifact_type": "rax_policy_regression_evidence_bundle", "bundle_id": "b1"}
+    signature = sign_rax_evidence_bundle(bundle=bundle, signing_key="key-a")
+    verified = verify_rax_evidence_bundle_signature(bundle=bundle, signature_record=signature, signing_key="key-b")
+    assert verified is False
+
+
+def test_rax13_rax14_rax17_operational_gate_enforces_conflict_zero_and_external_conditions() -> None:
+    gate = enforce_rax_operational_hard_gate(
+        gate_id="gate-op-01",
+        readiness_record={"ready_for_control": True},
+        conflict_record={"material_conflicts": ["contradictory_eval_signals"]},
+        policy_regression_bundle={"regression_passed": True},
+        replay_binding={"bound": True},
+        drift_threshold_decision={"freeze_worthy": False},
+        admission_record={"admitted": True},
+        signature_verified=True,
+    )
+    assert gate["passed"] is False
+    assert "material_conflicts_unresolved" in gate["blocking_reasons"]
