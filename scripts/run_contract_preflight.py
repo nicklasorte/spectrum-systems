@@ -9,7 +9,7 @@ import json
 import os
 import subprocess
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -134,6 +134,7 @@ class ChangedPathDetectionResult:
     refs_attempted: list[str]
     fallback_used: bool
     warnings: list[str]
+    ref_resolution_records: list[dict[str, str]] = field(default_factory=list)
 
 
 @dataclass
@@ -230,8 +231,54 @@ def _local_workspace_changes(repo_root: Path) -> list[str]:
     return sorted(set(paths))
 
 
+def _stable_unique_strings(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for value in values:
+        normalized = str(value).strip()
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        ordered.append(normalized)
+    return ordered
+
+
+class _RefAttemptTracker:
+    """Stable deduped revision-attempt tracker for schema-safe trace emission."""
+
+    def __init__(self) -> None:
+        self._seen: set[str] = set()
+        self._refs: list[str] = []
+        self._records: list[dict[str, str]] = []
+
+    def record(self, ref: str, status: str) -> None:
+        normalized_ref = str(ref).strip()
+        if not normalized_ref:
+            return
+        normalized_status = str(status).strip() or "attempted"
+        if normalized_ref not in self._seen:
+            self._seen.add(normalized_ref)
+            self._refs.append(normalized_ref)
+            self._records.append({"ref": normalized_ref, "status": normalized_status})
+            return
+        for row in self._records:
+            if row.get("ref") == normalized_ref:
+                existing = str(row.get("status", "attempted"))
+                if existing == "attempted" and normalized_status != "attempted":
+                    row["status"] = normalized_status
+                break
+
+    @property
+    def refs(self) -> list[str]:
+        return list(self._refs)
+
+    @property
+    def records(self) -> list[dict[str, str]]:
+        return [dict(row) for row in self._records]
+
+
 def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit: list[str] | None = None) -> ChangedPathDetectionResult:
-    refs_attempted: list[str] = []
+    ref_tracker = _RefAttemptTracker()
     warnings: list[str] = []
 
     if explicit:
@@ -241,99 +288,121 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
             refs_attempted=[],
             fallback_used=False,
             warnings=[],
+            ref_resolution_records=[],
         )
 
     # B: explicit base/head refs when resolvable.
-    refs_attempted.append(f"{base_ref}..{head_ref}")
+    primary_ref = f"{base_ref}..{head_ref}"
+    ref_tracker.record(primary_ref, "attempted")
     diff_paths, error = _diff_name_only(repo_root, base_ref, head_ref)
     if not error:
+        ref_tracker.record(primary_ref, "succeeded")
         return ChangedPathDetectionResult(
             changed_paths=diff_paths,
             changed_path_detection_mode="base_head_diff",
-            refs_attempted=refs_attempted,
+            refs_attempted=ref_tracker.refs,
             fallback_used=False,
             warnings=[],
+            ref_resolution_records=ref_tracker.records,
         )
+    ref_tracker.record(primary_ref, "failed_invalid_revision")
     warnings.append(f"base/head diff unavailable: {error}")
 
     if head_ref != "HEAD":
-        refs_attempted.append(f"{base_ref}..HEAD")
+        current_head_ref = f"{base_ref}..HEAD"
+        ref_tracker.record(current_head_ref, "attempted")
         current_head_paths, current_head_error = _diff_name_only(repo_root, base_ref, "HEAD")
         if not current_head_error:
+            ref_tracker.record(current_head_ref, "succeeded")
             return ChangedPathDetectionResult(
                 changed_paths=current_head_paths,
                 changed_path_detection_mode="base_to_current_head_fallback",
-                refs_attempted=refs_attempted,
+                refs_attempted=ref_tracker.refs,
                 fallback_used=True,
                 warnings=warnings + ["head ref unavailable; used current HEAD fallback"],
+                ref_resolution_records=ref_tracker.records,
             )
+        ref_tracker.record(current_head_ref, "failed_invalid_revision")
         warnings.append(f"base..HEAD fallback unavailable: {current_head_error}")
 
     # C: GitHub event-aware refs (PR base/head SHA; push before/current SHA).
     sha_pair = _github_sha_pair()
     if sha_pair:
         gh_base, gh_head, mode = sha_pair
-        refs_attempted.append(f"{gh_base}..{gh_head}")
+        github_ref = f"{gh_base}..{gh_head}"
+        ref_tracker.record(github_ref, "attempted")
         gh_paths, gh_error = _diff_name_only(repo_root, gh_base, gh_head)
         if not gh_error:
+            ref_tracker.record(github_ref, "succeeded")
             return ChangedPathDetectionResult(
                 changed_paths=gh_paths,
                 changed_path_detection_mode=mode,
-                refs_attempted=refs_attempted,
+                refs_attempted=ref_tracker.refs,
                 fallback_used=False,
                 warnings=warnings,
+                ref_resolution_records=ref_tracker.records,
             )
+        ref_tracker.record(github_ref, "failed_invalid_revision")
         warnings.append(f"github event ref diff unavailable: {gh_error}")
 
     # D: safe local fallback paths.
     local_changes = _local_workspace_changes(repo_root)
     local_governed = [path for path in local_changes if path.startswith("contracts/")]
     if local_governed:
+        ref_tracker.record("working_tree_vs_status", "succeeded")
         return ChangedPathDetectionResult(
             changed_paths=sorted(set(local_governed)),
             changed_path_detection_mode="local_workspace_status",
-            refs_attempted=refs_attempted,
+            refs_attempted=ref_tracker.refs,
             fallback_used=True,
             warnings=warnings + ["using git status porcelain fallback"],
+            ref_resolution_records=ref_tracker.records,
         )
     if local_changes:
         warnings.append("local workspace fallback had no governed contract paths; continuing to deeper fallback")
 
-    refs_attempted.append("working_tree_vs_HEAD")
+    ref_tracker.record("working_tree_vs_HEAD", "attempted")
     working_tree = _run(["git", "diff", "--name-only", "HEAD"], cwd=repo_root)
     if working_tree.returncode == 0:
+        ref_tracker.record("working_tree_vs_HEAD", "succeeded")
         paths = sorted({line.strip() for line in working_tree.stdout.splitlines() if line.strip()})
         governed_paths = [path for path in paths if path.startswith("contracts/")]
         if governed_paths:
             return ChangedPathDetectionResult(
                 changed_paths=sorted(set(governed_paths)),
                 changed_path_detection_mode="working_tree_diff_head",
-                refs_attempted=refs_attempted,
+                refs_attempted=ref_tracker.refs,
                 fallback_used=True,
                 warnings=warnings + ["using working tree diff fallback"],
+                ref_resolution_records=ref_tracker.records,
             )
         if paths:
             warnings.append("working tree fallback had no governed contract paths; degrading to full governed scan")
     else:
+        ref_tracker.record("working_tree_vs_HEAD", "failed_invalid_revision")
         warnings.append(f"working tree fallback unavailable: {working_tree.combined_output}")
 
     # E: fail-closed degraded full governed scan.
     governed = _all_governed_paths(repo_root)
     if governed:
+        ref_tracker.record("degraded_full_governed_scan", "fallback_used")
         return ChangedPathDetectionResult(
             changed_paths=governed,
             changed_path_detection_mode="degraded_full_governed_scan",
-            refs_attempted=refs_attempted,
+            refs_attempted=ref_tracker.refs,
             fallback_used=True,
             warnings=warnings + ["changed-path detection degraded; running full governed contract scan"],
+            ref_resolution_records=ref_tracker.records,
         )
 
+    ref_tracker.record("detection_failed_no_governed_paths", "fallback_used")
     return ChangedPathDetectionResult(
         changed_paths=[],
         changed_path_detection_mode="detection_failed_no_governed_paths",
-        refs_attempted=refs_attempted,
+        refs_attempted=ref_tracker.refs,
         fallback_used=True,
         warnings=warnings + ["changed-path detection failed and no governed paths were available"],
+        ref_resolution_records=ref_tracker.records,
     )
 
 
@@ -1213,10 +1282,12 @@ def main() -> int:
     changed_governed_definitions = classified["changed_governed_definitions"]
     changed_contracts = changed_contract_paths + changed_governed_definitions
     changed_examples = classified["changed_example_paths"]
+    refs_attempted = _stable_unique_strings(list(detection.refs_attempted))
     detection_meta = {
         "changed_path_detection_mode": detection.changed_path_detection_mode,
         "changed_paths_resolved": detection.changed_paths,
-        "refs_attempted": detection.refs_attempted,
+        "refs_attempted": refs_attempted,
+        "ref_resolution_records": detection.ref_resolution_records,
         "fallback_used": detection.fallback_used,
         "warnings": detection.warnings,
         "evaluation_mode": surface_classification["evaluation_mode"],
