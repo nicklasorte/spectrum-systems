@@ -199,6 +199,12 @@ class ContractSchemaTests(unittest.TestCase):
             "tpa_conflict_record",
             "tpa_policy_eval_result",
             "tpa_policy_bundle",
+            "pqx_execution_eval_result",
+            "pqx_execution_readiness_record",
+            "pqx_execution_conflict_record",
+            "pqx_execution_bundle",
+            "pqx_execution_effectiveness_record",
+            "pqx_execution_recurrence_record",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)

@@ -1,0 +1,10 @@
+{
+  "artifact_type": "pqx_execution_effectiveness_record",
+  "schema_version": "1.0.0",
+  "record_id": "pqx-effectiveness-abc123def456",
+  "slice_id": "PQX-QUEUE-01",
+  "intended_outcome_ref": "goal:bounded-execution",
+  "outcome_status": "effective",
+  "fallout_level": "low",
+  "generated_at": "2026-04-12T00:00:00Z"
+}

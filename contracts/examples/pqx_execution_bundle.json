@@ -1,0 +1,21 @@
+{
+  "artifact_type": "pqx_execution_bundle",
+  "schema_version": "1.0.0",
+  "bundle_id": "pqx-exec-bundle-abc123def456",
+  "run_id": "run-pqx-001",
+  "trace_id": "trace:pqx:001",
+  "wrapper_ref": "codex_pqx_task_wrapper:abc",
+  "tpa_slice_artifact_ref": "tpa_slice_artifact:abc",
+  "top_level_conductor_run_artifact_ref": "top_level_conductor_run_artifact:abc",
+  "eval_result_ref": "pqx_execution_eval_result:pqx-eval-abc123def456",
+  "readiness_ref": "pqx_execution_readiness_record:pqx-readiness-abc123def456",
+  "replay_validation": {
+    "is_match": true,
+    "baseline_fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "replay_fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "reason_codes": []
+  },
+  "effectiveness_ref": "pqx_execution_effectiveness_record:pqx-effectiveness-abc123def456",
+  "recurrence_ref": "pqx_execution_recurrence_record:pqx-recurrence-abc123def456",
+  "generated_at": "2026-04-12T00:00:00Z"
+}

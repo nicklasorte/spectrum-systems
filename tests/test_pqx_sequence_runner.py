@@ -172,6 +172,40 @@ def test_missing_required_identity_fails_closed(tmp_path: Path) -> None:
         )
 
 
+def test_sequence_runner_applies_pqx_hardening_eval_fail_closed(tmp_path: Path) -> None:
+    requests = [
+        {
+            "slice_id": "PQX-QUEUE-01",
+            "trace_id": "trace-01",
+            "changed_paths": ["tests/test_pqx_sequence_runner.py"],
+            "codex_pqx_task_wrapper": {
+                "artifact_type": "codex_pqx_task_wrapper",
+                "lineage_path": ["AEX", "TPA", "PQX"],
+                "freshness": {"status": "stale", "age_hours": 72},
+            },
+            "tpa_slice_artifact": {
+                "artifact_type": "tpa_slice_artifact",
+                "allowed_scope": ["tests/test_pqx_sequence_runner.py"],
+                "complexity_budget": {"max_units": 5},
+            },
+            "top_level_conductor_run_artifact": {
+                "artifact_type": "top_level_conductor_run_artifact",
+                "run_id": "run-hardening-001",
+            },
+        }
+    ]
+
+    state = execute_sequence_run(
+        slice_requests=requests,
+        state_path=tmp_path / "state.json",
+        queue_run_id="queue-hardening-001",
+        run_id="run-hardening-001",
+        trace_id="trace-hardening-001",
+    )
+    assert state["status"] == "failed"
+    assert state["failed_slice_ids"] == ["PQX-QUEUE-01"]
+
+
 def test_review_gate_requires_snapshot_when_enabled(tmp_path: Path) -> None:
     with pytest.raises(PQXSequenceRunnerError, match="repo_review_snapshot"):
         execute_sequence_run(

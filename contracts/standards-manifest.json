@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.116",
+  "artifact_version": "1.3.117",
   "schema_version": "1.3.98",
-  "standards_version": "1.3.116",
-  "record_id": "REC-STD-2026-04-12-TPA-001",
-  "run_id": "run-20260412T180000Z-tpa-001",
+  "standards_version": "1.3.117",
+  "record_id": "REC-STD-2026-04-12-PQX-001",
+  "run_id": "run-20260412T210000Z-pqx-001",
   "created_at": "2026-04-12T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.116",
+  "source_repo_version": "1.3.117",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -3255,6 +3255,19 @@
       "notes": "SS-HARD-01 canonical PQX-issued queue-step execution authority proof artifact for SEL-boundary verification."
     },
     {
+      "artifact_type": "pqx_execution_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.117",
+      "last_updated_in": "1.3.117",
+      "example_path": "contracts/examples/pqx_execution_bundle.json",
+      "notes": "PQX-001 bounded execution hardening artifact for deterministic fail-closed execution governance."
+    },
+    {
       "artifact_type": "pqx_execution_closure_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3266,6 +3279,71 @@
       "last_updated_in": "1.3.12",
       "example_path": "contracts/examples/pqx_execution_closure_record.json",
       "notes": "RF-18 deterministic execution closure proof artifact linking sequence identifiers, execution/eval/control/enforcement outputs, failure-binding consumption, recurrence prevention, and replay verification."
+    },
+    {
+      "artifact_type": "pqx_execution_conflict_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.117",
+      "last_updated_in": "1.3.117",
+      "example_path": "contracts/examples/pqx_execution_conflict_record.json",
+      "notes": "PQX-001 bounded execution hardening artifact for deterministic fail-closed execution governance."
+    },
+    {
+      "artifact_type": "pqx_execution_effectiveness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.117",
+      "last_updated_in": "1.3.117",
+      "example_path": "contracts/examples/pqx_execution_effectiveness_record.json",
+      "notes": "PQX-001 bounded execution hardening artifact for deterministic fail-closed execution governance."
+    },
+    {
+      "artifact_type": "pqx_execution_eval_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.117",
+      "last_updated_in": "1.3.117",
+      "example_path": "contracts/examples/pqx_execution_eval_result.json",
+      "notes": "PQX-001 bounded execution hardening artifact for deterministic fail-closed execution governance."
+    },
+    {
+      "artifact_type": "pqx_execution_readiness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.117",
+      "last_updated_in": "1.3.117",
+      "example_path": "contracts/examples/pqx_execution_readiness_record.json",
+      "notes": "PQX-001 bounded execution hardening artifact for deterministic fail-closed execution governance."
+    },
+    {
+      "artifact_type": "pqx_execution_recurrence_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.117",
+      "last_updated_in": "1.3.117",
+      "example_path": "contracts/examples/pqx_execution_recurrence_record.json",
+      "notes": "PQX-001 bounded execution hardening artifact for deterministic fail-closed execution governance."
     },
     {
       "artifact_type": "pqx_execution_request",
