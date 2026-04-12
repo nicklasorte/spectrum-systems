@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_conflict_arbitration_record.schema.json",
+  "title": "RAX Conflict Arbitration Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "arbitration_id",
+    "target_ref",
+    "trace_id",
+    "signal_status",
+    "material_conflicts",
+    "resolution_status",
+    "fail_closed"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "rax_conflict_arbitration_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "arbitration_id": {"type": "string", "minLength": 1},
+    "target_ref": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "signal_status": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "enum": ["pass", "fail", "unknown"]}
+    },
+    "material_conflicts": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "resolution_status": {"type": "string", "enum": ["no_conflict", "unresolved_fail_closed"]},
+    "fail_closed": {"type": "boolean"}
+  }
+}

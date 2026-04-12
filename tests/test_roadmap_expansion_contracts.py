@@ -160,6 +160,13 @@ def test_rax_feedback_loop_contract_examples_validate() -> None:
         "rax_unknown_state_record",
         "rax_pre_certification_alignment_record",
         "rax_adversarial_pattern_candidate",
+        "rax_conflict_arbitration_record",
+        "rax_judgment_record",
+        "rax_trend_report",
+        "rax_trust_posture_snapshot",
+        "rax_improvement_recommendation_record",
+        "rax_eval_candidate_admission_record",
+        "rax_promotion_hard_gate_record",
     ):
         validate_artifact(load_example(name), name)
 
@@ -167,5 +174,12 @@ def test_rax_feedback_loop_contract_examples_validate() -> None:
 def test_rax_control_readiness_requires_structured_change_conditions() -> None:
     instance = load_example("rax_control_readiness_record")
     instance.pop("conditions_under_which_ready_changes", None)
+    with pytest.raises(ValidationError):
+        validate_artifact(instance, "rax_control_readiness_record")
+
+
+def test_rax_control_readiness_requires_replay_identity() -> None:
+    instance = load_example("rax_control_readiness_record")
+    instance.pop("replay_identity", None)
     with pytest.raises(ValidationError):
         validate_artifact(instance, "rax_control_readiness_record")

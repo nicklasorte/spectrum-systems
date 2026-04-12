@@ -1,0 +1,11 @@
+{
+  "artifact_type": "rax_improvement_recommendation_record",
+  "schema_version": "1.0.0",
+  "recommendation_id": "improve-001",
+  "posture_snapshot_ref": "trust-posture-001",
+  "trend_report_ref": "trend-001",
+  "recommendations": [
+    "maintain_current_hardening"
+  ],
+  "authority_note": "non_authoritative_advisory_only"
+}

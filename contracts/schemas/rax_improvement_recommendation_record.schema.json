@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_improvement_recommendation_record.schema.json",
+  "title": "RAX Improvement Recommendation Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "recommendation_id",
+    "posture_snapshot_ref",
+    "trend_report_ref",
+    "recommendations",
+    "authority_note"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "rax_improvement_recommendation_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "recommendation_id": {"type": "string", "minLength": 1},
+    "posture_snapshot_ref": {"type": "string", "minLength": 1},
+    "trend_report_ref": {"type": "string", "minLength": 1},
+    "recommendations": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+    "authority_note": {"type": "string", "const": "non_authoritative_advisory_only"}
+  }
+}

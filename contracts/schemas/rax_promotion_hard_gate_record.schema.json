@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_promotion_hard_gate_record.schema.json",
+  "title": "RAX Promotion Hard Gate Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "gate_id",
+    "passed",
+    "missing_evidence",
+    "decision"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "rax_promotion_hard_gate_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "gate_id": {"type": "string", "minLength": 1},
+    "passed": {"type": "boolean"},
+    "missing_evidence": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "decision": {"type": "string", "enum": ["promote", "block"]}
+  }
+}
