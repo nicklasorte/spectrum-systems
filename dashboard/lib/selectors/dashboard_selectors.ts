@@ -20,18 +20,28 @@ function confidenceFromScore(score?: number): 'High' | 'Medium' | 'Low' {
   return 'Low'
 }
 
-function recommendationProvenanceRows(record: RecommendationRecord, timestamp?: string): Array<{ artifact: string; path: string; keyFields: string[]; timestamp?: string }> {
+function recommendationProvenanceRows(record: RecommendationRecord, timestamp?: string): Array<{ artifact: string; path: string; keyFields: string[]; timestamp?: string; provenanceConfidence?: 'high' | 'low' }> {
   const basis = (record.source_basis ?? []).filter((value) => typeof value === 'string' && value.trim().length > 0)
-  if (basis.length === 0) {
-    return [{ artifact: 'next_action_recommendation_record.json', path: '/next_action_recommendation_record.json', keyFields: ['records', 'recommended_next_action'], timestamp }]
-  }
+  const rows = [{
+    artifact: 'next_action_recommendation_record.json',
+    path: '/next_action_recommendation_record.json',
+    keyFields: ['records', 'recommended_next_action', 'confidence', 'source_basis', 'provenance_categories'],
+    timestamp,
+    provenanceConfidence: 'high' as const
+  }]
 
-  return basis.map((pathValue) => ({
-    artifact: pathValue.split('/').pop() ?? pathValue,
-    path: pathValue.startsWith('/') ? pathValue : `/${pathValue}`,
-    keyFields: ['source_basis'],
-    timestamp
-  }))
+  if (basis.length === 0) return rows
+
+  return [
+    ...rows,
+    ...basis.map((pathValue) => ({
+      artifact: pathValue.split('/').pop() ?? pathValue,
+      path: pathValue.startsWith('/') ? pathValue : `/${pathValue}`,
+      keyFields: ['unknown'],
+      timestamp,
+      provenanceConfidence: 'low' as const
+    }))
+  ]
 }
 
 function classifyExplorerStatus(artifact: ArtifactRecord, declaredArtifacts: Set<string>): ExplorerCoverageStatus {
@@ -51,6 +61,18 @@ function deriveHardGateUnsatisfied(readinessStatus?: string): boolean {
 function deriveRunBlocked(currentRunStatus?: string): boolean {
   const normalized = currentRunStatus ?? 'unknown'
   return normalized === 'blocked' || normalized === 'repair_required' || normalized === 'failed'
+}
+
+const ARTIFACT_EXPLORER_FAMILY_BY_NAME: Record<string, string> = {
+  'next_action_recommendation_record.json': 'recommendation',
+  'recommendation_accuracy_tracker.json': 'recommendation',
+  'recommendation_review_surface.json': 'recommendation',
+  'current_run_state_record.json': 'run_state',
+  'hard_gate_status_record.json': 'hard_gate'
+}
+
+function artifactExplorerFamily(name: string): string {
+  return ARTIFACT_EXPLORER_FAMILY_BY_NAME[name] ?? 'snapshot/publication'
 }
 
 export function selectDashboardViewModel(publication: DashboardPublication): DashboardViewModel {
@@ -90,7 +112,6 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
     ? `sync_audit:${publication.syncAudit.data?.publication_state ?? 'unknown'}`
     : `sync_audit_unavailable:${publication.syncAudit.error ?? 'missing_or_invalid'}`
 
-  const truthViolation = state.kind !== 'renderable'
   const hardGateUnsatisfied = deriveHardGateUnsatisfied(hardGate?.readiness_status)
   const runBlocked = deriveRunBlocked(runState?.current_run_status)
 
@@ -116,28 +137,22 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
         synthesizedFallback: false
       }
     : {
-        title: truthViolation
-          ? 'No recommendation: fail-closed truth gate active'
-          : hardGateUnsatisfied
-            ? `Satisfy hard gate: ${hardGate?.gate_name ?? 'active gate'}`
-            : runBlocked
-              ? `Run bounded repair for ${bottleneck?.bottleneck_name ?? 'current bottleneck'}`
-              : `Address bottleneck: ${bottleneck?.bottleneck_name ?? 'best available target'}`,
-        reason: truthViolation
-          ? 'Critical artifacts are missing, stale, invalid, or not live-backed.'
-          : hardGateUnsatisfied
-            ? 'Promotion requires certification and hard-gate evidence closure.'
-            : runBlocked
-              ? 'Current run-state artifact indicates blocked execution.'
-              : bottleneck?.explanation ?? 'Bottleneck evidence exists in published artifacts.',
-        confidence: truthViolation || hardGateUnsatisfied || runBlocked ? 'High' as const : 'Medium' as const,
-        sourceBasis: 'labeled_fallback',
+        title: 'No recommendation available',
+        reason: 'Governed recommendation artifact missing or invalid',
+        confidence: 'Low' as const,
+        sourceBasis: 'abstain_missing_artifact',
         why: [
-          'Recommendation artifact missing or invalid; fallback branch is explicitly labeled.',
-          truthViolation ? 'Fail-closed execution blocks operator guidance under truth violation.' : 'Fallback uses explicit enum-mapped status fields.'
+          'UI abstains when recommendation artifact is missing or invalid.',
+          'No local recommendation policy is synthesized in fallback path.'
         ],
-        whatChanges: ['Publish a valid next_action_recommendation_record artifact to replace fallback guidance.'],
-        provenance: [{ artifact: publication.recommendationRecord.name, path: publication.recommendationRecord.path, keyFields: ['records', 'artifact_type'], timestamp: publication.recommendationRecord.timestamp }],
+        whatChanges: ['Publish a valid next_action_recommendation_record artifact to populate recommendation content.'],
+        provenance: [{
+          artifact: publication.recommendationRecord.name,
+          path: publication.recommendationRecord.path,
+          keyFields: ['unknown'],
+          timestamp: publication.recommendationRecord.timestamp,
+          provenanceConfidence: 'low' as const
+        }],
         synthesizedFallback: true
       }
 
@@ -161,7 +176,7 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
     ...publication.allArtifacts
       .filter((artifact) => declaredArtifacts.has(artifact.name) || artifact.exists)
       .map((artifact) => ({
-        family: artifact.name.includes('recommendation') ? 'recommendation' : artifact.name.includes('run') ? 'run_state' : artifact.name.includes('gate') ? 'hard_gate' : 'snapshot/publication',
+        family: artifactExplorerFamily(artifact.name),
         name: artifact.name,
         path: artifact.path,
         status: classifyExplorerStatus(artifact, declaredArtifacts)
@@ -169,7 +184,7 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
     ...declaredRequired
       .filter((name) => !loadedByName.has(name))
       .map((name) => ({
-        family: name.includes('recommendation') ? 'recommendation' : name.includes('run') ? 'run_state' : name.includes('gate') ? 'hard_gate' : 'snapshot/publication',
+        family: artifactExplorerFamily(name),
         name,
         path: `/${name}`,
         status: 'declared_not_loaded' as const
@@ -240,10 +255,21 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
             : item.name === 'current_run_state_record.json'
               ? ['current_run_status', 'repair_loop_count']
               : item.name === 'next_action_recommendation_record.json'
-                ? ['artifact_type', 'records']
+                ? ['records', 'recommended_next_action', 'confidence', 'source_basis']
                 : item.name === 'dashboard_publication_sync_audit.json'
-                  ? ['artifact_type', 'publication_state', 'records']
-                  : ['artifact_type']
+                  ? ['artifact_type', 'publication_state', 'required_artifact_count', 'records']
+                  : item.name === 'dashboard_publication_manifest.json'
+                    ? ['publication_state', 'artifact_count', 'required_files']
+                    : ['unknown'],
+      provenanceConfidence: item.name === 'repo_snapshot.json' ||
+        item.name === 'repo_snapshot_meta.json' ||
+        item.name === 'hard_gate_status_record.json' ||
+        item.name === 'current_run_state_record.json' ||
+        item.name === 'next_action_recommendation_record.json' ||
+        item.name === 'dashboard_publication_sync_audit.json' ||
+        item.name === 'dashboard_publication_manifest.json'
+        ? 'high'
+        : 'low'
     })),
     trends: [
       { label: 'freshness', value: state.kind === 'stale' ? 'stale' : 'live' },

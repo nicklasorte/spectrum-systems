@@ -375,3 +375,5 @@ Closed plans are not deleted — they remain as execution history.
 | docs/review-actions/PLAN-BATCH-E-RQX-B4-2026-04-08.md | BATCH-E RQX-B4 — Operator handoff disposition/control integration | Active |
 | docs/review-actions/PLAN-BATCH-AEX-FIX-03-2026-04-09.md | BATCH-AEX-FIX-03 — Enforce repo-write lineage at PQX execution boundary | Active |
 | docs/review-actions/PLAN-BATCH-RDX-EXEC-REAL-01-2026-04-10.md | BATCH-RDX-EXEC-REAL-01 — Governed Multi-Umbrella REAL Execution (4 Umbrellas) | Active |
+
+| docs/review-actions/PLAN-DASHBOARD-UI-FIX-TRUTH-BOUNDARY-02-2026-04-12.md | DASHBOARD-UI-FIX-TRUTH-BOUNDARY-02 — UI truth-boundary surgical hardening | Active |

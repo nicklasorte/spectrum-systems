@@ -12,6 +12,12 @@ function isStringArray(v: unknown): v is string[] {
   return Array.isArray(v) && v.every((item) => typeof item === 'string')
 }
 
+function isUniqueNonEmptyStringArray(v: unknown): v is string[] {
+  if (!Array.isArray(v) || v.length === 0) return false
+  if (!v.every((item) => typeof item === 'string' && item.trim().length > 0)) return false
+  return new Set(v).size === v.length
+}
+
 function isNumber(v: unknown): v is number {
   return typeof v === 'number' && Number.isFinite(v)
 }
@@ -29,6 +35,35 @@ export function validateArtifactShape(name: string, data: unknown): { valid: boo
     const err = requireField(data, 'data_source_state', (value) => value === 'live' || value === 'stale' || value === 'offline', `${name} invalid data_source_state enum`) ??
       requireField(data, 'last_refreshed_time', isString, `${name} missing last_refreshed_time string`)
     return err ? { valid: false, error: err } : { valid: true }
+  }
+
+  if (name === 'dashboard_publication_manifest.json') {
+    const validPublicationStates = ['live', 'stale', 'offline']
+    const publicationStateErr = requireField(
+      data,
+      'publication_state',
+      (value) => validPublicationStates.includes(String(value)),
+      `${name} invalid publication_state enum`
+    )
+    if (publicationStateErr) return { valid: false, error: publicationStateErr }
+
+    const artifactCountErr = requireField(data, 'artifact_count', isNumber, `${name} missing artifact_count number`)
+    if (artifactCountErr) return { valid: false, error: artifactCountErr }
+
+    const requiredFilesErr = requireField(
+      data,
+      'required_files',
+      isUniqueNonEmptyStringArray,
+      `${name} required_files must be non-empty unique string[]`
+    )
+    if (requiredFilesErr) return { valid: false, error: requiredFilesErr }
+
+    const requiredFiles = data.required_files as string[]
+    if ((data.artifact_count as number) !== requiredFiles.length) {
+      return { valid: false, error: `${name} artifact_count must match required_files length` }
+    }
+
+    return { valid: true }
   }
 
   if (name === 'hard_gate_status_record.json') {

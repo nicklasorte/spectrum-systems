@@ -139,7 +139,7 @@ export type SectionInput<T> = {
   title: string
   data: T | null
   reason?: string
-  provenance: Array<{ artifact: string; path: string; keyFields: string[]; timestamp?: string }>
+  provenance: Array<{ artifact: string; path: string; keyFields: string[]; timestamp?: string; provenanceConfidence?: 'high' | 'low' }>
 }
 
 export type DashboardViewModel = {
@@ -167,7 +167,7 @@ export type DashboardViewModel = {
     sourceBasis: string
     why: string[]
     whatChanges: string[]
-    provenance: Array<{ artifact: string; path: string; keyFields: string[]; timestamp?: string }>
+    provenance: Array<{ artifact: string; path: string; keyFields: string[]; timestamp?: string; provenanceConfidence?: 'high' | 'low' }>
     synthesizedFallback: boolean
   }
   comparison: Record<string, string>
@@ -184,7 +184,7 @@ export type DashboardViewModel = {
     deferred: SectionInput<{ items: DeferredItem[]; readiness: DeferredReadiness[] }>
     constitutional: SectionInput<ConstitutionResult>
   }
-  provenance: Array<{ name: string; path: string; status: string; timestamp?: string; keysUsed: string[] }>
+  provenance: Array<{ name: string; path: string; status: string; timestamp?: string; keysUsed: string[]; provenanceConfidence?: 'high' | 'low' }>
   trends: Array<{ label: string; value: string }>
   history: { status: string; entries: string[] }
 }

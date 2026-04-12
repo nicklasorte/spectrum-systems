@@ -101,8 +101,13 @@ test('recommendation path is artifact-first with explicit fallback labeling', ()
   const src = read('lib/selectors/dashboard_selectors.ts')
   assert.ok(src.includes('const recommendationIsArtifactBacked'))
   assert.ok(src.includes("sourceBasis: 'recommendation artifact'"))
-  assert.ok(src.includes("sourceBasis: 'labeled_fallback'"))
+  assert.ok(src.includes("title: 'No recommendation available'"))
+  assert.ok(src.includes("reason: 'Governed recommendation artifact missing or invalid'"))
+  assert.ok(src.includes("sourceBasis: 'abstain_missing_artifact'"))
   assert.ok(src.includes('synthesizedFallback: true'))
+  assert.ok(!src.includes('Satisfy hard gate'))
+  assert.ok(!src.includes('Run bounded repair'))
+  assert.ok(!src.includes('Address bottleneck'))
 })
 
 test('runtime hotspots are not read before renderable branch', () => {
@@ -116,6 +121,30 @@ test('validation rejects malformed critical artifact fields', () => {
   assert.ok(src.includes('invalid readiness_status enum'))
   assert.ok(src.includes('invalid current_run_status enum'))
   assert.ok(src.includes('records must be non-empty array'))
+})
+
+test('manifest validation is strict for publication state and required files integrity', () => {
+  const src = read('lib/validation/dashboard_validation.ts')
+  assert.ok(src.includes("if (name === 'dashboard_publication_manifest.json')"))
+  assert.ok(src.includes('invalid publication_state enum'))
+  assert.ok(src.includes('required_files must be non-empty unique string[]'))
+  assert.ok(src.includes('artifact_count must match required_files length'))
+})
+
+test('provenance explicitly marks unknown fields as low confidence when necessary', () => {
+  const src = read('lib/selectors/dashboard_selectors.ts')
+  assert.ok(src.includes("keyFields: ['unknown']"))
+  assert.ok(src.includes("provenanceConfidence: 'low'"))
+  assert.ok(src.includes("provenanceConfidence: 'high'"))
+})
+
+test('artifact explorer uses explicit mapping table and no string includes classification', () => {
+  const src = read('lib/selectors/dashboard_selectors.ts')
+  assert.ok(src.includes('ARTIFACT_EXPLORER_FAMILY_BY_NAME'))
+  assert.ok(src.includes('artifactExplorerFamily'))
+  assert.ok(!src.includes("name.includes('recommendation')"))
+  assert.ok(!src.includes("name.includes('run')"))
+  assert.ok(!src.includes("name.includes('gate')"))
 })
 test('artifact set exists for critical publication files', () => {
   const pubDir = path.join(__dirname, '..', 'public')
