@@ -138,18 +138,25 @@ def main() -> int:
     if state != "live":
         checks["freshness_metadata_valid"] = "fail"
         return _fail("repo_snapshot_meta.data_source_state must be live", checks)
-    if refreshed != snapshot_ts:
-        checks["freshness_metadata_valid"] = "fail"
-        return _fail("repo_snapshot_meta.last_refreshed_time must equal repo_snapshot.generated_at", checks)
 
     ts = _parse_utc(refreshed, "repo_snapshot_meta.last_refreshed_time")
     age_hours = (datetime.now(timezone.utc) - ts).total_seconds() / 3600
     is_stale = age_hours > MAX_STALE_HOURS
+    if is_stale:
+        checks["freshness_metadata_valid"] = "fail"
+        return _fail("stale freshness metadata: repo_snapshot_meta.last_refreshed_time exceeds freshness window", checks)
+    if refreshed != snapshot_ts:
+        checks["freshness_metadata_valid"] = "fail"
+        return _fail("freshness metadata mismatch: repo_snapshot_meta.last_refreshed_time must equal repo_snapshot.generated_at", checks)
 
     freshness_state = str(freshness.get("status", "")).strip().lower()
+    publication_state = str(freshness.get("publication_state", "")).strip().lower()
     if freshness_state not in {"fresh", "stale", "unknown"}:
         checks["freshness_metadata_valid"] = "fail"
         return _fail("dashboard_freshness_status.status must be fresh/stale/unknown", checks)
+    if publication_state and publication_state != "live":
+        checks["fallback_live_ambiguity"] = "fail"
+        return _fail("dashboard_freshness_status.publication_state must be live when present", checks)
     if str(freshness.get("snapshot_last_refreshed_time", "")).strip() != snapshot_ts:
         checks["freshness_metadata_valid"] = "fail"
         return _fail("dashboard_freshness_status.snapshot_last_refreshed_time must equal repo_snapshot.generated_at", checks)
@@ -168,6 +175,14 @@ def main() -> int:
     if manifest.get("publication_mode") != "atomic":
         checks["publication_atomic"] = "fail"
         return _fail("dashboard_publication_manifest.publication_mode must be atomic", checks)
+
+    readiness = _read_json(PUBLIC_ROOT / "readiness_to_expand_validator.json")
+    promotion_gate = _read_json(PUBLIC_ROOT / "governed_promotion_discipline_gate.json")
+    readiness_state = str(readiness.get("readiness_state", "")).strip()
+    promotion_decision = str(promotion_gate.get("promotion_decision", "")).strip().lower()
+    if readiness_state != "Ready for bounded expansion" and promotion_decision == "bounded_promote":
+        checks["truth_constraints"] = "fail"
+        return _fail("promotion decision must not bounded_promote when readiness is not expansion-ready", checks)
 
     required_files = manifest.get("required_files")
     if not isinstance(required_files, list) or len(required_files) != len(set(required_files)):
@@ -201,7 +216,7 @@ def main() -> int:
             return _fail(f"manifest missing file record for {required_name}", checks)
         if str(record.get("sha256", "")) != hashlib.sha256(path.read_bytes()).hexdigest():
             checks["publication_atomic"] = "fail"
-            return _fail(f"manifest/file sha mismatch for {required_name}", checks)
+            return _fail(f"manifest/file mismatch: sha mismatch for {required_name}", checks)
 
     if refresh_run.get("artifact_type") != "refresh_run_record":
         checks["trace_linkage"] = "fail"

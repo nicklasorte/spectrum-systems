@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import shutil
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -259,6 +260,11 @@ def run_loop(ctx: LoopContext, inject_failure: str | None = None) -> int:
     if missing_required or manifest_missing:
         validation_pass = False
         reason_codes.append("missing_required_artifact")
+        if missing_required:
+            print(
+                f"required governed publication sources missing: {sorted(set(missing_required))}",
+                file=sys.stderr,
+            )
     if inject_failure == "malformed_manifest":
         manifest["publication_state"] = "invalid-state"
         validation_pass = False
