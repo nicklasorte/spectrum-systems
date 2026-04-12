@@ -171,6 +171,50 @@ export function validateArtifactShape(name: string, data: unknown): { valid: boo
     return err ? { valid: false, error: err } : { valid: true }
   }
 
+
+  if (name === 'judgment_application_artifact.json') {
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
+    const err = requireField(data, 'artifact_type', (value) => value === 'judgment_application_artifact', `${name} invalid artifact_type`) ??
+      requireField(data, 'decision_id', isString, `${name} missing decision_id string`) ??
+      requireField(data, 'judgment_ids', isStringArray, `${name} missing judgment_ids string[]`)
+    return err ? { valid: false, error: err } : { valid: true }
+  }
+
+  if (name === 'rq_next_24_01__umbrella_1__nx_05_operator_override_capture.json') {
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
+    const err = requireField(data, 'artifact_type', (value) => value === 'operator_override_capture', `${name} invalid artifact_type`) ??
+      requireField(data, 'overrides', Array.isArray, `${name} missing overrides array`)
+    return err ? { valid: false, error: err } : { valid: true }
+  }
+
+  if (name === 'rq_next_24_01__umbrella_3__nx_13_recommendation_replay_pack.json') {
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
+    const err = requireField(data, 'artifact_type', (value) => value === 'recommendation_replay_pack', `${name} invalid artifact_type`) ??
+      requireField(data, 'scenario_ids', isStringArray, `${name} missing scenario_ids string[]`)
+    return err ? { valid: false, error: err } : { valid: true }
+  }
+
+  if (name === 'serial_bundle_validator_result.json') {
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
+    const err = requireField(data, 'artifact_type', (value) => value === 'serial_bundle_validator_result', `${name} invalid artifact_type`) ??
+      requireField(data, 'pass', (value) => typeof value === 'boolean', `${name} missing pass boolean`)
+    return err ? { valid: false, error: err } : { valid: true }
+  }
+
+  if (name === 'dashboard_public_contract_coverage.json') {
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
+    const err = requireField(data, 'artifact_type', (value) => value === 'dashboard_public_contract_coverage', `${name} invalid artifact_type`) ??
+      requireField(data, 'covered_artifacts', isStringArray, `${name} missing covered_artifacts string[]`)
+    return err ? { valid: false, error: err } : { valid: true }
+  }
+
+  if (name === 'governed_promotion_discipline_gate.json') {
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
+    const err = requireField(data, 'artifact_type', (value) => value === 'governed_promotion_discipline_gate', `${name} invalid artifact_type`) ??
+      requireField(data, 'promotion_decision', isString, `${name} missing promotion_decision string`) ??
+      requireField(data, 'allowed_decisions', isStringArray, `${name} missing allowed_decisions string[]`)
+    return err ? { valid: false, error: err } : { valid: true }
+  }
   if (name === 'deferred_item_register.json' || name === 'deferred_return_tracker.json') {
     if (!isObject(data)) return { valid: false, error: `${name} must be object` }
     if (data.items !== undefined && !Array.isArray(data.items)) {
