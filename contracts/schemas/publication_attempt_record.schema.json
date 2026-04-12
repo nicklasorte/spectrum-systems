@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/contracts/schemas/publication_attempt_record.schema.json",
+  "title": "publication_attempt_record",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "publish_attempt_id",
+    "refresh_run_id",
+    "trace_id",
+    "decision",
+    "reason_codes",
+    "artifact_counts",
+    "freshness_summary",
+    "validation_summary",
+    "trigger_mode",
+    "timestamp"
+  ],
+  "properties": {
+    "artifact_type": {"const": "publication_attempt_record"},
+    "publish_attempt_id": {"type": "string", "minLength": 1},
+    "refresh_run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "decision": {"type": "string", "enum": ["allow", "block", "freeze"]},
+    "reason_codes": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "artifact_counts": {
+      "type": "object",
+      "required": ["required", "loaded", "valid"],
+      "properties": {
+        "required": {"type": "integer", "minimum": 0},
+        "loaded": {"type": "integer", "minimum": 0},
+        "valid": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "freshness_summary": {
+      "type": "object",
+      "required": ["overall_verdict", "stale_artifact_count"],
+      "properties": {
+        "overall_verdict": {"type": "string", "enum": ["pass", "block"]},
+        "stale_artifact_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": true
+    },
+    "validation_summary": {
+      "type": "object",
+      "required": ["overall_verdict"],
+      "properties": {
+        "overall_verdict": {"type": "string", "enum": ["pass", "block"]}
+      },
+      "additionalProperties": true
+    },
+    "trigger_mode": {"type": "string", "enum": ["scheduled", "manual", "repair", "test"]},
+    "operator_context": {"type": "string"},
+    "timestamp": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": false
+}

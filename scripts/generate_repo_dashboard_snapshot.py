@@ -7,7 +7,7 @@ import argparse
 import json
 import sys
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterable
 
@@ -223,6 +223,7 @@ def build_operational_signals(
 
 
 def build_snapshot(surface: RepoSurface) -> dict[str, object]:
+    generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     all_files = list(iter_repo_files(surface.repo_root))
     runtime_files = sorted([p for p in surface.runtime_root.rglob("*.py") if p.is_file()]) if surface.runtime_root.exists() else []
 
@@ -264,7 +265,8 @@ def build_snapshot(surface: RepoSurface) -> dict[str, object]:
         key_state["hard_gate_status_record"] = json.loads(key_hard_gate_path.read_text(encoding="utf-8"))
 
     return {
-        "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "generated_at": generated_at,
+        "freshness_timestamp_utc": generated_at,
         "repo_name": surface.repo_root.name,
         "root_counts": root_counts,
         "core_areas": build_core_areas(surface.repo_root, surface.runtime_root),
@@ -282,6 +284,24 @@ def build_snapshot(surface: RepoSurface) -> dict[str, object]:
 
 def write_snapshot(snapshot: dict[str, object], output_path: Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    previous_generated_at: str | None = None
+    if output_path.is_file():
+        try:
+            previous_generated_at = str(json.loads(output_path.read_text(encoding="utf-8")).get("generated_at", "")).strip() or None
+        except Exception:  # noqa: BLE001
+            previous_generated_at = None
+
+    if previous_generated_at:
+        try:
+            previous_dt = datetime.strptime(previous_generated_at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            current_dt = datetime.strptime(str(snapshot["generated_at"]), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            if current_dt <= previous_dt:
+                current_dt = previous_dt + timedelta(seconds=1)
+                snapshot["generated_at"] = current_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+                snapshot["freshness_timestamp_utc"] = snapshot["generated_at"]
+        except (ValueError, KeyError):
+            pass
+
     output_path.write_text(json.dumps(snapshot, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 

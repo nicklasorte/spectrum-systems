@@ -11,6 +11,8 @@ import type {
   DashboardPublicationSyncAudit,
   HardGateState,
   RecommendationAccuracyTracker,
+  RefreshRunRecord,
+  PublicationAttemptRecord,
   RecommendationRecordCollection,
   RunState,
   Snapshot,
@@ -58,6 +60,8 @@ export async function loadDashboardPublication(): Promise<DashboardPublication> 
     recommendationRecord: artifactByName<RecommendationRecordCollection>(declaredArtifactsByName, 'next_action_recommendation_record.json'),
     syncAudit: artifactByName<DashboardPublicationSyncAudit>(declaredArtifactsByName, 'dashboard_publication_sync_audit.json'),
     recommendationAccuracyTracker: artifactByName<RecommendationAccuracyTracker>(declaredArtifactsByName, 'recommendation_accuracy_tracker.json'),
+    refreshRunRecord: artifactByName<RefreshRunRecord>(declaredArtifactsByName, 'refresh_run_record.json'),
+    publicationAttemptRecord: artifactByName<PublicationAttemptRecord>(declaredArtifactsByName, 'publication_attempt_record.json'),
     declaredArtifactMap: Object.fromEntries(validatedDeclaredArtifacts.map((artifact) => [artifact.name, artifact])),
     allArtifacts: [manifest, ...validatedDeclaredArtifacts]
   }

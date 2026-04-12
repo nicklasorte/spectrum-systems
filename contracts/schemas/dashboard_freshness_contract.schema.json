@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/contracts/schemas/dashboard_freshness_contract.schema.json",
+  "title": "dashboard_freshness_contract",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "contract_version",
+    "freshness_source_of_truth",
+    "required_artifacts",
+    "reason_codes",
+    "pass_block_semantics"
+  ],
+  "properties": {
+    "artifact_type": {"const": "dashboard_freshness_contract"},
+    "contract_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "freshness_source_of_truth": {
+      "type": "object",
+      "required": ["artifact", "authoritative_timestamp_field", "stale_threshold_seconds"],
+      "properties": {
+        "artifact": {"type": "string", "enum": ["repo_snapshot.json", "repo_snapshot_meta.json", "dashboard_freshness_status.json"]},
+        "authoritative_timestamp_field": {"type": "string"},
+        "stale_threshold_seconds": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "required_artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "freshness_ok",
+          "stale_snapshot",
+          "missing_required_artifact",
+          "invalid_required_artifact",
+          "timestamp_missing",
+          "timestamp_unparseable",
+          "manifest_coherence_failure",
+          "trace_linkage_missing",
+          "error_budget_exhausted"
+        ]
+      }
+    },
+    "pass_block_semantics": {
+      "type": "object",
+      "required": ["pass_requires", "block_on_any"],
+      "properties": {
+        "pass_requires": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "block_on_any": {"type": "array", "items": {"type": "string"}, "minItems": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,17 @@
+{
+  "artifact_type": "refresh_run_record",
+  "refresh_run_id": "refresh-20260412T120000Z",
+  "trace_id": "trace-20260412T120000Z",
+  "run_id": "run-20260412T120000Z",
+  "target_artifact_family": "dashboard_publication",
+  "start_time": "2026-04-12T12:00:00Z",
+  "end_time": "2026-04-12T12:00:03Z",
+  "outcome": "success",
+  "refreshed_artifacts": [
+    "repo_snapshot.json",
+    "repo_snapshot_meta.json",
+    "dashboard_freshness_status.json"
+  ],
+  "stale_artifacts_found": [],
+  "trigger_mode": "scheduled"
+}

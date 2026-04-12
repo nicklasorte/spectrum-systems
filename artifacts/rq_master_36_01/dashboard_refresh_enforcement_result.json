@@ -7,6 +7,7 @@
     "freshness_metadata_valid": "pass",
     "publication_atomic": "pass",
     "fallback_live_ambiguity": "pass",
-    "truth_constraints": "pass"
+    "truth_constraints": "pass",
+    "trace_linkage": "pass"
   }
 }

@@ -1,8 +1,10 @@
 {
   "artifact_type": "dashboard_publication_sync_audit",
-  "published_at": "2026-04-11T15:31:15Z",
+  "published_at": "2026-04-12T18:57:32Z",
   "publication_state": "live",
-  "required_artifact_count": 32,
+  "required_artifact_count": 35,
+  "trace_id": "trace-20260412T185745Z",
+  "refresh_run_id": "refresh-20260412T185745Z",
   "records": [
     {
       "artifact": "canonical_roadmap_state_artifact.json",
@@ -48,9 +50,9 @@
     },
     {
       "artifact": "dashboard_freshness_status.json",
-      "source": "artifacts/rq_master_36_01/dashboard_freshness_status.json",
-      "sha256": "10690cbce4e9e3339c91edc3451127d4e11d974700625187deee3596a95e2579",
-      "size_bytes": 286
+      "source": "generated",
+      "sha256": "da8802ab1c33d17e19767e468529d6081cb9c31d8bf56083c68a9854f7f63993",
+      "size_bytes": 705
     },
     {
       "artifact": "dashboard_public_contract_coverage.json",
@@ -163,8 +165,14 @@
     {
       "artifact": "repo_snapshot.json",
       "source": "artifacts/dashboard/repo_snapshot.json",
-      "sha256": "0092a46ea26ce663d89a46034d64cf7f56b14b624b17d538f9229cab8f5ac810",
-      "size_bytes": 4482
+      "sha256": "4ca17a41b2b00e463293a96cc30286ecb1e611d252d23401abf580517716dcd6",
+      "size_bytes": 4535
+    },
+    {
+      "artifact": "repo_snapshot_meta.json",
+      "source": "generated",
+      "sha256": "41e558e6aff1f387ee5d187a8ed5cbcb664fc9ca7e93b970c4449f0743d75275",
+      "size_bytes": 343
     },
     {
       "artifact": "roadmap_alignment_validator_result.json",

@@ -20,6 +20,10 @@ function isNumber(v: unknown): v is number {
   return typeof v === 'number' && Number.isFinite(v)
 }
 
+function isIsoUtcTimestamp(v: unknown): v is string {
+  return typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(v.trim())
+}
+
 function requireField(data: Record<string, unknown>, field: string, check: (value: unknown) => boolean, message: string): string | null {
   if (!check(data[field])) return message
   return null
@@ -38,7 +42,7 @@ export function validateArtifactShape(name: string, data: unknown): { valid: boo
   if (name === 'dashboard_freshness_status.json') {
     if (!isObject(data)) return { valid: false, error: `${name} must be object` }
     const err = requireField(data, 'status', (value) => value === 'fresh' || value === 'stale' || value === 'unknown', `${name} invalid status enum`) ??
-      requireField(data, 'snapshot_last_refreshed_time', isString, `${name} missing snapshot_last_refreshed_time string`) ??
+      requireField(data, 'snapshot_last_refreshed_time', isIsoUtcTimestamp, `${name} missing/invalid snapshot_last_refreshed_time ISO UTC`) ??
       requireField(data, 'freshness_window_hours', isNumber, `${name} missing freshness_window_hours number`)
     return err ? { valid: false, error: err } : { valid: true }
   }
@@ -66,6 +70,9 @@ export function validateArtifactShape(name: string, data: unknown): { valid: boo
     if (requiredFilesErr) return { valid: false, error: requiredFilesErr }
 
     const requiredFiles = data.required_files as string[]
+    if (new Set(requiredFiles).size !== requiredFiles.length) {
+      return { valid: false, error: `${name} required_files must contain unique entries` }
+    }
     const artifactCount = data.artifact_count as number
     const allowsManifestSelfCount = requiredFiles.includes('dashboard_publication_manifest.json')
       ? requiredFiles.length + 1
@@ -132,6 +139,7 @@ export function validateArtifactShape(name: string, data: unknown): { valid: boo
     if (!isObject(data)) return { valid: false, error: `${name} must be object` }
     const err = requireField(data, 'artifact_type', (value) => value === 'dashboard_publication_sync_audit', `${name} invalid artifact_type`) ??
       requireField(data, 'publication_state', isString, `${name} missing publication_state string`) ??
+      requireField(data, 'published_at', isIsoUtcTimestamp, `${name} missing/invalid published_at ISO UTC`) ??
       requireField(data, 'required_artifact_count', isNumber, `${name} missing required_artifact_count number`) ??
       requireField(data, 'records', Array.isArray, `${name} missing records array`)
     if (err) return { valid: false, error: err }
@@ -143,6 +151,24 @@ export function validateArtifactShape(name: string, data: unknown): { valid: boo
       }
     }
     return { valid: true }
+  }
+
+  if (name === 'refresh_run_record.json') {
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
+    const err = requireField(data, 'artifact_type', (value) => value === 'refresh_run_record', `${name} invalid artifact_type`) ??
+      requireField(data, 'refresh_run_id', isString, `${name} missing refresh_run_id string`) ??
+      requireField(data, 'trace_id', isString, `${name} missing trace_id string`) ??
+      requireField(data, 'trigger_mode', (value) => ['scheduled', 'manual', 'repair', 'test'].includes(String(value)), `${name} invalid trigger_mode`)
+    return err ? { valid: false, error: err } : { valid: true }
+  }
+
+  if (name === 'publication_attempt_record.json') {
+    if (!isObject(data)) return { valid: false, error: `${name} must be object` }
+    const err = requireField(data, 'artifact_type', (value) => value === 'publication_attempt_record', `${name} invalid artifact_type`) ??
+      requireField(data, 'trace_id', isString, `${name} missing trace_id string`) ??
+      requireField(data, 'refresh_run_id', isString, `${name} missing refresh_run_id string`) ??
+      requireField(data, 'decision', (value) => ['allow', 'block', 'freeze'].includes(String(value)), `${name} invalid decision enum`)
+    return err ? { valid: false, error: err } : { valid: true }
   }
 
   if (name === 'deferred_item_register.json' || name === 'deferred_return_tracker.json') {

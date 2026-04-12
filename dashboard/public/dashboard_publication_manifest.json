@@ -1,16 +1,11 @@
 {
   "artifact_type": "dashboard_publication_manifest",
-  "manifest_version": "1.0.0",
-  "published_at": "2026-04-12T16:47:55Z",
+  "manifest_version": "1.1.0",
+  "published_at": "2026-04-12T18:57:32Z",
   "publication_mode": "atomic",
   "publication_state": "live",
   "publication_contract": "canonical_live_artifact_projection",
-  "artifact_count": 34,
-  "surfaces": [
-    "dashboard/public",
-    "artifacts/dashboard",
-    "artifacts/rq_master_36_01"
-  ],
+  "artifact_count": 35,
   "required_files": [
     "canonical_roadmap_state_artifact.json",
     "compatibility_mirror_retirement_assessment.json",
@@ -36,177 +31,196 @@
     "next_action_recommendation_record.json",
     "operator_surface_snapshot_export.json",
     "operator_trust_closeout_artifact.json",
+    "publication_attempt_record.json",
     "readiness_to_expand_validator.json",
     "recommendation_accuracy_tracker.json",
     "recommendation_review_surface.json",
     "recurrence_prevention_status.json",
+    "refresh_run_record.json",
     "repo_snapshot.json",
     "repo_snapshot_meta.json",
     "roadmap_alignment_validator_result.json",
     "serial_bundle_validator_result.json",
     "stuck_loop_detector.json"
   ],
+  "trace_id": "trace-20260412T185745Z",
+  "refresh_run_id": "refresh-20260412T185745Z",
   "file_records": {
     "canonical_roadmap_state_artifact.json": {
-      "sha256": "8b65bc8efb52a0419b61c1dbca6834f63a61e1e806130705f03a4e61496a9707",
+      "sha256": "a4f62d1a706afff2d850668e6dca9defdf9ae1d6545d5fb69bb45ceb630b3c5a",
       "size_bytes": 284,
       "source": "artifacts/ops_master_01/canonical_roadmap_state_artifact.json"
     },
     "compatibility_mirror_retirement_assessment.json": {
-      "sha256": "91f180659910ec4c5ee5e06fa5b2985ac51871ce5409f464391d4a8e14d70793",
+      "sha256": "179a130049356c59ff5acf9191ba556086aaaa609a66fa544dd7e1d072a1f865",
       "size_bytes": 481,
       "source": "artifacts/rq_master_36_01/compatibility_mirror_retirement_assessment.json"
     },
     "confidence_calibration_artifact.json": {
-      "sha256": "c06f728ba3af5c983b6b4cb9833a8c909cd98580c66edda8e608ff836d7f0c32",
+      "sha256": "aa8b0ac965acdc84321a6233c541e465c17c508cb33f5808c1d9f71a5e10dd9b",
       "size_bytes": 316,
       "source": "artifacts/rq_master_36_01/confidence_calibration_artifact.json"
     },
     "constitutional_drift_checker_result.json": {
-      "sha256": "a08109fce7f586f9c7c3a4ba95d711915f8a17acdccc4d89aadd33fe5d9f20f2",
+      "sha256": "0ea58f6aa701569d2ec74e495929aa889e398ac910f244e1d96491dfe61462b9",
       "size_bytes": 252,
       "source": "artifacts/ops_master_01/constitutional_drift_checker_result.json"
     },
     "current_bottleneck_record.json": {
-      "sha256": "fd9d6b16aff1f12ae999256a802832e96700db3e1ee7bf4b4886b937957ca515",
+      "sha256": "7193008b22535106f62567bd43b349893d9f9dc004de9bef11e376690ebd40bc",
       "size_bytes": 386,
       "source": "artifacts/ops_master_01/current_bottleneck_record.json"
     },
     "current_run_state_record.json": {
-      "sha256": "d7dc724bd78adc6f0d75493bd145726bc071cf0a23c534d25d6c3b4d9586ec1a",
+      "sha256": "f1b10087795a7d5c58ed54a024514aeec9dfc6e7aa299b7876d5bcf45dc4cead",
       "size_bytes": 292,
       "source": "artifacts/ops_master_01/current_run_state_record.json"
     },
     "cycle_comparator_03_05.json": {
-      "sha256": "40be68cc665835441abbafc5fca6af22410a9346d1d24455273d8aef64abe3b8",
+      "sha256": "28d299ca253c9cf9b6076df0ececfc16b671fe3ea1c7ea9e5a5b25babd2c986c",
       "size_bytes": 1349,
       "source": "artifacts/rq_master_36_01/cycle_comparator_03_05.json"
     },
     "dashboard_freshness_status.json": {
-      "sha256": "54329fb6f95ef5d8c7232dd20da46c8b6ee93bc842641316b29d3303ecbd4a19",
-      "size_bytes": 404,
-      "source": "artifacts/rq_master_36_01/dashboard_freshness_status.json"
+      "sha256": "da8802ab1c33d17e19767e468529d6081cb9c31d8bf56083c68a9854f7f63993",
+      "size_bytes": 705,
+      "source": "generated:dashboard_freshness_status.json"
     },
     "dashboard_public_contract_coverage.json": {
-      "sha256": "a90030828fbd9b6ae5036e5c4557cc89dd5207b916850edb3261a750a196a1b9",
+      "sha256": "1b68e445dc01ff0afa37cd52963e57bece560291fefbc15e466930f90f42ff1a",
       "size_bytes": 706,
       "source": "artifacts/rq_master_36_01/dashboard_public_contract_coverage.json"
     },
+    "dashboard_publication_manifest.json": {
+      "sha256": "5fe52ae9906fd053d317f70a22bfe6b08d405cf5745ce26c33b280add9e32c1e",
+      "size_bytes": 9442,
+      "source": "generated:dashboard_publication_manifest.json"
+    },
     "dashboard_publication_sync_audit.json": {
-      "sha256": "f1bc8f3dd5198994c8deaf40303736149f0918dbd0237afd7ddbafdae66323a3",
-      "size_bytes": 7817,
+      "sha256": "e6582a9c910083238b70d420c90a1a203bfe3f72fd67608f548f520857d62d04",
+      "size_bytes": 8052,
       "source": "generated:dashboard_publication_sync_audit.json"
     },
     "deferred_item_register.json": {
-      "sha256": "3a4b78d0913ee73dbd022e8c1dc6da4847c0e28fd6282abefc867bcd45ab0211",
+      "sha256": "6aef14d4180363498cb5ec6a74cf998953b727594210e360555454fec4215bda",
       "size_bytes": 490,
       "source": "artifacts/ops_master_01/deferred_item_register.json"
     },
     "deferred_return_tracker.json": {
-      "sha256": "96991549c3aef1609c2546f3b3775af37125477e8f9ebd606753a8a3741f76c7",
+      "sha256": "f2b6a63725d734d4d57c5532c616fb2bc7e1718bdcf9d4f75730f7fb428aba59",
       "size_bytes": 270,
       "source": "artifacts/ops_master_01/deferred_return_tracker.json"
     },
     "deploy_ci_truth_gate.json": {
-      "sha256": "3d7a8bbc93820972900ea0920d2c7557f30ca8489d2c21d571d4d1417dc39f98",
+      "sha256": "5892ddcd38e2f6130ab47b676f360dd1432cc317504843099f3a5aaff0e54c85",
       "size_bytes": 405,
       "source": "artifacts/rq_master_36_01/deploy_ci_truth_gate.json"
     },
     "drift_trend_continuity_artifact.json": {
-      "sha256": "8b3a77d429f4cfb4aee34d66aa6042f5a5b335d4eb9f75287ef266ae32ea4938",
+      "sha256": "1c7f2e1f82d18b26db6397c149016eb98c38ff8aec3bf94544bf15c7906c68dc",
       "size_bytes": 322,
       "source": "artifacts/ops_master_01/drift_trend_continuity_artifact.json"
     },
     "error_budget_enforcement_outcome.json": {
-      "sha256": "445003d333580d7b634888adeef2c1cb97ac29e14f81dd07311dececcbf0d7a1",
+      "sha256": "698d0f16f52a8014cfd0492435c9c364dc26768954fe320419533a5609cfd315",
       "size_bytes": 253,
       "source": "artifacts/rq_master_36_01/error_budget_enforcement_outcome.json"
     },
     "governed_promotion_discipline_gate.json": {
-      "sha256": "a0e2cb45d6c3ba1beeb35be94674efc9b0811cdca263d1c561fe2e763993df67",
+      "sha256": "e15ac76bad57e878a6de3b6c884b79eda5689f5b08913e8fa2381909d1d7a3a9",
       "size_bytes": 607,
       "source": "artifacts/rq_master_36_01/governed_promotion_discipline_gate.json"
     },
     "hard_gate_status_record.json": {
-      "sha256": "6632143b4aab1b938c0b7099838fe0306cb39b3a5b88edcdb661f90ababa437f",
+      "sha256": "a67a8e367aaeaf5f13f97ef83c82dfb3c802c46607dbc5b0b1f09be9bbdb4571",
       "size_bytes": 553,
       "source": "artifacts/ops_master_01/hard_gate_status_record.json"
     },
     "judgment_application_artifact.json": {
-      "sha256": "dc0ee63d86bac6febf2035b4488bb4da1e5555318c8d95a64d91e59e18c549e1",
+      "sha256": "31033b3fea0280b0ac8d011c40dd7c57736c2196c0806939da9c38d7496525bb",
       "size_bytes": 252,
       "source": "artifacts/rq_master_36_01/judgment_application_artifact.json"
     },
     "maturity_phase_tracker.json": {
-      "sha256": "9678ba5da0ab2b2e55f41bca4c38785af5f445c0fc8c894e2584c5bfd35dd6ae",
+      "sha256": "13dfa6e3b67fa1ebc9e38d05039c6cd6386d551277c116073c25695ddbd267d2",
       "size_bytes": 251,
       "source": "artifacts/ops_master_01/maturity_phase_tracker.json"
     },
     "next_action_outcome_record.json": {
-      "sha256": "5069ff18b3c97a41233bbdf7154cb001de428f026e54f69406c231c500ab0f7d",
+      "sha256": "041cb7399ae03b85e227969f1e8b8810cbb159120ec598bc75f2f96ff67f48d5",
       "size_bytes": 1520,
       "source": "artifacts/rq_master_36_01/next_action_outcome_record.json"
     },
     "next_action_recommendation_record.json": {
-      "sha256": "010952f0f471efe340c413d9e1647ca28924c68ae9f00660f68b38d62d1df2c7",
+      "sha256": "e1452900eeca625c1a3ada61b8fd05cf87545e628d3966d57b0bc3a1a71d0b26",
       "size_bytes": 2315,
       "source": "artifacts/rq_master_36_01/next_action_recommendation_record.json"
     },
     "operator_surface_snapshot_export.json": {
-      "sha256": "46e5f61db17adaa70a4b37078f9f19dcbfb39ea65edd76a9eea03cbe04ca00ea",
+      "sha256": "a0d9a8ce7203a21e0f9fabe362af3d5b65a8ca752badebb39e419155abde7bbc",
       "size_bytes": 341,
       "source": "artifacts/rq_master_36_01/operator_surface_snapshot_export.json"
     },
     "operator_trust_closeout_artifact.json": {
-      "sha256": "62934bed71ec081d28ee585d7a7cc96dc27ff59891bba0cafe7273e9436c83d0",
+      "sha256": "45b541f7ceb83499fc0b62b16915c0a26c138d951b32f755dbf3431ce0a20a4e",
       "size_bytes": 1039,
       "source": "artifacts/rq_master_36_01/operator_trust_closeout_artifact.json"
     },
+    "publication_attempt_record.json": {
+      "sha256": "4ea788ecc35f5b8989ef354c549beaac94a42892420c37b2cf98dc476b44bcc5",
+      "size_bytes": 654,
+      "source": "generated:publication_attempt_record.json"
+    },
     "readiness_to_expand_validator.json": {
-      "sha256": "766b84cb0983a64eeb7b91ea4342b7cc40017cfb1781aeb9d6881ecd85d22dd3",
+      "sha256": "18360d8a60897df21a79b8dc039872c41cd6e4f8426a13a5814f11a33f36add1",
       "size_bytes": 1505,
       "source": "artifacts/rq_master_36_01/readiness_to_expand_validator.json"
     },
     "recommendation_accuracy_tracker.json": {
-      "sha256": "84f7e1bcd10129e90d43e397d49f034e61a1a324e023909b6c62584bde5db8c5",
+      "sha256": "52c6efefbb76c0b192d7f7c700de0a0f6d6a61ee56907c7c8c95b329392bf927",
       "size_bytes": 380,
       "source": "artifacts/rq_master_36_01/recommendation_accuracy_tracker.json"
     },
     "recommendation_review_surface.json": {
-      "sha256": "e432faeee6fb0679012257156bcb0800b2f891b13dec3b5a235cec7ff58d9bf6",
+      "sha256": "d9b4fb284c538a151d14fd55c3d5071ea41ef36b6b0faa2acad0bf9d9990b5cd",
       "size_bytes": 523,
       "source": "artifacts/rq_master_36_01/recommendation_review_surface.json"
     },
     "recurrence_prevention_status.json": {
-      "sha256": "7033bb157497cfb623ceb9f40061120dd034a7ea3ab622a112ebf0caddff9197",
+      "sha256": "f5f74f5c386a03698f5633b2035d9a0154e5918068ad03349987be39b1cd2545",
       "size_bytes": 252,
       "source": "artifacts/rq_master_36_01/recurrence_prevention_status.json"
     },
+    "refresh_run_record.json": {
+      "sha256": "3af4c13630ac12a37f8933a270779924bb0b50d3dd02b4124748fe3709c60a7a",
+      "size_bytes": 1681,
+      "source": "generated:refresh_run_record.json"
+    },
     "repo_snapshot.json": {
-      "sha256": "da0c1b550d455c24934772f48b1386c09f310c0afc819e3ed4047cf85012ac45",
-      "size_bytes": 4482,
+      "sha256": "4ca17a41b2b00e463293a96cc30286ecb1e611d252d23401abf580517716dcd6",
+      "size_bytes": 4535,
       "source": "artifacts/dashboard/repo_snapshot.json"
     },
     "repo_snapshot_meta.json": {
-      "sha256": "6ed538256b00939ad4a591b2a2b24b941319afd17c046d3307ac9a1a7de0359c",
-      "size_bytes": 215,
+      "sha256": "41e558e6aff1f387ee5d187a8ed5cbcb664fc9ca7e93b970c4449f0743d75275",
+      "size_bytes": 343,
       "source": "generated:repo_snapshot_meta.json"
     },
     "roadmap_alignment_validator_result.json": {
-      "sha256": "e0357a561be09c2743933547b456c8721f076bf4da376f345b6c2a71fc912682",
+      "sha256": "a5d5379e76caa946dc8d688f2f05b44770a593087ba77d693156922f6816d243",
       "size_bytes": 236,
       "source": "artifacts/ops_master_01/roadmap_alignment_validator_result.json"
     },
     "serial_bundle_validator_result.json": {
-      "sha256": "266f13dd15291feddedab01e07bec6ac8ae116b01f088edd98bb8ec8726c4c1e",
+      "sha256": "a829f313958d16a346d08daea2cb1064616e60fb1fdd062cf7ad2f5e243fb8ed",
       "size_bytes": 383,
       "source": "artifacts/ops_master_01/serial_bundle_validator_result.json"
     },
     "stuck_loop_detector.json": {
-      "sha256": "fdfb73eb0ae862521858d8fb898dcb4c8a5f3d074cd76e717ea2911f0db4ceed",
+      "sha256": "eb93c75fa7b1a7b135a170cb79e5293cc047269a815249203ea5b7683df42bba",
       "size_bytes": 263,
       "source": "artifacts/rq_master_36_01/stuck_loop_detector.json"
     }
   },
-  "completeness_sha256": "7dcaa39eaa4f41444624527eef180fb96b2a2d478a524539cf47d17d23639d14"
+  "completeness_sha256": "4934a91df933fb204cd606b5c5760d08aba706eba0f77a38d993d363a05981cd"
 }

@@ -1,0 +1,9 @@
+{
+  "artifact_type": "dashboard_refresh_publish_alert",
+  "timestamp": "2026-04-12T12:10:01Z",
+  "trace_id": "trace-20260412T185745Z",
+  "status": "ok",
+  "reason_codes": [
+    "freshness_ok"
+  ]
+}
