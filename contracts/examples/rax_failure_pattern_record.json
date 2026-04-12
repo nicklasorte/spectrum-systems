@@ -1,0 +1,27 @@
+{
+  "artifact_type": "rax_failure_pattern_record",
+  "schema_version": "1.0.0",
+  "failure_id": "rax-failure-1111222233334444",
+  "source_artifact_refs": [
+    "eval_run://rax-eval-run-001",
+    "roadmap_step_contract:RAX-INTERFACE-24-01",
+    "trace://12121212-1212-4121-8121-121212121212"
+  ],
+  "failure_classification": "invalid_input",
+  "failure_details": [
+    "semantic_intent_insufficient"
+  ],
+  "semantic_category": "semantic_contradiction",
+  "trace_linkage": {
+    "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+    "trace_id": "12121212-1212-4121-8121-121212121212",
+    "linked_refs": [
+      "roadmap_step_contract:RAX-INTERFACE-24-01",
+      "trace://12121212-1212-4121-8121-121212121212"
+    ]
+  },
+  "reproducibility_inputs": {
+    "tests_passed": true
+  },
+  "candidate_eval_generation_status": "generated"
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_adversarial_pattern_candidate.schema.json",
+  "title": "RAX Adversarial Pattern Candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "variant_id",
+    "seed",
+    "variant_class",
+    "target_ref",
+    "payload",
+    "consumable_by_eval"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "rax_adversarial_pattern_candidate"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "variant_id": {
+      "type": "string"
+    },
+    "seed": {
+      "type": "string"
+    },
+    "variant_class": {
+      "type": "string",
+      "enum": [
+        "schema_valid_semantic_boundary",
+        "mutated_literal_variant",
+        "nested_variant",
+        "cross_step_contamination_variant",
+        "partial_signal_contradiction"
+      ]
+    },
+    "target_ref": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "consumable_by_eval": {
+      "type": "boolean"
+    }
+  }
+}

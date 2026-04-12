@@ -54,6 +54,32 @@ _NON_OPERATIONAL_ACCEPTANCE_PHRASES = (
 )
 _DEPENDENCY_ID_PATTERN = re.compile(r"^RAX-INTERFACE-\d{2}-\d{2}$")
 
+_COUNTER_EVIDENCE_PLACEHOLDERS = {
+    "n/a",
+    "none",
+    "unknown",
+    "placeholder",
+    "generic",
+    "tbd",
+    "todo",
+}
+
+_ENTRY_REQUIRED_FIELDS = {
+    "artifact_type",
+    "schema_version",
+    "step_id",
+    "title",
+    "owner",
+    "intent",
+    "depends_on",
+    "roadmap_group",
+    "source_authority_ref",
+    "source_version",
+    "input_freshness_ref",
+    "input_provenance_ref",
+}
+
+
 _DEFAULT_SOURCE_VERSION_AUTHORITY = {
     "docs/roadmaps/system_roadmap.md#RAX-INTERFACE-24-01": "1.3.112",
 }
@@ -154,18 +180,34 @@ def assure_rax_input(
     details: list[str] = []
     failure_classification = "none"
 
-    try:
-        validate_artifact(payload, "rax_upstream_input_envelope")
-        details.append("upstream schema validation passed")
-    except Exception as exc:  # fail-closed by classifying invalid input
+    missing_required_fields = sorted(field for field in _ENTRY_REQUIRED_FIELDS if field not in payload)
+    if missing_required_fields:
         failure_classification = "invalid_input"
-        details.append(f"schema validation failed: {exc}")
+        details.append(f"entry_contract_missing_required_fields: {missing_required_fields}")
+
+    if failure_classification == "none" and payload.get("artifact_type") != "rax_upstream_input_envelope":
+        failure_classification = "invalid_input"
+        details.append("entry_contract_invalid_artifact_type")
+
+    if failure_classification == "none":
+        try:
+            validate_artifact(payload, "rax_upstream_input_envelope")
+            details.append("upstream schema validation passed")
+        except Exception as exc:  # fail-closed by classifying invalid input
+            failure_classification = "invalid_input"
+            details.append(f"schema validation failed: {exc}")
 
     if failure_classification == "none":
         intent = payload["intent"]
         if not _is_semantically_sufficient_intent(intent):
             failure_classification = "invalid_input"
             details.append("semantic_intent_insufficient: intent content is placeholder-like or too weak")
+
+    if failure_classification == "none":
+        title = str(payload.get("title", ""))
+        if len(title.strip()) < 8:
+            failure_classification = "invalid_input"
+            details.append("entry_contract_semantic_sufficiency_failed:title_too_short")
 
     if failure_classification == "none":
         owner_contradiction = _validate_owner_intent_semantics(payload["owner"], payload["intent"])
@@ -231,6 +273,7 @@ def assure_rax_input(
         if trace is None:
             failure_classification = "trace_tampering"
             details.append("missing_required_expansion_trace")
+            details.append("entry_contract_trace_presence_required")
         else:
             trace_issues = _validate_expansion_trace(trace, expected_policy_hash=expected_policy_hash, step_id=payload["step_id"])
             if trace_issues:
@@ -408,10 +451,11 @@ def build_rax_assurance_audit_record(
 
     counter_evidence: list[str] = []
     if failure_classification != "none":
-        counter_evidence.extend(str(item) for item in input_assurance.get("details", []) if item)
-        counter_evidence.extend(str(item) for item in output_assurance.get("details", []) if item)
+        counter_evidence.extend(str(item).strip() for item in input_assurance.get("details", []) if str(item).strip())
+        counter_evidence.extend(str(item).strip() for item in output_assurance.get("details", []) if str(item).strip())
+        counter_evidence = [item for item in counter_evidence if item.lower() not in _COUNTER_EVIDENCE_PLACEHOLDERS]
         if not counter_evidence:
-            counter_evidence.append(f"failure_detected:{failure_classification}")
+            raise RAXAssuranceError("counter_evidence required and must be concrete when failures exist")
 
     stop_condition_triggered = failure_classification != "none"
 

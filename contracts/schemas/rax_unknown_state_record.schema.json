@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_unknown_state_record.schema.json",
+  "title": "RAX Unknown State Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "target_ref",
+    "unknown_reasons",
+    "candidate_ready",
+    "advancement_allowed",
+    "evidence_refs",
+    "status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "rax_unknown_state_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "record_id": {
+      "type": "string"
+    },
+    "target_ref": {
+      "type": "string"
+    },
+    "unknown_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "candidate_ready": {
+      "type": "boolean"
+    },
+    "advancement_allowed": {
+      "type": "boolean"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "known",
+        "unknown_blocking"
+      ]
+    }
+  }
+}
