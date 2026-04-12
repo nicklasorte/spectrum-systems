@@ -11,6 +11,7 @@ This module wires NX preparatory/runtime intelligence into canonical governed pa
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any, Callable
@@ -18,6 +19,14 @@ from typing import Any, Callable
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.nx_governed_intelligence import (
+    build_artifact_intelligence_index,
+    build_artifact_intelligence_report,
+    compute_trust_score,
+    evolve_policy_candidates,
+    fuse_signals,
+    mine_patterns,
+)
 
 
 class NXGovernedSystemError(ValueError):
@@ -241,6 +250,85 @@ def persist_prg_roadmap_candidates(*, trace_id: str, run_id: str, candidates: li
     return output_path
 
 
+def run_nx_integrated_cycle(
+    *,
+    run_id: str,
+    trace_id: str,
+    execution_record: dict[str, Any],
+    store_root: Path,
+) -> dict[str, Any]:
+    """Run deterministic NX integration in the canonical execution cycle."""
+    if not run_id.strip() or not trace_id.strip():
+        raise NXGovernedSystemError("run_id and trace_id required")
+    if not isinstance(execution_record, dict):
+        raise NXGovernedSystemError("execution_record must be object")
+
+    records = [dict(row) for row in execution_record.get("records", []) if isinstance(row, dict)]
+    if not records:
+        raise NXGovernedSystemError("execution_record.records must be non-empty")
+    normalized = [{**row, "trace_id": row.get("trace_id", trace_id)} for row in records]
+
+    def _lineage(payload: dict[str, Any]) -> dict[str, Any]:
+        return {**payload, "trace_id": trace_id, "lineage": {"trace_id": trace_id, "producer": "RIL"}}
+
+    index = {"trace_id": trace_id, **build_artifact_intelligence_index(normalized)}
+    report = _lineage(build_artifact_intelligence_report(index))
+    pattern = _lineage(mine_patterns([{"category": row.get("decision_outcome", "unknown"), "motif": row.get("blocker_class", "none")} for row in normalized]))
+    fused = _lineage(fuse_signals(execution_record.get("signals", {})))
+    policy_candidates = _lineage(
+        evolve_policy_candidates(pattern_report=pattern, overrides=execution_record.get("overrides", []), precedents=execution_record.get("precedents", []))
+    )
+    trust = _lineage(compute_trust_score(execution_record.get("trust_inputs", {})))
+
+    tlc_handoff = tlc_route_nx_flow(
+        run_id=run_id,
+        trace_id=trace_id,
+        nx_request={"phase": "NXR"},
+        ril_executor=lambda _: [index, report, pattern, fused, policy_candidates, trust],
+        store_root=store_root,
+    )
+    cde_input = cde_consume_nx_preparatory(fused_signal=fused, closure_context={"run_id": run_id})
+    tpa_input = tpa_consume_nx_candidates(policy_candidates=policy_candidates, policy_context={"run_id": run_id})
+    sel_hook = sel_enforce_with_authority(nx_trust=trust, cde_authority=cde_input, tpa_authority=tpa_input)
+
+    nx_refs = list(tlc_handoff["nx_artifact_refs"])
+    replay_record = {
+        "artifact_type": "nx_replay_record",
+        "trace_id": trace_id,
+        "run_id": run_id,
+        "nx_artifact_refs": sorted(nx_refs),
+        "deterministic_hash": hashlib.sha256(json.dumps(nx_refs, sort_keys=True).encode("utf-8")).hexdigest(),
+    }
+    certification_record = {
+        "artifact_type": "nx_certification_evidence",
+        "trace_id": trace_id,
+        "run_id": run_id,
+        "required_nx_artifacts_present": bool(nx_refs),
+        "certification_blocked": not bool(nx_refs),
+    }
+    return {
+        "tlc_handoff_record": tlc_handoff,
+        "pqx_execution_record": {
+            "artifact_type": "pqx_nx_execution_record",
+            "run_id": run_id,
+            "trace_id": trace_id,
+            "nx_artifact_refs": sorted(nx_refs),
+            "output_to_nx_to_eval_to_enforcement": True,
+        },
+        "cde_input": cde_input,
+        "tpa_input": tpa_input,
+        "sel_enforcement": sel_hook,
+        "ril_lineage": {
+            "artifact_type": "nx_lineage_record",
+            "trace_id": trace_id,
+            "lineage_path": ["execution", "nx", "control", "enforcement"],
+            "nx_artifact_refs": sorted(nx_refs),
+        },
+        "replay_record": replay_record,
+        "certification_record": certification_record,
+    }
+
+
 __all__ = [
     "NXGovernedSystemError",
     "NX_ARTIFACT_CONTRACTS",
@@ -254,4 +342,5 @@ __all__ = [
     "sel_enforce_with_authority",
     "integrate_rqx_review_cycle",
     "persist_prg_roadmap_candidates",
+    "run_nx_integrated_cycle",
 ]

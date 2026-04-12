@@ -10,6 +10,7 @@ from typing import Any, Callable
 from jsonschema import Draft202012Validator, FormatChecker
 
 from spectrum_systems.contracts import load_schema
+from spectrum_systems.modules.runtime.nx_governed_system import run_nx_integrated_cycle
 from spectrum_systems.modules.runtime.system_cycle_operator import SystemCycleOperatorError, run_system_cycle
 
 
@@ -358,6 +359,31 @@ def run_next_governed_cycle(
         }
 
     executed_cycle_id = str(cycle_result["roadmap_multi_batch_run_result"]["run_id"])
+    nx_execution_record = dict(integration_inputs.get("nx_execution_record") or {})
+    nx_execution_record.setdefault(
+        "records",
+        [
+            {
+                "artifact_id": f"run-{executed_cycle_id}",
+                "artifact_type": "roadmap_multi_batch_run_result",
+                "schema_version": "1.0.0",
+                "trace_id": trace_id,
+                "run_id": executed_cycle_id,
+                "decision_outcome": cycle_result["next_cycle_decision"]["decision"],
+                "reason_codes": cycle_result["next_cycle_decision"].get("decision_reason_codes", []),
+                "blocker_class": "none",
+                "eval_slice": "cycle",
+            }
+        ],
+    )
+    nx_execution_record.setdefault("signals", dict(integration_inputs.get("nx_signals") or {}))
+    nx_execution_record.setdefault("trust_inputs", dict(integration_inputs.get("nx_trust_inputs") or {}))
+    nx_cycle = run_nx_integrated_cycle(
+        run_id=executed_cycle_id,
+        trace_id=trace_id,
+        execution_record=nx_execution_record,
+        store_root=pqx_runs_root / "nx_artifacts",
+    )
     new_decision_ref = f"next_cycle_decision:{cycle_result['next_cycle_decision']['cycle_decision_id']}"
     new_bundle_ref = f"next_cycle_input_bundle:{cycle_result['next_cycle_input_bundle']['bundle_id']}"
     emitted_refs = [
@@ -367,6 +393,9 @@ def run_next_governed_cycle(
         f"build_summary:{cycle_result['build_summary']['summary_id']}",
         new_decision_ref,
         new_bundle_ref,
+        f"nx_lineage_record:{nx_cycle['ril_lineage']['trace_id']}",
+        f"nx_replay_record:{nx_cycle['replay_record']['trace_id']}",
+        f"nx_certification_evidence:{nx_cycle['certification_record']['trace_id']}",
     ]
     return {
         "cycle_runner_result": _build_result(
@@ -385,7 +414,7 @@ def run_next_governed_cycle(
             created_at=timestamp,
             trace_id=trace_id,
         ),
-        "executed_cycle": cycle_result,
+        "executed_cycle": {**cycle_result, "nx_cycle": nx_cycle},
         "bundle_consumption_summary": {
             "required_artifacts": required_artifacts,
             "active_program_constraints": active_program_constraints,

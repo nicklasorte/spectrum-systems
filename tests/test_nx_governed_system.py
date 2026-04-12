@@ -19,6 +19,7 @@ from spectrum_systems.modules.runtime.nx_governed_system import (
     load_nx_artifact,
     persist_nx_artifact,
     persist_prg_roadmap_candidates,
+    run_nx_integrated_cycle,
     sel_enforce_with_authority,
     tlc_route_nx_flow,
     tpa_consume_nx_candidates,
@@ -125,3 +126,47 @@ def test_unregistered_artifact_type_fails_closed(tmp_path: Path) -> None:
             store_root=tmp_path,
             trace_id="t",
         )
+
+
+def test_nx_integrated_cycle_emits_trace_replay_and_certification(tmp_path: Path) -> None:
+    cycle = run_nx_integrated_cycle(
+        run_id="run-nx-1",
+        trace_id="trace-nx-1",
+        execution_record={
+            "records": [
+                {
+                    "artifact_id": "a-1",
+                    "artifact_type": "replay_result",
+                    "schema_version": "1.0.0",
+                    "trace_id": "trace-nx-1",
+                    "run_id": "run-nx-1",
+                    "decision_outcome": "allow",
+                    "reason_codes": ["ok"],
+                    "blocker_class": "none",
+                    "eval_slice": "faq",
+                }
+            ],
+            "signals": {
+                "preflight": {"ok": True},
+                "eval_summary": {"pass_rate": 1.0},
+                "runtime_observability": {"latency": 1},
+                "judgment_eval": {"all_required_passed": True},
+                "replay_drift": {"drift": False},
+                "certification_state": {"certified": True},
+            },
+            "trust_inputs": {
+                "eval_pass_rate": 0.95,
+                "replay_consistency": 1.0,
+                "drift": 0.0,
+                "judgment_calibration": 0.9,
+                "certification": 1.0,
+                "blocker_trend": 0.0,
+            },
+        },
+        store_root=tmp_path / "nx",
+    )
+    assert cycle["tlc_handoff_record"]["artifact_type"] == "tlc_nx_handoff_record"
+    assert cycle["pqx_execution_record"]["output_to_nx_to_eval_to_enforcement"] is True
+    assert cycle["sel_enforcement"]["enforcement_allowed"] is True
+    assert cycle["replay_record"]["nx_artifact_refs"]
+    assert cycle["certification_record"]["required_nx_artifacts_present"] is True
