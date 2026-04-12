@@ -332,6 +332,8 @@ def test_runner_executes_exactly_one_cycle_when_allowed() -> None:
     assert artifact["executed_cycle_id"].startswith("RMB-")
     assert result["executed_cycle"] is not None
     assert len(result["executed_cycle"]["roadmap_multi_batch_run_result"]["attempted_batch_ids"]) == 1
+    assert result["executed_cycle"]["nx_cycle"]["pqx_execution_record"]["output_to_nx_to_eval_to_enforcement"] is True
+    assert result["executed_cycle"]["nx_cycle"]["replay_record"]["deterministic_hash"]
     assert result["bundle_consumption_summary"]["latest_exception_class"] == "execution_failure"
     assert result["bundle_consumption_summary"]["latest_exception_resolution_action"] == "remediation_batch"
 

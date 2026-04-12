@@ -1081,6 +1081,42 @@ def test_main_governed_context_with_valid_wrapper_allows(tmp_path: Path, monkeyp
     assert artifact["pqx_required_context_enforcement"]["status"] == "allow"
 
 
+def test_main_governed_context_bootstraps_missing_wrapper_path(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    wrapper_path = tmp_path / "missing-wrapper.json"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": ["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": str(wrapper_path),
+                "authority_evidence_ref": "data/pqx_runs/AI-01/example.pqx_slice_execution_record.json",
+            },
+        )(),
+    )
+    monkeypatch.setattr(preflight, "build_impact_map", lambda *_args, **_kwargs: {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": [], "contract_impact_artifact": {}})
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 0
+    assert wrapper_path.is_file()
+    wrapper = json.loads(wrapper_path.read_text(encoding="utf-8"))
+    assert wrapper["artifact_type"] == "codex_pqx_task_wrapper"
+    assert wrapper["governance"]["authority_evidence_ref"] == "data/pqx_runs/AI-01/example.pqx_slice_execution_record.json"
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["pqx_required_context_enforcement"]["status"] == "allow"
+
+
 def test_main_ci_style_base_head_with_wrapper_records_allow_state(tmp_path: Path, monkeypatch) -> None:
     output_dir = tmp_path / "out"
     wrapper_path = tmp_path / "wrapper.json"
