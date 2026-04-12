@@ -23,7 +23,7 @@ def _write_json(path: Path, payload: dict) -> None:
 
 def _base_contract(step_id: str) -> dict:
     depends = ["RF-01"] if step_id == "RF-02" else ["RF-01", "RF-02"]
-    tests = ["python -c \"raise SystemExit(0)\""]
+    tests = ["pytest tests/test_roadmap_realization_runner.py -k rf_contract_schema -q"]
     entrypoints = ["spectrum_systems.modules.runtime.roadmap_realization_runtime:next_realization_status"]
     if step_id == "RF-03":
         entrypoints.append("spectrum_systems.modules.runtime.roadmap_realization_runtime:enforce_realization_dependencies")
@@ -64,92 +64,75 @@ def _write_contracts(tmp_path: Path, rf02: dict | None = None, rf03: dict | None
     return contract_dir
 
 
-def test_rf02_rf03_contracts_pass_schema_validation() -> None:
+def test_rf_contract_schema() -> None:
     validate_artifact(json.loads(Path("artifacts/roadmap_contracts/RF-02.json").read_text()), "roadmap_step_contract")
     validate_artifact(json.loads(Path("artifacts/roadmap_contracts/RF-03.json").read_text()), "roadmap_step_contract")
 
 
-def test_rf03_dependency_order_is_enforced(tmp_path: Path) -> None:
+def test_malformed_contracts_rejected_fail_closed(tmp_path: Path) -> None:
+    rf02 = _base_contract("RF-02")
+    del rf02["target_modules"]
+    rf03 = _base_contract("RF-03")
+    rf03["acceptance_checks"] = []
+    contract_dir = _write_contracts(tmp_path, rf02=rf02, rf03=rf03)
+    result = realize_steps(step_ids=["RF-02", "RF-03"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
+    assert result["overall_status"] == "fail"
+    assert set(result["failed_steps"]) == {"RF-02", "RF-03"}
+    assert result["attempted_steps"] == []
+    assert set(result["contract_validation_failures"]) == {"RF-02", "RF-03"}
+
+
+def test_dependency_bypass_attack_blocked(tmp_path: Path) -> None:
     contract_dir = _write_contracts(tmp_path)
-    result = realize_steps(
-        step_ids=["RF-03", "RF-02"],
-        contract_dir=contract_dir,
-        result_path=tmp_path / "result.json",
-        repo_root=Path("."),
-    )
+    result = realize_steps(step_ids=["RF-03", "RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
     assert "RF-03" in result["failed_steps"]
+    assert "RF-03" in result["dependency_failures"]
+    assert result["overall_status"] == "fail"
 
 
-def test_forbidden_patterns_block_realization(tmp_path: Path) -> None:
+def test_forbidden_pattern_evasion_attack_blocked(tmp_path: Path) -> None:
     rf02 = _base_contract("RF-02")
     rf02["forbidden_patterns"] = ["ALLOWED_STATUSES"]
     contract_dir = _write_contracts(tmp_path, rf02=rf02)
-    result = realize_steps(
-        step_ids=["RF-02"],
-        contract_dir=contract_dir,
-        result_path=tmp_path / "result.json",
-        repo_root=Path("."),
-    )
-    assert result["failed_steps"] == ["RF-02"]
+    result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
+    assert result["overall_status"] == "fail"
     assert result["forbidden_pattern_hits"]["RF-02"]
 
 
-def test_missing_runtime_entrypoint_blocks_realization(tmp_path: Path) -> None:
+def test_fake_test_success_attack_blocked(tmp_path: Path) -> None:
+    rf02 = _base_contract("RF-02")
+    rf02["target_tests"] = ["pytest tests/test_roadmap_realization_runner.py -k rf_contract_schema -q && python -c \"raise SystemExit(0)\""]
+    contract_dir = _write_contracts(tmp_path, rf02=rf02)
+    result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
+    assert result["overall_status"] == "fail"
+    assert result["behavioral_test_policy_checks"]["RF-02"][0]["approved"] is False
+
+
+def test_status_forging_attack_blocked(tmp_path: Path) -> None:
+    rf02 = _base_contract("RF-02")
+    rf02["realization_status"] = "verified"
+    contract_dir = _write_contracts(tmp_path, rf02=rf02)
+    result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
+    assert result["overall_status"] == "pass"
+    updates = result["status_updates"]
+    assert updates[0]["from"] == "planned_only"
+    assert json.loads((contract_dir / "RF-02.json").read_text())["realization_status"] == "verified"
+
+
+def test_ownership_boundary_attack_blocked(tmp_path: Path) -> None:
+    rf02 = _base_contract("RF-02")
+    rf02["target_modules"] = ["spectrum_systems/modules/control/illegal.py"]
+    contract_dir = _write_contracts(tmp_path, rf02=rf02)
+    result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
+    assert result["overall_status"] == "fail"
+    assert result["ownership_checks"]["RF-02"]["passed"] is False
+
+
+def test_fail_closed_result_semantics_on_critical_failure(tmp_path: Path) -> None:
     rf02 = _base_contract("RF-02")
     rf02["runtime_entrypoints"] = ["spectrum_systems.modules.runtime.roadmap_realization_runtime:missing_function"]
     contract_dir = _write_contracts(tmp_path, rf02=rf02)
-    result = realize_steps(
-        step_ids=["RF-02"],
-        contract_dir=contract_dir,
-        result_path=tmp_path / "result.json",
-        repo_root=Path("."),
-    )
-    assert result["failed_steps"] == ["RF-02"]
-    assert result["runtime_entrypoint_checks"]["RF-02"][0]["exists"] is False
-
-
-def test_failing_behavioral_tests_block_status_advancement(tmp_path: Path) -> None:
-    rf02 = _base_contract("RF-02")
-    rf02["target_tests"] = ["python -c \"raise SystemExit(1)\""]
-    contract_dir = _write_contracts(tmp_path, rf02=rf02)
-    result = realize_steps(
-        step_ids=["RF-02"],
-        contract_dir=contract_dir,
-        result_path=tmp_path / "result.json",
-        repo_root=Path("."),
-    )
-    updated = json.loads((contract_dir / "RF-02.json").read_text())
-    assert result["failed_steps"] == ["RF-02"]
-    assert updated["realization_status"] == "planned_only"
-
-
-def test_passing_behavioral_tests_allow_status_advancement(tmp_path: Path) -> None:
-    contract_dir = _write_contracts(tmp_path)
-    result = realize_steps(
-        step_ids=["RF-02", "RF-03"],
-        contract_dir=contract_dir,
-        result_path=tmp_path / "result.json",
-        repo_root=Path("."),
-    )
-    rf02 = json.loads((contract_dir / "RF-02.json").read_text())
-    rf03 = json.loads((contract_dir / "RF-03.json").read_text())
-    assert result["failed_steps"] == []
-    assert rf02["realization_status"] in {"runtime_realized", "verified"}
-    assert rf03["realization_status"] in {"runtime_realized", "verified"}
-
-
-def test_result_artifact_reflects_real_outcomes(tmp_path: Path) -> None:
-    rf02 = _base_contract("RF-02")
-    rf02["target_tests"] = ["python -c \"raise SystemExit(1)\""]
-    contract_dir = _write_contracts(tmp_path, rf02=rf02)
-    result_path = tmp_path / "roadmap_realization_result.json"
-    result = realize_steps(
-        step_ids=["RF-02", "RF-03"],
-        contract_dir=contract_dir,
-        result_path=result_path,
-        repo_root=Path("."),
-    )
-    written = json.loads(result_path.read_text())
-    assert written["artifact_type"] == "roadmap_realization_result"
-    assert written["attempted_steps"] == ["RF-02", "RF-03"]
-    assert written["overall_status"] == result["overall_status"] == "fail"
+    result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
+    assert result["overall_status"] == "fail"
+    assert result["passed_steps"] == []
+    assert result["status_updates"] == []
