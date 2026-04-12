@@ -242,5 +242,80 @@ export function compileDashboardReadModel(publication: DashboardPublication): Da
     rows: [['blocked_diagnostic', controlStatus === 'allow' ? 'clear' : 'elevated'], ['high_risk_warning', disagreement ? 'shown' : 'none']]
   })
 
+  const reviewSurfaceArtifact = publication.declaredArtifactMap.recommendation_review_surface_json ?? publication.declaredArtifactMap['recommendation_review_surface.json']
+  const reviewSurface = (reviewSurfaceArtifact?.data ?? {}) as { pending_reviews?: Array<{ review_id?: string; checkpoint?: string; status?: string }>; checkpoint_count?: number; status?: string }
+  const reviewRows = (reviewSurface.pending_reviews ?? []).map((row) => [row.review_id ?? 'review', row.checkpoint ?? 'checkpoint', row.status ?? 'pending'])
+  panels.push(reviewSurfaceArtifact?.exists && reviewSurfaceArtifact.valid
+    ? {
+        panelId: 'review_queue_surface',
+        title: 'Review queue surface',
+        status: 'renderable',
+        summary: 'Artifact-backed pending reviews and HITL checkpoints.',
+        rows: reviewRows.length ? reviewRows : [[String(reviewSurface.checkpoint_count ?? 0), reviewSurface.status ?? 'unknown', publication.hardGate.data?.readiness_status ?? 'unknown']]
+      }
+    : blocked('review_queue_surface', 'Review queue artifact missing or invalid.'))
+
+  const actionRows: Array<Array<string>> = [
+    ['refresh', publication.refreshRunRecord.data?.refresh_run_id ?? 'unknown', publication.refreshRunRecord.data?.trigger_mode ?? 'unknown'],
+    ['replay', (publication.replayPack.data?.scenario_ids ?? []).join(', ') || 'none', publication.serialValidator.data?.pass ? 'last_replay_pass' : 'last_replay_mismatch']
+  ]
+  if (reviewSurfaceArtifact?.exists && reviewSurfaceArtifact.valid) {
+    actionRows.push(['review_handoff', String(reviewSurface.pending_reviews?.length ?? 0), reviewSurface.status ?? 'pending'])
+  }
+  const actionSurfaceReady = requireValidated(publication.refreshRunRecord) && requireValidated(publication.replayPack) && (reviewSurfaceArtifact?.exists ?? false) && (reviewSurfaceArtifact?.valid ?? false)
+  panels.push(actionSurfaceReady
+    ? {
+        panelId: 'action_surface',
+        title: 'Governed non-decision actions',
+        status: 'renderable',
+        summary: 'Refresh, replay, and review handoff actions only (no decision execution).',
+        rows: actionRows
+      }
+    : blocked('action_surface', 'Action surface blocked until refresh/replay/review artifacts are valid.'))
+
+  panels.push(requireValidated(publication.hardGate) && requireValidated(publication.promotionGate)
+    ? {
+        panelId: 'policy_visibility',
+        title: 'Policy visibility',
+        status: 'renderable',
+        summary: 'Read-only policy thresholds and enforcement rules from owning artifacts.',
+        rows: [
+          ['gate_name', publication.hardGate.data?.gate_name ?? 'unknown', publication.hardGate.data?.readiness_status ?? 'unknown'],
+          ['required_evidence', (publication.hardGate.data?.required_evidence ?? []).join(', ') || 'none'],
+          ['promotion_decision', publication.promotionGate.data?.promotion_decision ?? 'unknown', String(publication.promotionGate.data?.fail_closed ?? false)]
+        ]
+      }
+    : blocked('policy_visibility', 'Policy visibility blocked: gate or promotion artifacts invalid.'))
+
+  const auditReady = requireValidated(publication.publicationAttemptRecord) && requireValidated(publication.judgmentApplication) && requireValidated(publication.refreshRunRecord) && requireValidated(publication.serialValidator)
+  panels.push(auditReady
+    ? {
+        panelId: 'audit_trail',
+        title: 'Audit trail',
+        status: 'renderable',
+        summary: 'Decision history and transition lineage linked to trace artifacts.',
+        rows: [
+          ['decision', publication.publicationAttemptRecord.data?.decision ?? 'unknown', publication.publicationAttemptRecord.data?.trace_id ?? 'trace-missing'],
+          ['judgment', publication.judgmentApplication.data?.decision_id ?? 'unknown', (publication.judgmentApplication.data?.judgment_ids ?? []).join(', ') || 'none'],
+          ['refresh_run', publication.refreshRunRecord.data?.refresh_run_id ?? 'unknown', publication.refreshRunRecord.data?.outcome ?? 'unknown'],
+          ['validator', publication.serialValidator.data?.pass ? 'pass' : 'failed', publication.serialValidator.data?.generated_at ?? 'unknown']
+        ]
+      }
+    : blocked('audit_trail', 'Audit trail blocked due to missing lineage artifacts.'))
+
+  const lowEvidence = !publication.serialValidator.data?.pass || publication.freshnessStatus.data?.status === 'stale' || disagreement
+  panels.push({
+    panelId: 'misinterpretation_guard',
+    title: 'Misinterpretation guard',
+    status: lowEvidence ? 'blocked' : 'renderable',
+    summary: lowEvidence ? 'Evidence disagreement/low confidence: explicit uncertainty required.' : 'Evidence sufficient for normal interpretation.',
+    rows: [
+      ['freshness', publication.freshnessStatus.data?.status ?? 'unknown'],
+      ['validator_pass', String(Boolean(publication.serialValidator.data?.pass))],
+      ['disagreement', disagreement ? 'true' : 'false'],
+      ['uncertainty_label', lowEvidence ? 'unverified_or_disputed' : 'verified']
+    ]
+  })
+
   return panels
 }

@@ -44,5 +44,18 @@ export const PANEL_FIELD_PROVENANCE_MAP: PanelFieldProvenance[] = [
   { panel_id: 'maintain_drift', artifact: 'dashboard_public_contract_coverage.json', fields: ['covered_artifacts'] },
   { panel_id: 'maintain_drift', artifact: 'dashboard_publication_manifest.json', fields: ['required_files'] },
   { panel_id: 'scenario_simulator', artifact: 'rq_next_24_01__umbrella_3__nx_17_failure_hotspot_simulation_pack.json', fields: ['scenario_ids', 'hypotheses'] },
-  { panel_id: 'mobile_semantics', artifact: 'publication_attempt_record.json', fields: ['decision', 'reason_codes'] }
+  { panel_id: 'mobile_semantics', artifact: 'publication_attempt_record.json', fields: ['decision', 'reason_codes'] },
+  { panel_id: 'policy_visibility', artifact: 'hard_gate_status_record.json', fields: ['gate_name', 'readiness_status', 'required_evidence'] },
+  { panel_id: 'policy_visibility', artifact: 'governed_promotion_discipline_gate.json', fields: ['promotion_decision', 'allowed_decisions', 'fail_closed'] },
+  { panel_id: 'audit_trail', artifact: 'publication_attempt_record.json', fields: ['publish_attempt_id', 'decision', 'trace_id', 'timestamp'] },
+  { panel_id: 'audit_trail', artifact: 'judgment_application_artifact.json', fields: ['decision_id', 'judgment_ids'] },
+  { panel_id: 'audit_trail', artifact: 'refresh_run_record.json', fields: ['refresh_run_id', 'run_id', 'trace_id', 'outcome'] },
+  { panel_id: 'action_surface', artifact: 'refresh_run_record.json', fields: ['refresh_run_id', 'trigger_mode'] },
+  { panel_id: 'action_surface', artifact: 'rq_next_24_01__umbrella_3__nx_13_recommendation_replay_pack.json', fields: ['scenario_ids'] },
+  { panel_id: 'action_surface', artifact: 'recommendation_review_surface.json', fields: ['pending_reviews', 'checkpoint_count'], uncertainty: 'Review artifact shape is partially optional; missing keys are blocked.' },
+  { panel_id: 'review_queue_surface', artifact: 'recommendation_review_surface.json', fields: ['pending_reviews', 'checkpoint_count', 'status'] },
+  { panel_id: 'review_queue_surface', artifact: 'hard_gate_status_record.json', fields: ['readiness_status'] },
+  { panel_id: 'misinterpretation_guard', artifact: 'dashboard_freshness_status.json', fields: ['status', 'snapshot_age_hours'] },
+  { panel_id: 'misinterpretation_guard', artifact: 'serial_bundle_validator_result.json', fields: ['pass'] },
+  { panel_id: 'misinterpretation_guard', artifact: 'publication_attempt_record.json', fields: ['decision', 'reason_codes'] }
 ]
