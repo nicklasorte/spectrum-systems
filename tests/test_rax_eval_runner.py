@@ -74,6 +74,14 @@ def test_rax_eval_case_set_example_is_valid_and_includes_adversarial_and_baselin
     assert {"baseline", "adversarial", "failure_class"}.issubset(classes)
 
 
+
+def test_eval_case_set_contains_novel_adversarial_semantic_case() -> None:
+    case_set = load_rax_eval_case_set()
+    case = next(case for case in case_set["cases"] if case["eval_case_id"] == "rax-case-novel-adversarial-semantic-ambiguity")
+    assert case["case_class"] == "adversarial"
+    assert case["eval_type"] == "rax_input_semantic_sufficiency"
+    assert "semantic_intent_insufficient" in case["reason_codes"]
+
 def test_runner_emits_structured_eval_results_and_summary() -> None:
     out = run_rax_eval_runner(
         run_id="rax-eval-run-001",

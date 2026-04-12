@@ -1,0 +1,23 @@
+{
+  "artifact_type": "failure_pattern_record",
+  "schema_version": "1.0.0",
+  "pattern_id": "fpr-d999743b2d7efb4b",
+  "normalized_failure_key": "254e6c8bf84a437555b25e83cb20d3834bcb74e6bba843aabcd59cfd8d0a5b00",
+  "occurrence_count": 1,
+  "first_seen": "2026-04-12T00:00:00Z",
+  "last_seen": "2026-04-12T00:00:00Z",
+  "associated_stop_reasons": [
+    "semantic_validation_failed"
+  ],
+  "associated_root_causes": [
+    "assure_rax_input:semantic_intent_insufficient",
+    "assure_rax_input:ambiguous_or_evidence_avoiding_intent_phrase"
+  ],
+  "related_artifacts": [
+    "docs/reviews/rax_redteam_arch_report.json#attack_results[novel_adversarial_pattern]",
+    "contracts/examples/rax_eval_case_set.json#rax-case-novel-adversarial-semantic-ambiguity"
+  ],
+  "trace_ids": [
+    "novel-adversarial-pattern-2026-04-12"
+  ]
+}

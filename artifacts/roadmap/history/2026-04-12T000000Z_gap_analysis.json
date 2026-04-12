@@ -1,0 +1,50 @@
+{
+  "artifact_type": "roadmap_compiler_gap_analysis",
+  "timestamp": "2026-04-12T000000Z",
+  "dominant_bottleneck": {
+    "id": "BN-006",
+    "statement": "Orchestration gaps across engines lead to contract drift and missing readiness signals.",
+    "evidence": [
+      "docs/system-map.md bottleneck table",
+      "SYSTEMS.md orchestration contract guidance"
+    ]
+  },
+  "highest_risk_trust_gap": {
+    "id": "TG-001",
+    "statement": "Docs-to-runtime drift can make trust assumptions bypassable when replay/control invariants are not uniformly tested.",
+    "evidence": [
+      "SYSTEMS.md replay invariant",
+      "systems/* mostly documentation surfaces",
+      "spectrum_systems/modules/runtime high-change control surface"
+    ]
+  },
+  "gap_classes": {
+    "A_foundation": [
+      "Authority parity checks are not yet formalized as reusable compiler contract",
+      "Roadmap artifact schemas are not yet pinned for this slice"
+    ],
+    "B_governed_operation": [
+      "BN-006 orchestration governance remains partial across surfaces"
+    ],
+    "C_learning": [
+      "Eval assets are uneven across systems; learning loops are partial"
+    ],
+    "D_control": [
+      "Control coverage exceeds explicit invariant tests, creating bypass risk"
+    ],
+    "E_application": [
+      "System-specific executable adapters lag architecture coverage"
+    ],
+    "F_hardening": [
+      "Certification gate is partial and dead-surface candidates remain"
+    ],
+    "G_constitutional_alignment": [
+      "Continuous conformance checks to canonical runtime rules are not yet enforced in this slice"
+    ]
+  },
+  "top_risks": [
+    "BN-006 orchestration drift risk across engines",
+    "Partial eval/certification leaves control surfaces incompletely hardened",
+    "Potential docs-to-runtime drift without stronger invariant tests"
+  ]
+}

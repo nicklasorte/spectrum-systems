@@ -13,7 +13,12 @@
     "failing_slice_ref",
     "repairability_class",
     "recommended_continuation",
-    "evidence_refs"
+    "evidence_refs",
+    "failure_packet_digest",
+    "repair_candidate_digest",
+    "evidence_digest",
+    "issued_at",
+    "freshness_window_seconds"
   ],
   "properties": {
     "artifact_type": {"type": "string", "const": "cde_repair_continuation_input"},
@@ -24,6 +29,11 @@
     "failing_slice_ref": {"type": "string", "pattern": "^slice:.+"},
     "repairability_class": {"type": "string", "enum": ["artifact_only", "slice_metadata", "runtime_code", "escalate"]},
     "recommended_continuation": {"type": "string", "enum": ["continue_repair_bounded", "stop_escalate"]},
-    "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+    "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "failure_packet_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "repair_candidate_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "evidence_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "freshness_window_seconds": {"type": "integer", "minimum": 1}
   }
 }
