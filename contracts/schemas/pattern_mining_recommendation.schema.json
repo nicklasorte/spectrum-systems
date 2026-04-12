@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "$id": "https://spectrum-systems.org/contracts/pattern_mining_recommendation.schema.json",
+  "title": "pattern_mining_recommendation",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "authority_scope",
+    "recurring_motifs",
+    "improvement_candidates",
+    "trace_id",
+    "lineage"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "pattern_mining_recommendation"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "authority_scope": {
+      "const": "recommendation_only"
+    },
+    "recurring_motifs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "improvement_candidates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage": {
+      "type": "object"
+    }
+  }
+}

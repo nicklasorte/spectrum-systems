@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "$id": "https://spectrum-systems.org/contracts/artifact_intelligence_report.schema.json",
+  "title": "artifact_intelligence_report",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "authority_scope",
+    "top_blockers",
+    "trace_id",
+    "lineage"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "artifact_intelligence_report"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "authority_scope": {
+      "const": "non_authoritative"
+    },
+    "top_blockers": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "recurring_failure_motifs": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "policy_conflict_surfaces": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "override_hotspots": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "stale_artifact_attempts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "promotion_guard_blocks": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage": {
+      "type": "object"
+    }
+  }
+}

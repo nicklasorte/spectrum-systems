@@ -23,8 +23,11 @@ def _stable_sort(items: list[dict[str, Any]], keys: tuple[str, ...]) -> list[dic
 def build_artifact_intelligence_index(artifacts: list[dict[str, Any]]) -> dict[str, Any]:
     ordered = _stable_sort(artifacts, ("artifact_id", "artifact_type", "created_at"))
     return {
-        "artifact_type": {},
-        "schema_version": {},
+        "artifact_type": "artifact_intelligence_index",
+        "schema_version": "1.0.0",
+        "authority_scope": "non_authoritative",
+        "artifact_type_index": {},
+        "schema_version_index": {},
         "trace_id": {},
         "span_id": {},
         "run_id": {},
@@ -42,8 +45,8 @@ def build_artifact_intelligence_index(artifacts: list[dict[str, Any]]) -> dict[s
 
 def _index_dimensions(ordered: list[dict[str, Any]]) -> dict[str, dict[str, list[str]]]:
     index: dict[str, dict[str, list[str]]] = {
-        "artifact_type": {},
-        "schema_version": {},
+        "artifact_type_index": {},
+        "schema_version_index": {},
         "trace_id": {},
         "span_id": {},
         "run_id": {},
@@ -76,7 +79,8 @@ def _index_dimensions(ordered: list[dict[str, Any]]) -> dict[str, dict[str, list
         ):
             value = str(row.get(field, ""))
             if value:
-                index[field].setdefault(value, []).append(artifact_id)
+                bucket = field if field not in {"artifact_type", "schema_version"} else f"{field}_index"
+                index[bucket].setdefault(value, []).append(artifact_id)
         for reason in sorted(str(x) for x in row.get("reason_codes", []) if str(x)):
             index["reason_codes"].setdefault(reason, []).append(artifact_id)
 
@@ -152,6 +156,7 @@ def query_promotion_guard_blocks(index: dict[str, Any]) -> list[dict[str, Any]]:
 def build_artifact_intelligence_report(index: dict[str, Any]) -> dict[str, Any]:
     return {
         "artifact_type": "artifact_intelligence_report",
+        "schema_version": "1.0.0",
         "authority_scope": "non_authoritative",
         "top_blockers": query_top_blocker_families(index),
         "recurring_failure_motifs": query_recurring_failure_motifs(index),
@@ -306,6 +311,7 @@ def fuse_signals(signals: dict[str, Any]) -> dict[str, Any]:
         raise NXGovernedIntelligenceError(f"missing signal groups: {','.join(missing)}")
     return {
         "artifact_type": "fused_signal_record",
+        "schema_version": "1.0.0",
         "authority_scope": "preparatory_non_authoritative",
         "signals": signals,
         "prepared_for": ["cde_decision_input", "tpa_gating_input"],
@@ -318,6 +324,7 @@ def aggregate_multi_run(runs: list[dict[str, Any]]) -> dict[str, Any]:
     latency = sorted(float(r.get("latency_ms", 0.0)) for r in runs)
     return {
         "artifact_type": "multi_run_aggregate",
+        "schema_version": "1.0.0",
         "authority_scope": "non_authoritative",
         "run_count": len(runs),
         "pass_frequency": sum(1 for r in runs if r.get("status") == "pass") / len(runs),
@@ -343,6 +350,7 @@ def mine_patterns(events: list[dict[str, Any]]) -> dict[str, Any]:
     recurring = sorted(recurring, key=lambda r: (-int(r["count"]), r["category"], r["motif"]))
     return {
         "artifact_type": "pattern_mining_recommendation",
+        "schema_version": "1.0.0",
         "authority_scope": "recommendation_only",
         "recurring_motifs": recurring,
         "improvement_candidates": [f"candidate:{row['category']}:{row['motif']}" for row in recurring],
@@ -378,7 +386,8 @@ def evolve_policy_candidates(*, pattern_report: dict[str, Any], overrides: list[
         candidates.append({"candidate_id": "threshold-candidate-001", "source": "override_hotspot", "state": "draft", "authority_scope": "non_authoritative"})
     if precedents:
         candidates.append({"candidate_id": "contract-candidate-001", "source": "stable_precedent", "state": "draft", "authority_scope": "non_authoritative"})
-    return {"artifact_type": "policy_evolution_candidate_set", "authority_scope": "recommendation_only", "candidates": candidates}
+    return {"artifact_type": "policy_evolution_candidate_set",
+        "schema_version": "1.0.0", "authority_scope": "recommendation_only", "candidates": candidates}
 
 
 def simulate_scenarios(changes: list[dict[str, Any]]) -> dict[str, Any]:
@@ -401,6 +410,7 @@ def build_explainability_artifact(linkage: dict[str, Any]) -> dict[str, Any]:
         raise NXGovernedIntelligenceError(f"missing explainability linkage fields: {','.join(missing)}")
     return {
         "artifact_type": "decision_explainability_artifact",
+        "schema_version": "1.0.0",
         "authority_scope": "non_authoritative",
         "machine_readable": linkage,
         "human_readable_summary": " -> ".join([str(linkage["trace"]), str(linkage["control_decisions"]), str(linkage["enforcement_actions"])]),
@@ -418,6 +428,7 @@ def compute_trust_score(inputs: dict[str, float | bool]) -> dict[str, Any]:
     )
     return {
         "artifact_type": "system_trust_score_artifact",
+        "schema_version": "1.0.0",
         "authority_scope": "recommendation_only",
         "trust_score": round(score, 6),
     }
@@ -488,6 +499,7 @@ def evaluate_autonomy_expansion_gate(*, readiness: dict[str, Any], authority_inp
     eligible = bool(readiness.get("eligible", False)) and cde_authorized and not recommendation_only
     return {
         "artifact_type": "autonomy_expansion_gate_result",
+        "schema_version": "1.0.0",
         "eligible": eligible,
         "blocked_reasons": sorted(
             [

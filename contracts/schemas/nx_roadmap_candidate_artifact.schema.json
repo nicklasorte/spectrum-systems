@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "$id": "https://spectrum-systems.org/contracts/nx_roadmap_candidate_artifact.schema.json",
+  "title": "nx_roadmap_candidate_artifact",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "authority_scope",
+    "trace_id",
+    "run_id",
+    "authority_owner",
+    "admission_required",
+    "candidate_items"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "nx_roadmap_candidate_artifact"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "authority_scope": {
+      "const": "recommendation_only"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authority_owner": {
+      "const": "PRG"
+    },
+    "admission_required": {
+      "const": true
+    },
+    "candidate_items": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "$id": "https://spectrum-systems.org/contracts/autonomy_expansion_gate_result.schema.json",
+  "title": "autonomy_expansion_gate_result",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "eligible",
+    "blocked_reasons",
+    "trace_id",
+    "lineage"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "autonomy_expansion_gate_result"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "eligible": {
+      "type": "boolean"
+    },
+    "blocked_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage": {
+      "type": "object"
+    }
+  }
+}
