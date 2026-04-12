@@ -34,6 +34,36 @@ def _require_non_empty_string(value: Any, field_name: str) -> str:
     return value.strip()
 
 
+def _is_semantically_sufficient_intent(intent: str) -> bool:
+    normalized = " ".join(intent.lower().split())
+    tokens = [piece for piece in normalized.replace("-", " ").split(" ") if piece]
+    if len(tokens) < 4:
+        return False
+
+    generic_placeholders = {
+        "todo",
+        "tbd",
+        "placeholder",
+        "generic",
+        "misc",
+        "n/a",
+        "none",
+        "lorem",
+        "ipsum",
+        "asdf",
+    }
+    if normalized in generic_placeholders:
+        return False
+    if all(token in generic_placeholders for token in tokens):
+        return False
+
+    if len(set(tokens)) == 1:
+        return False
+
+    meaningful_tokens = [token for token in tokens if len(token) >= 4 and token not in generic_placeholders]
+    return len(meaningful_tokens) >= 3
+
+
 def load_compact_roadmap_step(payload: dict[str, Any]) -> CanonicalRoadmapStep:
     """Load and schema-validate a compact roadmap envelope before normalization."""
     validate_artifact(payload, "rax_upstream_input_envelope")
@@ -62,14 +92,21 @@ def normalize_compact_roadmap_step(payload: dict[str, Any]) -> CanonicalRoadmapS
     if not isinstance(depends_on_raw, list):
         raise RAXModelError("depends_on must be a list")
 
-    normalized_dependencies = tuple(sorted({_require_non_empty_string(dep, "depends_on[]") for dep in depends_on_raw}))
+    raw_dependencies = [_require_non_empty_string(dep, "depends_on[]") for dep in depends_on_raw]
+    normalized_dependencies = tuple(sorted(set(raw_dependencies)))
+    if len(raw_dependencies) != len(normalized_dependencies):
+        raise RAXModelError("depends_on normalization ambiguity: lossy dependency collapse detected")
+
+    intent = _require_non_empty_string(payload["intent"], "intent")
+    if not _is_semantically_sufficient_intent(intent):
+        raise RAXModelError("intent semantic insufficiency: content is too weak or placeholder-like")
 
     return CanonicalRoadmapStep(
         roadmap_id=_require_non_empty_string(payload["roadmap_id"], "roadmap_id"),
         roadmap_group=_require_non_empty_string(payload["roadmap_group"], "roadmap_group"),
         step_id=_require_non_empty_string(payload["step_id"], "step_id"),
         owner=_require_non_empty_string(payload["owner"], "owner"),
-        intent=_require_non_empty_string(payload["intent"], "intent"),
+        intent=intent,
         depends_on=normalized_dependencies,
         source_authority_ref=_require_non_empty_string(payload["source_authority_ref"], "source_authority_ref"),
         source_version=_require_non_empty_string(payload["source_version"], "source_version"),
