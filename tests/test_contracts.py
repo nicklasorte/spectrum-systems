@@ -193,6 +193,12 @@ class ContractSchemaTests(unittest.TestCase):
             "precedent_conflict_record",
             "override_governance_record",
             "tpa_policy_candidate",
+            "tpa_policy_input_bundle",
+            "tpa_policy_decision_record",
+            "tpa_evidence_requirement_record",
+            "tpa_conflict_record",
+            "tpa_policy_eval_result",
+            "tpa_policy_bundle",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_policy_input_bundle.schema.json",
+  "title": "TPA Policy Input Bundle",
+  "description": "Governed preparatory input bundle consumed by TPA policy authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "bundle_id",
+    "trace_id",
+    "task_wrapper_ref",
+    "source_authority_refresh_receipt",
+    "complexity_trend_ref",
+    "requested_scope",
+    "proposed_action"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "tpa_policy_input_bundle"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "bundle_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_wrapper_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_authority_refresh_receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "receipt_ref",
+        "refreshed_at",
+        "age_hours",
+        "max_age_hours",
+        "freshness_status"
+      ],
+      "properties": {
+        "receipt_ref": {
+          "type": "string",
+          "pattern": "^source_authority_refresh_receipt:.+"
+        },
+        "refreshed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "age_hours": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max_age_hours": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "freshness_status": {
+          "type": "string",
+          "enum": [
+            "fresh",
+            "stale",
+            "mismatch"
+          ]
+        }
+      }
+    },
+    "complexity_trend_ref": {
+      "type": "string",
+      "pattern": "^complexity_trend:.+"
+    },
+    "requested_scope": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "proposed_action": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "reject",
+        "narrow",
+        "evidence_required"
+      ]
+    },
+    "lineage_path": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "AEX",
+          "TLC",
+          "TPA",
+          "PQX"
+        ]
+      },
+      "minItems": 3,
+      "maxItems": 4
+    },
+    "evidence_debt_counter": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

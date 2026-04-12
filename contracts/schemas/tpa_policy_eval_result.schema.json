@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_policy_eval_result.schema.json",
+  "title": "TPA Policy Eval Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "eval_id", "trace_id", "decision_ref", "status", "checks", "fail_reasons"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "tpa_policy_eval_result"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "eval_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "decision_ref": {"type": "string", "pattern": "^tpa_policy_decision_record:.+"},
+    "status": {"type": "string", "enum": ["pass", "fail"]},
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_sufficiency", "policy_completeness", "boundary_correctness", "scope_correctness", "replay_consistency"],
+      "properties": {
+        "evidence_sufficiency": {"type": "boolean"},
+        "policy_completeness": {"type": "boolean"},
+        "boundary_correctness": {"type": "boolean"},
+        "scope_correctness": {"type": "boolean"},
+        "replay_consistency": {"type": "boolean"}
+      }
+    },
+    "fail_reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+  }
+}

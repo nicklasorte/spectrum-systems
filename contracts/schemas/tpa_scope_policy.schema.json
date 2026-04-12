@@ -14,7 +14,9 @@
     "required_pqx_steps",
     "optional_paths",
     "lightweight_mode_allowed",
-    "source_authority_refresh"
+    "source_authority_refresh",
+    "max_scope_items",
+    "complexity_budget_caps"
   ],
   "properties": {
     "artifact_type": {
@@ -23,7 +25,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.1.0"
+      "const": "1.2.0"
     },
     "policy_id": {
       "type": "string",
@@ -101,6 +103,23 @@
         "component_source_map_digest_sha256": {
           "type": "string",
           "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "max_scope_items": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "complexity_budget_caps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_units"
+      ],
+      "properties": {
+        "max_units": {
+          "type": "integer",
+          "minimum": 1
         }
       }
     }

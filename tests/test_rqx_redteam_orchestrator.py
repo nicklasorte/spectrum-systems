@@ -126,3 +126,25 @@ def test_rqx_cycle_routes_unmappable_to_operator_handoff() -> None:
             exploit_bundle=exploit,
             closure_requests=[],
         )
+
+
+def test_rqx_closeout_gate_requires_all_proof_types_in_real_cycle() -> None:
+    request = _review_request()
+    config = _round_config()
+    exploit = _exploit_bundle()
+    finding = _finding(finding_class="trust_policy")
+
+    bad_closure = _closure_request()
+    bad_closure["proof_refs"] = ["eval_case:only-one"]
+
+    cycle = run_redteam_cycle(
+        review_request=request,
+        round_config=config,
+        findings=[finding],
+        exploit_bundle=exploit,
+        closure_requests=[bad_closure],
+    )
+    assert cycle["fix_slice_requests"][0]["owner"] == "TPA"
+    assert cycle["closure_results"][0]["status"] == "fail"
+    assert "missing_regression_test_proof" in cycle["closure_results"][0]["blocking_reasons"]
+    assert "missing_hardening_proof" in cycle["closure_results"][0]["blocking_reasons"]

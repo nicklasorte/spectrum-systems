@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.115",
+  "artifact_version": "1.3.116",
   "schema_version": "1.3.98",
-  "standards_version": "1.3.115",
-  "record_id": "REC-STD-2026-04-12-RAX-ROADMAP",
-  "run_id": "run-20260412T120000Z-rax-roadmap-serial-01",
+  "standards_version": "1.3.116",
+  "record_id": "REC-STD-2026-04-12-TPA-001",
+  "run_id": "run-20260412T180000Z-tpa-001",
   "created_at": "2026-04-12T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.113",
+  "source_repo_version": "1.3.116",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -5589,6 +5589,32 @@
       "notes": "Unified canonical TPA certification envelope consumed by done and promotion gates, including cleanup-only evidence and fail-closed certification decision."
     },
     {
+      "artifact_type": "tpa_conflict_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.116",
+      "last_updated_in": "1.3.116",
+      "example_path": "contracts/examples/tpa_conflict_record.json",
+      "notes": "TPA material/non-material conflict arbitration artifact."
+    },
+    {
+      "artifact_type": "tpa_evidence_requirement_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.116",
+      "last_updated_in": "1.3.116",
+      "example_path": "contracts/examples/tpa_evidence_requirement_record.json",
+      "notes": "TPA evidence escalation and debt tracking output for insufficient evidence cases."
+    },
+    {
       "artifact_type": "tpa_observability_consumer_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5613,6 +5639,19 @@
       "last_updated_in": "1.3.72",
       "example_path": "contracts/examples/tpa_observability_summary.json",
       "notes": "TPA observability artifact consumed by control-loop learning through tpa_observability_consumer_record contract; includes effectiveness and bypass telemetry."
+    },
+    {
+      "artifact_type": "tpa_policy_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.116",
+      "last_updated_in": "1.3.116",
+      "example_path": "contracts/examples/tpa_policy_bundle.json",
+      "notes": "TPA deterministic bundle linking decision, eval, conflicts, evidence, replay fingerprint, and effectiveness."
     },
     {
       "artifact_type": "tpa_policy_candidate",
@@ -5641,6 +5680,45 @@
       "notes": "Contract-backed deterministic precedence/merge rules across tpa_scope_policy, complexity regression, simplicity review, cleanup-only, and schema-backed lightweight evidence omission allowlist constraints."
     },
     {
+      "artifact_type": "tpa_policy_decision_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.116",
+      "last_updated_in": "1.3.116",
+      "example_path": "contracts/examples/tpa_policy_decision_record.json",
+      "notes": "TPA authoritative bounded decision output: allow/reject/narrow/evidence_required."
+    },
+    {
+      "artifact_type": "tpa_policy_eval_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.116",
+      "last_updated_in": "1.3.116",
+      "example_path": "contracts/examples/tpa_policy_eval_result.json",
+      "notes": "TPA policy eval harness output with explicit boundary/scope/replay checks."
+    },
+    {
+      "artifact_type": "tpa_policy_input_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.116",
+      "last_updated_in": "1.3.116",
+      "example_path": "contracts/examples/tpa_policy_input_bundle.json",
+      "notes": "TPA bounded preparatory input contract for deterministic policy authority evaluation."
+    },
+    {
       "artifact_type": "tpa_repair_gating_input",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5656,13 +5734,13 @@
     {
       "artifact_type": "tpa_scope_policy",
       "artifact_class": "coordination",
-      "schema_version": "1.1.0",
+      "schema_version": "1.2.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.4.0",
-      "last_updated_in": "1.3.71",
+      "last_updated_in": "1.3.116",
       "example_path": "contracts/examples/tpa_scope_policy.json",
       "notes": "TPA scope policy anchored to source-authority refresh evidence via required source-index digests; fails closed on stale/missing refresh."
     },

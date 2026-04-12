@@ -1,6 +1,6 @@
 {
   "artifact_type": "tpa_scope_policy",
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "policy_id": "TPA-SCOPE-2026-04-04",
   "required_paths": [
     "pqx/",
@@ -32,5 +32,9 @@
     "source_inventory_digest_sha256": "86116ebfad412cdd95810df15fe4f0eb6a27ffbcc0cd1475930cf3cf02a5c3fd",
     "obligation_index_digest_sha256": "9d98576fe5ad367ac3df825d9d8cf008aea7067fc28652d399a2401d4abe3c15",
     "component_source_map_digest_sha256": "f0508a709b82b19e06fe203bf25fd96a6452673acf68e0aaa54aeb3d219c38df"
+  },
+  "max_scope_items": 3,
+  "complexity_budget_caps": {
+    "max_units": 8
   }
 }

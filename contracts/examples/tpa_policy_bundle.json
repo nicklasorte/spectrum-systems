@@ -1,0 +1,17 @@
+{
+  "artifact_type": "tpa_policy_bundle",
+  "schema_version": "1.0.0",
+  "bundle_id": "tpa-bundle-001",
+  "trace_id": "trace-tpa-001",
+  "input_bundle_ref": "tpa_policy_input_bundle:tpa-input-001",
+  "decision_ref": "tpa_policy_decision_record:tpa-decision-001",
+  "eval_result_ref": "tpa_policy_eval_result:tpa-eval-001",
+  "conflict_refs": ["tpa_conflict_record:tpa-conflict-001"],
+  "evidence_requirement_ref": "tpa_evidence_requirement_record:tpa-evidence-001",
+  "replay_fingerprint": "8f597f97955bf4faba2787af4eb3622428f745231ff0f9f58d0f8f7ea7149010",
+  "effectiveness": {
+    "prevented_bad_execution": true,
+    "unnecessary_blocking": false,
+    "precision_score": 0.92
+  }
+}
