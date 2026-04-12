@@ -6,6 +6,7 @@ import json
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -68,3 +69,23 @@ def test_failed_run_does_not_auto_refresh() -> None:
     assert result.returncode != 0
     assert not TRIGGER_PATH.exists()
     assert not INVOKE_PATH.exists()
+
+
+def test_refresh_uses_repo_snapshot_generated_at_for_freshness_contract() -> None:
+    _run(["bash", str(REFRESH_SCRIPT)])
+    first_snapshot = json.loads((PUBLIC_ROOT / "repo_snapshot.json").read_text(encoding="utf-8"))
+    first_meta = json.loads((PUBLIC_ROOT / "repo_snapshot_meta.json").read_text(encoding="utf-8"))
+    first_freshness = json.loads((PUBLIC_ROOT / "dashboard_freshness_status.json").read_text(encoding="utf-8"))
+
+    assert first_snapshot["generated_at"] == first_meta["last_refreshed_time"]
+    assert first_snapshot["generated_at"] == first_freshness["snapshot_last_refreshed_time"]
+
+    time.sleep(1.1)
+    _run(["bash", str(REFRESH_SCRIPT)])
+    second_snapshot = json.loads((PUBLIC_ROOT / "repo_snapshot.json").read_text(encoding="utf-8"))
+    second_meta = json.loads((PUBLIC_ROOT / "repo_snapshot_meta.json").read_text(encoding="utf-8"))
+    second_freshness = json.loads((PUBLIC_ROOT / "dashboard_freshness_status.json").read_text(encoding="utf-8"))
+
+    assert second_snapshot["generated_at"] == second_meta["last_refreshed_time"]
+    assert second_snapshot["generated_at"] == second_freshness["snapshot_last_refreshed_time"]
+    assert second_snapshot["generated_at"] != first_snapshot["generated_at"]
