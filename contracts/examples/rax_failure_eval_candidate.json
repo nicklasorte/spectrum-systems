@@ -1,0 +1,17 @@
+{
+  "artifact_type": "rax_failure_eval_candidate",
+  "schema_version": "1.0.0",
+  "candidate_id": "rax-failure-1111222233334444:eval-candidate",
+  "source_failure_id": "rax-failure-1111222233334444",
+  "eval_case_id": "rax-eval-run-001:rax_output_semantic_alignment:rax-failure-1111222233334444",
+  "eval_type": "rax_output_semantic_alignment",
+  "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+  "expected_status": "fail",
+  "reason_codes": [
+    "semantic_intent_insufficient"
+  ],
+  "trace_id": "12121212-1212-4121-8121-121212121212",
+  "version": "1.0.0",
+  "dedupe_key": "semantic_contradiction|roadmap_step_contract:RAX-INTERFACE-24-01|rax_output_semantic_alignment",
+  "generation_status": "generated"
+}

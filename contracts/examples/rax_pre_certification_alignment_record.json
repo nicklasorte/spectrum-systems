@@ -1,0 +1,16 @@
+{
+  "artifact_type": "rax_pre_certification_alignment_record",
+  "schema_version": "1.0.0",
+  "record_id": "precert-001",
+  "target_ref": "roadmap_step_contract:RAX-INTERFACE-24-01",
+  "eval_completeness_aligned": true,
+  "replay_consistency_aligned": true,
+  "trace_completeness_aligned": true,
+  "lineage_validity_aligned": true,
+  "fail_closed_aligned": true,
+  "semantic_correctness_aligned": true,
+  "ready_candidate_allowed": false,
+  "blocking_reasons": [
+    "downstream_certification_pending"
+  ]
+}

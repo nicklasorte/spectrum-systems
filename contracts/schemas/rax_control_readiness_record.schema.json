@@ -18,21 +18,119 @@
     "missing_required_eval_types",
     "trace_complete",
     "baseline_regression_detected",
-    "version_authority_aligned"
+    "version_authority_aligned",
+    "conditions_under_which_ready_changes",
+    "unknown_state_ref",
+    "pre_certification_alignment_ref"
   ],
   "properties": {
-    "artifact_type": {"type": "string", "const": "rax_control_readiness_record"},
-    "schema_version": {"type": "string", "const": "1.0.0"},
-    "batch": {"type": "string", "minLength": 1},
-    "target_ref": {"type": "string", "minLength": 1},
-    "ready_for_control": {"type": "boolean"},
-    "decision": {"type": "string", "enum": ["ready", "hold", "block"]},
-    "blocking_reasons": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "required_eval_types": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
-    "present_eval_types": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "missing_required_eval_types": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "trace_complete": {"type": "boolean"},
-    "baseline_regression_detected": {"type": "boolean"},
-    "version_authority_aligned": {"type": "boolean"}
+    "artifact_type": {
+      "type": "string",
+      "const": "rax_control_readiness_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "batch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ready_for_control": {
+      "type": "boolean"
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "ready",
+        "hold",
+        "block"
+      ]
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "required_eval_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "present_eval_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "missing_required_eval_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "trace_complete": {
+      "type": "boolean"
+    },
+    "baseline_regression_detected": {
+      "type": "boolean"
+    },
+    "version_authority_aligned": {
+      "type": "boolean"
+    },
+    "conditions_under_which_ready_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "condition_category",
+          "blocking_reason",
+          "evidence_refs",
+          "required_signal"
+        ],
+        "properties": {
+          "condition_category": {
+            "type": "string",
+            "minLength": 1
+          },
+          "blocking_reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "required_signal": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "unknown_state_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pre_certification_alignment_ref": {
+      "type": "string",
+      "minLength": 1
+    }
   }
 }

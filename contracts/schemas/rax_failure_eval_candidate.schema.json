@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_failure_eval_candidate.schema.json",
+  "title": "RAX Failure Eval Candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "candidate_id",
+    "source_failure_id",
+    "eval_case_id",
+    "eval_type",
+    "target_ref",
+    "expected_status",
+    "reason_codes",
+    "trace_id",
+    "version",
+    "dedupe_key",
+    "generation_status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "rax_failure_eval_candidate"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_failure_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eval_case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eval_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_status": {
+      "type": "string",
+      "enum": [
+        "fail",
+        "pass"
+      ]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dedupe_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generation_status": {
+      "type": "string",
+      "enum": [
+        "generated",
+        "duplicate"
+      ]
+    }
+  }
+}
