@@ -160,5 +160,21 @@ export const PANEL_CAPABILITY_MAP: PanelCapability[] = [
     owning_system: 'FRE',
     decision_authority: 'read_only',
     prohibited_local_authority: ['control', 'judgment', 'replay', 'override', 'eval', 'publication']
-  }
+  },
+  { panel_id: 'operator_coordination_layer', reads_from_artifacts: ['dashboard_publication_manifest.json', 'dashboard_freshness_status.json'], owning_system: 'TLC', decision_authority: 'read_only', prohibited_local_authority: ['control', 'judgment', 'replay', 'override', 'eval', 'publication'] },
+  { panel_id: 'decision_change_conditions', reads_from_artifacts: ['judgment_application_artifact.json'], owning_system: 'RIL', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] },
+  { panel_id: 'evidence_gap_hotspots', reads_from_artifacts: ['readiness_to_expand_validator.json'], owning_system: 'CDE', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] },
+  { panel_id: 'override_hotspots', reads_from_artifacts: ['rq_next_24_01__umbrella_1__nx_05_operator_override_capture.json'], owning_system: 'SEL', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] },
+  { panel_id: 'trust_posture_timeline', reads_from_artifacts: ['operator_trust_closeout_artifact.json'], owning_system: 'FRE', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] },
+  { panel_id: 'judge_disagreement', reads_from_artifacts: ['cycle_comparator_03_05.json'], owning_system: 'RIL', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] },
+  { panel_id: 'policy_regression', reads_from_artifacts: ['cycle_comparator_03_05.json'], owning_system: 'PRG', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] },
+  { panel_id: 'capability_readiness', reads_from_artifacts: ['readiness_to_expand_validator.json'], owning_system: 'SEL', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] },
+  { panel_id: 'route_efficiency', reads_from_artifacts: ['operator_trust_closeout_artifact.json'], owning_system: 'FRE', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] },
+  { panel_id: 'failure_derived_eval', reads_from_artifacts: ['next_action_outcome_record.json'], owning_system: 'PQX', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] },
+  { panel_id: 'correction_patterns', reads_from_artifacts: ['rq_next_24_01__umbrella_1__nx_05_operator_override_capture.json'], owning_system: 'TLC', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] },
+  { panel_id: 'review_outcomes', reads_from_artifacts: ['recommendation_review_surface.json'], owning_system: 'RIL', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] },
+  { panel_id: 'escalation_triggers', reads_from_artifacts: ['hard_gate_status_record.json', 'publication_attempt_record.json'], owning_system: 'SEL', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] },
+  { panel_id: 'cross_run_intelligence', reads_from_artifacts: ['cycle_comparator_03_05.json'], owning_system: 'CDE', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] },
+  { panel_id: 'high_risk_claim_board', reads_from_artifacts: ['readiness_to_expand_validator.json'], owning_system: 'PRG', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] },
+  { panel_id: 'governed_exports', reads_from_artifacts: ['operator_surface_snapshot_export.json', 'dashboard_publication_manifest.json', 'dashboard_freshness_status.json'], owning_system: 'CDE', decision_authority: 'read_only', prohibited_local_authority: ['control','judgment','replay','override','eval','publication'] }
 ]
