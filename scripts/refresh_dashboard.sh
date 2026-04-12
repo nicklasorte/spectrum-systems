@@ -39,9 +39,7 @@ if [[ ! -f "${SNAPSHOT_ARTIFACT}" ]]; then
   exit 1
 fi
 
-REFRESHED_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-
-python3 - <<'PY' "${REPO_ROOT}" "${DASHBOARD_PUBLIC_DIR}" "${REFRESHED_AT}"
+python3 - <<'PY' "${REPO_ROOT}" "${DASHBOARD_PUBLIC_DIR}"
 from __future__ import annotations
 
 import hashlib
@@ -53,7 +51,6 @@ from pathlib import Path
 
 repo_root = Path(sys.argv[1])
 public_root = Path(sys.argv[2])
-refreshed_at = sys.argv[3]
 
 required_sources = {
     "repo_snapshot.json": repo_root / "artifacts" / "dashboard" / "repo_snapshot.json",
@@ -95,9 +92,24 @@ if missing:
         print(f"- {row}", file=sys.stderr)
     raise SystemExit(1)
 
+snapshot_payload = json.loads(required_sources["repo_snapshot.json"].read_text(encoding="utf-8"))
+snapshot_generated_at = str(snapshot_payload.get("generated_at", "")).strip()
+if not snapshot_generated_at:
+    print("ERROR: repo_snapshot.json.generated_at is required", file=sys.stderr)
+    raise SystemExit(1)
+
+try:
+    datetime.strptime(snapshot_generated_at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+except ValueError as exc:
+    print(
+        "ERROR: repo_snapshot.json.generated_at must be ISO UTC (YYYY-MM-DDTHH:MM:SSZ)",
+        file=sys.stderr,
+    )
+    raise SystemExit(1) from exc
+
 snapshot_size_bytes = required_sources["repo_snapshot.json"].stat().st_size
 meta_payload = {
-    "last_refreshed_time": refreshed_at,
+    "last_refreshed_time": snapshot_generated_at,
     "snapshot_size": f"{snapshot_size_bytes} bytes",
     "data_source_state": "live",
     "snapshot_source_path": "artifacts/dashboard/repo_snapshot.json",
@@ -105,13 +117,13 @@ meta_payload = {
 }
 
 freshness_payload = json.loads(required_sources["dashboard_freshness_status.json"].read_text(encoding="utf-8"))
-refreshed_dt = datetime.strptime(refreshed_at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+refreshed_dt = datetime.strptime(snapshot_generated_at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
 age_hours = (datetime.now(timezone.utc) - refreshed_dt).total_seconds() / 3600
 freshness_payload.update(
     {
-        "generated_at": refreshed_at,
+        "generated_at": snapshot_generated_at,
         "status": "fresh" if age_hours <= 6 else "stale",
-        "snapshot_last_refreshed_time": refreshed_at,
+        "snapshot_last_refreshed_time": snapshot_generated_at,
         "snapshot_age_hours": round(age_hours, 3),
         "publication_state": "live",
     }
@@ -142,7 +154,7 @@ for name in sorted(required_sources):
 
 audit_payload = {
     "artifact_type": "dashboard_publication_sync_audit",
-    "published_at": refreshed_at,
+    "published_at": snapshot_generated_at,
     "publication_state": "live",
     "required_artifact_count": len(required_sources) + 2,
     "records": copied_rows,
@@ -152,7 +164,7 @@ audit_payload = {
 publication_manifest = {
     "artifact_type": "dashboard_publication_manifest",
     "manifest_version": "1.0.0",
-    "published_at": refreshed_at,
+    "published_at": snapshot_generated_at,
     "publication_mode": "atomic",
     "publication_state": "live",
     "publication_contract": "canonical_live_artifact_projection",
@@ -195,6 +207,22 @@ print(f"Refresh complete: {public_root / 'repo_snapshot.json'}")
 print(f"Metadata written: {public_root / 'repo_snapshot_meta.json'}")
 print(f"Publication audit: {public_root / 'dashboard_publication_sync_audit.json'}")
 PY
+
+REFRESHED_AT="$(python3 - <<'PY' "${SNAPSHOT_ARTIFACT}"
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+snapshot_path = Path(sys.argv[1])
+payload = json.loads(snapshot_path.read_text(encoding="utf-8"))
+value = str(payload.get("generated_at", "")).strip()
+if not value:
+    raise SystemExit("ERROR: repo_snapshot.json.generated_at missing after refresh")
+print(value)
+PY
+)"
 
 python3 "${VALIDATOR_SCRIPT}"
 
