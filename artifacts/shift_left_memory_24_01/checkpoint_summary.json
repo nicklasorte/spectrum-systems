@@ -1,0 +1,13 @@
+{
+  "artifact_type": "checkpoint_summary",
+  "batch_id": "SHIFT-LEFT-MEMORY-24-01",
+  "generated_at": "2026-04-11T18:06:02Z",
+  "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
+  "all_checkpoints_passed": true,
+  "umbrella_status": {
+    "UMBRELLA-1": "pass",
+    "UMBRELLA-2": "pass",
+    "UMBRELLA-3": "pass",
+    "UMBRELLA-4": "pass"
+  }
+}

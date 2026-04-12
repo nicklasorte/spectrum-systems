@@ -1,0 +1,10 @@
+{
+  "artifact_type": "judgment_application_artifact",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T15:31:14Z",
+  "decision_id": "RQ36-DEC-001",
+  "judgment_ids": [
+    "artifact_release_readiness"
+  ],
+  "consumed_by_control": true
+}

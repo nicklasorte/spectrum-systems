@@ -1,0 +1,11 @@
+{
+  "admissibility": "admit",
+  "artifact_type": "operator_action_admissibility",
+  "chosen_action": "validate_with_another_run",
+  "hard_gates": "pass",
+  "owner": "TPA",
+  "policy_scope": "bounded_validation_only",
+  "readiness_state": "Validate with another run",
+  "run_id": "GK-24-01-20260411T143757Z",
+  "trust_state": "governed"
+}

@@ -1,0 +1,11 @@
+{
+  "artifact_type": "post_fix_replay_record",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 14,
+  "phase": 5,
+  "owner": "PQX",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "replay_executed": true,
+  "replay_timing": "immediate",
+  "result": "pass"
+}

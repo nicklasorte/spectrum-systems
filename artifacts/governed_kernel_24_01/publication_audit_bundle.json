@@ -1,0 +1,15 @@
+{
+  "artifact_type": "publication_audit_bundle",
+  "evidence": {
+    "publication_completeness": "complete",
+    "source_path_hash_evidence": {
+      "execution_manifest": "4db1021907cd9d68",
+      "review_report": "5e9f3e57620483fc",
+      "run_contract": "d79dda990c14cbbf"
+    }
+  },
+  "fallback_live_ambiguity": "none",
+  "freshness_status": "PASS",
+  "public_truth_constraints": "PASS",
+  "run_id": "GK-24-01-20260411T143757Z"
+}

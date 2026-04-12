@@ -1,0 +1,7 @@
+{
+  "artifact_type": "canonical_delivery_report_artifact",
+  "batch_id": "REPAIR-LATENCY-24-01",
+  "generated_at": "2026-04-11T16:01:04Z",
+  "non_empty": true,
+  "summary": "Umbrella 1 completed with fail-closed fast-path gating."
+}

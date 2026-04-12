@@ -1,0 +1,11 @@
+{
+  "artifact_type": "dashboard_freshness_status",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T15:31:14Z",
+  "freshness_window_hours": 6,
+  "status": "fresh",
+  "evidence_basis": [
+    "repo_snapshot_meta.last_refreshed_time",
+    "dashboard_public_sync_audit"
+  ]
+}

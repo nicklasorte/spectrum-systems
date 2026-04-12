@@ -1,0 +1,13 @@
+{
+  "artifact_type": "repairable_failure_interpretation_packet",
+  "batch_id": "REPAIR-LATENCY-24-01",
+  "slice_id": "RL-01",
+  "owner": "RIL",
+  "generated_at": "2026-04-11T16:01:04Z",
+  "classification": {
+    "repairable": 4,
+    "non_repairable": 2,
+    "ambiguous": 1
+  },
+  "interpretation_boundary": "interpretation_only_not_authority"
+}

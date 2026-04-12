@@ -1,0 +1,12 @@
+{
+  "artifact_type": "review_quality_scoreboard",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 6,
+  "phase": 2,
+  "owner": "PRG",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "review_completeness": "100%",
+  "weak_review_frequency": 0,
+  "unresolved_review_debt": 0,
+  "authoritative": false
+}

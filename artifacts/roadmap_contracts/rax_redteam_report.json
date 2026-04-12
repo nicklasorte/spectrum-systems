@@ -1,0 +1,414 @@
+{
+  "artifact_type": "rax_redteam_report",
+  "batch": "RAX-03-REDTEAM",
+  "execution_mode": "FORENSIC ADVERSARIAL REVIEW",
+  "attacks_attempted": 8,
+  "attacks_blocked": 2,
+  "attacks_that_succeeded": [
+    "invalid_contract_attack",
+    "dependency_bypass_attack",
+    "forbidden_pattern_evasion_attack",
+    "fake_test_success_attack",
+    "status_forging_attack",
+    "ownership_boundary_attack"
+  ],
+  "severity_by_attack": {
+    "invalid_contract_attack": "high",
+    "dependency_bypass_attack": "critical",
+    "forbidden_pattern_evasion_attack": "critical",
+    "missing_runtime_entrypoint_attack": "none",
+    "fake_test_success_attack": "critical",
+    "status_forging_attack": "critical",
+    "expansion_trace_tampering_attack": "none",
+    "ownership_boundary_attack": "high"
+  },
+  "boundary_violations_found": [
+    {
+      "attack": "forbidden_pattern_evasion_attack",
+      "violation": "contract accepted without enforcing policy/behavioral boundary"
+    },
+    {
+      "attack": "fake_test_success_attack",
+      "violation": "contract accepted without enforcing policy/behavioral boundary"
+    },
+    {
+      "attack": "ownership_boundary_attack",
+      "violation": "contract accepted without enforcing policy/behavioral boundary"
+    }
+  ],
+  "status_forging_possible": true,
+  "overall_verdict": "FAIL",
+  "attack_results": [
+    {
+      "blocked": false,
+      "details": [
+        {
+          "case": "missing_required_field",
+          "blocked": true,
+          "reason": "'intent' is a required property\n\nFailed validating 'required' in schema:\n    {'$schema': 'https://json-schema.org/draft/2020-12/schema',\n     '$id': 'https://spectrum-systems.org/contracts/roadmap_step_contract.schema.json',\n     'title': 'Roadmap Step Contract',\n     'description': 'Strict enriched roadmap step contract used for '\n                    'deterministic artifact expansion planning. This '\n                    'contract does not grant execution, sequencing, '\n                    'prioritization, or enforcement authority.',\n     'type': 'object',\n     'additionalProperties': False,\n     'required': ['artifact_type',\n                  'step_id',\n                  'owner',\n                  'intent',\n                  'depends_on',\n                  'target_modules',\n                  'target_contracts',\n                  'target_tests',\n                  'runtime_entrypoints',\n                  'forbidden_patterns',\n                  'acceptance_checks',\n                  'realization_mode',\n                  'realization_status',\n                  'expansion_version',\n                  'expansion_policy_hash',\n                  'expansion_trace_ref'],\n     'properties': {'artifact_type': {'type': 'string',\n                                      'const': 'roadmap_step_contract'},\n                    'step_id': {'type': 'string',\n                                'pattern': '^[A-Z]{2,6}-[0-9]{2,4}([A-Z])?$'},\n                    'owner': {'type': 'string',\n                              'enum': ['RIL',\n                                       'CDE',\n                                       'TLC',\n                                       'PQX',\n                                       'FRE',\n                                       'SEL',\n                                       'PRG']},\n                    'intent': {'type': 'string', 'minLength': 10},\n                    'depends_on': {'type': 'array',\n                                   'items': {'type': 'string',\n                                             'pattern': '^[A-Z]{2,6}-[0-9]{2,4}([A-Z])?$'},\n                                   'uniqueItems': True},\n                    'target_modules': {'type': 'array',\n                                       'items': {'type': 'string',\n                                                 'minLength': 1},\n                                       'uniqueItems': True},\n                    'target_contracts': {'type': 'array',\n                                         'items': {'type': 'string',\n                                                   'minLength': 1},\n                                         'uniqueItems': True},\n                    'target_tests': {'type': 'array',\n                                     'items': {'type': 'string',\n                                               'minLength': 1},\n                                     'uniqueItems': True},\n                    'runtime_entrypoints': {'type': 'array',\n                                            'items': {'type': 'string',\n                                                      'minLength': 1},\n                                            'uniqueItems': True},\n                    'forbidden_patterns': {'type': 'array',\n                                           'items': {'type': 'string',\n                                                     'minLength': 1},\n                                           'uniqueItems': True},\n                    'acceptance_checks': {'type': 'array',\n                                          'items': {'type': 'object',\n                                                    'additionalProperties': False,\n                                                    'required': ['check_id',\n                                                                 'description',\n                                                                 'required'],\n                                                    'properties': {'check_id': {'type': 'string',\n                                                                                'pattern': '^[a-z0-9][a-z0-9_\\\\-]{2,63}$'},\n                                                                   'description': {'type': 'string',\n                                                                                   'minLength': 5},\n                                                                   'required': {'type': 'boolean',\n                                                                                'const': True}}}},\n                    'realization_mode': {'type': 'string',\n                                         'enum': ['artifact_materialization',\n                                                  'runtime_realization',\n                                                  'verification_only']},\n                    'realization_status': {'type': 'string',\n                                           'enum': ['planned_only',\n                                                    'artifact_materialized',\n                                                    'partially_realized',\n                                                    'runtime_realized',\n                                                    'verified']},\n                    'expansion_version': {'type': 'string',\n                                          'pattern': '^[0-9]+\\\\.[0-9]+\\\\.[0-9]+$'},\n                    'expansion_policy_hash': {'type': 'string',\n                                              'pattern': '^[a-f0-9]{64}$'},\n                    'expansion_trace_ref': {'type': 'string',\n                                            'pattern': '^contracts/examples/roadmap_expansion_trace\\\\.example\\\\.json#[A-Za-z0-9._:-]+$'}}}\n\nOn instance:\n    {'artifact_type': 'roadmap_step_contract',\n     'step_id': 'RF-02',\n     'owner': 'PQX',\n     'depends_on': ['RF-01'],\n     'target_modules': ['spectrum_systems/modules/runtime/roadmap_realization_runtime.py'],\n     'target_contracts': ['contracts/schemas/roadmap_step_contract.schema.json',\n                          'contracts/schemas/roadmap_expansion_trace.schema.json'],\n     'target_tests': ['pytest tests/test_roadmap_realization_runner.py -k '\n                      'rf02 -q'],\n     'runtime_entrypoints': ['spectrum_systems.modules.runtime.review_cycle_record:create_review_cycle',\n                             'spectrum_systems.modules.runtime.roadmap_realization_runtime:next_realization_status'],\n     'forbidden_patterns': ['_write_json',\n                            'artifact-only success',\n                            'direct static payload'],\n     'acceptance_checks': [{'check_id': 'rf02_contract_validation',\n                            'description': 'Step contract validates and '\n                                           'target schema paths remain '\n                                           'available.',\n                            'required': True},\n                           {'check_id': 'rf02_runtime_gate',\n                            'description': 'Runtime gate only advances '\n                                           'status when behavior checks '\n                                           'pass.',\n                            'required': True}],\n     'realization_mode': 'runtime_realization',\n     'realization_status': 'verified',\n     'expansion_version': '1.0.0',\n     'expansion_policy_hash': '152968011b794af977ccdfa9813025ef2271dbd6be90a48116d5a6b665b73839',\n     'expansion_trace_ref': 'contracts/examples/roadmap_expansion_trace.example.json#RF-02'}"
+        },
+        {
+          "case": "invalid_owner",
+          "blocked": true,
+          "reason": "'HAX' is not one of ['RIL', 'CDE', 'TLC', 'PQX', 'FRE', 'SEL', 'PRG']\n\nFailed validating 'enum' in schema['properties']['owner']:\n    {'type': 'string',\n     'enum': ['RIL', 'CDE', 'TLC', 'PQX', 'FRE', 'SEL', 'PRG']}\n\nOn instance['owner']:\n    'HAX'"
+        },
+        {
+          "case": "invalid_realization_mode",
+          "blocked": true,
+          "reason": "'hacked_mode' is not one of ['artifact_materialization', 'runtime_realization', 'verification_only']\n\nFailed validating 'enum' in schema['properties']['realization_mode']:\n    {'type': 'string',\n     'enum': ['artifact_materialization',\n              'runtime_realization',\n              'verification_only']}\n\nOn instance['realization_mode']:\n    'hacked_mode'"
+        },
+        {
+          "case": "invalid_realization_status",
+          "blocked": true,
+          "reason": "'forged_status' is not one of ['planned_only', 'artifact_materialized', 'partially_realized', 'runtime_realized', 'verified']\n\nFailed validating 'enum' in schema['properties']['realization_status']:\n    {'type': 'string',\n     'enum': ['planned_only',\n              'artifact_materialized',\n              'partially_realized',\n              'runtime_realized',\n              'verified']}\n\nOn instance['realization_status']:\n    'forged_status'"
+        },
+        {
+          "case": "missing_target_modules",
+          "blocked": false,
+          "reason": "accepted unexpectedly"
+        },
+        {
+          "case": "missing_acceptance_checks",
+          "blocked": false,
+          "reason": "accepted unexpectedly"
+        }
+      ],
+      "attack": "invalid_contract_attack"
+    },
+    {
+      "blocked": false,
+      "details": {
+        "artifact_type": "roadmap_realization_result",
+        "step_ids": [
+          "RF-03",
+          "RF-02"
+        ],
+        "attempted_steps": [
+          "RF-03",
+          "RF-02"
+        ],
+        "passed_steps": [
+          "RF-03",
+          "RF-02"
+        ],
+        "failed_steps": [],
+        "forbidden_pattern_hits": {
+          "RF-03": [],
+          "RF-02": []
+        },
+        "runtime_entrypoint_checks": {
+          "RF-03": [
+            {
+              "entrypoint": "spectrum_systems.modules.runtime.roadmap_realization_runtime:enforce_realization_dependencies",
+              "exists": true,
+              "error": ""
+            },
+            {
+              "entrypoint": "spectrum_systems.modules.runtime.roadmap_realization_runtime:next_realization_status",
+              "exists": true,
+              "error": ""
+            }
+          ],
+          "RF-02": [
+            {
+              "entrypoint": "spectrum_systems.modules.runtime.review_cycle_record:create_review_cycle",
+              "exists": true,
+              "error": ""
+            },
+            {
+              "entrypoint": "spectrum_systems.modules.runtime.roadmap_realization_runtime:next_realization_status",
+              "exists": true,
+              "error": ""
+            }
+          ]
+        },
+        "behavioral_test_results": {
+          "RF-03": [
+            {
+              "command": "pytest tests/test_roadmap_realization_runner.py -k rf03 -q",
+              "returncode": 0,
+              "passed": true,
+              "stdout": "..                                                                       [100%]\n2 passed, 5 deselected in 0.10s\n",
+              "stderr": ""
+            }
+          ],
+          "RF-02": [
+            {
+              "command": "pytest tests/test_roadmap_realization_runner.py -k rf02 -q",
+              "returncode": 0,
+              "passed": true,
+              "stdout": ".                                                                        [100%]\n1 passed, 6 deselected in 0.08s\n",
+              "stderr": ""
+            }
+          ]
+        },
+        "status_updates": [],
+        "overall_status": "pass"
+      },
+      "attack": "dependency_bypass_attack"
+    },
+    {
+      "blocked": false,
+      "details": {
+        "result": {
+          "artifact_type": "roadmap_realization_result",
+          "step_ids": [
+            "RF-02"
+          ],
+          "attempted_steps": [
+            "RF-02"
+          ],
+          "passed_steps": [
+            "RF-02"
+          ],
+          "failed_steps": [],
+          "forbidden_pattern_hits": {
+            "RF-02": []
+          },
+          "runtime_entrypoint_checks": {
+            "RF-02": [
+              {
+                "entrypoint": "spectrum_systems.modules.runtime.review_cycle_record:create_review_cycle",
+                "exists": true,
+                "error": ""
+              },
+              {
+                "entrypoint": "spectrum_systems.modules.runtime.roadmap_realization_runtime:next_realization_status",
+                "exists": true,
+                "error": ""
+              }
+            ]
+          },
+          "behavioral_test_results": {
+            "RF-02": [
+              {
+                "command": "python -c \"from pathlib import Path; assert Path('scripts/roadmap_realization_runner.py').is_file()\"",
+                "returncode": 0,
+                "passed": true,
+                "stdout": "",
+                "stderr": ""
+              }
+            ]
+          },
+          "status_updates": [
+            {
+              "step_id": "RF-02",
+              "from": "planned_only",
+              "to": "verified"
+            }
+          ],
+          "overall_status": "pass"
+        },
+        "updated_status": "verified"
+      },
+      "attack": "forbidden_pattern_evasion_attack"
+    },
+    {
+      "blocked": true,
+      "details": {
+        "artifact_type": "roadmap_realization_result",
+        "step_ids": [
+          "RF-02"
+        ],
+        "attempted_steps": [
+          "RF-02"
+        ],
+        "passed_steps": [],
+        "failed_steps": [
+          "RF-02"
+        ],
+        "forbidden_pattern_hits": {
+          "RF-02": []
+        },
+        "runtime_entrypoint_checks": {
+          "RF-02": [
+            {
+              "entrypoint": "spectrum_systems.modules.runtime.roadmap_realization_runtime:nope",
+              "exists": false,
+              "error": "module 'spectrum_systems.modules.runtime.roadmap_realization_runtime' has no attribute 'nope'"
+            }
+          ]
+        },
+        "behavioral_test_results": {
+          "RF-02": [
+            {
+              "command": "pytest tests/test_roadmap_realization_runner.py -k rf02 -q",
+              "returncode": 0,
+              "passed": true,
+              "stdout": ".                                                                        [100%]\n1 passed, 6 deselected in 0.07s\n",
+              "stderr": ""
+            }
+          ]
+        },
+        "status_updates": [],
+        "overall_status": "fail"
+      },
+      "attack": "missing_runtime_entrypoint_attack"
+    },
+    {
+      "blocked": false,
+      "details": {
+        "result": {
+          "artifact_type": "roadmap_realization_result",
+          "step_ids": [
+            "RF-02"
+          ],
+          "attempted_steps": [
+            "RF-02"
+          ],
+          "passed_steps": [
+            "RF-02"
+          ],
+          "failed_steps": [],
+          "forbidden_pattern_hits": {
+            "RF-02": []
+          },
+          "runtime_entrypoint_checks": {
+            "RF-02": [
+              {
+                "entrypoint": "spectrum_systems.modules.runtime.review_cycle_record:create_review_cycle",
+                "exists": true,
+                "error": ""
+              },
+              {
+                "entrypoint": "spectrum_systems.modules.runtime.roadmap_realization_runtime:next_realization_status",
+                "exists": true,
+                "error": ""
+              }
+            ]
+          },
+          "behavioral_test_results": {
+            "RF-02": [
+              {
+                "command": "python -c \"from pathlib import Path; import sys; sys.exit(0 if Path('contracts/schemas/roadmap_step_contract.schema.json').exists() else 1)\"",
+                "returncode": 0,
+                "passed": true,
+                "stdout": "",
+                "stderr": ""
+              }
+            ]
+          },
+          "status_updates": [
+            {
+              "step_id": "RF-02",
+              "from": "planned_only",
+              "to": "verified"
+            }
+          ],
+          "overall_status": "pass"
+        },
+        "updated_status": "verified"
+      },
+      "attack": "fake_test_success_attack"
+    },
+    {
+      "blocked": false,
+      "details": {
+        "result": {
+          "artifact_type": "roadmap_realization_result",
+          "step_ids": [
+            "RF-02"
+          ],
+          "attempted_steps": [
+            "RF-02"
+          ],
+          "passed_steps": [
+            "RF-02"
+          ],
+          "failed_steps": [],
+          "forbidden_pattern_hits": {
+            "RF-02": []
+          },
+          "runtime_entrypoint_checks": {
+            "RF-02": [
+              {
+                "entrypoint": "spectrum_systems.modules.runtime.roadmap_realization_runtime:nope",
+                "exists": false,
+                "error": "module 'spectrum_systems.modules.runtime.roadmap_realization_runtime' has no attribute 'nope'"
+              }
+            ]
+          },
+          "behavioral_test_results": {
+            "RF-02": [
+              {
+                "command": "python -c \"raise SystemExit(1)\"",
+                "returncode": 1,
+                "passed": false,
+                "stdout": "",
+                "stderr": ""
+              }
+            ]
+          },
+          "status_updates": [],
+          "overall_status": "pass"
+        },
+        "updated_status": "verified"
+      },
+      "attack": "status_forging_attack"
+    },
+    {
+      "blocked": true,
+      "details": "expansion_policy_hash mismatch for RF-02",
+      "attack": "expansion_trace_tampering_attack"
+    },
+    {
+      "blocked": false,
+      "details": {
+        "result": {
+          "artifact_type": "roadmap_realization_result",
+          "step_ids": [
+            "RF-02"
+          ],
+          "attempted_steps": [
+            "RF-02"
+          ],
+          "passed_steps": [
+            "RF-02"
+          ],
+          "failed_steps": [],
+          "forbidden_pattern_hits": {
+            "RF-02": []
+          },
+          "runtime_entrypoint_checks": {
+            "RF-02": [
+              {
+                "entrypoint": "spectrum_systems.modules.runtime.review_cycle_record:create_review_cycle",
+                "exists": true,
+                "error": ""
+              },
+              {
+                "entrypoint": "spectrum_systems.modules.runtime.roadmap_realization_runtime:next_realization_status",
+                "exists": true,
+                "error": ""
+              }
+            ]
+          },
+          "behavioral_test_results": {
+            "RF-02": [
+              {
+                "command": "python -c \"raise SystemExit(0)\"",
+                "returncode": 0,
+                "passed": true,
+                "stdout": "",
+                "stderr": ""
+              }
+            ]
+          },
+          "status_updates": [
+            {
+              "step_id": "RF-02",
+              "from": "planned_only",
+              "to": "verified"
+            }
+          ],
+          "overall_status": "pass"
+        },
+        "updated_status": "verified",
+        "target_modules": [
+          "README.md"
+        ]
+      },
+      "attack": "ownership_boundary_attack"
+    }
+  ]
+}

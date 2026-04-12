@@ -3,17 +3,24 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-RQ_SCRIPT = REPO_ROOT / "scripts" / "run_rq_master_01.py"
+RQ_SCRIPT = REPO_ROOT / "scripts" / "run_rq_master_36_01.py"
 REFRESH_SCRIPT = REPO_ROOT / "scripts" / "refresh_dashboard.sh"
 VALIDATOR = REPO_ROOT / "scripts" / "validate_dashboard_public_artifacts.py"
 PUBLIC_ROOT = REPO_ROOT / "dashboard" / "public"
 META_PATH = PUBLIC_ROOT / "repo_snapshot_meta.json"
+FRESHNESS_PATH = PUBLIC_ROOT / "dashboard_freshness_status.json"
+PROMOTION_PATH = PUBLIC_ROOT / "governed_promotion_discipline_gate.json"
+MANIFEST_PATH = PUBLIC_ROOT / "dashboard_publication_manifest.json"
+ENFORCEMENT_PATH = REPO_ROOT / "artifacts" / "rq_master_36_01" / "dashboard_refresh_enforcement_result.json"
+DEPLOY_GATE_PATH = REPO_ROOT / "artifacts" / "rq_master_36_01" / "dashboard_auto_deploy_gate_result.json"
+PREFLIGHT_PATH = REPO_ROOT / "artifacts" / "rq_master_36_01" / "dashboard_refresh_preflight_report.json"
 
 
 def _run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
@@ -30,22 +37,109 @@ def _write_json(path: Path, payload: dict) -> None:
 
 def test_validator_passes_for_fresh_public_artifacts() -> None:
     _run([sys.executable, str(RQ_SCRIPT)])
-    _run(["bash", str(REFRESH_SCRIPT)])
     _run([sys.executable, str(VALIDATOR)])
+    enforcement = _read_json(ENFORCEMENT_PATH)
+    preflight = _read_json(PREFLIGHT_PATH)
+    deploy_gate = _read_json(DEPLOY_GATE_PATH)
+    assert enforcement["status"] == "pass"
+    assert preflight["status"] == "pass"
+    assert deploy_gate["status"] == "pass"
 
 
 def test_validator_fails_on_stale_snapshot_meta() -> None:
     _run([sys.executable, str(RQ_SCRIPT)])
-    _run(["bash", str(REFRESH_SCRIPT)])
 
-    original = _read_json(META_PATH)
-    stale = dict(original)
+    original_meta = _read_json(META_PATH)
+    original_freshness = _read_json(FRESHNESS_PATH)
+
+    stale = dict(original_meta)
     stale["last_refreshed_time"] = (datetime.now(timezone.utc) - timedelta(hours=8)).strftime("%Y-%m-%dT%H:%M:%SZ")
     stale["data_source_state"] = "live"
     _write_json(META_PATH, stale)
 
     result = subprocess.run([sys.executable, str(VALIDATOR)], cwd=str(REPO_ROOT), capture_output=True, text=True)
     assert result.returncode != 0
-    assert "stale" in result.stderr.lower()
+    assert "stale" in result.stderr.lower() or "freshness" in result.stderr.lower()
 
-    _write_json(META_PATH, original)
+    _write_json(META_PATH, original_meta)
+    _write_json(FRESHNESS_PATH, original_freshness)
+
+
+def test_validator_fails_on_atomic_publication_break() -> None:
+    _run([sys.executable, str(RQ_SCRIPT)])
+
+    original_manifest = _read_json(MANIFEST_PATH)
+    broken_manifest = dict(original_manifest)
+    broken_manifest["publication_mode"] = "non_atomic"
+    _write_json(MANIFEST_PATH, broken_manifest)
+
+    result = subprocess.run([sys.executable, str(VALIDATOR)], cwd=str(REPO_ROOT), capture_output=True, text=True)
+    assert result.returncode != 0
+    assert "atomic" in result.stderr.lower()
+
+    _write_json(MANIFEST_PATH, original_manifest)
+
+
+def test_validator_fails_when_fallback_state_is_declared() -> None:
+    _run([sys.executable, str(RQ_SCRIPT)])
+
+    original_freshness = _read_json(FRESHNESS_PATH)
+    ambiguous = dict(original_freshness)
+    ambiguous["publication_state"] = "fallback"
+    _write_json(FRESHNESS_PATH, ambiguous)
+
+    result = subprocess.run([sys.executable, str(VALIDATOR)], cwd=str(REPO_ROOT), capture_output=True, text=True)
+    assert result.returncode != 0
+    assert "must be live" in result.stderr.lower()
+
+    _write_json(FRESHNESS_PATH, original_freshness)
+
+
+def test_validator_fails_when_promotion_overrides_readiness() -> None:
+    _run([sys.executable, str(RQ_SCRIPT)])
+
+    readiness_path = PUBLIC_ROOT / "readiness_to_expand_validator.json"
+    original_readiness = _read_json(readiness_path)
+    original_promotion = _read_json(PROMOTION_PATH)
+
+    downgraded = dict(original_readiness)
+    downgraded["readiness_state"] = "Validate with another run"
+    _write_json(readiness_path, downgraded)
+
+    invalid_promotion = dict(original_promotion)
+    invalid_promotion["promotion_decision"] = "bounded_promote"
+    _write_json(PROMOTION_PATH, invalid_promotion)
+
+    manifest = _read_json(MANIFEST_PATH)
+    for name in ("readiness_to_expand_validator.json", "governed_promotion_discipline_gate.json"):
+        path = PUBLIC_ROOT / name
+        payload = manifest["file_records"][name]
+        payload["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+        payload["size_bytes"] = path.stat().st_size
+    _write_json(MANIFEST_PATH, manifest)
+
+    result = subprocess.run([sys.executable, str(VALIDATOR)], cwd=str(REPO_ROOT), capture_output=True, text=True)
+    assert result.returncode != 0
+    assert "bounded_promote" in result.stderr
+
+    _write_json(readiness_path, original_readiness)
+    _write_json(PROMOTION_PATH, original_promotion)
+
+
+def test_validator_fails_on_manifest_file_mismatch() -> None:
+    _run([sys.executable, str(RQ_SCRIPT)])
+
+    original_manifest = _read_json(MANIFEST_PATH)
+    broken_manifest = dict(original_manifest)
+    file_records = dict(broken_manifest["file_records"])
+    repo_snapshot_record = dict(file_records["repo_snapshot.json"])
+    repo_snapshot_record["sha256"] = "0" * 64
+    file_records["repo_snapshot.json"] = repo_snapshot_record
+    broken_manifest["file_records"] = file_records
+    _write_json(MANIFEST_PATH, broken_manifest)
+
+    result = subprocess.run([sys.executable, str(VALIDATOR)], cwd=str(REPO_ROOT), capture_output=True, text=True)
+    assert result.returncode != 0
+    assert "manifest/file mismatch" in result.stderr.lower()
+
+    _write_json(MANIFEST_PATH, original_manifest)

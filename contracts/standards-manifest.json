@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.108",
+  "artifact_version": "1.3.112",
   "schema_version": "1.3.98",
-  "standards_version": "1.3.109",
-  "record_id": "REC-STD-2026-04-09-CTX-A",
-  "run_id": "run-20260409T000000Z-ctx-a",
-  "created_at": "2026-04-09T00:00:00Z",
+  "standards_version": "1.3.112",
+  "record_id": "REC-STD-2026-04-12-RAX",
+  "run_id": "run-20260412T000000Z-rax-interface",
+  "created_at": "2026-04-12T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.108",
+  "source_repo_version": "1.3.112",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -3691,6 +3691,19 @@
       "notes": "RIL-002 deterministic review signal classification artifact mapping review items into bounded operational signal classes with traceable source linkage."
     },
     {
+      "artifact_type": "review_cycle_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.109",
+      "last_updated_in": "1.3.109",
+      "example_path": "contracts/examples/review_cycle_record.json",
+      "notes": "RF-01-REAL runtime-owned review/fix/replay cycle state artifact emitted by RQX lifecycle functions with fail-closed transitions."
+    },
+    {
       "artifact_type": "review_eval_generation_report",
       "artifact_class": "review",
       "schema_version": "1.0.0",
@@ -4006,6 +4019,19 @@
       "notes": "BATCH-MVP-END-TO-END deterministic full-roadmap execution report with fail-closed control-loop continuation/stop semantics."
     },
     {
+      "artifact_type": "roadmap_expansion_trace",
+      "artifact_class": "governance",
+      "schema_version": "1.1.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.111",
+      "last_updated_in": "1.3.112",
+      "example_path": "contracts/examples/roadmap_expansion_trace.example.json",
+      "notes": "RAX-INTERFACE-24-01 deterministic expansion trace contract updated with generalized step_id compatibility for compact roadmap identifiers."
+    },
+    {
       "artifact_type": "roadmap_multi_batch_run_result",
       "artifact_class": "coordination",
       "schema_version": "1.4.0",
@@ -4121,6 +4147,19 @@
       "last_updated_in": "1.3.63",
       "example_path": "contracts/examples/roadmap_signal_bundle.json",
       "notes": "BATCH-LTV-C deterministic feeder bundle that steers roadmap priorities from drift/hotspot/coverage/replay/judgment/budget/trust signals."
+    },
+    {
+      "artifact_type": "roadmap_step_contract",
+      "artifact_class": "governance",
+      "schema_version": "1.1.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.111",
+      "last_updated_in": "1.3.112",
+      "example_path": "contracts/examples/roadmap_step_contract.example.json",
+      "notes": "RAX-INTERFACE-24-01 strict downstream contract for RAX output including compatibility metadata, provenance/freshness references, and fail-closed realization constraints."
     },
     {
       "artifact_type": "roadmap_step_execution_artifact",
@@ -4678,6 +4717,71 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
+    },
+    {
+      "artifact_type": "rax_upstream_input_envelope",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.112",
+      "last_updated_in": "1.3.112",
+      "example_path": "contracts/examples/rax_upstream_input_envelope.example.json",
+      "notes": "RAX-INTERFACE-24-01 strict compact upstream roadmap envelope consumed by RAX for deterministic contract expansion."
+    },
+    {
+      "artifact_type": "rax_assurance_audit_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.112",
+      "last_updated_in": "1.3.112",
+      "example_path": "contracts/examples/rax_assurance_audit_record.example.json",
+      "notes": "RAX-INTERFACE-24-01 fail-closed assurance audit artifact for local accept/hold/block candidate decisions."
+    },
+    {
+      "artifact_type": "rax_eval_registry",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/rax_eval_registry.json",
+      "notes": "RAX-EVAL-01 governed registry of required deterministic RAX eval definitions."
+    },
+    {
+      "artifact_type": "rax_eval_case_set",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/rax_eval_case_set.json",
+      "notes": "RAX-EVAL-01 governed deterministic eval case set across baseline, adversarial, and failure classes."
+    },
+    {
+      "artifact_type": "rax_control_readiness_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "active",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "example_path": "contracts/examples/rax_control_readiness_record.json",
+      "notes": "RAX-EVAL-01 bounded readiness artifact for downstream control consumption; fail-closed on missing required evals."
     }
   ]
 }

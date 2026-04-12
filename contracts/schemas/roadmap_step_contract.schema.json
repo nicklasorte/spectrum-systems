@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/roadmap_step_contract.schema.json",
+  "title": "Roadmap Step Contract",
+  "description": "Strict enriched roadmap step contract used for deterministic artifact expansion planning. This contract does not grant execution, sequencing, prioritization, or enforcement authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "roadmap_id",
+    "roadmap_group",
+    "step_id",
+    "owner",
+    "intent",
+    "depends_on",
+    "source_authority_ref",
+    "source_version",
+    "input_freshness_ref",
+    "input_provenance_ref",
+    "target_modules",
+    "target_contracts",
+    "target_tests",
+    "runtime_entrypoints",
+    "forbidden_patterns",
+    "acceptance_checks",
+    "realization_mode",
+    "realization_status",
+    "downstream_compatibility",
+    "expansion_version",
+    "expansion_policy_hash",
+    "expansion_trace_ref"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "roadmap_step_contract"
+    },
+    "step_id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]+(?:-[A-Z0-9]+)+$"
+    },
+    "owner": {
+      "type": "string",
+      "enum": [
+        "RIL",
+        "CDE",
+        "TLC",
+        "PQX",
+        "FRE",
+        "SEL",
+        "PRG"
+      ]
+    },
+    "intent": {
+      "type": "string",
+      "minLength": 10
+    },
+    "depends_on": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9]+(?:-[A-Z0-9]+)+$"
+      },
+      "uniqueItems": true
+    },
+    "target_modules": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "target_contracts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "target_tests": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "runtime_entrypoints": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "minItems": 0
+    },
+    "forbidden_patterns": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "acceptance_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "check_id",
+          "description",
+          "required"
+        ],
+        "properties": {
+          "check_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_\\-]{2,63}$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 5
+          },
+          "required": {
+            "type": "boolean",
+            "const": true
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "realization_mode": {
+      "type": "string",
+      "enum": [
+        "artifact_materialization",
+        "runtime_realization",
+        "verification_only"
+      ]
+    },
+    "realization_status": {
+      "type": "string",
+      "enum": [
+        "planned_only",
+        "artifact_materialized",
+        "partially_realized",
+        "runtime_realized",
+        "verified"
+      ]
+    },
+    "expansion_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "expansion_policy_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "expansion_trace_ref": {
+      "type": "string",
+      "pattern": "^contracts/examples/roadmap_expansion_trace\\.example\\.json#[A-Za-z0-9._:-]+$"
+    },
+    "roadmap_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9._-]{2,63}$"
+    },
+    "roadmap_group": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_-]{1,31}$"
+    },
+    "source_authority_ref": {
+      "type": "string",
+      "pattern": "^docs/roadmaps/system_roadmap\\.md#[A-Za-z0-9_.:-]+$"
+    },
+    "source_version": {
+      "type": "string",
+      "pattern": "^v?[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "input_freshness_ref": {
+      "type": "string",
+      "pattern": "^(freshness|artifacts)/[A-Za-z0-9._/-]+\\.json#[A-Za-z0-9_.:-]+$"
+    },
+    "input_provenance_ref": {
+      "type": "string",
+      "pattern": "^(provenance|artifacts)/[A-Za-z0-9._/-]+\\.json#[A-Za-z0-9_.:-]+$"
+    },
+    "downstream_compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prg_rdx_step_metadata",
+        "realization_runner_contract_complete"
+      ],
+      "properties": {
+        "prg_rdx_step_metadata": {
+          "type": "boolean",
+          "const": true
+        },
+        "realization_runner_contract_complete": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "realization_mode": {
+            "const": "runtime_realization"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "runtime_entrypoints": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

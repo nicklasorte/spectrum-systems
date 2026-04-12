@@ -1,0 +1,101 @@
+{
+  "artifact_type": "rq_next_umbrella_checkpoint",
+  "batch_id": "RQ-NEXT-24-01",
+  "generated_at": "2026-04-11T13:16:36Z",
+  "umbrella_id": "UMBRELLA-1",
+  "umbrella_name": "RECOMMENDATION_ACCURACY_HARDENING",
+  "slices": [
+    "NX-01",
+    "NX-02",
+    "NX-03",
+    "NX-04",
+    "NX-05",
+    "NX-06"
+  ],
+  "checkpoint_status": "pass",
+  "tests": {
+    "status": "pass",
+    "command": "pytest tests/test_rq_next_24_01.py -k umbrella_1"
+  },
+  "schema_validation": {
+    "status": "pass",
+    "scope": [
+      "NX-01",
+      "NX-02",
+      "NX-03",
+      "NX-04",
+      "NX-05",
+      "NX-06"
+    ]
+  },
+  "eval_review_control_validation": {
+    "status": "pass",
+    "scope": "evaluation + review + control surfaces for umbrella"
+  },
+  "dashboard_public_truth_validation": {
+    "status": "pass",
+    "scope": "public artifacts match generated artifact truth"
+  },
+  "stop_conditions": {
+    "max_files_modified_guard": "pass",
+    "contract_break_guard": "pass",
+    "tests_recoverability_guard": "pass",
+    "dashboard_truth_guard": "pass",
+    "confidence_honesty_guard": "pass",
+    "operator_path_clarity_guard": "pass",
+    "replay_evidence_bound_guard": "pass",
+    "canary_conservatism_guard": "pass",
+    "ownership_duplication_guard": "pass"
+  },
+  "delivery_contract": {
+    "intent": "RECOMMENDATION_ACCURACY_HARDENING",
+    "architecture_changes": [
+      "serial umbrella execution + hard checkpoint stop on failure"
+    ],
+    "source_mapping": [
+      "NX-01",
+      "NX-02",
+      "NX-03",
+      "NX-04",
+      "NX-05",
+      "NX-06"
+    ],
+    "schemas_changed": [],
+    "modules_changed": [
+      "scripts/run_rq_next_24_01.py"
+    ],
+    "tests_added": [
+      "tests/test_rq_next_24_01.py"
+    ],
+    "observability_added": [
+      "umbrella checkpoints",
+      "artifact trace",
+      "governance closeout traceability"
+    ],
+    "dashboard_publication_changes": [
+      "publish deterministic governed artifact truth for nx slices"
+    ],
+    "control_governance_integration": [
+      "checkpoint hard stop",
+      "fail-closed publication completeness gate"
+    ],
+    "failure_modes": [
+      "missing artifact",
+      "non-pass checkpoint",
+      "incomplete publication",
+      "invalid closeout basis"
+    ],
+    "guarantees": [
+      "artifact-first execution",
+      "fail-closed behavior",
+      "promotion requires certification"
+    ],
+    "rollback_plan": [
+      "remove rq_next_24_01 artifacts and revert publication copies"
+    ],
+    "remaining_gaps": [
+      "requires additional real-cycle data for wider longitudinal confidence claims"
+    ],
+    "certification_readiness_impact": "improves recommendation diagnostics, operator discipline, replay pressure, and conservative promotion governance"
+  }
+}

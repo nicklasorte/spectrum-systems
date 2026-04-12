@@ -1,0 +1,10 @@
+{
+  "artifact_type": "promotion_readiness_decision",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 22,
+  "phase": 8,
+  "owner": "CDE",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "decision": "not_ready_until_merge_path_guards_satisfied",
+  "authoritative": true
+}

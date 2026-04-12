@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_upstream_input_envelope.schema.json",
+  "title": "RAX Upstream Input Envelope",
+  "description": "Strict compact roadmap step envelope consumed by RAX from upstream systems.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "roadmap_id",
+    "step_id",
+    "owner",
+    "intent",
+    "depends_on",
+    "roadmap_group",
+    "source_authority_ref",
+    "source_version",
+    "input_freshness_ref",
+    "input_provenance_ref"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "rax_upstream_input_envelope"
+    },
+    "roadmap_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9._-]{2,63}$"
+    },
+    "step_id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]+(?:-[A-Z0-9]+)+$"
+    },
+    "owner": {
+      "type": "string",
+      "enum": ["RIL", "CDE", "TLC", "PQX", "FRE", "SEL", "PRG"]
+    },
+    "intent": {
+      "type": "string",
+      "minLength": 10
+    },
+    "depends_on": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9]+(?:-[A-Z0-9]+)+$"
+      },
+      "uniqueItems": true
+    },
+    "roadmap_group": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_-]{1,31}$"
+    },
+    "source_authority_ref": {
+      "type": "string",
+      "pattern": "^docs/roadmaps/system_roadmap\\.md#[A-Za-z0-9_.:-]+$"
+    },
+    "source_version": {
+      "type": "string",
+      "pattern": "^v?[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "input_freshness_ref": {
+      "type": "string",
+      "minLength": 8,
+      "pattern": "^(freshness|artifacts)/[A-Za-z0-9._/-]+\\.json#[A-Za-z0-9_.:-]+$"
+    },
+    "input_provenance_ref": {
+      "type": "string",
+      "minLength": 8,
+      "pattern": "^(provenance|artifacts)/[A-Za-z0-9._/-]+\\.json#[A-Za-z0-9_.:-]+$"
+    }
+  }
+}

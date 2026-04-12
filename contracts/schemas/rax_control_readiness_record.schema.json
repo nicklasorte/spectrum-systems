@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_control_readiness_record.schema.json",
+  "title": "RAX Control Readiness Record",
+  "description": "Bounded readiness artifact describing whether RAX eval coverage is complete and safe for downstream control consumption.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "batch",
+    "target_ref",
+    "ready_for_control",
+    "decision",
+    "blocking_reasons",
+    "required_eval_types",
+    "present_eval_types",
+    "missing_required_eval_types",
+    "trace_complete",
+    "baseline_regression_detected",
+    "version_authority_aligned"
+  ],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "rax_control_readiness_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "batch": {"type": "string", "minLength": 1},
+    "target_ref": {"type": "string", "minLength": 1},
+    "ready_for_control": {"type": "boolean"},
+    "decision": {"type": "string", "enum": ["ready", "hold", "block"]},
+    "blocking_reasons": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "required_eval_types": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1},
+    "present_eval_types": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "missing_required_eval_types": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "trace_complete": {"type": "boolean"},
+    "baseline_regression_detected": {"type": "boolean"},
+    "version_authority_aligned": {"type": "boolean"}
+  }
+}

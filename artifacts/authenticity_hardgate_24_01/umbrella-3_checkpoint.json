@@ -1,0 +1,134 @@
+{
+  "artifact_type": "authenticity_hardgate_umbrella_checkpoint",
+  "batch_id": "AUTHENTICITY-HARDGATE-24-01",
+  "generated_at": "2026-04-11T18:59:57Z",
+  "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
+  "umbrella_id": "UMBRELLA-3",
+  "umbrella_name": "REPLAY_PROTECTED_REENTRY_AND_REPAIR",
+  "slices": [
+    "AH-13",
+    "AH-14",
+    "AH-15",
+    "AH-16",
+    "AH-17",
+    "AH-18"
+  ],
+  "checkpoint_status": "pass",
+  "tests": {
+    "status": "pass",
+    "command": "pytest tests/test_authenticity_hardgate_24_01.py -k umbrella_3"
+  },
+  "schema_validation": {
+    "status": "pass",
+    "scope": [
+      "AH-13",
+      "AH-14",
+      "AH-15",
+      "AH-16",
+      "AH-17",
+      "AH-18"
+    ]
+  },
+  "review_eval_control_validation": {
+    "status": "pass",
+    "scope": "authenticity, ingress, replay, hard-gate evidence"
+  },
+  "registry_ownership_alignment": {
+    "status": "pass",
+    "scope": "single owner per slice; no authority drift"
+  },
+  "repo_mutation_lineage_validation": {
+    "status": "pass",
+    "lineage": [
+      "AEX",
+      "TLC",
+      "TPA",
+      "PQX"
+    ],
+    "bypass_detected": false
+  },
+  "stop_conditions": {
+    "max_files_modified_guard": "pass",
+    "contract_break_guard": "pass",
+    "tests_recoverability_guard": "pass",
+    "admission_enrichment_authority_drift_guard": "pass",
+    "repo_write_capability_fail_open_guard": "pass",
+    "direct_caller_bypass_guard": "pass",
+    "replay_protection_at_pqx_edge_guard": "pass",
+    "prg_authority_misuse_guard": "pass",
+    "map_semantic_invention_guard": "pass",
+    "ownership_duplication_guard": "pass",
+    "certification_conservatism_weakening_guard": "pass"
+  },
+  "delivery_contract": {
+    "intent": "Execute REPLAY_PROTECTED_REENTRY_AND_REPAIR with authenticity-first repo-write control and hard-gate evidence closure.",
+    "architecture_changes": [
+      "attested admission envelope and handoff artifact spine",
+      "single mandatory repo-write ingress seam",
+      "capability-first repo-write classification and policy scope gating",
+      "replay-protected re-entry lineage continuity",
+      "hard-gate evidence completeness and promotion closure guard"
+    ],
+    "source_mapping": [
+      "AH-13",
+      "AH-14",
+      "AH-15",
+      "AH-16",
+      "AH-17",
+      "AH-18"
+    ],
+    "schemas_changed": [],
+    "modules_changed": [
+      "scripts/run_authenticity_hardgate_24_01.py"
+    ],
+    "tests_added": [
+      "tests/test_authenticity_hardgate_24_01.py"
+    ],
+    "observability_added": [
+      "hard checkpoints per umbrella",
+      "15-point registry cross-check artifact",
+      "evidence-gap scoreboard non-authoritative marker",
+      "operator-safe proof projection constrained to governed artifacts"
+    ],
+    "control_governance_integration": [
+      "AEX admission and ingress enforcement only",
+      "TLC orchestration and handoff only",
+      "TPA policy/scope gating only",
+      "PQX execution-edge validation/classification only",
+      "RQX review-loop verification only",
+      "FRE repair planning only",
+      "RIL interpretation only",
+      "SEL enforcement and blocking only",
+      "PRG recommendation/scoring/closeout only (non-authoritative)",
+      "CDE readiness/certification/promotion authority only",
+      "MAP projection only",
+      "repo mutation lineage AEX -> TLC -> TPA -> PQX preserved"
+    ],
+    "failure_modes": [
+      "missing admission authenticity attestation",
+      "direct-caller ingress bypass",
+      "replayed lineage at execution edge",
+      "hard-gate evidence completeness gap",
+      "authority-boundary drift"
+    ],
+    "guarantees": [
+      "artifact-first execution",
+      "fail-closed behavior",
+      "promotion requires certification"
+    ],
+    "rollback_plan": [
+      "remove artifacts/authenticity_hardgate_24_01 outputs",
+      "remove AUTHENTICITY-HARDGATE-24-01 trace artifact"
+    ],
+    "remaining_gaps": [
+      "issuer key lifecycle rotation evidence remains external to this batch",
+      "replay nonce retention horizon tuning needs longitudinal runtime telemetry"
+    ],
+    "registry_alignment_result": "pass"
+  },
+  "checkpoint_status_output": "UMBRELLA-3: pass",
+  "human_confirmation": {
+    "available": false,
+    "status": "not_available_auto_continue_when_all_criteria_pass"
+  }
+}

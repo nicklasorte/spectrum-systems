@@ -1,0 +1,55 @@
+{
+  "artifact_type": "roadmap_step_contract",
+  "step_id": "RF-02",
+  "owner": "PQX",
+  "intent": "Realize roadmap contract validation and guarded dependency enforcement through runtime-backed realization checks.",
+  "depends_on": [
+    "RF-01"
+  ],
+  "target_modules": [
+    "spectrum_systems/modules/runtime/roadmap_realization_runtime.py"
+  ],
+  "target_contracts": [
+    "contracts/schemas/roadmap_step_contract.schema.json",
+    "contracts/schemas/roadmap_expansion_trace.schema.json"
+  ],
+  "target_tests": [
+    "pytest tests/test_roadmap_realization_runner.py -k rf02 -q"
+  ],
+  "runtime_entrypoints": [
+    "spectrum_systems.modules.runtime.review_cycle_record:create_review_cycle",
+    "spectrum_systems.modules.runtime.roadmap_realization_runtime:next_realization_status"
+  ],
+  "forbidden_patterns": [
+    "_write_json",
+    "artifact-only success",
+    "direct static payload"
+  ],
+  "acceptance_checks": [
+    {
+      "check_id": "rf02_contract_validation",
+      "description": "Step contract validates and target schema paths remain available.",
+      "required": true
+    },
+    {
+      "check_id": "rf02_runtime_gate",
+      "description": "Runtime gate only advances status when behavior checks pass.",
+      "required": true
+    }
+  ],
+  "realization_mode": "runtime_realization",
+  "realization_status": "verified",
+  "expansion_version": "1.1.0",
+  "expansion_policy_hash": "25a3ad696f7ef1ebc5ce5da1843b01929a64131b13c3321d1f2d7b5e05b6573e",
+  "expansion_trace_ref": "contracts/examples/roadmap_expansion_trace.example.json#RF-02",
+  "roadmap_id": "SYSTEM-ROADMAP-2026",
+  "roadmap_group": "RAX_INTERFACE",
+  "source_authority_ref": "docs/roadmaps/system_roadmap.md#RF-02",
+  "source_version": "1.3.112",
+  "input_freshness_ref": "freshness/roadmap_inputs.json#RF-02",
+  "input_provenance_ref": "provenance/roadmap_inputs.json#RF-02",
+  "downstream_compatibility": {
+    "prg_rdx_step_metadata": true,
+    "realization_runner_contract_complete": true
+  }
+}

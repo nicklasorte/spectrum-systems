@@ -1,0 +1,13 @@
+{
+  "artifact_type": "repair_debt_register",
+  "slice_id": "RL-14",
+  "owner": "PRG",
+  "generated_at": "2026-04-11T16:01:04Z",
+  "open_debt": [
+    {
+      "class": "schema_patch",
+      "count": 2,
+      "age_days": 6
+    }
+  ]
+}

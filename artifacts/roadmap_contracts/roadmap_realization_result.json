@@ -1,0 +1,79 @@
+{
+  "artifact_type": "roadmap_realization_result",
+  "step_ids": [
+    "RF-02",
+    "RF-03"
+  ],
+  "attempted_steps": [
+    "RF-02",
+    "RF-03"
+  ],
+  "passed_steps": [
+    "RF-02",
+    "RF-03"
+  ],
+  "failed_steps": [],
+  "forbidden_pattern_hits": {
+    "RF-02": [],
+    "RF-03": []
+  },
+  "runtime_entrypoint_checks": {
+    "RF-02": [
+      {
+        "entrypoint": "spectrum_systems.modules.runtime.review_cycle_record:create_review_cycle",
+        "exists": true,
+        "error": ""
+      },
+      {
+        "entrypoint": "spectrum_systems.modules.runtime.roadmap_realization_runtime:next_realization_status",
+        "exists": true,
+        "error": ""
+      }
+    ],
+    "RF-03": [
+      {
+        "entrypoint": "spectrum_systems.modules.runtime.roadmap_realization_runtime:enforce_realization_dependencies",
+        "exists": true,
+        "error": ""
+      },
+      {
+        "entrypoint": "spectrum_systems.modules.runtime.roadmap_realization_runtime:next_realization_status",
+        "exists": true,
+        "error": ""
+      }
+    ]
+  },
+  "behavioral_test_results": {
+    "RF-02": [
+      {
+        "command": "pytest tests/test_roadmap_realization_runner.py -k rf02 -q",
+        "returncode": 0,
+        "passed": true,
+        "stdout": ".                                                                        [100%]\n1 passed, 6 deselected in 0.11s\n",
+        "stderr": ""
+      }
+    ],
+    "RF-03": [
+      {
+        "command": "pytest tests/test_roadmap_realization_runner.py -k rf03 -q",
+        "returncode": 0,
+        "passed": true,
+        "stdout": "..                                                                       [100%]\n2 passed, 5 deselected in 0.15s\n",
+        "stderr": ""
+      }
+    ]
+  },
+  "status_updates": [
+    {
+      "step_id": "RF-02",
+      "from": "planned_only",
+      "to": "verified"
+    },
+    {
+      "step_id": "RF-03",
+      "from": "planned_only",
+      "to": "verified"
+    }
+  ],
+  "overall_status": "pass"
+}

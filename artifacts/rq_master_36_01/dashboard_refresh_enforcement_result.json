@@ -1,0 +1,12 @@
+{
+  "artifact_type": "dashboard_refresh_enforcement_result",
+  "enforcement_owner": "SEL",
+  "status": "pass",
+  "checks": {
+    "required_public_artifacts_present": "pass",
+    "freshness_metadata_valid": "pass",
+    "publication_atomic": "pass",
+    "fallback_live_ambiguity": "pass",
+    "truth_constraints": "pass"
+  }
+}

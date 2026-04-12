@@ -1,0 +1,13 @@
+{
+  "artifact_type": "admission_authenticity_envelope_spec",
+  "slice_id": "AH-01",
+  "owner": "AEX",
+  "generated_at": "2026-04-11T18:59:57Z",
+  "required_fields": [
+    "issuer",
+    "key_id",
+    "payload_digest",
+    "attestation"
+  ],
+  "repo_write_scope": "mandatory"
+}

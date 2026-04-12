@@ -1,0 +1,13 @@
+{
+  "artifact_type": "next_action_outcome_record",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T15:31:14Z",
+  "cycle_id": "cycle_03",
+  "recommendation_id": "RQ36-REC-003",
+  "recommendation_verdict": "partially_correct",
+  "reasoning": "Lineage stabilization reduced gating churn, but one repair loop persisted in cycle_04.",
+  "linked_cycle_references": [
+    "cycle_03",
+    "cycle_04"
+  ]
+}

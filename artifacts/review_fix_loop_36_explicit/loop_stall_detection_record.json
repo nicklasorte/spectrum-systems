@@ -1,0 +1,10 @@
+{
+  "artifact_type": "loop_stall_detection_record",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 28,
+  "phase": 10,
+  "owner": "SEL",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "infinite_or_non_productive_loop_detected": false,
+  "status": "pass"
+}

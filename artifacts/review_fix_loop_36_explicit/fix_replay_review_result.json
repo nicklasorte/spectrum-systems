@@ -1,0 +1,11 @@
+{
+  "artifact_type": "fix_replay_review_result",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 15,
+  "phase": 5,
+  "owner": "RQX",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "re_review_after_replay": "completed",
+  "status": "pass",
+  "review_only": true
+}

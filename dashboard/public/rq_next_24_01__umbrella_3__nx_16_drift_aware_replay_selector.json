@@ -1,0 +1,11 @@
+{
+  "artifact_type": "drift_aware_replay_selector",
+  "batch_id": "RQ-NEXT-24-01",
+  "generated_at": "2026-04-11T13:16:36Z",
+  "drift_signal": "input_lineage_variance",
+  "selected_scenarios": [
+    "REPLAY-001",
+    "REPLAY-002"
+  ],
+  "selection_rule": "match replay scenarios to active failure and drift conditions"
+}

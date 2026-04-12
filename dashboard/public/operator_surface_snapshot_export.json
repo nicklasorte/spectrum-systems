@@ -1,0 +1,14 @@
+{
+  "artifact_type": "operator_surface_snapshot_export",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T15:31:14Z",
+  "required_checks": [
+    "build",
+    "lint",
+    "required_public_artifacts",
+    "truth_constraints",
+    "freshness_fallback_ambiguity",
+    "recommendation_review_surface"
+  ],
+  "gate_result": "pass"
+}

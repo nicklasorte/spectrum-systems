@@ -1,0 +1,8 @@
+{
+  "artifact_type": "registry_alignment_result_artifact",
+  "batch_id": "AUTO-KERNEL-24-01",
+  "result": "pass",
+  "validated_against": "docs/architecture/system_registry.md",
+  "violations": [],
+  "generated_at": "2026-04-11T00:00:00Z"
+}

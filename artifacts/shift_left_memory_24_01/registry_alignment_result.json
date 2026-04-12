@@ -1,0 +1,24 @@
+{
+  "artifact_type": "registry_alignment_result",
+  "batch_id": "SHIFT-LEFT-MEMORY-24-01",
+  "generated_at": "2026-04-11T18:06:02Z",
+  "cross_checks": {
+    "1_each_slice_maps_to_exactly_one_canonical_owner": "pass",
+    "2_no_preparatory_artifact_is_authority": "pass",
+    "3_ril_interprets_only": "pass",
+    "4_aex_admits_enriches_only": "pass",
+    "5_tpa_gates_policy_scope_only": "pass",
+    "6_fre_diagnoses_plans_only": "pass",
+    "7_tlc_orchestrates_only": "pass",
+    "8_pqx_executes_only": "pass",
+    "9_rqx_review_loop_execution_only": "pass",
+    "10_sel_enforces_only": "pass",
+    "11_prg_recommends_aggregates_tracks_only": "pass",
+    "12_rdx_sequences_roadmap_only": "pass",
+    "13_cde_closure_readiness_promotion_authority_only": "pass",
+    "14_map_projects_only": "pass",
+    "15_repo_mutating_path_preserves_aex_tlc_tpa_pqx": "pass",
+    "16_batch_umbrella_artifacts_not_closure_authority": "pass"
+  },
+  "overall_status": "pass"
+}

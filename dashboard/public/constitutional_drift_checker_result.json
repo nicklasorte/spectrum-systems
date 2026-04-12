@@ -1,5 +1,9 @@
 {
-  "status": "Not available yet",
-  "summary": "Not available yet",
-  "violations": []
+  "artifact_type": "constitutional_drift_checker_result",
+  "batch_id": "OPS-MASTER-01",
+  "generated_at": "2026-04-11T01:01:56Z",
+  "ownership_violations": [],
+  "prep_as_decision_misuse": [],
+  "enforcement_misuse": [],
+  "drift_detected": false
 }

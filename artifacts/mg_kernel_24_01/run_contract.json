@@ -1,0 +1,173 @@
+{
+  "artifact_type": "meta_governance_run_contract",
+  "batch_id": "MG-KERNEL-24-01",
+  "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
+  "fail_closed_rules": [
+    "no_report_fail",
+    "no_artifact_backed_truth_fail",
+    "no_ready_on_thin_evidence_fail"
+  ],
+  "mandatory_authorities": [
+    "docs/architecture/system_registry.md",
+    "docs/architecture/strategy-control.md",
+    "docs/architecture/foundation_pqx_eval_control.md",
+    "docs/roadmaps/system_roadmap.md",
+    "docs/roadmaps/roadmap_authority.md",
+    "GOVERNED-KERNEL-24 outputs"
+  ],
+  "run_id": "MG-KERNEL-24-01-20260411T145237Z",
+  "umbrella_structure": {
+    "LEARNING_AND_GOVERNANCE_DEBT": [
+      {
+        "batch_id": "MG-B7",
+        "owner": "PRG",
+        "slice_id": "MG-19",
+        "title": "Governed experiment ledger"
+      },
+      {
+        "batch_id": "MG-B7",
+        "owner": "PRG",
+        "slice_id": "MG-20",
+        "title": "Change-to-outcome attribution"
+      },
+      {
+        "batch_id": "MG-B7",
+        "owner": "PRG",
+        "slice_id": "MG-21",
+        "title": "Execution realism assessor"
+      },
+      {
+        "batch_id": "MG-B8",
+        "owner": "PRG",
+        "slice_id": "MG-22",
+        "title": "Knowledge persistence registry"
+      },
+      {
+        "batch_id": "MG-B8",
+        "owner": "MAP",
+        "slice_id": "MG-23",
+        "title": "Layered explainability bundle"
+      },
+      {
+        "batch_id": "MG-B8",
+        "owner": "PRG",
+        "slice_id": "MG-24",
+        "title": "Governance debt + manual residue register"
+      }
+    ],
+    "LIVE_TRUTH_AND_OPERATIONAL_RISK": [
+      {
+        "batch_id": "MG-B5",
+        "owner": "SEL",
+        "slice_id": "MG-13",
+        "title": "Production dashboard truth probe"
+      },
+      {
+        "batch_id": "MG-B5",
+        "owner": "SEL",
+        "slice_id": "MG-14",
+        "title": "Live deploy truth verification"
+      },
+      {
+        "batch_id": "MG-B5",
+        "owner": "AEX",
+        "slice_id": "MG-15",
+        "title": "Frontend deploy preflight doctor"
+      },
+      {
+        "batch_id": "MG-B6",
+        "owner": "RIL",
+        "slice_id": "MG-16",
+        "title": "Anomaly detection interpretation"
+      },
+      {
+        "batch_id": "MG-B6",
+        "owner": "PRG",
+        "slice_id": "MG-17",
+        "title": "Bottleneck confidence + stability"
+      },
+      {
+        "batch_id": "MG-B6",
+        "owner": "SEL",
+        "slice_id": "MG-18",
+        "title": "Escalation trigger engine"
+      }
+    ],
+    "REPORT_AND_EVIDENCE_QUALITY": [
+      {
+        "batch_id": "MG-B3",
+        "owner": "RIL",
+        "slice_id": "MG-07",
+        "title": "Report evidence interpretation packet"
+      },
+      {
+        "batch_id": "MG-B3",
+        "owner": "RQX",
+        "slice_id": "MG-08",
+        "title": "Report quality validator"
+      },
+      {
+        "batch_id": "MG-B3",
+        "owner": "RQX",
+        "slice_id": "MG-09",
+        "title": "Report truth grading"
+      },
+      {
+        "batch_id": "MG-B4",
+        "owner": "PRG",
+        "slice_id": "MG-10",
+        "title": "Evidence depth evaluator"
+      },
+      {
+        "batch_id": "MG-B4",
+        "owner": "SEL",
+        "slice_id": "MG-11",
+        "title": "False readiness detector"
+      },
+      {
+        "batch_id": "MG-B4",
+        "owner": "PRG",
+        "slice_id": "MG-12",
+        "title": "Trust delta artifact"
+      }
+    ],
+    "ROADMAP_AND_PROMPT_BURDEN": [
+      {
+        "batch_id": "MG-B1",
+        "owner": "AEX",
+        "slice_id": "MG-01",
+        "title": "Roadmap registry-alignment preflight"
+      },
+      {
+        "batch_id": "MG-B1",
+        "owner": "RDX",
+        "slice_id": "MG-02",
+        "title": "Roadmap row owner checker"
+      },
+      {
+        "batch_id": "MG-B1",
+        "owner": "PRG",
+        "slice_id": "MG-03",
+        "title": "Roadmap quality assessment"
+      },
+      {
+        "batch_id": "MG-B2",
+        "owner": "PRG",
+        "slice_id": "MG-04",
+        "title": "Prompt burden meter"
+      },
+      {
+        "batch_id": "MG-B2",
+        "owner": "PRG",
+        "slice_id": "MG-05",
+        "title": "Prompt burden optimizer"
+      },
+      {
+        "batch_id": "MG-B2",
+        "owner": "PRG",
+        "slice_id": "MG-06",
+        "title": "Phase-sizing recommender"
+      }
+    ]
+  }
+}

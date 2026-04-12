@@ -1,0 +1,30 @@
+{
+  "artifact_type": "registry_alignment_result",
+  "batch_id": "REPAIR-LATENCY-24-01",
+  "generated_at": "2026-04-11T16:01:04Z",
+  "authorities": [
+    "README.md",
+    "docs/architecture/system_registry.md",
+    "docs/architecture/strategy-control.md",
+    "docs/architecture/foundation_pqx_eval_control.md",
+    "docs/roadmaps/system_roadmap.md",
+    "docs/roadmaps/roadmap_authority.md"
+  ],
+  "cross_checks": {
+    "1_each_slice_maps_to_exactly_one_owner": "pass",
+    "2_no_preparatory_artifact_treated_as_authority": "pass",
+    "3_ril_interprets_only": "pass",
+    "4_fre_diagnoses_and_plans_only": "pass",
+    "5_rqx_emits_fix_requests_and_review_verdicts_only": "pass",
+    "6_tpa_gates_only": "pass",
+    "7_pqx_executes_only": "pass",
+    "8_sel_enforces_only": "pass",
+    "9_tlc_orchestrates_only": "pass",
+    "10_prg_recommends_aggregates_prioritizes_assesses_only": "pass",
+    "11_rdx_sequences_roadmap_selected_work_only": "pass",
+    "12_cde_alone_issues_closure_readiness_promotion_authority": "pass",
+    "13_map_projects_only": "pass",
+    "14_repo_mutation_lineage_aex_tlc_tpa_pqx_preserved": "pass",
+    "15_batch_and_umbrella_decisions_not_closure_authority": "pass"
+  }
+}

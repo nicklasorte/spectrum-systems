@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rax_assurance_audit_record.schema.json",
+  "title": "RAX Assurance Audit Record",
+  "description": "Compact fail-closed assurance audit artifact emitted by RAX for contract expansion decisions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "roadmap_id",
+    "step_id",
+    "input_validation_result",
+    "output_validation_result",
+    "counter_evidence",
+    "freshness_result",
+    "provenance_result",
+    "failure_classification",
+    "repairability_classification",
+    "stop_condition_triggered",
+    "acceptance_decision",
+    "status_transition_result"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "rax_assurance_audit_record"
+    },
+    "roadmap_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "step_id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]+(?:-[A-Z0-9]+)+$"
+    },
+    "input_validation_result": {
+      "$ref": "#/$defs/checkResult"
+    },
+    "output_validation_result": {
+      "$ref": "#/$defs/checkResult"
+    },
+    "counter_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "freshness_result": {
+      "$ref": "#/$defs/checkResult"
+    },
+    "provenance_result": {
+      "$ref": "#/$defs/checkResult"
+    },
+    "failure_classification": {
+      "type": "string",
+      "enum": [
+        "none",
+        "invalid_input",
+        "dependency_blocked",
+        "stale_reference",
+        "trace_tampering",
+        "ownership_violation",
+        "invalid_output",
+        "downstream_incompatible"
+      ]
+    },
+    "repairability_classification": {
+      "type": "string",
+      "enum": ["none", "repairable", "needs_authority", "blocked"]
+    },
+    "stop_condition_triggered": {
+      "type": "boolean"
+    },
+    "acceptance_decision": {
+      "type": "string",
+      "enum": ["accept_candidate", "hold_candidate", "block_candidate"]
+    },
+    "status_transition_result": {
+      "type": "string",
+      "enum": ["not_attempted", "legal", "illegal"]
+    }
+  },
+  "$defs": {
+    "checkResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passed", "details"],
+      "properties": {
+        "passed": {
+          "type": "boolean"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

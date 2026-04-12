@@ -1,0 +1,32 @@
+{
+  "artifact_type": "report_evidence_quality_bundle",
+  "evidence_depth": {
+    "depth": "sufficient",
+    "overclaiming_detected": false,
+    "owner": "PRG"
+  },
+  "false_readiness_detector": {
+    "false_readiness": false,
+    "owner": "SEL",
+    "status": "PASS"
+  },
+  "report_interpretation_packet": {
+    "owner": "RIL",
+    "status": "PASS"
+  },
+  "report_quality_validator": {
+    "generic_template_rejected": true,
+    "owner": "RQX",
+    "status": "PASS"
+  },
+  "report_truth_grading": {
+    "artifact_reference_depth": 0.92,
+    "owner": "RQX",
+    "specificity": 0.9
+  },
+  "trust_delta": {
+    "delta": 0.14,
+    "direction": "improved",
+    "owner": "PRG"
+  }
+}

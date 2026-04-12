@@ -1,0 +1,15 @@
+{
+  "artifact_type": "cross_run_consistency_record",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 16,
+  "phase": 6,
+  "owner": "PRG",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "run_comparison": [
+    "run_a",
+    "run_b",
+    "run_c"
+  ],
+  "consistency": "pass",
+  "authoritative": false
+}

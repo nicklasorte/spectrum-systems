@@ -1,0 +1,64 @@
+{
+  "artifact_type": "next_action_recommendation_record_collection",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T13:02:26Z",
+  "records": [
+    {
+      "artifact_type": "next_action_recommendation_record",
+      "batch_id": "RQ-MASTER-36-01",
+      "generated_at": "2026-04-11T13:02:26Z",
+      "cycle_id": "cycle_03",
+      "recommendation_id": "RQ36-REC-003",
+      "recommended_next_action": "stabilize_input_lineage_before_promoting_changes",
+      "confidence": 0.63,
+      "source_basis": [
+        "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-03-artifact-trace.json",
+        "artifacts/ops_master_01/hard_gate_status_record.json",
+        "artifacts/ops_master_01/current_run_state_record.json"
+      ],
+      "provenance_categories": [
+        "run_trace",
+        "hard_gate",
+        "run_state"
+      ]
+    },
+    {
+      "artifact_type": "next_action_recommendation_record",
+      "batch_id": "RQ-MASTER-36-01",
+      "generated_at": "2026-04-11T13:02:26Z",
+      "cycle_id": "cycle_04",
+      "recommendation_id": "RQ36-REC-004",
+      "recommended_next_action": "prioritize targeted drift guard updates before expansion",
+      "confidence": 0.68,
+      "source_basis": [
+        "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-04-artifact-trace.json",
+        "artifacts/ops_master_01/drift_trend_continuity_artifact.json",
+        "artifacts/rq_master_36_01/cycle_comparator_03_05.json"
+      ],
+      "provenance_categories": [
+        "run_trace",
+        "drift_artifact",
+        "cross_cycle_baseline"
+      ]
+    },
+    {
+      "artifact_type": "next_action_recommendation_record",
+      "batch_id": "RQ-MASTER-36-01",
+      "generated_at": "2026-04-11T13:02:26Z",
+      "cycle_id": "cycle_05",
+      "recommendation_id": "RQ36-REC-005",
+      "recommended_next_action": "continue bounded governed cycles and re-check calibration after each outcome",
+      "confidence": 0.72,
+      "source_basis": [
+        "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-05-artifact-trace.json",
+        "artifacts/rq_master_36_01/recommendation_accuracy_tracker.json",
+        "artifacts/rq_master_36_01/confidence_calibration_artifact.json"
+      ],
+      "provenance_categories": [
+        "run_trace",
+        "accuracy_tracker",
+        "confidence_calibration"
+      ]
+    }
+  ]
+}

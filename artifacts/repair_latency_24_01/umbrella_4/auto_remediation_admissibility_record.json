@@ -1,0 +1,7 @@
+{
+  "artifact_type": "auto_remediation_admissibility_record",
+  "slice_id": "RL-20",
+  "owner": "TPA",
+  "generated_at": "2026-04-11T16:01:04Z",
+  "decision": "allow_bounded_only"
+}

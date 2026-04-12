@@ -1,0 +1,19 @@
+{
+  "artifact_type": "governed_promotion_discipline_gate",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T15:31:14Z",
+  "constitutional_authority": {
+    "cde_tpa_override_allowed": false,
+    "promotion_signal_can_override": false
+  },
+  "readiness_input": "Validate with another run",
+  "deployment_truth_gate_input": "pass",
+  "promotion_decision": "validate",
+  "allowed_decisions": [
+    "tune",
+    "validate",
+    "bounded_promote"
+  ],
+  "fail_closed": true,
+  "rationale": "Promotion remains conservative and cannot bypass constitutional authority or operator-truth constraints."
+}

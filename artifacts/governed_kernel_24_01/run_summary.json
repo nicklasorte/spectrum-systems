@@ -1,0 +1,7 @@
+{
+  "artifact_type": "governed_kernel_run_summary",
+  "deploy_gate": "BLOCK",
+  "promotion_state": "not_authorized",
+  "run_id": "GK-24-01-20260411T143757Z",
+  "status": "PASS"
+}

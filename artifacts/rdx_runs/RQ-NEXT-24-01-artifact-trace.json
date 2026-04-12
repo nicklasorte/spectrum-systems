@@ -1,0 +1,83 @@
+{
+  "artifact_type": "rq_next_artifact_trace",
+  "batch_id": "RQ-NEXT-24-01",
+  "generated_at": "2026-04-11T13:16:36Z",
+  "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
+  "umbrella_sequence": [
+    "UMBRELLA-1",
+    "UMBRELLA-2",
+    "UMBRELLA-3",
+    "UMBRELLA-4"
+  ],
+  "umbrella_checkpoint_status": {
+    "UMBRELLA-1": "pass",
+    "UMBRELLA-2": "pass",
+    "UMBRELLA-3": "pass",
+    "UMBRELLA-4": "pass"
+  },
+  "checkpoint_progression": "stopped_on_first_failure_else_continue",
+  "artifact_paths": [
+    "artifacts/rq_next_24_01/umbrella_1/nx_01_recommendation_failure_taxonomy.json",
+    "artifacts/rq_next_24_01/umbrella_1/nx_02_recommendation_error_pattern_registry.json",
+    "artifacts/rq_next_24_01/umbrella_1/nx_03_confidence_recalibration_policy.json",
+    "artifacts/rq_next_24_01/umbrella_1/nx_04_recommendation_rollback_heuristic.json",
+    "artifacts/rq_next_24_01/umbrella_1/nx_05_operator_override_capture.json",
+    "artifacts/rq_next_24_01/umbrella_1/nx_06_recommendation_learning_summary.json",
+    "artifacts/rq_next_24_01/umbrella_2/nx_07_operator_action_intake_artifact.json",
+    "artifacts/rq_next_24_01/umbrella_2/nx_08_operator_action_admissibility_check.json",
+    "artifacts/rq_next_24_01/umbrella_2/nx_09_guidance_to_execution_handoff_record.json",
+    "artifacts/rq_next_24_01/umbrella_2/nx_10_operator_divergence_tracker.json",
+    "artifacts/rq_next_24_01/umbrella_2/nx_11_guidance_compliance_score.json",
+    "artifacts/rq_next_24_01/umbrella_2/nx_12_action_result_closure_artifact.json",
+    "artifacts/rq_next_24_01/umbrella_3/nx_13_recommendation_replay_pack.json",
+    "artifacts/rq_next_24_01/umbrella_3/nx_14_decision_backtest_harness.json",
+    "artifacts/rq_next_24_01/umbrella_3/nx_15_counterfactual_recommendation_evaluator.json",
+    "artifacts/rq_next_24_01/umbrella_3/nx_16_drift_aware_replay_selector.json",
+    "artifacts/rq_next_24_01/umbrella_3/nx_17_failure_hotspot_simulation_pack.json",
+    "artifacts/rq_next_24_01/umbrella_3/nx_18_simulation_outcome_summary.json",
+    "artifacts/rq_next_24_01/umbrella_4/nx_19_expansion_evidence_bundle.json",
+    "artifacts/rq_next_24_01/umbrella_4/nx_20_governance_exception_register.json",
+    "artifacts/rq_next_24_01/umbrella_4/nx_21_promotion_readiness_trend_artifact.json",
+    "artifacts/rq_next_24_01/umbrella_4/nx_22_operator_trust_scorecard.json",
+    "artifacts/rq_next_24_01/umbrella_4/nx_23_controlled_expansion_canary_gate.json",
+    "artifacts/rq_next_24_01/umbrella_4/nx_24_next_cycle_governance_closeout.json"
+  ],
+  "dashboard_publication": {
+    "status": "pass",
+    "published_paths": [
+      "dashboard/public/rq_next_24_01__umbrella_1__nx_01_recommendation_failure_taxonomy.json",
+      "dashboard/public/rq_next_24_01__umbrella_1__nx_02_recommendation_error_pattern_registry.json",
+      "dashboard/public/rq_next_24_01__umbrella_1__nx_03_confidence_recalibration_policy.json",
+      "dashboard/public/rq_next_24_01__umbrella_1__nx_04_recommendation_rollback_heuristic.json",
+      "dashboard/public/rq_next_24_01__umbrella_1__nx_05_operator_override_capture.json",
+      "dashboard/public/rq_next_24_01__umbrella_1__nx_06_recommendation_learning_summary.json",
+      "dashboard/public/rq_next_24_01__umbrella_2__nx_07_operator_action_intake_artifact.json",
+      "dashboard/public/rq_next_24_01__umbrella_2__nx_08_operator_action_admissibility_check.json",
+      "dashboard/public/rq_next_24_01__umbrella_2__nx_09_guidance_to_execution_handoff_record.json",
+      "dashboard/public/rq_next_24_01__umbrella_2__nx_10_operator_divergence_tracker.json",
+      "dashboard/public/rq_next_24_01__umbrella_2__nx_11_guidance_compliance_score.json",
+      "dashboard/public/rq_next_24_01__umbrella_2__nx_12_action_result_closure_artifact.json",
+      "dashboard/public/rq_next_24_01__umbrella_3__nx_13_recommendation_replay_pack.json",
+      "dashboard/public/rq_next_24_01__umbrella_3__nx_14_decision_backtest_harness.json",
+      "dashboard/public/rq_next_24_01__umbrella_3__nx_15_counterfactual_recommendation_evaluator.json",
+      "dashboard/public/rq_next_24_01__umbrella_3__nx_16_drift_aware_replay_selector.json",
+      "dashboard/public/rq_next_24_01__umbrella_3__nx_17_failure_hotspot_simulation_pack.json",
+      "dashboard/public/rq_next_24_01__umbrella_3__nx_18_simulation_outcome_summary.json",
+      "dashboard/public/rq_next_24_01__umbrella_4__nx_19_expansion_evidence_bundle.json",
+      "dashboard/public/rq_next_24_01__umbrella_4__nx_20_governance_exception_register.json",
+      "dashboard/public/rq_next_24_01__umbrella_4__nx_21_promotion_readiness_trend_artifact.json",
+      "dashboard/public/rq_next_24_01__umbrella_4__nx_22_operator_trust_scorecard.json",
+      "dashboard/public/rq_next_24_01__umbrella_4__nx_23_controlled_expansion_canary_gate.json",
+      "dashboard/public/rq_next_24_01__umbrella_4__nx_24_next_cycle_governance_closeout.json"
+    ],
+    "ui_truth_bound": "no stronger than underlying artifact truth"
+  },
+  "final_success_conditions": {
+    "recommendation_correctness_more_diagnosable": true,
+    "operator_runtime_handoff_governed_and_measurable": true,
+    "replay_backtest_simulation_pressure_applied": true,
+    "promotion_readiness_trendable": true,
+    "canary_expansion_bounded_and_conservative": true,
+    "next_cycle_recommendation_artifact_backed": true
+  }
+}

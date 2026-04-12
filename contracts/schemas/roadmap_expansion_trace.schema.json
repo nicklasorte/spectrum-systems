@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/roadmap_expansion_trace.schema.json",
+  "title": "Roadmap Expansion Trace",
+  "description": "Strict deterministic trace artifact for roadmap step expansion field derivation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "step_id",
+    "expansion_version",
+    "expansion_policy_hash",
+    "field_trace"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "roadmap_expansion_trace"
+    },
+    "step_id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]+(?:-[A-Z0-9]+)+$"
+    },
+    "expansion_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "expansion_policy_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "field_trace": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field_name",
+          "source_type",
+          "source_ref",
+          "rule_id",
+          "notes"
+        ],
+        "properties": {
+          "field_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "roadmap_artifact",
+              "expansion_policy",
+              "governance_rule",
+              "manual_declaration"
+            ]
+          },
+          "source_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rule_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9_\\-.]{3,64}$"
+          },
+          "notes": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

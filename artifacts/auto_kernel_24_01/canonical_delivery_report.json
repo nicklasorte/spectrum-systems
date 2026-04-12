@@ -1,0 +1,11 @@
+{
+  "artifact_type": "canonical_delivery_report_artifact",
+  "batch_id": "AUTO-KERNEL-24-01",
+  "status": "complete",
+  "non_empty_required_sections": true,
+  "delivery_contract_status": "all_umbrellas_include_13_required_fields",
+  "hard_checkpoint_policy": "serial_stop_on_failure",
+  "fail_closed": "enforced",
+  "lineage": "AEX -> TLC -> TPA -> PQX",
+  "generated_at": "2026-04-11T00:00:00Z"
+}

@@ -1,0 +1,33 @@
+{
+  "artifact_type": "certification_judgment_checkpoint",
+  "batch_id": "CERTIFICATION-JUDGMENT-40-EXPLICIT",
+  "checkpoint": 1,
+  "generated_at": "2026-04-11T20:17:14Z",
+  "execution_mode": "STRICT SERIAL WITH HARD CHECKPOINTS",
+  "steps": [
+    "STEP 01",
+    "STEP 02",
+    "STEP 03",
+    "STEP 04"
+  ],
+  "validation": {
+    "tests": {
+      "status": "pass",
+      "command": "pytest tests/test_certification_judgment_40_explicit.py"
+    },
+    "schema_validation": {
+      "status": "pass"
+    },
+    "registry_alignment": {
+      "status": "pass"
+    },
+    "artifact_presence": {
+      "status": "pass"
+    },
+    "fail_closed_behavior": {
+      "status": "pass"
+    }
+  },
+  "stop_on_failure": true,
+  "checkpoint_status": "pass"
+}

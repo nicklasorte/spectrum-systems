@@ -1,0 +1,13 @@
+{
+  "artifact_type": "fix_slice_request_record",
+  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "step": 10,
+  "phase": 4,
+  "owner": "RQX",
+  "generated_at": "2026-04-11T19:42:05Z",
+  "bounded_fix_slice_requests_only": true,
+  "requested_slices": [
+    "fix-slice-01"
+  ],
+  "review_only": true
+}

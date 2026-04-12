@@ -1,0 +1,54 @@
+{
+  "artifact_type": "readiness_to_expand_validator",
+  "batch_id": "RQ-MASTER-36-01",
+  "generated_at": "2026-04-11T15:31:14Z",
+  "readiness_state": "Validate with another run",
+  "decision_options": [
+    "Tune instead",
+    "Validate with another run",
+    "Ready for bounded expansion",
+    "Unknown"
+  ],
+  "inputs": {
+    "drift_state": {
+      "trend": "improving",
+      "stability": "bounded_improvement",
+      "history_window_cycles": 3,
+      "history_quality": "thin_but_real"
+    },
+    "hard_gate_state": "satisfied",
+    "recommendation_accuracy": {
+      "score": 0.8333,
+      "state": "acceptable"
+    },
+    "confidence_calibration": {
+      "average_confidence": 0.6767,
+      "observed_quality": 0.8333,
+      "calibration_error": -0.1567,
+      "state": "miscalibrated"
+    },
+    "system_integrity": {
+      "control_surface": "pass",
+      "recurrence_prevention": "pass",
+      "judgment_consumption": "pass"
+    },
+    "data_completeness": "partial",
+    "real_cycle_evidence": {
+      "count": 3,
+      "quality": "acceptable",
+      "cycle_refs": [
+        "cycle_03",
+        "cycle_04",
+        "cycle_05"
+      ]
+    }
+  },
+  "rules_enforced": [
+    "conservative_bias",
+    "degrade_to_validate_or_unknown_on_weak_evidence",
+    "no_readiness_claim_on_thin_history",
+    "recommendation_confidence_never_substitutes_for_readiness"
+  ],
+  "rationale": "Evidence quality is present but insufficient for bounded expansion.",
+  "expansion_posture": "validate_before_expand"
+}
