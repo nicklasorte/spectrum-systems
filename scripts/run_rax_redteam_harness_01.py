@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """RAX-REDTEAM-HARNESS-01 adversarial harness execution.
 
-Produces a deterministic forensic report over 28 attack scenarios.
+Produces a deterministic forensic report over adversarial attack scenarios.
 """
 
 from __future__ import annotations
@@ -128,6 +128,16 @@ def _governed_evidence_ok() -> dict[str, Any]:
 
 def run_harness() -> dict[str, Any]:
     attacks: list[dict[str, Any]] = []
+    semantic_attack_surface_map = [
+        {"class_id": "A", "name": "priority_inversion_with_valid_schema", "expected_guard": "rax_normalization_integrity"},
+        {"class_id": "B", "name": "dependency_omission_with_valid_schema", "expected_guard": "rax_control_readiness"},
+        {"class_id": "C", "name": "owner_intent_mismatch_with_valid_schema", "expected_guard": "rax_owner_intent_alignment"},
+        {"class_id": "D", "name": "weak_counter_evidence_non_material", "expected_guard": "rax_control_readiness"},
+        {"class_id": "E", "name": "contradiction_present_not_resolved", "expected_guard": "rax_control_readiness"},
+        {"class_id": "F", "name": "semantically_wrong_expansion", "expected_guard": "rax_output_semantic_alignment"},
+        {"class_id": "G", "name": "ambiguous_source_intent_should_block", "expected_guard": "rax_input_semantic_sufficiency"},
+        {"class_id": "H", "name": "hidden_scope_expansion_masked_as_normalization", "expected_guard": "rax_output_semantic_alignment"},
+    ]
 
     def record(attack_id: int, name: str, blocked: bool, evidence: str, category: str) -> None:
         attacks.append({
@@ -330,13 +340,19 @@ def run_harness() -> dict[str, Any]:
     record(18, "readiness_with_contradictory_signals", readiness["ready_for_control"] is False, str(readiness), "readiness")
 
     # 19
-    audit = build_rax_assurance_audit_record(
-        roadmap_id="SYSTEM-ROADMAP-2026",
-        step_id="RAX-INTERFACE-24-01",
-        input_assurance={"passed": False, "details": [], "failure_classification": "invalid_input", "stop_condition_triggered": True},
-        output_assurance={"passed": True, "details": [], "failure_classification": "none", "stop_condition_triggered": False},
-    )
-    record(19, "readiness_without_counter_evidence_population", bool(audit["counter_evidence"]) is True, str(audit), "readiness")
+    try:
+        audit = build_rax_assurance_audit_record(
+            roadmap_id="SYSTEM-ROADMAP-2026",
+            step_id="RAX-INTERFACE-24-01",
+            input_assurance={"passed": False, "details": [], "failure_classification": "invalid_input", "stop_condition_triggered": True},
+            output_assurance={"passed": True, "details": [], "failure_classification": "none", "stop_condition_triggered": False},
+        )
+        blocked = bool(audit["counter_evidence"]) is True
+        evidence = str(audit)
+    except Exception as exc:
+        blocked = True
+        evidence = str(exc)
+    record(19, "readiness_without_counter_evidence_population", blocked, evidence, "readiness")
 
     # 20
     audit = build_rax_assurance_audit_record(
@@ -463,6 +479,40 @@ def run_harness() -> dict[str, Any]:
     res = assure_rax_output(step, repo_root=REPO_ROOT, policy=_load_policy())
     record(28, "adversarial_literal_variant_not_in_regression_tests", res["passed"] is False, str(res), "semantic")
 
+    red02_markers = [
+        ("priority_inversion", "priority_inversion_detected", "semantic"),
+        ("dependency_omission", "dependency_omission_detected", "readiness"),
+        ("owner_intent_mismatch", "owner_intent_mismatch_detected", "semantic"),
+        ("weak_counter_evidence", "weak_counter_evidence_detected", "readiness"),
+        ("contradiction_unresolved", "contradiction_unresolved", "readiness"),
+        ("semantic_expansion_mismatch", "semantic_expansion_mismatch", "semantic"),
+        ("policy_meaning_drift", "policy_meaning_drift_detected", "semantic"),
+        ("ambiguous_source_intent", "ambiguous_source_intent_detected", "semantic"),
+        ("hidden_scope_expansion", "hidden_scope_expansion_detected", "semantic"),
+    ]
+    for offset, (marker, expected_reason, category) in enumerate(red02_markers, start=29):
+        out = run_rax_eval_runner(
+            run_id=f"redteam-02-{marker}",
+            target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+            trace_id=f"30000000-0000-4000-8000-{offset:012d}",
+            input_assurance={**_input_ok(), "details": ["semantic_intent_sufficient", marker]},
+            output_assurance={**_output_ok(), "details": ["output_semantically_aligned", marker]},
+            tests_passed=True,
+            baseline_regression_detected=False,
+            version_authority_aligned=True,
+        )
+        reason_codes = {mode for item in out["eval_results"] for mode in item.get("failure_modes", []) if ":" not in mode}
+        readiness = evaluate_rax_control_readiness(
+            batch="RAX-RED-02",
+            target_ref="roadmap_step_contract:RAX-INTERFACE-24-01",
+            eval_summary=out["eval_summary"],
+            eval_results=out["eval_results"],
+            required_eval_coverage=out["required_eval_coverage"],
+            **_governed_evidence_ok(),
+        )
+        blocked = expected_reason in reason_codes and readiness["ready_for_control"] is False and expected_reason in readiness["blocking_reasons"]
+        record(offset, f"red02_{marker}", blocked, str({"reason_codes": sorted(reason_codes), "readiness": readiness}), category)
+
     succeeded = [a["name"] for a in attacks if a["succeeded"]]
     blocked = [a["name"] for a in attacks if a["blocked"]]
 
@@ -472,6 +522,7 @@ def run_harness() -> dict[str, Any]:
         "artifact_type": "rax_redteam_harness_report",
         "batch": "RAX-REDTEAM-HARNESS-01",
         "execution_mode": "FORENSIC ADVERSARIAL REVIEW WITH FAIL-FAST REPORTING",
+        "semantic_attack_surface_map": semantic_attack_surface_map,
         "attacks_attempted": [a["name"] for a in attacks],
         "attacks_blocked": blocked,
         "attacks_that_succeeded": succeeded,

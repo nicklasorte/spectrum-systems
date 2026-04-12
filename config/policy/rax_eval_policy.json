@@ -25,7 +25,16 @@
     "source_version_drift",
     "baseline_regression_detected",
     "missing_required_eval_artifact",
-    "tests_pass_eval_fail"
+    "tests_pass_eval_fail",
+    "priority_inversion_detected",
+    "dependency_omission_detected",
+    "owner_intent_mismatch_detected",
+    "weak_counter_evidence_detected",
+    "contradiction_unresolved",
+    "semantic_expansion_mismatch",
+    "policy_meaning_drift_detected",
+    "ambiguous_source_intent_detected",
+    "hidden_scope_expansion_detected"
   ],
   "health_thresholds": {
     "readiness_pass_rate": {
