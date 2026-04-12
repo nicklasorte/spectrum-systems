@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/repair_recurrence_record.schema.json",
+  "title": "Repair Recurrence Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "record_id", "trace_id", "repair_candidate_ref", "recurrence_count", "recurrence_state"],
+  "properties": {
+    "artifact_type": {"const": "repair_recurrence_record"},
+    "schema_version": {"const": "1.0.0"},
+    "record_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "repair_candidate_ref": {"type": "string", "pattern": "^repair_candidate:.+"},
+    "recurrence_count": {"type": "integer", "minimum": 0},
+    "recurrence_state": {"type": "string", "enum": ["recurring", "not_recurring"]}
+  }
+}

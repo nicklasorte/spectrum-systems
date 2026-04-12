@@ -1,0 +1,9 @@
+{
+  "artifact_type": "repair_recurrence_record",
+  "schema_version": "1.0.0",
+  "record_id": "fre-rec-01",
+  "trace_id": "trace-fre-001",
+  "repair_candidate_ref": "repair_candidate:fre-rc-01",
+  "recurrence_count": 0,
+  "recurrence_state": "not_recurring"
+}

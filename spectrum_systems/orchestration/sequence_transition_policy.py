@@ -402,6 +402,40 @@ def _cohesion_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
     return True, None
 
 
+def _rax_operational_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
+    refs = manifest.get("done_certification_input_refs")
+    refs_dict = refs if isinstance(refs, dict) else {}
+    gate_ref = manifest.get("rax_operational_gate_record_path")
+    if (not isinstance(gate_ref, str) or not gate_ref.strip()) and isinstance(refs_dict, dict):
+        gate_ref = refs_dict.get("rax_operational_gate_record_ref")
+    if not isinstance(gate_ref, str) or not gate_ref.strip():
+        return False, "promotion requires done_certification_input_refs.rax_operational_gate_record_ref"
+    if not _path_exists(gate_ref):
+        return False, "promotion blocked: rax_operational_gate_record_ref is unreadable"
+    payload = _load_json_if_path(gate_ref)
+    if not isinstance(payload, dict):
+        return False, "promotion blocked: rax_operational_gate_record_ref is unreadable"
+    errors = sorted(
+        Draft202012Validator(load_schema("rax_operational_gate_record")).iter_errors(payload),
+        key=lambda err: str(list(err.absolute_path)),
+    )
+    if errors:
+        return False, "promotion blocked: rax_operational_gate_record failed schema validation"
+    if payload.get("passed") is not True:
+        return False, "promotion blocked: rax_operational_gate_record passed=false"
+    missing_evidence_markers = {
+        "policy_regression_evidence_missing_or_failed",
+        "replay_evidence_unbound_or_stale",
+        "admission_quality_filter_denied",
+        "promotion_evidence_signature_missing_or_invalid",
+        "readiness_not_ready",
+    }
+    blocked = set(str(item) for item in payload.get("blocking_reasons", []))
+    if blocked & missing_evidence_markers:
+        return False, "promotion blocked: rax_operational_gate_record indicates missing required evidence"
+    return True, None
+
+
 def _stage_contract_input_counts(manifest: dict[str, Any]) -> dict[str, int]:
     refs = manifest.get("done_certification_input_refs")
     refs_dict = refs if isinstance(refs, dict) else {}
@@ -635,6 +669,9 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
         cohesion_passed, cohesion_error = _cohesion_gate(manifest)
         if not cohesion_passed:
             return SequenceTransitionDecision(False, cohesion_error)
+        rax_gate_passed, rax_gate_error = _rax_operational_gate(manifest)
+        if not rax_gate_passed:
+            return SequenceTransitionDecision(False, rax_gate_error)
         if manifest.get("decision_blocked") is True:
             return SequenceTransitionDecision(False, "promotion blocked by decision_blocked=true")
 

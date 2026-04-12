@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/repair_bundle.schema.json",
+  "title": "Repair Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "bundle_id", "trace_id", "repair_candidate_ref", "repair_eval_result_ref", "repair_effectiveness_record_ref", "repair_recurrence_record_ref", "repair_readiness_candidate_ref", "non_authority_assertions"],
+  "properties": {
+    "artifact_type": {"const": "repair_bundle"},
+    "schema_version": {"const": "1.0.0"},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "repair_candidate_ref": {"type": "string", "pattern": "^repair_candidate:.+"},
+    "repair_eval_result_ref": {"type": "string", "pattern": "^repair_eval_result:.+"},
+    "repair_effectiveness_record_ref": {"type": "string", "pattern": "^repair_effectiveness_record:.+"},
+    "repair_recurrence_record_ref": {"type": "string", "pattern": "^repair_recurrence_record:.+"},
+    "repair_readiness_candidate_ref": {"type": "string", "pattern": "^repair_readiness_candidate:.+"},
+    "non_authority_assertions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+  }
+}

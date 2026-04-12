@@ -5289,6 +5289,97 @@
       "last_updated_in": "1.3.113",
       "example_path": "contracts/examples/nx_roadmap_candidate_artifact.json",
       "notes": "PRG-owned recommendation-only roadmap candidate persistence artifact from NX feedback."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "artifact_type": "rax_operational_gate_record",
+      "example_path": "contracts/examples/rax_operational_gate_record.json",
+      "notes": "Operational RAX hard gate record used by promotion gating path."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "artifact_type": "repair_candidate",
+      "example_path": "contracts/examples/repair_candidate.json",
+      "notes": "FRE bounded non-authoritative repair candidate artifact."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "artifact_type": "repair_eval_result",
+      "example_path": "contracts/examples/repair_eval_result.json",
+      "notes": "FRE evaluation result for bounded repair candidate viability."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "artifact_type": "repair_effectiveness_record",
+      "example_path": "contracts/examples/repair_effectiveness_record.json",
+      "notes": "FRE observational effectiveness record for candidate outcomes."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "artifact_type": "repair_recurrence_record",
+      "example_path": "contracts/examples/repair_recurrence_record.json",
+      "notes": "FRE recurrence tracking record linked to repair candidate lineage."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "artifact_type": "repair_bundle",
+      "example_path": "contracts/examples/repair_bundle.json",
+      "notes": "FRE bundle linking candidate, eval, recurrence, effectiveness, and readiness candidate refs."
+    },
+    {
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.113",
+      "last_updated_in": "1.3.113",
+      "artifact_type": "repair_readiness_candidate",
+      "example_path": "contracts/examples/repair_readiness_candidate.json",
+      "notes": "FRE candidate-only readiness artifact explicitly non-authoritative."
     }
   ]
 }

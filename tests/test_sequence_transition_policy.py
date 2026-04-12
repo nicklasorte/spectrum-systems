@@ -39,6 +39,7 @@ def _base_manifest(state: str) -> dict:
             "closure_decision_artifact_ref": str(_REPO_ROOT / "contracts" / "examples" / "closure_decision_artifact.json"),
             "ril_output_artifact_ref": str(_REPO_ROOT / "contracts" / "examples" / "review_integration_packet_artifact.json"),
             "trust_spine_evidence_cohesion_result_ref": str(_REPO_ROOT / "contracts" / "examples" / "trust_spine_evidence_cohesion_result.json"),
+            "rax_operational_gate_record_ref": str(_REPO_ROOT / "contracts" / "examples" / "rax_operational_gate_record.json"),
         },
         "review_signal_policy": {"required_for_promotion": True},
         "control_loop_gate_proof": {
@@ -177,6 +178,28 @@ def test_promotion_blocks_when_enforcement_result_ref_missing() -> None:
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False
     assert "TRUST_SPINE_ENFORCEMENT_REF_MISSING" in str(decision.reason)
+
+
+def test_promotion_blocks_when_rax_operational_gate_ref_missing() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["done_certification_input_refs"].pop("rax_operational_gate_record_ref")
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "rax_operational_gate_record_ref" in str(decision.reason)
+
+
+def test_promotion_blocks_when_rax_operational_gate_not_passed(tmp_path: Path) -> None:
+    manifest = _base_manifest("certification_pending")
+    gate = json.loads(Path(manifest["done_certification_input_refs"]["rax_operational_gate_record_ref"]).read_text(encoding="utf-8"))
+    gate["passed"] = False
+    gate["decision"] = "block_candidate"
+    gate["blocking_reasons"] = ["replay_evidence_unbound_or_stale"]
+    path = tmp_path / "rax_operational_gate_record_blocked.json"
+    path.write_text(json.dumps(gate), encoding="utf-8")
+    manifest["done_certification_input_refs"]["rax_operational_gate_record_ref"] = str(path)
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "passed=false" in str(decision.reason)
 
 
 def test_promotion_blocks_when_eval_coverage_summary_ref_missing() -> None:

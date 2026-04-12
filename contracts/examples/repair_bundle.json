@@ -1,0 +1,12 @@
+{
+  "artifact_type": "repair_bundle",
+  "schema_version": "1.0.0",
+  "bundle_id": "fre-bundle-01",
+  "trace_id": "trace-fre-001",
+  "repair_candidate_ref": "repair_candidate:fre-rc-01",
+  "repair_eval_result_ref": "repair_eval_result:fre-reval-01",
+  "repair_effectiveness_record_ref": "repair_effectiveness_record:fre-eff-01",
+  "repair_recurrence_record_ref": "repair_recurrence_record:fre-rec-01",
+  "repair_readiness_candidate_ref": "repair_readiness_candidate:fre-ready-01",
+  "non_authority_assertions": ["bundle_is_candidate_only_non_authoritative"]
+}
