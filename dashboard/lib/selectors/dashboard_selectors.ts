@@ -112,8 +112,10 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
     ? `sync_audit:${publication.syncAudit.data?.publication_state ?? 'unknown'}`
     : `sync_audit_unavailable:${publication.syncAudit.error ?? 'missing_or_invalid'}`
 
-  const hardGateUnsatisfied = deriveHardGateUnsatisfied(hardGate?.readiness_status)
-  const runBlocked = deriveRunBlocked(runState?.current_run_status)
+  const hardGateStatus = hardGate?.readiness_status ?? hardGate?.pass_fail
+  const runStatus = runState?.current_run_status ?? runState?.status
+  const hardGateUnsatisfied = deriveHardGateUnsatisfied(hardGateStatus)
+  const runBlocked = deriveRunBlocked(runStatus)
 
   const recommendationRecords = publication.recommendationRecord.data?.records ?? []
   const recommendationRecord = recommendationRecords.length ? recommendationRecords[recommendationRecords.length - 1] : null
@@ -211,8 +213,8 @@ export function selectDashboardViewModel(publication: DashboardPublication): Das
     comparison: {
       bottleneck: 'Prior comparison unavailable',
       drift: drift?.trend ?? 'Not available yet',
-      hardGate: hardGate?.readiness_status ?? 'Not available yet',
-      runState: runState?.current_run_status ?? 'Not available yet',
+      hardGate: hardGateStatus ?? 'Not available yet',
+      runState: runStatus ?? 'Not available yet',
       recommendation: recommendation.title,
       warningReasons: state.truthViolationReasons.join(', ') || 'No truth-violation reason codes'
     },
