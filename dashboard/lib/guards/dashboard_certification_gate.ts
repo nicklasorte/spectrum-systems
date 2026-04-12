@@ -24,6 +24,15 @@ export function evaluateDashboardCertificationGate(): { status: 'pass' | 'blocke
     }
   }
 
+  for (const row of DASHBOARD_SURFACE_CONTRACT_REGISTRY) {
+    if (!row.provenance_requirements.length) {
+      reasons.push(`missing provenance requirements: ${row.panel_id}`)
+    }
+    if (!row.allowed_statuses.includes('blocked')) {
+      reasons.push(`blocked status missing from contract: ${row.panel_id}`)
+    }
+  }
+
   if (PANEL_CAPABILITY_MAP.some((row) => row.decision_authority !== 'read_only')) {
     reasons.push('selector-side governance decision authority detected')
   }

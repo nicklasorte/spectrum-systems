@@ -9,7 +9,7 @@ function read(rel) {
 
 test('surface contract registry declares required panel governance fields', () => {
   const src = read('lib/contracts/surface_contract_registry.ts')
-  for (const key of ['panel_id', 'artifact_family', 'owning_system', 'render_gate_dependency', 'freshness_dependency', 'provenance_requirements', 'blocked_state_behavior', 'allowed_statuses', 'certification_relevant', 'high_risk']) {
+  for (const key of ['panel_id', 'artifact_family', 'owning_system', 'render_gate_dependency', 'freshness_dependency', 'provenance_requirements', 'blocked_state_behavior', 'allowed_statuses', 'certification_relevant', 'high_risk', 'mobile_critical']) {
     assert.ok(src.includes(key))
   }
 })

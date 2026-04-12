@@ -13,6 +13,7 @@ export type DashboardSurfaceContract = {
   allowed_statuses: SurfaceStatus[]
   certification_relevant: boolean
   high_risk: boolean
+  mobile_critical: boolean
 }
 
 export const DASHBOARD_SURFACE_CONTRACT_REGISTRY: DashboardSurfaceContract[] = [
@@ -28,7 +29,68 @@ export const DASHBOARD_SURFACE_CONTRACT_REGISTRY: DashboardSurfaceContract[] = [
     blocked_state_behavior: 'render_blocked_diagnostic',
     allowed_statuses: ['renderable', 'blocked'],
     certification_relevant: true,
-    high_risk: true
+    high_risk: true,
+    mobile_critical: true
+  },
+  {
+    panel_id: 'causal_chain',
+    title: 'Causal chain',
+    artifact_family: 'publication_attempt_record + judgment_application_artifact + hard_gate_status_record + serial_bundle_validator_result',
+    contract_source: 'dashboard/public/publication_attempt_record.json',
+    owning_system: 'TLC',
+    render_gate_dependency: ['publication_attempt_record.json', 'judgment_application_artifact.json', 'hard_gate_status_record.json', 'serial_bundle_validator_result.json'],
+    freshness_dependency: ['publication_attempt_record.json', 'serial_bundle_validator_result.json'],
+    provenance_requirements: ['artifact-linked edge trace for eval → judgment → control → outcome'],
+    blocked_state_behavior: 'render_blocked_diagnostic',
+    allowed_statuses: ['renderable', 'blocked'],
+    certification_relevant: true,
+    high_risk: true,
+    mobile_critical: false
+  },
+  {
+    panel_id: 'decision_trace',
+    title: 'Decision trace',
+    artifact_family: 'publication_attempt_record + judgment_application_artifact + hard_gate_status_record',
+    contract_source: 'dashboard/public/judgment_application_artifact.json',
+    owning_system: 'RIL',
+    render_gate_dependency: ['publication_attempt_record.json', 'judgment_application_artifact.json', 'hard_gate_status_record.json'],
+    freshness_dependency: ['publication_attempt_record.json'],
+    provenance_requirements: ['decision reasons must be field-traceable to artifacts'],
+    blocked_state_behavior: 'render_blocked_diagnostic',
+    allowed_statuses: ['renderable', 'blocked'],
+    certification_relevant: true,
+    high_risk: true,
+    mobile_critical: true
+  },
+  {
+    panel_id: 'multi_artifact_correlation',
+    title: 'Multi-artifact correlation',
+    artifact_family: 'current_bottleneck_record + current_run_state_record + hard_gate_status_record + judgment_application_artifact + serial_bundle_validator_result',
+    contract_source: 'dashboard/public/current_bottleneck_record.json',
+    owning_system: 'PRG',
+    render_gate_dependency: ['current_bottleneck_record.json', 'current_run_state_record.json', 'hard_gate_status_record.json', 'judgment_application_artifact.json'],
+    freshness_dependency: ['current_run_state_record.json', 'serial_bundle_validator_result.json'],
+    provenance_requirements: ['correlation rows must preserve source artifact and consumed fields'],
+    blocked_state_behavior: 'render_blocked_diagnostic',
+    allowed_statuses: ['renderable', 'blocked'],
+    certification_relevant: false,
+    high_risk: true,
+    mobile_critical: false
+  },
+  {
+    panel_id: 'evidence_strength',
+    title: 'Evidence strength',
+    artifact_family: 'dashboard_publication_sync_audit + dashboard_freshness_status + serial_bundle_validator_result + dashboard_public_contract_coverage',
+    contract_source: 'dashboard/public/dashboard_publication_sync_audit.json',
+    owning_system: 'CDE',
+    render_gate_dependency: ['dashboard_publication_sync_audit.json', 'dashboard_freshness_status.json', 'serial_bundle_validator_result.json'],
+    freshness_dependency: ['dashboard_freshness_status.json'],
+    provenance_requirements: ['dimension-level rows for provenance depth/agreement/freshness/validation/replay'],
+    blocked_state_behavior: 'render_blocked_diagnostic',
+    allowed_statuses: ['renderable', 'blocked'],
+    certification_relevant: true,
+    high_risk: true,
+    mobile_critical: true
   },
   {
     panel_id: 'control_decisions',
@@ -42,7 +104,8 @@ export const DASHBOARD_SURFACE_CONTRACT_REGISTRY: DashboardSurfaceContract[] = [
     blocked_state_behavior: 'render_blocked_diagnostic',
     allowed_statuses: ['renderable', 'blocked'],
     certification_relevant: true,
-    high_risk: true
+    high_risk: true,
+    mobile_critical: true
   },
   {
     panel_id: 'judgment_records',
@@ -56,7 +119,8 @@ export const DASHBOARD_SURFACE_CONTRACT_REGISTRY: DashboardSurfaceContract[] = [
     blocked_state_behavior: 'render_blocked_diagnostic',
     allowed_statuses: ['renderable', 'blocked'],
     certification_relevant: true,
-    high_risk: true
+    high_risk: true,
+    mobile_critical: false
   },
   {
     panel_id: 'override_lifecycle',
@@ -70,7 +134,8 @@ export const DASHBOARD_SURFACE_CONTRACT_REGISTRY: DashboardSurfaceContract[] = [
     blocked_state_behavior: 'render_blocked_diagnostic',
     allowed_statuses: ['renderable', 'blocked'],
     certification_relevant: true,
-    high_risk: true
+    high_risk: true,
+    mobile_critical: true
   },
   {
     panel_id: 'replay_certification',
@@ -84,7 +149,8 @@ export const DASHBOARD_SURFACE_CONTRACT_REGISTRY: DashboardSurfaceContract[] = [
     blocked_state_behavior: 'render_blocked_diagnostic',
     allowed_statuses: ['renderable', 'blocked'],
     certification_relevant: true,
-    high_risk: true
+    high_risk: true,
+    mobile_critical: true
   },
   {
     panel_id: 'weighted_coverage',
@@ -98,7 +164,8 @@ export const DASHBOARD_SURFACE_CONTRACT_REGISTRY: DashboardSurfaceContract[] = [
     blocked_state_behavior: 'render_blocked_diagnostic',
     allowed_statuses: ['renderable', 'blocked', 'warning'],
     certification_relevant: true,
-    high_risk: true
+    high_risk: true,
+    mobile_critical: false
   },
   {
     panel_id: 'trend_control_charts',
@@ -112,7 +179,8 @@ export const DASHBOARD_SURFACE_CONTRACT_REGISTRY: DashboardSurfaceContract[] = [
     blocked_state_behavior: 'render_blocked_diagnostic',
     allowed_statuses: ['renderable', 'blocked'],
     certification_relevant: false,
-    high_risk: false
+    high_risk: false,
+    mobile_critical: false
   },
   {
     panel_id: 'reconciliation',
@@ -126,7 +194,8 @@ export const DASHBOARD_SURFACE_CONTRACT_REGISTRY: DashboardSurfaceContract[] = [
     blocked_state_behavior: 'render_blocked_diagnostic',
     allowed_statuses: ['renderable', 'blocked'],
     certification_relevant: true,
-    high_risk: true
+    high_risk: true,
+    mobile_critical: true
   },
   {
     panel_id: 'postmortem_outage',
@@ -140,7 +209,8 @@ export const DASHBOARD_SURFACE_CONTRACT_REGISTRY: DashboardSurfaceContract[] = [
     blocked_state_behavior: 'render_blocked_diagnostic',
     allowed_statuses: ['renderable', 'blocked'],
     certification_relevant: false,
-    high_risk: false
+    high_risk: false,
+    mobile_critical: false
   },
   {
     panel_id: 'tamper_evident_ledger',
@@ -154,7 +224,8 @@ export const DASHBOARD_SURFACE_CONTRACT_REGISTRY: DashboardSurfaceContract[] = [
     blocked_state_behavior: 'render_blocked_diagnostic',
     allowed_statuses: ['renderable', 'blocked'],
     certification_relevant: true,
-    high_risk: true
+    high_risk: true,
+    mobile_critical: false
   },
   {
     panel_id: 'maintain_drift',
@@ -168,7 +239,8 @@ export const DASHBOARD_SURFACE_CONTRACT_REGISTRY: DashboardSurfaceContract[] = [
     blocked_state_behavior: 'render_blocked_diagnostic',
     allowed_statuses: ['renderable', 'blocked', 'warning'],
     certification_relevant: false,
-    high_risk: true
+    high_risk: true,
+    mobile_critical: false
   },
   {
     panel_id: 'scenario_simulator',
@@ -182,7 +254,8 @@ export const DASHBOARD_SURFACE_CONTRACT_REGISTRY: DashboardSurfaceContract[] = [
     blocked_state_behavior: 'render_blocked_diagnostic',
     allowed_statuses: ['renderable', 'blocked'],
     certification_relevant: false,
-    high_risk: true
+    high_risk: true,
+    mobile_critical: false
   },
   {
     panel_id: 'mobile_semantics',
@@ -196,6 +269,7 @@ export const DASHBOARD_SURFACE_CONTRACT_REGISTRY: DashboardSurfaceContract[] = [
     blocked_state_behavior: 'render_blocked_diagnostic',
     allowed_statuses: ['renderable', 'blocked'],
     certification_relevant: true,
-    high_risk: true
+    high_risk: true,
+    mobile_critical: true
   }
 ]

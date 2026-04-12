@@ -9,7 +9,10 @@ const DECISION_STATUS_MAP: Record<string, Exclude<NormalizedStatus, 'unknown_blo
   failed: 'failed',
   fail: 'failed',
   ready: 'pass',
-  blocked: 'block'
+  blocked: 'block',
+  fresh: 'pass',
+  stale: 'block',
+  success: 'pass'
 }
 
 export function normalizeDecisionStatus(raw: unknown): NormalizedStatus {
