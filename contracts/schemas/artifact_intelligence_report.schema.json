@@ -2,8 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "$id": "https://spectrum-systems.org/contracts/nx_artifact_intelligence_report.schema.json",
-  "title": "nx_artifact_intelligence_report",
+  "$id": "https://spectrum-systems.org/contracts/artifact_intelligence_report.schema.json",
+  "title": "artifact_intelligence_report",
   "required": [
     "artifact_type",
     "schema_version",

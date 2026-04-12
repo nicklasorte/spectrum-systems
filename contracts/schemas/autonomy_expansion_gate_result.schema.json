@@ -2,34 +2,27 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "$id": "https://spectrum-systems.org/contracts/nx_pattern_mining_recommendation.schema.json",
-  "title": "nx_pattern_mining_recommendation",
+  "$id": "https://spectrum-systems.org/contracts/autonomy_expansion_gate_result.schema.json",
+  "title": "autonomy_expansion_gate_result",
   "required": [
     "artifact_type",
     "schema_version",
-    "authority_scope",
-    "recurring_motifs",
-    "improvement_candidates",
+    "eligible",
+    "blocked_reasons",
     "trace_id",
     "lineage"
   ],
   "properties": {
     "artifact_type": {
-      "const": "pattern_mining_recommendation"
+      "const": "autonomy_expansion_gate_result"
     },
     "schema_version": {
       "const": "1.0.0"
     },
-    "authority_scope": {
-      "const": "recommendation_only"
+    "eligible": {
+      "type": "boolean"
     },
-    "recurring_motifs": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
-    "improvement_candidates": {
+    "blocked_reasons": {
       "type": "array",
       "items": {
         "type": "string"

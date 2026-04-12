@@ -28,15 +28,15 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _STANDARDS_MANIFEST_PATH = _REPO_ROOT / "contracts" / "standards-manifest.json"
 
 NX_ARTIFACT_CONTRACTS: dict[str, dict[str, str]] = {
-    "artifact_intelligence_index": {"schema_name": "nx_artifact_intelligence_index", "schema_version": "1.0.0"},
-    "artifact_intelligence_report": {"schema_name": "nx_artifact_intelligence_report", "schema_version": "1.0.0"},
-    "fused_signal_record": {"schema_name": "nx_fused_signal_record", "schema_version": "1.0.0"},
-    "multi_run_aggregate": {"schema_name": "nx_multi_run_aggregate", "schema_version": "1.0.0"},
-    "pattern_mining_recommendation": {"schema_name": "nx_pattern_mining_recommendation", "schema_version": "1.0.0"},
-    "decision_explainability_artifact": {"schema_name": "nx_decision_explainability_artifact", "schema_version": "1.0.0"},
-    "system_trust_score_artifact": {"schema_name": "nx_system_trust_score_artifact", "schema_version": "1.0.0"},
-    "policy_evolution_candidate_set": {"schema_name": "nx_policy_evolution_candidate_set", "schema_version": "1.0.0"},
-    "autonomy_expansion_gate_result": {"schema_name": "nx_autonomy_expansion_gate_result", "schema_version": "1.0.0"},
+    "artifact_intelligence_index": {"schema_name": "artifact_intelligence_index", "schema_version": "1.0.0"},
+    "artifact_intelligence_report": {"schema_name": "artifact_intelligence_report", "schema_version": "1.0.0"},
+    "fused_signal_record": {"schema_name": "fused_signal_record", "schema_version": "1.0.0"},
+    "multi_run_aggregate": {"schema_name": "multi_run_aggregate", "schema_version": "1.0.0"},
+    "pattern_mining_recommendation": {"schema_name": "pattern_mining_recommendation", "schema_version": "1.0.0"},
+    "decision_explainability_artifact": {"schema_name": "decision_explainability_artifact", "schema_version": "1.0.0"},
+    "system_trust_score_artifact": {"schema_name": "system_trust_score_artifact", "schema_version": "1.0.0"},
+    "policy_evolution_candidate_set": {"schema_name": "policy_evolution_candidate_set", "schema_version": "1.0.0"},
+    "autonomy_expansion_gate_result": {"schema_name": "autonomy_expansion_gate_result", "schema_version": "1.0.0"},
     "nx_review_intelligence_link_artifact": {"schema_name": "nx_review_intelligence_link_artifact", "schema_version": "1.0.0"},
     "nx_roadmap_candidate_artifact": {"schema_name": "nx_roadmap_candidate_artifact", "schema_version": "1.0.0"},
 }

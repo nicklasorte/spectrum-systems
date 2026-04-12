@@ -2,31 +2,28 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "$id": "https://spectrum-systems.org/contracts/nx_autonomy_expansion_gate_result.schema.json",
-  "title": "nx_autonomy_expansion_gate_result",
+  "$id": "https://spectrum-systems.org/contracts/system_trust_score_artifact.schema.json",
+  "title": "system_trust_score_artifact",
   "required": [
     "artifact_type",
     "schema_version",
-    "eligible",
-    "blocked_reasons",
+    "authority_scope",
+    "trust_score",
     "trace_id",
     "lineage"
   ],
   "properties": {
     "artifact_type": {
-      "const": "autonomy_expansion_gate_result"
+      "const": "system_trust_score_artifact"
     },
     "schema_version": {
       "const": "1.0.0"
     },
-    "eligible": {
-      "type": "boolean"
+    "authority_scope": {
+      "const": "recommendation_only"
     },
-    "blocked_reasons": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+    "trust_score": {
+      "type": "number"
     },
     "trace_id": {
       "type": "string",

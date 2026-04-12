@@ -4897,7 +4897,7 @@
       ],
       "introduced_in": "1.3.113",
       "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/nx_artifact_intelligence_index.json",
+      "example_path": "contracts/examples/artifact_intelligence_index.json",
       "notes": "RIL-owned deterministic index over governed artifact telemetry for non-authoritative retrieval and analysis."
     },
     {
@@ -4910,7 +4910,7 @@
       ],
       "introduced_in": "1.3.113",
       "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/nx_artifact_intelligence_report.json",
+      "example_path": "contracts/examples/artifact_intelligence_report.json",
       "notes": "RIL-owned non-authoritative artifact intelligence report."
     },
     {
@@ -4923,7 +4923,7 @@
       ],
       "introduced_in": "1.3.113",
       "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/nx_fused_signal_record.json",
+      "example_path": "contracts/examples/fused_signal_record.json",
       "notes": "RIL preparatory fused signal artifact for downstream CDE/TPA consumption."
     },
     {
@@ -4936,7 +4936,7 @@
       ],
       "introduced_in": "1.3.113",
       "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/nx_multi_run_aggregate.json",
+      "example_path": "contracts/examples/multi_run_aggregate.json",
       "notes": "RIL multi-run deterministic aggregate artifact."
     },
     {
@@ -4949,7 +4949,7 @@
       ],
       "introduced_in": "1.3.113",
       "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/nx_pattern_mining_recommendation.json",
+      "example_path": "contracts/examples/pattern_mining_recommendation.json",
       "notes": "RIL recommendation-only recurring pattern mining output."
     },
     {
@@ -4962,7 +4962,7 @@
       ],
       "introduced_in": "1.3.113",
       "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/nx_decision_explainability_artifact.json",
+      "example_path": "contracts/examples/decision_explainability_artifact.json",
       "notes": "RIL explainability linkage artifact for governed traceability."
     },
     {
@@ -4975,7 +4975,7 @@
       ],
       "introduced_in": "1.3.113",
       "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/nx_system_trust_score_artifact.json",
+      "example_path": "contracts/examples/system_trust_score_artifact.json",
       "notes": "NX recommendation-only trust posture score artifact."
     },
     {
@@ -4988,7 +4988,7 @@
       ],
       "introduced_in": "1.3.113",
       "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/nx_policy_evolution_candidate_set.json",
+      "example_path": "contracts/examples/policy_evolution_candidate_set.json",
       "notes": "NX recommendation candidate set for TPA policy evolution intake."
     },
     {
@@ -5001,7 +5001,7 @@
       ],
       "introduced_in": "1.3.113",
       "last_updated_in": "1.3.113",
-      "example_path": "contracts/examples/nx_autonomy_expansion_gate_result.json",
+      "example_path": "contracts/examples/autonomy_expansion_gate_result.json",
       "notes": "NX preparatory autonomy expansion gate result artifact."
     },
     {

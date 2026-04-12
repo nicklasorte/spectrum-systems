@@ -2,8 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "$id": "https://spectrum-systems.org/contracts/nx_policy_evolution_candidate_set.schema.json",
-  "title": "nx_policy_evolution_candidate_set",
+  "$id": "https://spectrum-systems.org/contracts/policy_evolution_candidate_set.schema.json",
+  "title": "policy_evolution_candidate_set",
   "required": [
     "artifact_type",
     "schema_version",
