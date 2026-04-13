@@ -2,7 +2,7 @@
   "artifact_type": "system_registry_artifact",
   "artifact_class": "coordination",
   "schema_version": "1.0.0",
-  "registry_version": "v1.0.0",
+  "registry_version": "v1.1.0",
   "systems": [
     {
       "acronym": "AEX",
@@ -404,6 +404,207 @@
       "downstream_consumers": [
         "CDE"
       ]
+    },
+    {
+      "acronym": "CHX",
+      "full_name": "Chaos Harness eXchange",
+      "role": "Owns controlled failure injection and adversarial scenario execution across governed seams.",
+      "owns": [
+        "chaos_failure_injection",
+        "chaos_scenario_definition",
+        "chaos_campaign_execution",
+        "chaos_failure_surface_reporting"
+      ],
+      "consumes": [
+        "governed_scenario_inputs",
+        "replayable_system_bundles",
+        "certification_scope_inputs"
+      ],
+      "produces": [
+        "chx_injection_record",
+        "chx_scenario_pack",
+        "chx_campaign_result",
+        "chx_failure_surface_report"
+      ],
+      "prohibited_behaviors": [
+        "execute_production_workflows",
+        "replace_pqx_execution",
+        "issue_policy_authority",
+        "issue_closure_authority",
+        "mutate_live_state_outside_controlled_injection"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "CVX",
+      "full_name": "Consistency Validation eXchange",
+      "role": "Owns multi-run consistency comparison, divergence scoring, and instability classification.",
+      "owns": [
+        "multi_run_comparison",
+        "divergence_scoring",
+        "instability_classification"
+      ],
+      "consumes": [
+        "repeated_run_outputs",
+        "replay_bundles",
+        "evidence_chain_artifacts"
+      ],
+      "produces": [
+        "cvx_run_comparison_record",
+        "cvx_consistency_score",
+        "cvx_instability_report",
+        "cvx_consistency_bundle"
+      ],
+      "prohibited_behaviors": [
+        "alter_execution_outputs",
+        "override_decision_authority",
+        "replace_replay_engines"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "DEX",
+      "full_name": "Decision Explainability eXchange",
+      "role": "Owns deterministic decision explanation reconstruction from governed evidence and prior decisions.",
+      "owns": [
+        "decision_explanation_reconstruction",
+        "explanation_consistency_checking",
+        "explanation_compression_views"
+      ],
+      "consumes": [
+        "decision_artifacts",
+        "evidence_chain_artifacts",
+        "control_eval_artifacts",
+        "provenance_replay_refs"
+      ],
+      "produces": [
+        "dex_explanation_record",
+        "dex_explanation_consistency_result",
+        "dex_explanation_summary",
+        "dex_explanation_bundle"
+      ],
+      "prohibited_behaviors": [
+        "make_decisions",
+        "reinterpret_upstream_semantics",
+        "override_authority_paths"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "SIM",
+      "full_name": "Simulation eXecution Module",
+      "role": "Owns deterministic candidate policy and scenario simulation without live-state mutation.",
+      "owns": [
+        "candidate_policy_simulation",
+        "scenario_replay_execution",
+        "impact_diff_generation"
+      ],
+      "consumes": [
+        "candidate_policy_artifacts",
+        "baseline_artifacts",
+        "replayable_scenario_packs"
+      ],
+      "produces": [
+        "sim_scenario_record",
+        "sim_policy_impact_report",
+        "sim_diff_record",
+        "sim_simulation_bundle"
+      ],
+      "prohibited_behaviors": [
+        "modify_live_state",
+        "replace_tpa_cde_authority",
+        "promote_simulation_output_automatically"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "PRX",
+      "full_name": "Precedent Retrieval eXchange",
+      "role": "Owns structured precedent record retrieval and bounded relevance scoring.",
+      "owns": [
+        "precedent_record_storage_shape",
+        "precedent_retrieval",
+        "precedent_relevance_scoring"
+      ],
+      "consumes": [
+        "historical_decision_artifacts",
+        "historical_outcome_artifacts",
+        "evidence_bundles"
+      ],
+      "produces": [
+        "prx_precedent_record",
+        "prx_precedent_match_set",
+        "prx_precedent_score_report",
+        "prx_precedent_bundle"
+      ],
+      "prohibited_behaviors": [
+        "override_current_authority",
+        "auto_promote_historical_precedent"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "HIX",
+      "full_name": "Human Interaction eXchange",
+      "role": "Owns governed human interaction contracts, override auditing, and structured feedback exchange.",
+      "owns": [
+        "human_action_contracts",
+        "override_audit_artifacts",
+        "human_feedback_exchange_artifacts"
+      ],
+      "consumes": [
+        "hitl_checkpoints",
+        "override_requests",
+        "structured_human_feedback_inputs"
+      ],
+      "produces": [
+        "hix_human_action_record",
+        "hix_override_audit_record",
+        "hix_feedback_exchange_record",
+        "hix_human_interaction_bundle"
+      ],
+      "prohibited_behaviors": [
+        "bypass_governance_layers",
+        "mutate_state_outside_owner_flows",
+        "replace_cde_tpa_sel_authority"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
     }
   ],
   "invariants": [
@@ -494,6 +695,46 @@
     {
       "from": "CAX",
       "to": "CDE"
+    },
+    {
+      "from": "TLC",
+      "to": "CHX"
+    },
+    {
+      "from": "TLC",
+      "to": "CVX"
+    },
+    {
+      "from": "TLC",
+      "to": "DEX"
+    },
+    {
+      "from": "TLC",
+      "to": "SIM"
+    },
+    {
+      "from": "TLC",
+      "to": "PRX"
+    },
+    {
+      "from": "TLC",
+      "to": "HIX"
+    },
+    {
+      "from": "CHX",
+      "to": "CVX"
+    },
+    {
+      "from": "SIM",
+      "to": "CVX"
+    },
+    {
+      "from": "PRX",
+      "to": "DEX"
+    },
+    {
+      "from": "HIX",
+      "to": "DEX"
     }
   ]
 }

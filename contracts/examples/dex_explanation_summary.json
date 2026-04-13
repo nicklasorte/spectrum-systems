@@ -1,0 +1,16 @@
+{
+  "artifact_type": "dex_explanation_summary",
+  "schema_version": "1.0.0",
+  "artifact_id": "dex_explanation_summary-EX-001",
+  "status": "pass",
+  "generated_at": "2026-04-13T00:00:00Z",
+  "details": {
+    "summary": "Deterministic example for dex_explanation_summary",
+    "non_authority": true
+  },
+  "references": [
+    "AEX",
+    "TLC",
+    "TPA"
+  ]
+}
