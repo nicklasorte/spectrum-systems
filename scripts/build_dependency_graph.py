@@ -18,13 +18,19 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+import sys
 from typing import Dict, Iterable, List, Set, Tuple
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from spectrum_systems.contracts.artifact_class_taxonomy import load_allowed_artifact_classes
+
 SYSTEM_REGISTRY_PATH = REPO_ROOT / "ecosystem" / "system-registry.json"
 STANDARDS_MANIFEST_PATH = REPO_ROOT / "contracts" / "standards-manifest.json"
 ARTIFACT_CLASS_REGISTRY_PATH = REPO_ROOT / "contracts" / "artifact-class-registry.json"
+DEPENDENCY_GRAPH_SCHEMA_PATH = REPO_ROOT / "ecosystem" / "dependency-graph.schema.json"
 OUTPUT_JSON = REPO_ROOT / "ecosystem" / "dependency-graph.json"
 OUTPUT_SUMMARY = REPO_ROOT / "artifacts" / "dependency-graph-summary.md"
 OUTPUT_MERMAID = REPO_ROOT / "artifacts" / "dependency-graph.mmd"
@@ -362,8 +368,32 @@ def main() -> int:
     system_registry = load_json(SYSTEM_REGISTRY_PATH)
     standards_manifest = load_json(STANDARDS_MANIFEST_PATH)
     artifact_class_registry = load_json(ARTIFACT_CLASS_REGISTRY_PATH)
+    available_artifact_classes = set(load_allowed_artifact_classes())
+    registry_classes = {entry["name"] for entry in artifact_class_registry.get("artifact_classes", [])}
+    if registry_classes != available_artifact_classes:
+        raise ValueError(
+            "artifact-class taxonomy mismatch between canonical loader and contracts/artifact-class-registry.json"
+        )
 
-    available_artifact_classes = {entry["name"] for entry in artifact_class_registry.get("artifact_classes", [])}
+    dependency_graph_schema = load_json(DEPENDENCY_GRAPH_SCHEMA_PATH)
+    schema_contract_classes = (
+        dependency_graph_schema.get("properties", {})
+        .get("contracts", {})
+        .get("items", {})
+        .get("properties", {})
+        .get("artifact_class", {})
+        .get("enum", [])
+    )
+    schema_artifact_classes = (
+        dependency_graph_schema.get("properties", {})
+        .get("artifacts", {})
+        .get("items", {})
+        .get("properties", {})
+        .get("artifact_class", {})
+        .get("enum", [])
+    )
+    if sorted(schema_contract_classes) != sorted(available_artifact_classes) or sorted(schema_artifact_classes) != sorted(available_artifact_classes):
+        raise ValueError("dependency-graph schema artifact_class enum is out of sync with canonical taxonomy")
 
     systems = extract_systems(system_registry)
     contracts, contract_lookup = extract_contracts(standards_manifest)
@@ -379,9 +409,17 @@ def main() -> int:
     artifact_types = collect_artifact_types(systems, contracts, EXPLICIT_ARTIFACT_TYPES)
     artifacts = build_artifacts(artifact_types, contract_lookup, producers, consumers)
 
-    for artifact in artifacts:
-        if artifact["artifact_class"] not in available_artifact_classes:
-            artifact["artifact_class"] = infer_artifact_class(artifact["artifact_type"])
+    invalid_contract_classes = [
+        contract["contract_name"] for contract in contracts if contract["artifact_class"] not in available_artifact_classes
+    ]
+    if invalid_contract_classes:
+        raise ValueError(f"standards-manifest contains invalid artifact_class for: {invalid_contract_classes}")
+
+    invalid_artifact_classes = [
+        artifact["artifact_type"] for artifact in artifacts if artifact["artifact_class"] not in available_artifact_classes
+    ]
+    if invalid_artifact_classes:
+        raise ValueError(f"dependency graph contains invalid artifact_class for: {invalid_artifact_classes}")
 
     artifacts.sort(key=lambda item: item["artifact_type"])
     edges = build_edges(systems, contracts)

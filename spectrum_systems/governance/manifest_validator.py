@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from spectrum_systems.contracts.artifact_class_taxonomy import load_allowed_artifact_classes
+
 REQUIRED_CONTRACT_FIELDS = (
     "artifact_type",
     "artifact_class",
@@ -12,13 +14,7 @@ REQUIRED_CONTRACT_FIELDS = (
     "intended_consumers",
 )
 
-ALLOWED_ARTIFACT_CLASSES = (
-    "control",
-    "evaluation",
-    "governance",
-    "execution",
-    "monitoring",
-)
+ALLOWED_ARTIFACT_CLASSES = load_allowed_artifact_classes()
 
 
 def _entry_path(index: int, field: str) -> str:

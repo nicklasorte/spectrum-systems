@@ -3045,7 +3045,7 @@
     },
     {
       "artifact_type": "operator_action_request_artifact",
-      "artifact_class": "control",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -3059,7 +3059,7 @@
     },
     {
       "artifact_type": "operator_action_resolution_artifact",
-      "artifact_class": "control",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -3086,7 +3086,7 @@
     },
     {
       "artifact_type": "operator_evidence_bundle_artifact",
-      "artifact_class": "control",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -4604,7 +4604,7 @@
     },
     {
       "artifact_type": "recommendation_comparison_artifact",
-      "artifact_class": "control",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -4917,7 +4917,7 @@
     },
     {
       "artifact_type": "reuse_record_artifact",
-      "artifact_class": "control",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
