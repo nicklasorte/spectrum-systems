@@ -64,6 +64,29 @@ OPX_002_MANDATORY_TEST_COVERAGE = {index: text for index, text in enumerate([
     "no new slice duplicates a registry owner responsibility",
 ], start=1)}
 
+
+OPX_003_MANDATORY_TEST_COVERAGE = {index: text for index, text in enumerate([
+    "operator actions are artifact-backed and cannot bypass authority",
+    "operator evidence bundles are generated deterministically and linked to provenance",
+    "FAQ hardening wave 2 strengthens judgment/override/replay/certification behavior",
+    "operator overrides/review findings/corrections become eval/data artifacts deterministically",
+    "FAQ module template compiler output is deterministic and reusable",
+    "compatibility graph detects shared breakage",
+    "policy/judgment conflicts are surfaced deterministically",
+    "trust decomposition artifacts are correct and non-authoritative",
+    "queue/lead-time/burden metrics are generated correctly",
+    "working paper module runs end-to-end under governed flow",
+    "comment resolution module runs end-to-end under governed flow",
+    "study-plan module runs end-to-end under governed flow",
+    "champion/challenger lane remains governed and bounded",
+    "maintain-stage outputs are deterministic and governed",
+    "simulation/MATLAB promotion pack is bounded, replayable, and certifiable",
+    "red-team pack #1 generates findings and fix wave #1 resolves them",
+    "semantic cache reuses only on strict governed matches",
+    "red-team pack #2 generates findings and fix wave #2 resolves them",
+    "no new slice duplicates a registry owner responsibility",
+], start=1)}
+
 SLICE_OWNER = {
     "OPX-00": "CDE/SEL/TLC/RQX",
     "OPX-01": "RQX",
@@ -212,6 +235,65 @@ class OPXRuntime:
         self.artifacts.append({"kind": "operator_action_route", **routing})
         return routing
 
+    def build_operator_action_flow(
+        self,
+        *,
+        action: str,
+        trace_id: str,
+        actor: str,
+        evidence_refs: list[str],
+        queue_id: str = "default",
+        reviewer: str = "unassigned",
+    ) -> dict[str, dict[str, Any]]:
+        request = {
+            "kind": "operator_action_request_artifact",
+            "action_request_id": f"oar:{trace_id}:{action}",
+            "trace_id": trace_id,
+            "action": action,
+            "actor": actor,
+            "evidence_refs": sorted(evidence_refs),
+            "lineage": list(self.canonical_authority_path),
+            "queue_id": queue_id,
+            "reviewer": reviewer,
+            "authoritative": False,
+        }
+        route = self.route_operator_action(
+            self.create_operator_action_v2(
+                action,
+                trace_id,
+                actor=actor,
+                evidence_refs=evidence_refs,
+                queue_id=queue_id,
+                reviewer=reviewer,
+            )
+        )
+        resolution = {
+            "kind": "operator_action_resolution_artifact",
+            "resolution_id": f"oar-res:{trace_id}:{action}",
+            "action_request_id": request["action_request_id"],
+            "trace_id": trace_id,
+            "resolved_by_owner": "CDE" if route["cde_next_step_authority"] else "RQX",
+            "enforcement_owner": "SEL" if route["sel_enforcement_required"] else None,
+            "status": "resolved",
+            "bounded": True,
+        }
+        self.artifacts.extend([request, resolution])
+        return {"request": request, "resolution": resolution}
+
+    def build_recommendation_comparison(self, current: dict[str, Any], prior: dict[str, Any]) -> dict[str, Any]:
+        changed_keys = sorted(key for key in set(current) | set(prior) if current.get(key) != prior.get(key))
+        artifact = {
+            "kind": "recommendation_comparison_artifact",
+            "trace_id": current.get("trace_link", "trace:missing"),
+            "current_recommendation": current.get("recommendation", "unknown"),
+            "prior_recommendation": prior.get("recommendation", "unknown"),
+            "what_changed": changed_keys,
+            "why_this": current.get("why_now", "evidence_delta_detected"),
+            "authoritative": False,
+        }
+        self.artifacts.append(artifact)
+        return artifact
+
     def enqueue_review(self, review_type: str, severity: str, threshold: int) -> dict[str, Any]:
         item = {"review_type": review_type, "severity": severity, "threshold": threshold, "status": "queued", "owner": "RQX"}
         self.review_queue.append(item)
@@ -250,9 +332,10 @@ class OPXRuntime:
         return output
 
     def build_operator_evidence_bundle(self, recommendation: dict[str, Any], prior: dict[str, Any], moved_by: list[str], invalidate_conditions: list[str]) -> dict[str, Any]:
+        delta = sorted([k for k, v in recommendation.items() if prior.get(k) != v])
         bundle = {
             "why_now": recommendation.get("why_now", "evidence_delta_detected"),
-            "changed_since_prior": sorted([k for k, v in recommendation.items() if prior.get(k) != v]),
+            "changed_since_prior": delta,
             "moved_by_evidence": sorted(moved_by),
             "invalidate_conditions": sorted(invalidate_conditions),
             "provenance_refs": sorted(recommendation.get("provenance_refs", [])),
@@ -260,8 +343,25 @@ class OPXRuntime:
             "trace_link": recommendation.get("trace_link", "trace:missing"),
         }
         digest = hashlib.sha256(json.dumps(bundle, sort_keys=True).encode("utf-8")).hexdigest()
-        artifact = {"kind": "operator_evidence_bundle", "bundle_hash": digest, **bundle}
-        self.artifacts.append(artifact)
+        artifact = {"kind": "operator_evidence_bundle_artifact", "bundle_hash": digest, **bundle, "authoritative": False}
+        delta_artifact = {
+            "kind": "evidence_delta_artifact",
+            "trace_link": bundle["trace_link"],
+            "delta_fields": delta,
+            "delta_hash": hashlib.sha256(json.dumps(delta).encode("utf-8")).hexdigest(),
+        }
+        change_record = {
+            "kind": "recommendation_change_record",
+            "trace_link": bundle["trace_link"],
+            "change_count": len(delta),
+            "what_changed": delta,
+        }
+        invalidate_artifact = {
+            "kind": "invalidate_conditions_artifact",
+            "trace_link": bundle["trace_link"],
+            "invalidate_conditions": sorted(invalidate_conditions),
+        }
+        self.artifacts.extend([artifact, delta_artifact, change_record, invalidate_artifact])
         return artifact
 
     def harden_faq_wave2(self, faq_output: dict[str, Any], *, override: dict[str, Any] | None, replay_ok: bool, context_quality: int, trust_posture: str, promotion_regret: float) -> dict[str, Any]:
@@ -477,18 +577,24 @@ class OPXRuntime:
         return artifact
 
     def semantic_cache_store(self, key_fields: dict[str, str], payload: dict[str, Any]) -> str:
+        required = {"task_spec", "schema_version", "policy_version", "context_fingerprint", "active_set"}
+        if set(key_fields) != required:
+            raise ValueError("semantic cache requires strict governed key fields")
         key = hashlib.sha256(json.dumps(key_fields, sort_keys=True).encode("utf-8")).hexdigest()
         self.semantic_cache[key] = {"key_fields": key_fields, "payload": payload}
         return key
 
     def semantic_cache_retrieve(self, key_fields: dict[str, str]) -> dict[str, Any]:
+        required = {"task_spec", "schema_version", "policy_version", "context_fingerprint", "active_set"}
+        if set(key_fields) != required:
+            return {"hit": False, "reason": "governed_key_shape_mismatch", "reuse_record_emitted": False}
         key = hashlib.sha256(json.dumps(key_fields, sort_keys=True).encode("utf-8")).hexdigest()
         if key not in self.semantic_cache:
             return {"hit": False, "reason": "cache_miss", "reuse_record_emitted": False}
         record = self.semantic_cache[key]
         if record["key_fields"] != key_fields:
             return {"hit": False, "reason": "governed_mismatch", "reuse_record_emitted": False}
-        reuse = {"kind": "reuse_record", "cache_key": key, "trust_metric": 100, "payload_ref": "cache_payload", "reused": True}
+        reuse = {"kind": "reuse_record_artifact", "cache_key": key, "trust_metric": 100, "payload_ref": "cache_payload", "reused": True}
         self.artifacts.append(reuse)
         return {"hit": True, "reason": "strict_match", "reuse_record_emitted": True, "reuse_record": reuse}
 
@@ -593,6 +699,153 @@ class OPXRuntime:
     def non_duplication_check(self) -> bool:
         canonical_owners = {"AEX", "PQX", "HNX", "TPA", "FRE", "RIL", "RQX", "SEL", "CDE", "TLC", "PRG", "MAP"}
         return all(any(owner in SLICE_OWNER[slice_id] for owner in canonical_owners) for slice_id in SLICE_OWNER)
+
+
+def run_opx_003_roadmap() -> dict[str, Any]:
+    runtime = OPXRuntime()
+
+    # OPX-29
+    operator_flow = runtime.build_operator_action_flow(
+        action="assign_review",
+        trace_id="trace-opx-29",
+        actor="operator-a",
+        evidence_refs=["prov:opx29:1"],
+        queue_id="queue-review",
+        reviewer="rqx-reviewer-1",
+    )
+    # OPX-30
+    current = {
+        "trace_link": "trace-opx-30",
+        "recommendation": "approve_bounded_continuation",
+        "confidence": 0.91,
+        "provenance_refs": ["prov:30:1", "prov:30:2"],
+        "trust_decomposition_ref": "trust:30",
+        "why_now": "review_health_improved",
+    }
+    prior = {"trace_link": "trace-opx-30", "recommendation": "abstain", "confidence": 0.62}
+    comparison = runtime.build_recommendation_comparison(current, prior)
+    evidence_bundle = runtime.build_operator_evidence_bundle(current, prior, ["prov:30:2"], ["policy_revoked"])
+
+    # OPX-31 to OPX-33
+    faq_output = runtime.run_module("faq", "faq-transcript", ["faq-context"])
+    faq_hardened = runtime.harden_faq_wave2(
+        faq_output,
+        override={"justification": "bounded and expires", "expires": "2026-06-01"},
+        replay_ok=True,
+        context_quality=88,
+        trust_posture="guarded",
+        promotion_regret=0.01,
+    )
+    feedback = runtime.feedback_to_eval_artifacts(
+        "faq",
+        override_events=[{"id": "ovr-1", "recurs": True}],
+        review_findings=[{"id": "rvw-1"}],
+        corrections=[{"id": "fix-1", "pattern": "source_grounding"}],
+    )
+    template = runtime.compile_module_template(faq_output, feedback)
+
+    # OPX-34 to OPX-37
+    compat = runtime.build_compatibility_graph(
+        [
+            {"name": "faq", "shared_contracts": ["opx-core"], "schema_versions": {"output": "2.0-breaking"}},
+            {"name": "working_paper", "shared_contracts": ["opx-core"], "schema_versions": {"output": "1.4"}},
+        ]
+    )
+    conflicts = runtime.resolve_policy_judgment_conflicts(
+        {
+            "policies": [{"id": "p-1", "topic": "scope", "stance": "allow"}],
+            "judgments": [{"id": "j-1", "topic": "scope", "stance": "deny"}],
+        }
+    )
+    trust = runtime.trust_decomposition({"trace_failures": 1, "replay_failures": 1, "review_backlog": 2})
+    burden = runtime.queue_burden_metrics(
+        [
+            {"status": "escalated", "age_hours": 26, "action_latency_minutes": 12, "override": True, "disagreement": True},
+            {"status": "fixed", "age_hours": 4, "action_latency_minutes": 10, "override": False, "disagreement": False},
+        ],
+        cert_backlog=3,
+    )
+
+    # OPX-38 to OPX-40
+    working_paper = runtime.run_templated_module_e2e("working_paper", template, "wp-transcript", ["wp-context"])
+    comment_resolution = runtime.run_templated_module_e2e("comment_resolution", template, "cr-transcript", ["cr-context"])
+    study_plan = runtime.run_templated_module_e2e("study_plan", template, "sp-transcript", ["sp-context"])
+
+    # OPX-41 to OPX-43
+    lane = runtime.champion_challenger_lane({"id": "champion"}, {"id": "challenger"}, 0.1)
+    maintain = runtime.maintain_stage_v2("opx-42-seed")
+    simulation = runtime.simulation_promotion_pack("sim-43", resource_limit=2048, replay_seed="seed-43")
+
+    # OPX-44 to OPX-45
+    red1 = runtime.red_team_pack_v2(
+        "red-1",
+        [
+            "operator_action_abuse",
+            "authority_bypass",
+            "stale_replay_use",
+            "fail_open_certification",
+            "review_loop_bypass",
+            "degraded_context_exploitation",
+            "hidden_override_abuse",
+            "active_set_misuse",
+            "evidence_bundle_misdirection",
+        ],
+    )
+    fix1 = runtime.apply_fix_wave_v2(red1)
+
+    # OPX-46
+    cache_key_fields = {
+        "task_spec": "faq-resolution",
+        "schema_version": "1.0",
+        "policy_version": "1.0",
+        "context_fingerprint": "ctx-46",
+        "active_set": "active-46",
+    }
+    runtime.semantic_cache_store(cache_key_fields, {"result": "cached"})
+    cache_hit = runtime.semantic_cache_retrieve(cache_key_fields)
+    cache_miss = runtime.semantic_cache_retrieve({**cache_key_fields, "policy_version": "2.0"})
+
+    # OPX-47 to OPX-48
+    red2 = runtime.red_team_pack_v2(
+        "red-2",
+        [
+            "queue_overload",
+            "rollback_failure",
+            "trust_drift",
+            "stale_active_set",
+            "policy_conflict",
+            "calibration_decay",
+            "reviewer_fatigue",
+            "cross_module_contract_breakage",
+            "semantic_cache_poisoning",
+            "portfolio_freeze_threshold_breach",
+        ],
+    )
+    fix2 = runtime.apply_fix_wave_v2(red2)
+
+    return {
+        "operator_flow": operator_flow,
+        "comparison": comparison,
+        "evidence_bundle": evidence_bundle,
+        "faq_hardened": faq_hardened,
+        "feedback": feedback,
+        "template": template,
+        "compatibility": compat,
+        "conflicts": conflicts,
+        "trust": trust,
+        "burden": burden,
+        "modules": {"working_paper": working_paper, "comment_resolution": comment_resolution, "study_plan": study_plan},
+        "champion_challenger": lane,
+        "maintain_stage": maintain,
+        "simulation_pack": simulation,
+        "red_team_1": red1,
+        "fix_wave_1": fix1,
+        "semantic_cache": {"hit": cache_hit, "miss": cache_miss},
+        "red_team_2": red2,
+        "fix_wave_2": fix2,
+        "non_duplication": runtime.non_duplication_check(),
+        "coverage": OPX_003_MANDATORY_TEST_COVERAGE,
+    }
 
 
 def run_full_opx_roadmap() -> dict[str, Any]:

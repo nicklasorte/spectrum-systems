@@ -3408,6 +3408,34 @@
       "notes": "OPS-01 governed deterministic unattended-operations monitoring thresholds, severity mapping, and escalation/action contract."
     },
     {
+      "artifact_type": "operator_action_request_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "schema_path": "contracts/schemas/operator_action_request_artifact.schema.json",
+      "example_path": "contracts/examples/operator_action_request_artifact.json",
+      "notes": "OPX-29 operator action request artifact for TLC-routed governed operator action intake."
+    },
+    {
+      "artifact_type": "operator_action_resolution_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "schema_path": "contracts/schemas/operator_action_resolution_artifact.schema.json",
+      "example_path": "contracts/examples/operator_action_resolution_artifact.json",
+      "notes": "OPX-29 operator action resolution artifact linking RQX/CDE/SEL bounded resolution outcomes."
+    },
+    {
       "artifact_type": "operator_backlog_handoff",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3419,6 +3447,20 @@
       "last_updated_in": "1.3.36",
       "example_path": "contracts/examples/operator_backlog_handoff.json",
       "notes": "BATCH-Y prioritized operator hardening handoff artifact rack-and-stacked from deterministic shakeout friction evidence."
+    },
+    {
+      "artifact_type": "operator_evidence_bundle_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "schema_path": "contracts/schemas/operator_evidence_bundle_artifact.schema.json",
+      "example_path": "contracts/examples/operator_evidence_bundle_artifact.json",
+      "notes": "OPX-30 compact evidence bundle describing why now, what changed, and provenance refs for operator recommendations."
     },
     {
       "artifact_type": "operator_friction_report",
@@ -5237,6 +5279,20 @@
       "notes": "RIL-004 deterministic read-only readiness aggregate projection from review_integration_packet_artifact readiness_inputs with explicit provenance continuity."
     },
     {
+      "artifact_type": "recommendation_comparison_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "schema_path": "contracts/schemas/recommendation_comparison_artifact.schema.json",
+      "example_path": "contracts/examples/recommendation_comparison_artifact.json",
+      "notes": "OPX-29/30 current-versus-prior recommendation comparison artifact for operator decision support."
+    },
+    {
       "artifact_type": "recovery_result_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5534,6 +5590,20 @@
       "last_updated_in": "1.3.92",
       "example_path": "contracts/examples/resume_record.json",
       "notes": "HR-B canonical governed resume attempt artifact linked to checkpoint continuity state."
+    },
+    {
+      "artifact_type": "reuse_record_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "schema_path": "contracts/schemas/reuse_record_artifact.schema.json",
+      "example_path": "contracts/examples/reuse_record_artifact.json",
+      "notes": "OPX-46 governed semantic-cache reuse record artifact with explicit trust metric."
     },
     {
       "artifact_type": "review_artifact",

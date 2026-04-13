@@ -1,0 +1,24 @@
+{
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.3.121",
+  "trace_id": "trace-opx-003",
+  "artifact_type": "operator_action_request_artifact",
+  "action_request_id": "oar:1",
+  "action": "assign_review",
+  "actor": "operator-1",
+  "lineage": [
+    "AEX",
+    "TLC",
+    "TPA",
+    "PQX",
+    "RIL",
+    "CDE",
+    "SEL"
+  ],
+  "evidence_refs": [
+    "prov:1"
+  ],
+  "queue_id": "review",
+  "reviewer": "rqx-1"
+}

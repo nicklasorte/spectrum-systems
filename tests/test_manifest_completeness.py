@@ -8,7 +8,7 @@ def _base_manifest() -> dict:
         "contracts": [
             {
                 "artifact_type": "pqx_slice_execution_record",
-                "artifact_class": "control",
+                "artifact_class": "governance",
                 "schema_path": "contracts/schemas/pqx_slice_execution_record.schema.json",
                 "example_path": "contracts/examples/pqx_slice_execution_record.json",
                 "intended_consumers": ["spectrum-systems"],
@@ -39,7 +39,7 @@ def test_null_field_fails() -> None:
 
 def test_invalid_artifact_class_fails() -> None:
     manifest = _base_manifest()
-    manifest["contracts"][0]["artifact_class"] = "coordination"
+    manifest["contracts"][0]["artifact_class"] = "invalid_class"
 
     result = validate_manifest_completeness(manifest)
 

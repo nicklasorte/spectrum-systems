@@ -1,0 +1,14 @@
+{
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.3.121",
+  "trace_id": "trace-opx-003",
+  "artifact_type": "recommendation_comparison_artifact",
+  "current_recommendation": "approve_bounded_continuation",
+  "prior_recommendation": "abstain",
+  "what_changed": [
+    "confidence",
+    "recommendation"
+  ],
+  "why_this": "review_health_improved"
+}

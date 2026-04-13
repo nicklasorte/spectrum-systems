@@ -4,9 +4,11 @@ import unittest
 
 from jsonschema import Draft202012Validator
 
+from spectrum_systems.contracts.artifact_class_taxonomy import load_allowed_artifact_classes
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-ALLOWED_CLASSES = {"coordination", "work", "review", "governance"}
+ALLOWED_CLASSES = set(load_allowed_artifact_classes())
 KEY_CONTRACT_CLASSES = {
     "meeting_minutes_record": "coordination",
     "reviewer_comment_set": "review",

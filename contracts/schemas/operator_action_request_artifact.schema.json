@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/schemas/operator_action_request_artifact.schema.json",
+  "title": "operator_action_request_artifact",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "action_request_id",
+    "action",
+    "actor",
+    "lineage",
+    "evidence_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "standards_version": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "action_request_id": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string"
+    },
+    "actor": {
+      "type": "string"
+    },
+    "lineage": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 3
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "queue_id": {
+      "type": "string"
+    },
+    "reviewer": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

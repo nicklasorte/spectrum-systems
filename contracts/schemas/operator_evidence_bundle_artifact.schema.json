@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/schemas/operator_evidence_bundle_artifact.schema.json",
+  "title": "operator_evidence_bundle_artifact",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "bundle_hash",
+    "why_now",
+    "changed_since_prior",
+    "moved_by_evidence",
+    "provenance_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "standards_version": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "bundle_hash": {
+      "type": "string"
+    },
+    "why_now": {
+      "type": "string"
+    },
+    "changed_since_prior": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "moved_by_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "invalidate_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "provenance_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "trust_decomposition_ref": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}
