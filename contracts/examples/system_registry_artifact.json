@@ -1149,6 +1149,204 @@
         "CDE",
         "SEL"
       ]
+    },
+    {
+      "acronym": "RSM",
+      "full_name": "Reconciliation State Manager",
+      "role": "Compares desired vs actual state and emits reconciliation artifacts.",
+      "owns": [
+        "desired_state_artifact",
+        "actual_state_artifact",
+        "state_delta_artifact",
+        "divergence_record",
+        "state_alignment_status",
+        "reconciliation_plan_artifact",
+        "portfolio_state_snapshot"
+      ],
+      "consumes": [
+        "review_integration_packet_artifact",
+        "module_posture",
+        "operator_posture",
+        "policy_judgment_override_state",
+        "portfolio_posture_signal"
+      ],
+      "produces": [
+        "rsm_reconciliation_debt_artifact",
+        "rsm_portfolio_state_snapshot"
+      ],
+      "prohibited_behaviors": [
+        "closure_decisioning",
+        "runtime_enforcement",
+        "work_execution",
+        "policy_adjudication",
+        "raw_evidence_reinterpretation"
+      ],
+      "upstream_dependencies": [
+        "RIL"
+      ],
+      "downstream_consumers": [
+        "PRG",
+        "CDE"
+      ]
+    },
+    {
+      "acronym": "DEM",
+      "full_name": "Decision Economics Modeler",
+      "role": "Produces recommendation-grade economics and tradeoff artifacts.",
+      "owns": [
+        "decision_economics_artifact",
+        "cost_of_delay_model",
+        "false_positive_cost_model",
+        "false_negative_cost_model",
+        "human_review_cost_model",
+        "tradeoff_surface_artifact",
+        "economic_decision_score"
+      ],
+      "consumes": [
+        "portfolio_posture_signal",
+        "external_outcome_impact_artifact"
+      ],
+      "produces": [
+        "dem_decision_economics_artifact"
+      ],
+      "prohibited_behaviors": [
+        "closure_decisioning",
+        "runtime_enforcement",
+        "work_execution"
+      ],
+      "upstream_dependencies": [
+        "RSM",
+        "XRL"
+      ],
+      "downstream_consumers": [
+        "PRG"
+      ]
+    },
+    {
+      "acronym": "MCL",
+      "full_name": "Memory Compaction Layer",
+      "role": "Manages compaction/archive/retention artifacts for governed memory surfaces.",
+      "owns": [
+        "memory_compaction_plan",
+        "archival_tier_assignment",
+        "retention_policy_artifact",
+        "memory_entropy_report",
+        "canonical_memory_promotion_candidate",
+        "archive_prune_record"
+      ],
+      "consumes": [
+        "precedent_archive",
+        "judgment_archive",
+        "policy_archive"
+      ],
+      "produces": [
+        "mcl_memory_compaction_plan"
+      ],
+      "prohibited_behaviors": [
+        "closure_decisioning",
+        "runtime_enforcement",
+        "ungoverned_delete_execution"
+      ],
+      "upstream_dependencies": [
+        "RIL"
+      ],
+      "downstream_consumers": [
+        "RSM",
+        "PRG"
+      ]
+    },
+    {
+      "acronym": "BRM",
+      "full_name": "Blast Radius Manager",
+      "role": "Classifies impact/irreversibility and escalation support requirements.",
+      "owns": [
+        "blast_radius_assessment",
+        "irreversibility_classification",
+        "rollback_difficulty_score",
+        "escalation_requirement_record",
+        "multi_review_requirement_record"
+      ],
+      "consumes": [
+        "change_impact_artifact"
+      ],
+      "produces": [
+        "brm_blast_radius_assessment"
+      ],
+      "prohibited_behaviors": [
+        "closure_decisioning",
+        "runtime_enforcement"
+      ],
+      "upstream_dependencies": [
+        "RIL"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "DCL",
+      "full_name": "Doctrine Compilation Layer",
+      "role": "Compiles institutional doctrine artifacts with conflict and lineage records.",
+      "owns": [
+        "doctrine_artifact",
+        "doctrine_update_candidate",
+        "doctrine_supersession_record",
+        "doctrine_conflict_record",
+        "doctrine_lineage_record"
+      ],
+      "consumes": [
+        "judgment_eval_result",
+        "policy_change_candidate",
+        "precedent_archive"
+      ],
+      "produces": [
+        "dcl_doctrine_artifact"
+      ],
+      "prohibited_behaviors": [
+        "policy_authority_decisioning",
+        "closure_decisioning",
+        "runtime_enforcement"
+      ],
+      "upstream_dependencies": [
+        "RIL",
+        "PRG"
+      ],
+      "downstream_consumers": [
+        "TPA",
+        "PRG"
+      ]
+    },
+    {
+      "acronym": "XRL",
+      "full_name": "External Reality Loop",
+      "role": "Normalizes external outcomes and emits trust-weighted feedback bindings.",
+      "owns": [
+        "external_outcome_signal",
+        "outcome_normalization_record",
+        "outcome_trust_weight",
+        "external_feedback_binding_record",
+        "external_outcome_impact_artifact"
+      ],
+      "consumes": [
+        "external_outcome_feed",
+        "postmortem_record"
+      ],
+      "produces": [
+        "xrl_external_outcome_impact_artifact"
+      ],
+      "prohibited_behaviors": [
+        "policy_authority_decisioning",
+        "closure_decisioning",
+        "runtime_enforcement"
+      ],
+      "upstream_dependencies": [
+        "RIL"
+      ],
+      "downstream_consumers": [
+        "PRG",
+        "DEM"
+      ]
     }
   ],
   "invariants": [
@@ -1415,6 +1613,42 @@
     {
       "from": "CON",
       "to": "SEL"
+    },
+    {
+      "from": "RIL",
+      "to": "RSM"
+    },
+    {
+      "from": "RSM",
+      "to": "PRG"
+    },
+    {
+      "from": "RSM",
+      "to": "CDE"
+    },
+    {
+      "from": "DEM",
+      "to": "PRG"
+    },
+    {
+      "from": "BRM",
+      "to": "CDE"
+    },
+    {
+      "from": "DCL",
+      "to": "TPA"
+    },
+    {
+      "from": "XRL",
+      "to": "RIL"
+    },
+    {
+      "from": "XRL",
+      "to": "PRG"
+    },
+    {
+      "from": "MCL",
+      "to": "RSM"
     }
   ]
 }

@@ -1500,6 +1500,53 @@ def test_main_contract_preflight_allows_con035_changed_paths_when_required_tests
     assert artifact["control_signal"]["strategy_gate_decision"] == "ALLOW"
 
 
+def test_resolve_wrapper_path_normalizes_repo_relative_path() -> None:
+    resolved = preflight._resolve_wrapper_path(Path("/repo"), "outputs/contract_preflight/wrapper.json")
+    assert resolved == Path("/repo/outputs/contract_preflight/wrapper.json")
+
+
+def test_main_governed_preflight_auto_builds_missing_wrapper(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    wrapper_path = tmp_path / "missing-wrapper.json"
+    changed = ["contracts/schemas/roadmap_eligibility_artifact.schema.json"]
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": changed,
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": str(wrapper_path),
+                "authority_evidence_ref": "data/pqx_runs/AI-01/example.pqx_slice_execution_record.json",
+            },
+        )(),
+    )
+
+    def _fake_run(command: list[str], cwd: Path):
+        if "build_preflight_pqx_wrapper.py" in " ".join(command):
+            wrapper_path.write_text(json.dumps(_governed_wrapper_payload(changed)), encoding="utf-8")
+            return preflight.CommandResult(command=command, returncode=0, stdout="ok", stderr="")
+        return preflight.CommandResult(command=command, returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(preflight, "_run", _fake_run)
+    monkeypatch.setattr(preflight, "build_impact_map", lambda *_args, **_kwargs: {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": [], "contract_impact_artifact": {}})
+    monkeypatch.setattr(preflight, "validate_examples", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 0
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["pqx_required_context_enforcement"]["status"] == "allow"
+    assert report["changed_path_detection"]["pqx_wrapper_resolution"]["built"] is True
+
+
 def test_main_contract_preflight_blocks_con035_when_required_test_mapping_missing(tmp_path: Path, monkeypatch) -> None:
     output_dir = tmp_path / "out"
     changed_paths = ["scripts/pqx_runner.py"]

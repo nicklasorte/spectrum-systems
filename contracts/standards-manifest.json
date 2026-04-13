@@ -3,7 +3,7 @@
   "artifact_id": "STD-CONTRACTS",
   "artifact_version": "1.3.127",
   "schema_version": "1.3.99",
-  "standards_version": "1.3.128",
+  "standards_version": "1.3.129",
   "record_id": "REC-STD-2026-04-13-MNT-002",
   "run_id": "run-20260413T000000Z-mnt-002",
   "created_at": "2026-04-13T00:00:00Z",
@@ -7816,6 +7816,19 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
+    },
+    {
+      "artifact_type": "opx_005_integration_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.129",
+      "last_updated_in": "1.3.129",
+      "example_path": "contracts/examples/opx_005_integration_artifact.json",
+      "notes": "OPX-005 integrated governance artifact covering RSM/DEM/MCL/BRM/DCL/XRL non-authoritative runtime surfaces and red-team fix-wave completion state."
     }
   ]
 }

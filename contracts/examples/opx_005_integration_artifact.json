@@ -1,0 +1,9 @@
+{
+  "artifact_type": "opx_005_integration_artifact",
+  "artifact_class": "coordination",
+  "schema_version": "1.0.0",
+  "trace_id": "opx-005-trace-001",
+  "systems_covered": ["RSM", "DEM", "MCL", "BRM", "DCL", "XRL"],
+  "fix_waves_completed": 4,
+  "non_authoritative": true
+}
