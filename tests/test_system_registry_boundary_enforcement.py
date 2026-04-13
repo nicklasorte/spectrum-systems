@@ -84,10 +84,17 @@ def test_validator_fails_when_entry_invariant_is_weakened(tmp_path: Path) -> Non
 
 def test_registry_includes_adv_systems() -> None:
     systems, _ = validator.parse_registry(REGISTRY_PATH)
-    for name in ("CHX", "DEX", "SIM", "PRX", "CVX", "HIX", "CAL", "POL", "AIL", "SCH", "DEP", "RCA", "QOS", "SIMX", "CTX", "EVL", "OBS", "LIN", "DRT", "SLO", "CAN", "DAT", "JDG", "PRM", "ROU", "HIT", "CAP", "SEC", "REP", "ENT", "CON"):
+    for name in ("CHX", "DEX", "SIM", "PRX", "CVX", "HIX", "CAL", "POL", "AIL", "SCH", "DEP", "RCA", "QOS", "SIMX", "CTX", "EVL", "OBS", "LIN", "DRT", "SLO", "CAN", "DAT", "JDG", "PRM", "ROU", "HIT", "CAP", "SEC", "REP", "ENT", "CON", "TRN", "NRM", "CMP", "RET", "ABS", "CRS", "MIG", "QRY", "TST", "RSK", "EVD", "SUP", "HND", "SYN"):
         assert name in systems
         assert systems[name].owns
         assert systems[name].must_not_do
+
+
+def test_next_phase_systems_declare_consumes_and_produces() -> None:
+    systems, _ = validator.parse_registry(REGISTRY_PATH)
+    for name in ("TRN", "NRM", "CMP", "RET", "ABS", "CRS", "MIG", "QRY", "TST", "RSK", "EVD", "SUP", "HND", "SYN"):
+        assert systems[name].consumes
+        assert systems[name].produces
 
 
 def test_extended_hardening_unique_owners_enforced(tmp_path: Path) -> None:

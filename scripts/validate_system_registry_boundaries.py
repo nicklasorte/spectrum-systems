@@ -13,7 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_PATH = REPO_ROOT / "docs" / "architecture" / "system_registry.md"
 
 SYSTEM_HEADER_RE = re.compile(r"^\s*###\s+([A-Z0-9]+)\s*$")
-FIELD_RE = re.compile(r"^\s*-\s+\*\*(role|owns|must_not_do):\*\*\s*(.*)$")
+FIELD_RE = re.compile(r"^\s*-\s+\*\*(role|owns|consumes|produces|must_not_do):\*\*\s*(.*)$")
 LIST_ITEM_RE = re.compile(r"^\s*-\s+(.*)$")
 ANY_FIELD_RE = re.compile(r"^\s*-\s+\*\*[a-z_]+:\*\*")
 
@@ -23,6 +23,8 @@ class SystemDefinition:
     name: str
     role: str
     owns: list[str]
+    consumes: list[str]
+    produces: list[str]
     must_not_do: list[str]
 
 
@@ -32,22 +34,28 @@ def parse_registry(path: Path) -> tuple[dict[str, SystemDefinition], str]:
     current: str | None = None
     role = ""
     owns: list[str] = []
+    consumes: list[str] = []
+    produces: list[str] = []
     must_not_do: list[str] = []
     active_list: str | None = None
 
     def flush() -> None:
-        nonlocal current, role, owns, must_not_do, active_list
+        nonlocal current, role, owns, consumes, produces, must_not_do, active_list
         if current is None:
             return
         systems[current] = SystemDefinition(
             name=current,
             role=role.strip(),
             owns=[item.strip() for item in owns if item.strip()],
+            consumes=[item.strip() for item in consumes if item.strip()],
+            produces=[item.strip() for item in produces if item.strip()],
             must_not_do=[item.strip() for item in must_not_do if item.strip()],
         )
         current = None
         role = ""
         owns = []
+        consumes = []
+        produces = []
         must_not_do = []
         active_list = None
 
@@ -69,6 +77,10 @@ def parse_registry(path: Path) -> tuple[dict[str, SystemDefinition], str]:
                 active_list = None
             elif field == "owns":
                 active_list = "owns"
+            elif field == "consumes":
+                active_list = "consumes"
+            elif field == "produces":
+                active_list = "produces"
             elif field == "must_not_do":
                 active_list = "must_not_do"
             continue
@@ -82,6 +94,10 @@ def parse_registry(path: Path) -> tuple[dict[str, SystemDefinition], str]:
                 item = item_match.group(1).strip()
                 if active_list == "owns":
                     owns.append(item)
+                elif active_list == "consumes":
+                    consumes.append(item)
+                elif active_list == "produces":
+                    produces.append(item)
                 elif active_list == "must_not_do":
                     must_not_do.append(item)
             elif line.strip() and not line.lstrip().startswith("- "):
@@ -273,6 +289,20 @@ def check_extended_hardening_ownership(systems: dict[str, SystemDefinition]) -> 
         "replay_integrity_validation": "REP",
         "entropy_accumulation_detection": "ENT",
         "interface_contract_registry": "CON",
+        "source_translation_contracts": "TRN",
+        "deterministic_normalization_rules": "NRM",
+        "comparison_run_governance": "CMP",
+        "retirement_lifecycle_rules": "RET",
+        "abstention_taxonomy": "ABS",
+        "cross_artifact_consistency_checks": "CRS",
+        "migration_plan_contracts": "MIG",
+        "query_index_manifest_authority": "QRY",
+        "test_asset_registry": "TST",
+        "risk_classification_taxonomy": "RSK",
+        "evidence_sufficiency_scoring": "EVD",
+        "supersession_rules": "SUP",
+        "handoff_package_contracts": "HND",
+        "trust_signal_synthesis_rules": "SYN",
     }
     for responsibility, owner in required_owners.items():
         owning = sorted(name for name, s in systems.items() if responsibility in s.owns)
@@ -293,10 +323,24 @@ def check_next_wave_boundaries(systems: dict[str, SystemDefinition]) -> list[str
         errors.append("DAG must not own execution")
     return errors
 
+
+def check_next_phase_presence_and_io(systems: dict[str, SystemDefinition]) -> list[str]:
+    errors: list[str] = []
+    required = ("TRN", "NRM", "CMP", "RET", "ABS", "CRS", "MIG", "QRY", "TST", "RSK", "EVD", "SUP", "HND", "SYN")
+    for name in required:
+        if name not in systems:
+            errors.append(f"missing required system definition: {name}")
+            continue
+        if not systems[name].consumes:
+            errors.append(f"{name} must declare consumes list")
+        if not systems[name].produces:
+            errors.append(f"{name} must declare produces list")
+    return errors
+
 def run_all_checks(registry_path: Path = REGISTRY_PATH) -> list[str]:
     systems, full_text = parse_registry(registry_path)
 
-    required_systems = {"TLC", "CDE", "RQX", "RIL", "FRE", "TPA", "SEL", "PRG", "AEX", "MAP", "PQX", "CHX", "DEX", "SIM", "PRX", "CVX", "HIX", "CAL", "POL", "AIL", "SCH", "DEP", "RCA", "QOS", "SIMX", "JDX", "RUX", "XPL", "REL", "DAG", "EXT", "CTX", "EVL", "OBS", "LIN", "DRT", "SLO", "CAN", "DAT", "JDG", "PRM", "ROU", "HIT", "CAP", "SEC", "REP", "ENT", "CON"}
+    required_systems = {"TLC", "CDE", "RQX", "RIL", "FRE", "TPA", "SEL", "PRG", "AEX", "MAP", "PQX", "CHX", "DEX", "SIM", "PRX", "CVX", "HIX", "CAL", "POL", "AIL", "SCH", "DEP", "RCA", "QOS", "SIMX", "JDX", "RUX", "XPL", "REL", "DAG", "EXT", "CTX", "EVL", "OBS", "LIN", "DRT", "SLO", "CAN", "DAT", "JDG", "PRM", "ROU", "HIT", "CAP", "SEC", "REP", "ENT", "CON", "TRN", "NRM", "CMP", "RET", "ABS", "CRS", "MIG", "QRY", "TST", "RSK", "EVD", "SUP", "HND", "SYN"}
     missing = sorted(required_systems - set(systems))
     errors: list[str] = []
     if missing:
@@ -310,6 +354,7 @@ def run_all_checks(registry_path: Path = REGISTRY_PATH) -> list[str]:
     errors.extend(check_adv_owner_constraints(systems))
     errors.extend(check_extended_hardening_ownership(systems))
     errors.extend(check_next_wave_boundaries(systems))
+    errors.extend(check_next_phase_presence_and_io(systems))
     return errors
 
 

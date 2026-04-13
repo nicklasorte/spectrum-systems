@@ -1,0 +1,21 @@
+{
+  "artifact_type": "guardrail_event",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-guardrail_event",
+  "created_at": "2026-04-13T00:00:00Z",
+  "provenance": {
+    "source_system": "CON",
+    "inputs": [
+      "seed"
+    ],
+    "simulated": false
+  },
+  "record_id": "guardrail_event-001",
+  "status": "ok",
+  "reason_codes": [
+    "seed"
+  ],
+  "payload": {
+    "note": "example"
+  }
+}
