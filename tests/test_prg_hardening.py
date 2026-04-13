@@ -21,6 +21,7 @@ from spectrum_systems.modules.runtime.prg_hardening import (
     run_governance_eval,
     run_governance_recommendation_engine,
     run_prg_boundary_redteam,
+    run_prg_closeout_gate,
     run_prg_semantic_redteam,
     validate_recommendation_replay,
 )
@@ -197,3 +198,23 @@ def test_prg_05_08_08a_08b_08c_08d_08e_09_and_redteam_fix_loops() -> None:
             created_at="2026-04-13T00:00:00Z",
             trace_id="trace-prg-001",
         )
+
+
+def test_prg_10_closeout_gate() -> None:
+    gate = run_prg_closeout_gate(
+        recommendation_replay_ok=True,
+        strategy_alignment_ok=True,
+        authority_boundary_failures=[],
+        effectiveness_record={"artifact_type": "prg_governance_effectiveness_record", "effectiveness_score": 0.9},
+    )
+    assert gate["closeout_gate"] == "pass"
+
+    failed = run_prg_closeout_gate(
+        recommendation_replay_ok=False,
+        strategy_alignment_ok=True,
+        authority_boundary_failures=["recommendation_authority_leakage:a1"],
+        effectiveness_record={"artifact_type": "bad_record"},
+    )
+    assert failed["closeout_gate"] == "fail"
+    assert "recommendation_replay_validation" in failed["fail_reasons"]
+    assert "recommendation_vs_authority_protection" in failed["fail_reasons"]

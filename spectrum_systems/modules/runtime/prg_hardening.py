@@ -332,3 +332,19 @@ def build_governance_bundle(*, artifact_refs: list[str], created_at: str, trace_
     }
     validate_artifact(bundle, "prg_governance_bundle")
     return bundle
+
+
+def run_prg_closeout_gate(*, recommendation_replay_ok: bool, strategy_alignment_ok: bool, authority_boundary_failures: list[str], effectiveness_record: Mapping[str, Any]) -> dict[str, Any]:
+    checks = {
+        "recommendation_replay_validation": recommendation_replay_ok,
+        "strategy_alignment_integrity": strategy_alignment_ok,
+        "recommendation_vs_authority_protection": len(authority_boundary_failures) == 0,
+        "governance_effectiveness_tracking": bool(effectiveness_record.get("effectiveness_score") is not None),
+        "prg_non_authoritative_posture": bool(effectiveness_record.get("artifact_type") == "prg_governance_effectiveness_record"),
+    }
+    fail_reasons = [k for k, ok in checks.items() if not ok]
+    return {
+        "closeout_gate": "pass" if not fail_reasons else "fail",
+        "checks": checks,
+        "fail_reasons": fail_reasons,
+    }
