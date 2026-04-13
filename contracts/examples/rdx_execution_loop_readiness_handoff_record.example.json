@@ -1,0 +1,14 @@
+{
+  "artifact_type": "rdx_execution_loop_readiness_handoff_record",
+  "record_id": "reh-001",
+  "trace_id": "trace-rdx-001",
+  "selected_batch_id": "BATCH-TRUST-01",
+  "selected_umbrella_id": "UMB-TRUST-01",
+  "lineage_ref": "lineage:rdx:001",
+  "readiness_status": "candidate_only",
+  "non_authority_assertions": [
+    "candidate_only_non_authoritative",
+    "rdx_not_execution_authority"
+  ],
+  "created_at": "2026-04-13T00:00:00Z"
+}

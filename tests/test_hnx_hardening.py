@@ -20,6 +20,7 @@ from spectrum_systems.modules.runtime.hnx_hardening import (
     validate_checkpoint_resume_integrity,
     validate_harness_replay,
     validate_stop_conditions,
+    verify_hnx_closeout_gate,
 )
 
 
@@ -203,3 +204,31 @@ def test_harness_effectiveness_requires_outcomes() -> None:
         ],
     )
     assert artifact["runs_evaluated"] == 2
+
+
+def test_hnx_10_closeout_gate_is_operationally_real() -> None:
+    fx = _fixtures()
+    eval_result = evaluate_harness_contracts(
+        stage_contract=fx["stage_contract"],
+        checkpoint_record=fx["checkpoint"],
+        resume_record=fx["resume"],
+        continuity_state=fx["continuity"],
+        stop_condition_record=fx["stop"],
+        expected_lineage_chain=["AEX", "TLC", "TPA", "PQX"],
+        evaluated_at="2026-04-13T00:00:00Z",
+    )
+    readiness = build_harness_readiness(
+        run_id="run-closeout",
+        trace_id="trace-hnx-closeout",
+        eval_result=eval_result,
+        continuity_failures=[],
+        created_at="2026-04-13T00:00:00Z",
+    )
+    closeout = verify_hnx_closeout_gate(
+        harness_eval=eval_result,
+        readiness=readiness,
+        replay_match=True,
+        stop_failures=[],
+        checkpoint_resume_failures=[],
+    )
+    assert closeout["closeout_status"] == "closed"

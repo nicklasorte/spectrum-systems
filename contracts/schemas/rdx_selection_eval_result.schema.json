@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rdx_selection_eval_result.schema.json",
+  "title": "Rdx Selection Eval Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "eval_id",
+    "selection_ref",
+    "evaluated_at",
+    "evaluation_status",
+    "checks",
+    "fail_reasons",
+    "trace_id"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "rdx_selection_eval_result"
+    },
+    "eval_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "selection_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evaluation_status": {
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "checks": {
+      "type": "object"
+    },
+    "fail_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

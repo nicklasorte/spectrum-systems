@@ -1,0 +1,16 @@
+{
+  "artifact_type": "rdx_umbrella_selection_record",
+  "record_id": "rus-001",
+  "roadmap_id": "RM-001",
+  "selected_umbrella_id": "UMB-TRUST-01",
+  "batch_ids": [
+    "BATCH-TRUST-01",
+    "BATCH-TRUST-02"
+  ],
+  "reason_codes": [
+    "umbrella_active",
+    "minimum_cardinality_satisfied"
+  ],
+  "evaluated_at": "2026-04-13T00:00:00Z",
+  "lineage_ref": "lineage:rdx:001"
+}
