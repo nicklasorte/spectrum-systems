@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prg_governance_conflict_record.schema.json",
+  "title": "prg_governance_conflict_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "conflict_id",
+    "created_at",
+    "trace_id",
+    "lineage_ref",
+    "conflict_codes",
+    "severity"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "prg_governance_conflict_record"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "conflict_id": {
+      "type": "string"
+    },
+    "conflict_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "none",
+        "low",
+        "medium",
+        "high"
+      ]
+    }
+  }
+}

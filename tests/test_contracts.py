@@ -237,6 +237,26 @@ class ContractSchemaTests(unittest.TestCase):
             validate_artifact(instance, name)
 
 
+
+
+    def test_prg_governance_contract_examples_validate(self) -> None:
+        for name in (
+            "evaluation_pattern_report",
+            "policy_change_candidate",
+            "slice_contract_update_candidate",
+            "program_alignment_assessment",
+            "prioritized_adoption_candidate_set",
+            "adaptive_readiness_record",
+            "prg_governance_eval_result",
+            "prg_governance_readiness_record",
+            "prg_governance_conflict_record",
+            "prg_governance_bundle",
+            "prg_governance_effectiveness_record",
+            "prg_recommendation_rework_debt_record",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_rqx_redteam_contract_examples_validate(self) -> None:
         for name in (
             "redteam_review_request",

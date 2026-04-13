@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prg_governance_effectiveness_record.schema.json",
+  "title": "prg_governance_effectiveness_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "effectiveness_id",
+    "created_at",
+    "trace_id",
+    "lineage_ref",
+    "window_size",
+    "trust_improvement_rate",
+    "drift_reduction_rate",
+    "alignment_improvement_rate",
+    "effectiveness_score",
+    "value_status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "prg_governance_effectiveness_record"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "effectiveness_id": {
+      "type": "string"
+    },
+    "window_size": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "trust_improvement_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "drift_reduction_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "alignment_improvement_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "effectiveness_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "value_status": {
+      "type": "string",
+      "enum": [
+        "improving",
+        "stagnating"
+      ]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "artifact_type": "evaluation_pattern_report",
+  "report_id": "epr-001",
+  "program_id": "PRG-ROADMAP-EXECUTION",
+  "generated_at": "2026-04-13T00:00:00Z",
+  "created_at": "2026-04-13T00:00:00Z",
+  "trace_id": "trace-prg-001",
+  "lineage_ref": "lineage:prg:001",
+  "patterns": [
+    {
+      "pattern_code": "missing_eval_coverage",
+      "occurrences": 2,
+      "evidence_refs": [
+        "signal:missing_eval"
+      ]
+    }
+  ],
+  "causal_claims": [
+    {
+      "claim_id": "claim-1",
+      "claim": "coverage gaps increase governance risk",
+      "evidence_refs": [
+        "signal:missing_eval"
+      ],
+      "supported": true
+    }
+  ]
+}

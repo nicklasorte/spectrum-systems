@@ -380,3 +380,5 @@ Closed plans are not deleted — they remain as execution history.
 | docs/review-actions/PLAN-DASHBOARD-UI-FIX-TRUTH-BOUNDARY-02-2026-04-12.md | DASHBOARD-UI-FIX-TRUTH-BOUNDARY-02 — UI truth-boundary surgical hardening | Active |
 
 | docs/review-actions/PLAN-DASHBOARD-NEXT-PHASE-SERIAL-04-2026-04-12.md | DASHBOARD-NEXT-PHASE-SERIAL-04 — Governed operator coordination surface | Active |
+
+| docs/review-actions/PLAN-PRG-001-2026-04-13.md | PRG-001 — RDX closeout + PRG bounded governance foundation + red-team fix loops | Active |

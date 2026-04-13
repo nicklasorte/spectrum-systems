@@ -1,0 +1,15 @@
+{
+  "artifact_type": "prg_governance_bundle",
+  "bundle_id": "pgb-001",
+  "artifact_refs": [
+    "evaluation_pattern_report:epr-001",
+    "prioritized_adoption_candidate_set:pacs-001",
+    "prg_governance_eval_result:pge-001"
+  ],
+  "non_authority_assertions": [
+    "recommendation_only"
+  ],
+  "created_at": "2026-04-13T00:00:00Z",
+  "trace_id": "trace-prg-001",
+  "lineage_ref": "lineage:prg:001"
+}

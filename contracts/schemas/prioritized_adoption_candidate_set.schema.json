@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prioritized_adoption_candidate_set.schema.json",
+  "title": "prioritized_adoption_candidate_set",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "candidate_set_id",
+    "program_id",
+    "generated_at",
+    "trace_id",
+    "lineage_ref",
+    "non_authority_assertions",
+    "candidates"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "prioritized_adoption_candidate_set"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_set_id": {
+      "type": "string"
+    },
+    "program_id": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidate_id",
+          "target_type",
+          "target_ref",
+          "priority",
+          "reason_codes",
+          "authority_scope",
+          "evidence_refs"
+        ],
+        "properties": {
+          "candidate_id": {
+            "type": "string"
+          },
+          "target_type": {
+            "type": "string"
+          },
+          "target_ref": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "reason_codes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "authority_scope": {
+            "type": "string",
+            "const": "recommendation_only"
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          }
+        }
+      }
+    }
+  }
+}
