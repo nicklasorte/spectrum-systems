@@ -1,0 +1,14 @@
+{
+  "artifact_type": "rsm_portfolio_state_snapshot",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-rsm-001",
+  "metrics": {
+    "burden": 0.43,
+    "trust": 0.72,
+    "drift": 1.0,
+    "freeze_ratio": 0.0,
+    "readiness": 0.63,
+    "conflict_density": 2.0
+  },
+  "non_authoritative": true
+}

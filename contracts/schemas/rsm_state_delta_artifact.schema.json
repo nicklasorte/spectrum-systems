@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rsm_state_delta_artifact.schema.json",
+  "title": "RSM State Delta Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "deltas",
+    "non_authoritative"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "rsm_state_delta_artifact"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "deltas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "module_id",
+          "field",
+          "magnitude",
+          "domain",
+          "evidence_refs"
+        ],
+        "properties": {
+          "module_id": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "magnitude": {
+            "type": "number"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "non_authoritative": {
+      "const": true
+    },
+    "state_delta_id": {
+      "type": "string",
+      "pattern": "^rsm-delta-[a-f0-9]{16}$"
+    }
+  }
+}

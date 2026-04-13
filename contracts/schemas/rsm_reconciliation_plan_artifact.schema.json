@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rsm_reconciliation_plan_artifact.schema.json",
+  "title": "RSM Reconciliation Plan Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "candidate_moves",
+    "authoritative",
+    "authority_owner",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "rsm_reconciliation_plan_artifact"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "candidate_moves": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "authoritative": {
+      "const": false
+    },
+    "authority_owner": {
+      "const": "CDE"
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

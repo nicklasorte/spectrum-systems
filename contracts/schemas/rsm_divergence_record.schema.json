@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rsm_divergence_record.schema.json",
+  "title": "RSM Divergence Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "divergences",
+    "non_authoritative"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "rsm_divergence_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "divergences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "module_id",
+          "field",
+          "classification"
+        ],
+        "properties": {
+          "module_id": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "classification": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "degraded",
+              "critical",
+              "inconsistent"
+            ]
+          }
+        }
+      }
+    },
+    "non_authoritative": {
+      "const": true
+    }
+  }
+}

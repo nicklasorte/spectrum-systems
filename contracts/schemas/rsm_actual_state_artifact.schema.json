@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rsm_actual_state_artifact.schema.json",
+  "title": "RSM Actual State Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "modules",
+    "interpreted_inputs",
+    "conflict_count",
+    "non_authoritative"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "rsm_actual_state_artifact"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "modules": {
+      "type": "object"
+    },
+    "interpreted_inputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "conflict_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "non_authoritative": {
+      "const": true
+    },
+    "actual_state_id": {
+      "type": "string",
+      "pattern": "^rsm-actual-[a-f0-9]{16}$"
+    }
+  }
+}

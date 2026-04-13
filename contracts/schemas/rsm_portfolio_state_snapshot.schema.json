@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rsm_portfolio_state_snapshot.schema.json",
+  "title": "RSM Portfolio State Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "metrics",
+    "non_authoritative"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "rsm_portfolio_state_snapshot"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "burden",
+        "trust",
+        "drift",
+        "freeze_ratio",
+        "readiness",
+        "conflict_density"
+      ],
+      "properties": {
+        "burden": {
+          "type": "number"
+        },
+        "trust": {
+          "type": "number"
+        },
+        "drift": {
+          "type": "number"
+        },
+        "freeze_ratio": {
+          "type": "number"
+        },
+        "readiness": {
+          "type": "number"
+        },
+        "conflict_density": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "non_authoritative": {
+      "const": true
+    }
+  }
+}

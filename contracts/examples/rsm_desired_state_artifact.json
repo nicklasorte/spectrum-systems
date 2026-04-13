@@ -1,0 +1,29 @@
+{
+  "artifact_type": "rsm_desired_state_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-rsm-001",
+  "desired_state_version": "1.0.0",
+  "source": {
+    "source_ref": "docs/roadmaps/system_roadmap.md",
+    "source_kind": "roadmap"
+  },
+  "generated_at": "2026-04-13T00:00:00Z",
+  "desired_module_posture": {
+    "faq": {
+      "status": "active",
+      "trust": 0.9,
+      "burden": 0.2,
+      "freeze": false,
+      "readiness": 0.91
+    }
+  },
+  "desired_operator_posture": {
+    "review_capacity": 4,
+    "escalation_policy": "bounded"
+  },
+  "desired_portfolio_posture": {
+    "trust_budget": 0.8,
+    "burden_budget": 0.35
+  },
+  "non_authoritative": true
+}

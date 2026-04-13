@@ -1,0 +1,28 @@
+{
+  "artifact_type": "rsm_reconciliation_plan_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-rsm-001",
+  "candidate_moves": [
+    {
+      "module_id": "faq",
+      "bounded_next_moves": [
+        "request_review",
+        "collect_new_evidence"
+      ],
+      "evidence_refs": [
+        "ril_interpreted_state:faq:001"
+      ],
+      "blocked_paths": [
+        "direct_execute",
+        "direct_enforce"
+      ]
+    }
+  ],
+  "authoritative": false,
+  "authority_owner": "CDE",
+  "non_authority_assertions": [
+    "CDE decides bounded next step",
+    "SEL enforces",
+    "PQX executes"
+  ]
+}

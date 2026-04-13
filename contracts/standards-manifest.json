@@ -6520,6 +6520,84 @@
       "notes": "HS-04 governed deterministic routing policy mapping route_key/task_class to prompt alias and model selection inputs with fail-closed semantics."
     },
     {
+      "artifact_type": "rsm_actual_state_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/rsm_actual_state_artifact.json",
+      "notes": "RSM foundational non-authoritative reconciliation artifact for desired/actual state, delta, divergence, reconciliation planning, and portfolio visibility."
+    },
+    {
+      "artifact_type": "rsm_desired_state_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/rsm_desired_state_artifact.json",
+      "notes": "RSM foundational non-authoritative reconciliation artifact for desired/actual state, delta, divergence, reconciliation planning, and portfolio visibility."
+    },
+    {
+      "artifact_type": "rsm_divergence_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/rsm_divergence_record.json",
+      "notes": "RSM foundational non-authoritative reconciliation artifact for desired/actual state, delta, divergence, reconciliation planning, and portfolio visibility."
+    },
+    {
+      "artifact_type": "rsm_portfolio_state_snapshot",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/rsm_portfolio_state_snapshot.json",
+      "notes": "RSM foundational non-authoritative reconciliation artifact for desired/actual state, delta, divergence, reconciliation planning, and portfolio visibility."
+    },
+    {
+      "artifact_type": "rsm_reconciliation_plan_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/rsm_reconciliation_plan_artifact.json",
+      "notes": "RSM foundational non-authoritative reconciliation artifact for desired/actual state, delta, divergence, reconciliation planning, and portfolio visibility."
+    },
+    {
+      "artifact_type": "rsm_state_delta_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/rsm_state_delta_artifact.json",
+      "notes": "RSM foundational non-authoritative reconciliation artifact for desired/actual state, delta, divergence, reconciliation planning, and portfolio visibility."
+    },
+    {
       "artifact_type": "run_summary_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
