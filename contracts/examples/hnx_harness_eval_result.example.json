@@ -1,0 +1,12 @@
+{
+  "artifact_type": "hnx_harness_eval_result",
+  "schema_version": "1.0.0",
+  "eval_id": "hnx-eval-1",
+  "evaluation_status": "pass",
+  "checks": {
+    "stage_contract_complete": true
+  },
+  "fail_reasons": [],
+  "evaluated_at": "2026-04-12T00:06:00Z",
+  "trace_id": "trace-hnx-1"
+}

@@ -21,6 +21,7 @@ from spectrum_systems.modules.runtime.tlc_hardening import (
     validate_route_to_closure_integrity,
     validate_route_to_review_integrity,
     validate_tlc_routing_replay,
+    verify_tlc_closeout_gate,
 )
 from tests.helpers_repo_write_lineage import build_valid_repo_write_lineage
 
@@ -179,3 +180,33 @@ def test_fail_closed_missing_governed_inputs() -> None:
 def test_effectiveness_requires_non_empty_outcomes() -> None:
     with pytest.raises(TLCHardeningError, match="effectiveness_requires_outcomes"):
         compute_tlc_orchestration_effectiveness(run_outcomes=[], window_id="x", created_at="2026-04-12T00:00:00Z")
+
+
+def test_tlc_closeout_gate_operationally_real() -> None:
+    governed = _inputs()
+    bundle = build_tlc_routing_bundle(
+        run_id="tlc-closeout-001",
+        trace_id="trace-tlc-hard-1",
+        governed_inputs=copy.deepcopy(governed),
+        created_at="2026-04-12T00:00:00Z",
+    )
+    eval_result = evaluate_tlc_routing_bundle(
+        routing_bundle=bundle,
+        required_artifacts=copy.deepcopy(governed),
+        created_at="2026-04-12T00:00:00Z",
+    )
+    readiness = build_tlc_orchestration_readiness(
+        run_id="tlc-closeout-001",
+        trace_id="trace-tlc-hard-1",
+        routing_eval=eval_result,
+        handoff_failures=[],
+        created_at="2026-04-12T00:00:00Z",
+    )
+    closeout = verify_tlc_closeout_gate(
+        routing_eval=eval_result,
+        readiness=readiness,
+        replay_match=True,
+        dead_loop_failures=[],
+        non_authority_assertions=["tlc_not_closure_authority", "tlc_not_execution_authority"],
+    )
+    assert closeout["closeout_status"] == "closed"

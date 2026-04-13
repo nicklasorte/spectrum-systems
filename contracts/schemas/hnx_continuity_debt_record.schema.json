@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hnx_continuity_debt_record.schema.json",
+  "title": "Hnx Continuity Debt Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "debt_id",
+    "run_id",
+    "trace_id",
+    "violation_counts",
+    "repeat_violation_codes",
+    "debt_status",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "hnx_continuity_debt_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "debt_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "violation_counts": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "repeat_violation_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "debt_status": {
+      "enum": [
+        "normal",
+        "elevated",
+        "critical"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

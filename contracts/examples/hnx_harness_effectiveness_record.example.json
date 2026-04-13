@@ -1,0 +1,12 @@
+{
+  "artifact_type": "hnx_harness_effectiveness_record",
+  "schema_version": "1.0.0",
+  "effectiveness_id": "hnx-eff-1",
+  "window_id": "window-1",
+  "runs_evaluated": 3,
+  "completion_quality": 0.67,
+  "broken_resume_rate": 0.33,
+  "stop_bypass_block_rate": 1.0,
+  "value_status": "degraded",
+  "created_at": "2026-04-12T00:06:00Z"
+}

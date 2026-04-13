@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hnx_harness_eval_result.schema.json",
+  "title": "Hnx Harness Eval Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "eval_id",
+    "evaluation_status",
+    "checks",
+    "fail_reasons",
+    "evaluated_at",
+    "trace_id"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "hnx_harness_eval_result"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "eval_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evaluation_status": {
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "fail_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
