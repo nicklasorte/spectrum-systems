@@ -1,0 +1,9 @@
+{
+  "artifact_type": "judgment_supersession_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "supersession_id": "JSP-1",
+  "old_judgment_id": "J-1",
+  "new_judgment_id": "J-2",
+  "reason": "new evidence"
+}

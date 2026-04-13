@@ -1,0 +1,9 @@
+{
+  "artifact_type": "eval_expansion_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "cycle_id": "MNT-1",
+  "required_eval_targets": [
+    "ctx_staleness_gate"
+  ]
+}

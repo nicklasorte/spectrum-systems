@@ -1,0 +1,12 @@
+{
+  "artifact_type": "context_recipe",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "recipe_id": "CTX-RCP-001",
+  "artifact_family": "review_projection_bundle_artifact",
+  "strict_mode": true,
+  "required_sources": [
+    "review_projection_bundle",
+    "trace_engine"
+  ]
+}

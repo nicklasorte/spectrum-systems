@@ -73,7 +73,7 @@ def test_bounded_repair_plan_creation_known_category() -> None:
     )
     plan = build_preflight_repair_plan_record(diagnosis_record=diagnosis)
     assert plan["repair_category"] == "missing_required_surface_mapping"
-    assert "contracts/standards-manifest.json" in plan["allowed_paths"]
+    assert "docs/governance/preflight_required_surface_test_overrides.json" in plan["allowed_paths"]
 
 
 def test_repair_scope_is_bounded_to_declared_paths() -> None:
@@ -133,7 +133,7 @@ def test_rerun_preflight_required_and_blocks_when_still_block(tmp_path: Path) ->
             self.returncode = returncode
 
     def _runner(cmd, cwd):
-        if "run_contract_preflight.py" in cmd:
+        if any("run_contract_preflight.py" in part for part in cmd):
             return _Res(cmd, 2)
         return _Res(cmd, 0)
 
@@ -164,3 +164,71 @@ def test_no_mutation_allowed_for_fork_or_unsafe_context(tmp_path: Path) -> None:
             authority_evidence_ref="artifact",
             same_repo_write_allowed=False,
         )
+
+
+def test_schema_example_manifest_drift_classified_and_scoped() -> None:
+    diagnosis = build_preflight_block_diagnosis_record(
+        report={
+            "schema_example_failures": [
+                {
+                    "path": "contracts/examples/system_registry_artifact.json",
+                    "error": "minItems",
+                }
+            ]
+        },
+        preflight_artifact={"control_signal": {"strategy_gate_decision": "BLOCK"}, "generated_at": "2026"},
+    )
+    assert diagnosis["repair_category"] == "schema_example_manifest_drift"
+    plan = build_preflight_repair_plan_record(diagnosis_record=diagnosis)
+    assert plan["apply_automatically"] is True
+    assert plan["allowed_paths"] == ["contracts/examples/system_registry_artifact.json"]
+
+
+def test_missing_required_surface_mapping_autorepair_writes_override_file(tmp_path: Path) -> None:
+    out = _write_base_artifacts(
+        tmp_path,
+        report_overrides={
+            "missing_required_surface": [
+                {
+                    "path": "spectrum_systems/modules/runtime/task_registry.py",
+                    "reason": "required contract surface changed but no deterministic evaluation target was found",
+                }
+            ],
+            "changed_path_detection": {},
+        },
+    )
+    (tmp_path / "tests").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "tests" / "test_task_registry_ai_adapter_eval_slice_runner.py").write_text("def test_x():\n    assert True\n", encoding="utf-8")
+
+    class _Res:
+        def __init__(self, command, returncode):
+            self.command = command
+            self.returncode = returncode
+
+    def _runner(cmd, cwd):
+        if any("run_contract_preflight.py" in part for part in cmd):
+            (out / "contract_preflight_result_artifact.json").write_text(
+                json.dumps(
+                    {
+                        "control_signal": {"strategy_gate_decision": "ALLOW"},
+                        "generated_at": "2026-04-13T00:00:00Z",
+                    }
+                ),
+                encoding="utf-8",
+            )
+        return _Res(cmd, 0)
+
+    result = run_preflight_block_autorepair(
+        repo_root=tmp_path,
+        output_dir=out,
+        base_ref="base",
+        head_ref="head",
+        execution_context="pqx_governed",
+        pqx_wrapper_path=out / "preflight_pqx_task_wrapper.json",
+        authority_evidence_ref="artifact",
+        same_repo_write_allowed=True,
+        command_runner=_runner,
+    )
+    assert result["success"] is True
+    override_file = tmp_path / "docs" / "governance" / "preflight_required_surface_test_overrides.json"
+    assert override_file.exists()

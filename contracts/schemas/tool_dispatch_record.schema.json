@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tool_dispatch_record",
+  "type": "object",
+  "properties": {
+    "artifact_type": {
+      "type": "string"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "dispatch_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "tool_id": {
+      "type": "string"
+    },
+    "contract_ref": {
+      "type": "string"
+    },
+    "permission_ref": {
+      "type": "string"
+    },
+    "output_ref": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "dispatch_id",
+    "run_id",
+    "trace_id",
+    "tool_id",
+    "contract_ref",
+    "permission_ref",
+    "output_ref"
+  ],
+  "additionalProperties": false
+}

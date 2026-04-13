@@ -54,6 +54,7 @@ jobs:
           echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
 
       - name: Build preflight wrapper and run preflight
+        id: preflight
         run: |
           set -euo pipefail
           python scripts/build_preflight_pqx_wrapper.py \
@@ -74,7 +75,7 @@ jobs:
           echo "preflight_exit=$preflight_exit" >> "$GITHUB_OUTPUT"
 
       - name: Run governed preflight BLOCK autorepair
-        if: always()
+        if: steps.preflight.outputs.preflight_exit == '2'
         run: |
           set -euo pipefail
           python scripts/run_github_pr_autofix_contract_preflight.py \

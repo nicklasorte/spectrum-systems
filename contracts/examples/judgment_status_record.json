@@ -1,0 +1,8 @@
+{
+  "artifact_type": "judgment_status_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "judgment_id": "J-1",
+  "status": "active",
+  "status_reason": "initial"
+}

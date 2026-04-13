@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "context_recipe",
+  "type": "object",
+  "properties": {
+    "artifact_type": {
+      "type": "string"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "recipe_id": {
+      "type": "string"
+    },
+    "artifact_family": {
+      "type": "string"
+    },
+    "strict_mode": {
+      "type": "boolean"
+    },
+    "required_sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "recipe_id",
+    "artifact_family",
+    "strict_mode",
+    "required_sources"
+  ],
+  "additionalProperties": false
+}

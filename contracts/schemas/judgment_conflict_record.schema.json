@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "judgment_conflict_record",
+  "type": "object",
+  "properties": {
+    "artifact_type": {
+      "type": "string"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "has_conflicts": {
+      "type": "boolean"
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "policy_key": {
+            "type": "string"
+          },
+          "existing_value": {
+            "type": "string"
+          },
+          "new_value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "policy_key",
+          "existing_value",
+          "new_value"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "has_conflicts",
+    "conflicts"
+  ],
+  "additionalProperties": false
+}

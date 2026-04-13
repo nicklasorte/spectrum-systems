@@ -1815,3 +1815,81 @@ flowchart LR
   - execute work (PQX-owned)
   - make policy admissibility decisions (TPA-owned)
   - issue closure decisions (CDE-owned)
+
+## RAX Serial Operating-Substrate Extension (2026-04-13)
+
+### CTX
+- **acronym:** `CTX`
+- **full_name:** `Context eXchange`
+- **role:** Owns governed context assembly, bundling, manifest hashing, provenance, TTL/freshness, trust levels, conflict handling, and context preflight.
+- **owns:**
+  - context_bundle_contracts
+  - context_bundle
+  - context_recipe
+  - context_manifest
+  - context_conflict_record
+  - context_preflight_result
+- **must_not_do:**
+  - bypass_policy_source_admission
+  - emit_implicit_context
+  - allow_untraceable_or_stale_context_through_strict_mode
+
+### TLX
+- **acronym:** `TLX`
+- **full_name:** `Tooling Layer eXecutor`
+- **role:** Owns tool registry, tool contracts, tool dispatch metadata, output normalization, permission metadata, and truncation/pagination rules.
+- **owns:**
+  - tool_registry_entry
+  - tool_contract
+  - tool_output_envelope
+  - tool_permission_profile
+  - tool_dispatch_record
+- **must_not_do:**
+  - allow_raw_unbounded_tool_outputs_into_runtime_context
+  - treat_prompts_as_security_boundary
+  - bypass_policy_permissions
+
+### JSX
+- **acronym:** `JSX`
+- **full_name:** `Judgment State eXchange`
+- **role:** Owns judgment lifecycle, active-set management, supersession, conflict records, and policy extraction handoff.
+- **owns:**
+  - judgment_status_record
+  - judgment_supersession_record
+  - judgment_active_set_record
+  - judgment_conflict_record
+  - judgment_policy_extraction_record
+- **must_not_do:**
+  - replace_control_authority
+  - treat_stale_judgments_as_active
+  - leave_conflict_resolution_implicit
+
+### DRX
+- **acronym:** `DRX`
+- **full_name:** `Drift Response eXecutor`
+- **role:** Owns recurring drift/entropy detection and governed maintain-stage responses.
+- **owns:**
+  - drift_signal_record
+  - drift_response_plan
+  - maintain_cycle_record
+  - invariant_gap_record
+  - eval_expansion_record
+- **must_not_do:**
+  - silently_mutate_governance
+  - auto_fix_without_governed_artifacts
+  - emit_drift_claims_without_trace_and_evidence_linkage
+
+### CPX
+- **acronym:** `CPX`
+- **full_name:** `Canary Policy eXecutor`
+- **role:** Reserved/planned; not an active build target.
+
+### CLX
+- **acronym:** `CLX`
+- **full_name:** `Calibration eXecutor`
+- **role:** Reserved/planned; not an active build target.
+
+### HFX
+- **acronym:** `HFX`
+- **full_name:** `Handoff eXecutor`
+- **role:** Reserved/planned; not an active build target.

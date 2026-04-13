@@ -1,0 +1,11 @@
+{
+  "artifact_type": "context_preflight_result",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "result_id": "CTXP-1",
+  "run_id": "run-1",
+  "trace_id": "trace-1",
+  "bundle_ref": "context_bundle:CTXB-run-1-trace-1",
+  "passed": true,
+  "reason_codes": []
+}

@@ -1,0 +1,10 @@
+{
+  "artifact_type": "tool_contract",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "tool_id": "search",
+  "required_inputs": [
+    "query"
+  ],
+  "output_schema": "tool_output_envelope"
+}

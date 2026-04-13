@@ -117,6 +117,23 @@ _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "spectrum_systems/modules/runtime/pqx_slice_runner.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
     "scripts/pqx_runner.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
 }
+def _load_required_surface_override_map(repo_root: Path) -> dict[str, list[str]]:
+    merged: dict[str, list[str]] = {path: list(targets) for path, targets in _REQUIRED_SURFACE_TEST_OVERRIDES.items()}
+    override_path = repo_root / "docs" / "governance" / "preflight_required_surface_test_overrides.json"
+    if not override_path.is_file():
+        return merged
+    try:
+        payload = json.loads(override_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return merged
+    if not isinstance(payload, dict):
+        return merged
+    for path, targets in payload.items():
+        if not isinstance(path, str) or not isinstance(targets, list):
+            continue
+        normalized_targets = [str(item) for item in targets if isinstance(item, str) and item.strip()]
+        merged[path] = sorted(set(normalized_targets))
+    return merged
 
 
 @dataclass
@@ -570,9 +587,10 @@ def resolve_required_surface_tests(repo_root: Path, changed_paths: list[str]) ->
     tests_root = repo_root / "tests"
     test_files = sorted(path for path in tests_root.rglob("test_*.py") if path.is_file()) if tests_root.is_dir() else []
     path_to_targets: dict[str, list[str]] = {}
+    override_map = _load_required_surface_override_map(repo_root)
     for rel_path in changed_paths:
         targets: set[str] = set()
-        for override in _REQUIRED_SURFACE_TEST_OVERRIDES.get(rel_path, []):
+        for override in override_map.get(rel_path, []):
             targets.add(override)
         candidate = Path(rel_path)
         if rel_path.startswith("tests/test_") and rel_path.endswith(".py"):

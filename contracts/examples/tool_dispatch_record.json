@@ -1,0 +1,12 @@
+{
+  "artifact_type": "tool_dispatch_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "dispatch_id": "TDIS-1",
+  "run_id": "run-1",
+  "trace_id": "trace-1",
+  "tool_id": "search",
+  "contract_ref": "tool_contract:search",
+  "permission_ref": "tool_permission_profile:search-profile",
+  "output_ref": "tool_output_envelope:search-1"
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "judgment_active_set_record",
+  "type": "object",
+  "properties": {
+    "artifact_type": {
+      "type": "string"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "active_judgment_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "active_count": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "active_judgment_ids",
+    "active_count"
+  ],
+  "additionalProperties": false
+}

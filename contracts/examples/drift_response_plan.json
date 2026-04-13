@@ -1,0 +1,10 @@
+{
+  "artifact_type": "drift_response_plan",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "runbook_ref": "docs/runbooks/drift.md",
+  "actions": [
+    "investigate:override_rate"
+  ],
+  "action_count": 1
+}

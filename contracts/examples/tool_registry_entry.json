@@ -1,0 +1,9 @@
+{
+  "artifact_type": "tool_registry_entry",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "tool_id": "search",
+  "name": "Search Tool",
+  "contract_ref": "tool_contract:search",
+  "permission_profile_ref": "tool_permission_profile:search"
+}
