@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/mnt_platform_reliability_bundle.schema.json",
+  "title": "MNT Platform Reliability Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "artifact_version",
+    "standards_version",
+    "artifact_id",
+    "generated_at",
+    "generated_by_version",
+    "slo_catalog",
+    "error_budget",
+    "burn_rate_alerts",
+    "alert_quality",
+    "continuous_certification_gate",
+    "active_set_gate",
+    "dashboard_summary",
+    "trend_snapshot",
+    "red_team",
+    "incidents",
+    "capacity_guardrails",
+    "maintain_stage",
+    "signed_promotion_bundle_validation",
+    "platform_reliability_review_gate",
+    "freeze_on_budget_exhaustion"
+  ],
+  "properties": {
+    "artifact_type": {"const": "mnt_platform_reliability_bundle"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "artifact_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "standards_version": {"type": "string"},
+    "artifact_id": {"type": "string", "minLength": 8},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "generated_by_version": {"type": "string", "minLength": 3},
+    "slo_catalog": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sli_name", "target", "observed", "status"],
+        "properties": {
+          "sli_name": {"type": "string"},
+          "target": {"type": "number", "minimum": 0, "maximum": 1},
+          "observed": {"type": "number", "minimum": 0, "maximum": 1},
+          "status": {"type": "string", "enum": ["pass", "fail"]}
+        }
+      }
+    },
+    "error_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "entries"],
+      "properties": {
+        "status": {"type": "string", "enum": ["healthy", "warning", "exhausted"]},
+        "entries": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["sli_name", "consumed_ratio", "status"],
+            "properties": {
+              "sli_name": {"type": "string"},
+              "consumed_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+              "status": {"type": "string", "enum": ["healthy", "warning", "exhausted"]}
+            }
+          }
+        }
+      }
+    },
+    "burn_rate_alerts": {"type": "array", "items": {"type": "object"}},
+    "alert_quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["precision_proxy", "recall_proxy"],
+      "properties": {
+        "precision_proxy": {"type": "number", "minimum": 0, "maximum": 1},
+        "recall_proxy": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "continuous_certification_gate": {"type": "object"},
+    "active_set_gate": {"type": "object"},
+    "dashboard_summary": {"type": "object"},
+    "trend_snapshot": {"type": "object"},
+    "red_team": {"type": "object"},
+    "incidents": {"type": "array", "items": {"type": "object"}},
+    "capacity_guardrails": {"type": "object"},
+    "maintain_stage": {"type": "object"},
+    "signed_promotion_bundle_validation": {"type": "object"},
+    "platform_reliability_review_gate": {"type": "object"},
+    "freeze_on_budget_exhaustion": {"type": "object"}
+  }
+}

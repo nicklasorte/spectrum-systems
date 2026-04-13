@@ -1,0 +1,35 @@
+{
+  "artifact_type": "mnt_platform_reliability_bundle",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.3.126",
+  "artifact_id": "MNT2-example-001",
+  "generated_at": "2026-04-13T00:00:00Z",
+  "generated_by_version": "platform_reliability_ops.py@1.0.0",
+  "slo_catalog": [
+    {"sli_name": "replay_integrity", "target": 0.995, "observed": 0.998, "status": "pass"}
+  ],
+  "error_budget": {
+    "status": "healthy",
+    "entries": [
+      {"sli_name": "replay_integrity", "consumed_ratio": 0.0, "status": "healthy"}
+    ]
+  },
+  "burn_rate_alerts": [],
+  "alert_quality": {"precision_proxy": 1.0, "recall_proxy": 1.0},
+  "continuous_certification_gate": {"status": "pass", "reason": null, "age_hours": 1.0},
+  "active_set_gate": {"status": "pass", "stale_refs": []},
+  "dashboard_summary": {"slo_pass_rate": 1.0, "alert_count": 0, "budget_status": "healthy", "certification_gate": "pass", "active_set_gate": "pass"},
+  "trend_snapshot": {"slo_pass_rate_delta": 0.01, "alert_count_delta": -1},
+  "red_team": {"rt3_exploits": [], "rt4_exploits": [], "fx3_applied": false, "fx4_applied": false},
+  "incidents": [],
+  "capacity_guardrails": {"overload_detected": false, "retry_storm_detected": false, "retry_rate": 0.0, "backlog_depth": 1, "avg_latency_ms": 120.0},
+  "maintain_stage": {
+    "next_cycle_at": "2026-04-14T00:00:00Z",
+    "required_tasks": ["drift_scan", "eval_expansion", "doc_vs_reality_check", "supersession_cleanup", "simplification_run", "reliability_maintenance"],
+    "simplification": {"status": "pass", "duplicate_guard_count": 0, "trust_preserved": true}
+  },
+  "signed_promotion_bundle_validation": {"status": "pass", "signer": "governance-signer-1"},
+  "platform_reliability_review_gate": {"status": "pass", "blockers": []},
+  "freeze_on_budget_exhaustion": {"status": "normal", "reason": null}
+}

@@ -1,0 +1,14 @@
+{
+  "artifact_type": "mnt_red_team_round_report",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.3.126",
+  "artifact_id": "MNT-RT3-example-001",
+  "round_id": "RT3",
+  "generated_at": "2026-04-13T00:00:00Z",
+  "exploit_count": 2,
+  "exploits": ["false_green_dashboard", "stale_certification_used"],
+  "all_exploits_converted_to_tests": true,
+  "all_exploits_converted_to_evals": true,
+  "all_exploits_converted_to_guards": true
+}
