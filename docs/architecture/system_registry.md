@@ -112,6 +112,23 @@ CDE is the only system allowed to emit:
 - **RCA** — evidence-grounded root-cause attribution and failure graph artifacts
 - **QOS** — queue/backpressure/retry-budget load governance signaling
 - **SIMX** — external simulation provenance and replay integrity hardening
+- **CTX** — context bundle governance and preflight gate authority
+- **EVL** — required evaluation registry and evaluation gate authority
+- **OBS** — observability contract and completeness authority
+- **LIN** — lineage completeness and promotion lineage gate authority
+- **DRT** — drift signal emission and aggregation authority
+- **SLO** — error-budget and burn-rate control authority
+- **CAN** — canary rollout and rollback governance authority
+- **DAT** — evaluation dataset registry and lineage authority
+- **JDG** — governed judgment artifact authority
+- **PRM** — prompt registry and version admissibility authority
+- **ROU** — routing observability and route-governance authority
+- **HIT** — human override/correction artifact authority
+- **CAP** — cost/latency/capacity budget governance authority
+- **SEC** — guardrail-to-control integration authority
+- **REP** — replay integrity and replay gating authority
+- **ENT** — entropy accumulation and correction-mining governance authority
+- **CON** — interface contract hardening authority
 
 ## Recurring Cross-System Phase Labels (Non-Owner)
 
@@ -1162,3 +1179,361 @@ flowchart LR
   - replace SIM
   - mutate external systems directly
   - trust external results without provenance validation
+
+
+### CTX
+- **acronym:** `CTX`
+- **full_name:** Context Governance Exchange
+- **role:** Owns canonical context bundle assembly contracts and governed context preflight gating.
+- **owns:**
+  - context_bundle_contracts
+  - context_bundle_assembly_manifests
+  - context_preflight_gates
+- **consumes:**
+  - source_context_artifacts
+  - lineage_provenance_artifacts
+  - context_inclusion_policies
+- **produces:**
+  - ctx_context_bundle_artifact
+  - ctx_context_preflight_report
+  - ctx_context_assembly_manifest
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - make policy admissibility decisions (TPA-owned)
+  - issue promotion decisions (CDE-owned)
+
+### EVL
+- **acronym:** `EVL`
+- **full_name:** Evaluation Registry Layer
+- **role:** Owns required evaluation registry, required-case governance, and evaluation readiness gating signals.
+- **owns:**
+  - required_eval_registry
+  - required_eval_case_governance
+  - eval_completion_blocking
+- **consumes:**
+  - eval_run_artifacts
+  - eval_registry_updates
+  - required_case_policy
+- **produces:**
+  - evl_required_eval_set
+  - evl_eval_completion_record
+  - evl_eval_block_signal
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - override closure decisions (CDE-owned)
+  - bypass enforcement outcomes (SEL-owned)
+
+### OBS
+- **acronym:** `OBS`
+- **full_name:** Observability Contract System
+- **role:** Owns cross-system observability contracts for trace/span/correlation completeness.
+- **owns:**
+  - observability_contracts
+  - trace_span_correlation_requirements
+  - observability_completeness_checks
+- **consumes:**
+  - runtime_trace_artifacts
+  - review_trace_artifacts
+  - control_trace_artifacts
+- **produces:**
+  - obs_observability_contract_record
+  - obs_completeness_report
+  - obs_correlation_validation_record
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - reinterpret review semantics (RIL-owned)
+  - make closure decisions (CDE-owned)
+
+### LIN
+- **acronym:** `LIN`
+- **full_name:** Lineage Integrity Network
+- **role:** Owns end-to-end lineage completeness requirements for promotion-relevant artifacts.
+- **owns:**
+  - lineage_completeness_rules
+  - lineage_graph_integrity_checks
+  - lineage_promotion_gates
+- **consumes:**
+  - admission_lineage_artifacts
+  - execution_lineage_artifacts
+  - certification_lineage_artifacts
+- **produces:**
+  - lin_lineage_completeness_report
+  - lin_lineage_graph_artifact
+  - lin_lineage_promotion_block
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - make policy admissibility decisions (TPA-owned)
+  - issue closure decisions (CDE-owned)
+
+### DRT
+- **acronym:** `DRT`
+- **full_name:** Drift Signal Runtime
+- **role:** Owns deterministic drift signal artifacts for control consumption.
+- **owns:**
+  - drift_signal_emission
+  - drift_type_classification
+  - drift_signal_aggregation
+- **consumes:**
+  - input_outcome_route_override_signals
+  - contradiction_artifacts
+  - historical_baseline_artifacts
+- **produces:**
+  - drt_input_drift_artifact
+  - drt_outcome_drift_artifact
+  - drt_route_override_contradiction_bundle
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - apply enforcement actions (SEL-owned)
+  - issue promotion decisions (CDE-owned)
+
+### SLO
+- **acronym:** `SLO`
+- **full_name:** Service Level Objective Control
+- **role:** Owns governed error-budget and burn-rate decision artifacts.
+- **owns:**
+  - slo_error_budget_artifacts
+  - burn_rate_decisioning
+  - slo_freeze_block_signals
+- **consumes:**
+  - eval_replay_drift_latency_cost_signals
+  - budget_threshold_policies
+  - control_decision_inputs
+- **produces:**
+  - slo_budget_status_artifact
+  - slo_burn_rate_record
+  - slo_control_decision_signal
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - replace TPA admissibility authority
+  - override CDE closure authority
+
+### CAN
+- **acronym:** `CAN`
+- **full_name:** Canary Rollout Governance
+- **role:** Owns staged rollout, canary evidence, and rollback governance artifacts.
+- **owns:**
+  - canary_rollout_artifacts
+  - rollback_decision_artifacts
+  - staged_release_guardrails
+- **consumes:**
+  - prompt_policy_route_judge_change_sets
+  - rollout_eval_records
+  - rollback_trigger_signals
+- **produces:**
+  - can_rollout_plan_artifact
+  - can_canary_outcome_record
+  - can_rollback_action_record
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - make policy admissibility decisions (TPA-owned)
+  - issue closure decisions (CDE-owned)
+
+### DAT
+- **acronym:** `DAT`
+- **full_name:** Dataset Registry Authority
+- **role:** Owns evaluation dataset registry lineage and version governance.
+- **owns:**
+  - eval_dataset_registry
+  - dataset_lineage_tracking
+  - dataset_version_governance
+- **consumes:**
+  - dataset_manifests
+  - eval_case_manifests
+  - failure_derived_dataset_inputs
+- **produces:**
+  - dat_dataset_registry_record
+  - dat_dataset_lineage_record
+  - dat_dataset_version_resolution
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - bypass EVL required-eval rules
+  - issue closure decisions (CDE-owned)
+
+### JDG
+- **acronym:** `JDG`
+- **full_name:** Judgment Governance
+- **role:** Owns high-impact governed judgment artifact requirements.
+- **owns:**
+  - judgment_artifact_requirements
+  - evidence_sufficiency_judgments
+  - escalation_judgment_records
+- **consumes:**
+  - readiness_policy_evidence_artifacts
+  - certification_evidence_bundles
+  - escalation_context_artifacts
+- **produces:**
+  - jdg_judgment_record
+  - jdg_evidence_sufficiency_report
+  - jdg_escalation_decision_artifact
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - reinterpret review semantics (RIL-owned)
+  - issue closure decisions (CDE-owned)
+
+### PRM
+- **acronym:** `PRM`
+- **full_name:** Prompt Registry Manager
+- **role:** Owns canonical prompt/task registry and prompt version admissibility.
+- **owns:**
+  - prompt_registry_authority
+  - prompt_version_resolution
+  - shadow_prompt_blocking
+- **consumes:**
+  - prompt_spec_artifacts
+  - task_registry_artifacts
+  - prompt_change_records
+- **produces:**
+  - prm_prompt_registry_record
+  - prm_prompt_resolution_artifact
+  - prm_shadow_prompt_block_record
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - make policy admissibility decisions (TPA-owned)
+  - issue closure decisions (CDE-owned)
+
+### ROU
+- **acronym:** `ROU`
+- **full_name:** Routing Governance System
+- **role:** Owns route candidate comparison, selection evidence, and route-governance records.
+- **owns:**
+  - route_candidate_records
+  - route_selection_evidence
+  - route_change_governance
+- **consumes:**
+  - routing_candidates
+  - cost_quality_signals
+  - eval_and_canary_results
+- **produces:**
+  - rou_route_comparison_record
+  - rou_route_selection_artifact
+  - rou_route_change_control_record
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - reinterpret review semantics (RIL-owned)
+  - issue closure decisions (CDE-owned)
+
+### HIT
+- **acronym:** `HIT`
+- **full_name:** Human Intervention Tracker
+- **role:** Owns human review, override, correction diff, and downstream learning artifacts.
+- **owns:**
+  - human_override_artifacts
+  - correction_diff_artifacts
+  - override_learning_linkage
+- **consumes:**
+  - human_review_records
+  - override_requests
+  - downstream_learning_signals
+- **produces:**
+  - hit_override_record
+  - hit_correction_diff
+  - hit_learning_linkage_artifact
+- **must_not_do:**
+  - bypass SEL enforcement
+  - execute work (PQX-owned)
+  - issue closure decisions (CDE-owned)
+
+### CAP
+- **acronym:** `CAP`
+- **full_name:** Capacity and Budget Governance
+- **role:** Owns governed cost/latency/queue depth/capacity budget artifacts and decisions.
+- **owns:**
+  - cost_budget_artifacts
+  - latency_capacity_budget_artifacts
+  - capacity_control_decision_signals
+- **consumes:**
+  - cost_latency_queue_signals
+  - capacity_forecast_artifacts
+  - budget_policy_artifacts
+- **produces:**
+  - cap_budget_status_record
+  - cap_capacity_pressure_report
+  - cap_control_budget_decision
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - replace SLO authority
+  - issue closure decisions (CDE-owned)
+
+### SEC
+- **acronym:** `SEC`
+- **full_name:** Security Guardrail Control
+- **role:** Owns governed security guardrail event artifacts and control integration outputs.
+- **owns:**
+  - security_guardrail_event_contracts
+  - guardrail_control_integration
+  - indeterminate_guardrail_freeze_signals
+- **consumes:**
+  - input_guardrail_events
+  - output_guardrail_events
+  - tool_guardrail_events
+- **produces:**
+  - sec_guardrail_event_record
+  - sec_control_integration_signal
+  - sec_indeterminate_freeze_record
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - make policy admissibility decisions (TPA-owned)
+  - issue closure decisions (CDE-owned)
+
+### REP
+- **acronym:** `REP`
+- **full_name:** Replay Enforcement Plane
+- **role:** Owns replay integrity requirements and replay-gated promotion signals.
+- **owns:**
+  - replay_integrity_validation
+  - replay_required_promotion_gates
+  - replay_failure_freeze_signals
+- **consumes:**
+  - replay_result_artifacts
+  - baseline_replay_artifacts
+  - promotion_gate_requests
+- **produces:**
+  - rep_replay_integrity_record
+  - rep_replay_gate_decision
+  - rep_replay_freeze_artifact
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - replace CDE closure authority
+  - bypass SEL enforcement
+
+### ENT
+- **acronym:** `ENT`
+- **full_name:** Entropy Management Loop
+- **role:** Owns recurring drift/exception accumulation detection and correction-mining governance outputs.
+- **owns:**
+  - entropy_accumulation_detection
+  - override_backlog_reporting
+  - correction_mining_outputs
+- **consumes:**
+  - drift_exception_history
+  - override_backlog_artifacts
+  - architecture_lint_signals
+- **produces:**
+  - ent_entropy_report
+  - ent_override_backlog_record
+  - ent_correction_mining_bundle
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - replace PRG planning authority
+  - issue closure decisions (CDE-owned)
+
+### CON
+- **acronym:** `CON`
+- **full_name:** Contract Interface Governance
+- **role:** Owns explicit interface contract hardening between systems.
+- **owns:**
+  - interface_contract_registry
+  - contract_compatibility_gates
+  - hidden_coupling_detection
+- **consumes:**
+  - system_interface_contracts
+  - compatibility_reports
+  - orchestration_handoff_records
+- **produces:**
+  - con_interface_contract_record
+  - con_compatibility_gate_result
+  - con_hidden_coupling_report
+- **must_not_do:**
+  - execute work (PQX-owned)
+  - make policy admissibility decisions (TPA-owned)
+  - issue closure decisions (CDE-owned)

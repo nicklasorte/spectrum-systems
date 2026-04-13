@@ -244,10 +244,41 @@ def check_adv_owner_constraints(systems: dict[str, SystemDefinition]) -> list[st
         errors.append("HIX must not own bypass behaviors")
     return errors
 
+
+
+def check_extended_hardening_ownership(systems: dict[str, SystemDefinition]) -> list[str]:
+    errors: list[str] = []
+    required_owners = {
+        "context_bundle_contracts": "CTX",
+        "required_eval_registry": "EVL",
+        "observability_contracts": "OBS",
+        "lineage_completeness_rules": "LIN",
+        "drift_signal_emission": "DRT",
+        "slo_error_budget_artifacts": "SLO",
+        "canary_rollout_artifacts": "CAN",
+        "eval_dataset_registry": "DAT",
+        "judgment_artifact_requirements": "JDG",
+        "policy_rollout_lifecycle": "POL",
+        "prompt_registry_authority": "PRM",
+        "route_candidate_records": "ROU",
+        "human_override_artifacts": "HIT",
+        "cost_budget_artifacts": "CAP",
+        "security_guardrail_event_contracts": "SEC",
+        "replay_integrity_validation": "REP",
+        "entropy_accumulation_detection": "ENT",
+        "interface_contract_registry": "CON",
+    }
+    for responsibility, owner in required_owners.items():
+        owning = sorted(name for name, s in systems.items() if responsibility in s.owns)
+        if owning != [owner]:
+            errors.append(f"{responsibility}: expected unique owner {owner}, found {owning or 'none'}")
+    return errors
+
+
 def run_all_checks(registry_path: Path = REGISTRY_PATH) -> list[str]:
     systems, full_text = parse_registry(registry_path)
 
-    required_systems = {"TLC", "CDE", "RQX", "RIL", "FRE", "TPA", "SEL", "PRG", "AEX", "MAP", "PQX", "CHX", "DEX", "SIM", "PRX", "CVX", "HIX", "CAL", "POL", "AIL", "SCH", "DEP", "RCA", "QOS", "SIMX"}
+    required_systems = {"TLC", "CDE", "RQX", "RIL", "FRE", "TPA", "SEL", "PRG", "AEX", "MAP", "PQX", "CHX", "DEX", "SIM", "PRX", "CVX", "HIX", "CAL", "POL", "AIL", "SCH", "DEP", "RCA", "QOS", "SIMX", "CTX", "EVL", "OBS", "LIN", "DRT", "SLO", "CAN", "DAT", "JDG", "PRM", "ROU", "HIT", "CAP", "SEC", "REP", "ENT", "CON"}
     missing = sorted(required_systems - set(systems))
     errors: list[str] = []
     if missing:
@@ -259,6 +290,7 @@ def run_all_checks(registry_path: Path = REGISTRY_PATH) -> list[str]:
     errors.extend(check_drift_risks(systems))
     errors.extend(check_repo_mutation_fail_closed(systems, full_text))
     errors.extend(check_adv_owner_constraints(systems))
+    errors.extend(check_extended_hardening_ownership(systems))
     return errors
 
 

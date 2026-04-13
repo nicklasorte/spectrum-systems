@@ -124,6 +124,46 @@ def _all_paths_exist(paths: Any) -> bool:
     return isinstance(paths, list) and all(_path_exists(path) for path in paths)
 
 
+def _promotion_transition_preflight(manifest: Dict[str, Any]) -> list[dict[str, str]]:
+    """Preflight three-slice promotion prerequisites with machine-readable reason codes."""
+    issues: list[dict[str, str]] = []
+    refs = manifest.get("done_certification_input_refs")
+    refs_dict = refs if isinstance(refs, dict) else {}
+    if not isinstance(refs, dict):
+        issues.append(
+            {
+                "code": "PROMOTION_PREFLIGHT_INPUT_REFS_MISSING",
+                "message": "done_certification_input_refs must be present as an object for promotion",
+            }
+        )
+        return issues
+
+    required_refs = (
+        "ctx_context_bundle_ref",
+        "lin_lineage_report_ref",
+        "obs_observability_report_ref",
+        "evl_required_eval_record_ref",
+        "dat_dataset_registry_ref",
+        "rep_replay_gate_decision_ref",
+        "jdg_judgment_record_ref",
+        "pol_policy_lifecycle_ref",
+        "sec_guardrail_record_ref",
+        "con_interface_contract_ref",
+        "queue_permission_decision_ref",
+        "sel_boundary_proof_ref",
+    )
+    for key in required_refs:
+        value = refs_dict.get(key)
+        if not isinstance(value, str) or not value.strip() or not _path_exists(value):
+            issues.append(
+                {
+                    "code": f"PROMOTION_PREFLIGHT_MISSING_REF_{key.upper()}",
+                    "message": f"missing required promotion ref: {key}",
+                }
+            )
+    return issues
+
+
 def _validate_review_set(paths: list[str], *, cycle_id: str) -> Dict[str, Dict[str, Any]]:
     reviews: Dict[str, Dict[str, Any]] = {}
     for path in sorted(paths):
@@ -492,7 +532,7 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
     if state not in _STATES:
         raise CycleRunnerError(f"unsupported cycle state: {state}")
 
-    def blocked(reason: str) -> Dict[str, Any]:
+    def blocked(reason: str, *, reason_codes: list[str] | None = None) -> Dict[str, Any]:
         issues = [*manifest.get("blocking_issues", []), reason]
         manifest["current_state"] = "blocked"
         manifest["next_action"] = "resolve_blocking_issues"
@@ -505,6 +545,7 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
             "next_state": "blocked",
             "next_action": "resolve_blocking_issues",
             "blocking_issues": issues,
+            "blocking_reason_codes": list(reason_codes or []),
         }
 
     governance_error = _validate_governance_authority(manifest)
@@ -512,7 +553,13 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         return blocked(governance_error)
 
     def _authorize_sequence_transition(target_state: str) -> str | None:
-        decision = evaluate_sequence_transition(manifest, target_state)
+        transition_manifest = dict(manifest)
+        if target_state == "promoted":
+            # cycle_manifest does not carry execution_mode/simulation_mode fields; inject deterministic
+            # live execution semantics for promotion policy evaluation.
+            transition_manifest["execution_mode"] = "real_execution"
+            transition_manifest["simulation_mode"] = False
+        decision = evaluate_sequence_transition(transition_manifest, target_state)
         return None if decision.allowed else decision.reason or "sequence transition blocked by policy"
 
     def _record_sequence_transition(target_state: str, *, reason: str | None = None) -> None:
@@ -545,9 +592,15 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
             "frozen": ("frozen", "manual_unfreeze_required"),
         }
         target_state, next_action = target_map[state]
+        if target_state == "promoted":
+            preflight_issues = _promotion_transition_preflight(manifest)
+            if preflight_issues:
+                reason_codes = [item["code"] for item in preflight_issues]
+                reason = "; ".join(item["message"] for item in preflight_issues)
+                return blocked(f"promotion preflight failed: {reason}", reason_codes=reason_codes)
         blocked_reason = _authorize_sequence_transition(target_state)
         if blocked_reason is not None:
-            return blocked(blocked_reason)
+            return blocked(blocked_reason, reason_codes=["SEQUENCE_TRANSITION_POLICY_BLOCK"])
         if state != target_state:
             _record_sequence_transition(target_state)
             manifest["current_state"] = target_state

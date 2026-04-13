@@ -32,3 +32,11 @@ This document is a companion surface for ecosystem orientation. It is **not** th
 | system-factory | `system-factory` | factory | governance | 3 | active | Scaffolds new governed system repositories with pinned contracts and manifests. |
 
 For ownership conflicts, treat this file as derived and correct the derived surface to match `docs/architecture/system_registry.md`.
+
+
+## Canonical control-plane system inventory snapshot
+The canonical registry currently includes the core spine systems plus the extended hardening systems below:
+`CTX, EVL, OBS, LIN, DRT, SLO, CAN, DAT, JDG, POL, PRM, ROU, HIT, CAP, SEC, REP, ENT, CON`.
+
+Ownership remains authoritative only in `docs/architecture/system_registry.md`; this companion file must not redefine ownership.
+

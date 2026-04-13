@@ -84,7 +84,21 @@ def test_validator_fails_when_entry_invariant_is_weakened(tmp_path: Path) -> Non
 
 def test_registry_includes_adv_systems() -> None:
     systems, _ = validator.parse_registry(REGISTRY_PATH)
-    for name in ("CHX", "DEX", "SIM", "PRX", "CVX", "HIX", "CAL", "POL", "AIL", "SCH", "DEP", "RCA", "QOS", "SIMX"):
+    for name in ("CHX", "DEX", "SIM", "PRX", "CVX", "HIX", "CAL", "POL", "AIL", "SCH", "DEP", "RCA", "QOS", "SIMX", "CTX", "EVL", "OBS", "LIN", "DRT", "SLO", "CAN", "DAT", "JDG", "PRM", "ROU", "HIT", "CAP", "SEC", "REP", "ENT", "CON"):
         assert name in systems
         assert systems[name].owns
         assert systems[name].must_not_do
+
+
+def test_extended_hardening_unique_owners_enforced(tmp_path: Path) -> None:
+    content = REGISTRY_PATH.read_text(encoding="utf-8")
+    mutated = content.replace(
+        "  - orchestration\n",
+        "  - orchestration\n  - context_bundle_contracts\n",
+        1,
+    )
+    mutated_path = tmp_path / "registry.md"
+    mutated_path.write_text(mutated, encoding="utf-8")
+
+    errors = validator.run_all_checks(mutated_path)
+    assert any("context_bundle_contracts" in error for error in errors)

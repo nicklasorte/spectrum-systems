@@ -572,6 +572,47 @@ def _review_signal_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
     return True, None
 
 
+
+
+def _extended_trust_envelope_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
+    refs = manifest.get("done_certification_input_refs") if isinstance(manifest.get("done_certification_input_refs"), dict) else {}
+
+    required_refs = {
+        "ctx_context_bundle_ref": "CTX",
+        "lin_lineage_report_ref": "LIN",
+        "obs_observability_report_ref": "OBS",
+        "evl_required_eval_record_ref": "EVL",
+        "dat_dataset_registry_ref": "DAT",
+        "rep_replay_gate_decision_ref": "REP",
+        "jdg_judgment_record_ref": "JDG",
+        "pol_policy_lifecycle_ref": "POL",
+        "sec_guardrail_record_ref": "SEC",
+        "con_interface_contract_ref": "CON",
+    }
+
+    for key, owner in required_refs.items():
+        value = refs.get(key)
+        if not isinstance(value, str) or not value.strip() or not _path_exists(value):
+            return False, f"promotion blocked: missing required {owner} artifact ref ({key})"
+
+    execution_mode = str(manifest.get("execution_mode") or "").strip().lower()
+    simulation_mode = manifest.get("simulation_mode")
+    if execution_mode not in {"real_execution", "governed_live"}:
+        return False, "promotion blocked: execution_mode must be explicit real_execution/governed_live"
+    if simulation_mode is True:
+        return False, "promotion blocked: simulation_mode=true is non-promotable"
+
+    queue_permission_ref = refs.get("queue_permission_decision_ref")
+    if not isinstance(queue_permission_ref, str) or not queue_permission_ref.strip() or not _path_exists(queue_permission_ref):
+        return False, "promotion blocked: queue permission realism requires queue_permission_decision_ref"
+
+    sel_boundary_proof_ref = refs.get("sel_boundary_proof_ref")
+    if not isinstance(sel_boundary_proof_ref, str) or not sel_boundary_proof_ref.strip() or not _path_exists(sel_boundary_proof_ref):
+        return False, "promotion blocked: SEL boundary proof is required"
+
+    return True, None
+
+
 def _closure_decision_gate(manifest: dict[str, Any]) -> tuple[bool, str | None]:
     closure_ref = manifest.get("closure_decision_artifact_ref")
     refs = manifest.get("done_certification_input_refs")
@@ -672,6 +713,9 @@ def evaluate_sequence_transition(manifest: dict[str, Any], target_state: str) ->
         rax_gate_passed, rax_gate_error = _rax_operational_gate(manifest)
         if not rax_gate_passed:
             return SequenceTransitionDecision(False, rax_gate_error)
+        extended_gate_passed, extended_gate_error = _extended_trust_envelope_gate(manifest)
+        if not extended_gate_passed:
+            return SequenceTransitionDecision(False, extended_gate_error)
         if manifest.get("decision_blocked") is True:
             return SequenceTransitionDecision(False, "promotion blocked by decision_blocked=true")
 
