@@ -270,9 +270,15 @@
       "acronym": "CLX",
       "full_name": "CLX (Reserved)",
       "role": "Reserved/planned; not active build target.",
-      "owns": [],
-      "consumes": [],
-      "produces": [],
+      "owns": [
+        "clx_reserved_planning_scope"
+      ],
+      "consumes": [
+        "clx_reserved_input"
+      ],
+      "produces": [
+        "clx_reserved_artifact"
+      ],
       "prohibited_behaviors": [
         "activate_without_registry_update"
       ],
@@ -315,9 +321,15 @@
       "acronym": "CPX",
       "full_name": "CPX (Reserved)",
       "role": "Reserved/planned; not active build target.",
-      "owns": [],
-      "consumes": [],
-      "produces": [],
+      "owns": [
+        "cpx_reserved_planning_scope"
+      ],
+      "consumes": [
+        "cpx_reserved_input"
+      ],
+      "produces": [
+        "cpx_reserved_artifact"
+      ],
       "prohibited_behaviors": [
         "activate_without_registry_update"
       ],
@@ -690,9 +702,15 @@
       "acronym": "HFX",
       "full_name": "HFX (Reserved)",
       "role": "Reserved/planned; not active build target.",
-      "owns": [],
-      "consumes": [],
-      "produces": [],
+      "owns": [
+        "hfx_reserved_planning_scope"
+      ],
+      "consumes": [
+        "hfx_reserved_input"
+      ],
+      "produces": [
+        "hfx_reserved_artifact"
+      ],
       "prohibited_behaviors": [
         "activate_without_registry_update"
       ],
@@ -1789,23 +1807,19 @@
     },
     {
       "from": "CTX",
-      "to": "PQX",
-      "reason": "rax-serial-operating-substrate"
+      "to": "PQX"
     },
     {
       "from": "TLX",
-      "to": "CTX",
-      "reason": "rax-serial-operating-substrate"
+      "to": "CTX"
     },
     {
       "from": "JSX",
-      "to": "CAX",
-      "reason": "rax-serial-operating-substrate"
+      "to": "CAX"
     },
     {
       "from": "DRX",
-      "to": "CAX",
-      "reason": "rax-serial-operating-substrate"
+      "to": "CAX"
     }
   ]
 }

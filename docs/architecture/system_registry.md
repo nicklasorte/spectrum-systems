@@ -1823,6 +1823,7 @@ flowchart LR
 - **full_name:** `Context eXchange`
 - **role:** Owns governed context assembly, bundling, manifest hashing, provenance, TTL/freshness, trust levels, conflict handling, and context preflight.
 - **owns:**
+  - context_bundle_contracts
   - context_bundle
   - context_recipe
   - context_manifest

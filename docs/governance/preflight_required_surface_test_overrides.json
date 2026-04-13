@@ -1,0 +1,11 @@
+{
+  "spectrum_systems/modules/runtime/ai_adapter.py": [
+    "tests/test_task_registry_ai_adapter_eval_slice_runner.py"
+  ],
+  "spectrum_systems/modules/runtime/task_registry.py": [
+    "tests/test_task_registry_ai_adapter_eval_slice_runner.py"
+  ],
+  "spectrum_systems/modules/runtime/eval_slice_runner.py": [
+    "tests/test_task_registry_ai_adapter_eval_slice_runner.py"
+  ]
+}

@@ -1188,6 +1188,26 @@ def test_main_required_surface_without_eval_target_fails_closed(tmp_path: Path, 
     ]
 
 
+def test_required_surface_override_map_is_loaded_from_governance_file(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path / "repo"
+    (repo_root / "docs" / "governance").mkdir(parents=True, exist_ok=True)
+    (repo_root / "docs" / "governance" / "preflight_required_surface_test_overrides.json").write_text(
+        json.dumps(
+            {
+                "spectrum_systems/modules/runtime/ai_adapter.py": [
+                    "tests/test_task_registry_ai_adapter_eval_slice_runner.py"
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    merged = preflight._load_required_surface_override_map(repo_root)
+    assert (
+        merged["spectrum_systems/modules/runtime/ai_adapter.py"]
+        == ["tests/test_task_registry_ai_adapter_eval_slice_runner.py"]
+    )
+
+
 def test_main_passes_only_contract_schema_paths_into_impact_analyzer(tmp_path: Path, monkeypatch) -> None:
     output_dir = tmp_path / "out"
     wrapper_path = tmp_path / "wrapper.json"
