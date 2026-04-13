@@ -1,0 +1,11 @@
+{
+  "artifact_type": "preflight_repair_plan_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "plan_id": "plan-1",
+  "repair_category": "missing_preflight_wrapper_or_authority_linkage",
+  "allowed_paths": [
+    "outputs/contract_preflight/preflight_pqx_task_wrapper.json"
+  ],
+  "apply_automatically": true
+}

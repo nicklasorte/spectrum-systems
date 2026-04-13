@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "system_budget_status_v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "status_id",
+    "run_id",
+    "trace_id",
+    "cost_status",
+    "quality_status",
+    "risk_status",
+    "merged_status",
+    "reason_codes"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "system_budget_status_v2"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "status_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "cost_status": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "warn",
+        "freeze",
+        "block"
+      ]
+    },
+    "quality_status": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "warn",
+        "freeze",
+        "block"
+      ]
+    },
+    "risk_status": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "warn",
+        "freeze",
+        "block"
+      ]
+    },
+    "merged_status": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "warn",
+        "freeze",
+        "block"
+      ]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  }
+}

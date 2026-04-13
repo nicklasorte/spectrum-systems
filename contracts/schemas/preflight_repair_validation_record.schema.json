@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "preflight_repair_validation_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "validation_id",
+    "attempt_id",
+    "validation_passed",
+    "validation_command"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "preflight_repair_validation_record"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "validation_id": {
+      "type": "string"
+    },
+    "attempt_id": {
+      "type": "string"
+    },
+    "validation_passed": {
+      "type": "boolean"
+    },
+    "validation_command": {
+      "type": "string"
+    }
+  }
+}

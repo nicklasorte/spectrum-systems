@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "preflight_block_diagnosis_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "diagnosis_id",
+    "strategy_gate_decision",
+    "repair_category",
+    "reason_codes"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "preflight_block_diagnosis_record"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "diagnosis_id": {
+      "type": "string"
+    },
+    "strategy_gate_decision": {
+      "type": "string",
+      "enum": [
+        "ALLOW",
+        "WARN",
+        "FREEZE",
+        "BLOCK"
+      ]
+    },
+    "repair_category": {
+      "type": "string"
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  }
+}

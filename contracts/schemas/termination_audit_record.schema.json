@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "termination_audit_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "audit_id",
+    "decision_ref",
+    "replay_hash",
+    "deterministic_inputs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "termination_audit_record"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "audit_id": {
+      "type": "string"
+    },
+    "decision_ref": {
+      "type": "string"
+    },
+    "replay_hash": {
+      "type": "string"
+    },
+    "deterministic_inputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  }
+}

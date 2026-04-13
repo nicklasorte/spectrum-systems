@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "termination_policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "policy_id",
+    "policy_version",
+    "required_artifacts",
+    "required_evals",
+    "allow_async_wait",
+    "max_repair_cycles"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "termination_policy"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "policy_id": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "required_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "required_evals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "allow_async_wait": {
+      "type": "boolean"
+    },
+    "max_repair_cycles": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

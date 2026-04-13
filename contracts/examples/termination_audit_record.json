@@ -1,0 +1,12 @@
+{
+  "artifact_type": "termination_audit_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "audit_id": "TAUD-001",
+  "decision_ref": "termination_decision:TDEC-001",
+  "replay_hash": "abc123",
+  "deterministic_inputs": [
+    "termination_signal_record:TSIG-001",
+    "termination_policy:TPOL-001"
+  ]
+}

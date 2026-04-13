@@ -1,0 +1,18 @@
+{
+  "artifact_type": "termination_signal_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "signal_id": "TSIG-001",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "required_artifacts_present": true,
+  "required_evals_present": true,
+  "required_evals_passed": true,
+  "trace_complete": true,
+  "blocking_contradiction_present": false,
+  "human_review_outstanding": false,
+  "replay_consistent": true,
+  "policy_rejected": false,
+  "bax_decision": "allow",
+  "confidence_signal": 0.88
+}

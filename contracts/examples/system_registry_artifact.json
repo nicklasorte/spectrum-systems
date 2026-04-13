@@ -304,16 +304,119 @@
       "downstream_consumers": [
         "TLC"
       ]
+    },
+    {
+      "acronym": "TAX",
+      "full_name": "Termination Authority eXecutor",
+      "role": "Determines termination outcome from governed evidence sufficiency.",
+      "owns": [
+        "information_sufficiency_evaluation",
+        "bounded_completion_authority",
+        "termination_decision_artifacts"
+      ],
+      "consumes": [
+        "termination_signal_record",
+        "termination_policy",
+        "system_budget_status_v2"
+      ],
+      "produces": [
+        "termination_decision",
+        "termination_audit_record"
+      ],
+      "prohibited_behaviors": [
+        "runtime_enforcement",
+        "policy_admissibility_override",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "PQX",
+        "BAX",
+        "TPA"
+      ],
+      "downstream_consumers": [
+        "CAX",
+        "CDE"
+      ]
+    },
+    {
+      "acronym": "BAX",
+      "full_name": "Budget Authority eXecutor",
+      "role": "Determines cost/quality/risk budget status for governed execution.",
+      "owns": [
+        "system_budget_governance",
+        "merged_budget_status",
+        "budget_decision_artifacts"
+      ],
+      "consumes": [
+        "budget_consumption_record",
+        "system_budget_policy",
+        "evaluation_control_decision"
+      ],
+      "produces": [
+        "system_budget_status_v2",
+        "budget_control_decision"
+      ],
+      "prohibited_behaviors": [
+        "runtime_enforcement",
+        "closure_decisioning",
+        "termination_execution"
+      ],
+      "upstream_dependencies": [
+        "PQX",
+        "TPA"
+      ],
+      "downstream_consumers": [
+        "TAX",
+        "CAX",
+        "CDE"
+      ]
+    },
+    {
+      "acronym": "CAX",
+      "full_name": "Control Arbitration eXchange",
+      "role": "Composes TAX/BAX/TPA/replay/trace/judgment signals into deterministic CDE input bundles.",
+      "owns": [
+        "control_arbitration",
+        "authority_composition",
+        "conflict_resolution_precedence",
+        "cde_arbitration_input_bundle"
+      ],
+      "consumes": [
+        "termination_decision",
+        "budget_control_decision",
+        "tpa_policy_decision_record"
+      ],
+      "produces": [
+        "control_arbitration_record",
+        "control_arbitration_reason_bundle",
+        "cde_arbitration_input_bundle"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "runtime_enforcement",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TAX",
+        "BAX",
+        "TPA"
+      ],
+      "downstream_consumers": [
+        "CDE"
+      ]
     }
   ],
   "invariants": [
+    "arbitration_composition_only_in_CAX",
+    "budget_authority_only_in_BAX",
     "closure_decisions_only_in_CDE",
     "enforcement_only_in_SEL",
     "execution_only_in_PQX",
     "orchestration_only_in_TLC",
     "recovery_only_in_FRE",
     "repo_mutation_admission_only_in_AEX",
-    "review_interpretation_only_in_RIL"
+    "review_interpretation_only_in_RIL",
+    "termination_authority_only_in_TAX"
   ],
   "interaction_edges": [
     {
@@ -375,6 +478,22 @@
     {
       "from": "SEL",
       "to": "PRG"
+    },
+    {
+      "from": "TPA",
+      "to": "BAX"
+    },
+    {
+      "from": "BAX",
+      "to": "TAX"
+    },
+    {
+      "from": "TAX",
+      "to": "CAX"
+    },
+    {
+      "from": "CAX",
+      "to": "CDE"
     }
   ]
 }

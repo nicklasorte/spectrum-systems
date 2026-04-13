@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "control_arbitration_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "arbitration_id",
+    "run_id",
+    "trace_id",
+    "outcome",
+    "reason_bundle_ref",
+    "input_refs",
+    "policy_version"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "control_arbitration_record"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "arbitration_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "continue",
+        "repair_required",
+        "freeze_required",
+        "block_required",
+        "await_async_signal",
+        "warn_complete_candidate"
+      ]
+    },
+    "reason_bundle_ref": {
+      "type": "string"
+    },
+    "input_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "termination_decision_ref",
+        "budget_control_decision_ref"
+      ],
+      "properties": {
+        "termination_decision_ref": {
+          "type": "string"
+        },
+        "budget_control_decision_ref": {
+          "type": "string"
+        },
+        "tpa_decision_ref": {
+          "type": "string"
+        },
+        "judgment_ref": {
+          "type": "string"
+        },
+        "replay_ref": {
+          "type": "string"
+        }
+      }
+    },
+    "policy_version": {
+      "type": "string"
+    }
+  }
+}
