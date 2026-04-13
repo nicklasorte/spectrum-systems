@@ -93,6 +93,12 @@ CDE is the only system allowed to emit:
 - **CDE** — closure-state decision authority
 - **TLC** — top-level orchestration and routing across subsystems
 - **PRG** — program-level planning, priority, and governance
+- **RSM** — reconciliation state manager for desired-vs-actual state artifacts (non-authoritative planning support)
+- **DEM** — decision economics modeler for recommendation-grade tradeoff scoring (non-authoritative)
+- **MCL** — memory compaction layer for retention, archival, and entropy control artifacts (non-authoritative)
+- **BRM** — blast radius manager for impact/irreversibility classification artifacts (non-authoritative)
+- **DCL** — doctrine compilation layer for durable doctrine lifecycle artifacts (non-authoritative to policy authority)
+- **XRL** — external reality loop for outcome normalization, trust weighting, and calibration bindings (non-authoritative)
 - **SAL** — source authority layer for deterministic source precedence and obligation indexing *(placeholder; non-authoritative governance seam)*
 - **SAS** — source authority sync ingestion surface *(placeholder; source retrieval seam)*
 - **SHA** — shared authority layer for shared primitive ownership boundaries *(placeholder; shared primitive seam)*
@@ -537,6 +543,106 @@ CDE is the only system allowed to emit:
   - issue policy authority decisions (TPA-owned)
   - influence runtime execution authority or admission decisions (PQX/AEX-owned)
 
+### RSM
+- **acronym:** `RSM`
+- **full_name:** Reconciliation State Manager
+- **role:** Compares desired vs actual state, classifies divergence, and emits non-authoritative reconciliation artifacts.
+- **owns:**
+  - desired_state_artifact
+  - actual_state_artifact
+  - state_delta_artifact
+  - divergence_record
+  - state_alignment_status
+  - reconciliation_plan_artifact
+  - portfolio_state_snapshot
+- **consumes:**
+  - interpreted artifacts and state-ready surfaces
+  - module posture
+  - operator posture
+  - policy/judgment/override state
+  - portfolio posture signals
+- **must_not_do:**
+  - decide next-step authority (CDE-owned)
+  - enforce actions (SEL-owned)
+  - execute work (PQX-owned)
+  - apply policy (TPA-owned)
+  - reinterpret raw evidence semantics (RIL-owned)
+
+### DEM
+- **acronym:** `DEM`
+- **full_name:** Decision Economics Modeler
+- **role:** Quantifies economic tradeoffs and emits recommendation-grade decision economics artifacts.
+- **owns:**
+  - decision_economics_artifact
+  - cost_of_delay_model
+  - false_positive_cost_model
+  - false_negative_cost_model
+  - human_review_cost_model
+  - tradeoff_surface_artifact
+  - economic_decision_score
+- **must_not_do:**
+  - decide next-step authority (CDE-owned)
+  - enforce actions (SEL-owned)
+  - execute work (PQX-owned)
+
+### MCL
+- **acronym:** `MCL`
+- **full_name:** Memory Compaction Layer
+- **role:** Governs memory compaction, archival tiering, entropy reduction, and retention artifacts.
+- **owns:**
+  - memory_compaction_plan
+  - archival_tier_assignment
+  - retention_policy_artifact
+  - memory_entropy_report
+  - canonical_memory_promotion_candidate
+  - archive_prune_record
+- **must_not_do:**
+  - decide active policy or closure authority
+  - override active-set rules owned elsewhere
+  - execute deletion outside canonical governance
+
+### BRM
+- **acronym:** `BRM`
+- **full_name:** Blast Radius Manager
+- **role:** Classifies blast radius, irreversibility, rollback difficulty, and escalation requirements.
+- **owns:**
+  - blast_radius_assessment
+  - irreversibility_classification
+  - rollback_difficulty_score
+  - escalation_requirement_record
+  - multi_review_requirement_record
+- **must_not_do:**
+  - decide final authority (CDE-owned)
+  - enforce directly (SEL-owned)
+
+### DCL
+- **acronym:** `DCL`
+- **full_name:** Doctrine Compilation Layer
+- **role:** Compiles stable judgments/policies/precedents into doctrine lifecycle artifacts with lineage and conflicts.
+- **owns:**
+  - doctrine_artifact
+  - doctrine_update_candidate
+  - doctrine_supersession_record
+  - doctrine_conflict_record
+  - doctrine_lineage_record
+- **must_not_do:**
+  - act as policy authority by itself
+  - override TPA/CDE/SEL ownership
+  - silently elevate commentary into doctrine
+
+### XRL
+- **acronym:** `XRL`
+- **full_name:** External Reality Loop
+- **role:** Ingests and normalizes external outcomes, computes trust weighting, and binds outcomes into calibration/eval loops.
+- **owns:**
+  - external_outcome_signal
+  - outcome_normalization_record
+  - outcome_trust_weight
+  - external_feedback_binding_record
+  - external_outcome_impact_artifact
+- **must_not_do:**
+  - directly update policy/judgment/closure without canonical paths
+
 ### SAL
 - **acronym:** `SAL`
 - **full_name:** Source Authority Layer
@@ -696,6 +802,12 @@ CDE is the only system allowed to emit:
 | TLC emits control decisions from prep artifacts | Orchestration cannot convert preparatory inputs into authority outputs | CDE / TPA |
 | Control-prep artifacts treated as final decisions | Preparatory artifacts cannot substitute for authority decisions | CDE / TPA |
 | Drift detection directly changes runtime behavior | Detection cannot directly mutate runtime behavior outside governed authority paths | TPA / SEL / PQX via governed cycle |
+| RSM issues closure/promotion decisions | Reconciliation is preparatory; closure authority remains canonical | CDE |
+| DEM emits enforcement decisions | Economics is recommendation-grade only | SEL / CDE |
+| DCL activates policy directly | Doctrine compilation cannot bypass policy authority | TPA |
+| XRL writes policy/judgment/closure directly | External outcomes must route through canonical consumers | TPA / CDE / RIL |
+| BRM executes freezes/enforcement directly | Blast classification cannot become enforcement action | SEL / CDE |
+| MCL deletes governed memory directly | Compaction must remain governed and auditable | SEL / CDE / policy owners |
 
 ## Allowed Interaction Graph
 - AEX → TLC
@@ -716,6 +828,16 @@ CDE is the only system allowed to emit:
 - TLC → review_handoff_disposition_artifact (classification output only; no execution trigger and no closure authority)
 - CDE → closure_decision_artifact (readiness-to-close / bounded-next-step / promotion-readiness decisions)
 - RIL → CDE
+- RIL → RSM (interpreted state inputs)
+- RSM → PRG (portfolio divergence and debt signals)
+- RSM → CDE (non-authoritative reconciliation inputs)
+- DEM → PRG (economic tradeoff recommendations)
+- BRM → CDE (blast/irreversibility support artifacts)
+- DCL → TPA (doctrine-derived policy candidate inputs)
+- DCL → PRG (doctrine posture summaries)
+- XRL → RIL (external outcome normalization bindings)
+- XRL → PRG (outcome impact trend signals)
+- MCL → RSM (compacted memory posture summaries)
 - Placeholder seams (LCE/ABX/DBB/SAL/SAS/SHA/RAX) are non-authoritative and must route final authority decisions through canonical owners above.
 
 ## Entry Invariant (Repo-Mutation Admission)
@@ -762,6 +884,7 @@ CDE is the only system allowed to emit:
 10. Multi-umbrella roadmap bundles **MUST** preserve complete per-umbrella completion boundaries.
 11. Batch and umbrella decision artifacts control progression only and **MUST NOT** substitute for CDE closure authority.
 12. New roadmap proposals **MUST** be duplication-checked against this registry before admission.
+13. RSM/DEM/MCL/BRM/DCL/XRL outputs are preparatory/recommendation-grade and MUST route authority transitions through canonical CDE/TPA/SEL paths.
 
 ## System Invariants
 1. Execution is owned only by **PQX**.
