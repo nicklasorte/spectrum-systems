@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/mnt_red_team_round_report.schema.json",
+  "title": "MNT Red Team Round Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "artifact_version",
+    "standards_version",
+    "artifact_id",
+    "round_id",
+    "generated_at",
+    "exploit_count",
+    "exploits",
+    "all_exploits_converted_to_tests",
+    "all_exploits_converted_to_evals",
+    "all_exploits_converted_to_guards"
+  ],
+  "properties": {
+    "artifact_type": {"const": "mnt_red_team_round_report"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "artifact_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "standards_version": {"type": "string"},
+    "artifact_id": {"type": "string", "minLength": 8},
+    "round_id": {"type": "string", "enum": ["RT3", "RT4"]},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "exploit_count": {"type": "integer", "minimum": 0},
+    "exploits": {"type": "array", "items": {"type": "string"}},
+    "all_exploits_converted_to_tests": {"type": "boolean"},
+    "all_exploits_converted_to_evals": {"type": "boolean"},
+    "all_exploits_converted_to_guards": {"type": "boolean"}
+  }
+}

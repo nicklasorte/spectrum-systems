@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.125",
+  "artifact_version": "1.3.126",
   "schema_version": "1.3.99",
-  "standards_version": "1.3.125",
-  "record_id": "REC-STD-2026-04-12-TLC-001",
-  "run_id": "run-20260412T220000Z-tlc-001",
-  "created_at": "2026-04-12T00:00:00Z",
+  "standards_version": "1.3.126",
+  "record_id": "REC-STD-2026-04-13-MNT-002",
+  "run_id": "run-20260413T000000Z-mnt-002",
+  "created_at": "2026-04-13T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.124",
+  "source_repo_version": "1.3.125",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -3145,6 +3145,32 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/mnt_maintain_cycle_report.json",
       "notes": "MNT-10 governed maintain-stage report artifact with drift signals and eval auto-expansion output."
+    },
+    {
+      "artifact_type": "mnt_platform_reliability_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.126",
+      "last_updated_in": "1.3.126",
+      "example_path": "contracts/examples/mnt_platform_reliability_bundle.json",
+      "notes": "MNT-002 serial reliability operations bundle covering SLO/error budget/burn-rate/certification/active-set/maintain/review and freeze gating."
+    },
+    {
+      "artifact_type": "mnt_red_team_round_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.126",
+      "last_updated_in": "1.3.126",
+      "example_path": "contracts/examples/mnt_red_team_round_report.json",
+      "notes": "MNT-002 deterministic red-team round report enforcing exploit-to-eval/test/guard conversion requirements."
     },
     {
       "artifact_type": "mnt_trust_integration_bundle",
