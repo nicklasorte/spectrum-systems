@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/schemas/opx_durability_cycle_artifact.schema.json",
+  "title": "OPX Durability Cycle Artifact",
+  "description": "Deterministic OPX-004 durability and self-correction cycle output artifact.",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "opx_id",
+    "prompt_type",
+    "replay",
+    "coverage",
+    "non_duplication"
+  ],
+  "properties": {
+    "artifact_type": {"const": "opx_durability_cycle_artifact"},
+    "artifact_version": {"type": "string", "pattern": "^1\\.0\\.[0-9]+$"},
+    "opx_id": {"const": "OPX-004"},
+    "prompt_type": {"const": "BUILD"},
+    "replay": {
+      "type": "object",
+      "required": ["status", "runs", "no_silent_skip"],
+      "properties": {
+        "status": {"type": "string", "enum": ["pass", "fail"]},
+        "runs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["module", "pass", "drift_points", "freshness_hours"],
+            "properties": {
+              "module": {"type": "string"},
+              "pass": {"type": "boolean"},
+              "drift_points": {"type": "integer", "minimum": 0},
+              "freshness_hours": {"type": "integer", "minimum": 0}
+            },
+            "additionalProperties": true
+          }
+        },
+        "no_silent_skip": {"type": "boolean"}
+      },
+      "additionalProperties": true
+    },
+    "coverage": {
+      "type": "object",
+      "minProperties": 24,
+      "additionalProperties": {"type": "string"}
+    },
+    "non_duplication": {"type": "boolean"}
+  },
+  "additionalProperties": true
+}
