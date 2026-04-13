@@ -19,6 +19,8 @@ input
 → certification
 → promotion
 
+This is a simplified operational loop. Canonical subsystem ownership and full acronym coverage are defined in `docs/architecture/system_registry.md`.
+
 ## Hard Rules
 - All work must go through governed runtime.
 - No direct repo mutation outside PQX.
@@ -49,15 +51,9 @@ failure
 → roadmap signal
 
 ## System Ownership
-| System | Ownership |
-| --- | --- |
-| RIL | structure |
-| CDE | decision |
-| TLC | orchestration |
-| PQX | execution |
-| FRE | diagnosis/repair |
-| SEL | enforcement |
-| PRG | direction (no execution) |
+Canonical system ownership is defined only in `docs/architecture/system_registry.md`.
+
+This file intentionally provides operational behavior guidance and does not duplicate the registry ownership table.
 
 ## Codex Role
 - Codex executes changes via PQX-equivalent behavior.

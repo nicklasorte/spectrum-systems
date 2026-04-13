@@ -50,7 +50,7 @@ Architecture standards, ecosystem maps, lifecycle guides, triage rules, registri
 - `system-interface-spec.md` — Interface contract standard every system must follow.
 - `system-lifecycle.md` — Lifecycle stages from concept to production.
 - `system-map.md` — Visual/textual map of systems and relationships.
-- `system-registry.md` — Control-plane catalog of all governed systems.
+- `docs/architecture/system_registry.md` — Canonical system registry for system names, ownership, and placeholder status.
 - `system-status-registry.md` — Current maturity/status of each system.
 - `system-failure-modes.md` — Known failure modes and mitigations.
 - `system-maturity-model.md` — Level 0–20 maturity ladder definition.
