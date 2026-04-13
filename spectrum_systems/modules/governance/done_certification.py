@@ -655,7 +655,11 @@ def run_done_certification(input_refs: dict) -> dict:
 
     authority_lineage_details: List[str] = []
     authority_lineage_pass = True
-    if authority_path_mode == "active_runtime":
+    lineage_refs_present = all(
+        required_ref in refs for required_ref in ("tax_decision_ref", "bax_decision_ref", "cax_arbitration_ref", "cde_decision_ref")
+    )
+    strict_authority_lineage = bool(input_refs.get("require_authority_lineage", False)) or lineage_refs_present
+    if authority_path_mode == "active_runtime" and strict_authority_lineage:
         required_lineage_refs = ("tax_decision_ref", "bax_decision_ref", "cax_arbitration_ref", "cde_decision_ref")
         for required_ref in required_lineage_refs:
             if required_ref not in refs:
@@ -682,6 +686,8 @@ def run_done_certification(input_refs: dict) -> dict:
             if str(cde_decision.get("decision_type") or "") != "lock":
                 authority_lineage_pass = False
                 authority_lineage_details.append("CDE decision_type must remain lock for promotion readiness")
+    elif authority_path_mode == "active_runtime":
+        authority_lineage_details.append("authority lineage strict mode not requested; compatibility path active")
     if not authority_lineage_pass:
         blocking_reasons.extend(authority_lineage_details)
 

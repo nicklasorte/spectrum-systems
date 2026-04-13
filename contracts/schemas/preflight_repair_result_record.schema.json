@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "preflight_repair_result_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "result_id",
+    "attempt_id",
+    "rerun_preflight_exit_code",
+    "rerun_strategy_gate_decision",
+    "success"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "preflight_repair_result_record"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "result_id": {
+      "type": "string"
+    },
+    "attempt_id": {
+      "type": "string"
+    },
+    "rerun_preflight_exit_code": {
+      "type": "integer"
+    },
+    "rerun_strategy_gate_decision": {
+      "type": "string",
+      "enum": [
+        "ALLOW",
+        "WARN",
+        "FREEZE",
+        "BLOCK"
+      ]
+    },
+    "success": {
+      "type": "boolean"
+    }
+  }
+}

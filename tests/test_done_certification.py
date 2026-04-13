@@ -745,3 +745,11 @@ def test_done_certification_fails_closed_when_tpa_scope_policy_missing(tmp_path:
     refs["tpa_scope_policy_path"] = str(tmp_path / "missing_policy.json")
     with pytest.raises(DoneCertificationError, match="TPA scope policy evaluation failed"):
         run_done_certification(refs)
+
+
+def test_done_certification_blocks_when_strict_authority_lineage_required_and_missing(tmp_path: Path) -> None:
+    refs = _write_inputs(tmp_path)
+    result = run_done_certification({**refs, "require_authority_lineage": True})
+    assert result["final_status"] == "FAILED"
+    assert result["system_response"] == "block"
+    assert any(reason.startswith("missing required authority lineage ref:") for reason in result["blocking_reasons"])
