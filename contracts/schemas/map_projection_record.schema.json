@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/map_projection_record.schema.json",
+  "title": "MAP Projection Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "projection_id",
+    "created_at",
+    "trace_id",
+    "lineage_ref",
+    "source_artifact_ref",
+    "source_artifact_hash",
+    "projection_scope",
+    "non_authority_assertions",
+    "status_markers",
+    "contradiction_markers",
+    "projected_payload"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "map_projection_record"
+    },
+    "projection_id": {
+      "type": "string",
+      "pattern": "^mpr-[a-f0-9]{16}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_artifact_ref": {
+      "type": "string",
+      "pattern": "^review_projection_bundle_artifact:rpb-[a-f0-9]{16}$"
+    },
+    "source_artifact_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "projection_scope": {
+      "type": "string",
+      "const": "mediation_projection_only"
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "status_markers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "blocker_present",
+        "escalation_present",
+        "highest_priority"
+      ],
+      "properties": {
+        "blocker_present": {
+          "type": "boolean"
+        },
+        "escalation_present": {
+          "type": "boolean"
+        },
+        "highest_priority": {
+          "type": "string",
+          "enum": [
+            "P0",
+            "P1",
+            "P2",
+            "monitor"
+          ]
+        }
+      }
+    },
+    "contradiction_markers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^rii-[a-f0-9]{16}$"
+      }
+    },
+    "projected_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roadmap_projection_ref",
+        "control_loop_projection_ref",
+        "readiness_projection_ref",
+        "roadmap_item_count",
+        "control_queue_count",
+        "readiness_item_count",
+        "evidence_trace_refs"
+      ],
+      "properties": {
+        "roadmap_projection_ref": {
+          "type": "string",
+          "pattern": "^rrp-[a-f0-9]{16}$"
+        },
+        "control_loop_projection_ref": {
+          "type": "string",
+          "pattern": "^cri-[a-f0-9]{16}$"
+        },
+        "readiness_projection_ref": {
+          "type": "string",
+          "pattern": "^rdp-[a-f0-9]{16}$"
+        },
+        "roadmap_item_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "control_queue_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "readiness_item_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence_trace_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

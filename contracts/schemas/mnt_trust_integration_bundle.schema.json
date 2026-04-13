@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/mnt_trust_integration_bundle.schema.json",
+  "title": "mnt_trust_integration_bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "bundle_id",
+    "created_at",
+    "trace_id",
+    "evidence_chain_ref",
+    "replay_ref",
+    "observability_ref",
+    "cde_certification_ref",
+    "input_coverage"
+  ],
+  "properties": {
+    "artifact_type": {"const": "mnt_unified_certification_bundle"},
+    "bundle_id": {"type": "string", "minLength": 8},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "minLength": 3},
+    "evidence_chain_ref": {"type": "string", "minLength": 8},
+    "replay_ref": {"type": "string", "minLength": 8},
+    "observability_ref": {"type": "string", "minLength": 8},
+    "cde_certification_ref": {"type": "string", "minLength": 8},
+    "input_coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "required_inputs", "missing_inputs"],
+      "properties": {
+        "status": {"type": "string", "enum": ["pass", "fail"]},
+        "required_inputs": {"type": "array", "items": {"type": "string"}},
+        "missing_inputs": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

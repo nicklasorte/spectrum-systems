@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/map_projection_bundle.schema.json",
+  "title": "MAP Projection Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "bundle_id",
+    "created_at",
+    "trace_id",
+    "projection_ref",
+    "eval_ref",
+    "readiness_ref",
+    "conflict_ref",
+    "debt_ref",
+    "effectiveness_ref",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "map_projection_bundle"
+    },
+    "bundle_id": {
+      "type": "string",
+      "pattern": "^mpb-[a-f0-9]{16}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projection_ref": {
+      "type": "string",
+      "pattern": "^map_projection_record:mpr-[a-f0-9]{16}$"
+    },
+    "eval_ref": {
+      "type": "string",
+      "pattern": "^map_projection_eval_result:mpe-[a-f0-9]{16}$"
+    },
+    "readiness_ref": {
+      "type": "string",
+      "pattern": "^map_projection_readiness_record:mprr-[a-f0-9]{16}$"
+    },
+    "conflict_ref": {
+      "type": "string",
+      "pattern": "^map_projection_conflict_record:mpc-[a-f0-9]{16}$"
+    },
+    "debt_ref": {
+      "type": "string",
+      "pattern": "^map_projection_debt_record:mpd-[a-f0-9]{16}$"
+    },
+    "effectiveness_ref": {
+      "type": "string",
+      "pattern": "^map_projection_effectiveness_record:mpeff-[a-f0-9]{16}$"
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

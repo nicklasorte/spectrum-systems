@@ -1,7 +1,7 @@
 # Ecosystem Map
 
 ## Purpose
-Authoritative overview of the spectrum-systems ecosystem and how repositories relate. This repository (`spectrum-systems`) is the governance/constitution layer that defines contracts, schemas, and rules every downstream repo must follow.
+Companion overview of the spectrum-systems ecosystem and how repositories relate. This repository (`spectrum-systems`) is the governance/constitution layer that defines contracts, schemas, and rules every downstream repo must follow.
 
 ## Ecosystem Repository Table
 | Repository | Role | System ID (if applicable) | Produces Contracts | Consumes Contracts | Upstream Dependencies | Downstream Consumers | Implementation Status |
@@ -56,6 +56,8 @@ spectrum-program-advisor
 
 ## Governance Note
 All repositories in this ecosystem must honor the contracts, schemas, and rules published in `spectrum-systems` before emitting or consuming artifacts. Changes to contracts originate here and propagate deterministically to downstream repos.
+
+Ownership authority note: canonical subsystem ownership, acronyms, and placeholder status are defined only in `docs/architecture/system_registry.md`.
 
 ## Cross-links
 - `SYSTEMS.md`

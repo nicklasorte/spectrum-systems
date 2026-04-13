@@ -28,6 +28,88 @@ function safeRows(rows: Array<Array<string>>): Array<Array<string>> {
   return rows.length > 0 ? rows : [['no_rows']]
 }
 
+type Serial05PanelBinding = {
+  panelId: string
+  title: string
+  sourceArtifact: string
+  owningSystem: 'RIL' | 'CDE' | 'TLC' | 'PQX' | 'FRE' | 'SEL' | 'PRG'
+  rankingPanel?: boolean
+}
+
+const SERIAL_05_PANEL_BINDINGS: Serial05PanelBinding[] = [
+  { panelId: 'trust_posture_artifact_browser', title: 'Trust posture artifact browser', sourceArtifact: 'operator_trust_closeout_artifact.json', owningSystem: 'SEL' },
+  { panelId: 'trust_posture_diff', title: 'Trust posture diff view', sourceArtifact: 'operator_trust_closeout_artifact.json', owningSystem: 'SEL' },
+  { panelId: 'capability_readiness_timeline', title: 'Capability readiness timeline', sourceArtifact: 'readiness_to_expand_validator.json', owningSystem: 'SEL' },
+  { panelId: 'capability_expansion_blockers', title: 'Capability expansion blockers', sourceArtifact: 'readiness_to_expand_validator.json', owningSystem: 'SEL' },
+  { panelId: 'improvement_recommendation', title: 'Improvement recommendation surface', sourceArtifact: 'next_action_recommendation_record.json', owningSystem: 'PRG' },
+  { panelId: 'improvement_recommendation_outcomes', title: 'Improvement recommendation outcome view', sourceArtifact: 'next_action_outcome_record.json', owningSystem: 'PRG' },
+  { panelId: 'artifact_family_health', title: 'Artifact family health', sourceArtifact: 'dashboard_publication_sync_audit.json', owningSystem: 'CDE' },
+  { panelId: 'artifact_family_health_trend', title: 'Artifact family health trend', sourceArtifact: 'dashboard_publication_sync_audit.json', owningSystem: 'CDE' },
+  { panelId: 'evidence_coverage_density', title: 'Evidence coverage density', sourceArtifact: 'readiness_to_expand_validator.json', owningSystem: 'CDE', rankingPanel: true },
+  { panelId: 'evidence_sufficiency_change', title: 'Evidence sufficiency change', sourceArtifact: 'next_action_outcome_record.json', owningSystem: 'CDE' },
+  { panelId: 'judge_calibration', title: 'Judge calibration', sourceArtifact: 'confidence_calibration_artifact.json', owningSystem: 'RIL' },
+  { panelId: 'judge_drift', title: 'Judge drift', sourceArtifact: 'cycle_comparator_03_05.json', owningSystem: 'RIL' },
+  { panelId: 'human_correction_magnitude', title: 'Human correction magnitude', sourceArtifact: 'rq_next_24_01__umbrella_1__nx_05_operator_override_capture.json', owningSystem: 'TLC', rankingPanel: true },
+  { panelId: 'correction_absorption', title: 'Correction absorption', sourceArtifact: 'next_action_outcome_record.json', owningSystem: 'TLC' },
+  { panelId: 'policy_deviation', title: 'Policy deviation', sourceArtifact: 'rq_next_24_01__umbrella_4__nx_20_governance_exception_register.json', owningSystem: 'PRG' },
+  { panelId: 'policy_change_impact', title: 'Policy change impact', sourceArtifact: 'cycle_comparator_03_05.json', owningSystem: 'PRG' },
+  { panelId: 'route_distribution', title: 'Route distribution', sourceArtifact: 'operator_trust_closeout_artifact.json', owningSystem: 'FRE' },
+  { panelId: 'quality_vs_cost', title: 'Quality vs cost', sourceArtifact: 'operator_trust_closeout_artifact.json', owningSystem: 'FRE' },
+  { panelId: 'latency_vs_quality', title: 'Latency vs quality', sourceArtifact: 'operator_trust_closeout_artifact.json', owningSystem: 'FRE' },
+  { panelId: 'retry_validation_failure', title: 'Retry and validation failure', sourceArtifact: 'serial_bundle_validator_result.json', owningSystem: 'CDE' },
+  { panelId: 'prompt_version_impact', title: 'Prompt version impact', sourceArtifact: 'rq_next_24_01__umbrella_3__nx_14_decision_backtest_harness.json', owningSystem: 'TLC' },
+  { panelId: 'context_recipe_comparison', title: 'Context recipe comparison', sourceArtifact: 'rq_next_24_01__umbrella_3__nx_15_counterfactual_recommendation_evaluator.json', owningSystem: 'TLC' },
+  { panelId: 'context_source_reliability', title: 'Context source reliability', sourceArtifact: 'rq_next_24_01__umbrella_3__nx_18_simulation_outcome_summary.json', owningSystem: 'FRE' },
+  { panelId: 'context_exclusion_rationale', title: 'Context exclusion rationale', sourceArtifact: 'rq_next_24_01__umbrella_2__nx_08_operator_action_admissibility_check.json', owningSystem: 'RIL' },
+  { panelId: 'contradiction_type', title: 'Contradiction type', sourceArtifact: 'cycle_comparator_03_05.json', owningSystem: 'FRE', rankingPanel: true },
+  { panelId: 'cross_artifact_consistency', title: 'Cross-artifact consistency', sourceArtifact: 'dashboard_publication_sync_audit.json', owningSystem: 'CDE' },
+  { panelId: 'schema_drift', title: 'Schema drift', sourceArtifact: 'dashboard_public_contract_coverage.json', owningSystem: 'CDE' },
+  { panelId: 'provenance_coverage', title: 'Provenance coverage', sourceArtifact: 'dashboard_publication_sync_audit.json', owningSystem: 'CDE' },
+  { panelId: 'lineage_coverage', title: 'Lineage coverage', sourceArtifact: 'serial_bundle_validator_result.json', owningSystem: 'CDE' },
+  { panelId: 'trace_integrity', title: 'Trace integrity', sourceArtifact: 'refresh_run_record.json', owningSystem: 'CDE' },
+  { panelId: 'openlineage_trace_correlation', title: 'Openlineage / trace correlation', sourceArtifact: 'refresh_run_record.json', owningSystem: 'CDE' },
+  { panelId: 'run_bundle_audit', title: 'Run bundle audit', sourceArtifact: 'serial_bundle_validator_result.json', owningSystem: 'CDE' },
+  { panelId: 'promotion_readiness', title: 'Promotion readiness', sourceArtifact: 'governed_promotion_discipline_gate.json', owningSystem: 'SEL' },
+  { panelId: 'promotion_failure', title: 'Promotion failure', sourceArtifact: 'governed_promotion_discipline_gate.json', owningSystem: 'SEL' },
+  { panelId: 'certification_failure', title: 'Certification failure', sourceArtifact: 'serial_bundle_validator_result.json', owningSystem: 'SEL' },
+  { panelId: 'replay_mismatch_root_cause', title: 'Replay mismatch root cause', sourceArtifact: 'rq_next_24_01__umbrella_3__nx_13_recommendation_replay_pack.json', owningSystem: 'PQX' },
+  { panelId: 'replay_stability', title: 'Replay stability', sourceArtifact: 'rq_next_24_01__umbrella_3__nx_13_recommendation_replay_pack.json', owningSystem: 'PQX' },
+  { panelId: 'non_determinism_hotspot', title: 'Non-determinism hotspot', sourceArtifact: 'drift_trend_continuity_artifact.json', owningSystem: 'PQX', rankingPanel: true },
+  { panelId: 'error_budget_burn', title: 'Error budget burn', sourceArtifact: 'error_budget_enforcement_outcome.json', owningSystem: 'FRE' },
+  { panelId: 'budget_breach_history', title: 'Budget breach history', sourceArtifact: 'error_budget_enforcement_outcome.json', owningSystem: 'FRE' },
+  { panelId: 'incident_correlation', title: 'Incident correlation', sourceArtifact: 'refresh_run_record.json', owningSystem: 'FRE' },
+  { panelId: 'alert_quality', title: 'Alert quality', sourceArtifact: 'hard_gate_status_record.json', owningSystem: 'FRE' },
+  { panelId: 'review_queue_load', title: 'Review queue load', sourceArtifact: 'recommendation_review_surface.json', owningSystem: 'RIL' },
+  { panelId: 'review_queue_routing_quality', title: 'Review queue routing quality', sourceArtifact: 'recommendation_review_surface.json', owningSystem: 'RIL' },
+  { panelId: 'review_debt', title: 'Review debt', sourceArtifact: 'recommendation_review_surface.json', owningSystem: 'RIL' },
+  { panelId: 'review_to_eval_closure', title: 'Review-to-eval closure', sourceArtifact: 'next_action_outcome_record.json', owningSystem: 'RIL' },
+  { panelId: 'hitl_override_quality', title: 'HITL override quality', sourceArtifact: 'rq_next_24_01__umbrella_1__nx_05_operator_override_capture.json', owningSystem: 'SEL' },
+  { panelId: 'human_review_reason', title: 'Human review reason', sourceArtifact: 'recommendation_review_surface.json', owningSystem: 'RIL' },
+  { panelId: 'decision_log_integrity', title: 'Decision-log integrity', sourceArtifact: 'judgment_application_artifact.json', owningSystem: 'RIL' },
+  { panelId: 'decision_alternative', title: 'Decision alternative', sourceArtifact: 'judgment_application_artifact.json', owningSystem: 'RIL' },
+  { panelId: 'decision_fragility', title: 'Decision fragility', sourceArtifact: 'rq_next_24_01__umbrella_3__nx_15_counterfactual_recommendation_evaluator.json', owningSystem: 'RIL', rankingPanel: true },
+  { panelId: 'counterfactual_study_index', title: 'Counterfactual study index', sourceArtifact: 'rq_next_24_01__umbrella_3__nx_15_counterfactual_recommendation_evaluator.json', owningSystem: 'RIL' },
+  { panelId: 'route_canary', title: 'Route canary', sourceArtifact: 'rq_next_24_01__umbrella_4__nx_23_controlled_expansion_canary_gate.json', owningSystem: 'FRE' },
+  { panelId: 'model_tournament', title: 'Model tournament', sourceArtifact: 'rq_next_24_01__umbrella_3__nx_18_simulation_outcome_summary.json', owningSystem: 'FRE' },
+  { panelId: 'slice_severity', title: 'Slice severity', sourceArtifact: 'readiness_to_expand_validator.json', owningSystem: 'PRG', rankingPanel: true },
+  { panelId: 'missing_eval_slice', title: 'Missing eval slice', sourceArtifact: 'next_action_outcome_record.json', owningSystem: 'PRG' },
+  { panelId: 'blocking_bottleneck', title: 'Blocking bottleneck', sourceArtifact: 'current_bottleneck_record.json', owningSystem: 'PRG', rankingPanel: true },
+  { panelId: 'roadmap_feed', title: 'Roadmap feed', sourceArtifact: 'canonical_roadmap_state_artifact.json', owningSystem: 'PRG' },
+  { panelId: 'control_vs_roadmap_split', title: 'Control vs roadmap split', sourceArtifact: 'canonical_roadmap_state_artifact.json', owningSystem: 'PRG' },
+  { panelId: 'human_review_consumption', title: 'Human review consumption', sourceArtifact: 'recommendation_review_surface.json', owningSystem: 'RIL' },
+  { panelId: 'quality_sli', title: 'Quality SLI', sourceArtifact: 'dashboard_freshness_status.json', owningSystem: 'CDE' },
+  { panelId: 'reliability_sli', title: 'Reliability SLI', sourceArtifact: 'refresh_run_record.json', owningSystem: 'CDE' },
+  { panelId: 'capacity_cost_sli', title: 'Capacity / cost SLI', sourceArtifact: 'error_budget_enforcement_outcome.json', owningSystem: 'CDE' },
+  { panelId: 'time_to_insight', title: 'Time-to-insight', sourceArtifact: 'operator_trust_closeout_artifact.json', owningSystem: 'TLC' },
+  { panelId: 'link_integrity', title: 'Link integrity', sourceArtifact: 'dashboard_publication_manifest.json', owningSystem: 'CDE' },
+  { panelId: 'dashboard_self_health', title: 'Dashboard self-health', sourceArtifact: 'dashboard_public_contract_coverage.json', owningSystem: 'CDE' },
+  { panelId: 'operator_session_path', title: 'Operator session path', sourceArtifact: 'operator_surface_snapshot_export.json', owningSystem: 'TLC' },
+  { panelId: 'cognitive_load', title: 'Cognitive load', sourceArtifact: 'operator_surface_snapshot_export.json', owningSystem: 'TLC' },
+  { panelId: 'panel_materiality_ranking', title: 'Panel materiality ranking', sourceArtifact: 'dashboard_publication_sync_audit.json', owningSystem: 'PRG', rankingPanel: true },
+  { panelId: 'panel_retirement_candidate', title: 'Panel retirement candidate', sourceArtifact: 'dashboard_public_contract_coverage.json', owningSystem: 'PRG', rankingPanel: true },
+  { panelId: 'certification_gate_reinforcement', title: 'Certification gate reinforcement', sourceArtifact: 'governed_promotion_discipline_gate.json', owningSystem: 'SEL' }
+]
+
 export function compileDashboardReadModel(publication: DashboardPublication): DashboardPanelSurface[] {
   if (PANEL_CAPABILITY_MAP.some((capability) => capability.decision_authority !== 'read_only')) {
     return [blocked('dashboard_read_model', 'Capability map violated read-only contract.')]
@@ -555,6 +637,35 @@ export function compileDashboardReadModel(publication: DashboardPublication): Da
     ]
   })
 
+  for (const panel of SERIAL_05_PANEL_BINDINGS) {
+    const source = artifactRecord(publication, panel.sourceArtifact)
+    if (!source?.exists || !source.valid) {
+      panels.push(blocked(panel.panelId, `${panel.title} blocked: governed source artifact missing/invalid; explicit_uncertainty.`))
+      continue
+    }
+
+    const materialityScore = Number((source.data as { materiality_score?: number; severity?: number } | undefined)?.materiality_score
+      ?? (source.data as { materiality_score?: number; severity?: number } | undefined)?.severity
+      ?? 0)
+
+    if (panel.rankingPanel && materialityScore <= 0) {
+      panels.push(blocked(panel.panelId, `${panel.title} abstains: insufficient governed materiality evidence.`))
+      continue
+    }
+
+    panels.push({
+      panelId: panel.panelId,
+      title: panel.title,
+      status: 'renderable',
+      summary: `Observational and read-only from ${panel.sourceArtifact} (${panel.owningSystem}) with drill-down and explicit uncertainty.`,
+      rows: safeRows([
+        ['source_artifact', panel.sourceArtifact],
+        ['verification_state', String((source.data as { verification_state?: string } | undefined)?.verification_state ?? 'unknown')],
+        ['materiality_score', String(materialityScore)],
+        ['read_only', 'true']
+      ])
+    })
+  }
 
   return panels
 }

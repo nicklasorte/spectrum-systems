@@ -34,17 +34,17 @@ In practice, this means:
 
 ## System Components
 
-Canonical ownership is defined in `docs/architecture/system_registry.md`.
+Canonical system names, acronyms, ownership, and placeholder status are defined only in `docs/architecture/system_registry.md`.
 
-| System | Role in the runtime | Owns | Must not do |
-| --- | --- | --- | --- |
-| **RIL** (Review Integration Layer) | Interprets review outputs into deterministic integration artifacts | review interpretation and projection | enforce policy, execute work, make closure decisions |
-| **CDE** (Closure Decision Engine) | Issues authoritative closure-state decisions | closure decisions and bounded next-step classification | execute work, enforce side effects, generate repairs |
-| **TLC** (Top Level Conductor) | Orchestrates invocation order and routing across systems | orchestration and subsystem routing | execute work internals, replace CDE or FRE authority |
-| **PQX** (Prompt Queue Execution) | Executes bounded authorized work slices | execution and execution state transitions | adjudicate policy, generate repairs, issue closure decisions |
-| **FRE** (Failure Recovery Engine) | Diagnoses failures and emits repair plans | failure diagnosis and repair planning | execute repairs directly, enforce policy, issue closure decisions |
-| **SEL** (System Enforcement Layer) | Applies hard gates and fail-closed controls | enforcement and promotion guarding | reinterpret review semantics, generate repairs, orchestrate routing |
-| **PRG** (Program Governance) | Governs objectives, roadmap alignment, and program drift | program governance and roadmap alignment | execute runtime work, enforce runtime blocks, reinterpret review packets |
+This README provides a runtime summary only:
+- admission and execution boundary control
+- orchestration and bounded execution
+- trust/policy gating, review interpretation, and review-loop execution
+- failure diagnosis and enforcement
+- roadmap/program governance and closure decisioning
+- placeholder seams for lifecycle, transfer, shared data, and source authority surfaces
+
+For complete and current subsystem definitions (including placeholder status and reserved acronyms), defer to the canonical registry.
 
 ## Execution Model
 
@@ -133,7 +133,7 @@ Spectrum Systems enables:
 
 ## Current State
 
-Current architecture centers on a governed runtime with explicit role ownership for **RIL, CDE, TLC, PQX, FRE, SEL, and PRG**, with control enforced through artifacts, schemas, and validation surfaces in this repository.
+Current architecture centers on a governed runtime with explicit subsystem ownership defined in the canonical registry, with control enforced through artifacts, schemas, and validation surfaces in this repository.
 
 ## How to Use
 

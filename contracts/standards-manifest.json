@@ -2970,6 +2970,97 @@
       "notes": "Deterministic remediation readiness status including TPA bypass drift observability fields and blocking reason wiring."
     },
     {
+      "artifact_type": "map_projection_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/map_projection_bundle.json",
+      "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
+    },
+    {
+      "artifact_type": "map_projection_conflict_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/map_projection_conflict_record.json",
+      "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
+    },
+    {
+      "artifact_type": "map_projection_debt_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/map_projection_debt_record.json",
+      "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
+    },
+    {
+      "artifact_type": "map_projection_effectiveness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/map_projection_effectiveness_record.json",
+      "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
+    },
+    {
+      "artifact_type": "map_projection_eval_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/map_projection_eval_result.json",
+      "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
+    },
+    {
+      "artifact_type": "map_projection_readiness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/map_projection_readiness_record.json",
+      "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
+    },
+    {
+      "artifact_type": "map_projection_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/map_projection_record.json",
+      "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
+    },
+    {
       "artifact_type": "meeting_agenda_contract",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3041,6 +3132,32 @@
       "last_updated_in": "1.3.52",
       "example_path": "contracts/examples/missing_required_eval_enforcement.json",
       "notes": "Fail-closed enforcement output for missing or indeterminate required eval coverage."
+    },
+    {
+      "artifact_type": "mnt_maintain_cycle_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/mnt_maintain_cycle_report.json",
+      "notes": "MNT-10 governed maintain-stage report artifact with drift signals and eval auto-expansion output."
+    },
+    {
+      "artifact_type": "mnt_trust_integration_bundle",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/mnt_trust_integration_bundle.json",
+      "notes": "MNT-03/MNT-12 unified cross-system certification bundle input for platform promotion hard gate."
     },
     {
       "artifact_type": "multi_cycle_execution_report",
