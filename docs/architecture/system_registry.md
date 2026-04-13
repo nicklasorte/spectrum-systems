@@ -118,6 +118,12 @@ CDE is the only system allowed to emit:
 - **RCA** — evidence-grounded root-cause attribution and failure graph artifacts
 - **QOS** — queue/backpressure/retry-budget load governance signaling
 - **SIMX** — external simulation provenance and replay integrity hardening
+- **JDX** — first-class judgment artifact governance between interpreted evidence and control decisions
+- **RUX** — reuse governance recording, boundary enforcement, and freshness/scope validation
+- **XPL** — artifact-card explainability signal governance for limitations and risk posture
+- **REL** — release engineering governance for canary, freeze, and rollback semantics
+- **DAG** — dependency graph governance for declaration integrity, cycles, and critical-path signals
+- **EXT** — external runtime governance for provenance, replay verification, and constraint enforcement
 - **CTX** — context bundle governance and preflight gate authority
 - **EVL** — required evaluation registry and evaluation gate authority
 - **OBS** — observability contract and completeness authority
@@ -1303,6 +1309,155 @@ flowchart LR
   - mutate external systems directly
   - trust external results without provenance validation
 
+
+### JDX
+- **acronym:** `JDX`
+- **full_name:** Judgment Layer
+- **role:** First-class governed judgment artifacts between interpreted evidence and downstream control decisions.
+- **owns:**
+  - judgment_record
+  - judgment_policy_registry_artifacts
+  - judgment_eval_result_artifacts
+  - judgment_application_record_lineage
+  - judgment_bundles
+- **consumes:**
+  - interpreted_evidence_artifacts
+  - precedent_artifacts
+  - policy_lifecycle_artifacts
+  - calibration_artifacts
+  - evaluation_results
+  - replay_provenance_references
+- **produces:**
+  - jdx_judgment_record
+  - jdx_judgment_policy
+  - jdx_judgment_eval_result
+  - jdx_judgment_application_record
+  - jdx_judgment_bundle
+- **must_not_do:**
+  - replace CDE closure authority
+  - replace TPA policy authority
+  - execute work
+  - enforce actions
+  - silently promote precedent/simulation output into authority
+
+### RUX
+- **acronym:** `RUX`
+- **full_name:** Reuse Governance Layer
+- **role:** Governed reuse recording, boundary validation, and freshness/scope enforcement.
+- **owns:**
+  - reuse_record_artifacts
+  - reuse_boundary_validation
+  - reuse_freshness_scope_checks
+  - reuse_bundles
+- **consumes:**
+  - governed_reusable_assets
+  - active_set_supersession_state
+  - lineage_provenance_refs
+- **produces:**
+  - rux_reuse_record
+  - rux_boundary_validation_result
+  - rux_freshness_scope_report
+  - rux_reuse_bundle
+- **must_not_do:**
+  - invent authority
+  - auto_reuse_without_recorded_justification
+  - bypass_active_set_supersession_rules
+
+### XPL
+- **acronym:** `XPL`
+- **full_name:** Explainability Signal Layer
+- **role:** Artifact-card explainability signals for intended use, limitations, eval status, and risk posture.
+- **owns:**
+  - artifact_card_records
+  - generator_limitation_records
+  - evaluation_status_explainability_signals
+  - explainability_signal_bundles
+- **consumes:**
+  - generator_metadata
+  - evaluation_status
+  - known_risk_artifacts
+  - artifact_family_metadata
+  - provenance_refs
+- **produces:**
+  - xpl_artifact_card
+  - xpl_generator_risk_record
+  - xpl_explainability_signal_bundle
+- **must_not_do:**
+  - replace DEX decision explanation authority
+  - invent authority
+  - hide uncertainty_or_limitations
+
+### REL
+- **acronym:** `REL`
+- **full_name:** Release Engineering Layer
+- **role:** Governed release/canary/freeze semantics for schema/prompt/pipeline changes.
+- **owns:**
+  - release_records
+  - canary_metrics_breakdowns
+  - change_freeze_gates
+  - release_bundles
+- **consumes:**
+  - canary_results
+  - slo_error_budget_status
+  - policy_lifecycle_status
+  - certification_artifacts
+  - compatibility_checks
+- **produces:**
+  - rel_release_record
+  - rel_canary_metrics_breakdown
+  - rel_change_freeze_record
+  - rel_release_bundle
+- **must_not_do:**
+  - replace TPA_or_CDE_authority
+  - promote_change_without_governed_evidence
+  - bypass_budget_exhaustion_gates
+
+### DAG
+- **acronym:** `DAG`
+- **full_name:** Dependency Graph Governance Layer
+- **role:** First-class dependency declaration governance, cycle/deadlock detection, and critical-path signals.
+- **owns:**
+  - dependency_graph_artifacts
+  - cycle_deadlock_reports
+  - critical_path_scheduler_signals
+  - dependency_bundles
+- **consumes:**
+  - roadmap_execution_dependency_declarations
+  - queue_critical_path_evidence
+  - chain_metadata
+- **produces:**
+  - dag_dependency_graph_record
+  - dag_cycle_deadlock_report
+  - dag_critical_path_signal
+  - dag_dependency_bundle
+- **must_not_do:**
+  - execute work
+  - replace TLC_RDX_PQX
+  - silently infer_hidden_dependencies_without_surface
+
+### EXT
+- **acronym:** `EXT`
+- **full_name:** External Runtime Governance Layer
+- **role:** Governance for external runtimes and simulation-heavy workflows with replayable provenance and constraints.
+- **owns:**
+  - external_runtime_provenance_contracts
+  - external_replay_verification_bundles
+  - runtime_constraint_enforcement_artifacts
+  - external_runtime_bundles
+- **consumes:**
+  - external_runtime_version_environment_metadata
+  - external_input_output_payloads
+  - resource_time_limits
+  - simulation_provenance_refs
+- **produces:**
+  - ext_runtime_provenance_record
+  - ext_replay_verification_bundle
+  - ext_constraint_enforcement_record
+  - ext_runtime_governance_bundle
+- **must_not_do:**
+  - replace SIM_or_SIMX
+  - mutate_unmanaged_external_systems_directly
+  - trust_unproven_external_output_without_provenance_validation
 
 ### CTX
 - **acronym:** `CTX`
