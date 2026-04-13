@@ -76,6 +76,7 @@ jobs:
 
       - name: Run governed preflight BLOCK autorepair
         if: steps.preflight.outputs.preflight_exit == '2'
+        id: autorepair
         run: |
           set -euo pipefail
           python scripts/run_github_pr_autofix_contract_preflight.py \
@@ -86,6 +87,34 @@ jobs:
             --pqx-wrapper-path outputs/contract_preflight/preflight_pqx_task_wrapper.json \
             --authority-evidence-ref artifacts/pqx_runs/preflight.pqx_slice_execution_record.json \
             --same-repo-write-allowed
+
+      - name: Publish preflight BLOCK bundle summary
+        if: always()
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          out = Path("outputs/contract_preflight")
+          summary = Path(__import__("os").environ["GITHUB_STEP_SUMMARY"])
+          lines = ["## Governed contract preflight outcome", ""]
+          result = out / "contract_preflight_result_artifact.json"
+          if result.exists():
+              payload = json.loads(result.read_text(encoding="utf-8"))
+              decision = payload.get("control_signal", {}).get("strategy_gate_decision", "UNKNOWN")
+              lines.append(f"- strategy_gate_decision: `{decision}`")
+          for name in [
+              "contract_preflight_report.md",
+              "preflight_block_diagnosis_record.json",
+              "preflight_repair_plan_record.json",
+              "failure_repair_candidate_artifact.json",
+              "preflight_repair_result_record.json",
+              "preflight_human_escalation_record.json",
+          ]:
+              p = out / name
+              lines.append(f"- {name}: {'present' if p.exists() else 'missing'}")
+          summary.write_text("\n".join(lines) + "\n", encoding="utf-8")
+          PY
 
       - name: Upload preflight autorepair artifacts
         if: always()

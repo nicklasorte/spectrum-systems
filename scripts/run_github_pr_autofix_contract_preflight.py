@@ -27,10 +27,11 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
+    output_dir = Path(args.output_dir)
     try:
         result = run_preflight_block_autorepair(
             repo_root=Path(__file__).resolve().parents[1],
-            output_dir=Path(args.output_dir),
+            output_dir=output_dir,
             base_ref=args.base_ref,
             head_ref=args.head_ref,
             execution_context=args.execution_context,
@@ -39,7 +40,14 @@ def main() -> int:
             same_repo_write_allowed=bool(args.same_repo_write_allowed),
         )
     except ContractPreflightAutofixError as exc:
-        print(json.dumps({"status": "blocked", "error": str(exc)}))
+        bundle_paths = {
+            "diagnosis": str(output_dir / "preflight_block_diagnosis_record.json"),
+            "repair_plan": str(output_dir / "preflight_repair_plan_record.json"),
+            "repair_candidate": str(output_dir / "failure_repair_candidate_artifact.json"),
+            "rerun_decision": str(output_dir / "preflight_repair_result_record.json"),
+            "escalation": str(output_dir / "preflight_human_escalation_record.json"),
+        }
+        print(json.dumps({"status": "blocked", "error": str(exc), "artifact_paths": bundle_paths}))
         return 2
     print(json.dumps({"status": "passed", "result": result}))
     return 0

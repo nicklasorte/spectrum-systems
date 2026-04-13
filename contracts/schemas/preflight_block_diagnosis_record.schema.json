@@ -9,8 +9,9 @@
     "schema_version",
     "diagnosis_id",
     "strategy_gate_decision",
-    "repair_category",
-    "reason_codes"
+    "failure_class",
+    "reason_codes",
+    "root_cause_summary"
   ],
   "properties": {
     "artifact_type": {
@@ -34,8 +35,19 @@
         "BLOCK"
       ]
     },
-    "repair_category": {
-      "type": "string"
+    "failure_class": {
+      "type": "string",
+      "enum": [
+        "missing_required_artifact",
+        "contract_mismatch",
+        "schema_violation",
+        "lineage_missing",
+        "authority_evidence_missing",
+        "invalid_wrapper",
+        "non_repairable_policy_violation",
+        "internal_preflight_error",
+        "unknown_preflight_failure"
+      ]
     },
     "reason_codes": {
       "type": "array",
@@ -43,6 +55,10 @@
         "type": "string"
       },
       "minItems": 1
+    },
+    "root_cause_summary": {
+      "type": "string",
+      "minLength": 1
     }
   }
 }

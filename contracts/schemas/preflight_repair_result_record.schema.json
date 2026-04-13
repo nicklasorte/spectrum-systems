@@ -11,7 +11,11 @@
     "attempt_id",
     "rerun_preflight_exit_code",
     "rerun_strategy_gate_decision",
-    "success"
+    "success",
+    "rerun_allowed",
+    "rerun_requires",
+    "escalation_required",
+    "next_invocation_surface"
   ],
   "properties": {
     "artifact_type": {
@@ -43,6 +47,22 @@
     },
     "success": {
       "type": "boolean"
+    },
+    "rerun_allowed": {
+      "type": "boolean"
+    },
+    "rerun_requires": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "escalation_required": {
+      "type": "boolean"
+    },
+    "next_invocation_surface": {
+      "type": "string",
+      "minLength": 1
     }
   }
 }

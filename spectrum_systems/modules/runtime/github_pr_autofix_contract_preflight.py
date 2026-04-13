@@ -17,15 +17,15 @@ class ContractPreflightAutofixError(RuntimeError):
 
 
 KNOWN_REPAIR_CATEGORIES = {
-    "missing_required_surface_mapping",
-    "stale_test_fixture_contract",
-    "stale_targeted_test_expectation",
-    "missing_preflight_wrapper_or_authority_linkage",
-    "trust_spine_input_expectation_mismatch",
-    "control_surface_gap_mapping_missing",
-    "pr_event_preflight_normalization_bug",
-    "authority_evidence_ref_resolution_mismatch",
-    "schema_example_manifest_drift",
+    "missing_required_artifact",
+    "contract_mismatch",
+    "schema_violation",
+    "lineage_missing",
+    "authority_evidence_missing",
+    "invalid_wrapper",
+    "non_repairable_policy_violation",
+    "internal_preflight_error",
+    "unknown_preflight_failure",
 }
 
 
@@ -59,40 +59,52 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
                 continue
             path = str(failure.get("path") or "")
             if path in {"contracts/examples/system_registry_artifact.json", "contracts/standards-manifest.json"}:
-                return "schema_example_manifest_drift", ["schema_example_manifest_drift"]
-        return "schema_example_manifest_drift", ["schema_example_failure"]
+                return "schema_violation", ["SCHEMA_EXAMPLE_MANIFEST_DRIFT"]
+        return "schema_violation", ["SCHEMA_EXAMPLE_FAILURE"]
 
     if report.get("missing_required_surface"):
-        return "missing_required_surface_mapping", ["missing_required_surface"]
+        return "contract_mismatch", ["MISSING_REQUIRED_SURFACE_MAPPING"]
 
     pqx_ctx = report.get("changed_path_detection", {}).get("pqx_required_context_enforcement")
     if isinstance(pqx_ctx, dict) and pqx_ctx.get("status") == "block":
         blocking_reasons = [str(item) for item in pqx_ctx.get("blocking_reasons", []) if isinstance(item, str)]
         if any("AUTHORITY_EVIDENCE" in reason for reason in blocking_reasons):
-            return "authority_evidence_ref_resolution_mismatch", ["authority_evidence_ref_resolution_mismatch"]
-        return "missing_preflight_wrapper_or_authority_linkage", ["pqx_required_context_enforcement_block"]
+            return "authority_evidence_missing", ["AUTHORITY_EVIDENCE_REF_RESOLUTION_MISMATCH"]
+        if any("WRAPPER" in reason for reason in blocking_reasons):
+            return "invalid_wrapper", ["PQX_REQUIRED_CONTEXT_WRAPPER_BLOCK"]
+        return "missing_required_artifact", ["PQX_REQUIRED_CONTEXT_ENFORCEMENT_BLOCK"]
 
     mode = str((report.get("changed_path_detection") or {}).get("changed_path_detection_mode") or "")
     if mode == "degraded_full_governed_scan":
-        return "pr_event_preflight_normalization_bug", ["pr_event_preflight_normalization_bug"]
+        return "internal_preflight_error", ["PR_EVENT_PREFLIGHT_NORMALIZATION_BUG"]
 
     if report.get("control_surface_gap_blocking") is True:
-        return "control_surface_gap_mapping_missing", ["control_surface_gap_blocking"]
+        return "lineage_missing", ["CONTROL_SURFACE_GAP_BLOCKING"]
 
     if report.get("trust_spine_evidence_cohesion"):
-        return "trust_spine_input_expectation_mismatch", ["trust_spine_evidence_cohesion_present"]
+        return "non_repairable_policy_violation", ["TRUST_SPINE_EVIDENCE_COHESION_PRESENT"]
 
     producer_failures = report.get("producer_failures") or []
     fixture_hits = [entry for entry in producer_failures if isinstance(entry, dict) and "fixtures" in str(entry.get("path") or "")]
     if fixture_hits:
-        return "stale_test_fixture_contract", ["fixture_contract_failure"]
+        return "contract_mismatch", ["FIXTURE_CONTRACT_FAILURE"]
 
     consumer_failures = report.get("consumer_failures") or []
     if consumer_failures:
-        reasons.extend(["consumer_failures_present"])
-        return "stale_targeted_test_expectation", reasons
+        reasons.extend(["CONSUMER_FAILURES_PRESENT"])
+        return "contract_mismatch", reasons
 
-    return "unknown", ["unclassified_block_reason"]
+    return "unknown_preflight_failure", ["UNCLASSIFIED_BLOCK_REASON"]
+
+
+def _repair_policy(failure_class: str) -> tuple[str, bool, bool]:
+    if failure_class in {"schema_violation", "contract_mismatch", "invalid_wrapper", "authority_evidence_missing", "missing_required_artifact"}:
+        return "auto_repair_allowed", True, False
+    if failure_class in {"non_repairable_policy_violation", "lineage_missing"}:
+        return "auto_repair_forbidden", False, True
+    if failure_class in {"internal_preflight_error", "unknown_preflight_failure"}:
+        return "escalation_required", False, True
+    return "escalation_required", False, True
 
 
 def build_preflight_block_diagnosis_record(*, report: dict[str, Any], preflight_artifact: dict[str, Any]) -> dict[str, Any]:
@@ -103,32 +115,34 @@ def build_preflight_block_diagnosis_record(*, report: dict[str, Any], preflight_
         "schema_version": "1.0.0",
         "diagnosis_id": f"diag-{preflight_artifact.get('generated_at', 'unknown')}",
         "strategy_gate_decision": str(((preflight_artifact.get("control_signal") or {}).get("strategy_gate_decision")) or "BLOCK"),
-        "repair_category": category,
+        "failure_class": category,
         "reason_codes": reasons,
+        "root_cause_summary": str((preflight_artifact.get("control_signal") or {}).get("rationale") or "preflight block"),
     }
 
 
 def build_preflight_repair_plan_record(*, diagnosis_record: dict[str, Any]) -> dict[str, Any]:
-    category = diagnosis_record["repair_category"]
+    category = diagnosis_record["failure_class"]
     if category not in KNOWN_REPAIR_CATEGORIES:
         raise ContractPreflightAutofixError("unknown_repair_category")
+    eligibility_decision, auto_repair_allowed, escalation_required = _repair_policy(category)
 
     allowed_paths = {
-        "missing_preflight_wrapper_or_authority_linkage": [
+        "invalid_wrapper": [
             "outputs/contract_preflight/preflight_pqx_task_wrapper.json",
             "outputs/contract_preflight/preflight_changed_path_resolution.json",
         ],
-        "missing_required_surface_mapping": ["docs/governance/preflight_required_surface_test_overrides.json"],
-        "stale_test_fixture_contract": ["tests/fixtures"],
-        "stale_targeted_test_expectation": ["tests/"],
-        "trust_spine_input_expectation_mismatch": ["tests/", "outputs/contract_preflight"],
-        "control_surface_gap_mapping_missing": ["spectrum_systems/modules/runtime/control_surface_gap_to_pqx.py", "tests/test_control_surface_gap_to_pqx.py"],
-        "pr_event_preflight_normalization_bug": ["scripts/run_contract_preflight.py", "tests/test_contract_preflight.py"],
-        "authority_evidence_ref_resolution_mismatch": [
+        "authority_evidence_missing": [
             "outputs/contract_preflight/preflight_pqx_task_wrapper.json",
             "outputs/contract_preflight/preflight_changed_path_resolution.json",
         ],
-        "schema_example_manifest_drift": ["contracts/examples/system_registry_artifact.json"],
+        "contract_mismatch": ["tests/", "contracts/examples", "docs/governance/preflight_required_surface_test_overrides.json"],
+        "schema_violation": ["contracts/examples", "contracts/schemas"],
+        "missing_required_artifact": ["outputs/contract_preflight", "contracts/examples"],
+        "lineage_missing": ["outputs/contract_preflight", "scripts/run_contract_preflight.py"],
+        "non_repairable_policy_violation": ["docs/reviews"],
+        "internal_preflight_error": ["scripts/run_contract_preflight.py"],
+        "unknown_preflight_failure": ["docs/reviews"],
     }[category]
 
     return {
@@ -136,15 +150,84 @@ def build_preflight_repair_plan_record(*, diagnosis_record: dict[str, Any]) -> d
         "artifact_version": "1.0.0",
         "schema_version": "1.0.0",
         "plan_id": f"plan-{diagnosis_record['diagnosis_id']}",
-        "repair_category": category,
+        "failure_class": category,
+        "eligibility_decision": eligibility_decision,
         "allowed_paths": allowed_paths,
-        "apply_automatically": category in {
-            "missing_preflight_wrapper_or_authority_linkage",
-            "authority_evidence_ref_resolution_mismatch",
-            "missing_required_surface_mapping",
-            "schema_example_manifest_drift",
-        },
+        "apply_automatically": auto_repair_allowed,
+        "escalation_required": escalation_required,
+        "max_retry_attempts": 2,
+        "rerun_prerequisites": ["preflight_repair_validation_record"],
     }
+
+
+def build_failure_repair_candidate_artifact(*, diagnosis_record: dict[str, Any], plan_record: dict[str, Any]) -> dict[str, Any]:
+    failure_class = diagnosis_record["failure_class"]
+    return {
+        "artifact_type": "failure_repair_candidate_artifact",
+        "schema_version": "1.0.0",
+        "failure_id": diagnosis_record["diagnosis_id"],
+        "source_run_ref": "contract_preflight_report:latest",
+        "source_test_refs": ["tests/test_contract_preflight.py"],
+        "failure_class": failure_class,
+        "safe_to_repair": bool(plan_record.get("apply_automatically", False)),
+        "bounded_scope": list(plan_record.get("allowed_paths", [])),
+        "proposed_repair_ref": f"preflight_repair_plan_record:{plan_record['plan_id']}",
+        "trace_refs": ["contract_preflight_result_artifact:latest"],
+        "reason_codes": list(diagnosis_record.get("reason_codes", [])),
+        "retry_budget": int(plan_record.get("max_retry_attempts", 0)),
+        "rerun_prerequisites": list(plan_record.get("rerun_prerequisites", [])),
+    }
+
+
+def build_preflight_repair_result_record(*, attempt_id: str, plan_record: dict[str, Any], rerun_exit: int, rerun_decision: str) -> dict[str, Any]:
+    rerun_allowed = bool(plan_record.get("apply_automatically", False))
+    escalation_required = bool(plan_record.get("escalation_required", not rerun_allowed))
+    return {
+        "artifact_type": "preflight_repair_result_record",
+        "artifact_version": "1.0.0",
+        "schema_version": "1.0.0",
+        "result_id": f"result-{attempt_id}",
+        "attempt_id": attempt_id,
+        "rerun_preflight_exit_code": rerun_exit,
+        "rerun_strategy_gate_decision": rerun_decision,
+        "success": rerun_exit == 0 and rerun_decision == "ALLOW",
+        "rerun_allowed": rerun_allowed,
+        "rerun_requires": list(plan_record.get("rerun_prerequisites", [])),
+        "escalation_required": escalation_required,
+        "next_invocation_surface": "scripts/run_github_pr_autofix_contract_preflight.py" if rerun_allowed else "operator_escalation_queue",
+    }
+
+
+def emit_preflight_block_bundle(*, report: dict[str, Any], preflight_artifact: dict[str, Any], output_dir: Path) -> dict[str, Any]:
+    diagnosis = build_preflight_block_diagnosis_record(report=report, preflight_artifact=preflight_artifact)
+    plan = build_preflight_repair_plan_record(diagnosis_record=diagnosis)
+    candidate = build_failure_repair_candidate_artifact(diagnosis_record=diagnosis, plan_record=plan)
+    result = build_preflight_repair_result_record(
+        attempt_id=f"attempt-{plan['plan_id']}",
+        plan_record=plan,
+        rerun_exit=2,
+        rerun_decision=str((preflight_artifact.get("control_signal") or {}).get("strategy_gate_decision") or "BLOCK"),
+    )
+    validate_artifact(diagnosis, "preflight_block_diagnosis_record")
+    validate_artifact(plan, "preflight_repair_plan_record")
+    validate_artifact(candidate, "failure_repair_candidate_artifact")
+    validate_artifact(result, "preflight_repair_result_record")
+    _write_json(output_dir / "preflight_block_diagnosis_record.json", diagnosis)
+    _write_json(output_dir / "preflight_repair_plan_record.json", plan)
+    _write_json(output_dir / "failure_repair_candidate_artifact.json", candidate)
+    _write_json(output_dir / "preflight_repair_result_record.json", result)
+    if bool(plan.get("escalation_required", False)):
+        escalation = {
+            "artifact_type": "preflight_human_escalation_record",
+            "schema_version": "1.0.0",
+            "diagnosis_id": diagnosis["diagnosis_id"],
+            "failure_class": diagnosis["failure_class"],
+            "reason_codes": diagnosis["reason_codes"],
+            "escalation_reason": "auto_repair_forbidden_or_unknown",
+            "required_actions": ["manual_review_required", "bounded_followup_plan_required"],
+        }
+        _write_json(output_dir / "preflight_human_escalation_record.json", escalation)
+    return {"diagnosis": diagnosis, "plan": plan, "candidate": candidate, "result": result}
 
 
 def _repair_required_surface_mapping(*, repo_root: Path, report: dict[str, Any]) -> list[str]:
@@ -222,11 +305,9 @@ def run_preflight_block_autorepair(
         raise ContractPreflightAutofixError("preflight_not_blocked")
 
     report = _read_json(output_dir / "contract_preflight_report.json")
-    diagnosis = build_preflight_block_diagnosis_record(report=report, preflight_artifact=result_artifact)
-    if diagnosis["repair_category"] == "unknown":
-        raise ContractPreflightAutofixError("unknown_block_reason")
-
-    plan = build_preflight_repair_plan_record(diagnosis_record=diagnosis)
+    bundle = emit_preflight_block_bundle(report=report, preflight_artifact=result_artifact, output_dir=output_dir)
+    diagnosis = bundle["diagnosis"]
+    plan = bundle["plan"]
     attempt = {
         "artifact_type": "preflight_repair_attempt_record",
         "artifact_version": "1.0.0",
@@ -238,8 +319,8 @@ def run_preflight_block_autorepair(
     }
 
     if plan["apply_automatically"]:
-        category = plan["repair_category"]
-        if category in {"missing_preflight_wrapper_or_authority_linkage", "authority_evidence_ref_resolution_mismatch"}:
+        category = plan["failure_class"]
+        if category in {"invalid_wrapper", "authority_evidence_missing", "missing_required_artifact"}:
             cmd = [
                 sys.executable,
                 "scripts/build_preflight_pqx_wrapper.py",
@@ -254,15 +335,27 @@ def run_preflight_block_autorepair(
             if built.returncode != 0:
                 raise ContractPreflightAutofixError("wrapper_regeneration_failed")
             attempt["mutated_paths"] = [str(pqx_wrapper_path)]
-        elif category == "missing_required_surface_mapping":
+        elif category == "contract_mismatch":
             attempt["mutated_paths"] = _repair_required_surface_mapping(repo_root=repo_root, report=report)
-        elif category == "schema_example_manifest_drift":
+        elif category == "schema_violation":
             attempt["mutated_paths"] = _repair_system_registry_reserved_entries(repo_root=repo_root)
         else:
             raise ContractPreflightAutofixError("unsupported_auto_repair_category")
         if len(attempt["mutated_paths"]) > 5:
             raise ContractPreflightAutofixError("proposed_file_scope_too_broad")
         attempt["attempt_status"] = "applied"
+    else:
+        result = build_preflight_repair_result_record(
+            attempt_id=attempt["attempt_id"],
+            plan_record=plan,
+            rerun_exit=2,
+            rerun_decision=str(((result_artifact.get("control_signal") or {}).get("strategy_gate_decision")) or "BLOCK"),
+        )
+        validate_artifact(attempt, "preflight_repair_attempt_record")
+        validate_artifact(result, "preflight_repair_result_record")
+        _write_json(output_dir / "preflight_repair_attempt_record.json", attempt)
+        _write_json(output_dir / "preflight_repair_result_record.json", result)
+        raise ContractPreflightAutofixError("auto_repair_forbidden_escalation_required")
 
     validation_cmd = [sys.executable, "-m", "pytest", "-q", "tests/test_contract_preflight.py"]
     validation = command_runner(validation_cmd, repo_root)
@@ -297,19 +390,13 @@ def run_preflight_block_autorepair(
     rerun = command_runner(rerun_cmd, repo_root)
     rerun_artifact = _read_json(output_dir / "contract_preflight_result_artifact.json")
     rerun_decision = str(((rerun_artifact.get("control_signal") or {}).get("strategy_gate_decision")) or "BLOCK")
-    result = {
-        "artifact_type": "preflight_repair_result_record",
-        "artifact_version": "1.0.0",
-        "schema_version": "1.0.0",
-        "result_id": f"result-{attempt['attempt_id']}",
-        "attempt_id": attempt["attempt_id"],
-        "rerun_preflight_exit_code": rerun.returncode,
-        "rerun_strategy_gate_decision": rerun_decision,
-        "success": rerun.returncode == 0 and rerun_decision == "ALLOW",
-    }
+    result = build_preflight_repair_result_record(
+        attempt_id=attempt["attempt_id"],
+        plan_record=plan,
+        rerun_exit=rerun.returncode,
+        rerun_decision=rerun_decision,
+    )
 
-    validate_artifact(diagnosis, "preflight_block_diagnosis_record")
-    validate_artifact(plan, "preflight_repair_plan_record")
     validate_artifact(attempt, "preflight_repair_attempt_record")
     validate_artifact(validation_record, "preflight_repair_validation_record")
     validate_artifact(result, "preflight_repair_result_record")

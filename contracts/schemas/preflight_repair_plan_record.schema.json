@@ -8,9 +8,13 @@
     "artifact_version",
     "schema_version",
     "plan_id",
-    "repair_category",
+    "failure_class",
+    "eligibility_decision",
     "allowed_paths",
-    "apply_automatically"
+    "apply_automatically",
+    "escalation_required",
+    "max_retry_attempts",
+    "rerun_prerequisites"
   ],
   "properties": {
     "artifact_type": {
@@ -25,8 +29,16 @@
     "plan_id": {
       "type": "string"
     },
-    "repair_category": {
+    "failure_class": {
       "type": "string"
+    },
+    "eligibility_decision": {
+      "type": "string",
+      "enum": [
+        "auto_repair_allowed",
+        "auto_repair_forbidden",
+        "escalation_required"
+      ]
     },
     "allowed_paths": {
       "type": "array",
@@ -37,6 +49,19 @@
     },
     "apply_automatically": {
       "type": "boolean"
+    },
+    "escalation_required": {
+      "type": "boolean"
+    },
+    "max_retry_attempts": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rerun_prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   }
 }

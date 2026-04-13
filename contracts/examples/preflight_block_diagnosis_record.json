@@ -4,8 +4,9 @@
   "schema_version": "1.0.0",
   "diagnosis_id": "diag-1",
   "strategy_gate_decision": "BLOCK",
-  "repair_category": "missing_preflight_wrapper_or_authority_linkage",
+  "failure_class": "invalid_wrapper",
   "reason_codes": [
-    "pqx_required_context_enforcement_block"
-  ]
+    "PQX_REQUIRED_CONTEXT_WRAPPER_BLOCK"
+  ],
+  "root_cause_summary": "preflight wrapper context invalid"
 }

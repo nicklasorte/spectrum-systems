@@ -1613,3 +1613,19 @@ def test_main_contract_preflight_blocks_con035_when_required_test_mapping_missin
     artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
     assert artifact["preflight_status"] == "failed"
     assert artifact["control_signal"]["strategy_gate_decision"] == "BLOCK"
+    diagnosis = json.loads((output_dir / "preflight_block_diagnosis_record.json").read_text(encoding="utf-8"))
+    plan = json.loads((output_dir / "preflight_repair_plan_record.json").read_text(encoding="utf-8"))
+    rerun = json.loads((output_dir / "preflight_repair_result_record.json").read_text(encoding="utf-8"))
+    assert diagnosis["failure_class"] in {
+        "missing_required_artifact",
+        "contract_mismatch",
+        "schema_violation",
+        "lineage_missing",
+        "authority_evidence_missing",
+        "invalid_wrapper",
+        "non_repairable_policy_violation",
+        "internal_preflight_error",
+        "unknown_preflight_failure",
+    }
+    assert "eligibility_decision" in plan
+    assert "rerun_allowed" in rerun

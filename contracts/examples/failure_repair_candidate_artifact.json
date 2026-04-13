@@ -6,7 +6,7 @@
   "source_test_refs": [
     "pytest_failure:tests/test_contracts.py::test_manifest_registry_alignment"
   ],
-  "failure_class": "contract_registration_missing",
+  "failure_class": "contract_mismatch",
   "safe_to_repair": true,
   "bounded_scope": [
     "contracts/standards-manifest.json"
@@ -14,5 +14,12 @@
   "proposed_repair_ref": "repair_prompt_artifact:tlc-example-001:bounded",
   "trace_refs": [
     "trace-tlc-example-001"
+  ],
+  "reason_codes": [
+    "CONSUMER_FAILURES_PRESENT"
+  ],
+  "retry_budget": 2,
+  "rerun_prerequisites": [
+    "preflight_repair_validation_record"
   ]
 }

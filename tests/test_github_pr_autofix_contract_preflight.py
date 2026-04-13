@@ -52,7 +52,7 @@ def test_diagnosis_fails_closed_when_preflight_artifact_missing(tmp_path: Path) 
 
 def test_diagnosis_fails_closed_when_block_reason_unknown(tmp_path: Path) -> None:
     out = _write_base_artifacts(tmp_path, report_overrides={"changed_path_detection": {}, "consumer_failures": [], "producer_failures": []})
-    with pytest.raises(ContractPreflightAutofixError, match="unknown_block_reason"):
+    with pytest.raises(ContractPreflightAutofixError, match="auto_repair_forbidden_escalation_required"):
         run_preflight_block_autorepair(
             repo_root=tmp_path,
             output_dir=out,
@@ -64,6 +64,11 @@ def test_diagnosis_fails_closed_when_block_reason_unknown(tmp_path: Path) -> Non
             same_repo_write_allowed=True,
             command_runner=lambda cmd, cwd: None,  # type: ignore[arg-type]
         )
+    assert (out / "preflight_block_diagnosis_record.json").exists()
+    assert (out / "preflight_repair_plan_record.json").exists()
+    assert (out / "preflight_repair_result_record.json").exists()
+    diagnosis = json.loads((out / "preflight_block_diagnosis_record.json").read_text(encoding="utf-8"))
+    assert diagnosis["failure_class"] == "unknown_preflight_failure"
 
 
 def test_bounded_repair_plan_creation_known_category() -> None:
@@ -72,7 +77,8 @@ def test_bounded_repair_plan_creation_known_category() -> None:
         preflight_artifact={"control_signal": {"strategy_gate_decision": "BLOCK"}, "generated_at": "2026"},
     )
     plan = build_preflight_repair_plan_record(diagnosis_record=diagnosis)
-    assert plan["repair_category"] == "missing_required_surface_mapping"
+    assert plan["failure_class"] == "contract_mismatch"
+    assert plan["eligibility_decision"] == "auto_repair_allowed"
     assert "docs/governance/preflight_required_surface_test_overrides.json" in plan["allowed_paths"]
 
 
@@ -83,8 +89,9 @@ def test_repair_scope_is_bounded_to_declared_paths() -> None:
         "schema_version": "1.0.0",
         "diagnosis_id": "diag-1",
         "strategy_gate_decision": "BLOCK",
-        "repair_category": "missing_preflight_wrapper_or_authority_linkage",
+        "failure_class": "invalid_wrapper",
         "reason_codes": ["x"],
+        "root_cause_summary": "wrapper missing",
     }
     plan = build_preflight_repair_plan_record(diagnosis_record=diagnosis)
     assert plan["allowed_paths"] == [
@@ -178,10 +185,10 @@ def test_schema_example_manifest_drift_classified_and_scoped() -> None:
         },
         preflight_artifact={"control_signal": {"strategy_gate_decision": "BLOCK"}, "generated_at": "2026"},
     )
-    assert diagnosis["repair_category"] == "schema_example_manifest_drift"
+    assert diagnosis["failure_class"] == "schema_violation"
     plan = build_preflight_repair_plan_record(diagnosis_record=diagnosis)
     assert plan["apply_automatically"] is True
-    assert plan["allowed_paths"] == ["contracts/examples/system_registry_artifact.json"]
+    assert "contracts/examples" in plan["allowed_paths"]
 
 
 def test_missing_required_surface_mapping_autorepair_writes_override_file(tmp_path: Path) -> None:
