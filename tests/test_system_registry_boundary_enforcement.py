@@ -84,7 +84,7 @@ def test_validator_fails_when_entry_invariant_is_weakened(tmp_path: Path) -> Non
 
 def test_registry_includes_adv_systems() -> None:
     systems, _ = validator.parse_registry(REGISTRY_PATH)
-    for name in ("CHX", "DEX", "SIM", "PRX", "CVX", "HIX"):
+    for name in ("CHX", "DEX", "SIM", "PRX", "CVX", "HIX", "CAL", "POL", "AIL", "SCH", "DEP", "RCA", "QOS", "SIMX"):
         assert name in systems
         assert systems[name].owns
         assert systems[name].must_not_do

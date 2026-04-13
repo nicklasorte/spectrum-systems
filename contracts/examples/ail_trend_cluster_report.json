@@ -1,0 +1,17 @@
+{
+  "artifact_type": "ail_trend_cluster_report",
+  "schema_version": "1.0.0",
+  "artifact_id": "AIL-TREND-CLUSTER-REPORT-0001",
+  "status": "pass",
+  "generated_at": "2026-04-13T00:00:00Z",
+  "details": {
+    "summary": "example",
+    "non_authority_assertions": [
+      "candidate_only"
+    ]
+  },
+  "references": [
+    "AEX",
+    "PQX"
+  ]
+}

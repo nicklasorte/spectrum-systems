@@ -104,6 +104,14 @@ CDE is the only system allowed to emit:
 - **PRX** — precedent retrieval/scoring memory layer (non-authoritative)
 - **CVX** — cross-run consistency validation and instability classification
 - **HIX** — governed human interaction/override audit exchange
+- **CAL** — calibration layer for confidence/correctness drift and budget signals (non-authoritative)
+- **POL** — policy lifecycle/canary/error-budget governance (non-authoritative to live TPA decisions)
+- **AIL** — artifact intelligence indexing and derived trend/recommendation deltas
+- **SCH** — schema compatibility/migration/staleness governance
+- **DEP** — dependency-aware reliability validation across critical chains
+- **RCA** — evidence-grounded root-cause attribution and failure graph artifacts
+- **QOS** — queue/backpressure/retry-budget load governance signaling
+- **SIMX** — external simulation provenance and replay integrity hardening
 
 ## Recurring Cross-System Phase Labels (Non-Owner)
 
@@ -968,3 +976,189 @@ flowchart LR
   - bypass_governance_layers
   - mutate_state_outside_owner_flows
   - replace_cde_tpa_sel_authority
+
+
+### CAL
+- **acronym:** `CAL`
+- **full_name:** Calibration Layer
+- **role:** Measures calibration between confidence and correctness over time for governed outputs.
+- **owns:**
+  - calibration_records
+  - calibration_drift_monitoring
+  - confidence_budget_signals
+- **consumes:**
+  - confidence_bearing_outputs
+  - correctness_outcome_artifacts
+  - historical_evaluation_results
+- **produces:**
+  - cal_calibration_record
+  - cal_drift_report
+  - cal_confidence_budget_status
+  - cal_calibration_bundle
+- **must_not_do:**
+  - make decisions
+  - replace policy or closure authority
+  - alter upstream outputs
+
+### POL
+- **acronym:** `POL`
+- **full_name:** Policy Lifecycle Layer
+- **role:** Governs policy rollout lifecycle state and decision-quality budget tracking.
+- **owns:**
+  - policy_rollout_lifecycle
+  - wrong_allow_wrong_block_budget_tracking
+  - policy_backtesting_outputs
+  - rollout_bundle_emission
+- **consumes:**
+  - policy_candidates
+  - golden_set_evaluation_bundles
+  - canary_outcomes
+  - error_budget_evidence
+- **produces:**
+  - pol_rollout_record
+  - pol_error_budget_record
+  - pol_backtest_report
+  - pol_policy_lifecycle_bundle
+- **must_not_do:**
+  - replace TPA live policy authority
+  - auto-activate unsafe policies
+  - bypass certification gates
+
+### AIL
+- **acronym:** `AIL`
+- **full_name:** Artifact Intelligence Layer
+- **role:** Indexes governed artifacts and emits deterministic intelligence jobs from governed history.
+- **owns:**
+  - artifact_indexes
+  - derived_artifact_jobs
+  - recommendation_delta_jobs
+  - cluster_trend_outputs
+- **consumes:**
+  - artifact_graph_history
+  - evaluations
+  - overrides
+  - drift_signals
+  - certification_events
+- **produces:**
+  - ail_index_record
+  - ail_derived_artifact_job
+  - ail_trend_cluster_report
+  - ail_recommendation_delta_report
+  - ail_intelligence_bundle
+- **must_not_do:**
+  - invent authority
+  - replace PRG recommendation authority
+  - replace RDX sequencing authority
+  - emit unsupported causal claims
+
+### SCH
+- **acronym:** `SCH`
+- **full_name:** Schema Evolution Layer
+- **role:** Governs backward compatibility and migration discipline for governed artifact contracts.
+- **owns:**
+  - schema_compatibility_validation
+  - migration_records
+  - stale_schema_detection
+- **consumes:**
+  - contract_versions
+  - artifact_families
+  - migration_specs
+  - historical_artifacts
+- **produces:**
+  - sch_compatibility_result
+  - sch_migration_record
+  - sch_stale_schema_report
+  - sch_schema_evolution_bundle
+- **must_not_do:**
+  - rewrite live artifacts silently
+  - override contract owners
+
+### DEP
+- **acronym:** `DEP`
+- **full_name:** Dependency Integrity Layer
+- **role:** Performs dependency-aware reliability validation over critical multi-system chains.
+- **owns:**
+  - dependency_aware_test_bundles
+  - chain_integrity_reports
+  - dependency_regression_outputs
+- **consumes:**
+  - critical_path_metadata
+  - chain_metadata
+  - reliability_evidence
+- **produces:**
+  - dep_dependency_test_bundle
+  - dep_chain_integrity_report
+  - dep_regression_surface_report
+  - dep_dependency_bundle
+- **must_not_do:**
+  - replace execution owners
+  - replace routing owners
+  - mutate production state
+
+### RCA
+- **acronym:** `RCA`
+- **full_name:** Root Cause Attribution Layer
+- **role:** Generates explicit causal diagnosis artifacts from correlated governed signals.
+- **owns:**
+  - root_cause_records
+  - failure_graphs
+  - attribution_bundles
+- **consumes:**
+  - replay_certification_observability_override_failure_signals
+  - evidence_chain_artifacts
+  - incident_artifacts
+- **produces:**
+  - rca_root_cause_record
+  - rca_failure_graph
+  - rca_attribution_bundle
+- **must_not_do:**
+  - invent unsupported causal claims
+  - replace incident owners
+  - replace enforcement authority
+
+### QOS
+- **acronym:** `QOS`
+- **full_name:** Queue and Backpressure Governance
+- **role:** Governs queue/backlog/priority/retry-budget signaling under load.
+- **owns:**
+  - queue_governance_records
+  - backpressure_signals
+  - retry_budget_records
+  - load_governance_bundles
+- **consumes:**
+  - backlog_depth
+  - queue_age
+  - retry_counts
+  - throughput_latency_evidence
+  - error_budget_status
+- **produces:**
+  - qos_queue_governance_record
+  - qos_backpressure_signal
+  - qos_retry_budget_record
+  - qos_load_governance_bundle
+- **must_not_do:**
+  - replace execution owners
+  - silently throttle without governed signaling
+  - bypass SEL/CDE/TPA where authority is required
+
+### SIMX
+- **acronym:** `SIMX`
+- **full_name:** External Simulation Provenance
+- **role:** Hardens provenance/replay/integrity for external simulation-heavy workflows.
+- **owns:**
+  - external_simulation_provenance_records
+  - replayable_simulation_bundles
+  - external_drift_detection_outputs
+- **consumes:**
+  - external_runtime_version_data
+  - simulation_inputs_outputs
+  - environment_provenance_captures
+- **produces:**
+  - simx_provenance_record
+  - simx_replayable_bundle
+  - simx_drift_report
+  - simx_simulation_integrity_bundle
+- **must_not_do:**
+  - replace SIM
+  - mutate external systems directly
+  - trust external results without provenance validation
