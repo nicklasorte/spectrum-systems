@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/program_alignment_assessment.schema.json",
+  "title": "program_alignment_assessment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "assessment_id",
+    "program_id",
+    "alignment_status",
+    "strategy_integrity",
+    "created_at",
+    "trace_id",
+    "lineage_ref",
+    "reason_codes",
+    "fail_reasons"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "program_alignment_assessment"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assessment_id": {
+      "type": "string"
+    },
+    "program_id": {
+      "type": "string"
+    },
+    "alignment_status": {
+      "type": "string",
+      "enum": [
+        "aligned",
+        "misaligned"
+      ]
+    },
+    "strategy_integrity": {
+      "type": "string",
+      "enum": [
+        "trust_gap_first",
+        "breadth_first_inversion"
+      ]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "fail_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "artifact_type": "prg_governance_conflict_record",
+  "conflict_id": "pgc-001",
+  "conflict_codes": [
+    "recommendation_authority_leakage"
+  ],
+  "severity": "high",
+  "created_at": "2026-04-13T00:00:00Z",
+  "trace_id": "trace-prg-001",
+  "lineage_ref": "lineage:prg:001"
+}

@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.122",
-  "schema_version": "1.3.98",
-  "standards_version": "1.3.122",
+  "artifact_version": "1.3.123",
+  "schema_version": "1.3.99",
+  "standards_version": "1.3.123",
   "record_id": "REC-STD-2026-04-12-TLC-001",
   "run_id": "run-20260412T220000Z-tlc-001",
   "created_at": "2026-04-12T00:00:00Z",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.121",
+  "source_repo_version": "1.3.122",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -65,6 +65,19 @@
       "last_updated_in": "1.3.37",
       "example_path": "contracts/examples/adaptive_execution_trend_report.json",
       "notes": "BATCH-X1 deterministic guardrail and trend report for bounded adaptive execution operator tuning decisions."
+    },
+    {
+      "artifact_type": "adaptive_readiness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/adaptive_readiness_record.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
     },
     {
       "artifact_type": "admission_authenticity_record",
@@ -1828,6 +1841,19 @@
       "notes": "Aggregated monitoring artifact supporting both regression-window and run-bundle control-loop summary shapes."
     },
     {
+      "artifact_type": "evaluation_pattern_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/evaluation_pattern_report.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
       "artifact_type": "evaluation_release_record",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -3346,6 +3372,19 @@
       "notes": "BATCH-LTV-D governed policy extraction/activation/conflict artifact for deterministic policy rollout control."
     },
     {
+      "artifact_type": "policy_change_candidate",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/policy_change_candidate.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
       "artifact_type": "policy_conflict_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3851,6 +3890,110 @@
       "last_updated_in": "1.3.62",
       "example_path": "contracts/examples/precedent_selection_record.json",
       "notes": "LT-02 deterministic precedent retrieval and selection decision record with explicit rejected candidates."
+    },
+    {
+      "artifact_type": "prg_governance_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/prg_governance_bundle.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prg_governance_conflict_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/prg_governance_conflict_record.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prg_governance_effectiveness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/prg_governance_effectiveness_record.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prg_governance_eval_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/prg_governance_eval_result.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prg_governance_readiness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/prg_governance_readiness_record.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prg_recommendation_rework_debt_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/prg_recommendation_rework_debt_record.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prioritized_adoption_candidate_set",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/prioritized_adoption_candidate_set.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "program_alignment_assessment",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/program_alignment_assessment.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
     },
     {
       "artifact_type": "program_artifact",
@@ -4676,6 +4819,136 @@
       "last_updated_in": "1.3.112",
       "example_path": "contracts/examples/rax_upstream_input_envelope.example.json",
       "notes": "RAX-INTERFACE-24-01 strict compact upstream roadmap envelope consumed by RAX for deterministic contract expansion."
+    },
+    {
+      "artifact_type": "rdx_batch_selection_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_batch_selection_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_execution_loop_readiness_handoff_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_execution_loop_readiness_handoff_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_rework_debt_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_rework_debt_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_roadmap_governance_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_roadmap_governance_bundle.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_roadmap_selection_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_roadmap_selection_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_selection_conflict_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_selection_conflict_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_selection_effectiveness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_selection_effectiveness_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_selection_eval_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_selection_eval_result.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_selection_readiness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_selection_readiness_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_umbrella_selection_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_umbrella_selection_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
     },
     {
       "artifact_type": "readiness_review_dashboard_artifact",
@@ -5644,6 +5917,19 @@
       "notes": "SRE-08 governed deterministic SLO definition artifact for bounded observability metric objectives and breach severities."
     },
     {
+      "artifact_type": "slice_contract_update_candidate",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/slice_contract_update_candidate.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
       "artifact_type": "slide_deck",
       "artifact_class": "work",
       "schema_version": "1.0.0",
@@ -6277,136 +6563,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "rdx_roadmap_selection_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.122",
-      "last_updated_in": "1.3.122",
-      "example_path": "contracts/examples/rdx_roadmap_selection_record.example.json",
-      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
-    },
-    {
-      "artifact_type": "rdx_batch_selection_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.122",
-      "last_updated_in": "1.3.122",
-      "example_path": "contracts/examples/rdx_batch_selection_record.example.json",
-      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
-    },
-    {
-      "artifact_type": "rdx_umbrella_selection_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.122",
-      "last_updated_in": "1.3.122",
-      "example_path": "contracts/examples/rdx_umbrella_selection_record.example.json",
-      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
-    },
-    {
-      "artifact_type": "rdx_execution_loop_readiness_handoff_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.122",
-      "last_updated_in": "1.3.122",
-      "example_path": "contracts/examples/rdx_execution_loop_readiness_handoff_record.example.json",
-      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
-    },
-    {
-      "artifact_type": "rdx_selection_eval_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.122",
-      "last_updated_in": "1.3.122",
-      "example_path": "contracts/examples/rdx_selection_eval_result.example.json",
-      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
-    },
-    {
-      "artifact_type": "rdx_selection_conflict_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.122",
-      "last_updated_in": "1.3.122",
-      "example_path": "contracts/examples/rdx_selection_conflict_record.example.json",
-      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
-    },
-    {
-      "artifact_type": "rdx_selection_readiness_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.122",
-      "last_updated_in": "1.3.122",
-      "example_path": "contracts/examples/rdx_selection_readiness_record.example.json",
-      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
-    },
-    {
-      "artifact_type": "rdx_selection_effectiveness_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.122",
-      "last_updated_in": "1.3.122",
-      "example_path": "contracts/examples/rdx_selection_effectiveness_record.example.json",
-      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
-    },
-    {
-      "artifact_type": "rdx_rework_debt_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.122",
-      "last_updated_in": "1.3.122",
-      "example_path": "contracts/examples/rdx_rework_debt_record.example.json",
-      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
-    },
-    {
-      "artifact_type": "rdx_roadmap_governance_bundle",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.122",
-      "last_updated_in": "1.3.122",
-      "example_path": "contracts/examples/rdx_roadmap_governance_bundle.example.json",
-      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
     }
   ]
 }
