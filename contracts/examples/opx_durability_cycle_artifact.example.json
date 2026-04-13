@@ -1,0 +1,394 @@
+{
+  "alignment_drift": {
+    "detected": true,
+    "misalignments": [
+      "policy:p1|judgment:j9"
+    ]
+  },
+  "anomaly_prediction": {
+    "alerts": [
+      "likely_context_conflict"
+    ],
+    "authoritative": false,
+    "recommendation_grade": true
+  },
+  "artifact_aging": {
+    "aging_policy_hours": 24,
+    "stale": [
+      "recommendation:old",
+      "cert_pack:old"
+    ]
+  },
+  "artifact_type": "opx_durability_cycle_artifact",
+  "artifact_version": "1.0.0",
+  "audit_log": {
+    "events": [
+      {
+        "actor": "operator-a",
+        "event": "decision",
+        "judgment": "j3",
+        "module": "faq",
+        "policy": "p1",
+        "route": "RQX",
+        "ts": "2026-04-13T00:00:00Z"
+      },
+      {
+        "actor": "operator-b",
+        "event": "override",
+        "judgment": "j9",
+        "module": "minutes",
+        "policy": "p2",
+        "route": "RQX",
+        "ts": "2026-04-13T00:10:00Z"
+      },
+      {
+        "actor": "system",
+        "event": "replay",
+        "judgment": "j5",
+        "module": "simulation",
+        "policy": "p3",
+        "route": "TLC",
+        "ts": "2026-04-13T00:20:00Z"
+      }
+    ],
+    "query_faq": [
+      {
+        "actor": "operator-a",
+        "event": "decision",
+        "judgment": "j3",
+        "module": "faq",
+        "policy": "p1",
+        "route": "RQX",
+        "ts": "2026-04-13T00:00:00Z"
+      }
+    ]
+  },
+  "calibration": {
+    "bucketed_brier": 0.12,
+    "by_module": {
+      "faq": 0.11,
+      "minutes": 0.14
+    }
+  },
+  "consistency": {
+    "deterministic_check": true,
+    "same_input_violations": [
+      "faq:trace-22"
+    ]
+  },
+  "context_lifecycle": {
+    "blocked_by": "TPA",
+    "conflicts": [
+      "context:faq:source_conflict"
+    ],
+    "freshness_score": 61,
+    "usable": false
+  },
+  "coverage": {
+    "1": "continuous replay validation works across active modules",
+    "2": "longitudinal drift is surfaced deterministically",
+    "3": "failures/overrides/red-team findings produce eval expansion candidates",
+    "4": "policy/judgment/override/context/artifact lifecycle rules are enforced",
+    "5": "cross-run consistency, calibration, volatility, and alignment drift are computed correctly",
+    "6": "promotion gates honor replay regression posture",
+    "7": "failure clustering and routing work across modules",
+    "8": "recurring red-team injections are governed and bounded",
+    "9": "maintain-stage scheduling produces deterministic outputs",
+    "10": "evidence coherence failures are detected",
+    "11": "cross-module governance drift is surfaced",
+    "12": "system health index remains non-authoritative",
+    "13": "rollback triggers are canonical and bounded",
+    "14": "governance audit logs are complete and queryable",
+    "15": "anomaly prediction remains recommendation-grade",
+    "16": "operator behavior drift is tracked",
+    "17": "decision feedback loop closure affects future governed artifacts",
+    "18": "invariant violations fail closed",
+    "19": "policy outcome simulation is deterministic and non-authoritative",
+    "20": "strategic planning and tradeoff outputs remain recommendation-only",
+    "21": "external feedback ingestion feeds calibration/eval/drift",
+    "22": "multi-actor modeling is deterministic",
+    "23": "self-improvement recommendations cannot self-apply",
+    "24": "no new slice duplicates a registry owner responsibility"
+  },
+  "cross_module_consistency": {
+    "divergence": [
+      "minutes:lifecycle_rule_missing"
+    ],
+    "status": "drift_detected"
+  },
+  "drift": {
+    "cross_module_drift": 1,
+    "deterministic": true,
+    "module_drift": {
+      "comment_resolution": 0,
+      "faq": 0,
+      "minutes": 0,
+      "simulation": 1,
+      "study_plan": 0,
+      "working_paper": 0
+    },
+    "window": "P30D"
+  },
+  "eval_expansion": {
+    "authoritative": false,
+    "candidate_evals": [
+      "failure:faq:trace-gap",
+      "override:minutes:recurrence",
+      "redteam:cache-misuse"
+    ],
+    "dataset_candidates": [
+      "dataset:correction:001",
+      "dataset:late_truth:002"
+    ]
+  },
+  "evidence_coherence": {
+    "broken_chains": [
+      "trace-77"
+    ],
+    "detects_missing_link": true,
+    "status": "fail"
+  },
+  "external_feedback_ingestion": {
+    "accepted": 14,
+    "calibration_delta": -0.02,
+    "downstream_corrections": 2,
+    "drift_delta": 1,
+    "eval_expansion_delta": 2,
+    "late_truth": 1,
+    "rejected": 3
+  },
+  "failure_patterns": {
+    "feeds_prg": true,
+    "patterns": [
+      "context_conflict+override_pressure"
+    ]
+  },
+  "failure_routing": {
+    "clusters": {
+      "context_conflict": 3,
+      "schema_mismatch": 2
+    },
+    "route": {
+      "context_conflict": "FRE",
+      "schema_mismatch": "FRE"
+    }
+  },
+  "feedback_loop_closure": {
+    "closed_loop": true,
+    "future_eval_updates": [
+      "eval:feedback:late_truth"
+    ],
+    "outcome_links": [
+      "late_truth:002->eval_case:delta"
+    ]
+  },
+  "invariants": {
+    "active_set_required": true,
+    "evidence_coherence_required": true,
+    "fail_closed": true,
+    "judgment_gating_required": true,
+    "replay_integrity_required": true
+  },
+  "judgment_lifecycle": {
+    "active_judgment_ids": [
+      "judgment:faq:v3"
+    ],
+    "reuse_lineage": {
+      "judgment:faq:v3": [
+        "judgment:faq:v2"
+      ]
+    },
+    "stale_or_retired_blocked": [
+      "judgment:faq:v1",
+      "judgment:faq:v2"
+    ]
+  },
+  "maintain": {
+    "deterministic_output_hash": "019467080b1621b3",
+    "jobs": [
+      "doc_gardening",
+      "eval_expansion",
+      "invariant_checks",
+      "stale_cleanup",
+      "drift_scan",
+      "runbook_freshness"
+    ],
+    "seed": "opx-95"
+  },
+  "multi_actor_model": {
+    "actors": [
+      "agency-a",
+      "agency-b"
+    ],
+    "authoritative": false,
+    "deterministic": true,
+    "interaction_matrix": [
+      [
+        1,
+        -1
+      ],
+      [
+        -1,
+        1
+      ]
+    ]
+  },
+  "non_duplication": true,
+  "operator_drift": {
+    "disagreement_drift": 0.18,
+    "override_creep_delta": 0.22,
+    "review_fatigue_signal": 0.31
+  },
+  "opx_id": "OPX-004",
+  "override_lifecycle": {
+    "escalation_triggered": true,
+    "expired_ids": [
+      "override:1"
+    ],
+    "recurring_ids": [
+      "override:2"
+    ]
+  },
+  "policy_lifecycle": {
+    "evidence_refs": [
+      "cert:policy:001"
+    ],
+    "evidence_required": true,
+    "from": "canary",
+    "stale_active_policies": [
+      "policy:minutes:v1"
+    ],
+    "to": "active",
+    "valid": true
+  },
+  "policy_outcome_simulation": {
+    "authoritative": false,
+    "scenarios": [
+      {
+        "policy": "strict",
+        "review_burden": 74,
+        "rollback_risk": 12
+      }
+    ]
+  },
+  "prompt_type": "BUILD",
+  "redteam": {
+    "bounded": true,
+    "engine": "recurring",
+    "scenarios": [
+      "bypass_attempt",
+      "stale_replay_use",
+      "override_abuse",
+      "context_poisoning",
+      "cache_misuse",
+      "policy_judgment_pressure"
+    ]
+  },
+  "replay": {
+    "confidence_posture": "guarded",
+    "no_silent_skip": true,
+    "routed_to_owner": "FRE",
+    "runs": [
+      {
+        "drift_points": 0,
+        "freshness_hours": 6,
+        "module": "faq",
+        "pass": true
+      },
+      {
+        "drift_points": 0,
+        "freshness_hours": 6,
+        "module": "minutes",
+        "pass": true
+      },
+      {
+        "drift_points": 0,
+        "freshness_hours": 6,
+        "module": "working_paper",
+        "pass": true
+      },
+      {
+        "drift_points": 0,
+        "freshness_hours": 6,
+        "module": "comment_resolution",
+        "pass": true
+      },
+      {
+        "drift_points": 0,
+        "freshness_hours": 6,
+        "module": "study_plan",
+        "pass": true
+      },
+      {
+        "drift_points": 1,
+        "freshness_hours": 6,
+        "module": "simulation",
+        "pass": false
+      }
+    ],
+    "status": "fail"
+  },
+  "replay_regression_gate": {
+    "promotion_status": "blocked",
+    "reason": "replay_regression",
+    "trend_required": true
+  },
+  "rollback": {
+    "auto_rollback": false,
+    "owner_path": [
+      "TLC",
+      "CDE",
+      "SEL"
+    ],
+    "triggered_candidates": [
+      "freeze_candidate:faq"
+    ]
+  },
+  "self_improvement_governance": {
+    "recommendations": [
+      "policy_tighten_ctx_conflict"
+    ],
+    "required_path": [
+      "approval",
+      "canary",
+      "promotion"
+    ],
+    "self_apply_allowed": false
+  },
+  "strategic_plan": {
+    "authoritative": false,
+    "horizon": "Q+2",
+    "recommendations": [
+      "reduce_override_recurrence"
+    ]
+  },
+  "system_health_index": {
+    "authoritative": false,
+    "inputs": {
+      "burden": 76,
+      "calibration": 88,
+      "drift": 65,
+      "failure": 73,
+      "replay": 60,
+      "trust": 70
+    },
+    "score": 72
+  },
+  "tradeoff_model": {
+    "authoritative": false,
+    "dimensions": [
+      "trust_vs_speed",
+      "burden_vs_automation",
+      "strictness_vs_override_pressure",
+      "replay_rigor_vs_throughput"
+    ]
+  },
+  "volatility": {
+    "fragile_cases": [
+      "policy-vs-context-edge"
+    ],
+    "stable_cases": [
+      "baseline-faq"
+    ]
+  }
+}

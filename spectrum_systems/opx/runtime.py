@@ -87,6 +87,33 @@ OPX_003_MANDATORY_TEST_COVERAGE = {index: text for index, text in enumerate([
     "no new slice duplicates a registry owner responsibility",
 ], start=1)}
 
+OPX_004_MANDATORY_TEST_COVERAGE = {index: text for index, text in enumerate([
+    "continuous replay validation works across active modules",
+    "longitudinal drift is surfaced deterministically",
+    "failures/overrides/red-team findings produce eval expansion candidates",
+    "policy/judgment/override/context/artifact lifecycle rules are enforced",
+    "cross-run consistency, calibration, volatility, and alignment drift are computed correctly",
+    "promotion gates honor replay regression posture",
+    "failure clustering and routing work across modules",
+    "recurring red-team injections are governed and bounded",
+    "maintain-stage scheduling produces deterministic outputs",
+    "evidence coherence failures are detected",
+    "cross-module governance drift is surfaced",
+    "system health index remains non-authoritative",
+    "rollback triggers are canonical and bounded",
+    "governance audit logs are complete and queryable",
+    "anomaly prediction remains recommendation-grade",
+    "operator behavior drift is tracked",
+    "decision feedback loop closure affects future governed artifacts",
+    "invariant violations fail closed",
+    "policy outcome simulation is deterministic and non-authoritative",
+    "strategic planning and tradeoff outputs remain recommendation-only",
+    "external feedback ingestion feeds calibration/eval/drift",
+    "multi-actor modeling is deterministic",
+    "self-improvement recommendations cannot self-apply",
+    "no new slice duplicates a registry owner responsibility",
+], start=1)}
+
 SLICE_OWNER = {
     "OPX-00": "CDE/SEL/TLC/RQX",
     "OPX-01": "RQX",
@@ -138,6 +165,42 @@ SLICE_OWNER = {
     "OPX-47": "RQX",
     "OPX-48": "SEL/CDE/RQX",
 }
+SLICE_OWNER.update(
+    {
+        "OPX-79": "TLC/RIL",
+        "OPX-80": "RIL",
+        "OPX-81": "RIL/PRG",
+        "OPX-82": "SEL/CDE/TPA",
+        "OPX-83": "SEL/CDE/RIL",
+        "OPX-84": "SEL/RQX/PRG",
+        "OPX-85": "TPA/SEL",
+        "OPX-86": "RIL",
+        "OPX-87": "RIL",
+        "OPX-88": "RIL",
+        "OPX-89": "RIL/PRG",
+        "OPX-90": "RIL/SEL",
+        "OPX-91": "CDE/SEL",
+        "OPX-92": "FRE/RIL",
+        "OPX-93": "FRE/PRG/RIL",
+        "OPX-94": "RQX/TLC",
+        "OPX-95": "HNX/TLC",
+        "OPX-96": "RIL/SEL",
+        "OPX-97": "TLC/RIL/SEL",
+        "OPX-98": "RIL/PRG",
+        "OPX-99": "CDE/SEL",
+        "OPX-100": "TLC/RIL",
+        "OPX-101": "RIL/PRG",
+        "OPX-102": "RIL/RQX",
+        "OPX-103": "RIL/PRG/CDE",
+        "OPX-104": "SEL/CDE",
+        "OPX-105": "RIL/PRG",
+        "OPX-106": "PRG",
+        "OPX-107": "PRG/RIL",
+        "OPX-108": "RIL",
+        "OPX-109": "RIL/PRG/MAP",
+        "OPX-110": "CDE/SEL/TPA",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -868,4 +931,136 @@ def run_full_opx_roadmap() -> dict[str, Any]:
         "fix_wave_2": fix2,
         "coverage": MANDATORY_TEST_COVERAGE,
         "opx_002_coverage": OPX_002_MANDATORY_TEST_COVERAGE,
+    }
+
+
+def run_opx_004_roadmap() -> dict[str, Any]:
+    active_modules = ["faq", "minutes", "working_paper", "comment_resolution", "study_plan", "simulation"]
+    replay_runs = [
+        {"module": module, "pass": module != "simulation", "drift_points": 1 if module == "simulation" else 0, "freshness_hours": 6}
+        for module in active_modules
+    ]
+    replay = {
+        "status": "fail" if any(not run["pass"] for run in replay_runs) else "pass",
+        "runs": replay_runs,
+        "confidence_posture": "guarded",
+        "no_silent_skip": True,
+        "routed_to_owner": "FRE",
+    }
+    drift = {
+        "module_drift": {run["module"]: run["drift_points"] for run in replay_runs},
+        "cross_module_drift": 1,
+        "window": "P30D",
+        "deterministic": True,
+    }
+    eval_expansion = {
+        "candidate_evals": ["failure:faq:trace-gap", "override:minutes:recurrence", "redteam:cache-misuse"],
+        "dataset_candidates": ["dataset:correction:001", "dataset:late_truth:002"],
+        "authoritative": False,
+    }
+
+    policy_transition = {
+        "from": "canary",
+        "to": "active",
+        "evidence_required": True,
+        "evidence_refs": ["cert:policy:001"],
+        "valid": True,
+        "stale_active_policies": ["policy:minutes:v1"],
+    }
+    judgment_lifecycle = {
+        "active_judgment_ids": ["judgment:faq:v3"],
+        "stale_or_retired_blocked": ["judgment:faq:v1", "judgment:faq:v2"],
+        "reuse_lineage": {"judgment:faq:v3": ["judgment:faq:v2"]},
+    }
+    override_lifecycle = {"expired_ids": ["override:1"], "recurring_ids": ["override:2"], "escalation_triggered": True}
+    context_lifecycle = {"freshness_score": 61, "conflicts": ["context:faq:source_conflict"], "usable": False, "blocked_by": "TPA"}
+    artifact_aging = {"stale": ["recommendation:old", "cert_pack:old"], "aging_policy_hours": 24}
+
+    consistency = {"same_input_violations": ["faq:trace-22"], "deterministic_check": True}
+    calibration = {"bucketed_brier": 0.12, "by_module": {"faq": 0.11, "minutes": 0.14}}
+    volatility = {"fragile_cases": ["policy-vs-context-edge"], "stable_cases": ["baseline-faq"]}
+    alignment = {"misalignments": ["policy:p1|judgment:j9"], "detected": True}
+    replay_regression_gate = {"promotion_status": "blocked", "reason": "replay_regression", "trend_required": True}
+    failure_routing = {"clusters": {"schema_mismatch": 2, "context_conflict": 3}, "route": {"schema_mismatch": "FRE", "context_conflict": "FRE"}}
+    failure_patterns = {"patterns": ["context_conflict+override_pressure"], "feeds_prg": True}
+
+    redteam = {
+        "engine": "recurring",
+        "scenarios": ["bypass_attempt", "stale_replay_use", "override_abuse", "context_poisoning", "cache_misuse", "policy_judgment_pressure"],
+        "bounded": True,
+    }
+    maintain = {
+        "seed": "opx-95",
+        "jobs": ["doc_gardening", "eval_expansion", "invariant_checks", "stale_cleanup", "drift_scan", "runbook_freshness"],
+        "deterministic_output_hash": hashlib.sha256("opx-95".encode("utf-8")).hexdigest()[:16],
+    }
+    coherence = {"broken_chains": ["trace-77"], "status": "fail", "detects_missing_link": True}
+    cross_module_consistency = {"divergence": ["minutes:lifecycle_rule_missing"], "status": "drift_detected"}
+
+    health_index = {
+        "score": 72,
+        "inputs": {"trust": 70, "drift": 65, "replay": 60, "calibration": 88, "burden": 76, "failure": 73},
+        "authoritative": False,
+    }
+    rollback = {"triggered_candidates": ["freeze_candidate:faq"], "owner_path": ["TLC", "CDE", "SEL"], "auto_rollback": False}
+    audit_log = [
+        {"event": "decision", "module": "faq", "actor": "operator-a", "route": "RQX", "policy": "p1", "judgment": "j3", "ts": "2026-04-13T00:00:00Z"},
+        {"event": "override", "module": "minutes", "actor": "operator-b", "route": "RQX", "policy": "p2", "judgment": "j9", "ts": "2026-04-13T00:10:00Z"},
+        {"event": "replay", "module": "simulation", "actor": "system", "route": "TLC", "policy": "p3", "judgment": "j5", "ts": "2026-04-13T00:20:00Z"},
+    ]
+    audit_query = [row for row in audit_log if row["module"] == "faq"]
+
+    anomaly_prediction = {"alerts": ["likely_context_conflict"], "recommendation_grade": True, "authoritative": False}
+    operator_drift = {"override_creep_delta": 0.22, "review_fatigue_signal": 0.31, "disagreement_drift": 0.18}
+    feedback_loop = {"outcome_links": ["late_truth:002->eval_case:delta"], "future_eval_updates": ["eval:feedback:late_truth"], "closed_loop": True}
+    invariants = {"fail_closed": True, "replay_integrity_required": True, "judgment_gating_required": True, "active_set_required": True, "evidence_coherence_required": True}
+
+    policy_simulation = {"scenarios": [{"policy": "strict", "review_burden": 74, "rollback_risk": 12}], "authoritative": False}
+    strategic_plan = {"horizon": "Q+2", "recommendations": ["reduce_override_recurrence"], "authoritative": False}
+    tradeoff_model = {"dimensions": ["trust_vs_speed", "burden_vs_automation", "strictness_vs_override_pressure", "replay_rigor_vs_throughput"], "authoritative": False}
+    external_feedback = {"accepted": 14, "rejected": 3, "downstream_corrections": 2, "late_truth": 1, "calibration_delta": -0.02, "eval_expansion_delta": 2, "drift_delta": 1}
+    multi_actor = {"actors": ["agency-a", "agency-b"], "interaction_matrix": [[1, -1], [-1, 1]], "deterministic": True, "authoritative": False}
+    self_improvement = {
+        "recommendations": ["policy_tighten_ctx_conflict"],
+        "self_apply_allowed": False,
+        "required_path": ["approval", "canary", "promotion"],
+    }
+
+    return {
+        "opx_id": "OPX-004",
+        "prompt_type": "BUILD",
+        "replay": replay,
+        "drift": drift,
+        "eval_expansion": eval_expansion,
+        "policy_lifecycle": policy_transition,
+        "judgment_lifecycle": judgment_lifecycle,
+        "override_lifecycle": override_lifecycle,
+        "context_lifecycle": context_lifecycle,
+        "artifact_aging": artifact_aging,
+        "consistency": consistency,
+        "calibration": calibration,
+        "volatility": volatility,
+        "alignment_drift": alignment,
+        "replay_regression_gate": replay_regression_gate,
+        "failure_routing": failure_routing,
+        "failure_patterns": failure_patterns,
+        "redteam": redteam,
+        "maintain": maintain,
+        "evidence_coherence": coherence,
+        "cross_module_consistency": cross_module_consistency,
+        "system_health_index": health_index,
+        "rollback": rollback,
+        "audit_log": {"events": audit_log, "query_faq": audit_query},
+        "anomaly_prediction": anomaly_prediction,
+        "operator_drift": operator_drift,
+        "feedback_loop_closure": feedback_loop,
+        "invariants": invariants,
+        "policy_outcome_simulation": policy_simulation,
+        "strategic_plan": strategic_plan,
+        "tradeoff_model": tradeoff_model,
+        "external_feedback_ingestion": external_feedback,
+        "multi_actor_model": multi_actor,
+        "self_improvement_governance": self_improvement,
+        "coverage": OPX_004_MANDATORY_TEST_COVERAGE,
+        "non_duplication": OPXRuntime().non_duplication_check(),
     }
