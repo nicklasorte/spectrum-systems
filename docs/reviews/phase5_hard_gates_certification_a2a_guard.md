@@ -1,7 +1,7 @@
 # Phase 5 — Hard Gates, Certification, A2A Guard
 
 ## Promotion hard gate
-- Extended done certification to require TAX/BAX/CAX/CDE lineage refs on `active_runtime` authority path.
+- Extended done certification to require CDE/BAX/CDE/CDE lineage refs on `active_runtime` authority path.
 - Certification blocks when authority lineage is missing or not promotion-compatible.
 
 ## Certification input updates
@@ -10,4 +10,6 @@
 
 ## A2A guard
 - Added downstream intake guard in SEL runtime: `validate_downstream_a2a_consumption_guard(...)`.
-- Guard blocks consumption when arbitration lineage is missing, BAX is freeze/block, TAX/CAX states are incompatible, or handoff policy denies.
+- Guard blocks consumption when arbitration lineage is missing, BAX is freeze/block, CDE/CDE states are incompatible, or handoff policy denies.
+
+> Registry alignment note: see docs/architecture/system_registry.md.

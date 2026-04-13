@@ -8,7 +8,7 @@ Implement the next governed operating-substrate phase in serial order with repo-
 - `contracts/examples/system_registry_artifact.json`
 
 ## Systems registered
-TAX, BAX, CAX, CTX, TLX, JSX, DRX (active); CPX, CLX, HFX (reserved/planned).
+CDE, BAX, CDE, CTX, TLX, JSX, DRX (active); REL, CAL, HND (reserved/planned).
 
 ## Runtime modules added
 - CTX/TLX/JSX/DRX modules
@@ -27,4 +27,6 @@ Contract validation and runtime behavior tests across new modules plus gate fail
 Both rounds documented with concrete findings and code-level fixes in phase11/phase15 review artifacts.
 
 ## Deferred optional systems
-CPX, CLX, HFX intentionally reserved/planned only.
+REL, CAL, HND intentionally reserved/planned only.
+
+> Registry alignment note: see docs/architecture/system_registry.md.

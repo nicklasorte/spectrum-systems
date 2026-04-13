@@ -11,7 +11,7 @@ Harden the governed control spine and trust envelope so promotion-relevant execu
 - Regression tests for registry boundary and promotion gate hardening.
 
 ## Registry Changes Made
-- Added canonical definitions for: `CTX, EVL, OBS, LIN, DRT, SLO, CAN, DAT, JDG, POL, PRM, ROU, HIT, CAP, SEC, REP, ENT, CON`.
+- Added canonical definitions for: `CTX, EVL, OBS, LIN, DRT, SLO, REL, DAT, JDX, POL, PRM, ROU, HIT, CAP, SEC, REP, ENT, CON`.
 - Added companion-summary acknowledgement of the new hardening systems in `docs/system-registry.md`.
 - Expanded machine-readable `system_registry_artifact` to include new systems and deterministic interaction edges.
 
@@ -22,7 +22,7 @@ Harden the governed control spine and trust envelope so promotion-relevant execu
 
 ## Durable Guarantees Added
 - Promotion now requires explicit `execution_mode` and rejects `simulation_mode=true`.
-- Promotion now requires explicit CTX/LIN/OBS/EVL/DAT/REP/JDG/POL/SEC/CON artifact references.
+- Promotion now requires explicit CTX/LIN/OBS/EVL/DAT/REP/JDX/POL/SEC/CON artifact references.
 - Promotion now requires deterministic queue permission artifact and SEL boundary proof artifact.
 - Registry validation now fails if extended-system ownership markers are duplicated or missing owners.
 
@@ -32,7 +32,7 @@ Harden the governed control spine and trust envelope so promotion-relevant execu
 - Registry ownership bleed for newly introduced hardening responsibilities is now validator-blocked.
 
 ## New Systems Added To The Registry
-`CTX, EVL, OBS, LIN, DRT, SLO, CAN, DAT, JDG, POL, PRM, ROU, HIT, CAP, SEC, REP, ENT, CON`.
+`CTX, EVL, OBS, LIN, DRT, SLO, REL, DAT, JDX, POL, PRM, ROU, HIT, CAP, SEC, REP, ENT, CON`.
 
 ## Schemas Added or Changed
 - No new JSON schema files were added in this slice.
@@ -65,3 +65,5 @@ Harden the governed control spine and trust envelope so promotion-relevant execu
 
 ## Final Readiness Verdict (READY or NOT READY)
 NOT READY
+
+> Registry alignment note: see docs/architecture/system_registry.md.

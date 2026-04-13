@@ -1,7 +1,7 @@
-# TAX/BAX/CAX Serial Delivery Report
+# CDE/BAX/CDE Serial Delivery Report
 
 ## Intent
-Register and implement TAX, BAX, and CAX as canonical governed authorities while preserving CDE closure authority and SEL enforcement authority.
+Register and implement CDE, BAX, and CDE as canonical governed authorities while preserving CDE closure authority and SEL enforcement authority.
 
 ## Repo seams used
 - Registry: `docs/architecture/system_registry.md`, `contracts/examples/system_registry_artifact.json`
@@ -11,10 +11,10 @@ Register and implement TAX, BAX, and CAX as canonical governed authorities while
 - Validation: `tests/test_tax_runtime.py`, `tests/test_bax_runtime.py`, `tests/test_cax_runtime.py`, `tests/test_tax_bax_cax_contracts.py`, `tests/test_tax_bax_cax_gates.py`
 
 ## Precedence model
-- Implemented explicit CAX precedence with fail-closed blocking/freeze dominance and CDE-consumable arbitration outputs.
+- Implemented explicit CDE precedence with fail-closed blocking/freeze dominance and CDE-consumable arbitration outputs.
 
 ## Hard gates
-- Promotion requires TAX+BAX+CAX+CDE lineage on active runtime path.
+- Promotion requires CDE+BAX+CDE+CDE lineage on active runtime path.
 - Downstream A2A artifact consumption requires arbitration lineage and compatible authority states.
 
 ## Red-team findings
@@ -25,3 +25,5 @@ Register and implement TAX, BAX, and CAX as canonical governed authorities while
 ## Follow-on work
 - Add full integration wiring into cycle orchestration and operator dashboards.
 - Add chaos tests for mixed conflict bundles at scale.
+
+> Registry alignment note: see docs/architecture/system_registry.md.

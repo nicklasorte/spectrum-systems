@@ -67,8 +67,8 @@
         "TPA"
       ],
       "downstream_consumers": [
-        "TAX",
-        "CAX",
+        "CDE",
+        "CDE",
         "CDE"
       ]
     },
@@ -102,7 +102,7 @@
       ]
     },
     {
-      "acronym": "CAN",
+      "acronym": "REL",
       "full_name": "Canary Rollout Governance",
       "role": "Owns staged rollout, canary evidence, and rollback governance artifacts.",
       "owns": [
@@ -166,9 +166,9 @@
       ]
     },
     {
-      "acronym": "CAX",
+      "acronym": "CDE",
       "full_name": "Control Arbitration eXchange",
-      "role": "Composes TAX/BAX/TPA/replay/trace/judgment signals into deterministic CDE input bundles.",
+      "role": "Composes CDE/BAX/TPA/replay/trace/judgment signals into deterministic CDE input bundles.",
       "owns": [
         "control_arbitration",
         "authority_composition",
@@ -191,7 +191,7 @@
         "closure_decisioning"
       ],
       "upstream_dependencies": [
-        "TAX",
+        "CDE",
         "BAX",
         "TPA"
       ],
@@ -267,8 +267,8 @@
       ]
     },
     {
-      "acronym": "CLX",
-      "full_name": "CLX (Reserved)",
+      "acronym": "CAL",
+      "full_name": "CAL (Reserved)",
       "role": "Reserved/planned; not active build target.",
       "owns": [
         "clx_reserved_planning_scope"
@@ -318,8 +318,8 @@
       ]
     },
     {
-      "acronym": "CPX",
-      "full_name": "CPX (Reserved)",
+      "acronym": "REL",
+      "full_name": "REL (Reserved)",
       "role": "Reserved/planned; not active build target.",
       "owns": [
         "cpx_reserved_planning_scope"
@@ -366,7 +366,7 @@
       ],
       "downstream_consumers": [
         "PQX",
-        "CAX"
+        "CDE"
       ]
     },
     {
@@ -596,7 +596,7 @@
         "OBS"
       ],
       "downstream_consumers": [
-        "CAX",
+        "CDE",
         "PRG"
       ]
     },
@@ -699,8 +699,8 @@
       ]
     },
     {
-      "acronym": "HFX",
-      "full_name": "HFX (Reserved)",
+      "acronym": "HND",
+      "full_name": "HND (Reserved)",
       "role": "Reserved/planned; not active build target.",
       "owns": [
         "hfx_reserved_planning_scope"
@@ -783,7 +783,7 @@
       ]
     },
     {
-      "acronym": "JDG",
+      "acronym": "JDX",
       "full_name": "Judgment Governance",
       "role": "Owns high-impact governed judgment artifact requirements.",
       "owns": [
@@ -842,7 +842,7 @@
       ],
       "downstream_consumers": [
         "TPA",
-        "CAX"
+        "CDE"
       ]
     },
     {
@@ -1340,7 +1340,7 @@
       ]
     },
     {
-      "acronym": "TAX",
+      "acronym": "CDE",
       "full_name": "Termination Authority eXecutor",
       "role": "Determines termination outcome from governed evidence sufficiency.",
       "owns": [
@@ -1368,7 +1368,7 @@
         "TPA"
       ],
       "downstream_consumers": [
-        "CAX",
+        "CDE",
         "CDE"
       ]
     },
@@ -1933,14 +1933,14 @@
     },
     {
       "from": "BAX",
-      "to": "TAX"
+      "to": "CDE"
     },
     {
-      "from": "TAX",
-      "to": "CAX"
+      "from": "CDE",
+      "to": "CDE"
     },
     {
-      "from": "CAX",
+      "from": "CDE",
       "to": "CDE"
     },
     {
@@ -2033,10 +2033,10 @@
     },
     {
       "from": "TLC",
-      "to": "CAN"
+      "to": "REL"
     },
     {
-      "from": "CAN",
+      "from": "REL",
       "to": "SEL"
     },
     {
@@ -2049,10 +2049,10 @@
     },
     {
       "from": "TLC",
-      "to": "JDG"
+      "to": "JDX"
     },
     {
-      "from": "JDG",
+      "from": "JDX",
       "to": "SEL"
     },
     {
@@ -2165,11 +2165,11 @@
     },
     {
       "from": "JSX",
-      "to": "CAX"
+      "to": "CDE"
     },
     {
       "from": "DRX",
-      "to": "CAX"
+      "to": "CDE"
     }
   ]
 }

@@ -271,9 +271,9 @@ def check_extended_hardening_ownership(systems: dict[str, SystemDefinition]) -> 
         "lineage_completeness_rules": "LIN",
         "drift_signal_emission": "DRT",
         "slo_error_budget_artifacts": "SLO",
-        "canary_rollout_artifacts": "CAN",
+        "canary_rollout_artifacts": "REL",
         "eval_dataset_registry": "DAT",
-        "judgment_artifact_requirements": "JDG",
+        "judgment_artifact_requirements": "JDX",
         "judgment_record": "JDX",
         "reuse_record_artifacts": "RUX",
         "artifact_card_records": "XPL",
@@ -340,7 +340,7 @@ def check_next_phase_presence_and_io(systems: dict[str, SystemDefinition]) -> li
 def run_all_checks(registry_path: Path = REGISTRY_PATH) -> list[str]:
     systems, full_text = parse_registry(registry_path)
 
-    required_systems = {"TLC", "CDE", "RQX", "RIL", "FRE", "TPA", "SEL", "PRG", "AEX", "MAP", "PQX", "CHX", "DEX", "SIM", "PRX", "CVX", "HIX", "CAL", "POL", "AIL", "SCH", "DEP", "RCA", "QOS", "SIMX", "JDX", "RUX", "XPL", "REL", "DAG", "EXT", "CTX", "EVL", "OBS", "LIN", "DRT", "SLO", "CAN", "DAT", "JDG", "PRM", "ROU", "HIT", "CAP", "SEC", "REP", "ENT", "CON", "TRN", "NRM", "CMP", "RET", "ABS", "CRS", "MIG", "QRY", "TST", "RSK", "EVD", "SUP", "HND", "SYN"}
+    required_systems = {"TLC", "CDE", "RQX", "RIL", "FRE", "TPA", "SEL", "PRG", "AEX", "MAP", "PQX", "CHX", "DEX", "SIM", "PRX", "CVX", "HIX", "CAL", "POL", "AIL", "SCH", "DEP", "RCA", "QOS", "SIMX", "JDX", "RUX", "XPL", "REL", "DAG", "EXT", "CTX", "EVL", "OBS", "LIN", "DRT", "SLO", "REL", "DAT", "JDX", "PRM", "ROU", "HIT", "CAP", "SEC", "REP", "ENT", "CON", "TRN", "NRM", "CMP", "RET", "ABS", "CRS", "MIG", "QRY", "TST", "RSK", "EVD", "SUP", "HND", "SYN"}
     missing = sorted(required_systems - set(systems))
     errors: list[str] = []
     if missing:

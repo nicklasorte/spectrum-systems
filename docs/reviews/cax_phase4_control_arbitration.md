@@ -1,4 +1,4 @@
-# CAX Phase 4 — Control Arbitration
+# CDE Phase 4 — Control Arbitration
 
 Implemented `spectrum_systems/modules/runtime/cax.py`:
 - `build_arbitration_inputs(...)`
@@ -7,4 +7,6 @@ Implemented `spectrum_systems/modules/runtime/cax.py`:
 - `emit_control_arbitration_record(...)`
 - `emit_cde_arbitration_input_bundle(...)`
 
-CAX now deterministically composes TAX/BAX/TPA + trace/replay/drift blockers and emits CDE input bundles without replacing CDE closure authority.
+CDE now deterministically composes CDE/BAX/TPA + trace/replay/drift blockers and emits CDE input bundles without replacing CDE closure authority.
+
+> Registry alignment note: see docs/architecture/system_registry.md.
