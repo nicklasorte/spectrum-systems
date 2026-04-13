@@ -1,0 +1,12 @@
+{
+  "artifact_type": "rdx_selection_readiness_record",
+  "readiness_id": "rsr-001",
+  "trace_id": "trace-rdx-001",
+  "created_at": "2026-04-13T00:00:00Z",
+  "readiness_status": "candidate_only",
+  "fail_reasons": [],
+  "non_authority_assertions": [
+    "candidate_only_non_authoritative",
+    "rdx_not_closure_authority"
+  ]
+}

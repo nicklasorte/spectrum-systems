@@ -1,0 +1,12 @@
+{
+  "artifact_type": "rdx_roadmap_selection_record",
+  "record_id": "rrs-001",
+  "roadmap_id": "RM-001",
+  "selected_umbrella_id": "UMB-TRUST-01",
+  "reason_codes": [
+    "dependency_satisfied",
+    "trust_gap_priority_applied"
+  ],
+  "evaluated_at": "2026-04-13T00:00:00Z",
+  "lineage_ref": "lineage:rdx:001"
+}

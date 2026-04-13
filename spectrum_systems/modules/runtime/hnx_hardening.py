@@ -277,3 +277,16 @@ def build_hnx_conflict_record(*, run_id: str, trace_id: str, conflict_codes: lis
     }
     validate_artifact(artifact, "hnx_harness_conflict_record")
     return artifact
+
+
+def verify_hnx_closeout_gate(*, harness_eval: Mapping[str, Any], readiness: Mapping[str, Any], replay_match: bool, stop_failures: list[str], checkpoint_resume_failures: list[str]) -> dict[str, Any]:
+    """HNX-10 closeout gate proving checkpoint/resume, stop-guard, replay, and continuity are operationally real."""
+    checks = {
+        "checkpoint_resume_integrity": not checkpoint_resume_failures,
+        "stop_condition_integrity": not stop_failures,
+        "harness_replay_valid": replay_match is True,
+        "continuity_semantics_real": harness_eval.get("evaluation_status") == "pass",
+        "hnx_bounded_scope_preserved": "does_not_replace_pqx_execution_authority" in readiness.get("non_authority_assertions", []),
+    }
+    fail_reasons = [name for name, passed in checks.items() if not passed]
+    return {"closeout_status": "closed" if not fail_reasons else "open", "checks": checks, "fail_reasons": fail_reasons}

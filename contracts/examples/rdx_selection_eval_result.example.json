@@ -1,0 +1,16 @@
+{
+  "artifact_type": "rdx_selection_eval_result",
+  "eval_id": "rse-001",
+  "selection_ref": "rdx_batch_selection_record:rbs-001",
+  "evaluated_at": "2026-04-13T00:00:00Z",
+  "evaluation_status": "pass",
+  "checks": {
+    "required_evidence_present": true,
+    "dependency_valid": true,
+    "owner_valid": true,
+    "trust_gap_priority_aligned": true,
+    "hierarchy_valid": true
+  },
+  "fail_reasons": [],
+  "trace_id": "trace-rdx-001"
+}

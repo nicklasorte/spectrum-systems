@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rdx_batch_selection_record.schema.json",
+  "title": "Rdx Batch Selection Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "record_id",
+    "roadmap_id",
+    "selected_batch_id",
+    "selected_umbrella_id",
+    "reason_codes",
+    "trust_gap_tag",
+    "evaluated_at",
+    "lineage_ref"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "rdx_batch_selection_record"
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "roadmap_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "selected_batch_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "selected_umbrella_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "trust_gap_tag": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lineage_ref": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

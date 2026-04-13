@@ -261,6 +261,22 @@ class ContractSchemaTests(unittest.TestCase):
             instance = load_example(name)
             validate_artifact(instance, name)
 
+    def test_rdx_hardening_contract_examples_validate(self) -> None:
+        for name in (
+            "rdx_roadmap_selection_record",
+            "rdx_batch_selection_record",
+            "rdx_umbrella_selection_record",
+            "rdx_execution_loop_readiness_handoff_record",
+            "rdx_selection_eval_result",
+            "rdx_selection_conflict_record",
+            "rdx_selection_readiness_record",
+            "rdx_selection_effectiveness_record",
+            "rdx_rework_debt_record",
+            "rdx_roadmap_governance_bundle",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
 
     def test_system_roadmap_batches_have_required_governed_fields(self) -> None:
         instance = load_example("system_roadmap")
