@@ -103,13 +103,12 @@ CDE is the only system allowed to emit:
 - **SAS** — source authority sync ingestion surface *(placeholder; source retrieval seam)*
 - **SHA** — shared authority layer for shared primitive ownership boundaries *(placeholder; shared primitive seam)*
 - **RAX** — bounded runtime candidate-signal surface *(placeholder; non-authoritative by design)*
-- **SIV** — not currently present in this repository scope (reserved acronym)
 - **CHX** — chaos harness for controlled failure injection and adversarial campaign artifacts
 - **DEX** — decision explainability reconstruction and consistency checking artifacts
 - **SIM** — candidate policy/scenario simulation engine (non-live, non-authoritative)
 - **PRX** — precedent retrieval/scoring memory layer (non-authoritative)
 - **CVX** — cross-run consistency validation and instability classification
-- **HIX** — governed human interaction/override audit exchange
+- **HIX** — governed human interaction protocol and exchange contracts (no override artifact ownership)
 - **CAL** — calibration layer for confidence/correctness drift and budget signals (non-authoritative)
 - **POL** — policy lifecycle/canary/error-budget governance (non-authoritative to live TPA decisions)
 - **AIL** — artifact intelligence indexing and derived trend/recommendation deltas
@@ -119,20 +118,20 @@ CDE is the only system allowed to emit:
 - **QOS** — queue/backpressure/retry-budget load governance signaling
 - **SIMX** — external simulation provenance and replay integrity hardening
 - **JDX** — first-class judgment artifact governance between interpreted evidence and control decisions
+- **JSX** — judgment lifecycle, active-set, supersession, and conflict-state authority
 - **RUX** — reuse governance recording, boundary enforcement, and freshness/scope validation
 - **XPL** — artifact-card explainability signal governance for limitations and risk posture
-- **REL** — release engineering governance for canary, freeze, and rollback semantics
+- **REL** — release engineering authority for staged rollout, canary execution, freeze, and rollback semantics
 - **DAG** — dependency graph governance for declaration integrity, cycles, and critical-path signals
 - **EXT** — external runtime governance for provenance, replay verification, and constraint enforcement
-- **CTX** — context bundle governance and preflight gate authority
+- **CTX** — governed context assembly, bundle contract, and preflight gate authority
 - **EVL** — required evaluation registry and evaluation gate authority
 - **OBS** — observability contract and completeness authority
 - **LIN** — lineage completeness and promotion lineage gate authority
 - **DRT** — drift signal emission and aggregation authority
+- **DRX** — governed drift response planning and maintain-cycle response authority
 - **SLO** — error-budget and burn-rate control authority
-- **CAN** — canary rollout and rollback governance authority
 - **DAT** — evaluation dataset registry and lineage authority
-- **JDG** — governed judgment artifact authority
 - **PRM** — prompt registry and version admissibility authority
 - **ROU** — routing observability and route-governance authority
 - **HIT** — human override/correction artifact authority
@@ -814,6 +813,15 @@ CDE is the only system allowed to emit:
 | XRL writes policy/judgment/closure directly | External outcomes must route through canonical consumers | TPA / CDE / RIL |
 | BRM executes freezes/enforcement directly | Blast classification cannot become enforcement action | SEL / CDE |
 | MCL deletes governed memory directly | Compaction must remain governed and auditable | SEL / CDE / policy owners |
+| HIT publishes protocol contracts as authority artifacts | Human override ownership is distinct from interaction contract surfaces | HIX |
+| HIX records override/correction artifacts as canonical intervention records | Interaction contracts cannot become human action owner | HIT |
+| REL replaced by a second rollout owner | Release engineering is canonical rollout/freeze/rollback authority | REL |
+| DRT emits response plans | Drift signal production is distinct from response planning | DRX |
+| DRX emits first-class drift detection authority | Response planning cannot replace drift signal authority | DRT |
+| ENT emits immediate maintain-cycle response plans | Entropy mining is long-horizon input, not maintain-cycle response ownership | DRX |
+| BAX acts as primary budget owner | BAX is arbitration input only; budget ownership remains split by domain | CAP / SLO / QOS |
+| REP scope silently moved into EXT or SIMX | Replay gate authority must stay singular | REP |
+| CTX duplicated under alternate acronym expansion | Context governance ownership must be singular | CTX |
 
 ## Allowed Interaction Graph
 - AEX → TLC
@@ -844,6 +852,16 @@ CDE is the only system allowed to emit:
 - XRL → RIL (external outcome normalization bindings)
 - XRL → PRG (outcome impact trend signals)
 - MCL → RSM (compacted memory posture summaries)
+- HIT → HIX (human action artifacts consumed through governed interaction contracts)
+- HIX → HIT (protocol-valid human interaction records only)
+- DRT → DRX (drift signals inform governed response planning)
+- ENT → DRX (long-horizon correction mining input only)
+- CAP → BAX (budget-status arbitration input only)
+- SLO → BAX (budget-status arbitration input only)
+- QOS → BAX (budget-status arbitration input only)
+- REP → EXT (replay gate decisions consumed for external runtime controls)
+- SIMX → REP (simulation-specific provenance input to replay gating)
+- REL → CDE (release/canary/freeze/rollback recommendations route to closure authority)
 - Placeholder seams (LCE/ABX/DBB/SAL/SAS/SHA/RAX) are non-authoritative and must route final authority decisions through canonical owners above.
 
 ## Entry Invariant (Repo-Mutation Admission)
@@ -941,39 +959,39 @@ flowchart LR
 ### TAX
 - **acronym:** `TAX`
 - **full_name:** `Termination Authority eXecutor`
-- **role:** Determines whether a governed run should complete, continue, repair, freeze, block, or await async signal from validated evidence.
+- **role:** Provides bounded termination recommendations for closure-state evaluation; does not own final closure decisions.
 - **owns:**
   - information_sufficiency_evaluation
-  - bounded_completion_authority
-  - termination_decision_artifacts
+  - bounded_termination_recommendations
+  - termination_recommendation_artifacts
 - **must_not_do:**
   - enforce_side_effects
   - replace_budget_authority
   - replace_closure_state_owner
-  - terminate_on_confidence_alone
+  - emit_final_closure_state
 
 ### BAX
 - **acronym:** `BAX`
 - **full_name:** `Budget Authority eXecutor`
-- **role:** Determines whether governed execution remains within acceptable cost, quality, and risk bounds.
+- **role:** Composes multi-owner budget status into arbitration inputs for CAX; does not replace CAP/SLO/QOS ownership.
 - **owns:**
-  - system_budget_governance
+  - budget_arbitration_inputs
   - merged_budget_status
-  - budget_decision_artifacts
+  - budget_arbitration_bundle
 - **must_not_do:**
   - terminate_runs_directly
   - enforce_side_effects
   - optimize_for_cost_only
+  - replace_cap_slo_qos_primary_authority
   - replace_closure_state_owner
 
 ### CAX
 - **acronym:** `CAX`
 - **full_name:** `Control Arbitration eXchange`
-- **role:** Deterministically composes TAX, BAX, TPA, judgment, replay, trace, drift, and guardrail signals into a single arbitration outcome for CDE consumption.
+- **role:** Deterministically composes TAX/BAX and canonical authority signals into a single arbitration input bundle for CDE consumption.
 - **owns:**
-  - control_arbitration
-  - authority_composition
-  - conflict_resolution_precedence
+  - arbitration_input_composition
+  - arbitration_precedence_record
   - cde_arbitration_input_bundle
 - **must_not_do:**
   - execute_work
@@ -981,6 +999,7 @@ flowchart LR
   - replace_CDE
   - replace_TPA
   - emit_final_closure_state
+  - become_secondary_control_plane_owner
 
 ### Governed topology extension
 - `AEX -> TLC -> TPA -> PQX -> BAX + TAX -> CAX -> CDE -> SEL`
@@ -1104,21 +1123,22 @@ flowchart LR
 ### HIX
 - **acronym:** `HIX`
 - **full_name:** Human Interaction eXchange
-- **role:** Owns governed human interaction contracts, override auditing, and structured feedback exchange.
+- **role:** Owns governed human interaction protocol contracts and structured exchange envelopes only.
 - **owns:**
   - human_action_contracts
-  - override_audit_artifacts
+  - human_interaction_protocol_contracts
   - human_feedback_exchange_artifacts
 - **consumes:**
   - hitl_checkpoints
-  - override_requests
+  - hit_override_records
   - structured_human_feedback_inputs
 - **produces:**
-  - hix_human_action_record
-  - hix_override_audit_record
+  - hix_protocol_validation_record
   - hix_feedback_exchange_record
   - hix_human_interaction_bundle
 - **must_not_do:**
+  - own_human_override_artifacts
+  - own_correction_diff_artifacts
   - bypass_governance_layers
   - mutate_state_outside_owner_flows
   - replace_cde_tpa_sel_authority
@@ -1290,11 +1310,11 @@ flowchart LR
 ### SIMX
 - **acronym:** `SIMX`
 - **full_name:** External Simulation Provenance
-- **role:** Hardens provenance/replay/integrity for external simulation-heavy workflows.
+- **role:** Owns simulation-specific provenance and replay-integrity bundles for external simulation workflows.
 - **owns:**
   - external_simulation_provenance_records
   - replayable_simulation_bundles
-  - external_drift_detection_outputs
+  - simulation_replay_integrity_artifacts
 - **consumes:**
   - external_runtime_version_data
   - simulation_inputs_outputs
@@ -1306,6 +1326,8 @@ flowchart LR
   - simx_simulation_integrity_bundle
 - **must_not_do:**
   - replace SIM
+  - replace REP replay_gate_authority
+  - replace EXT external_runtime_owner
   - mutate external systems directly
   - trust external results without provenance validation
 
@@ -1334,6 +1356,7 @@ flowchart LR
   - jdx_judgment_application_record
   - jdx_judgment_bundle
 - **must_not_do:**
+  - own_judgment_lifecycle_active_set_or_supersession_state (JSX-owned)
   - replace CDE closure authority
   - replace TPA policy authority
   - execute work
@@ -1390,7 +1413,7 @@ flowchart LR
 ### REL
 - **acronym:** `REL`
 - **full_name:** Release Engineering Layer
-- **role:** Governed release/canary/freeze semantics for schema/prompt/pipeline changes.
+- **role:** Canonical release-engineering owner for staged rollout, canary execution, freeze, and rollback governance artifacts.
 - **owns:**
   - release_records
   - canary_metrics_breakdowns
@@ -1408,6 +1431,7 @@ flowchart LR
   - rel_change_freeze_record
   - rel_release_bundle
 - **must_not_do:**
+  - defer_release_governance_to_parallel_owner
   - replace TPA_or_CDE_authority
   - promote_change_without_governed_evidence
   - bypass_budget_exhaustion_gates
@@ -1438,10 +1462,10 @@ flowchart LR
 ### EXT
 - **acronym:** `EXT`
 - **full_name:** External Runtime Governance Layer
-- **role:** Governance for external runtimes and simulation-heavy workflows with replayable provenance and constraints.
+- **role:** Owns governance for non-simulation external runtimes, including provenance, constraints, and runtime contract enforcement.
 - **owns:**
   - external_runtime_provenance_contracts
-  - external_replay_verification_bundles
+  - external_runtime_replay_verification_records
   - runtime_constraint_enforcement_artifacts
   - external_runtime_bundles
 - **consumes:**
@@ -1455,17 +1479,23 @@ flowchart LR
   - ext_constraint_enforcement_record
   - ext_runtime_governance_bundle
 - **must_not_do:**
-  - replace SIM_or_SIMX
+  - replace REP replay_gate_authority
+  - replace SIMX simulation_specific_provenance_owner
   - mutate_unmanaged_external_systems_directly
   - trust_unproven_external_output_without_provenance_validation
 
 ### CTX
 - **acronym:** `CTX`
 - **full_name:** Context Governance Exchange
-- **role:** Owns canonical context bundle assembly contracts and governed context preflight gating.
+- **role:** Owns canonical governed context assembly, context bundle contracts, and context preflight gating.
 - **owns:**
   - context_bundle_contracts
+  - context_bundle
+  - context_recipe
   - context_bundle_assembly_manifests
+  - context_manifest_hashing
+  - context_ttl_freshness_rules
+  - context_conflict_records
   - context_preflight_gates
 - **consumes:**
   - source_context_artifacts
@@ -1560,6 +1590,7 @@ flowchart LR
   - drt_outcome_drift_artifact
   - drt_route_override_contradiction_bundle
 - **must_not_do:**
+  - emit_drift_response_plans (DRX-owned)
   - execute work (PQX-owned)
   - apply enforcement actions (SEL-owned)
   - issue promotion decisions (CDE-owned)
@@ -1585,26 +1616,6 @@ flowchart LR
   - replace TPA admissibility authority
   - override CDE closure authority
 
-### CAN
-- **acronym:** `CAN`
-- **full_name:** Canary Rollout Governance
-- **role:** Owns staged rollout, canary evidence, and rollback governance artifacts.
-- **owns:**
-  - canary_rollout_artifacts
-  - rollback_decision_artifacts
-  - staged_release_guardrails
-- **consumes:**
-  - prompt_policy_route_judge_change_sets
-  - rollout_eval_records
-  - rollback_trigger_signals
-- **produces:**
-  - can_rollout_plan_artifact
-  - can_canary_outcome_record
-  - can_rollback_action_record
-- **must_not_do:**
-  - execute work (PQX-owned)
-  - make policy admissibility decisions (TPA-owned)
-  - issue closure decisions (CDE-owned)
 
 ### DAT
 - **acronym:** `DAT`
@@ -1627,26 +1638,6 @@ flowchart LR
   - bypass EVL required-eval rules
   - issue closure decisions (CDE-owned)
 
-### JDG
-- **acronym:** `JDG`
-- **full_name:** Judgment Governance
-- **role:** Owns high-impact governed judgment artifact requirements.
-- **owns:**
-  - judgment_artifact_requirements
-  - evidence_sufficiency_judgments
-  - escalation_judgment_records
-- **consumes:**
-  - readiness_policy_evidence_artifacts
-  - certification_evidence_bundles
-  - escalation_context_artifacts
-- **produces:**
-  - jdg_judgment_record
-  - jdg_evidence_sufficiency_report
-  - jdg_escalation_decision_artifact
-- **must_not_do:**
-  - execute work (PQX-owned)
-  - reinterpret review semantics (RIL-owned)
-  - issue closure decisions (CDE-owned)
 
 ### PRM
 - **acronym:** `PRM`
@@ -1707,6 +1698,7 @@ flowchart LR
   - hit_correction_diff
   - hit_learning_linkage_artifact
 - **must_not_do:**
+  - redefine_human_interaction_protocol_contracts (HIX-owned)
   - bypass SEL enforcement
   - execute work (PQX-owned)
   - issue closure decisions (CDE-owned)
@@ -1729,7 +1721,9 @@ flowchart LR
   - cap_control_budget_decision
 - **must_not_do:**
   - execute work (PQX-owned)
+  - replace QOS queue_retry_budget_authority
   - replace SLO authority
+  - replace BAX_arbitration_input_surface
   - issue closure decisions (CDE-owned)
 
 ### SEC
@@ -1771,15 +1765,17 @@ flowchart LR
   - rep_replay_freeze_artifact
 - **must_not_do:**
   - execute work (PQX-owned)
+  - replace SIMX simulation_provenance_owner
+  - replace EXT external_runtime_constraint_owner
   - replace CDE closure authority
   - bypass SEL enforcement
 
 ### ENT
 - **acronym:** `ENT`
 - **full_name:** Entropy Management Loop
-- **role:** Owns recurring drift/exception accumulation detection and correction-mining governance outputs.
+- **role:** Owns long-horizon entropy accumulation analysis and correction-mining governance outputs.
 - **owns:**
-  - entropy_accumulation_detection
+  - entropy_accumulation_analysis
   - override_backlog_reporting
   - correction_mining_outputs
 - **consumes:**
@@ -1792,6 +1788,7 @@ flowchart LR
   - ent_correction_mining_bundle
 - **must_not_do:**
   - execute work (PQX-owned)
+  - emit_maintain_cycle_response_plans (DRX-owned)
   - replace PRG planning authority
   - issue closure decisions (CDE-owned)
 
@@ -2044,22 +2041,6 @@ flowchart LR
 
 ## RAX Serial Operating-Substrate Extension (2026-04-13)
 
-### CTX
-- **acronym:** `CTX`
-- **full_name:** `Context eXchange`
-- **role:** Owns governed context assembly, bundling, manifest hashing, provenance, TTL/freshness, trust levels, conflict handling, and context preflight.
-- **owns:**
-  - context_bundle_contracts
-  - context_bundle
-  - context_recipe
-  - context_manifest
-  - context_conflict_record
-  - context_preflight_result
-- **must_not_do:**
-  - bypass_policy_source_admission
-  - emit_implicit_context
-  - allow_untraceable_or_stale_context_through_strict_mode
-
 ### TLX
 - **acronym:** `TLX`
 - **full_name:** `Tooling Layer eXecutor`
@@ -2093,29 +2074,15 @@ flowchart LR
 ### DRX
 - **acronym:** `DRX`
 - **full_name:** `Drift Response eXecutor`
-- **role:** Owns recurring drift/entropy detection and governed maintain-stage responses.
+- **role:** Owns governed drift-response planning and maintain-cycle response artifacts from DRT/ENT inputs.
 - **owns:**
-  - drift_signal_record
   - drift_response_plan
   - maintain_cycle_record
   - invariant_gap_record
   - eval_expansion_record
 - **must_not_do:**
+  - own_primary_drift_signal_emission
+  - replace_ENT_long_horizon_entropy_mining
   - silently_mutate_governance
   - auto_fix_without_governed_artifacts
   - emit_drift_claims_without_trace_and_evidence_linkage
-
-### CPX
-- **acronym:** `CPX`
-- **full_name:** `Canary Policy eXecutor`
-- **role:** Reserved/planned; not an active build target.
-
-### CLX
-- **acronym:** `CLX`
-- **full_name:** `Calibration eXecutor`
-- **role:** Reserved/planned; not an active build target.
-
-### HFX
-- **acronym:** `HFX`
-- **full_name:** `Handoff eXecutor`
-- **role:** Reserved/planned; not an active build target.
