@@ -49,10 +49,12 @@ flowchart TB
 ## Local Governance Artifact Rule
 The ecosystem assumes governance artifacts are part of the platform control plane and are always locally available to engines and orchestration. Schemas, contracts, standards manifests, and registry files must be mounted or vendored from the `spectrum-systems` checkout rather than fetched over the network at runtime.
 
-## System Registry as Ecosystem Control Plane
-- The System Registry (`docs/system-registry.md` and `ecosystem/system-registry.json`) is the authoritative inventory of systems, roles, loop alignment, and maturity states across the ecosystem.
-- Future dependency graphing, compliance checks, and advisor capabilities build on this registry to understand what each system consumes, emits, and depends on.
-- Keeping the registry current prevents hidden components and repo drift, giving orchestrators and governance automation a single control-plane view.
+## System Registry Surfaces and Authority
+- Canonical authority for subsystem names, acronyms, ownership, and placeholder status is `docs/architecture/system_registry.md`.
+- `docs/system-registry.md` is a companion ecosystem inventory summary and must defer ownership authority to the canonical registry.
+- `docs/systems-registry.md` is a compatibility companion stub for legacy links.
+- `ecosystem/system-registry.json` remains the machine-readable ecosystem inventory used by automation.
+- Future dependency graphing, compliance checks, and advisor capabilities should consume the machine-readable inventory while resolving ownership authority from the canonical registry.
 
 ## Artifact Envelope as the Interoperability Layer
 - Engines exchange artifacts as **envelope + payload** pairs: the envelope standardizes `artifact_class`, `artifact_type`, `contract_version`, and lineage hooks; the payload remains the contract-defined schema.

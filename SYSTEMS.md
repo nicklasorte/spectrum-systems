@@ -1,6 +1,10 @@
 # Spectrum Systems Architecture Index
 
-## How to Navigate
+## Authority Note
+- This file catalogs SYS-00x ecosystem engines and related assets.
+- Canonical control-plane subsystem ownership (AEX/PQX/HNX/... and placeholder status) is authoritative only in `docs/architecture/system_registry.md`.
+- If this file and the canonical registry diverge, the canonical registry wins.
+
 - Start with `docs/system-map.md` and `docs/system-status-registry.md` for the current picture.
 - Use `docs/ecosystem-map.md` for repo-level flows and control-plane coverage.
 - Each system lives under `systems/<system>/` with `overview`, `interface`, `design`, `evaluation`, and `prompts` docs.
