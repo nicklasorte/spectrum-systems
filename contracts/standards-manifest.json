@@ -3,7 +3,7 @@
   "artifact_id": "STD-CONTRACTS",
   "artifact_version": "1.3.127",
   "schema_version": "1.3.99",
-  "standards_version": "1.0.83",
+  "standards_version": "1.3.128",
   "record_id": "REC-STD-2026-04-13-MNT-002",
   "run_id": "run-20260413T000000Z-mnt-002",
   "created_at": "2026-04-13T00:00:00Z",
@@ -729,6 +729,58 @@
       "notes": "HR-B canonical checkpoint continuity artifact for long-running governed execution."
     },
     {
+      "artifact_type": "chx_campaign_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/chx_campaign_result.json",
+      "notes": "ADV-001 deterministic chx_campaign_result artifact contract."
+    },
+    {
+      "artifact_type": "chx_failure_surface_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/chx_failure_surface_report.json",
+      "notes": "ADV-001 deterministic chx_failure_surface_report artifact contract."
+    },
+    {
+      "artifact_type": "chx_injection_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/chx_injection_record.json",
+      "notes": "ADV-001 deterministic chx_injection_record artifact contract."
+    },
+    {
+      "artifact_type": "chx_scenario_pack",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/chx_scenario_pack.json",
+      "notes": "ADV-001 deterministic chx_scenario_pack artifact contract."
+    },
+    {
       "artifact_type": "closure_decision_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1174,6 +1226,58 @@
       "notes": "XRUN-01 deterministic decision-driving cross-run artifact with trend metrics, detected patterns, recommended actions, and stable|warning|unstable system signal."
     },
     {
+      "artifact_type": "cvx_consistency_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/cvx_consistency_bundle.json",
+      "notes": "ADV-001 deterministic cvx_consistency_bundle artifact contract."
+    },
+    {
+      "artifact_type": "cvx_consistency_score",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/cvx_consistency_score.json",
+      "notes": "ADV-001 deterministic cvx_consistency_score artifact contract."
+    },
+    {
+      "artifact_type": "cvx_instability_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/cvx_instability_report.json",
+      "notes": "ADV-001 deterministic cvx_instability_report artifact contract."
+    },
+    {
+      "artifact_type": "cvx_run_comparison_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/cvx_run_comparison_record.json",
+      "notes": "ADV-001 deterministic cvx_run_comparison_record artifact contract."
+    },
+    {
       "artifact_type": "cycle_backlog_snapshot",
       "artifact_class": "coordination",
       "schema_version": "1.2.0",
@@ -1394,6 +1498,58 @@
       "last_updated_in": "1.3.114",
       "example_path": "contracts/examples/decision_replay_validation_record.json",
       "notes": "CDE-001 bounded decision authority and RIL closeout contract."
+    },
+    {
+      "artifact_type": "dex_explanation_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/dex_explanation_bundle.json",
+      "notes": "ADV-001 deterministic dex_explanation_bundle artifact contract."
+    },
+    {
+      "artifact_type": "dex_explanation_consistency_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/dex_explanation_consistency_result.json",
+      "notes": "ADV-001 deterministic dex_explanation_consistency_result artifact contract."
+    },
+    {
+      "artifact_type": "dex_explanation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/dex_explanation_record.json",
+      "notes": "ADV-001 deterministic dex_explanation_record artifact contract."
+    },
+    {
+      "artifact_type": "dex_explanation_summary",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/dex_explanation_summary.json",
+      "notes": "ADV-001 deterministic dex_explanation_summary artifact contract."
     },
     {
       "artifact_type": "done_certification_error",
@@ -2383,6 +2539,58 @@
       "last_updated_in": "1.0.39",
       "example_path": "contracts/examples/hitl_review_request.json",
       "notes": "AG-03 deterministic fail-closed human-in-the-loop review handoff artifact with pending-review queue semantics."
+    },
+    {
+      "artifact_type": "hix_feedback_exchange_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/hix_feedback_exchange_record.json",
+      "notes": "ADV-001 deterministic hix_feedback_exchange_record artifact contract."
+    },
+    {
+      "artifact_type": "hix_human_action_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/hix_human_action_record.json",
+      "notes": "ADV-001 deterministic hix_human_action_record artifact contract."
+    },
+    {
+      "artifact_type": "hix_human_interaction_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/hix_human_interaction_bundle.json",
+      "notes": "ADV-001 deterministic hix_human_interaction_bundle artifact contract."
+    },
+    {
+      "artifact_type": "hix_override_audit_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/hix_override_audit_record.json",
+      "notes": "ADV-001 deterministic hix_override_audit_record artifact contract."
     },
     {
       "artifact_type": "hnx_checkpoint_record",
@@ -4876,6 +5084,58 @@
       "notes": "Reusable provenance structure aligned to data-provenance-standard."
     },
     {
+      "artifact_type": "prx_precedent_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/prx_precedent_bundle.json",
+      "notes": "ADV-001 deterministic prx_precedent_bundle artifact contract."
+    },
+    {
+      "artifact_type": "prx_precedent_match_set",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/prx_precedent_match_set.json",
+      "notes": "ADV-001 deterministic prx_precedent_match_set artifact contract."
+    },
+    {
+      "artifact_type": "prx_precedent_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/prx_precedent_record.json",
+      "notes": "ADV-001 deterministic prx_precedent_record artifact contract."
+    },
+    {
+      "artifact_type": "prx_precedent_score_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/prx_precedent_score_report.json",
+      "notes": "ADV-001 deterministic prx_precedent_score_report artifact contract."
+    },
+    {
       "artifact_type": "publication_attempt_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -6362,6 +6622,58 @@
       "last_updated_in": "1.0.56",
       "example_path": "contracts/examples/service_level_objective.json",
       "notes": "SRE-08 governed deterministic SLO definition artifact for bounded observability metric objectives and breach severities."
+    },
+    {
+      "artifact_type": "sim_diff_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/sim_diff_record.json",
+      "notes": "ADV-001 deterministic sim_diff_record artifact contract."
+    },
+    {
+      "artifact_type": "sim_policy_impact_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/sim_policy_impact_report.json",
+      "notes": "ADV-001 deterministic sim_policy_impact_report artifact contract."
+    },
+    {
+      "artifact_type": "sim_scenario_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/sim_scenario_record.json",
+      "notes": "ADV-001 deterministic sim_scenario_record artifact contract."
+    },
+    {
+      "artifact_type": "sim_simulation_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.128",
+      "last_updated_in": "1.3.128",
+      "example_path": "contracts/examples/sim_simulation_bundle.json",
+      "notes": "ADV-001 deterministic sim_simulation_bundle artifact contract."
     },
     {
       "artifact_type": "slice_contract_update_candidate",

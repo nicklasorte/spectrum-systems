@@ -1,0 +1,16 @@
+{
+  "artifact_type": "hix_human_action_record",
+  "schema_version": "1.0.0",
+  "artifact_id": "hix_human_action_record-EX-001",
+  "status": "pass",
+  "generated_at": "2026-04-13T00:00:00Z",
+  "details": {
+    "summary": "Deterministic example for hix_human_action_record",
+    "non_authority": true
+  },
+  "references": [
+    "AEX",
+    "TLC",
+    "TPA"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "artifact_type": "prx_precedent_bundle",
+  "schema_version": "1.0.0",
+  "artifact_id": "prx_precedent_bundle-EX-001",
+  "status": "pass",
+  "generated_at": "2026-04-13T00:00:00Z",
+  "details": {
+    "summary": "Deterministic example for prx_precedent_bundle",
+    "non_authority": true
+  },
+  "references": [
+    "AEX",
+    "TLC",
+    "TPA"
+  ]
+}

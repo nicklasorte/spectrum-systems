@@ -79,3 +79,12 @@ def test_validator_fails_when_entry_invariant_is_weakened(tmp_path: Path) -> Non
     errors = validator.run_all_checks(weakened_path)
 
     assert any("Entry invariant missing required fail-closed statement" in error for error in errors)
+
+
+
+def test_registry_includes_adv_systems() -> None:
+    systems, _ = validator.parse_registry(REGISTRY_PATH)
+    for name in ("CHX", "DEX", "SIM", "PRX", "CVX", "HIX"):
+        assert name in systems
+        assert systems[name].owns
+        assert systems[name].must_not_do
