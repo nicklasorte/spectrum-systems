@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "context_conflict_record",
+  "title": "judgment_conflict_record",
   "type": "object",
   "properties": {
     "artifact_type": {
@@ -12,34 +12,28 @@
     "schema_version": {
       "type": "string"
     },
-    "conflict_id": {
-      "type": "string"
-    },
-    "run_id": {
-      "type": "string"
-    },
-    "trace_id": {
-      "type": "string"
+    "has_conflicts": {
+      "type": "boolean"
     },
     "conflicts": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "field": {
+          "policy_key": {
             "type": "string"
           },
-          "source_a": {
+          "existing_value": {
             "type": "string"
           },
-          "source_b": {
+          "new_value": {
             "type": "string"
           }
         },
         "required": [
-          "field",
-          "source_a",
-          "source_b"
+          "policy_key",
+          "existing_value",
+          "new_value"
         ],
         "additionalProperties": false
       }
@@ -49,9 +43,7 @@
     "artifact_type",
     "artifact_version",
     "schema_version",
-    "conflict_id",
-    "run_id",
-    "trace_id",
+    "has_conflicts",
     "conflicts"
   ],
   "additionalProperties": false

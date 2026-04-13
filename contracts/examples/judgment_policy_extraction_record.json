@@ -1,0 +1,14 @@
+{
+  "artifact_type": "judgment_policy_extraction_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "extraction_id": "JPE-1",
+  "active_set_ref": {
+    "active_count": 1
+  },
+  "conflict_ref": {
+    "has_conflicts": false
+  },
+  "target": "tpa-policy-candidate",
+  "ready": true
+}

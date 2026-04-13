@@ -1,0 +1,11 @@
+{
+  "artifact_type": "maintain_cycle_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "cycle_id": "MNT-1",
+  "drift_detected": true,
+  "signal_count": 1,
+  "response_plan_ref": {
+    "artifact_type": "drift_response_plan"
+  }
+}

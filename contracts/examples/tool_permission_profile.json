@@ -1,0 +1,10 @@
+{
+  "artifact_type": "tool_permission_profile",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "profile_id": "search-profile",
+  "allowed_permissions": [
+    "read"
+  ],
+  "allow_network": false
+}

@@ -1,0 +1,9 @@
+{
+  "artifact_type": "judgment_active_set_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "active_judgment_ids": [
+    "J-2"
+  ],
+  "active_count": 1
+}

@@ -1,0 +1,9 @@
+{
+  "artifact_type": "invariant_gap_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "cycle_id": "MNT-1",
+  "gaps": [
+    "missing_eval_slice:context_poisoning"
+  ]
+}

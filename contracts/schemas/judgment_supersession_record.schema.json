@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "judgment_supersession_record",
+  "type": "object",
+  "properties": {
+    "artifact_type": {
+      "type": "string"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "supersession_id": {
+      "type": "string"
+    },
+    "old_judgment_id": {
+      "type": "string"
+    },
+    "new_judgment_id": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "supersession_id",
+    "old_judgment_id",
+    "new_judgment_id",
+    "reason"
+  ],
+  "additionalProperties": false
+}

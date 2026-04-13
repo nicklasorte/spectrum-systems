@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tool_permission_profile",
+  "type": "object",
+  "properties": {
+    "artifact_type": {
+      "type": "string"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "profile_id": {
+      "type": "string"
+    },
+    "allowed_permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allow_network": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "profile_id",
+    "allowed_permissions",
+    "allow_network"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "judgment_policy_extraction_record",
+  "type": "object",
+  "properties": {
+    "artifact_type": {
+      "type": "string"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "extraction_id": {
+      "type": "string"
+    },
+    "active_set_ref": {
+      "type": "object"
+    },
+    "conflict_ref": {
+      "type": "object"
+    },
+    "target": {
+      "type": "string"
+    },
+    "ready": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "extraction_id",
+    "active_set_ref",
+    "conflict_ref",
+    "target",
+    "ready"
+  ],
+  "additionalProperties": false
+}

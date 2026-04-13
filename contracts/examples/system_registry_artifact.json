@@ -40,305 +40,6 @@
       ]
     },
     {
-      "acronym": "PQX",
-      "full_name": "Prompt Queue Execution",
-      "role": "Executes bounded authorized work slices.",
-      "owns": [
-        "execution",
-        "execution_state_transitions",
-        "execution_trace_emission"
-      ],
-      "consumes": [
-        "codex_pqx_task_wrapper",
-        "tpa_slice_artifact",
-        "top_level_conductor_run_artifact"
-      ],
-      "produces": [
-        "pqx_slice_execution_record",
-        "pqx_bundle_execution_record",
-        "pqx_execution_closure_record"
-      ],
-      "prohibited_behaviors": [
-        "trust_policy_adjudication",
-        "repair_plan_generation",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "TLC",
-        "TPA"
-      ],
-      "downstream_consumers": [
-        "FRE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "TPA",
-      "full_name": "Trust Policy Application",
-      "role": "Applies trust and policy gates to authorize execution scope.",
-      "owns": [
-        "trust_policy_application",
-        "scope_gating",
-        "complexity_budgeting"
-      ],
-      "consumes": [
-        "codex_pqx_task_wrapper",
-        "source_authority_refresh_receipt",
-        "complexity_trend"
-      ],
-      "produces": [
-        "tpa_scope_policy",
-        "tpa_slice_artifact",
-        "tpa_observability_summary"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "runtime_enforcement",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "PQX",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "FRE",
-      "full_name": "Failure Recovery Engine",
-      "role": "Diagnoses failures and emits bounded repair plans.",
-      "owns": [
-        "failure_diagnosis",
-        "repair_plan_generation",
-        "recurrence_prevention_recommendation"
-      ],
-      "consumes": [
-        "agent_failure_record",
-        "system_enforcement_result_artifact",
-        "review_signal_artifact"
-      ],
-      "produces": [
-        "failure_diagnosis_artifact",
-        "repair_prompt_artifact",
-        "recurrence_prevention_record"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "direct_enforcement_mutation",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "PQX",
-        "SEL",
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "TLC",
-        "PRG"
-      ]
-    },
-    {
-      "acronym": "RIL",
-      "full_name": "Review Integration Layer",
-      "role": "Interprets review outputs into deterministic integration payloads.",
-      "owns": [
-        "review_interpretation",
-        "review_integration",
-        "review_projection"
-      ],
-      "consumes": [
-        "review_artifact",
-        "review_signal_artifact",
-        "review_action_tracker_artifact"
-      ],
-      "produces": [
-        "review_integration_packet_artifact",
-        "review_projection_bundle_artifact",
-        "roadmap_review_projection_artifact"
-      ],
-      "prohibited_behaviors": [
-        "runtime_enforcement",
-        "work_execution",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "PRG"
-      ]
-    },
-    {
-      "acronym": "SEL",
-      "full_name": "System Enforcement Layer",
-      "role": "Applies fail-closed enforcement decisions across subsystem boundaries.",
-      "owns": [
-        "enforcement",
-        "fail_closed_blocking",
-        "promotion_guarding"
-      ],
-      "consumes": [
-        "tpa_slice_artifact",
-        "review_control_signal_artifact",
-        "closure_decision_artifact"
-      ],
-      "produces": [
-        "system_enforcement_result_artifact",
-        "enforcement_decision",
-        "action_trace_record"
-      ],
-      "prohibited_behaviors": [
-        "review_reinterpretation",
-        "repair_plan_generation",
-        "orchestration"
-      ],
-      "upstream_dependencies": [
-        "TLC",
-        "TPA",
-        "CDE"
-      ],
-      "downstream_consumers": [
-        "PQX",
-        "FRE",
-        "TLC"
-      ]
-    },
-    {
-      "acronym": "CDE",
-      "full_name": "Closure Decision Engine",
-      "role": "Determines closure state from governed evidence and review outputs.",
-      "owns": [
-        "closure_decisions",
-        "closure_lock_state",
-        "bounded_next_step_classification"
-      ],
-      "consumes": [
-        "review_projection_bundle_artifact",
-        "review_signal_artifact",
-        "review_action_tracker_artifact"
-      ],
-      "produces": [
-        "closure_decision_artifact"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "direct_enforcement_action",
-        "repair_plan_generation"
-      ],
-      "upstream_dependencies": [
-        "RIL",
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "SEL",
-        "TLC"
-      ]
-    },
-    {
-      "acronym": "TLC",
-      "full_name": "Top Level Conductor",
-      "role": "Orchestrates subsystem invocation order and interaction boundaries.",
-      "owns": [
-        "orchestration",
-        "subsystem_routing",
-        "bounded_cycle_coordination"
-      ],
-      "consumes": [
-        "tpa_slice_artifact",
-        "system_enforcement_result_artifact",
-        "closure_decision_artifact"
-      ],
-      "produces": [
-        "top_level_conductor_run_artifact"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "repair_plan_generation",
-        "closure_decision_override"
-      ],
-      "upstream_dependencies": [
-        "AEX",
-        "PRG"
-      ],
-      "downstream_consumers": [
-        "PQX",
-        "TPA",
-        "FRE",
-        "RIL",
-        "CDE",
-        "PRG",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "PRG",
-      "full_name": "Program Governance",
-      "role": "Owns program-level planning, drift management, and roadmap alignment.",
-      "owns": [
-        "program_governance",
-        "roadmap_alignment",
-        "program_drift_management"
-      ],
-      "consumes": [
-        "roadmap_signal_bundle",
-        "roadmap_review_view_artifact",
-        "batch_delivery_report"
-      ],
-      "produces": [
-        "program_brief",
-        "program_feedback_record",
-        "program_roadmap_alignment_result"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "runtime_enforcement",
-        "review_interpretation"
-      ],
-      "upstream_dependencies": [
-        "TLC",
-        "RIL",
-        "FRE"
-      ],
-      "downstream_consumers": [
-        "TLC"
-      ]
-    },
-    {
-      "acronym": "TAX",
-      "full_name": "Termination Authority eXecutor",
-      "role": "Determines termination outcome from governed evidence sufficiency.",
-      "owns": [
-        "information_sufficiency_evaluation",
-        "bounded_completion_authority",
-        "termination_decision_artifacts"
-      ],
-      "consumes": [
-        "termination_signal_record",
-        "termination_policy",
-        "system_budget_status_v2"
-      ],
-      "produces": [
-        "termination_decision",
-        "termination_audit_record"
-      ],
-      "prohibited_behaviors": [
-        "runtime_enforcement",
-        "policy_admissibility_override",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "PQX",
-        "BAX",
-        "TPA"
-      ],
-      "downstream_consumers": [
-        "CAX",
-        "CDE"
-      ]
-    },
-    {
       "acronym": "BAX",
       "full_name": "Budget Authority eXecutor",
       "role": "Determines cost/quality/risk budget status for governed execution.",
@@ -372,426 +73,28 @@
       ]
     },
     {
-      "acronym": "CAX",
-      "full_name": "Control Arbitration eXchange",
-      "role": "Composes TAX/BAX/TPA/replay/trace/judgment signals into deterministic CDE input bundles.",
+      "acronym": "BRM",
+      "full_name": "Blast Radius Manager",
+      "role": "Classifies impact/irreversibility and escalation support requirements.",
       "owns": [
-        "control_arbitration",
-        "authority_composition",
-        "conflict_resolution_precedence",
-        "cde_arbitration_input_bundle"
+        "blast_radius_assessment",
+        "irreversibility_classification",
+        "rollback_difficulty_score",
+        "escalation_requirement_record",
+        "multi_review_requirement_record"
       ],
       "consumes": [
-        "termination_decision",
-        "budget_control_decision",
-        "tpa_policy_decision_record"
+        "change_impact_artifact"
       ],
       "produces": [
-        "control_arbitration_record",
-        "control_arbitration_reason_bundle",
-        "cde_arbitration_input_bundle"
+        "brm_blast_radius_assessment"
       ],
       "prohibited_behaviors": [
-        "work_execution",
-        "runtime_enforcement",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "TAX",
-        "BAX",
-        "TPA"
-      ],
-      "downstream_consumers": [
-        "CDE"
-      ]
-    },
-    {
-      "acronym": "CHX",
-      "full_name": "Chaos Harness eXchange",
-      "role": "Owns controlled failure injection and adversarial scenario execution across governed seams.",
-      "owns": [
-        "chaos_failure_injection",
-        "chaos_scenario_definition",
-        "chaos_campaign_execution",
-        "chaos_failure_surface_reporting"
-      ],
-      "consumes": [
-        "governed_scenario_inputs",
-        "replayable_system_bundles",
-        "certification_scope_inputs"
-      ],
-      "produces": [
-        "chx_injection_record",
-        "chx_scenario_pack",
-        "chx_campaign_result",
-        "chx_failure_surface_report"
-      ],
-      "prohibited_behaviors": [
-        "execute_production_workflows",
-        "replace_pqx_execution",
-        "issue_policy_authority",
-        "issue_closure_authority",
-        "mutate_live_state_outside_controlled_injection"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "CVX",
-      "full_name": "Consistency Validation eXchange",
-      "role": "Owns multi-run consistency comparison, divergence scoring, and instability classification.",
-      "owns": [
-        "multi_run_comparison",
-        "divergence_scoring",
-        "instability_classification"
-      ],
-      "consumes": [
-        "repeated_run_outputs",
-        "replay_bundles",
-        "evidence_chain_artifacts"
-      ],
-      "produces": [
-        "cvx_run_comparison_record",
-        "cvx_consistency_score",
-        "cvx_instability_report",
-        "cvx_consistency_bundle"
-      ],
-      "prohibited_behaviors": [
-        "alter_execution_outputs",
-        "override_decision_authority",
-        "replace_replay_engines"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "DEX",
-      "full_name": "Decision Explainability eXchange",
-      "role": "Owns deterministic decision explanation reconstruction from governed evidence and prior decisions.",
-      "owns": [
-        "decision_explanation_reconstruction",
-        "explanation_consistency_checking",
-        "explanation_compression_views"
-      ],
-      "consumes": [
-        "decision_artifacts",
-        "evidence_chain_artifacts",
-        "control_eval_artifacts",
-        "provenance_replay_refs"
-      ],
-      "produces": [
-        "dex_explanation_record",
-        "dex_explanation_consistency_result",
-        "dex_explanation_summary",
-        "dex_explanation_bundle"
-      ],
-      "prohibited_behaviors": [
-        "make_decisions",
-        "reinterpret_upstream_semantics",
-        "override_authority_paths"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "SIM",
-      "full_name": "Simulation eXecution Module",
-      "role": "Owns deterministic candidate policy and scenario simulation without live-state mutation.",
-      "owns": [
-        "candidate_policy_simulation",
-        "scenario_replay_execution",
-        "impact_diff_generation"
-      ],
-      "consumes": [
-        "candidate_policy_artifacts",
-        "baseline_artifacts",
-        "replayable_scenario_packs"
-      ],
-      "produces": [
-        "sim_scenario_record",
-        "sim_policy_impact_report",
-        "sim_diff_record",
-        "sim_simulation_bundle"
-      ],
-      "prohibited_behaviors": [
-        "modify_live_state",
-        "replace_tpa_cde_authority",
-        "promote_simulation_output_automatically"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "PRX",
-      "full_name": "Precedent Retrieval eXchange",
-      "role": "Owns structured precedent record retrieval and bounded relevance scoring.",
-      "owns": [
-        "precedent_record_storage_shape",
-        "precedent_retrieval",
-        "precedent_relevance_scoring"
-      ],
-      "consumes": [
-        "historical_decision_artifacts",
-        "historical_outcome_artifacts",
-        "evidence_bundles"
-      ],
-      "produces": [
-        "prx_precedent_record",
-        "prx_precedent_match_set",
-        "prx_precedent_score_report",
-        "prx_precedent_bundle"
-      ],
-      "prohibited_behaviors": [
-        "override_current_authority",
-        "auto_promote_historical_precedent"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "HIX",
-      "full_name": "Human Interaction eXchange",
-      "role": "Owns governed human interaction contracts, override auditing, and structured feedback exchange.",
-      "owns": [
-        "human_action_contracts",
-        "override_audit_artifacts",
-        "human_feedback_exchange_artifacts"
-      ],
-      "consumes": [
-        "hitl_checkpoints",
-        "override_requests",
-        "structured_human_feedback_inputs"
-      ],
-      "produces": [
-        "hix_human_action_record",
-        "hix_override_audit_record",
-        "hix_feedback_exchange_record",
-        "hix_human_interaction_bundle"
-      ],
-      "prohibited_behaviors": [
-        "bypass_governance_layers",
-        "mutate_state_outside_owner_flows",
-        "replace_cde_tpa_sel_authority"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "CTX",
-      "full_name": "Context Governance Exchange",
-      "role": "Owns canonical context bundle assembly contracts and governed context preflight gating.",
-      "owns": [
-        "context_bundle_contracts",
-        "context_bundle_assembly_manifests",
-        "context_preflight_gates"
-      ],
-      "consumes": [
-        "source_context_artifacts",
-        "lineage_provenance_artifacts",
-        "context_inclusion_policies"
-      ],
-      "produces": [
-        "ctx_context_bundle_artifact",
-        "ctx_context_preflight_report",
-        "ctx_context_assembly_manifest"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "trust_policy_adjudication",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "EVL",
-      "full_name": "Evaluation Registry Layer",
-      "role": "Owns required evaluation registry, required-case governance, and evaluation readiness gating signals.",
-      "owns": [
-        "required_eval_registry",
-        "required_eval_case_governance",
-        "eval_completion_blocking"
-      ],
-      "consumes": [
-        "eval_run_artifacts",
-        "eval_registry_updates",
-        "required_case_policy"
-      ],
-      "produces": [
-        "evl_required_eval_set",
-        "evl_eval_completion_record",
-        "evl_eval_block_signal"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
         "closure_decisioning",
         "runtime_enforcement"
       ],
       "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "OBS",
-      "full_name": "Observability Contract System",
-      "role": "Owns cross-system observability contracts for trace/span/correlation completeness.",
-      "owns": [
-        "observability_contracts",
-        "trace_span_correlation_requirements",
-        "observability_completeness_checks"
-      ],
-      "consumes": [
-        "runtime_trace_artifacts",
-        "review_trace_artifacts",
-        "control_trace_artifacts"
-      ],
-      "produces": [
-        "obs_observability_contract_record",
-        "obs_completeness_report",
-        "obs_correlation_validation_record"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "review_interpretation",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "LIN",
-      "full_name": "Lineage Integrity Network",
-      "role": "Owns end-to-end lineage completeness requirements for promotion-relevant artifacts.",
-      "owns": [
-        "lineage_completeness_rules",
-        "lineage_graph_integrity_checks",
-        "lineage_promotion_gates"
-      ],
-      "consumes": [
-        "admission_lineage_artifacts",
-        "execution_lineage_artifacts",
-        "certification_lineage_artifacts"
-      ],
-      "produces": [
-        "lin_lineage_completeness_report",
-        "lin_lineage_graph_artifact",
-        "lin_lineage_promotion_block"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "trust_policy_adjudication",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "DRT",
-      "full_name": "Drift Signal Runtime",
-      "role": "Owns deterministic drift signal artifacts for control consumption.",
-      "owns": [
-        "drift_signal_emission",
-        "drift_type_classification",
-        "drift_signal_aggregation"
-      ],
-      "consumes": [
-        "input_outcome_route_override_signals",
-        "contradiction_artifacts",
-        "historical_baseline_artifacts"
-      ],
-      "produces": [
-        "drt_input_drift_artifact",
-        "drt_outcome_drift_artifact",
-        "drt_route_override_contradiction_bundle"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "runtime_enforcement",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "SLO",
-      "full_name": "Service Level Objective Control",
-      "role": "Owns governed error-budget and burn-rate decision artifacts.",
-      "owns": [
-        "slo_error_budget_artifacts",
-        "burn_rate_decisioning",
-        "slo_freeze_block_signals"
-      ],
-      "consumes": [
-        "eval_replay_drift_latency_cost_signals",
-        "budget_threshold_policies",
-        "control_decision_inputs"
-      ],
-      "produces": [
-        "slo_budget_status_artifact",
-        "slo_burn_rate_record",
-        "slo_control_decision_signal"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "trust_policy_adjudication",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "TLC"
+        "RIL"
       ],
       "downstream_consumers": [
         "CDE",
@@ -820,166 +123,6 @@
       "prohibited_behaviors": [
         "work_execution",
         "trust_policy_adjudication",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "DAT",
-      "full_name": "Dataset Registry Authority",
-      "role": "Owns evaluation dataset registry lineage and version governance.",
-      "owns": [
-        "eval_dataset_registry",
-        "dataset_lineage_tracking",
-        "dataset_version_governance"
-      ],
-      "consumes": [
-        "dataset_manifests",
-        "eval_case_manifests",
-        "failure_derived_dataset_inputs"
-      ],
-      "produces": [
-        "dat_dataset_registry_record",
-        "dat_dataset_lineage_record",
-        "dat_dataset_version_resolution"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "closure_decisioning",
-        "runtime_enforcement"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "JDG",
-      "full_name": "Judgment Governance",
-      "role": "Owns high-impact governed judgment artifact requirements.",
-      "owns": [
-        "judgment_artifact_requirements",
-        "evidence_sufficiency_judgments",
-        "escalation_judgment_records"
-      ],
-      "consumes": [
-        "readiness_policy_evidence_artifacts",
-        "certification_evidence_bundles",
-        "escalation_context_artifacts"
-      ],
-      "produces": [
-        "jdg_judgment_record",
-        "jdg_evidence_sufficiency_report",
-        "jdg_escalation_decision_artifact"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "review_interpretation",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "PRM",
-      "full_name": "Prompt Registry Manager",
-      "role": "Owns canonical prompt/task registry and prompt version admissibility.",
-      "owns": [
-        "prompt_registry_authority",
-        "prompt_version_resolution",
-        "shadow_prompt_blocking"
-      ],
-      "consumes": [
-        "prompt_spec_artifacts",
-        "task_registry_artifacts",
-        "prompt_change_records"
-      ],
-      "produces": [
-        "prm_prompt_registry_record",
-        "prm_prompt_resolution_artifact",
-        "prm_shadow_prompt_block_record"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "trust_policy_adjudication",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "ROU",
-      "full_name": "Routing Governance System",
-      "role": "Owns route candidate comparison, selection evidence, and route-governance records.",
-      "owns": [
-        "route_candidate_records",
-        "route_selection_evidence",
-        "route_change_governance"
-      ],
-      "consumes": [
-        "routing_candidates",
-        "cost_quality_signals",
-        "eval_and_canary_results"
-      ],
-      "produces": [
-        "rou_route_comparison_record",
-        "rou_route_selection_artifact",
-        "rou_route_change_control_record"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "review_interpretation",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "TLC"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "SEL"
-      ]
-    },
-    {
-      "acronym": "HIT",
-      "full_name": "Human Intervention Tracker",
-      "role": "Owns human review, override, correction diff, and downstream learning artifacts.",
-      "owns": [
-        "human_override_artifacts",
-        "correction_diff_artifacts",
-        "override_learning_linkage"
-      ],
-      "consumes": [
-        "human_review_records",
-        "override_requests",
-        "downstream_learning_signals"
-      ],
-      "produces": [
-        "hit_override_record",
-        "hit_correction_diff",
-        "hit_learning_linkage_artifact"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "runtime_enforcement",
         "closure_decisioning"
       ],
       "upstream_dependencies": [
@@ -1023,28 +166,885 @@
       ]
     },
     {
-      "acronym": "SEC",
-      "full_name": "Security Guardrail Control",
-      "role": "Owns governed security guardrail event artifacts and control integration outputs.",
+      "acronym": "CAX",
+      "full_name": "Control Arbitration eXchange",
+      "role": "Composes TAX/BAX/TPA/replay/trace/judgment signals into deterministic CDE input bundles.",
       "owns": [
-        "security_guardrail_event_contracts",
-        "guardrail_control_integration",
-        "indeterminate_guardrail_freeze_signals"
+        "control_arbitration",
+        "authority_composition",
+        "conflict_resolution_precedence",
+        "cde_arbitration_input_bundle"
       ],
       "consumes": [
-        "input_guardrail_events",
-        "output_guardrail_events",
-        "tool_guardrail_events"
+        "termination_decision",
+        "budget_control_decision",
+        "tpa_policy_decision_record"
       ],
       "produces": [
-        "sec_guardrail_event_record",
-        "sec_control_integration_signal",
-        "sec_indeterminate_freeze_record"
+        "control_arbitration_record",
+        "control_arbitration_reason_bundle",
+        "cde_arbitration_input_bundle"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "runtime_enforcement",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TAX",
+        "BAX",
+        "TPA"
+      ],
+      "downstream_consumers": [
+        "CDE"
+      ]
+    },
+    {
+      "acronym": "CDE",
+      "full_name": "Closure Decision Engine",
+      "role": "Determines closure state from governed evidence and review outputs.",
+      "owns": [
+        "closure_decisions",
+        "closure_lock_state",
+        "bounded_next_step_classification"
+      ],
+      "consumes": [
+        "review_projection_bundle_artifact",
+        "review_signal_artifact",
+        "review_action_tracker_artifact"
+      ],
+      "produces": [
+        "closure_decision_artifact"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "direct_enforcement_action",
+        "repair_plan_generation"
+      ],
+      "upstream_dependencies": [
+        "RIL",
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "SEL",
+        "TLC"
+      ]
+    },
+    {
+      "acronym": "CHX",
+      "full_name": "Chaos Harness eXchange",
+      "role": "Owns controlled failure injection and adversarial scenario execution across governed seams.",
+      "owns": [
+        "chaos_failure_injection",
+        "chaos_scenario_definition",
+        "chaos_campaign_execution",
+        "chaos_failure_surface_reporting"
+      ],
+      "consumes": [
+        "governed_scenario_inputs",
+        "replayable_system_bundles",
+        "certification_scope_inputs"
+      ],
+      "produces": [
+        "chx_injection_record",
+        "chx_scenario_pack",
+        "chx_campaign_result",
+        "chx_failure_surface_report"
+      ],
+      "prohibited_behaviors": [
+        "execute_production_workflows",
+        "replace_pqx_execution",
+        "issue_policy_authority",
+        "issue_closure_authority",
+        "mutate_live_state_outside_controlled_injection"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "CLX",
+      "full_name": "CLX (Reserved)",
+      "role": "Reserved/planned; not active build target.",
+      "owns": [],
+      "consumes": [],
+      "produces": [],
+      "prohibited_behaviors": [
+        "activate_without_registry_update"
+      ],
+      "upstream_dependencies": [],
+      "downstream_consumers": []
+    },
+    {
+      "acronym": "CON",
+      "full_name": "Contract Interface Governance",
+      "role": "Owns explicit interface contract hardening between systems.",
+      "owns": [
+        "interface_contract_registry",
+        "contract_compatibility_gates",
+        "hidden_coupling_detection"
+      ],
+      "consumes": [
+        "system_interface_contracts",
+        "compatibility_reports",
+        "orchestration_handoff_records"
+      ],
+      "produces": [
+        "con_interface_contract_record",
+        "con_compatibility_gate_result",
+        "con_hidden_coupling_report"
       ],
       "prohibited_behaviors": [
         "work_execution",
         "trust_policy_adjudication",
         "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "CPX",
+      "full_name": "CPX (Reserved)",
+      "role": "Reserved/planned; not active build target.",
+      "owns": [],
+      "consumes": [],
+      "produces": [],
+      "prohibited_behaviors": [
+        "activate_without_registry_update"
+      ],
+      "upstream_dependencies": [],
+      "downstream_consumers": []
+    },
+    {
+      "acronym": "CTX",
+      "full_name": "Context eXchange",
+      "role": "Owns governed context assembly, bundling, manifest hashing, provenance, TTL/freshness, trust levels, conflict handling, and context preflight.",
+      "owns": [
+        "context_bundle",
+        "context_recipe",
+        "context_manifest",
+        "context_conflict_record",
+        "context_preflight_result"
+      ],
+      "consumes": [
+        "source_context_artifacts",
+        "policy_admission_rules"
+      ],
+      "produces": [
+        "context_bundle",
+        "context_manifest",
+        "context_preflight_result"
+      ],
+      "prohibited_behaviors": [
+        "bypass_policy_source_admission",
+        "emit_implicit_context",
+        "allow_untraceable_or_stale_context_through_strict_mode"
+      ],
+      "upstream_dependencies": [
+        "TPA"
+      ],
+      "downstream_consumers": [
+        "PQX",
+        "CAX"
+      ]
+    },
+    {
+      "acronym": "CVX",
+      "full_name": "Consistency Validation eXchange",
+      "role": "Owns multi-run consistency comparison, divergence scoring, and instability classification.",
+      "owns": [
+        "multi_run_comparison",
+        "divergence_scoring",
+        "instability_classification"
+      ],
+      "consumes": [
+        "repeated_run_outputs",
+        "replay_bundles",
+        "evidence_chain_artifacts"
+      ],
+      "produces": [
+        "cvx_run_comparison_record",
+        "cvx_consistency_score",
+        "cvx_instability_report",
+        "cvx_consistency_bundle"
+      ],
+      "prohibited_behaviors": [
+        "alter_execution_outputs",
+        "override_decision_authority",
+        "replace_replay_engines"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "DAT",
+      "full_name": "Dataset Registry Authority",
+      "role": "Owns evaluation dataset registry lineage and version governance.",
+      "owns": [
+        "eval_dataset_registry",
+        "dataset_lineage_tracking",
+        "dataset_version_governance"
+      ],
+      "consumes": [
+        "dataset_manifests",
+        "eval_case_manifests",
+        "failure_derived_dataset_inputs"
+      ],
+      "produces": [
+        "dat_dataset_registry_record",
+        "dat_dataset_lineage_record",
+        "dat_dataset_version_resolution"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning",
+        "runtime_enforcement"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "DCL",
+      "full_name": "Doctrine Compilation Layer",
+      "role": "Compiles institutional doctrine artifacts with conflict and lineage records.",
+      "owns": [
+        "doctrine_artifact",
+        "doctrine_update_candidate",
+        "doctrine_supersession_record",
+        "doctrine_conflict_record",
+        "doctrine_lineage_record"
+      ],
+      "consumes": [
+        "judgment_eval_result",
+        "policy_change_candidate",
+        "precedent_archive"
+      ],
+      "produces": [
+        "dcl_doctrine_artifact"
+      ],
+      "prohibited_behaviors": [
+        "policy_authority_decisioning",
+        "closure_decisioning",
+        "runtime_enforcement"
+      ],
+      "upstream_dependencies": [
+        "RIL",
+        "PRG"
+      ],
+      "downstream_consumers": [
+        "TPA",
+        "PRG"
+      ]
+    },
+    {
+      "acronym": "DEM",
+      "full_name": "Decision Economics Modeler",
+      "role": "Produces recommendation-grade economics and tradeoff artifacts.",
+      "owns": [
+        "decision_economics_artifact",
+        "cost_of_delay_model",
+        "false_positive_cost_model",
+        "false_negative_cost_model",
+        "human_review_cost_model",
+        "tradeoff_surface_artifact",
+        "economic_decision_score"
+      ],
+      "consumes": [
+        "portfolio_posture_signal",
+        "external_outcome_impact_artifact"
+      ],
+      "produces": [
+        "dem_decision_economics_artifact"
+      ],
+      "prohibited_behaviors": [
+        "closure_decisioning",
+        "runtime_enforcement",
+        "work_execution"
+      ],
+      "upstream_dependencies": [
+        "RSM",
+        "XRL"
+      ],
+      "downstream_consumers": [
+        "PRG"
+      ]
+    },
+    {
+      "acronym": "DEX",
+      "full_name": "Decision Explainability eXchange",
+      "role": "Owns deterministic decision explanation reconstruction from governed evidence and prior decisions.",
+      "owns": [
+        "decision_explanation_reconstruction",
+        "explanation_consistency_checking",
+        "explanation_compression_views"
+      ],
+      "consumes": [
+        "decision_artifacts",
+        "evidence_chain_artifacts",
+        "control_eval_artifacts",
+        "provenance_replay_refs"
+      ],
+      "produces": [
+        "dex_explanation_record",
+        "dex_explanation_consistency_result",
+        "dex_explanation_summary",
+        "dex_explanation_bundle"
+      ],
+      "prohibited_behaviors": [
+        "make_decisions",
+        "reinterpret_upstream_semantics",
+        "override_authority_paths"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "DRT",
+      "full_name": "Drift Signal Runtime",
+      "role": "Owns deterministic drift signal artifacts for control consumption.",
+      "owns": [
+        "drift_signal_emission",
+        "drift_type_classification",
+        "drift_signal_aggregation"
+      ],
+      "consumes": [
+        "input_outcome_route_override_signals",
+        "contradiction_artifacts",
+        "historical_baseline_artifacts"
+      ],
+      "produces": [
+        "drt_input_drift_artifact",
+        "drt_outcome_drift_artifact",
+        "drt_route_override_contradiction_bundle"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "runtime_enforcement",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "DRX",
+      "full_name": "Drift Response eXecutor",
+      "role": "Owns recurring drift/entropy detection and governed maintain-stage responses.",
+      "owns": [
+        "drift_signal_record",
+        "drift_response_plan",
+        "maintain_cycle_record",
+        "invariant_gap_record",
+        "eval_expansion_record"
+      ],
+      "consumes": [
+        "trace_drift_metrics",
+        "eval_coverage_metrics"
+      ],
+      "produces": [
+        "drift_signal_record",
+        "maintain_cycle_record",
+        "eval_expansion_record"
+      ],
+      "prohibited_behaviors": [
+        "silently_mutate_governance",
+        "auto_fix_without_governed_artifacts",
+        "emit_drift_claims_without_trace_and_evidence_linkage"
+      ],
+      "upstream_dependencies": [
+        "PQX",
+        "OBS"
+      ],
+      "downstream_consumers": [
+        "CAX",
+        "PRG"
+      ]
+    },
+    {
+      "acronym": "ENT",
+      "full_name": "Entropy Management Loop",
+      "role": "Owns recurring drift/exception accumulation detection and correction-mining governance outputs.",
+      "owns": [
+        "entropy_accumulation_detection",
+        "override_backlog_reporting",
+        "correction_mining_outputs"
+      ],
+      "consumes": [
+        "drift_exception_history",
+        "override_backlog_artifacts",
+        "architecture_lint_signals"
+      ],
+      "produces": [
+        "ent_entropy_report",
+        "ent_override_backlog_record",
+        "ent_correction_mining_bundle"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning",
+        "runtime_enforcement"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "EVL",
+      "full_name": "Evaluation Registry Layer",
+      "role": "Owns required evaluation registry, required-case governance, and evaluation readiness gating signals.",
+      "owns": [
+        "required_eval_registry",
+        "required_eval_case_governance",
+        "eval_completion_blocking"
+      ],
+      "consumes": [
+        "eval_run_artifacts",
+        "eval_registry_updates",
+        "required_case_policy"
+      ],
+      "produces": [
+        "evl_required_eval_set",
+        "evl_eval_completion_record",
+        "evl_eval_block_signal"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning",
+        "runtime_enforcement"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "FRE",
+      "full_name": "Failure Recovery Engine",
+      "role": "Diagnoses failures and emits bounded repair plans.",
+      "owns": [
+        "failure_diagnosis",
+        "repair_plan_generation",
+        "recurrence_prevention_recommendation"
+      ],
+      "consumes": [
+        "agent_failure_record",
+        "system_enforcement_result_artifact",
+        "review_signal_artifact"
+      ],
+      "produces": [
+        "failure_diagnosis_artifact",
+        "repair_prompt_artifact",
+        "recurrence_prevention_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "direct_enforcement_mutation",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "PQX",
+        "SEL",
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "TLC",
+        "PRG"
+      ]
+    },
+    {
+      "acronym": "HFX",
+      "full_name": "HFX (Reserved)",
+      "role": "Reserved/planned; not active build target.",
+      "owns": [],
+      "consumes": [],
+      "produces": [],
+      "prohibited_behaviors": [
+        "activate_without_registry_update"
+      ],
+      "upstream_dependencies": [],
+      "downstream_consumers": []
+    },
+    {
+      "acronym": "HIT",
+      "full_name": "Human Intervention Tracker",
+      "role": "Owns human review, override, correction diff, and downstream learning artifacts.",
+      "owns": [
+        "human_override_artifacts",
+        "correction_diff_artifacts",
+        "override_learning_linkage"
+      ],
+      "consumes": [
+        "human_review_records",
+        "override_requests",
+        "downstream_learning_signals"
+      ],
+      "produces": [
+        "hit_override_record",
+        "hit_correction_diff",
+        "hit_learning_linkage_artifact"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "runtime_enforcement",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "HIX",
+      "full_name": "Human Interaction eXchange",
+      "role": "Owns governed human interaction contracts, override auditing, and structured feedback exchange.",
+      "owns": [
+        "human_action_contracts",
+        "override_audit_artifacts",
+        "human_feedback_exchange_artifacts"
+      ],
+      "consumes": [
+        "hitl_checkpoints",
+        "override_requests",
+        "structured_human_feedback_inputs"
+      ],
+      "produces": [
+        "hix_human_action_record",
+        "hix_override_audit_record",
+        "hix_feedback_exchange_record",
+        "hix_human_interaction_bundle"
+      ],
+      "prohibited_behaviors": [
+        "bypass_governance_layers",
+        "mutate_state_outside_owner_flows",
+        "replace_cde_tpa_sel_authority"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "JDG",
+      "full_name": "Judgment Governance",
+      "role": "Owns high-impact governed judgment artifact requirements.",
+      "owns": [
+        "judgment_artifact_requirements",
+        "evidence_sufficiency_judgments",
+        "escalation_judgment_records"
+      ],
+      "consumes": [
+        "readiness_policy_evidence_artifacts",
+        "certification_evidence_bundles",
+        "escalation_context_artifacts"
+      ],
+      "produces": [
+        "jdg_judgment_record",
+        "jdg_evidence_sufficiency_report",
+        "jdg_escalation_decision_artifact"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "review_interpretation",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "JSX",
+      "full_name": "Judgment State eXchange",
+      "role": "Owns judgment lifecycle, active-set management, supersession, conflict records, and policy extraction handoff.",
+      "owns": [
+        "judgment_status_record",
+        "judgment_supersession_record",
+        "judgment_active_set_record",
+        "judgment_conflict_record",
+        "judgment_policy_extraction_record"
+      ],
+      "consumes": [
+        "judgment_artifacts"
+      ],
+      "produces": [
+        "judgment_active_set_record",
+        "judgment_policy_extraction_record"
+      ],
+      "prohibited_behaviors": [
+        "replace_control_authority",
+        "treat_stale_judgments_as_active",
+        "leave_conflict_resolution_implicit"
+      ],
+      "upstream_dependencies": [
+        "RIL"
+      ],
+      "downstream_consumers": [
+        "TPA",
+        "CAX"
+      ]
+    },
+    {
+      "acronym": "LIN",
+      "full_name": "Lineage Integrity Network",
+      "role": "Owns end-to-end lineage completeness requirements for promotion-relevant artifacts.",
+      "owns": [
+        "lineage_completeness_rules",
+        "lineage_graph_integrity_checks",
+        "lineage_promotion_gates"
+      ],
+      "consumes": [
+        "admission_lineage_artifacts",
+        "execution_lineage_artifacts",
+        "certification_lineage_artifacts"
+      ],
+      "produces": [
+        "lin_lineage_completeness_report",
+        "lin_lineage_graph_artifact",
+        "lin_lineage_promotion_block"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "trust_policy_adjudication",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "MCL",
+      "full_name": "Memory Compaction Layer",
+      "role": "Manages compaction/archive/retention artifacts for governed memory surfaces.",
+      "owns": [
+        "memory_compaction_plan",
+        "archival_tier_assignment",
+        "retention_policy_artifact",
+        "memory_entropy_report",
+        "canonical_memory_promotion_candidate",
+        "archive_prune_record"
+      ],
+      "consumes": [
+        "precedent_archive",
+        "judgment_archive",
+        "policy_archive"
+      ],
+      "produces": [
+        "mcl_memory_compaction_plan"
+      ],
+      "prohibited_behaviors": [
+        "closure_decisioning",
+        "runtime_enforcement",
+        "ungoverned_delete_execution"
+      ],
+      "upstream_dependencies": [
+        "RIL"
+      ],
+      "downstream_consumers": [
+        "RSM",
+        "PRG"
+      ]
+    },
+    {
+      "acronym": "OBS",
+      "full_name": "Observability Contract System",
+      "role": "Owns cross-system observability contracts for trace/span/correlation completeness.",
+      "owns": [
+        "observability_contracts",
+        "trace_span_correlation_requirements",
+        "observability_completeness_checks"
+      ],
+      "consumes": [
+        "runtime_trace_artifacts",
+        "review_trace_artifacts",
+        "control_trace_artifacts"
+      ],
+      "produces": [
+        "obs_observability_contract_record",
+        "obs_completeness_report",
+        "obs_correlation_validation_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "review_interpretation",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "PQX",
+      "full_name": "Prompt Queue Execution",
+      "role": "Executes bounded authorized work slices.",
+      "owns": [
+        "execution",
+        "execution_state_transitions",
+        "execution_trace_emission"
+      ],
+      "consumes": [
+        "codex_pqx_task_wrapper",
+        "tpa_slice_artifact",
+        "top_level_conductor_run_artifact"
+      ],
+      "produces": [
+        "pqx_slice_execution_record",
+        "pqx_bundle_execution_record",
+        "pqx_execution_closure_record"
+      ],
+      "prohibited_behaviors": [
+        "trust_policy_adjudication",
+        "repair_plan_generation",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC",
+        "TPA"
+      ],
+      "downstream_consumers": [
+        "FRE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "PRG",
+      "full_name": "Program Governance",
+      "role": "Owns program-level planning, drift management, and roadmap alignment.",
+      "owns": [
+        "program_governance",
+        "roadmap_alignment",
+        "program_drift_management"
+      ],
+      "consumes": [
+        "roadmap_signal_bundle",
+        "roadmap_review_view_artifact",
+        "batch_delivery_report"
+      ],
+      "produces": [
+        "program_brief",
+        "program_feedback_record",
+        "program_roadmap_alignment_result"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "runtime_enforcement",
+        "review_interpretation"
+      ],
+      "upstream_dependencies": [
+        "TLC",
+        "RIL",
+        "FRE"
+      ],
+      "downstream_consumers": [
+        "TLC"
+      ]
+    },
+    {
+      "acronym": "PRM",
+      "full_name": "Prompt Registry Manager",
+      "role": "Owns canonical prompt/task registry and prompt version admissibility.",
+      "owns": [
+        "prompt_registry_authority",
+        "prompt_version_resolution",
+        "shadow_prompt_blocking"
+      ],
+      "consumes": [
+        "prompt_spec_artifacts",
+        "task_registry_artifacts",
+        "prompt_change_records"
+      ],
+      "produces": [
+        "prm_prompt_registry_record",
+        "prm_prompt_resolution_artifact",
+        "prm_shadow_prompt_block_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "trust_policy_adjudication",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "PRX",
+      "full_name": "Precedent Retrieval eXchange",
+      "role": "Owns structured precedent record retrieval and bounded relevance scoring.",
+      "owns": [
+        "precedent_record_storage_shape",
+        "precedent_retrieval",
+        "precedent_relevance_scoring"
+      ],
+      "consumes": [
+        "historical_decision_artifacts",
+        "historical_outcome_artifacts",
+        "evidence_bundles"
+      ],
+      "produces": [
+        "prx_precedent_record",
+        "prx_precedent_match_set",
+        "prx_precedent_score_report",
+        "prx_precedent_bundle"
+      ],
+      "prohibited_behaviors": [
+        "override_current_authority",
+        "auto_promote_historical_precedent"
       ],
       "upstream_dependencies": [
         "TLC"
@@ -1087,59 +1087,59 @@
       ]
     },
     {
-      "acronym": "ENT",
-      "full_name": "Entropy Management Loop",
-      "role": "Owns recurring drift/exception accumulation detection and correction-mining governance outputs.",
+      "acronym": "RIL",
+      "full_name": "Review Integration Layer",
+      "role": "Interprets review outputs into deterministic integration payloads.",
       "owns": [
-        "entropy_accumulation_detection",
-        "override_backlog_reporting",
-        "correction_mining_outputs"
+        "review_interpretation",
+        "review_integration",
+        "review_projection"
       ],
       "consumes": [
-        "drift_exception_history",
-        "override_backlog_artifacts",
-        "architecture_lint_signals"
+        "review_artifact",
+        "review_signal_artifact",
+        "review_action_tracker_artifact"
       ],
       "produces": [
-        "ent_entropy_report",
-        "ent_override_backlog_record",
-        "ent_correction_mining_bundle"
+        "review_integration_packet_artifact",
+        "review_projection_bundle_artifact",
+        "roadmap_review_projection_artifact"
       ],
       "prohibited_behaviors": [
+        "runtime_enforcement",
         "work_execution",
-        "closure_decisioning",
-        "runtime_enforcement"
+        "closure_decisioning"
       ],
       "upstream_dependencies": [
         "TLC"
       ],
       "downstream_consumers": [
         "CDE",
-        "SEL"
+        "PRG"
       ]
     },
     {
-      "acronym": "CON",
-      "full_name": "Contract Interface Governance",
-      "role": "Owns explicit interface contract hardening between systems.",
+      "acronym": "ROU",
+      "full_name": "Routing Governance System",
+      "role": "Owns route candidate comparison, selection evidence, and route-governance records.",
       "owns": [
-        "interface_contract_registry",
-        "contract_compatibility_gates",
-        "hidden_coupling_detection"
+        "route_candidate_records",
+        "route_selection_evidence",
+        "route_change_governance"
       ],
       "consumes": [
-        "system_interface_contracts",
-        "compatibility_reports",
-        "orchestration_handoff_records"
+        "routing_candidates",
+        "cost_quality_signals",
+        "eval_and_canary_results"
       ],
       "produces": [
-        "con_interface_contract_record",
-        "con_compatibility_gate_result",
-        "con_hidden_coupling_report"
+        "rou_route_comparison_record",
+        "rou_route_selection_artifact",
+        "rou_route_change_control_record"
       ],
       "prohibited_behaviors": [
         "work_execution",
-        "trust_policy_adjudication",
+        "review_interpretation",
         "closure_decisioning"
       ],
       "upstream_dependencies": [
@@ -1190,94 +1190,31 @@
       ]
     },
     {
-      "acronym": "DEM",
-      "full_name": "Decision Economics Modeler",
-      "role": "Produces recommendation-grade economics and tradeoff artifacts.",
+      "acronym": "SEC",
+      "full_name": "Security Guardrail Control",
+      "role": "Owns governed security guardrail event artifacts and control integration outputs.",
       "owns": [
-        "decision_economics_artifact",
-        "cost_of_delay_model",
-        "false_positive_cost_model",
-        "false_negative_cost_model",
-        "human_review_cost_model",
-        "tradeoff_surface_artifact",
-        "economic_decision_score"
+        "security_guardrail_event_contracts",
+        "guardrail_control_integration",
+        "indeterminate_guardrail_freeze_signals"
       ],
       "consumes": [
-        "portfolio_posture_signal",
-        "external_outcome_impact_artifact"
+        "input_guardrail_events",
+        "output_guardrail_events",
+        "tool_guardrail_events"
       ],
       "produces": [
-        "dem_decision_economics_artifact"
+        "sec_guardrail_event_record",
+        "sec_control_integration_signal",
+        "sec_indeterminate_freeze_record"
       ],
       "prohibited_behaviors": [
-        "closure_decisioning",
-        "runtime_enforcement",
-        "work_execution"
+        "work_execution",
+        "trust_policy_adjudication",
+        "closure_decisioning"
       ],
       "upstream_dependencies": [
-        "RSM",
-        "XRL"
-      ],
-      "downstream_consumers": [
-        "PRG"
-      ]
-    },
-    {
-      "acronym": "MCL",
-      "full_name": "Memory Compaction Layer",
-      "role": "Manages compaction/archive/retention artifacts for governed memory surfaces.",
-      "owns": [
-        "memory_compaction_plan",
-        "archival_tier_assignment",
-        "retention_policy_artifact",
-        "memory_entropy_report",
-        "canonical_memory_promotion_candidate",
-        "archive_prune_record"
-      ],
-      "consumes": [
-        "precedent_archive",
-        "judgment_archive",
-        "policy_archive"
-      ],
-      "produces": [
-        "mcl_memory_compaction_plan"
-      ],
-      "prohibited_behaviors": [
-        "closure_decisioning",
-        "runtime_enforcement",
-        "ungoverned_delete_execution"
-      ],
-      "upstream_dependencies": [
-        "RIL"
-      ],
-      "downstream_consumers": [
-        "RSM",
-        "PRG"
-      ]
-    },
-    {
-      "acronym": "BRM",
-      "full_name": "Blast Radius Manager",
-      "role": "Classifies impact/irreversibility and escalation support requirements.",
-      "owns": [
-        "blast_radius_assessment",
-        "irreversibility_classification",
-        "rollback_difficulty_score",
-        "escalation_requirement_record",
-        "multi_review_requirement_record"
-      ],
-      "consumes": [
-        "change_impact_artifact"
-      ],
-      "produces": [
-        "brm_blast_radius_assessment"
-      ],
-      "prohibited_behaviors": [
-        "closure_decisioning",
-        "runtime_enforcement"
-      ],
-      "upstream_dependencies": [
-        "RIL"
+        "TLC"
       ],
       "downstream_consumers": [
         "CDE",
@@ -1285,36 +1222,236 @@
       ]
     },
     {
-      "acronym": "DCL",
-      "full_name": "Doctrine Compilation Layer",
-      "role": "Compiles institutional doctrine artifacts with conflict and lineage records.",
+      "acronym": "SEL",
+      "full_name": "System Enforcement Layer",
+      "role": "Applies fail-closed enforcement decisions across subsystem boundaries.",
       "owns": [
-        "doctrine_artifact",
-        "doctrine_update_candidate",
-        "doctrine_supersession_record",
-        "doctrine_conflict_record",
-        "doctrine_lineage_record"
+        "enforcement",
+        "fail_closed_blocking",
+        "promotion_guarding"
       ],
       "consumes": [
-        "judgment_eval_result",
-        "policy_change_candidate",
-        "precedent_archive"
+        "tpa_slice_artifact",
+        "review_control_signal_artifact",
+        "closure_decision_artifact"
       ],
       "produces": [
-        "dcl_doctrine_artifact"
+        "system_enforcement_result_artifact",
+        "enforcement_decision",
+        "action_trace_record"
       ],
       "prohibited_behaviors": [
-        "policy_authority_decisioning",
-        "closure_decisioning",
-        "runtime_enforcement"
+        "review_reinterpretation",
+        "repair_plan_generation",
+        "orchestration"
       ],
       "upstream_dependencies": [
-        "RIL",
+        "TLC",
+        "TPA",
+        "CDE"
+      ],
+      "downstream_consumers": [
+        "PQX",
+        "FRE",
+        "TLC"
+      ]
+    },
+    {
+      "acronym": "SIM",
+      "full_name": "Simulation eXecution Module",
+      "role": "Owns deterministic candidate policy and scenario simulation without live-state mutation.",
+      "owns": [
+        "candidate_policy_simulation",
+        "scenario_replay_execution",
+        "impact_diff_generation"
+      ],
+      "consumes": [
+        "candidate_policy_artifacts",
+        "baseline_artifacts",
+        "replayable_scenario_packs"
+      ],
+      "produces": [
+        "sim_scenario_record",
+        "sim_policy_impact_report",
+        "sim_diff_record",
+        "sim_simulation_bundle"
+      ],
+      "prohibited_behaviors": [
+        "modify_live_state",
+        "replace_tpa_cde_authority",
+        "promote_simulation_output_automatically"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "SLO",
+      "full_name": "Service Level Objective Control",
+      "role": "Owns governed error-budget and burn-rate decision artifacts.",
+      "owns": [
+        "slo_error_budget_artifacts",
+        "burn_rate_decisioning",
+        "slo_freeze_block_signals"
+      ],
+      "consumes": [
+        "eval_replay_drift_latency_cost_signals",
+        "budget_threshold_policies",
+        "control_decision_inputs"
+      ],
+      "produces": [
+        "slo_budget_status_artifact",
+        "slo_burn_rate_record",
+        "slo_control_decision_signal"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "trust_policy_adjudication",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "TAX",
+      "full_name": "Termination Authority eXecutor",
+      "role": "Determines termination outcome from governed evidence sufficiency.",
+      "owns": [
+        "information_sufficiency_evaluation",
+        "bounded_completion_authority",
+        "termination_decision_artifacts"
+      ],
+      "consumes": [
+        "termination_signal_record",
+        "termination_policy",
+        "system_budget_status_v2"
+      ],
+      "produces": [
+        "termination_decision",
+        "termination_audit_record"
+      ],
+      "prohibited_behaviors": [
+        "runtime_enforcement",
+        "policy_admissibility_override",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "PQX",
+        "BAX",
+        "TPA"
+      ],
+      "downstream_consumers": [
+        "CAX",
+        "CDE"
+      ]
+    },
+    {
+      "acronym": "TLC",
+      "full_name": "Top Level Conductor",
+      "role": "Orchestrates subsystem invocation order and interaction boundaries.",
+      "owns": [
+        "orchestration",
+        "subsystem_routing",
+        "bounded_cycle_coordination"
+      ],
+      "consumes": [
+        "tpa_slice_artifact",
+        "system_enforcement_result_artifact",
+        "closure_decision_artifact"
+      ],
+      "produces": [
+        "top_level_conductor_run_artifact"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "repair_plan_generation",
+        "closure_decision_override"
+      ],
+      "upstream_dependencies": [
+        "AEX",
         "PRG"
       ],
       "downstream_consumers": [
+        "PQX",
         "TPA",
-        "PRG"
+        "FRE",
+        "RIL",
+        "CDE",
+        "PRG",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "TLX",
+      "full_name": "Tooling Layer eXecutor",
+      "role": "Owns tool registry, tool contracts, tool dispatch metadata, output normalization, permission metadata, and truncation/pagination rules.",
+      "owns": [
+        "tool_registry_entry",
+        "tool_contract",
+        "tool_output_envelope",
+        "tool_permission_profile",
+        "tool_dispatch_record"
+      ],
+      "consumes": [
+        "tool_requests",
+        "policy_permission_profile"
+      ],
+      "produces": [
+        "tool_output_envelope",
+        "tool_dispatch_record"
+      ],
+      "prohibited_behaviors": [
+        "allow_raw_unbounded_tool_outputs_into_runtime_context",
+        "treat_prompts_as_security_boundary",
+        "bypass_policy_permissions"
+      ],
+      "upstream_dependencies": [
+        "TPA"
+      ],
+      "downstream_consumers": [
+        "PQX",
+        "CTX"
+      ]
+    },
+    {
+      "acronym": "TPA",
+      "full_name": "Trust Policy Application",
+      "role": "Applies trust and policy gates to authorize execution scope.",
+      "owns": [
+        "trust_policy_application",
+        "scope_gating",
+        "complexity_budgeting"
+      ],
+      "consumes": [
+        "codex_pqx_task_wrapper",
+        "source_authority_refresh_receipt",
+        "complexity_trend"
+      ],
+      "produces": [
+        "tpa_scope_policy",
+        "tpa_slice_artifact",
+        "tpa_observability_summary"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "runtime_enforcement",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "PQX",
+        "SEL"
       ]
     },
     {
@@ -1649,6 +1786,26 @@
     {
       "from": "MCL",
       "to": "RSM"
+    },
+    {
+      "from": "CTX",
+      "to": "PQX",
+      "reason": "rax-serial-operating-substrate"
+    },
+    {
+      "from": "TLX",
+      "to": "CTX",
+      "reason": "rax-serial-operating-substrate"
+    },
+    {
+      "from": "JSX",
+      "to": "CAX",
+      "reason": "rax-serial-operating-substrate"
+    },
+    {
+      "from": "DRX",
+      "to": "CAX",
+      "reason": "rax-serial-operating-substrate"
     }
   ]
 }

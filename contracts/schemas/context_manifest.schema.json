@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "context_conflict_record",
+  "title": "context_manifest",
   "type": "object",
   "properties": {
     "artifact_type": {
@@ -12,7 +12,7 @@
     "schema_version": {
       "type": "string"
     },
-    "conflict_id": {
+    "manifest_id": {
       "type": "string"
     },
     "run_id": {
@@ -21,38 +21,30 @@
     "trace_id": {
       "type": "string"
     },
-    "conflicts": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "field": {
-            "type": "string"
-          },
-          "source_a": {
-            "type": "string"
-          },
-          "source_b": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "field",
-          "source_a",
-          "source_b"
-        ],
-        "additionalProperties": false
-      }
+    "bundle_ref": {
+      "type": "string"
+    },
+    "manifest_hash": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
     }
   },
   "required": [
     "artifact_type",
     "artifact_version",
     "schema_version",
-    "conflict_id",
+    "manifest_id",
     "run_id",
     "trace_id",
-    "conflicts"
+    "bundle_ref",
+    "manifest_hash",
+    "policy_version",
+    "created_at"
   ],
   "additionalProperties": false
 }

@@ -1,0 +1,7 @@
+{
+  "artifact_type": "judgment_conflict_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "has_conflicts": false,
+  "conflicts": []
+}

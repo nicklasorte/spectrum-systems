@@ -1,0 +1,11 @@
+{
+  "artifact_type": "tool_output_envelope",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "tool_id": "search",
+  "records": [
+    "result"
+  ],
+  "record_count": 1,
+  "truncated": false
+}

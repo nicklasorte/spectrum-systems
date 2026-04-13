@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.130",
+  "artifact_version": "1.3.131",
   "schema_version": "1.3.99",
-  "standards_version": "1.3.130",
-  "record_id": "REC-STD-2026-04-13-NEXT-WAVE-001",
-  "run_id": "run-20260413T000000Z-next-wave-001",
+  "standards_version": "1.3.131",
+  "record_id": "REC-STD-2026-04-13-RAX-SERIAL-OPERATING-SUBSTRATE",
+  "run_id": "run-20260413T000000Z-rax-serial-operating-substrate",
   "created_at": "2026-04-13T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.130",
+  "source_repo_version": "1.3.131",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -1059,6 +1059,45 @@
       "notes": "BATCH-CTX-A conflict artifact for deterministic context source disagreement capture and resolution requirement signaling."
     },
     {
+      "artifact_type": "context_manifest",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/context_manifest.json",
+      "notes": "RAX serial operating substrate governance contract."
+    },
+    {
+      "artifact_type": "context_preflight_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/context_preflight_result.json",
+      "notes": "RAX serial operating substrate governance contract."
+    },
+    {
+      "artifact_type": "context_recipe",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/context_recipe.json",
+      "notes": "RAX serial operating substrate governance contract."
+    },
+    {
       "artifact_type": "context_recipe_spec",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -1447,6 +1486,58 @@
       "notes": "CTRL-LOOP-01 grouped observability extension: deterministic per-cycle status projection with normalized blocked reasons and artifact references."
     },
     {
+      "artifact_type": "dag_critical_path_signal",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/dag_critical_path_signal.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "dag_cycle_deadlock_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/dag_cycle_deadlock_report.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "dag_dependency_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/dag_dependency_bundle.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "dag_dependency_graph_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/dag_dependency_graph_record.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
       "artifact_type": "dashboard_freshness_contract",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -1799,6 +1890,19 @@
       "notes": "Governed deterministic policy mapping normalized blocking categories to remediation classes for fail-closed routing."
     },
     {
+      "artifact_type": "drift_response_plan",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/drift_response_plan.json",
+      "notes": "RAX serial operating substrate governance contract."
+    },
+    {
       "artifact_type": "drift_response_validation_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1823,6 +1927,19 @@
       "last_updated_in": "1.0.13",
       "example_path": "contracts/examples/drift_result.json",
       "notes": "BAH fail-closed deterministic drift classification artifact for BAG replay_result comparison of final_status and enforcement_action."
+    },
+    {
+      "artifact_type": "drift_signal_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/drift_signal_record.json",
+      "notes": "RAX serial operating substrate governance contract."
     },
     {
       "artifact_type": "end_to_end_failure_simulation_result",
@@ -2094,6 +2211,19 @@
       "last_updated_in": "1.0.14",
       "example_path": "contracts/examples/eval_dataset.json",
       "notes": "BBC governed versioned dataset of eval_case and failure_eval_case members with deterministic admission summary and policy linkage. Includes explicit canonicalization_policy_id governance linkage."
+    },
+    {
+      "artifact_type": "eval_expansion_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/eval_expansion_record.json",
+      "notes": "RAX serial operating substrate governance contract."
     },
     {
       "artifact_type": "eval_registry_snapshot",
@@ -2381,6 +2511,58 @@
       "last_updated_in": "1.0.88",
       "example_path": "contracts/examples/execution_report_artifact.json",
       "notes": "AUTONOMOUS-LOOP-01 execution report contract for PQX integration seam outputs."
+    },
+    {
+      "artifact_type": "ext_constraint_enforcement_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/ext_constraint_enforcement_record.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "ext_replay_verification_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/ext_replay_verification_bundle.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "ext_runtime_governance_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/ext_runtime_governance_bundle.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "ext_runtime_provenance_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/ext_runtime_provenance_record.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
     },
     {
       "artifact_type": "external_artifact_manifest",
@@ -3087,6 +3269,97 @@
       "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
     },
     {
+      "artifact_type": "invariant_gap_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/invariant_gap_record.json",
+      "notes": "RAX serial operating substrate governance contract."
+    },
+    {
+      "artifact_type": "jdx_judgment_application_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/jdx_judgment_application_record.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "jdx_judgment_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/jdx_judgment_bundle.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "jdx_judgment_eval_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/jdx_judgment_eval_result.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "jdx_judgment_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/jdx_judgment_policy.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "jdx_judgment_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/jdx_judgment_record.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "judgment_active_set_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/judgment_active_set_record.json",
+      "notes": "RAX serial operating substrate governance contract."
+    },
+    {
       "artifact_type": "judgment_application_record",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -3111,6 +3384,19 @@
       "last_updated_in": "1.3.12",
       "example_path": "contracts/examples/judgment_calibration_result.json",
       "notes": "RF-14 rolling-window calibration evidence metadata + policy linkage + lifecycle-ready health/trend thresholds."
+    },
+    {
+      "artifact_type": "judgment_conflict_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/judgment_conflict_record.json",
+      "notes": "RAX serial operating substrate governance contract."
     },
     {
       "artifact_type": "judgment_control_escalation_record",
@@ -3243,6 +3529,19 @@
       "notes": "Versioned deterministic judgment policy now includes learning_control_policy thresholds for drift, calibration, and error-budget enforcement seams. Extended status enum with revoked for explicit lifecycle revocation governance."
     },
     {
+      "artifact_type": "judgment_policy_extraction_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/judgment_policy_extraction_record.json",
+      "notes": "RAX serial operating substrate governance contract."
+    },
+    {
       "artifact_type": "judgment_policy_lifecycle_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3345,6 +3644,45 @@
       "last_updated_in": "1.3.71",
       "example_path": "contracts/examples/judgment_remediation_readiness_status.json",
       "notes": "Deterministic remediation readiness status including TPA bypass drift observability fields and blocking reason wiring."
+    },
+    {
+      "artifact_type": "judgment_status_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/judgment_status_record.json",
+      "notes": "RAX serial operating substrate governance contract."
+    },
+    {
+      "artifact_type": "judgment_supersession_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/judgment_supersession_record.json",
+      "notes": "RAX serial operating substrate governance contract."
+    },
+    {
+      "artifact_type": "maintain_cycle_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/maintain_cycle_record.json",
+      "notes": "RAX serial operating substrate governance contract."
     },
     {
       "artifact_type": "map_projection_bundle",
@@ -3511,6 +3849,19 @@
       "notes": "Fail-closed enforcement output for missing or indeterminate required eval coverage."
     },
     {
+      "artifact_type": "mnt_enforcement_consistency_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/mnt_enforcement_consistency_result.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
       "artifact_type": "mnt_maintain_cycle_report",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -3535,6 +3886,32 @@
       "last_updated_in": "1.3.126",
       "example_path": "contracts/examples/mnt_platform_reliability_bundle.json",
       "notes": "MNT-002 serial reliability operations bundle covering SLO/error budget/burn-rate/certification/active-set/maintain/review and freeze gating."
+    },
+    {
+      "artifact_type": "mnt_promotion_entrypoint_coverage_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/mnt_promotion_entrypoint_coverage_report.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "mnt_real_flow_reliability_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/mnt_real_flow_reliability_result.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
     },
     {
       "artifact_type": "mnt_red_team_round_report",
@@ -3877,6 +4254,19 @@
       "last_updated_in": "1.3.36",
       "example_path": "contracts/examples/operator_friction_report.json",
       "notes": "BATCH-Y deterministic operator-friction harvest report emitted from realistic governed system-cycle scenarios."
+    },
+    {
+      "artifact_type": "opx_005_integration_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.129",
+      "last_updated_in": "1.3.129",
+      "example_path": "contracts/examples/opx_005_integration_artifact.json",
+      "notes": "OPX-005 integrated governance artifact covering RSM/DEM/MCL/BRM/DCL/XRL non-authoritative runtime surfaces and red-team fix-wave completion state."
     },
     {
       "artifact_type": "opx_durability_cycle_artifact",
@@ -5930,6 +6320,58 @@
       "notes": "DASHBOARD-REFRESH-PUBLISH-LOOP-01 trace-linked refresh execution record artifact."
     },
     {
+      "artifact_type": "rel_canary_metrics_breakdown",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/rel_canary_metrics_breakdown.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "rel_change_freeze_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/rel_change_freeze_record.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "rel_release_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/rel_release_bundle.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "rel_release_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/rel_release_record.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
       "artifact_type": "repair_attempt_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -6923,6 +7365,58 @@
       "notes": "BATCH-CLEANUP-01 deterministic operator run summary artifact that references key artifacts, key decisions, and terminal outcomes."
     },
     {
+      "artifact_type": "rux_boundary_validation_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/rux_boundary_validation_result.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "rux_freshness_scope_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/rux_freshness_scope_report.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "rux_reuse_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/rux_reuse_bundle.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "rux_reuse_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.130",
+      "last_updated_in": "1.3.130",
+      "example_path": "contracts/examples/rux_reuse_record.json",
+      "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
       "artifact_type": "sch_compatibility_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -7492,6 +7986,71 @@
       "notes": "TLC routing evaluation result with fail-closed checks and explicit fail reasons."
     },
     {
+      "artifact_type": "tool_contract",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/tool_contract.json",
+      "notes": "RAX serial operating substrate governance contract."
+    },
+    {
+      "artifact_type": "tool_dispatch_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/tool_dispatch_record.json",
+      "notes": "RAX serial operating substrate governance contract."
+    },
+    {
+      "artifact_type": "tool_output_envelope",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/tool_output_envelope.json",
+      "notes": "RAX serial operating substrate governance contract."
+    },
+    {
+      "artifact_type": "tool_permission_profile",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/tool_permission_profile.json",
+      "notes": "RAX serial operating substrate governance contract."
+    },
+    {
+      "artifact_type": "tool_registry_entry",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.131",
+      "last_updated_in": "1.3.131",
+      "example_path": "contracts/examples/tool_registry_entry.json",
+      "notes": "RAX serial operating substrate governance contract."
+    },
+    {
       "artifact_type": "top_level_conductor_run_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -7805,149 +8364,6 @@
       "notes": "Initial canonical intake contract. Payload is expected to travel inside the artifact envelope standard for orchestration and data lake manifests."
     },
     {
-      "artifact_type": "xrun_signal_quality_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.82",
-      "last_updated_in": "1.0.82",
-      "example_path": "contracts/examples/xrun_signal_quality_result.json",
-      "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "opx_005_integration_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.129",
-      "last_updated_in": "1.3.129",
-      "example_path": "contracts/examples/opx_005_integration_artifact.json",
-      "notes": "OPX-005 integrated governance artifact covering RSM/DEM/MCL/BRM/DCL/XRL non-authoritative runtime surfaces and red-team fix-wave completion state."
-    },
-    {
-      "artifact_type": "jdx_judgment_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/jdx_judgment_record.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "jdx_judgment_policy",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/jdx_judgment_policy.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "jdx_judgment_eval_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/jdx_judgment_eval_result.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "jdx_judgment_application_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/jdx_judgment_application_record.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "jdx_judgment_bundle",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/jdx_judgment_bundle.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "rux_reuse_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/rux_reuse_record.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "rux_boundary_validation_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/rux_boundary_validation_result.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "rux_freshness_scope_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/rux_freshness_scope_report.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "rux_reuse_bundle",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/rux_reuse_bundle.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
       "artifact_type": "xpl_artifact_card",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -7958,19 +8374,6 @@
       "introduced_in": "1.3.130",
       "last_updated_in": "1.3.130",
       "example_path": "contracts/examples/xpl_artifact_card.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "xpl_generator_risk_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/xpl_generator_risk_record.json",
       "notes": "NEXT-WAVE-001 governed runtime artifact."
     },
     {
@@ -7987,7 +8390,7 @@
       "notes": "NEXT-WAVE-001 governed runtime artifact."
     },
     {
-      "artifact_type": "rel_release_record",
+      "artifact_type": "xpl_generator_risk_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
@@ -7996,190 +8399,21 @@
       ],
       "introduced_in": "1.3.130",
       "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/rel_release_record.json",
+      "example_path": "contracts/examples/xpl_generator_risk_record.json",
       "notes": "NEXT-WAVE-001 governed runtime artifact."
     },
     {
-      "artifact_type": "rel_canary_metrics_breakdown",
+      "artifact_type": "xrun_signal_quality_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/rel_canary_metrics_breakdown.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "rel_change_freeze_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/rel_change_freeze_record.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "rel_release_bundle",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/rel_release_bundle.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "dag_dependency_graph_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/dag_dependency_graph_record.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "dag_cycle_deadlock_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/dag_cycle_deadlock_report.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "dag_critical_path_signal",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/dag_critical_path_signal.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "dag_dependency_bundle",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/dag_dependency_bundle.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "ext_runtime_provenance_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/ext_runtime_provenance_record.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "ext_replay_verification_bundle",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/ext_replay_verification_bundle.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "ext_constraint_enforcement_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/ext_constraint_enforcement_record.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "ext_runtime_governance_bundle",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/ext_runtime_governance_bundle.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "mnt_promotion_entrypoint_coverage_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/mnt_promotion_entrypoint_coverage_report.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "mnt_enforcement_consistency_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/mnt_enforcement_consistency_result.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
-    },
-    {
-      "artifact_type": "mnt_real_flow_reliability_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.130",
-      "last_updated_in": "1.3.130",
-      "example_path": "contracts/examples/mnt_real_flow_reliability_result.json",
-      "notes": "NEXT-WAVE-001 governed runtime artifact."
+      "introduced_in": "1.0.82",
+      "last_updated_in": "1.0.82",
+      "example_path": "contracts/examples/xrun_signal_quality_result.json",
+      "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
     }
   ]
 }

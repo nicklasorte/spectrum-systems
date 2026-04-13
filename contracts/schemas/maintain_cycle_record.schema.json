@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "maintain_cycle_record",
+  "type": "object",
+  "properties": {
+    "artifact_type": {
+      "type": "string"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "cycle_id": {
+      "type": "string"
+    },
+    "drift_detected": {
+      "type": "boolean"
+    },
+    "signal_count": {
+      "type": "integer"
+    },
+    "response_plan_ref": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "cycle_id",
+    "drift_detected",
+    "signal_count",
+    "response_plan_ref"
+  ],
+  "additionalProperties": false
+}

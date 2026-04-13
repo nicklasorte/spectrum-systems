@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "context_conflict_record",
+  "title": "context_preflight_result",
   "type": "object",
   "properties": {
     "artifact_type": {
@@ -12,7 +12,7 @@
     "schema_version": {
       "type": "string"
     },
-    "conflict_id": {
+    "result_id": {
       "type": "string"
     },
     "run_id": {
@@ -21,27 +21,16 @@
     "trace_id": {
       "type": "string"
     },
-    "conflicts": {
+    "bundle_ref": {
+      "type": "string"
+    },
+    "passed": {
+      "type": "boolean"
+    },
+    "reason_codes": {
       "type": "array",
       "items": {
-        "type": "object",
-        "properties": {
-          "field": {
-            "type": "string"
-          },
-          "source_a": {
-            "type": "string"
-          },
-          "source_b": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "field",
-          "source_a",
-          "source_b"
-        ],
-        "additionalProperties": false
+        "type": "string"
       }
     }
   },
@@ -49,10 +38,12 @@
     "artifact_type",
     "artifact_version",
     "schema_version",
-    "conflict_id",
+    "result_id",
     "run_id",
     "trace_id",
-    "conflicts"
+    "bundle_ref",
+    "passed",
+    "reason_codes"
   ],
   "additionalProperties": false
 }

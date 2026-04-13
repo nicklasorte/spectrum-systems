@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "context_conflict_record",
+  "title": "drift_signal_record",
   "type": "object",
   "properties": {
     "artifact_type": {
@@ -12,47 +12,39 @@
     "schema_version": {
       "type": "string"
     },
-    "conflict_id": {
-      "type": "string"
-    },
-    "run_id": {
-      "type": "string"
-    },
-    "trace_id": {
-      "type": "string"
-    },
-    "conflicts": {
+    "signals": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "field": {
+          "signal": {
             "type": "string"
           },
-          "source_a": {
-            "type": "string"
+          "value": {
+            "type": "number"
           },
-          "source_b": {
-            "type": "string"
+          "threshold": {
+            "type": "number"
           }
         },
         "required": [
-          "field",
-          "source_a",
-          "source_b"
+          "signal",
+          "value",
+          "threshold"
         ],
         "additionalProperties": false
       }
+    },
+    "drift_detected": {
+      "type": "boolean"
     }
   },
   "required": [
     "artifact_type",
     "artifact_version",
     "schema_version",
-    "conflict_id",
-    "run_id",
-    "trace_id",
-    "conflicts"
+    "signals",
+    "drift_detected"
   ],
   "additionalProperties": false
 }

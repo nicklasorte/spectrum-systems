@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tool_registry_entry",
+  "type": "object",
+  "properties": {
+    "artifact_type": {
+      "type": "string"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "tool_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "contract_ref": {
+      "type": "string"
+    },
+    "permission_profile_ref": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "tool_id",
+    "name",
+    "contract_ref",
+    "permission_profile_ref"
+  ],
+  "additionalProperties": false
+}
