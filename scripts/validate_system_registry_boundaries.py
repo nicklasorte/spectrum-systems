@@ -247,7 +247,7 @@ def check_adv_owner_constraints(systems: dict[str, SystemDefinition]) -> list[st
 def run_all_checks(registry_path: Path = REGISTRY_PATH) -> list[str]:
     systems, full_text = parse_registry(registry_path)
 
-    required_systems = {"TLC", "CDE", "RQX", "RIL", "FRE", "TPA", "SEL", "PRG", "AEX", "MAP", "PQX", "CHX", "DEX", "SIM", "PRX", "CVX", "HIX"}
+    required_systems = {"TLC", "CDE", "RQX", "RIL", "FRE", "TPA", "SEL", "PRG", "AEX", "MAP", "PQX", "CHX", "DEX", "SIM", "PRX", "CVX", "HIX", "CAL", "POL", "AIL", "SCH", "DEP", "RCA", "QOS", "SIMX"}
     missing = sorted(required_systems - set(systems))
     errors: list[str] = []
     if missing:

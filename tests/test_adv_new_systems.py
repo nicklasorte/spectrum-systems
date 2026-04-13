@@ -3,9 +3,27 @@ from __future__ import annotations
 
 import pytest
 
-from spectrum_systems.modules.runtime import chx_runtime, cvx_runtime, dex_runtime, hix_runtime, prx_runtime, sim_runtime
+from spectrum_systems.modules.runtime import (
+    ail_runtime,
+    cal_runtime,
+    chx_runtime,
+    cvx_runtime,
+    dep_runtime,
+    dex_runtime,
+    hix_runtime,
+    pol_runtime,
+    prx_runtime,
+    qos_runtime,
+    rca_runtime,
+    sch_runtime,
+    sim_runtime,
+    simx_runtime,
+)
 
-RUNTIMES = [chx_runtime, cvx_runtime, dex_runtime, sim_runtime, prx_runtime, hix_runtime]
+RUNTIMES = [
+    chx_runtime, cvx_runtime, dex_runtime, sim_runtime, prx_runtime, hix_runtime,
+    cal_runtime, pol_runtime, ail_runtime, sch_runtime, dep_runtime, rca_runtime, qos_runtime, simx_runtime,
+]
 
 
 def _payload() -> dict:

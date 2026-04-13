@@ -1,0 +1,17 @@
+{
+  "artifact_type": "rca_root_cause_record",
+  "schema_version": "1.0.0",
+  "artifact_id": "RCA-ROOT-CAUSE-RECORD-0001",
+  "status": "pass",
+  "generated_at": "2026-04-13T00:00:00Z",
+  "details": {
+    "summary": "example",
+    "non_authority_assertions": [
+      "candidate_only"
+    ]
+  },
+  "references": [
+    "AEX",
+    "PQX"
+  ]
+}

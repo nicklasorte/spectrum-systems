@@ -1,0 +1,17 @@
+{
+  "artifact_type": "pol_policy_lifecycle_bundle",
+  "schema_version": "1.0.0",
+  "artifact_id": "POL-POLICY-LIFECYCLE-BUNDLE-0001",
+  "status": "pass",
+  "generated_at": "2026-04-13T00:00:00Z",
+  "details": {
+    "summary": "example",
+    "non_authority_assertions": [
+      "candidate_only"
+    ]
+  },
+  "references": [
+    "AEX",
+    "PQX"
+  ]
+}

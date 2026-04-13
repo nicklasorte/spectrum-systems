@@ -1,0 +1,17 @@
+{
+  "artifact_type": "rca_failure_graph",
+  "schema_version": "1.0.0",
+  "artifact_id": "RCA-FAILURE-GRAPH-0001",
+  "status": "pass",
+  "generated_at": "2026-04-13T00:00:00Z",
+  "details": {
+    "summary": "example",
+    "non_authority_assertions": [
+      "candidate_only"
+    ]
+  },
+  "references": [
+    "AEX",
+    "PQX"
+  ]
+}

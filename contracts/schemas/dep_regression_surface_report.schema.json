@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/dep_regression_surface_report.schema.json",
+  "title": "Dep Regression Surface Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "artifact_id",
+    "status",
+    "generated_at",
+    "details"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "dep_regression_surface_report"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "candidate_ready",
+        "not_ready",
+        "stable",
+        "mildly_divergent",
+        "materially_inconsistent",
+        "recorded",
+        "blocked",
+        "flagged"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "details": {
+      "type": "object"
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

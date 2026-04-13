@@ -249,6 +249,71 @@
       "notes": "HS-X1 canonical response artifact for structured-generation enforcement outcome, target-schema linkage, and fail-closed normalization status."
     },
     {
+      "artifact_type": "ail_derived_artifact_job",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/ail_derived_artifact_job.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "ail_index_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/ail_index_record.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "ail_intelligence_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/ail_intelligence_bundle.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "ail_recommendation_delta_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/ail_recommendation_delta_report.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "ail_trend_cluster_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/ail_trend_cluster_report.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
       "artifact_type": "alert_trigger",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -623,6 +688,58 @@
       "last_updated_in": "1.3.65",
       "example_path": "contracts/examples/build_summary.json",
       "notes": "BATCH-LTV-D adds policy candidate/activation/conflict visibility and active-policy propagation for governed policy rollout."
+    },
+    {
+      "artifact_type": "cal_calibration_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/cal_calibration_bundle.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "cal_calibration_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/cal_calibration_record.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "cal_confidence_budget_status",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/cal_confidence_budget_status.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "cal_drift_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/cal_drift_report.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
       "artifact_type": "calibration_assessment_record",
@@ -1498,6 +1615,58 @@
       "last_updated_in": "1.3.114",
       "example_path": "contracts/examples/decision_replay_validation_record.json",
       "notes": "CDE-001 bounded decision authority and RIL closeout contract."
+    },
+    {
+      "artifact_type": "dep_chain_integrity_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/dep_chain_integrity_report.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "dep_dependency_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/dep_dependency_bundle.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "dep_dependency_test_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/dep_dependency_test_bundle.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "dep_regression_surface_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/dep_regression_surface_report.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
       "artifact_type": "dex_explanation_bundle",
@@ -3804,6 +3973,58 @@
       "notes": "HR-C canonical control-surface artifact family"
     },
     {
+      "artifact_type": "pol_backtest_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/pol_backtest_report.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "pol_error_budget_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/pol_error_budget_record.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "pol_policy_lifecycle_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/pol_policy_lifecycle_bundle.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "pol_rollout_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/pol_rollout_record.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
       "artifact_type": "policy_activation_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5149,6 +5370,58 @@
       "notes": "DASHBOARD-REFRESH-PUBLISH-LOOP-01 governed allow/block/freeze publication decision artifact."
     },
     {
+      "artifact_type": "qos_backpressure_signal",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/qos_backpressure_signal.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "qos_load_governance_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/qos_load_governance_bundle.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "qos_queue_governance_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/qos_queue_governance_record.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "qos_retry_budget_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/qos_retry_budget_record.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
       "artifact_type": "rax_adversarial_pattern_candidate",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -5420,6 +5693,45 @@
       "last_updated_in": "1.3.112",
       "example_path": "contracts/examples/rax_upstream_input_envelope.example.json",
       "notes": "RAX-INTERFACE-24-01 strict compact upstream roadmap envelope consumed by RAX for deterministic contract expansion."
+    },
+    {
+      "artifact_type": "rca_attribution_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/rca_attribution_bundle.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "rca_failure_graph",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/rca_failure_graph.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "rca_root_cause_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/rca_root_cause_record.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
       "artifact_type": "rdx_batch_selection_record",
@@ -6611,6 +6923,58 @@
       "notes": "BATCH-CLEANUP-01 deterministic operator run summary artifact that references key artifacts, key decisions, and terminal outcomes."
     },
     {
+      "artifact_type": "sch_compatibility_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/sch_compatibility_result.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "sch_migration_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/sch_migration_record.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "sch_schema_evolution_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/sch_schema_evolution_bundle.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "sch_stale_schema_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/sch_stale_schema_report.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
       "artifact_type": "service_level_objective",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -6674,6 +7038,58 @@
       "last_updated_in": "1.3.128",
       "example_path": "contracts/examples/sim_simulation_bundle.json",
       "notes": "ADV-001 deterministic sim_simulation_bundle artifact contract."
+    },
+    {
+      "artifact_type": "simx_drift_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/simx_drift_report.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "simx_provenance_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/simx_provenance_record.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "simx_replayable_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/simx_replayable_bundle.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "simx_simulation_integrity_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.200",
+      "last_updated_in": "1.3.200",
+      "example_path": "contracts/examples/simx_simulation_integrity_bundle.json",
+      "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
       "artifact_type": "slice_contract_update_candidate",
