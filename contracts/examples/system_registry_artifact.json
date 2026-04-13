@@ -67,8 +67,6 @@
         "TPA"
       ],
       "downstream_consumers": [
-        "CDE",
-        "CDE",
         "CDE"
       ]
     },
@@ -163,40 +161,6 @@
       "downstream_consumers": [
         "CDE",
         "SEL"
-      ]
-    },
-    {
-      "acronym": "CDE",
-      "full_name": "Control Arbitration eXchange",
-      "role": "Composes CDE/BAX/TPA/replay/trace/judgment signals into deterministic CDE input bundles.",
-      "owns": [
-        "control_arbitration",
-        "authority_composition",
-        "conflict_resolution_precedence",
-        "cde_arbitration_input_bundle"
-      ],
-      "consumes": [
-        "termination_decision",
-        "budget_control_decision",
-        "tpa_policy_decision_record"
-      ],
-      "produces": [
-        "control_arbitration_record",
-        "control_arbitration_reason_bundle",
-        "cde_arbitration_input_bundle"
-      ],
-      "prohibited_behaviors": [
-        "work_execution",
-        "runtime_enforcement",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "CDE",
-        "BAX",
-        "TPA"
-      ],
-      "downstream_consumers": [
-        "CDE"
       ]
     },
     {
@@ -316,25 +280,6 @@
         "CDE",
         "SEL"
       ]
-    },
-    {
-      "acronym": "REL",
-      "full_name": "REL (Reserved)",
-      "role": "Reserved/planned; not active build target.",
-      "owns": [
-        "cpx_reserved_planning_scope"
-      ],
-      "consumes": [
-        "cpx_reserved_input"
-      ],
-      "produces": [
-        "cpx_reserved_artifact"
-      ],
-      "prohibited_behaviors": [
-        "activate_without_registry_update"
-      ],
-      "upstream_dependencies": [],
-      "downstream_consumers": []
     },
     {
       "acronym": "CTX",
@@ -697,25 +642,6 @@
         "TLC",
         "PRG"
       ]
-    },
-    {
-      "acronym": "HND",
-      "full_name": "HND (Reserved)",
-      "role": "Reserved/planned; not active build target.",
-      "owns": [
-        "hfx_reserved_planning_scope"
-      ],
-      "consumes": [
-        "hfx_reserved_input"
-      ],
-      "produces": [
-        "hfx_reserved_artifact"
-      ],
-      "prohibited_behaviors": [
-        "activate_without_registry_update"
-      ],
-      "upstream_dependencies": [],
-      "downstream_consumers": []
     },
     {
       "acronym": "HIT",
@@ -1337,39 +1263,6 @@
       "downstream_consumers": [
         "CDE",
         "SEL"
-      ]
-    },
-    {
-      "acronym": "CDE",
-      "full_name": "Termination Authority eXecutor",
-      "role": "Determines termination outcome from governed evidence sufficiency.",
-      "owns": [
-        "information_sufficiency_evaluation",
-        "bounded_completion_authority",
-        "termination_decision_artifacts"
-      ],
-      "consumes": [
-        "termination_signal_record",
-        "termination_policy",
-        "system_budget_status_v2"
-      ],
-      "produces": [
-        "termination_decision",
-        "termination_audit_record"
-      ],
-      "prohibited_behaviors": [
-        "runtime_enforcement",
-        "policy_admissibility_override",
-        "closure_decisioning"
-      ],
-      "upstream_dependencies": [
-        "PQX",
-        "BAX",
-        "TPA"
-      ],
-      "downstream_consumers": [
-        "CDE",
-        "CDE"
       ]
     },
     {

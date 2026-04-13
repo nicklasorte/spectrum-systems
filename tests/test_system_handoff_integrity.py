@@ -6,7 +6,12 @@ from pathlib import Path
 import pytest
 
 from spectrum_systems.contracts import load_example
-from spectrum_systems.modules.runtime.system_registry_enforcer import validate_system_action, validate_system_handoff
+from spectrum_systems.modules.runtime import system_registry_enforcer
+from spectrum_systems.modules.runtime.system_registry_enforcer import (
+    SystemRegistryEnforcerError,
+    validate_system_action,
+    validate_system_handoff,
+)
 from spectrum_systems.modules.runtime.top_level_conductor import TopLevelConductorError, run_top_level_conductor
 
 
@@ -160,6 +165,19 @@ def test_invalid_handoffs_blocked_by_registry_rules() -> None:
     assert validate_system_action("PRG", "execution", "PQX")["block"]
     assert validate_system_action("RIL", "runtime_enforcement", "SEL")["block"]
     assert validate_system_action("TLC", "execution", "PQX")["block"]
+
+
+def test_registry_runtime_load_surfaces_precise_validation_error(tmp_path: Path, monkeypatch) -> None:
+    broken = copy.deepcopy(load_example("system_registry_artifact"))
+    broken["systems"][0]["downstream_consumers"] = ["CDE", "CDE"]
+    bad_path = tmp_path / "system_registry_artifact.json"
+    bad_path.write_text(__import__("json").dumps(broken), encoding="utf-8")
+
+    monkeypatch.setattr(system_registry_enforcer, "_REGISTRY_EXAMPLE_PATH", bad_path)
+    system_registry_enforcer._load_registry.cache_clear()
+    system_registry_enforcer._registry_indexes.cache_clear()
+    with pytest.raises(SystemRegistryEnforcerError, match="schema validation failed"):
+        validate_system_action("AEX", "execution_admission", "TLC")
 
 
 def test_tlc_fails_closed_on_missing_or_malformed_outputs(tmp_path: Path) -> None:
