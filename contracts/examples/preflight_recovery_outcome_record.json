@@ -1,0 +1,22 @@
+{
+  "artifact_type": "preflight_recovery_outcome_record",
+  "schema_version": "1.0.0",
+  "initial_preflight_status": "failed",
+  "failure_class": "schema_violation",
+  "eligibility_decision": "auto_repair_allowed",
+  "repair_invoked": true,
+  "repair_execution_status": "completed",
+  "rerun_status": "passed",
+  "final_decision": "repaired_and_passed",
+  "retry_count": 1,
+  "reason_codes": [
+    "SCHEMA_EXAMPLE_FAILURE"
+  ],
+  "artifact_refs": {
+    "preflight_result_ref": "outputs/contract_preflight/contract_preflight_result_artifact.json",
+    "diagnosis_ref": "outputs/contract_preflight/preflight_block_diagnosis_record.json",
+    "repair_plan_ref": "outputs/contract_preflight/preflight_repair_plan_record.json",
+    "repair_candidate_ref": "outputs/contract_preflight/failure_repair_candidate_artifact.json",
+    "rerun_decision_ref": "outputs/contract_preflight/preflight_repair_result_record.json"
+  }
+}

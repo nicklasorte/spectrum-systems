@@ -46,10 +46,11 @@ def main() -> int:
             "repair_candidate": str(output_dir / "failure_repair_candidate_artifact.json"),
             "rerun_decision": str(output_dir / "preflight_repair_result_record.json"),
             "escalation": str(output_dir / "preflight_human_escalation_record.json"),
+            "recovery_outcome": str(output_dir / "preflight_recovery_outcome_record.json"),
         }
         print(json.dumps({"status": "blocked", "error": str(exc), "artifact_paths": bundle_paths}))
         return 2
-    print(json.dumps({"status": "passed", "result": result}))
+    print(json.dumps({"status": "passed", "result": result, "recovery_outcome_path": str(output_dir / "preflight_recovery_outcome_record.json")}))
     return 0
 
 

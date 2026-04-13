@@ -36,3 +36,4 @@ def test_cli_returns_blocked_on_autofix_error(monkeypatch, capsys, tmp_path: Pat
     payload = json.loads(capsys.readouterr().out)
     assert payload["status"] == "blocked"
     assert "artifact_paths" in payload
+    assert "recovery_outcome" in payload["artifact_paths"]

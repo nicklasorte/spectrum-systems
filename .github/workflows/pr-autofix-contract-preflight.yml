@@ -79,6 +79,7 @@ jobs:
         id: autorepair
         run: |
           set -euo pipefail
+          set +e
           python scripts/run_github_pr_autofix_contract_preflight.py \
             --output-dir outputs/contract_preflight \
             --base-ref "${{ steps.refs.outputs.base_sha }}" \
@@ -87,6 +88,9 @@ jobs:
             --pqx-wrapper-path outputs/contract_preflight/preflight_pqx_task_wrapper.json \
             --authority-evidence-ref artifacts/pqx_runs/preflight.pqx_slice_execution_record.json \
             --same-repo-write-allowed
+          autorepair_exit=$?
+          set -e
+          echo "autorepair_exit=$autorepair_exit" >> "$GITHUB_OUTPUT"
 
       - name: Publish preflight BLOCK bundle summary
         if: always()
@@ -109,11 +113,37 @@ jobs:
               "preflight_repair_plan_record.json",
               "failure_repair_candidate_artifact.json",
               "preflight_repair_result_record.json",
+              "preflight_recovery_outcome_record.json",
               "preflight_human_escalation_record.json",
           ]:
               p = out / name
               lines.append(f"- {name}: {'present' if p.exists() else 'missing'}")
           summary.write_text("\n".join(lines) + "\n", encoding="utf-8")
+          PY
+
+      - name: Enforce final governed preflight decision
+        if: always()
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          out = Path("outputs/contract_preflight")
+          result = out / "contract_preflight_result_artifact.json"
+          if not result.exists():
+              raise SystemExit("missing contract_preflight_result_artifact.json")
+          payload = json.loads(result.read_text(encoding="utf-8"))
+          initial = payload.get("control_signal", {}).get("strategy_gate_decision", "BLOCK")
+          if initial != "BLOCK":
+              raise SystemExit(0 if initial in {"ALLOW", "WARN"} else 2)
+          outcome_path = out / "preflight_recovery_outcome_record.json"
+          if not outcome_path.exists():
+              raise SystemExit("BLOCK without preflight_recovery_outcome_record")
+          outcome = json.loads(outcome_path.read_text(encoding="utf-8"))
+          final_decision = outcome.get("final_decision", "repair_failed")
+          if final_decision == "repaired_and_passed":
+              raise SystemExit(0)
+          raise SystemExit(2)
           PY
 
       - name: Upload preflight autorepair artifacts

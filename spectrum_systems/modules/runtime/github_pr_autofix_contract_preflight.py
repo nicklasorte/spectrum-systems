@@ -49,6 +49,39 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _write_recovery_outcome(
+    *,
+    output_dir: Path,
+    result_artifact: dict[str, Any],
+    diagnosis: dict[str, Any],
+    plan: dict[str, Any],
+    repair_invoked: bool,
+    repair_execution_status: str,
+    rerun_status: str,
+    final_decision: str,
+    retry_count: int,
+    reason_codes: list[str],
+    artifact_refs: dict[str, str],
+) -> dict[str, Any]:
+    payload = {
+        "artifact_type": "preflight_recovery_outcome_record",
+        "schema_version": "1.0.0",
+        "initial_preflight_status": str(result_artifact.get("preflight_status") or "failed"),
+        "failure_class": str(diagnosis.get("failure_class") or "unknown_preflight_failure"),
+        "eligibility_decision": str(plan.get("eligibility_decision") or "escalation_required"),
+        "repair_invoked": bool(repair_invoked),
+        "repair_execution_status": repair_execution_status,
+        "rerun_status": rerun_status,
+        "final_decision": final_decision,
+        "retry_count": retry_count,
+        "reason_codes": sorted({str(code) for code in reason_codes if str(code)}),
+        "artifact_refs": artifact_refs,
+    }
+    validate_artifact(payload, "preflight_recovery_outcome_record")
+    _write_json(output_dir / "preflight_recovery_outcome_record.json", payload)
+    return payload
+
+
 def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]:
     reasons: list[str] = []
 
@@ -318,6 +351,14 @@ def run_preflight_block_autorepair(
         "mutated_paths": [],
     }
 
+    artifact_refs = {
+        "preflight_result_ref": str(output_dir / "contract_preflight_result_artifact.json"),
+        "diagnosis_ref": str(output_dir / "preflight_block_diagnosis_record.json"),
+        "repair_plan_ref": str(output_dir / "preflight_repair_plan_record.json"),
+        "repair_candidate_ref": str(output_dir / "failure_repair_candidate_artifact.json"),
+        "rerun_decision_ref": str(output_dir / "preflight_repair_result_record.json"),
+    }
+
     if plan["apply_automatically"]:
         category = plan["failure_class"]
         if category in {"invalid_wrapper", "authority_evidence_missing", "missing_required_artifact"}:
@@ -355,6 +396,22 @@ def run_preflight_block_autorepair(
         validate_artifact(result, "preflight_repair_result_record")
         _write_json(output_dir / "preflight_repair_attempt_record.json", attempt)
         _write_json(output_dir / "preflight_repair_result_record.json", result)
+        escalation_ref = output_dir / "preflight_human_escalation_record.json"
+        if escalation_ref.exists():
+            artifact_refs["escalation_ref"] = str(escalation_ref)
+        _write_recovery_outcome(
+            output_dir=output_dir,
+            result_artifact=result_artifact,
+            diagnosis=diagnosis,
+            plan=plan,
+            repair_invoked=False,
+            repair_execution_status="not_invoked",
+            rerun_status="not_permitted",
+            final_decision="repair_not_permitted",
+            retry_count=0,
+            reason_codes=list(diagnosis.get("reason_codes", [])),
+            artifact_refs=artifact_refs,
+        )
         raise ContractPreflightAutofixError("auto_repair_forbidden_escalation_required")
 
     validation_cmd = [sys.executable, "-m", "pytest", "-q", "tests/test_contract_preflight.py"]
@@ -369,6 +426,19 @@ def run_preflight_block_autorepair(
         "validation_command": " ".join(validation_cmd),
     }
     if validation.returncode != 0:
+        _write_recovery_outcome(
+            output_dir=output_dir,
+            result_artifact=result_artifact,
+            diagnosis=diagnosis,
+            plan=plan,
+            repair_invoked=True,
+            repair_execution_status="failed_validation",
+            rerun_status="not_run",
+            final_decision="repair_failed",
+            retry_count=1,
+            reason_codes=list(diagnosis.get("reason_codes", [])) + ["VALIDATION_REPLAY_FAILED"],
+            artifact_refs=artifact_refs,
+        )
         raise ContractPreflightAutofixError("validation_replay_failed")
 
     rerun_cmd = [
@@ -406,7 +476,32 @@ def run_preflight_block_autorepair(
     _write_json(output_dir / "preflight_repair_attempt_record.json", attempt)
     _write_json(output_dir / "preflight_repair_validation_record.json", validation_record)
     _write_json(output_dir / "preflight_repair_result_record.json", result)
-
     if not result["success"]:
+        _write_recovery_outcome(
+            output_dir=output_dir,
+            result_artifact=result_artifact,
+            diagnosis=diagnosis,
+            plan=plan,
+            repair_invoked=True,
+            repair_execution_status="completed",
+            rerun_status="blocked",
+            final_decision="repaired_but_still_blocked",
+            retry_count=1,
+            reason_codes=list(diagnosis.get("reason_codes", [])) + ["RERUN_STILL_BLOCKED"],
+            artifact_refs=artifact_refs,
+        )
         raise ContractPreflightAutofixError("preflight_rerun_blocked_or_failed")
-    return result
+    outcome = _write_recovery_outcome(
+        output_dir=output_dir,
+        result_artifact=result_artifact,
+        diagnosis=diagnosis,
+        plan=plan,
+        repair_invoked=True,
+        repair_execution_status="completed",
+        rerun_status="passed",
+        final_decision="repaired_and_passed",
+        retry_count=1,
+        reason_codes=list(diagnosis.get("reason_codes", [])),
+        artifact_refs=artifact_refs,
+    )
+    return {"repair_result": result, "recovery_outcome": outcome}
