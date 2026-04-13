@@ -752,3 +752,53 @@ flowchart LR
 - **SAS** — added because `docs/architecture/source_authority_sync.md` defines deterministic retrieve/materialize/index behavior with fail-closed completeness checks.
 - **SHA** — added because `docs/architecture/shared-authority.md` defines shared primitive ownership boundaries and prohibited redefinition behavior across modules.
 - **RAX** — added because this registry already used RAX as a governed runtime boundary and multiple architecture/review surfaces rely on its candidate artifact seam; full definition added to resolve missing registry entry.
+
+## TAX/BAX/CAX Authority Extension (2026-04-13)
+
+### TAX
+- **acronym:** `TAX`
+- **full_name:** `Termination Authority eXecutor`
+- **role:** Determines whether a governed run should complete, continue, repair, freeze, block, or await async signal from validated evidence.
+- **owns:**
+  - information_sufficiency_evaluation
+  - bounded_completion_authority
+  - termination_decision_artifacts
+- **must_not_do:**
+  - enforce_side_effects
+  - replace_budget_authority
+  - replace_closure_state_owner
+  - terminate_on_confidence_alone
+
+### BAX
+- **acronym:** `BAX`
+- **full_name:** `Budget Authority eXecutor`
+- **role:** Determines whether governed execution remains within acceptable cost, quality, and risk bounds.
+- **owns:**
+  - system_budget_governance
+  - merged_budget_status
+  - budget_decision_artifacts
+- **must_not_do:**
+  - terminate_runs_directly
+  - enforce_side_effects
+  - optimize_for_cost_only
+  - replace_closure_state_owner
+
+### CAX
+- **acronym:** `CAX`
+- **full_name:** `Control Arbitration eXchange`
+- **role:** Deterministically composes TAX, BAX, TPA, judgment, replay, trace, drift, and guardrail signals into a single arbitration outcome for CDE consumption.
+- **owns:**
+  - control_arbitration
+  - authority_composition
+  - conflict_resolution_precedence
+  - cde_arbitration_input_bundle
+- **must_not_do:**
+  - execute_work
+  - enforce_actions
+  - replace_CDE
+  - replace_TPA
+  - emit_final_closure_state
+
+### Governed topology extension
+- `AEX -> TLC -> TPA -> PQX -> BAX + TAX -> CAX -> CDE -> SEL`
+- **CDE remains sole final closure-state owner.**

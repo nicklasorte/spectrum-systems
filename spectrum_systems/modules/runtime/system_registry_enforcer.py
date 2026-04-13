@@ -20,9 +20,10 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _REGISTRY_EXAMPLE_PATH = _REPO_ROOT / "contracts" / "examples" / "system_registry_artifact.json"
 _CANONICAL_HANDOFF_PATH: set[tuple[str, str]] = {
     ("PQX", "TPA"),
-    ("TPA", "FRE"),
-    ("FRE", "RIL"),
-    ("RIL", "CDE"),
+    ("TPA", "BAX"),
+    ("BAX", "TAX"),
+    ("TAX", "CAX"),
+    ("CAX", "CDE"),
     ("CDE", "TLC"),
 }
 

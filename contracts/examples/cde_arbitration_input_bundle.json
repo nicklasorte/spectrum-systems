@@ -1,0 +1,11 @@
+{
+  "artifact_type": "cde_arbitration_input_bundle",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "bundle_id": "CDEIN-001",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "arbitration_ref": "control_arbitration_record:CAR-001",
+  "recommended_outcome": "warn_complete_candidate",
+  "blocking_conditions": []
+}

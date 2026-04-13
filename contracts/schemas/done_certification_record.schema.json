@@ -127,6 +127,22 @@
         "tpa_certification_envelope_ref": {
           "type": "string",
           "minLength": 1
+        },
+        "tax_decision_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bax_decision_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cax_arbitration_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cde_decision_ref": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },
@@ -182,6 +198,9 @@
           "$ref": "#/$defs/check_result"
         },
         "tpa_compliance": {
+          "$ref": "#/$defs/check_result"
+        },
+        "authority_lineage": {
           "$ref": "#/$defs/check_result"
         }
       }

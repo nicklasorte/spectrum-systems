@@ -1,0 +1,18 @@
+{
+  "artifact_type": "termination_decision",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "decision_id": "TDEC-001",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "decision": "complete",
+  "reason_codes": [
+    "all_required_signals_satisfied"
+  ],
+  "policy_version": "2026-04-13",
+  "input_refs": {
+    "termination_signal_record_ref": "termination_signal_record:TSIG-001",
+    "termination_policy_ref": "termination_policy:TPOL-001",
+    "bax_status_ref": "budget_control_decision:BDEC-001"
+  }
+}

@@ -106,6 +106,10 @@ def _require_refs(input_refs: Dict[str, Any]) -> Dict[str, str]:
     for optional_key in (
         "enforcement_result_ref",
         "tpa_certification_envelope_ref",
+        "tax_decision_ref",
+        "bax_decision_ref",
+        "cax_arbitration_ref",
+        "cde_decision_ref",
         "eval_coverage_summary_ref",
         "repo_review_snapshot_ref",
         "repo_health_eval_summary_ref",
@@ -649,6 +653,38 @@ def run_done_certification(input_refs: dict) -> dict:
     if tpa_required and not tpa_compliance_pass:
         blocking_reasons.extend(tpa_details or ["TPA compliance failed for required scope"])
 
+    authority_lineage_details: List[str] = []
+    authority_lineage_pass = True
+    if authority_path_mode == "active_runtime":
+        required_lineage_refs = ("tax_decision_ref", "bax_decision_ref", "cax_arbitration_ref", "cde_decision_ref")
+        for required_ref in required_lineage_refs:
+            if required_ref not in refs:
+                authority_lineage_pass = False
+                authority_lineage_details.append(f"missing required authority lineage ref: {required_ref}")
+        if authority_lineage_pass:
+            tax_decision = _load_json(refs["tax_decision_ref"], label="termination_decision")
+            bax_decision = _load_json(refs["bax_decision_ref"], label="budget_control_decision")
+            cax_record = _load_json(refs["cax_arbitration_ref"], label="control_arbitration_record")
+            cde_decision = _load_json(refs["cde_decision_ref"], label="closure_decision_artifact")
+            _validate_schema(tax_decision, "termination_decision", label="termination_decision")
+            _validate_schema(bax_decision, "budget_control_decision", label="budget_control_decision")
+            _validate_schema(cax_record, "control_arbitration_record", label="control_arbitration_record")
+            _validate_schema(cde_decision, "closure_decision_artifact", label="closure_decision_artifact")
+            if str(tax_decision.get("decision") or "") != "complete":
+                authority_lineage_pass = False
+                authority_lineage_details.append("TAX decision must be complete for promotion readiness")
+            if str(bax_decision.get("decision") or "") not in {"allow", "warn"}:
+                authority_lineage_pass = False
+                authority_lineage_details.append("BAX decision must be allow or warn for promotion readiness")
+            if str(cax_record.get("outcome") or "") not in {"complete", "warn_complete_candidate"}:
+                authority_lineage_pass = False
+                authority_lineage_details.append("CAX outcome must be complete or warn_complete_candidate")
+            if str(cde_decision.get("decision_type") or "") != "lock":
+                authority_lineage_pass = False
+                authority_lineage_details.append("CDE decision_type must remain lock for promotion readiness")
+    if not authority_lineage_pass:
+        blocking_reasons.extend(authority_lineage_details)
+
     readiness_details: List[str] = []
     readiness_pass = True
     readiness_response = "allow"
@@ -797,6 +833,10 @@ def run_done_certification(input_refs: dict) -> dict:
             "tpa_compliance": {
                 "passed": (tpa_compliance_pass if tpa_required else True),
                 "details": tpa_details,
+            },
+            "authority_lineage": {
+                "passed": authority_lineage_pass,
+                "details": authority_lineage_details,
             },
             "system_readiness": {
                 "passed": readiness_pass and readiness_response in {"allow", "warn"},

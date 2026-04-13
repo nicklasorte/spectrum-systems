@@ -1,0 +1,13 @@
+{
+  "artifact_type": "budget_control_decision",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "decision_id": "BDEC-001",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "decision": "warn",
+  "reason_codes": [
+    "risk_human_review_backlog"
+  ],
+  "status_ref": "system_budget_status_v2:BSTAT-001"
+}

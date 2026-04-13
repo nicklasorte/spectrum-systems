@@ -943,3 +943,28 @@ def enforce_system_boundaries(context: dict[str, Any]) -> dict[str, Any]:
         raise SystemEnforcementLayerError(f"system enforcement result failed schema validation: {details}")
 
     return result
+
+
+def validate_downstream_a2a_consumption_guard(consumption_request: dict[str, Any]) -> dict[str, Any]:
+    """Fail-closed intake guard for downstream agent-to-agent artifact consumption."""
+    if not isinstance(consumption_request, dict):
+        return {"allow": False, "block": True, "reasons": ["invalid_consumption_request"]}
+
+    reasons: list[str] = []
+    if not str(consumption_request.get("arbitration_ref") or "").strip():
+        reasons.append("missing_arbitration_lineage")
+
+    bax_decision = str(consumption_request.get("bax_decision") or "").strip().lower()
+    if bax_decision in {"block", "freeze"}:
+        reasons.append("bax_state_blocks_downstream_consumption")
+
+    tax_decision = str(consumption_request.get("tax_decision") or "").strip().lower()
+    cax_outcome = str(consumption_request.get("cax_outcome") or "").strip().lower()
+    if tax_decision in {"freeze_required", "block_required"}:
+        reasons.append("tax_state_incompatible_with_downstream_consumption")
+    if cax_outcome in {"freeze_required", "block_required"}:
+        reasons.append("cax_state_incompatible_with_downstream_consumption")
+    if not bool(consumption_request.get("handoff_policy_permits", False)):
+        reasons.append("handoff_policy_denied")
+
+    return {"allow": len(reasons) == 0, "block": len(reasons) > 0, "reasons": reasons}

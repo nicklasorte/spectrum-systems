@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "system_budget_policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "policy_id",
+    "policy_version",
+    "cost_limits",
+    "quality_limits",
+    "risk_limits"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "system_budget_policy"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "policy_id": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "cost_limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "usd",
+        "tokens",
+        "retries",
+        "wall_clock_minutes"
+      ],
+      "properties": {
+        "usd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "retries": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "wall_clock_minutes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "quality_limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eval_failure_rate",
+        "indeterminate_rate",
+        "replay_mismatch_rate",
+        "override_rate",
+        "policy_alignment_failure_rate"
+      ],
+      "properties": {
+        "eval_failure_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "indeterminate_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "replay_mismatch_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "override_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "policy_alignment_failure_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "risk_limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "guardrail_violations",
+        "trace_incompleteness",
+        "missing_material_evidence",
+        "unsafe_tool_attempt_rate",
+        "human_review_backlog"
+      ],
+      "properties": {
+        "guardrail_violations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "trace_incompleteness": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missing_material_evidence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unsafe_tool_attempt_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "human_review_backlog": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

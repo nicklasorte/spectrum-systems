@@ -1,0 +1,15 @@
+{
+  "artifact_type": "system_budget_status_v2",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "status_id": "BSTAT-001",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "cost_status": "allow",
+  "quality_status": "allow",
+  "risk_status": "warn",
+  "merged_status": "warn",
+  "reason_codes": [
+    "risk_human_review_backlog"
+  ]
+}

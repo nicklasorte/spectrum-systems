@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "termination_signal_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "signal_id",
+    "run_id",
+    "trace_id",
+    "required_artifacts_present",
+    "required_evals_present",
+    "required_evals_passed",
+    "trace_complete",
+    "blocking_contradiction_present",
+    "human_review_outstanding",
+    "replay_consistent",
+    "policy_rejected",
+    "bax_decision"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "termination_signal_record"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "signal_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "required_artifacts_present": {
+      "type": "boolean"
+    },
+    "required_evals_present": {
+      "type": "boolean"
+    },
+    "required_evals_passed": {
+      "type": "boolean"
+    },
+    "trace_complete": {
+      "type": "boolean"
+    },
+    "blocking_contradiction_present": {
+      "type": "boolean"
+    },
+    "human_review_outstanding": {
+      "type": "boolean"
+    },
+    "replay_consistent": {
+      "type": "boolean"
+    },
+    "policy_rejected": {
+      "type": "boolean"
+    },
+    "bax_decision": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "warn",
+        "freeze",
+        "block"
+      ]
+    },
+    "confidence_signal": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  }
+}

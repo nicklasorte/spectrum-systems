@@ -1,0 +1,27 @@
+{
+  "artifact_type": "system_budget_policy",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "policy_id": "BPOL-001",
+  "policy_version": "2026-04-13",
+  "cost_limits": {
+    "usd": 100.0,
+    "tokens": 50000,
+    "retries": 4,
+    "wall_clock_minutes": 120
+  },
+  "quality_limits": {
+    "eval_failure_rate": 0.05,
+    "indeterminate_rate": 0.02,
+    "replay_mismatch_rate": 0.01,
+    "override_rate": 0.01,
+    "policy_alignment_failure_rate": 0.01
+  },
+  "risk_limits": {
+    "guardrail_violations": 0,
+    "trace_incompleteness": 0,
+    "missing_material_evidence": 0,
+    "unsafe_tool_attempt_rate": 0.01,
+    "human_review_backlog": 1
+  }
+}

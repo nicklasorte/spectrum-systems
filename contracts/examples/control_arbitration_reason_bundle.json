@@ -1,0 +1,15 @@
+{
+  "artifact_type": "control_arbitration_reason_bundle",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "bundle_id": "CRB-001",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "reason_codes": [
+    "tax_complete_bax_warn"
+  ],
+  "source_signals": [
+    "termination_decision:TDEC-001",
+    "budget_control_decision:BDEC-001"
+  ]
+}
