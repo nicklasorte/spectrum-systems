@@ -257,6 +257,20 @@ class ContractSchemaTests(unittest.TestCase):
             instance = load_example(name)
             validate_artifact(instance, name)
 
+
+    def test_map_projection_contract_examples_validate(self) -> None:
+        for name in (
+            "map_projection_record",
+            "map_projection_eval_result",
+            "map_projection_readiness_record",
+            "map_projection_conflict_record",
+            "map_projection_bundle",
+            "map_projection_effectiveness_record",
+            "map_projection_debt_record",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_rqx_redteam_contract_examples_validate(self) -> None:
         for name in (
             "redteam_review_request",

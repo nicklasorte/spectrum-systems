@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/map_projection_effectiveness_record.schema.json",
+  "title": "MAP Projection Effectiveness Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "effectiveness_id",
+    "created_at",
+    "trace_id",
+    "window_size",
+    "usability_improvement_rate",
+    "semantic_distortion_rate",
+    "authority_confusion_rate",
+    "effectiveness_score",
+    "value_status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "map_projection_effectiveness_record"
+    },
+    "effectiveness_id": {
+      "type": "string",
+      "pattern": "^mpeff-[a-f0-9]{16}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "window_size": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "usability_improvement_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "semantic_distortion_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "authority_confusion_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "effectiveness_score": {
+      "type": "number",
+      "minimum": -1,
+      "maximum": 1
+    },
+    "value_status": {
+      "type": "string",
+      "enum": [
+        "improving",
+        "degrading"
+      ]
+    }
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/map_projection_eval_result.schema.json",
+  "title": "MAP Projection Eval Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "eval_id",
+    "created_at",
+    "trace_id",
+    "projection_id",
+    "evaluation_status",
+    "checks",
+    "missing_required_fields",
+    "fail_reasons"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "map_projection_eval_result"
+    },
+    "eval_id": {
+      "type": "string",
+      "pattern": "^mpe-[a-f0-9]{16}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projection_id": {
+      "type": "string",
+      "pattern": "^mpr-[a-f0-9]{16}$"
+    },
+    "evaluation_status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "completeness",
+        "provenance_retention",
+        "contradiction_visibility",
+        "required_field_preservation",
+        "formatting_correctness",
+        "field_loss_detector",
+        "status_washing_detector",
+        "ril_to_map_integrity",
+        "projection_to_governance_integrity"
+      ],
+      "properties": {
+        "completeness": {
+          "type": "boolean"
+        },
+        "provenance_retention": {
+          "type": "boolean"
+        },
+        "contradiction_visibility": {
+          "type": "boolean"
+        },
+        "required_field_preservation": {
+          "type": "boolean"
+        },
+        "formatting_correctness": {
+          "type": "boolean"
+        },
+        "field_loss_detector": {
+          "type": "boolean"
+        },
+        "status_washing_detector": {
+          "type": "boolean"
+        },
+        "ril_to_map_integrity": {
+          "type": "boolean"
+        },
+        "projection_to_governance_integrity": {
+          "type": "boolean"
+        }
+      }
+    },
+    "missing_required_fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "fail_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}
