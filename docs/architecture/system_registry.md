@@ -98,6 +98,12 @@ CDE is the only system allowed to emit:
 - **SHA** — shared authority layer for shared primitive ownership boundaries *(placeholder; shared primitive seam)*
 - **RAX** — bounded runtime candidate-signal surface *(placeholder; non-authoritative by design)*
 - **SIV** — not currently present in this repository scope (reserved acronym)
+- **CHX** — chaos harness for controlled failure injection and adversarial campaign artifacts
+- **DEX** — decision explainability reconstruction and consistency checking artifacts
+- **SIM** — candidate policy/scenario simulation engine (non-live, non-authoritative)
+- **PRX** — precedent retrieval/scoring memory layer (non-authoritative)
+- **CVX** — cross-run consistency validation and instability classification
+- **HIX** — governed human interaction/override audit exchange
 
 ## Recurring Cross-System Phase Labels (Non-Owner)
 
@@ -825,3 +831,140 @@ flowchart LR
 ### Governed topology extension
 - `AEX -> TLC -> TPA -> PQX -> BAX + TAX -> CAX -> CDE -> SEL`
 - **CDE remains sole final closure-state owner.**
+
+## Advanced System Extensions (ADV-001)
+
+### CHX
+- **acronym:** `CHX`
+- **full_name:** Chaos Harness eXchange
+- **role:** Owns controlled failure injection and adversarial scenario execution across governed seams.
+- **owns:**
+  - chaos_failure_injection
+  - chaos_scenario_definition
+  - chaos_campaign_execution
+  - chaos_failure_surface_reporting
+- **consumes:**
+  - governed_scenario_inputs
+  - replayable_system_bundles
+  - certification_scope_inputs
+- **produces:**
+  - chx_injection_record
+  - chx_scenario_pack
+  - chx_campaign_result
+  - chx_failure_surface_report
+- **must_not_do:**
+  - execute_production_workflows
+  - replace_pqx_execution
+  - issue_policy_authority
+  - issue_closure_authority
+  - mutate_live_state_outside_controlled_injection
+
+### CVX
+- **acronym:** `CVX`
+- **full_name:** Consistency Validation eXchange
+- **role:** Owns multi-run consistency comparison, divergence scoring, and instability classification.
+- **owns:**
+  - multi_run_comparison
+  - divergence_scoring
+  - instability_classification
+- **consumes:**
+  - repeated_run_outputs
+  - replay_bundles
+  - evidence_chain_artifacts
+- **produces:**
+  - cvx_run_comparison_record
+  - cvx_consistency_score
+  - cvx_instability_report
+  - cvx_consistency_bundle
+- **must_not_do:**
+  - alter_execution_outputs
+  - override_decision_authority
+  - replace_replay_engines
+
+### DEX
+- **acronym:** `DEX`
+- **full_name:** Decision Explainability eXchange
+- **role:** Owns deterministic decision explanation reconstruction from governed evidence and prior decisions.
+- **owns:**
+  - decision_explanation_reconstruction
+  - explanation_consistency_checking
+  - explanation_compression_views
+- **consumes:**
+  - decision_artifacts
+  - evidence_chain_artifacts
+  - control_eval_artifacts
+  - provenance_replay_refs
+- **produces:**
+  - dex_explanation_record
+  - dex_explanation_consistency_result
+  - dex_explanation_summary
+  - dex_explanation_bundle
+- **must_not_do:**
+  - make_decisions
+  - reinterpret_upstream_semantics
+  - override_authority_paths
+
+### SIM
+- **acronym:** `SIM`
+- **full_name:** Simulation eXecution Module
+- **role:** Owns deterministic candidate policy and scenario simulation without live-state mutation.
+- **owns:**
+  - candidate_policy_simulation
+  - scenario_replay_execution
+  - impact_diff_generation
+- **consumes:**
+  - candidate_policy_artifacts
+  - baseline_artifacts
+  - replayable_scenario_packs
+- **produces:**
+  - sim_scenario_record
+  - sim_policy_impact_report
+  - sim_diff_record
+  - sim_simulation_bundle
+- **must_not_do:**
+  - modify_live_state
+  - replace_tpa_cde_authority
+  - promote_simulation_output_automatically
+
+### PRX
+- **acronym:** `PRX`
+- **full_name:** Precedent Retrieval eXchange
+- **role:** Owns structured precedent record retrieval and bounded relevance scoring.
+- **owns:**
+  - precedent_record_storage_shape
+  - precedent_retrieval
+  - precedent_relevance_scoring
+- **consumes:**
+  - historical_decision_artifacts
+  - historical_outcome_artifacts
+  - evidence_bundles
+- **produces:**
+  - prx_precedent_record
+  - prx_precedent_match_set
+  - prx_precedent_score_report
+  - prx_precedent_bundle
+- **must_not_do:**
+  - override_current_authority
+  - auto_promote_historical_precedent
+
+### HIX
+- **acronym:** `HIX`
+- **full_name:** Human Interaction eXchange
+- **role:** Owns governed human interaction contracts, override auditing, and structured feedback exchange.
+- **owns:**
+  - human_action_contracts
+  - override_audit_artifacts
+  - human_feedback_exchange_artifacts
+- **consumes:**
+  - hitl_checkpoints
+  - override_requests
+  - structured_human_feedback_inputs
+- **produces:**
+  - hix_human_action_record
+  - hix_override_audit_record
+  - hix_feedback_exchange_record
+  - hix_human_interaction_bundle
+- **must_not_do:**
+  - bypass_governance_layers
+  - mutate_state_outside_owner_flows
+  - replace_cde_tpa_sel_authority

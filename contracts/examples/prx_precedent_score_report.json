@@ -1,0 +1,16 @@
+{
+  "artifact_type": "prx_precedent_score_report",
+  "schema_version": "1.0.0",
+  "artifact_id": "prx_precedent_score_report-EX-001",
+  "status": "pass",
+  "generated_at": "2026-04-13T00:00:00Z",
+  "details": {
+    "summary": "Deterministic example for prx_precedent_score_report",
+    "non_authority": true
+  },
+  "references": [
+    "AEX",
+    "TLC",
+    "TPA"
+  ]
+}

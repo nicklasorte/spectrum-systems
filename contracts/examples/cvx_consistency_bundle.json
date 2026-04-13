@@ -1,0 +1,16 @@
+{
+  "artifact_type": "cvx_consistency_bundle",
+  "schema_version": "1.0.0",
+  "artifact_id": "cvx_consistency_bundle-EX-001",
+  "status": "pass",
+  "generated_at": "2026-04-13T00:00:00Z",
+  "details": {
+    "summary": "Deterministic example for cvx_consistency_bundle",
+    "non_authority": true
+  },
+  "references": [
+    "AEX",
+    "TLC",
+    "TPA"
+  ]
+}

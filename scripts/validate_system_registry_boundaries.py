@@ -225,10 +225,29 @@ def check_repo_mutation_fail_closed(systems: dict[str, SystemDefinition], full_t
     return errors
 
 
+
+
+
+def check_adv_owner_constraints(systems: dict[str, SystemDefinition]) -> list[str]:
+    errors: list[str] = []
+    if "execution" in systems["CHX"].owns or "execution_state_transitions" in systems["CHX"].owns:
+        errors.append("CHX must not own runtime execution authority")
+    if "decision_authority" in systems["DEX"].owns or "closure_decisions" in systems["DEX"].owns:
+        errors.append("DEX must not own decision authority")
+    if any("live" in item for item in systems["SIM"].owns):
+        errors.append("SIM must not own live state mutation")
+    if any("closure" in item for item in systems["PRX"].owns):
+        errors.append("PRX must not own closure authority")
+    if any("execution" in item for item in systems["CVX"].owns):
+        errors.append("CVX must not own execution mutation")
+    if any("bypass" in item for item in systems["HIX"].owns):
+        errors.append("HIX must not own bypass behaviors")
+    return errors
+
 def run_all_checks(registry_path: Path = REGISTRY_PATH) -> list[str]:
     systems, full_text = parse_registry(registry_path)
 
-    required_systems = {"TLC", "CDE", "RQX", "RIL", "FRE", "TPA", "SEL", "PRG", "AEX", "MAP", "PQX"}
+    required_systems = {"TLC", "CDE", "RQX", "RIL", "FRE", "TPA", "SEL", "PRG", "AEX", "MAP", "PQX", "CHX", "DEX", "SIM", "PRX", "CVX", "HIX"}
     missing = sorted(required_systems - set(systems))
     errors: list[str] = []
     if missing:
@@ -239,6 +258,7 @@ def run_all_checks(registry_path: Path = REGISTRY_PATH) -> list[str]:
     errors.extend(check_forbidden_authority_patterns(systems))
     errors.extend(check_drift_risks(systems))
     errors.extend(check_repo_mutation_fail_closed(systems, full_text))
+    errors.extend(check_adv_owner_constraints(systems))
     return errors
 
 
