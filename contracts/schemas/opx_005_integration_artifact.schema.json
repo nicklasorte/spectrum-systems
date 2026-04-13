@@ -15,6 +15,10 @@
     "artifact_type": {
       "const": "opx_005_integration_artifact"
     },
+    "artifact_class": {
+      "type": "string",
+      "const": "coordination"
+    },
     "schema_version": {
       "type": "string",
       "const": "1.0.0"

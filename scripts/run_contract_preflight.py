@@ -190,6 +190,45 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def _resolve_wrapper_path(repo_root: Path, wrapper_path_value: str) -> Path:
+    wrapper_path = Path(wrapper_path_value)
+    if not wrapper_path.is_absolute():
+        wrapper_path = repo_root / wrapper_path
+    return wrapper_path
+
+
+def _attempt_build_missing_wrapper(
+    *,
+    repo_root: Path,
+    wrapper_path: Path,
+    base_ref: str,
+    head_ref: str,
+) -> dict[str, Any]:
+    try:
+        output_arg = str(wrapper_path.relative_to(repo_root))
+    except ValueError:
+        output_arg = str(wrapper_path)
+    command = [
+        sys.executable,
+        str(repo_root / "scripts" / "build_preflight_pqx_wrapper.py"),
+        "--base-ref",
+        base_ref,
+        "--head-ref",
+        head_ref,
+        "--output",
+        output_arg,
+    ]
+    result = _run(command, cwd=repo_root)
+    return {
+        "attempted": True,
+        "command": command,
+        "returncode": result.returncode,
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+        "built": result.returncode == 0 and wrapper_path.exists(),
+    }
+
+
 def _all_governed_paths(repo_root: Path) -> list[str]:
     governed = []
     governed.extend(str(path.relative_to(repo_root)) for path in sorted((repo_root / "contracts" / "schemas").glob("*.schema.json")))
@@ -1210,21 +1249,33 @@ def main() -> int:
         getattr(args, "authority_evidence_ref", None),
     )
     wrapper_path_value = getattr(args, "pqx_wrapper_path", None)
+    wrapper_resolution: dict[str, Any] | None = None
     if wrapper_path_value:
-        wrapper_path = Path(wrapper_path_value)
+        wrapper_path = _resolve_wrapper_path(REPO_ROOT, str(wrapper_path_value))
+        if not wrapper_path.exists():
+            wrapper_resolution = _attempt_build_missing_wrapper(
+                repo_root=REPO_ROOT,
+                wrapper_path=wrapper_path,
+                base_ref=str(getattr(args, "base_ref", "origin/main")),
+                head_ref=str(getattr(args, "head_ref", "HEAD")),
+            )
         try:
             wrapper_payload = json.loads(wrapper_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
+            blocking_reasons = ["MALFORMED_PQX_TASK_WRAPPER"]
+            if isinstance(wrapper_resolution, dict) and wrapper_resolution.get("attempted") and not wrapper_resolution.get("built"):
+                blocking_reasons.insert(0, "MISSING_PQX_TASK_WRAPPER_AUTO_BUILD_FAILED")
             pqx_required_context_enforcement = {
                 "classification": "governed_pqx_required",
                 "execution_context": str(getattr(args, "execution_context", "unspecified") or "unspecified"),
-                "wrapper_present": True,
+                "wrapper_present": wrapper_path.exists(),
                 "wrapper_context_valid": False,
                 "authority_context_valid": False,
                 "status": "block",
-                "blocking_reasons": ["MALFORMED_PQX_TASK_WRAPPER"],
+                "blocking_reasons": blocking_reasons,
                 "error": str(exc),
             }
+    detection_meta["pqx_wrapper_resolution"] = wrapper_resolution
     try:
         pqx_execution_policy = evaluate_pqx_execution_policy(
             changed_paths=detection.changed_paths,
