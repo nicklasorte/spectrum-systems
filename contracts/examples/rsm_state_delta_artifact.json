@@ -1,0 +1,20 @@
+{
+  "artifact_type": "rsm_state_delta_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-rsm-001",
+  "deltas": [
+    {
+      "module_id": "faq",
+      "field": "trust",
+      "desired": 0.9,
+      "actual": 0.72,
+      "magnitude": 0.18,
+      "domain": "module_posture",
+      "evidence_refs": [
+        "desired:rsm-desired-a",
+        "actual:rsm-actual-a"
+      ]
+    }
+  ],
+  "non_authoritative": true
+}

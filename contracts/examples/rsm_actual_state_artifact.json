@@ -1,0 +1,19 @@
+{
+  "artifact_type": "rsm_actual_state_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-rsm-001",
+  "modules": {
+    "faq": {
+      "status": "active",
+      "trust": 0.72,
+      "burden": 0.43,
+      "freeze": false,
+      "readiness": 0.63
+    }
+  },
+  "interpreted_inputs": [
+    "ril_interpreted_state:faq:001"
+  ],
+  "conflict_count": 2,
+  "non_authoritative": true
+}

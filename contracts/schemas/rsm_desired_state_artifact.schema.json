@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rsm_desired_state_artifact.schema.json",
+  "title": "RSM Desired State Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "desired_state_version",
+    "source",
+    "generated_at",
+    "desired_module_posture",
+    "desired_operator_posture",
+    "desired_portfolio_posture",
+    "non_authoritative"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "rsm_desired_state_artifact"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "desired_state_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "source_ref",
+        "source_kind"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_kind": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "desired_module_posture": {
+      "type": "object"
+    },
+    "desired_operator_posture": {
+      "type": "object"
+    },
+    "desired_portfolio_posture": {
+      "type": "object"
+    },
+    "non_authoritative": {
+      "const": true
+    },
+    "desired_state_id": {
+      "type": "string",
+      "pattern": "^rsm-desired-[a-f0-9]{16}$"
+    }
+  }
+}

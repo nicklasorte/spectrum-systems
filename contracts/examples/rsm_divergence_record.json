@@ -1,0 +1,13 @@
+{
+  "artifact_type": "rsm_divergence_record",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-rsm-001",
+  "divergences": [
+    {
+      "module_id": "faq",
+      "field": "trust",
+      "classification": "degraded"
+    }
+  ],
+  "non_authoritative": true
+}
