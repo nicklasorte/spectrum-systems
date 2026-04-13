@@ -1,0 +1,16 @@
+{
+  "artifact_id": "art-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.3.130",
+  "created_at": "2026-04-13T00:00:00Z",
+  "artifact_type": "jdx_judgment_policy",
+  "policy_id": "JDX-POL-001",
+  "policy_version": "1.0.0",
+  "lifecycle_state": "canary",
+  "rules": [
+    "require_evidence",
+    "surface_uncertainty"
+  ],
+  "supersedes": "JDX-POL-000"
+}

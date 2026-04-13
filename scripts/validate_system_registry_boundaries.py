@@ -258,6 +258,12 @@ def check_extended_hardening_ownership(systems: dict[str, SystemDefinition]) -> 
         "canary_rollout_artifacts": "CAN",
         "eval_dataset_registry": "DAT",
         "judgment_artifact_requirements": "JDG",
+        "judgment_record": "JDX",
+        "reuse_record_artifacts": "RUX",
+        "artifact_card_records": "XPL",
+        "release_records": "REL",
+        "dependency_graph_artifacts": "DAG",
+        "external_runtime_provenance_contracts": "EXT",
         "policy_rollout_lifecycle": "POL",
         "prompt_registry_authority": "PRM",
         "route_candidate_records": "ROU",
@@ -275,10 +281,22 @@ def check_extended_hardening_ownership(systems: dict[str, SystemDefinition]) -> 
     return errors
 
 
+
+def check_next_wave_boundaries(systems: dict[str, SystemDefinition]) -> list[str]:
+    errors: list[str] = []
+    for required in ("JDX", "RUX", "XPL", "REL", "DAG", "EXT"):
+        if required not in systems:
+            errors.append(f"missing required system definition: {required}")
+    if "JDX" in systems and any("closure" in x for x in systems["JDX"].owns):
+        errors.append("JDX must not own closure authority")
+    if "DAG" in systems and any("execution" in x for x in systems["DAG"].owns):
+        errors.append("DAG must not own execution")
+    return errors
+
 def run_all_checks(registry_path: Path = REGISTRY_PATH) -> list[str]:
     systems, full_text = parse_registry(registry_path)
 
-    required_systems = {"TLC", "CDE", "RQX", "RIL", "FRE", "TPA", "SEL", "PRG", "AEX", "MAP", "PQX", "CHX", "DEX", "SIM", "PRX", "CVX", "HIX", "CAL", "POL", "AIL", "SCH", "DEP", "RCA", "QOS", "SIMX", "CTX", "EVL", "OBS", "LIN", "DRT", "SLO", "CAN", "DAT", "JDG", "PRM", "ROU", "HIT", "CAP", "SEC", "REP", "ENT", "CON"}
+    required_systems = {"TLC", "CDE", "RQX", "RIL", "FRE", "TPA", "SEL", "PRG", "AEX", "MAP", "PQX", "CHX", "DEX", "SIM", "PRX", "CVX", "HIX", "CAL", "POL", "AIL", "SCH", "DEP", "RCA", "QOS", "SIMX", "JDX", "RUX", "XPL", "REL", "DAG", "EXT", "CTX", "EVL", "OBS", "LIN", "DRT", "SLO", "CAN", "DAT", "JDG", "PRM", "ROU", "HIT", "CAP", "SEC", "REP", "ENT", "CON"}
     missing = sorted(required_systems - set(systems))
     errors: list[str] = []
     if missing:
@@ -291,6 +309,7 @@ def run_all_checks(registry_path: Path = REGISTRY_PATH) -> list[str]:
     errors.extend(check_repo_mutation_fail_closed(systems, full_text))
     errors.extend(check_adv_owner_constraints(systems))
     errors.extend(check_extended_hardening_ownership(systems))
+    errors.extend(check_next_wave_boundaries(systems))
     return errors
 
 

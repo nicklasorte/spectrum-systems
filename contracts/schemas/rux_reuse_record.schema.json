@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rux_reuse_record.schema.json",
+  "title": "rux_reuse_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "created_at",
+    "asset_ref",
+    "asset_type",
+    "justification",
+    "scope",
+    "freshness_hours",
+    "lineage_ref"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "rux_reuse_record"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "asset_ref": {
+      "type": "string"
+    },
+    "asset_type": {
+      "type": "string"
+    },
+    "justification": {
+      "type": "string",
+      "minLength": 3
+    },
+    "scope": {
+      "type": "string"
+    },
+    "freshness_hours": {
+      "type": "number",
+      "minimum": 0
+    },
+    "lineage_ref": {
+      "type": "string"
+    },
+    "active_set_valid": {
+      "type": "boolean"
+    }
+  }
+}

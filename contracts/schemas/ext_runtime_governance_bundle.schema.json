@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/ext_runtime_governance_bundle.schema.json",
+  "title": "ext_runtime_governance_bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "created_at",
+    "provenance_ref",
+    "replay_verification_ref",
+    "constraint_enforcement_ref"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "ext_runtime_governance_bundle"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provenance_ref": {
+      "type": "string"
+    },
+    "replay_verification_ref": {
+      "type": "string"
+    },
+    "constraint_enforcement_ref": {
+      "type": "string"
+    }
+  }
+}
