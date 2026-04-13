@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/mnt_maintain_cycle_report.schema.json",
+  "title": "mnt_maintain_cycle_report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "cycle_id",
+    "drift_scan",
+    "eval_expansion",
+    "doc_vs_reality_checks",
+    "invariant_enforcement",
+    "authority_boundary_status"
+  ],
+  "properties": {
+    "artifact_type": {"const": "mnt_maintain_cycle_report"},
+    "cycle_id": {"type": "string", "minLength": 8},
+    "drift_scan": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+    "eval_expansion": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["eval_id", "source_failure", "status"],
+        "properties": {
+          "eval_id": {"type": "string"},
+          "source_failure": {"type": "string"},
+          "status": {"type": "string", "enum": ["candidate", "admitted"]}
+        }
+      }
+    },
+    "doc_vs_reality_checks": {"type": "string", "enum": ["executed"]},
+    "invariant_enforcement": {"type": "string", "enum": ["executed"]},
+    "authority_boundary_status": {"type": "string", "enum": ["non_authoritative"]}
+  }
+}

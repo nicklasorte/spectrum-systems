@@ -1,0 +1,20 @@
+{
+  "artifact_type": "mnt_unified_certification_bundle",
+  "bundle_id": "mntcb-15d7dd16a1000c35",
+  "created_at": "2026-04-13T00:00:00Z",
+  "trace_id": "trace-mnt-001",
+  "evidence_chain_ref": "mnt_cross_system_evidence_chain:abc123",
+  "replay_ref": "mnt_cross_system_replay:def456",
+  "observability_ref": "mnt_observability:ghi789",
+  "cde_certification_ref": "closure_decision_artifact:cde-001",
+  "input_coverage": {
+    "status": "pass",
+    "required_inputs": [
+      "evidence_chain_ref",
+      "replay_ref",
+      "observability_ref",
+      "cde_certification_ref"
+    ],
+    "missing_inputs": []
+  }
+}

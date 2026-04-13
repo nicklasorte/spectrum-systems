@@ -28,6 +28,12 @@ def test_validator_passes_for_current_registry() -> None:
     assert errors == []
 
 
+def test_registry_declares_mnt_as_non_owner_phase_label() -> None:
+    content = REGISTRY_PATH.read_text(encoding="utf-8")
+    assert "MNT — Maintain / Cross-System Trust Integration" in content
+    assert "recurring phase label (not a canonical system owner)" in content
+
+
 def test_validator_fails_when_tlc_owns_closure_decisions(tmp_path: Path) -> None:
     content = REGISTRY_PATH.read_text(encoding="utf-8")
     mutated = content.replace(
