@@ -1,0 +1,16 @@
+{
+  "artifact_type": "hnx_harness_readiness_record",
+  "schema_version": "1.0.0",
+  "readiness_id": "hnx-ready-1",
+  "run_id": "run-1",
+  "trace_id": "trace-hnx-1",
+  "readiness_status": "candidate_only",
+  "fail_reasons": [],
+  "non_authority_assertions": [
+    "candidate_only_non_authoritative",
+    "does_not_replace_tlc_orchestration",
+    "does_not_replace_tpa_policy_authority",
+    "does_not_replace_cde_or_sel_authority"
+  ],
+  "created_at": "2026-04-12T00:06:00Z"
+}

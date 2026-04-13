@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hnx_resume_record.schema.json",
+  "title": "Hnx Resume Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "resume_id",
+    "checkpoint_id",
+    "checkpoint_hash",
+    "downstream_lineage",
+    "resumed_at",
+    "trace_id"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "hnx_resume_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "resume_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "checkpoint_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "checkpoint_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "downstream_lineage": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "string",
+        "enum": [
+          "AEX",
+          "TLC",
+          "TPA",
+          "PQX"
+        ]
+      },
+      "prefixItems": [
+        {
+          "const": "AEX"
+        },
+        {
+          "const": "TLC"
+        },
+        {
+          "const": "TPA"
+        },
+        {
+          "const": "PQX"
+        }
+      ]
+    },
+    "resumed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

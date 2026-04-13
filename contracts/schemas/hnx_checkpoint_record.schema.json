@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hnx_checkpoint_record.schema.json",
+  "title": "Hnx Checkpoint Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "checkpoint_id",
+    "workflow_id",
+    "stage_contract_id",
+    "stage_index",
+    "lineage_ref",
+    "content_hash",
+    "created_epoch_minutes",
+    "created_at",
+    "trace_id"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "hnx_checkpoint_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "checkpoint_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workflow_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stage_contract_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stage_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "lineage_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "created_epoch_minutes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

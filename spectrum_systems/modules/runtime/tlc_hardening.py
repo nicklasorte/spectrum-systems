@@ -229,3 +229,20 @@ def run_tlc_semantic_redteam(*, fixtures: list[dict[str, Any]]) -> list[dict[str
         if row.get("semantic_drift") and row.get("observed") != "blocked":
             findings.append(row)
     return findings
+
+
+def verify_tlc_closeout_gate(*, routing_eval: dict[str, Any], readiness: dict[str, Any], replay_match: bool, dead_loop_failures: list[str], non_authority_assertions: list[str]) -> dict[str, Any]:
+    """TLC-10 closeout gate proving TLC orchestration integrity is operationally real."""
+    checks = {
+        "cross_system_handoff_integrity": routing_eval.get("evaluation_status") == "pass",
+        "prep_vs_authority_protected": "tlc_not_closure_authority" in non_authority_assertions,
+        "routing_replay_valid": replay_match is True,
+        "dead_loop_protection_active": not dead_loop_failures,
+        "tlc_orchestration_only": "does_not_replace_pqx_execution_authority" in readiness.get("non_authority_assertions", []),
+    }
+    fail_reasons = [name for name, passed in checks.items() if not passed]
+    return {
+        "closeout_status": "closed" if not fail_reasons else "open",
+        "checks": checks,
+        "fail_reasons": fail_reasons,
+    }

@@ -1,0 +1,44 @@
+{
+  "artifact_type": "hnx_stage_contract_record",
+  "schema_version": "1.0.0",
+  "contract_id": "hnx-contract-1",
+  "trace_id": "trace-hnx-1",
+  "required_stages": [
+    "initialized",
+    "candidate_ready",
+    "checkpointed",
+    "resumed",
+    "completed"
+  ],
+  "allowed_transitions": [
+    {
+      "from": "initialized",
+      "to": "candidate_ready",
+      "reason_code": "INITIALIZED"
+    },
+    {
+      "from": "candidate_ready",
+      "to": "checkpointed",
+      "reason_code": "CANDIDATE_VERIFIED"
+    },
+    {
+      "from": "checkpointed",
+      "to": "resumed",
+      "reason_code": "RESUME_ALLOWED"
+    },
+    {
+      "from": "resumed",
+      "to": "completed",
+      "reason_code": "COMPLETED"
+    }
+  ],
+  "stop_states": [
+    "halted",
+    "frozen"
+  ],
+  "created_at": "2026-04-12T00:00:00Z",
+  "provenance": {
+    "source": "hnx",
+    "version": "1.0.0"
+  }
+}

@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.120",
+  "artifact_version": "1.3.121",
   "schema_version": "1.3.98",
-  "standards_version": "1.3.120",
+  "standards_version": "1.3.121",
   "record_id": "REC-STD-2026-04-12-TLC-001",
   "run_id": "run-20260412T220000Z-tlc-001",
   "created_at": "2026-04-12T00:00:00Z",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.119",
+  "source_repo_version": "1.3.120",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -2281,6 +2281,149 @@
       "notes": "AG-03 deterministic fail-closed human-in-the-loop review handoff artifact with pending-review queue semantics."
     },
     {
+      "artifact_type": "hnx_checkpoint_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_checkpoint_record.example.json",
+      "notes": "HNX checkpoint artifact with freshness+lineage semantics for resume integrity."
+    },
+    {
+      "artifact_type": "hnx_continuity_debt_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_continuity_debt_record.example.json",
+      "notes": "HNX continuity debt tracker artifact for repeated continuity violations."
+    },
+    {
+      "artifact_type": "hnx_continuity_state_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_continuity_state_record.example.json",
+      "notes": "HNX continuity state artifact for checkpoint freshness and continuity references."
+    },
+    {
+      "artifact_type": "hnx_harness_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_harness_bundle.example.json",
+      "notes": "HNX bundle artifact linking inputs/eval and replay fingerprint."
+    },
+    {
+      "artifact_type": "hnx_harness_conflict_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_harness_conflict_record.example.json",
+      "notes": "HNX boundary and replay conflict artifact for surfaced contradictions."
+    },
+    {
+      "artifact_type": "hnx_harness_effectiveness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_harness_effectiveness_record.example.json",
+      "notes": "HNX effectiveness tracking artifact for continuity and completion quality proxies."
+    },
+    {
+      "artifact_type": "hnx_harness_eval_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_harness_eval_result.example.json",
+      "notes": "HNX harness contract evaluation artifact with fail-closed checks."
+    },
+    {
+      "artifact_type": "hnx_harness_readiness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_harness_readiness_record.example.json",
+      "notes": "Candidate-only HNX readiness artifact with explicit non-authority assertions."
+    },
+    {
+      "artifact_type": "hnx_resume_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_resume_record.example.json",
+      "notes": "HNX resume attempt artifact with downstream lineage continuity checks."
+    },
+    {
+      "artifact_type": "hnx_stage_contract_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_stage_contract_record.example.json",
+      "notes": "HNX stage contract boundary for deterministic stage topology and allowed transitions."
+    },
+    {
+      "artifact_type": "hnx_stop_condition_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_stop_condition_record.example.json",
+      "notes": "HNX stop/freeze/human-checkpoint artifact for bypass-proof stop semantics."
+    },
+    {
       "artifact_type": "human_checkpoint_decision",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -2845,6 +2988,19 @@
       "last_updated_in": "1.3.45",
       "example_path": "contracts/examples/mvp_20_slice_execution_report.json",
       "notes": "BATCH-MVP-20 deterministic governed 20-slice execution drill report proving bounded continuation control, stop/escalate safety, replay parity, and operator-readable evidence linkage."
+    },
+    {
+      "artifact_type": "next24_serial_execution_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.120",
+      "last_updated_in": "1.3.120",
+      "example_path": "contracts/examples/next24_serial_execution_record.json",
+      "notes": "Deterministic serial execution record for NEXT24 governance foundation build with fail-closed hard gates."
     },
     {
       "artifact_type": "next_best_action_memo",
@@ -6121,19 +6277,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "next24_serial_execution_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.120",
-      "last_updated_in": "1.3.120",
-      "example_path": "contracts/examples/next24_serial_execution_record.json",
-      "notes": "Deterministic serial execution record for NEXT24 governance foundation build with fail-closed hard gates."
     }
   ]
 }

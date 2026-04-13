@@ -1,0 +1,13 @@
+{
+  "artifact_type": "hnx_checkpoint_record",
+  "schema_version": "1.0.0",
+  "checkpoint_id": "cp-1",
+  "workflow_id": "wf-1",
+  "stage_contract_id": "hnx-contract-1",
+  "stage_index": 2,
+  "lineage_ref": "lineage:cp-1",
+  "content_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "created_epoch_minutes": 1000,
+  "created_at": "2026-04-12T00:00:00Z",
+  "trace_id": "trace-hnx-1"
+}
