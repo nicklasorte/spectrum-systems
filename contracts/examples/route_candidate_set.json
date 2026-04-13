@@ -1,0 +1,21 @@
+{
+  "artifact_type": "route_candidate_set",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-route_candidate_set",
+  "created_at": "2026-04-13T00:00:00Z",
+  "provenance": {
+    "source_system": "CON",
+    "inputs": [
+      "seed"
+    ],
+    "simulated": false
+  },
+  "record_id": "route_candidate_set-001",
+  "status": "ok",
+  "reason_codes": [
+    "seed"
+  ],
+  "payload": {
+    "note": "example"
+  }
+}

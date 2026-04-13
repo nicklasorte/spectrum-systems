@@ -1,0 +1,29 @@
+{
+  "artifact_type": "cross_artifact_consistency_report",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-cross_artifact_consistency_report",
+  "created_at": "2026-04-13T00:00:00Z",
+  "provenance": {
+    "source_system": "CON",
+    "inputs": [
+      "seed"
+    ],
+    "simulated": false
+  },
+  "record_id": "cross_artifact_consistency_report-001",
+  "status": "ok",
+  "reason_codes": [
+    "seed"
+  ],
+  "payload": {
+    "note": "example"
+  },
+  "consistent": true,
+  "checks": [
+    {
+      "name": "trace",
+      "ok": true,
+      "reason_code": "ok"
+    }
+  ]
+}

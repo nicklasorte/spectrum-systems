@@ -1816,6 +1816,232 @@ flowchart LR
   - make policy admissibility decisions (TPA-owned)
   - issue closure decisions (CDE-owned)
 
+
+### TRN
+- **acronym:** `TRN`
+- **full_name:** Translation System
+- **role:** Owns governed source-to-artifact translation for external inputs entering governed execution.
+- **owns:**
+  - source_translation_contracts
+  - translation_provenance_binding
+  - raw_input_translation_gate
+- **consumes:**
+  - external_source_inputs
+  - source_classification_rules
+- **produces:**
+  - context_source_admission_record
+  - translation_artifact
+- **must_not_do:**
+  - bypass_source_provenance
+  - publish_untranslated_external_input
+
+### NRM
+- **acronym:** `NRM`
+- **full_name:** Normalization System
+- **role:** Owns deterministic canonicalization of translated artifacts.
+- **owns:**
+  - deterministic_normalization_rules
+  - canonical_form_generation
+  - normalization_drift_checks
+- **consumes:**
+  - translation_artifact
+  - normalization_policy
+- **produces:**
+  - normalized_artifact
+  - normalization_report
+- **must_not_do:**
+  - emit_non_deterministic_normalization
+  - bypass_trace_binding
+
+### CMP
+- **acronym:** `CMP`
+- **full_name:** Comparison System
+- **role:** Owns governed comparison runs and comparison result contracts.
+- **owns:**
+  - comparison_run_governance
+  - comparison_result_contracts
+  - comparison_regression_tracking
+- **consumes:**
+  - model_route_prompt_policy_candidates
+  - eval_and_outcome_artifacts
+- **produces:**
+  - comparison_run_record
+  - comparison_result_record
+- **must_not_do:**
+  - change_live_policy_or_routes_directly
+  - bypass_eval_requirements
+
+### RET
+- **acronym:** `RET`
+- **full_name:** Retirement System
+- **role:** Owns governed retirement records and retirement eligibility checks.
+- **owns:**
+  - retirement_lifecycle_rules
+  - retirement_record_authority
+- **consumes:**
+  - policy_prompt_route_judgment_records
+  - supersession_and_active_set_inputs
+- **produces:**
+  - retirement_record
+- **must_not_do:**
+  - leave_retired_artifacts_active
+
+### ABS
+- **acronym:** `ABS`
+- **full_name:** Abstention System
+- **role:** Owns abstention taxonomy, abstention artifacts, and escalation routing.
+- **owns:**
+  - abstention_taxonomy
+  - abstention_artifact_requirements
+  - abstention_escalation_rules
+- **consumes:**
+  - context_preflight_result
+  - evidence_sufficiency_result
+- **produces:**
+  - abstention_record
+- **must_not_do:**
+  - emit_silent_abstentions
+  - bypass_escalation_queue
+
+### CRS
+- **acronym:** `CRS`
+- **full_name:** Cross-Artifact Consistency System
+- **role:** Owns consistency checks across certification, replay, eval, judgment, control, enforcement, and promotion artifacts.
+- **owns:**
+  - cross_artifact_consistency_checks
+  - consistency_reason_code_taxonomy
+  - consistency_blocking_rules
+- **consumes:**
+  - certification_replay_eval_judgment_control_artifacts
+- **produces:**
+  - cross_artifact_consistency_report
+- **must_not_do:**
+  - downgrade_material_inconsistency_to_warning
+
+### MIG
+- **acronym:** `MIG`
+- **full_name:** Migration System
+- **role:** Owns governed migration plans and compatibility validations.
+- **owns:**
+  - migration_plan_contracts
+  - staged_migration_checks
+  - compatibility_validation_rules
+- **consumes:**
+  - schema_policy_prompt_route_versions
+- **produces:**
+  - migration_plan_record
+  - migration_validation_result
+- **must_not_do:**
+  - perform_implicit_dual_write_without_contract
+
+### QRY
+- **acronym:** `QRY`
+- **full_name:** Query/Index System
+- **role:** Owns artifact-index manifests and operator retrieval queries.
+- **owns:**
+  - query_index_manifest_authority
+  - operator_query_definitions
+- **consumes:**
+  - artifact_lineage_indexes
+  - control_and_enforcement_reason_codes
+- **produces:**
+  - query_index_manifest
+- **must_not_do:**
+  - retrieve_retired_or_superseded_records_by_default
+
+### TST
+- **acronym:** `TST`
+- **full_name:** Test Asset Governance System
+- **role:** Owns canonical fixture governance and drift/freshness controls for test assets.
+- **owns:**
+  - test_asset_registry
+  - fixture_freshness_checks
+  - fixture_drift_detection
+- **consumes:**
+  - eval_dataset_registry
+  - test_execution_results
+- **produces:**
+  - test_asset_governance_record
+- **must_not_do:**
+  - allow_untracked_fixtures_in_required_paths
+
+### RSK
+- **acronym:** `RSK`
+- **full_name:** Risk Classification System
+- **role:** Owns explicit risk classification artifacts and deterministic control posture mapping.
+- **owns:**
+  - risk_classification_taxonomy
+  - control_posture_mapping
+- **consumes:**
+  - change_impact_and_evidence_artifacts
+- **produces:**
+  - risk_classification_record
+- **must_not_do:**
+  - leave_high_risk_paths_without_stricter_controls
+
+### EVD
+- **acronym:** `EVD`
+- **full_name:** Evidence Sufficiency System
+- **role:** Owns evidence sufficiency scoring and threshold enforcement by artifact family.
+- **owns:**
+  - evidence_sufficiency_scoring
+  - sufficiency_threshold_rules
+  - insufficiency_blocking_rules
+- **consumes:**
+  - eval_results
+  - judgment_inputs
+  - provenance_chains
+- **produces:**
+  - evidence_sufficiency_result
+- **must_not_do:**
+  - treat_presence_of_any_evidence_as_sufficient
+
+### SUP
+- **acronym:** `SUP`
+- **full_name:** Supersession / Active-Set System
+- **role:** Owns supersession records and active-set snapshots.
+- **owns:**
+  - supersession_rules
+  - active_set_snapshot_authority
+- **consumes:**
+  - retirement_record
+  - lifecycle_records
+- **produces:**
+  - supersession_record
+  - active_set_snapshot
+- **must_not_do:**
+  - allow_superseded_records_in_active_set
+
+### HND
+- **acronym:** `HND`
+- **full_name:** Handoff Integrity System
+- **role:** Owns handoff package completeness rules and handoff validation artifacts.
+- **owns:**
+  - handoff_package_contracts
+  - semantic_handoff_validation
+- **consumes:**
+  - reset_resume_review_fix_promotion_handoffs
+- **produces:**
+  - handoff_package
+  - handoff_validation_result
+- **must_not_do:**
+  - accept_structural_only_handoffs_without_semantic_checks
+
+### SYN
+- **acronym:** `SYN`
+- **full_name:** Signal Synthesis System
+- **role:** Owns synthesized trust signals derived from governed artifact families.
+- **owns:**
+  - trust_signal_synthesis_rules
+  - synthesis_freeze_trigger_rules
+- **consumes:**
+  - trust_posture_snapshot
+  - override_and_evidence_gap_reports
+- **produces:**
+  - synthesized_trust_signal
+- **must_not_do:**
+  - emit_unattributed_confidence_claims
+
 ## RAX Serial Operating-Substrate Extension (2026-04-13)
 
 ### CTX

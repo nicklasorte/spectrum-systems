@@ -1,0 +1,21 @@
+{
+  "artifact_type": "latency_budget_status",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-latency_budget_status",
+  "created_at": "2026-04-13T00:00:00Z",
+  "provenance": {
+    "source_system": "CON",
+    "inputs": [
+      "seed"
+    ],
+    "simulated": false
+  },
+  "record_id": "latency_budget_status-001",
+  "status": "ok",
+  "reason_codes": [
+    "seed"
+  ],
+  "payload": {
+    "note": "example"
+  }
+}

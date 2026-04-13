@@ -2,7 +2,7 @@
   "artifact_type": "system_registry_artifact",
   "artifact_class": "coordination",
   "schema_version": "1.0.0",
-  "registry_version": "v1.2.0",
+  "registry_version": "v1.3.0",
   "systems": [
     {
       "acronym": "AEX",
@@ -1501,6 +1501,356 @@
       "downstream_consumers": [
         "PRG",
         "DEM"
+      ]
+    },
+    {
+      "acronym": "TRN",
+      "full_name": "Translation System",
+      "role": "Translation System governance authority.",
+      "owns": [
+        "source_translation_contracts"
+      ],
+      "consumes": [
+        "governed_inputs"
+      ],
+      "produces": [
+        "trn_governance_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "NRM",
+      "full_name": "Normalization System",
+      "role": "Normalization System governance authority.",
+      "owns": [
+        "deterministic_normalization_rules"
+      ],
+      "consumes": [
+        "governed_inputs"
+      ],
+      "produces": [
+        "nrm_governance_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "CMP",
+      "full_name": "Comparison System",
+      "role": "Comparison System governance authority.",
+      "owns": [
+        "comparison_run_governance"
+      ],
+      "consumes": [
+        "governed_inputs"
+      ],
+      "produces": [
+        "cmp_governance_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "RET",
+      "full_name": "Retirement System",
+      "role": "Retirement System governance authority.",
+      "owns": [
+        "retirement_lifecycle_rules"
+      ],
+      "consumes": [
+        "governed_inputs"
+      ],
+      "produces": [
+        "ret_governance_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "ABS",
+      "full_name": "Abstention System",
+      "role": "Abstention System governance authority.",
+      "owns": [
+        "abstention_taxonomy"
+      ],
+      "consumes": [
+        "governed_inputs"
+      ],
+      "produces": [
+        "abs_governance_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "CRS",
+      "full_name": "Cross-Artifact Consistency System",
+      "role": "Cross-Artifact Consistency System governance authority.",
+      "owns": [
+        "cross_artifact_consistency_checks"
+      ],
+      "consumes": [
+        "governed_inputs"
+      ],
+      "produces": [
+        "crs_governance_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "MIG",
+      "full_name": "Migration System",
+      "role": "Migration System governance authority.",
+      "owns": [
+        "migration_plan_contracts"
+      ],
+      "consumes": [
+        "governed_inputs"
+      ],
+      "produces": [
+        "mig_governance_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "QRY",
+      "full_name": "Query/Index System",
+      "role": "Query/Index System governance authority.",
+      "owns": [
+        "query_index_manifest_authority"
+      ],
+      "consumes": [
+        "governed_inputs"
+      ],
+      "produces": [
+        "qry_governance_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "TST",
+      "full_name": "Test Asset Governance System",
+      "role": "Test Asset Governance System governance authority.",
+      "owns": [
+        "test_asset_registry"
+      ],
+      "consumes": [
+        "governed_inputs"
+      ],
+      "produces": [
+        "tst_governance_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "RSK",
+      "full_name": "Risk Classification System",
+      "role": "Risk Classification System governance authority.",
+      "owns": [
+        "risk_classification_taxonomy"
+      ],
+      "consumes": [
+        "governed_inputs"
+      ],
+      "produces": [
+        "rsk_governance_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "EVD",
+      "full_name": "Evidence Sufficiency System",
+      "role": "Evidence Sufficiency System governance authority.",
+      "owns": [
+        "evidence_sufficiency_scoring"
+      ],
+      "consumes": [
+        "governed_inputs"
+      ],
+      "produces": [
+        "evd_governance_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "SUP",
+      "full_name": "Supersession Active-Set System",
+      "role": "Supersession Active-Set System governance authority.",
+      "owns": [
+        "supersession_rules"
+      ],
+      "consumes": [
+        "governed_inputs"
+      ],
+      "produces": [
+        "sup_governance_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "HND",
+      "full_name": "Handoff Integrity System",
+      "role": "Handoff Integrity System governance authority.",
+      "owns": [
+        "handoff_package_contracts"
+      ],
+      "consumes": [
+        "governed_inputs"
+      ],
+      "produces": [
+        "hnd_governance_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "acronym": "SYN",
+      "full_name": "Signal Synthesis System",
+      "role": "Signal Synthesis System governance authority.",
+      "owns": [
+        "trust_signal_synthesis_rules"
+      ],
+      "consumes": [
+        "governed_inputs"
+      ],
+      "produces": [
+        "syn_governance_record"
+      ],
+      "prohibited_behaviors": [
+        "work_execution",
+        "closure_decisioning"
+      ],
+      "upstream_dependencies": [
+        "TLC"
+      ],
+      "downstream_consumers": [
+        "CDE",
+        "SEL"
       ]
     }
   ],

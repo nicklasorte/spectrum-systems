@@ -1,0 +1,21 @@
+{
+  "artifact_type": "routing_decision_record",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-routing_decision_record",
+  "created_at": "2026-04-13T00:00:00Z",
+  "provenance": {
+    "source_system": "CON",
+    "inputs": [
+      "seed"
+    ],
+    "simulated": false
+  },
+  "record_id": "routing_decision_record-001",
+  "status": "ok",
+  "reason_codes": [
+    "seed"
+  ],
+  "payload": {
+    "note": "example"
+  }
+}

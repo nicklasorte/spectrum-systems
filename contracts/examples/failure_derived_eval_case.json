@@ -1,0 +1,21 @@
+{
+  "artifact_type": "failure_derived_eval_case",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-failure_derived_eval_case",
+  "created_at": "2026-04-13T00:00:00Z",
+  "provenance": {
+    "source_system": "CON",
+    "inputs": [
+      "seed"
+    ],
+    "simulated": false
+  },
+  "record_id": "failure_derived_eval_case-001",
+  "status": "ok",
+  "reason_codes": [
+    "seed"
+  ],
+  "payload": {
+    "note": "example"
+  }
+}

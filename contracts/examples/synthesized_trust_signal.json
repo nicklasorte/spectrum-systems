@@ -1,0 +1,23 @@
+{
+  "artifact_type": "synthesized_trust_signal",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-synthesized_trust_signal",
+  "created_at": "2026-04-13T00:00:00Z",
+  "provenance": {
+    "source_system": "CON",
+    "inputs": [
+      "seed"
+    ],
+    "simulated": false
+  },
+  "record_id": "synthesized_trust_signal-001",
+  "status": "ok",
+  "reason_codes": [
+    "seed"
+  ],
+  "payload": {
+    "note": "example"
+  },
+  "score": 0.86,
+  "freeze_triggered": false
+}
