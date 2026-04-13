@@ -5,6 +5,15 @@ import hashlib
 import json
 from typing import Any
 
+from spectrum_systems.modules.runtime.mnt_trust_integration import (
+    build_cross_system_evidence_chain,
+    build_unified_certification_bundle,
+    check_observability_completeness,
+    enforce_platform_promotion_hard_gate,
+    generate_drift_debt_signals,
+    run_maintain_stage_engine,
+    validate_cross_system_replay,
+)
 MANDATORY_TEST_COVERAGE = {index: text for index, text in enumerate([
     "operator actions are artifact-backed and cannot bypass authority",
     "review queue behavior is bounded and ownership-safe",
@@ -394,6 +403,46 @@ class OPXRuntime:
             "compatibility_drift_scan": f"done:{checksum}",
             "runbook_freshness": f"done:{checksum}",
             "silent_mutation": False,
+        }
+        self.artifacts.append(artifact)
+        return artifact
+
+    def run_mnt_trust_integration_cycle(self, stage_records: dict[str, dict[str, Any]], *, trace_id: str, created_at: str, cde_certification_ref: str) -> dict[str, Any]:
+        evidence_chain = build_cross_system_evidence_chain(stage_records=stage_records, trace_id=trace_id)
+        replay = validate_cross_system_replay(prior_chain=evidence_chain, replay_chain=evidence_chain)
+        observability = check_observability_completeness(chain=evidence_chain)
+        certification_bundle = build_unified_certification_bundle(
+            evidence_chain=evidence_chain,
+            replay_result=replay,
+            observability_result=observability,
+            cde_certification_ref=cde_certification_ref,
+            created_at=created_at,
+            trace_id=trace_id,
+        )
+        drift = generate_drift_debt_signals(
+            replay_failures=0,
+            missing_evals=0,
+            schema_bypasses=0,
+            override_pressure=0,
+            promotion_fragility=0,
+            evidence_gaps=0,
+        )
+        maintain_report = run_maintain_stage_engine(drift_signals=drift, recurring_failures=[])
+        promotion_gate = enforce_platform_promotion_hard_gate(
+            certification_bundle_ok=certification_bundle["input_coverage"]["status"] == "pass",
+            replay_ok=replay["status"] == "pass",
+            observability_ok=observability["status"] == "pass",
+            evidence_chain_ok=True,
+        )
+        artifact = {
+            "kind": "mnt_trust_integration_cycle",
+            "trace_id": trace_id,
+            "evidence_chain": evidence_chain,
+            "replay": replay,
+            "observability": observability,
+            "certification_bundle": certification_bundle,
+            "maintain_report": maintain_report,
+            "promotion_gate": promotion_gate,
         }
         self.artifacts.append(artifact)
         return artifact

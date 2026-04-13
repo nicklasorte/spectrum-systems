@@ -1,0 +1,22 @@
+{
+  "artifact_type": "mnt_maintain_cycle_report",
+  "cycle_id": "mnt-cycle-84df60bd7fd8",
+  "drift_scan": {
+    "replay_failure_signal": 1,
+    "missing_eval_signal": 2,
+    "schema_bypass_signal": 0,
+    "override_pressure_signal": 1,
+    "promotion_fragility_signal": 1,
+    "evidence_gap_signal": 0
+  },
+  "eval_expansion": [
+    {
+      "eval_id": "mnt-auto-replay_drift",
+      "source_failure": "replay_drift",
+      "status": "admitted"
+    }
+  ],
+  "doc_vs_reality_checks": "executed",
+  "invariant_enforcement": "executed",
+  "authority_boundary_status": "non_authoritative"
+}

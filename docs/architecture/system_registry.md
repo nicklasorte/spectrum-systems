@@ -99,6 +99,29 @@ CDE is the only system allowed to emit:
 - **RAX** — bounded runtime candidate-signal surface *(placeholder; non-authoritative by design)*
 - **SIV** — not currently present in this repository scope (reserved acronym)
 
+## Recurring Cross-System Phase Labels (Non-Owner)
+
+### MNT — Maintain / Cross-System Trust Integration
+- **classification:** recurring phase label (not a canonical system owner)
+- **purpose:** post-owner platform hardening and trust-integration maintenance across existing canonical owners.
+- **may coordinate roadmap groups for:**
+  - cross-system evidence chains
+  - certification bundle unification
+  - end-to-end replay validation
+  - observability completeness checks
+  - exploit recurrence mining
+  - drift/debt signal generation
+  - supersession/retirement discipline
+  - simplification/de-duplication passes
+  - maintain-stage mechanics
+- **must_not_do:**
+  - become a new authority owner
+  - override canonical ownership boundaries
+  - execute work directly
+  - issue policy decisions
+  - issue closure decisions
+  - issue enforcement actions
+
 ## System Definitions
 
 ### AEX
