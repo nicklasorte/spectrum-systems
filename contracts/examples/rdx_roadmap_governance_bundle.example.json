@@ -1,0 +1,20 @@
+{
+  "artifact_type": "rdx_roadmap_governance_bundle",
+  "bundle_id": "rgb-001",
+  "trace_id": "trace-rdx-001",
+  "created_at": "2026-04-13T00:00:00Z",
+  "record_refs": [
+    "rdx_roadmap_selection_record:rrs-001",
+    "rdx_batch_selection_record:rbs-001",
+    "rdx_umbrella_selection_record:rus-001",
+    "rdx_execution_loop_readiness_handoff_record:reh-001",
+    "rdx_selection_eval_result:rse-001",
+    "rdx_selection_readiness_record:rsr-001",
+    "rdx_selection_effectiveness_record:rseff-001",
+    "rdx_rework_debt_record:rrd-001"
+  ],
+  "non_authority_assertions": [
+    "bundle_controls_progression_only",
+    "does_not_replace_cde_closure_authority"
+  ]
+}

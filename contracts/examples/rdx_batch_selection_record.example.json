@@ -1,0 +1,14 @@
+{
+  "artifact_type": "rdx_batch_selection_record",
+  "record_id": "rbs-001",
+  "roadmap_id": "RM-001",
+  "selected_batch_id": "BATCH-TRUST-01",
+  "selected_umbrella_id": "UMB-TRUST-01",
+  "reason_codes": [
+    "dependency_satisfied",
+    "deterministic_tie_break_applied"
+  ],
+  "trust_gap_tag": "trust-core",
+  "evaluated_at": "2026-04-13T00:00:00Z",
+  "lineage_ref": "lineage:rdx:001"
+}

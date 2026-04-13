@@ -237,6 +237,40 @@ class ContractSchemaTests(unittest.TestCase):
             validate_artifact(instance, name)
 
 
+
+
+    def test_prg_governance_contract_examples_validate(self) -> None:
+        for name in (
+            "evaluation_pattern_report",
+            "policy_change_candidate",
+            "slice_contract_update_candidate",
+            "program_alignment_assessment",
+            "prioritized_adoption_candidate_set",
+            "adaptive_readiness_record",
+            "prg_governance_eval_result",
+            "prg_governance_readiness_record",
+            "prg_governance_conflict_record",
+            "prg_governance_bundle",
+            "prg_governance_effectiveness_record",
+            "prg_recommendation_rework_debt_record",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
+
+    def test_map_projection_contract_examples_validate(self) -> None:
+        for name in (
+            "map_projection_record",
+            "map_projection_eval_result",
+            "map_projection_readiness_record",
+            "map_projection_conflict_record",
+            "map_projection_bundle",
+            "map_projection_effectiveness_record",
+            "map_projection_debt_record",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_rqx_redteam_contract_examples_validate(self) -> None:
         for name in (
             "redteam_review_request",
@@ -257,6 +291,22 @@ class ContractSchemaTests(unittest.TestCase):
             "tlc_orchestration_readiness_record",
             "tlc_orchestration_effectiveness_record",
             "tlc_handoff_debt_record",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
+    def test_rdx_hardening_contract_examples_validate(self) -> None:
+        for name in (
+            "rdx_roadmap_selection_record",
+            "rdx_batch_selection_record",
+            "rdx_umbrella_selection_record",
+            "rdx_execution_loop_readiness_handoff_record",
+            "rdx_selection_eval_result",
+            "rdx_selection_conflict_record",
+            "rdx_selection_readiness_record",
+            "rdx_selection_effectiveness_record",
+            "rdx_rework_debt_record",
+            "rdx_roadmap_governance_bundle",
         ):
             instance = load_example(name)
             validate_artifact(instance, name)

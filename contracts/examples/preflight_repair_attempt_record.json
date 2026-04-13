@@ -1,0 +1,11 @@
+{
+  "artifact_type": "preflight_repair_attempt_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "attempt_id": "attempt-1",
+  "plan_id": "plan-1",
+  "attempt_status": "applied",
+  "mutated_paths": [
+    "outputs/contract_preflight/preflight_pqx_task_wrapper.json"
+  ]
+}

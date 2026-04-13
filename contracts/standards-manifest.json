@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.121",
-  "schema_version": "1.3.98",
-  "standards_version": "1.3.121",
+  "artifact_version": "1.3.125",
+  "schema_version": "1.3.99",
+  "standards_version": "1.3.125",
   "record_id": "REC-STD-2026-04-12-TLC-001",
   "run_id": "run-20260412T220000Z-tlc-001",
   "created_at": "2026-04-12T00:00:00Z",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.120",
+  "source_repo_version": "1.3.124",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -65,6 +65,19 @@
       "last_updated_in": "1.3.37",
       "example_path": "contracts/examples/adaptive_execution_trend_report.json",
       "notes": "BATCH-X1 deterministic guardrail and trend report for bounded adaptive execution operator tuning decisions."
+    },
+    {
+      "artifact_type": "adaptive_readiness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/adaptive_readiness_record.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
     },
     {
       "artifact_type": "admission_authenticity_record",
@@ -547,6 +560,32 @@
       "notes": "FRE bounded repair candidate derived from canonical failure packet without execution authority."
     },
     {
+      "artifact_type": "budget_consumption_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/budget_consumption_record.json",
+      "notes": "TAX/BAX/CAX governed authority contract."
+    },
+    {
+      "artifact_type": "budget_control_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/budget_control_decision.json",
+      "notes": "TAX/BAX/CAX governed authority contract."
+    },
+    {
       "artifact_type": "build_admission_record",
       "artifact_class": "coordination",
       "schema_version": "1.2.0",
@@ -623,6 +662,19 @@
       "last_updated_in": "1.3.58",
       "example_path": "contracts/examples/capability_readiness_record.json",
       "notes": "BATCH-A2 deterministic capability readiness posture signal for unattended-operation supervision gating."
+    },
+    {
+      "artifact_type": "cde_arbitration_input_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/cde_arbitration_input_bundle.json",
+      "notes": "TAX/BAX/CAX governed authority contract."
     },
     {
       "artifact_type": "cde_closeout_gate_record",
@@ -927,6 +979,45 @@
       "last_updated_in": "1.3.21",
       "example_path": "contracts/examples/contract_preflight_result_artifact.json",
       "notes": "Governed contract preflight result artifact carrying BLOCK/FREEZE/WARN/ALLOW strategy-gate mapping, PQX required-context enforcement result, and impact repair guidance for PQX pre-execution control."
+    },
+    {
+      "artifact_type": "control_arbitration_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/control_arbitration_policy.json",
+      "notes": "TAX/BAX/CAX governed authority contract."
+    },
+    {
+      "artifact_type": "control_arbitration_reason_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/control_arbitration_reason_bundle.json",
+      "notes": "TAX/BAX/CAX governed authority contract."
+    },
+    {
+      "artifact_type": "control_arbitration_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/control_arbitration_record.json",
+      "notes": "TAX/BAX/CAX governed authority contract."
     },
     {
       "artifact_type": "control_decision_consistency_result",
@@ -1828,6 +1919,19 @@
       "notes": "Aggregated monitoring artifact supporting both regression-window and run-bundle control-loop summary shapes."
     },
     {
+      "artifact_type": "evaluation_pattern_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/evaluation_pattern_report.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
       "artifact_type": "evaluation_release_record",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -2281,6 +2385,149 @@
       "notes": "AG-03 deterministic fail-closed human-in-the-loop review handoff artifact with pending-review queue semantics."
     },
     {
+      "artifact_type": "hnx_checkpoint_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_checkpoint_record.example.json",
+      "notes": "HNX checkpoint artifact with freshness+lineage semantics for resume integrity."
+    },
+    {
+      "artifact_type": "hnx_continuity_debt_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_continuity_debt_record.example.json",
+      "notes": "HNX continuity debt tracker artifact for repeated continuity violations."
+    },
+    {
+      "artifact_type": "hnx_continuity_state_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_continuity_state_record.example.json",
+      "notes": "HNX continuity state artifact for checkpoint freshness and continuity references."
+    },
+    {
+      "artifact_type": "hnx_harness_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_harness_bundle.example.json",
+      "notes": "HNX bundle artifact linking inputs/eval and replay fingerprint."
+    },
+    {
+      "artifact_type": "hnx_harness_conflict_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_harness_conflict_record.example.json",
+      "notes": "HNX boundary and replay conflict artifact for surfaced contradictions."
+    },
+    {
+      "artifact_type": "hnx_harness_effectiveness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_harness_effectiveness_record.example.json",
+      "notes": "HNX effectiveness tracking artifact for continuity and completion quality proxies."
+    },
+    {
+      "artifact_type": "hnx_harness_eval_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_harness_eval_result.example.json",
+      "notes": "HNX harness contract evaluation artifact with fail-closed checks."
+    },
+    {
+      "artifact_type": "hnx_harness_readiness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_harness_readiness_record.example.json",
+      "notes": "Candidate-only HNX readiness artifact with explicit non-authority assertions."
+    },
+    {
+      "artifact_type": "hnx_resume_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_resume_record.example.json",
+      "notes": "HNX resume attempt artifact with downstream lineage continuity checks."
+    },
+    {
+      "artifact_type": "hnx_stage_contract_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_stage_contract_record.example.json",
+      "notes": "HNX stage contract boundary for deterministic stage topology and allowed transitions."
+    },
+    {
+      "artifact_type": "hnx_stop_condition_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.121",
+      "last_updated_in": "1.3.121",
+      "example_path": "contracts/examples/hnx_stop_condition_record.example.json",
+      "notes": "HNX stop/freeze/human-checkpoint artifact for bypass-proof stop semantics."
+    },
+    {
       "artifact_type": "human_checkpoint_decision",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -2723,6 +2970,97 @@
       "notes": "Deterministic remediation readiness status including TPA bypass drift observability fields and blocking reason wiring."
     },
     {
+      "artifact_type": "map_projection_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/map_projection_bundle.json",
+      "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
+    },
+    {
+      "artifact_type": "map_projection_conflict_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/map_projection_conflict_record.json",
+      "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
+    },
+    {
+      "artifact_type": "map_projection_debt_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/map_projection_debt_record.json",
+      "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
+    },
+    {
+      "artifact_type": "map_projection_effectiveness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/map_projection_effectiveness_record.json",
+      "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
+    },
+    {
+      "artifact_type": "map_projection_eval_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/map_projection_eval_result.json",
+      "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
+    },
+    {
+      "artifact_type": "map_projection_readiness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/map_projection_readiness_record.json",
+      "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
+    },
+    {
+      "artifact_type": "map_projection_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/map_projection_record.json",
+      "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
+    },
+    {
       "artifact_type": "meeting_agenda_contract",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2794,6 +3132,32 @@
       "last_updated_in": "1.3.52",
       "example_path": "contracts/examples/missing_required_eval_enforcement.json",
       "notes": "Fail-closed enforcement output for missing or indeterminate required eval coverage."
+    },
+    {
+      "artifact_type": "mnt_maintain_cycle_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/mnt_maintain_cycle_report.json",
+      "notes": "MNT-10 governed maintain-stage report artifact with drift signals and eval auto-expansion output."
+    },
+    {
+      "artifact_type": "mnt_trust_integration_bundle",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/mnt_trust_integration_bundle.json",
+      "notes": "MNT-03/MNT-12 unified cross-system certification bundle input for platform promotion hard gate."
     },
     {
       "artifact_type": "multi_cycle_execution_report",
@@ -3243,6 +3607,19 @@
       "last_updated_in": "1.3.64",
       "example_path": "contracts/examples/policy_candidate_record.json",
       "notes": "BATCH-LTV-D governed policy extraction/activation/conflict artifact for deterministic policy rollout control."
+    },
+    {
+      "artifact_type": "policy_change_candidate",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/policy_change_candidate.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
     },
     {
       "artifact_type": "policy_conflict_record",
@@ -3750,6 +4127,175 @@
       "last_updated_in": "1.3.62",
       "example_path": "contracts/examples/precedent_selection_record.json",
       "notes": "LT-02 deterministic precedent retrieval and selection decision record with explicit rejected candidates."
+    },
+    {
+      "artifact_type": "preflight_block_diagnosis_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.125",
+      "last_updated_in": "1.3.125",
+      "example_path": "contracts/examples/preflight_block_diagnosis_record.json",
+      "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
+    },
+    {
+      "artifact_type": "preflight_repair_attempt_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.125",
+      "last_updated_in": "1.3.125",
+      "example_path": "contracts/examples/preflight_repair_attempt_record.json",
+      "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
+    },
+    {
+      "artifact_type": "preflight_repair_plan_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.125",
+      "last_updated_in": "1.3.125",
+      "example_path": "contracts/examples/preflight_repair_plan_record.json",
+      "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
+    },
+    {
+      "artifact_type": "preflight_repair_result_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.125",
+      "last_updated_in": "1.3.125",
+      "example_path": "contracts/examples/preflight_repair_result_record.json",
+      "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
+    },
+    {
+      "artifact_type": "preflight_repair_validation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.125",
+      "last_updated_in": "1.3.125",
+      "example_path": "contracts/examples/preflight_repair_validation_record.json",
+      "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
+    },
+    {
+      "artifact_type": "prg_governance_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/prg_governance_bundle.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prg_governance_conflict_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/prg_governance_conflict_record.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prg_governance_effectiveness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/prg_governance_effectiveness_record.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prg_governance_eval_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/prg_governance_eval_result.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prg_governance_readiness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/prg_governance_readiness_record.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prg_recommendation_rework_debt_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/prg_recommendation_rework_debt_record.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prioritized_adoption_candidate_set",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/prioritized_adoption_candidate_set.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "program_alignment_assessment",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/program_alignment_assessment.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
     },
     {
       "artifact_type": "program_artifact",
@@ -4575,6 +5121,136 @@
       "last_updated_in": "1.3.112",
       "example_path": "contracts/examples/rax_upstream_input_envelope.example.json",
       "notes": "RAX-INTERFACE-24-01 strict compact upstream roadmap envelope consumed by RAX for deterministic contract expansion."
+    },
+    {
+      "artifact_type": "rdx_batch_selection_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_batch_selection_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_execution_loop_readiness_handoff_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_execution_loop_readiness_handoff_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_rework_debt_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_rework_debt_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_roadmap_governance_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_roadmap_governance_bundle.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_roadmap_selection_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_roadmap_selection_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_selection_conflict_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_selection_conflict_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_selection_effectiveness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_selection_effectiveness_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_selection_eval_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_selection_eval_result.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_selection_readiness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_selection_readiness_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_umbrella_selection_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.122",
+      "last_updated_in": "1.3.122",
+      "example_path": "contracts/examples/rdx_umbrella_selection_record.example.json",
+      "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
     },
     {
       "artifact_type": "readiness_review_dashboard_artifact",
@@ -5571,6 +6247,19 @@
       "notes": "SRE-08 governed deterministic SLO definition artifact for bounded observability metric objectives and breach severities."
     },
     {
+      "artifact_type": "slice_contract_update_candidate",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.123",
+      "last_updated_in": "1.3.123",
+      "example_path": "contracts/examples/slice_contract_update_candidate.json",
+      "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
       "artifact_type": "slide_deck",
       "artifact_class": "work",
       "schema_version": "1.0.0",
@@ -5684,6 +6373,19 @@
       "notes": "Gate-focused readiness assessment highlighting missing artifacts and blockers; payloads should be wrapped in the artifact envelope standard."
     },
     {
+      "artifact_type": "system_budget_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/system_budget_policy.json",
+      "notes": "TAX/BAX/CAX governed authority contract."
+    },
+    {
       "artifact_type": "system_budget_status",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5695,6 +6397,19 @@
       "last_updated_in": "1.3.61",
       "example_path": "contracts/examples/system_budget_status.json",
       "notes": "BATCH-12 ST-14 deterministic budget status for cost/latency/error fail-closed enforcement."
+    },
+    {
+      "artifact_type": "system_budget_status_v2",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/system_budget_status_v2.json",
+      "notes": "TAX/BAX/CAX governed authority contract."
     },
     {
       "artifact_type": "system_end_to_end_validation_result_artifact",
@@ -5787,6 +6502,58 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/tactic_register.json",
       "notes": "Governed tactic register record grounded to book/transcript evidence."
+    },
+    {
+      "artifact_type": "termination_audit_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/termination_audit_record.json",
+      "notes": "TAX/BAX/CAX governed authority contract."
+    },
+    {
+      "artifact_type": "termination_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/termination_decision.json",
+      "notes": "TAX/BAX/CAX governed authority contract."
+    },
+    {
+      "artifact_type": "termination_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/termination_policy.json",
+      "notes": "TAX/BAX/CAX governed authority contract."
+    },
+    {
+      "artifact_type": "termination_signal_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.124",
+      "last_updated_in": "1.3.124",
+      "example_path": "contracts/examples/termination_signal_record.json",
+      "notes": "TAX/BAX/CAX governed authority contract."
     },
     {
       "artifact_type": "tlc_handoff_debt_record",

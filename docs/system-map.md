@@ -3,6 +3,8 @@
 Traceability map for systems, bottlenecks, schemas, prompts, and evaluation assets.
 See `docs/ecosystem-map.md` for repo-level control and artifact flow.
 
+Ownership authority note: this map is operational and non-authoritative for subsystem ownership. Canonical ownership and placeholder status are defined only in `docs/architecture/system_registry.md`.
+
 ## Loop Traceability
 - Coordination Loop: SYS-006 Meeting Minutes Engine; SYS-002 Transcript-to-Issue Engine.
 - Document Production Loop: SYS-007 Working Paper Review Engine; SYS-001 Comment Resolution Engine; SYS-008 DOCX Comment Injection Engine; SYS-003 Study Artifact Generator; SYS-004 Spectrum Study Compiler.

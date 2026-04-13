@@ -1,0 +1,27 @@
+{
+  "artifact_type": "budget_consumption_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "record_id": "BCON-001",
+  "run_id": "run-001",
+  "cost": {
+    "usd": 42.1,
+    "tokens": 22000,
+    "retries": 1,
+    "wall_clock_minutes": 18
+  },
+  "quality": {
+    "eval_failure_rate": 0.01,
+    "indeterminate_rate": 0.0,
+    "replay_mismatch_rate": 0.0,
+    "override_rate": 0.0,
+    "policy_alignment_failure_rate": 0.0
+  },
+  "risk": {
+    "guardrail_violations": 0,
+    "trace_incompleteness": 0,
+    "missing_material_evidence": 0,
+    "unsafe_tool_attempt_rate": 0.0,
+    "human_review_backlog": 1
+  }
+}

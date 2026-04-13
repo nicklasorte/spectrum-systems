@@ -1,0 +1,10 @@
+{
+  "artifact_type": "preflight_repair_result_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "result_id": "result-1",
+  "attempt_id": "attempt-1",
+  "rerun_preflight_exit_code": 0,
+  "rerun_strategy_gate_decision": "ALLOW",
+  "success": true
+}

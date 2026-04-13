@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rdx_rework_debt_record.schema.json",
+  "title": "Rdx Rework Debt Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "debt_id",
+    "trace_id",
+    "created_at",
+    "deferred_counts",
+    "repeat_rework_batch_ids",
+    "debt_status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "rdx_rework_debt_record"
+    },
+    "debt_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "deferred_counts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "repeat_rework_batch_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "debt_status": {
+      "enum": [
+        "normal",
+        "elevated"
+      ]
+    }
+  }
+}

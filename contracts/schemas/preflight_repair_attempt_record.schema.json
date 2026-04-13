@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "preflight_repair_attempt_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "attempt_id",
+    "plan_id",
+    "attempt_status",
+    "mutated_paths"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "preflight_repair_attempt_record"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "attempt_id": {
+      "type": "string"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "attempt_status": {
+      "type": "string",
+      "enum": [
+        "applied",
+        "skipped",
+        "failed"
+      ]
+    },
+    "mutated_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

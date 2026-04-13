@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hnx_harness_conflict_record.schema.json",
+  "title": "Hnx Harness Conflict Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "conflict_id",
+    "run_id",
+    "trace_id",
+    "conflict_codes",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "hnx_harness_conflict_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "conflict_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "conflict_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

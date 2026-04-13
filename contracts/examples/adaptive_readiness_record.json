@@ -1,0 +1,12 @@
+{
+  "artifact_type": "adaptive_readiness_record",
+  "readiness_id": "arr-001",
+  "readiness_state": "candidate_only",
+  "non_authority_assertions": [
+    "recommendation_only"
+  ],
+  "fail_reasons": [],
+  "created_at": "2026-04-13T00:00:00Z",
+  "trace_id": "trace-prg-001",
+  "lineage_ref": "lineage:prg:001"
+}

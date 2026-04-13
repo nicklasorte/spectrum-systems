@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "preflight_repair_plan_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "plan_id",
+    "repair_category",
+    "allowed_paths",
+    "apply_automatically"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "preflight_repair_plan_record"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "repair_category": {
+      "type": "string"
+    },
+    "allowed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "apply_automatically": {
+      "type": "boolean"
+    }
+  }
+}

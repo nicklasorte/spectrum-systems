@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "cde_arbitration_input_bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "bundle_id",
+    "run_id",
+    "trace_id",
+    "arbitration_ref",
+    "recommended_outcome",
+    "blocking_conditions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "cde_arbitration_input_bundle"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "bundle_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "arbitration_ref": {
+      "type": "string"
+    },
+    "recommended_outcome": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "continue",
+        "repair_required",
+        "freeze_required",
+        "block_required",
+        "await_async_signal",
+        "warn_complete_candidate"
+      ]
+    },
+    "blocking_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

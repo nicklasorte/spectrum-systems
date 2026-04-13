@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/map_projection_conflict_record.schema.json",
+  "title": "MAP Projection Conflict Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "conflict_id",
+    "created_at",
+    "trace_id",
+    "projection_eval_ref",
+    "conflict_codes",
+    "severity"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "map_projection_conflict_record"
+    },
+    "conflict_id": {
+      "type": "string",
+      "pattern": "^mpc-[a-f0-9]{16}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projection_eval_ref": {
+      "type": "string",
+      "pattern": "^map_projection_eval_result:mpe-[a-f0-9]{16}$"
+    },
+    "conflict_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "none",
+        "high"
+      ]
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "artifact_type": "map_projection_eval_result",
+  "eval_id": "mpe-a1b2c3d4e5f67890",
+  "created_at": "2026-04-13T00:00:00Z",
+  "trace_id": "trace-map-001",
+  "projection_id": "mpr-a1b2c3d4e5f67890",
+  "evaluation_status": "pass",
+  "checks": {
+    "completeness": true,
+    "provenance_retention": true,
+    "contradiction_visibility": true,
+    "required_field_preservation": true,
+    "formatting_correctness": true,
+    "field_loss_detector": true,
+    "status_washing_detector": true,
+    "ril_to_map_integrity": true,
+    "projection_to_governance_integrity": true
+  },
+  "missing_required_fields": [],
+  "fail_reasons": []
+}

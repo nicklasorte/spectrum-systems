@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prg_governance_bundle.schema.json",
+  "title": "prg_governance_bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "bundle_id",
+    "created_at",
+    "trace_id",
+    "lineage_ref",
+    "artifact_refs",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "prg_governance_bundle"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "bundle_id": {
+      "type": "string"
+    },
+    "artifact_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 3
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "artifact_type": "program_alignment_assessment",
+  "assessment_id": "paa-001",
+  "program_id": "PRG-ROADMAP-EXECUTION",
+  "alignment_status": "aligned",
+  "strategy_integrity": "trust_gap_first",
+  "reason_codes": [
+    "incomplete_trust_layers_prioritized"
+  ],
+  "fail_reasons": [],
+  "created_at": "2026-04-13T00:00:00Z",
+  "trace_id": "trace-prg-001",
+  "lineage_ref": "lineage:prg:001"
+}

@@ -80,9 +80,12 @@ CDE is the only system allowed to emit:
 - **AEX** — admission and execution exchange boundary for repo-mutating Codex requests
 - **PQX** — bounded execution engine
 - **HNX** — stage harness (structure + time/continuity semantics)
+- **LCE** — lifecycle transition enforcement surface for governed artifacts *(placeholder; control-plane seam)*
 - **TPA** — trust/policy application gate on execution inputs and paths
 - **MAP** — review artifact mediation and projection bridge
 - **RDX** — roadmap selection and execution-loop governance adapter
+- **ABX** — artifact bus exchange surface for cross-module artifact transfer *(placeholder; orchestration seam)*
+- **DBB** — data backbone surface for canonical metadata/lineage/evaluation/work-item records *(placeholder; shared substrate seam)*
 - **FRE** — failure diagnosis and repair planning
 - **RIL** — review interpretation and integration
 - **RQX** — bounded review queue execution and bounded fix-slice request emission
@@ -90,7 +93,34 @@ CDE is the only system allowed to emit:
 - **CDE** — closure-state decision authority
 - **TLC** — top-level orchestration and routing across subsystems
 - **PRG** — program-level planning, priority, and governance
+- **SAL** — source authority layer for deterministic source precedence and obligation indexing *(placeholder; non-authoritative governance seam)*
+- **SAS** — source authority sync ingestion surface *(placeholder; source retrieval seam)*
+- **SHA** — shared authority layer for shared primitive ownership boundaries *(placeholder; shared primitive seam)*
+- **RAX** — bounded runtime candidate-signal surface *(placeholder; non-authoritative by design)*
 - **SIV** — not currently present in this repository scope (reserved acronym)
+
+## Recurring Cross-System Phase Labels (Non-Owner)
+
+### MNT — Maintain / Cross-System Trust Integration
+- **classification:** recurring phase label (not a canonical system owner)
+- **purpose:** post-owner platform hardening and trust-integration maintenance across existing canonical owners.
+- **may coordinate roadmap groups for:**
+  - cross-system evidence chains
+  - certification bundle unification
+  - end-to-end replay validation
+  - observability completeness checks
+  - exploit recurrence mining
+  - drift/debt signal generation
+  - supersession/retirement discipline
+  - simplification/de-duplication passes
+  - maintain-stage mechanics
+- **must_not_do:**
+  - become a new authority owner
+  - override canonical ownership boundaries
+  - execute work directly
+  - issue policy decisions
+  - issue closure decisions
+  - issue enforcement actions
 
 ## System Definitions
 
@@ -148,6 +178,14 @@ CDE is the only system allowed to emit:
   - stage structure semantics
   - checkpoint/resume/async continuity constraints
   - harness-level execution preconditions
+- **consumes:**
+  - stage_contract
+  - checkpoint_contract
+  - resume_handoff_contract
+- **produces:**
+  - stage_continuity_evaluation
+  - continuation_contract_validation_record
+  - hnx_continuity_guard_result
 - **must_not_do:**
   - execute work (PQX-owned)
   - make promotion decisions (CDE/SEL-owned)
@@ -159,6 +197,12 @@ CDE is the only system allowed to emit:
 - **role:** Performs mediation/projection formatting only for governed artifacts that are already semantically interpreted by RIL.
 - **owns:**
   - mediation_projection_formatting
+- **consumes:**
+  - review_integration_packet_artifact
+  - review_projection_bundle_artifact
+- **produces:**
+  - mediated_review_projection_artifact
+  - projection_view_bundle
 - **must_not_do:**
   - reinterpret review semantics (RIL-owned)
   - perform review-loop execution (RQX-owned)
@@ -168,6 +212,90 @@ CDE is the only system allowed to emit:
 - **acronym:** `RDX`
 - **full_name:** Roadmap Decision eXchange
 - **role:** Governs roadmap-selected batch sequencing and execution-loop readiness handoff.
+- **owns:**
+  - roadmap_selection_governance
+  - batch_sequence_governance
+  - execution_loop_readiness_handoff
+- **consumes:**
+  - roadmap_artifact
+  - roadmap_signal_bundle
+  - cycle_manifest
+- **produces:**
+  - roadmap_selection_record
+  - execution_loop_readiness_record
+  - roadmap_handoff_artifact
+- **must_not_do:**
+  - execute bounded work (PQX-owned)
+  - enforce runtime blocks (SEL-owned)
+  - issue closure-state authority decisions (CDE-owned)
+
+### LCE
+- **acronym:** `LCE`
+- **full_name:** Lifecycle Control Enforcement
+- **role:** Placeholder control-plane subsystem for canonical artifact lifecycle transition validation and transition gating.
+- **status:** Placeholder (non-authoritative outside lifecycle transition checks)
+- **owns:**
+  - lifecycle_state_transition_validation
+  - transition_required_field_enforcement
+  - lifecycle_transition_rejection_on_invalid_state
+- **consumes:**
+  - lifecycle_state_artifact
+  - lifecycle_transition_request
+  - evaluation_and_work_item_linkage_artifacts
+- **produces:**
+  - lifecycle_transition_validation_result
+  - lifecycle_violation_record
+  - lifecycle_transition_acceptance_record
+- **must_not_do:**
+  - execute work slices (PQX-owned)
+  - reinterpret policy admissibility (TPA-owned)
+  - issue closure-state authority decisions (CDE-owned)
+
+### ABX
+- **acronym:** `ABX`
+- **full_name:** Artifact Bus eXchange
+- **role:** Placeholder orchestration subsystem for governed cross-module artifact transfer messaging and transfer validation.
+- **status:** Placeholder (non-authoritative transfer seam)
+- **owns:**
+  - cross_module_artifact_transfer_envelope
+  - transfer_message_validation
+  - run_linked_handoff_trace_requirements
+- **consumes:**
+  - source_module_artifact
+  - orchestration_flow_definition
+  - module_manifest_io_contracts
+- **produces:**
+  - artifact_bus_message
+  - rejected_transfer_record
+  - transfer_lineage_link
+- **must_not_do:**
+  - reinterpret review semantics (RIL-owned)
+  - execute work slices (PQX-owned)
+  - issue trust/policy admissibility decisions (TPA-owned)
+
+### DBB
+- **acronym:** `DBB`
+- **full_name:** Data Backbone
+- **role:** Placeholder shared-data subsystem defining canonical metadata, lineage, evaluation, and work-item record surfaces for governed artifacts.
+- **status:** Placeholder (shared substrate; authority remains with canonical system owners)
+- **owns:**
+  - canonical_artifact_metadata_shape
+  - canonical_lineage_record_shape
+  - canonical_evaluation_record_shape
+  - canonical_work_item_record_shape
+- **consumes:**
+  - artifact_emission_records
+  - lineage_references
+  - evaluation_and_work_item_records
+- **produces:**
+  - governed_metadata_record
+  - governed_lineage_record
+  - governed_evaluation_record
+  - governed_work_item_record
+- **must_not_do:**
+  - execute work slices (PQX-owned)
+  - decide closure/readiness states (CDE-owned)
+  - enforce runtime actions (SEL-owned)
 
 ### TPA
 - **acronym:** `TPA`
@@ -378,6 +506,99 @@ CDE is the only system allowed to emit:
   - issue policy authority decisions (TPA-owned)
   - influence runtime execution authority or admission decisions (PQX/AEX-owned)
 
+### SAL
+- **acronym:** `SAL`
+- **full_name:** Source Authority Layer
+- **role:** Placeholder governance subsystem for deterministic source-authority precedence and source-obligation index surfaces.
+- **status:** Placeholder (non-authoritative source-governance surface)
+- **owns:**
+  - source_authority_precedence_rules
+  - source_inventory_index_requirements
+  - source_obligation_index_requirements
+- **consumes:**
+  - source_structured_artifact
+  - source_inventory_record
+  - obligation_index_record
+- **produces:**
+  - source_authority_validation_result
+  - source_authority_precedence_record
+  - source_obligation_trace_record
+- **must_not_do:**
+  - execute bounded work slices (PQX-owned)
+  - issue trust/policy admissibility decisions (TPA-owned)
+  - issue closure/promotion decisions (CDE-owned)
+
+### SAS
+- **acronym:** `SAS`
+- **full_name:** Source Authority Sync
+- **role:** Placeholder ingestion subsystem for deterministic retrieve/materialize/index of project-design source artifacts.
+- **status:** Placeholder (retrieve/index seam; non-authoritative for downstream decisions)
+- **owns:**
+  - source_retrieve_sync_execution
+  - source_materialization_rules
+  - source_sync_completeness_validation
+- **consumes:**
+  - upstream_source_repository_content
+  - source_sync_configuration
+  - required_source_manifest
+- **produces:**
+  - source_raw_copy_record
+  - source_structured_artifact
+  - source_sync_validation_report
+- **must_not_do:**
+  - issue closure/readiness decisions (CDE-owned)
+  - bypass source precedence rules (SAL-owned)
+  - execute repo mutation outside admitted orchestration paths (AEX/TLC-owned)
+
+### SHA
+- **acronym:** `SHA`
+- **full_name:** Shared Authority
+- **role:** Placeholder boundary subsystem defining exclusive ownership for shared primitives used across modules.
+- **status:** Placeholder (boundary-definition seam; non-execution subsystem)
+- **owns:**
+  - shared_primitive_ownership_boundary
+  - shared_primitive_redefinition_prohibition
+  - shared_layer_manifest_requirements
+- **consumes:**
+  - module_manifest
+  - shared_primitive_definition
+  - architecture_boundary_rules
+- **produces:**
+  - shared_authority_compliance_result
+  - shared_boundary_violation_record
+  - shared_ownership_reference_map
+- **must_not_do:**
+  - execute bounded work slices (PQX-owned)
+  - perform orchestration routing (TLC-owned)
+  - issue closure-state authority decisions (CDE-owned)
+
+### RAX
+- **acronym:** `RAX`
+- **full_name:** Runtime Assurance eXchange
+- **role:** Bounded runtime candidate-signal surface emitting non-authoritative readiness, feedback-loop, and assurance artifacts.
+- **status:** Placeholder (explicitly non-authoritative runtime interface)
+- **owns:**
+  - rax_candidate_signal_emission
+  - rax_eval_surface_artifact_emission
+  - rax_feedback_loop_trace_linkage
+- **consumes:**
+  - eval_result
+  - eval_summary
+  - runtime_trace_evidence
+- **produces:**
+  - rax_failure_pattern_record
+  - rax_failure_eval_candidate
+  - rax_feedback_loop_record
+  - rax_health_snapshot
+  - rax_drift_signal_record
+  - rax_unknown_state_record
+  - rax_pre_certification_alignment_record
+  - rax_control_readiness_record
+- **must_not_do:**
+  - issue closure, readiness-to-close, or promotion authority decisions (CDE-owned)
+  - enforce runtime block/unblock decisions directly (SEL-owned)
+  - execute bounded work slices (PQX-owned)
+
 ## Control-Prep Artifact Rule (Non-Authoritative)
 - The following artifacts are **preparatory only** and **MUST NOT** be treated as authoritative decisions:
   - `control_signal_fusion_record`
@@ -464,6 +685,7 @@ CDE is the only system allowed to emit:
 - TLC → review_handoff_disposition_artifact (classification output only; no execution trigger and no closure authority)
 - CDE → closure_decision_artifact (readiness-to-close / bounded-next-step / promotion-readiness decisions)
 - RIL → CDE
+- Placeholder seams (LCE/ABX/DBB/SAL/SAS/SHA/RAX) are non-authoritative and must route final authority decisions through canonical owners above.
 
 ## Entry Invariant (Repo-Mutation Admission)
 - All Codex execution requests that create or modify repository state MUST enter through **AEX**.
@@ -545,14 +767,61 @@ flowchart LR
 ```
 
 
-## RAX governed boundary note
-- RAX is a bounded runtime interface surface that can emit candidate artifacts only:
-  - `rax_failure_pattern_record`
-  - `rax_failure_eval_candidate`
-  - `rax_feedback_loop_record`
-  - `rax_health_snapshot`
-  - `rax_drift_signal_record`
-  - `rax_unknown_state_record`
-  - `rax_pre_certification_alignment_record`
-  - `rax_control_readiness_record`
-- RAX must remain non-authoritative; downstream control and certification ownership remains unchanged (SEL/CDE/PQX/TLC by existing registry boundaries).
+## Placeholder Systems Added
+- **LCE** — added because `docs/architecture/lifecycle-enforcement.md` defines a concrete lifecycle transition enforcement seam with canonical transition validation behavior.
+- **ABX** — added because `docs/architecture/artifact-bus.md` defines a canonical cross-module artifact transfer surface with required message contracts.
+- **DBB** — added because `docs/architecture/data-backbone.md` defines platform-wide governed artifact metadata/lineage/evaluation/work-item substrate behavior.
+- **SAL** — added because `docs/architecture/source_authority_layer.md` defines canonical source-authority precedence and index-governance behavior used by roadmap/planning flows.
+- **SAS** — added because `docs/architecture/source_authority_sync.md` defines deterministic retrieve/materialize/index behavior with fail-closed completeness checks.
+- **SHA** — added because `docs/architecture/shared-authority.md` defines shared primitive ownership boundaries and prohibited redefinition behavior across modules.
+- **RAX** — added because this registry already used RAX as a governed runtime boundary and multiple architecture/review surfaces rely on its candidate artifact seam; full definition added to resolve missing registry entry.
+
+## TAX/BAX/CAX Authority Extension (2026-04-13)
+
+### TAX
+- **acronym:** `TAX`
+- **full_name:** `Termination Authority eXecutor`
+- **role:** Determines whether a governed run should complete, continue, repair, freeze, block, or await async signal from validated evidence.
+- **owns:**
+  - information_sufficiency_evaluation
+  - bounded_completion_authority
+  - termination_decision_artifacts
+- **must_not_do:**
+  - enforce_side_effects
+  - replace_budget_authority
+  - replace_closure_state_owner
+  - terminate_on_confidence_alone
+
+### BAX
+- **acronym:** `BAX`
+- **full_name:** `Budget Authority eXecutor`
+- **role:** Determines whether governed execution remains within acceptable cost, quality, and risk bounds.
+- **owns:**
+  - system_budget_governance
+  - merged_budget_status
+  - budget_decision_artifacts
+- **must_not_do:**
+  - terminate_runs_directly
+  - enforce_side_effects
+  - optimize_for_cost_only
+  - replace_closure_state_owner
+
+### CAX
+- **acronym:** `CAX`
+- **full_name:** `Control Arbitration eXchange`
+- **role:** Deterministically composes TAX, BAX, TPA, judgment, replay, trace, drift, and guardrail signals into a single arbitration outcome for CDE consumption.
+- **owns:**
+  - control_arbitration
+  - authority_composition
+  - conflict_resolution_precedence
+  - cde_arbitration_input_bundle
+- **must_not_do:**
+  - execute_work
+  - enforce_actions
+  - replace_CDE
+  - replace_TPA
+  - emit_final_closure_state
+
+### Governed topology extension
+- `AEX -> TLC -> TPA -> PQX -> BAX + TAX -> CAX -> CDE -> SEL`
+- **CDE remains sole final closure-state owner.**

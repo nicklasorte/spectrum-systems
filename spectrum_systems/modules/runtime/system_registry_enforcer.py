@@ -23,6 +23,10 @@ _CANONICAL_HANDOFF_PATH: set[tuple[str, str]] = {
     ("TPA", "FRE"),
     ("FRE", "RIL"),
     ("RIL", "CDE"),
+    ("TPA", "BAX"),
+    ("BAX", "TAX"),
+    ("TAX", "CAX"),
+    ("CAX", "CDE"),
     ("CDE", "TLC"),
 }
 

@@ -1,0 +1,9 @@
+{
+  "artifact_type": "preflight_repair_validation_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "validation_id": "validation-1",
+  "attempt_id": "attempt-1",
+  "validation_passed": true,
+  "validation_command": "pytest -q tests/test_contract_preflight.py"
+}

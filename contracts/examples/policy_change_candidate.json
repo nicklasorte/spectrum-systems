@@ -1,0 +1,12 @@
+{
+  "artifact_type": "policy_change_candidate",
+  "candidate_id": "pcc-001",
+  "policy_area": "tpa_scope",
+  "reason_codes": [
+    "recurring_conflict"
+  ],
+  "authority_scope": "recommendation_only",
+  "created_at": "2026-04-13T00:00:00Z",
+  "trace_id": "trace-prg-001",
+  "lineage_ref": "lineage:prg:001"
+}

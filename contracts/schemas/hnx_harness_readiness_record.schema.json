@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hnx_harness_readiness_record.schema.json",
+  "title": "Hnx Harness Readiness Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "readiness_id",
+    "run_id",
+    "trace_id",
+    "readiness_status",
+    "fail_reasons",
+    "non_authority_assertions",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "hnx_harness_readiness_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "readiness_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "readiness_status": {
+      "enum": [
+        "candidate_only",
+        "blocked"
+      ]
+    },
+    "fail_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

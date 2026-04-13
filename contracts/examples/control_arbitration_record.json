@@ -1,0 +1,18 @@
+{
+  "artifact_type": "control_arbitration_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "arbitration_id": "CAR-001",
+  "run_id": "run-001",
+  "trace_id": "trace-001",
+  "outcome": "warn_complete_candidate",
+  "reason_bundle_ref": "control_arbitration_reason_bundle:CRB-001",
+  "input_refs": {
+    "termination_decision_ref": "termination_decision:TDEC-001",
+    "budget_control_decision_ref": "budget_control_decision:BDEC-001",
+    "tpa_decision_ref": "tpa_policy_decision_record:TPA-001",
+    "judgment_ref": "judgment_record:J-001",
+    "replay_ref": "replay_result:R-001"
+  },
+  "policy_version": "2026-04-13"
+}

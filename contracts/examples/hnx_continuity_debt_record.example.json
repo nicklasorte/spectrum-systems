@@ -1,0 +1,16 @@
+{
+  "artifact_type": "hnx_continuity_debt_record",
+  "schema_version": "1.0.0",
+  "debt_id": "hnx-debt-1",
+  "run_id": "run-1",
+  "trace_id": "trace-hnx-1",
+  "violation_counts": {
+    "CHECKPOINT_STALE": 2,
+    "STAGE_SKIP_DETECTED": 1
+  },
+  "repeat_violation_codes": [
+    "CHECKPOINT_STALE"
+  ],
+  "debt_status": "elevated",
+  "created_at": "2026-04-12T00:06:00Z"
+}

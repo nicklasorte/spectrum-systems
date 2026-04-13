@@ -1,0 +1,10 @@
+{
+  "artifact_type": "slice_contract_update_candidate",
+  "candidate_id": "scc-001",
+  "target_contract": "roadmap_step_contract",
+  "change_summary": "tighten non-authority assertions",
+  "authority_scope": "recommendation_only",
+  "created_at": "2026-04-13T00:00:00Z",
+  "trace_id": "trace-prg-001",
+  "lineage_ref": "lineage:prg:001"
+}

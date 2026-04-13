@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hnx_harness_effectiveness_record.schema.json",
+  "title": "Hnx Harness Effectiveness Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "effectiveness_id",
+    "window_id",
+    "runs_evaluated",
+    "completion_quality",
+    "broken_resume_rate",
+    "stop_bypass_block_rate",
+    "value_status",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "hnx_harness_effectiveness_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "effectiveness_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "window_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runs_evaluated": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "completion_quality": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "broken_resume_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "stop_bypass_block_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "value_status": {
+      "enum": [
+        "improving",
+        "flat",
+        "degraded"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

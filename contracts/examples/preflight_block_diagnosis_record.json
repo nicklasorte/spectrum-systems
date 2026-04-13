@@ -1,0 +1,11 @@
+{
+  "artifact_type": "preflight_block_diagnosis_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "diagnosis_id": "diag-1",
+  "strategy_gate_decision": "BLOCK",
+  "repair_category": "missing_preflight_wrapper_or_authority_linkage",
+  "reason_codes": [
+    "pqx_required_context_enforcement_block"
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/map_projection_debt_record.schema.json",
+  "title": "MAP Projection Debt Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "debt_id",
+    "created_at",
+    "trace_id",
+    "debt_items",
+    "debt_status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "map_projection_debt_record"
+    },
+    "debt_id": {
+      "type": "string",
+      "pattern": "^mpd-[a-f0-9]{16}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "debt_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "incident_code",
+          "recurrence_count",
+          "status"
+        ],
+        "properties": {
+          "incident_code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recurrence_count": {
+            "type": "integer",
+            "minimum": 2
+          },
+          "status": {
+            "type": "string",
+            "const": "open"
+          }
+        }
+      }
+    },
+    "debt_status": {
+      "type": "string",
+      "enum": [
+        "stable",
+        "elevated"
+      ]
+    }
+  }
+}

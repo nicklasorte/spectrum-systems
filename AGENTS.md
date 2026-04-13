@@ -25,10 +25,9 @@ If any instruction conflicts with these sources, treat it as a defect and correc
 These rules are non-negotiable across prompts, plans, and governance docs.
 
 ## Canonical system roles
-Use role ownership exactly as defined in `docs/architecture/system_registry.md`:
-`RIL`, `CDE`, `TLC`, `PQX`, `FRE`, `SEL`, `PRG`.
+Use role ownership exactly as defined in `docs/architecture/system_registry.md`.
 
-Do not duplicate or redefine role ownership in other governance documents.
+Do not duplicate, subset, or redefine ownership sets in other governance documents.
 
 ## Prompt type system
 Each prompt must declare exactly one primary type:

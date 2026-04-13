@@ -1,0 +1,12 @@
+{
+  "artifact_type": "control_arbitration_policy",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "policy_id": "CAPOL-001",
+  "policy_version": "2026-04-13",
+  "precedence_rules": [
+    "tpa_reject_blocks",
+    "missing_required_signals_block",
+    "bax_block_dominates"
+  ]
+}
