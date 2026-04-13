@@ -241,6 +241,41 @@ def _seed_implementation_reviews(manifest: dict, tmp_path: Path) -> None:
     manifest["implementation_review_paths"] = [str(claude_path), str(codex_path)]
 
 
+def _seed_three_slice_promotion_happy_prereqs(manifest: dict) -> None:
+    refs = manifest["done_certification_input_refs"]
+    refs["hard_gate_falsification_record_path"] = str(
+        _REPO_ROOT / "contracts" / "examples" / "pqx_hard_gate_falsification_record.json"
+    )
+    refs["certification_pack_ref"] = str(_REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json")
+    refs["replay_result_ref"] = str(_REPO_ROOT / "contracts" / "examples" / "replay_result.json")
+    refs["policy_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "evaluation_control_decision_allow.json")
+    refs["enforcement_result_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "enforcement_result_allow.json")
+    refs["eval_coverage_summary_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json")
+    refs["rax_operational_gate_record_ref"] = str(_REPO_ROOT / "contracts" / "examples" / "rax_operational_gate_record.json")
+    refs["ctx_context_bundle_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "ctx_context_bundle.json")
+    refs["lin_lineage_report_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "lin_lineage_report.json")
+    refs["obs_observability_report_ref"] = str(
+        _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "obs_observability_report.json"
+    )
+    refs["evl_required_eval_record_ref"] = str(
+        _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "evl_required_eval_record.json"
+    )
+    refs["dat_dataset_registry_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "dat_dataset_registry.json")
+    refs["rep_replay_gate_decision_ref"] = str(
+        _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "rep_replay_gate_decision.json"
+    )
+    refs["jdg_judgment_record_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "jdg_judgment_record.json")
+    refs["pol_policy_lifecycle_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "pol_policy_lifecycle.json")
+    refs["sec_guardrail_record_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "sec_guardrail_record.json")
+    refs["con_interface_contract_ref"] = str(
+        _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "con_interface_contract.json"
+    )
+    refs["queue_permission_decision_ref"] = str(
+        _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "queue_permission_decision.json"
+    )
+    refs["sel_boundary_proof_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "sel_boundary_proof.json")
+
+
 def test_cycle_runner_happy_path_execution_ready_through_certified_done(tmp_path: Path) -> None:
     manifest, manifest_path = _manifest(tmp_path, state="execution_ready")
 
@@ -965,30 +1000,7 @@ def test_cycle_runner_sequence_state_happy_three_slice_path(tmp_path: Path) -> N
     manifest["certification_status"] = "passed"
     manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
     manifest["control_allow_promotion"] = True
-    manifest["done_certification_input_refs"]["hard_gate_falsification_record_path"] = str(
-        _REPO_ROOT / "contracts" / "examples" / "pqx_hard_gate_falsification_record.json"
-    )
-    manifest["done_certification_input_refs"]["certification_pack_ref"] = str(
-        _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
-    )
-    manifest["done_certification_input_refs"]["replay_result_ref"] = str(_REPO_ROOT / "contracts" / "examples" / "replay_result.json")
-    manifest["done_certification_input_refs"]["policy_ref"] = str(Path(manifest_path).parent / "evaluation_control_decision_allow.json")
-    manifest["done_certification_input_refs"]["enforcement_result_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "enforcement_result_allow.json")
-    manifest["done_certification_input_refs"]["eval_coverage_summary_ref"] = str(
-        _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json"
-    )
-    manifest["done_certification_input_refs"]["rax_operational_gate_record_ref"] = str(
-        _REPO_ROOT / "contracts" / "examples" / "rax_operational_gate_record.json"
-    )
-    manifest["done_certification_input_refs"]["eval_coverage_summary_ref"] = str(
-        _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json"
-    )
-    manifest["done_certification_input_refs"]["replay_result_ref"] = str(_REPO_ROOT / "contracts" / "examples" / "replay_result.json")
-    manifest["done_certification_input_refs"]["policy_ref"] = str(Path(manifest_path).parent / "evaluation_control_decision_allow.json")
-    manifest["done_certification_input_refs"]["enforcement_result_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "enforcement_result_allow.json")
-    manifest["done_certification_input_refs"]["eval_coverage_summary_ref"] = str(
-        _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json"
-    )
+    _seed_three_slice_promotion_happy_prereqs(manifest)
     _write(manifest_path, manifest)
 
     expected = [
@@ -1010,18 +1022,7 @@ def test_cycle_runner_sequence_state_blocks_promotion_without_rax_operational_ga
     manifest["certification_status"] = "passed"
     manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
     manifest["control_allow_promotion"] = True
-    manifest["done_certification_input_refs"]["hard_gate_falsification_record_path"] = str(
-        _REPO_ROOT / "contracts" / "examples" / "pqx_hard_gate_falsification_record.json"
-    )
-    manifest["done_certification_input_refs"]["certification_pack_ref"] = str(
-        _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
-    )
-    manifest["done_certification_input_refs"]["replay_result_ref"] = str(_REPO_ROOT / "contracts" / "examples" / "replay_result.json")
-    manifest["done_certification_input_refs"]["policy_ref"] = str(Path(manifest_path).parent / "evaluation_control_decision_allow.json")
-    manifest["done_certification_input_refs"]["enforcement_result_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "enforcement_result_allow.json")
-    manifest["done_certification_input_refs"]["eval_coverage_summary_ref"] = str(
-        _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json"
-    )
+    _seed_three_slice_promotion_happy_prereqs(manifest)
     manifest["done_certification_input_refs"].pop("rax_operational_gate_record_ref", None)
     _write(manifest_path, manifest)
 
@@ -1036,18 +1037,7 @@ def test_cycle_runner_sequence_state_blocks_promotion_without_control_allow(tmp_
     manifest["certification_status"] = "passed"
     manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
     manifest["control_allow_promotion"] = False
-    manifest["done_certification_input_refs"]["hard_gate_falsification_record_path"] = str(
-        _REPO_ROOT / "contracts" / "examples" / "pqx_hard_gate_falsification_record.json"
-    )
-    manifest["done_certification_input_refs"]["certification_pack_ref"] = str(
-        _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
-    )
-    manifest["done_certification_input_refs"]["replay_result_ref"] = str(_REPO_ROOT / "contracts" / "examples" / "replay_result.json")
-    manifest["done_certification_input_refs"]["policy_ref"] = str(Path(manifest_path).parent / "evaluation_control_decision_allow.json")
-    manifest["done_certification_input_refs"]["enforcement_result_ref"] = str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "enforcement_result_allow.json")
-    manifest["done_certification_input_refs"]["eval_coverage_summary_ref"] = str(
-        _REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "eval_coverage_summary_allow.json"
-    )
+    _seed_three_slice_promotion_happy_prereqs(manifest)
     closure = json.loads((_REPO_ROOT / "contracts" / "examples" / "closure_decision_artifact.json").read_text(encoding="utf-8"))
     closure["decision_type"] = "blocked"
     closure_path = tmp_path / "closure_blocked.json"
@@ -1066,10 +1056,9 @@ def test_cycle_runner_sequence_state_blocks_promotion_without_hard_gate_falsific
     manifest["certification_status"] = "passed"
     manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
     manifest["control_allow_promotion"] = True
+    _seed_three_slice_promotion_happy_prereqs(manifest)
     manifest["done_certification_input_refs"].pop("hard_gate_falsification_record_path", None)
-    manifest["done_certification_input_refs"]["certification_pack_ref"] = str(
-        _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
-    )
+    manifest["done_certification_input_refs"].pop("replay_result_ref", None)
     _write(manifest_path, manifest)
 
     result = cycle_runner.run_cycle(manifest_path)
@@ -1083,15 +1072,42 @@ def test_cycle_runner_sequence_state_promotion_blocker_precedence_hard_gate_befo
     manifest["certification_status"] = "passed"
     manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
     manifest["control_allow_promotion"] = False
+    _seed_three_slice_promotion_happy_prereqs(manifest)
     manifest["done_certification_input_refs"].pop("hard_gate_falsification_record_path", None)
-    manifest["done_certification_input_refs"]["certification_pack_ref"] = str(
-        _REPO_ROOT / "contracts" / "examples" / "control_loop_certification_pack.json"
-    )
+    manifest["done_certification_input_refs"].pop("replay_result_ref", None)
     _write(manifest_path, manifest)
 
     result = cycle_runner.run_cycle(manifest_path)
     assert result["status"] == "blocked"
     assert "replay_result_ref" in result["blocking_issues"][-1]
+
+
+def test_cycle_runner_three_slice_promotion_preflight_emits_reason_codes(tmp_path: Path) -> None:
+    manifest, manifest_path = _manifest(tmp_path, state="certification_pending")
+    manifest["sequence_mode"] = "three_slice"
+    manifest["certification_status"] = "passed"
+    manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
+    manifest["control_allow_promotion"] = True
+    _seed_three_slice_promotion_happy_prereqs(manifest)
+    manifest["done_certification_input_refs"].pop("ctx_context_bundle_ref")
+    _write(manifest_path, manifest)
+
+    result = cycle_runner.run_cycle(manifest_path)
+    assert result["status"] == "blocked"
+    assert result["next_state"] == "blocked"
+    assert "PROMOTION_PREFLIGHT_MISSING_REF_CTX_CONTEXT_BUNDLE_REF" in result["blocking_reason_codes"]
+    assert "ctx_context_bundle_ref" in result["blocking_issues"][-1]
+
+
+def test_cycle_runner_three_slice_happy_manifest_satisfies_promotion_preflight_contract(tmp_path: Path) -> None:
+    manifest, _ = _manifest(tmp_path, state="certification_pending")
+    manifest["sequence_mode"] = "three_slice"
+    manifest["certification_status"] = "passed"
+    manifest["certification_record_path"] = str(_REPO_ROOT / "contracts" / "examples" / "done_certification_record.json")
+    manifest["control_allow_promotion"] = True
+    _seed_three_slice_promotion_happy_prereqs(manifest)
+    issues = cycle_runner._promotion_transition_preflight(manifest)
+    assert issues == []
 
 
 from spectrum_systems.modules.runtime.judgment_engine import (
