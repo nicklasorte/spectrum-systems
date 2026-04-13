@@ -40,6 +40,19 @@ def _base_manifest(state: str) -> dict:
             "ril_output_artifact_ref": str(_REPO_ROOT / "contracts" / "examples" / "review_integration_packet_artifact.json"),
             "trust_spine_evidence_cohesion_result_ref": str(_REPO_ROOT / "contracts" / "examples" / "trust_spine_evidence_cohesion_result.json"),
             "rax_operational_gate_record_ref": str(_REPO_ROOT / "contracts" / "examples" / "rax_operational_gate_record.json"),
+
+            "ctx_context_bundle_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "ctx_context_bundle.json"),
+            "lin_lineage_report_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "lin_lineage_report.json"),
+            "obs_observability_report_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "obs_observability_report.json"),
+            "evl_required_eval_record_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "evl_required_eval_record.json"),
+            "dat_dataset_registry_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "dat_dataset_registry.json"),
+            "rep_replay_gate_decision_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "rep_replay_gate_decision.json"),
+            "jdg_judgment_record_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "jdg_judgment_record.json"),
+            "pol_policy_lifecycle_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "pol_policy_lifecycle.json"),
+            "sec_guardrail_record_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "sec_guardrail_record.json"),
+            "con_interface_contract_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "con_interface_contract.json"),
+            "queue_permission_decision_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "queue_permission_decision.json"),
+            "sel_boundary_proof_ref": str(_REPO_ROOT / "tests" / "fixtures" / "autonomous_cycle" / "hardening" / "sel_boundary_proof.json"),
         },
         "review_signal_policy": {"required_for_promotion": True},
         "control_loop_gate_proof": {
@@ -57,6 +70,9 @@ def _base_manifest(state: str) -> dict:
             "recurrence_prevention_refs": ["contracts/examples/failure_policy_binding.json"],
         },
         "sequence_trace_id": "trace-seq",
+
+        "execution_mode": "real_execution",
+        "simulation_mode": False,
         "sequence_lineage": ["contracts/examples/roadmap_eligibility_artifact.json"],
         "blocking_issues": ["explicit block"],
     }
@@ -428,3 +444,19 @@ def test_stage_contract_continuity_gate_blocks_missing_handoff_in_reset_mode(tmp
     decision = evaluate_sequence_transition(manifest, "promoted")
     assert decision.allowed is False
     assert "HANDOFF_REQUIRED" in str(decision.reason)
+
+
+def test_promotion_blocks_when_simulation_mode_true() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["simulation_mode"] = True
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "simulation_mode=true" in str(decision.reason)
+
+
+def test_promotion_blocks_when_ctx_ref_missing() -> None:
+    manifest = _base_manifest("certification_pending")
+    manifest["done_certification_input_refs"].pop("ctx_context_bundle_ref")
+    decision = evaluate_sequence_transition(manifest, "promoted")
+    assert decision.allowed is False
+    assert "CTX artifact ref" in str(decision.reason)
