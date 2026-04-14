@@ -14,13 +14,15 @@
     "repair_execution_status",
     "rerun_status",
     "final_decision",
+    "repair_attempted",
+    "repair_inapplicable_reason",
     "retry_count",
     "reason_codes",
     "artifact_refs"
   ],
   "properties": {
     "artifact_type": {"const": "preflight_recovery_outcome_record"},
-    "schema_version": {"type": "string", "const": "1.0.0"},
+    "schema_version": {"type": "string", "const": "1.1.0"},
     "initial_preflight_status": {"type": "string", "enum": ["passed", "failed", "skipped"]},
     "failure_class": {"type": "string", "minLength": 1},
     "eligibility_decision": {
@@ -35,8 +37,16 @@
     "rerun_status": {"type": "string", "enum": ["passed", "blocked", "not_run", "not_permitted"]},
     "final_decision": {
       "type": "string",
-      "enum": ["repaired_and_passed", "repaired_but_still_blocked", "repair_failed", "repair_not_permitted"]
+      "enum": [
+        "passed_without_repair",
+        "passed_after_auto_repair",
+        "blocked_repair_failed",
+        "blocked_repair_not_applicable",
+        "blocked_escalation_required"
+      ]
     },
+    "repair_attempted": {"type": "boolean"},
+    "repair_inapplicable_reason": {"type": ["string", "null"], "minLength": 1},
     "retry_count": {"type": "integer", "minimum": 0},
     "reason_codes": {
       "type": "array",

@@ -1,13 +1,15 @@
 {
   "artifact_type": "preflight_recovery_outcome_record",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "initial_preflight_status": "failed",
   "failure_class": "schema_violation",
   "eligibility_decision": "auto_repair_allowed",
   "repair_invoked": true,
   "repair_execution_status": "completed",
   "rerun_status": "passed",
-  "final_decision": "repaired_and_passed",
+  "final_decision": "passed_after_auto_repair",
+  "repair_attempted": true,
+  "repair_inapplicable_reason": null,
   "retry_count": 1,
   "reason_codes": [
     "SCHEMA_EXAMPLE_FAILURE"

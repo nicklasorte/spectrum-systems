@@ -131,6 +131,10 @@ def test_validation_replay_required_before_success(tmp_path: Path) -> None:
             command_runner=_runner,
         )
     assert any("pytest" in cmd for cmd in calls)
+    outcome = json.loads((out / "preflight_recovery_outcome_record.json").read_text(encoding="utf-8"))
+    assert outcome["final_decision"] == "blocked_repair_failed"
+    assert outcome["repair_attempted"] is True
+    assert outcome["repair_inapplicable_reason"] is None
 
 
 def test_rerun_preflight_required_and_blocks_when_still_block(tmp_path: Path) -> None:
@@ -159,7 +163,9 @@ def test_rerun_preflight_required_and_blocks_when_still_block(tmp_path: Path) ->
             command_runner=_runner,
         )
     outcome = json.loads((out / "preflight_recovery_outcome_record.json").read_text(encoding="utf-8"))
-    assert outcome["final_decision"] == "repaired_but_still_blocked"
+    assert outcome["final_decision"] == "blocked_repair_failed"
+    result = json.loads((out / "preflight_repair_result_record.json").read_text(encoding="utf-8"))
+    assert result["terminal_state"] == "blocked_repair_failed"
 
 
 def test_no_mutation_allowed_for_fork_or_unsafe_context(tmp_path: Path) -> None:
@@ -241,7 +247,7 @@ def test_missing_required_surface_mapping_autorepair_writes_override_file(tmp_pa
         command_runner=_runner,
     )
     assert result["repair_result"]["success"] is True
-    assert result["recovery_outcome"]["final_decision"] == "repaired_and_passed"
+    assert result["recovery_outcome"]["final_decision"] == "passed_after_auto_repair"
     override_file = tmp_path / "docs" / "governance" / "preflight_required_surface_test_overrides.json"
     assert override_file.exists()
 
@@ -267,8 +273,38 @@ def test_non_repairable_block_emits_recovery_outcome_and_escalates(tmp_path: Pat
             command_runner=lambda cmd, cwd: None,  # type: ignore[arg-type]
         )
     outcome = json.loads((out / "preflight_recovery_outcome_record.json").read_text(encoding="utf-8"))
-    assert outcome["final_decision"] == "repair_not_permitted"
+    assert outcome["final_decision"] == "blocked_repair_not_applicable"
     assert outcome["repair_invoked"] is False
+    assert outcome["repair_attempted"] is False
+    assert outcome["repair_inapplicable_reason"] == "auto_repair_forbidden_by_policy"
+
+
+def test_contract_mismatch_with_empty_repair_plan_is_blocked_not_applicable(tmp_path: Path) -> None:
+    out = _write_base_artifacts(
+        tmp_path,
+        report_overrides={
+            "missing_required_surface": [
+                {"path": "docs/architecture/system_registry.md", "reason": "missing deterministic mapping"},
+            ],
+            "changed_path_detection": {},
+        },
+    )
+    with pytest.raises(ContractPreflightAutofixError, match="repair_plan_not_applicable:empty_repair_plan"):
+        run_preflight_block_autorepair(
+            repo_root=tmp_path,
+            output_dir=out,
+            base_ref="base",
+            head_ref="head",
+            execution_context="pqx_governed",
+            pqx_wrapper_path=out / "preflight_pqx_task_wrapper.json",
+            authority_evidence_ref="artifact",
+            same_repo_write_allowed=True,
+            command_runner=lambda cmd, cwd: type("Res", (), {"command": cmd, "returncode": 0})(),
+        )
+    outcome = json.loads((out / "preflight_recovery_outcome_record.json").read_text(encoding="utf-8"))
+    assert outcome["final_decision"] == "blocked_repair_not_applicable"
+    assert outcome["repair_attempted"] is False
+    assert outcome["repair_inapplicable_reason"] == "empty_repair_plan"
 
 
 def test_schema_violation_auto_repair_path_writes_terminal_success_outcome(tmp_path: Path) -> None:
@@ -307,7 +343,7 @@ def test_schema_violation_auto_repair_path_writes_terminal_success_outcome(tmp_p
         same_repo_write_allowed=True,
         command_runner=_runner,
     )
-    assert result["recovery_outcome"]["final_decision"] == "repaired_and_passed"
+    assert result["recovery_outcome"]["final_decision"] == "passed_after_auto_repair"
 
 
 def test_classification_distinguishes_missing_refs_reason() -> None:

@@ -40,3 +40,20 @@ Preflight report and changed-path resolution artifacts include `ref_context`:
 - `contract_mismatch_from_bad_ref_resolution`
 
 These reason codes are consumed by the preflight diagnosis/repair flow for deterministic classification and bounded auto-repair behavior.
+
+## PRF-06 repair terminal-state semantics
+
+Root cause of vague `BLOCK + exit 2` handling: first-pass preflight classification emitted `contract_mismatch` with `auto_repair_allowed`, but the CI flow could stop after first-pass preflight without executing the governed repair+rereun path.
+
+Current governed state machine:
+1. run first-pass `scripts/run_contract_preflight.py`
+2. if first pass blocks and `preflight_repair_plan_record.eligibility_decision == auto_repair_allowed`, run `scripts/run_github_pr_autofix_contract_preflight.py`
+3. auto-repair emits deterministic terminal state and post-repair artifact truth:
+   - `passed_after_auto_repair`
+   - `blocked_repair_failed`
+   - `blocked_repair_not_applicable`
+   - `blocked_escalation_required`
+
+Guardrails:
+- if `eligibility_decision == auto_repair_allowed`, flow must either mark `repair_attempted == true` or set deterministic `repair_inapplicable_reason`.
+- generic terminal `BLOCK` is not accepted when a post-repair terminal state is available.

@@ -12,6 +12,7 @@
     "rerun_preflight_exit_code",
     "rerun_strategy_gate_decision",
     "success",
+    "terminal_state",
     "rerun_allowed",
     "rerun_requires",
     "escalation_required",
@@ -47,6 +48,16 @@
     },
     "success": {
       "type": "boolean"
+    },
+    "terminal_state": {
+      "type": "string",
+      "enum": [
+        "passed_without_repair",
+        "passed_after_auto_repair",
+        "blocked_repair_failed",
+        "blocked_repair_not_applicable",
+        "blocked_escalation_required"
+      ]
     },
     "rerun_allowed": {
       "type": "boolean"
