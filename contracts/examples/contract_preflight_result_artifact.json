@@ -51,7 +51,8 @@
     ],
     "fallback_used": false,
     "targeted_selection_empty": false,
-    "fallback_selection_empty": false
+    "fallback_selection_empty": false,
+    "selection_reason_codes": []
   },
   "pqx_required_context_enforcement": {
     "classification": "governed_pqx_required",

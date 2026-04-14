@@ -23,3 +23,9 @@ def test_pr_pytest_execution_gap_maps_to_inventory_regression() -> None:
     report = {"invariant_violations": ["PR_PYTEST_EXECUTION_REQUIRED"]}
     result = normalize_preflight_failure(report)
     assert result["failure_class"] == "test_inventory_regression"
+
+
+def test_preflight_pass_without_execution_maps_to_inventory_regression() -> None:
+    report = {"invariant_violations": ["PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION"]}
+    result = normalize_preflight_failure(report)
+    assert result["failure_class"] == "test_inventory_regression"

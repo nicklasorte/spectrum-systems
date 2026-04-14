@@ -147,6 +147,23 @@ PY
             --authority-evidence-ref artifacts/pqx_runs/preflight.pqx_slice_execution_record.json \
             --same-repo-write-allowed
 
+          # Preflight is the canonical authority for PR pytest execution truth.
+          python - <<'PY'
+import json
+import os
+from pathlib import Path
+
+artifact = Path("outputs/contract_preflight/contract_preflight_result_artifact.json")
+if not artifact.is_file():
+    raise SystemExit("missing contract_preflight_result_artifact.json")
+payload = json.loads(artifact.read_text(encoding="utf-8"))
+decision = str((payload.get("control_signal") or {}).get("strategy_gate_decision") or "BLOCK")
+execution = payload.get("pytest_execution") or {}
+count = int(execution.get("pytest_execution_count") or 0)
+if os.environ.get("GITHUB_EVENT_NAME") == "pull_request" and decision in {"ALLOW", "WARN"} and count < 1:
+    raise SystemExit("workflow/preflight trust mismatch: PR allow without preflight-owned pytest execution")
+PY
+
       - name: Upload contract preflight outputs
         if: always()
         uses: actions/upload-artifact@v4
@@ -225,4 +242,6 @@ PY
         run: python -m pip install -r requirements-dev.txt
 
       - name: Run pytest
+        # Non-authoritative redundancy signal only.
+        # PR gating execution truth is owned by contract-preflight artifacts.
         run: pytest

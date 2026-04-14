@@ -207,6 +207,10 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
     if invariant_violations:
         if "PR_PYTEST_EXECUTION_REQUIRED" in invariant_violations:
             return "no_tests_discovered", ["PR_PYTEST_EXECUTION_REQUIRED"]
+        if "PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION" in invariant_violations:
+            return "no_tests_discovered", ["PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION"]
+        if "PR_PYTEST_SELECTED_TARGETS_EMPTY" in invariant_violations:
+            return "no_tests_discovered", ["PR_PYTEST_SELECTED_TARGETS_EMPTY"]
         if "PR_PYTEST_FALLBACK_TARGETS_EMPTY" in invariant_violations:
             return "no_tests_discovered", ["PR_PYTEST_FALLBACK_TARGETS_EMPTY"]
         if "artifact_validation_failure" in invariant_violations:

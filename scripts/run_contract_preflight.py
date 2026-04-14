@@ -1341,6 +1341,7 @@ def main() -> int:
                 "fallback_used": False,
                 "targeted_selection_empty": True,
                 "fallback_selection_empty": False,
+                "selection_reason_codes": [],
             },
             "ref_context": ref_context.as_dict(),
             "root_cause_classification": {"failure_class": "missing_required_artifact", "reason_codes": [str(ref_context.reason_code or "malformed_ref_context")]},
@@ -1563,6 +1564,7 @@ def main() -> int:
     fallback_pytest_used = False
     targeted_selection_empty = False
     fallback_selection_empty = False
+    pytest_selection_reason_codes: list[str] = []
 
     if detection.changed_path_detection_mode == "detection_failed_no_governed_paths":
         detection_invariants = ["changed-path detection failed before evaluation"]
@@ -1681,6 +1683,8 @@ def main() -> int:
         producer_eval_targets = sorted(set(producer_targets + forced_targets))
         selected_pytest_targets = sorted(set(producer_eval_targets + fixture_targets + smoke_targets))
         targeted_selection_empty = len(selected_pytest_targets) == 0
+        if is_pull_request_event and targeted_selection_empty:
+            pytest_selection_reason_codes.append("PR_PYTEST_SELECTED_TARGETS_EMPTY")
         producer_failures = run_targeted_pytests(producer_eval_targets, execution_log=pytest_execution_log) if producer_eval_targets else []
         fixture_failures = run_targeted_pytests(fixture_targets, execution_log=pytest_execution_log) if fixture_targets else []
         consumer_failures = run_targeted_pytests(smoke_targets, execution_log=pytest_execution_log) if smoke_targets else []
@@ -1738,6 +1742,8 @@ def main() -> int:
     if is_pull_request_event and report.get("status") == "passed" and not pytest_execution_log:
         fallback_pytest_targets = _resolve_existing_pytest_targets(_GOVERNED_PR_FALLBACK_PYTEST_TARGETS)
         fallback_pytest_used = True
+        if "PR_PYTEST_SELECTED_TARGETS_EMPTY" not in pytest_selection_reason_codes:
+            pytest_selection_reason_codes.append("PR_PYTEST_SELECTED_TARGETS_EMPTY")
         fallback_selection_empty = len(fallback_pytest_targets) == 0
         if fallback_pytest_targets:
             fallback_failures = run_targeted_pytests(fallback_pytest_targets, execution_log=pytest_execution_log)
@@ -1768,6 +1774,7 @@ def main() -> int:
         "fallback_used": fallback_pytest_used,
         "targeted_selection_empty": targeted_selection_empty,
         "fallback_selection_empty": fallback_selection_empty,
+        "selection_reason_codes": sorted(set(pytest_selection_reason_codes)),
     }
     if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
         report["status"] = "failed"
@@ -1835,7 +1842,10 @@ def main() -> int:
     if is_pull_request_event and report.get("status") == "passed" and pytest_execution_count < 1:
         report["status"] = "failed"
         report["invariant_violations"] = sorted(
-            set(report.get("invariant_violations", []) + ["PR_PYTEST_EXECUTION_REQUIRED"])
+            set(
+                report.get("invariant_violations", [])
+                + ["PR_PYTEST_EXECUTION_REQUIRED", "PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION"]
+            )
         )
         report["recommended_repair_areas"] = sorted(
             set(report.get("recommended_repair_areas", []) + ["run governed PR pytest execution before ALLOW"])

@@ -144,7 +144,8 @@
         "fallback_targets",
         "fallback_used",
         "targeted_selection_empty",
-        "fallback_selection_empty"
+        "fallback_selection_empty",
+        "selection_reason_codes"
       ],
       "properties": {
         "event_name": {"type": "string"},
@@ -165,7 +166,12 @@
         },
         "fallback_used": {"type": "boolean"},
         "targeted_selection_empty": {"type": "boolean"},
-        "fallback_selection_empty": {"type": "boolean"}
+        "fallback_selection_empty": {"type": "boolean"},
+        "selection_reason_codes": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        }
       }
     },
     "pqx_required_context_enforcement": {
