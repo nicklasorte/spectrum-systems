@@ -64,6 +64,7 @@ def test_wrapper_builder_writes_changed_paths_and_resolution(tmp_path: Path, mon
     assert "changed_path_resolution" not in payload
     sidecar = json.loads((tmp_path / "preflight_changed_path_resolution.json").read_text(encoding="utf-8"))
     assert sidecar["trust_level"] == "authoritative"
+    assert sidecar["github_ref_context"]["failure_class"] == "none"
 
 
 def test_wrapper_builder_blocks_on_insufficient_context(tmp_path: Path, monkeypatch) -> None:

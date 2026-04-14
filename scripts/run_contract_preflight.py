@@ -109,6 +109,7 @@ _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS = [
     "tests/test_pqx_slice_runner.py",
 ]
 _GOVERNED_PROMPT_SURFACE_REGISTRY = REPO_ROOT / "docs" / "governance" / "governed_prompt_surfaces.json"
+_GOVERNED_RUNTIME_OWNERSHIP_MAP = REPO_ROOT / "docs" / "governance" / "governed_runtime_ownership_map.json"
 
 _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "scripts/run_autonomous_validation_run.py": ["tests/test_run_autonomous_validation_run.py"],
@@ -419,6 +420,65 @@ def classify_changed_contracts(changed_paths: list[str]) -> dict[str, list[str]]
         "changed_example_paths": changed_examples,
         "changed_governed_definitions": governed_defs,
     }
+
+
+def classify_preflight_failure(report: dict[str, Any]) -> str:
+    if report.get("schema_example_failures"):
+        return "canonicalizable_registry_or_schema_mismatch"
+    if report.get("missing_required_surface"):
+        return "required_surface_mapping_mismatch"
+    pqx_ctx = (report.get("changed_path_detection") or {}).get("pqx_required_context_enforcement")
+    if isinstance(pqx_ctx, dict) and str(pqx_ctx.get("status")) == "block":
+        return "pqx_required_context_block"
+    if report.get("control_surface_gap_blocking"):
+        return "control_surface_gap_blocking"
+    if report.get("consumer_failures") or report.get("producer_failures") or report.get("fixture_failures"):
+        return "contract_or_runtime_validation_failure"
+    if str(report.get("status")) == "failed":
+        return "unknown_preflight_failure"
+    return "none"
+
+
+def validate_governed_runtime_ownership(changed_paths: list[str]) -> list[dict[str, str]]:
+    if not _GOVERNED_RUNTIME_OWNERSHIP_MAP.is_file():
+        return [{"path": "docs/governance/governed_runtime_ownership_map.json", "reason": "missing_ownership_map"}]
+    try:
+        payload = json.loads(_GOVERNED_RUNTIME_OWNERSHIP_MAP.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return [{"path": "docs/governance/governed_runtime_ownership_map.json", "reason": "invalid_ownership_map"}]
+    prefixes = payload.get("governed_path_prefixes", []) if isinstance(payload, dict) else []
+    known_exact = {
+        str(entry.get("path") or "")
+        for entry in prefixes
+        if isinstance(entry, dict) and str(entry.get("path") or "").endswith(".py")
+    }
+    waivers = {str(item.get("path") or "") for item in payload.get("waivers", []) if isinstance(item, dict)} if isinstance(payload, dict) else set()
+    failures: list[dict[str, str]] = []
+    for path in changed_paths:
+        if not path.startswith(("spectrum_systems/modules/runtime/", "scripts/")):
+            continue
+        if not (REPO_ROOT / path).exists() and path not in known_exact:
+            failures.append({"path": path, "reason": "missing_governed_runtime_ownership_classification"})
+            continue
+        if path in waivers:
+            continue
+        matched = False
+        for entry in prefixes:
+            if not isinstance(entry, dict):
+                continue
+            prefix = str(entry.get("path") or "")
+            if path.startswith(prefix):
+                matched = True
+                classification = str(entry.get("classification") or "")
+                owner = entry.get("owner")
+                if classification == "authority_bearing" and (not isinstance(owner, str) or len(owner) != 3):
+                    failures.append({"path": path, "reason": "authority_bearing_requires_three_letter_owner"})
+                if classification == "support_only" and owner is not None:
+                    failures.append({"path": path, "reason": "support_only_must_not_set_owner"})
+                break
+        if not matched:
+            failures.append({"path": path, "reason": "missing_governed_runtime_ownership_classification"})
+    return failures
 
 
 
@@ -1490,6 +1550,7 @@ def main() -> int:
                 resolved_targets_by_path=forced_eval_targets_by_path,
             )
         )
+        missing_required_surface.extend(validate_governed_runtime_ownership(detection.changed_paths))
         forced_targets = sorted({target for targets in forced_eval_targets_by_path.values() for target in targets})
 
         producer_eval_targets = sorted(set(producer_targets + forced_targets))
@@ -1592,6 +1653,7 @@ def main() -> int:
     control_signal = map_preflight_control_signal(report=report, hardening_flow=bool(args.hardening_flow))
     decision = str(control_signal.get("strategy_gate_decision", "BLOCK"))
     report["status"] = "failed" if decision in {"BLOCK", "FREEZE"} else "passed"
+    report["failure_classification"] = classify_preflight_failure(report)
 
     json_path = output_dir / "contract_preflight_report.json"
     md_path = output_dir / "contract_preflight_report.md"

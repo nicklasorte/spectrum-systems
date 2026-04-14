@@ -41,7 +41,11 @@ from spectrum_systems.modules.runtime.review_parsing_engine import parse_review_
 from spectrum_systems.modules.runtime.review_projection_adapter import build_review_projection_bundle
 from spectrum_systems.modules.runtime.review_signal_classifier import classify_review_signal
 from spectrum_systems.modules.runtime.review_signal_consumer import build_review_integration_packet
-from spectrum_systems.modules.runtime.system_registry_enforcer import validate_system_action, validate_system_handoff
+from spectrum_systems.modules.runtime.system_registry_enforcer import (
+    validate_artifact_authority,
+    validate_system_action,
+    validate_system_handoff,
+)
 from spectrum_systems.modules.runtime.system_enforcement_layer import enforce_system_boundaries
 from spectrum_systems.modules.runtime.tlc_hardening import (
     build_tlc_orchestration_readiness,
@@ -446,9 +450,13 @@ def _enforce_handoff(
 
 
 def _validate_handoff_output(subsystem: str, result: dict[str, Any]) -> None:
+    if isinstance(result.get("closure_decision_artifact"), dict):
+        authority = validate_artifact_authority(emitting_system=subsystem, artifact_type="closure_decision_artifact")
+        if not authority["allow"]:
+            codes = ",".join(authority["violation_codes"])
+            raise TopLevelConductorError(f"{subsystem} must not emit closure_decision_artifact; authority_violation={codes}")
+
     if subsystem != "CDE":
-        if isinstance(result.get("closure_decision_artifact"), dict):
-            raise TopLevelConductorError(f"{subsystem} must not emit closure_decision_artifact; route closure signals to CDE")
         if isinstance(result.get("decision_type"), str) and result.get("decision_type"):
             raise TopLevelConductorError(f"{subsystem} must not emit decision_type; closure authority is CDE-only")
         if isinstance(result.get("next_step_class"), str) and result.get("next_step_class"):

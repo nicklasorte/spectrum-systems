@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from dataclasses import dataclass
@@ -11,6 +12,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_PATH = REPO_ROOT / "docs" / "architecture" / "system_registry.md"
+REGISTRY_ARTIFACT_PATH = REPO_ROOT / "contracts" / "examples" / "system_registry_artifact.json"
 
 SYSTEM_HEADER_RE = re.compile(r"^\s*###\s+([A-Z0-9]+)\s*$")
 FIELD_RE = re.compile(r"^\s*-\s+\*\*(role|owns|consumes|produces|must_not_do):\*\*\s*(.*)$")
@@ -337,6 +339,42 @@ def check_next_phase_presence_and_io(systems: dict[str, SystemDefinition]) -> li
             errors.append(f"{name} must declare produces list")
     return errors
 
+
+def check_doc_artifact_drift(systems: dict[str, SystemDefinition]) -> list[str]:
+    errors: list[str] = []
+    if not REGISTRY_ARTIFACT_PATH.is_file():
+        return ["registry artifact missing for drift validation"]
+    payload = json.loads(REGISTRY_ARTIFACT_PATH.read_text(encoding="utf-8"))
+    artifact_systems = payload.get("systems", [])
+    artifact_by_name = {
+        str(entry.get("acronym") or "").strip().upper(): entry
+        for entry in artifact_systems
+        if isinstance(entry, dict)
+    }
+    doc_names = set(systems.keys())
+    artifact_names = set(artifact_by_name.keys())
+    artifact_only = sorted(artifact_names - doc_names)
+    if artifact_only:
+        errors.append(f"registry_doc_artifact_drift:artifact_only={artifact_only}")
+    protected = {
+        "execution": "PQX",
+        "execution_admission": "AEX",
+        "failure_diagnosis": "FRE",
+        "review_interpretation": "RIL",
+        "closure_decisions": "CDE",
+        "enforcement": "SEL",
+        "orchestration": "TLC",
+    }
+    for responsibility, owner in protected.items():
+        artifact_owner = sorted(
+            name
+            for name, entry in artifact_by_name.items()
+            if responsibility in (entry.get("owns") if isinstance(entry.get("owns"), list) else [])
+        )
+        if artifact_owner != [owner]:
+            errors.append(f"registry_artifact_protected_owner_drift:{responsibility}:expected={owner}:actual={artifact_owner}")
+    return errors
+
 def run_all_checks(registry_path: Path = REGISTRY_PATH) -> list[str]:
     systems, full_text = parse_registry(registry_path)
 
@@ -355,6 +393,7 @@ def run_all_checks(registry_path: Path = REGISTRY_PATH) -> list[str]:
     errors.extend(check_extended_hardening_ownership(systems))
     errors.extend(check_next_wave_boundaries(systems))
     errors.extend(check_next_phase_presence_and_io(systems))
+    errors.extend(check_doc_artifact_drift(systems))
     return errors
 
 

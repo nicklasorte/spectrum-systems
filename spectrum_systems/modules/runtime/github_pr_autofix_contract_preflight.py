@@ -313,6 +313,21 @@ def _repair_system_registry_reserved_entries(*, repo_root: Path) -> list[str]:
     return [str(path.relative_to(repo_root))]
 
 
+def _canonical_rebuild_system_registry(*, repo_root: Path, command_runner: Callable[[list[str], Path], CommandResult]) -> list[str]:
+    cmd = [
+        sys.executable,
+        "scripts/build_system_registry_artifact.py",
+        "--input",
+        "contracts/examples/system_registry_artifact.json",
+        "--output",
+        "contracts/examples/system_registry_artifact.json",
+    ]
+    result = command_runner(cmd, repo_root)
+    if result.returncode != 0:
+        raise ContractPreflightAutofixError("system_registry_canonical_rebuild_failed")
+    return ["contracts/examples/system_registry_artifact.json"]
+
+
 def _run(command: list[str], cwd: Path) -> CommandResult:
     completed = subprocess.run(command, cwd=str(cwd), check=False)
     return CommandResult(command=command, returncode=completed.returncode)
@@ -379,7 +394,9 @@ def run_preflight_block_autorepair(
         elif category == "contract_mismatch":
             attempt["mutated_paths"] = _repair_required_surface_mapping(repo_root=repo_root, report=report)
         elif category == "schema_violation":
-            attempt["mutated_paths"] = _repair_system_registry_reserved_entries(repo_root=repo_root)
+            repaired = _repair_system_registry_reserved_entries(repo_root=repo_root)
+            rebuilt = _canonical_rebuild_system_registry(repo_root=repo_root, command_runner=command_runner)
+            attempt["mutated_paths"] = sorted(set(repaired + rebuilt))
         else:
             raise ContractPreflightAutofixError("unsupported_auto_repair_category")
         if len(attempt["mutated_paths"]) > 5:

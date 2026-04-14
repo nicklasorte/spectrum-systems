@@ -52,22 +52,18 @@ class BuildResult:
     normalized_system_count: int
 
 
-def _dedupe_ordered_strings(values: Any, *, field: str, acronym: str) -> list[str]:
+def _dedupe_sorted_strings(values: Any, *, field: str, acronym: str) -> list[str]:
     if not isinstance(values, list):
         raise SystemRegistryBuildError(f"registry_build_invalid:{acronym}.{field}:expected_list")
-    out: list[str] = []
-    seen: set[str] = set()
+    out: set[str] = set()
     for idx, raw in enumerate(values):
         if not isinstance(raw, str):
             raise SystemRegistryBuildError(f"registry_build_invalid:{acronym}.{field}[{idx}]:expected_string")
         value = raw.strip()
         if not value:
             raise SystemRegistryBuildError(f"registry_build_invalid:{acronym}.{field}[{idx}]:empty_string")
-        if value in seen:
-            continue
-        seen.add(value)
-        out.append(value)
-    return out
+        out.add(value)
+    return sorted(out)
 
 
 def _normalize_registry(payload: dict[str, Any]) -> dict[str, Any]:
@@ -91,10 +87,22 @@ def _normalize_registry(payload: dict[str, Any]) -> dict[str, Any]:
         record = dict(entry)
         record["acronym"] = acronym
         for field in _SET_LIKE_SYSTEM_FIELDS:
-            record[field] = _dedupe_ordered_strings(record.get(field, []), field=field, acronym=acronym)
+            record[field] = _dedupe_sorted_strings(record.get(field, []), field=field, acronym=acronym)
         normalized_systems.append(record)
 
-    normalized["systems"] = normalized_systems
+    normalized["systems"] = sorted(normalized_systems, key=lambda item: str(item.get("acronym", "")))
+    interaction_edges = payload.get("interaction_edges")
+    if isinstance(interaction_edges, list):
+        deduped_edges: set[tuple[str, str]] = set()
+        for edge in interaction_edges:
+            if not isinstance(edge, dict):
+                raise SystemRegistryBuildError("registry_build_invalid:interaction_edges:expected_object_entries")
+            source = str(edge.get("from") or "").strip().upper()
+            target = str(edge.get("to") or "").strip().upper()
+            if not source or not target:
+                raise SystemRegistryBuildError("registry_build_invalid:interaction_edges:from_to_required")
+            deduped_edges.add((source, target))
+        normalized["interaction_edges"] = [{"from": source, "to": target} for source, target in sorted(deduped_edges)]
     return normalized
 
 

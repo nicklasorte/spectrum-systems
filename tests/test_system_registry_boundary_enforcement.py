@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from scripts import validate_system_registry_boundaries as validator
@@ -109,3 +110,19 @@ def test_extended_hardening_unique_owners_enforced(tmp_path: Path) -> None:
 
     errors = validator.run_all_checks(mutated_path)
     assert any("context_bundle_contracts" in error for error in errors)
+
+
+def test_validator_detects_doc_artifact_drift(tmp_path: Path, monkeypatch) -> None:
+    artifact = {
+        "systems": [
+            {
+                "acronym": "ZZZ",
+                "owns": ["execution_admission"],
+            }
+        ]
+    }
+    artifact_path = tmp_path / "system_registry_artifact.json"
+    artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+    monkeypatch.setattr(validator, "REGISTRY_ARTIFACT_PATH", artifact_path)
+    errors = validator.run_all_checks(REGISTRY_PATH)
+    assert any("registry_doc_artifact_drift" in error for error in errors)

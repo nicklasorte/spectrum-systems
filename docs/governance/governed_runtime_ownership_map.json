@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "policy": "three_letter_governed_runtime_ownership",
+  "governed_path_prefixes": [
+    {
+      "path": "spectrum_systems/modules/runtime/",
+      "classification": "authority_bearing",
+      "owner": "TLC"
+    },
+    {
+      "path": "scripts/run_contract_preflight.py",
+      "classification": "authority_bearing",
+      "owner": "TPA"
+    },
+    {
+      "path": "scripts/build_preflight_pqx_wrapper.py",
+      "classification": "authority_bearing",
+      "owner": "PQX"
+    },
+    {
+      "path": "scripts/",
+      "classification": "support_only",
+      "owner": null
+    },
+    {
+      "path": "tests/",
+      "classification": "support_only",
+      "owner": null
+    },
+    {
+      "path": "docs/",
+      "classification": "support_only",
+      "owner": null
+    },
+    {
+      "path": "contracts/examples/",
+      "classification": "support_only",
+      "owner": null
+    }
+  ],
+  "waivers": [
+    {
+      "path": "spectrum_systems/modules/runtime/__init__.py",
+      "classification": "support_only",
+      "expires_on": "2026-12-31",
+      "reason": "legacy module init shim; no authority behavior"
+    }
+  ]
+}

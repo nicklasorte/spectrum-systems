@@ -74,6 +74,29 @@ def test_classify_changed_contracts_detects_governed_surfaces() -> None:
     assert classified["changed_governed_definitions"] == ["contracts/review-output.schema.json"]
 
 
+def test_classify_preflight_failure_marks_registry_schema_as_canonicalizable() -> None:
+    failure_class = preflight.classify_preflight_failure(
+        {
+            "status": "failed",
+            "schema_example_failures": [{"path": "contracts/examples/system_registry_artifact.json"}],
+            "missing_required_surface": [],
+        }
+    )
+    assert failure_class == "canonicalizable_registry_or_schema_mismatch"
+
+
+def test_validate_governed_runtime_ownership_flags_unclassified_runtime_paths() -> None:
+    failures = preflight.validate_governed_runtime_ownership(
+        ["spectrum_systems/modules/runtime/new_ownerless_surface.py"]
+    )
+    assert failures == [
+        {
+            "path": "spectrum_systems/modules/runtime/new_ownerless_surface.py",
+            "reason": "missing_governed_runtime_ownership_classification",
+        }
+    ]
+
+
 def test_build_impact_map_includes_required_roadmap_smoke_tests(monkeypatch) -> None:
     def _fake_analyze_contract_impact(**_: object) -> dict[str, object]:
         return {

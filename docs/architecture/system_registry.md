@@ -3,6 +3,8 @@
 ## Core Rule
 1. **Single-responsibility ownership:** each governed responsibility has exactly one owning system.
 2. **No-duplication rule:** no system may implement, enforce, or silently shadow a responsibility owned by another system.
+3. **Canonical artifact rule:** runtime enforcement MUST consume the normalized `contracts/examples/system_registry_artifact.json` produced by `scripts/build_system_registry_artifact.py`.
+4. **Support-only rule:** support code may assist governed runtime execution but MUST NOT become an authority surface.
 
 These rules are hard boundaries for architecture, contracts, and validation.
 

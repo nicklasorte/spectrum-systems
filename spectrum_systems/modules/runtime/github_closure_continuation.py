@@ -23,6 +23,7 @@ from spectrum_systems.modules.runtime.closure_decision_engine import (
     build_closure_decision_artifact,
     maybe_build_next_step_prompt_artifact,
 )
+from spectrum_systems.modules.runtime.system_registry_enforcer import validate_artifact_authority
 from spectrum_systems.modules.runtime.top_level_conductor import run_top_level_conductor
 from spectrum_systems.utils.deterministic_id import deterministic_id
 
@@ -602,6 +603,11 @@ def run_github_closure_continuation(
     }
 
     decision_artifact = build_closure_decision_artifact(cde_request)
+    authority = validate_artifact_authority(emitting_system="CDE", artifact_type="closure_decision_artifact")
+    if not authority["allow"]:
+        raise GithubClosureContinuationError(
+            "closure_decision_artifact authority violation: " + ",".join(authority["violation_codes"])
+        )
     validate_artifact(decision_artifact, "closure_decision_artifact")
     _write_json(artifact_paths.closure_decision_artifact_path, decision_artifact)
 

@@ -34,6 +34,7 @@
     "systems": {
       "type": "array",
       "minItems": 8,
+      "description": "Canonicalized by scripts/build_system_registry_artifact.py; each governed action maps to exactly one owner.",
       "items": {
         "$ref": "#/$defs/system_entry"
       }
@@ -87,6 +88,7 @@
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
+          "description": "Set-like ownership responsibilities; duplicates are invalid and canonical builder repair is required.",
           "items": {
             "type": "string",
             "pattern": "^[a-z][a-z0-9_]*$"

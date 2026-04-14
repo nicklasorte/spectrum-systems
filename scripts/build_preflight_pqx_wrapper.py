@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import sys
 from copy import deepcopy
 from datetime import datetime, timezone
@@ -97,6 +98,22 @@ def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _github_ref_context() -> dict[str, object]:
+    event_name = (os.environ.get("GITHUB_EVENT_NAME") or "").strip()
+    payload = {
+        "event_name": event_name or "unspecified",
+        "has_base_head_sha": bool((os.environ.get("GITHUB_BASE_SHA") or "").strip() and (os.environ.get("GITHUB_HEAD_SHA") or "").strip()),
+        "has_push_before_sha": bool((os.environ.get("GITHUB_BEFORE_SHA") or "").strip() and (os.environ.get("GITHUB_SHA") or "").strip()),
+    }
+    if event_name == "pull_request" and not payload["has_base_head_sha"]:
+        payload["failure_class"] = "missing_pr_sha_context"
+    elif event_name == "push" and not payload["has_push_before_sha"]:
+        payload["failure_class"] = "missing_push_sha_context"
+    else:
+        payload["failure_class"] = "none"
+    return payload
+
+
 def main(argv: Optional[list[str]] = None) -> int:
     args = _parse_args(argv)
     template_path = _REPO_ROOT / args.template
@@ -148,6 +165,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         "refs_attempted": resolution.refs_attempted,
         "warnings": resolution.warnings,
         "hardening_artifact_refs": hardening_refs,
+        "github_ref_context": _github_ref_context(),
     }
 
     output_path = _REPO_ROOT / args.output
