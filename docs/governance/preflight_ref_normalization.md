@@ -30,6 +30,7 @@ Preflight report and changed-path resolution artifacts include `ref_context`:
 - `fallback_used`
 - `valid`
 - `reason_code` / `invalid_reason` when blocked
+- `root_cause_classification` and `repair_eligibility_rationale` in `contract_preflight_report.json` for deterministic repair/escalation decisions
 
 ## Failure reason-code distinctions
 

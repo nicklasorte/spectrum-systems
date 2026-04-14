@@ -84,6 +84,7 @@ def _write_recovery_outcome(
 
 def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]:
     reasons: list[str] = []
+    invariant_violations = [str(item) for item in (report.get("invariant_violations") or []) if isinstance(item, str)]
     ref_context = ((report.get("changed_path_detection") or {}).get("ref_context") or {}) if isinstance(report, dict) else {}
     ref_reason_code = str(ref_context.get("reason_code") or "").strip()
     if ref_reason_code == "missing_refs":
@@ -92,6 +93,17 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
         return "internal_preflight_error", ["unsupported_event_context"]
     if ref_reason_code == "malformed_ref_context":
         return "invalid_wrapper", ["malformed_ref_context"]
+    if ref_reason_code == "invalid_git_ref":
+        return "invalid_wrapper", ["invalid_git_ref"]
+
+    detection_mode = str((report.get("changed_path_detection") or {}).get("changed_path_detection_mode") or "")
+    if detection_mode in {"ref_context_invalid", "detection_failed_no_governed_paths"}:
+        if "contract_mismatch_from_bad_ref_resolution" in invariant_violations:
+            return "contract_mismatch", ["contract_mismatch_from_bad_ref_resolution"]
+        return "missing_required_artifact", ["changed_path_resolution_failure"]
+
+    if report.get("bootstrap_failures"):
+        return "missing_required_artifact", ["changed_path_resolution_failure"]
 
     schema_example_failures = report.get("schema_example_failures") or []
     if schema_example_failures:
@@ -104,8 +116,7 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
         return "schema_violation", ["SCHEMA_EXAMPLE_FAILURE"]
 
     if report.get("missing_required_surface"):
-        reason_codes = [str(item) for item in (report.get("invariant_violations") or []) if isinstance(item, str)]
-        if "contract_mismatch_from_bad_ref_resolution" in reason_codes:
+        if "contract_mismatch_from_bad_ref_resolution" in invariant_violations:
             return "contract_mismatch", ["contract_mismatch_from_bad_ref_resolution"]
         return "contract_mismatch", ["MISSING_REQUIRED_SURFACE_MAPPING"]
 
@@ -118,7 +129,7 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
             return "invalid_wrapper", ["PQX_REQUIRED_CONTEXT_WRAPPER_BLOCK"]
         return "missing_required_artifact", ["PQX_REQUIRED_CONTEXT_ENFORCEMENT_BLOCK"]
 
-    mode = str((report.get("changed_path_detection") or {}).get("changed_path_detection_mode") or "")
+    mode = detection_mode
     if mode == "degraded_full_governed_scan":
         return "internal_preflight_error", ["PR_EVENT_PREFLIGHT_NORMALIZATION_BUG"]
 
@@ -138,6 +149,15 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
         reasons.extend(["CONSUMER_FAILURES_PRESENT"])
         return "contract_mismatch", reasons
 
+    if invariant_violations:
+        if "artifact_validation_failure" in invariant_violations:
+            return "schema_violation", ["artifact_validation_failure"]
+        if "repair_pipeline_failure" in invariant_violations:
+            return "internal_preflight_error", ["repair_pipeline_failure"]
+        if "preflight_runtime_exception" in invariant_violations:
+            return "internal_preflight_error", ["preflight_runtime_exception"]
+        return "contract_mismatch", invariant_violations[:3]
+
     return "unknown_preflight_failure", ["UNCLASSIFIED_BLOCK_REASON"]
 
 
@@ -152,7 +172,10 @@ def _repair_policy(failure_class: str) -> tuple[str, bool, bool]:
 
 
 def build_preflight_block_diagnosis_record(*, report: dict[str, Any], preflight_artifact: dict[str, Any]) -> dict[str, Any]:
-    category, reasons = classify_preflight_block(report=report)
+    try:
+        category, reasons = classify_preflight_block(report=report)
+    except Exception:
+        category, reasons = "internal_preflight_error", ["preflight_runtime_exception"]
     return {
         "artifact_type": "preflight_block_diagnosis_record",
         "artifact_version": "1.0.0",
@@ -447,7 +470,7 @@ def run_preflight_block_autorepair(
             rerun_status="not_run",
             final_decision="repair_failed",
             retry_count=1,
-            reason_codes=list(diagnosis.get("reason_codes", [])) + ["VALIDATION_REPLAY_FAILED"],
+            reason_codes=list(diagnosis.get("reason_codes", [])) + ["VALIDATION_REPLAY_FAILED", "repair_pipeline_failure"],
             artifact_refs=artifact_refs,
         )
         raise ContractPreflightAutofixError("validation_replay_failed")
@@ -498,7 +521,7 @@ def run_preflight_block_autorepair(
             rerun_status="blocked",
             final_decision="repaired_but_still_blocked",
             retry_count=1,
-            reason_codes=list(diagnosis.get("reason_codes", [])) + ["RERUN_STILL_BLOCKED"],
+            reason_codes=list(diagnosis.get("reason_codes", [])) + ["RERUN_STILL_BLOCKED", "repair_pipeline_failure"],
             artifact_refs=artifact_refs,
         )
         raise ContractPreflightAutofixError("preflight_rerun_blocked_or_failed")

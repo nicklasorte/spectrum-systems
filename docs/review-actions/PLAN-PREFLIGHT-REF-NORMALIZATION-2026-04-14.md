@@ -20,8 +20,10 @@ Fix push-event preflight ref mismatch failures by introducing one canonical, det
 | spectrum_systems/modules/runtime/github_pr_autofix_contract_preflight.py | MODIFY | Distinguish bad-ref-resolution mismatch in diagnosis/repair classification |
 | scripts/run_github_pr_autofix_contract_preflight.py | MODIFY | Normalize refs consistently for auto-repair reruns |
 | tests/test_preflight_ref_normalization.py | CREATE | Unit tests for push/pr/workflow_dispatch/local ref normalization rules |
+| tests/test_build_preflight_pqx_wrapper.py | MODIFY | Verify wrapper and runner share canonical ref normalization path |
 | tests/test_contract_preflight.py | MODIFY | Regression tests for push fallback, explicit override, workflow_dispatch block reason, and normalization observability |
 | tests/test_github_pr_autofix_contract_preflight.py | MODIFY | Classification tests for missing/malformed/unsupported/bad-ref-resolution reasons |
+| tests/test_run_github_pr_autofix_contract_preflight.py | MODIFY | Keep CLI adapter tests aligned with normalized ref context args |
 | docs/governance/preflight_ref_normalization.md | CREATE | Canonical documentation for event-specific ref normalization + artifact fields |
 
 ## Contracts touched

@@ -343,3 +343,78 @@ def test_classification_distinguishes_contract_mismatch_from_bad_ref_resolution(
     )
     assert failure_class == "contract_mismatch"
     assert reason_codes == ["contract_mismatch_from_bad_ref_resolution"]
+
+
+def test_classification_maps_preflight_runtime_exception_reason() -> None:
+    failure_class, reason_codes = classify_preflight_block(
+        report={"invariant_violations": ["preflight_runtime_exception"]}
+    )
+    assert failure_class == "internal_preflight_error"
+    assert reason_codes == ["preflight_runtime_exception"]
+
+
+def test_repair_pipeline_failure_preserves_original_reason_codes(tmp_path: Path) -> None:
+    out = _write_base_artifacts(
+        tmp_path,
+        report_overrides={
+            "changed_path_detection": {"ref_context": {"reason_code": "missing_refs"}},
+        },
+    )
+
+    class _Res:
+        def __init__(self, command, returncode):
+            self.command = command
+            self.returncode = returncode
+
+    def _runner(cmd, cwd):
+        if "pytest" in cmd:
+            return _Res(cmd, 1)
+        return _Res(cmd, 0)
+
+    with pytest.raises(ContractPreflightAutofixError, match="validation_replay_failed"):
+        run_preflight_block_autorepair(
+            repo_root=tmp_path,
+            output_dir=out,
+            base_ref="base",
+            head_ref="head",
+            execution_context="pqx_governed",
+            pqx_wrapper_path=out / "preflight_pqx_task_wrapper.json",
+            authority_evidence_ref="artifact",
+            same_repo_write_allowed=True,
+            command_runner=_runner,
+        )
+
+    outcome = json.loads((out / "preflight_recovery_outcome_record.json").read_text(encoding="utf-8"))
+    assert "missing_refs" in outcome["reason_codes"]
+    assert "repair_pipeline_failure" in outcome["reason_codes"]
+
+
+def test_diagnosable_push_ref_failure_does_not_emit_human_escalation(tmp_path: Path) -> None:
+    out = _write_base_artifacts(
+        tmp_path,
+        report_overrides={
+            "changed_path_detection": {"ref_context": {"reason_code": "missing_refs"}},
+        },
+    )
+
+    with pytest.raises(ContractPreflightAutofixError, match="validation_replay_failed"):
+        run_preflight_block_autorepair(
+            repo_root=tmp_path,
+            output_dir=out,
+            base_ref="base",
+            head_ref="head",
+            execution_context="pqx_governed",
+            pqx_wrapper_path=out / "preflight_pqx_task_wrapper.json",
+            authority_evidence_ref="artifact",
+            same_repo_write_allowed=True,
+            command_runner=lambda cmd, cwd: type("Res", (), {"command": cmd, "returncode": 1 if "pytest" in cmd else 0})(),
+        )
+
+    assert not (out / "preflight_human_escalation_record.json").exists()
+
+
+def test_classification_deterministic_for_same_push_inputs() -> None:
+    report = {"changed_path_detection": {"ref_context": {"reason_code": "missing_refs"}}}
+    first = classify_preflight_block(report=report)
+    second = classify_preflight_block(report=report)
+    assert first == second

@@ -1775,3 +1775,73 @@ def test_preflight_cli_refs_override_env_push_fallback(tmp_path: Path, monkeypat
     assert ref_context["normalization_strategy"] == "explicit_cli_pair"
     assert ref_context["base_ref"] == "explicit-base"
     assert ref_context["head_ref"] == "explicit-head"
+
+
+def test_push_context_exact_failure_regression_no_unknown_and_no_escalation(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    monkeypatch.setenv("GITHUB_BEFORE_SHA", "cafecb6682f83c47134a7d01ae818643d1136811")
+    monkeypatch.setenv("GITHUB_SHA", "a91128736a3706718cb0d32910503cfe056d3d1f")
+    monkeypatch.setenv("GITHUB_BASE_SHA", "")
+    monkeypatch.setenv("GITHUB_HEAD_SHA", "")
+
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "cafecb6682f83c47134a7d01ae818643d1136811",
+                "head_ref": "a91128736a3706718cb0d32910503cfe056d3d1f",
+                "event_name": "push",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=[],
+            changed_path_detection_mode="detection_failed_no_governed_paths",
+            refs_attempted=["cafecb..a911"],
+            fallback_used=False,
+            warnings=["simulated diff failure"],
+        ),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "evaluate_control_surface_gap_bridge",
+        lambda _output_dir: {
+            "status": "not_run",
+            "gap_result": None,
+            "gap_result_path": None,
+            "pqx_work_items": None,
+            "pqx_work_items_path": None,
+            "conversion_error": None,
+            "blocking": False,
+        },
+    )
+    monkeypatch.setattr(preflight, "evaluate_trust_spine_cohesion", lambda *_args, **_kwargs: None)
+
+    code = preflight.main()
+    assert code == 2
+
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["root_cause_classification"]["failure_class"] != "unknown_preflight_failure"
+    assert report["root_cause_classification"]["reason_codes"] == ["changed_path_resolution_failure"]
+    ref_context = report["changed_path_detection"]["ref_context"]
+    assert ref_context["base_ref"] == "cafecb6682f83c47134a7d01ae818643d1136811"
+    assert ref_context["head_ref"] == "a91128736a3706718cb0d32910503cfe056d3d1f"
+
+    diagnosis = json.loads((output_dir / "preflight_block_diagnosis_record.json").read_text(encoding="utf-8"))
+    plan = json.loads((output_dir / "preflight_repair_plan_record.json").read_text(encoding="utf-8"))
+    assert diagnosis["failure_class"] != "unknown_preflight_failure"
+    assert plan["eligibility_decision"] == "auto_repair_allowed"
+    assert not (output_dir / "preflight_human_escalation_record.json").exists()

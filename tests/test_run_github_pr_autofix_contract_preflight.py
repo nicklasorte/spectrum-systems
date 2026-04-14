@@ -17,6 +17,7 @@ def test_cli_returns_blocked_on_autofix_error(monkeypatch, capsys, tmp_path: Pat
                 "output_dir": str(tmp_path / "outputs" / "contract_preflight"),
                 "base_ref": "base",
                 "head_ref": "head",
+                "event_name": "pull_request",
                 "execution_context": "pqx_governed",
                 "pqx_wrapper_path": "outputs/contract_preflight/preflight_pqx_task_wrapper.json",
                 "authority_evidence_ref": "artifact",

@@ -53,6 +53,7 @@ from spectrum_systems.modules.runtime.trust_spine_evidence_cohesion import (  # 
     evaluate_trust_spine_evidence_cohesion,
 )
 from spectrum_systems.modules.runtime.github_pr_autofix_contract_preflight import (  # noqa: E402
+    classify_preflight_block,
     emit_preflight_block_bundle,
 )
 from spectrum_systems.modules.governance.system_registry_guard import (  # noqa: E402
@@ -1289,6 +1290,9 @@ def main() -> int:
             "system_registry_guard_result": {"artifact_type": "system_registry_guard_result", "status": "pass", "normalized_reason_codes": []},
             "system_registry_guard_result_ref": None,
             "ref_context": ref_context.as_dict(),
+            "root_cause_classification": {"failure_class": "missing_required_artifact", "reason_codes": [str(ref_context.reason_code or "malformed_ref_context")]},
+            "repair_eligibility_rationale": "auto_repair_allowed: normalized ref context unavailable and must be reconstructed with bounded inputs",
+            "secondary_exception": None,
         }
         json_path = output_dir / "contract_preflight_report.json"
         md_path = output_dir / "contract_preflight_report.md"
@@ -1351,8 +1355,8 @@ def main() -> int:
     preflight_mode = (
         "commit_range_inspection"
         if not list(getattr(args, "changed_path", []) or [])
-        and bool(getattr(args, "base_ref", None))
-        and bool(getattr(args, "head_ref", None))
+        and bool(ref_context.base_ref)
+        and bool(ref_context.head_ref)
         else "explicit_or_local_inspection"
     )
     detection_meta["preflight_mode"] = preflight_mode
@@ -1709,6 +1713,26 @@ def main() -> int:
     control_signal = map_preflight_control_signal(report=report, hardening_flow=bool(args.hardening_flow))
     decision = str(control_signal.get("strategy_gate_decision", "BLOCK"))
     report["status"] = "failed" if decision in {"BLOCK", "FREEZE"} else "passed"
+    classification_exception: str | None = None
+    if report["status"] == "failed":
+        try:
+            failure_class, reason_codes = classify_preflight_block(report=report)
+        except Exception as exc:  # defensive fail-closed annotation only
+            failure_class, reason_codes = "internal_preflight_error", ["preflight_runtime_exception"]
+            classification_exception = str(exc)
+        report["root_cause_classification"] = {
+            "failure_class": failure_class,
+            "reason_codes": reason_codes,
+        }
+        if failure_class in {"missing_required_artifact", "contract_mismatch", "schema_violation", "invalid_wrapper", "authority_evidence_missing"}:
+            report["repair_eligibility_rationale"] = "auto_repair_allowed: deterministic bounded failure classification"
+        else:
+            report["repair_eligibility_rationale"] = "escalation_required: non-repairable policy or unbounded runtime failure"
+        report["secondary_exception"] = classification_exception
+    else:
+        report["root_cause_classification"] = {"failure_class": "none", "reason_codes": []}
+        report["repair_eligibility_rationale"] = "not_applicable: preflight passed"
+        report["secondary_exception"] = None
 
     json_path = output_dir / "contract_preflight_report.json"
     md_path = output_dir / "contract_preflight_report.md"
