@@ -353,9 +353,11 @@ def _execution_impact_artifact(*, blocking: bool, indeterminate: bool, safe_to_e
 
 
 def _preflight_artifact(*, status: str, decision: str, masking_detected: bool = False, degraded: bool = False) -> dict:
+    execution_record_hash = "a" * 64
+    selection_integrity_hash = "b" * 64
     return {
         "artifact_type": "contract_preflight_result_artifact",
-        "schema_version": "1.4.0",
+        "schema_version": "1.5.0",
         "preflight_status": status,
         "changed_contracts": ["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
         "impacted_producers": [
@@ -376,7 +378,7 @@ def _preflight_artifact(*, status: str, decision: str, masking_detected: bool = 
             "tests/test_sequence_transition_policy.py",
         ],
         "masking_detected": masking_detected,
-        "recommended_repair_area": [] if decision in {"ALLOW", "WARN"} else ["targeted downstream consumer tests"],
+        "recommended_repair_area": [] if decision in {"ALLOW"} else ["targeted downstream consumer tests"],
         "report_paths": {
             "json_report_path": "outputs/contract_preflight/contract_preflight_report.json",
             "markdown_report_path": "outputs/contract_preflight/contract_preflight_report.md",
@@ -400,7 +402,7 @@ def _preflight_artifact(*, status: str, decision: str, masking_detected: bool = 
         "pytest_execution_record_ref": "outputs/contract_preflight/pytest_execution_record.json",
         "pytest_selection_integrity": {
             "artifact_type": "pytest_selection_integrity_result",
-            "schema_version": "1.0.0",
+            "schema_version": "1.1.0",
             "changed_paths": ["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
             "required_test_targets": ["tests/test_contract_preflight.py"],
             "selected_test_targets": ["tests/test_contract_preflight.py"],
@@ -411,9 +413,23 @@ def _preflight_artifact(*, status: str, decision: str, masking_detected: bool = 
             "impacted_surface_count": 1,
             "selection_integrity_decision": "ALLOW",
             "blocking_reasons": [],
-            "generated_at": "2026-04-01T00:00:00Z"
+            "generated_at": "2026-04-01T00:00:00Z",
+            "source_commit_sha": "0123456789abcdef0123456789abcdef01234567",
+            "source_head_ref": "refs/pull/123/head",
+            "workflow_run_id": "1234567890",
+            "producer_script": "scripts/run_contract_preflight.py",
+            "produced_at": "2026-04-01T00:00:00Z",
+            "source_pytest_execution_record_ref": "outputs/contract_preflight/pytest_execution_record.json",
+            "source_pytest_execution_record_hash": execution_record_hash,
+            "artifact_hash": selection_integrity_hash,
         },
         "pytest_selection_integrity_result_ref": "outputs/contract_preflight/pytest_selection_integrity_result.json",
+        "pytest_artifact_linkage": {
+            "pytest_execution_record_ref": "outputs/contract_preflight/pytest_execution_record.json",
+            "pytest_execution_record_hash": execution_record_hash,
+            "pytest_selection_integrity_result_ref": "outputs/contract_preflight/pytest_selection_integrity_result.json",
+            "pytest_selection_integrity_result_hash": selection_integrity_hash,
+        },
         "pqx_required_context_enforcement": {
             "classification": "governed_pqx_required",
             "execution_context": "pqx_governed",
@@ -659,11 +675,11 @@ def test_run_pqx_slice_blocks_on_preflight_masking_detected(tmp_path: Path) -> N
     assert "preflight BLOCK" in result["reason"]
 
 
-def test_run_pqx_slice_warns_or_allows_on_degraded_preflight_scan(tmp_path: Path) -> None:
+def test_run_pqx_slice_allows_on_degraded_preflight_scan_when_decision_is_allow(tmp_path: Path) -> None:
     state_path = tmp_path / "pqx_state.json"
     state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
-    preflight_path = tmp_path / "preflight-warn.json"
-    preflight_path.write_text(json.dumps(_preflight_artifact(status="passed", decision="WARN", degraded=True)), encoding="utf-8")
+    preflight_path = tmp_path / "preflight-allow-degraded.json"
+    preflight_path.write_text(json.dumps(_preflight_artifact(status="passed", decision="ALLOW", degraded=True)), encoding="utf-8")
 
     result = run_pqx_slice(
         step_id="AI-01",
@@ -676,7 +692,7 @@ def test_run_pqx_slice_warns_or_allows_on_degraded_preflight_scan(tmp_path: Path
     )
 
     assert result["status"] == "complete"
-    assert result["contract_preflight_decision"] == "warn"
+    assert result["contract_preflight_decision"] == "allow"
 
 
 def test_run_pqx_slice_blocks_when_preflight_authority_is_unknown_pending_execution(tmp_path: Path) -> None:
@@ -744,11 +760,11 @@ def test_run_pqx_slice_blocks_on_inconsistent_preflight_status_and_decision(tmp_
     assert "inconsistent preflight control mapping" in result["reason"]
 
 
-def test_run_pqx_slice_blocks_on_preflight_warn_without_degraded_detection(tmp_path: Path) -> None:
+def test_run_pqx_slice_blocks_on_preflight_freeze_when_status_is_passed(tmp_path: Path) -> None:
     state_path = tmp_path / "pqx_state.json"
     state_path.write_text(json.dumps({"schema_version": "1.0.0", "rows": []}) + "\n", encoding="utf-8")
-    payload = _preflight_artifact(status="passed", decision="WARN", degraded=False)
-    preflight_path = tmp_path / "preflight-warn-without-degraded.json"
+    payload = _preflight_artifact(status="passed", decision="FREEZE", degraded=False)
+    preflight_path = tmp_path / "preflight-freeze-with-passed-status.json"
     preflight_path.write_text(json.dumps(payload), encoding="utf-8")
 
     result = run_pqx_slice(
@@ -763,7 +779,7 @@ def test_run_pqx_slice_blocks_on_preflight_warn_without_degraded_detection(tmp_p
 
     assert result["status"] == "blocked"
     assert result["block_type"] == "CONTRACT_PREFLIGHT_BLOCKED"
-    assert "WARN decision requires degraded_detection=true" in result["reason"]
+    assert "inconsistent preflight control mapping" in result["reason"]
 
 
 def test_runtime_module_import_has_no_done_certification_cycle() -> None:
