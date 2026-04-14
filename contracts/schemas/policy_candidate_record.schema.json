@@ -26,7 +26,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "pattern": "^judgment_record:JDG-[A-F0-9]{12}$"
+        "pattern": "^judgment_record:JDX-[A-F0-9]{12}$"
       },
       "minItems": 1,
       "uniqueItems": true

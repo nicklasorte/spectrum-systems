@@ -635,7 +635,7 @@
       "introduced_in": "1.3.124",
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/budget_consumption_record.json",
-      "notes": "TAX/BAX/CAX governed authority contract."
+      "notes": "CDE/BAX/CDE governed authority contract."
     },
     {
       "artifact_type": "budget_control_decision",
@@ -648,7 +648,7 @@
       "introduced_in": "1.3.124",
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/budget_control_decision.json",
-      "notes": "TAX/BAX/CAX governed authority contract."
+      "notes": "CDE/BAX/CDE governed authority contract."
     },
     {
       "artifact_type": "build_admission_record",
@@ -791,7 +791,7 @@
       "introduced_in": "1.3.124",
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/cde_arbitration_input_bundle.json",
-      "notes": "TAX/BAX/CAX governed authority contract."
+      "notes": "CDE/BAX/CDE governed authority contract."
     },
     {
       "artifact_type": "cde_closeout_gate_record",
@@ -1199,7 +1199,7 @@
       "introduced_in": "1.3.124",
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/control_arbitration_policy.json",
-      "notes": "TAX/BAX/CAX governed authority contract."
+      "notes": "CDE/BAX/CDE governed authority contract."
     },
     {
       "artifact_type": "control_arbitration_reason_bundle",
@@ -1212,7 +1212,7 @@
       "introduced_in": "1.3.124",
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/control_arbitration_reason_bundle.json",
-      "notes": "TAX/BAX/CAX governed authority contract."
+      "notes": "CDE/BAX/CDE governed authority contract."
     },
     {
       "artifact_type": "control_arbitration_record",
@@ -1225,7 +1225,7 @@
       "introduced_in": "1.3.124",
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/control_arbitration_record.json",
-      "notes": "TAX/BAX/CAX governed authority contract."
+      "notes": "CDE/BAX/CDE governed authority contract."
     },
     {
       "artifact_type": "control_decision_consistency_result",
@@ -7722,7 +7722,7 @@
       "introduced_in": "1.3.124",
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/system_budget_policy.json",
-      "notes": "TAX/BAX/CAX governed authority contract."
+      "notes": "CDE/BAX/CDE governed authority contract."
     },
     {
       "artifact_type": "system_budget_status",
@@ -7748,7 +7748,7 @@
       "introduced_in": "1.3.124",
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/system_budget_status_v2.json",
-      "notes": "TAX/BAX/CAX governed authority contract."
+      "notes": "CDE/BAX/CDE governed authority contract."
     },
     {
       "artifact_type": "system_end_to_end_validation_result_artifact",
@@ -7853,7 +7853,7 @@
       "introduced_in": "1.3.124",
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/termination_audit_record.json",
-      "notes": "TAX/BAX/CAX governed authority contract."
+      "notes": "CDE/BAX/CDE governed authority contract."
     },
     {
       "artifact_type": "termination_decision",
@@ -7866,7 +7866,7 @@
       "introduced_in": "1.3.124",
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/termination_decision.json",
-      "notes": "TAX/BAX/CAX governed authority contract."
+      "notes": "CDE/BAX/CDE governed authority contract."
     },
     {
       "artifact_type": "termination_policy",
@@ -7879,7 +7879,7 @@
       "introduced_in": "1.3.124",
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/termination_policy.json",
-      "notes": "TAX/BAX/CAX governed authority contract."
+      "notes": "CDE/BAX/CDE governed authority contract."
     },
     {
       "artifact_type": "termination_signal_record",
@@ -7892,7 +7892,7 @@
       "introduced_in": "1.3.124",
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/termination_signal_record.json",
-      "notes": "TAX/BAX/CAX governed authority contract."
+      "notes": "CDE/BAX/CDE governed authority contract."
     },
     {
       "artifact_type": "tlc_handoff_debt_record",

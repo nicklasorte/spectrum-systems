@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/preflight_recovery_outcome_record.schema.json",
+  "title": "Preflight Recovery Outcome Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "initial_preflight_status",
+    "failure_class",
+    "eligibility_decision",
+    "repair_invoked",
+    "repair_execution_status",
+    "rerun_status",
+    "final_decision",
+    "retry_count",
+    "reason_codes",
+    "artifact_refs"
+  ],
+  "properties": {
+    "artifact_type": {"const": "preflight_recovery_outcome_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "initial_preflight_status": {"type": "string", "enum": ["passed", "failed", "skipped"]},
+    "failure_class": {"type": "string", "minLength": 1},
+    "eligibility_decision": {
+      "type": "string",
+      "enum": ["auto_repair_allowed", "auto_repair_forbidden", "escalation_required"]
+    },
+    "repair_invoked": {"type": "boolean"},
+    "repair_execution_status": {
+      "type": "string",
+      "enum": ["not_invoked", "completed", "failed_validation", "failed_execution"]
+    },
+    "rerun_status": {"type": "string", "enum": ["passed", "blocked", "not_run", "not_permitted"]},
+    "final_decision": {
+      "type": "string",
+      "enum": ["repaired_and_passed", "repaired_but_still_blocked", "repair_failed", "repair_not_permitted"]
+    },
+    "retry_count": {"type": "integer", "minimum": 0},
+    "reason_codes": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "artifact_refs": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "minLength": 1}
+    }
+  }
+}

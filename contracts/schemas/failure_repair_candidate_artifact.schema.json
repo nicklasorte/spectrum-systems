@@ -50,7 +50,16 @@
         "branch_policy_violation",
         "dependency_graph_violation",
         "test_expectation_drift",
-        "unknown_failure"
+        "unknown_failure",
+        "missing_required_artifact",
+        "contract_mismatch",
+        "schema_violation",
+        "lineage_missing",
+        "authority_evidence_missing",
+        "invalid_wrapper",
+        "non_repairable_policy_violation",
+        "internal_preflight_error",
+        "unknown_preflight_failure"
       ]
     },
     "safe_to_repair": {
@@ -76,6 +85,20 @@
         "type": "string",
         "minLength": 1
       }
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    },
+    "retry_budget": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rerun_prerequisites": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
     }
   }
 }

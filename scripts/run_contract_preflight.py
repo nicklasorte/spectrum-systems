@@ -52,6 +52,9 @@ from spectrum_systems.modules.runtime.trust_spine_evidence_cohesion import (  # 
     TrustSpineEvidenceCohesionError,
     evaluate_trust_spine_evidence_cohesion,
 )
+from spectrum_systems.modules.runtime.github_pr_autofix_contract_preflight import (  # noqa: E402
+    emit_preflight_block_bundle,
+)
 
 DEFAULT_REQUIRED_SMOKE_TESTS = [
     "tests/test_roadmap_eligibility.py",
@@ -1604,6 +1607,24 @@ def main() -> int:
     Draft202012Validator(preflight_schema, format_checker=FormatChecker()).validate(preflight_artifact)
     preflight_artifact_path = output_dir / "contract_preflight_result_artifact.json"
     preflight_artifact_path.write_text(json.dumps(preflight_artifact, indent=2) + "\n", encoding="utf-8")
+    block_bundle_paths: dict[str, str] = {}
+    if preflight_artifact["control_signal"]["strategy_gate_decision"] in {"BLOCK", "FREEZE"}:
+        bundle = emit_preflight_block_bundle(
+            report=report,
+            preflight_artifact=preflight_artifact,
+            output_dir=output_dir,
+        )
+        block_bundle_paths = {
+            "preflight_block_diagnosis_record": str(output_dir / "preflight_block_diagnosis_record.json"),
+            "preflight_repair_plan_record": str(output_dir / "preflight_repair_plan_record.json"),
+            "failure_repair_candidate_artifact": str(output_dir / "failure_repair_candidate_artifact.json"),
+            "preflight_repair_result_record": str(output_dir / "preflight_repair_result_record.json"),
+            "failure_class": str(bundle["diagnosis"]["failure_class"]),
+            "eligibility_decision": str(bundle["plan"]["eligibility_decision"]),
+        }
+        escalation_path = output_dir / "preflight_human_escalation_record.json"
+        if escalation_path.exists():
+            block_bundle_paths["preflight_human_escalation_record"] = str(escalation_path)
 
     print(
         json.dumps(
@@ -1613,6 +1634,7 @@ def main() -> int:
                 "markdown_report": str(md_path),
                 "preflight_artifact": str(preflight_artifact_path),
                 "strategy_gate_decision": preflight_artifact["control_signal"]["strategy_gate_decision"],
+                "block_bundle": block_bundle_paths,
             },
             indent=2,
         )

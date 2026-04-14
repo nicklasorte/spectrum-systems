@@ -45,8 +45,20 @@ def _is_present(value: Any) -> bool:
 def _load_registry() -> dict[str, Any]:
     if not _REGISTRY_EXAMPLE_PATH.is_file():
         raise SystemRegistryEnforcerError(f"registry example missing: {_REGISTRY_EXAMPLE_PATH}")
-    registry = json.loads(_REGISTRY_EXAMPLE_PATH.read_text(encoding="utf-8"))
-    validate_artifact(registry, "system_registry_artifact")
+    try:
+        registry = json.loads(_REGISTRY_EXAMPLE_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemRegistryEnforcerError(
+            f"registry artifact JSON invalid at {_REGISTRY_EXAMPLE_PATH}: {exc.msg} (line {exc.lineno}, col {exc.colno})"
+        ) from exc
+    try:
+        validate_artifact(registry, "system_registry_artifact")
+    except ValidationError as exc:
+        path = "/".join(str(part) for part in exc.path) or "<root>"
+        raise SystemRegistryEnforcerError(
+            "registry artifact schema validation failed at "
+            f"{path}: {exc.message}. Rebuild with scripts/build_system_registry_artifact.py."
+        ) from exc
     return registry
 
 
@@ -66,6 +78,12 @@ def _registry_indexes() -> tuple[dict[str, dict[str, Any]], dict[str, list[str]]
         if not acronym:
             raise SystemRegistryEnforcerError("system_registry_artifact system acronym is required")
         systems_by_name[acronym] = raw_system
+        downstream = raw_system.get("downstream_consumers", [])
+        if isinstance(downstream, list) and len(downstream) != len(set(str(item) for item in downstream)):
+            raise SystemRegistryEnforcerError(
+                f"registry malformed: duplicate downstream_consumers for {acronym}. "
+                "Rebuild with scripts/build_system_registry_artifact.py."
+            )
         owns = raw_system.get("owns", [])
         if isinstance(owns, list):
             for action in owns:

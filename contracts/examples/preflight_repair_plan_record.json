@@ -3,9 +3,15 @@
   "artifact_version": "1.0.0",
   "schema_version": "1.0.0",
   "plan_id": "plan-1",
-  "repair_category": "missing_preflight_wrapper_or_authority_linkage",
+  "failure_class": "invalid_wrapper",
+  "eligibility_decision": "auto_repair_allowed",
   "allowed_paths": [
     "outputs/contract_preflight/preflight_pqx_task_wrapper.json"
   ],
-  "apply_automatically": true
+  "apply_automatically": true,
+  "escalation_required": false,
+  "max_retry_attempts": 2,
+  "rerun_prerequisites": [
+    "preflight_repair_validation_record"
+  ]
 }

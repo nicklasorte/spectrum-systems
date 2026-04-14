@@ -6,5 +6,11 @@
   "attempt_id": "attempt-1",
   "rerun_preflight_exit_code": 0,
   "rerun_strategy_gate_decision": "ALLOW",
-  "success": true
+  "success": true,
+  "rerun_allowed": true,
+  "rerun_requires": [
+    "preflight_repair_validation_record"
+  ],
+  "escalation_required": false,
+  "next_invocation_surface": "scripts/run_github_pr_autofix_contract_preflight.py"
 }

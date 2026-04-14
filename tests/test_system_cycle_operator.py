@@ -955,7 +955,7 @@ def test_observability_artifacts_are_deterministic() -> None:
 
 def test_policy_candidate_generation_and_canary_rollout() -> None:
     integration_inputs = _integration_inputs()
-    integration_inputs["judgment_records"] = [{"judgment_ref": "judgment_record:JDG-1111AAAABBBB"}]
+    integration_inputs["judgment_records"] = [{"judgment_ref": "judgment_record:JDX-1111AAAABBBB"}]
     integration_inputs["policy_eval_results"] = [{"eval_ref": "eval_result:EVR-1111AAAABBBB", "passed": True}]
     integration_inputs["correction_recurrence_threshold"] = 1
     integration_inputs["policy_recurrence_threshold"] = 1
@@ -994,7 +994,7 @@ def test_policy_candidate_generation_and_canary_rollout() -> None:
 
 def test_policy_conflict_blocks_activation_fail_closed() -> None:
     integration_inputs = _integration_inputs()
-    integration_inputs["judgment_records"] = [{"judgment_ref": "judgment_record:JDG-1111AAAABBBB"}]
+    integration_inputs["judgment_records"] = [{"judgment_ref": "judgment_record:JDX-1111AAAABBBB"}]
     integration_inputs["policy_eval_results"] = [{"eval_ref": "eval_result:EVR-1111AAAABBBB", "passed": True}]
     integration_inputs["correction_recurrence_threshold"] = 1
     integration_inputs["policy_recurrence_threshold"] = 1

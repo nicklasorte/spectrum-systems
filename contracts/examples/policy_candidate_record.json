@@ -1,7 +1,7 @@
 {
   "policy_candidate_id": "PCD-1A2B3C4D5E6F",
   "source_judgment_refs": [
-    "judgment_record:JDG-1A2B3C4D5E6F"
+    "judgment_record:JDX-1A2B3C4D5E6F"
   ],
   "source_correction_pattern_refs": [
     "correction_pattern_record:CPR-1A2B3C4D5E6F"

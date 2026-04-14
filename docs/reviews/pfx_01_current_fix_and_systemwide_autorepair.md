@@ -2,7 +2,7 @@
 
 ## Exact root cause (artifact-based)
 From `outputs/contract_preflight/contract_preflight_report.json` and sibling artifacts, the BLOCK was caused by test failures, not by missing wrapper/context or schema-example failures:
-1. `producer_failures`: `tests/test_done_certification.py` failing after strict TAX/BAX/CAX lineage gating was made unconditional in active runtime mode.
+1. `producer_failures`: `tests/test_done_certification.py` failing after strict CDE/BAX/CDE lineage gating was made unconditional in active runtime mode.
 2. `producer_failures`: `tests/test_system_handoff_integrity.py` failing because canonical handoff path `TPA -> FRE -> RIL -> CDE` was replaced instead of extended.
 3. `consumer_failures`: mirrored done-certification failure.
 
@@ -12,7 +12,7 @@ No `missing_required_surface`, `pqx_required_context_enforcement` block, or trus
 - `spectrum_systems/modules/governance/done_certification.py`
   - narrowed strict authority-lineage enforcement to explicit strict mode (`require_authority_lineage=true`) or explicit lineage refs present.
 - `spectrum_systems/modules/runtime/system_registry_enforcer.py`
-  - restored legacy canonical handoff edges and added TAX/BAX/CAX edges as extension rather than replacement.
+  - restored legacy canonical handoff edges and added CDE/BAX/CDE edges as extension rather than replacement.
 - `tests/test_done_certification.py`
   - added strict-mode coverage asserting fail-closed block when lineage is explicitly required but missing.
 
@@ -84,3 +84,5 @@ Auto-repair blocks when:
 ## Remaining risks
 - Non-wrapper categories are currently diagnosis+plan only (no automatic mutation) to preserve bounded safety.
 - Future extension should add explicitly approved mutation policies per category with dedicated tests.
+
+> Registry alignment note: see docs/architecture/system_registry.md.

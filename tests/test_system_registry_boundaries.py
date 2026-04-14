@@ -4,6 +4,8 @@ from typing import Dict, List
 
 import pytest
 from jsonschema import Draft202012Validator
+from scripts.build_system_registry_artifact import build_system_registry_artifact
+from scripts.build_system_registry_artifact import SystemRegistryBuildError
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -140,3 +142,52 @@ def test_allowed_interaction_edges_present() -> None:
         ("RIL", "CDE"),
     }
     assert expected.issubset(edge_pairs)
+
+
+def test_registry_builder_deduplicates_downstream_consumers(tmp_path: Path) -> None:
+    registry = _load_registry()
+    registry["systems"][0]["downstream_consumers"] = ["CDE", "CDE", "SEL", "SEL"]
+    input_path = tmp_path / "registry.json"
+    output_path = tmp_path / "registry.out.json"
+    input_path.write_text(json.dumps(registry), encoding="utf-8")
+
+    build_system_registry_artifact(input_path=input_path, output_path=output_path)
+    built = _load_json(output_path)
+    assert built["systems"][0]["downstream_consumers"] == ["CDE", "SEL"]
+
+
+def test_registry_builder_output_validates_against_schema(tmp_path: Path) -> None:
+    output_path = tmp_path / "registry.out.json"
+    build_system_registry_artifact(input_path=EXAMPLE_PATH, output_path=output_path)
+    schema = _load_json(SCHEMA_PATH)
+    validator = Draft202012Validator(schema)
+    errors = list(validator.iter_errors(_load_json(output_path)))
+    assert errors == []
+
+
+def test_canonical_example_is_synced_with_builder_output(tmp_path: Path) -> None:
+    rebuilt = tmp_path / "registry.rebuilt.json"
+    build_system_registry_artifact(input_path=EXAMPLE_PATH, output_path=rebuilt)
+    assert _load_json(EXAMPLE_PATH) == _load_json(rebuilt)
+
+
+def test_registry_build_fails_closed_on_duplicate_single_owner_responsibility(tmp_path: Path) -> None:
+    registry = _load_registry()
+    systems = registry["systems"]
+    systems[0]["owns"].append("closure_decisions")
+    input_path = tmp_path / "registry.bad.json"
+    input_path.write_text(json.dumps(registry), encoding="utf-8")
+
+    with pytest.raises(SystemRegistryBuildError, match="closure_decisions:expected_owner=CDE"):
+        build_system_registry_artifact(input_path=input_path, output_path=tmp_path / "out.json")
+
+
+def test_registry_build_fails_closed_on_duplicate_acronym(tmp_path: Path) -> None:
+    registry = _load_registry()
+    duplicate = dict(registry["systems"][0])
+    duplicate["full_name"] = f"{duplicate['full_name']} duplicate"
+    registry["systems"].append(duplicate)
+    input_path = tmp_path / "registry.dup.json"
+    input_path.write_text(json.dumps(registry), encoding="utf-8")
+    with pytest.raises(SystemRegistryBuildError, match="duplicate_acronym"):
+        build_system_registry_artifact(input_path=input_path, output_path=tmp_path / "out.json")
