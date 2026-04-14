@@ -1,0 +1,97 @@
+{
+  "artifact_type": "historical_pytest_exposure_backtest_result",
+  "schema_version": "1.0.0",
+  "audit_window": {
+    "window_label": "historical_local_scan",
+    "scan_roots": [
+      "/workspace/spectrum-systems/outputs",
+      "/workspace/spectrum-systems/artifacts",
+      "/workspace/spectrum-systems/data"
+    ],
+    "artifact_globs": [
+      "**/contract_preflight_result_artifact.json"
+    ],
+    "max_items": 200
+  },
+  "evidence_sources": {
+    "audit_window": {
+      "window_label": "historical_local_scan",
+      "scan_roots": [
+        "/workspace/spectrum-systems/outputs",
+        "/workspace/spectrum-systems/artifacts",
+        "/workspace/spectrum-systems/data"
+      ],
+      "artifact_globs": [
+        "**/contract_preflight_result_artifact.json"
+      ],
+      "max_items": 200
+    },
+    "source_type": "repo_local_artifacts",
+    "evidence_priority": [
+      "governed_artifacts",
+      "workflow_evidence",
+      "local_repo_evidence"
+    ]
+  },
+  "evaluated_items": 3,
+  "suspect_items": [
+    "run-legacy-001",
+    "run-legacy-002"
+  ],
+  "classifications": [
+    {
+      "identifier": "run-legacy-001",
+      "type": "run",
+      "evidence_refs": [
+        "outputs/history/run-legacy-001/contract_preflight_result_artifact.json"
+      ],
+      "classification": "suspect_missing_pytest_execution",
+      "reasons": [
+        "MISSING_OR_EMPTY_PYTEST_EXECUTION",
+        "MISSING_OR_NONCANONICAL_PYTEST_EXECUTION_REF"
+      ],
+      "confidence": "high",
+      "recommended_followup": [
+        "Retrieve canonical pytest execution record evidence for the item before trust assertions."
+      ]
+    },
+    {
+      "identifier": "run-legacy-002",
+      "type": "run",
+      "evidence_refs": [
+        "outputs/history/run-legacy-002/contract_preflight_result_artifact.json"
+      ],
+      "classification": "insufficient_evidence_to_determine",
+      "reasons": [
+        "MISSING_TRACE_CONTEXT",
+        "NON_TRUSTING_DECISION_STATE"
+      ],
+      "confidence": "low",
+      "recommended_followup": [
+        "Retrieve historical decision context; trust could not be inferred from available artifacts."
+      ]
+    },
+    {
+      "identifier": "run-modern-003",
+      "type": "run",
+      "evidence_refs": [
+        "outputs/history/run-modern-003/contract_preflight_result_artifact.json",
+        "outputs/contract_preflight/pytest_execution_record.json",
+        "outputs/contract_preflight/pytest_selection_integrity_result.json"
+      ],
+      "classification": "trustworthy",
+      "reasons": [],
+      "confidence": "high",
+      "recommended_followup": [
+        "No immediate operator follow-up required for this item."
+      ]
+    }
+  ],
+  "summary_counts": {
+    "insufficient_evidence_to_determine": 1,
+    "suspect_missing_pytest_execution": 1,
+    "trustworthy": 1
+  },
+  "final_decision": "BLOCK",
+  "generated_at": "2026-04-14T00:00:00Z"
+}

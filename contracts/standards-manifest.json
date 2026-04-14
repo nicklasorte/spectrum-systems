@@ -3048,6 +3048,19 @@
       "notes": "CDX-01 next-phase governed contract surface."
     },
     {
+      "artifact_type": "historical_pytest_exposure_backtest_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.135",
+      "last_updated_in": "1.3.135",
+      "example_path": "contracts/examples/historical_pytest_exposure_backtest_result.json",
+      "notes": "BXT-01 deterministic historical trust-exposure backtest output with explicit uncertainty classification."
+    },
+    {
       "artifact_type": "hitl_override_decision",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -6007,6 +6020,45 @@
       "notes": "PYX-02 canonical preflight-owned pytest execution evidence artifact with required same-run provenance binding fields for pull_request trust gating fail-closed checks."
     },
     {
+      "artifact_type": "pytest_selection_integrity_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.84",
+      "last_updated_in": "1.3.201",
+      "example_path": "contracts/examples/pytest_selection_integrity_result.json",
+      "notes": "TSI-01 governed fail-closed PR pytest selection integrity evidence artifact with deterministic linkage to canonical pytest_execution_record provenance."
+    },
+    {
+      "artifact_type": "pytest_trust_gap_audit_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.84",
+      "last_updated_in": "1.0.84",
+      "example_path": "contracts/examples/pytest_trust_gap_audit_result.json",
+      "notes": "TSI-01 deterministic read-only audit artifact for historical pytest trust-gap evidence."
+    },
+    {
+      "artifact_type": "pytest_trust_gap_backtest_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.135",
+      "last_updated_in": "1.3.135",
+      "example_path": "contracts/examples/pytest_trust_gap_backtest_result.json",
+      "notes": "AUD-02 deterministic read-only backtest artifact classifying recent PR/preflight trust-gap exposure and confidence."
+    },
+    {
       "artifact_type": "qos_backpressure_signal",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -6877,6 +6929,19 @@
       "last_updated_in": "1.3.18",
       "example_path": "contracts/examples/repo_review_snapshot.json",
       "notes": "MAP-001 governed repository review snapshot binding review markdown and handoff artifacts to deterministic eval/control inputs."
+    },
+    {
+      "artifact_type": "required_check_alignment_audit_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.135",
+      "last_updated_in": "1.3.135",
+      "example_path": "contracts/examples/required_check_alignment_audit_result.json",
+      "notes": "AUD-02 deterministic required-status-check alignment artifact proving workflow/policy consistency and explicit unknown live branch-protection state."
     },
     {
       "artifact_type": "required_eval_registry",
@@ -8285,6 +8350,19 @@
       "notes": "Governed pytest inventory integrity artifact for PR/default suite discovery and regression enforcement."
     },
     {
+      "artifact_type": "three_letter_system_enforcement_audit_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.135",
+      "last_updated_in": "1.3.135",
+      "example_path": "contracts/examples/three_letter_system_enforcement_audit_result.json",
+      "notes": "BXT-01 deterministic 3LS ownership and gate expectation audit result with fail-closed violations."
+    },
+    {
       "artifact_type": "tlc_handoff_debt_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -8804,58 +8882,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "pytest_selection_integrity_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.84",
-      "last_updated_in": "1.3.201",
-      "example_path": "contracts/examples/pytest_selection_integrity_result.json",
-      "notes": "TSI-01 governed fail-closed PR pytest selection integrity evidence artifact with deterministic linkage to canonical pytest_execution_record provenance."
-    },
-    {
-      "artifact_type": "pytest_trust_gap_audit_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.84",
-      "last_updated_in": "1.0.84",
-      "example_path": "contracts/examples/pytest_trust_gap_audit_result.json",
-      "notes": "TSI-01 deterministic read-only audit artifact for historical pytest trust-gap evidence."
-    },
-    {
-      "artifact_type": "pytest_trust_gap_backtest_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.135",
-      "last_updated_in": "1.3.135",
-      "example_path": "contracts/examples/pytest_trust_gap_backtest_result.json",
-      "notes": "AUD-02 deterministic read-only backtest artifact classifying recent PR/preflight trust-gap exposure and confidence."
-    },
-    {
-      "artifact_type": "required_check_alignment_audit_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.135",
-      "last_updated_in": "1.3.135",
-      "example_path": "contracts/examples/required_check_alignment_audit_result.json",
-      "notes": "AUD-02 deterministic required-status-check alignment artifact proving workflow/policy consistency and explicit unknown live branch-protection state."
     }
   ]
 }

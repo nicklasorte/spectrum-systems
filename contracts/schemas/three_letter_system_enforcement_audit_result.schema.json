@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/three_letter_system_enforcement_audit_result.schema.json",
+  "title": "Three Letter System Enforcement Audit Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "policy_version",
+    "systems_evaluated",
+    "fully_covered_systems",
+    "ambiguous_paths",
+    "unowned_system_like_paths",
+    "ownership_drift_findings",
+    "missing_gate_expectations",
+    "violations",
+    "final_decision",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_type": {"const": "three_letter_system_enforcement_audit_result"},
+    "schema_version": {"const": "1.0.0"},
+    "policy_version": {"type": "string", "minLength": 1},
+    "systems_evaluated": {"type": "integer", "minimum": 0},
+    "fully_covered_systems": {"type": "array", "items": {"type": "string", "pattern": "^[A-Z0-9]{3}$"}, "uniqueItems": true},
+    "ambiguous_paths": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "unowned_system_like_paths": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "ownership_drift_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "owners", "reason"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "owners": {"type": "array", "items": {"type": "string", "pattern": "^[A-Z0-9]{3}$"}, "minItems": 2, "uniqueItems": true},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "missing_gate_expectations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["system", "path", "missing_requirements"],
+        "properties": {
+          "system": {"type": "string", "pattern": "^[A-Z0-9]{3}$"},
+          "path": {"type": "string", "minLength": 1},
+          "missing_requirements": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true}
+        }
+      }
+    },
+    "violations": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "final_decision": {"type": "string", "enum": ["PASS", "WARN", "BLOCK"]},
+    "generated_at": {"type": "string", "format": "date-time"}
+  }
+}

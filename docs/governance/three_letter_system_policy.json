@@ -1,0 +1,58 @@
+{
+  "policy_version": "1.0.0",
+  "default_decision": "fail_closed",
+  "system_like_path_prefixes": [
+    "scripts/",
+    "spectrum_systems/modules/",
+    ".github/workflows/",
+    "docs/governance/",
+    "contracts/governance/"
+  ],
+  "reserved_or_transitional_paths": [
+    "docs/reviews/",
+    "docs/review-actions/",
+    "contracts/examples/"
+  ],
+  "systems": {
+    "TPA": {
+      "owned_paths": [
+        "spectrum_systems/modules/runtime/",
+        "scripts/run_contract_preflight.py",
+        "docs/governance/required_pr_checks.json"
+      ],
+      "criticality": "high",
+      "minimum_required_tests": [
+        "tests/test_contract_preflight.py",
+        "tests/test_pytest_trust_gap_audit.py"
+      ],
+      "artifact_boundary_coverage_mandatory": true,
+      "pytest_visibility_mandatory": true,
+      "system_registry_review_mandatory": true
+    },
+    "TLC": {
+      "owned_paths": [
+        ".github/workflows/artifact-boundary.yml"
+      ],
+      "criticality": "high",
+      "minimum_required_tests": [
+        "tests/test_artifact_boundary_workflow_pytest_enforcement.py"
+      ],
+      "artifact_boundary_coverage_mandatory": true,
+      "pytest_visibility_mandatory": true,
+      "system_registry_review_mandatory": true
+    },
+    "PRG": {
+      "owned_paths": [
+        "docs/architecture/system_registry.md",
+        "contracts/governance/system_registry_guard_policy.json"
+      ],
+      "criticality": "high",
+      "minimum_required_tests": [
+        "tests/test_system_registry_guard.py"
+      ],
+      "artifact_boundary_coverage_mandatory": true,
+      "pytest_visibility_mandatory": false,
+      "system_registry_review_mandatory": true
+    }
+  }
+}

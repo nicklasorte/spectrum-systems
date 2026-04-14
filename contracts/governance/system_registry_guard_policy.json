@@ -13,34 +13,119 @@
     "replay": "REP"
   },
   "responsibility_clusters": {
-    "context": ["context", "context_bundle", "contextual"],
-    "judgment": ["judgment", "judgement", "decision"],
-    "calibration": ["calibration", "confidence", "correctness"],
-    "drift": ["drift", "deviation", "regression"],
-    "entropy": ["entropy", "decay"],
-    "release": ["release", "rollout", "freeze", "rollback"],
-    "canary": ["canary"],
-    "replay": ["replay", "reproducibility"],
-    "external_runtime": ["external", "runtime", "provenance"],
-    "cost": ["cost", "budget", "latency"],
-    "capacity": ["capacity", "throughput"],
-    "queue_backpressure": ["queue", "backpressure", "retry"],
-    "policy": ["policy", "admissibility", "scope"],
-    "closure": ["closure", "closeout", "promotion"],
-    "readiness": ["readiness", "ready"],
-    "enforcement": ["enforcement", "guard", "block"],
-    "execution": ["execution", "execute", "runner"],
-    "override_hitl": ["override", "hitl", "human"]
+    "context": [
+      "context",
+      "context_bundle",
+      "contextual"
+    ],
+    "judgment": [
+      "judgment",
+      "judgement",
+      "decision"
+    ],
+    "calibration": [
+      "calibration",
+      "confidence",
+      "correctness"
+    ],
+    "drift": [
+      "drift",
+      "deviation",
+      "regression"
+    ],
+    "entropy": [
+      "entropy",
+      "decay"
+    ],
+    "release": [
+      "release",
+      "rollout",
+      "freeze",
+      "rollback"
+    ],
+    "canary": [
+      "canary"
+    ],
+    "replay": [
+      "replay",
+      "reproducibility"
+    ],
+    "external_runtime": [
+      "external",
+      "runtime",
+      "provenance"
+    ],
+    "cost": [
+      "cost",
+      "budget",
+      "latency"
+    ],
+    "capacity": [
+      "capacity",
+      "throughput"
+    ],
+    "queue_backpressure": [
+      "queue",
+      "backpressure",
+      "retry"
+    ],
+    "policy": [
+      "policy",
+      "admissibility",
+      "scope"
+    ],
+    "closure": [
+      "closure",
+      "closeout",
+      "promotion"
+    ],
+    "readiness": [
+      "readiness",
+      "ready"
+    ],
+    "enforcement": [
+      "enforcement",
+      "guard",
+      "block"
+    ],
+    "execution": [
+      "execution",
+      "execute",
+      "runner"
+    ],
+    "override_hitl": [
+      "override",
+      "hitl",
+      "human"
+    ]
   },
   "synonym_groups": {
-    "context": ["retrieval", "retrieve"],
-    "judgment": ["adjudication", "verdict"],
-    "drift": ["drifting"],
-    "release": ["deployment"],
-    "policy": ["governance"],
-    "closure": ["finalization"],
-    "execution": ["run"],
-    "override_hitl": ["operator"]
+    "context": [
+      "retrieval",
+      "retrieve"
+    ],
+    "judgment": [
+      "adjudication",
+      "verdict"
+    ],
+    "drift": [
+      "drifting"
+    ],
+    "release": [
+      "deployment"
+    ],
+    "policy": [
+      "governance"
+    ],
+    "closure": [
+      "finalization"
+    ],
+    "execution": [
+      "run"
+    ],
+    "override_hitl": [
+      "operator"
+    ]
   },
   "phrase_mappings": {
     "context owner": "context",
@@ -54,5 +139,33 @@
     "fail closed": "enforcement",
     "execute work": "execution",
     "human override": "override_hitl"
-  }
+  },
+  "system_like_path_prefixes": [
+    "scripts/",
+    "spectrum_systems/modules/",
+    ".github/workflows/",
+    "docs/governance/",
+    "contracts/governance/"
+  ],
+  "reserved_or_transitional_path_prefixes": [
+    "docs/reviews/",
+    "docs/review-actions/",
+    "contracts/examples/"
+  ],
+  "require_three_letter_system_tokens": false,
+  "non_authority_path_prefixes": [
+    "tests/",
+    "contracts/examples/",
+    "docs/reviews/",
+    "docs/review-actions/"
+  ],
+  "non_authority_exact_paths": [
+    "contracts/standards-manifest.json"
+  ],
+  "authoritative_owner_scan_suffixes": [
+    ".md",
+    ".py",
+    ".txt",
+    ".rst"
+  ]
 }

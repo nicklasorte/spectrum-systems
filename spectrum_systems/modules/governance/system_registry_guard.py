@@ -50,7 +50,7 @@ _SYSTEM_MAP_ENTRY = re.compile(r"^\s*-\s+\*\*([A-Z0-9]{2,8})\*\*\s+—\s+(.*)$")
 _SYSTEM_CANDIDATE_PATTERNS = [
     re.compile(r"^\s*###\s+([A-Z0-9]{3})\s*$"),
     re.compile(r"\*\*([A-Z0-9]{3})\*\*\s+—"),
-    re.compile(r"\bacronym\s*:\s*`?([A-Z0-9]{3})`?", re.IGNORECASE),
+    re.compile(r"\bacronym\s*:\s*`?([A-Z0-9]{3})`?"),
     re.compile(r"\b([A-Z0-9]{3})\s+system\b"),
 ]
 _OWNER_CLAIM_PATTERNS = [
@@ -289,14 +289,68 @@ def evaluate_system_registry_guard(
     registration_failures: list[dict[str, Any]] = []
     protected_violations: list[dict[str, Any]] = []
     acronym_collisions: list[dict[str, Any]] = []
+    unowned_system_like_paths: list[dict[str, Any]] = []
+    ambiguous_system_like_paths: list[dict[str, Any]] = []
     required_actions: list[str] = []
     reason_codes: set[str] = set()
+    policy_system_like_prefixes = tuple(
+        str(item)
+        for item in (policy.get("system_like_path_prefixes") or [])
+        if isinstance(item, str) and item.strip()
+    )
+    non_authority_prefixes = tuple(
+        str(item)
+        for item in (policy.get("non_authority_path_prefixes") or [])
+        if isinstance(item, str) and item.strip()
+    )
+    non_authority_exact_paths = {
+        str(item)
+        for item in (policy.get("non_authority_exact_paths") or [])
+        if isinstance(item, str) and item.strip()
+    }
+    authoritative_suffixes = tuple(
+        str(item)
+        for item in (policy.get("authoritative_owner_scan_suffixes") or [".md", ".py", ".txt", ".rst"])
+        if isinstance(item, str) and item.strip()
+    )
+    policy_reserved_prefixes = tuple(
+        str(item)
+        for item in (policy.get("reserved_or_transitional_path_prefixes") or [])
+        if isinstance(item, str) and item.strip()
+    )
+
+    owner_path_hints: dict[str, list[str]] = {}
+    for acronym, system in registry_model.systems.items():
+        if system.status not in {"active", "placeholder", "deprecated"}:
+            continue
+        owners = owner_path_hints.setdefault(acronym, [])
+        owners.append(f"docs/architecture/system_registry.md::{acronym}")
+        for own in system.owns:
+            token = str(own or "").strip().lower().replace(" ", "_")
+            if token:
+                owners.append(token)
+
+    diagnostics: list[dict[str, Any]] = []
+
+    def _is_non_authority_path(rel_path: str) -> bool:
+        if rel_path in non_authority_exact_paths:
+            return True
+        return bool(non_authority_prefixes and rel_path.startswith(non_authority_prefixes))
+
+    def _is_authoritative_scan_path(rel_path: str) -> bool:
+        if _is_non_authority_path(rel_path):
+            return False
+        if not authoritative_suffixes:
+            return True
+        return rel_path.endswith(authoritative_suffixes)
 
     for rel_path in changed_paths:
         path = repo_root / rel_path
         if not path.is_file():
             continue
         if rel_path == "docs/architecture/system_registry.md":
+            continue
+        if not _is_authoritative_scan_path(rel_path):
             continue
         try:
             content = path.read_text(encoding="utf-8")
@@ -332,6 +386,16 @@ def evaluate_system_registry_guard(
                                 "line": idx,
                                 "system": subject,
                                 "reason": "removed/deprecated system referenced as active owner claim",
+                                "resolution_category": "remove",
+                            }
+                        )
+                        diagnostics.append(
+                            {
+                                "reason_code": "REMOVED_SYSTEM_REFERENCE",
+                                "file": rel_path,
+                                "line": idx,
+                                "symbol": subject,
+                                "resolution_category": "remove",
                             }
                         )
                         reason_codes.add("REMOVED_SYSTEM_REFERENCE")
@@ -346,6 +410,18 @@ def evaluate_system_registry_guard(
                                     "claimed_owner": subject,
                                     "canonical_owner": owner,
                                     "reason": "protected authority seam claimed by non-owner",
+                                    "resolution_category": "fold_into_owner",
+                                }
+                            )
+                            diagnostics.append(
+                                {
+                                    "reason_code": "PROTECTED_AUTHORITY_VIOLATION",
+                                    "file": rel_path,
+                                    "line": idx,
+                                    "symbol": subject,
+                                    "responsibility": seam,
+                                    "canonical_owner": owner,
+                                    "resolution_category": "fold_into_owner",
                                 }
                             )
                             reason_codes.add("PROTECTED_AUTHORITY_VIOLATION")
@@ -362,6 +438,18 @@ def evaluate_system_registry_guard(
                                     "cluster": cluster,
                                     "canonical_owner": canonical_owner,
                                     "reason": "semantic ownership overlap",
+                                    "resolution_category": "fold_into_owner",
+                                }
+                            )
+                            diagnostics.append(
+                                {
+                                    "reason_code": "SHADOW_OWNERSHIP_OVERLAP",
+                                    "file": rel_path,
+                                    "line": idx,
+                                    "symbol": subject,
+                                    "cluster": cluster,
+                                    "canonical_owner": canonical_owner,
+                                    "resolution_category": "fold_into_owner",
                                 }
                             )
                             reason_codes.add("SHADOW_OWNERSHIP_OVERLAP")
@@ -376,6 +464,18 @@ def evaluate_system_registry_guard(
                                     "responsibility": responsibility,
                                     "canonical_owner": owner,
                                     "reason": "direct ownership overlap",
+                                    "resolution_category": "fold_into_owner",
+                                }
+                            )
+                            diagnostics.append(
+                                {
+                                    "reason_code": "DIRECT_OWNERSHIP_OVERLAP",
+                                    "file": rel_path,
+                                    "line": idx,
+                                    "symbol": subject,
+                                    "responsibility": responsibility,
+                                    "canonical_owner": owner,
+                                    "resolution_category": "fold_into_owner",
                                 }
                             )
                             reason_codes.add("DIRECT_OWNERSHIP_OVERLAP")
@@ -401,6 +501,16 @@ def evaluate_system_registry_guard(
                             "line": candidate_entry["line"],
                             "system": candidate,
                             "reason": "new system registry entry missing required canonical fields",
+                            "resolution_category": "register",
+                        }
+                    )
+                    diagnostics.append(
+                        {
+                            "reason_code": "INCOMPLETE_SYSTEM_REGISTRATION",
+                            "file": candidate_entry["file"],
+                            "line": candidate_entry["line"],
+                            "symbol": candidate,
+                            "resolution_category": "register",
                         }
                     )
                     reason_codes.add("INCOMPLETE_SYSTEM_REGISTRATION")
@@ -411,6 +521,16 @@ def evaluate_system_registry_guard(
                             "line": candidate_entry["line"],
                             "system": candidate,
                             "reason": "removed/deprecated system referenced as active candidate",
+                            "resolution_category": "remove",
+                        }
+                    )
+                    diagnostics.append(
+                        {
+                            "reason_code": "REMOVED_SYSTEM_REFERENCE",
+                            "file": candidate_entry["file"],
+                            "line": candidate_entry["line"],
+                            "symbol": candidate,
+                            "resolution_category": "remove",
                         }
                     )
                     reason_codes.add("REMOVED_SYSTEM_REFERENCE")
@@ -422,6 +542,16 @@ def evaluate_system_registry_guard(
                         "line": candidate_entry["line"],
                         "system": candidate,
                         "reason": "SRG must not be introduced as canonical system owner",
+                        "resolution_category": "remove",
+                    }
+                )
+                diagnostics.append(
+                    {
+                        "reason_code": "SRG_OWNER_INTRODUCTION_FORBIDDEN",
+                        "file": candidate_entry["file"],
+                        "line": candidate_entry["line"],
+                        "symbol": candidate,
+                        "resolution_category": "remove",
                     }
                 )
                 reason_codes.add("SRG_OWNER_INTRODUCTION_FORBIDDEN")
@@ -433,6 +563,16 @@ def evaluate_system_registry_guard(
                         "line": candidate_entry["line"],
                         "system": candidate,
                         "reason": "new system introduced without same-change registry update",
+                        "resolution_category": "register",
+                    }
+                )
+                diagnostics.append(
+                    {
+                        "reason_code": "NEW_SYSTEM_MISSING_REGISTRATION",
+                        "file": candidate_entry["file"],
+                        "line": candidate_entry["line"],
+                        "symbol": candidate,
+                        "resolution_category": "register",
                     }
                 )
                 reason_codes.add("NEW_SYSTEM_MISSING_REGISTRATION")
@@ -447,6 +587,16 @@ def evaluate_system_registry_guard(
                             "line": candidate_entry["line"],
                             "system": candidate,
                             "reason": "new system registry entry missing required canonical fields",
+                            "resolution_category": "register",
+                        }
+                    )
+                    diagnostics.append(
+                        {
+                            "reason_code": "INCOMPLETE_SYSTEM_REGISTRATION",
+                            "file": candidate_entry["file"],
+                            "line": candidate_entry["line"],
+                            "symbol": candidate,
+                            "resolution_category": "register",
                         }
                     )
                     reason_codes.add("INCOMPLETE_SYSTEM_REGISTRATION")
@@ -458,9 +608,90 @@ def evaluate_system_registry_guard(
                         "line": candidate_entry["line"],
                         "system": candidate,
                         "reason": "acronym collision with retired namespace",
+                        "resolution_category": "remove",
+                    }
+                )
+                diagnostics.append(
+                    {
+                        "reason_code": "ACRONYM_NAMESPACE_COLLISION",
+                        "file": candidate_entry["file"],
+                        "line": candidate_entry["line"],
+                        "symbol": candidate,
+                        "resolution_category": "remove",
                     }
                 )
                 reason_codes.add("ACRONYM_NAMESPACE_COLLISION")
+
+    if bool(policy.get("require_three_letter_system_tokens")):
+        for rel_path in changed_paths:
+            if rel_path == "docs/architecture/system_registry.md":
+                continue
+            if policy_reserved_prefixes and rel_path.startswith(policy_reserved_prefixes):
+                continue
+            if policy_system_like_prefixes and not rel_path.startswith(policy_system_like_prefixes):
+                continue
+            if _is_non_authority_path(rel_path):
+                continue
+            path = repo_root / rel_path
+            if not path.is_file():
+                continue
+            try:
+                content = path.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                continue
+            lines = content.splitlines()
+            has_system_semantics = False
+            for line in lines:
+                if any(pattern.search(line) for pattern in _OWNER_CLAIM_PATTERNS) or any(
+                    pattern.search(line) for pattern in _SYSTEM_CANDIDATE_PATTERNS
+                ):
+                    has_system_semantics = True
+                    break
+            if not has_system_semantics:
+                continue
+
+            matched_owners: list[str] = []
+            lowered_path = rel_path.lower()
+            for acronym, hints in owner_path_hints.items():
+                if any(hint and hint in lowered_path for hint in hints):
+                    matched_owners.append(acronym)
+            if not matched_owners:
+                unowned_system_like_paths.append(
+                    {
+                        "file": rel_path,
+                        "reason": "system-like path changed without detectable 3-letter owner alignment",
+                        "resolution_category": "convert_to_non_authority_artifact",
+                    }
+                )
+                diagnostics.append(
+                    {
+                        "reason_code": "UNOWNED_SYSTEM_SURFACE",
+                        "file": rel_path,
+                        "line": None,
+                        "symbol": None,
+                        "resolution_category": "convert_to_non_authority_artifact",
+                    }
+                )
+                reason_codes.add("UNOWNED_SYSTEM_SURFACE")
+            elif len(set(matched_owners)) > 1:
+                ambiguous_system_like_paths.append(
+                    {
+                        "file": rel_path,
+                        "candidate_owners": sorted(set(matched_owners)),
+                        "reason": "multiple 3-letter systems appear to match changed system-like path",
+                        "resolution_category": "fold_into_owner",
+                    }
+                )
+                diagnostics.append(
+                    {
+                        "reason_code": "AMBIGUOUS_SYSTEM_SURFACE",
+                        "file": rel_path,
+                        "line": None,
+                        "symbol": None,
+                        "resolution_category": "fold_into_owner",
+                    }
+                )
+                reason_codes.add("AMBIGUOUS_SYSTEM_SURFACE")
 
     if overlaps_found:
         required_actions.append("Use the canonical owner responsibilities from docs/architecture/system_registry.md.")
@@ -472,6 +703,10 @@ def evaluate_system_registry_guard(
         required_actions.append("Mark historical systems as non-authoritative historical references, not active owners.")
     if protected_violations:
         required_actions.append("Restore protected authority seams to their canonical owner system.")
+    if unowned_system_like_paths:
+        required_actions.append("Declare explicit 3-letter ownership for changed system-like paths or mark them reserved/transitional.")
+    if ambiguous_system_like_paths:
+        required_actions.append("Resolve ambiguous 3-letter ownership claims to a single canonical owner per changed path.")
 
     failed = bool(
         overlaps_found
@@ -480,7 +715,18 @@ def evaluate_system_registry_guard(
         or registration_failures
         or protected_violations
         or acronym_collisions
+        or unowned_system_like_paths
+        or ambiguous_system_like_paths
     )
+
+    unique_diagnostics: list[dict[str, Any]] = []
+    seen_diagnostics: set[str] = set()
+    for item in diagnostics:
+        key = _stable_hash(item)
+        if key in seen_diagnostics:
+            continue
+        seen_diagnostics.add(key)
+        unique_diagnostics.append(item)
 
     return {
         "artifact_type": "system_registry_guard_result",
@@ -495,8 +741,11 @@ def evaluate_system_registry_guard(
         "registration_failures": registration_failures,
         "protected_authority_violations": protected_violations,
         "acronym_collisions": acronym_collisions,
+        "unowned_system_like_paths": unowned_system_like_paths,
+        "ambiguous_system_like_paths": ambiguous_system_like_paths,
         "required_actions": sorted(set(required_actions)),
         "normalized_reason_codes": sorted(reason_codes),
+        "diagnostics": unique_diagnostics,
         "registry_digest_or_version": registry_model.source_digest,
         "trace": {
             "registry_path": registry_model.source_path,

@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/historical_pytest_exposure_backtest_result.schema.json",
+  "title": "Historical Pytest Exposure Backtest Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "audit_window",
+    "evidence_sources",
+    "evaluated_items",
+    "suspect_items",
+    "classifications",
+    "summary_counts",
+    "final_decision",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_type": {"const": "historical_pytest_exposure_backtest_result"},
+    "schema_version": {"const": "1.0.0"},
+    "audit_window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["window_label", "scan_roots", "artifact_globs", "max_items"],
+      "properties": {
+        "window_label": {"type": "string", "minLength": 1},
+        "scan_roots": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "artifact_globs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "max_items": {"type": "integer", "minimum": 1}
+      }
+    },
+    "evidence_sources": {"type": "object", "minProperties": 1},
+    "evaluated_items": {"type": "integer", "minimum": 0},
+    "suspect_items": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "classifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "identifier",
+          "type",
+          "evidence_refs",
+          "classification",
+          "reasons",
+          "confidence",
+          "recommended_followup"
+        ],
+        "properties": {
+          "identifier": {"type": "string", "minLength": 1},
+          "type": {"type": "string", "enum": ["PR", "run", "branch", "merge", "commit-range"]},
+          "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+          "classification": {
+            "type": "string",
+            "enum": [
+              "trustworthy",
+              "suspect_missing_pytest_execution",
+              "suspect_missing_artifact_boundary_enforcement",
+              "suspect_missing_selection_integrity",
+              "suspect_warn_pass_equivalence",
+              "suspect_visibility_only_without_trust",
+              "insufficient_evidence_to_determine"
+            ]
+          },
+          "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+          "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
+          "recommended_followup": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+        }
+      }
+    },
+    "summary_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^(trustworthy|suspect_missing_pytest_execution|suspect_missing_artifact_boundary_enforcement|suspect_missing_selection_integrity|suspect_warn_pass_equivalence|suspect_visibility_only_without_trust|insufficient_evidence_to_determine)$": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "final_decision": {"type": "string", "enum": ["PASS", "WARN", "BLOCK"]},
+    "generated_at": {"type": "string", "format": "date-time"}
+  }
+}
