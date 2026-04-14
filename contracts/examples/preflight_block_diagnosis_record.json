@@ -8,5 +8,9 @@
   "reason_codes": [
     "PQX_REQUIRED_CONTEXT_WRAPPER_BLOCK"
   ],
-  "root_cause_summary": "preflight wrapper context invalid"
+  "root_cause_summary": "preflight wrapper context invalid",
+  "normalized_failure": {
+    "failure_class": "invalid_wrapper",
+    "repairable": true
+  }
 }

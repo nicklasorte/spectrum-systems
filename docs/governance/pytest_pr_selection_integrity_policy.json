@@ -1,0 +1,51 @@
+{
+  "artifact_type": "pytest_pr_selection_integrity_policy",
+  "schema_version": "1.0.0",
+  "policy_version": "1.0.0",
+  "minimum_selection_threshold": 1,
+  "allow_bounded_equivalence": true,
+  "governed_surface_prefixes": [
+    "contracts/",
+    "scripts/",
+    "spectrum_systems/",
+    "tests/",
+    ".github/workflows/",
+    "docs/governance/"
+  ],
+  "surface_rules": [
+    {
+      "path_prefix": "scripts/run_contract_preflight.py",
+      "required_test_targets": [
+        "tests/test_contract_preflight.py"
+      ]
+    },
+    {
+      "path_prefix": "spectrum_systems/modules/runtime/github_pr_autofix_contract_preflight.py",
+      "required_test_targets": [
+        "tests/test_github_pr_autofix_contract_preflight.py"
+      ]
+    },
+    {
+      "path_prefix": "spectrum_systems/modules/runtime/test_inventory_integrity.py",
+      "required_test_targets": [
+        "tests/test_test_inventory_integrity.py"
+      ]
+    },
+    {
+      "path_prefix": "contracts/",
+      "required_test_targets": [
+        "tests/test_contracts.py"
+      ]
+    }
+  ],
+  "bounded_equivalence": [
+    {
+      "required_target": "tests/test_contract_preflight.py",
+      "equivalent_targets": [
+        "tests/test_contract_preflight.py",
+        "tests/test_run_github_pr_autofix_contract_preflight.py"
+      ]
+    }
+  ],
+  "allowed_exceptions": []
+}

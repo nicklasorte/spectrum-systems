@@ -58,7 +58,11 @@
         "internal_preflight_error",
         "test_inventory_regression",
         "control_surface_gap",
-        "downstream_test_failure"
+        "downstream_test_failure",
+        "pytest_selection_missing",
+        "pytest_selection_mismatch",
+        "pytest_selection_filtering",
+        "pytest_selection_threshold"
       ]
     },
     "reason_codes": {
@@ -75,10 +79,18 @@
     "normalized_failure": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["failure_class", "repairable"],
+      "required": [
+        "failure_class",
+        "repairable"
+      ],
       "properties": {
-        "failure_class": {"type": "string", "minLength": 1},
-        "repairable": {"type": "boolean"}
+        "failure_class": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repairable": {
+          "type": "boolean"
+        }
       }
     }
   }

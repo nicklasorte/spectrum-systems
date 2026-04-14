@@ -156,3 +156,18 @@ def test_deterministic_artifact_generation(tmp_path: Path) -> None:
 
     assert first["failure_class"] == second["failure_class"]
     assert first["selected_nodeids"] == second["selected_nodeids"]
+
+
+def test_execution_only_without_selected_targets_fails_closed(tmp_path: Path) -> None:
+    repo = _write_repo(tmp_path)
+    baseline = repo / "docs" / "governance" / "baseline.json"
+    baseline.parent.mkdir(parents=True)
+    baseline.write_text(json.dumps({"expected_count": 1, "expected_nodeids": ["tests/test_sample.py::test_ok"]}), encoding="utf-8")
+    result = evaluate_test_inventory_integrity(
+        repo_root=repo,
+        baseline_path=baseline,
+        suite_targets=["tests/does_not_exist.py"],
+        execution_cwd=repo,
+    )
+    assert result.failure_class in {"collection_failure", "no_tests_discovered"}
+    assert result.blocking is True

@@ -176,6 +176,18 @@ if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
         raise SystemExit("workflow/preflight trust mismatch: PR allow with executed=false")
     if decision in {"ALLOW", "WARN"} and not selected_targets:
         raise SystemExit("workflow/preflight trust mismatch: PR allow with empty selected_targets")
+    selection_ref = str(payload.get("pytest_selection_integrity_result_ref") or "").strip()
+    selection = payload.get("pytest_selection_integrity") or {}
+    if not selection_ref:
+        raise SystemExit("workflow/preflight trust mismatch: missing pytest_selection_integrity_result_ref")
+    selection_path = Path(selection_ref)
+    if not selection_path.is_file():
+        raise SystemExit(f"workflow/preflight trust mismatch: missing pytest_selection_integrity_result artifact at {selection_ref}")
+    selection_from_ref = json.loads(selection_path.read_text(encoding="utf-8"))
+    if str(selection_from_ref.get("selection_integrity_decision") or "BLOCK") != "ALLOW" and decision in {"ALLOW", "WARN"}:
+        raise SystemExit("workflow/preflight trust mismatch: allow decision with blocked pytest selection integrity")
+    if selection and str(selection.get("selection_integrity_decision") or "BLOCK") != "ALLOW" and decision in {"ALLOW", "WARN"}:
+        raise SystemExit("workflow/preflight trust mismatch: allow decision with in-artifact blocked pytest selection integrity")
 PY
 
       - name: Upload contract preflight outputs

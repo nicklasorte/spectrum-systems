@@ -1,6 +1,6 @@
 {
   "artifact_type": "contract_preflight_result_artifact",
-  "schema_version": "1.3.0",
+  "schema_version": "1.4.0",
   "preflight_status": "passed",
   "changed_contracts": [
     "contracts/schemas/roadmap_eligibility_artifact.schema.json"
@@ -70,5 +70,27 @@
     ],
     "provenance_ref": "contracts/standards-manifest.json"
   },
-  "pytest_execution_record_ref": "outputs/contract_preflight/pytest_execution_record.json"
+  "pytest_execution_record_ref": "outputs/contract_preflight/pytest_execution_record.json",
+  "pytest_selection_integrity": {
+    "artifact_type": "pytest_selection_integrity_result",
+    "schema_version": "1.0.0",
+    "changed_paths": [
+      "contracts/schemas/roadmap_eligibility_artifact.schema.json"
+    ],
+    "required_test_targets": [
+      "tests/test_roadmap_eligibility.py"
+    ],
+    "selected_test_targets": [
+      "tests/test_roadmap_eligibility.py"
+    ],
+    "missing_required_targets": [],
+    "selection_count": 1,
+    "minimum_selection_threshold": 1,
+    "threshold_satisfied": true,
+    "impacted_surface_count": 1,
+    "selection_integrity_decision": "ALLOW",
+    "blocking_reasons": [],
+    "generated_at": "2026-04-14T00:00:00Z"
+  },
+  "pytest_selection_integrity_result_ref": "outputs/contract_preflight/pytest_selection_integrity_result.json"
 }

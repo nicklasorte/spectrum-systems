@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pytest_selection_integrity_result.schema.json",
+  "title": "Pytest Selection Integrity Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "changed_paths",
+    "required_test_targets",
+    "selected_test_targets",
+    "missing_required_targets",
+    "selection_count",
+    "minimum_selection_threshold",
+    "threshold_satisfied",
+    "impacted_surface_count",
+    "selection_integrity_decision",
+    "blocking_reasons",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_type": {"const": "pytest_selection_integrity_result"},
+    "schema_version": {"const": "1.0.0"},
+    "changed_paths": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "required_test_targets": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "selected_test_targets": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "missing_required_targets": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "selection_count": {"type": "integer", "minimum": 0},
+    "minimum_selection_threshold": {"type": "integer", "minimum": 1},
+    "threshold_satisfied": {"type": "boolean"},
+    "impacted_surface_count": {"type": "integer", "minimum": 0},
+    "selection_integrity_decision": {"type": "string", "enum": ["ALLOW", "BLOCK"]},
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "PYTEST_SELECTION_EMPTY",
+          "PYTEST_REQUIRED_TARGETS_MISSING",
+          "PYTEST_SELECTION_THRESHOLD_NOT_MET",
+          "PYTEST_SELECTION_ARTIFACT_MISSING",
+          "PYTEST_SELECTION_ARTIFACT_INVALID",
+          "PYTEST_SELECTION_MISMATCH",
+          "PYTEST_SELECTION_FILTERING_DETECTED"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "generated_at": {"type": "string", "format": "date-time"}
+  }
+}

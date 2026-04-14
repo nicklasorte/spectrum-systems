@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pytest_trust_gap_audit_result.schema.json",
+  "title": "Pytest Trust Gap Audit Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "audit_scope",
+    "scanned_artifact_count",
+    "suspect_count",
+    "suspect_runs",
+    "summary_reason_codes",
+    "generated_at",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {"const": "pytest_trust_gap_audit_result"},
+    "schema_version": {"const": "1.0.0"},
+    "audit_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roots", "artifact_globs", "max_artifacts", "repo_root"],
+      "properties": {
+        "roots": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "artifact_globs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "max_artifacts": {"type": "integer", "minimum": 1},
+        "repo_root": {"type": "string", "minLength": 1}
+      }
+    },
+    "scanned_artifact_count": {"type": "integer", "minimum": 0},
+    "suspect_count": {"type": "integer", "minimum": 0},
+    "suspect_runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact_path", "classification", "context", "trusting_outcome", "reason_codes"],
+        "properties": {
+          "artifact_path": {"type": "string", "minLength": 1},
+          "classification": {"type": "string", "enum": ["clean_evidence", "weak_evidence", "missing_evidence", "unable_to_evaluate"]},
+          "context": {"type": "string", "enum": ["pr", "non_pr", "unknown"]},
+          "trusting_outcome": {"type": "boolean"},
+          "reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+        }
+      }
+    },
+    "summary_reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer", "classification_policy", "scan_mode", "read_only"],
+      "properties": {
+        "producer": {"type": "string", "minLength": 1},
+        "classification_policy": {"type": "string", "minLength": 1},
+        "scan_mode": {"type": "string", "const": "repo_local_artifacts_only"},
+        "read_only": {"type": "boolean", "const": true}
+      }
+    }
+  }
+}

@@ -26,6 +26,18 @@ def normalize_preflight_failure(report: dict[str, Any]) -> dict[str, Any]:
             }
             & set(report.get("invariant_violations", []))
         ),
+        "has_pytest_selection_gap": bool(
+            {
+                "PYTEST_SELECTION_EMPTY",
+                "PYTEST_REQUIRED_TARGETS_MISSING",
+                "PYTEST_SELECTION_THRESHOLD_NOT_MET",
+                "PYTEST_SELECTION_ARTIFACT_MISSING",
+                "PYTEST_SELECTION_ARTIFACT_INVALID",
+                "PYTEST_SELECTION_MISMATCH",
+                "PYTEST_SELECTION_FILTERING_DETECTED",
+            }
+            & set(report.get("invariant_violations", []))
+        ),
         "has_test_inventory_failure": (
             report.get("test_inventory_integrity", {}).get("failure_class") not in {None, "success"}
         ),
@@ -36,6 +48,8 @@ def normalize_preflight_failure(report: dict[str, Any]) -> dict[str, Any]:
     elif signals["has_missing_surface"]:
         failure_class = "contract_mismatch"
     elif signals["has_test_inventory_failure"]:
+        failure_class = "test_inventory_regression"
+    elif signals["has_pytest_selection_gap"]:
         failure_class = "test_inventory_regression"
     elif signals["has_control_surface_gap"]:
         failure_class = "control_surface_gap"

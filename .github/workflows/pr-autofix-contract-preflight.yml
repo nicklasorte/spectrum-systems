@@ -150,6 +150,18 @@ jobs:
               raise SystemExit("workflow/preflight trust mismatch: allow decision with executed=false")
           if initial in {"ALLOW", "WARN"} and not selected_targets:
               raise SystemExit("workflow/preflight trust mismatch: allow decision with empty selected_targets")
+          selection_ref = str(payload.get("pytest_selection_integrity_result_ref") or "").strip()
+          selection = payload.get("pytest_selection_integrity") or {}
+          if not selection_ref:
+              raise SystemExit("workflow/preflight trust mismatch: missing pytest_selection_integrity_result_ref")
+          selection_path = Path(selection_ref)
+          if not selection_path.exists():
+              raise SystemExit(f"workflow/preflight trust mismatch: missing pytest_selection_integrity_result artifact at {selection_ref}")
+          selection_from_ref = json.loads(selection_path.read_text(encoding="utf-8"))
+          if initial in {"ALLOW", "WARN"} and str(selection_from_ref.get("selection_integrity_decision") or "BLOCK") != "ALLOW":
+              raise SystemExit("workflow/preflight trust mismatch: allow decision with blocked pytest selection integrity")
+          if initial in {"ALLOW", "WARN"} and str(selection.get("selection_integrity_decision") or "BLOCK") != "ALLOW":
+              raise SystemExit("workflow/preflight trust mismatch: allow decision with in-artifact blocked pytest selection integrity")
           if initial != "BLOCK":
               raise SystemExit(0 if initial in {"ALLOW", "WARN"} else 2)
           outcome_path = out / "preflight_recovery_outcome_record.json"

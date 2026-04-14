@@ -788,6 +788,14 @@ class ContractSchemaTests(unittest.TestCase):
             ["technical", "data", "schedule", "stakeholder", "process_legal", "coordination", "narrative"],
         )
 
+    def test_pytest_selection_integrity_result_example_validates(self) -> None:
+        instance = load_example("pytest_selection_integrity_result")
+        validate_artifact(instance, "pytest_selection_integrity_result")
+
+    def test_pytest_trust_gap_audit_result_example_validates(self) -> None:
+        instance = load_example("pytest_trust_gap_audit_result")
+        validate_artifact(instance, "pytest_trust_gap_audit_result")
+
 
 if __name__ == "__main__":
     unittest.main()

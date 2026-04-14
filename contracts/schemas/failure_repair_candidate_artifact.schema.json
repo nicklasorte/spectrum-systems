@@ -70,7 +70,11 @@
         "internal_preflight_error",
         "test_inventory_regression",
         "control_surface_gap",
-        "downstream_test_failure"
+        "downstream_test_failure",
+        "pytest_selection_missing",
+        "pytest_selection_mismatch",
+        "pytest_selection_filtering",
+        "pytest_selection_threshold"
       ]
     },
     "safe_to_repair": {
@@ -99,7 +103,9 @@
     },
     "reason_codes": {
       "type": "array",
-      "items": {"type": "string"},
+      "items": {
+        "type": "string"
+      },
       "uniqueItems": true
     },
     "retry_budget": {
@@ -108,7 +114,9 @@
     },
     "rerun_prerequisites": {
       "type": "array",
-      "items": {"type": "string"},
+      "items": {
+        "type": "string"
+      },
       "uniqueItems": true
     }
   }

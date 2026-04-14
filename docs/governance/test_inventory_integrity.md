@@ -52,3 +52,21 @@ This rewrites `docs/governance/pytest_pr_inventory_baseline.json` using determin
 - Integrity failure classes are surfaced directly in preflight diagnosis.
 - Contract preflight blocks merge/promotion when inventory drops or drifts silently.
 - Repair routing points to pytest config, test roots, CI working directory, or baseline refresh path depending on classification.
+
+## Pytest selection integrity hard gate (TSI-01)
+Preflight now emits and validates:
+- `outputs/contract_preflight/pytest_selection_integrity_result.json`
+
+Governed policy source:
+- `docs/governance/pytest_pr_selection_integrity_policy.json`
+
+Fail-closed invariant reason codes:
+- `PYTEST_SELECTION_EMPTY`
+- `PYTEST_REQUIRED_TARGETS_MISSING`
+- `PYTEST_SELECTION_THRESHOLD_NOT_MET`
+- `PYTEST_SELECTION_ARTIFACT_MISSING`
+- `PYTEST_SELECTION_ARTIFACT_INVALID`
+- `PYTEST_SELECTION_MISMATCH`
+- `PYTEST_SELECTION_FILTERING_DETECTED`
+
+PR trust gating requires both execution evidence and selection integrity evidence. Execution alone is non-sufficient.
