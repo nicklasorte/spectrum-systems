@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/retroactive_pytest_remediation_queue.schema.json",
+  "title": "Retroactive Pytest Remediation Queue",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "audit_result_ref",
+    "queue_size",
+    "items",
+    "generated_at",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "retroactive_pytest_remediation_queue"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "audit_result_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "queue_size": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_path",
+          "classification",
+          "reason_codes",
+          "recommended_action",
+          "quarantine_recommendation"
+        ],
+        "properties": {
+          "artifact_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "classification": {
+            "type": "string",
+            "enum": [
+              "suspect_missing_pytest_execution",
+              "suspect_non_authoritative_pytest",
+              "suspect_incomplete_execution_accounting"
+            ]
+          },
+          "reason_codes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "recommended_action": {
+            "type": "string",
+            "enum": [
+              "manual_operator_review_required",
+              "re_run_governed_preflight_if_commit_pair_reconstructable"
+            ]
+          },
+          "quarantine_recommendation": {
+            "type": "string",
+            "const": "quarantine_from_trusted_baseline_metrics_until_revalidated"
+          }
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "producer",
+        "queue_policy",
+        "queue_limit"
+      ],
+      "properties": {
+        "producer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "queue_policy": {
+          "type": "string",
+          "const": "bounded_suspect_only"
+        },
+        "queue_limit": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

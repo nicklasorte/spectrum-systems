@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/retroactive_pytest_integrity_audit_result.schema.json",
+  "title": "Retroactive Pytest Integrity Audit Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "audit_scope",
+    "scanned_run_count",
+    "trusted_count",
+    "suspect_count",
+    "unable_to_evaluate_count",
+    "suspect_runs",
+    "remediation_queue",
+    "summary_reason_codes",
+    "generated_at",
+    "trace"
+  ],
+  "properties": {
+    "artifact_type": {"const": "retroactive_pytest_integrity_audit_result"},
+    "schema_version": {"const": "1.0.0"},
+    "audit_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roots", "artifact_globs", "repo_root"],
+      "properties": {
+        "roots": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "artifact_globs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "repo_root": {"type": "string", "minLength": 1}
+      }
+    },
+    "scanned_run_count": {"type": "integer", "minimum": 0},
+    "trusted_count": {"type": "integer", "minimum": 0},
+    "suspect_count": {"type": "integer", "minimum": 0},
+    "unable_to_evaluate_count": {"type": "integer", "minimum": 0},
+    "suspect_runs": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/runClassification"}
+    },
+    "remediation_queue": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/remediationItem"}
+    },
+    "summary_reason_codes": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "generated_at": {"type": "string", "format": "date-time"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer", "classification_policy", "remediation_queue_limit", "scan_mode"],
+      "properties": {
+        "producer": {"type": "string", "minLength": 1},
+        "classification_policy": {"type": "string", "minLength": 1},
+        "remediation_queue_limit": {"type": "integer", "minimum": 1},
+        "scan_mode": {"type": "string", "const": "repo_local_artifacts_only"}
+      }
+    }
+  },
+  "$defs": {
+    "runClassification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_path", "classification", "reason_codes", "trusting_outcome", "context", "remediation_recommendation"],
+      "properties": {
+        "artifact_path": {"type": "string", "minLength": 1},
+        "classification": {
+          "type": "string",
+          "enum": [
+            "trusted",
+            "suspect_missing_pytest_execution",
+            "suspect_non_authoritative_pytest",
+            "suspect_incomplete_execution_accounting",
+            "unable_to_evaluate"
+          ]
+        },
+        "reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "trusting_outcome": {"type": "boolean"},
+        "context": {"type": "string", "enum": ["pr", "non_pr", "unknown"]},
+        "remediation_recommendation": {
+          "type": "string",
+          "enum": [
+            "none",
+            "manual_operator_review_required",
+            "re_run_governed_preflight_if_commit_pair_reconstructable"
+          ]
+        }
+      }
+    },
+    "remediationItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_path",
+        "classification",
+        "reason_codes",
+        "recommended_action",
+        "quarantine_recommendation"
+      ],
+      "properties": {
+        "artifact_path": {"type": "string", "minLength": 1},
+        "classification": {
+          "type": "string",
+          "enum": [
+            "suspect_missing_pytest_execution",
+            "suspect_non_authoritative_pytest",
+            "suspect_incomplete_execution_accounting"
+          ]
+        },
+        "reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "recommended_action": {
+          "type": "string",
+          "enum": [
+            "manual_operator_review_required",
+            "re_run_governed_preflight_if_commit_pair_reconstructable"
+          ]
+        },
+        "quarantine_recommendation": {
+          "type": "string",
+          "const": "quarantine_from_trusted_baseline_metrics_until_revalidated"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "artifact_type": "retroactive_pytest_remediation_queue",
+  "schema_version": "1.0.0",
+  "audit_result_ref": "outputs/retroactive_pytest_integrity_audit/retroactive_pytest_integrity_audit_result.json",
+  "queue_size": 1,
+  "items": [
+    {
+      "artifact_path": "outputs/history/run-001/contract_preflight_result_artifact.json",
+      "classification": "suspect_missing_pytest_execution",
+      "reason_codes": [
+        "HISTORICAL_ARTIFACT_SHAPE_PRE_PYX01",
+        "HISTORICAL_PR_ALLOW_WITHOUT_PYTEST_EXECUTION"
+      ],
+      "recommended_action": "re_run_governed_preflight_if_commit_pair_reconstructable",
+      "quarantine_recommendation": "quarantine_from_trusted_baseline_metrics_until_revalidated"
+    }
+  ],
+  "generated_at": "2026-04-14T00:00:00Z",
+  "trace": {
+    "producer": "spectrum_systems.modules.runtime.retroactive_pytest_integrity_audit",
+    "queue_policy": "bounded_suspect_only",
+    "queue_limit": 50
+  }
+}

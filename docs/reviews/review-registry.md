@@ -20,6 +20,8 @@ See `docs/reviews/README.md` for the review protocol and `ADR-005-review-protoco
 | [2026-03-18-maturity-review](2026-03-18-maturity-review.md) | 2026-03-18 | REVIEW — Focused control-loop maturity assessment (AN–AW2 scope) | spectrum-systems | Copilot (Architecture Agent) | Open | 7/20 | Re-run after MR-001 through MR-005 complete (operational AU→AW2 cycle with committed artifacts). Target: advance score from L7 to L9. |
 | [2026-03-22-governed-prompt-queue-live-review-invocation-impl-review](governed_prompt_queue_live_review_invocation_impl_review.md) | 2026-03-22 | Pre-implementation surgical design review — first bounded live review invocation slice | spectrum-systems | Claude (Reasoning Agent — Sonnet 4.6) | Open | — | When LI-CR-3 (write ordering spec) and LI-CR-4 (failure-to-state mapping) are published: implementation may begin. Re-review when first live invocation implementation is complete. Verdict: PASS. Trust: YES. |
 
+| [AUD-01-retroactive-pytest-integrity-audit](AUD-01-retroactive-pytest-integrity-audit.md) | 2026-04-14 | BUILD — Retroactive pytest execution integrity backtest review | spectrum-systems | Codex (repository execution) | Open | — | Re-run after first bounded remediation queue cycle completes and suspect set is triaged. |
+
 ## Carried-Forward Findings (as of 2026-03-17 closure verification)
 
 The following findings from prior reviews remain unresolved and are tracked in the `2026-03-16-governance-constitution-deep-review` registry entry. See `review-registry.json` for full `carried_forward_findings` detail.

@@ -1,0 +1,57 @@
+{
+  "artifact_type": "retroactive_pytest_integrity_audit_result",
+  "schema_version": "1.0.0",
+  "audit_scope": {
+    "roots": [
+      "outputs",
+      "artifacts",
+      "data"
+    ],
+    "artifact_globs": [
+      "**/contract_preflight_result_artifact.json",
+      "**/contract_preflight_report.json"
+    ],
+    "repo_root": "/workspace/spectrum-systems"
+  },
+  "scanned_run_count": 3,
+  "trusted_count": 1,
+  "suspect_count": 1,
+  "unable_to_evaluate_count": 1,
+  "suspect_runs": [
+    {
+      "artifact_path": "outputs/history/run-001/contract_preflight_result_artifact.json",
+      "classification": "suspect_missing_pytest_execution",
+      "reason_codes": [
+        "HISTORICAL_ARTIFACT_SHAPE_PRE_PYX01",
+        "HISTORICAL_PR_ALLOW_WITHOUT_PYTEST_EXECUTION"
+      ],
+      "trusting_outcome": true,
+      "context": "pr",
+      "remediation_recommendation": "re_run_governed_preflight_if_commit_pair_reconstructable"
+    }
+  ],
+  "remediation_queue": [
+    {
+      "artifact_path": "outputs/history/run-001/contract_preflight_result_artifact.json",
+      "classification": "suspect_missing_pytest_execution",
+      "reason_codes": [
+        "HISTORICAL_ARTIFACT_SHAPE_PRE_PYX01",
+        "HISTORICAL_PR_ALLOW_WITHOUT_PYTEST_EXECUTION"
+      ],
+      "recommended_action": "re_run_governed_preflight_if_commit_pair_reconstructable",
+      "quarantine_recommendation": "quarantine_from_trusted_baseline_metrics_until_revalidated"
+    }
+  ],
+  "summary_reason_codes": [
+    "HISTORICAL_ARTIFACT_SHAPE_PRE_PYX01",
+    "HISTORICAL_CONTEXT_NOT_EVALUABLE",
+    "HISTORICAL_PR_ALLOW_WITHOUT_PYTEST_EXECUTION"
+  ],
+  "generated_at": "2026-04-14T00:00:00Z",
+  "trace": {
+    "producer": "spectrum_systems.modules.runtime.retroactive_pytest_integrity_audit",
+    "classification_policy": "pyx01_execution_truth_backtest_v1",
+    "remediation_queue_limit": 50,
+    "scan_mode": "repo_local_artifacts_only"
+  }
+}

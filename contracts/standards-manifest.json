@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.131",
+  "artifact_version": "1.3.132",
   "schema_version": "1.3.99",
   "standards_version": "1.0.83",
-  "record_id": "REC-STD-2026-04-13-RAX-SERIAL-OPERATING-SUBSTRATE",
-  "run_id": "run-20260413T000000Z-rax-serial-operating-substrate",
-  "created_at": "2026-04-13T00:00:00Z",
+  "record_id": "REC-STD-2026-04-14-AUD-01-RETROACTIVE-PYTEST-INTEGRITY",
+  "run_id": "run-20260414T000000Z-aud-01-retroactive-pytest-integrity",
+  "created_at": "2026-04-14T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.131",
+  "source_repo_version": "1.3.132",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -27,6 +27,32 @@
     }
   ],
   "contracts": [
+    {
+      "artifact_type": "abstention_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/abstention_record.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
+      "artifact_type": "active_set_snapshot",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/active_set_snapshot.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
     {
       "artifact_type": "adaptive_execution_observability",
       "artifact_class": "coordination",
@@ -955,6 +981,32 @@
       "notes": "Canonical human-facing spreadsheet interface with fixed headers, order, and normalized mapping; payloads should be wrapped in the artifact envelope standard."
     },
     {
+      "artifact_type": "comparison_result_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/comparison_result_record.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
+      "artifact_type": "comparison_run_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/comparison_run_record.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
       "artifact_type": "complexity_budget",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1367,6 +1419,32 @@
       "artifact_type": "correction_pattern_record",
       "example_path": "contracts/examples/correction_pattern_record.json",
       "notes": "BATCH-11 deterministic recurrence-driven correction pattern artifact with explicit remediation type mapping."
+    },
+    {
+      "artifact_type": "cost_budget_status",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/cost_budget_status.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
+      "artifact_type": "cross_artifact_consistency_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/cross_artifact_consistency_report.json",
+      "notes": "CDX-01 next-phase governed contract surface."
     },
     {
       "artifact_type": "cross_run_intelligence_decision",
@@ -2213,6 +2291,19 @@
       "notes": "BBC governed versioned dataset of eval_case and failure_eval_case members with deterministic admission summary and policy linkage. Includes explicit canonicalization_policy_id governance linkage."
     },
     {
+      "artifact_type": "eval_dataset_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/eval_dataset_record.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
       "artifact_type": "eval_expansion_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2224,6 +2315,19 @@
       "last_updated_in": "1.3.131",
       "example_path": "contracts/examples/eval_expansion_record.json",
       "notes": "RAX serial operating substrate governance contract."
+    },
+    {
+      "artifact_type": "eval_registry_entry",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/eval_registry_entry.json",
+      "notes": "CDX-01 next-phase governed contract surface."
     },
     {
       "artifact_type": "eval_registry_snapshot",
@@ -2263,6 +2367,19 @@
       "last_updated_in": "1.0.7",
       "example_path": "contracts/examples/eval_run.json",
       "notes": "Governed eval-run record covering case set, system version, dataset version, and run timestamp."
+    },
+    {
+      "artifact_type": "eval_slice_definition",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/eval_slice_definition.json",
+      "notes": "CDX-01 next-phase governed contract surface."
     },
     {
       "artifact_type": "eval_slice_summary",
@@ -2437,6 +2554,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/evidence_map.json",
       "notes": "Evidence map linking strategic claims to anchored source evidence."
+    },
+    {
+      "artifact_type": "evidence_sufficiency_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/evidence_sufficiency_result.json",
+      "notes": "CDX-01 next-phase governed contract surface."
     },
     {
       "artifact_class": "coordination",
@@ -2619,6 +2749,19 @@
       "notes": "BATCH-MB-01 finite failure class registry for deterministic one-class mapping."
     },
     {
+      "artifact_type": "failure_derived_eval_case",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/failure_derived_eval_case.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
       "artifact_type": "failure_diagnosis_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2629,7 +2772,7 @@
       "introduced_in": "1.3.74",
       "last_updated_in": "1.3.89",
       "example_path": "contracts/examples/failure_diagnosis_artifact.json",
-      "notes": "BATCH-FRE-01 deterministic failure intake/classification artifact for governed failure\u2192diagnosis handoff; diagnosis-only with no repair execution authority."
+      "notes": "BATCH-FRE-01 deterministic failure intake/classification artifact for governed failure→diagnosis handoff; diagnosis-only with no repair execution authority."
     },
     {
       "artifact_type": "failure_eval_case",
@@ -2642,7 +2785,7 @@
       "introduced_in": "1.0.8",
       "last_updated_in": "1.0.41",
       "example_path": "contracts/examples/failure_eval_case.json",
-      "notes": "AG-05 deterministic failure\u2192eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
+      "notes": "AG-05 deterministic failure→eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
     },
     {
       "artifact_type": "failure_learning_record_artifact",
@@ -2785,7 +2928,7 @@
       "introduced_in": "1.3.86",
       "last_updated_in": "1.3.86",
       "example_path": "contracts/examples/github_review_handoff_artifact.json",
-      "notes": "BATCH-GHA-CORE-01 deterministic GHA-01\u2192GHA-02 handoff index for fail-closed artifact routing without adding workflow decision logic."
+      "notes": "BATCH-GHA-CORE-01 deterministic GHA-01→GHA-02 handoff index for fail-closed artifact routing without adding workflow decision logic."
     },
     {
       "artifact_type": "glossary_entry",
@@ -2853,6 +2996,19 @@
       "notes": "HS-19 deterministic claim-level grounding/fact-check eval artifact with bounded failure classes and fail-closed policy traceability."
     },
     {
+      "artifact_type": "guardrail_event",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/guardrail_event.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
       "artifact_type": "handoff_artifact",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -2864,6 +3020,32 @@
       "last_updated_in": "1.3.92",
       "example_path": "contracts/examples/handoff_artifact.json",
       "notes": "HR-B canonical governed reset-with-handoff state transfer artifact."
+    },
+    {
+      "artifact_type": "handoff_package",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/handoff_package.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
+      "artifact_type": "handoff_validation_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/handoff_validation_result.json",
+      "notes": "CDX-01 next-phase governed contract surface."
     },
     {
       "artifact_type": "hitl_override_decision",
@@ -3672,6 +3854,19 @@
       "notes": "RAX serial operating substrate governance contract."
     },
     {
+      "artifact_type": "latency_budget_status",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/latency_budget_status.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
       "artifact_type": "maintain_cycle_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3820,6 +4015,19 @@
       "last_updated_in": "1.0.88",
       "example_path": "contracts/examples/meeting_minutes_record.example.json",
       "notes": "Machine-validated meeting minutes record emitted from meeting-minutes-engine for downstream consumption and DOCX rendering; payloads should be wrapped in the artifact envelope standard."
+    },
+    {
+      "artifact_type": "migration_plan_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/migration_plan_record.json",
+      "notes": "CDX-01 next-phase governed contract surface."
     },
     {
       "artifact_type": "milestone_plan",
@@ -4306,6 +4514,19 @@
       "last_updated_in": "1.3.61",
       "example_path": "contracts/examples/override_hotspot_report.json",
       "notes": "BATCH-12 ST-18 deterministic override concentration hotspots for governance attention."
+    },
+    {
+      "artifact_type": "override_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/override_record.json",
+      "notes": "CDX-01 next-phase governed contract surface."
     },
     {
       "artifact_type": "pattern_mining_recommendation",
@@ -4854,7 +5075,7 @@
       "introduced_in": "1.0.86",
       "last_updated_in": "1.0.87",
       "example_path": "contracts/examples/pqx_n_slice_validation_record.json",
-      "notes": "B30 first 5\u201310 slice governed-run readiness validation artifact."
+      "notes": "B30 first 5–10 slice governed-run readiness validation artifact."
     },
     {
       "artifact_type": "pqx_review_result",
@@ -5000,6 +5221,19 @@
       "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
     },
     {
+      "artifact_type": "preflight_recovery_outcome_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.126",
+      "last_updated_in": "1.3.126",
+      "example_path": "contracts/examples/preflight_recovery_outcome_record.json",
+      "notes": "PRF-06 terminal repair-state outcome for governed contract preflight."
+    },
+    {
       "artifact_type": "preflight_repair_attempt_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5050,19 +5284,6 @@
       "last_updated_in": "1.3.125",
       "example_path": "contracts/examples/preflight_repair_validation_record.json",
       "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
-    },
-    {
-      "artifact_type": "preflight_recovery_outcome_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.126",
-      "last_updated_in": "1.3.126",
-      "example_path": "contracts/examples/preflight_recovery_outcome_record.json",
-      "notes": "PRF-06 terminal repair-state outcome for governed contract preflight."
     },
     {
       "artifact_type": "prg_governance_bundle",
@@ -5825,6 +6046,19 @@
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
+      "artifact_type": "query_index_manifest",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/query_index_manifest.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
       "artifact_type": "rax_adversarial_pattern_candidate",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -6525,7 +6759,7 @@
       "introduced_in": "1.3.75",
       "last_updated_in": "1.3.77",
       "example_path": "contracts/examples/repair_prompt_artifact.json",
-      "notes": "BATCH-FRE-02 deterministic diagnosis\u2192repair bridge artifact defining bounded Codex-ready repair instructions, validation commands, constraints, and success criteria."
+      "notes": "BATCH-FRE-02 deterministic diagnosis→repair bridge artifact defining bounded Codex-ready repair instructions, validation commands, constraints, and success criteria."
     },
     {
       "artifact_class": "coordination",
@@ -6658,6 +6892,45 @@
       "notes": "HR-B canonical governed resume attempt artifact linked to checkpoint continuity state."
     },
     {
+      "artifact_type": "retirement_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/retirement_record.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
+      "artifact_type": "retroactive_pytest_integrity_audit_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.132",
+      "last_updated_in": "1.3.132",
+      "example_path": "contracts/examples/retroactive_pytest_integrity_audit_result.json",
+      "notes": "AUD-01 deterministic historical preflight trust backtest artifact classifying PYX-01 execution-truth integrity outcomes."
+    },
+    {
+      "artifact_type": "retroactive_pytest_remediation_queue",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.132",
+      "last_updated_in": "1.3.132",
+      "example_path": "contracts/examples/retroactive_pytest_remediation_queue.json",
+      "notes": "AUD-01 bounded remediation queue artifact for suspect historical preflight runs pending revalidation/quarantine decisions."
+    },
+    {
       "artifact_type": "reuse_record_artifact",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -6787,7 +7060,7 @@
       "introduced_in": "1.3.98",
       "last_updated_in": "1.3.98",
       "example_path": "contracts/examples/review_fix_execution_request_artifact.json",
-      "notes": "RQX-B2 one-cycle governed request artifact requiring RQX\u2192TPA\u2192PQX\u2192RQX routing with max cycle count = 1."
+      "notes": "RQX-B2 one-cycle governed request artifact requiring RQX→TPA→PQX→RQX routing with max cycle count = 1."
     },
     {
       "artifact_type": "review_fix_execution_result_artifact",
@@ -6879,6 +7152,19 @@
       "last_updated_in": "1.3.101",
       "example_path": "contracts/examples/review_operator_handoff_artifact.json",
       "notes": "RQX-B3 strict unresolved post-cycle operator handoff artifact emitted after bounded one-cycle execution without automatic recursion."
+    },
+    {
+      "artifact_type": "review_outcome_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/review_outcome_record.json",
+      "notes": "CDX-01 next-phase governed contract surface."
     },
     {
       "artifact_type": "review_projection_bundle_artifact",
@@ -6985,6 +7271,19 @@
       "last_updated_in": "1.3.114",
       "example_path": "contracts/examples/ril_closeout_gate_record.json",
       "notes": "CDE-001 bounded decision authority and RIL closeout contract."
+    },
+    {
+      "artifact_type": "risk_classification_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/risk_classification_record.json",
+      "notes": "CDX-01 next-phase governed contract surface."
     },
     {
       "artifact_type": "risk_register",
@@ -7261,6 +7560,19 @@
       "notes": "BATCH-11 deterministic rollback planning artifact for promotion-sensitive and roadmap mutation reversibility guarantees."
     },
     {
+      "artifact_type": "route_candidate_set",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/route_candidate_set.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
       "artifact_type": "routing_decision",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -7272,6 +7584,19 @@
       "last_updated_in": "1.0.44",
       "example_path": "contracts/examples/routing_decision.json",
       "notes": "HS-04 deterministic runtime routing decision artifact linking policy selection, resolved prompt version, selected model id, and trace identifiers."
+    },
+    {
+      "artifact_type": "routing_decision_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/routing_decision_record.json",
+      "notes": "CDX-01 next-phase governed contract surface."
     },
     {
       "artifact_type": "routing_policy",
@@ -7725,6 +8050,32 @@
       "notes": "Gate-focused readiness assessment highlighting missing artifacts and blockers; payloads should be wrapped in the artifact envelope standard."
     },
     {
+      "artifact_type": "supersession_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/supersession_record.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
+      "artifact_type": "synthesized_trust_signal",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/synthesized_trust_signal.json",
+      "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
       "artifact_type": "system_budget_policy",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -7906,6 +8257,19 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/termination_signal_record.json",
       "notes": "CDE/BAX/CDE governed authority contract."
+    },
+    {
+      "artifact_type": "test_inventory_integrity_result",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/test_inventory_integrity_result.json",
+      "notes": "Governed pytest inventory integrity artifact for PR/default suite discovery and regression enforcement."
     },
     {
       "artifact_type": "tlc_handoff_debt_record",
@@ -8427,344 +8791,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "eval_registry_entry",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/eval_registry_entry.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "eval_dataset_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/eval_dataset_record.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "eval_slice_definition",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/eval_slice_definition.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "failure_derived_eval_case",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/failure_derived_eval_case.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "evidence_sufficiency_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/evidence_sufficiency_result.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "abstention_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/abstention_record.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "route_candidate_set",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/route_candidate_set.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "routing_decision_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/routing_decision_record.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "comparison_run_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/comparison_run_record.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "comparison_result_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/comparison_result_record.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "guardrail_event",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/guardrail_event.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "cost_budget_status",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/cost_budget_status.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "latency_budget_status",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/latency_budget_status.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "override_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/override_record.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "review_outcome_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/review_outcome_record.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "handoff_package",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/handoff_package.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "handoff_validation_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/handoff_validation_result.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "cross_artifact_consistency_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/cross_artifact_consistency_report.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "migration_plan_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/migration_plan_record.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "risk_classification_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/risk_classification_record.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "supersession_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/supersession_record.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "retirement_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/retirement_record.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "active_set_snapshot",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/active_set_snapshot.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "query_index_manifest",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/query_index_manifest.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "synthesized_trust_signal",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/synthesized_trust_signal.json",
-      "notes": "CDX-01 next-phase governed contract surface."
-    },
-    {
-      "artifact_type": "test_inventory_integrity_result",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.0.83",
-      "last_updated_in": "1.0.83",
-      "example_path": "contracts/examples/test_inventory_integrity_result.json",
-      "notes": "Governed pytest inventory integrity artifact for PR/default suite discovery and regression enforcement."
     }
   ]
 }
