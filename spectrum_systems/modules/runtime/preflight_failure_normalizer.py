@@ -23,6 +23,13 @@ def normalize_preflight_failure(report: dict[str, Any]) -> dict[str, Any]:
                 "PR_PYTEST_EXECUTION_REQUIRED",
                 "PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION",
                 "PR_PYTEST_EXECUTION_RECORD_REQUIRED",
+                "PR_PYTEST_EXECUTION_REF_NON_CANONICAL",
+                "PR_PYTEST_SELECTION_REF_NON_CANONICAL",
+                "PR_PYTEST_EXECUTION_PROVENANCE_MISSING",
+                "PR_PYTEST_SELECTION_PROVENANCE_MISSING",
+                "PR_PYTEST_PROVENANCE_LINK_MISMATCH",
+                "PR_PYTEST_PROVENANCE_HASH_MISMATCH",
+                "PR_PYTEST_PROVENANCE_COMMIT_MISMATCH",
             }
             & set(report.get("invariant_violations", []))
         ),
@@ -36,6 +43,9 @@ def normalize_preflight_failure(report: dict[str, Any]) -> dict[str, Any]:
                 "PYTEST_SELECTION_MISMATCH",
                 "PYTEST_SELECTION_FILTERING_DETECTED",
                 "PR_PYTEST_SELECTION_INTEGRITY_REQUIRED",
+                "DEGRADED_REF_RESOLUTION_PR_BLOCK",
+                "NON_EXHAUSTIVE_GOVERNED_PATH_RESOLUTION",
+                "GOVERNED_SURFACE_DIFF_INCOMPLETE",
             }
             & set(report.get("invariant_violations", []))
         ),

@@ -25,11 +25,17 @@
     "execution_count",
     "execution_entries",
     "timestamp",
-    "failure_reason"
+    "failure_reason",
+    "source_commit_sha",
+    "source_head_ref",
+    "workflow_run_id",
+    "producer_script",
+    "produced_at",
+    "artifact_hash"
   ],
   "properties": {
     "artifact_type": {"const": "pytest_execution_record"},
-    "schema_version": {"const": "1.0.0"},
+    "schema_version": {"const": "1.1.0"},
     "event_name": {"type": "string", "minLength": 1},
     "workflow_name": {"type": ["string", "null"]},
     "workflow_job": {"type": ["string", "null"]},
@@ -59,6 +65,12 @@
       }
     },
     "timestamp": {"type": "string", "format": "date-time"},
-    "failure_reason": {"type": ["string", "null"]}
+    "failure_reason": {"type": ["string", "null"]},
+    "source_commit_sha": {"type": "string", "minLength": 1},
+    "source_head_ref": {"type": "string", "minLength": 1},
+    "workflow_run_id": {"type": "string", "minLength": 1},
+    "producer_script": {"type": "string", "const": "scripts/run_contract_preflight.py"},
+    "produced_at": {"type": "string", "format": "date-time"},
+    "artifact_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
   }
 }

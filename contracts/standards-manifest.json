@@ -1230,15 +1230,15 @@
     {
       "artifact_type": "contract_preflight_result_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.2.0",
+      "schema_version": "1.5.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.9",
-      "last_updated_in": "1.3.21",
+      "last_updated_in": "1.3.201",
       "example_path": "contracts/examples/contract_preflight_result_artifact.json",
-      "notes": "Governed contract preflight result artifact carrying BLOCK/FREEZE/WARN/ALLOW strategy-gate mapping, PQX required-context enforcement result, and impact repair guidance for PQX pre-execution control."
+      "notes": "Governed contract preflight result artifact carrying ALLOW/BLOCK/FREEZE strategy-gate mapping, canonical pytest artifact linkage hashes, and PQX required-context enforcement for PR trust-seam fail-closed control."
     },
     {
       "artifact_type": "control_arbitration_policy",
@@ -5996,15 +5996,15 @@
     {
       "artifact_type": "pytest_execution_record",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.3.133",
-      "last_updated_in": "1.3.133",
+      "last_updated_in": "1.3.201",
       "example_path": "contracts/examples/pytest_execution_record.json",
-      "notes": "PYX-02 canonical preflight-owned pytest execution evidence artifact for pull_request trust gating fail-closed checks."
+      "notes": "PYX-02 canonical preflight-owned pytest execution evidence artifact with required same-run provenance binding fields for pull_request trust gating fail-closed checks."
     },
     {
       "artifact_type": "qos_backpressure_signal",
@@ -8808,15 +8808,15 @@
     {
       "artifact_type": "pytest_selection_integrity_result",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "stable",
       "intended_consumers": [
         "spectrum-systems"
       ],
       "introduced_in": "1.0.84",
-      "last_updated_in": "1.0.84",
+      "last_updated_in": "1.3.201",
       "example_path": "contracts/examples/pytest_selection_integrity_result.json",
-      "notes": "TSI-01 governed fail-closed PR pytest selection integrity evidence artifact."
+      "notes": "TSI-01 governed fail-closed PR pytest selection integrity evidence artifact with deterministic linkage to canonical pytest_execution_record provenance."
     },
     {
       "artifact_type": "pytest_trust_gap_audit_result",

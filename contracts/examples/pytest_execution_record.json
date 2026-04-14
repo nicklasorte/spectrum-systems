@@ -1,6 +1,6 @@
 {
   "artifact_type": "pytest_execution_record",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "event_name": "pull_request",
   "workflow_name": "artifact-boundary",
   "workflow_job": "contract-preflight",
@@ -28,5 +28,11 @@
     }
   ],
   "timestamp": "2026-04-14T00:00:00Z",
-  "failure_reason": null
+  "failure_reason": null,
+  "source_commit_sha": "0123456789abcdef0123456789abcdef01234567",
+  "source_head_ref": "refs/pull/123/head",
+  "workflow_run_id": "1234567890",
+  "producer_script": "scripts/run_contract_preflight.py",
+  "produced_at": "2026-04-14T00:00:00Z",
+  "artifact_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 }

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timezone
+import hashlib
 import json
 import os
 import subprocess
@@ -138,6 +139,16 @@ _GOVERNED_PR_FALLBACK_PYTEST_TARGETS = [
     "tests/test_eval_dataset_registry.py",
     "tests/test_contracts.py",
 ]
+_CANONICAL_PREFLIGHT_OUTPUT_PREFIX = "outputs/contract_preflight/"
+_CANONICAL_PYTEST_EXECUTION_REF = f"{_CANONICAL_PREFLIGHT_OUTPUT_PREFIX}pytest_execution_record.json"
+_CANONICAL_PYTEST_SELECTION_REF = f"{_CANONICAL_PREFLIGHT_OUTPUT_PREFIX}pytest_selection_integrity_result.json"
+_GOVERNED_CHANGED_PATH_PREFIXES = (
+    "contracts/",
+    "scripts/",
+    "spectrum_systems/",
+    ".github/workflows/",
+    "docs/governance/",
+)
 
 _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "scripts/run_autonomous_validation_run.py": ["tests/test_run_autonomous_validation_run.py"],
@@ -245,6 +256,36 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def _hash_payload(payload: dict[str, Any]) -> str:
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _build_common_provenance(*, source_head_ref: str) -> dict[str, Any]:
+    source_commit_sha = (
+        str(os.environ.get("GITHUB_SHA") or "").strip()
+        or source_head_ref
+        or str(os.environ.get("GIT_COMMIT") or "").strip()
+        or "unknown"
+    )
+    return {
+        "source_commit_sha": source_commit_sha,
+        "source_head_ref": source_head_ref or "unknown",
+        "workflow_run_id": str(os.environ.get("GITHUB_RUN_ID") or "local"),
+        "producer_script": "scripts/run_contract_preflight.py",
+        "produced_at": _utc_now(),
+    }
+
+
+def _is_governed_changed_path(path: str) -> bool:
+    return any(path.startswith(prefix) for prefix in _GOVERNED_CHANGED_PATH_PREFIXES)
+
+
+def _validate_canonical_ref_path(*, ref: str, expected_suffix: str) -> bool:
+    normalized = ref.replace("\\", "/").lstrip("./")
+    return normalized == expected_suffix
+
+
 def _resolve_wrapper_path(repo_root: Path, wrapper_path_value: str) -> Path:
     wrapper_path = Path(wrapper_path_value)
     if not wrapper_path.is_absolute():
@@ -285,10 +326,14 @@ def _attempt_build_missing_wrapper(
 
 
 def _all_governed_paths(repo_root: Path) -> list[str]:
-    governed = []
-    governed.extend(str(path.relative_to(repo_root)) for path in sorted((repo_root / "contracts" / "schemas").glob("*.schema.json")))
-    governed.extend(str(path.relative_to(repo_root)) for path in sorted((repo_root / "contracts" / "examples").glob("*.json")))
-    governed.extend(str(path.relative_to(repo_root)) for path in sorted((repo_root / "contracts").glob("*.schema.json")))
+    governed: list[str] = []
+    for prefix in _GOVERNED_CHANGED_PATH_PREFIXES:
+        root = repo_root / prefix
+        if not root.exists():
+            continue
+        for path in sorted(root.rglob("*")):
+            if path.is_file():
+                governed.append(str(path.relative_to(repo_root)))
     return sorted(set(governed))
 
 
@@ -385,7 +430,7 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
 
     # D: safe local fallback paths.
     local_changes = _local_workspace_changes(repo_root)
-    local_governed = [path for path in local_changes if path.startswith("contracts/")]
+    local_governed = [path for path in local_changes if _is_governed_changed_path(path)]
     if local_governed:
         return ChangedPathDetectionResult(
             changed_paths=sorted(set(local_governed)),
@@ -395,13 +440,13 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
             warnings=warnings + ["using git status porcelain fallback"],
         )
     if local_changes:
-        warnings.append("local workspace fallback had no governed contract paths; continuing to deeper fallback")
+        warnings.append("local workspace fallback had no governed surface paths; continuing to deeper fallback")
 
     refs_attempted.append("working_tree_vs_HEAD")
     working_tree = _run(["git", "diff", "--name-only", "HEAD"], cwd=repo_root)
     if working_tree.returncode == 0:
         paths = sorted({line.strip() for line in working_tree.stdout.splitlines() if line.strip()})
-        governed_paths = [path for path in paths if path.startswith("contracts/")]
+        governed_paths = [path for path in paths if _is_governed_changed_path(path)]
         if governed_paths:
             return ChangedPathDetectionResult(
                 changed_paths=sorted(set(governed_paths)),
@@ -411,7 +456,7 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
                 warnings=warnings + ["using working tree diff fallback"],
             )
         if paths:
-            warnings.append("working tree fallback had no governed contract paths; degrading to full governed scan")
+            warnings.append("working tree fallback had no governed surface paths; degrading to full governed scan")
     else:
         warnings.append(f"working tree fallback unavailable: {working_tree.combined_output}")
 
@@ -423,7 +468,7 @@ def detect_changed_paths(repo_root: Path, base_ref: str, head_ref: str, explicit
             changed_path_detection_mode="degraded_full_governed_scan",
             refs_attempted=refs_attempted,
             fallback_used=True,
-            warnings=warnings + ["changed-path detection degraded; running full governed contract scan"],
+            warnings=warnings + ["changed-path detection degraded; running full governed surface scan"],
         )
 
     # Canonical resolver fallback for explicit insufficient-context metadata surface.
@@ -734,6 +779,7 @@ def run_targeted_pytests(paths: list[str], *, execution_log: list[dict[str, Any]
 def build_pytest_execution_record(
     *,
     event_name: str,
+    source_head_ref: str,
     execution_log: list[dict[str, Any]],
     selected_targets: list[str],
     fallback_targets: list[str],
@@ -770,9 +816,9 @@ def build_pytest_execution_record(
 
     workflow_name = str(os.environ.get("GITHUB_WORKFLOW", "")).strip()
     workflow_job = str(os.environ.get("GITHUB_JOB", "")).strip()
-    return {
+    payload = {
         "artifact_type": "pytest_execution_record",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "event_name": event_name,
         "workflow_name": workflow_name or None,
         "workflow_job": workflow_job or None,
@@ -792,6 +838,9 @@ def build_pytest_execution_record(
         "timestamp": _utc_now(),
         "failure_reason": failure_reason,
     }
+    payload.update(_build_common_provenance(source_head_ref=source_head_ref))
+    payload["artifact_hash"] = _hash_payload(payload)
+    return payload
 
 
 def detect_masked_failures(failures: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -1191,7 +1240,7 @@ def evaluate_trust_spine_cohesion(changed_paths: list[str], output_dir: Path) ->
     return result
 
 
-def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool) -> dict[str, Any]:
+def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool, event_name: str = "") -> dict[str, Any]:
     changed_path_detection = report.get("changed_path_detection", {})
     detection_mode = str(changed_path_detection.get("changed_path_detection_mode", "unknown"))
     preflight_mode = str(changed_path_detection.get("preflight_mode", "explicit_or_local_inspection"))
@@ -1237,6 +1286,13 @@ def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool
             "changed_path_detection_mode": detection_mode,
             "degraded_detection": degraded,
         }
+    if pqx_policy_warning and event_name == "pull_request":
+        return {
+            "strategy_gate_decision": "BLOCK",
+            "rationale": "PR trust seam requires ALLOW-only pass semantics; WARN is fail-closed",
+            "changed_path_detection_mode": detection_mode,
+            "degraded_detection": degraded,
+        }
     if pqx_policy_warning:
         return {
             "strategy_gate_decision": "ALLOW",
@@ -1260,10 +1316,17 @@ def map_preflight_control_signal(*, report: dict[str, Any], hardening_flow: bool
             "changed_path_detection_mode": detection_mode,
             "degraded_detection": degraded,
         }
+    if status == "passed" and degraded and event_name == "pull_request":
+        return {
+            "strategy_gate_decision": "BLOCK",
+            "rationale": "PR trust seam blocks degraded path resolution outcomes",
+            "changed_path_detection_mode": detection_mode,
+            "degraded_detection": degraded,
+        }
     if status == "passed" and degraded:
         return {
-            "strategy_gate_decision": "WARN",
-            "rationale": "preflight passed under degraded full governed scan mode",
+            "strategy_gate_decision": "BLOCK",
+            "rationale": "preflight passed under degraded full governed scan mode; fail-closed required",
             "changed_path_detection_mode": detection_mode,
             "degraded_detection": degraded,
         }
@@ -1290,7 +1353,11 @@ def build_preflight_result_artifact(
     hardening_flow: bool,
 ) -> dict[str, Any]:
     detection = report.get("changed_path_detection", {})
-    control_signal = map_preflight_control_signal(report=report, hardening_flow=hardening_flow)
+    control_signal = map_preflight_control_signal(
+        report=report,
+        hardening_flow=hardening_flow,
+        event_name=str(report.get("pytest_execution", {}).get("event_name", "")),
+    )
     required_context = report.get("pqx_required_context_enforcement")
     if not isinstance(required_context, dict):
         required_context = {
@@ -1307,7 +1374,7 @@ def build_preflight_result_artifact(
         }
     return {
         "artifact_type": "contract_preflight_result_artifact",
-        "schema_version": "1.4.0",
+        "schema_version": "1.5.0",
         "preflight_status": report.get("status", "failed"),
         "changed_contracts": report.get("changed_contracts", []),
         "impacted_producers": report.get("impact", {}).get("producers", []),
@@ -1328,6 +1395,12 @@ def build_preflight_result_artifact(
         "pytest_execution_record_ref": report.get("pytest_execution_record_ref"),
         "pytest_selection_integrity": report.get("pytest_selection_integrity", {}),
         "pytest_selection_integrity_result_ref": report.get("pytest_selection_integrity_result_ref"),
+        "pytest_artifact_linkage": {
+            "pytest_execution_record_ref": _CANONICAL_PYTEST_EXECUTION_REF,
+            "pytest_execution_record_hash": str((report.get("pytest_execution_record") or {}).get("artifact_hash") or ""),
+            "pytest_selection_integrity_result_ref": _CANONICAL_PYTEST_SELECTION_REF,
+            "pytest_selection_integrity_result_hash": str((report.get("pytest_selection_integrity") or {}).get("artifact_hash") or ""),
+        },
         "pqx_required_context_enforcement": {
             "classification": str(required_context.get("classification", "exploration_only_or_non_governed")),
             "execution_context": str(required_context.get("execution_context", "unspecified")),
@@ -1862,6 +1935,7 @@ def main() -> int:
     }
     pytest_execution_record = build_pytest_execution_record(
         event_name=str(ref_context.event_name or ""),
+        source_head_ref=str(ref_context.head_ref or ""),
         execution_log=pytest_execution_log,
         selected_targets=selected_pytest_targets,
         fallback_targets=fallback_pytest_targets,
@@ -1871,11 +1945,20 @@ def main() -> int:
         selection_reason_codes=pytest_selection_reason_codes,
     )
     validate_artifact(pytest_execution_record, "pytest_execution_record")
+    report["pytest_execution_record"] = pytest_execution_record
     pytest_execution_record_path = output_dir / "pytest_execution_record.json"
     pytest_execution_record_path.write_text(json.dumps(pytest_execution_record, indent=2) + "\n", encoding="utf-8")
-    report["pytest_execution_record_ref"] = str(pytest_execution_record_path)
+    report["pytest_execution_record_ref"] = _CANONICAL_PYTEST_EXECUTION_REF
+    pytest_execution_record_hash = str(pytest_execution_record.get("artifact_hash") or "")
 
     required_targets_for_integrity = sorted(set(smoke_targets + forced_targets)) if "smoke_targets" in locals() and "forced_targets" in locals() else []
+    selection_provenance = _build_common_provenance(source_head_ref=str(ref_context.head_ref or ""))
+    selection_provenance.update(
+        {
+            "source_pytest_execution_record_ref": _CANONICAL_PYTEST_EXECUTION_REF,
+            "source_pytest_execution_record_hash": pytest_execution_record_hash,
+        }
+    )
     try:
         selection_eval = evaluate_pytest_selection_integrity(
             changed_paths=detection.changed_paths,
@@ -1884,12 +1967,13 @@ def main() -> int:
             pytest_execution_record=pytest_execution_record,
             policy_path=_PYTEST_SELECTION_INTEGRITY_POLICY_PATH,
             generated_at=_utc_now(),
+            provenance=selection_provenance,
         )
         report["pytest_selection_integrity"] = selection_eval.payload
     except PytestSelectionIntegrityError:
         report["pytest_selection_integrity"] = {
             "artifact_type": "pytest_selection_integrity_result",
-            "schema_version": "1.0.0",
+            "schema_version": "1.1.0",
             "changed_paths": sorted(set(detection.changed_paths)),
             "required_test_targets": required_targets_for_integrity,
             "selected_test_targets": sorted(set(selected_pytest_targets + fallback_pytest_targets)),
@@ -1901,7 +1985,15 @@ def main() -> int:
             "selection_integrity_decision": "BLOCK",
             "blocking_reasons": ["PYTEST_SELECTION_ARTIFACT_INVALID"],
             "generated_at": _utc_now(),
+            "source_commit_sha": selection_provenance["source_commit_sha"],
+            "source_head_ref": selection_provenance["source_head_ref"],
+            "workflow_run_id": selection_provenance["workflow_run_id"],
+            "producer_script": selection_provenance["producer_script"],
+            "produced_at": selection_provenance["produced_at"],
+            "source_pytest_execution_record_ref": selection_provenance["source_pytest_execution_record_ref"],
+            "source_pytest_execution_record_hash": selection_provenance["source_pytest_execution_record_hash"],
         }
+        report["pytest_selection_integrity"]["artifact_hash"] = _hash_payload(report["pytest_selection_integrity"])
     selection_integrity_valid = True
     try:
         validate_artifact(report["pytest_selection_integrity"], "pytest_selection_integrity_result")
@@ -1911,7 +2003,7 @@ def main() -> int:
         report["invariant_violations"] = sorted(set(report.get("invariant_violations", []) + ["PYTEST_SELECTION_ARTIFACT_INVALID"]))
         report["pytest_selection_integrity"] = {
             "artifact_type": "pytest_selection_integrity_result",
-            "schema_version": "1.0.0",
+            "schema_version": "1.1.0",
             "changed_paths": sorted(set(detection.changed_paths)),
             "required_test_targets": required_targets_for_integrity,
             "selected_test_targets": sorted(set(selected_pytest_targets + fallback_pytest_targets)),
@@ -1923,13 +2015,23 @@ def main() -> int:
             "selection_integrity_decision": "BLOCK",
             "blocking_reasons": ["PYTEST_SELECTION_ARTIFACT_INVALID"],
             "generated_at": _utc_now(),
+            "source_commit_sha": selection_provenance["source_commit_sha"],
+            "source_head_ref": selection_provenance["source_head_ref"],
+            "workflow_run_id": selection_provenance["workflow_run_id"],
+            "producer_script": selection_provenance["producer_script"],
+            "produced_at": selection_provenance["produced_at"],
+            "source_pytest_execution_record_ref": selection_provenance["source_pytest_execution_record_ref"],
+            "source_pytest_execution_record_hash": selection_provenance["source_pytest_execution_record_hash"],
         }
+        report["pytest_selection_integrity"]["artifact_hash"] = _hash_payload(report["pytest_selection_integrity"])
+    if report.get("pytest_selection_integrity", {}).get("artifact_hash") in {"", None}:
+        report["pytest_selection_integrity"]["artifact_hash"] = _hash_payload(report["pytest_selection_integrity"])
     selection_integrity_path = output_dir / "pytest_selection_integrity_result.json"
     if selection_integrity_valid:
         selection_integrity_path.write_text(json.dumps(report["pytest_selection_integrity"], indent=2) + "\n", encoding="utf-8")
-        report["pytest_selection_integrity_result_ref"] = str(selection_integrity_path)
+        report["pytest_selection_integrity_result_ref"] = _CANONICAL_PYTEST_SELECTION_REF
     else:
-        report["pytest_selection_integrity_result_ref"] = None
+        report["pytest_selection_integrity_result_ref"] = _CANONICAL_PYTEST_SELECTION_REF
 
     if is_pull_request_event:
         if not bool(pytest_execution_record.get("executed", False)):
@@ -1959,6 +2061,76 @@ def main() -> int:
             report["recommended_repair_areas"] = sorted(
                 set(report.get("recommended_repair_areas", []) + ["restore deterministic PR pytest selection integrity coverage"])
             )
+        execution_ref = str(report.get("pytest_execution_record_ref") or "").strip()
+        selection_ref = str(report.get("pytest_selection_integrity_result_ref") or "").strip()
+        if not _validate_canonical_ref_path(ref=execution_ref, expected_suffix=_CANONICAL_PYTEST_EXECUTION_REF):
+            report["status"] = "failed"
+            report["invariant_violations"] = sorted(
+                set(report.get("invariant_violations", []) + ["PR_PYTEST_EXECUTION_REF_NON_CANONICAL"])
+            )
+        if not _validate_canonical_ref_path(ref=selection_ref, expected_suffix=_CANONICAL_PYTEST_SELECTION_REF):
+            report["status"] = "failed"
+            report["invariant_violations"] = sorted(
+                set(report.get("invariant_violations", []) + ["PR_PYTEST_SELECTION_REF_NON_CANONICAL"])
+            )
+        execution_provenance_fields = [
+            "source_commit_sha",
+            "source_head_ref",
+            "workflow_run_id",
+            "producer_script",
+            "produced_at",
+            "artifact_hash",
+        ]
+        if any(not str(pytest_execution_record.get(field) or "").strip() for field in execution_provenance_fields):
+            report["status"] = "failed"
+            report["invariant_violations"] = sorted(
+                set(report.get("invariant_violations", []) + ["PR_PYTEST_EXECUTION_PROVENANCE_MISSING"])
+            )
+        selection_provenance_fields = execution_provenance_fields + [
+            "source_pytest_execution_record_ref",
+            "source_pytest_execution_record_hash",
+        ]
+        if any(not str(selection_integrity.get(field) or "").strip() for field in selection_provenance_fields):
+            report["status"] = "failed"
+            report["invariant_violations"] = sorted(
+                set(report.get("invariant_violations", []) + ["PR_PYTEST_SELECTION_PROVENANCE_MISSING"])
+            )
+        if str(selection_integrity.get("source_pytest_execution_record_ref") or "") != execution_ref:
+            report["status"] = "failed"
+            report["invariant_violations"] = sorted(
+                set(report.get("invariant_violations", []) + ["PR_PYTEST_PROVENANCE_LINK_MISMATCH"])
+            )
+        if str(selection_integrity.get("source_pytest_execution_record_hash") or "") != str(pytest_execution_record.get("artifact_hash") or ""):
+            report["status"] = "failed"
+            report["invariant_violations"] = sorted(
+                set(report.get("invariant_violations", []) + ["PR_PYTEST_PROVENANCE_HASH_MISMATCH"])
+            )
+        if str(selection_integrity.get("source_commit_sha") or "") != str(pytest_execution_record.get("source_commit_sha") or ""):
+            report["status"] = "failed"
+            report["invariant_violations"] = sorted(
+                set(report.get("invariant_violations", []) + ["PR_PYTEST_PROVENANCE_COMMIT_MISMATCH"])
+            )
+        detection_mode = str(report.get("changed_path_detection", {}).get("changed_path_detection_mode", ""))
+        degraded_modes = {
+            "local_workspace_status",
+            "working_tree_diff_head",
+            "degraded_full_governed_scan",
+            "detection_failed_no_governed_paths",
+            "base_to_current_head_fallback",
+            "github_ref_context_fallback",
+        }
+        if detection_mode in degraded_modes:
+            report["status"] = "failed"
+            report["invariant_violations"] = sorted(
+                set(report.get("invariant_violations", []) + ["DEGRADED_REF_RESOLUTION_PR_BLOCK"])
+            )
+            if detection_mode != "degraded_full_governed_scan":
+                report["invariant_violations"] = sorted(
+                    set(
+                        report.get("invariant_violations", [])
+                        + ["NON_EXHAUSTIVE_GOVERNED_PATH_RESOLUTION", "GOVERNED_SURFACE_DIFF_INCOMPLETE"]
+                    )
+                )
 
     if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
         report["status"] = "failed"
@@ -2041,7 +2213,11 @@ def main() -> int:
             set(report.get("recommended_repair_areas", []) + ["run governed PR pytest execution before ALLOW"])
         )
 
-    control_signal = map_preflight_control_signal(report=report, hardening_flow=bool(args.hardening_flow))
+    control_signal = map_preflight_control_signal(
+        report=report,
+        hardening_flow=bool(args.hardening_flow),
+        event_name=str(ref_context.event_name or ""),
+    )
     decision = str(control_signal.get("strategy_gate_decision", "BLOCK"))
     report["status"] = "failed" if decision in {"BLOCK", "FREEZE"} else "passed"
     classification_exception: str | None = None

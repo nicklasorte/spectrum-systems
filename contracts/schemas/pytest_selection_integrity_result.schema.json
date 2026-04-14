@@ -17,11 +17,19 @@
     "impacted_surface_count",
     "selection_integrity_decision",
     "blocking_reasons",
-    "generated_at"
+    "generated_at",
+    "source_commit_sha",
+    "source_head_ref",
+    "workflow_run_id",
+    "producer_script",
+    "produced_at",
+    "source_pytest_execution_record_ref",
+    "source_pytest_execution_record_hash",
+    "artifact_hash"
   ],
   "properties": {
     "artifact_type": {"const": "pytest_selection_integrity_result"},
-    "schema_version": {"const": "1.0.0"},
+    "schema_version": {"const": "1.1.0"},
     "changed_paths": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
     "required_test_targets": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
     "selected_test_targets": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
@@ -47,6 +55,14 @@
       },
       "uniqueItems": true
     },
-    "generated_at": {"type": "string", "format": "date-time"}
+    "generated_at": {"type": "string", "format": "date-time"},
+    "source_commit_sha": {"type": "string", "minLength": 1},
+    "source_head_ref": {"type": "string", "minLength": 1},
+    "workflow_run_id": {"type": "string", "minLength": 1},
+    "producer_script": {"type": "string", "const": "scripts/run_contract_preflight.py"},
+    "produced_at": {"type": "string", "format": "date-time"},
+    "source_pytest_execution_record_ref": {"type": "string", "const": "outputs/contract_preflight/pytest_execution_record.json"},
+    "source_pytest_execution_record_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "artifact_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
   }
 }

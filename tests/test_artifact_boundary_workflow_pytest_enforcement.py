@@ -32,9 +32,21 @@ def test_artifact_boundary_workflow_fail_closes_on_missing_or_blocked_selection_
     assert 'allow decision with blocked pytest selection integrity' in text
 
 
+def test_artifact_boundary_workflow_enforces_canonical_refs_and_provenance() -> None:
+    text = ARTIFACT_BOUNDARY_WORKFLOW.read_text(encoding='utf-8')
+    assert 'WARN is not pass-equivalent for pull_request' in text
+    assert 'non-canonical pytest_execution_record_ref' in text
+    assert 'missing pytest_execution_record provenance fields' in text
+    assert 'non-canonical pytest_selection_integrity_result_ref' in text
+    assert 'selection provenance record ref mismatch' in text
+
+
 def test_autofix_workflow_enforces_pytest_execution_record_for_allow_warn() -> None:
     text = AUTOFIX_WORKFLOW.read_text(encoding='utf-8')
     assert 'pytest_execution_record_ref' in text
+    assert 'WARN is not pass-equivalent for pull_request' in text
+    assert 'non-canonical pytest_execution_record_ref' in text
+    assert 'missing pytest_execution_record provenance fields' in text
     assert 'allow decision with executed=false' in text
     assert 'allow decision with empty selected_targets' in text
 
@@ -42,5 +54,8 @@ def test_autofix_workflow_enforces_pytest_execution_record_for_allow_warn() -> N
 def test_autofix_workflow_enforces_selection_integrity_for_allow_warn() -> None:
     text = AUTOFIX_WORKFLOW.read_text(encoding='utf-8')
     assert 'pytest_selection_integrity_result_ref' in text
+    assert 'non-canonical pytest_selection_integrity_result_ref' in text
+    assert 'selection provenance record ref mismatch' in text
+    assert 'selection provenance record hash mismatch' in text
     assert 'missing pytest_selection_integrity_result_ref' in text
     assert 'allow decision with blocked pytest selection integrity' in text

@@ -168,23 +168,51 @@ if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
     record = json.loads(record_path.read_text(encoding="utf-8"))
     executed = bool(record.get("executed", False))
     selected_targets = record.get("selected_targets") or []
-    if decision in {"ALLOW", "WARN"} and count < 1:
+    if decision == "WARN":
+        raise SystemExit("workflow/preflight trust mismatch: WARN is not pass-equivalent for pull_request")
+    if decision == "ALLOW" and count < 1:
         raise SystemExit("workflow/preflight trust mismatch: PR allow without preflight-owned pytest execution")
-    if decision in {"ALLOW", "WARN"} and not executed:
+    if decision == "ALLOW" and not executed:
         raise SystemExit("workflow/preflight trust mismatch: PR allow with executed=false")
-    if decision in {"ALLOW", "WARN"} and not selected_targets:
+    if decision == "ALLOW" and not selected_targets:
         raise SystemExit("workflow/preflight trust mismatch: PR allow with empty selected_targets")
+    if record_ref != "outputs/contract_preflight/pytest_execution_record.json":
+        raise SystemExit("workflow/preflight trust mismatch: non-canonical pytest_execution_record_ref")
+    required_execution_provenance = [
+        "source_commit_sha",
+        "source_head_ref",
+        "workflow_run_id",
+        "producer_script",
+        "produced_at",
+        "artifact_hash",
+    ]
+    if any(not str(record.get(field) or "").strip() for field in required_execution_provenance):
+        raise SystemExit("workflow/preflight trust mismatch: missing pytest_execution_record provenance fields")
     selection_ref = str(payload.get("pytest_selection_integrity_result_ref") or "").strip()
     selection = payload.get("pytest_selection_integrity") or {}
     if not selection_ref:
         raise SystemExit("workflow/preflight trust mismatch: missing pytest_selection_integrity_result_ref")
+    if selection_ref != "outputs/contract_preflight/pytest_selection_integrity_result.json":
+        raise SystemExit("workflow/preflight trust mismatch: non-canonical pytest_selection_integrity_result_ref")
     selection_path = Path(selection_ref)
     if not selection_path.is_file():
         raise SystemExit(f"workflow/preflight trust mismatch: missing pytest_selection_integrity_result artifact at {selection_ref}")
     selection_from_ref = json.loads(selection_path.read_text(encoding="utf-8"))
-    if str(selection_from_ref.get("selection_integrity_decision") or "BLOCK") != "ALLOW" and decision in {"ALLOW", "WARN"}:
+    required_selection_provenance = required_execution_provenance + [
+        "source_pytest_execution_record_ref",
+        "source_pytest_execution_record_hash",
+    ]
+    if any(not str(selection_from_ref.get(field) or "").strip() for field in required_selection_provenance):
+        raise SystemExit("workflow/preflight trust mismatch: missing pytest_selection_integrity_result provenance fields")
+    if str(selection_from_ref.get("source_pytest_execution_record_ref") or "") != record_ref:
+        raise SystemExit("workflow/preflight trust mismatch: selection provenance record ref mismatch")
+    if str(selection_from_ref.get("source_pytest_execution_record_hash") or "") != str(record.get("artifact_hash") or ""):
+        raise SystemExit("workflow/preflight trust mismatch: selection provenance record hash mismatch")
+    if str(selection_from_ref.get("source_commit_sha") or "") != str(record.get("source_commit_sha") or ""):
+        raise SystemExit("workflow/preflight trust mismatch: selection provenance commit mismatch")
+    if str(selection_from_ref.get("selection_integrity_decision") or "BLOCK") != "ALLOW" and decision == "ALLOW":
         raise SystemExit("workflow/preflight trust mismatch: allow decision with blocked pytest selection integrity")
-    if selection and str(selection.get("selection_integrity_decision") or "BLOCK") != "ALLOW" and decision in {"ALLOW", "WARN"}:
+    if selection and str(selection.get("selection_integrity_decision") or "BLOCK") != "ALLOW" and decision == "ALLOW":
         raise SystemExit("workflow/preflight trust mismatch: allow decision with in-artifact blocked pytest selection integrity")
 PY
 

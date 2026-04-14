@@ -35,3 +35,9 @@ def test_execution_record_required_maps_to_inventory_regression() -> None:
     report = {"invariant_violations": ["PR_PYTEST_EXECUTION_RECORD_REQUIRED"]}
     result = normalize_preflight_failure(report)
     assert result["failure_class"] == "test_inventory_regression"
+
+
+def test_degraded_ref_resolution_pr_block_maps_to_inventory_regression() -> None:
+    report = {"invariant_violations": ["DEGRADED_REF_RESOLUTION_PR_BLOCK"]}
+    result = normalize_preflight_failure(report)
+    assert result["failure_class"] == "test_inventory_regression"
