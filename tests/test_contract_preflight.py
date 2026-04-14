@@ -2116,6 +2116,7 @@ def test_preflight_blocks_when_selection_integrity_rejects(monkeypatch, tmp_path
     assert code == 2
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
     assert any(code.startswith("PYTEST_SELECTION_") for code in report["invariant_violations"])
+    assert "PR_PYTEST_SELECTION_INTEGRITY_REQUIRED" in report["invariant_violations"]
 
 
 def test_preflight_writes_selection_integrity_artifact_ref(monkeypatch, tmp_path: Path) -> None:

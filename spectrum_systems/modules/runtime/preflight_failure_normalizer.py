@@ -35,6 +35,7 @@ def normalize_preflight_failure(report: dict[str, Any]) -> dict[str, Any]:
                 "PYTEST_SELECTION_ARTIFACT_INVALID",
                 "PYTEST_SELECTION_MISMATCH",
                 "PYTEST_SELECTION_FILTERING_DETECTED",
+                "PR_PYTEST_SELECTION_INTEGRITY_REQUIRED",
             }
             & set(report.get("invariant_violations", []))
         ),

@@ -117,11 +117,8 @@ jobs:
           preflight_exit=$?
           set -e
 
-          if [[ "$preflight_exit" -eq 0 ]]; then
-            exit 0
-          fi
-
-          auto_repair_allowed=$(python - <<'PY'
+          if [[ "$preflight_exit" -ne 0 ]]; then
+            auto_repair_allowed=$(python - <<'PY'
 import json
 from pathlib import Path
 path = Path("outputs/contract_preflight/preflight_repair_plan_record.json")
@@ -133,11 +130,11 @@ else:
 PY
 )
 
-          if [[ "$auto_repair_allowed" != "true" ]]; then
-            exit "$preflight_exit"
-          fi
+            if [[ "$auto_repair_allowed" != "true" ]]; then
+              exit "$preflight_exit"
+            fi
 
-          python scripts/run_github_pr_autofix_contract_preflight.py \
+            python scripts/run_github_pr_autofix_contract_preflight.py \
             --output-dir outputs/contract_preflight \
             --base-ref "${{ steps.preflight-refs.outputs.base_ref }}" \
             --head-ref "${{ steps.preflight-refs.outputs.head_ref }}" \
@@ -146,6 +143,7 @@ PY
             --pqx-wrapper-path outputs/contract_preflight/preflight_pqx_task_wrapper.json \
             --authority-evidence-ref artifacts/pqx_runs/preflight.pqx_slice_execution_record.json \
             --same-repo-write-allowed
+          fi
 
           # Preflight is the canonical authority for PR pytest execution truth.
           python - <<'PY'

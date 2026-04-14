@@ -552,3 +552,14 @@ def test_selection_integrity_mismatch_classifies_non_repairable() -> None:
     assert diagnosis["failure_class"] == "pytest_selection_mismatch"
     plan = build_preflight_repair_plan_record(diagnosis_record=diagnosis)
     assert plan["eligibility_decision"] != "auto_repair_allowed"
+
+
+def test_pr_selection_integrity_required_invariant_classifies_as_selection_missing() -> None:
+    diagnosis = build_preflight_block_diagnosis_record(
+        report={
+            "invariant_violations": ["PR_PYTEST_SELECTION_INTEGRITY_REQUIRED"],
+            "normalized_failure": {"failure_class": "test_inventory_regression", "repairable": True},
+        },
+        preflight_artifact={"control_signal": {"strategy_gate_decision": "BLOCK"}, "generated_at": "2026"},
+    )
+    assert diagnosis["failure_class"] == "pytest_selection_missing"

@@ -1953,7 +1953,9 @@ def main() -> int:
         selection_reasons = [str(item) for item in (selection_integrity.get("blocking_reasons") or []) if isinstance(item, str)]
         if str(selection_integrity.get("selection_integrity_decision") or "BLOCK") != "ALLOW":
             report["status"] = "failed"
-            report["invariant_violations"] = sorted(set(report.get("invariant_violations", []) + selection_reasons))
+            report["invariant_violations"] = sorted(
+                set(report.get("invariant_violations", []) + selection_reasons + ["PR_PYTEST_SELECTION_INTEGRITY_REQUIRED"])
+            )
             report["recommended_repair_areas"] = sorted(
                 set(report.get("recommended_repair_areas", []) + ["restore deterministic PR pytest selection integrity coverage"])
             )
@@ -2023,7 +2025,9 @@ def main() -> int:
     pytest_execution_count = int(pytest_execution.get("pytest_execution_count", 0)) if isinstance(pytest_execution, dict) else 0
     if is_pull_request_event and not str(report.get("pytest_selection_integrity_result_ref") or "").strip():
         report["status"] = "failed"
-        report["invariant_violations"] = sorted(set(report.get("invariant_violations", []) + ["PYTEST_SELECTION_ARTIFACT_MISSING"]))
+        report["invariant_violations"] = sorted(
+            set(report.get("invariant_violations", []) + ["PYTEST_SELECTION_ARTIFACT_MISSING", "PR_PYTEST_SELECTION_INTEGRITY_REQUIRED"])
+        )
 
     if is_pull_request_event and report.get("status") == "passed" and pytest_execution_count < 1:
         report["status"] = "failed"

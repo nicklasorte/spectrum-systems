@@ -219,6 +219,8 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
             return "no_tests_discovered", ["PR_PYTEST_SELECTED_TARGETS_EMPTY"]
         if "PR_PYTEST_FALLBACK_TARGETS_EMPTY" in invariant_violations:
             return "no_tests_discovered", ["PR_PYTEST_FALLBACK_TARGETS_EMPTY"]
+        if "PR_PYTEST_SELECTION_INTEGRITY_REQUIRED" in invariant_violations:
+            return "pytest_selection_missing", ["PR_PYTEST_SELECTION_INTEGRITY_REQUIRED"]
         if "PYTEST_SELECTION_ARTIFACT_MISSING" in invariant_violations or "PYTEST_SELECTION_ARTIFACT_INVALID" in invariant_violations:
             return "pytest_selection_missing", [code for code in invariant_violations if code.startswith("PYTEST_SELECTION_ARTIFACT")][:1] or ["PYTEST_SELECTION_ARTIFACT_MISSING"]
         if "PYTEST_SELECTION_FILTERING_DETECTED" in invariant_violations:
