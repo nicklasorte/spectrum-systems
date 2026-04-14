@@ -1,0 +1,7 @@
+{
+  "policy_version": "1.0.0",
+  "workflow": "artifact-boundary",
+  "authoritative_job_id": "pytest-pr",
+  "authoritative_display_name": "PR / pytest",
+  "required_status_check_name": "PR / pytest"
+}

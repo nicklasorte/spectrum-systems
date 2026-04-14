@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/required_check_alignment_audit_result.schema.json",
+  "title": "Required Check Alignment Audit Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "expected_required_check",
+    "workflow_name",
+    "authoritative_job_id",
+    "authoritative_display_name",
+    "local_policy_alignment_status",
+    "live_github_alignment_status",
+    "final_decision",
+    "blocking_reasons",
+    "operator_actions_required",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_type": {"const": "required_check_alignment_audit_result"},
+    "schema_version": {"const": "1.0.0"},
+    "expected_required_check": {"type": "string", "minLength": 1},
+    "workflow_name": {"type": "string", "minLength": 1},
+    "authoritative_job_id": {"type": "string", "minLength": 1},
+    "authoritative_display_name": {"type": "string", "minLength": 1},
+    "local_policy_alignment_status": {
+      "type": "string",
+      "enum": ["aligned", "contradiction"]
+    },
+    "live_github_alignment_status": {
+      "type": "string",
+      "enum": ["aligned", "misaligned", "unknown"]
+    },
+    "final_decision": {
+      "type": "string",
+      "enum": ["PASS", "WARN", "BLOCK"]
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "operator_actions_required": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "generated_at": {"type": "string", "format": "date-time"}
+  }
+}

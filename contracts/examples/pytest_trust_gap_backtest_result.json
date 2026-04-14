@@ -1,0 +1,72 @@
+{
+  "artifact_type": "pytest_trust_gap_backtest_result",
+  "schema_version": "1.0.0",
+  "audit_window": {
+    "roots": [
+      "outputs",
+      "artifacts",
+      "data"
+    ],
+    "artifact_globs": [
+      "**/contract_preflight_result_artifact.json"
+    ],
+    "max_artifacts": 50,
+    "repo_root": "/workspace/spectrum-systems"
+  },
+  "evaluated_runs": 3,
+  "suspect_runs": 2,
+  "run_classifications": [
+    {
+      "run_identifier": "outputs/history/run-001/contract_preflight_result_artifact.json",
+      "evidence_refs_used": [
+        "outputs/history/run-001/contract_preflight_result_artifact.json"
+      ],
+      "classification": "suspect_missing_selection_integrity_evidence",
+      "reasons": [
+        "MISSING_PYTEST_SELECTION_INTEGRITY_ARTIFACT",
+        "MISSING_PYTEST_SELECTION_INTEGRITY_RESULT_REF",
+        "MISSING_PYTEST_EXECUTION_RECORD_REF"
+      ],
+      "confidence_level": "high",
+      "recommended_follow_up": [
+        "Retrieve canonical pytest_selection_integrity_result and verify selection_integrity_decision=ALLOW."
+      ]
+    },
+    {
+      "run_identifier": "outputs/history/run-002/contract_preflight_result_artifact.json",
+      "evidence_refs_used": [
+        "outputs/history/run-002/contract_preflight_result_artifact.json"
+      ],
+      "classification": "insufficient_evidence_to_determine",
+      "reasons": [
+        "MISSING_PYTEST_EXECUTION_ARTIFACT",
+        "MISSING_PYTEST_SELECTION_INTEGRITY_ARTIFACT"
+      ],
+      "confidence_level": "low",
+      "recommended_follow_up": [
+        "Retrieve event_name and canonical preflight refs to classify run trustworthiness."
+      ]
+    },
+    {
+      "run_identifier": "outputs/history/run-003/contract_preflight_result_artifact.json",
+      "evidence_refs_used": [
+        "outputs/history/run-003/contract_preflight_result_artifact.json",
+        "outputs/contract_preflight/pytest_execution_record.json",
+        "outputs/contract_preflight/pytest_selection_integrity_result.json"
+      ],
+      "classification": "trustworthy",
+      "reasons": [],
+      "confidence_level": "high",
+      "recommended_follow_up": [
+        "No immediate action required."
+      ]
+    }
+  ],
+  "summary_counts": {
+    "insufficient_evidence_to_determine": 1,
+    "suspect_missing_selection_integrity_evidence": 1,
+    "trustworthy": 1
+  },
+  "final_decision": "BLOCK",
+  "generated_at": "2026-04-14T00:00:00Z"
+}

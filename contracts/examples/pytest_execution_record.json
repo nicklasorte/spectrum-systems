@@ -3,7 +3,7 @@
   "schema_version": "1.1.0",
   "event_name": "pull_request",
   "workflow_name": "artifact-boundary",
-  "workflow_job": "contract-preflight",
+  "workflow_job": "pytest-pr",
   "executed": true,
   "pytest_command": "python -m pytest -q tests/test_contract_preflight.py",
   "selected_targets": [

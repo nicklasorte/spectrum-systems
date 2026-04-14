@@ -1,0 +1,16 @@
+{
+  "artifact_type": "required_check_alignment_audit_result",
+  "schema_version": "1.0.0",
+  "expected_required_check": "PR / pytest",
+  "workflow_name": "artifact-boundary",
+  "authoritative_job_id": "pytest-pr",
+  "authoritative_display_name": "PR / pytest",
+  "local_policy_alignment_status": "aligned",
+  "live_github_alignment_status": "unknown",
+  "final_decision": "WARN",
+  "blocking_reasons": [],
+  "operator_actions_required": [
+    "Verify GitHub branch protection required status checks include exactly 'PR / pytest' and remove obsolete checks."
+  ],
+  "generated_at": "2026-04-14T00:00:00Z"
+}

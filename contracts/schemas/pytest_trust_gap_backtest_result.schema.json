@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pytest_trust_gap_backtest_result.schema.json",
+  "title": "Pytest Trust Gap Backtest Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "audit_window",
+    "evaluated_runs",
+    "suspect_runs",
+    "run_classifications",
+    "summary_counts",
+    "final_decision",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_type": {"const": "pytest_trust_gap_backtest_result"},
+    "schema_version": {"const": "1.0.0"},
+    "audit_window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roots", "artifact_globs", "max_artifacts", "repo_root"],
+      "properties": {
+        "roots": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "artifact_globs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "max_artifacts": {"type": "integer", "minimum": 1},
+        "repo_root": {"type": "string", "minLength": 1}
+      }
+    },
+    "evaluated_runs": {"type": "integer", "minimum": 0},
+    "suspect_runs": {"type": "integer", "minimum": 0},
+    "run_classifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "run_identifier",
+          "evidence_refs_used",
+          "classification",
+          "reasons",
+          "confidence_level",
+          "recommended_follow_up"
+        ],
+        "properties": {
+          "run_identifier": {"type": "string", "minLength": 1},
+          "evidence_refs_used": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+          "classification": {
+            "type": "string",
+            "enum": [
+              "trustworthy",
+              "suspect_missing_pytest_execution_evidence",
+              "suspect_missing_selection_integrity_evidence",
+              "suspect_noncanonical_ref_acceptance",
+              "suspect_warn_pass_equivalence",
+              "suspect_degraded_ref_resolution",
+              "insufficient_evidence_to_determine"
+            ]
+          },
+          "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+          "confidence_level": {"type": "string", "enum": ["high", "medium", "low"]},
+          "recommended_follow_up": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+        }
+      }
+    },
+    "summary_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^(trustworthy|suspect_missing_pytest_execution_evidence|suspect_missing_selection_integrity_evidence|suspect_noncanonical_ref_acceptance|suspect_warn_pass_equivalence|suspect_degraded_ref_resolution|insufficient_evidence_to_determine)$": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "final_decision": {"type": "string", "enum": ["PASS", "WARN", "BLOCK"]},
+    "generated_at": {"type": "string", "format": "date-time"}
+  }
+}
