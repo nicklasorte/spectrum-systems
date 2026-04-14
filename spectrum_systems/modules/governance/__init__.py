@@ -19,6 +19,12 @@ from .drift_response_validation import (
     DriftResponseValidationError,
     run_drift_response_validation,
 )
+from .system_registry_guard import (
+    SystemRegistryGuardError,
+    evaluate_system_registry_guard,
+    load_guard_policy,
+    parse_system_registry,
+)
 
 __all__ = [
     "DoneCertificationError",
@@ -35,4 +41,8 @@ __all__ = [
     "run_eval_auto_generation_quality_validation",
     "DriftResponseValidationError",
     "run_drift_response_validation",
+    "SystemRegistryGuardError",
+    "evaluate_system_registry_guard",
+    "load_guard_policy",
+    "parse_system_registry",
 ]

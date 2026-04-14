@@ -100,11 +100,13 @@ jobs:
           GITHUB_BEFORE_SHA: ${{ github.event.before || '' }}
           GITHUB_SHA: ${{ github.sha }}
         run: |
+          set -euo pipefail
           python scripts/build_preflight_pqx_wrapper.py \
             --base-ref "${{ steps.preflight-refs.outputs.base_ref }}" \
             --head-ref "${{ steps.preflight-refs.outputs.head_ref }}" \
             --output outputs/contract_preflight/preflight_pqx_task_wrapper.json
 
+          set +e
           python scripts/run_contract_preflight.py \
             --base-ref "${{ steps.preflight-refs.outputs.base_ref }}" \
             --head-ref "${{ steps.preflight-refs.outputs.head_ref }}" \
@@ -112,6 +114,38 @@ jobs:
             --execution-context pqx_governed \
             --pqx-wrapper-path outputs/contract_preflight/preflight_pqx_task_wrapper.json \
             --authority-evidence-ref artifacts/pqx_runs/preflight.pqx_slice_execution_record.json
+          preflight_exit=$?
+          set -e
+
+          if [[ "$preflight_exit" -eq 0 ]]; then
+            exit 0
+          fi
+
+          auto_repair_allowed=$(python - <<'PY'
+import json
+from pathlib import Path
+path = Path("outputs/contract_preflight/preflight_repair_plan_record.json")
+if not path.is_file():
+    print("false")
+else:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    print("true" if payload.get("eligibility_decision") == "auto_repair_allowed" else "false")
+PY
+)
+
+          if [[ "$auto_repair_allowed" != "true" ]]; then
+            exit "$preflight_exit"
+          fi
+
+          python scripts/run_github_pr_autofix_contract_preflight.py \
+            --output-dir outputs/contract_preflight \
+            --base-ref "${{ steps.preflight-refs.outputs.base_ref }}" \
+            --head-ref "${{ steps.preflight-refs.outputs.head_ref }}" \
+            --event-name "${{ github.event_name }}" \
+            --execution-context pqx_governed \
+            --pqx-wrapper-path outputs/contract_preflight/preflight_pqx_task_wrapper.json \
+            --authority-evidence-ref artifacts/pqx_runs/preflight.pqx_slice_execution_record.json \
+            --same-repo-write-allowed
 
       - name: Upload contract preflight outputs
         if: always()
@@ -123,7 +157,52 @@ jobs:
             outputs/contract_preflight/contract_preflight_report.md
             outputs/contract_preflight/contract_preflight_report.json
             outputs/contract_preflight/contract_preflight_result_artifact.json
+            outputs/contract_preflight/system_registry_guard_result.json
             outputs/contract_preflight/contract_preflight_diagnosis_bundle.md
+
+  system-registry-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Resolve changed refs
+        id: srg-refs
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "base_ref=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+            echo "head_ref=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+          elif [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            echo "base_ref=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+            echo "head_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "base_ref=origin/main" >> "$GITHUB_OUTPUT"
+            echo "head_ref=HEAD" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run system registry guard
+        run: |
+          python scripts/run_system_registry_guard.py \
+            --base-ref "${{ steps.srg-refs.outputs.base_ref }}" \
+            --head-ref "${{ steps.srg-refs.outputs.head_ref }}" \
+            --output outputs/system_registry_guard/system_registry_guard_result.json
+
+      - name: Upload system registry guard outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-registry-guard-outputs
+          if-no-files-found: warn
+          path: outputs/system_registry_guard/system_registry_guard_result.json
 
   run-pytest:
     needs:
@@ -131,6 +210,7 @@ jobs:
       - validate-module-architecture
       - validate-orchestration-boundaries
       - contract-preflight
+      - system-registry-guard
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

@@ -7,6 +7,7 @@ from spectrum_systems.modules.runtime.github_pr_autofix_contract_preflight impor
     ContractPreflightAutofixError,
     build_preflight_block_diagnosis_record,
     build_preflight_repair_plan_record,
+    classify_preflight_block,
     run_preflight_block_autorepair,
 )
 
@@ -130,6 +131,10 @@ def test_validation_replay_required_before_success(tmp_path: Path) -> None:
             command_runner=_runner,
         )
     assert any("pytest" in cmd for cmd in calls)
+    outcome = json.loads((out / "preflight_recovery_outcome_record.json").read_text(encoding="utf-8"))
+    assert outcome["final_decision"] == "blocked_repair_failed"
+    assert outcome["repair_attempted"] is True
+    assert outcome["repair_inapplicable_reason"] is None
 
 
 def test_rerun_preflight_required_and_blocks_when_still_block(tmp_path: Path) -> None:
@@ -158,7 +163,9 @@ def test_rerun_preflight_required_and_blocks_when_still_block(tmp_path: Path) ->
             command_runner=_runner,
         )
     outcome = json.loads((out / "preflight_recovery_outcome_record.json").read_text(encoding="utf-8"))
-    assert outcome["final_decision"] == "repaired_but_still_blocked"
+    assert outcome["final_decision"] == "blocked_repair_failed"
+    result = json.loads((out / "preflight_repair_result_record.json").read_text(encoding="utf-8"))
+    assert result["terminal_state"] == "blocked_repair_failed"
 
 
 def test_no_mutation_allowed_for_fork_or_unsafe_context(tmp_path: Path) -> None:
@@ -240,7 +247,7 @@ def test_missing_required_surface_mapping_autorepair_writes_override_file(tmp_pa
         command_runner=_runner,
     )
     assert result["repair_result"]["success"] is True
-    assert result["recovery_outcome"]["final_decision"] == "repaired_and_passed"
+    assert result["recovery_outcome"]["final_decision"] == "passed_after_auto_repair"
     override_file = tmp_path / "docs" / "governance" / "preflight_required_surface_test_overrides.json"
     assert override_file.exists()
 
@@ -266,8 +273,38 @@ def test_non_repairable_block_emits_recovery_outcome_and_escalates(tmp_path: Pat
             command_runner=lambda cmd, cwd: None,  # type: ignore[arg-type]
         )
     outcome = json.loads((out / "preflight_recovery_outcome_record.json").read_text(encoding="utf-8"))
-    assert outcome["final_decision"] == "repair_not_permitted"
+    assert outcome["final_decision"] == "blocked_repair_not_applicable"
     assert outcome["repair_invoked"] is False
+    assert outcome["repair_attempted"] is False
+    assert outcome["repair_inapplicable_reason"] == "auto_repair_forbidden_by_policy"
+
+
+def test_contract_mismatch_with_empty_repair_plan_is_blocked_not_applicable(tmp_path: Path) -> None:
+    out = _write_base_artifacts(
+        tmp_path,
+        report_overrides={
+            "missing_required_surface": [
+                {"path": "docs/architecture/system_registry.md", "reason": "missing deterministic mapping"},
+            ],
+            "changed_path_detection": {},
+        },
+    )
+    with pytest.raises(ContractPreflightAutofixError, match="repair_plan_not_applicable:empty_repair_plan"):
+        run_preflight_block_autorepair(
+            repo_root=tmp_path,
+            output_dir=out,
+            base_ref="base",
+            head_ref="head",
+            execution_context="pqx_governed",
+            pqx_wrapper_path=out / "preflight_pqx_task_wrapper.json",
+            authority_evidence_ref="artifact",
+            same_repo_write_allowed=True,
+            command_runner=lambda cmd, cwd: type("Res", (), {"command": cmd, "returncode": 0})(),
+        )
+    outcome = json.loads((out / "preflight_recovery_outcome_record.json").read_text(encoding="utf-8"))
+    assert outcome["final_decision"] == "blocked_repair_not_applicable"
+    assert outcome["repair_attempted"] is False
+    assert outcome["repair_inapplicable_reason"] == "empty_repair_plan"
 
 
 def test_schema_violation_auto_repair_path_writes_terminal_success_outcome(tmp_path: Path) -> None:
@@ -306,4 +343,114 @@ def test_schema_violation_auto_repair_path_writes_terminal_success_outcome(tmp_p
         same_repo_write_allowed=True,
         command_runner=_runner,
     )
-    assert result["recovery_outcome"]["final_decision"] == "repaired_and_passed"
+    assert result["recovery_outcome"]["final_decision"] == "passed_after_auto_repair"
+
+
+def test_classification_distinguishes_missing_refs_reason() -> None:
+    failure_class, reason_codes = classify_preflight_block(
+        report={"changed_path_detection": {"ref_context": {"reason_code": "missing_refs"}}}
+    )
+    assert failure_class == "missing_required_artifact"
+    assert reason_codes == ["missing_refs"]
+
+
+def test_classification_distinguishes_unsupported_event_context_reason() -> None:
+    failure_class, reason_codes = classify_preflight_block(
+        report={"changed_path_detection": {"ref_context": {"reason_code": "unsupported_event_context"}}}
+    )
+    assert failure_class == "internal_preflight_error"
+    assert reason_codes == ["unsupported_event_context"]
+
+
+def test_classification_distinguishes_malformed_ref_context_reason() -> None:
+    failure_class, reason_codes = classify_preflight_block(
+        report={"changed_path_detection": {"ref_context": {"reason_code": "malformed_ref_context"}}}
+    )
+    assert failure_class == "invalid_wrapper"
+    assert reason_codes == ["malformed_ref_context"]
+
+
+def test_classification_distinguishes_contract_mismatch_from_bad_ref_resolution() -> None:
+    failure_class, reason_codes = classify_preflight_block(
+        report={
+            "missing_required_surface": [{"path": "contracts/schemas/x.schema.json", "reason": "none"}],
+            "invariant_violations": ["contract_mismatch_from_bad_ref_resolution"],
+        }
+    )
+    assert failure_class == "contract_mismatch"
+    assert reason_codes == ["contract_mismatch_from_bad_ref_resolution"]
+
+
+def test_classification_maps_preflight_runtime_exception_reason() -> None:
+    failure_class, reason_codes = classify_preflight_block(
+        report={"invariant_violations": ["preflight_runtime_exception"]}
+    )
+    assert failure_class == "internal_preflight_error"
+    assert reason_codes == ["preflight_runtime_exception"]
+
+
+def test_repair_pipeline_failure_preserves_original_reason_codes(tmp_path: Path) -> None:
+    out = _write_base_artifacts(
+        tmp_path,
+        report_overrides={
+            "changed_path_detection": {"ref_context": {"reason_code": "missing_refs"}},
+        },
+    )
+
+    class _Res:
+        def __init__(self, command, returncode):
+            self.command = command
+            self.returncode = returncode
+
+    def _runner(cmd, cwd):
+        if "pytest" in cmd:
+            return _Res(cmd, 1)
+        return _Res(cmd, 0)
+
+    with pytest.raises(ContractPreflightAutofixError, match="validation_replay_failed"):
+        run_preflight_block_autorepair(
+            repo_root=tmp_path,
+            output_dir=out,
+            base_ref="base",
+            head_ref="head",
+            execution_context="pqx_governed",
+            pqx_wrapper_path=out / "preflight_pqx_task_wrapper.json",
+            authority_evidence_ref="artifact",
+            same_repo_write_allowed=True,
+            command_runner=_runner,
+        )
+
+    outcome = json.loads((out / "preflight_recovery_outcome_record.json").read_text(encoding="utf-8"))
+    assert "missing_refs" in outcome["reason_codes"]
+    assert "repair_pipeline_failure" in outcome["reason_codes"]
+
+
+def test_diagnosable_push_ref_failure_does_not_emit_human_escalation(tmp_path: Path) -> None:
+    out = _write_base_artifacts(
+        tmp_path,
+        report_overrides={
+            "changed_path_detection": {"ref_context": {"reason_code": "missing_refs"}},
+        },
+    )
+
+    with pytest.raises(ContractPreflightAutofixError, match="validation_replay_failed"):
+        run_preflight_block_autorepair(
+            repo_root=tmp_path,
+            output_dir=out,
+            base_ref="base",
+            head_ref="head",
+            execution_context="pqx_governed",
+            pqx_wrapper_path=out / "preflight_pqx_task_wrapper.json",
+            authority_evidence_ref="artifact",
+            same_repo_write_allowed=True,
+            command_runner=lambda cmd, cwd: type("Res", (), {"command": cmd, "returncode": 1 if "pytest" in cmd else 0})(),
+        )
+
+    assert not (out / "preflight_human_escalation_record.json").exists()
+
+
+def test_classification_deterministic_for_same_push_inputs() -> None:
+    report = {"changed_path_detection": {"ref_context": {"reason_code": "missing_refs"}}}
+    first = classify_preflight_block(report=report)
+    second = classify_preflight_block(report=report)
+    assert first == second

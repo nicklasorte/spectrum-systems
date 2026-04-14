@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from scripts import build_preflight_pqx_wrapper as builder
+from scripts import run_contract_preflight as preflight
 
 
 def test_wrapper_builder_writes_changed_paths_and_resolution(tmp_path: Path, monkeypatch) -> None:
@@ -95,3 +96,7 @@ def test_wrapper_builder_blocks_on_insufficient_context(tmp_path: Path, monkeypa
     monkeypatch.setattr(builder, "resolve_changed_paths", lambda **_: FakeResult())
     rc = builder.main(["--base-ref", "base", "--head-ref", "head", "--template", "template.json"])
     assert rc == 2
+
+
+def test_wrapper_and_runner_share_canonical_ref_normalizer() -> None:
+    assert builder.normalize_preflight_ref_context is preflight.normalize_preflight_ref_context

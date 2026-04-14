@@ -7,6 +7,7 @@
   "rerun_preflight_exit_code": 0,
   "rerun_strategy_gate_decision": "ALLOW",
   "success": true,
+  "terminal_state": "passed_after_auto_repair",
   "rerun_allowed": true,
   "rerun_requires": [
     "preflight_repair_validation_record"

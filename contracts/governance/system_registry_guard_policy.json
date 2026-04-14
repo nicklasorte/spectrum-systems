@@ -1,0 +1,58 @@
+{
+  "policy_version": "1.0.0",
+  "protected_authority_seams": {
+    "execution admission": "AEX",
+    "execution": "PQX",
+    "trust policy": "TPA",
+    "orchestration": "TLC",
+    "closure": "CDE",
+    "promotion readiness": "CDE",
+    "enforcement": "SEL",
+    "override": "HIT",
+    "context preflight": "CTX",
+    "replay": "REP"
+  },
+  "responsibility_clusters": {
+    "context": ["context", "context_bundle", "contextual"],
+    "judgment": ["judgment", "judgement", "decision"],
+    "calibration": ["calibration", "confidence", "correctness"],
+    "drift": ["drift", "deviation", "regression"],
+    "entropy": ["entropy", "decay"],
+    "release": ["release", "rollout", "freeze", "rollback"],
+    "canary": ["canary"],
+    "replay": ["replay", "reproducibility"],
+    "external_runtime": ["external", "runtime", "provenance"],
+    "cost": ["cost", "budget", "latency"],
+    "capacity": ["capacity", "throughput"],
+    "queue_backpressure": ["queue", "backpressure", "retry"],
+    "policy": ["policy", "admissibility", "scope"],
+    "closure": ["closure", "closeout", "promotion"],
+    "readiness": ["readiness", "ready"],
+    "enforcement": ["enforcement", "guard", "block"],
+    "execution": ["execution", "execute", "runner"],
+    "override_hitl": ["override", "hitl", "human"]
+  },
+  "synonym_groups": {
+    "context": ["retrieval", "retrieve"],
+    "judgment": ["adjudication", "verdict"],
+    "drift": ["drifting"],
+    "release": ["deployment"],
+    "policy": ["governance"],
+    "closure": ["finalization"],
+    "execution": ["run"],
+    "override_hitl": ["operator"]
+  },
+  "phrase_mappings": {
+    "context owner": "context",
+    "judgment owner": "judgment",
+    "drift response": "drift",
+    "error budget": "cost",
+    "queue load": "queue_backpressure",
+    "policy authority": "policy",
+    "closure decision": "closure",
+    "promotion readiness": "readiness",
+    "fail closed": "enforcement",
+    "execute work": "execution",
+    "human override": "override_hitl"
+  }
+}

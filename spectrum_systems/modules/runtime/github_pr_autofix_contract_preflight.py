@@ -28,6 +28,14 @@ KNOWN_REPAIR_CATEGORIES = {
     "unknown_preflight_failure",
 }
 
+TERMINAL_STATES = {
+    "passed_without_repair",
+    "passed_after_auto_repair",
+    "blocked_repair_failed",
+    "blocked_repair_not_applicable",
+    "blocked_escalation_required",
+}
+
 
 @dataclass(frozen=True)
 class CommandResult:
@@ -59,13 +67,15 @@ def _write_recovery_outcome(
     repair_execution_status: str,
     rerun_status: str,
     final_decision: str,
+    repair_attempted: bool,
+    repair_inapplicable_reason: str | None,
     retry_count: int,
     reason_codes: list[str],
     artifact_refs: dict[str, str],
 ) -> dict[str, Any]:
     payload = {
         "artifact_type": "preflight_recovery_outcome_record",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "initial_preflight_status": str(result_artifact.get("preflight_status") or "failed"),
         "failure_class": str(diagnosis.get("failure_class") or "unknown_preflight_failure"),
         "eligibility_decision": str(plan.get("eligibility_decision") or "escalation_required"),
@@ -73,6 +83,8 @@ def _write_recovery_outcome(
         "repair_execution_status": repair_execution_status,
         "rerun_status": rerun_status,
         "final_decision": final_decision,
+        "repair_attempted": repair_attempted,
+        "repair_inapplicable_reason": repair_inapplicable_reason,
         "retry_count": retry_count,
         "reason_codes": sorted({str(code) for code in reason_codes if str(code)}),
         "artifact_refs": artifact_refs,
@@ -82,8 +94,53 @@ def _write_recovery_outcome(
     return payload
 
 
+def _fold_terminal_state(
+    *,
+    eligibility_decision: str,
+    repair_attempted: bool,
+    repair_inapplicable_reason: str | None,
+    repair_execution_status: str,
+    rerun_status: str,
+) -> str:
+    if eligibility_decision == "escalation_required":
+        return "blocked_escalation_required"
+    if eligibility_decision == "auto_repair_forbidden":
+        return "blocked_repair_not_applicable"
+    if eligibility_decision == "auto_repair_allowed":
+        if not repair_attempted and not repair_inapplicable_reason:
+            raise ContractPreflightAutofixError("repair_guard_violation:auto_repair_allowed_without_attempt_or_reason")
+        if repair_inapplicable_reason:
+            return "blocked_repair_not_applicable"
+        if rerun_status == "passed":
+            return "passed_after_auto_repair"
+        if repair_execution_status in {"failed_validation", "failed_execution"}:
+            return "blocked_repair_failed"
+        return "blocked_repair_failed"
+    return "blocked_escalation_required"
+
+
 def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]:
     reasons: list[str] = []
+    invariant_violations = [str(item) for item in (report.get("invariant_violations") or []) if isinstance(item, str)]
+    ref_context = ((report.get("changed_path_detection") or {}).get("ref_context") or {}) if isinstance(report, dict) else {}
+    ref_reason_code = str(ref_context.get("reason_code") or "").strip()
+    if ref_reason_code == "missing_refs":
+        return "missing_required_artifact", ["missing_refs"]
+    if ref_reason_code == "unsupported_event_context":
+        return "internal_preflight_error", ["unsupported_event_context"]
+    if ref_reason_code == "malformed_ref_context":
+        return "invalid_wrapper", ["malformed_ref_context"]
+    if ref_reason_code == "invalid_git_ref":
+        return "invalid_wrapper", ["invalid_git_ref"]
+
+    detection_mode = str((report.get("changed_path_detection") or {}).get("changed_path_detection_mode") or "")
+    if detection_mode in {"ref_context_invalid", "detection_failed_no_governed_paths"}:
+        if "contract_mismatch_from_bad_ref_resolution" in invariant_violations:
+            return "contract_mismatch", ["contract_mismatch_from_bad_ref_resolution"]
+        return "missing_required_artifact", ["changed_path_resolution_failure"]
+
+    if report.get("bootstrap_failures"):
+        return "missing_required_artifact", ["changed_path_resolution_failure"]
 
     schema_example_failures = report.get("schema_example_failures") or []
     if schema_example_failures:
@@ -96,6 +153,8 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
         return "schema_violation", ["SCHEMA_EXAMPLE_FAILURE"]
 
     if report.get("missing_required_surface"):
+        if "contract_mismatch_from_bad_ref_resolution" in invariant_violations:
+            return "contract_mismatch", ["contract_mismatch_from_bad_ref_resolution"]
         return "contract_mismatch", ["MISSING_REQUIRED_SURFACE_MAPPING"]
 
     pqx_ctx = report.get("changed_path_detection", {}).get("pqx_required_context_enforcement")
@@ -107,7 +166,7 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
             return "invalid_wrapper", ["PQX_REQUIRED_CONTEXT_WRAPPER_BLOCK"]
         return "missing_required_artifact", ["PQX_REQUIRED_CONTEXT_ENFORCEMENT_BLOCK"]
 
-    mode = str((report.get("changed_path_detection") or {}).get("changed_path_detection_mode") or "")
+    mode = detection_mode
     if mode == "degraded_full_governed_scan":
         return "internal_preflight_error", ["PR_EVENT_PREFLIGHT_NORMALIZATION_BUG"]
 
@@ -127,6 +186,15 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
         reasons.extend(["CONSUMER_FAILURES_PRESENT"])
         return "contract_mismatch", reasons
 
+    if invariant_violations:
+        if "artifact_validation_failure" in invariant_violations:
+            return "schema_violation", ["artifact_validation_failure"]
+        if "repair_pipeline_failure" in invariant_violations:
+            return "internal_preflight_error", ["repair_pipeline_failure"]
+        if "preflight_runtime_exception" in invariant_violations:
+            return "internal_preflight_error", ["preflight_runtime_exception"]
+        return "contract_mismatch", invariant_violations[:3]
+
     return "unknown_preflight_failure", ["UNCLASSIFIED_BLOCK_REASON"]
 
 
@@ -141,7 +209,10 @@ def _repair_policy(failure_class: str) -> tuple[str, bool, bool]:
 
 
 def build_preflight_block_diagnosis_record(*, report: dict[str, Any], preflight_artifact: dict[str, Any]) -> dict[str, Any]:
-    category, reasons = classify_preflight_block(report=report)
+    try:
+        category, reasons = classify_preflight_block(report=report)
+    except Exception:
+        category, reasons = "internal_preflight_error", ["preflight_runtime_exception"]
     return {
         "artifact_type": "preflight_block_diagnosis_record",
         "artifact_version": "1.0.0",
@@ -228,6 +299,7 @@ def build_preflight_repair_result_record(*, attempt_id: str, plan_record: dict[s
         "rerun_requires": list(plan_record.get("rerun_prerequisites", [])),
         "escalation_required": escalation_required,
         "next_invocation_surface": "scripts/run_github_pr_autofix_contract_preflight.py" if rerun_allowed else "operator_escalation_queue",
+        "terminal_state": "passed_after_auto_repair" if rerun_exit == 0 and rerun_decision == "ALLOW" else "blocked_repair_failed",
     }
 
 
@@ -272,18 +344,22 @@ def _repair_required_surface_mapping(*, repo_root: Path, report: dict[str, Any])
         if isinstance(loaded, dict):
             payload = {str(path): [str(test) for test in tests if isinstance(test, str)] for path, tests in loaded.items() if isinstance(path, str) and isinstance(tests, list)}
 
+    actionable = False
     for entry in missing:
         if not isinstance(entry, dict):
             continue
         path = str(entry.get("path") or "").strip()
         if not path.startswith("spectrum_systems/modules/runtime/"):
             continue
+        actionable = True
         module_stem = Path(path).stem
         candidate = f"tests/test_{module_stem}.py"
         fallback = "tests/test_task_registry_ai_adapter_eval_slice_runner.py"
         selected = candidate if (repo_root / candidate).is_file() else fallback
         payload[path] = sorted(set(payload.get(path, []) + [selected]))
 
+    if not actionable:
+        return []
     override_path.parent.mkdir(parents=True, exist_ok=True)
     override_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return [str(override_path.relative_to(repo_root))]
@@ -359,6 +435,7 @@ def run_preflight_block_autorepair(
         "rerun_decision_ref": str(output_dir / "preflight_repair_result_record.json"),
     }
 
+    repair_inapplicable_reason: str | None = None
     if plan["apply_automatically"]:
         category = plan["failure_class"]
         if category in {"invalid_wrapper", "authority_evidence_missing", "missing_required_artifact"}:
@@ -382,15 +459,63 @@ def run_preflight_block_autorepair(
             attempt["mutated_paths"] = _repair_system_registry_reserved_entries(repo_root=repo_root)
         else:
             raise ContractPreflightAutofixError("unsupported_auto_repair_category")
+        if not attempt["mutated_paths"]:
+            repair_inapplicable_reason = "empty_repair_plan"
+            attempt["attempt_status"] = "skipped"
+            result = build_preflight_repair_result_record(
+                attempt_id=attempt["attempt_id"],
+                plan_record=plan,
+                rerun_exit=2,
+                rerun_decision=str(((result_artifact.get("control_signal") or {}).get("strategy_gate_decision")) or "BLOCK"),
+            )
+            result["terminal_state"] = _fold_terminal_state(
+                eligibility_decision=str(plan.get("eligibility_decision", "escalation_required")),
+                repair_attempted=False,
+                repair_inapplicable_reason=repair_inapplicable_reason,
+                repair_execution_status="not_invoked",
+                rerun_status="not_run",
+            )
+            validate_artifact(attempt, "preflight_repair_attempt_record")
+            validate_artifact(result, "preflight_repair_result_record")
+            _write_json(output_dir / "preflight_repair_attempt_record.json", attempt)
+            _write_json(output_dir / "preflight_repair_result_record.json", result)
+            _write_recovery_outcome(
+                output_dir=output_dir,
+                result_artifact=result_artifact,
+                diagnosis=diagnosis,
+                plan=plan,
+                repair_invoked=False,
+                repair_execution_status="not_invoked",
+                rerun_status="not_run",
+                final_decision=result["terminal_state"],
+                repair_attempted=False,
+                repair_inapplicable_reason=repair_inapplicable_reason,
+                retry_count=0,
+                reason_codes=list(diagnosis.get("reason_codes", [])) + ["EMPTY_REPAIR_PLAN"],
+                artifact_refs=artifact_refs,
+            )
+            raise ContractPreflightAutofixError("repair_plan_not_applicable:empty_repair_plan")
         if len(attempt["mutated_paths"]) > 5:
             raise ContractPreflightAutofixError("proposed_file_scope_too_broad")
         attempt["attempt_status"] = "applied"
     else:
+        repair_inapplicable_reason = (
+            "eligibility_decision_escalation_required"
+            if str(plan.get("eligibility_decision")) == "escalation_required"
+            else "auto_repair_forbidden_by_policy"
+        )
         result = build_preflight_repair_result_record(
             attempt_id=attempt["attempt_id"],
             plan_record=plan,
             rerun_exit=2,
             rerun_decision=str(((result_artifact.get("control_signal") or {}).get("strategy_gate_decision")) or "BLOCK"),
+        )
+        result["terminal_state"] = _fold_terminal_state(
+            eligibility_decision=str(plan.get("eligibility_decision", "escalation_required")),
+            repair_attempted=False,
+            repair_inapplicable_reason=repair_inapplicable_reason,
+            repair_execution_status="not_invoked",
+            rerun_status="not_permitted",
         )
         validate_artifact(attempt, "preflight_repair_attempt_record")
         validate_artifact(result, "preflight_repair_result_record")
@@ -407,7 +532,9 @@ def run_preflight_block_autorepair(
             repair_invoked=False,
             repair_execution_status="not_invoked",
             rerun_status="not_permitted",
-            final_decision="repair_not_permitted",
+            final_decision=result["terminal_state"],
+            repair_attempted=False,
+            repair_inapplicable_reason=repair_inapplicable_reason,
             retry_count=0,
             reason_codes=list(diagnosis.get("reason_codes", [])),
             artifact_refs=artifact_refs,
@@ -426,6 +553,13 @@ def run_preflight_block_autorepair(
         "validation_command": " ".join(validation_cmd),
     }
     if validation.returncode != 0:
+        terminal_state = _fold_terminal_state(
+            eligibility_decision=str(plan.get("eligibility_decision", "escalation_required")),
+            repair_attempted=True,
+            repair_inapplicable_reason=None,
+            repair_execution_status="failed_validation",
+            rerun_status="not_run",
+        )
         _write_recovery_outcome(
             output_dir=output_dir,
             result_artifact=result_artifact,
@@ -434,9 +568,11 @@ def run_preflight_block_autorepair(
             repair_invoked=True,
             repair_execution_status="failed_validation",
             rerun_status="not_run",
-            final_decision="repair_failed",
+            final_decision=terminal_state,
+            repair_attempted=True,
+            repair_inapplicable_reason=None,
             retry_count=1,
-            reason_codes=list(diagnosis.get("reason_codes", [])) + ["VALIDATION_REPLAY_FAILED"],
+            reason_codes=list(diagnosis.get("reason_codes", [])) + ["VALIDATION_REPLAY_FAILED", "repair_pipeline_failure"],
             artifact_refs=artifact_refs,
         )
         raise ContractPreflightAutofixError("validation_replay_failed")
@@ -466,6 +602,13 @@ def run_preflight_block_autorepair(
         rerun_exit=rerun.returncode,
         rerun_decision=rerun_decision,
     )
+    result["terminal_state"] = _fold_terminal_state(
+        eligibility_decision=str(plan.get("eligibility_decision", "escalation_required")),
+        repair_attempted=True,
+        repair_inapplicable_reason=None,
+        repair_execution_status="completed",
+        rerun_status="passed" if result["success"] else "blocked",
+    )
 
     validate_artifact(attempt, "preflight_repair_attempt_record")
     validate_artifact(validation_record, "preflight_repair_validation_record")
@@ -485,9 +628,11 @@ def run_preflight_block_autorepair(
             repair_invoked=True,
             repair_execution_status="completed",
             rerun_status="blocked",
-            final_decision="repaired_but_still_blocked",
+            final_decision=result["terminal_state"],
+            repair_attempted=True,
+            repair_inapplicable_reason=None,
             retry_count=1,
-            reason_codes=list(diagnosis.get("reason_codes", [])) + ["RERUN_STILL_BLOCKED"],
+            reason_codes=list(diagnosis.get("reason_codes", [])) + ["RERUN_STILL_BLOCKED", "repair_pipeline_failure"],
             artifact_refs=artifact_refs,
         )
         raise ContractPreflightAutofixError("preflight_rerun_blocked_or_failed")
@@ -499,7 +644,9 @@ def run_preflight_block_autorepair(
         repair_invoked=True,
         repair_execution_status="completed",
         rerun_status="passed",
-        final_decision="repaired_and_passed",
+        final_decision=result["terminal_state"],
+        repair_attempted=True,
+        repair_inapplicable_reason=None,
         retry_count=1,
         reason_codes=list(diagnosis.get("reason_codes", [])),
         artifact_refs=artifact_refs,

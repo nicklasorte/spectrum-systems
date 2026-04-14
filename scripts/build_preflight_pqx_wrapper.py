@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import sys
 from copy import deepcopy
 from datetime import datetime, timezone
@@ -17,6 +18,9 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from spectrum_systems.modules.runtime.changed_path_resolution import resolve_changed_paths  # noqa: E402
+from spectrum_systems.modules.runtime.preflight_ref_normalization import (  # noqa: E402
+    normalize_preflight_ref_context,
+)
 
 
 def _stable_hash(payload: object) -> str:
@@ -89,8 +93,9 @@ def _write_preflight_hardening_artifacts(*, output_dir: Path, run_id: str, trace
 
 def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build preflight PQX wrapper")
-    parser.add_argument("--base-ref", required=True)
-    parser.add_argument("--head-ref", required=True)
+    parser.add_argument("--base-ref", default="")
+    parser.add_argument("--head-ref", default="")
+    parser.add_argument("--event-name", default=None)
     parser.add_argument("--template", default="contracts/examples/codex_pqx_task_wrapper.json")
     parser.add_argument("--output", default="outputs/contract_preflight/preflight_pqx_task_wrapper.json")
     parser.add_argument("--changed-path", action="append", default=[])
@@ -104,10 +109,23 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(f"ERROR: wrapper template missing: {template_path}", file=sys.stderr)
         return 2
 
+    ref_context = normalize_preflight_ref_context(
+        event_name=args.event_name,
+        cli_base_ref=args.base_ref,
+        cli_head_ref=args.head_ref,
+        env=os.environ,
+    )
+    if not ref_context.valid:
+        print(
+            f"ERROR: preflight ref normalization failed ({ref_context.reason_code}): {ref_context.invalid_reason}",
+            file=sys.stderr,
+        )
+        return 2
+
     resolution = resolve_changed_paths(
         repo_root=_REPO_ROOT,
-        base_ref=args.base_ref,
-        head_ref=args.head_ref,
+        base_ref=ref_context.base_ref,
+        head_ref=ref_context.head_ref,
         explicit=args.changed_path,
     )
 
@@ -148,6 +166,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         "refs_attempted": resolution.refs_attempted,
         "warnings": resolution.warnings,
         "hardening_artifact_refs": hardening_refs,
+        "ref_context": ref_context.as_dict(),
     }
 
     output_path = _REPO_ROOT / args.output

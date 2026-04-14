@@ -53,7 +53,16 @@ from spectrum_systems.modules.runtime.trust_spine_evidence_cohesion import (  # 
     evaluate_trust_spine_evidence_cohesion,
 )
 from spectrum_systems.modules.runtime.github_pr_autofix_contract_preflight import (  # noqa: E402
+    classify_preflight_block,
     emit_preflight_block_bundle,
+)
+from spectrum_systems.modules.governance.system_registry_guard import (  # noqa: E402
+    evaluate_system_registry_guard,
+    load_guard_policy,
+    parse_system_registry,
+)
+from spectrum_systems.modules.runtime.preflight_ref_normalization import (  # noqa: E402
+    normalize_preflight_ref_context,
 )
 
 DEFAULT_REQUIRED_SMOKE_TESTS = [
@@ -109,6 +118,8 @@ _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS = [
     "tests/test_pqx_slice_runner.py",
 ]
 _GOVERNED_PROMPT_SURFACE_REGISTRY = REPO_ROOT / "docs" / "governance" / "governed_prompt_surfaces.json"
+_SYSTEM_REGISTRY_PATH = REPO_ROOT / "docs" / "architecture" / "system_registry.md"
+_SYSTEM_REGISTRY_GUARD_POLICY_PATH = REPO_ROOT / "contracts" / "governance" / "system_registry_guard_policy.json"
 
 _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "scripts/run_autonomous_validation_run.py": ["tests/test_run_autonomous_validation_run.py"],
@@ -176,8 +187,9 @@ def _run(command: list[str], cwd: Path) -> CommandResult:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fail-closed contract/schema preflight gate")
-    parser.add_argument("--base-ref", default="origin/main", help="Git base ref used for diff detection")
-    parser.add_argument("--head-ref", default="HEAD", help="Git head ref used for diff detection")
+    parser.add_argument("--base-ref", default="", help="Git base ref used for diff detection")
+    parser.add_argument("--head-ref", default="", help="Git head ref used for diff detection")
+    parser.add_argument("--event-name", default=None, help="Optional event context override for ref normalization")
     parser.add_argument("--changed-path", action="append", default=[], help="Optional explicit changed paths")
     parser.add_argument("--output-dir", default="outputs/contract_preflight", help="Preflight output directory")
     parser.add_argument(
@@ -1235,7 +1247,92 @@ def main() -> int:
     output_dir = REPO_ROOT / args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    detection = detect_changed_paths(REPO_ROOT, args.base_ref, args.head_ref, args.changed_path)
+    ref_context = normalize_preflight_ref_context(
+        event_name=getattr(args, "event_name", None),
+        cli_base_ref=getattr(args, "base_ref", ""),
+        cli_head_ref=getattr(args, "head_ref", ""),
+        env=os.environ,
+    )
+    if not ref_context.valid:
+        report = {
+            "status": "failed",
+            "changed_contracts": [],
+            "changed_examples": [],
+            "changed_path_detection": {
+                "changed_path_detection_mode": "ref_context_invalid",
+                "changed_paths_resolved": [],
+                "refs_attempted": [],
+                "fallback_used": False,
+                "warnings": [str(ref_context.invalid_reason)],
+                "evaluation_mode": "blocked",
+                "evaluated_surfaces": [],
+                "ref_context": ref_context.as_dict(),
+            },
+            "impact": {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": []},
+            "schema_example_failures": [],
+            "producer_failures": [],
+            "fixture_failures": [],
+            "consumer_failures": [],
+            "masked_failures": [],
+            "recommended_repair_areas": ["preflight reference normalization"],
+            "bootstrap_failures": ["preflight ref normalization failed closed"],
+            "evaluation_classification": [],
+            "missing_required_surface": [],
+            "skip_reason": None,
+            "invariant_violations": [str(ref_context.reason_code or "malformed_ref_context")],
+            "control_surface_enforcement": None,
+            "control_surface_gap_result": None,
+            "control_surface_gap_pqx_work_items": None,
+            "control_surface_gap_pqx_conversion_error": None,
+            "trust_spine_evidence_cohesion": None,
+            "pqx_execution_policy": {"status": "block", "blocking_reasons": [str(ref_context.reason_code or "malformed_ref_context")]},
+            "pqx_required_context_enforcement": {"status": "block", "blocking_reasons": [str(ref_context.reason_code or "malformed_ref_context")]},
+            "system_registry_guard_result": {"artifact_type": "system_registry_guard_result", "status": "pass", "normalized_reason_codes": []},
+            "system_registry_guard_result_ref": None,
+            "ref_context": ref_context.as_dict(),
+            "root_cause_classification": {"failure_class": "missing_required_artifact", "reason_codes": [str(ref_context.reason_code or "malformed_ref_context")]},
+            "repair_eligibility_rationale": "auto_repair_allowed: normalized ref context unavailable and must be reconstructed with bounded inputs",
+            "secondary_exception": None,
+        }
+        json_path = output_dir / "contract_preflight_report.json"
+        md_path = output_dir / "contract_preflight_report.md"
+        json_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        md_path.write_text(render_markdown(report), encoding="utf-8")
+        preflight_artifact = build_preflight_result_artifact(
+            report=report,
+            json_report_path=json_path,
+            markdown_report_path=md_path,
+            hardening_flow=bool(args.hardening_flow),
+        )
+        preflight_artifact_path = output_dir / "contract_preflight_result_artifact.json"
+        preflight_artifact_path.write_text(json.dumps(preflight_artifact, indent=2) + "\n", encoding="utf-8")
+        emit_preflight_block_bundle(report=report, preflight_artifact=preflight_artifact, output_dir=output_dir)
+        print(
+            json.dumps(
+                {
+                    "status": "failed",
+                    "json_report": str(json_path),
+                    "markdown_report": str(md_path),
+                    "preflight_artifact": str(preflight_artifact_path),
+                    "strategy_gate_decision": preflight_artifact["control_signal"]["strategy_gate_decision"],
+                    "ref_context": ref_context.as_dict(),
+                },
+                indent=2,
+            )
+        )
+        return 2
+
+    detection = detect_changed_paths(REPO_ROOT, ref_context.base_ref, ref_context.head_ref, args.changed_path)
+    registry_policy = load_guard_policy(_SYSTEM_REGISTRY_GUARD_POLICY_PATH)
+    registry_model = parse_system_registry(_SYSTEM_REGISTRY_PATH)
+    system_registry_guard_result = evaluate_system_registry_guard(
+        repo_root=REPO_ROOT,
+        changed_files=detection.changed_paths,
+        policy=registry_policy,
+        registry_model=registry_model,
+    )
+    srg_output_path = output_dir / "system_registry_guard_result.json"
+    srg_output_path.write_text(json.dumps(system_registry_guard_result, indent=2) + "\n", encoding="utf-8")
     control_surface_gap_bridge = evaluate_control_surface_gap_bridge(output_dir)
     trust_spine_cohesion = evaluate_trust_spine_cohesion(detection.changed_paths, output_dir)
     classified = classify_changed_contracts(detection.changed_paths)
@@ -1253,12 +1350,13 @@ def main() -> int:
         "warnings": detection.warnings,
         "evaluation_mode": surface_classification["evaluation_mode"],
         "evaluated_surfaces": surface_classification["evaluated_surfaces"],
+        "ref_context": ref_context.as_dict(),
     }
     preflight_mode = (
         "commit_range_inspection"
         if not list(getattr(args, "changed_path", []) or [])
-        and bool(getattr(args, "base_ref", None))
-        and bool(getattr(args, "head_ref", None))
+        and bool(ref_context.base_ref)
+        and bool(ref_context.head_ref)
         else "explicit_or_local_inspection"
     )
     detection_meta["preflight_mode"] = preflight_mode
@@ -1396,6 +1494,15 @@ def main() -> int:
             pqx_execution_policy["blocking_reasons"] = authority_resolution["blocking_reasons"]
 
     if detection.changed_path_detection_mode == "detection_failed_no_governed_paths":
+        detection_invariants = ["changed-path detection failed before evaluation"]
+        ref_raw = ref_context.raw_inputs
+        if (
+            ref_context.event_name == "push"
+            and ref_context.fallback_used
+            and not str(ref_raw.get("github_base_sha", "")).strip()
+            and not str(ref_raw.get("github_head_sha", "")).strip()
+        ):
+            detection_invariants.append("contract_mismatch_from_bad_ref_resolution")
         report = {
             "status": "failed",
             "changed_contracts": [],
@@ -1417,7 +1524,7 @@ def main() -> int:
             "evaluation_classification": surface_classification["path_classifications"],
             "missing_required_surface": [],
             "skip_reason": None,
-            "invariant_violations": ["changed-path detection failed before evaluation"],
+            "invariant_violations": detection_invariants,
             "control_surface_enforcement": None,
             "control_surface_gap_result": control_surface_gap_bridge["gap_result"],
             "control_surface_gap_pqx_work_items": control_surface_gap_bridge["pqx_work_items"],
@@ -1425,6 +1532,8 @@ def main() -> int:
             "trust_spine_evidence_cohesion": trust_spine_cohesion,
             "pqx_execution_policy": pqx_execution_policy,
             "pqx_required_context_enforcement": pqx_required_context_enforcement,
+            "system_registry_guard_result": system_registry_guard_result,
+            "system_registry_guard_result_ref": str(srg_output_path),
         }
     elif not surface_classification["required_paths"]:
         report = {
@@ -1455,6 +1564,8 @@ def main() -> int:
             "trust_spine_evidence_cohesion": trust_spine_cohesion,
             "pqx_execution_policy": pqx_execution_policy,
             "pqx_required_context_enforcement": pqx_required_context_enforcement,
+            "system_registry_guard_result": system_registry_guard_result,
+            "system_registry_guard_result_ref": str(srg_output_path),
         }
     else:
         if changed_contract_paths:
@@ -1542,6 +1653,8 @@ def main() -> int:
             "trust_spine_evidence_cohesion": trust_spine_cohesion,
             "pqx_execution_policy": pqx_execution_policy,
             "pqx_required_context_enforcement": pqx_required_context_enforcement,
+            "system_registry_guard_result": system_registry_guard_result,
+            "system_registry_guard_result_ref": str(srg_output_path),
         }
         if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
             report["status"] = "failed"
@@ -1575,6 +1688,14 @@ def main() -> int:
         report["recommended_repair_areas"] = sorted(
             set(report.get("recommended_repair_areas", []) + ["default PQX execution policy enforcement"])
         )
+    if system_registry_guard_result.get("status") == "fail":
+        report["status"] = "failed"
+        report["invariant_violations"] = sorted(
+            set(report.get("invariant_violations", []) + list(system_registry_guard_result.get("normalized_reason_codes", [])))
+        )
+        report["recommended_repair_areas"] = sorted(
+            set(report.get("recommended_repair_areas", []) + ["system registry ownership boundaries"])
+        )
     cohesion_decision = (trust_spine_cohesion or {}).get("overall_decision") if isinstance(trust_spine_cohesion, dict) else None
     report["trust_spine_evidence_cohesion"] = trust_spine_cohesion
     report["trust_spine_evidence_cohesion_ref"] = (
@@ -1592,6 +1713,26 @@ def main() -> int:
     control_signal = map_preflight_control_signal(report=report, hardening_flow=bool(args.hardening_flow))
     decision = str(control_signal.get("strategy_gate_decision", "BLOCK"))
     report["status"] = "failed" if decision in {"BLOCK", "FREEZE"} else "passed"
+    classification_exception: str | None = None
+    if report["status"] == "failed":
+        try:
+            failure_class, reason_codes = classify_preflight_block(report=report)
+        except Exception as exc:  # defensive fail-closed annotation only
+            failure_class, reason_codes = "internal_preflight_error", ["preflight_runtime_exception"]
+            classification_exception = str(exc)
+        report["root_cause_classification"] = {
+            "failure_class": failure_class,
+            "reason_codes": reason_codes,
+        }
+        if failure_class in {"missing_required_artifact", "contract_mismatch", "schema_violation", "invalid_wrapper", "authority_evidence_missing"}:
+            report["repair_eligibility_rationale"] = "auto_repair_allowed: deterministic bounded failure classification"
+        else:
+            report["repair_eligibility_rationale"] = "escalation_required: non-repairable policy or unbounded runtime failure"
+        report["secondary_exception"] = classification_exception
+    else:
+        report["root_cause_classification"] = {"failure_class": "none", "reason_codes": []}
+        report["repair_eligibility_rationale"] = "not_applicable: preflight passed"
+        report["secondary_exception"] = None
 
     json_path = output_dir / "contract_preflight_report.json"
     md_path = output_dir / "contract_preflight_report.md"

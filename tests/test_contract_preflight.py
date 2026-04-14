@@ -1629,3 +1629,219 @@ def test_main_contract_preflight_blocks_con035_when_required_test_mapping_missin
     }
     assert "eligibility_decision" in plan
     assert "rerun_allowed" in rerun
+
+
+def test_preflight_blocks_when_system_registry_guard_fails(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": ["docs/proposal.md"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "evaluate_system_registry_guard",
+        lambda **_kwargs: {
+            "artifact_type": "system_registry_guard_result",
+            "status": "fail",
+            "normalized_reason_codes": ["NEW_SYSTEM_MISSING_REGISTRATION"],
+            "changed_files": ["docs/proposal.md"],
+            "required_actions": ["Register the new system in the canonical registry."],
+        },
+    )
+    monkeypatch.setattr(preflight, "evaluate_control_surface_gap_bridge", lambda _out: {"status": "not_run", "gap_result": None, "gap_result_path": None, "pqx_work_items": None, "pqx_work_items_path": None, "conversion_error": None, "blocking": False})
+    monkeypatch.setattr(preflight, "evaluate_trust_spine_cohesion", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(preflight, "evaluate_pqx_execution_policy", lambda **_kwargs: type("Policy", (), {"to_dict": lambda self: {"status": "allow", "classification": "exploration_only_or_non_governed", "execution_context": "pqx_governed"}})())
+    monkeypatch.setattr(preflight, "enforce_pqx_required_context", lambda **_kwargs: type("Enf", (), {"to_dict": lambda self: {"status": "allow", "classification": "exploration_only_or_non_governed", "execution_context": "pqx_governed", "wrapper_present": False, "wrapper_context_valid": True, "authority_context_valid": True, "authority_state": "non_authoritative_direct_run", "requires_pqx_execution": False, "enforcement_decision": "allow", "blocking_reasons": []}})())
+
+    code = preflight.main()
+
+    assert code == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert "NEW_SYSTEM_MISSING_REGISTRATION" in report["invariant_violations"]
+    assert (output_dir / "system_registry_guard_result.json").is_file()
+
+
+def test_preflight_push_event_normalizes_empty_cli_refs_from_push_env(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    monkeypatch.setenv("GITHUB_BASE_SHA", "")
+    monkeypatch.setenv("GITHUB_HEAD_SHA", "")
+    monkeypatch.setenv("GITHUB_BEFORE_SHA", "78f6cd4c28268e03eab3794497feb26378f620c2")
+    monkeypatch.setenv("GITHUB_SHA", "cafecb6682f83c47134a7d01ae818643d1136811")
+
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "",
+                "head_ref": "",
+                "event_name": "push",
+                "changed_path": ["README.md"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+            },
+        )(),
+    )
+
+    code = preflight.main()
+    assert code == 0
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    ref_context = report["changed_path_detection"]["ref_context"]
+    assert ref_context["normalization_strategy"] == "push_before_sha_fallback"
+    assert ref_context["base_ref"] == "78f6cd4c28268e03eab3794497feb26378f620c2"
+    assert ref_context["head_ref"] == "cafecb6682f83c47134a7d01ae818643d1136811"
+    assert report["status"] == "passed"
+
+
+def test_preflight_workflow_dispatch_without_refs_blocks_with_precise_reason(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "",
+                "head_ref": "",
+                "event_name": "workflow_dispatch",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+            },
+        )(),
+    )
+
+    code = preflight.main()
+    assert code == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert "unsupported_event_context" in report["invariant_violations"]
+    diagnosis = json.loads((output_dir / "preflight_block_diagnosis_record.json").read_text(encoding="utf-8"))
+    assert diagnosis["reason_codes"] == ["unsupported_event_context"]
+
+
+def test_preflight_cli_refs_override_env_push_fallback(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    monkeypatch.setenv("GITHUB_BEFORE_SHA", "env-base")
+    monkeypatch.setenv("GITHUB_SHA", "env-head")
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "explicit-base",
+                "head_ref": "explicit-head",
+                "event_name": "push",
+                "changed_path": ["README.md"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+            },
+        )(),
+    )
+
+    code = preflight.main()
+    assert code == 0
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    ref_context = report["changed_path_detection"]["ref_context"]
+    assert ref_context["normalization_strategy"] == "explicit_cli_pair"
+    assert ref_context["base_ref"] == "explicit-base"
+    assert ref_context["head_ref"] == "explicit-head"
+
+
+def test_push_context_exact_failure_regression_no_unknown_and_no_escalation(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    monkeypatch.setenv("GITHUB_BEFORE_SHA", "cafecb6682f83c47134a7d01ae818643d1136811")
+    monkeypatch.setenv("GITHUB_SHA", "a91128736a3706718cb0d32910503cfe056d3d1f")
+    monkeypatch.setenv("GITHUB_BASE_SHA", "")
+    monkeypatch.setenv("GITHUB_HEAD_SHA", "")
+
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "cafecb6682f83c47134a7d01ae818643d1136811",
+                "head_ref": "a91128736a3706718cb0d32910503cfe056d3d1f",
+                "event_name": "push",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=[],
+            changed_path_detection_mode="detection_failed_no_governed_paths",
+            refs_attempted=["cafecb..a911"],
+            fallback_used=False,
+            warnings=["simulated diff failure"],
+        ),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "evaluate_control_surface_gap_bridge",
+        lambda _output_dir: {
+            "status": "not_run",
+            "gap_result": None,
+            "gap_result_path": None,
+            "pqx_work_items": None,
+            "pqx_work_items_path": None,
+            "conversion_error": None,
+            "blocking": False,
+        },
+    )
+    monkeypatch.setattr(preflight, "evaluate_trust_spine_cohesion", lambda *_args, **_kwargs: None)
+
+    code = preflight.main()
+    assert code == 2
+
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["root_cause_classification"]["failure_class"] != "unknown_preflight_failure"
+    assert report["root_cause_classification"]["reason_codes"] == ["changed_path_resolution_failure"]
+    ref_context = report["changed_path_detection"]["ref_context"]
+    assert ref_context["base_ref"] == "cafecb6682f83c47134a7d01ae818643d1136811"
+    assert ref_context["head_ref"] == "a91128736a3706718cb0d32910503cfe056d3d1f"
+
+    diagnosis = json.loads((output_dir / "preflight_block_diagnosis_record.json").read_text(encoding="utf-8"))
+    plan = json.loads((output_dir / "preflight_repair_plan_record.json").read_text(encoding="utf-8"))
+    assert diagnosis["failure_class"] != "unknown_preflight_failure"
+    assert plan["eligibility_decision"] == "auto_repair_allowed"
+    assert not (output_dir / "preflight_human_escalation_record.json").exists()
