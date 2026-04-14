@@ -24,6 +24,19 @@ def _policy() -> dict[str, object]:
             "closure decision": "closure",
             "human override": "override_hitl",
         },
+        "system_like_path_prefixes": [
+            "scripts/",
+            "spectrum_systems/modules/",
+            ".github/workflows/",
+            "docs/governance/",
+            "contracts/governance/",
+        ],
+        "reserved_or_transitional_path_prefixes": [
+            "docs/reviews/",
+            "docs/review-actions/",
+            "contracts/examples/",
+        ],
+        "require_three_letter_system_tokens": True,
     }
 
 
@@ -204,3 +217,34 @@ def test_guard_detects_shadow_overlap_via_cluster_mapping(tmp_path: Path) -> Non
 
     assert result["status"] == "fail"
     assert "SHADOW_OWNERSHIP_OVERLAP" in result["normalized_reason_codes"]
+
+
+def test_guard_flags_unowned_system_like_surface(tmp_path: Path) -> None:
+    registry_path = tmp_path / "docs" / "architecture" / "system_registry.md"
+    _write(registry_path, _registry_text())
+    _write(tmp_path / "scripts" / "unknown_surface.py", "# ZZZ owns execution authority for this helper\n")
+
+    result = evaluate_system_registry_guard(
+        repo_root=tmp_path,
+        changed_files=["scripts/unknown_surface.py"],
+        policy=_policy(),
+        registry_model=parse_system_registry(registry_path),
+    )
+
+    assert result["status"] == "fail"
+    assert "UNOWNED_SYSTEM_SURFACE" in result["normalized_reason_codes"]
+
+
+def test_guard_allows_reserved_transitional_paths(tmp_path: Path) -> None:
+    registry_path = tmp_path / "docs" / "architecture" / "system_registry.md"
+    _write(registry_path, _registry_text())
+    _write(tmp_path / "docs" / "reviews" / "note.md", "Historical note without owner claim.\n")
+
+    result = evaluate_system_registry_guard(
+        repo_root=tmp_path,
+        changed_files=["docs/reviews/note.md"],
+        policy=_policy(),
+        registry_model=parse_system_registry(registry_path),
+    )
+
+    assert result["status"] == "pass"

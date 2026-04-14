@@ -289,8 +289,31 @@ def evaluate_system_registry_guard(
     registration_failures: list[dict[str, Any]] = []
     protected_violations: list[dict[str, Any]] = []
     acronym_collisions: list[dict[str, Any]] = []
+    unowned_system_like_paths: list[dict[str, Any]] = []
+    ambiguous_system_like_paths: list[dict[str, Any]] = []
     required_actions: list[str] = []
     reason_codes: set[str] = set()
+    policy_system_like_prefixes = tuple(
+        str(item)
+        for item in (policy.get("system_like_path_prefixes") or [])
+        if isinstance(item, str) and item.strip()
+    )
+    policy_reserved_prefixes = tuple(
+        str(item)
+        for item in (policy.get("reserved_or_transitional_path_prefixes") or [])
+        if isinstance(item, str) and item.strip()
+    )
+
+    owner_path_hints: dict[str, list[str]] = {}
+    for acronym, system in registry_model.systems.items():
+        if system.status not in {"active", "placeholder", "deprecated"}:
+            continue
+        owners = owner_path_hints.setdefault(acronym, [])
+        owners.append(f"docs/architecture/system_registry.md::{acronym}")
+        for own in system.owns:
+            token = str(own or "").strip().lower().replace(" ", "_")
+            if token:
+                owners.append(token)
 
     for rel_path in changed_paths:
         path = repo_root / rel_path
@@ -462,6 +485,55 @@ def evaluate_system_registry_guard(
                 )
                 reason_codes.add("ACRONYM_NAMESPACE_COLLISION")
 
+    if bool(policy.get("require_three_letter_system_tokens")):
+        for rel_path in changed_paths:
+            if rel_path == "docs/architecture/system_registry.md":
+                continue
+            if policy_reserved_prefixes and rel_path.startswith(policy_reserved_prefixes):
+                continue
+            if policy_system_like_prefixes and not rel_path.startswith(policy_system_like_prefixes):
+                continue
+            path = repo_root / rel_path
+            if not path.is_file():
+                continue
+            try:
+                content = path.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                continue
+            lines = content.splitlines()
+            has_system_semantics = False
+            for line in lines:
+                if any(pattern.search(line) for pattern in _OWNER_CLAIM_PATTERNS) or any(
+                    pattern.search(line) for pattern in _SYSTEM_CANDIDATE_PATTERNS
+                ):
+                    has_system_semantics = True
+                    break
+            if not has_system_semantics:
+                continue
+
+            matched_owners: list[str] = []
+            lowered_path = rel_path.lower()
+            for acronym, hints in owner_path_hints.items():
+                if any(hint and hint in lowered_path for hint in hints):
+                    matched_owners.append(acronym)
+            if not matched_owners:
+                unowned_system_like_paths.append(
+                    {
+                        "file": rel_path,
+                        "reason": "system-like path changed without detectable 3-letter owner alignment",
+                    }
+                )
+                reason_codes.add("UNOWNED_SYSTEM_SURFACE")
+            elif len(set(matched_owners)) > 1:
+                ambiguous_system_like_paths.append(
+                    {
+                        "file": rel_path,
+                        "candidate_owners": sorted(set(matched_owners)),
+                        "reason": "multiple 3-letter systems appear to match changed system-like path",
+                    }
+                )
+                reason_codes.add("AMBIGUOUS_SYSTEM_SURFACE")
+
     if overlaps_found:
         required_actions.append("Use the canonical owner responsibilities from docs/architecture/system_registry.md.")
     if shadow_owner_findings:
@@ -472,6 +544,10 @@ def evaluate_system_registry_guard(
         required_actions.append("Mark historical systems as non-authoritative historical references, not active owners.")
     if protected_violations:
         required_actions.append("Restore protected authority seams to their canonical owner system.")
+    if unowned_system_like_paths:
+        required_actions.append("Declare explicit 3-letter ownership for changed system-like paths or mark them reserved/transitional.")
+    if ambiguous_system_like_paths:
+        required_actions.append("Resolve ambiguous 3-letter ownership claims to a single canonical owner per changed path.")
 
     failed = bool(
         overlaps_found
@@ -480,6 +556,8 @@ def evaluate_system_registry_guard(
         or registration_failures
         or protected_violations
         or acronym_collisions
+        or unowned_system_like_paths
+        or ambiguous_system_like_paths
     )
 
     return {
@@ -495,6 +573,8 @@ def evaluate_system_registry_guard(
         "registration_failures": registration_failures,
         "protected_authority_violations": protected_violations,
         "acronym_collisions": acronym_collisions,
+        "unowned_system_like_paths": unowned_system_like_paths,
+        "ambiguous_system_like_paths": ambiguous_system_like_paths,
         "required_actions": sorted(set(required_actions)),
         "normalized_reason_codes": sorted(reason_codes),
         "registry_digest_or_version": registry_model.source_digest,

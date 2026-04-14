@@ -1,0 +1,18 @@
+{
+  "artifact_type": "three_letter_system_enforcement_audit_result",
+  "schema_version": "1.0.0",
+  "policy_version": "1.0.0",
+  "systems_evaluated": 3,
+  "fully_covered_systems": [
+    "PRG",
+    "TLC",
+    "TPA"
+  ],
+  "ambiguous_paths": [],
+  "unowned_system_like_paths": [],
+  "ownership_drift_findings": [],
+  "missing_gate_expectations": [],
+  "violations": [],
+  "final_decision": "PASS",
+  "generated_at": "2026-04-14T00:00:00Z"
+}
