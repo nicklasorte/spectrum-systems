@@ -1629,3 +1629,47 @@ def test_main_contract_preflight_blocks_con035_when_required_test_mapping_missin
     }
     assert "eligibility_decision" in plan
     assert "rerun_allowed" in rerun
+
+
+def test_preflight_blocks_when_system_registry_guard_fails(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": ["docs/proposal.md"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "evaluate_system_registry_guard",
+        lambda **_kwargs: {
+            "artifact_type": "system_registry_guard_result",
+            "status": "fail",
+            "normalized_reason_codes": ["NEW_SYSTEM_MISSING_REGISTRATION"],
+            "changed_files": ["docs/proposal.md"],
+            "required_actions": ["Register the new system in the canonical registry."],
+        },
+    )
+    monkeypatch.setattr(preflight, "evaluate_control_surface_gap_bridge", lambda _out: {"status": "not_run", "gap_result": None, "gap_result_path": None, "pqx_work_items": None, "pqx_work_items_path": None, "conversion_error": None, "blocking": False})
+    monkeypatch.setattr(preflight, "evaluate_trust_spine_cohesion", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(preflight, "evaluate_pqx_execution_policy", lambda **_kwargs: type("Policy", (), {"to_dict": lambda self: {"status": "allow", "classification": "exploration_only_or_non_governed", "execution_context": "pqx_governed"}})())
+    monkeypatch.setattr(preflight, "enforce_pqx_required_context", lambda **_kwargs: type("Enf", (), {"to_dict": lambda self: {"status": "allow", "classification": "exploration_only_or_non_governed", "execution_context": "pqx_governed", "wrapper_present": False, "wrapper_context_valid": True, "authority_context_valid": True, "authority_state": "non_authoritative_direct_run", "requires_pqx_execution": False, "enforcement_decision": "allow", "blocking_reasons": []}})())
+
+    code = preflight.main()
+
+    assert code == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert "NEW_SYSTEM_MISSING_REGISTRATION" in report["invariant_violations"]
+    assert (output_dir / "system_registry_guard_result.json").is_file()

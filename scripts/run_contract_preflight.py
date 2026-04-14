@@ -55,6 +55,11 @@ from spectrum_systems.modules.runtime.trust_spine_evidence_cohesion import (  # 
 from spectrum_systems.modules.runtime.github_pr_autofix_contract_preflight import (  # noqa: E402
     emit_preflight_block_bundle,
 )
+from spectrum_systems.modules.governance.system_registry_guard import (  # noqa: E402
+    evaluate_system_registry_guard,
+    load_guard_policy,
+    parse_system_registry,
+)
 
 DEFAULT_REQUIRED_SMOKE_TESTS = [
     "tests/test_roadmap_eligibility.py",
@@ -109,6 +114,8 @@ _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS = [
     "tests/test_pqx_slice_runner.py",
 ]
 _GOVERNED_PROMPT_SURFACE_REGISTRY = REPO_ROOT / "docs" / "governance" / "governed_prompt_surfaces.json"
+_SYSTEM_REGISTRY_PATH = REPO_ROOT / "docs" / "architecture" / "system_registry.md"
+_SYSTEM_REGISTRY_GUARD_POLICY_PATH = REPO_ROOT / "contracts" / "governance" / "system_registry_guard_policy.json"
 
 _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "scripts/run_autonomous_validation_run.py": ["tests/test_run_autonomous_validation_run.py"],
@@ -1236,6 +1243,16 @@ def main() -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     detection = detect_changed_paths(REPO_ROOT, args.base_ref, args.head_ref, args.changed_path)
+    registry_policy = load_guard_policy(_SYSTEM_REGISTRY_GUARD_POLICY_PATH)
+    registry_model = parse_system_registry(_SYSTEM_REGISTRY_PATH)
+    system_registry_guard_result = evaluate_system_registry_guard(
+        repo_root=REPO_ROOT,
+        changed_files=detection.changed_paths,
+        policy=registry_policy,
+        registry_model=registry_model,
+    )
+    srg_output_path = output_dir / "system_registry_guard_result.json"
+    srg_output_path.write_text(json.dumps(system_registry_guard_result, indent=2) + "\n", encoding="utf-8")
     control_surface_gap_bridge = evaluate_control_surface_gap_bridge(output_dir)
     trust_spine_cohesion = evaluate_trust_spine_cohesion(detection.changed_paths, output_dir)
     classified = classify_changed_contracts(detection.changed_paths)
@@ -1425,6 +1442,8 @@ def main() -> int:
             "trust_spine_evidence_cohesion": trust_spine_cohesion,
             "pqx_execution_policy": pqx_execution_policy,
             "pqx_required_context_enforcement": pqx_required_context_enforcement,
+            "system_registry_guard_result": system_registry_guard_result,
+            "system_registry_guard_result_ref": str(srg_output_path),
         }
     elif not surface_classification["required_paths"]:
         report = {
@@ -1455,6 +1474,8 @@ def main() -> int:
             "trust_spine_evidence_cohesion": trust_spine_cohesion,
             "pqx_execution_policy": pqx_execution_policy,
             "pqx_required_context_enforcement": pqx_required_context_enforcement,
+            "system_registry_guard_result": system_registry_guard_result,
+            "system_registry_guard_result_ref": str(srg_output_path),
         }
     else:
         if changed_contract_paths:
@@ -1542,6 +1563,8 @@ def main() -> int:
             "trust_spine_evidence_cohesion": trust_spine_cohesion,
             "pqx_execution_policy": pqx_execution_policy,
             "pqx_required_context_enforcement": pqx_required_context_enforcement,
+            "system_registry_guard_result": system_registry_guard_result,
+            "system_registry_guard_result_ref": str(srg_output_path),
         }
         if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
             report["status"] = "failed"
@@ -1574,6 +1597,14 @@ def main() -> int:
         )
         report["recommended_repair_areas"] = sorted(
             set(report.get("recommended_repair_areas", []) + ["default PQX execution policy enforcement"])
+        )
+    if system_registry_guard_result.get("status") == "fail":
+        report["status"] = "failed"
+        report["invariant_violations"] = sorted(
+            set(report.get("invariant_violations", []) + list(system_registry_guard_result.get("normalized_reason_codes", [])))
+        )
+        report["recommended_repair_areas"] = sorted(
+            set(report.get("recommended_repair_areas", []) + ["system registry ownership boundaries"])
         )
     cohesion_decision = (trust_spine_cohesion or {}).get("overall_decision") if isinstance(trust_spine_cohesion, dict) else None
     report["trust_spine_evidence_cohesion"] = trust_spine_cohesion

@@ -42,6 +42,7 @@ Each prompt must declare exactly one primary type:
 - **No hidden behavior**: all execution rules must be explicit in governed markdown.
 - **No deep reference chains**: keep required behavior understandable within one reference level.
 - **No unrelated refactors**: keep changes in declared scope.
+- **System introduction discipline**: before introducing or broadening any system owner, check `docs/architecture/system_registry.md`, avoid duplicate ownership claims, and include same-change canonical registration when a truly new system is required. System Registry Guard (SRG) enforcement in preflight/CI will fail closed on violations.
 
 ## Terminology normalization
 Use these terms consistently:

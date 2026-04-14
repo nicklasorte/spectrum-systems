@@ -123,7 +123,52 @@ jobs:
             outputs/contract_preflight/contract_preflight_report.md
             outputs/contract_preflight/contract_preflight_report.json
             outputs/contract_preflight/contract_preflight_result_artifact.json
+            outputs/contract_preflight/system_registry_guard_result.json
             outputs/contract_preflight/contract_preflight_diagnosis_bundle.md
+
+  system-registry-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Resolve changed refs
+        id: srg-refs
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            echo "base_ref=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+            echo "head_ref=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+          elif [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            echo "base_ref=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+            echo "head_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "base_ref=origin/main" >> "$GITHUB_OUTPUT"
+            echo "head_ref=HEAD" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run system registry guard
+        run: |
+          python scripts/run_system_registry_guard.py \
+            --base-ref "${{ steps.srg-refs.outputs.base_ref }}" \
+            --head-ref "${{ steps.srg-refs.outputs.head_ref }}" \
+            --output outputs/system_registry_guard/system_registry_guard_result.json
+
+      - name: Upload system registry guard outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-registry-guard-outputs
+          if-no-files-found: warn
+          path: outputs/system_registry_guard/system_registry_guard_result.json
 
   run-pytest:
     needs:
@@ -131,6 +176,7 @@ jobs:
       - validate-module-architecture
       - validate-orchestration-boundaries
       - contract-preflight
+      - system-registry-guard
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
