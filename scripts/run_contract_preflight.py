@@ -70,6 +70,10 @@ from spectrum_systems.modules.runtime.test_inventory_integrity import (  # noqa:
     evaluate_test_inventory_integrity,
     refresh_baseline as refresh_test_inventory_baseline,
 )
+from spectrum_systems.modules.runtime.pytest_selection_integrity import (  # noqa: E402
+    PytestSelectionIntegrityError,
+    evaluate_pytest_selection_integrity,
+)
 
 DEFAULT_REQUIRED_SMOKE_TESTS = [
     "tests/test_roadmap_eligibility.py",
@@ -127,6 +131,7 @@ _GOVERNED_PROMPT_SURFACE_REGISTRY = REPO_ROOT / "docs" / "governance" / "governe
 _SYSTEM_REGISTRY_PATH = REPO_ROOT / "docs" / "architecture" / "system_registry.md"
 _SYSTEM_REGISTRY_GUARD_POLICY_PATH = REPO_ROOT / "contracts" / "governance" / "system_registry_guard_policy.json"
 _TEST_INVENTORY_BASELINE_PATH = REPO_ROOT / "docs" / "governance" / "pytest_pr_inventory_baseline.json"
+_PYTEST_SELECTION_INTEGRITY_POLICY_PATH = REPO_ROOT / "docs" / "governance" / "pytest_pr_selection_integrity_policy.json"
 _DEFAULT_PR_INVENTORY_TARGETS = ["tests/test_eval_dataset_registry.py"]
 _GOVERNED_PR_FALLBACK_PYTEST_TARGETS = [
     "tests/test_run_github_pr_autofix_contract_preflight.py",
@@ -852,6 +857,13 @@ def render_markdown(report: dict[str, Any]) -> str:
         lines.append(f"- **pytest_fallback_used**: {pytest_execution.get('fallback_used', False)}")
         lines.append(f"- **pytest_selected_target_count**: {len(pytest_execution.get('selected_targets', []))}")
 
+    pytest_selection_integrity = report.get("pytest_selection_integrity")
+    if isinstance(pytest_selection_integrity, dict):
+        lines.append(f"- **pytest_selection_integrity_decision**: {pytest_selection_integrity.get('selection_integrity_decision', 'BLOCK')}")
+        lines.append(f"- **pytest_selection_count**: {pytest_selection_integrity.get('selection_count', 0)}")
+        lines.append(f"- **pytest_required_target_count**: {len(pytest_selection_integrity.get('required_test_targets', []))}")
+        lines.append(f"- **pytest_selection_blocking_reasons**: {len(pytest_selection_integrity.get('blocking_reasons', []))}")
+
     lines.append("")
     pqx_execution_policy = report.get("pqx_execution_policy")
     if isinstance(pqx_execution_policy, dict):
@@ -1295,7 +1307,7 @@ def build_preflight_result_artifact(
         }
     return {
         "artifact_type": "contract_preflight_result_artifact",
-        "schema_version": "1.3.0",
+        "schema_version": "1.4.0",
         "preflight_status": report.get("status", "failed"),
         "changed_contracts": report.get("changed_contracts", []),
         "impacted_producers": report.get("impact", {}).get("producers", []),
@@ -1314,6 +1326,8 @@ def build_preflight_result_artifact(
         "control_surface_gap_blocking": bool(report.get("control_surface_gap_blocking", False)),
         "pytest_execution": report.get("pytest_execution", {}),
         "pytest_execution_record_ref": report.get("pytest_execution_record_ref"),
+        "pytest_selection_integrity": report.get("pytest_selection_integrity", {}),
+        "pytest_selection_integrity_result_ref": report.get("pytest_selection_integrity_result_ref"),
         "pqx_required_context_enforcement": {
             "classification": str(required_context.get("classification", "exploration_only_or_non_governed")),
             "execution_context": str(required_context.get("execution_context", "unspecified")),
@@ -1673,6 +1687,8 @@ def main() -> int:
             "system_registry_guard_result_ref": str(srg_output_path),
             "test_inventory_integrity": test_inventory_payload,
             "test_inventory_integrity_result_ref": str(test_inventory_artifact_path),
+            "pytest_selection_integrity": {},
+            "pytest_selection_integrity_result_ref": None,
         }
     elif not surface_classification["required_paths"]:
         report = {
@@ -1707,6 +1723,8 @@ def main() -> int:
             "system_registry_guard_result_ref": str(srg_output_path),
             "test_inventory_integrity": test_inventory_payload,
             "test_inventory_integrity_result_ref": str(test_inventory_artifact_path),
+            "pytest_selection_integrity": {},
+            "pytest_selection_integrity_result_ref": None,
         }
     else:
         if changed_contract_paths:
@@ -1802,6 +1820,8 @@ def main() -> int:
             "system_registry_guard_result_ref": str(srg_output_path),
             "test_inventory_integrity": test_inventory_payload,
             "test_inventory_integrity_result_ref": str(test_inventory_artifact_path),
+            "pytest_selection_integrity": {},
+            "pytest_selection_integrity_result_ref": None,
         }
     if is_pull_request_event and report.get("status") == "passed" and not pytest_execution_log:
         fallback_pytest_targets = _resolve_existing_pytest_targets(_GOVERNED_PR_FALLBACK_PYTEST_TARGETS)
@@ -1855,6 +1875,62 @@ def main() -> int:
     pytest_execution_record_path.write_text(json.dumps(pytest_execution_record, indent=2) + "\n", encoding="utf-8")
     report["pytest_execution_record_ref"] = str(pytest_execution_record_path)
 
+    required_targets_for_integrity = sorted(set(smoke_targets + forced_targets)) if "smoke_targets" in locals() and "forced_targets" in locals() else []
+    try:
+        selection_eval = evaluate_pytest_selection_integrity(
+            changed_paths=detection.changed_paths,
+            selected_test_targets=sorted(set(selected_pytest_targets + fallback_pytest_targets)),
+            required_test_targets=required_targets_for_integrity,
+            pytest_execution_record=pytest_execution_record,
+            policy_path=_PYTEST_SELECTION_INTEGRITY_POLICY_PATH,
+            generated_at=_utc_now(),
+        )
+        report["pytest_selection_integrity"] = selection_eval.payload
+    except PytestSelectionIntegrityError:
+        report["pytest_selection_integrity"] = {
+            "artifact_type": "pytest_selection_integrity_result",
+            "schema_version": "1.0.0",
+            "changed_paths": sorted(set(detection.changed_paths)),
+            "required_test_targets": required_targets_for_integrity,
+            "selected_test_targets": sorted(set(selected_pytest_targets + fallback_pytest_targets)),
+            "missing_required_targets": required_targets_for_integrity,
+            "selection_count": len(sorted(set(selected_pytest_targets + fallback_pytest_targets))),
+            "minimum_selection_threshold": 1,
+            "threshold_satisfied": False,
+            "impacted_surface_count": len(detection.changed_paths),
+            "selection_integrity_decision": "BLOCK",
+            "blocking_reasons": ["PYTEST_SELECTION_ARTIFACT_INVALID"],
+            "generated_at": _utc_now(),
+        }
+    selection_integrity_valid = True
+    try:
+        validate_artifact(report["pytest_selection_integrity"], "pytest_selection_integrity_result")
+    except Exception:
+        selection_integrity_valid = False
+        report["status"] = "failed"
+        report["invariant_violations"] = sorted(set(report.get("invariant_violations", []) + ["PYTEST_SELECTION_ARTIFACT_INVALID"]))
+        report["pytest_selection_integrity"] = {
+            "artifact_type": "pytest_selection_integrity_result",
+            "schema_version": "1.0.0",
+            "changed_paths": sorted(set(detection.changed_paths)),
+            "required_test_targets": required_targets_for_integrity,
+            "selected_test_targets": sorted(set(selected_pytest_targets + fallback_pytest_targets)),
+            "missing_required_targets": required_targets_for_integrity,
+            "selection_count": len(sorted(set(selected_pytest_targets + fallback_pytest_targets))),
+            "minimum_selection_threshold": 1,
+            "threshold_satisfied": False,
+            "impacted_surface_count": len(detection.changed_paths),
+            "selection_integrity_decision": "BLOCK",
+            "blocking_reasons": ["PYTEST_SELECTION_ARTIFACT_INVALID"],
+            "generated_at": _utc_now(),
+        }
+    selection_integrity_path = output_dir / "pytest_selection_integrity_result.json"
+    if selection_integrity_valid:
+        selection_integrity_path.write_text(json.dumps(report["pytest_selection_integrity"], indent=2) + "\n", encoding="utf-8")
+        report["pytest_selection_integrity_result_ref"] = str(selection_integrity_path)
+    else:
+        report["pytest_selection_integrity_result_ref"] = None
+
     if is_pull_request_event:
         if not bool(pytest_execution_record.get("executed", False)):
             report["status"] = "failed"
@@ -1871,6 +1947,17 @@ def main() -> int:
             )
             report["recommended_repair_areas"] = sorted(
                 set(report.get("recommended_repair_areas", []) + ["restore deterministic PR pytest target selection"])
+            )
+
+        selection_integrity = report.get("pytest_selection_integrity") or {}
+        selection_reasons = [str(item) for item in (selection_integrity.get("blocking_reasons") or []) if isinstance(item, str)]
+        if str(selection_integrity.get("selection_integrity_decision") or "BLOCK") != "ALLOW":
+            report["status"] = "failed"
+            report["invariant_violations"] = sorted(
+                set(report.get("invariant_violations", []) + selection_reasons + ["PR_PYTEST_SELECTION_INTEGRITY_REQUIRED"])
+            )
+            report["recommended_repair_areas"] = sorted(
+                set(report.get("recommended_repair_areas", []) + ["restore deterministic PR pytest selection integrity coverage"])
             )
 
     if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
@@ -1936,6 +2023,12 @@ def main() -> int:
         )
     pytest_execution = report.get("pytest_execution", {})
     pytest_execution_count = int(pytest_execution.get("pytest_execution_count", 0)) if isinstance(pytest_execution, dict) else 0
+    if is_pull_request_event and not str(report.get("pytest_selection_integrity_result_ref") or "").strip():
+        report["status"] = "failed"
+        report["invariant_violations"] = sorted(
+            set(report.get("invariant_violations", []) + ["PYTEST_SELECTION_ARTIFACT_MISSING", "PR_PYTEST_SELECTION_INTEGRITY_REQUIRED"])
+        )
+
     if is_pull_request_event and report.get("status") == "passed" and pytest_execution_count < 1:
         report["status"] = "failed"
         report["invariant_violations"] = sorted(

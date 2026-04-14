@@ -1,0 +1,52 @@
+{
+  "artifact_type": "pytest_trust_gap_audit_result",
+  "schema_version": "1.0.0",
+  "audit_scope": {
+    "roots": [
+      "outputs",
+      "artifacts",
+      "data"
+    ],
+    "artifact_globs": [
+      "**/contract_preflight_result_artifact.json"
+    ],
+    "max_artifacts": 50,
+    "repo_root": "/workspace/spectrum-systems"
+  },
+  "scanned_artifact_count": 3,
+  "suspect_count": 2,
+  "suspect_runs": [
+    {
+      "artifact_path": "outputs/history/run-001/contract_preflight_result_artifact.json",
+      "classification": "weak_evidence",
+      "context": "pr",
+      "trusting_outcome": true,
+      "reason_codes": [
+        "MISSING_PYTEST_SELECTION_INTEGRITY_ARTIFACT",
+        "TRUSTED_OUTCOME_WITH_GAP"
+      ]
+    },
+    {
+      "artifact_path": "outputs/history/run-002/contract_preflight_result_artifact.json",
+      "classification": "missing_evidence",
+      "context": "unknown",
+      "trusting_outcome": true,
+      "reason_codes": [
+        "MISSING_PYTEST_EXECUTION_ARTIFACT",
+        "TRUSTED_OUTCOME_WITH_GAP"
+      ]
+    }
+  ],
+  "summary_reason_codes": [
+    "MISSING_PYTEST_EXECUTION_ARTIFACT",
+    "MISSING_PYTEST_SELECTION_INTEGRITY_ARTIFACT",
+    "TRUSTED_OUTCOME_WITH_GAP"
+  ],
+  "generated_at": "2026-04-14T00:00:00Z",
+  "trace": {
+    "producer": "spectrum_systems.modules.runtime.pytest_trust_gap_audit",
+    "classification_policy": "tsi-01-trust-gap-v1",
+    "scan_mode": "repo_local_artifacts_only",
+    "read_only": true
+  }
+}

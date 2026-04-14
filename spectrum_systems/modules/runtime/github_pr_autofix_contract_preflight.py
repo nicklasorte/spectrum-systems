@@ -38,6 +38,10 @@ KNOWN_REPAIR_CATEGORIES = {
     "test_inventory_regression",
     "control_surface_gap",
     "downstream_test_failure",
+    "pytest_selection_missing",
+    "pytest_selection_mismatch",
+    "pytest_selection_filtering",
+    "pytest_selection_threshold",
 }
 
 TERMINAL_STATES = {
@@ -215,6 +219,16 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
             return "no_tests_discovered", ["PR_PYTEST_SELECTED_TARGETS_EMPTY"]
         if "PR_PYTEST_FALLBACK_TARGETS_EMPTY" in invariant_violations:
             return "no_tests_discovered", ["PR_PYTEST_FALLBACK_TARGETS_EMPTY"]
+        if "PR_PYTEST_SELECTION_INTEGRITY_REQUIRED" in invariant_violations:
+            return "pytest_selection_missing", ["PR_PYTEST_SELECTION_INTEGRITY_REQUIRED"]
+        if "PYTEST_SELECTION_ARTIFACT_MISSING" in invariant_violations or "PYTEST_SELECTION_ARTIFACT_INVALID" in invariant_violations:
+            return "pytest_selection_missing", [code for code in invariant_violations if code.startswith("PYTEST_SELECTION_ARTIFACT")][:1] or ["PYTEST_SELECTION_ARTIFACT_MISSING"]
+        if "PYTEST_SELECTION_FILTERING_DETECTED" in invariant_violations:
+            return "pytest_selection_filtering", ["PYTEST_SELECTION_FILTERING_DETECTED"]
+        if "PYTEST_SELECTION_THRESHOLD_NOT_MET" in invariant_violations:
+            return "pytest_selection_threshold", ["PYTEST_SELECTION_THRESHOLD_NOT_MET"]
+        if "PYTEST_SELECTION_MISMATCH" in invariant_violations or "PYTEST_REQUIRED_TARGETS_MISSING" in invariant_violations or "PYTEST_SELECTION_EMPTY" in invariant_violations:
+            return "pytest_selection_mismatch", [code for code in invariant_violations if code in {"PYTEST_SELECTION_MISMATCH","PYTEST_REQUIRED_TARGETS_MISSING","PYTEST_SELECTION_EMPTY"}] or ["PYTEST_SELECTION_MISMATCH"]
         if "artifact_validation_failure" in invariant_violations:
             return "schema_violation", ["artifact_validation_failure"]
         if "repair_pipeline_failure" in invariant_violations:
@@ -244,9 +258,10 @@ def _repair_policy(failure_class: str) -> tuple[str, bool, bool]:
         "collection_failure",
         "working_directory_mismatch",
         "accidental_filtering_detected",
+        "pytest_selection_missing",
     }:
         return "auto_repair_allowed", True, False
-    if failure_class in {"non_repairable_policy_violation", "lineage_missing", "downstream_test_failure"}:
+    if failure_class in {"non_repairable_policy_violation", "lineage_missing", "downstream_test_failure", "pytest_selection_mismatch", "pytest_selection_filtering", "pytest_selection_threshold"}:
         return "auto_repair_forbidden", False, True
     if failure_class in {"internal_preflight_error"}:
         return "escalation_required", False, True
@@ -313,6 +328,10 @@ def build_preflight_repair_plan_record(*, diagnosis_record: dict[str, Any]) -> d
         "collection_failure": ["tests/", "pytest.ini"],
         "working_directory_mismatch": [".github/workflows/", "scripts/run_contract_preflight.py"],
         "accidental_filtering_detected": ["pytest.ini", ".github/workflows/"],
+        "pytest_selection_missing": ["docs/governance/pytest_pr_selection_integrity_policy.json", "scripts/run_contract_preflight.py"],
+        "pytest_selection_mismatch": ["docs/governance/pytest_pr_selection_integrity_policy.json", "tests/"],
+        "pytest_selection_filtering": ["pytest.ini", "docs/governance/pytest_pr_selection_integrity_policy.json"],
+        "pytest_selection_threshold": ["docs/governance/pytest_pr_selection_integrity_policy.json"],
         "control_surface_gap": ["outputs/contract_preflight", "scripts/run_contract_preflight.py"],
         "downstream_test_failure": ["tests/", "scripts/run_contract_preflight.py"],
     }[category]
@@ -664,6 +683,14 @@ def run_preflight_block_autorepair(
     rerun = command_runner(rerun_cmd, repo_root)
     rerun_artifact = _read_json(output_dir / "contract_preflight_result_artifact.json")
     rerun_decision = str(((rerun_artifact.get("control_signal") or {}).get("strategy_gate_decision")) or "BLOCK")
+    rerun_exec_ref = str(rerun_artifact.get("pytest_execution_record_ref") or "").strip()
+    rerun_selection_ref = str(rerun_artifact.get("pytest_selection_integrity_result_ref") or "").strip()
+    rerun_selection = rerun_artifact.get("pytest_selection_integrity") if isinstance(rerun_artifact.get("pytest_selection_integrity"), dict) else {}
+    rerun_execution_ok = bool(rerun_exec_ref)
+    rerun_selection_ok = bool(rerun_selection_ref) and str(rerun_selection.get("selection_integrity_decision") or "BLOCK") == "ALLOW"
+    if not (rerun_execution_ok and rerun_selection_ok):
+        rerun_decision = "BLOCK"
+
     result = build_preflight_repair_result_record(
         attempt_id=attempt["attempt_id"],
         plan_record=plan,

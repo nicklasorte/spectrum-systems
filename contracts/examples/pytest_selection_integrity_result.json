@@ -1,0 +1,23 @@
+{
+  "artifact_type": "pytest_selection_integrity_result",
+  "schema_version": "1.0.0",
+  "changed_paths": [
+    "scripts/run_contract_preflight.py",
+    "tests/test_contract_preflight.py"
+  ],
+  "required_test_targets": [
+    "tests/test_contract_preflight.py"
+  ],
+  "selected_test_targets": [
+    "tests/test_contract_preflight.py",
+    "tests/test_run_github_pr_autofix_contract_preflight.py"
+  ],
+  "missing_required_targets": [],
+  "selection_count": 2,
+  "minimum_selection_threshold": 1,
+  "threshold_satisfied": true,
+  "impacted_surface_count": 2,
+  "selection_integrity_decision": "ALLOW",
+  "blocking_reasons": [],
+  "generated_at": "2026-04-14T00:00:00Z"
+}

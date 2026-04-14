@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.133",
+  "artifact_version": "1.3.134",
   "schema_version": "1.3.99",
-  "standards_version": "1.0.83",
-  "record_id": "REC-STD-2026-04-14-PYX-02-PR-PYTEST-ENFORCEMENT",
-  "run_id": "run-20260414T000000Z-pyx-02-pr-pytest-enforcement",
+  "standards_version": "1.0.84",
+  "record_id": "REC-STD-2026-04-14-TSI-01-SELECTION-INTEGRITY-AUDIT",
+  "run_id": "run-20260414T000000Z-tsi-01-selection-integrity-audit",
   "created_at": "2026-04-14T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.133",
+  "source_repo_version": "1.3.134",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -2772,7 +2772,7 @@
       "introduced_in": "1.3.74",
       "last_updated_in": "1.3.89",
       "example_path": "contracts/examples/failure_diagnosis_artifact.json",
-      "notes": "BATCH-FRE-01 deterministic failure intake/classification artifact for governed failure→diagnosis handoff; diagnosis-only with no repair execution authority."
+      "notes": "BATCH-FRE-01 deterministic failure intake/classification artifact for governed failure\u2192diagnosis handoff; diagnosis-only with no repair execution authority."
     },
     {
       "artifact_type": "failure_eval_case",
@@ -2785,7 +2785,7 @@
       "introduced_in": "1.0.8",
       "last_updated_in": "1.0.41",
       "example_path": "contracts/examples/failure_eval_case.json",
-      "notes": "AG-05 deterministic failure→eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
+      "notes": "AG-05 deterministic failure\u2192eval auto-generation artifact for bounded runtime failure, review-required halt, and control-indeterminate non-allow source conditions."
     },
     {
       "artifact_type": "failure_learning_record_artifact",
@@ -2928,7 +2928,7 @@
       "introduced_in": "1.3.86",
       "last_updated_in": "1.3.86",
       "example_path": "contracts/examples/github_review_handoff_artifact.json",
-      "notes": "BATCH-GHA-CORE-01 deterministic GHA-01→GHA-02 handoff index for fail-closed artifact routing without adding workflow decision logic."
+      "notes": "BATCH-GHA-CORE-01 deterministic GHA-01\u2192GHA-02 handoff index for fail-closed artifact routing without adding workflow decision logic."
     },
     {
       "artifact_type": "glossary_entry",
@@ -5075,7 +5075,7 @@
       "introduced_in": "1.0.86",
       "last_updated_in": "1.0.87",
       "example_path": "contracts/examples/pqx_n_slice_validation_record.json",
-      "notes": "B30 first 5–10 slice governed-run readiness validation artifact."
+      "notes": "B30 first 5\u201310 slice governed-run readiness validation artifact."
     },
     {
       "artifact_type": "pqx_review_result",
@@ -6772,7 +6772,7 @@
       "introduced_in": "1.3.75",
       "last_updated_in": "1.3.77",
       "example_path": "contracts/examples/repair_prompt_artifact.json",
-      "notes": "BATCH-FRE-02 deterministic diagnosis→repair bridge artifact defining bounded Codex-ready repair instructions, validation commands, constraints, and success criteria."
+      "notes": "BATCH-FRE-02 deterministic diagnosis\u2192repair bridge artifact defining bounded Codex-ready repair instructions, validation commands, constraints, and success criteria."
     },
     {
       "artifact_class": "coordination",
@@ -7073,7 +7073,7 @@
       "introduced_in": "1.3.98",
       "last_updated_in": "1.3.98",
       "example_path": "contracts/examples/review_fix_execution_request_artifact.json",
-      "notes": "RQX-B2 one-cycle governed request artifact requiring RQX→TPA→PQX→RQX routing with max cycle count = 1."
+      "notes": "RQX-B2 one-cycle governed request artifact requiring RQX\u2192TPA\u2192PQX\u2192RQX routing with max cycle count = 1."
     },
     {
       "artifact_type": "review_fix_execution_result_artifact",
@@ -8804,6 +8804,32 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
+    },
+    {
+      "artifact_type": "pytest_selection_integrity_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.84",
+      "last_updated_in": "1.0.84",
+      "example_path": "contracts/examples/pytest_selection_integrity_result.json",
+      "notes": "TSI-01 governed fail-closed PR pytest selection integrity evidence artifact."
+    },
+    {
+      "artifact_type": "pytest_trust_gap_audit_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.84",
+      "last_updated_in": "1.0.84",
+      "example_path": "contracts/examples/pytest_trust_gap_audit_result.json",
+      "notes": "TSI-01 deterministic read-only audit artifact for historical pytest trust-gap evidence."
     }
   ]
 }

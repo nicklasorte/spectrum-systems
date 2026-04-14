@@ -355,7 +355,7 @@ def _execution_impact_artifact(*, blocking: bool, indeterminate: bool, safe_to_e
 def _preflight_artifact(*, status: str, decision: str, masking_detected: bool = False, degraded: bool = False) -> dict:
     return {
         "artifact_type": "contract_preflight_result_artifact",
-        "schema_version": "1.3.0",
+        "schema_version": "1.4.0",
         "preflight_status": status,
         "changed_contracts": ["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
         "impacted_producers": [
@@ -398,6 +398,22 @@ def _preflight_artifact(*, status: str, decision: str, masking_detected: bool = 
             "selection_reason_codes": [],
         },
         "pytest_execution_record_ref": "outputs/contract_preflight/pytest_execution_record.json",
+        "pytest_selection_integrity": {
+            "artifact_type": "pytest_selection_integrity_result",
+            "schema_version": "1.0.0",
+            "changed_paths": ["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
+            "required_test_targets": ["tests/test_contract_preflight.py"],
+            "selected_test_targets": ["tests/test_contract_preflight.py"],
+            "missing_required_targets": [],
+            "selection_count": 1,
+            "minimum_selection_threshold": 1,
+            "threshold_satisfied": True,
+            "impacted_surface_count": 1,
+            "selection_integrity_decision": "ALLOW",
+            "blocking_reasons": [],
+            "generated_at": "2026-04-01T00:00:00Z"
+        },
+        "pytest_selection_integrity_result_ref": "outputs/contract_preflight/pytest_selection_integrity_result.json",
         "pqx_required_context_enforcement": {
             "classification": "governed_pqx_required",
             "execution_context": "pqx_governed",

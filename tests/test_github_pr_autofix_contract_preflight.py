@@ -267,6 +267,9 @@ def test_missing_required_surface_mapping_autorepair_writes_override_file(tmp_pa
                     {
                         "control_signal": {"strategy_gate_decision": "ALLOW"},
                         "generated_at": "2026-04-13T00:00:00Z",
+                        "pytest_execution_record_ref": "outputs/contract_preflight/pytest_execution_record.json",
+                        "pytest_selection_integrity_result_ref": "outputs/contract_preflight/pytest_selection_integrity_result.json",
+                        "pytest_selection_integrity": {"selection_integrity_decision": "ALLOW"},
                     }
                 ),
                 encoding="utf-8",
@@ -365,7 +368,7 @@ def test_schema_violation_auto_repair_path_writes_terminal_success_outcome(tmp_p
     def _runner(cmd, cwd):
         if any("run_contract_preflight.py" in part for part in cmd):
             (out / "contract_preflight_result_artifact.json").write_text(
-                json.dumps({"control_signal": {"strategy_gate_decision": "ALLOW"}, "generated_at": "2026-04-13T00:00:00Z"}),
+                json.dumps({"control_signal": {"strategy_gate_decision": "ALLOW"}, "generated_at": "2026-04-13T00:00:00Z", "pytest_execution_record_ref": "outputs/contract_preflight/pytest_execution_record.json", "pytest_selection_integrity_result_ref": "outputs/contract_preflight/pytest_selection_integrity_result.json", "pytest_selection_integrity": {"selection_integrity_decision": "ALLOW"}}),
                 encoding="utf-8",
             )
         return _Res(cmd, 0)
@@ -523,3 +526,40 @@ def test_preflight_test_inventory_failure_is_auto_repairable_and_bounded() -> No
     )
     assert plan["eligibility_decision"] == "auto_repair_allowed"
     assert "docs/governance/pytest_pr_inventory_baseline.json" in plan["allowed_paths"]
+
+
+def test_selection_integrity_missing_artifact_classifies_repairable() -> None:
+    diagnosis = build_preflight_block_diagnosis_record(
+        report={
+            "invariant_violations": ["PYTEST_SELECTION_ARTIFACT_MISSING"],
+            "normalized_failure": {"failure_class": "test_inventory_regression", "repairable": True},
+        },
+        preflight_artifact={"control_signal": {"strategy_gate_decision": "BLOCK"}, "generated_at": "2026"},
+    )
+    assert diagnosis["failure_class"] == "pytest_selection_missing"
+    plan = build_preflight_repair_plan_record(diagnosis_record=diagnosis)
+    assert plan["eligibility_decision"] == "auto_repair_allowed"
+
+
+def test_selection_integrity_mismatch_classifies_non_repairable() -> None:
+    diagnosis = build_preflight_block_diagnosis_record(
+        report={
+            "invariant_violations": ["PYTEST_SELECTION_MISMATCH"],
+            "normalized_failure": {"failure_class": "test_inventory_regression", "repairable": False},
+        },
+        preflight_artifact={"control_signal": {"strategy_gate_decision": "BLOCK"}, "generated_at": "2026"},
+    )
+    assert diagnosis["failure_class"] == "pytest_selection_mismatch"
+    plan = build_preflight_repair_plan_record(diagnosis_record=diagnosis)
+    assert plan["eligibility_decision"] != "auto_repair_allowed"
+
+
+def test_pr_selection_integrity_required_invariant_classifies_as_selection_missing() -> None:
+    diagnosis = build_preflight_block_diagnosis_record(
+        report={
+            "invariant_violations": ["PR_PYTEST_SELECTION_INTEGRITY_REQUIRED"],
+            "normalized_failure": {"failure_class": "test_inventory_regression", "repairable": True},
+        },
+        preflight_artifact={"control_signal": {"strategy_gate_decision": "BLOCK"}, "generated_at": "2026"},
+    )
+    assert diagnosis["failure_class"] == "pytest_selection_missing"

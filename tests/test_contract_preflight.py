@@ -1077,7 +1077,7 @@ def test_main_governed_context_with_valid_wrapper_allows(tmp_path: Path, monkeyp
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
     assert report["pqx_required_context_enforcement"]["status"] == "allow"
     artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
-    assert artifact["schema_version"] == "1.3.0"
+    assert artifact["schema_version"] == "1.4.0"
     assert artifact["pqx_required_context_enforcement"]["status"] == "allow"
 
 
@@ -2011,14 +2011,15 @@ def test_pull_request_no_targeted_tests_uses_governed_fallback(tmp_path: Path, m
     monkeypatch.setattr(preflight, "_resolve_existing_pytest_targets", lambda paths: [str(paths[0])])
 
     code = preflight.main()
-    assert code == 0
+    assert code == 2
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
-    assert report["status"] == "passed"
+    assert report["status"] == "failed"
     assert report["pytest_execution"]["fallback_used"] is True
     assert report["pytest_execution"]["pytest_execution_count"] == 1
     assert report["pytest_execution"]["selected_targets"] == []
     assert report["pytest_execution"]["fallback_targets"] == ["tests/test_run_github_pr_autofix_contract_preflight.py"]
     assert report["pytest_execution"]["selection_reason_codes"] == ["PR_PYTEST_SELECTED_TARGETS_EMPTY"]
+    assert "PYTEST_SELECTION_FILTERING_DETECTED" in report["invariant_violations"]
     artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
     assert artifact["pytest_execution"]["pytest_execution_count"] == 1
     assert "selection_reason_codes" in artifact["pytest_execution"]
@@ -2086,3 +2087,62 @@ def test_pull_request_fails_closed_when_fallback_reports_success_without_executi
     assert code == 2
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
     assert "PR_PYTEST_EXECUTION_RECORD_REQUIRED" in report["invariant_violations"]
+
+
+def test_preflight_blocks_when_selection_integrity_rejects(monkeypatch, tmp_path: Path) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": ["scripts/run_contract_preflight.py"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+                "event_name": "pull_request",
+                "refresh_test_inventory_baseline": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+    code = preflight.main()
+    assert code == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert any(code.startswith("PYTEST_SELECTION_") for code in report["invariant_violations"])
+    assert "PR_PYTEST_SELECTION_INTEGRITY_REQUIRED" in report["invariant_violations"]
+
+
+def test_preflight_writes_selection_integrity_artifact_ref(monkeypatch, tmp_path: Path) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "changed_path": ["tests/test_contract_preflight.py"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+                "event_name": "pull_request",
+                "refresh_test_inventory_baseline": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda paths, **kwargs: [] if paths else [])
+    _ = preflight.main()
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["pytest_selection_integrity_result_ref"]
+    assert (output_dir / "pytest_selection_integrity_result.json").exists()

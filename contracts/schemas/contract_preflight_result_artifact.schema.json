@@ -25,7 +25,9 @@
     "pqx_required_context_enforcement",
     "control_signal",
     "trace",
-    "pytest_execution_record_ref"
+    "pytest_execution_record_ref",
+    "pytest_selection_integrity",
+    "pytest_selection_integrity_result_ref"
   ],
   "properties": {
     "artifact_type": {
@@ -33,7 +35,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.3.0"
+      "const": "1.4.0"
     },
     "preflight_status": {
       "type": "string",
@@ -149,28 +151,51 @@
         "selection_reason_codes"
       ],
       "properties": {
-        "event_name": {"type": "string"},
-        "pytest_execution_count": {"type": "integer", "minimum": 0},
+        "event_name": {
+          "type": "string"
+        },
+        "pytest_execution_count": {
+          "type": "integer",
+          "minimum": 0
+        },
         "pytest_commands": {
           "type": "array",
-          "items": {"type": "string", "minLength": 1}
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         },
         "selected_targets": {
           "type": "array",
-          "items": {"type": "string", "minLength": 1},
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
           "uniqueItems": true
         },
         "fallback_targets": {
           "type": "array",
-          "items": {"type": "string", "minLength": 1},
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
           "uniqueItems": true
         },
-        "fallback_used": {"type": "boolean"},
-        "targeted_selection_empty": {"type": "boolean"},
-        "fallback_selection_empty": {"type": "boolean"},
+        "fallback_used": {
+          "type": "boolean"
+        },
+        "targeted_selection_empty": {
+          "type": "boolean"
+        },
+        "fallback_selection_empty": {
+          "type": "boolean"
+        },
         "selection_reason_codes": {
           "type": "array",
-          "items": {"type": "string", "minLength": 1},
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
           "uniqueItems": true
         }
       }
@@ -351,6 +376,103 @@
           "minLength": 1
         }
       }
+    },
+    "pytest_selection_integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_type",
+        "schema_version",
+        "changed_paths",
+        "required_test_targets",
+        "selected_test_targets",
+        "missing_required_targets",
+        "selection_count",
+        "minimum_selection_threshold",
+        "threshold_satisfied",
+        "impacted_surface_count",
+        "selection_integrity_decision",
+        "blocking_reasons",
+        "generated_at"
+      ],
+      "properties": {
+        "artifact_type": {
+          "const": "pytest_selection_integrity_result"
+        },
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "changed_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "required_test_targets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "selected_test_targets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "missing_required_targets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "selection_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minimum_selection_threshold": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "threshold_satisfied": {
+          "type": "boolean"
+        },
+        "impacted_surface_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "selection_integrity_decision": {
+          "type": "string",
+          "enum": [
+            "ALLOW",
+            "BLOCK"
+          ]
+        },
+        "blocking_reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pytest_selection_integrity_result_ref": {
+      "type": "string",
+      "minLength": 1
     }
   }
 }

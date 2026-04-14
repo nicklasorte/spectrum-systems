@@ -117,11 +117,8 @@ jobs:
           preflight_exit=$?
           set -e
 
-          if [[ "$preflight_exit" -eq 0 ]]; then
-            exit 0
-          fi
-
-          auto_repair_allowed=$(python - <<'PY'
+          if [[ "$preflight_exit" -ne 0 ]]; then
+            auto_repair_allowed=$(python - <<'PY'
 import json
 from pathlib import Path
 path = Path("outputs/contract_preflight/preflight_repair_plan_record.json")
@@ -133,11 +130,11 @@ else:
 PY
 )
 
-          if [[ "$auto_repair_allowed" != "true" ]]; then
-            exit "$preflight_exit"
-          fi
+            if [[ "$auto_repair_allowed" != "true" ]]; then
+              exit "$preflight_exit"
+            fi
 
-          python scripts/run_github_pr_autofix_contract_preflight.py \
+            python scripts/run_github_pr_autofix_contract_preflight.py \
             --output-dir outputs/contract_preflight \
             --base-ref "${{ steps.preflight-refs.outputs.base_ref }}" \
             --head-ref "${{ steps.preflight-refs.outputs.head_ref }}" \
@@ -146,6 +143,7 @@ PY
             --pqx-wrapper-path outputs/contract_preflight/preflight_pqx_task_wrapper.json \
             --authority-evidence-ref artifacts/pqx_runs/preflight.pqx_slice_execution_record.json \
             --same-repo-write-allowed
+          fi
 
           # Preflight is the canonical authority for PR pytest execution truth.
           python - <<'PY'
@@ -176,6 +174,18 @@ if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
         raise SystemExit("workflow/preflight trust mismatch: PR allow with executed=false")
     if decision in {"ALLOW", "WARN"} and not selected_targets:
         raise SystemExit("workflow/preflight trust mismatch: PR allow with empty selected_targets")
+    selection_ref = str(payload.get("pytest_selection_integrity_result_ref") or "").strip()
+    selection = payload.get("pytest_selection_integrity") or {}
+    if not selection_ref:
+        raise SystemExit("workflow/preflight trust mismatch: missing pytest_selection_integrity_result_ref")
+    selection_path = Path(selection_ref)
+    if not selection_path.is_file():
+        raise SystemExit(f"workflow/preflight trust mismatch: missing pytest_selection_integrity_result artifact at {selection_ref}")
+    selection_from_ref = json.loads(selection_path.read_text(encoding="utf-8"))
+    if str(selection_from_ref.get("selection_integrity_decision") or "BLOCK") != "ALLOW" and decision in {"ALLOW", "WARN"}:
+        raise SystemExit("workflow/preflight trust mismatch: allow decision with blocked pytest selection integrity")
+    if selection and str(selection.get("selection_integrity_decision") or "BLOCK") != "ALLOW" and decision in {"ALLOW", "WARN"}:
+        raise SystemExit("workflow/preflight trust mismatch: allow decision with in-artifact blocked pytest selection integrity")
 PY
 
       - name: Upload contract preflight outputs
