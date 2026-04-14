@@ -11,6 +11,19 @@ def test_artifact_boundary_workflow_uses_contract_preflight_on_pull_request() ->
     assert 'python scripts/run_contract_preflight.py' in text
 
 
+def test_artifact_boundary_workflow_defines_explicit_pytest_pr_job_name() -> None:
+    text = ARTIFACT_BOUNDARY_WORKFLOW.read_text(encoding='utf-8')
+    assert 'pytest-pr:' in text
+    assert 'name: PR / pytest' in text
+    assert 'Run governed pytest preflight gate' in text
+
+
+def test_artifact_boundary_redundant_pytest_job_depends_on_explicit_pytest_pr_job() -> None:
+    text = ARTIFACT_BOUNDARY_WORKFLOW.read_text(encoding='utf-8')
+    assert '- pytest-pr' in text
+    assert '- contract-preflight' not in text
+
+
 def test_artifact_boundary_workflow_does_not_bypass_artifact_validation_on_preflight_exit_zero() -> None:
     text = ARTIFACT_BOUNDARY_WORKFLOW.read_text(encoding='utf-8')
     assert 'if [[ "$preflight_exit" -ne 0 ]]; then' in text

@@ -60,7 +60,8 @@ jobs:
       - name: Validate orchestration boundaries and artifact-bus schema
         run: python scripts/validate_orchestration_boundaries.py
 
-  contract-preflight:
+  pytest-pr:
+    name: PR / pytest
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -92,7 +93,7 @@ jobs:
             echo "head_ref=HEAD" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Run contract preflight gate
+      - name: Run governed pytest preflight gate
         env:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
@@ -278,7 +279,7 @@ PY
       - enforce-artifact-boundary
       - validate-module-architecture
       - validate-orchestration-boundaries
-      - contract-preflight
+      - pytest-pr
       - system-registry-guard
     runs-on: ubuntu-latest
     steps:
