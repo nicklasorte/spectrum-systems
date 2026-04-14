@@ -84,6 +84,14 @@ def _write_recovery_outcome(
 
 def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]:
     reasons: list[str] = []
+    ref_context = ((report.get("changed_path_detection") or {}).get("ref_context") or {}) if isinstance(report, dict) else {}
+    ref_reason_code = str(ref_context.get("reason_code") or "").strip()
+    if ref_reason_code == "missing_refs":
+        return "missing_required_artifact", ["missing_refs"]
+    if ref_reason_code == "unsupported_event_context":
+        return "internal_preflight_error", ["unsupported_event_context"]
+    if ref_reason_code == "malformed_ref_context":
+        return "invalid_wrapper", ["malformed_ref_context"]
 
     schema_example_failures = report.get("schema_example_failures") or []
     if schema_example_failures:
@@ -96,6 +104,9 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
         return "schema_violation", ["SCHEMA_EXAMPLE_FAILURE"]
 
     if report.get("missing_required_surface"):
+        reason_codes = [str(item) for item in (report.get("invariant_violations") or []) if isinstance(item, str)]
+        if "contract_mismatch_from_bad_ref_resolution" in reason_codes:
+            return "contract_mismatch", ["contract_mismatch_from_bad_ref_resolution"]
         return "contract_mismatch", ["MISSING_REQUIRED_SURFACE_MAPPING"]
 
     pqx_ctx = report.get("changed_path_detection", {}).get("pqx_required_context_enforcement")

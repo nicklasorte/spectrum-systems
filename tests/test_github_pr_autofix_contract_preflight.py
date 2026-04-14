@@ -7,6 +7,7 @@ from spectrum_systems.modules.runtime.github_pr_autofix_contract_preflight impor
     ContractPreflightAutofixError,
     build_preflight_block_diagnosis_record,
     build_preflight_repair_plan_record,
+    classify_preflight_block,
     run_preflight_block_autorepair,
 )
 
@@ -307,3 +308,38 @@ def test_schema_violation_auto_repair_path_writes_terminal_success_outcome(tmp_p
         command_runner=_runner,
     )
     assert result["recovery_outcome"]["final_decision"] == "repaired_and_passed"
+
+
+def test_classification_distinguishes_missing_refs_reason() -> None:
+    failure_class, reason_codes = classify_preflight_block(
+        report={"changed_path_detection": {"ref_context": {"reason_code": "missing_refs"}}}
+    )
+    assert failure_class == "missing_required_artifact"
+    assert reason_codes == ["missing_refs"]
+
+
+def test_classification_distinguishes_unsupported_event_context_reason() -> None:
+    failure_class, reason_codes = classify_preflight_block(
+        report={"changed_path_detection": {"ref_context": {"reason_code": "unsupported_event_context"}}}
+    )
+    assert failure_class == "internal_preflight_error"
+    assert reason_codes == ["unsupported_event_context"]
+
+
+def test_classification_distinguishes_malformed_ref_context_reason() -> None:
+    failure_class, reason_codes = classify_preflight_block(
+        report={"changed_path_detection": {"ref_context": {"reason_code": "malformed_ref_context"}}}
+    )
+    assert failure_class == "invalid_wrapper"
+    assert reason_codes == ["malformed_ref_context"]
+
+
+def test_classification_distinguishes_contract_mismatch_from_bad_ref_resolution() -> None:
+    failure_class, reason_codes = classify_preflight_block(
+        report={
+            "missing_required_surface": [{"path": "contracts/schemas/x.schema.json", "reason": "none"}],
+            "invariant_violations": ["contract_mismatch_from_bad_ref_resolution"],
+        }
+    )
+    assert failure_class == "contract_mismatch"
+    assert reason_codes == ["contract_mismatch_from_bad_ref_resolution"]

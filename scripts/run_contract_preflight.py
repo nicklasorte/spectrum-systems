@@ -60,6 +60,9 @@ from spectrum_systems.modules.governance.system_registry_guard import (  # noqa:
     load_guard_policy,
     parse_system_registry,
 )
+from spectrum_systems.modules.runtime.preflight_ref_normalization import (  # noqa: E402
+    normalize_preflight_ref_context,
+)
 
 DEFAULT_REQUIRED_SMOKE_TESTS = [
     "tests/test_roadmap_eligibility.py",
@@ -183,8 +186,9 @@ def _run(command: list[str], cwd: Path) -> CommandResult:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fail-closed contract/schema preflight gate")
-    parser.add_argument("--base-ref", default="origin/main", help="Git base ref used for diff detection")
-    parser.add_argument("--head-ref", default="HEAD", help="Git head ref used for diff detection")
+    parser.add_argument("--base-ref", default="", help="Git base ref used for diff detection")
+    parser.add_argument("--head-ref", default="", help="Git head ref used for diff detection")
+    parser.add_argument("--event-name", default=None, help="Optional event context override for ref normalization")
     parser.add_argument("--changed-path", action="append", default=[], help="Optional explicit changed paths")
     parser.add_argument("--output-dir", default="outputs/contract_preflight", help="Preflight output directory")
     parser.add_argument(
@@ -1242,7 +1246,79 @@ def main() -> int:
     output_dir = REPO_ROOT / args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    detection = detect_changed_paths(REPO_ROOT, args.base_ref, args.head_ref, args.changed_path)
+    ref_context = normalize_preflight_ref_context(
+        event_name=getattr(args, "event_name", None),
+        cli_base_ref=getattr(args, "base_ref", ""),
+        cli_head_ref=getattr(args, "head_ref", ""),
+        env=os.environ,
+    )
+    if not ref_context.valid:
+        report = {
+            "status": "failed",
+            "changed_contracts": [],
+            "changed_examples": [],
+            "changed_path_detection": {
+                "changed_path_detection_mode": "ref_context_invalid",
+                "changed_paths_resolved": [],
+                "refs_attempted": [],
+                "fallback_used": False,
+                "warnings": [str(ref_context.invalid_reason)],
+                "evaluation_mode": "blocked",
+                "evaluated_surfaces": [],
+                "ref_context": ref_context.as_dict(),
+            },
+            "impact": {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": []},
+            "schema_example_failures": [],
+            "producer_failures": [],
+            "fixture_failures": [],
+            "consumer_failures": [],
+            "masked_failures": [],
+            "recommended_repair_areas": ["preflight reference normalization"],
+            "bootstrap_failures": ["preflight ref normalization failed closed"],
+            "evaluation_classification": [],
+            "missing_required_surface": [],
+            "skip_reason": None,
+            "invariant_violations": [str(ref_context.reason_code or "malformed_ref_context")],
+            "control_surface_enforcement": None,
+            "control_surface_gap_result": None,
+            "control_surface_gap_pqx_work_items": None,
+            "control_surface_gap_pqx_conversion_error": None,
+            "trust_spine_evidence_cohesion": None,
+            "pqx_execution_policy": {"status": "block", "blocking_reasons": [str(ref_context.reason_code or "malformed_ref_context")]},
+            "pqx_required_context_enforcement": {"status": "block", "blocking_reasons": [str(ref_context.reason_code or "malformed_ref_context")]},
+            "system_registry_guard_result": {"artifact_type": "system_registry_guard_result", "status": "pass", "normalized_reason_codes": []},
+            "system_registry_guard_result_ref": None,
+            "ref_context": ref_context.as_dict(),
+        }
+        json_path = output_dir / "contract_preflight_report.json"
+        md_path = output_dir / "contract_preflight_report.md"
+        json_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        md_path.write_text(render_markdown(report), encoding="utf-8")
+        preflight_artifact = build_preflight_result_artifact(
+            report=report,
+            json_report_path=json_path,
+            markdown_report_path=md_path,
+            hardening_flow=bool(args.hardening_flow),
+        )
+        preflight_artifact_path = output_dir / "contract_preflight_result_artifact.json"
+        preflight_artifact_path.write_text(json.dumps(preflight_artifact, indent=2) + "\n", encoding="utf-8")
+        emit_preflight_block_bundle(report=report, preflight_artifact=preflight_artifact, output_dir=output_dir)
+        print(
+            json.dumps(
+                {
+                    "status": "failed",
+                    "json_report": str(json_path),
+                    "markdown_report": str(md_path),
+                    "preflight_artifact": str(preflight_artifact_path),
+                    "strategy_gate_decision": preflight_artifact["control_signal"]["strategy_gate_decision"],
+                    "ref_context": ref_context.as_dict(),
+                },
+                indent=2,
+            )
+        )
+        return 2
+
+    detection = detect_changed_paths(REPO_ROOT, ref_context.base_ref, ref_context.head_ref, args.changed_path)
     registry_policy = load_guard_policy(_SYSTEM_REGISTRY_GUARD_POLICY_PATH)
     registry_model = parse_system_registry(_SYSTEM_REGISTRY_PATH)
     system_registry_guard_result = evaluate_system_registry_guard(
@@ -1270,6 +1346,7 @@ def main() -> int:
         "warnings": detection.warnings,
         "evaluation_mode": surface_classification["evaluation_mode"],
         "evaluated_surfaces": surface_classification["evaluated_surfaces"],
+        "ref_context": ref_context.as_dict(),
     }
     preflight_mode = (
         "commit_range_inspection"
@@ -1413,6 +1490,15 @@ def main() -> int:
             pqx_execution_policy["blocking_reasons"] = authority_resolution["blocking_reasons"]
 
     if detection.changed_path_detection_mode == "detection_failed_no_governed_paths":
+        detection_invariants = ["changed-path detection failed before evaluation"]
+        ref_raw = ref_context.raw_inputs
+        if (
+            ref_context.event_name == "push"
+            and ref_context.fallback_used
+            and not str(ref_raw.get("github_base_sha", "")).strip()
+            and not str(ref_raw.get("github_head_sha", "")).strip()
+        ):
+            detection_invariants.append("contract_mismatch_from_bad_ref_resolution")
         report = {
             "status": "failed",
             "changed_contracts": [],
@@ -1434,7 +1520,7 @@ def main() -> int:
             "evaluation_classification": surface_classification["path_classifications"],
             "missing_required_surface": [],
             "skip_reason": None,
-            "invariant_violations": ["changed-path detection failed before evaluation"],
+            "invariant_violations": detection_invariants,
             "control_surface_enforcement": None,
             "control_surface_gap_result": control_surface_gap_bridge["gap_result"],
             "control_surface_gap_pqx_work_items": control_surface_gap_bridge["pqx_work_items"],

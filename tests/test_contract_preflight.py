@@ -1673,3 +1673,105 @@ def test_preflight_blocks_when_system_registry_guard_fails(tmp_path: Path, monke
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
     assert "NEW_SYSTEM_MISSING_REGISTRATION" in report["invariant_violations"]
     assert (output_dir / "system_registry_guard_result.json").is_file()
+
+
+def test_preflight_push_event_normalizes_empty_cli_refs_from_push_env(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    monkeypatch.setenv("GITHUB_BASE_SHA", "")
+    monkeypatch.setenv("GITHUB_HEAD_SHA", "")
+    monkeypatch.setenv("GITHUB_BEFORE_SHA", "78f6cd4c28268e03eab3794497feb26378f620c2")
+    monkeypatch.setenv("GITHUB_SHA", "cafecb6682f83c47134a7d01ae818643d1136811")
+
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "",
+                "head_ref": "",
+                "event_name": "push",
+                "changed_path": ["README.md"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+            },
+        )(),
+    )
+
+    code = preflight.main()
+    assert code == 0
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    ref_context = report["changed_path_detection"]["ref_context"]
+    assert ref_context["normalization_strategy"] == "push_before_sha_fallback"
+    assert ref_context["base_ref"] == "78f6cd4c28268e03eab3794497feb26378f620c2"
+    assert ref_context["head_ref"] == "cafecb6682f83c47134a7d01ae818643d1136811"
+    assert report["status"] == "passed"
+
+
+def test_preflight_workflow_dispatch_without_refs_blocks_with_precise_reason(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "",
+                "head_ref": "",
+                "event_name": "workflow_dispatch",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+            },
+        )(),
+    )
+
+    code = preflight.main()
+    assert code == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert "unsupported_event_context" in report["invariant_violations"]
+    diagnosis = json.loads((output_dir / "preflight_block_diagnosis_record.json").read_text(encoding="utf-8"))
+    assert diagnosis["reason_codes"] == ["unsupported_event_context"]
+
+
+def test_preflight_cli_refs_override_env_push_fallback(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "push")
+    monkeypatch.setenv("GITHUB_BEFORE_SHA", "env-base")
+    monkeypatch.setenv("GITHUB_SHA", "env-head")
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "explicit-base",
+                "head_ref": "explicit-head",
+                "event_name": "push",
+                "changed_path": ["README.md"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+            },
+        )(),
+    )
+
+    code = preflight.main()
+    assert code == 0
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    ref_context = report["changed_path_detection"]["ref_context"]
+    assert ref_context["normalization_strategy"] == "explicit_cli_pair"
+    assert ref_context["base_ref"] == "explicit-base"
+    assert ref_context["head_ref"] == "explicit-head"
