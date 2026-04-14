@@ -8752,6 +8752,19 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/synthesized_trust_signal.json",
       "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
+      "artifact_type": "test_inventory_integrity_result",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/test_inventory_integrity_result.json",
+      "notes": "Governed pytest inventory integrity artifact for PR/default suite discovery and regression enforcement."
     }
   ]
 }

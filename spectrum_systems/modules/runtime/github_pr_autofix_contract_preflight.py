@@ -26,6 +26,15 @@ KNOWN_REPAIR_CATEGORIES = {
     "non_repairable_policy_violation",
     "internal_preflight_error",
     "unknown_preflight_failure",
+    "pytest_config_missing",
+    "pytest_config_mismatch",
+    "testpaths_missing",
+    "no_tests_discovered",
+    "unexpected_test_inventory_regression",
+    "import_resolution_failure",
+    "collection_failure",
+    "working_directory_mismatch",
+    "accidental_filtering_detected",
 }
 
 TERMINAL_STATES = {
@@ -121,6 +130,12 @@ def _fold_terminal_state(
 
 def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]:
     reasons: list[str] = []
+    test_inventory = report.get("test_inventory_integrity")
+    if isinstance(test_inventory, dict):
+        failure_class = str(test_inventory.get("failure_class") or "").strip()
+        if failure_class and failure_class != "success":
+            return failure_class, [failure_class]
+
     invariant_violations = [str(item) for item in (report.get("invariant_violations") or []) if isinstance(item, str)]
     ref_context = ((report.get("changed_path_detection") or {}).get("ref_context") or {}) if isinstance(report, dict) else {}
     ref_reason_code = str(ref_context.get("reason_code") or "").strip()
@@ -199,7 +214,22 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
 
 
 def _repair_policy(failure_class: str) -> tuple[str, bool, bool]:
-    if failure_class in {"schema_violation", "contract_mismatch", "invalid_wrapper", "authority_evidence_missing", "missing_required_artifact"}:
+    if failure_class in {
+        "schema_violation",
+        "contract_mismatch",
+        "invalid_wrapper",
+        "authority_evidence_missing",
+        "missing_required_artifact",
+        "pytest_config_missing",
+        "pytest_config_mismatch",
+        "testpaths_missing",
+        "no_tests_discovered",
+        "unexpected_test_inventory_regression",
+        "import_resolution_failure",
+        "collection_failure",
+        "working_directory_mismatch",
+        "accidental_filtering_detected",
+    }:
         return "auto_repair_allowed", True, False
     if failure_class in {"non_repairable_policy_violation", "lineage_missing"}:
         return "auto_repair_forbidden", False, True
@@ -247,6 +277,15 @@ def build_preflight_repair_plan_record(*, diagnosis_record: dict[str, Any]) -> d
         "non_repairable_policy_violation": ["docs/reviews"],
         "internal_preflight_error": ["scripts/run_contract_preflight.py"],
         "unknown_preflight_failure": ["docs/reviews"],
+        "pytest_config_missing": ["pytest.ini"],
+        "pytest_config_mismatch": ["pytest.ini", "docs/governance/pytest_pr_inventory_baseline.json"],
+        "testpaths_missing": ["pytest.ini", "tests/"],
+        "no_tests_discovered": ["tests/", "pytest.ini"],
+        "unexpected_test_inventory_regression": ["tests/", "docs/governance/pytest_pr_inventory_baseline.json"],
+        "import_resolution_failure": ["tests/", "spectrum_systems/", "pytest.ini"],
+        "collection_failure": ["tests/", "pytest.ini"],
+        "working_directory_mismatch": [".github/workflows/", "scripts/run_contract_preflight.py"],
+        "accidental_filtering_detected": ["pytest.ini", ".github/workflows/"],
     }[category]
 
     return {

@@ -1,0 +1,52 @@
+{
+  "artifact_type": "test_inventory_integrity_result",
+  "schema_version": "1.0.0",
+  "owner_system": "PRG",
+  "enforcement_system": "SEL",
+  "execution_system": "PQX",
+  "orchestration_system": "TLC",
+  "diagnosis_system": "FRE",
+  "registry_system": "SRG",
+  "configured_test_roots": [
+    "tests"
+  ],
+  "discovered_test_files": [
+    "tests/test_eval_dataset_registry.py"
+  ],
+  "collected_nodeids": [
+    "tests/test_eval_dataset_registry.py::test_valid_dataset_creation"
+  ],
+  "selected_nodeids": [
+    "tests/test_eval_dataset_registry.py::test_valid_dataset_creation"
+  ],
+  "collected_count": 1,
+  "selected_count": 1,
+  "baseline_expected_count": 1,
+  "baseline_expected_nodeids": [
+    "tests/test_eval_dataset_registry.py::test_valid_dataset_creation"
+  ],
+  "baseline_missing_nodeids": [],
+  "baseline_unexpected_nodeids": [],
+  "failure_class": "success",
+  "status": "passed",
+  "blocking": false,
+  "recommended_repair_route": "none",
+  "classification_detail": "",
+  "execution_cwd": "/workspace/spectrum-systems",
+  "repo_root": "/workspace/spectrum-systems",
+  "pytest_config": {
+    "pytest_ini_path": "pytest.ini",
+    "raw_testpaths": "tests",
+    "testpaths": [
+      "tests"
+    ],
+    "addopts": "",
+    "pythonpath": "."
+  },
+  "selected_targets": [
+    "tests/test_eval_dataset_registry.py"
+  ],
+  "collect_output_excerpt": "",
+  "selected_output_excerpt": "",
+  "baseline_status": "present"
+}

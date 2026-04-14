@@ -64,6 +64,10 @@ from spectrum_systems.modules.governance.system_registry_guard import (  # noqa:
 from spectrum_systems.modules.runtime.preflight_ref_normalization import (  # noqa: E402
     normalize_preflight_ref_context,
 )
+from spectrum_systems.modules.runtime.test_inventory_integrity import (  # noqa: E402
+    evaluate_test_inventory_integrity,
+    refresh_baseline as refresh_test_inventory_baseline,
+)
 
 DEFAULT_REQUIRED_SMOKE_TESTS = [
     "tests/test_roadmap_eligibility.py",
@@ -120,6 +124,8 @@ _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS = [
 _GOVERNED_PROMPT_SURFACE_REGISTRY = REPO_ROOT / "docs" / "governance" / "governed_prompt_surfaces.json"
 _SYSTEM_REGISTRY_PATH = REPO_ROOT / "docs" / "architecture" / "system_registry.md"
 _SYSTEM_REGISTRY_GUARD_POLICY_PATH = REPO_ROOT / "contracts" / "governance" / "system_registry_guard_policy.json"
+_TEST_INVENTORY_BASELINE_PATH = REPO_ROOT / "docs" / "governance" / "pytest_pr_inventory_baseline.json"
+_DEFAULT_PR_INVENTORY_TARGETS = ["tests/test_eval_dataset_registry.py"]
 
 _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "scripts/run_autonomous_validation_run.py": ["tests/test_run_autonomous_validation_run.py"],
@@ -214,6 +220,11 @@ def _parse_args() -> argparse.Namespace:
         "--authority-evidence-ref",
         default=None,
         help="Optional authority evidence ref used for governed required-context enforcement.",
+    )
+    parser.add_argument(
+        "--refresh-test-inventory-baseline",
+        action="store_true",
+        help="Refresh governed PR/default pytest inventory baseline and exit.",
     )
     return parser.parse_args()
 
@@ -754,6 +765,11 @@ def render_markdown(report: dict[str, Any]) -> str:
         lines.append(f"- **control_surface_gap_status**: {gap_result.get('status')}")
         lines.append(f"- **control_surface_gap_count**: {len(gap_result.get('gaps', []))}")
         lines.append(f"- **control_surface_gap_pqx_conversion_error**: {report.get('control_surface_gap_pqx_conversion_error') or 'none'}")
+    test_inventory = report.get("test_inventory_integrity")
+    if isinstance(test_inventory, dict):
+        lines.append(f"- **test_inventory_failure_class**: {test_inventory.get('failure_class', 'unknown')}")
+        lines.append(f"- **test_inventory_selected_count**: {test_inventory.get('selected_count', 0)}")
+        lines.append(f"- **test_inventory_baseline_expected_count**: {test_inventory.get('baseline_expected_count', 0)}")
 
     lines.append("")
     pqx_execution_policy = report.get("pqx_execution_policy")
@@ -1246,6 +1262,14 @@ def main() -> int:
     args = _parse_args()
     output_dir = REPO_ROOT / args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
+    if bool(getattr(args, "refresh_test_inventory_baseline", False)):
+        refreshed = refresh_test_inventory_baseline(
+            repo_root=REPO_ROOT,
+            baseline_path=_TEST_INVENTORY_BASELINE_PATH,
+            suite_targets=_DEFAULT_PR_INVENTORY_TARGETS,
+        )
+        print(json.dumps({"status": "baseline_refreshed", "baseline_path": str(_TEST_INVENTORY_BASELINE_PATH), "baseline": refreshed}, indent=2))
+        return 0
 
     ref_context = normalize_preflight_ref_context(
         event_name=getattr(args, "event_name", None),
@@ -1493,6 +1517,17 @@ def main() -> int:
             )
             pqx_execution_policy["blocking_reasons"] = authority_resolution["blocking_reasons"]
 
+    test_inventory_eval = evaluate_test_inventory_integrity(
+        repo_root=REPO_ROOT,
+        baseline_path=_TEST_INVENTORY_BASELINE_PATH,
+        suite_targets=_DEFAULT_PR_INVENTORY_TARGETS,
+        execution_cwd=Path.cwd(),
+    )
+    test_inventory_payload = test_inventory_eval.payload
+    test_inventory_artifact_path = output_dir / "test_inventory_integrity_result.json"
+    test_inventory_artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    test_inventory_artifact_path.write_text(json.dumps(test_inventory_payload, indent=2) + "\n", encoding="utf-8")
+
     if detection.changed_path_detection_mode == "detection_failed_no_governed_paths":
         detection_invariants = ["changed-path detection failed before evaluation"]
         ref_raw = ref_context.raw_inputs
@@ -1534,6 +1569,8 @@ def main() -> int:
             "pqx_required_context_enforcement": pqx_required_context_enforcement,
             "system_registry_guard_result": system_registry_guard_result,
             "system_registry_guard_result_ref": str(srg_output_path),
+            "test_inventory_integrity": test_inventory_payload,
+            "test_inventory_integrity_result_ref": str(test_inventory_artifact_path),
         }
     elif not surface_classification["required_paths"]:
         report = {
@@ -1566,6 +1603,8 @@ def main() -> int:
             "pqx_required_context_enforcement": pqx_required_context_enforcement,
             "system_registry_guard_result": system_registry_guard_result,
             "system_registry_guard_result_ref": str(srg_output_path),
+            "test_inventory_integrity": test_inventory_payload,
+            "test_inventory_integrity_result_ref": str(test_inventory_artifact_path),
         }
     else:
         if changed_contract_paths:
@@ -1655,6 +1694,8 @@ def main() -> int:
             "pqx_required_context_enforcement": pqx_required_context_enforcement,
             "system_registry_guard_result": system_registry_guard_result,
             "system_registry_guard_result_ref": str(srg_output_path),
+            "test_inventory_integrity": test_inventory_payload,
+            "test_inventory_integrity_result_ref": str(test_inventory_artifact_path),
         }
         if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
             report["status"] = "failed"
@@ -1695,6 +1736,14 @@ def main() -> int:
         )
         report["recommended_repair_areas"] = sorted(
             set(report.get("recommended_repair_areas", []) + ["system registry ownership boundaries"])
+        )
+    if test_inventory_eval.blocking:
+        report["status"] = "failed"
+        report["invariant_violations"] = sorted(
+            set(report.get("invariant_violations", []) + [str(test_inventory_eval.failure_class)])
+        )
+        report["recommended_repair_areas"] = sorted(
+            set(report.get("recommended_repair_areas", []) + ["pytest discovery/collection inventory integrity gate"])
         )
     cohesion_decision = (trust_spine_cohesion or {}).get("overall_decision") if isinstance(trust_spine_cohesion, dict) else None
     report["trust_spine_evidence_cohesion"] = trust_spine_cohesion
