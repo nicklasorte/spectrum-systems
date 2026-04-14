@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "policy_id": "governed_runtime_code_ownership",
+  "description": "Fail-closed ownership/support classification for governed runtime and preflight code paths.",
+  "rules": [
+    {
+      "path_glob": "spectrum_systems/modules/runtime/*.py",
+      "classification": "owner",
+      "owner_system": "TLC"
+    },
+    {
+      "path_glob": "spectrum_systems/orchestration/*.py",
+      "classification": "owner",
+      "owner_system": "TLC"
+    },
+    {
+      "path_glob": "scripts/*.py",
+      "classification": "support_only"
+    }
+  ],
+  "waivers": []
+}

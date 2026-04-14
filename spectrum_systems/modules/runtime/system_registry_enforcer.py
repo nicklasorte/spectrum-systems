@@ -29,6 +29,10 @@ _CANONICAL_HANDOFF_PATH: set[tuple[str, str]] = {
     ("CAX", "CDE"),
     ("CDE", "TLC"),
 }
+_AUTHORITY_ARTIFACT_OWNERS = {
+    "closure_decision_artifact": "CDE",
+    "system_registry_artifact": "TLC",
+}
 
 
 def _is_present(value: Any) -> bool:
@@ -105,7 +109,19 @@ def _registry_indexes() -> tuple[dict[str, dict[str, Any]], dict[str, list[str]]
     return systems_by_name, owners_by_action, allowed_edges
 
 
-def validate_system_action(system_name: str, action_type: str, target_system: str) -> dict[str, Any]:
+def reset_registry_cache() -> None:
+    """Clear memoized registry reads to support deterministic rebuild/reload flows."""
+    _load_registry.cache_clear()
+    _registry_indexes.cache_clear()
+
+
+def validate_system_action(
+    system_name: str,
+    action_type: str,
+    target_system: str,
+    *,
+    actor_classification: str = "owner",
+) -> dict[str, Any]:
     """Fail-closed registry enforcement for runtime action ownership and interactions."""
     systems, owners_by_action, allowed_edges = _registry_indexes()
 
@@ -114,6 +130,9 @@ def validate_system_action(system_name: str, action_type: str, target_system: st
     action = str(action_type or "").strip()
 
     violations: list[str] = []
+
+    if not action:
+        violations.append("missing_action_type")
 
     source_system = systems.get(source)
     target_exists = target in systems
@@ -126,6 +145,8 @@ def validate_system_action(system_name: str, action_type: str, target_system: st
     if len(owners) > 1:
         violations.append("duplicate_action_ownership")
     if source_system is not None:
+        if actor_classification == "support_only":
+            violations.append("support_only_actor_forbidden")
         if action not in source_system.get("owns", []):
             violations.append("action_not_owned_by_system")
         if action in source_system.get("prohibited_behaviors", []):
@@ -142,6 +163,7 @@ def validate_system_action(system_name: str, action_type: str, target_system: st
         "system": source,
         "target_system": target,
         "action_type": action,
+        "actor_classification": actor_classification,
     }
 
 
@@ -160,12 +182,22 @@ def validate_system_handoff(from_system: str, to_system: str, artifact: dict[str
     payload = artifact.get("payload") if isinstance(artifact.get("payload"), dict) else artifact
     schema_name = artifact.get("schema_name") if isinstance(artifact.get("schema_name"), str) else artifact.get("artifact_type")
     action_type = artifact.get("action_type") if isinstance(artifact.get("action_type"), str) else "orchestration"
+    actor_classification = (
+        artifact.get("actor_classification")
+        if isinstance(artifact.get("actor_classification"), str)
+        else "owner"
+    )
     required_fields = artifact.get("required_fields") if isinstance(artifact.get("required_fields"), list) else []
     expected_trace_refs = artifact.get("expected_trace_refs") if isinstance(artifact.get("expected_trace_refs"), list) else []
 
     violations: list[str] = []
 
-    action_check = validate_system_action(from_system, action_type, to_system)
+    action_check = validate_system_action(
+        from_system,
+        action_type,
+        to_system,
+        actor_classification=str(actor_classification).strip() or "owner",
+    )
     violations.extend(action_check["violation_codes"])
 
     if not isinstance(schema_name, str) or not schema_name.strip():
@@ -202,6 +234,12 @@ def validate_system_handoff(from_system: str, to_system: str, artifact: dict[str
         expected = {str(item).strip() for item in expected_trace_refs if str(item).strip()}
         if expected and expected.isdisjoint(set(normalized_trace_refs)):
             violations.append("broken_trace_continuity")
+
+    artifact_type = payload.get("artifact_type")
+    if isinstance(artifact_type, str):
+        expected_owner = _AUTHORITY_ARTIFACT_OWNERS.get(artifact_type)
+        if expected_owner and str(from_system or "").strip().upper() != expected_owner:
+            violations.append("artifact_authority_owner_mismatch")
 
     return {
         "allow": len(set(violations)) == 0,

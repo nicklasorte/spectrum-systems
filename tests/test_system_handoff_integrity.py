@@ -9,6 +9,7 @@ from spectrum_systems.contracts import load_example
 from spectrum_systems.modules.runtime import system_registry_enforcer
 from spectrum_systems.modules.runtime.system_registry_enforcer import (
     SystemRegistryEnforcerError,
+    reset_registry_cache,
     validate_system_action,
     validate_system_handoff,
 )
@@ -174,8 +175,7 @@ def test_registry_runtime_load_surfaces_precise_validation_error(tmp_path: Path,
     bad_path.write_text(__import__("json").dumps(broken), encoding="utf-8")
 
     monkeypatch.setattr(system_registry_enforcer, "_REGISTRY_EXAMPLE_PATH", bad_path)
-    system_registry_enforcer._load_registry.cache_clear()
-    system_registry_enforcer._registry_indexes.cache_clear()
+    reset_registry_cache()
     with pytest.raises(SystemRegistryEnforcerError, match="schema validation failed"):
         validate_system_action("AEX", "execution_admission", "TLC")
 
@@ -314,3 +314,32 @@ def test_registry_enforcement_duplicate_ownership_and_prohibited_behavior(monkey
     duplicate = validate_system_action("PQX", "execution", "TPA")
     assert duplicate["block"]
     assert "duplicate_action_ownership" in duplicate["violation_codes"]
+
+
+def test_support_only_actor_cannot_perform_authority_action() -> None:
+    result = validate_system_action(
+        "PQX",
+        "execution",
+        "TPA",
+        actor_classification="support_only",
+    )
+    assert result["block"]
+    assert "support_only_actor_forbidden" in result["violation_codes"]
+
+
+def test_artifact_authority_owner_mismatch_is_blocked() -> None:
+    cde_payload = copy.deepcopy(load_example("closure_decision_artifact"))
+    cde_payload["trace_id"] = "trace-mismatch-1"
+    result = validate_system_handoff(
+        "TLC",
+        "SEL",
+        {
+            "schema_name": "closure_decision_artifact",
+            "action_type": "orchestration",
+            "payload": cde_payload,
+            "trace_refs": ["trace-mismatch-1"],
+            "expected_trace_refs": ["trace-mismatch-1"],
+        },
+    )
+    assert result["block"]
+    assert "artifact_authority_owner_mismatch" in result["violation_codes"]

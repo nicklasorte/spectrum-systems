@@ -109,3 +109,16 @@ def test_extended_hardening_unique_owners_enforced(tmp_path: Path) -> None:
 
     errors = validator.run_all_checks(mutated_path)
     assert any("context_bundle_contracts" in error for error in errors)
+
+
+def test_validator_detects_doc_artifact_drift(tmp_path: Path, monkeypatch) -> None:
+    content = REGISTRY_PATH.read_text(encoding="utf-8")
+    mutated_path = tmp_path / "registry.md"
+    mutated = content.replace(
+        "  - execution_admission\n",
+        "  - execution_admission\n  - orchestration\n",
+        1,
+    )
+    mutated_path.write_text(mutated, encoding="utf-8")
+    errors = validator.run_all_checks(mutated_path)
+    assert any("doc/artifact drift: protected owner mismatch" in error for error in errors)

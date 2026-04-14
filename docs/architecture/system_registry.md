@@ -3,6 +3,13 @@
 ## Core Rule
 1. **Single-responsibility ownership:** each governed responsibility has exactly one owning system.
 2. **No-duplication rule:** no system may implement, enforce, or silently shadow a responsibility owned by another system.
+3. **Support-only rule:** support code and utilities may assist owners but must never act as authority owners.
+
+## Canonical Runtime Source of Truth
+- Canonical ownership definitions are authored in this document.
+- Runtime enforcement source of truth is the normalized artifact at `contracts/examples/system_registry_artifact.json`.
+- The normalized artifact **MUST** be generated/validated through `scripts/build_system_registry_artifact.py`.
+- Canonical repair sequence is: **canonicalize → validate → enforce → bounded repair → escalate**.
 
 These rules are hard boundaries for architecture, contracts, and validation.
 

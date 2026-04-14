@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import fnmatch
 from datetime import datetime, timezone
 import json
 import os
@@ -120,6 +121,7 @@ _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS = [
 _GOVERNED_PROMPT_SURFACE_REGISTRY = REPO_ROOT / "docs" / "governance" / "governed_prompt_surfaces.json"
 _SYSTEM_REGISTRY_PATH = REPO_ROOT / "docs" / "architecture" / "system_registry.md"
 _SYSTEM_REGISTRY_GUARD_POLICY_PATH = REPO_ROOT / "contracts" / "governance" / "system_registry_guard_policy.json"
+_GOVERNED_RUNTIME_OWNERSHIP_PATH = REPO_ROOT / "docs" / "governance" / "governed_runtime_code_ownership.json"
 
 _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "scripts/run_autonomous_validation_run.py": ["tests/test_run_autonomous_validation_run.py"],
@@ -178,6 +180,72 @@ class EvaluationSurfaceClassification:
     reason: str
     requires_evaluation: bool
     surface: str
+
+
+def evaluate_governed_runtime_ownership_policy(*, repo_root: Path, changed_paths: list[str], policy_path: Path) -> dict[str, Any]:
+    governed_prefixes = ("spectrum_systems/modules/runtime/", "spectrum_systems/orchestration/", "scripts/")
+    candidates = sorted(
+        {
+            path
+            for path in changed_paths
+            if path.startswith(governed_prefixes) and path.endswith(".py")
+        }
+    )
+    if not candidates:
+        return {"status": "pass", "checked_paths": [], "violations": [], "waivers_used": []}
+    if not policy_path.is_file():
+        return {
+            "status": "fail",
+            "checked_paths": candidates,
+            "violations": [{"code": "missing_policy_file", "path": str(policy_path)}],
+            "waivers_used": [],
+        }
+    payload = json.loads(policy_path.read_text(encoding="utf-8"))
+    rules = payload.get("rules") if isinstance(payload, dict) else None
+    waivers = payload.get("waivers") if isinstance(payload, dict) else None
+    if not isinstance(rules, list):
+        return {
+            "status": "fail",
+            "checked_paths": candidates,
+            "violations": [{"code": "invalid_policy_rules", "path": str(policy_path)}],
+            "waivers_used": [],
+        }
+    if not isinstance(waivers, list):
+        waivers = []
+    today = datetime.now(timezone.utc).date()
+    violations: list[dict[str, str]] = []
+    waivers_used: list[str] = []
+    for path in candidates:
+        matched_rule = next((rule for rule in rules if isinstance(rule, dict) and fnmatch.fnmatch(path, str(rule.get("path_glob") or ""))), None)
+        if not isinstance(matched_rule, dict):
+            waiver = next((w for w in waivers if isinstance(w, dict) and str(w.get("path") or "") == path), None)
+            if isinstance(waiver, dict):
+                expires = str(waiver.get("expires_on") or "").strip()
+                try:
+                    expiry_date = datetime.fromisoformat(expires).date()
+                except ValueError:
+                    expiry_date = None
+                if expiry_date and expiry_date >= today:
+                    waivers_used.append(path)
+                    continue
+                violations.append({"code": "expired_or_invalid_waiver", "path": path})
+                continue
+            violations.append({"code": "missing_ownership_assignment", "path": path})
+            continue
+        classification = str(matched_rule.get("classification") or "").strip()
+        if classification not in {"owner", "support_only"}:
+            violations.append({"code": "invalid_classification", "path": path})
+            continue
+        if classification == "owner":
+            owner_system = str(matched_rule.get("owner_system") or "").strip()
+            if not owner_system or len(owner_system) != 3 or not owner_system.isalpha() or owner_system.upper() != owner_system:
+                violations.append({"code": "invalid_owner_system", "path": path})
+    return {
+        "status": "pass" if not violations else "fail",
+        "checked_paths": candidates,
+        "violations": violations,
+        "waivers_used": waivers_used,
+    }
 
 
 def _run(command: list[str], cwd: Path) -> CommandResult:
@@ -1337,6 +1405,11 @@ def main() -> int:
     trust_spine_cohesion = evaluate_trust_spine_cohesion(detection.changed_paths, output_dir)
     classified = classify_changed_contracts(detection.changed_paths)
     surface_classification = classify_evaluation_surfaces(detection.changed_paths, classified)
+    ownership_policy_result = evaluate_governed_runtime_ownership_policy(
+        repo_root=REPO_ROOT,
+        changed_paths=detection.changed_paths,
+        policy_path=_GOVERNED_RUNTIME_OWNERSHIP_PATH,
+    )
 
     changed_contract_paths = classified["changed_contract_paths"]
     changed_governed_definitions = classified["changed_governed_definitions"]
@@ -1534,6 +1607,7 @@ def main() -> int:
             "pqx_required_context_enforcement": pqx_required_context_enforcement,
             "system_registry_guard_result": system_registry_guard_result,
             "system_registry_guard_result_ref": str(srg_output_path),
+            "governed_runtime_ownership_policy": ownership_policy_result,
         }
     elif not surface_classification["required_paths"]:
         report = {
@@ -1566,6 +1640,7 @@ def main() -> int:
             "pqx_required_context_enforcement": pqx_required_context_enforcement,
             "system_registry_guard_result": system_registry_guard_result,
             "system_registry_guard_result_ref": str(srg_output_path),
+            "governed_runtime_ownership_policy": ownership_policy_result,
         }
     else:
         if changed_contract_paths:
@@ -1655,6 +1730,7 @@ def main() -> int:
             "pqx_required_context_enforcement": pqx_required_context_enforcement,
             "system_registry_guard_result": system_registry_guard_result,
             "system_registry_guard_result_ref": str(srg_output_path),
+            "governed_runtime_ownership_policy": ownership_policy_result,
         }
         if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
             report["status"] = "failed"
@@ -1695,6 +1771,14 @@ def main() -> int:
         )
         report["recommended_repair_areas"] = sorted(
             set(report.get("recommended_repair_areas", []) + ["system registry ownership boundaries"])
+        )
+    if ownership_policy_result.get("status") == "fail":
+        report["status"] = "failed"
+        report["invariant_violations"] = sorted(
+            set(report.get("invariant_violations", []) + ["GOVERNED_RUNTIME_OWNERSHIP_POLICY_FAIL"])
+        )
+        report["recommended_repair_areas"] = sorted(
+            set(report.get("recommended_repair_areas", []) + ["governed runtime ownership assignments"])
         )
     cohesion_decision = (trust_spine_cohesion or {}).get("overall_decision") if isinstance(trust_spine_cohesion, dict) else None
     report["trust_spine_evidence_cohesion"] = trust_spine_cohesion

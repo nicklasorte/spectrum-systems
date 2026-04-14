@@ -142,6 +142,34 @@ def test_classify_evaluation_surfaces_marks_runtime_changes_as_evaluated() -> No
     assert evaluation["path_classifications"][0]["surface"] == "runtime_module"
 
 
+def test_governed_runtime_ownership_policy_requires_assignment(tmp_path: Path) -> None:
+    policy = tmp_path / "ownership.json"
+    policy.write_text(json.dumps({"rules": [], "waivers": []}), encoding="utf-8")
+    result = preflight.evaluate_governed_runtime_ownership_policy(
+        repo_root=tmp_path,
+        changed_paths=["spectrum_systems/modules/runtime/new_runtime_surface.py"],
+        policy_path=policy,
+    )
+    assert result["status"] == "fail"
+    assert result["violations"][0]["code"] == "missing_ownership_assignment"
+
+
+def test_governed_runtime_ownership_policy_excludes_docs_tests_examples(tmp_path: Path) -> None:
+    policy = tmp_path / "ownership.json"
+    policy.write_text(json.dumps({"rules": [], "waivers": []}), encoding="utf-8")
+    result = preflight.evaluate_governed_runtime_ownership_policy(
+        repo_root=tmp_path,
+        changed_paths=[
+            "tests/test_contract_preflight.py",
+            "docs/architecture/system_registry.md",
+            "contracts/examples/system_registry_artifact.json",
+        ],
+        policy_path=policy,
+    )
+    assert result["status"] == "pass"
+    assert result["checked_paths"] == []
+
+
 def test_classify_evaluation_surfaces_marks_contract_tied_tests_as_evaluated() -> None:
     classified_contracts = preflight.classify_changed_contracts([])
     evaluation = preflight.classify_evaluation_surfaces(

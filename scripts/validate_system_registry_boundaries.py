@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from dataclasses import dataclass
@@ -11,6 +12,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_PATH = REPO_ROOT / "docs" / "architecture" / "system_registry.md"
+REGISTRY_ARTIFACT_PATH = REPO_ROOT / "contracts" / "examples" / "system_registry_artifact.json"
 
 SYSTEM_HEADER_RE = re.compile(r"^\s*###\s+([A-Z0-9]+)\s*$")
 FIELD_RE = re.compile(r"^\s*-\s+\*\*(role|owns|consumes|produces|must_not_do):\*\*\s*(.*)$")
@@ -337,6 +339,43 @@ def check_next_phase_presence_and_io(systems: dict[str, SystemDefinition]) -> li
             errors.append(f"{name} must declare produces list")
     return errors
 
+
+def check_doc_artifact_drift(systems: dict[str, SystemDefinition], artifact_path: Path) -> list[str]:
+    errors: list[str] = []
+    if not artifact_path.is_file():
+        return [f"missing canonical registry artifact: {artifact_path}"]
+    payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+    artifact_systems_raw = payload.get("systems")
+    if not isinstance(artifact_systems_raw, list):
+        return ["canonical registry artifact malformed: systems must be a list"]
+    artifact_systems = {
+        str(item.get("acronym") or "").strip().upper(): item
+        for item in artifact_systems_raw
+        if isinstance(item, dict)
+    }
+
+    protected_actions = {
+        "execution": "PQX",
+        "execution_admission": "AEX",
+        "failure_diagnosis": "FRE",
+        "review_interpretation": "RIL",
+        "closure_decisions": "CDE",
+        "enforcement": "SEL",
+        "orchestration": "TLC",
+    }
+    for action, expected_owner in protected_actions.items():
+        doc_owners = sorted(name for name, definition in systems.items() if action in definition.owns)
+        artifact_owners = sorted(
+            acronym
+            for acronym, entry in artifact_systems.items()
+            if isinstance(entry, dict) and action in [str(item).strip() for item in entry.get("owns", [])]
+        )
+        if doc_owners != [expected_owner] or artifact_owners != [expected_owner]:
+            errors.append(
+                f"doc/artifact drift: protected owner mismatch for {action} (doc={doc_owners}, artifact={artifact_owners})"
+            )
+    return errors
+
 def run_all_checks(registry_path: Path = REGISTRY_PATH) -> list[str]:
     systems, full_text = parse_registry(registry_path)
 
@@ -355,6 +394,7 @@ def run_all_checks(registry_path: Path = REGISTRY_PATH) -> list[str]:
     errors.extend(check_extended_hardening_ownership(systems))
     errors.extend(check_next_wave_boundaries(systems))
     errors.extend(check_next_phase_presence_and_io(systems))
+    errors.extend(check_doc_artifact_drift(systems, REGISTRY_ARTIFACT_PATH))
     return errors
 
 

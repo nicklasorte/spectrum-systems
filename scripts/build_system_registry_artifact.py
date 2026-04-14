@@ -95,6 +95,29 @@ def _normalize_registry(payload: dict[str, Any]) -> dict[str, Any]:
         normalized_systems.append(record)
 
     normalized["systems"] = normalized_systems
+    normalized["invariants"] = _dedupe_ordered_strings(
+        normalized.get("invariants", []),
+        field="invariants",
+        acronym="REGISTRY",
+    )
+    interaction_edges = normalized.get("interaction_edges", [])
+    if not isinstance(interaction_edges, list):
+        raise SystemRegistryBuildError("registry_build_invalid:interaction_edges:expected_list")
+    canonical_edges: list[dict[str, str]] = []
+    seen_edges: set[tuple[str, str]] = set()
+    for idx, edge in enumerate(interaction_edges):
+        if not isinstance(edge, dict):
+            raise SystemRegistryBuildError(f"registry_build_invalid:interaction_edges[{idx}]:expected_object")
+        source = str(edge.get("from") or "").strip().upper()
+        target = str(edge.get("to") or "").strip().upper()
+        if not source or not target:
+            raise SystemRegistryBuildError(f"registry_build_invalid:interaction_edges[{idx}]:from_to_required")
+        key = (source, target)
+        if key in seen_edges:
+            continue
+        seen_edges.add(key)
+        canonical_edges.append({"from": source, "to": target})
+    normalized["interaction_edges"] = canonical_edges
     return normalized
 
 

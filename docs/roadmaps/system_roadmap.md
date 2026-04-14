@@ -51,3 +51,15 @@
 | BATCH-CL-03 | CL | Recurrence Prevention Enforcement | not_started | BATCH-CL-02 | true | Roadmap authority + deterministic dependency-gated progression | policy authority | pytest tests/test_batch_cl_03.py | Replayable ordered batch evaluation with trace anchor trace-system-roadmap-mvp-2026-04-04 and batch_id BATCH-CL-03 | hard gate; fail-closed on: missing_required_artifact, failed_required_test, hard_gate_failed |
 
 Execution automation must read the governed JSON artifact, validate against schema before selection, and fail closed on invalid roadmap state.
+
+## Ownership Governance Visibility (3LS-50)
+
+Ownership violations are first-class failure classes for roadmap operations. Operators must treat the following as governed blocking signals:
+- `registry_malformed`
+- `ownership_mismatch`
+- `prohibited_behavior`
+- `interaction_edge_violation`
+- `preflight_auto_repaired`
+- `preflight_escalated`
+
+Runtime and preflight reporting must emit structured artifacts first, then human-readable summaries.

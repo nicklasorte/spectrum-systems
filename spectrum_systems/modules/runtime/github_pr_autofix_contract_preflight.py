@@ -199,7 +199,13 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
 
 
 def _repair_policy(failure_class: str) -> tuple[str, bool, bool]:
-    if failure_class in {"schema_violation", "contract_mismatch", "invalid_wrapper", "authority_evidence_missing", "missing_required_artifact"}:
+    if failure_class in {
+        "schema_violation",
+        "contract_mismatch",
+        "invalid_wrapper",
+        "authority_evidence_missing",
+        "missing_required_artifact",
+    }:
         return "auto_repair_allowed", True, False
     if failure_class in {"non_repairable_policy_violation", "lineage_missing"}:
         return "auto_repair_forbidden", False, True
@@ -241,7 +247,7 @@ def build_preflight_repair_plan_record(*, diagnosis_record: dict[str, Any]) -> d
             "outputs/contract_preflight/preflight_changed_path_resolution.json",
         ],
         "contract_mismatch": ["tests/", "contracts/examples", "docs/governance/preflight_required_surface_test_overrides.json"],
-        "schema_violation": ["contracts/examples", "contracts/schemas"],
+        "schema_violation": ["contracts/examples", "contracts/schemas", "scripts/build_system_registry_artifact.py"],
         "missing_required_artifact": ["outputs/contract_preflight", "contracts/examples"],
         "lineage_missing": ["outputs/contract_preflight", "scripts/run_contract_preflight.py"],
         "non_repairable_policy_violation": ["docs/reviews"],
@@ -456,7 +462,21 @@ def run_preflight_block_autorepair(
         elif category == "contract_mismatch":
             attempt["mutated_paths"] = _repair_required_surface_mapping(repo_root=repo_root, report=report)
         elif category == "schema_violation":
-            attempt["mutated_paths"] = _repair_system_registry_reserved_entries(repo_root=repo_root)
+            if "SCHEMA_EXAMPLE_MANIFEST_DRIFT" in [str(code) for code in diagnosis.get("reason_codes", [])]:
+                command = [
+                    sys.executable,
+                    "scripts/build_system_registry_artifact.py",
+                    "--input",
+                    "contracts/examples/system_registry_artifact.json",
+                    "--output",
+                    "contracts/examples/system_registry_artifact.json",
+                ]
+                repair_result = command_runner(command, repo_root)
+                if repair_result.returncode != 0:
+                    raise ContractPreflightAutofixError("registry_canonicalization_failed")
+                attempt["mutated_paths"] = ["contracts/examples/system_registry_artifact.json"]
+            else:
+                attempt["mutated_paths"] = _repair_system_registry_reserved_entries(repo_root=repo_root)
         else:
             raise ContractPreflightAutofixError("unsupported_auto_repair_category")
         if not attempt["mutated_paths"]:
