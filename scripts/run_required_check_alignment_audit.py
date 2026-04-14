@@ -24,7 +24,7 @@ DEFAULT_LOCAL_EVIDENCE_PATHS = [
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run required-check alignment audit.")
-    parser.add_argument("--workflow-path", default=".github/workflows/artifact-boundary.yml")
+    parser.add_argument("--workflow-path", default=".github/workflows/pr-pytest.yml")
     parser.add_argument("--policy-path", default="docs/governance/required_pr_checks.json")
     parser.add_argument("--local-evidence-path", action="append", default=[])
     parser.add_argument("--live-github-evidence-path", default="")
@@ -39,25 +39,25 @@ def _load_json(path: Path) -> dict:
     return payload
 
 
-def _load_workflow_payload(path: Path) -> dict:
+def _load_workflow_payload(path: Path, *, authoritative_job_id: str) -> dict:
     text = path.read_text(encoding="utf-8")
     workflow_name_match = re.search(r"(?m)^name:\s*(.+?)\s*$", text)
-    workflow_name = workflow_name_match.group(1).strip() if workflow_name_match else "artifact-boundary"
+    workflow_name = workflow_name_match.group(1).strip() if workflow_name_match else "PR"
     job_name = ""
     lines = text.splitlines()
-    inside_pytest_job = False
+    inside_authoritative_job = False
     for line in lines:
-        if re.match(r"^\s{2}pytest-pr:\s*$", line):
-            inside_pytest_job = True
+        if re.match(rf"^\s{{2}}{re.escape(authoritative_job_id)}:\s*$", line):
+            inside_authoritative_job = True
             continue
-        if inside_pytest_job and re.match(r"^\s{2}[A-Za-z0-9_.-]+:\s*$", line):
+        if inside_authoritative_job and re.match(r"^\s{2}[A-Za-z0-9_.-]+:\s*$", line):
             break
-        if inside_pytest_job:
+        if inside_authoritative_job:
             match = re.match(r"^\s{4}name:\s*(.+?)\s*$", line)
             if match:
                 job_name = match.group(1).strip()
                 break
-    return {"name": workflow_name, "jobs": {"pytest-pr": {"name": job_name}}}
+    return {"name": workflow_name, "jobs": {authoritative_job_id: {"name": job_name}}}
 
 
 def main() -> int:
@@ -65,8 +65,11 @@ def main() -> int:
     workflow_path = Path(args.workflow_path) if Path(args.workflow_path).is_absolute() else (REPO_ROOT / args.workflow_path)
     policy_path = Path(args.policy_path) if Path(args.policy_path).is_absolute() else (REPO_ROOT / args.policy_path)
 
-    workflow_payload = _load_workflow_payload(workflow_path)
     policy_payload = _load_json(policy_path)
+    authoritative_job_id = str(policy_payload.get("authoritative_job_id") or "").strip()
+    if not authoritative_job_id:
+        raise ValueError("policy_missing_authoritative_job_id")
+    workflow_payload = _load_workflow_payload(workflow_path, authoritative_job_id=authoritative_job_id)
 
     candidate_local_paths = args.local_evidence_path or DEFAULT_LOCAL_EVIDENCE_PATHS
     local_payloads: list[dict] = []

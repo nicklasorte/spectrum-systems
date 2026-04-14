@@ -21,18 +21,18 @@ def _load_json(path: Path) -> dict[str, Any]:
     return payload
 
 
-def _extract_authoritative_job(workflow_payload: dict[str, Any]) -> tuple[str, str, str]:
+def _extract_authoritative_job(workflow_payload: dict[str, Any], *, authoritative_job_id: str) -> tuple[str, str, str]:
     jobs = workflow_payload.get("jobs")
     if not isinstance(jobs, dict):
         raise ValueError("workflow_missing_jobs")
-    pytest_job = jobs.get("pytest-pr")
+    pytest_job = jobs.get(authoritative_job_id)
     if not isinstance(pytest_job, dict):
-        raise ValueError("workflow_missing_pytest_pr_job")
+        raise ValueError("workflow_missing_authoritative_job")
     display_name = str(pytest_job.get("name") or "").strip()
     if not display_name:
-        raise ValueError("workflow_missing_pytest_pr_name")
+        raise ValueError("workflow_missing_authoritative_job_name")
     workflow_name = str(workflow_payload.get("name") or "").strip() or "artifact-boundary"
-    return workflow_name, "pytest-pr", display_name
+    return workflow_name, authoritative_job_id, display_name
 
 
 def run_required_check_alignment_audit(
@@ -43,8 +43,15 @@ def run_required_check_alignment_audit(
     live_required_checks_payload: dict[str, Any] | None = None,
     generated_at: str | None = None,
 ) -> dict[str, Any]:
-    workflow_name, authoritative_job_id, authoritative_display_name = _extract_authoritative_job(workflow_payload)
-    expected_required_check = authoritative_display_name
+    policy_job_id = str(required_policy_payload.get("authoritative_job_id") or "").strip()
+    if not policy_job_id:
+        raise ValueError("policy_missing_authoritative_job_id")
+
+    workflow_name, authoritative_job_id, authoritative_display_name = _extract_authoritative_job(
+        workflow_payload,
+        authoritative_job_id=policy_job_id,
+    )
+    expected_required_check = f"{workflow_name} / {authoritative_display_name}"
 
     local_required_checks_payloads = local_required_checks_payloads or []
 

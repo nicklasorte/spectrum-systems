@@ -46,6 +46,7 @@ def test_preflight_wrapper_builder_stays_compatible_with_governed_preflight(tmp_
             "Args",
             (),
             {
+                "event_name": "push",
                 "base_ref": "HEAD",
                 "head_ref": "HEAD",
                 "changed_path": ["scripts/build_preflight_pqx_wrapper.py"],
