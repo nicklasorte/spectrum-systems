@@ -152,5 +152,20 @@
     "docs/review-actions/",
     "contracts/examples/"
   ],
-  "require_three_letter_system_tokens": false
+  "require_three_letter_system_tokens": false,
+  "non_authority_path_prefixes": [
+    "tests/",
+    "contracts/examples/",
+    "docs/reviews/",
+    "docs/review-actions/"
+  ],
+  "non_authority_exact_paths": [
+    "contracts/standards-manifest.json"
+  ],
+  "authoritative_owner_scan_suffixes": [
+    ".md",
+    ".py",
+    ".txt",
+    ".rst"
+  ]
 }
