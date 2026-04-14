@@ -53,8 +53,10 @@ from spectrum_systems.modules.runtime.trust_spine_evidence_cohesion import (  # 
     evaluate_trust_spine_evidence_cohesion,
 )
 from spectrum_systems.modules.runtime.github_pr_autofix_contract_preflight import (  # noqa: E402
-    classify_preflight_block,
     emit_preflight_block_bundle,
+)
+from spectrum_systems.modules.runtime.preflight_failure_normalizer import (  # noqa: E402
+    normalize_preflight_failure,
 )
 from spectrum_systems.modules.governance.system_registry_guard import (  # noqa: E402
     evaluate_system_registry_guard,
@@ -1765,15 +1767,32 @@ def main() -> int:
     classification_exception: str | None = None
     if report["status"] == "failed":
         try:
-            failure_class, reason_codes = classify_preflight_block(report=report)
+            normalized = normalize_preflight_failure(report)
+            failure_class = normalized["failure_class"]
+            reason_codes = list(report.get("invariant_violations", []))
+            report["normalized_failure"] = normalized
         except Exception as exc:  # defensive fail-closed annotation only
+            normalized = {
+                "failure_class": "internal_preflight_error",
+                "signals": {},
+                "repairable": False,
+            }
             failure_class, reason_codes = "internal_preflight_error", ["preflight_runtime_exception"]
+            report["normalized_failure"] = normalized
             classification_exception = str(exc)
         report["root_cause_classification"] = {
             "failure_class": failure_class,
             "reason_codes": reason_codes,
         }
-        if failure_class in {"missing_required_artifact", "contract_mismatch", "schema_violation", "invalid_wrapper", "authority_evidence_missing"}:
+        assert report["root_cause_classification"]["failure_class"] in {
+            "schema_violation",
+            "contract_mismatch",
+            "test_inventory_regression",
+            "control_surface_gap",
+            "downstream_test_failure",
+            "internal_preflight_error",
+        }
+        if report["normalized_failure"]["repairable"]:
             report["repair_eligibility_rationale"] = "auto_repair_allowed: deterministic bounded failure classification"
         else:
             report["repair_eligibility_rationale"] = "escalation_required: non-repairable policy or unbounded runtime failure"

@@ -70,7 +70,7 @@ def test_diagnosis_fails_closed_when_block_reason_unknown(tmp_path: Path) -> Non
     assert (out / "preflight_repair_result_record.json").exists()
     assert (out / "preflight_recovery_outcome_record.json").exists()
     diagnosis = json.loads((out / "preflight_block_diagnosis_record.json").read_text(encoding="utf-8"))
-    assert diagnosis["failure_class"] == "unknown_preflight_failure"
+    assert diagnosis["failure_class"] == "internal_preflight_error"
 
 
 def test_bounded_repair_plan_creation_known_category() -> None:

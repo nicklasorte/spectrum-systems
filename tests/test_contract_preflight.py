@@ -1625,7 +1625,6 @@ def test_main_contract_preflight_blocks_con035_when_required_test_mapping_missin
         "invalid_wrapper",
         "non_repairable_policy_violation",
         "internal_preflight_error",
-        "unknown_preflight_failure",
     }
     assert "eligibility_decision" in plan
     assert "rerun_allowed" in rerun
@@ -1834,15 +1833,15 @@ def test_push_context_exact_failure_regression_no_unknown_and_no_escalation(tmp_
     assert code == 2
 
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
-    assert report["root_cause_classification"]["failure_class"] != "unknown_preflight_failure"
-    assert report["root_cause_classification"]["reason_codes"] == ["changed_path_resolution_failure"]
+    assert report["root_cause_classification"]["failure_class"] == "internal_preflight_error"
+    assert report["root_cause_classification"]["reason_codes"] == ["changed-path detection failed before evaluation"]
     ref_context = report["changed_path_detection"]["ref_context"]
     assert ref_context["base_ref"] == "cafecb6682f83c47134a7d01ae818643d1136811"
     assert ref_context["head_ref"] == "a91128736a3706718cb0d32910503cfe056d3d1f"
 
     diagnosis = json.loads((output_dir / "preflight_block_diagnosis_record.json").read_text(encoding="utf-8"))
     plan = json.loads((output_dir / "preflight_repair_plan_record.json").read_text(encoding="utf-8"))
-    assert diagnosis["failure_class"] != "unknown_preflight_failure"
+    assert diagnosis["failure_class"] != "internal_preflight_error"
     assert plan["eligibility_decision"] == "auto_repair_allowed"
     assert not (output_dir / "preflight_human_escalation_record.json").exists()
 
@@ -1935,5 +1934,5 @@ def test_main_preflight_emits_classified_test_inventory_failure(tmp_path: Path, 
     assert exit_code == 2
 
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
-    assert report["root_cause_classification"]["failure_class"] == "unexpected_test_inventory_regression"
+    assert report["root_cause_classification"]["failure_class"] == "test_inventory_regression"
     assert "unexpected_test_inventory_regression" in report["invariant_violations"]

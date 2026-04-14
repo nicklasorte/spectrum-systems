@@ -68,7 +68,9 @@
         "accidental_filtering_detected",
         "non_repairable_policy_violation",
         "internal_preflight_error",
-        "unknown_preflight_failure"
+        "test_inventory_regression",
+        "control_surface_gap",
+        "downstream_test_failure"
       ]
     },
     "safe_to_repair": {
