@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.modules.runtime.preflight_failure_normalizer import normalize_preflight_failure
 
 
 class ContractPreflightAutofixError(RuntimeError):
@@ -25,7 +26,6 @@ KNOWN_REPAIR_CATEGORIES = {
     "invalid_wrapper",
     "non_repairable_policy_violation",
     "internal_preflight_error",
-    "unknown_preflight_failure",
     "pytest_config_missing",
     "pytest_config_mismatch",
     "testpaths_missing",
@@ -35,6 +35,9 @@ KNOWN_REPAIR_CATEGORIES = {
     "collection_failure",
     "working_directory_mismatch",
     "accidental_filtering_detected",
+    "test_inventory_regression",
+    "control_surface_gap",
+    "downstream_test_failure",
 }
 
 TERMINAL_STATES = {
@@ -86,7 +89,7 @@ def _write_recovery_outcome(
         "artifact_type": "preflight_recovery_outcome_record",
         "schema_version": "1.1.0",
         "initial_preflight_status": str(result_artifact.get("preflight_status") or "failed"),
-        "failure_class": str(diagnosis.get("failure_class") or "unknown_preflight_failure"),
+        "failure_class": str(diagnosis.get("failure_class") or "internal_preflight_error"),
         "eligibility_decision": str(plan.get("eligibility_decision") or "escalation_required"),
         "repair_invoked": bool(repair_invoked),
         "repair_execution_status": repair_execution_status,
@@ -202,6 +205,14 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
         return "contract_mismatch", reasons
 
     if invariant_violations:
+        if "PR_PYTEST_EXECUTION_REQUIRED" in invariant_violations:
+            return "no_tests_discovered", ["PR_PYTEST_EXECUTION_REQUIRED"]
+        if "PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION" in invariant_violations:
+            return "no_tests_discovered", ["PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION"]
+        if "PR_PYTEST_SELECTED_TARGETS_EMPTY" in invariant_violations:
+            return "no_tests_discovered", ["PR_PYTEST_SELECTED_TARGETS_EMPTY"]
+        if "PR_PYTEST_FALLBACK_TARGETS_EMPTY" in invariant_violations:
+            return "no_tests_discovered", ["PR_PYTEST_FALLBACK_TARGETS_EMPTY"]
         if "artifact_validation_failure" in invariant_violations:
             return "schema_violation", ["artifact_validation_failure"]
         if "repair_pipeline_failure" in invariant_violations:
@@ -210,13 +221,15 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
             return "internal_preflight_error", ["preflight_runtime_exception"]
         return "contract_mismatch", invariant_violations[:3]
 
-    return "unknown_preflight_failure", ["UNCLASSIFIED_BLOCK_REASON"]
+    return "internal_preflight_error", ["UNCLASSIFIED_BLOCK_REASON"]
 
 
 def _repair_policy(failure_class: str) -> tuple[str, bool, bool]:
     if failure_class in {
         "schema_violation",
         "contract_mismatch",
+        "test_inventory_regression",
+        "control_surface_gap",
         "invalid_wrapper",
         "authority_evidence_missing",
         "missing_required_artifact",
@@ -231,17 +244,21 @@ def _repair_policy(failure_class: str) -> tuple[str, bool, bool]:
         "accidental_filtering_detected",
     }:
         return "auto_repair_allowed", True, False
-    if failure_class in {"non_repairable_policy_violation", "lineage_missing"}:
+    if failure_class in {"non_repairable_policy_violation", "lineage_missing", "downstream_test_failure"}:
         return "auto_repair_forbidden", False, True
-    if failure_class in {"internal_preflight_error", "unknown_preflight_failure"}:
+    if failure_class in {"internal_preflight_error"}:
         return "escalation_required", False, True
     return "escalation_required", False, True
 
 
 def build_preflight_block_diagnosis_record(*, report: dict[str, Any], preflight_artifact: dict[str, Any]) -> dict[str, Any]:
     try:
+        normalized_failure = report.get("normalized_failure")
+        if not isinstance(normalized_failure, dict):
+            normalized_failure = normalize_preflight_failure(report)
         category, reasons = classify_preflight_block(report=report)
     except Exception:
+        normalized_failure = {"failure_class": "internal_preflight_error", "repairable": False}
         category, reasons = "internal_preflight_error", ["preflight_runtime_exception"]
     return {
         "artifact_type": "preflight_block_diagnosis_record",
@@ -251,6 +268,10 @@ def build_preflight_block_diagnosis_record(*, report: dict[str, Any], preflight_
         "strategy_gate_decision": str(((preflight_artifact.get("control_signal") or {}).get("strategy_gate_decision")) or "BLOCK"),
         "failure_class": category,
         "reason_codes": reasons,
+        "normalized_failure": {
+            "failure_class": category,
+            "repairable": bool(normalized_failure.get("repairable", False)),
+        },
         "root_cause_summary": str((preflight_artifact.get("control_signal") or {}).get("rationale") or "preflight block"),
     }
 
@@ -259,7 +280,11 @@ def build_preflight_repair_plan_record(*, diagnosis_record: dict[str, Any]) -> d
     category = diagnosis_record["failure_class"]
     if category not in KNOWN_REPAIR_CATEGORIES:
         raise ContractPreflightAutofixError("unknown_repair_category")
-    eligibility_decision, auto_repair_allowed, escalation_required = _repair_policy(category)
+    normalized_failure = diagnosis_record.get("normalized_failure")
+    if isinstance(normalized_failure, dict) and bool(normalized_failure.get("repairable", False)):
+        eligibility_decision, auto_repair_allowed, escalation_required = "auto_repair_allowed", True, False
+    else:
+        eligibility_decision, auto_repair_allowed, escalation_required = _repair_policy(category)
 
     allowed_paths = {
         "invalid_wrapper": [
@@ -275,17 +300,19 @@ def build_preflight_repair_plan_record(*, diagnosis_record: dict[str, Any]) -> d
         "missing_required_artifact": ["outputs/contract_preflight", "contracts/examples"],
         "lineage_missing": ["outputs/contract_preflight", "scripts/run_contract_preflight.py"],
         "non_repairable_policy_violation": ["docs/reviews"],
-        "internal_preflight_error": ["scripts/run_contract_preflight.py"],
-        "unknown_preflight_failure": ["docs/reviews"],
+        "internal_preflight_error": ["scripts/run_contract_preflight.py", "docs/reviews"],
         "pytest_config_missing": ["pytest.ini"],
         "pytest_config_mismatch": ["pytest.ini", "docs/governance/pytest_pr_inventory_baseline.json"],
         "testpaths_missing": ["pytest.ini", "tests/"],
         "no_tests_discovered": ["tests/", "pytest.ini"],
         "unexpected_test_inventory_regression": ["tests/", "docs/governance/pytest_pr_inventory_baseline.json"],
+        "test_inventory_regression": ["tests/", "docs/governance/pytest_pr_inventory_baseline.json"],
         "import_resolution_failure": ["tests/", "spectrum_systems/", "pytest.ini"],
         "collection_failure": ["tests/", "pytest.ini"],
         "working_directory_mismatch": [".github/workflows/", "scripts/run_contract_preflight.py"],
         "accidental_filtering_detected": ["pytest.ini", ".github/workflows/"],
+        "control_surface_gap": ["outputs/contract_preflight", "scripts/run_contract_preflight.py"],
+        "downstream_test_failure": ["tests/", "scripts/run_contract_preflight.py"],
     }[category]
 
     return {

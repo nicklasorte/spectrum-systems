@@ -134,6 +134,9 @@ jobs:
               raise SystemExit("missing contract_preflight_result_artifact.json")
           payload = json.loads(result.read_text(encoding="utf-8"))
           initial = payload.get("control_signal", {}).get("strategy_gate_decision", "BLOCK")
+          pytest_count = int(((payload.get("pytest_execution") or {}).get("pytest_execution_count") or 0))
+          if initial in {"ALLOW", "WARN"} and pytest_count < 1:
+              raise SystemExit("workflow/preflight trust mismatch: allow decision missing preflight-owned pytest execution")
           if initial != "BLOCK":
               raise SystemExit(0 if initial in {"ALLOW", "WARN"} else 2)
           outcome_path = out / "preflight_recovery_outcome_record.json"

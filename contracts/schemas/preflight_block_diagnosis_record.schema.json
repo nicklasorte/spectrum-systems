@@ -11,7 +11,8 @@
     "strategy_gate_decision",
     "failure_class",
     "reason_codes",
-    "root_cause_summary"
+    "root_cause_summary",
+    "normalized_failure"
   ],
   "properties": {
     "artifact_type": {
@@ -55,7 +56,9 @@
         "accidental_filtering_detected",
         "non_repairable_policy_violation",
         "internal_preflight_error",
-        "unknown_preflight_failure"
+        "test_inventory_regression",
+        "control_surface_gap",
+        "downstream_test_failure"
       ]
     },
     "reason_codes": {
@@ -68,6 +71,15 @@
     "root_cause_summary": {
       "type": "string",
       "minLength": 1
+    },
+    "normalized_failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["failure_class", "repairable"],
+      "properties": {
+        "failure_class": {"type": "string", "minLength": 1},
+        "repairable": {"type": "boolean"}
+      }
     }
   }
 }

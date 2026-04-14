@@ -35,6 +35,25 @@
   "control_surface_gap_result_ref": "outputs/contract_preflight/control_surface_gap_result.json",
   "pqx_gap_work_items_ref": "outputs/contract_preflight/control_surface_gap_pqx_work_items.json",
   "control_surface_gap_blocking": false,
+  "pytest_execution": {
+    "event_name": "pull_request",
+    "pytest_execution_count": 2,
+    "pytest_commands": [
+      "/usr/bin/python3 -m pytest -q tests/test_run_github_pr_autofix_contract_preflight.py"
+    ],
+    "selected_targets": [
+      "tests/test_run_github_pr_autofix_contract_preflight.py"
+    ],
+    "fallback_targets": [
+      "tests/test_run_github_pr_autofix_contract_preflight.py",
+      "tests/test_eval_dataset_registry.py",
+      "tests/test_contracts.py"
+    ],
+    "fallback_used": false,
+    "targeted_selection_empty": false,
+    "fallback_selection_empty": false,
+    "selection_reason_codes": []
+  },
   "pqx_required_context_enforcement": {
     "classification": "governed_pqx_required",
     "execution_context": "pqx_governed",

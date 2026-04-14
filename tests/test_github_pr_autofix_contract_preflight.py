@@ -70,7 +70,33 @@ def test_diagnosis_fails_closed_when_block_reason_unknown(tmp_path: Path) -> Non
     assert (out / "preflight_repair_result_record.json").exists()
     assert (out / "preflight_recovery_outcome_record.json").exists()
     diagnosis = json.loads((out / "preflight_block_diagnosis_record.json").read_text(encoding="utf-8"))
-    assert diagnosis["failure_class"] == "unknown_preflight_failure"
+    assert diagnosis["failure_class"] == "internal_preflight_error"
+
+
+def test_pr_pytest_execution_invariant_is_classified_for_repair(tmp_path: Path) -> None:
+    diagnosis = build_preflight_block_diagnosis_record(
+        report={
+            "invariant_violations": ["PR_PYTEST_EXECUTION_REQUIRED"],
+            "normalized_failure": {"failure_class": "test_inventory_regression", "repairable": True},
+        },
+        preflight_artifact={"control_signal": {"strategy_gate_decision": "BLOCK"}, "generated_at": "2026"},
+    )
+    assert diagnosis["failure_class"] == "no_tests_discovered"
+    assert diagnosis["normalized_failure"]["repairable"] is True
+    plan = build_preflight_repair_plan_record(diagnosis_record=diagnosis)
+    assert plan["eligibility_decision"] == "auto_repair_allowed"
+
+
+def test_preflight_pass_without_execution_invariant_is_classified_for_repair() -> None:
+    diagnosis = build_preflight_block_diagnosis_record(
+        report={
+            "invariant_violations": ["PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION"],
+            "normalized_failure": {"failure_class": "test_inventory_regression", "repairable": True},
+        },
+        preflight_artifact={"control_signal": {"strategy_gate_decision": "BLOCK"}, "generated_at": "2026"},
+    )
+    assert diagnosis["failure_class"] == "no_tests_discovered"
+    assert diagnosis["reason_codes"] == ["PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION"]
 
 
 def test_bounded_repair_plan_creation_known_category() -> None:

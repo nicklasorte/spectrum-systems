@@ -1625,7 +1625,6 @@ def test_main_contract_preflight_blocks_con035_when_required_test_mapping_missin
         "invalid_wrapper",
         "non_repairable_policy_violation",
         "internal_preflight_error",
-        "unknown_preflight_failure",
     }
     assert "eligibility_decision" in plan
     assert "rerun_allowed" in rerun
@@ -1834,15 +1833,15 @@ def test_push_context_exact_failure_regression_no_unknown_and_no_escalation(tmp_
     assert code == 2
 
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
-    assert report["root_cause_classification"]["failure_class"] != "unknown_preflight_failure"
-    assert report["root_cause_classification"]["reason_codes"] == ["changed_path_resolution_failure"]
+    assert report["root_cause_classification"]["failure_class"] == "internal_preflight_error"
+    assert report["root_cause_classification"]["reason_codes"] == ["changed-path detection failed before evaluation"]
     ref_context = report["changed_path_detection"]["ref_context"]
     assert ref_context["base_ref"] == "cafecb6682f83c47134a7d01ae818643d1136811"
     assert ref_context["head_ref"] == "a91128736a3706718cb0d32910503cfe056d3d1f"
 
     diagnosis = json.loads((output_dir / "preflight_block_diagnosis_record.json").read_text(encoding="utf-8"))
     plan = json.loads((output_dir / "preflight_repair_plan_record.json").read_text(encoding="utf-8"))
-    assert diagnosis["failure_class"] != "unknown_preflight_failure"
+    assert diagnosis["failure_class"] != "internal_preflight_error"
     assert plan["eligibility_decision"] == "auto_repair_allowed"
     assert not (output_dir / "preflight_human_escalation_record.json").exists()
 
@@ -1935,5 +1934,147 @@ def test_main_preflight_emits_classified_test_inventory_failure(tmp_path: Path, 
     assert exit_code == 2
 
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
-    assert report["root_cause_classification"]["failure_class"] == "unexpected_test_inventory_regression"
+    assert report["root_cause_classification"]["failure_class"] == "test_inventory_regression"
     assert "unexpected_test_inventory_regression" in report["invariant_violations"]
+
+
+def test_pull_request_blocks_when_no_pytest_execution_and_no_fallback_targets(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "event_name": "pull_request",
+                "changed_path": ["README.md"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+            },
+        )(),
+    )
+    monkeypatch.setattr(preflight, "_resolve_existing_pytest_targets", lambda _paths: [])
+
+    code = preflight.main()
+    assert code == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert "PR_PYTEST_FALLBACK_TARGETS_EMPTY" in report["invariant_violations"]
+    assert report["pytest_execution"]["pytest_execution_count"] == 0
+    assert report["pytest_execution"]["fallback_used"] is True
+
+
+def test_pull_request_no_targeted_tests_uses_governed_fallback(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "event_name": "pull_request",
+                "changed_path": ["README.md"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+            },
+        )(),
+    )
+
+    def _fake_pytest(paths: list[str], *, execution_log: list[dict[str, object]] | None = None) -> list[dict[str, object]]:
+        if execution_log is not None:
+            for target in paths:
+                execution_log.append(
+                    {
+                        "target": target,
+                        "command": f"python -m pytest -q {target}",
+                        "returncode": 0,
+                    }
+                )
+        return []
+
+    monkeypatch.setattr(preflight, "run_targeted_pytests", _fake_pytest)
+    monkeypatch.setattr(preflight, "_resolve_existing_pytest_targets", lambda paths: [str(paths[0])])
+
+    code = preflight.main()
+    assert code == 0
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["status"] == "passed"
+    assert report["pytest_execution"]["fallback_used"] is True
+    assert report["pytest_execution"]["pytest_execution_count"] == 1
+    assert report["pytest_execution"]["selected_targets"] == []
+    assert report["pytest_execution"]["fallback_targets"] == ["tests/test_run_github_pr_autofix_contract_preflight.py"]
+    assert report["pytest_execution"]["selection_reason_codes"] == ["PR_PYTEST_SELECTED_TARGETS_EMPTY"]
+    artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
+    assert artifact["pytest_execution"]["pytest_execution_count"] == 1
+    assert "selection_reason_codes" in artifact["pytest_execution"]
+
+
+def test_push_noop_does_not_require_pull_request_pytest_invariant(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "event_name": "push",
+                "changed_path": ["README.md"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+            },
+        )(),
+    )
+
+    code = preflight.main()
+    assert code == 0
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert "PR_PYTEST_EXECUTION_REQUIRED" not in report["invariant_violations"]
+    assert report["status"] == "passed"
+
+
+def test_pull_request_fails_closed_when_fallback_reports_success_without_execution_log(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "event_name": "pull_request",
+                "changed_path": ["README.md"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+            },
+        )(),
+    )
+    monkeypatch.setattr(preflight, "_resolve_existing_pytest_targets", lambda _paths: ["tests/test_contracts.py"])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    code = preflight.main()
+    assert code == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert "PR_PYTEST_EXECUTION_REQUIRED" in report["invariant_violations"]
+    assert "PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION" in report["invariant_violations"]
