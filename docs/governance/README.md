@@ -98,3 +98,14 @@ Each template already wires:
   - `pytest tests/test_governed_prompt_surface_sync.py`
 
 A missing governance reference is a blocking defect and must be remediated before prompt execution.
+
+## Retroactive pytest integrity audit (AUD-01)
+Use this governed backtest to retrieve historical preflight evidence and classify trust posture relative to PYX-01 execution-truth authority.
+
+- Runtime module: `spectrum_systems/modules/runtime/retroactive_pytest_integrity_audit.py`
+- CLI: `scripts/run_retroactive_pytest_integrity_audit.py`
+- Output artifacts:
+  - `outputs/retroactive_pytest_integrity_audit/retroactive_pytest_integrity_audit_result.json`
+  - `outputs/retroactive_pytest_integrity_audit/retroactive_pytest_remediation_queue.json`
+
+This audit does not replace forward preflight authority. It isolates historical suspect runs for bounded remediation and quarantine decisions.

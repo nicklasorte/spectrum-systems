@@ -1077,7 +1077,7 @@ def test_main_governed_context_with_valid_wrapper_allows(tmp_path: Path, monkeyp
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
     assert report["pqx_required_context_enforcement"]["status"] == "allow"
     artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
-    assert artifact["schema_version"] == "1.2.0"
+    assert artifact["schema_version"] == "1.3.0"
     assert artifact["pqx_required_context_enforcement"]["status"] == "allow"
 
 
@@ -1965,8 +1965,12 @@ def test_pull_request_blocks_when_no_pytest_execution_and_no_fallback_targets(tm
     assert code == 2
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
     assert "PR_PYTEST_FALLBACK_TARGETS_EMPTY" in report["invariant_violations"]
+    assert "PR_PYTEST_EXECUTION_RECORD_REQUIRED" in report["invariant_violations"]
     assert report["pytest_execution"]["pytest_execution_count"] == 0
     assert report["pytest_execution"]["fallback_used"] is True
+    execution_record = json.loads((output_dir / "pytest_execution_record.json").read_text(encoding="utf-8"))
+    assert execution_record["executed"] is False
+    assert execution_record["failure_reason"] == "no_pytest_command_executed"
 
 
 def test_pull_request_no_targeted_tests_uses_governed_fallback(tmp_path: Path, monkeypatch) -> None:
@@ -2018,6 +2022,11 @@ def test_pull_request_no_targeted_tests_uses_governed_fallback(tmp_path: Path, m
     artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
     assert artifact["pytest_execution"]["pytest_execution_count"] == 1
     assert "selection_reason_codes" in artifact["pytest_execution"]
+    assert artifact["pytest_execution_record_ref"] == str(output_dir / "pytest_execution_record.json")
+    execution_record = json.loads((output_dir / "pytest_execution_record.json").read_text(encoding="utf-8"))
+    assert execution_record["executed"] is True
+    assert execution_record["exit_code"] == 0
+    assert execution_record["selected_targets"] == ["tests/test_run_github_pr_autofix_contract_preflight.py"]
 
 
 def test_push_noop_does_not_require_pull_request_pytest_invariant(tmp_path: Path, monkeypatch) -> None:
@@ -2076,5 +2085,4 @@ def test_pull_request_fails_closed_when_fallback_reports_success_without_executi
     code = preflight.main()
     assert code == 2
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
-    assert "PR_PYTEST_EXECUTION_REQUIRED" in report["invariant_violations"]
-    assert "PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION" in report["invariant_violations"]
+    assert "PR_PYTEST_EXECUTION_RECORD_REQUIRED" in report["invariant_violations"]

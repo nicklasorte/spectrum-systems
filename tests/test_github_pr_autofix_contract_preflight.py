@@ -99,6 +99,18 @@ def test_preflight_pass_without_execution_invariant_is_classified_for_repair() -
     assert diagnosis["reason_codes"] == ["PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION"]
 
 
+def test_pytest_execution_record_required_invariant_is_classified_for_repair() -> None:
+    diagnosis = build_preflight_block_diagnosis_record(
+        report={
+            "invariant_violations": ["PR_PYTEST_EXECUTION_RECORD_REQUIRED"],
+            "normalized_failure": {"failure_class": "test_inventory_regression", "repairable": True},
+        },
+        preflight_artifact={"control_signal": {"strategy_gate_decision": "BLOCK"}, "generated_at": "2026"},
+    )
+    assert diagnosis["failure_class"] == "no_tests_discovered"
+    assert diagnosis["reason_codes"] == ["PR_PYTEST_EXECUTION_RECORD_REQUIRED"]
+
+
 def test_bounded_repair_plan_creation_known_category() -> None:
     diagnosis = build_preflight_block_diagnosis_record(
         report={"missing_required_surface": ["x"]},

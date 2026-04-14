@@ -647,6 +647,7 @@ class ContractSchemaTests(unittest.TestCase):
     def test_contract_preflight_result_artifact_example_validates(self) -> None:
         instance = load_example("contract_preflight_result_artifact")
         validate_artifact(instance, "contract_preflight_result_artifact")
+        assert instance["pytest_execution_record_ref"]
         required_context = instance["pqx_required_context_enforcement"]
         assert required_context["status"] in {"allow", "block"}
         assert isinstance(required_context["blocking_reasons"], list)
@@ -657,6 +658,12 @@ class ContractSchemaTests(unittest.TestCase):
         }
         assert isinstance(required_context["requires_pqx_execution"], bool)
         assert required_context["enforcement_decision"] in {"allow", "block"}
+
+    def test_pytest_execution_record_example_validates(self) -> None:
+        instance = load_example("pytest_execution_record")
+        validate_artifact(instance, "pytest_execution_record")
+        assert instance["artifact_type"] == "pytest_execution_record"
+        assert isinstance(instance["execution_entries"], list)
 
     def test_control_surface_obedience_result_example_validates(self) -> None:
         instance = load_example("control_surface_obedience_result")

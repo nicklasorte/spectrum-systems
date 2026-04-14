@@ -160,8 +160,22 @@ payload = json.loads(artifact.read_text(encoding="utf-8"))
 decision = str((payload.get("control_signal") or {}).get("strategy_gate_decision") or "BLOCK")
 execution = payload.get("pytest_execution") or {}
 count = int(execution.get("pytest_execution_count") or 0)
-if os.environ.get("GITHUB_EVENT_NAME") == "pull_request" and decision in {"ALLOW", "WARN"} and count < 1:
-    raise SystemExit("workflow/preflight trust mismatch: PR allow without preflight-owned pytest execution")
+record_ref = str(payload.get("pytest_execution_record_ref") or "").strip()
+if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
+    if not record_ref:
+        raise SystemExit("workflow/preflight trust mismatch: missing pytest_execution_record_ref")
+    record_path = Path(record_ref)
+    if not record_path.is_file():
+        raise SystemExit(f"workflow/preflight trust mismatch: missing pytest_execution_record artifact at {record_ref}")
+    record = json.loads(record_path.read_text(encoding="utf-8"))
+    executed = bool(record.get("executed", False))
+    selected_targets = record.get("selected_targets") or []
+    if decision in {"ALLOW", "WARN"} and count < 1:
+        raise SystemExit("workflow/preflight trust mismatch: PR allow without preflight-owned pytest execution")
+    if decision in {"ALLOW", "WARN"} and not executed:
+        raise SystemExit("workflow/preflight trust mismatch: PR allow with executed=false")
+    if decision in {"ALLOW", "WARN"} and not selected_targets:
+        raise SystemExit("workflow/preflight trust mismatch: PR allow with empty selected_targets")
 PY
 
       - name: Upload contract preflight outputs

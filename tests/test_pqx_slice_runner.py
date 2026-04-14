@@ -355,7 +355,7 @@ def _execution_impact_artifact(*, blocking: bool, indeterminate: bool, safe_to_e
 def _preflight_artifact(*, status: str, decision: str, masking_detected: bool = False, degraded: bool = False) -> dict:
     return {
         "artifact_type": "contract_preflight_result_artifact",
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "preflight_status": status,
         "changed_contracts": ["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
         "impacted_producers": [
@@ -386,6 +386,18 @@ def _preflight_artifact(*, status: str, decision: str, masking_detected: bool = 
         "control_surface_gap_result_ref": None,
         "pqx_gap_work_items_ref": None,
         "control_surface_gap_blocking": False,
+        "pytest_execution": {
+            "event_name": "pull_request",
+            "pytest_execution_count": 1,
+            "pytest_commands": ["python -m pytest -q tests/test_contract_preflight.py"],
+            "selected_targets": ["tests/test_contract_preflight.py"],
+            "fallback_targets": [],
+            "fallback_used": False,
+            "targeted_selection_empty": False,
+            "fallback_selection_empty": True,
+            "selection_reason_codes": [],
+        },
+        "pytest_execution_record_ref": "outputs/contract_preflight/pytest_execution_record.json",
         "pqx_required_context_enforcement": {
             "classification": "governed_pqx_required",
             "execution_context": "pqx_governed",
