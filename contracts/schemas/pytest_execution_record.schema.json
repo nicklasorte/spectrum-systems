@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pytest_execution_record.schema.json",
+  "title": "Pytest Execution Record",
+  "description": "Canonical preflight-owned pytest execution evidence artifact for PR trust gating.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "event_name",
+    "workflow_name",
+    "workflow_job",
+    "executed",
+    "pytest_command",
+    "selected_targets",
+    "configured_selected_targets",
+    "fallback_targets",
+    "fallback_used",
+    "targeted_selection_empty",
+    "fallback_selection_empty",
+    "selection_reason_codes",
+    "collection_count",
+    "exit_code",
+    "execution_count",
+    "execution_entries",
+    "timestamp",
+    "failure_reason"
+  ],
+  "properties": {
+    "artifact_type": {"const": "pytest_execution_record"},
+    "schema_version": {"const": "1.0.0"},
+    "event_name": {"type": "string", "minLength": 1},
+    "workflow_name": {"type": ["string", "null"]},
+    "workflow_job": {"type": ["string", "null"]},
+    "executed": {"type": "boolean"},
+    "pytest_command": {"type": "string"},
+    "selected_targets": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "configured_selected_targets": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "fallback_targets": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "fallback_used": {"type": "boolean"},
+    "targeted_selection_empty": {"type": "boolean"},
+    "fallback_selection_empty": {"type": "boolean"},
+    "selection_reason_codes": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+    "collection_count": {"type": ["integer", "null"], "minimum": 0},
+    "exit_code": {"type": "integer", "minimum": 0},
+    "execution_count": {"type": "integer", "minimum": 0},
+    "execution_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target", "command", "exit_code"],
+        "properties": {
+          "target": {"type": "string", "minLength": 1},
+          "command": {"type": "string", "minLength": 1},
+          "exit_code": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "timestamp": {"type": "string", "format": "date-time"},
+    "failure_reason": {"type": ["string", "null"]}
+  }
+}

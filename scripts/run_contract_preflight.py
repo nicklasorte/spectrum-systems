@@ -19,7 +19,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from spectrum_systems.contracts import load_schema  # noqa: E402
+from spectrum_systems.contracts import load_schema, validate_artifact  # noqa: E402
 from spectrum_systems.governance.contract_impact import analyze_contract_impact  # noqa: E402
 from spectrum_systems.modules.runtime.changed_path_resolution import (  # noqa: E402
     resolve_changed_paths,
@@ -726,6 +726,69 @@ def run_targeted_pytests(paths: list[str], *, execution_log: list[dict[str, Any]
     return failures
 
 
+def build_pytest_execution_record(
+    *,
+    event_name: str,
+    execution_log: list[dict[str, Any]],
+    selected_targets: list[str],
+    fallback_targets: list[str],
+    fallback_used: bool,
+    targeted_selection_empty: bool,
+    fallback_selection_empty: bool,
+    selection_reason_codes: list[str],
+) -> dict[str, Any]:
+    entries: list[dict[str, Any]] = []
+    for item in execution_log:
+        entries.append(
+            {
+                "target": str(item.get("target", "")),
+                "command": str(item.get("command", "")),
+                "exit_code": int(item.get("returncode", 0)),
+            }
+        )
+    effective_targets = sorted(
+        {
+            str(entry.get("target", "")).strip()
+            for entry in entries
+            if str(entry.get("target", "")).strip()
+        }
+    )
+    aggregate_exit_code = 0
+    if entries:
+        aggregate_exit_code = max(int(entry.get("exit_code", 0)) for entry in entries)
+    executed = len(entries) > 0
+    failure_reason = None
+    if not executed:
+        failure_reason = "no_pytest_command_executed"
+    elif aggregate_exit_code != 0:
+        failure_reason = "pytest_command_failed"
+
+    workflow_name = str(os.environ.get("GITHUB_WORKFLOW", "")).strip()
+    workflow_job = str(os.environ.get("GITHUB_JOB", "")).strip()
+    return {
+        "artifact_type": "pytest_execution_record",
+        "schema_version": "1.0.0",
+        "event_name": event_name,
+        "workflow_name": workflow_name or None,
+        "workflow_job": workflow_job or None,
+        "executed": executed,
+        "pytest_command": " ; ".join(str(entry.get("command", "")) for entry in entries),
+        "selected_targets": effective_targets,
+        "configured_selected_targets": sorted(set(selected_targets)),
+        "fallback_targets": sorted(set(fallback_targets)),
+        "fallback_used": bool(fallback_used),
+        "targeted_selection_empty": bool(targeted_selection_empty),
+        "fallback_selection_empty": bool(fallback_selection_empty),
+        "selection_reason_codes": sorted(set(selection_reason_codes)),
+        "collection_count": None,
+        "exit_code": aggregate_exit_code,
+        "execution_count": len(entries),
+        "execution_entries": entries,
+        "timestamp": _utc_now(),
+        "failure_reason": failure_reason,
+    }
+
+
 def detect_masked_failures(failures: list[dict[str, Any]]) -> list[dict[str, Any]]:
     masked: list[dict[str, Any]] = []
     for item in failures:
@@ -1232,7 +1295,7 @@ def build_preflight_result_artifact(
         }
     return {
         "artifact_type": "contract_preflight_result_artifact",
-        "schema_version": "1.2.0",
+        "schema_version": "1.3.0",
         "preflight_status": report.get("status", "failed"),
         "changed_contracts": report.get("changed_contracts", []),
         "impacted_producers": report.get("impact", {}).get("producers", []),
@@ -1250,6 +1313,7 @@ def build_preflight_result_artifact(
         "pqx_gap_work_items_ref": report.get("pqx_gap_work_items_ref"),
         "control_surface_gap_blocking": bool(report.get("control_surface_gap_blocking", False)),
         "pytest_execution": report.get("pytest_execution", {}),
+        "pytest_execution_record_ref": report.get("pytest_execution_record_ref"),
         "pqx_required_context_enforcement": {
             "classification": str(required_context.get("classification", "exploration_only_or_non_governed")),
             "execution_context": str(required_context.get("execution_context", "unspecified")),
@@ -1776,6 +1840,39 @@ def main() -> int:
         "fallback_selection_empty": fallback_selection_empty,
         "selection_reason_codes": sorted(set(pytest_selection_reason_codes)),
     }
+    pytest_execution_record = build_pytest_execution_record(
+        event_name=str(ref_context.event_name or ""),
+        execution_log=pytest_execution_log,
+        selected_targets=selected_pytest_targets,
+        fallback_targets=fallback_pytest_targets,
+        fallback_used=fallback_pytest_used,
+        targeted_selection_empty=targeted_selection_empty,
+        fallback_selection_empty=fallback_selection_empty,
+        selection_reason_codes=pytest_selection_reason_codes,
+    )
+    validate_artifact(pytest_execution_record, "pytest_execution_record")
+    pytest_execution_record_path = output_dir / "pytest_execution_record.json"
+    pytest_execution_record_path.write_text(json.dumps(pytest_execution_record, indent=2) + "\n", encoding="utf-8")
+    report["pytest_execution_record_ref"] = str(pytest_execution_record_path)
+
+    if is_pull_request_event:
+        if not bool(pytest_execution_record.get("executed", False)):
+            report["status"] = "failed"
+            report["invariant_violations"] = sorted(
+                set(report.get("invariant_violations", []) + ["PR_PYTEST_EXECUTION_RECORD_REQUIRED"])
+            )
+            report["recommended_repair_areas"] = sorted(
+                set(report.get("recommended_repair_areas", []) + ["restore canonical PR pytest execution path"])
+            )
+        if not report["pytest_execution"]["selected_targets"] and not report["pytest_execution"]["fallback_targets"]:
+            report["status"] = "failed"
+            report["invariant_violations"] = sorted(
+                set(report.get("invariant_violations", []) + ["PR_PYTEST_SELECTED_TARGETS_EMPTY"])
+            )
+            report["recommended_repair_areas"] = sorted(
+                set(report.get("recommended_repair_areas", []) + ["restore deterministic PR pytest target selection"])
+            )
+
     if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
         report["status"] = "failed"
         report["invariant_violations"] = sorted(

@@ -19,7 +19,11 @@ def normalize_preflight_failure(report: dict[str, Any]) -> dict[str, Any]:
         "has_invariant_violations": bool(report.get("invariant_violations")),
         "has_control_surface_gap": bool(report.get("control_surface_gap_blocking")),
         "has_pytest_execution_gap": bool(
-            {"PR_PYTEST_EXECUTION_REQUIRED", "PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION"}
+            {
+                "PR_PYTEST_EXECUTION_REQUIRED",
+                "PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION",
+                "PR_PYTEST_EXECUTION_RECORD_REQUIRED",
+            }
             & set(report.get("invariant_violations", []))
         ),
         "has_test_inventory_failure": (

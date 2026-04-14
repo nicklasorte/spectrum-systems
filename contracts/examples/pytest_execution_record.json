@@ -1,0 +1,32 @@
+{
+  "artifact_type": "pytest_execution_record",
+  "schema_version": "1.0.0",
+  "event_name": "pull_request",
+  "workflow_name": "artifact-boundary",
+  "workflow_job": "contract-preflight",
+  "executed": true,
+  "pytest_command": "python -m pytest -q tests/test_contract_preflight.py",
+  "selected_targets": [
+    "tests/test_contract_preflight.py"
+  ],
+  "configured_selected_targets": [
+    "tests/test_contract_preflight.py"
+  ],
+  "fallback_targets": [],
+  "fallback_used": false,
+  "targeted_selection_empty": false,
+  "fallback_selection_empty": true,
+  "selection_reason_codes": [],
+  "collection_count": null,
+  "exit_code": 0,
+  "execution_count": 1,
+  "execution_entries": [
+    {
+      "target": "tests/test_contract_preflight.py",
+      "command": "python -m pytest -q tests/test_contract_preflight.py",
+      "exit_code": 0
+    }
+  ],
+  "timestamp": "2026-04-14T00:00:00Z",
+  "failure_reason": null
+}

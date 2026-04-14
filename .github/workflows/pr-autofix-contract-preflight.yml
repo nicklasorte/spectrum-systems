@@ -135,8 +135,21 @@ jobs:
           payload = json.loads(result.read_text(encoding="utf-8"))
           initial = payload.get("control_signal", {}).get("strategy_gate_decision", "BLOCK")
           pytest_count = int(((payload.get("pytest_execution") or {}).get("pytest_execution_count") or 0))
+          record_ref = str(payload.get("pytest_execution_record_ref") or "").strip()
+          if not record_ref:
+              raise SystemExit("workflow/preflight trust mismatch: missing pytest_execution_record_ref")
+          record_path = Path(record_ref)
+          if not record_path.exists():
+              raise SystemExit(f"workflow/preflight trust mismatch: missing pytest_execution_record artifact at {record_ref}")
+          record = json.loads(record_path.read_text(encoding="utf-8"))
+          executed = bool(record.get("executed", False))
+          selected_targets = record.get("selected_targets") or []
           if initial in {"ALLOW", "WARN"} and pytest_count < 1:
               raise SystemExit("workflow/preflight trust mismatch: allow decision missing preflight-owned pytest execution")
+          if initial in {"ALLOW", "WARN"} and not executed:
+              raise SystemExit("workflow/preflight trust mismatch: allow decision with executed=false")
+          if initial in {"ALLOW", "WARN"} and not selected_targets:
+              raise SystemExit("workflow/preflight trust mismatch: allow decision with empty selected_targets")
           if initial != "BLOCK":
               raise SystemExit(0 if initial in {"ALLOW", "WARN"} else 2)
           outcome_path = out / "preflight_recovery_outcome_record.json"
