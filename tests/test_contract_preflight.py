@@ -642,6 +642,7 @@ def test_main_irrelevant_changed_file_reports_explicit_no_op(tmp_path: Path, mon
             "Args",
             (),
             {
+                "event_name": "push",
                 "base_ref": "origin/main",
                 "head_ref": "HEAD",
                 "changed_path": ["README.md"],
@@ -705,6 +706,7 @@ def test_main_commit_range_without_context_warns_without_naive_direct_run_block(
             "Args",
             (),
             {
+                "event_name": "push",
                 "base_ref": "origin/main",
                 "head_ref": "HEAD",
                 "changed_path": [],
@@ -760,6 +762,7 @@ def test_main_commit_range_without_context_allows_when_authority_evidence_resolv
             "Args",
             (),
             {
+                "event_name": "push",
                 "base_ref": "origin/main",
                 "head_ref": "HEAD",
                 "changed_path": [],
@@ -868,6 +871,7 @@ def test_main_governed_context_with_trace_authority_ref_allows(tmp_path: Path, m
             "Args",
             (),
             {
+                "event_name": "push",
                 "base_ref": "origin/main",
                 "head_ref": "HEAD",
                 "changed_path": ["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
@@ -971,6 +975,7 @@ def test_main_commit_range_governed_with_valid_authority_allows(tmp_path: Path, 
             "Args",
             (),
             {
+                "event_name": "push",
                 "base_ref": "origin/main",
                 "head_ref": "HEAD",
                 "changed_path": [],
@@ -1059,6 +1064,7 @@ def test_main_governed_context_with_valid_wrapper_allows(tmp_path: Path, monkeyp
             "Args",
             (),
             {
+                "event_name": "push",
                 "base_ref": "origin/main",
                 "head_ref": "HEAD",
                 "changed_path": ["contracts/schemas/roadmap_eligibility_artifact.schema.json"],
@@ -1096,6 +1102,7 @@ def test_main_ci_style_base_head_with_wrapper_records_allow_state(tmp_path: Path
             "Args",
             (),
             {
+                "event_name": "push",
                 "base_ref": "origin/main",
                 "head_ref": "HEAD",
                 "changed_path": [],
@@ -1234,6 +1241,7 @@ def test_main_passes_only_contract_schema_paths_into_impact_analyzer(tmp_path: P
             "Args",
             (),
             {
+                "event_name": "push",
                 "base_ref": "origin/main",
                 "head_ref": "HEAD",
                 "changed_path": [],
@@ -1487,6 +1495,7 @@ def test_main_contract_preflight_allows_con035_changed_paths_when_required_tests
             "Args",
             (),
             {
+                "event_name": "push",
                 "base_ref": "origin/main",
                 "head_ref": "HEAD",
                 "changed_path": changed_paths,
@@ -1539,6 +1548,7 @@ def test_main_governed_preflight_auto_builds_missing_wrapper(tmp_path: Path, mon
             "Args",
             (),
             {
+                "event_name": "push",
                 "base_ref": "origin/main",
                 "head_ref": "HEAD",
                 "changed_path": changed,
