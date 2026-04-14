@@ -21,6 +21,7 @@
     "control_surface_gap_result_ref",
     "pqx_gap_work_items_ref",
     "control_surface_gap_blocking",
+    "pytest_execution",
     "pqx_required_context_enforcement",
     "control_signal",
     "trace"
@@ -131,6 +132,41 @@
     },
     "control_surface_gap_blocking": {
       "type": "boolean"
+    },
+    "pytest_execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_name",
+        "pytest_execution_count",
+        "pytest_commands",
+        "selected_targets",
+        "fallback_targets",
+        "fallback_used",
+        "targeted_selection_empty",
+        "fallback_selection_empty"
+      ],
+      "properties": {
+        "event_name": {"type": "string"},
+        "pytest_execution_count": {"type": "integer", "minimum": 0},
+        "pytest_commands": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "selected_targets": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "fallback_targets": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "fallback_used": {"type": "boolean"},
+        "targeted_selection_empty": {"type": "boolean"},
+        "fallback_selection_empty": {"type": "boolean"}
+      }
     },
     "pqx_required_context_enforcement": {
       "type": "object",

@@ -17,3 +17,9 @@ def test_missing_surface_maps_to_contract_mismatch() -> None:
     report = {"missing_required_surface": ["x"]}
     result = normalize_preflight_failure(report)
     assert result["failure_class"] == "contract_mismatch"
+
+
+def test_pr_pytest_execution_gap_maps_to_inventory_regression() -> None:
+    report = {"invariant_violations": ["PR_PYTEST_EXECUTION_REQUIRED"]}
+    result = normalize_preflight_failure(report)
+    assert result["failure_class"] == "test_inventory_regression"

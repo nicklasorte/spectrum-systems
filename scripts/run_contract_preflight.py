@@ -128,6 +128,11 @@ _SYSTEM_REGISTRY_PATH = REPO_ROOT / "docs" / "architecture" / "system_registry.m
 _SYSTEM_REGISTRY_GUARD_POLICY_PATH = REPO_ROOT / "contracts" / "governance" / "system_registry_guard_policy.json"
 _TEST_INVENTORY_BASELINE_PATH = REPO_ROOT / "docs" / "governance" / "pytest_pr_inventory_baseline.json"
 _DEFAULT_PR_INVENTORY_TARGETS = ["tests/test_eval_dataset_registry.py"]
+_GOVERNED_PR_FALLBACK_PYTEST_TARGETS = [
+    "tests/test_run_github_pr_autofix_contract_preflight.py",
+    "tests/test_eval_dataset_registry.py",
+    "tests/test_contracts.py",
+]
 
 _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "scripts/run_autonomous_validation_run.py": ["tests/test_run_autonomous_validation_run.py"],
@@ -698,11 +703,17 @@ def validate_examples(changed_example_paths: list[str]) -> list[dict[str, Any]]:
     return failures
 
 
-def run_targeted_pytests(paths: list[str]) -> list[dict[str, Any]]:
+def _resolve_existing_pytest_targets(paths: list[str]) -> list[str]:
+    return sorted({path for path in paths if (REPO_ROOT / path).is_file()})
+
+
+def run_targeted_pytests(paths: list[str], *, execution_log: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
     failures: list[dict[str, Any]] = []
     for path in paths:
         cmd = [sys.executable, "-m", "pytest", "-q", path]
         result = _run(cmd, cwd=REPO_ROOT)
+        if execution_log is not None:
+            execution_log.append({"target": path, "command": " ".join(cmd), "returncode": result.returncode})
         if result.returncode != 0:
             failures.append(
                 {
@@ -772,6 +783,11 @@ def render_markdown(report: dict[str, Any]) -> str:
         lines.append(f"- **test_inventory_failure_class**: {test_inventory.get('failure_class', 'unknown')}")
         lines.append(f"- **test_inventory_selected_count**: {test_inventory.get('selected_count', 0)}")
         lines.append(f"- **test_inventory_baseline_expected_count**: {test_inventory.get('baseline_expected_count', 0)}")
+    pytest_execution = report.get("pytest_execution")
+    if isinstance(pytest_execution, dict):
+        lines.append(f"- **pytest_execution_count**: {pytest_execution.get('pytest_execution_count', 0)}")
+        lines.append(f"- **pytest_fallback_used**: {pytest_execution.get('fallback_used', False)}")
+        lines.append(f"- **pytest_selected_target_count**: {len(pytest_execution.get('selected_targets', []))}")
 
     lines.append("")
     pqx_execution_policy = report.get("pqx_execution_policy")
@@ -1233,6 +1249,7 @@ def build_preflight_result_artifact(
         "control_surface_gap_result_ref": report.get("control_surface_gap_result_ref"),
         "pqx_gap_work_items_ref": report.get("pqx_gap_work_items_ref"),
         "control_surface_gap_blocking": bool(report.get("control_surface_gap_blocking", False)),
+        "pytest_execution": report.get("pytest_execution", {}),
         "pqx_required_context_enforcement": {
             "classification": str(required_context.get("classification", "exploration_only_or_non_governed")),
             "execution_context": str(required_context.get("execution_context", "unspecified")),
@@ -1315,6 +1332,16 @@ def main() -> int:
             "pqx_required_context_enforcement": {"status": "block", "blocking_reasons": [str(ref_context.reason_code or "malformed_ref_context")]},
             "system_registry_guard_result": {"artifact_type": "system_registry_guard_result", "status": "pass", "normalized_reason_codes": []},
             "system_registry_guard_result_ref": None,
+            "pytest_execution": {
+                "event_name": str(ref_context.event_name or ""),
+                "pytest_execution_count": 0,
+                "pytest_commands": [],
+                "selected_targets": [],
+                "fallback_targets": [],
+                "fallback_used": False,
+                "targeted_selection_empty": True,
+                "fallback_selection_empty": False,
+            },
             "ref_context": ref_context.as_dict(),
             "root_cause_classification": {"failure_class": "missing_required_artifact", "reason_codes": [str(ref_context.reason_code or "malformed_ref_context")]},
             "repair_eligibility_rationale": "auto_repair_allowed: normalized ref context unavailable and must be reconstructed with bounded inputs",
@@ -1529,6 +1556,13 @@ def main() -> int:
     test_inventory_artifact_path = output_dir / "test_inventory_integrity_result.json"
     test_inventory_artifact_path.parent.mkdir(parents=True, exist_ok=True)
     test_inventory_artifact_path.write_text(json.dumps(test_inventory_payload, indent=2) + "\n", encoding="utf-8")
+    is_pull_request_event = str(ref_context.event_name or "").strip() == "pull_request"
+    pytest_execution_log: list[dict[str, Any]] = []
+    selected_pytest_targets: list[str] = []
+    fallback_pytest_targets: list[str] = []
+    fallback_pytest_used = False
+    targeted_selection_empty = False
+    fallback_selection_empty = False
 
     if detection.changed_path_detection_mode == "detection_failed_no_governed_paths":
         detection_invariants = ["changed-path detection failed before evaluation"]
@@ -1645,9 +1679,11 @@ def main() -> int:
         forced_targets = sorted({target for targets in forced_eval_targets_by_path.values() for target in targets})
 
         producer_eval_targets = sorted(set(producer_targets + forced_targets))
-        producer_failures = run_targeted_pytests(producer_eval_targets) if producer_eval_targets else []
-        fixture_failures = run_targeted_pytests(fixture_targets) if fixture_targets else []
-        consumer_failures = run_targeted_pytests(smoke_targets) if smoke_targets else []
+        selected_pytest_targets = sorted(set(producer_eval_targets + fixture_targets + smoke_targets))
+        targeted_selection_empty = len(selected_pytest_targets) == 0
+        producer_failures = run_targeted_pytests(producer_eval_targets, execution_log=pytest_execution_log) if producer_eval_targets else []
+        fixture_failures = run_targeted_pytests(fixture_targets, execution_log=pytest_execution_log) if fixture_targets else []
+        consumer_failures = run_targeted_pytests(smoke_targets, execution_log=pytest_execution_log) if smoke_targets else []
 
         masked_failures = detect_masked_failures(producer_failures + fixture_failures + consumer_failures)
 
@@ -1699,17 +1735,51 @@ def main() -> int:
             "test_inventory_integrity": test_inventory_payload,
             "test_inventory_integrity_result_ref": str(test_inventory_artifact_path),
         }
-        if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
+    if is_pull_request_event and report.get("status") == "passed" and not pytest_execution_log:
+        fallback_pytest_targets = _resolve_existing_pytest_targets(_GOVERNED_PR_FALLBACK_PYTEST_TARGETS)
+        fallback_pytest_used = True
+        fallback_selection_empty = len(fallback_pytest_targets) == 0
+        if fallback_pytest_targets:
+            fallback_failures = run_targeted_pytests(fallback_pytest_targets, execution_log=pytest_execution_log)
+            if fallback_failures:
+                report["status"] = "failed"
+                report["consumer_failures"] = sorted(
+                    list(report.get("consumer_failures", [])) + fallback_failures,
+                    key=lambda entry: str(entry.get("path", "")) if isinstance(entry, dict) else str(entry),
+                )
+                report["recommended_repair_areas"] = sorted(
+                    set(report.get("recommended_repair_areas", []) + ["governed fallback PR pytest suite"])
+                )
+        else:
             report["status"] = "failed"
             report["invariant_violations"] = sorted(
-                set(
-                    report.get("invariant_violations", [])
-                    + report["control_surface_enforcement"].get("blocking_reasons", [])
-                )
+                set(report.get("invariant_violations", []) + ["PR_PYTEST_FALLBACK_TARGETS_EMPTY"])
             )
             report["recommended_repair_areas"] = sorted(
-                set(report["recommended_repair_areas"] + ["control surface manifest required coverage mappings"])
+                set(report.get("recommended_repair_areas", []) + ["restore governed PR fallback pytest suite"])
             )
+
+    report["pytest_execution"] = {
+        "event_name": str(ref_context.event_name or ""),
+        "pytest_execution_count": len(pytest_execution_log),
+        "pytest_commands": [str(entry.get("command", "")) for entry in pytest_execution_log],
+        "selected_targets": selected_pytest_targets,
+        "fallback_targets": fallback_pytest_targets,
+        "fallback_used": fallback_pytest_used,
+        "targeted_selection_empty": targeted_selection_empty,
+        "fallback_selection_empty": fallback_selection_empty,
+    }
+    if report["control_surface_enforcement"] and report["control_surface_enforcement"].get("enforcement_status") == "BLOCK":
+        report["status"] = "failed"
+        report["invariant_violations"] = sorted(
+            set(
+                report.get("invariant_violations", [])
+                + report["control_surface_enforcement"].get("blocking_reasons", [])
+            )
+        )
+        report["recommended_repair_areas"] = sorted(
+            set(report["recommended_repair_areas"] + ["control surface manifest required coverage mappings"])
+        )
     report["control_surface_gap_status"] = control_surface_gap_bridge["status"]
     report["control_surface_gap_result_ref"] = control_surface_gap_bridge["gap_result_path"]
     report["pqx_gap_work_items_ref"] = control_surface_gap_bridge["pqx_work_items_path"]
@@ -1759,6 +1829,16 @@ def main() -> int:
         )
         report["recommended_repair_areas"] = sorted(
             set(report.get("recommended_repair_areas", []) + ["trust-spine evidence cohesion"])
+        )
+    pytest_execution = report.get("pytest_execution", {})
+    pytest_execution_count = int(pytest_execution.get("pytest_execution_count", 0)) if isinstance(pytest_execution, dict) else 0
+    if is_pull_request_event and report.get("status") == "passed" and pytest_execution_count < 1:
+        report["status"] = "failed"
+        report["invariant_violations"] = sorted(
+            set(report.get("invariant_violations", []) + ["PR_PYTEST_EXECUTION_REQUIRED"])
+        )
+        report["recommended_repair_areas"] = sorted(
+            set(report.get("recommended_repair_areas", []) + ["run governed PR pytest execution before ALLOW"])
         )
 
     control_signal = map_preflight_control_signal(report=report, hardening_flow=bool(args.hardening_flow))

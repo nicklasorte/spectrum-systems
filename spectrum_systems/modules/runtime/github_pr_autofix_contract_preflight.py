@@ -205,6 +205,10 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
         return "contract_mismatch", reasons
 
     if invariant_violations:
+        if "PR_PYTEST_EXECUTION_REQUIRED" in invariant_violations:
+            return "no_tests_discovered", ["PR_PYTEST_EXECUTION_REQUIRED"]
+        if "PR_PYTEST_FALLBACK_TARGETS_EMPTY" in invariant_violations:
+            return "no_tests_discovered", ["PR_PYTEST_FALLBACK_TARGETS_EMPTY"]
         if "artifact_validation_failure" in invariant_violations:
             return "schema_violation", ["artifact_validation_failure"]
         if "repair_pipeline_failure" in invariant_violations:
