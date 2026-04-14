@@ -9,6 +9,9 @@ from spectrum_systems.modules.runtime.pqx_execution_policy import (
     classify_changed_paths as classify_pqx_policy_changed_paths,
     evaluate_pqx_execution_policy,
 )
+from spectrum_systems.modules.runtime.pytest_selection_integrity import (
+    evaluate_pytest_selection_integrity as evaluate_pytest_selection_integrity_runtime,
+)
 
 
 def _governed_wrapper_payload(changed_paths: list[str] | None = None) -> dict[str, object]:
@@ -332,8 +335,8 @@ def test_detect_changed_paths_skips_non_governed_working_tree_fallback(monkeypat
     monkeypatch.setattr(preflight, "_all_governed_paths", lambda _repo: ["contracts/schemas/roadmap_eligibility_artifact.schema.json"])
 
     detected = preflight.detect_changed_paths(repo_root=Path("."), base_ref="origin/main", head_ref="HEAD", explicit=[])
-    assert detected.changed_path_detection_mode == "degraded_full_governed_scan"
-    assert detected.changed_paths == ["contracts/schemas/roadmap_eligibility_artifact.schema.json"]
+    assert detected.changed_path_detection_mode == "working_tree_diff_head"
+    assert detected.changed_paths == ["scripts/run_contract_preflight.py"]
 
 
 def test_masking_detection_labels_contract_masking() -> None:
@@ -465,14 +468,14 @@ def test_main_report_includes_changed_path_fallback_metadata(tmp_path: Path, mon
     monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
 
     code = preflight.main()
-    assert code == 0
+    assert code == 2
 
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
     assert report["changed_path_detection"]["changed_path_detection_mode"] == "degraded_full_governed_scan"
     assert report["changed_path_detection"]["fallback_used"] is True
     preflight_artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
     assert preflight_artifact["artifact_type"] == "contract_preflight_result_artifact"
-    assert preflight_artifact["control_signal"]["strategy_gate_decision"] == "WARN"
+    assert preflight_artifact["control_signal"]["strategy_gate_decision"] == "BLOCK"
     assert preflight_artifact["control_surface_gap_status"] == "not_run"
     assert preflight_artifact["control_surface_gap_blocking"] is False
 
@@ -1077,7 +1080,7 @@ def test_main_governed_context_with_valid_wrapper_allows(tmp_path: Path, monkeyp
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
     assert report["pqx_required_context_enforcement"]["status"] == "allow"
     artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
-    assert artifact["schema_version"] == "1.4.0"
+    assert artifact["schema_version"] == "1.5.0"
     assert artifact["pqx_required_context_enforcement"]["status"] == "allow"
 
 
@@ -2023,7 +2026,7 @@ def test_pull_request_no_targeted_tests_uses_governed_fallback(tmp_path: Path, m
     artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
     assert artifact["pytest_execution"]["pytest_execution_count"] == 1
     assert "selection_reason_codes" in artifact["pytest_execution"]
-    assert artifact["pytest_execution_record_ref"] == str(output_dir / "pytest_execution_record.json")
+    assert artifact["pytest_execution_record_ref"] == "outputs/contract_preflight/pytest_execution_record.json"
     execution_record = json.loads((output_dir / "pytest_execution_record.json").read_text(encoding="utf-8"))
     assert execution_record["executed"] is True
     assert execution_record["exit_code"] == 0
@@ -2144,5 +2147,94 @@ def test_preflight_writes_selection_integrity_artifact_ref(monkeypatch, tmp_path
     monkeypatch.setattr(preflight, "run_targeted_pytests", lambda paths, **kwargs: [] if paths else [])
     _ = preflight.main()
     artifact = json.loads((output_dir / "contract_preflight_result_artifact.json").read_text(encoding="utf-8"))
-    assert artifact["pytest_selection_integrity_result_ref"]
+    assert artifact["pytest_selection_integrity_result_ref"] == "outputs/contract_preflight/pytest_selection_integrity_result.json"
     assert (output_dir / "pytest_selection_integrity_result.json").exists()
+
+
+def test_pr_warn_control_signal_blocks_fail_closed() -> None:
+    report = {"status": "passed", "changed_path_detection": {}, "pqx_execution_policy": {"status": "warn"}}
+    result = preflight.map_preflight_control_signal(report=report, hardening_flow=False, event_name="pull_request")
+    assert result["strategy_gate_decision"] == "BLOCK"
+
+
+def test_push_warn_control_signal_remains_explicit() -> None:
+    report = {"status": "passed", "changed_path_detection": {}, "pqx_execution_policy": {"status": "warn"}}
+    result = preflight.map_preflight_control_signal(report=report, hardening_flow=False, event_name="push")
+    assert result["strategy_gate_decision"] == "ALLOW"
+
+
+def test_pr_degraded_ref_resolution_blocks_with_invariants(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "missing-head",
+                "event_name": "pull_request",
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+                "refresh_test_inventory_baseline": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=["scripts/run_contract_preflight.py"],
+            changed_path_detection_mode="local_workspace_status",
+            refs_attempted=["origin/main..missing-head"],
+            fallback_used=True,
+            warnings=["using git status porcelain fallback"],
+        ),
+    )
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+    assert preflight.main() == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert "DEGRADED_REF_RESOLUTION_PR_BLOCK" in report["invariant_violations"]
+    assert "NON_EXHAUSTIVE_GOVERNED_PATH_RESOLUTION" in report["invariant_violations"]
+    assert "GOVERNED_SURFACE_DIFF_INCOMPLETE" in report["invariant_violations"]
+
+
+def test_pr_blocks_on_execution_provenance_mismatch(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "event_name": "pull_request",
+                "changed_path": ["README.md"],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+                "refresh_test_inventory_baseline": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "_resolve_existing_pytest_targets", lambda _paths: ["tests/test_contract_preflight.py"])
+
+    def _fake_eval(**kwargs):
+        payload = evaluate_pytest_selection_integrity_runtime(**kwargs).payload
+        payload["source_commit_sha"] = "forged"
+        return type("Eval", (), {"payload": payload})()
+
+    monkeypatch.setattr(preflight, "evaluate_pytest_selection_integrity", _fake_eval)
+    assert preflight.main() == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert "PR_PYTEST_PROVENANCE_COMMIT_MISMATCH" in report["invariant_violations"]

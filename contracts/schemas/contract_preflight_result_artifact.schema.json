@@ -27,7 +27,8 @@
     "trace",
     "pytest_execution_record_ref",
     "pytest_selection_integrity",
-    "pytest_selection_integrity_result_ref"
+    "pytest_selection_integrity_result_ref",
+    "pytest_artifact_linkage"
   ],
   "properties": {
     "artifact_type": {
@@ -35,7 +36,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.4.0"
+      "const": "1.5.0"
     },
     "preflight_status": {
       "type": "string",
@@ -202,7 +203,7 @@
     },
     "pytest_execution_record_ref": {
       "type": "string",
-      "minLength": 1
+      "const": "outputs/contract_preflight/pytest_execution_record.json"
     },
     "pqx_required_context_enforcement": {
       "type": "object",
@@ -289,7 +290,6 @@
           "type": "string",
           "enum": [
             "ALLOW",
-            "WARN",
             "FREEZE",
             "BLOCK"
           ]
@@ -304,6 +304,34 @@
         },
         "degraded_detection": {
           "type": "boolean"
+        }
+      }
+    },
+    "pytest_artifact_linkage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pytest_execution_record_ref",
+        "pytest_execution_record_hash",
+        "pytest_selection_integrity_result_ref",
+        "pytest_selection_integrity_result_hash"
+      ],
+      "properties": {
+        "pytest_execution_record_ref": {
+          "type": "string",
+          "const": "outputs/contract_preflight/pytest_execution_record.json"
+        },
+        "pytest_execution_record_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "pytest_selection_integrity_result_ref": {
+          "type": "string",
+          "const": "outputs/contract_preflight/pytest_selection_integrity_result.json"
+        },
+        "pytest_selection_integrity_result_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
         }
       }
     },
@@ -393,14 +421,22 @@
         "impacted_surface_count",
         "selection_integrity_decision",
         "blocking_reasons",
-        "generated_at"
+        "generated_at",
+        "source_commit_sha",
+        "source_head_ref",
+        "workflow_run_id",
+        "producer_script",
+        "produced_at",
+        "source_pytest_execution_record_ref",
+        "source_pytest_execution_record_hash",
+        "artifact_hash"
       ],
       "properties": {
         "artifact_type": {
           "const": "pytest_selection_integrity_result"
         },
         "schema_version": {
-          "const": "1.0.0"
+          "const": "1.1.0"
         },
         "changed_paths": {
           "type": "array",
@@ -467,12 +503,44 @@
         "generated_at": {
           "type": "string",
           "format": "date-time"
+        },
+        "source_commit_sha": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_head_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workflow_run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "producer_script": {
+          "type": "string",
+          "const": "scripts/run_contract_preflight.py"
+        },
+        "produced_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_pytest_execution_record_ref": {
+          "type": "string",
+          "const": "outputs/contract_preflight/pytest_execution_record.json"
+        },
+        "source_pytest_execution_record_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "artifact_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
         }
       }
     },
     "pytest_selection_integrity_result_ref": {
       "type": "string",
-      "minLength": 1
+      "const": "outputs/contract_preflight/pytest_selection_integrity_result.json"
     }
   }
 }

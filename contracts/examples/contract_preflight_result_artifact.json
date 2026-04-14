@@ -1,6 +1,6 @@
 {
   "artifact_type": "contract_preflight_result_artifact",
-  "schema_version": "1.4.0",
+  "schema_version": "1.5.0",
   "preflight_status": "passed",
   "changed_contracts": [
     "contracts/schemas/roadmap_eligibility_artifact.schema.json"
@@ -90,9 +90,15 @@
     "provenance_ref": "contracts/standards-manifest.json"
   },
   "pytest_execution_record_ref": "outputs/contract_preflight/pytest_execution_record.json",
+  "pytest_artifact_linkage": {
+    "pytest_execution_record_ref": "outputs/contract_preflight/pytest_execution_record.json",
+    "pytest_execution_record_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "pytest_selection_integrity_result_ref": "outputs/contract_preflight/pytest_selection_integrity_result.json",
+    "pytest_selection_integrity_result_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
   "pytest_selection_integrity": {
     "artifact_type": "pytest_selection_integrity_result",
-    "schema_version": "1.0.0",
+    "schema_version": "1.1.0",
     "changed_paths": [
       "contracts/schemas/roadmap_eligibility_artifact.schema.json"
     ],
@@ -109,7 +115,15 @@
     "impacted_surface_count": 1,
     "selection_integrity_decision": "ALLOW",
     "blocking_reasons": [],
-    "generated_at": "2026-04-14T00:00:00Z"
+    "generated_at": "2026-04-14T00:00:00Z",
+    "source_commit_sha": "0123456789abcdef0123456789abcdef01234567",
+    "source_head_ref": "refs/pull/123/head",
+    "workflow_run_id": "1234567890",
+    "producer_script": "scripts/run_contract_preflight.py",
+    "produced_at": "2026-04-14T00:00:00Z",
+    "source_pytest_execution_record_ref": "outputs/contract_preflight/pytest_execution_record.json",
+    "source_pytest_execution_record_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "artifact_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
   },
   "pytest_selection_integrity_result_ref": "outputs/contract_preflight/pytest_selection_integrity_result.json"
 }

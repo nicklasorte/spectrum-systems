@@ -83,3 +83,27 @@ def test_allows_bounded_equivalence_when_enabled(tmp_path: Path) -> None:
     )
     assert result.decision == "ALLOW"
     assert result.blocking_reasons == []
+
+
+def test_payload_includes_provenance_binding_fields(tmp_path: Path) -> None:
+    result = evaluate_pytest_selection_integrity(
+        changed_paths=["scripts/run_contract_preflight.py"],
+        selected_test_targets=["tests/test_contract_preflight.py"],
+        required_test_targets=["tests/test_contract_preflight.py"],
+        pytest_execution_record={"executed": True, "selection_reason_codes": []},
+        policy_path=_policy_path(tmp_path),
+        generated_at="2026-04-14T00:00:00Z",
+        provenance={
+            "source_commit_sha": "abc123",
+            "source_head_ref": "refs/pull/1/head",
+            "workflow_run_id": "123",
+            "producer_script": "scripts/run_contract_preflight.py",
+            "produced_at": "2026-04-14T00:00:00Z",
+            "source_pytest_execution_record_ref": "outputs/contract_preflight/pytest_execution_record.json",
+            "source_pytest_execution_record_hash": "a" * 64,
+            "artifact_hash": "b" * 64,
+        },
+    )
+    assert result.payload["schema_version"] == "1.1.0"
+    assert result.payload["source_pytest_execution_record_ref"] == "outputs/contract_preflight/pytest_execution_record.json"
+    assert result.payload["artifact_hash"] == "b" * 64

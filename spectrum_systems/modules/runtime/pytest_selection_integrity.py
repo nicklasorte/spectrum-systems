@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -72,6 +73,7 @@ def evaluate_pytest_selection_integrity(
     pytest_execution_record: dict[str, Any] | None,
     policy_path: Path,
     generated_at: str,
+    provenance: dict[str, Any] | None = None,
 ) -> SelectionIntegrityEvaluation:
     """Evaluate fail-closed selection integrity evidence for preflight."""
     policy = _load_policy(policy_path)
@@ -138,7 +140,7 @@ def evaluate_pytest_selection_integrity(
     decision = "ALLOW" if not reasons else "BLOCK"
     payload = {
         "artifact_type": "pytest_selection_integrity_result",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "changed_paths": changed_paths_norm,
         "required_test_targets": effective_required,
         "selected_test_targets": selected_targets_norm,
@@ -151,6 +153,22 @@ def evaluate_pytest_selection_integrity(
         "blocking_reasons": reasons,
         "generated_at": generated_at,
     }
+    if isinstance(provenance, dict):
+        payload.update(
+            {
+                "source_commit_sha": str(provenance.get("source_commit_sha") or "unknown"),
+                "source_head_ref": str(provenance.get("source_head_ref") or "unknown"),
+                "workflow_run_id": str(provenance.get("workflow_run_id") or "local"),
+                "producer_script": str(provenance.get("producer_script") or "scripts/run_contract_preflight.py"),
+                "produced_at": str(provenance.get("produced_at") or generated_at),
+                "source_pytest_execution_record_ref": str(provenance.get("source_pytest_execution_record_ref") or ""),
+                "source_pytest_execution_record_hash": str(provenance.get("source_pytest_execution_record_hash") or ""),
+            }
+        )
+        payload["artifact_hash"] = str(provenance.get("artifact_hash") or "")
+    if not str(payload.get("artifact_hash") or "").strip():
+        canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        payload["artifact_hash"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     return SelectionIntegrityEvaluation(
         status="passed" if decision == "ALLOW" else "failed",
         decision=decision,
