@@ -9,10 +9,14 @@ from spectrum_systems.modules.runtime.next_phase_governance import (
     build_synthesized_trust_signal,
     evaluate_promotion_trust_envelope,
     filter_active_records,
+    retrieve_prx_precedents,
     normalize_translation_artifact,
     quarantine_simulated_for_promotion,
     translate_source_to_artifact,
+    validate_ail_synthesis_non_authoritative,
     validate_cross_artifact_consistency,
+    validate_hnx_semantic_handoff,
+    validate_jsx_active_set,
 )
 
 
@@ -102,3 +106,47 @@ def test_consistency_active_set_query_and_signal() -> None:
         override_rate=0.1,
     )
     assert signal["freeze_triggered"] is True
+
+
+def test_jsx_stale_active_set_rejection() -> None:
+    result = validate_jsx_active_set(
+        [
+            {"id": "j-1", "active": True, "retired": False, "superseded": False},
+            {"id": "j-2", "active": True, "retired": True, "superseded": False},
+        ]
+    )
+    assert result["valid"] is False
+    assert result["stale_active_records"] == ["j-2"]
+    assert "stale_active_set_rejected" in result["reason_codes"]
+
+
+def test_prx_retrieval_excludes_stale_precedents_by_default() -> None:
+    precedents = [
+        {"id": "p-1", "retired": False, "superseded": False, "scope_tags": ["route"]},
+        {"id": "p-2", "retired": True, "superseded": False, "scope_tags": ["route"]},
+        {"id": "p-3", "retired": False, "superseded": True, "scope_tags": ["route"]},
+        {"id": "p-4", "retired": False, "superseded": False, "scope_tags": ["policy"]},
+    ]
+    eligible = retrieve_prx_precedents(precedents, in_scope_tags={"route"})
+    assert [row["id"] for row in eligible] == ["p-1"]
+
+
+def test_ail_synthesis_is_non_authoritative() -> None:
+    signal = build_synthesized_trust_signal(
+        context_trust_score=0.8,
+        evidence_sufficient=True,
+        consistency_ok=True,
+        override_rate=0.0,
+    )
+    validation = validate_ail_synthesis_non_authoritative(signal)
+    assert validation["valid"] is True
+
+    leaked = validate_ail_synthesis_non_authoritative({"status": "promote"})
+    assert leaked["valid"] is False
+    assert leaked["reason_codes"] == ["ail_authority_leak_blocked"]
+
+
+def test_hnx_semantic_handoff_completeness() -> None:
+    result = validate_hnx_semantic_handoff({"reset": True, "resume": True, "review": True, "fix": True, "promotion": False})
+    assert result["complete"] is False
+    assert result["missing"] == ["promotion"]

@@ -1,0 +1,287 @@
+{
+  "roadmap_id": "CDX-02",
+  "authority_source": "docs/architecture/system_registry.md",
+  "allowed_true_new_owners": [
+    "CRS",
+    "MGV"
+  ],
+  "steps": [
+    {
+      "id": "3LS-01",
+      "title": "Freeze canonical registry as roadmap authority",
+      "owner": "CON",
+      "classification": "validator_under_existing_owner"
+    },
+    {
+      "id": "3LS-02",
+      "title": "Expand registry-to-implementation drift checks",
+      "owner": "CON",
+      "classification": "validator_under_existing_owner"
+    },
+    {
+      "id": "3LS-03",
+      "title": "Improve owner vs non-owner classification",
+      "owner": "CON",
+      "classification": "validator_under_existing_owner"
+    },
+    {
+      "id": "3LS-04",
+      "title": "Strengthen CTX source admission and context integrity",
+      "owner": "CTX",
+      "classification": "canonical_owner_work"
+    },
+    {
+      "id": "3LS-05",
+      "title": "Add CTX trust-tier and abstention preconditions",
+      "owner": "CTX",
+      "classification": "artifact_family_under_existing_owner"
+    },
+    {
+      "id": "3LS-06",
+      "title": "Expand EVL required-case discipline",
+      "owner": "EVL",
+      "classification": "validator_under_existing_owner"
+    },
+    {
+      "id": "3LS-07",
+      "title": "Expand DAT dataset lineage and version governance",
+      "owner": "DAT",
+      "classification": "canonical_owner_work"
+    },
+    {
+      "id": "3LS-08",
+      "title": "Add stale-fixture and stale-example detection",
+      "owner": "EVL",
+      "classification": "validator_under_existing_owner"
+    },
+    {
+      "id": "3LS-09",
+      "title": "Strengthen JDG evidence sufficiency requirements",
+      "owner": "JDX",
+      "classification": "canonical_owner_work"
+    },
+    {
+      "id": "3LS-10",
+      "title": "Expand JSX active-set, supersession, and conflict records",
+      "owner": "JSX",
+      "classification": "canonical_owner_work"
+    },
+    {
+      "id": "3LS-11",
+      "title": "Strengthen PRX precedent retrieval eligibility",
+      "owner": "PRX",
+      "classification": "validator_under_existing_owner"
+    },
+    {
+      "id": "3LS-12",
+      "title": "Expand POL lifecycle checks",
+      "owner": "POL",
+      "classification": "validator_under_existing_owner"
+    },
+    {
+      "id": "3LS-13",
+      "title": "Add REL release/canary/freeze semantics across change types",
+      "owner": "REL",
+      "classification": "canonical_owner_work"
+    },
+    {
+      "id": "3LS-14",
+      "title": "Strengthen PRM prompt admissibility",
+      "owner": "PRM",
+      "classification": "validator_under_existing_owner"
+    },
+    {
+      "id": "3LS-15",
+      "title": "Expand ROU route comparison evidence and route-change control",
+      "owner": "ROU",
+      "classification": "artifact_family_under_existing_owner"
+    },
+    {
+      "id": "3LS-16",
+      "title": "Expand OBS completeness checks",
+      "owner": "OBS",
+      "classification": "validator_under_existing_owner"
+    },
+    {
+      "id": "3LS-17",
+      "title": "Strengthen LIN end-to-end lineage completeness",
+      "owner": "LIN",
+      "classification": "validator_under_existing_owner"
+    },
+    {
+      "id": "3LS-18",
+      "title": "Expand REP replay gating",
+      "owner": "REP",
+      "classification": "validator_under_existing_owner"
+    },
+    {
+      "id": "3LS-19",
+      "title": "Add CRS as a narrowly scoped new owner",
+      "owner": "CRS",
+      "classification": "canonical_owner_work",
+      "new_owner": true
+    },
+    {
+      "id": "3LS-20",
+      "title": "Wire CRS outputs into canonical authorities only",
+      "owner": "CRS",
+      "classification": "non_authoritative_mode_or_prep_artifact"
+    },
+    {
+      "id": "3LS-21",
+      "title": "Expand SEC guardrail integration",
+      "owner": "SEC",
+      "classification": "canonical_owner_work"
+    },
+    {
+      "id": "3LS-22",
+      "title": "Expand CAP and SLO budget coverage",
+      "owner": "CAP",
+      "classification": "artifact_family_under_existing_owner",
+      "dependencies": [
+        "SLO"
+      ]
+    },
+    {
+      "id": "3LS-23",
+      "title": "Strengthen DRT and DRX drift-to-remediation flow",
+      "owner": "DRT",
+      "classification": "artifact_family_under_existing_owner",
+      "dependencies": [
+        "DRX",
+        "FRE",
+        "PRG"
+      ]
+    },
+    {
+      "id": "3LS-24",
+      "title": "Add HNX semantic handoff completeness checks",
+      "owner": "HNX",
+      "classification": "validator_under_existing_owner"
+    },
+    {
+      "id": "3LS-25",
+      "title": "Expand HIT and HIX alignment",
+      "owner": "HIT",
+      "classification": "artifact_family_under_existing_owner",
+      "dependencies": [
+        "HIX"
+      ]
+    },
+    {
+      "id": "3LS-26",
+      "title": "Expand RUX reuse governance",
+      "owner": "RUX",
+      "classification": "validator_under_existing_owner"
+    },
+    {
+      "id": "3LS-27",
+      "title": "Expand AIL operator-facing intelligence outputs",
+      "owner": "AIL",
+      "classification": "report_or_intelligence_output"
+    },
+    {
+      "id": "3LS-28",
+      "title": "Add non-authoritative synthesized trust posture under AIL",
+      "owner": "AIL",
+      "classification": "non_authoritative_mode_or_prep_artifact"
+    },
+    {
+      "id": "3LS-29",
+      "title": "Expand RSM reconciliation artifacts",
+      "owner": "RSM",
+      "classification": "non_authoritative_mode_or_prep_artifact"
+    },
+    {
+      "id": "3LS-30",
+      "title": "Add SCH-backed migration choreography",
+      "owner": "SCH",
+      "classification": "artifact_family_under_existing_owner"
+    },
+    {
+      "id": "3LS-31",
+      "title": "Improve XRL delayed outcome and correctness binding",
+      "owner": "XRL",
+      "classification": "artifact_family_under_existing_owner"
+    },
+    {
+      "id": "3LS-32",
+      "title": "Expand CAL calibration bundles and budgets",
+      "owner": "CAL",
+      "classification": "artifact_family_under_existing_owner"
+    },
+    {
+      "id": "3LS-33",
+      "title": "Add governed comparison campaigns under CVX",
+      "owner": "CVX",
+      "classification": "artifact_family_under_existing_owner"
+    },
+    {
+      "id": "3LS-34",
+      "title": "Expand CHX campaign packs",
+      "owner": "CHX",
+      "classification": "artifact_family_under_existing_owner"
+    },
+    {
+      "id": "3LS-35",
+      "title": "Red team round 1",
+      "owner": "CHX",
+      "classification": "report_or_intelligence_output"
+    },
+    {
+      "id": "3LS-36",
+      "title": "Convert round 1 findings into code",
+      "owner": "FRE",
+      "classification": "canonical_owner_work"
+    },
+    {
+      "id": "3LS-37",
+      "title": "Expand ENT maintain-stage jobs",
+      "owner": "ENT",
+      "classification": "non_authoritative_mode_or_prep_artifact"
+    },
+    {
+      "id": "3LS-38",
+      "title": "Expand PRG roadmap alignment outputs",
+      "owner": "PRG",
+      "classification": "report_or_intelligence_output"
+    },
+    {
+      "id": "3LS-39",
+      "title": "Add MGV as a narrowly scoped new owner",
+      "owner": "MGV",
+      "classification": "canonical_owner_work",
+      "new_owner": true
+    },
+    {
+      "id": "3LS-40",
+      "title": "Route MGV outputs through canonical authorities only",
+      "owner": "MGV",
+      "classification": "non_authoritative_mode_or_prep_artifact"
+    },
+    {
+      "id": "3LS-41",
+      "title": "Red team round 2",
+      "owner": "CHX",
+      "classification": "report_or_intelligence_output"
+    },
+    {
+      "id": "3LS-42",
+      "title": "Convert round 2 findings into code",
+      "owner": "FRE",
+      "classification": "canonical_owner_work"
+    },
+    {
+      "id": "3LS-43",
+      "title": "Final trust-envelope lock",
+      "owner": "CDE",
+      "classification": "canonical_owner_work"
+    },
+    {
+      "id": "3LS-44",
+      "title": "Emit checkpoint review artifact",
+      "owner": "PRG",
+      "classification": "report_or_intelligence_output"
+    }
+  ]
+}
