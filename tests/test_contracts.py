@@ -796,6 +796,14 @@ class ContractSchemaTests(unittest.TestCase):
         instance = load_example("pytest_trust_gap_audit_result")
         validate_artifact(instance, "pytest_trust_gap_audit_result")
 
+    def test_pytest_trust_gap_backtest_result_example_validates(self) -> None:
+        instance = load_example("pytest_trust_gap_backtest_result")
+        validate_artifact(instance, "pytest_trust_gap_backtest_result")
+
+    def test_required_check_alignment_audit_result_example_validates(self) -> None:
+        instance = load_example("required_check_alignment_audit_result")
+        validate_artifact(instance, "required_check_alignment_audit_result")
+
 
 if __name__ == "__main__":
     unittest.main()
