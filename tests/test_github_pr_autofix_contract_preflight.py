@@ -454,3 +454,34 @@ def test_classification_deterministic_for_same_push_inputs() -> None:
     first = classify_preflight_block(report=report)
     second = classify_preflight_block(report=report)
     assert first == second
+
+
+def test_classify_preflight_block_reports_precise_test_inventory_failure() -> None:
+    failure_class, reason_codes = classify_preflight_block(
+        report={
+            "test_inventory_integrity": {
+                "failure_class": "unexpected_test_inventory_regression",
+                "status": "failed",
+                "blocking": True,
+            }
+        }
+    )
+    assert failure_class == "unexpected_test_inventory_regression"
+    assert reason_codes == ["unexpected_test_inventory_regression"]
+
+
+def test_preflight_test_inventory_failure_is_auto_repairable_and_bounded() -> None:
+    plan = build_preflight_repair_plan_record(
+        diagnosis_record={
+            "artifact_type": "preflight_block_diagnosis_record",
+            "artifact_version": "1.0.0",
+            "schema_version": "1.0.0",
+            "diagnosis_id": "diag-2",
+            "strategy_gate_decision": "BLOCK",
+            "failure_class": "unexpected_test_inventory_regression",
+            "reason_codes": ["unexpected_test_inventory_regression"],
+            "root_cause_summary": "inventory drift",
+        }
+    )
+    assert plan["eligibility_decision"] == "auto_repair_allowed"
+    assert "docs/governance/pytest_pr_inventory_baseline.json" in plan["allowed_paths"]

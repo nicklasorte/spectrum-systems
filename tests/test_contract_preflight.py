@@ -1845,3 +1845,95 @@ def test_push_context_exact_failure_regression_no_unknown_and_no_escalation(tmp_
     assert diagnosis["failure_class"] != "unknown_preflight_failure"
     assert plan["eligibility_decision"] == "auto_repair_allowed"
     assert not (output_dir / "preflight_human_escalation_record.json").exists()
+
+
+def test_main_preflight_emits_classified_test_inventory_failure(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "preflight"
+
+    class _Ref:
+        base_ref = "base"
+        head_ref = "head"
+        event_name = "pull_request"
+        fallback_used = False
+        raw_inputs = {}
+        valid = True
+        reason_code = "ok"
+        reason = "ok"
+
+        def as_dict(self) -> dict[str, object]:
+            return {
+                "base_ref": self.base_ref,
+                "head_ref": self.head_ref,
+                "event_name": self.event_name,
+                "fallback_used": self.fallback_used,
+                "raw_inputs": self.raw_inputs,
+            }
+
+    class _Detection:
+        changed_paths = ["README.md"]
+        changed_path_detection_mode = "explicit_paths"
+        refs_attempted = ["base..head"]
+        fallback_used = False
+        warnings: list[str] = []
+
+    class _Integrity:
+        status = "failed"
+        failure_class = "unexpected_test_inventory_regression"
+        blocking = True
+        payload = {
+            "artifact_type": "test_inventory_integrity_result",
+            "schema_version": "1.0.0",
+            "failure_class": "unexpected_test_inventory_regression",
+            "status": "failed",
+            "blocking": True,
+            "configured_test_roots": ["tests"],
+            "discovered_test_files": ["tests/test_eval_dataset_registry.py"],
+            "collected_nodeids": ["tests/test_eval_dataset_registry.py::test_valid_dataset_creation"],
+            "selected_nodeids": [],
+            "collected_count": 1,
+            "selected_count": 0,
+            "baseline_expected_count": 19,
+            "baseline_expected_nodeids": ["tests/test_eval_dataset_registry.py::test_valid_dataset_creation"],
+            "baseline_missing_nodeids": ["tests/test_eval_dataset_registry.py::test_valid_dataset_creation"],
+            "baseline_unexpected_nodeids": [],
+            "recommended_repair_route": "restore baseline",
+            "classification_detail": "selected suite inventory drifted",
+            "execution_cwd": ".",
+            "repo_root": ".",
+            "owner_system": "PRG",
+            "enforcement_system": "SEL",
+            "execution_system": "PQX",
+            "orchestration_system": "TLC",
+            "diagnosis_system": "FRE",
+            "registry_system": "SRG",
+        }
+
+    monkeypatch.setattr(preflight, "_parse_args", lambda: type("Args", (), {
+        "base_ref": "base",
+        "head_ref": "head",
+        "event_name": "pull_request",
+        "changed_path": ["README.md"],
+        "output_dir": str(output_dir),
+        "hardening_flow": False,
+        "execution_context": "pqx_governed",
+        "pqx_wrapper_path": None,
+        "authority_evidence_ref": None,
+        "refresh_test_inventory_baseline": False,
+    })())
+    monkeypatch.setattr(preflight, "normalize_preflight_ref_context", lambda **_: _Ref())
+    monkeypatch.setattr(preflight, "detect_changed_paths", lambda *_args, **_kwargs: _Detection())
+    monkeypatch.setattr(preflight, "load_guard_policy", lambda *_: {"policy_version": "1.0.0"})
+    monkeypatch.setattr(preflight, "parse_system_registry", lambda *_: {"systems": []})
+    monkeypatch.setattr(preflight, "evaluate_system_registry_guard", lambda **_: {"status": "pass", "normalized_reason_codes": []})
+    monkeypatch.setattr(preflight, "evaluate_control_surface_gap_bridge", lambda *_: {"status": "ok", "gap_result": {}, "pqx_work_items": [], "conversion_error": None, "gap_result_path": None, "pqx_work_items_path": None, "blocking": False})
+    monkeypatch.setattr(preflight, "evaluate_trust_spine_cohesion", lambda *_: {"overall_decision": "ALLOW", "blocking_reasons": []})
+    monkeypatch.setattr(preflight, "evaluate_pqx_execution_policy", lambda **_: type("Policy", (), {"to_dict": lambda self: {"status": "allow", "classification": "exploration_only_or_non_governed", "blocking_reasons": []}})())
+    monkeypatch.setattr(preflight, "enforce_pqx_required_context", lambda **_: type("Ctx", (), {"to_dict": lambda self: {"status": "allow", "blocking_reasons": []}})())
+    monkeypatch.setattr(preflight, "evaluate_test_inventory_integrity", lambda **_: _Integrity())
+
+    exit_code = preflight.main()
+    assert exit_code == 2
+
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["root_cause_classification"]["failure_class"] == "unexpected_test_inventory_regression"
+    assert "unexpected_test_inventory_regression" in report["invariant_violations"]
