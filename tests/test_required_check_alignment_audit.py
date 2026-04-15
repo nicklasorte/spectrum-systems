@@ -28,6 +28,7 @@ def test_required_check_alignment_passes_when_live_evidence_matches() -> None:
     )
     assert result["final_decision"] == "PASS"
     assert result["live_github_alignment_status"] == "aligned"
+    assert result["mismatch_details"] == []
     validate_artifact(result, "required_check_alignment_audit_result")
 
 
@@ -76,3 +77,22 @@ def test_required_check_alignment_detects_policy_workflow_drift() -> None:
     )
     assert result["final_decision"] == "BLOCK"
     assert "POLICY_WORKFLOW_MISMATCH" in result["blocking_reasons"]
+    mismatch_classes = {entry["mismatch_class"] for entry in result["mismatch_details"]}
+    assert "POLICY_WORKFLOW_MISMATCH" in mismatch_classes
+
+
+def test_required_check_alignment_drift_is_structured_when_workflow_job_missing() -> None:
+    result = run_required_check_alignment_audit(
+        workflow_payload={"name": "PR", "jobs": {}},
+        required_policy_payload={
+            "workflow": "PR",
+            "authoritative_job_id": "pytest",
+            "authoritative_display_name": "pytest",
+            "required_status_check_name": "PR / pytest",
+        },
+        generated_at="2026-04-14T00:00:00Z",
+    )
+    assert result["final_decision"] == "BLOCK"
+    mismatch_classes = {entry["mismatch_class"] for entry in result["mismatch_details"]}
+    assert "WORKFLOW_MISSING_AUTHORITATIVE_JOB" in mismatch_classes
+    assert "POLICY_JOB_ID_MISMATCH" not in result["blocking_reasons"]

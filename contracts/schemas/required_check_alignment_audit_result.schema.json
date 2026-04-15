@@ -15,6 +15,7 @@
     "live_github_alignment_status",
     "final_decision",
     "blocking_reasons",
+    "mismatch_details",
     "operator_actions_required",
     "generated_at"
   ],
@@ -41,6 +42,27 @@
       "type": "array",
       "items": {"type": "string", "minLength": 1},
       "uniqueItems": true
+    },
+    "mismatch_details": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "mismatch_class",
+          "expected_policy_value",
+          "discovered_workflow_value",
+          "blocking",
+          "recommended_remediation"
+        ],
+        "properties": {
+          "mismatch_class": {"type": "string", "minLength": 1},
+          "expected_policy_value": {"type": "string"},
+          "discovered_workflow_value": {"type": "string"},
+          "blocking": {"type": "boolean"},
+          "recommended_remediation": {"type": "string", "minLength": 1}
+        }
+      }
     },
     "operator_actions_required": {
       "type": "array",
