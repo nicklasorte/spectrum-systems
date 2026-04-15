@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/sec_control_integration_signal.schema.json",
+  "title": "sec_control_integration_signal",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "sec_control_integration_signal"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner_system": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{2,8}$"
+    },
+    "control_surface": {
+      "type": "string"
+    },
+    "guardrail_event_id": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "observe",
+        "block",
+        "freeze"
+      ]
+    }
+  },
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "trace_id",
+    "created_at",
+    "owner_system",
+    "control_surface",
+    "guardrail_event_id",
+    "action"
+  ]
+}

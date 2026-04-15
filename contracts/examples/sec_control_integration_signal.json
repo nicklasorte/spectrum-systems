@@ -1,0 +1,13 @@
+{
+  "artifact_type": "sec_control_integration_signal",
+  "artifact_id": "SEC_CONTROL_INTEGRATION_SIGNAL-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.1",
+  "trace_id": "trace-rgp02-001",
+  "created_at": "2026-04-15T00:00:00Z",
+  "owner_system": "CON",
+  "control_surface": "control_surface-value",
+  "guardrail_event_id": "guardrail_event_id-value",
+  "action": "observe"
+}

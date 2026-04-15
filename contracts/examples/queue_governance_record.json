@@ -1,0 +1,14 @@
+{
+  "artifact_type": "queue_governance_record",
+  "artifact_id": "QUEUE_GOVERNANCE_RECORD-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.1",
+  "trace_id": "trace-rgp02-001",
+  "created_at": "2026-04-15T00:00:00Z",
+  "owner_system": "CON",
+  "queue_name": "queue_name-value",
+  "depth": 1,
+  "capacity": 1,
+  "state": "normal"
+}
