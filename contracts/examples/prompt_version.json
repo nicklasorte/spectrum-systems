@@ -1,0 +1,20 @@
+{
+  "artifact_type": "prompt_version",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.1",
+  "record_id": "PROMPT_VERSION-0001",
+  "owner": "OSX03",
+  "created_at": "2026-04-15T00:00:00Z",
+  "artifact_family": "prompt_task_bundle",
+  "status": "active",
+  "lineage_refs": [
+    "context_manifest:CTXM-0001"
+  ],
+  "evidence_refs": [
+    "eval_slice_summary:EVL-0001"
+  ],
+  "details": {
+    "note": "OSX-03 canonical example"
+  }
+}
