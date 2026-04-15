@@ -1,0 +1,17 @@
+{
+  "artifact_type": "evd_roadmap_evidence_sufficiency_map",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "artifact_id": "evd_roadmap_evidence_sufficiency_map-example",
+  "owner": "EVD",
+  "created_at": "2026-04-15T00:00:00Z",
+  "status": "pass",
+  "reason_codes": [
+    "example_payload"
+  ],
+  "evidence_refs": [
+    "evidence:example"
+  ],
+  "non_authority_assertions": []
+}
