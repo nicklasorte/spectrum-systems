@@ -179,6 +179,27 @@ def filter_active_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]
     return [r for r in records if not r.get("retired", False) and not r.get("superseded", False)]
 
 
+def validate_jsx_active_set(records: list[dict[str, Any]]) -> dict[str, Any]:
+    stale = [r.get("id", "unknown") for r in records if bool(r.get("active", False)) and (r.get("retired") or r.get("superseded"))]
+    return {
+        "valid": not stale,
+        "stale_active_records": stale,
+        "reason_codes": [] if not stale else ["stale_active_set_rejected"],
+    }
+
+
+def retrieve_prx_precedents(records: list[dict[str, Any]], *, in_scope_tags: set[str]) -> list[dict[str, Any]]:
+    eligible: list[dict[str, Any]] = []
+    for record in records:
+        if record.get("retired") or record.get("superseded"):
+            continue
+        record_scope = set(record.get("scope_tags", []))
+        if in_scope_tags and record_scope.isdisjoint(in_scope_tags):
+            continue
+        eligible.append(record)
+    return eligible
+
+
 def build_query_index_manifest(reason_index: dict[str, list[str]]) -> dict[str, Any]:
     return {
         "artifact_type": "query_index_manifest",
@@ -219,6 +240,25 @@ def build_synthesized_trust_signal(
         "payload": {"override_rate": override_rate},
         "score": score,
         "freeze_triggered": score < 0.5,
+    }
+
+
+def validate_ail_synthesis_non_authoritative(signal: dict[str, Any]) -> dict[str, Any]:
+    status = str(signal.get("status", "monitor"))
+    authority_leak = status in {"admit", "promote", "enforce", "execute", "close"}
+    return {
+        "valid": not authority_leak,
+        "reason_codes": [] if not authority_leak else ["ail_authority_leak_blocked"],
+    }
+
+
+def validate_hnx_semantic_handoff(handoff: dict[str, Any]) -> dict[str, Any]:
+    required = ("reset", "resume", "review", "fix", "promotion")
+    missing = [key for key in required if not handoff.get(key)]
+    return {
+        "complete": not missing,
+        "missing": missing,
+        "reason_codes": [] if not missing else ["semantic_handoff_incomplete"],
     }
 
 

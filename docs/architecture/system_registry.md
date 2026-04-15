@@ -1832,17 +1832,21 @@ flowchart LR
 ### CRS
 - **acronym:** `CRS`
 - **full_name:** Cross-Artifact Consistency System
-- **role:** Owns consistency checks across certification, replay, eval, judgment, control, enforcement, and promotion artifacts.
+- **role:** Owns cross-artifact logical consistency checks only and emits consistency artifacts for canonical authorities.
 - **owns:**
   - cross_artifact_consistency_checks
   - consistency_reason_code_taxonomy
-  - consistency_blocking_rules
+  - consistency_report_artifact_requirements
 - **consumes:**
-  - certification_replay_eval_judgment_control_artifacts
+  - governed_artifact_sets_for_consistency_analysis
 - **produces:**
   - cross_artifact_consistency_report
 - **must_not_do:**
-  - downgrade_material_inconsistency_to_warning
+  - own_lineage_authority
+  - own_replay_authority
+  - own_eval_authority
+  - own_judgment_authority
+  - decide_admit_enforce_or_execute
 
 ### MIG
 - **acronym:** `MIG`
@@ -2014,3 +2018,24 @@ flowchart LR
   - silently_mutate_governance
   - auto_fix_without_governed_artifacts
   - emit_drift_claims_without_trace_and_evidence_linkage
+
+### MGV
+- **acronym:** `MGV`
+- **full_name:** `Meta Governance`
+- **role:** Owns governance-of-governance controls for who may change selected governance controls, retire active records, approve override classes, and promote canaries through canonical owners.
+- **owns:**
+  - governance_threshold_change_authorization
+  - active_record_retirement_authorization
+  - override_class_approval_authorization
+  - canary_promotion_authorization
+- **consumes:**
+  - governance_change_requests
+  - override_and_canary_requests
+- **produces:**
+  - meta_governance_authorization_record
+- **must_not_do:**
+  - become_tpa
+  - become_cde
+  - become_sel
+  - become_pqx
+  - become_prg
