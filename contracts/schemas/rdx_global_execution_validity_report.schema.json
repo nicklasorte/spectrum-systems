@@ -3,71 +3,147 @@
   "title": "rdx_global_execution_validity_report",
   "type": "object",
   "additionalProperties": true,
-  "required": [
-    "artifact_type",
-    "schema_version",
-    "artifact_id",
-    "owner",
-    "created_at",
-    "status"
-  ],
   "properties": {
     "artifact_type": {
       "const": "rdx_global_execution_validity_report"
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
-    },
-    "artifact_version": {
-      "type": "string"
-    },
-    "standards_version": {
-      "type": "string"
+      "pattern": "^1\\.0\\.0$"
     },
     "artifact_id": {
-      "type": "string",
-      "minLength": 1
-    },
-    "owner": {
       "type": "string",
       "minLength": 3
     },
     "created_at": {
       "type": "string",
-      "minLength": 10
+      "format": "date-time"
+    },
+    "owner": {
+      "type": "string",
+      "const": "RDX"
     },
     "status": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "authority_boundary": {
       "type": "string",
-      "enum": [
-        "pass",
-        "fail",
-        "warn",
-        "ready",
-        "not_ready",
-        "continue",
-        "halt",
-        "candidate_only",
-        "block"
+      "const": "non_authoritative_signal_only"
+    },
+    "lin_lineage_report_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "rep_replay_report_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "evl_eval_report_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "evd_evidence_report_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "obs_observability_report_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "dag_dependency_report_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "dep_chain_report_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "artifact_version": {
+      "type": [
+        "string",
+        "array",
+        "object",
+        "number",
+        "boolean",
+        "null"
+      ]
+    },
+    "standards_version": {
+      "type": [
+        "string",
+        "array",
+        "object",
+        "number",
+        "boolean",
+        "null"
       ]
     },
     "reason_codes": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "type": [
+        "string",
+        "array",
+        "object",
+        "number",
+        "boolean",
+        "null"
+      ]
     },
-    "evidence_refs": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+    "required_downstream_gates": {
+      "type": [
+        "string",
+        "array",
+        "object",
+        "number",
+        "boolean",
+        "null"
+      ]
+    },
+    "unresolved_blockers": {
+      "type": [
+        "string",
+        "array",
+        "object",
+        "number",
+        "boolean",
+        "null"
+      ]
+    },
+    "outstanding_debt_refs": {
+      "type": [
+        "string",
+        "array",
+        "object",
+        "number",
+        "boolean",
+        "null"
+      ]
     },
     "non_authority_assertions": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "type": [
+        "string",
+        "array",
+        "object",
+        "number",
+        "boolean",
+        "null"
+      ]
     }
-  }
+  },
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "artifact_id",
+    "created_at",
+    "owner",
+    "status"
+  ]
 }

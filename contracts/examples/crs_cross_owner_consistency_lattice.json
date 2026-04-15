@@ -1,23 +1,25 @@
 {
   "artifact_type": "crs_cross_owner_consistency_lattice",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "artifact_id": "crs_cross_owner_consistency_lattice-example-001",
   "created_at": "2026-04-15T00:00:00Z",
   "owner": "CRS",
-  "status": "ok",
-  "summary": "R100-NP-001 coherence and replay posture.",
+  "status": "referenced",
+  "summary": "Reference-only composition artifact.",
   "inputs": [
-    "roadmap_execution_contract_v2"
+    "rdx_global_execution_validity_report:rdx-global-001"
   ],
-  "signals": [
-    {
-      "signal": "deterministic",
-      "value": 0.5
-    }
-  ],
-  "metrics": {
-    "risk": 0.5,
-    "debt": 0.2
+  "authority_boundary": "composition_reference_only",
+  "reference_integrity": {
+    "lin_lineage_report_ref": true,
+    "rep_replay_report_ref": true,
+    "evl_eval_report_ref": true,
+    "evd_evidence_report_ref": true,
+    "obs_observability_report_ref": true
   },
-  "authority_boundary": "non_authoritative_signal_only"
+  "lin_lineage_report_ref": "lin_lineage_report:ref-001",
+  "rep_replay_report_ref": "rep_replay_report:ref-002",
+  "evl_eval_report_ref": "evl_eval_report:ref-003",
+  "evd_evidence_report_ref": "evd_evidence_report:ref-004",
+  "obs_observability_report_ref": "obs_observability_report:ref-005"
 }

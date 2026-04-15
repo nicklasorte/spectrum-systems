@@ -1,0 +1,19 @@
+{
+  "artifact_type": "cde_composite_posture_bundle",
+  "schema_version": "1.0.0",
+  "artifact_id": "cde_composite_posture_bundle-example-001",
+  "created_at": "2026-04-15T00:00:00Z",
+  "owner": "CDE",
+  "status": "ready",
+  "summary": "Composition-only artifact.",
+  "inputs": [
+    "roadmap_execution_contract_v2:roadmap-001"
+  ],
+  "authority_boundary": "cde_final_decision_scope",
+  "rdx_global_execution_validity_report_ref": "rdx_global_execution_validity_report:ref-001",
+  "prg_prioritized_control_signal_bundle_ref": "prg_prioritized_control_signal_bundle:ref-002",
+  "slo_signal_ref": "slo_signal:ref-003",
+  "cap_signal_ref": "cap_signal:ref-004",
+  "qos_signal_ref": "qos_signal:ref-005",
+  "outcome": "continue"
+}

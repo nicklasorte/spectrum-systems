@@ -1,23 +1,19 @@
 {
   "artifact_type": "con_hidden_coupling_severity_record",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "artifact_id": "con_hidden_coupling_severity_record-example-001",
   "created_at": "2026-04-15T00:00:00Z",
   "owner": "CON",
-  "status": "ok",
-  "summary": "R100-NP-001 context/contract/final authority.",
+  "status": "referenced",
+  "summary": "Reference-only composition artifact.",
   "inputs": [
-    "roadmap_execution_contract_v2"
+    "rdx_global_execution_validity_report:rdx-global-001"
   ],
-  "signals": [
-    {
-      "signal": "deterministic",
-      "value": 0.5
-    }
-  ],
-  "metrics": {
-    "risk": 0.5,
-    "debt": 0.2
+  "authority_boundary": "composition_reference_only",
+  "reference_integrity": {
+    "interface_contract_ref": true,
+    "mutation_graph_ref": true
   },
-  "authority_boundary": "non_authoritative_signal_only"
+  "interface_contract_ref": "interface_contract:ref-001",
+  "mutation_graph_ref": "mutation_graph:ref-002"
 }

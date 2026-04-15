@@ -2,24 +2,14 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "rep_replay_baseline_drift_score_record",
   "type": "object",
-  "additionalProperties": true,
-  "required": [
-    "artifact_type",
-    "schema_version",
-    "artifact_id",
-    "created_at",
-    "owner",
-    "status",
-    "summary",
-    "inputs"
-  ],
+  "additionalProperties": false,
   "properties": {
     "artifact_type": {
       "const": "rep_replay_baseline_drift_score_record"
     },
     "schema_version": {
       "type": "string",
-      "pattern": "^1\\.0\\.0$"
+      "pattern": "^1\\.1\\.0$"
     },
     "artifact_id": {
       "type": "string",
@@ -44,17 +34,35 @@
         "type": "string"
       }
     },
-    "signals": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
-    "metrics": {
-      "type": "object"
-    },
     "authority_boundary": {
       "type": "string"
+    },
+    "reference_integrity": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "replay_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "baseline_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
     }
-  }
+  },
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "artifact_id",
+    "created_at",
+    "owner",
+    "status",
+    "summary",
+    "inputs",
+    "authority_boundary",
+    "replay_ref",
+    "baseline_ref"
+  ]
 }

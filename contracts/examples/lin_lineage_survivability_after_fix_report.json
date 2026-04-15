@@ -1,23 +1,19 @@
 {
   "artifact_type": "lin_lineage_survivability_after_fix_report",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "artifact_id": "lin_lineage_survivability_after_fix_report-example-001",
   "created_at": "2026-04-15T00:00:00Z",
   "owner": "LIN",
-  "status": "ok",
-  "summary": "R100-NP-001 coherence and replay posture.",
+  "status": "referenced",
+  "summary": "Reference-only composition artifact.",
   "inputs": [
-    "roadmap_execution_contract_v2"
+    "rdx_global_execution_validity_report:rdx-global-001"
   ],
-  "signals": [
-    {
-      "signal": "deterministic",
-      "value": 0.5
-    }
-  ],
-  "metrics": {
-    "risk": 0.5,
-    "debt": 0.2
+  "authority_boundary": "composition_reference_only",
+  "reference_integrity": {
+    "lineage_ref": true,
+    "fix_pack_ref": true
   },
-  "authority_boundary": "non_authoritative_signal_only"
+  "lineage_ref": "lineage:ref-001",
+  "fix_pack_ref": "fix_pack:ref-002"
 }

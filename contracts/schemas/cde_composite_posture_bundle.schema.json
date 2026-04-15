@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "prg_prioritized_control_signal_bundle",
+  "title": "cde_composite_posture_bundle",
   "type": "object",
   "additionalProperties": true,
   "properties": {
     "artifact_type": {
-      "const": "prg_prioritized_control_signal_bundle"
+      "const": "cde_composite_posture_bundle"
     },
     "schema_version": {
       "type": "string",
@@ -21,7 +21,7 @@
     },
     "owner": {
       "type": "string",
-      "const": "PRG"
+      "const": "CDE"
     },
     "status": {
       "type": "string"
@@ -37,9 +37,13 @@
     },
     "authority_boundary": {
       "type": "string",
-      "const": "non_authoritative_signal_only"
+      "const": "cde_final_decision_scope"
     },
     "rdx_global_execution_validity_report_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "prg_prioritized_control_signal_bundle_ref": {
       "type": "string",
       "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
     },
@@ -55,13 +59,14 @@
       "type": "string",
       "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
     },
-    "ranked_signal_refs": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
-      },
-      "minItems": 1
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "continue",
+        "halt",
+        "recut",
+        "escalate"
+      ]
     },
     "artifact_version": {
       "type": [
@@ -83,27 +88,17 @@
         "null"
       ]
     },
-    "signals": {
-      "type": [
-        "string",
-        "array",
-        "object",
-        "number",
-        "boolean",
-        "null"
-      ]
-    },
-    "signal_count": {
-      "type": [
-        "string",
-        "array",
-        "object",
-        "number",
-        "boolean",
-        "null"
-      ]
-    },
     "reason_codes": {
+      "type": [
+        "string",
+        "array",
+        "object",
+        "number",
+        "boolean",
+        "null"
+      ]
+    },
+    "control_action": {
       "type": [
         "string",
         "array",

@@ -23,7 +23,8 @@ CONTRACTS = [
     'syn_synthesized_trust_signal_record','syn_synthesized_halt_pressure_signal_record','ent_long_roadmap_entropy_accumulation_report','ent_correction_backlog_pressure_record','hnd_roadmap_handoff_package_validation_result','hnd_semantic_handoff_debt_report',
     'ril_roadmap_contract_structure_red_team_report','ril_temporal_resume_red_team_report','ril_dependency_critical_path_red_team_report','ril_coherence_lineage_replay_red_team_report','ril_eval_evidence_observability_red_team_report','ril_signal_overload_prioritization_red_team_report','ril_budget_capacity_queue_red_team_report',
     'fre_tpa_sel_pqx_fix_pack_e1','fre_tpa_sel_pqx_fix_pack_e2','fre_tpa_sel_pqx_fix_pack_e3','fre_tpa_sel_pqx_fix_pack_e4','fre_tpa_sel_pqx_fix_pack_e5','fre_tpa_sel_pqx_fix_pack_e6','fre_tpa_sel_pqx_fix_pack_e7',
-    'final_100_step_synthetic_scenario_pack','final_umbrella_boundary_continue_halt_test_matrix','final_impacted_suite_rerun_report'
+    'final_100_step_synthetic_scenario_pack','final_umbrella_boundary_continue_halt_test_matrix','final_impacted_suite_rerun_report',
+    'rdx_global_execution_validity_report','prg_prioritized_control_signal_bundle','cde_composite_posture_bundle'
 ]
 
 
