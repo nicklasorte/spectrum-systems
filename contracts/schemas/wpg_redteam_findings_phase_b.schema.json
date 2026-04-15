@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/wpg_redteam_findings_phase_b.schema.json",
+  "title": "WPG Red Team Findings Phase B",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "findings"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "wpg_redteam_findings_phase_b"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "finding_id",
+          "severity",
+          "scenario",
+          "expected_decision",
+          "observed_decision",
+          "status"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ]
+          },
+          "scenario": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expected_decision": {
+            "type": "string",
+            "enum": [
+              "ALLOW",
+              "WARN",
+              "BLOCK",
+              "FREEZE"
+            ]
+          },
+          "observed_decision": {
+            "type": "string",
+            "enum": [
+              "ALLOW",
+              "WARN",
+              "BLOCK",
+              "FREEZE"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "fixed"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

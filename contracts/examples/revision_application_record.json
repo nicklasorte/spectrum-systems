@@ -1,0 +1,26 @@
+{
+  "artifact_type": "revision_application_record",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-wpg-b-001",
+  "inputs_ref": [
+    "revision_plan_artifact",
+    "working_paper_artifact"
+  ],
+  "outputs": {
+    "applied_task_ids": [
+      "rev-01"
+    ],
+    "revised_content": "Updated section with comment-driven evidence linkage."
+  },
+  "provenance": {
+    "stage": "revision_application"
+  },
+  "evaluation_refs": {
+    "control_decision": {
+      "decision": "ALLOW",
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

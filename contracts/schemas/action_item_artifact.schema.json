@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/action_item_artifact.schema.json",
+  "title": "Action Item Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "inputs_ref",
+    "outputs",
+    "provenance",
+    "evaluation_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "action_item_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inputs_ref": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action_items",
+        "explicit_empty"
+      ],
+      "properties": {
+        "action_items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "action_id",
+              "description",
+              "owner",
+              "required",
+              "priority"
+            ],
+            "properties": {
+              "action_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "owner": {
+                "type": "string",
+                "minLength": 1
+              },
+              "required": {
+                "type": "boolean"
+              },
+              "priority": {
+                "type": "string",
+                "enum": [
+                  "normal",
+                  "critical"
+                ]
+              }
+            }
+          }
+        },
+        "explicit_empty": {
+          "type": "boolean"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "evaluation_refs": {
+      "type": "object"
+    }
+  }
+}

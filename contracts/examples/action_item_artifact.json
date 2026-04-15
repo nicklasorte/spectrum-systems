@@ -1,0 +1,32 @@
+{
+  "artifact_type": "action_item_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-wpg-b-001",
+  "inputs_ref": [
+    "meeting_minutes_artifact",
+    "transcript_artifact"
+  ],
+  "outputs": {
+    "action_items": [
+      {
+        "action_id": "act-01",
+        "description": "WPG will map transcript decisions into FAQ and sections.",
+        "owner": "WPG",
+        "required": true,
+        "priority": "critical"
+      }
+    ],
+    "explicit_empty": false
+  },
+  "provenance": {
+    "stage": "action_item_extraction"
+  },
+  "evaluation_refs": {
+    "control_decision": {
+      "decision": "ALLOW",
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

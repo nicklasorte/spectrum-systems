@@ -1,0 +1,28 @@
+{
+  "artifact_type": "comment_disposition_record",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-wpg-b-001",
+  "inputs_ref": [
+    "comment_resolution_matrix"
+  ],
+  "outputs": {
+    "state_counts": {
+      "resolved": 1,
+      "unresolved": 0,
+      "deferred": 1,
+      "escalated": 0
+    },
+    "critical_unresolved": 0
+  },
+  "provenance": {
+    "stage": "comment_disposition_tracking"
+  },
+  "evaluation_refs": {
+    "control_decision": {
+      "decision": "ALLOW",
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

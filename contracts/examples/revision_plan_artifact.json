@@ -1,0 +1,30 @@
+{
+  "artifact_type": "revision_plan_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-wpg-b-001",
+  "inputs_ref": [
+    "comment_resolution_matrix",
+    "comment_mapping_record"
+  ],
+  "outputs": {
+    "tasks": [
+      {
+        "task_id": "rev-01",
+        "comment_id": "c-01",
+        "target_section": "Action linkage controls",
+        "instruction": "Add explicit evidence citation for linked action item."
+      }
+    ]
+  },
+  "provenance": {
+    "stage": "revision_plan"
+  },
+  "evaluation_refs": {
+    "control_decision": {
+      "decision": "ALLOW",
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

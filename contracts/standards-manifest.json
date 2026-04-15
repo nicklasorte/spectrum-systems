@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.125",
+  "artifact_version": "1.3.126",
   "schema_version": "1.3.99",
   "standards_version": "1.9.1",
   "record_id": "REC-STD-2026-04-15-R100-NP-001-FIXED",
@@ -39,6 +39,32 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/abstention_record.json",
       "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
+      "artifact_type": "action_item_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.140",
+      "last_updated_in": "1.3.140",
+      "example_path": "contracts/examples/action_item_artifact.json",
+      "notes": "WPG Phase B governed workflow loop contract."
+    },
+    {
+      "artifact_type": "action_linkage_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.140",
+      "last_updated_in": "1.3.140",
+      "example_path": "contracts/examples/action_linkage_record.json",
+      "notes": "WPG Phase B governed workflow loop contract."
     },
     {
       "artifact_type": "active_set_snapshot",
@@ -1320,6 +1346,45 @@
       "last_updated_in": "1.3.19",
       "example_path": "contracts/examples/codex_pqx_task_wrapper.json",
       "notes": "CON-038 deterministic Codex task wrapper for fail-closed PQX-native ingestion with explicit governance/authority posture."
+    },
+    {
+      "artifact_type": "comment_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.140",
+      "last_updated_in": "1.3.140",
+      "example_path": "contracts/examples/comment_artifact.json",
+      "notes": "WPG Phase B governed workflow loop contract."
+    },
+    {
+      "artifact_type": "comment_disposition_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.140",
+      "last_updated_in": "1.3.140",
+      "example_path": "contracts/examples/comment_disposition_record.json",
+      "notes": "WPG Phase B governed workflow loop contract."
+    },
+    {
+      "artifact_type": "comment_mapping_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.140",
+      "last_updated_in": "1.3.140",
+      "example_path": "contracts/examples/comment_mapping_record.json",
+      "notes": "WPG Phase B governed workflow loop contract."
     },
     {
       "artifact_type": "comment_resolution_matrix",
@@ -5855,6 +5920,19 @@
       "notes": "Canonical agenda-generation contract derived from prior minutes, resolution matrices, submitted comments, and context notes."
     },
     {
+      "artifact_type": "meeting_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.140",
+      "last_updated_in": "1.3.140",
+      "example_path": "contracts/examples/meeting_artifact.json",
+      "notes": "WPG Phase B governed workflow loop contract."
+    },
+    {
       "artifact_type": "meeting_minutes",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5869,6 +5947,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/meeting_minutes_contract.json",
       "notes": "Canonical meeting minutes contract (JSON + DOCX + validation report); downstream repos must not add unsupported fields or alter required nesting."
+    },
+    {
+      "artifact_type": "meeting_minutes_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.140",
+      "last_updated_in": "1.3.140",
+      "example_path": "contracts/examples/meeting_minutes_artifact.json",
+      "notes": "WPG Phase B governed workflow loop contract."
     },
     {
       "artifact_type": "meeting_minutes_record",
@@ -10039,6 +10130,32 @@
       "notes": "Normalized reviewer comments with provenance links; payloads should be wrapped in the artifact envelope standard."
     },
     {
+      "artifact_type": "revision_application_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.140",
+      "last_updated_in": "1.3.140",
+      "example_path": "contracts/examples/revision_application_record.json",
+      "notes": "WPG Phase B governed workflow loop contract."
+    },
+    {
+      "artifact_type": "revision_plan_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.140",
+      "last_updated_in": "1.3.140",
+      "example_path": "contracts/examples/revision_plan_artifact.json",
+      "notes": "WPG Phase B governed workflow loop contract."
+    },
+    {
       "artifact_type": "ril_ai_cost_runaway_red_team_report",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -12095,6 +12212,19 @@
       "last_updated_in": "1.3.136",
       "example_path": "contracts/examples/wpg_redteam_findings_post_fix.json",
       "notes": "Deterministic red-team findings for WPG RTX post-fix closure gate."
+    },
+    {
+      "artifact_type": "wpg_redteam_findings_phase_b",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.140",
+      "last_updated_in": "1.3.140",
+      "example_path": "contracts/examples/wpg_redteam_findings_phase_b.json",
+      "notes": "WPG Phase B governed workflow loop contract."
     },
     {
       "artifact_type": "wpg_uncertainty_control_record",

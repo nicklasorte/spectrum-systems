@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/revision_application_record.schema.json",
+  "title": "Revision Application Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "inputs_ref",
+    "outputs",
+    "provenance",
+    "evaluation_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "revision_application_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inputs_ref": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "applied_task_ids",
+        "revised_content"
+      ],
+      "properties": {
+        "applied_task_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "revised_content": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "evaluation_refs": {
+      "type": "object"
+    }
+  }
+}

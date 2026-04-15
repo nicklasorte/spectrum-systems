@@ -1,0 +1,23 @@
+{
+  "artifact_type": "wpg_redteam_findings_phase_b",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-wpg-b-001",
+  "findings": [
+    {
+      "finding_id": "RTX11-001",
+      "severity": "HIGH",
+      "scenario": "missing action items with ALLOW decision",
+      "expected_decision": "BLOCK",
+      "observed_decision": "BLOCK",
+      "status": "fixed"
+    },
+    {
+      "finding_id": "RTX12-001",
+      "severity": "HIGH",
+      "scenario": "dropped critical comment during revision",
+      "expected_decision": "BLOCK",
+      "observed_decision": "BLOCK",
+      "status": "fixed"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "artifact_type": "meeting_minutes_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-wpg-b-001",
+  "inputs_ref": [
+    "meeting_artifact",
+    "transcript_artifact"
+  ],
+  "outputs": {
+    "meeting_id": "mtg-001",
+    "summary": "Team reviewed transcript-grounded decisions and agreed to controlled revisions only.",
+    "decisions": [
+      "Decision: run controlled workflow loop with strict control decisions."
+    ],
+    "open_questions": [
+      "What unresolved critical comments remain before promotion?"
+    ]
+  },
+  "provenance": {
+    "stage": "meeting_minutes_generation"
+  },
+  "evaluation_refs": {
+    "control_decision": {
+      "decision": "ALLOW",
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

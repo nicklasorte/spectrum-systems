@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/comment_mapping_record.schema.json",
+  "title": "Comment Mapping Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "inputs_ref",
+    "outputs",
+    "provenance",
+    "evaluation_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "comment_mapping_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inputs_ref": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mappings",
+        "critical_unmapped"
+      ],
+      "properties": {
+        "mappings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "comment_id",
+              "faq_ref",
+              "section_ref",
+              "evidence_ref"
+            ],
+            "properties": {
+              "comment_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "faq_ref": {
+                "type": "string"
+              },
+              "section_ref": {
+                "type": "string"
+              },
+              "evidence_ref": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "critical_unmapped": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "evaluation_refs": {
+      "type": "object"
+    }
+  }
+}

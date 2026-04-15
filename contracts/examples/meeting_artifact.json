@@ -1,0 +1,22 @@
+{
+  "artifact_type": "meeting_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-wpg-b-001",
+  "outputs": {
+    "meeting_id": "mtg-001",
+    "date": "2026-04-15",
+    "topic": "WPG Phase B Workflow Loop",
+    "study_context": "Governed runtime expansion remains uncertified; Phase B only.",
+    "participants": [
+      "WPG Lead",
+      "CRM Lead",
+      "GOV Observer"
+    ],
+    "agenda": [
+      "Review transcript evidence",
+      "Draft governed minutes",
+      "Resolve stakeholder comments"
+    ],
+    "transcript_ref": "transcript_artifact"
+  }
+}
