@@ -115,6 +115,10 @@
         "$ref": "#/$defs/entry"
       },
       "description": "Resolution entries aligned to reviewer comments."
+    },
+    "evaluation_refs": {
+      "type": "object",
+      "description": "Optional deterministic evaluation and control decision bundle for fail-closed orchestration integration."
     }
   },
   "$defs": {

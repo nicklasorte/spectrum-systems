@@ -1,0 +1,32 @@
+{
+  "artifact_type": "comment_mapping_record",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-wpg-b-001",
+  "inputs_ref": [
+    "comment_artifact",
+    "faq_artifact",
+    "working_section_artifact"
+  ],
+  "outputs": {
+    "mappings": [
+      {
+        "comment_id": "c-01",
+        "faq_ref": "How are action items linked?",
+        "section_ref": "Action linkage controls",
+        "evidence_ref": "faq"
+      }
+    ],
+    "critical_unmapped": 0
+  },
+  "provenance": {
+    "stage": "comment_mapping"
+  },
+  "evaluation_refs": {
+    "control_decision": {
+      "decision": "ALLOW",
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

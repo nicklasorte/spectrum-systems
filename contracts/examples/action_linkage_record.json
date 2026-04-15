@@ -1,0 +1,31 @@
+{
+  "artifact_type": "action_linkage_record",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-wpg-b-001",
+  "inputs_ref": [
+    "action_item_artifact",
+    "faq_artifact",
+    "working_section_artifact"
+  ],
+  "outputs": {
+    "linkages": [
+      {
+        "action_id": "act-01",
+        "faq_ref": "How will comments be resolved?",
+        "section_ref": "Workflow governance loop"
+      }
+    ],
+    "required_unlinked": 0
+  },
+  "provenance": {
+    "stage": "action_linkage"
+  },
+  "evaluation_refs": {
+    "control_decision": {
+      "decision": "ALLOW",
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

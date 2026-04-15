@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/action_linkage_record.schema.json",
+  "title": "Action Linkage Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "inputs_ref",
+    "outputs",
+    "provenance",
+    "evaluation_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "action_linkage_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inputs_ref": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "linkages",
+        "required_unlinked"
+      ],
+      "properties": {
+        "linkages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "action_id",
+              "faq_ref",
+              "section_ref"
+            ],
+            "properties": {
+              "action_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "faq_ref": {
+                "type": "string"
+              },
+              "section_ref": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required_unlinked": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "evaluation_refs": {
+      "type": "object"
+    }
+  }
+}

@@ -20,6 +20,16 @@ WPG_CONTRACTS = [
     "wpg_contradiction_propagation_record",
     "wpg_uncertainty_control_record",
     "narrative_integrity_record",
+    "meeting_artifact",
+    "meeting_minutes_artifact",
+    "action_item_artifact",
+    "action_linkage_record",
+    "comment_artifact",
+    "comment_mapping_record",
+    "revision_plan_artifact",
+    "revision_application_record",
+    "comment_disposition_record",
+    "wpg_redteam_findings_phase_b",
 ]
 
 

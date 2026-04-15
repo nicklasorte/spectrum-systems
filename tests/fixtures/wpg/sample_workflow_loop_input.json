@@ -1,0 +1,60 @@
+{
+  "run_id": "wpg-phase-b-001",
+  "trace_id": "trace-wpg-phase-b-001",
+  "meeting_artifact": {
+    "meeting_id": "mtg-phase-b-001",
+    "date": "2026-04-15",
+    "topic": "Workflow loop validation",
+    "study_context": "Phase B only",
+    "participants": ["WPG", "CRM", "GOV"],
+    "agenda": ["minutes", "actions", "comments", "revisions"],
+    "transcript_ref": "transcript_artifact"
+  },
+  "transcript": {
+    "meeting_id": "mtg-phase-b-001",
+    "segments": [
+      {
+        "segment_id": "s1",
+        "speaker": "WPG Lead",
+        "agency": "NTIA",
+        "text": "Decision: We must map each action item to FAQ and section evidence."
+      },
+      {
+        "segment_id": "s2",
+        "speaker": "CRM Lead",
+        "agency": "NTIA",
+        "text": "Action: CRM will resolve comments and create revision tasks by tomorrow."
+      },
+      {
+        "segment_id": "s3",
+        "speaker": "GOV",
+        "agency": "NTIA",
+        "text": "What unresolved critical comments remain before promotion?"
+      }
+    ]
+  },
+  "comment_artifact": {
+    "comments": [
+      {
+        "comment_id": "c-01",
+        "text": "Critical: action mapping evidence is missing in the workflow section.",
+        "severity": "critical",
+        "critical": true
+      },
+      {
+        "comment_id": "c-02",
+        "text": "Clarify revision owner assignment.",
+        "severity": "normal",
+        "critical": false
+      }
+    ]
+  },
+  "resolved_comments": {
+    "resolved_comments": [
+      {
+        "comment_id": "c-legacy-01",
+        "resolution": "Legacy resolution from Phase A."
+      }
+    ]
+  }
+}

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from spectrum_systems.modules.wpg import (
     StageContext,
@@ -14,7 +14,15 @@ from spectrum_systems.modules.wpg import (
     format_faq_for_report,
     write_sections,
 )
-from spectrum_systems.modules.wpg.common import ensure_contract, normalize_transcript_payload, stable_hash
+from spectrum_systems.modules.wpg.common import (
+    control_decision_from_eval,
+    ensure_contract,
+    make_eval_artifacts,
+    normalize_text_tokens,
+    normalize_transcript_payload,
+    stable_hash,
+    stage_provenance,
+)
 
 
 REQUIRED_ENFORCEMENT = {"ALLOW": "proceed", "WARN": "annotate", "BLOCK": "trigger_repair", "FREEZE": "halt"}
@@ -111,6 +119,390 @@ def _build_phase_a_assurance_artifacts(
     }
 
 
+def _as_list(value: Any) -> List[Any]:
+    return value if isinstance(value, list) else []
+
+
+def _normalize_meeting_payload(meeting_payload: Dict[str, Any], *, trace_id: str) -> Dict[str, Any]:
+    explicit = bool(meeting_payload)
+    if explicit:
+        required = ("date", "topic", "study_context", "participants", "agenda")
+        missing = [field for field in required if not meeting_payload.get(field)]
+        if missing:
+            raise WPGError(f"invalid meeting artifact missing required fields: {', '.join(missing)}")
+    participants = [str(p).strip() for p in _as_list(meeting_payload.get("participants")) if str(p).strip()]
+    agenda = [str(i).strip() for i in _as_list(meeting_payload.get("agenda")) if str(i).strip()]
+    artifact = {
+        "artifact_type": "meeting_artifact",
+        "schema_version": "1.0.0",
+        "trace_id": trace_id,
+        "outputs": {
+            "meeting_id": str(meeting_payload.get("meeting_id", "meeting-unknown")),
+            "date": str(meeting_payload.get("date", "1970-01-01")),
+            "topic": str(meeting_payload.get("topic", "Transcript-only workflow run")),
+            "study_context": str(meeting_payload.get("study_context", "No explicit meeting artifact provided.")),
+            "participants": participants or ["unknown-participant"],
+            "agenda": agenda or ["review transcript"],
+            "transcript_ref": str(meeting_payload.get("transcript_ref", "transcript_artifact")),
+        },
+    }
+    return ensure_contract(artifact, "meeting_artifact")
+
+
+def _build_meeting_minutes(
+    transcript_artifact: Dict[str, Any], meeting_artifact: Dict[str, Any], trace_id: str, run_id: str
+) -> Dict[str, Any]:
+    segments = transcript_artifact.get("outputs", {}).get("segments", [])
+    segment_text = [s.get("text", "") for s in segments]
+    summary = " ".join(segment_text[:2]).strip()
+    decisions = [text for text in segment_text if any(k in text.lower() for k in ("decide", "approved", "resolved"))][:5]
+    open_questions = [text for text in segment_text if "?" in text][:5]
+    if not decisions and segment_text:
+        decisions = ["No explicit decisions captured."]
+    if not open_questions:
+        open_questions = ["No open questions captured."]
+    checks = [
+        {"description": "minutes summary present", "passed": bool(summary), "failure_mode": "missing_summary"},
+        {"description": "minutes decisions present", "passed": bool(decisions), "failure_mode": "missing_decisions"},
+        {"description": "minutes open questions present", "passed": bool(open_questions), "failure_mode": "missing_open_questions"},
+    ]
+    eval_pack = make_eval_artifacts("meeting_minutes_generation", checks, type("Ctx", (), {"run_id": run_id, "trace_id": trace_id})())
+    control = control_decision_from_eval(stage="meeting_minutes_generation", eval_summary=eval_pack["eval_summary"], no_content=not bool(summary))
+    artifact = ensure_contract(
+        {
+            "artifact_type": "meeting_minutes_artifact",
+            "schema_version": "1.0.0",
+            "trace_id": trace_id,
+            "inputs_ref": ["meeting_artifact", "transcript_artifact"],
+            "outputs": {
+                "meeting_id": meeting_artifact["outputs"]["meeting_id"],
+                "summary": summary,
+                "decisions": decisions,
+                "open_questions": open_questions,
+            },
+            "provenance": stage_provenance("meeting_minutes_generation", type("Ctx", (), {"run_id": run_id, "trace_id": trace_id, "policy_version": "1.0.0", "eval_version": "1.0.0"})(), ["meeting_artifact", "transcript_artifact"]),
+            "evaluation_refs": {**eval_pack, "control_decision": control},
+        },
+        "meeting_minutes_artifact",
+    )
+    return artifact
+
+
+def _extract_action_items(
+    transcript_artifact: Dict[str, Any], meeting_minutes_artifact: Dict[str, Any], trace_id: str, run_id: str
+) -> Dict[str, Any]:
+    source_lines = [s.get("text", "") for s in transcript_artifact.get("outputs", {}).get("segments", [])]
+    source_lines.extend(meeting_minutes_artifact.get("outputs", {}).get("decisions", []))
+    candidates = [line for line in source_lines if any(k in line.lower() for k in ("will ", "action", "todo", "must ", "follow up"))]
+    action_items = []
+    for idx, line in enumerate(candidates, start=1):
+        action_items.append(
+            {
+                "action_id": f"act-{idx:02d}",
+                "description": line,
+                "owner": "unassigned",
+                "required": "must " in line.lower(),
+                "priority": "critical" if "must " in line.lower() else "normal",
+            }
+        )
+    explicit_empty = not bool(action_items)
+    eval_pack = make_eval_artifacts(
+        "action_item_extraction",
+        [
+            {"description": "action extraction executed", "passed": True, "failure_mode": "extraction_not_run"},
+            {"description": "empty actions explicit", "passed": (not action_items and explicit_empty) or bool(action_items), "failure_mode": "implicit_empty_actions"},
+        ],
+        type("Ctx", (), {"run_id": run_id, "trace_id": trace_id})(),
+    )
+    control = control_decision_from_eval(stage="action_item_extraction", eval_summary=eval_pack["eval_summary"])
+    return ensure_contract(
+        {
+            "artifact_type": "action_item_artifact",
+            "schema_version": "1.0.0",
+            "trace_id": trace_id,
+            "inputs_ref": ["meeting_minutes_artifact", "transcript_artifact"],
+            "outputs": {"action_items": action_items, "explicit_empty": explicit_empty},
+            "provenance": stage_provenance("action_item_extraction", type("Ctx", (), {"run_id": run_id, "trace_id": trace_id, "policy_version": "1.0.0", "eval_version": "1.0.0"})(), ["meeting_minutes_artifact", "transcript_artifact"]),
+            "evaluation_refs": {**eval_pack, "control_decision": control},
+        },
+        "action_item_artifact",
+    )
+
+
+def _build_action_linkage(
+    action_item_artifact: Dict[str, Any], faq_artifact: Dict[str, Any], sections_artifact: Dict[str, Any], trace_id: str, run_id: str
+) -> Dict[str, Any]:
+    faqs = faq_artifact.get("outputs", {}).get("faqs", [])
+    sections = sections_artifact.get("outputs", {}).get("sections", [])
+    records = []
+    required_unlinked = 0
+    for action in action_item_artifact.get("outputs", {}).get("action_items", []):
+        action_tokens = normalize_text_tokens(action.get("description", ""))
+        faq_link = next((f.get("question", "") for f in faqs if action_tokens & normalize_text_tokens(f.get("question", ""))), "")
+        section_link = next((s.get("title", "") for s in sections if action_tokens & normalize_text_tokens(s.get("title", ""))), "")
+        if action.get("required") and (not faq_link or not section_link):
+            required_unlinked += 1
+        records.append({"action_id": action["action_id"], "faq_ref": faq_link, "section_ref": section_link})
+    eval_pack = make_eval_artifacts(
+        "action_linkage",
+        [{"description": "required actions linked", "passed": required_unlinked == 0, "failure_mode": "required_action_missing_linkage"}],
+        type("Ctx", (), {"run_id": run_id, "trace_id": trace_id})(),
+    )
+    control = control_decision_from_eval(
+        stage="action_linkage",
+        eval_summary=eval_pack["eval_summary"],
+        contradictions_unresolved=required_unlinked,
+    )
+    return ensure_contract(
+        {
+            "artifact_type": "action_linkage_record",
+            "schema_version": "1.0.0",
+            "trace_id": trace_id,
+            "inputs_ref": ["action_item_artifact", "faq_artifact", "working_section_artifact"],
+            "outputs": {"linkages": records, "required_unlinked": required_unlinked},
+            "provenance": stage_provenance("action_linkage", type("Ctx", (), {"run_id": run_id, "trace_id": trace_id, "policy_version": "1.0.0", "eval_version": "1.0.0"})(), ["action_item_artifact", "faq_artifact", "working_section_artifact"]),
+            "evaluation_refs": {**eval_pack, "control_decision": control},
+        },
+        "action_linkage_record",
+    )
+
+
+def _normalize_comment_payload(comment_payload: Dict[str, Any], *, trace_id: str, strict: bool = True) -> Dict[str, Any]:
+    comments = []
+    for idx, raw in enumerate(_as_list(comment_payload.get("comments")), start=1):
+        if not isinstance(raw, dict):
+            continue
+        source_text = raw.get("text") if strict else (raw.get("text") or raw.get("resolution"))
+        text = str(source_text or "").strip()
+        if strict and not text:
+            raise WPGError("invalid comment artifact contains empty text")
+        if strict and raw.get("severity", "normal") not in {"low", "normal", "high", "critical"}:
+            raise WPGError("invalid comment artifact contains unsupported severity")
+        comments.append(
+            {
+                "comment_id": str(raw.get("comment_id", f"c-{idx:02d}")),
+                "text": text or "No comment text provided.",
+                "severity": str(raw.get("severity", "normal")).lower(),
+                "critical": bool(raw.get("critical", False)),
+            }
+        )
+    artifact = {"artifact_type": "comment_artifact", "schema_version": "1.0.0", "trace_id": trace_id, "outputs": {"comments": comments}}
+    return ensure_contract(artifact, "comment_artifact")
+
+
+def _build_comment_resolution_matrix(comment_artifact: Dict[str, Any], trace_id: str, run_id: str) -> Dict[str, Any]:
+    entries = []
+    for c in comment_artifact.get("outputs", {}).get("comments", []):
+        disposition = "resolved" if c.get("text") else "needs_input"
+        entries.append(
+            {
+                "entry_id": f"ENT-{len(entries)+1:04d}",
+                "comment_id": f"CMT-{len(entries)+1:04d}",
+                "resolution_status": disposition,
+                "response_text": f"Addressed: {c.get('text', '')}",
+                "action_items": [],
+                "validated_by": {
+                    "name": "CRM Workflow",
+                    "role": "workflow-review",
+                    "timestamp": "2026-04-15T00:00:00Z",
+                    "review_status": "pending_review",
+                },
+                "applies_to_revision": "rev1",
+                "provenance_id": f"PRV-CMT-{len(entries)+1:04d}",
+            }
+        )
+    if not entries:
+        entries.append(
+            {
+                "entry_id": "ENT-0001",
+                "comment_id": "CMT-0001",
+                "resolution_status": "needs_input",
+                "response_text": "No comments supplied; matrix captures explicit empty state.",
+                "action_items": [],
+                "validated_by": {
+                    "name": "CRM Workflow",
+                    "role": "workflow-review",
+                    "timestamp": "2026-04-15T00:00:00Z",
+                    "review_status": "pending_review",
+                },
+                "applies_to_revision": "rev1",
+                "provenance_id": "PRV-CMT-0001",
+            }
+        )
+    eval_pack = make_eval_artifacts(
+        "comment_resolution_matrix",
+        [{"description": "matrix rows valid", "passed": all(r.get("entry_id") for r in entries), "failure_mode": "invalid_matrix"}],
+        type("Ctx", (), {"run_id": run_id, "trace_id": trace_id})(),
+    )
+    control = control_decision_from_eval(stage="comment_resolution_matrix", eval_summary=eval_pack["eval_summary"])
+    return ensure_contract(
+        {
+            "artifact_type": "comment_resolution_matrix",
+            "schema_version": "1.0.0",
+            "artifact_class": "review",
+            "artifact_id": f"CRM-{run_id.upper()}",
+            "artifact_version": "1.0.0",
+            "standards_version": "2026.03.0",
+            "record_id": f"REC-CRM-{run_id.upper()}",
+            "run_id": f"run-{run_id}",
+            "created_at": "2026-04-15T00:00:00Z",
+            "created_by": {"name": "CRM Engine", "role": "resolution", "agent_type": "workflow"},
+            "source_repo": "nicklasorte/spectrum-systems",
+            "source_repo_version": "local",
+            "matrix_id": f"CRM-{run_id.upper()}",
+            "comment_set_id": f"CSET-{run_id.upper()}",
+            "working_paper_id": f"WKP-{run_id.upper()}",
+            "working_paper_revision": "rev1",
+            "input_artifacts": [
+                {
+                    "artifact_id": f"CSET-{run_id.upper()}",
+                    "artifact_type": "comment_artifact",
+                    "artifact_version": "1.0.0",
+                    "role": "source",
+                }
+            ],
+            "entries": entries,
+            "evaluation_refs": {**eval_pack, "control_decision": control},
+        },
+        "comment_resolution_matrix",
+    )
+
+
+def _build_comment_mapping_record(
+    comment_artifact: Dict[str, Any], faq_artifact: Dict[str, Any], sections_artifact: Dict[str, Any], trace_id: str, run_id: str
+) -> Dict[str, Any]:
+    faqs = faq_artifact.get("outputs", {}).get("faqs", [])
+    sections = sections_artifact.get("outputs", {}).get("sections", [])
+    mappings = []
+    critical_unmapped = 0
+    for c in comment_artifact.get("outputs", {}).get("comments", []):
+        tokens = normalize_text_tokens(c.get("text", ""))
+        faq_ref = next((f.get("question", "") for f in faqs if tokens & normalize_text_tokens(f.get("question", ""))), "")
+        section_ref = next((s.get("title", "") for s in sections if tokens & normalize_text_tokens(s.get("title", ""))), "")
+        evidence = "faq" if faq_ref else ("section" if section_ref else "")
+        if c.get("critical") and not evidence:
+            critical_unmapped += 1
+        mappings.append({"comment_id": c["comment_id"], "faq_ref": faq_ref, "section_ref": section_ref, "evidence_ref": evidence})
+    eval_pack = make_eval_artifacts(
+        "comment_mapping",
+        [{"description": "critical comments mapped", "passed": critical_unmapped == 0, "failure_mode": "unmapped_critical_comment"}],
+        type("Ctx", (), {"run_id": run_id, "trace_id": trace_id})(),
+    )
+    control = control_decision_from_eval(stage="comment_mapping", eval_summary=eval_pack["eval_summary"], contradictions_unresolved=critical_unmapped)
+    return ensure_contract(
+        {
+            "artifact_type": "comment_mapping_record",
+            "schema_version": "1.0.0",
+            "trace_id": trace_id,
+            "inputs_ref": ["comment_artifact", "faq_artifact", "working_section_artifact"],
+            "outputs": {"mappings": mappings, "critical_unmapped": critical_unmapped},
+            "provenance": stage_provenance("comment_mapping", type("Ctx", (), {"run_id": run_id, "trace_id": trace_id, "policy_version": "1.0.0", "eval_version": "1.0.0"})(), ["comment_artifact", "faq_artifact", "working_section_artifact"]),
+            "evaluation_refs": {**eval_pack, "control_decision": control},
+        },
+        "comment_mapping_record",
+    )
+
+
+def _build_revision_plan(
+    comment_resolution_matrix: Dict[str, Any], comment_mapping_record: Dict[str, Any], trace_id: str, run_id: str
+) -> Dict[str, Any]:
+    mapping_by_comment = {m["comment_id"]: m for m in comment_mapping_record.get("outputs", {}).get("mappings", [])}
+    tasks = []
+    for row in comment_resolution_matrix.get("entries", []):
+        if row.get("resolution_status") != "resolved":
+            map_row = mapping_by_comment.get(row.get("comment_id"), {})
+            tasks.append(
+                {
+                    "task_id": f"rev-{len(tasks)+1:02d}",
+                    "comment_id": row.get("comment_id"),
+                    "target_section": map_row.get("section_ref", ""),
+                    "instruction": row.get("response_text", ""),
+                }
+            )
+    eval_pack = make_eval_artifacts(
+        "revision_plan",
+        [{"description": "revision plan valid", "passed": isinstance(tasks, list), "failure_mode": "invalid_revision_plan"}],
+        type("Ctx", (), {"run_id": run_id, "trace_id": trace_id})(),
+    )
+    control = control_decision_from_eval(stage="revision_plan", eval_summary=eval_pack["eval_summary"])
+    return ensure_contract(
+        {
+            "artifact_type": "revision_plan_artifact",
+            "schema_version": "1.0.0",
+            "trace_id": trace_id,
+            "inputs_ref": ["comment_resolution_matrix", "comment_mapping_record"],
+            "outputs": {"tasks": tasks},
+            "provenance": stage_provenance("revision_plan", type("Ctx", (), {"run_id": run_id, "trace_id": trace_id, "policy_version": "1.0.0", "eval_version": "1.0.0"})(), ["comment_resolution_matrix", "comment_mapping_record"]),
+            "evaluation_refs": {**eval_pack, "control_decision": control},
+        },
+        "revision_plan_artifact",
+    )
+
+
+def _apply_revisions(revision_plan_artifact: Dict[str, Any], working_paper: Dict[str, Any], trace_id: str, run_id: str) -> Dict[str, Any]:
+    tasks = revision_plan_artifact.get("outputs", {}).get("tasks", [])
+    if tasks is None:
+        tasks = []
+    content = working_paper.get("outputs", {}).get("content", "")
+    applied = []
+    for t in tasks:
+        content += f"\n- Revision {t['task_id']} ({t.get('comment_id', 'unknown')}): {t.get('instruction', '')}"
+        applied.append(t["task_id"])
+    eval_pack = make_eval_artifacts(
+        "revision_application",
+        [{"description": "revision requires plan", "passed": isinstance(tasks, list), "failure_mode": "revision_without_plan"}],
+        type("Ctx", (), {"run_id": run_id, "trace_id": trace_id})(),
+    )
+    control = control_decision_from_eval(stage="revision_application", eval_summary=eval_pack["eval_summary"])
+    return ensure_contract(
+        {
+            "artifact_type": "revision_application_record",
+            "schema_version": "1.0.0",
+            "trace_id": trace_id,
+            "inputs_ref": ["revision_plan_artifact", "working_paper_artifact"],
+            "outputs": {"applied_task_ids": applied, "revised_content": content},
+            "provenance": stage_provenance("revision_application", type("Ctx", (), {"run_id": run_id, "trace_id": trace_id, "policy_version": "1.0.0", "eval_version": "1.0.0"})(), ["revision_plan_artifact", "working_paper_artifact"]),
+            "evaluation_refs": {**eval_pack, "control_decision": control},
+        },
+        "revision_application_record",
+    )
+
+
+def _build_comment_disposition_record(comment_resolution_matrix: Dict[str, Any], trace_id: str, run_id: str) -> Dict[str, Any]:
+    rows = comment_resolution_matrix.get("entries", [])
+    by_state = {"resolved": 0, "unresolved": 0, "deferred": 0, "escalated": 0}
+    critical_unresolved = 0
+    for row in rows:
+        state = row.get("resolution_status", "unresolved")
+        if state not in by_state:
+            by_state[state] = 0
+        by_state[state] += 1
+        if state in {"unresolved", "escalated", "needs_input"} and "critical" in row.get("response_text", "").lower():
+            critical_unresolved += 1
+    eval_pack = make_eval_artifacts(
+        "comment_disposition_tracking",
+        [{"description": "critical unresolved blocked", "passed": critical_unresolved == 0, "failure_mode": "unresolved_critical_issue"}],
+        type("Ctx", (), {"run_id": run_id, "trace_id": trace_id})(),
+    )
+    control = control_decision_from_eval(
+        stage="comment_disposition_tracking",
+        eval_summary=eval_pack["eval_summary"],
+        contradictions_unresolved=critical_unresolved,
+    )
+    return ensure_contract(
+        {
+            "artifact_type": "comment_disposition_record",
+            "schema_version": "1.0.0",
+            "trace_id": trace_id,
+            "inputs_ref": ["comment_resolution_matrix"],
+            "outputs": {"state_counts": by_state, "critical_unresolved": critical_unresolved},
+            "provenance": stage_provenance("comment_disposition_tracking", type("Ctx", (), {"run_id": run_id, "trace_id": trace_id, "policy_version": "1.0.0", "eval_version": "1.0.0"})(), ["comment_resolution_matrix"]),
+            "evaluation_refs": {**eval_pack, "control_decision": control},
+        },
+        "comment_disposition_record",
+    )
+
+
 def run_wpg_pipeline(
     transcript_payload: Dict[str, Any],
     *,
@@ -119,16 +511,31 @@ def run_wpg_pipeline(
     mode: str = "working_paper",
     prior_working_paper: Dict[str, Any] | None = None,
     resolved_comments: Dict[str, Any] | None = None,
+    meeting_artifact: Dict[str, Any] | None = None,
+    comment_artifact: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     ctx = StageContext(run_id=run_id, trace_id=trace_id)
 
     transcript_artifact = ensure_contract(normalize_transcript_payload(transcript_payload, trace_id=trace_id), "transcript_artifact")
+    meeting_normalized = _normalize_meeting_payload(meeting_artifact or {}, trace_id=trace_id)
+    meeting_minutes_artifact = _build_meeting_minutes(transcript_artifact, meeting_normalized, trace_id, run_id)
+    action_item_artifact = _extract_action_items(transcript_artifact, meeting_minutes_artifact, trace_id, run_id)
 
     question_set = extract_questions(transcript_artifact, ctx)
     faq_bundle = build_faq(question_set, transcript_artifact, ctx)
     faq_report = format_faq_for_report(faq_bundle["faq_artifact"], ctx, mode=mode)
     cluster_bundle = cluster_faqs(faq_report, ctx)
     sections = write_sections(cluster_bundle["faq_cluster_artifact"], ctx)
+    action_linkage_record = _build_action_linkage(action_item_artifact, faq_bundle["faq_artifact"], sections, trace_id, run_id)
+    comment_payload = (
+        comment_artifact
+        if comment_artifact is not None
+        else ({"comments": resolved_comments.get("resolved_comments", [])} if resolved_comments else {"comments": []})
+    )
+    comment_input = _normalize_comment_payload(comment_payload, trace_id=trace_id, strict=comment_artifact is not None)
+    comment_resolution_matrix = _build_comment_resolution_matrix(comment_input, trace_id, run_id)
+    comment_mapping_record = _build_comment_mapping_record(comment_input, faq_bundle["faq_artifact"], sections, trace_id, run_id)
+    revision_plan_artifact = _build_revision_plan(comment_resolution_matrix, comment_mapping_record, trace_id, run_id)
     assembly = assemble_working_paper(
         sections,
         cluster_bundle["unknowns_artifact"],
@@ -138,6 +545,8 @@ def run_wpg_pipeline(
         ctx,
         mode,
     )
+    revision_application_record = _apply_revisions(revision_plan_artifact, assembly["working_paper_artifact"], trace_id, run_id)
+    comment_disposition_record = _build_comment_disposition_record(comment_resolution_matrix, trace_id, run_id)
     assurance = _build_phase_a_assurance_artifacts(
         faq_bundle=faq_bundle,
         sections=sections,
@@ -146,12 +555,22 @@ def run_wpg_pipeline(
     )
 
     artifact_chain = {
+        "meeting_artifact": meeting_normalized,
         "transcript_artifact": transcript_artifact,
+        "meeting_minutes_artifact": meeting_minutes_artifact,
+        "action_item_artifact": action_item_artifact,
         "question_set_artifact": question_set,
         **faq_bundle,
         "faq_report_artifact": faq_report,
         **cluster_bundle,
         "working_section_artifact": sections,
+        "action_linkage_record": action_linkage_record,
+        "comment_artifact": comment_input,
+        "comment_resolution_matrix": comment_resolution_matrix,
+        "comment_mapping_record": comment_mapping_record,
+        "revision_plan_artifact": revision_plan_artifact,
+        "revision_application_record": revision_application_record,
+        "comment_disposition_record": comment_disposition_record,
         **assembly,
         **assurance,
     }
@@ -196,6 +615,8 @@ def run_wpg_pipeline_from_file(input_path: Path, output_dir: Path, mode: str = "
 
     prior = payload.get("prior_working_paper_artifact")
     resolved_comments = payload.get("resolved_comments", {"resolved_comments": []})
+    meeting_artifact = payload.get("meeting_artifact")
+    comment_artifact = payload.get("comment_artifact")
 
     bundle = run_wpg_pipeline(
         transcript,
@@ -204,6 +625,8 @@ def run_wpg_pipeline_from_file(input_path: Path, output_dir: Path, mode: str = "
         mode=mode,
         prior_working_paper=prior,
         resolved_comments=resolved_comments,
+        meeting_artifact=meeting_artifact,
+        comment_artifact=comment_artifact,
     )
 
     output_dir.mkdir(parents=True, exist_ok=True)

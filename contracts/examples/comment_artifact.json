@@ -1,0 +1,21 @@
+{
+  "artifact_type": "comment_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-wpg-b-001",
+  "outputs": {
+    "comments": [
+      {
+        "comment_id": "c-01",
+        "text": "Critical: action mapping evidence is missing in Section 2.",
+        "severity": "critical",
+        "critical": true
+      },
+      {
+        "comment_id": "c-02",
+        "text": "Please clarify who owns revision approvals.",
+        "severity": "normal",
+        "critical": false
+      }
+    ]
+  }
+}
