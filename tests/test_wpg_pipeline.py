@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
+from spectrum_systems.modules.wpg.redteam import run_wpg_redteam_suite
 from spectrum_systems.orchestration.wpg_pipeline import run_wpg_pipeline, run_wpg_pipeline_from_file
 
 
@@ -55,9 +58,7 @@ def test_control_and_enforcement_on_each_stage() -> None:
     payload = _load()
     bundle = run_wpg_pipeline(payload["transcript"], run_id="r3", trace_id="t3")
     for artifact in bundle["artifact_chain"].values():
-        decision = artifact.get("evaluation_refs", {}).get("control_decision")
-        if not decision:
-            continue
+        decision = artifact["evaluation_refs"]["control_decision"]
         assert decision["decision"] in {"ALLOW", "WARN", "BLOCK", "FREEZE"}
         assert decision["enforcement"]["action"] in {"proceed", "annotate", "trigger_repair", "halt"}
 
@@ -69,6 +70,60 @@ def test_confidence_and_unknowns_present() -> None:
     unknowns = bundle["artifact_chain"]["unknowns_artifact"]["outputs"]["unknowns"]
     assert confidence
     assert unknowns
+
+
+def test_unknown_input_cannot_allow_with_full_confidence() -> None:
+    bundle = run_wpg_pipeline(
+        {"segments": [{"segment_id": "u-1", "speaker": "Ops", "agency": "NOAA", "text": "When does this complete? Unknown pending validation."}]},
+        run_id="r-unknown",
+        trace_id="t-unknown",
+    )
+    rows = bundle["artifact_chain"]["faq_confidence_artifact"]["outputs"]["confidence_rows"]
+    assert rows[0]["unknown"] is True
+    assert rows[0]["confidence"] < 1.0
+    assert bundle["artifact_chain"]["faq_artifact"]["evaluation_refs"]["control_decision"]["decision"] != "ALLOW"
+
+
+def test_semantic_conflict_detection_non_empty() -> None:
+    transcript = {
+        "segments": [
+            {"segment_id": "c-1", "speaker": "A", "agency": "FAA", "text": "Can deployment start now? Yes deployment can start now."},
+            {"segment_id": "c-2", "speaker": "B", "agency": "DoD", "text": "Can deployment start now? No deployment cannot start now."},
+        ]
+    }
+    bundle = run_wpg_pipeline(transcript, run_id="r-conflict", trace_id="t-conflict")
+    conflicts = bundle["artifact_chain"]["faq_conflict_artifact"]["outputs"]["conflicts"]
+    assert conflicts
+
+
+def test_invalid_transcript_is_blocked() -> None:
+    with pytest.raises(Exception):
+        run_wpg_pipeline({"segments": [{"segment_id": "bad", "speaker": "A"}]}, run_id="r-bad", trace_id="t-bad")
+
+
+def test_narrative_order_has_justification() -> None:
+    payload = _load()
+    bundle = run_wpg_pipeline(payload["transcript"], run_id="r5", trace_id="t5")
+    sections = bundle["artifact_chain"]["working_section_artifact"]["outputs"]["sections"]
+    assert all(section.get("chronology", {}).get("justification") for section in sections)
+
+
+def test_delta_identical_input_same_hash() -> None:
+    payload = _load()
+    first = run_wpg_pipeline(payload["transcript"], run_id="r6", trace_id="t6")
+    prior = first["artifact_chain"]["working_paper_artifact"]
+    second = run_wpg_pipeline(payload["transcript"], run_id="r6", trace_id="t6", prior_working_paper=prior)
+    delta = second["artifact_chain"]["wpg_delta_artifact"]["outputs"]
+    assert delta["previous_hash"] == delta["current_hash"]
+    assert delta["changed"] is False
+
+
+def test_rtx05_redteam_has_no_high_allow() -> None:
+    findings = run_wpg_redteam_suite()
+    assert all(
+        not (entry["severity"] == "HIGH" and entry["decision"] == "ALLOW")
+        for entry in findings["findings"]
+    )
 
 
 def test_cli_runner_writes_artifacts(tmp_path: Path) -> None:

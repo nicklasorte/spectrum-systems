@@ -14,6 +14,8 @@ WPG_CONTRACTS = [
     "working_paper_artifact",
     "unknowns_artifact",
     "wpg_delta_artifact",
+    "transcript_artifact",
+    "wpg_redteam_findings",
 ]
 
 
