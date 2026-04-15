@@ -90,6 +90,60 @@ def jaccard_similarity(left: Sequence[str] | Set[str], right: Sequence[str] | Se
     return len(left_set & right_set) / len(left_set | right_set)
 
 
+def normalize_transcript_payload(transcript_payload: Dict[str, Any], *, trace_id: str) -> Dict[str, Any]:
+    source_segments = transcript_payload.get("segments", []) if isinstance(transcript_payload, dict) else []
+    if not isinstance(source_segments, list):
+        raise WPGError("transcript segments must be a list")
+
+    segments: List[Dict[str, Any]] = []
+    for idx, raw in enumerate(source_segments, start=1):
+        if not isinstance(raw, dict):
+            raise WPGError("transcript segment must be an object")
+        seg = {
+            "segment_id": str(raw.get("segment_id") or f"seg-{idx}"),
+            "speaker": str(raw.get("speaker") or "unknown"),
+            "agency": str(raw.get("agency") or "unknown"),
+            "text": str(raw.get("text") or "").strip(),
+        }
+        timestamp = raw.get("timestamp")
+        if timestamp is not None:
+            seg["timestamp"] = str(timestamp)
+        if not seg["text"]:
+            raise WPGError(f"transcript segment text missing at index {idx}")
+        segments.append(seg)
+
+    if not segments:
+        raise WPGError("transcript must include at least one segment")
+
+    identity_input = {
+        "segments": segments,
+        "source_refs": transcript_payload.get("source_refs", []),
+        "meeting_id": transcript_payload.get("meeting_id"),
+    }
+    artifact_identity = f"trx-{stable_hash(identity_input)[:16]}"
+
+    return {
+        "artifact_type": "transcript_artifact",
+        "schema_version": "1.0.0",
+        "trace_id": trace_id,
+        "outputs": {
+            "artifact_id": artifact_identity,
+            "metadata": {
+                "segment_count": len(segments),
+                "has_timestamps": any("timestamp" in seg for seg in segments),
+                "meeting_id": transcript_payload.get("meeting_id", "unknown"),
+            },
+            "source_refs": transcript_payload.get("source_refs", []),
+            "segments": segments,
+            "provenance": {
+                "ingress": "wpg_pipeline",
+                "normalization": "deterministic",
+                "identity_hash": stable_hash(identity_input),
+            },
+        },
+    }
+
+
 def make_eval_artifacts(stage: str, checks: List[Dict[str, Any]], ctx: StageContext) -> Dict[str, Any]:
     eval_cases: List[Dict[str, Any]] = []
     eval_results: List[Dict[str, Any]] = []

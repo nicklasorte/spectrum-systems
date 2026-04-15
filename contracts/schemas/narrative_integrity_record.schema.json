@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/narrative_integrity_record.schema.json",
+  "title": "Narrative Integrity Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "trace_id", "outputs"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "narrative_integrity_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "trace_id": {"type": "string", "minLength": 1},
+    "outputs": {
+      "type": "object",
+      "required": ["section_count", "chronology_justifications", "synthetic_ordering_rationale_present"],
+      "properties": {
+        "section_count": {"type": "integer", "minimum": 0},
+        "chronology_justifications": {"type": "array", "items": {"type": "string"}},
+        "synthetic_ordering_rationale_present": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

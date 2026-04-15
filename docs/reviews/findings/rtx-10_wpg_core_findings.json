@@ -1,0 +1,15 @@
+{
+  "artifact_type": "wpg_redteam_findings",
+  "schema_version": "1.0.0",
+  "suite_id": "RTX-10",
+  "overall_verdict": "NEEDS_FIXES_FIRST",
+  "findings": [
+    {
+      "id": "RTX10-F1",
+      "severity": "HIGH",
+      "class": "weak_grounding",
+      "status": "fixed",
+      "control_after_fix": "BLOCK"
+    }
+  ]
+}

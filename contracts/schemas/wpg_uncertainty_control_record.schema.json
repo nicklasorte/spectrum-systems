@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/wpg_uncertainty_control_record.schema.json",
+  "title": "WPG Uncertainty Control Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "trace_id", "outputs"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "wpg_uncertainty_control_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "trace_id": {"type": "string", "minLength": 1},
+    "outputs": {
+      "type": "object",
+      "required": ["unknown_count", "low_confidence_count", "max_confidence", "narrative_warning_present"],
+      "properties": {
+        "unknown_count": {"type": "integer", "minimum": 0},
+        "low_confidence_count": {"type": "integer", "minimum": 0},
+        "max_confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "narrative_warning_present": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

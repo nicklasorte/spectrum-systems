@@ -16,6 +16,10 @@ WPG_CONTRACTS = [
     "wpg_delta_artifact",
     "transcript_artifact",
     "wpg_redteam_findings",
+    "wpg_grounding_eval_case",
+    "wpg_contradiction_propagation_record",
+    "wpg_uncertainty_control_record",
+    "narrative_integrity_record",
 ]
 
 

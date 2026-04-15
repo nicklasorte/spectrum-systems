@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.124",
+  "artifact_version": "1.3.125",
   "schema_version": "1.3.99",
   "standards_version": "1.9.1",
   "record_id": "REC-STD-2026-04-15-R100-NP-001-FIXED",
@@ -6093,6 +6093,19 @@
       "notes": "BATCH-MVP-20 deterministic governed 20-slice execution drill report proving bounded continuation control, stop/escalate safety, replay parity, and operator-readable evidence linkage."
     },
     {
+      "artifact_type": "narrative_integrity_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.139",
+      "last_updated_in": "1.3.139",
+      "example_path": "contracts/examples/narrative_integrity_record.json",
+      "notes": "WPG MASTER EXEC 03 core hardening artifact."
+    },
+    {
       "artifact_type": "next24_serial_execution_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -12032,6 +12045,19 @@
       "notes": "WPG-00 governed working paper generator artifact chain."
     },
     {
+      "artifact_type": "wpg_contradiction_propagation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.139",
+      "last_updated_in": "1.3.139",
+      "example_path": "contracts/examples/wpg_contradiction_propagation_record.json",
+      "notes": "WPG MASTER EXEC 03 core hardening artifact."
+    },
+    {
       "artifact_type": "wpg_delta_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -12045,6 +12071,19 @@
       "notes": "WPG-00 governed working paper generator artifact chain."
     },
     {
+      "artifact_type": "wpg_grounding_eval_case",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.139",
+      "last_updated_in": "1.3.139",
+      "example_path": "contracts/examples/wpg_grounding_eval_case.json",
+      "notes": "WPG MASTER EXEC 03 core hardening artifact."
+    },
+    {
       "artifact_type": "wpg_redteam_findings",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -12056,6 +12095,19 @@
       "last_updated_in": "1.3.136",
       "example_path": "contracts/examples/wpg_redteam_findings_post_fix.json",
       "notes": "Deterministic red-team findings for WPG RTX post-fix closure gate."
+    },
+    {
+      "artifact_type": "wpg_uncertainty_control_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.139",
+      "last_updated_in": "1.3.139",
+      "example_path": "contracts/examples/wpg_uncertainty_control_record.json",
+      "notes": "WPG MASTER EXEC 03 core hardening artifact."
     },
     {
       "artifact_type": "wrong_allow_record",
