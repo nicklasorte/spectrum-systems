@@ -1,0 +1,16 @@
+{
+  "artifact_type": "ail_ai_roadmap_candidate_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "record_id": "REC-AIL_AI_ROADMAP_CANDIDATE_RECORD",
+  "run_id": "run-aig-001",
+  "owner": "AIL",
+  "status": "pass",
+  "evidence_refs": [
+    "artifact:seed-001"
+  ],
+  "payload": {
+    "step": "ail_ai_roadmap_candidate_record",
+    "note": "AIG-001 governed AI integration artifact"
+  }
+}

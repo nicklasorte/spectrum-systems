@@ -1,0 +1,16 @@
+{
+  "artifact_type": "cap_ai_cost_budget_posture",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "record_id": "REC-CAP_AI_COST_BUDGET_POSTURE",
+  "run_id": "run-aig-001",
+  "owner": "CAP",
+  "status": "pass",
+  "evidence_refs": [
+    "artifact:seed-001"
+  ],
+  "payload": {
+    "step": "cap_ai_cost_budget_posture",
+    "note": "AIG-001 governed AI integration artifact"
+  }
+}
