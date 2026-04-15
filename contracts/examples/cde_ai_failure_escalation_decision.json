@@ -1,0 +1,16 @@
+{
+  "artifact_type": "cde_ai_failure_escalation_decision",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "record_id": "REC-CDE_AI_FAILURE_ESCALATION_DECISION",
+  "run_id": "run-aig-001",
+  "owner": "CDE",
+  "status": "escalate",
+  "evidence_refs": [
+    "artifact:seed-001"
+  ],
+  "payload": {
+    "step": "cde_ai_failure_escalation_decision",
+    "note": "AIG-001 governed AI integration artifact"
+  }
+}

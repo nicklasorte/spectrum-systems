@@ -1,0 +1,16 @@
+{
+  "artifact_type": "jdx_ai_judgment_candidate_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "record_id": "REC-JDX_AI_JUDGMENT_CANDIDATE_RECORD",
+  "run_id": "run-aig-001",
+  "owner": "JDX",
+  "status": "pass",
+  "evidence_refs": [
+    "artifact:seed-001"
+  ],
+  "payload": {
+    "step": "jdx_ai_judgment_candidate_record",
+    "note": "AIG-001 governed AI integration artifact"
+  }
+}

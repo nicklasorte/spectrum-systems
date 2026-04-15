@@ -1,0 +1,16 @@
+{
+  "artifact_type": "slo_ai_reliability_budget_posture",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "record_id": "REC-SLO_AI_RELIABILITY_BUDGET_POSTURE",
+  "run_id": "run-aig-001",
+  "owner": "SLO",
+  "status": "pass",
+  "evidence_refs": [
+    "artifact:seed-001"
+  ],
+  "payload": {
+    "step": "slo_ai_reliability_budget_posture",
+    "note": "AIG-001 governed AI integration artifact"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "artifact_type": "prg_ai_control_signal_bundle",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "record_id": "REC-PRG_AI_CONTROL_SIGNAL_BUNDLE",
+  "run_id": "run-aig-001",
+  "owner": "PRG",
+  "status": "pass",
+  "evidence_refs": [
+    "artifact:seed-001"
+  ],
+  "payload": {
+    "step": "prg_ai_control_signal_bundle",
+    "note": "AIG-001 governed AI integration artifact"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "artifact_type": "prx_ai_precedent_retrieval_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "record_id": "REC-PRX_AI_PRECEDENT_RETRIEVAL_RECORD",
+  "run_id": "run-aig-001",
+  "owner": "PRX",
+  "status": "pass",
+  "evidence_refs": [
+    "artifact:seed-001"
+  ],
+  "payload": {
+    "step": "prx_ai_precedent_retrieval_record",
+    "note": "AIG-001 governed AI integration artifact"
+  }
+}
