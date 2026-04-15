@@ -1,0 +1,17 @@
+{
+  "artifact_type": "cap_roadmap_capacity_budget_posture",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "artifact_id": "cap_roadmap_capacity_budget_posture-example",
+  "owner": "CAP",
+  "created_at": "2026-04-15T00:00:00Z",
+  "status": "pass",
+  "reason_codes": [
+    "example_payload"
+  ],
+  "evidence_refs": [
+    "evidence:example"
+  ],
+  "non_authority_assertions": []
+}
