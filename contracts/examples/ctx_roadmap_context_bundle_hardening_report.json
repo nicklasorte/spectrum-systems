@@ -1,0 +1,19 @@
+{
+  "artifact_type": "ctx_roadmap_context_bundle_hardening_report",
+  "schema_version": "1.1.0",
+  "artifact_id": "ctx_roadmap_context_bundle_hardening_report-example-001",
+  "created_at": "2026-04-15T00:00:00Z",
+  "owner": "CTX",
+  "status": "referenced",
+  "summary": "Reference-only composition artifact.",
+  "inputs": [
+    "rdx_global_execution_validity_report:rdx-global-001"
+  ],
+  "authority_boundary": "composition_reference_only",
+  "reference_integrity": {
+    "context_bundle_ref": true,
+    "context_recipe_ref": true
+  },
+  "context_bundle_ref": "context_bundle:ref-001",
+  "context_recipe_ref": "context_recipe:ref-002"
+}

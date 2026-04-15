@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.137",
+  "artifact_version": "1.3.139",
   "schema_version": "1.3.99",
   "standards_version": "1.9.1",
-  "record_id": "REC-STD-2026-04-15-WPG-00",
-  "run_id": "run-20260415T000000Z-wpg-00",
+  "record_id": "REC-STD-2026-04-15-R100-NP-001-FIXED",
+  "run_id": "run-20260415T180000Z-r100-np-001-fixed",
   "created_at": "2026-04-15T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.137",
+  "source_repo_version": "1.3.139",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -302,6 +302,19 @@
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
+      "artifact_type": "ail_fix_effectiveness_trend_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/ail_fix_effectiveness_trend_record.json",
+      "notes": "R100-NP-001 learning and pressure posture."
+    },
+    {
       "artifact_type": "ail_index_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -341,6 +354,19 @@
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
+      "artifact_type": "ail_recurring_blocker_family_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/ail_recurring_blocker_family_record.json",
+      "notes": "R100-NP-001 learning and pressure posture."
+    },
+    {
       "artifact_type": "ail_recurring_exploit_family_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -352,6 +378,19 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/ail_recurring_exploit_family_record.json",
       "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "ail_roadmap_debt_trend_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/ail_roadmap_debt_trend_record.json",
+      "notes": "R100-NP-001 learning and pressure posture."
     },
     {
       "artifact_type": "ail_trend_cluster_report",
@@ -848,6 +887,19 @@
       "notes": "BATCH-12 ST-17 canary-first rollout governance record with promotion block/rollback decisions."
     },
     {
+      "artifact_type": "cap_operator_review_saturation_forecast",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/cap_operator_review_saturation_forecast.json",
+      "notes": "R100-NP-001 budget and queue pressure."
+    },
+    {
       "artifact_type": "cap_parallelism_ceiling_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -859,6 +911,19 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/cap_parallelism_ceiling_record.json",
       "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "cap_parallelism_risk_cap_by_phase",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/cap_parallelism_risk_cap_by_phase.json",
+      "notes": "R100-NP-001 budget and queue pressure."
     },
     {
       "artifact_type": "cap_reviewer_load_pressure_record",
@@ -927,6 +992,19 @@
       "notes": "CDE-10 closeout gate proving CDE decision outputs are operationally consumable by SEL."
     },
     {
+      "artifact_type": "cde_composite_posture_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.139",
+      "last_updated_in": "1.3.139",
+      "example_path": "contracts/examples/cde_composite_posture_bundle.json",
+      "notes": "R100-NP-001-FIXED composition-only orchestration artifact."
+    },
+    {
       "artifact_type": "cde_composite_posture_consumption_contract",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -953,6 +1031,19 @@
       "schema_path": "contracts/schemas/cde_continue_vs_halt_decision.schema.json",
       "example_path": "contracts/examples/cde_continue_vs_halt_decision.json",
       "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "cde_debt_threshold_stop_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/cde_debt_threshold_stop_decision.json",
+      "notes": "R100-NP-001 context/contract/final authority."
     },
     {
       "artifact_type": "cde_escalation_to_human_decision",
@@ -996,6 +1087,45 @@
       "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
+      "artifact_type": "cde_partial_continuation_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/cde_partial_continuation_decision.json",
+      "notes": "R100-NP-001 context/contract/final authority."
+    },
+    {
+      "artifact_type": "cde_phase_boundary_continue_halt_escalate_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/cde_phase_boundary_continue_halt_escalate_decision.json",
+      "notes": "R100-NP-001 context/contract/final authority."
+    },
+    {
+      "artifact_type": "cde_recut_required_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/cde_recut_required_decision.json",
+      "notes": "R100-NP-001 context/contract/final authority."
+    },
+    {
       "artifact_type": "cde_repair_continuation_input",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1007,6 +1137,19 @@
       "last_updated_in": "1.3.109",
       "example_path": "contracts/examples/cde_repair_continuation_input.json",
       "notes": "CDE decision input derived from failure packet + bounded repair candidate."
+    },
+    {
+      "artifact_type": "cde_roadmap_continuation_readiness_bundle_contract",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/cde_roadmap_continuation_readiness_bundle_contract.json",
+      "notes": "R100-NP-001 context/contract/final authority."
     },
     {
       "artifact_type": "certification_integrity_result",
@@ -1209,6 +1352,19 @@
       "notes": "TPA complexity governance artifact for deterministic budget/trend/campaign enforcement and PQX cleanup scheduling."
     },
     {
+      "artifact_type": "con_contract_evolution_pressure_map",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/con_contract_evolution_pressure_map.json",
+      "notes": "R100-NP-001 context/contract/final authority."
+    },
+    {
       "artifact_type": "con_cross_owner_contract_compatibility_matrix",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -1220,6 +1376,19 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/con_cross_owner_contract_compatibility_matrix.json",
       "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "con_hidden_coupling_severity_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.139",
+      "example_path": "contracts/examples/con_hidden_coupling_severity_record.json",
+      "notes": "R100-NP-001-FIXED reference-only composition artifact (no shadow recomputation)."
     },
     {
       "artifact_type": "con_interface_drift_report",
@@ -1662,6 +1831,19 @@
       "notes": "XRUN-01 deterministic decision-driving cross-run artifact with trend metrics, detected patterns, recommended actions, and stable|warning|unstable system signal."
     },
     {
+      "artifact_type": "crs_active_rule_ambiguity_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/crs_active_rule_ambiguity_report.json",
+      "notes": "R100-NP-001 coherence and replay posture."
+    },
+    {
       "artifact_type": "crs_consistency_severity_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -1687,6 +1869,32 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/crs_contradiction_cluster_record.json",
       "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "crs_control_vs_judgment_mismatch_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/crs_control_vs_judgment_mismatch_report.json",
+      "notes": "R100-NP-001 coherence and replay posture."
+    },
+    {
+      "artifact_type": "crs_cross_owner_consistency_lattice",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.139",
+      "example_path": "contracts/examples/crs_cross_owner_consistency_lattice.json",
+      "notes": "R100-NP-001-FIXED reference-only composition artifact (no shadow recomputation)."
     },
     {
       "artifact_type": "crs_cross_owner_contradiction_history",
@@ -1716,6 +1924,19 @@
       "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
+      "artifact_type": "crs_phase_contradiction_escalation_band_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/crs_phase_contradiction_escalation_band_record.json",
+      "notes": "R100-NP-001 coherence and replay posture."
+    },
+    {
       "artifact_type": "ctx_context_recipe_conformity_report",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -1727,6 +1948,32 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/ctx_context_recipe_conformity_report.json",
       "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "ctx_recipe_drift_block_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/ctx_recipe_drift_block_report.json",
+      "notes": "R100-NP-001 context/contract/final authority."
+    },
+    {
+      "artifact_type": "ctx_roadmap_context_bundle_hardening_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.139",
+      "example_path": "contracts/examples/ctx_roadmap_context_bundle_hardening_report.json",
+      "notes": "R100-NP-001-FIXED reference-only composition artifact (no shadow recomputation)."
     },
     {
       "artifact_type": "ctx_roadmap_scale_context_preflight_report",
@@ -1873,6 +2120,19 @@
       "notes": "NEXT-WAVE-001 governed runtime artifact."
     },
     {
+      "artifact_type": "dag_cross_umbrella_mutation_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/dag_cross_umbrella_mutation_report.json",
+      "notes": "R100-NP-001 structure and chain pressure."
+    },
+    {
       "artifact_type": "dag_cycle_deadlock_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1925,6 +2185,19 @@
       "notes": "NEXT-WAVE-001 governed runtime artifact."
     },
     {
+      "artifact_type": "dag_edge_class_taxonomy_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/dag_edge_class_taxonomy_record.json",
+      "notes": "R100-NP-001 structure and chain pressure."
+    },
+    {
       "artifact_type": "dag_full_roadmap_dependency_validation",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -1952,6 +2225,19 @@
       "notes": "R100-001 integration fabric extension artifact."
     },
     {
+      "artifact_type": "dag_late_stage_insertion_risk_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/dag_late_stage_insertion_risk_record.json",
+      "notes": "R100-NP-001 structure and chain pressure."
+    },
+    {
       "artifact_type": "dag_umbrella_boundary_dependency_report",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -1963,6 +2249,19 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/dag_umbrella_boundary_dependency_report.json",
       "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "dag_undeclared_dependency_evidence_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/dag_undeclared_dependency_evidence_bundle.json",
+      "notes": "R100-NP-001 structure and chain pressure."
     },
     {
       "artifact_type": "dashboard_freshness_contract",
@@ -1989,6 +2288,32 @@
       "last_updated_in": "1.3.116",
       "example_path": "contracts/examples/dashboard_freshness_status_record.json",
       "notes": "DASHBOARD-REFRESH-PUBLISH-LOOP-01 per-artifact freshness verdict artifact for fail-closed publish gating."
+    },
+    {
+      "artifact_type": "dat_dataset_drift_visibility_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/dat_dataset_drift_visibility_record.json",
+      "notes": "R100-NP-001 test/data/signal/handoff support."
+    },
+    {
+      "artifact_type": "dat_roadmap_dataset_slice_registry_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/dat_roadmap_dataset_slice_registry_record.json",
+      "notes": "R100-NP-001 test/data/signal/handoff support."
     },
     {
       "artifact_type": "dataset_lineage_record",
@@ -2148,6 +2473,19 @@
       "notes": "CDE-001 bounded decision authority and RIL closeout contract."
     },
     {
+      "artifact_type": "dep_chain_break_replay_probe_pack",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/dep_chain_break_replay_probe_pack.json",
+      "notes": "R100-NP-001 structure and chain pressure."
+    },
+    {
       "artifact_type": "dep_chain_integrity_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2188,6 +2526,19 @@
       "notes": "R100-001 integration fabric extension artifact."
     },
     {
+      "artifact_type": "dep_cross_fix_chain_interference_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/dep_cross_fix_chain_interference_report.json",
+      "notes": "R100-NP-001 structure and chain pressure."
+    },
+    {
       "artifact_type": "dep_dependency_bundle",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2199,6 +2550,19 @@
       "last_updated_in": "1.3.200",
       "example_path": "contracts/examples/dep_dependency_bundle.json",
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "dep_dependency_regression_debt_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/dep_dependency_regression_debt_record.json",
+      "notes": "R100-NP-001 structure and chain pressure."
     },
     {
       "artifact_type": "dep_dependency_test_bundle",
@@ -2535,6 +2899,32 @@
       "last_updated_in": "1.3.115",
       "example_path": "contracts/examples/enforcement_result_record.json",
       "notes": "SEL enforcement result artifact with deterministic status and explicit fail reasons."
+    },
+    {
+      "artifact_type": "ent_correction_backlog_pressure_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/ent_correction_backlog_pressure_record.json",
+      "notes": "R100-NP-001 test/data/signal/handoff support."
+    },
+    {
+      "artifact_type": "ent_long_roadmap_entropy_accumulation_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/ent_long_roadmap_entropy_accumulation_report.json",
+      "notes": "R100-NP-001 test/data/signal/handoff support."
     },
     {
       "artifact_type": "entropy_report",
@@ -2945,6 +3335,45 @@
       "notes": "SF-14 deterministic release decision artifact for baseline-versus-candidate canary evaluation, governed promotion, and deterministic rollback targeting."
     },
     {
+      "artifact_type": "evd_commentary_vs_authority_evidence_split_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/evd_commentary_vs_authority_evidence_split_record.json",
+      "notes": "R100-NP-001 coverage and evidence hardening."
+    },
+    {
+      "artifact_type": "evd_evidence_contradiction_density_map",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/evd_evidence_contradiction_density_map.json",
+      "notes": "R100-NP-001 coverage and evidence hardening."
+    },
+    {
+      "artifact_type": "evd_evidence_source_fragility_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/evd_evidence_source_fragility_report.json",
+      "notes": "R100-NP-001 coverage and evidence hardening."
+    },
+    {
       "artifact_type": "evd_evidence_thinning_report",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -3051,6 +3480,19 @@
       "notes": "CDX-01 next-phase governed contract surface."
     },
     {
+      "artifact_type": "evl_eval_freshness_expiration_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/evl_eval_freshness_expiration_record.json",
+      "notes": "R100-NP-001 coverage and evidence hardening."
+    },
+    {
       "artifact_type": "evl_phase_required_eval_set",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -3075,6 +3517,19 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/evl_red_team_coverage_ledger.json",
       "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "evl_red_team_to_eval_conversion_ledger",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/evl_red_team_to_eval_conversion_ledger.json",
+      "notes": "R100-NP-001 coverage and evidence hardening."
     },
     {
       "artifact_type": "evl_required_eval_debt_record",
@@ -3103,6 +3558,32 @@
       "schema_path": "contracts/schemas/evl_roadmap_eval_completeness_map.schema.json",
       "example_path": "contracts/examples/evl_roadmap_eval_completeness_map.json",
       "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "evl_roadmap_untested_surface_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/evl_roadmap_untested_surface_report.json",
+      "notes": "R100-NP-001 coverage and evidence hardening."
+    },
+    {
+      "artifact_type": "evl_route_by_route_eval_debt_map",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.139",
+      "example_path": "contracts/examples/evl_route_by_route_eval_debt_map.json",
+      "notes": "R100-NP-001-FIXED reference-only composition artifact (no shadow recomputation)."
     },
     {
       "artifact_class": "coordination",
@@ -3454,6 +3935,45 @@
       "notes": "WPG-00 governed working paper generator artifact chain."
     },
     {
+      "artifact_type": "final_100_step_synthetic_scenario_pack",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/final_100_step_synthetic_scenario_pack.json",
+      "notes": "R100-NP-001 final integration and rerun evidence."
+    },
+    {
+      "artifact_type": "final_impacted_suite_rerun_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/final_impacted_suite_rerun_report.json",
+      "notes": "R100-NP-001 final integration and rerun evidence."
+    },
+    {
+      "artifact_type": "final_umbrella_boundary_continue_halt_test_matrix",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/final_umbrella_boundary_continue_halt_test_matrix.json",
+      "notes": "R100-NP-001 final integration and rerun evidence."
+    },
+    {
       "artifact_type": "fix_plan_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3504,6 +4024,97 @@
       "artifact_type": "fre_promotion_gate_record",
       "example_path": "contracts/examples/fre_promotion_gate_record.json",
       "notes": "Fail-closed FRE promotion hard gate evidence record."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_fix_pack_e1",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_e1.json",
+      "notes": "R100-NP-001 fix-pack along FRE->TPA->SEL->PQX path."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_fix_pack_e2",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_e2.json",
+      "notes": "R100-NP-001 fix-pack along FRE->TPA->SEL->PQX path."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_fix_pack_e3",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_e3.json",
+      "notes": "R100-NP-001 fix-pack along FRE->TPA->SEL->PQX path."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_fix_pack_e4",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_e4.json",
+      "notes": "R100-NP-001 fix-pack along FRE->TPA->SEL->PQX path."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_fix_pack_e5",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_e5.json",
+      "notes": "R100-NP-001 fix-pack along FRE->TPA->SEL->PQX path."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_fix_pack_e6",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_e6.json",
+      "notes": "R100-NP-001 fix-pack along FRE->TPA->SEL->PQX path."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_fix_pack_e7",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_e7.json",
+      "notes": "R100-NP-001 fix-pack along FRE->TPA->SEL->PQX path."
     },
     {
       "artifact_type": "fused_signal_record",
@@ -3779,6 +4390,45 @@
       "notes": "ADV-001 deterministic hix_override_audit_record artifact contract."
     },
     {
+      "artifact_type": "hnd_roadmap_handoff_package_validation_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/hnd_roadmap_handoff_package_validation_result.json",
+      "notes": "R100-NP-001 test/data/signal/handoff support."
+    },
+    {
+      "artifact_type": "hnd_semantic_handoff_debt_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/hnd_semantic_handoff_debt_report.json",
+      "notes": "R100-NP-001 test/data/signal/handoff support."
+    },
+    {
+      "artifact_type": "hnx_checkpoint_density_policy_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/hnx_checkpoint_density_policy_record.json",
+      "notes": "R100-NP-001 long-roadmap temporal hardening."
+    },
+    {
       "artifact_type": "hnx_checkpoint_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3845,6 +4495,19 @@
       "notes": "HNX continuity state artifact for checkpoint freshness and continuity references."
     },
     {
+      "artifact_type": "hnx_delayed_invalidity_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/hnx_delayed_invalidity_report.json",
+      "notes": "R100-NP-001 long-roadmap temporal hardening."
+    },
+    {
       "artifact_type": "hnx_forward_validity_projection",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -3859,6 +4522,19 @@
       "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
+      "artifact_type": "hnx_future_invalidity_warning_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/hnx_future_invalidity_warning_record.json",
+      "notes": "R100-NP-001 long-roadmap temporal hardening."
+    },
+    {
       "artifact_type": "hnx_handoff_completeness_requirement_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -3870,6 +4546,19 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/hnx_handoff_completeness_requirement_record.json",
       "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "hnx_handoff_semantic_completeness_score",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/hnx_handoff_semantic_completeness_score.json",
+      "notes": "R100-NP-001 long-roadmap temporal hardening."
     },
     {
       "artifact_type": "hnx_harness_bundle",
@@ -3937,6 +4626,19 @@
       "notes": "Candidate-only HNX readiness artifact with explicit non-authority assertions."
     },
     {
+      "artifact_type": "hnx_phase_window_continuity_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/hnx_phase_window_continuity_record.json",
+      "notes": "R100-NP-001 long-roadmap temporal hardening."
+    },
+    {
       "artifact_type": "hnx_resume_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3974,6 +4676,19 @@
       "last_updated_in": "1.3.121",
       "example_path": "contracts/examples/hnx_stage_contract_record.example.json",
       "notes": "HNX stage contract boundary for deterministic stage topology and allowed transitions."
+    },
+    {
+      "artifact_type": "hnx_stale_resume_hazard_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/hnx_stale_resume_hazard_report.json",
+      "notes": "R100-NP-001 long-roadmap temporal hardening."
     },
     {
       "artifact_type": "hnx_step_temporal_validity_record",
@@ -4224,6 +4939,19 @@
       "notes": "NEXT-WAVE-001 governed runtime artifact."
     },
     {
+      "artifact_type": "jdx_judgment_contradiction_feedback_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/jdx_judgment_contradiction_feedback_record.json",
+      "notes": "R100-NP-001 learning and pressure posture."
+    },
+    {
       "artifact_type": "jdx_judgment_eval_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -4275,6 +5003,19 @@
       "last_updated_in": "1.3.130",
       "example_path": "contracts/examples/jdx_judgment_record.json",
       "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "jdx_judgment_to_policy_compilation_debt_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/jdx_judgment_to_policy_compilation_debt_record.json",
+      "notes": "R100-NP-001 learning and pressure posture."
     },
     {
       "artifact_type": "judgment_active_set_record",
@@ -4654,6 +5395,32 @@
       "schema_path": "contracts/schemas/lin_lineage_decay_report.schema.json",
       "example_path": "contracts/examples/lin_lineage_decay_report.json",
       "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "lin_lineage_survivability_after_fix_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.139",
+      "example_path": "contracts/examples/lin_lineage_survivability_after_fix_report.json",
+      "notes": "R100-NP-001-FIXED reference-only composition artifact (no shadow recomputation)."
+    },
+    {
+      "artifact_type": "lin_promotion_lineage_gap_classifier",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/lin_promotion_lineage_gap_classifier.json",
+      "notes": "R100-NP-001 coherence and replay posture."
     },
     {
       "artifact_type": "lineage_completeness_report",
@@ -5211,6 +5978,32 @@
       "notes": "R100-001 integration fabric extension artifact."
     },
     {
+      "artifact_type": "obs_missing_span_hotspot_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/obs_missing_span_hotspot_record.json",
+      "notes": "R100-NP-001 coverage and evidence hardening."
+    },
+    {
+      "artifact_type": "obs_observability_survival_after_repair_loop_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/obs_observability_survival_after_repair_loop_report.json",
+      "notes": "R100-NP-001 coverage and evidence hardening."
+    },
+    {
       "artifact_type": "obs_roadmap_observability_completeness_report",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -5237,6 +6030,19 @@
       "schema_path": "contracts/schemas/obs_trace_correlation_decay_report.schema.json",
       "example_path": "contracts/examples/obs_trace_correlation_decay_report.json",
       "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "obs_trace_join_failure_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.139",
+      "example_path": "contracts/examples/obs_trace_join_failure_report.json",
+      "notes": "R100-NP-001-FIXED reference-only composition artifact (no shadow recomputation)."
     },
     {
       "artifact_type": "observability_contract_record",
@@ -5492,6 +6298,19 @@
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
+      "artifact_type": "pol_canary_cohort_drift_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/pol_canary_cohort_drift_report.json",
+      "notes": "R100-NP-001 learning and pressure posture."
+    },
+    {
       "artifact_type": "pol_error_budget_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5503,6 +6322,19 @@
       "last_updated_in": "1.3.200",
       "example_path": "contracts/examples/pol_error_budget_record.json",
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "pol_policy_degradation_hotspot_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/pol_policy_degradation_hotspot_record.json",
+      "notes": "R100-NP-001 learning and pressure posture."
     },
     {
       "artifact_type": "pol_policy_lifecycle_bundle",
@@ -6208,6 +7040,19 @@
       "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
     },
     {
+      "artifact_type": "prg_bottleneck_severity_rank_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/prg_bottleneck_severity_rank_record.json",
+      "notes": "R100-NP-001 learning and pressure posture."
+    },
+    {
       "artifact_type": "prg_governance_bundle",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -6273,6 +7118,32 @@
       "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
     },
     {
+      "artifact_type": "prg_halt_recut_continue_recommendation_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/prg_halt_recut_continue_recommendation_bundle.json",
+      "notes": "R100-NP-001 learning and pressure posture."
+    },
+    {
+      "artifact_type": "prg_minimal_safe_replan_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/prg_minimal_safe_replan_artifact.json",
+      "notes": "R100-NP-001 learning and pressure posture."
+    },
+    {
       "artifact_type": "prg_prioritized_control_signal_bundle",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -6298,6 +7169,19 @@
       "last_updated_in": "1.3.123",
       "example_path": "contracts/examples/prg_recommendation_rework_debt_record.json",
       "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prg_roadmap_batch_shrink_recommendation",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/prg_roadmap_batch_shrink_recommendation.json",
+      "notes": "R100-NP-001 learning and pressure posture."
     },
     {
       "artifact_type": "prg_roadmap_halt_recommendation",
@@ -6339,6 +7223,19 @@
       "schema_path": "contracts/schemas/prg_roadmap_risk_stack.schema.json",
       "example_path": "contracts/examples/prg_roadmap_risk_stack.json",
       "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "prg_signal_conflict_arbitration_policy_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/prg_signal_conflict_arbitration_policy_record.json",
+      "notes": "R100-NP-001 learning and pressure posture."
     },
     {
       "artifact_type": "prg_signal_prioritization_record",
@@ -6998,6 +7895,19 @@
       "notes": "ADV-001 deterministic prx_precedent_match_set artifact contract."
     },
     {
+      "artifact_type": "prx_precedent_misuse_pattern_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/prx_precedent_misuse_pattern_record.json",
+      "notes": "R100-NP-001 learning and pressure posture."
+    },
+    {
       "artifact_type": "prx_precedent_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -7036,6 +7946,19 @@
       "last_updated_in": "1.3.128",
       "example_path": "contracts/examples/prx_precedent_score_report.json",
       "notes": "ADV-001 deterministic prx_precedent_score_report artifact contract."
+    },
+    {
+      "artifact_type": "prx_stale_precedent_pressure_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/prx_stale_precedent_pressure_report.json",
+      "notes": "R100-NP-001 learning and pressure posture."
     },
     {
       "artifact_type": "publication_attempt_record",
@@ -7103,6 +8026,19 @@
       "notes": "AUD-02 deterministic read-only backtest artifact classifying recent PR/preflight trust-gap exposure and confidence."
     },
     {
+      "artifact_type": "qos_backlog_aging_hotspot_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/qos_backlog_aging_hotspot_record.json",
+      "notes": "R100-NP-001 budget and queue pressure."
+    },
+    {
       "artifact_type": "qos_backpressure_signal",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -7140,6 +8076,19 @@
       "last_updated_in": "1.3.200",
       "example_path": "contracts/examples/qos_queue_governance_record.json",
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "qos_retry_accumulation_hazard_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/qos_retry_accumulation_hazard_report.json",
+      "notes": "R100-NP-001 budget and queue pressure."
     },
     {
       "artifact_type": "qos_retry_budget_record",
@@ -7520,6 +8469,19 @@
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
+      "artifact_type": "rdx_advancement_precondition_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/rdx_advancement_precondition_bundle.json",
+      "notes": "R100-NP-001 long-roadmap fabric."
+    },
+    {
       "artifact_type": "rdx_batch_selection_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -7600,6 +8562,19 @@
       "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
+      "artifact_type": "rdx_roadmap_contract_normalization_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/rdx_roadmap_contract_normalization_record.json",
+      "notes": "R100-NP-001 long-roadmap fabric."
+    },
+    {
       "artifact_type": "rdx_roadmap_execution_contract",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -7614,6 +8589,19 @@
       "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
+      "artifact_type": "rdx_roadmap_execution_contract_v2",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/rdx_roadmap_execution_contract_v2.json",
+      "notes": "R100-NP-001 long-roadmap fabric."
+    },
+    {
       "artifact_type": "rdx_roadmap_governance_bundle",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -7625,6 +8613,19 @@
       "last_updated_in": "1.3.122",
       "example_path": "contracts/examples/rdx_roadmap_governance_bundle.example.json",
       "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_roadmap_invalidation_graph",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/rdx_roadmap_invalidation_graph.json",
+      "notes": "R100-NP-001 long-roadmap fabric."
     },
     {
       "artifact_type": "rdx_roadmap_prerequisite_graph",
@@ -7705,6 +8706,19 @@
       "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
     },
     {
+      "artifact_type": "rdx_umbrella_dependency_seal",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/rdx_umbrella_dependency_seal.json",
+      "notes": "R100-NP-001 long-roadmap fabric."
+    },
+    {
       "artifact_type": "rdx_umbrella_selection_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -7716,6 +8730,19 @@
       "last_updated_in": "1.3.122",
       "example_path": "contracts/examples/rdx_umbrella_selection_record.example.json",
       "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_unsafe_breadth_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/rdx_unsafe_breadth_report.json",
+      "notes": "R100-NP-001 long-roadmap fabric."
     },
     {
       "artifact_type": "readiness_review_dashboard_artifact",
@@ -7861,6 +8888,32 @@
       "schema_path": "contracts/schemas/rep_replay_after_n_steps_record.schema.json",
       "example_path": "contracts/examples/rep_replay_after_n_steps_record.json",
       "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "rep_replay_baseline_drift_score_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.139",
+      "example_path": "contracts/examples/rep_replay_baseline_drift_score_record.json",
+      "notes": "R100-NP-001-FIXED reference-only composition artifact (no shadow recomputation)."
+    },
+    {
+      "artifact_type": "rep_replay_sufficiency_profile_by_phase",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/rep_replay_sufficiency_profile_by_phase.json",
+      "notes": "R100-NP-001 coherence and replay posture."
     },
     {
       "artifact_type": "rep_replay_window_regression_pack",
@@ -8557,6 +9610,19 @@
       "notes": "Normalized reviewer comments with provenance links; payloads should be wrapped in the artifact envelope standard."
     },
     {
+      "artifact_type": "ril_budget_capacity_queue_red_team_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/ril_budget_capacity_queue_red_team_report.json",
+      "notes": "R100-NP-001 adversarial artifact report."
+    },
+    {
       "artifact_type": "ril_budget_readiness_red_team_report",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -8584,6 +9650,45 @@
       "notes": "CDE-001 bounded decision authority and RIL closeout contract."
     },
     {
+      "artifact_type": "ril_coherence_lineage_replay_red_team_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/ril_coherence_lineage_replay_red_team_report.json",
+      "notes": "R100-NP-001 adversarial artifact report."
+    },
+    {
+      "artifact_type": "ril_dependency_critical_path_red_team_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/ril_dependency_critical_path_red_team_report.json",
+      "notes": "R100-NP-001 adversarial artifact report."
+    },
+    {
+      "artifact_type": "ril_eval_evidence_observability_red_team_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/ril_eval_evidence_observability_red_team_report.json",
+      "notes": "R100-NP-001 adversarial artifact report."
+    },
+    {
       "artifact_type": "ril_plan_wide_coherence_red_team_report",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -8596,6 +9701,32 @@
       "schema_path": "contracts/schemas/ril_plan_wide_coherence_red_team_report.schema.json",
       "example_path": "contracts/examples/ril_plan_wide_coherence_red_team_report.json",
       "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "ril_roadmap_contract_structure_red_team_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/ril_roadmap_contract_structure_red_team_report.json",
+      "notes": "R100-NP-001 adversarial artifact report."
+    },
+    {
+      "artifact_type": "ril_signal_overload_prioritization_red_team_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/ril_signal_overload_prioritization_red_team_report.json",
+      "notes": "R100-NP-001 adversarial artifact report."
     },
     {
       "artifact_type": "ril_signal_overload_red_team_report",
@@ -8624,6 +9755,19 @@
       "schema_path": "contracts/schemas/ril_temporal_dependency_red_team_report.schema.json",
       "example_path": "contracts/examples/ril_temporal_dependency_red_team_report.json",
       "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "ril_temporal_resume_red_team_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/ril_temporal_resume_red_team_report.json",
+      "notes": "R100-NP-001 adversarial artifact report."
     },
     {
       "artifact_type": "risk_classification_record",
@@ -9352,6 +10496,32 @@
       "notes": "R100-001 integration fabric extension artifact."
     },
     {
+      "artifact_type": "slo_roadmap_quality_budget_posture",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/slo_roadmap_quality_budget_posture.json",
+      "notes": "R100-NP-001 budget and queue pressure."
+    },
+    {
+      "artifact_type": "slo_umbrella_boundary_budget_breach_forecast",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/slo_umbrella_boundary_budget_breach_forecast.json",
+      "notes": "R100-NP-001 budget and queue pressure."
+    },
+    {
       "artifact_type": "stage_contract",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -9454,6 +10624,32 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/supersession_record.json",
       "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
+      "artifact_type": "syn_synthesized_halt_pressure_signal_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/syn_synthesized_halt_pressure_signal_record.json",
+      "notes": "R100-NP-001 test/data/signal/handoff support."
+    },
+    {
+      "artifact_type": "syn_synthesized_trust_signal_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/syn_synthesized_trust_signal_record.json",
+      "notes": "R100-NP-001 test/data/signal/handoff support."
     },
     {
       "artifact_type": "synthesized_trust_signal",
@@ -10118,6 +11314,45 @@
       "last_updated_in": "1.3.18",
       "example_path": "contracts/examples/trust_spine_evidence_cohesion_result.json",
       "notes": "CON-033 deterministic fail-closed cohesion proof for trust-spine evidence continuity across manifest/enforcement/obedience/invariant/certification/promotion/preflight seams."
+    },
+    {
+      "artifact_type": "tst_adversarial_fixture_freshness_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/tst_adversarial_fixture_freshness_record.json",
+      "notes": "R100-NP-001 test/data/signal/handoff support."
+    },
+    {
+      "artifact_type": "tst_long_roadmap_fixture_governance_pack",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/tst_long_roadmap_fixture_governance_pack.json",
+      "notes": "R100-NP-001 test/data/signal/handoff support."
+    },
+    {
+      "artifact_type": "tst_long_window_replay_fixture_bank",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.138",
+      "last_updated_in": "1.3.138",
+      "example_path": "contracts/examples/tst_long_window_replay_fixture_bank.json",
+      "notes": "R100-NP-001 test/data/signal/handoff support."
     },
     {
       "artifact_type": "unknown_state_signal",

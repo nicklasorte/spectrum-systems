@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "cde_composite_posture_bundle",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "artifact_type": {
+      "const": "cde_composite_posture_bundle"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^1\\.0\\.0$"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner": {
+      "type": "string",
+      "const": "CDE"
+    },
+    "status": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "authority_boundary": {
+      "type": "string",
+      "const": "cde_final_decision_scope"
+    },
+    "rdx_global_execution_validity_report_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "prg_prioritized_control_signal_bundle_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "slo_signal_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "cap_signal_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "qos_signal_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "continue",
+        "halt",
+        "recut",
+        "escalate"
+      ]
+    },
+    "artifact_version": {
+      "type": [
+        "string",
+        "array",
+        "object",
+        "number",
+        "boolean",
+        "null"
+      ]
+    },
+    "standards_version": {
+      "type": [
+        "string",
+        "array",
+        "object",
+        "number",
+        "boolean",
+        "null"
+      ]
+    },
+    "reason_codes": {
+      "type": [
+        "string",
+        "array",
+        "object",
+        "number",
+        "boolean",
+        "null"
+      ]
+    },
+    "control_action": {
+      "type": [
+        "string",
+        "array",
+        "object",
+        "number",
+        "boolean",
+        "null"
+      ]
+    },
+    "non_authority_assertions": {
+      "type": [
+        "string",
+        "array",
+        "object",
+        "number",
+        "boolean",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "artifact_id",
+    "created_at",
+    "owner",
+    "status"
+  ]
+}

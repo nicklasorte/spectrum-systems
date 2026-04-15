@@ -1,0 +1,23 @@
+{
+  "artifact_type": "ctx_recipe_drift_block_report",
+  "schema_version": "1.0.0",
+  "artifact_id": "ctx_recipe_drift_block_report-example-001",
+  "created_at": "2026-04-15T00:00:00Z",
+  "owner": "CTX",
+  "status": "ok",
+  "summary": "R100-NP-001 context/contract/final authority.",
+  "inputs": [
+    "roadmap_execution_contract_v2"
+  ],
+  "signals": [
+    {
+      "signal": "deterministic",
+      "value": 0.5
+    }
+  ],
+  "metrics": {
+    "risk": 0.5,
+    "debt": 0.2
+  },
+  "authority_boundary": "authoritative_within_registered_scope"
+}

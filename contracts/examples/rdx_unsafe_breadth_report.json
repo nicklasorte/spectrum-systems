@@ -1,0 +1,23 @@
+{
+  "artifact_type": "rdx_unsafe_breadth_report",
+  "schema_version": "1.0.0",
+  "artifact_id": "rdx_unsafe_breadth_report-example-001",
+  "created_at": "2026-04-15T00:00:00Z",
+  "owner": "RDX",
+  "status": "ok",
+  "summary": "R100-NP-001 long-roadmap fabric.",
+  "inputs": [
+    "roadmap_execution_contract_v2"
+  ],
+  "signals": [
+    {
+      "signal": "deterministic",
+      "value": 0.5
+    }
+  ],
+  "metrics": {
+    "risk": 0.5,
+    "debt": 0.2
+  },
+  "authority_boundary": "non_authoritative_signal_only"
+}

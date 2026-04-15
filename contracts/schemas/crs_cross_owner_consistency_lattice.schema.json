@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "crs_cross_owner_consistency_lattice",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "artifact_type": {
+      "const": "crs_cross_owner_consistency_lattice"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^1\\.1\\.0$"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "authority_boundary": {
+      "type": "string"
+    },
+    "reference_integrity": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "lin_lineage_report_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "rep_replay_report_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "evl_eval_report_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "evd_evidence_report_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "obs_observability_report_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    }
+  },
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "artifact_id",
+    "created_at",
+    "owner",
+    "status",
+    "summary",
+    "inputs",
+    "authority_boundary",
+    "lin_lineage_report_ref",
+    "rep_replay_report_ref",
+    "evl_eval_report_ref",
+    "evd_evidence_report_ref",
+    "obs_observability_report_ref"
+  ]
+}

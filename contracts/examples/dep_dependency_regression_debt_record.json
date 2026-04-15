@@ -1,0 +1,23 @@
+{
+  "artifact_type": "dep_dependency_regression_debt_record",
+  "schema_version": "1.0.0",
+  "artifact_id": "dep_dependency_regression_debt_record-example-001",
+  "created_at": "2026-04-15T00:00:00Z",
+  "owner": "DEP",
+  "status": "ok",
+  "summary": "R100-NP-001 structure and chain pressure.",
+  "inputs": [
+    "roadmap_execution_contract_v2"
+  ],
+  "signals": [
+    {
+      "signal": "deterministic",
+      "value": 0.5
+    }
+  ],
+  "metrics": {
+    "risk": 0.5,
+    "debt": 0.2
+  },
+  "authority_boundary": "non_authoritative_signal_only"
+}

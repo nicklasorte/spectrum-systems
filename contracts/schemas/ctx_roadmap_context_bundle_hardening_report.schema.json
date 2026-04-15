@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ctx_roadmap_context_bundle_hardening_report",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "artifact_type": {
+      "const": "ctx_roadmap_context_bundle_hardening_report"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^1\\.1\\.0$"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "authority_boundary": {
+      "type": "string"
+    },
+    "reference_integrity": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "context_bundle_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    },
+    "context_recipe_ref": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+:[A-Za-z0-9._-]+$"
+    }
+  },
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "artifact_id",
+    "created_at",
+    "owner",
+    "status",
+    "summary",
+    "inputs",
+    "authority_boundary",
+    "context_bundle_ref",
+    "context_recipe_ref"
+  ]
+}

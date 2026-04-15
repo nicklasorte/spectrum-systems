@@ -1,0 +1,19 @@
+{
+  "artifact_type": "rep_replay_baseline_drift_score_record",
+  "schema_version": "1.1.0",
+  "artifact_id": "rep_replay_baseline_drift_score_record-example-001",
+  "created_at": "2026-04-15T00:00:00Z",
+  "owner": "REP",
+  "status": "referenced",
+  "summary": "Reference-only composition artifact.",
+  "inputs": [
+    "rdx_global_execution_validity_report:rdx-global-001"
+  ],
+  "authority_boundary": "composition_reference_only",
+  "reference_integrity": {
+    "replay_ref": true,
+    "baseline_ref": true
+  },
+  "replay_ref": "replay:ref-001",
+  "baseline_ref": "baseline:ref-002"
+}

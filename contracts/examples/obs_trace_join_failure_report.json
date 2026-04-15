@@ -1,0 +1,19 @@
+{
+  "artifact_type": "obs_trace_join_failure_report",
+  "schema_version": "1.1.0",
+  "artifact_id": "obs_trace_join_failure_report-example-001",
+  "created_at": "2026-04-15T00:00:00Z",
+  "owner": "OBS",
+  "status": "referenced",
+  "summary": "Reference-only composition artifact.",
+  "inputs": [
+    "rdx_global_execution_validity_report:rdx-global-001"
+  ],
+  "authority_boundary": "composition_reference_only",
+  "reference_integrity": {
+    "observability_trace_ref": true,
+    "join_analysis_ref": true
+  },
+  "observability_trace_ref": "observability_trace:ref-001",
+  "join_analysis_ref": "join_analysis:ref-002"
+}
