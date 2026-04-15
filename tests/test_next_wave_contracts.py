@@ -27,6 +27,8 @@ CONTRACTS = [
     "ext_constraint_enforcement_record",
     "ext_runtime_governance_bundle",
     "mnt_promotion_entrypoint_coverage_report",
+    "mnt_promotion_enforcement_result",
+    "mnt_advancement_coverage_audit",
     "mnt_enforcement_consistency_result",
     "mnt_real_flow_reliability_result",
 ]

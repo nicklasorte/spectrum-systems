@@ -2039,3 +2039,13 @@ flowchart LR
   - become_sel
   - become_pqx
   - become_prg
+
+## FSG-RA-001 Phase-0 Implementation Note (2026-04-15)
+
+This note records concrete artifact mappings for MNT enforcement hardening without changing canonical ownership.
+
+- **TLC + SEL**: `mnt_promotion_enforcement_result` captures promotion-entrypoint execution checks and fail-closed block decisions when MNT-002 has not executed.
+- **CDE authority seam**: `mnt_promotion_enforcement_result.certification_bundle_ref` is required for advancement, preventing promotion without certification bundle injection.
+- **PRG (non-authoritative)**: `mnt_advancement_coverage_audit` reports required vs audited advancement paths and uncovered paths only; it does not enforce.
+- **SEL semantics**: pass/block/freeze normalization remains enforced through `mnt_enforcement_consistency_result` and real-flow checks.
+- **RIL red-team loop**: `mnt_red_team_round_report` remains the exploit conversion evidence artifact, with explicit test/eval/guard conversion flags.
