@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/faq_cluster_artifact.schema.json",
+  "title": "Faq Cluster Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "inputs_ref",
+    "outputs",
+    "provenance",
+    "evaluation_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "faq_cluster_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inputs_ref": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "required": [
+        "clusters"
+      ],
+      "properties": {
+        "clusters": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "evaluation_refs": {
+      "type": "object"
+    }
+  }
+}

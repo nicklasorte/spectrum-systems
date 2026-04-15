@@ -1,0 +1,34 @@
+{
+  "run_id": "wpg-run-001",
+  "trace_id": "wpg-trace-001",
+  "transcript": {
+    "segments": [
+      {
+        "segment_id": "seg-1",
+        "speaker": "Alice",
+        "agency": "NTIA",
+        "text": "What policy controls spectrum sharing? Policy X controls spectrum sharing in this pilot."
+      },
+      {
+        "segment_id": "seg-2",
+        "speaker": "Bob",
+        "agency": "FCC",
+        "text": "How is interference measured? Interference is measured using baseline SINR and field reports."
+      },
+      {
+        "segment_id": "seg-3",
+        "speaker": "Carol",
+        "agency": "DoD",
+        "text": "When can deployment start? Unknown until certification is complete."
+      }
+    ]
+  },
+  "resolved_comments": {
+    "resolved_comments": [
+      {
+        "comment_id": "C-1",
+        "resolution": "Added explicit policy citation to section 1."
+      }
+    ]
+  }
+}
