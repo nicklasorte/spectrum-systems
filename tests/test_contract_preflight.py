@@ -2173,6 +2173,14 @@ def test_push_warn_control_signal_remains_explicit() -> None:
     assert result["strategy_gate_decision"] == "ALLOW"
 
 
+def test_push_and_pull_request_control_signal_decisions_remain_context_specific() -> None:
+    report = {"status": "passed", "changed_path_detection": {}, "pqx_execution_policy": {"status": "warn"}}
+    pr = preflight.map_preflight_control_signal(report=report, hardening_flow=False, event_name="pull_request")
+    push = preflight.map_preflight_control_signal(report=report, hardening_flow=False, event_name="push")
+    assert pr["strategy_gate_decision"] == "BLOCK"
+    assert push["strategy_gate_decision"] == "ALLOW"
+
+
 def test_pr_degraded_ref_resolution_blocks_with_invariants(tmp_path: Path, monkeypatch) -> None:
     output_dir = tmp_path / "out"
     monkeypatch.setattr(

@@ -9,6 +9,7 @@
   "live_github_alignment_status": "unknown",
   "final_decision": "WARN",
   "blocking_reasons": [],
+  "mismatch_details": [],
   "operator_actions_required": [
     "Verify GitHub branch protection required status checks include exactly 'PR / pytest' and remove obsolete checks."
   ],
