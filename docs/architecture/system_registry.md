@@ -125,6 +125,7 @@ CDE is the only system allowed to emit:
 - **DAG** — dependency graph governance for declaration integrity, cycles, and critical-path signals
 - **EXT** — external runtime governance for provenance, replay verification, and constraint enforcement
 - **CTX** — context bundle governance and preflight gate authority
+- **TLX** — tool substrate contract normalization and dispatch-record governance
 - **EVL** — required evaluation registry and evaluation gate authority
 - **OBS** — observability contract and completeness authority
 - **LIN** — lineage completeness and promotion lineage gate authority
@@ -133,6 +134,10 @@ CDE is the only system allowed to emit:
 - **SLO** — error-budget and burn-rate control authority
 - **DAT** — evaluation dataset registry and lineage authority
 - **JSX** — judgment lifecycle/state governance and supersession records
+- **JDX** — judgment artifact shape governance for persisted judgment records
+- **SUP** — active-set and supersession governance for judgment activation
+- **RET** — retirement and deprecation lifecycle governance
+- **EVD** — evidence sufficiency scoring and threshold governance
 - **PRM** — prompt registry and version admissibility authority
 - **ROU** — routing observability and route-governance authority
 - **HIT** — human override/correction artifact authority
@@ -140,6 +145,16 @@ CDE is the only system allowed to emit:
 - **SEC** — guardrail-to-control integration authority
 - **REP** — replay integrity and replay gating authority
 - **ENT** — entropy accumulation and correction-mining governance authority
+- **DEP** — dependency integrity governance for bounded rollout chains
+- **CRS** — cross-artifact consistency governance and mismatch blocking
+- **TRN** — translation governance for external input adaptation
+- **NRM** — deterministic normalization governance for canonical representations
+- **CMP** — comparison-run governance and delta artifact authority
+- **QRY** — query/index integrity governance for artifact retrieval
+- **TST** — test-asset governance and stale-fixture blocking authority
+- **RSK** — risk classification artifact governance
+- **SYN** — synthesized multi-signal governance summaries
+- **HND** — handoff integrity and semantic completeness governance
 - **CON** — interface contract hardening authority
 - **WPG** — governed working paper generator pipeline (artifact-first FAQ-to-paper synthesis)
 

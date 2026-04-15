@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 
@@ -21,6 +21,11 @@ def resolve_context_recipe(*, recipe: dict[str, Any]) -> dict[str, Any]:
 
 def gather_context_candidates(*, candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return sorted((dict(item) for item in candidates), key=lambda item: str(item.get("source_id", "")))
+
+
+def gather_sources(*, candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Alias preserved for OSX-03 phase contract wording."""
+    return gather_context_candidates(candidates=candidates)
 
 
 def enforce_context_admission(*, recipe: dict[str, Any], candidates: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[str]]:
@@ -41,7 +46,36 @@ def enforce_context_admission(*, recipe: dict[str, Any], candidates: list[dict[s
 
 
 def rank_context_candidates(*, candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    return sorted(candidates, key=lambda item: (int(item.get("priority", 1000)), str(item.get("source_id", ""))))
+    return sorted(
+        candidates,
+        key=lambda item: (
+            int(item.get("priority", 1000)),
+            str(item.get("source_id", "")),
+            str(item.get("content_hash", "")),
+        ),
+    )
+
+
+def detect_context_conflicts(*, candidates: list[dict[str, Any]]) -> dict[str, Any]:
+    by_key: dict[str, str] = {}
+    conflicts: list[dict[str, str]] = []
+    for candidate in candidates:
+        policy_key = str(candidate.get("policy_key") or "")
+        policy_value = str(candidate.get("policy_value") or "")
+        if not policy_key:
+            continue
+        previous = by_key.get(policy_key)
+        if previous is not None and previous != policy_value:
+            conflicts.append({"policy_key": policy_key, "existing_value": previous, "new_value": policy_value})
+        by_key[policy_key] = policy_value
+    return {
+        "artifact_type": "context_conflict_record",
+        "artifact_version": "1.0.0",
+        "schema_version": "1.0.0",
+        "has_conflicts": len(conflicts) > 0,
+        "conflicts": conflicts,
+        "conflict_codes": [f"context_conflict:{item['policy_key']}" for item in conflicts],
+    }
 
 
 def assemble_context_bundle(*, run_id: str, trace_id: str, recipe: dict[str, Any], candidates: list[dict[str, Any]]) -> dict[str, Any]:
@@ -87,6 +121,17 @@ def run_context_preflight(*, recipe: dict[str, Any], admitted_candidates: list[d
     for item in admitted_candidates:
         if bool(recipe.get("strict_mode", True)) and not item.get("fresh", False):
             reasons.append(f"stale_context:{item.get('source_id')}")
+        expires_at = item.get("expires_at")
+        if expires_at:
+            try:
+                expiry = datetime.fromisoformat(str(expires_at).replace("Z", "+00:00"))
+            except ValueError:
+                reasons.append(f"invalid_expires_at:{item.get('source_id')}")
+                continue
+            if expiry <= datetime.now(timezone.utc) + timedelta(seconds=0):
+                reasons.append(f"expired_context:{item.get('source_id')}")
+        if bool(recipe.get("strict_mode", True)) and not item.get("content_hash"):
+            reasons.append(f"missing_content_hash:{item.get('source_id')}")
     return len(reasons) == 0, sorted(set(reasons))
 
 

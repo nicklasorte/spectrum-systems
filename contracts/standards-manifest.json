@@ -3,7 +3,7 @@
   "artifact_id": "STD-CONTRACTS",
   "artifact_version": "1.3.136",
   "schema_version": "1.3.99",
-  "standards_version": "1.0.86",
+  "standards_version": "1.9.1",
   "record_id": "REC-STD-2026-04-15-WPG-00",
   "run_id": "run-20260415T000000Z-wpg-00",
   "created_at": "2026-04-15T00:00:00Z",
@@ -781,6 +781,19 @@
       "notes": "LT-06 deterministic longitudinal calibration artifact for confidence/correctness alignment and drift tracking."
     },
     {
+      "artifact_type": "calibration_summary",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/calibration_summary.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
       "artifact_type": "canary_rollout_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1044,6 +1057,19 @@
       "last_updated_in": "1.3.69",
       "example_path": "contracts/examples/complexity_trend.json",
       "notes": "TPA complexity governance artifact for deterministic budget/trend/campaign enforcement and PQX cleanup scheduling."
+    },
+    {
+      "artifact_type": "confidence_drift_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/confidence_drift_record.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
     },
     {
       "artifact_type": "context_admission_decision",
@@ -1642,6 +1668,19 @@
       "notes": "DASHBOARD-REFRESH-PUBLISH-LOOP-01 per-artifact freshness verdict artifact for fail-closed publish gating."
     },
     {
+      "artifact_type": "dataset_lineage_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/dataset_lineage_record.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
       "artifact_type": "decision_bundle",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -2135,6 +2174,19 @@
       "notes": "SEL enforcement result artifact with deterministic status and explicit fail reasons."
     },
     {
+      "artifact_type": "entropy_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/entropy_report.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
       "artifact_type": "error_budget_policy",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2343,6 +2395,19 @@
       "notes": "BBC immutable registry snapshot of active admission policy and dataset approval posture for governed downstream consumption. Includes explicit canonicalization_policy_id governance linkage."
     },
     {
+      "artifact_type": "eval_regression_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/eval_regression_report.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
       "artifact_type": "eval_result",
       "artifact_class": "review",
       "schema_version": "1.0.0",
@@ -2541,6 +2606,19 @@
       "last_updated_in": "1.3.61",
       "example_path": "contracts/examples/evidence_gap_hotspot_report.json",
       "notes": "BATCH-12 ST-18 deterministic evidence gap hotspots by artifact family and eval-stage coverage."
+    },
+    {
+      "artifact_type": "evidence_gap_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/evidence_gap_report.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
     },
     {
       "artifact_type": "evidence_map",
@@ -3100,6 +3178,19 @@
       "notes": "CDX-01 next-phase governed contract surface."
     },
     {
+      "artifact_type": "handoff_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/handoff_record.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
       "artifact_type": "handoff_validation_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3124,6 +3215,32 @@
       "last_updated_in": "1.3.135",
       "example_path": "contracts/examples/historical_pytest_exposure_backtest_result.json",
       "notes": "BXT-01 deterministic historical trust-exposure backtest output with explicit uncertainty classification."
+    },
+    {
+      "artifact_type": "hit_correction_diff",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/hit_correction_diff.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
+      "artifact_type": "hit_override_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/hit_override_record.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
     },
     {
       "artifact_type": "hitl_override_decision",
@@ -3945,6 +4062,19 @@
       "notes": "CDX-01 next-phase governed contract surface."
     },
     {
+      "artifact_type": "lineage_completeness_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/lineage_completeness_report.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
       "artifact_type": "maintain_cycle_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -4461,6 +4591,19 @@
       "notes": "PRG-owned recommendation-only roadmap candidate persistence artifact from NX feedback."
     },
     {
+      "artifact_type": "observability_contract_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/observability_contract_record.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
       "artifact_type": "observability_metrics",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -4842,6 +4985,19 @@
       "last_updated_in": "1.3.113",
       "example_path": "contracts/examples/policy_evolution_candidate_set.json",
       "notes": "NX recommendation candidate set for TPA policy evolution intake."
+    },
+    {
+      "artifact_type": "policy_lifecycle_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/policy_lifecycle_record.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
     },
     {
       "artifact_type": "pqx_block_record",
@@ -6018,6 +6174,45 @@
       "notes": "Immutable governed prompt version artifact carrying deterministic selection key, prompt text hash, risk metadata, and bounded eval linkage."
     },
     {
+      "artifact_type": "prompt_rollout_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/prompt_rollout_record.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
+      "artifact_type": "prompt_spec",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/prompt_spec.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
+      "artifact_type": "prompt_version",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/prompt_version.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
       "artifact_type": "provenance_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -6788,6 +6983,19 @@
       "notes": "NEXT-WAVE-001 governed runtime artifact."
     },
     {
+      "artifact_type": "release_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/release_record.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
       "artifact_type": "repair_attempt_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -7007,6 +7215,19 @@
       "last_updated_in": "1.0.88",
       "example_path": "contracts/examples/replay_execution_record.json",
       "notes": "Deterministic replay lineage artifact for run-bundle control-plane consistency checks."
+    },
+    {
+      "artifact_type": "replay_integrity_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/replay_integrity_record.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
     },
     {
       "artifact_type": "replay_result",
@@ -8389,6 +8610,19 @@
       "notes": "Governed tactic register record grounded to book/transcript evidence."
     },
     {
+      "artifact_type": "task_spec",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/task_spec.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
       "artifact_type": "termination_audit_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -9012,6 +9246,32 @@
       "last_updated_in": "1.3.136",
       "example_path": "contracts/examples/wpg_redteam_findings_post_fix.json",
       "notes": "Deterministic red-team findings for WPG RTX post-fix closure gate."
+    },
+    {
+      "artifact_type": "wrong_allow_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/wrong_allow_record.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
+      "artifact_type": "wrong_block_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.1",
+      "last_updated_in": "1.9.1",
+      "example_path": "contracts/examples/wrong_block_record.json",
+      "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
     },
     {
       "artifact_type": "xpl_artifact_card",
