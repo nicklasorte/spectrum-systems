@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/phase_transition_policy_result.schema.json",
+  "title": "Phase Transition Policy Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "trace_id", "phase_id", "requested_action", "decision", "reason_codes", "next_phase", "may_advance"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "phase_transition_policy_result"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "trace_id": {"type": "string", "minLength": 1},
+    "phase_id": {"type": "string", "minLength": 1},
+    "requested_action": {"type": "string", "enum": ["start", "continue", "resume"]},
+    "decision": {"type": "string", "enum": ["ALLOW", "BLOCK"]},
+    "reason_codes": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "next_phase": {"type": ["string", "null"]},
+    "may_advance": {"type": "boolean"}
+  }
+}

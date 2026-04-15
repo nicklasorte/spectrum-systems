@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/phase_registry.schema.json",
+  "title": "Phase Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "trace_id", "phases"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "phase_registry"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "trace_id": {"type": "string", "minLength": 1},
+    "phases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["phase_id", "label", "owner_system", "prerequisites"],
+        "properties": {
+          "phase_id": {"type": "string", "minLength": 1},
+          "label": {"type": "string", "minLength": 1},
+          "owner_system": {"type": "string", "minLength": 1},
+          "prerequisites": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "artifact_type": "phase_handoff_record",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-001",
+  "phase_id": "PHASE_B",
+  "checkpoint_status": "FIX_REQUIRED",
+  "next_executable_slice": "FIX-15",
+  "blockers": ["high_severity_redteam_open"],
+  "handoff_notes": ["Apply FIX-15 regression patch set before PHASE-B-VAL."]
+}

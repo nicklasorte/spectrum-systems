@@ -2097,3 +2097,27 @@ This note records concrete artifact mappings for MNT enforcement hardening witho
   - emit unvalidated ad-hoc artifacts
   - bypass replay linkage, policy_version, or eval_version
   - redefine ownership of PQX execution authority, RAX evaluation authority, SEL enforcement authority, or artifact-boundary trust authority
+
+### CHK
+- **acronym:** `CHK`
+- **full_name:** Checkpoint and Resume Governance
+- **role:** Owns machine-readable phase checkpointing, transition gating, resume state, and handoff artifacts for deterministic continuation across WPG lifecycle phases.
+- **owns:**
+  - phase_checkpoint_record
+  - phase_transition_policy_result
+  - phase_resume_record
+  - phase_handoff_record
+  - phase_registry_and_phase_requirement_profiles
+- **consumes:**
+  - red-team findings status
+  - validation status
+  - review completion refs
+- **produces:**
+  - phase_checkpoint_record
+  - phase_transition_policy_result
+  - phase_resume_record
+  - phase_handoff_record
+- **must_not_do:**
+  - bypass fail-closed transition behavior
+  - advance blocked phases without required fix and review closure
+  - supersede authoritative control-loop decisions

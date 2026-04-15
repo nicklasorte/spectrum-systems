@@ -1,0 +1,15 @@
+{
+  "artifact_type": "phase_registry",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-001",
+  "phases": [
+    {"phase_id": "PHASE_A", "label": "Core hardening", "owner_system": "WPG", "prerequisites": []},
+    {"phase_id": "PHASE_B", "label": "Workflow loop", "owner_system": "WPG", "prerequisites": ["PHASE_A"]},
+    {"phase_id": "PHASE_C", "label": "Critique memory", "owner_system": "WPG", "prerequisites": ["PHASE_B"]},
+    {"phase_id": "PHASE_D", "label": "Judgment and learning", "owner_system": "JDG", "prerequisites": ["PHASE_C"]},
+    {"phase_id": "PHASE_E", "label": "Policy and ops", "owner_system": "GOV", "prerequisites": ["PHASE_D"]},
+    {"phase_id": "PHASE_F", "label": "Checkpoint and resume", "owner_system": "CHK", "prerequisites": ["PHASE_E"]},
+    {"phase_id": "PHASE_G", "label": "Governance offload", "owner_system": "GOV", "prerequisites": ["PHASE_F"]},
+    {"phase_id": "PHASE_H", "label": "Certification", "owner_system": "GOV", "prerequisites": ["PHASE_G"]}
+  ]
+}

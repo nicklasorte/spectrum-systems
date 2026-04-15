@@ -30,6 +30,13 @@ WPG_CONTRACTS = [
     "revision_application_record",
     "comment_disposition_record",
     "wpg_redteam_findings_phase_b",
+    "phase_checkpoint_record",
+    "phase_transition_policy_result",
+    "phase_resume_record",
+    "phase_handoff_record",
+    "phase_registry",
+    "phase_requirement_profile",
+    "artifact_family_phase_map",
 ]
 
 

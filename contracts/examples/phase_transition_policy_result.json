@@ -1,0 +1,11 @@
+{
+  "artifact_type": "phase_transition_policy_result",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-001",
+  "phase_id": "PHASE_A",
+  "requested_action": "continue",
+  "decision": "ALLOW",
+  "reason_codes": ["none"],
+  "next_phase": "PHASE_B",
+  "may_advance": true
+}
