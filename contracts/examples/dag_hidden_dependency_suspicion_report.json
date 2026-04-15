@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "created_at": "2026-04-15T00:00:00Z",
+  "status": "pass",
+  "reason_codes": [
+    "example"
+  ],
+  "evidence_refs": [],
+  "non_authority_assertions": [],
+  "artifact_type": "dag_hidden_dependency_suspicion_report",
+  "artifact_id": "dag_hidden_dependency_suspicion_report-example",
+  "owner": "DAG"
+}

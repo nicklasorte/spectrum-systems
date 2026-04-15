@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "con_interface_drift_report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "artifact_id",
+    "owner",
+    "created_at",
+    "status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "con_interface_drift_report"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "artifact_version": {
+      "type": "string"
+    },
+    "standards_version": {
+      "type": "string"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 3
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 10
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "warn",
+        "ready",
+        "not_ready",
+        "continue",
+        "halt",
+        "candidate_only",
+        "block"
+      ]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
