@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/wpg_lifecycle_certification_artifact.schema.json",
+  "title": "wpg_lifecycle_certification_artifact",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "artifact_type": {
+      "const": "wpg_lifecycle_certification_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL"
+      ]
+    },
+    "blocking_controls": {
+      "type": "array"
+    },
+    "final_review_doc": {
+      "type": "string"
+    },
+    "evaluation_refs": {
+      "type": "object",
+      "required": [
+        "control_decision"
+      ]
+    }
+  },
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "verdict",
+    "blocking_controls",
+    "final_review_doc",
+    "evaluation_refs"
+  ]
+}

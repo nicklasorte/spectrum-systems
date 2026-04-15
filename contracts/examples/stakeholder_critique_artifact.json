@@ -1,0 +1,33 @@
+{
+  "artifact_type": "stakeholder_critique_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "outputs": {
+    "findings": [
+      {
+        "section_title": "Methods",
+        "agency_critique": [
+          "add_gate"
+        ],
+        "industry_critique": [
+          "deployment"
+        ],
+        "editorial_synthesis": "tighten gate language",
+        "severity": "medium"
+      }
+    ],
+    "high_severity_count": 0
+  },
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "multi_pass_critique",
+      "decision": "ALLOW",
+      "reasons": [
+        "findings_actionable"
+      ],
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

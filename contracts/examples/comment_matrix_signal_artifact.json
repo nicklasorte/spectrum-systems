@@ -1,0 +1,30 @@
+{
+  "artifact_type": "comment_matrix_signal_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "outputs": {
+    "signal_count": 1,
+    "malformed_count": 0,
+    "signals": [
+      {
+        "issue_class": "ambiguity",
+        "stakeholder": "FCC",
+        "section_type": "method",
+        "resolution_pattern": "added_clarifying_text",
+        "severity": "medium"
+      }
+    ]
+  },
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "comment_matrix_ingestion",
+      "decision": "ALLOW",
+      "reasons": [
+        "matrix_valid"
+      ],
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

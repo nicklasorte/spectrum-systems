@@ -1,0 +1,24 @@
+{
+  "artifact_type": "judgment_eval",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "judgment_id": "jdg-001",
+  "checks": [
+    {
+      "check_id": "rationale_non_empty",
+      "passed": true
+    }
+  ],
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "judgment_eval",
+      "decision": "ALLOW",
+      "reasons": [
+        "judgment_quality_ok"
+      ],
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

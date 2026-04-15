@@ -1,0 +1,20 @@
+{
+  "artifact_type": "context_admission_policy",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "policy_rules": [
+    "allow_governed_only"
+  ],
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "context_admission_policy",
+      "decision": "ALLOW",
+      "reasons": [
+        "policy_loaded"
+      ],
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

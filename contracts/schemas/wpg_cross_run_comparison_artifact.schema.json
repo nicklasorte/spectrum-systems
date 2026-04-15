@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/wpg_cross_run_comparison_artifact.schema.json",
+  "title": "wpg_cross_run_comparison_artifact",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "artifact_type": {
+      "const": "wpg_cross_run_comparison_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "outputs": {
+      "type": "object",
+      "required": [
+        "run_a_signature",
+        "run_b_signature",
+        "drift_detected",
+        "diff_summary"
+      ]
+    },
+    "evaluation_refs": {
+      "type": "object",
+      "required": [
+        "control_decision"
+      ]
+    }
+  },
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "outputs",
+    "evaluation_refs"
+  ]
+}

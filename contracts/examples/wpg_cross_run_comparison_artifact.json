@@ -1,0 +1,25 @@
+{
+  "artifact_type": "wpg_cross_run_comparison_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "outputs": {
+    "run_a_signature": "sig-a",
+    "run_b_signature": "sig-b",
+    "drift_detected": true,
+    "diff_summary": [
+      "artifact drift detected"
+    ]
+  },
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "cross_run_comparison",
+      "decision": "WARN",
+      "reasons": [
+        "run_drift"
+      ],
+      "enforcement": {
+        "action": "annotate"
+      }
+    }
+  }
+}

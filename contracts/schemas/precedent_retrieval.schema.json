@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/precedent_retrieval.schema.json",
+  "title": "precedent_retrieval",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "artifact_type": {
+      "const": "precedent_retrieval"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "judgment_id": {
+      "type": "string"
+    },
+    "precedents": {
+      "type": "array"
+    },
+    "evaluation_refs": {
+      "type": "object",
+      "required": [
+        "control_decision"
+      ]
+    }
+  },
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "judgment_id",
+    "precedents",
+    "evaluation_refs"
+  ]
+}

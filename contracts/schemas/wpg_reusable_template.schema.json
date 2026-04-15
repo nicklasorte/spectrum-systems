@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/wpg_reusable_template.schema.json",
+  "title": "wpg_reusable_template",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "artifact_type": {
+      "const": "wpg_reusable_template"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "template_sections": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evaluation_refs": {
+      "type": "object",
+      "required": [
+        "control_decision"
+      ]
+    }
+  },
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "template_sections",
+    "evaluation_refs"
+  ]
+}

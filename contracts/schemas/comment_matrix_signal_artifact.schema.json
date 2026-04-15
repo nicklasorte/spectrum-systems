@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/comment_matrix_signal_artifact.schema.json",
+  "title": "comment_matrix_signal_artifact",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "artifact_type": {
+      "const": "comment_matrix_signal_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "outputs": {
+      "type": "object",
+      "required": [
+        "signal_count",
+        "malformed_count",
+        "signals"
+      ]
+    },
+    "evaluation_refs": {
+      "type": "object",
+      "required": [
+        "control_decision"
+      ]
+    }
+  },
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "outputs",
+    "evaluation_refs"
+  ]
+}
