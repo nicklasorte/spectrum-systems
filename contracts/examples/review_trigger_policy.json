@@ -1,0 +1,20 @@
+{
+  "artifact_type": "review_trigger_policy",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "policy_rules": [
+    "trigger_on_block"
+  ],
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "review_trigger_policy",
+      "decision": "ALLOW",
+      "reasons": [
+        "policy_loaded"
+      ],
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

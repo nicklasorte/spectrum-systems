@@ -1,0 +1,20 @@
+{
+  "artifact_type": "eval_requirement_profile",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "policy_rules": [
+    "require_eval_suite"
+  ],
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "eval_requirement_profile",
+      "decision": "ALLOW",
+      "reasons": [
+        "policy_loaded"
+      ],
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

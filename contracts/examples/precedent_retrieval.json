@@ -1,0 +1,24 @@
+{
+  "artifact_type": "precedent_retrieval",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "judgment_id": "jdg-001",
+  "precedents": [
+    {
+      "record_ref": "jdg-000",
+      "score": 2.0
+    }
+  ],
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "precedent_retrieval",
+      "decision": "ALLOW",
+      "reasons": [
+        "precedent_ranked"
+      ],
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

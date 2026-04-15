@@ -1,0 +1,28 @@
+{
+  "artifact_type": "agency_critique_profile",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "outputs": {
+    "profiles": [
+      {
+        "agency": "FCC",
+        "recurring_objections": [
+          "ambiguity"
+        ],
+        "top_resolution_pattern": "added_clarifying_text"
+      }
+    ]
+  },
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "agency_critique_profile",
+      "decision": "ALLOW",
+      "reasons": [
+        "profiles_present"
+      ],
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

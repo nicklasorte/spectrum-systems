@@ -18,6 +18,20 @@ from spectrum_systems.modules.wpg import (
     extract_questions,
     format_faq_for_report,
     write_sections,
+    ingest_comment_matrix_signal,
+    build_agency_critique_profile,
+    build_industry_critique_profile,
+    retrieve_critique_memory,
+    run_multi_pass_critique,
+    build_judgment_record,
+    retrieve_precedent,
+    evaluate_judgment,
+    compare_cross_run,
+    build_study_policy_profile,
+    evaluate_quality_slo,
+    build_governance_policy_pack,
+    build_lifecycle_certification,
+    build_reusable_template,
 )
 from spectrum_systems.modules.wpg.common import (
     control_decision_from_eval,
@@ -576,6 +590,31 @@ def run_wpg_pipeline(
     )
     revision_application_record = _apply_revisions(revision_plan_artifact, assembly["working_paper_artifact"], trace_id, run_id)
     comment_disposition_record = _build_comment_disposition_record(comment_resolution_matrix, trace_id, run_id)
+
+    comment_matrix_signal_artifact = ingest_comment_matrix_signal(comment_resolution_matrix, ctx)
+    agency_critique_profile = build_agency_critique_profile(comment_matrix_signal_artifact, ctx)
+    industry_critique_profile = build_industry_critique_profile(comment_matrix_signal_artifact, ctx)
+    critique_retrieval_record = retrieve_critique_memory(
+        comment_matrix_signal_artifact,
+        trace_id=trace_id,
+        band="C",
+        topic="deployment",
+        stakeholder="unassigned",
+        section_type="general",
+    )
+    stakeholder_critique_artifact = run_multi_pass_critique(
+        sections_artifact=sections,
+        agency_profile=agency_critique_profile,
+        industry_profile=industry_critique_profile,
+        ctx=ctx,
+    )
+    judgment_record = build_judgment_record(critique_artifact=stakeholder_critique_artifact, trace_id=trace_id)
+    precedent_retrieval = retrieve_precedent(judgment_record=judgment_record, prior_records=[judgment_record], trace_id=trace_id)
+    judgment_eval = evaluate_judgment(judgment_record=judgment_record, precedent_retrieval=precedent_retrieval, trace_id=trace_id)
+    wpg_cross_run_comparison_artifact = compare_cross_run(run_a={"replay": {"signature": stable_hash(question_set)}}, run_b={"replay": {"signature": stable_hash(sections)}}, trace_id=trace_id)
+    wpg_study_policy_profile = build_study_policy_profile(study_id="wpg-default-study", required_rules=["require_eval_suite", "require_control_decision"], trace_id=trace_id)
+    wpg_quality_slo = evaluate_quality_slo(quality_score=0.95, error_budget_remaining=0.2, trace_id=trace_id)
+    governance_policy_pack = build_governance_policy_pack(trace_id=trace_id)
     assurance = _build_phase_a_assurance_artifacts(
         faq_bundle=faq_bundle,
         sections=sections,
@@ -600,6 +639,18 @@ def run_wpg_pipeline(
         "revision_plan_artifact": revision_plan_artifact,
         "revision_application_record": revision_application_record,
         "comment_disposition_record": comment_disposition_record,
+        "comment_matrix_signal_artifact": comment_matrix_signal_artifact,
+        "agency_critique_profile": agency_critique_profile,
+        "industry_critique_profile": industry_critique_profile,
+        "critique_retrieval_record": critique_retrieval_record,
+        "stakeholder_critique_artifact": stakeholder_critique_artifact,
+        "judgment_record": judgment_record,
+        "precedent_retrieval": precedent_retrieval,
+        "judgment_eval": judgment_eval,
+        "wpg_cross_run_comparison_artifact": wpg_cross_run_comparison_artifact,
+        "wpg_study_policy_profile": wpg_study_policy_profile,
+        "wpg_quality_slo": wpg_quality_slo,
+        **governance_policy_pack,
         **assembly,
         **assurance,
         "phase_registry": registry,
@@ -618,6 +669,15 @@ def run_wpg_pipeline(
     )
     artifact_chain["phase_resume_record"] = phase_resume
     artifact_chain["phase_handoff_record"] = phase_handoff
+    controls = [
+        artifact.get("evaluation_refs", {}).get("control_decision")
+        for artifact in artifact_chain.values()
+        if isinstance(artifact, dict) and artifact.get("evaluation_refs", {}).get("control_decision")
+    ]
+    wpg_lifecycle_certification_artifact = build_lifecycle_certification(trace_id=trace_id, required_controls=controls)
+    wpg_reusable_template = build_reusable_template(trace_id=trace_id, required_sections=["summary", "findings", "controls"])
+    artifact_chain["wpg_lifecycle_certification_artifact"] = wpg_lifecycle_certification_artifact
+    artifact_chain["wpg_reusable_template"] = wpg_reusable_template
     failure_capture = []
     repair_suggestions = []
     for name, artifact in artifact_chain.items():

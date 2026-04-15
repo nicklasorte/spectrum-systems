@@ -1,0 +1,33 @@
+{
+  "artifact_type": "industry_critique_profile",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "outputs": {
+    "objections": [
+      {
+        "theme": "deployment",
+        "count": 2
+      },
+      {
+        "theme": "ambiguity",
+        "count": 1
+      },
+      {
+        "theme": "burden",
+        "count": 1
+      }
+    ]
+  },
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "industry_critique_profile",
+      "decision": "ALLOW",
+      "reasons": [
+        "objections_present"
+      ],
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

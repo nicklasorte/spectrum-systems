@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/wpg_study_policy_profile.schema.json",
+  "title": "wpg_study_policy_profile",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "artifact_type": {
+      "const": "wpg_study_policy_profile"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "study_id": {
+      "type": "string"
+    },
+    "required_rules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "policy_hash": {
+      "type": "string"
+    },
+    "evaluation_refs": {
+      "type": "object",
+      "required": [
+        "control_decision"
+      ]
+    }
+  },
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "study_id",
+    "required_rules",
+    "policy_hash",
+    "evaluation_refs"
+  ]
+}

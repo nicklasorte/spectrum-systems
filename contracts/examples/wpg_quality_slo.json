@@ -1,0 +1,20 @@
+{
+  "artifact_type": "wpg_quality_slo",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "quality_score": 0.95,
+  "error_budget_remaining": 0.3,
+  "freeze_required": false,
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "wpg_quality_slo",
+      "decision": "ALLOW",
+      "reasons": [
+        "slo_healthy"
+      ],
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

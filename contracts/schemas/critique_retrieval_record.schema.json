@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/critique_retrieval_record.schema.json",
+  "title": "critique_retrieval_record",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "artifact_type": {
+      "const": "critique_retrieval_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "query": {
+      "type": "object",
+      "required": [
+        "band",
+        "topic",
+        "stakeholder",
+        "section_type"
+      ]
+    },
+    "evidence": {
+      "type": "array"
+    },
+    "evaluation_refs": {
+      "type": "object",
+      "required": [
+        "control_decision"
+      ]
+    }
+  },
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "query",
+    "evidence",
+    "evaluation_refs"
+  ]
+}

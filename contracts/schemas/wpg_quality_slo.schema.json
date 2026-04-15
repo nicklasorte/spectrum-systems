@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/wpg_quality_slo.schema.json",
+  "title": "wpg_quality_slo",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "artifact_type": {
+      "const": "wpg_quality_slo"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "quality_score": {
+      "type": "number"
+    },
+    "error_budget_remaining": {
+      "type": "number"
+    },
+    "freeze_required": {
+      "type": "boolean"
+    },
+    "evaluation_refs": {
+      "type": "object",
+      "required": [
+        "control_decision"
+      ]
+    }
+  },
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "quality_score",
+    "error_budget_remaining",
+    "freeze_required",
+    "evaluation_refs"
+  ]
+}

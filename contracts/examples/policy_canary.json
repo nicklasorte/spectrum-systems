@@ -1,0 +1,20 @@
+{
+  "artifact_type": "policy_canary",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "policy_rules": [
+    "sample_policy_paths"
+  ],
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "policy_canary",
+      "decision": "ALLOW",
+      "reasons": [
+        "policy_loaded"
+      ],
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

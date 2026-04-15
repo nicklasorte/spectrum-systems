@@ -1,0 +1,22 @@
+{
+  "artifact_type": "wpg_study_policy_profile",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "study_id": "study-01",
+  "required_rules": [
+    "require_eval_suite"
+  ],
+  "policy_hash": "abc123",
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "study_policy",
+      "decision": "ALLOW",
+      "reasons": [
+        "policy_rules_loaded"
+      ],
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

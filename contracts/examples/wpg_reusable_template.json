@@ -1,0 +1,21 @@
+{
+  "artifact_type": "wpg_reusable_template",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "template_sections": [
+    "executive_summary",
+    "risks"
+  ],
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "reusable_template",
+      "decision": "ALLOW",
+      "reasons": [
+        "template_ready"
+      ],
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "artifact_type": "critique_retrieval_record",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "query": {
+    "band": "C",
+    "topic": "deployment",
+    "stakeholder": "FCC",
+    "section_type": "method"
+  },
+  "evidence": [
+    {
+      "issue_class": "deployment",
+      "stakeholder": "FCC",
+      "section_type": "method",
+      "resolution_pattern": "add_gate",
+      "severity": "high"
+    }
+  ],
+  "evaluation_refs": {
+    "control_decision": {
+      "stage": "critique_retrieval",
+      "decision": "ALLOW",
+      "reasons": [
+        "evidence_found"
+      ],
+      "enforcement": {
+        "action": "proceed"
+      }
+    }
+  }
+}

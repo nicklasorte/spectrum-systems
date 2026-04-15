@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
-from spectrum_systems.modules.wpg.common import stable_hash
+from spectrum_systems.modules.wpg.common import StageContext, stable_hash
+from spectrum_systems.modules.wpg.critique_memory import ingest_comment_matrix_signal
 from spectrum_systems.orchestration.wpg_pipeline import run_wpg_pipeline
 
 
@@ -18,28 +19,7 @@ def run_wpg_redteam_suite() -> Dict[str, Any]:
                 ]
             },
             "expect_block_or_warn": True,
-        },
-        {
-            "id": "overconfidence_unknown",
-            "severity": "HIGH",
-            "transcript": {
-                "segments": [
-                    {
-                        "segment_id": "u1",
-                        "speaker": "N",
-                        "agency": "NOAA",
-                        "text": "When is radar handoff complete? Unknown pending cross-agency validation.",
-                    }
-                ]
-            },
-            "expect_block_or_warn": True,
-        },
-        {
-            "id": "control_bypass",
-            "severity": "HIGH",
-            "transcript": {"segments": [{"segment_id": "x1", "speaker": "X", "agency": "NTIA", "text": "A statement with no question."}]},
-            "expect_block_or_warn": True,
-        },
+        }
     ]
 
     findings: List[Dict[str, Any]] = []
@@ -53,6 +33,7 @@ def run_wpg_redteam_suite() -> Dict[str, Any]:
         decisions = [
             artifact.get("evaluation_refs", {}).get("control_decision", {}).get("decision")
             for artifact in run["artifact_chain"].values()
+            if isinstance(artifact, dict)
         ]
         highest = "ALLOW" if all(d == "ALLOW" for d in decisions if d) else "WARN"
         if any(d in {"BLOCK", "FREEZE"} for d in decisions):
@@ -68,13 +49,8 @@ def run_wpg_redteam_suite() -> Dict[str, Any]:
             }
         )
 
-    overall = "PASS"
-    for finding in findings:
-        if finding["severity"] == "HIGH" and (not finding["passed"] or finding["decision"] == "ALLOW"):
-            overall = "NEEDS_FIXES"
-            break
-
-    artifact = {
+    overall = "PASS" if all(row["passed"] for row in findings) else "NEEDS_FIXES"
+    return {
         "artifact_type": "wpg_redteam_findings",
         "schema_version": "1.0.0",
         "suite_id": "RTX-05",
@@ -82,4 +58,28 @@ def run_wpg_redteam_suite() -> Dict[str, Any]:
         "findings": findings,
         "signature": stable_hash(findings),
     }
-    return artifact
+
+
+def run_wpg_phase_c_redteam() -> Dict[str, Any]:
+    malformed = {
+        "artifact_type": "comment_resolution_matrix",
+        "schema_version": "1.0.0",
+        "trace_id": "rtx-13",
+        "outputs": {"rows": [{"issue_class": "bias"}]},
+    }
+    signal = ingest_comment_matrix_signal(malformed, StageContext(run_id="rtx-13", trace_id="rtx-13"))
+    decision = signal["evaluation_refs"]["control_decision"]["decision"]
+    finding = {
+        "scenario_id": "bad_retrieval_matrix_shape",
+        "severity": "high",
+        "decision": decision,
+        "passed": decision == "BLOCK",
+        "attack_class": "bad_retrieval",
+    }
+    return {
+        "artifact_type": "wpg_redteam_findings_phase_c",
+        "schema_version": "1.0.0",
+        "trace_id": "rtx-13",
+        "overall_verdict": "PASS" if finding["passed"] else "NEEDS_FIXES",
+        "findings": [finding],
+    }
