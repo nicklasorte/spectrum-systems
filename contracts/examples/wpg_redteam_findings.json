@@ -1,0 +1,231 @@
+{
+  "artifact_type": "wpg_redteam_findings",
+  "schema_version": "1.0.0",
+  "findings": [
+    {
+      "id": "RTX-WPG-001",
+      "failure_class": "hallucinated_consensus",
+      "description": "Conflicting policy recommendations were treated as independent FAQs because grouping requires exact question-string equality; no contradiction was emitted and control stayed ALLOW.",
+      "evidence_refs": [
+        "outputs/wpg_redteam/conflict_suppression/faq_artifact.json#outputs.faqs",
+        "outputs/wpg_redteam/conflict_suppression/faq_conflict_artifact.json#outputs.unresolved_count=0",
+        "outputs/wpg_redteam/conflict_suppression/wpg_pipeline_bundle.json#failure_artifacts=[]"
+      ],
+      "severity": "high",
+      "reproducible": true,
+      "affected_artifacts": [
+        "faq_artifact",
+        "faq_conflict_artifact",
+        "working_paper_artifact"
+      ],
+      "control_failure": true,
+      "eval_failure": true,
+      "root_cause": "Conflict detection compares exact question text and does not normalize semantically equivalent prompts.",
+      "recommended_fix": "Use semantic or normalized question matching and require contradiction checks to fail closed when opposing answers are present."
+    },
+    {
+      "id": "RTX-WPG-002",
+      "failure_class": "conflict_suppression",
+      "description": "Contradictory statements were weakened into separate narrative bullets with no explicit conflict block, suppressing governance-significant disagreement.",
+      "evidence_refs": [
+        "outputs/wpg_redteam/conflict_suppression/working_section_artifact.json#outputs.sections",
+        "outputs/wpg_redteam/conflict_suppression/working_paper_artifact.json#outputs.content",
+        "outputs/wpg_redteam/conflict_suppression/faq_conflict_artifact.json#outputs.conflicts=[]"
+      ],
+      "severity": "high",
+      "reproducible": true,
+      "affected_artifacts": [
+        "working_section_artifact",
+        "working_paper_artifact"
+      ],
+      "control_failure": true,
+      "eval_failure": true,
+      "root_cause": "Narrative generation has no requirement to surface unresolved contradiction state before synthesis.",
+      "recommended_fix": "Gate section/working-paper generation on explicit contradiction status and carry contradiction markers into final narrative."
+    },
+    {
+      "id": "RTX-WPG-003",
+      "failure_class": "overconfidence",
+      "description": "Questions with no in-segment answer or explicit unknown responses still received confidence=1.0 and ALLOW control decisions.",
+      "evidence_refs": [
+        "outputs/wpg_redteam/overconfidence_unknown/faq_artifact.json#outputs.faqs",
+        "outputs/wpg_redteam/overconfidence_unknown/faq_confidence_artifact.json#outputs.confidence_rows",
+        "outputs/wpg_redteam/overconfidence_unknown/faq_artifact.json#evaluation_refs.control_decision.decision=ALLOW"
+      ],
+      "severity": "high",
+      "reproducible": true,
+      "affected_artifacts": [
+        "faq_confidence_artifact",
+        "faq_artifact"
+      ],
+      "control_failure": true,
+      "eval_failure": true,
+      "root_cause": "Confidence formula hard-codes agreement/eval factors to 1.0 and depends only on source count, not answer quality.",
+      "recommended_fix": "Penalize unknown/no-answer outputs and couple confidence to grounded multi-source evidence plus contradiction status."
+    },
+    {
+      "id": "RTX-WPG-004",
+      "failure_class": "source_drift",
+      "description": "Answer extraction is a substring split on '?' from the same segment, which can misattribute rhetorical text as grounded answer without validating semantic linkage.",
+      "evidence_refs": [
+        "spectrum_systems/modules/wpg/faq_generator.py#_answer_for_question",
+        "outputs/wpg_redteam/base/faq_artifact.json#outputs.faqs"
+      ],
+      "severity": "medium",
+      "reproducible": true,
+      "affected_artifacts": [
+        "faq_artifact",
+        "faq_report_artifact"
+      ],
+      "control_failure": true,
+      "eval_failure": true,
+      "root_cause": "Grounding checks verify only source presence, not whether answer content is supported by the cited segment.",
+      "recommended_fix": "Add entailment/grounding checks between answer text and cited source spans before passing eval."
+    },
+    {
+      "id": "RTX-WPG-005",
+      "failure_class": "missing_questions",
+      "description": "High-signal declarative risks with no question marks produced zero extracted questions and an empty downstream chain.",
+      "evidence_refs": [
+        "outputs/wpg_redteam/missing_questions/question_set_artifact.json#outputs.questions=[]",
+        "outputs/wpg_redteam/missing_questions/wpg_pipeline_bundle.json#failure_artifacts"
+      ],
+      "severity": "medium",
+      "reproducible": true,
+      "affected_artifacts": [
+        "question_set_artifact",
+        "faq_artifact"
+      ],
+      "control_failure": false,
+      "eval_failure": false,
+      "root_cause": "Question extraction relies exclusively on '?' heuristics and misses implicit question intents.",
+      "recommended_fix": "Introduce declarative issue-to-question transformation before FAQ generation."
+    },
+    {
+      "id": "RTX-WPG-006",
+      "failure_class": "clustering_failure",
+      "description": "Theme clustering uses keyword-first-match logic, forcing mixed policy/technical questions into a single bucket and separating related operational concerns.",
+      "evidence_refs": [
+        "spectrum_systems/modules/wpg/faq_clusterer.py#THEMES",
+        "outputs/wpg_redteam/clustering_narrative/faq_cluster_artifact.json#outputs.clusters"
+      ],
+      "severity": "medium",
+      "reproducible": true,
+      "affected_artifacts": [
+        "faq_cluster_artifact",
+        "working_section_artifact"
+      ],
+      "control_failure": true,
+      "eval_failure": true,
+      "root_cause": "No semantic similarity objective; cluster assignment is deterministic but shallow lexical routing.",
+      "recommended_fix": "Use multi-label or embedding-based clustering with eval cases for cluster cohesion/separation quality."
+    },
+    {
+      "id": "RTX-WPG-007",
+      "failure_class": "narrative_manipulation",
+      "description": "Section ordering is by sorted cluster key rather than evidence chronology, which can alter emphasis and implied dependency sequence.",
+      "evidence_refs": [
+        "outputs/wpg_redteam/base/faq_cluster_artifact.json#outputs.clusters",
+        "outputs/wpg_redteam/base/working_section_artifact.json#outputs.sections",
+        "outputs/wpg_redteam/base/working_paper_artifact.json#outputs.content"
+      ],
+      "severity": "medium",
+      "reproducible": true,
+      "affected_artifacts": [
+        "working_section_artifact",
+        "working_paper_artifact"
+      ],
+      "control_failure": true,
+      "eval_failure": true,
+      "root_cause": "Narrative flow eval checks only non-empty transitions and does not validate causal faithfulness to transcript order.",
+      "recommended_fix": "Evaluate chronology/causality preservation and require explicit ordering rationale in artifact metadata."
+    },
+    {
+      "id": "RTX-WPG-008",
+      "failure_class": "unknown_suppression",
+      "description": "Unknown answers are collected in unknowns_artifact but still presented as normal bullet claims with max confidence and no blocking control decision.",
+      "evidence_refs": [
+        "outputs/wpg_redteam/overconfidence_unknown/unknowns_artifact.json#outputs.unknowns",
+        "outputs/wpg_redteam/overconfidence_unknown/faq_confidence_artifact.json#outputs.confidence_rows",
+        "outputs/wpg_redteam/overconfidence_unknown/working_paper_artifact.json#outputs.content"
+      ],
+      "severity": "high",
+      "reproducible": true,
+      "affected_artifacts": [
+        "unknowns_artifact",
+        "faq_confidence_artifact",
+        "working_paper_artifact"
+      ],
+      "control_failure": true,
+      "eval_failure": true,
+      "root_cause": "Uncertainty handling is disconnected from confidence and control logic.",
+      "recommended_fix": "Bind unknown count to control decision thresholds and narrative warning banners."
+    },
+    {
+      "id": "RTX-WPG-009",
+      "failure_class": "eval_weakness",
+      "description": "Key eval checks are trivially passing (e.g., contradiction detection passed=True constant), allowing incorrect artifacts to appear healthy.",
+      "evidence_refs": [
+        "spectrum_systems/modules/wpg/faq_generator.py#make_eval_artifacts call for contradiction detection",
+        "outputs/wpg_redteam/conflict_suppression/faq_artifact.json#evaluation_refs.eval_summary.pass_rate=1.0"
+      ],
+      "severity": "high",
+      "reproducible": true,
+      "affected_artifacts": [
+        "faq_artifact",
+        "faq_conflict_artifact"
+      ],
+      "control_failure": true,
+      "eval_failure": true,
+      "root_cause": "Eval definitions are implementation-coupled and do not assert adversarial correctness properties.",
+      "recommended_fix": "Replace placeholder checks with adversarial pass/fail conditions linked to transcript-ground truth expectations."
+    },
+    {
+      "id": "RTX-WPG-010",
+      "failure_class": "control_bypass",
+      "description": "Late-stage artifacts (faq_report, clustering, sections, working paper, delta) carry eval refs but no control_decision, so invalid synthesis can still complete with no ALLOW/BLOCK gate.",
+      "evidence_refs": [
+        "outputs/wpg_redteam/overconfidence_unknown/working_paper_artifact.json#evaluation_refs(no control_decision)",
+        "outputs/wpg_redteam/overconfidence_unknown/wpg_pipeline_bundle.json#failure_artifacts=[]",
+        "spectrum_systems/orchestration/wpg_pipeline.py#control scan loop"
+      ],
+      "severity": "high",
+      "reproducible": true,
+      "affected_artifacts": [
+        "faq_report_artifact",
+        "faq_cluster_artifact",
+        "working_section_artifact",
+        "working_paper_artifact",
+        "wpg_delta_artifact"
+      ],
+      "control_failure": true,
+      "eval_failure": false,
+      "root_cause": "Control integration is partial and enforcement only inspects artifacts that already expose control_decision.",
+      "recommended_fix": "Require control_decision for every pipeline stage and fail closed when missing."
+    },
+    {
+      "id": "RTX-WPG-011",
+      "failure_class": "three_ls_boundary_violation",
+      "description": "The transcript input artifact is constructed ad hoc in orchestration and never contract-validated, creating an ungoverned boundary before WPG-owned artifacts begin.",
+      "evidence_refs": [
+        "spectrum_systems/orchestration/wpg_pipeline.py#transcript_artifact construction",
+        "outputs/wpg_redteam/base/wpg_pipeline_bundle.json#artifact_chain starts at question_set_artifact"
+      ],
+      "severity": "medium",
+      "reproducible": true,
+      "affected_artifacts": [
+        "transcript_artifact (ephemeral input boundary)",
+        "question_set_artifact"
+      ],
+      "control_failure": true,
+      "eval_failure": true,
+      "root_cause": "Boundary governance starts after ingestion instead of validating first-class transcript artifact contracts at entry.",
+      "recommended_fix": "Introduce and enforce transcript artifact contract validation at pipeline ingress with ownership-tagged provenance."
+    }
+  ],
+  "summary": {
+    "total_findings": 11,
+    "high_severity": 6,
+    "system_trust_score": 34
+  }
+}
