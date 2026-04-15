@@ -3,13 +3,26 @@
   "schema_version": "1.0.0",
   "trace_id": "wpg-trace-example",
   "outputs": {
+    "artifact_id": "trx-example-001",
+    "metadata": {
+      "segment_count": 1,
+      "has_timestamps": true,
+      "meeting_id": "meeting-001"
+    },
+    "source_refs": ["meeting-notes://session-001"],
     "segments": [
       {
         "segment_id": "seg-1",
         "speaker": "Alice",
         "agency": "NTIA",
+        "timestamp": "2026-04-15T10:00:00Z",
         "text": "What policy controls spectrum sharing? Policy X controls sharing in this pilot."
       }
-    ]
+    ],
+    "provenance": {
+      "ingress": "wpg_pipeline",
+      "normalization": "deterministic",
+      "identity_hash": "abc123"
+    }
   }
 }

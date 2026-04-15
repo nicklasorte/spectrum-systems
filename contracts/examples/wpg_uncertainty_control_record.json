@@ -1,0 +1,11 @@
+{
+  "artifact_type": "wpg_uncertainty_control_record",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "outputs": {
+    "unknown_count": 1,
+    "low_confidence_count": 1,
+    "max_confidence": 0.53,
+    "narrative_warning_present": true
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "artifact_type": "wpg_contradiction_propagation_record",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "outputs": {
+    "conflict_count": 1,
+    "faq_conflict_ids": ["conflict-01"],
+    "section_conflict_annotation": 1,
+    "paper_conflict_annotation": 1
+  }
+}

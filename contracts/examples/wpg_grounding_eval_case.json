@@ -1,0 +1,9 @@
+{
+  "artifact_type": "wpg_grounding_eval_case",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "outputs": {
+    "faq_grounding_failures": 0,
+    "supported_claim_ratio": 1.0
+  }
+}

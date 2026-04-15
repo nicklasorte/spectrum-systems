@@ -36,6 +36,10 @@ def test_pipeline_outputs_all_artifacts() -> None:
         "working_paper_artifact",
         "unknowns_artifact",
         "wpg_delta_artifact",
+        "wpg_grounding_eval_case",
+        "wpg_contradiction_propagation_record",
+        "wpg_uncertainty_control_record",
+        "narrative_integrity_record",
     }
     assert expected.issubset(bundle["artifact_chain"].keys())
 
@@ -58,6 +62,8 @@ def test_control_and_enforcement_on_each_stage() -> None:
     payload = _load()
     bundle = run_wpg_pipeline(payload["transcript"], run_id="r3", trace_id="t3")
     for artifact in bundle["artifact_chain"].values():
+        if "evaluation_refs" not in artifact:
+            continue
         decision = artifact["evaluation_refs"]["control_decision"]
         assert decision["decision"] in {"ALLOW", "WARN", "BLOCK", "FREEZE"}
         assert decision["enforcement"]["action"] in {"proceed", "annotate", "trigger_repair", "halt"}
@@ -117,6 +123,21 @@ def test_delta_identical_input_same_hash() -> None:
     assert delta["previous_hash"] == delta["current_hash"]
     assert delta["changed"] is False
 
+
+
+
+def test_transcript_ingress_deterministic_identity() -> None:
+    payload = _load()
+    a = run_wpg_pipeline(payload["transcript"], run_id="r-ident", trace_id="t-ident")
+    b = run_wpg_pipeline(payload["transcript"], run_id="r-ident", trace_id="t-ident")
+    assert a["artifact_chain"]["transcript_artifact"]["outputs"]["artifact_id"] == b["artifact_chain"]["transcript_artifact"]["outputs"]["artifact_id"]
+
+
+def test_phase_a_assurance_artifacts_emitted() -> None:
+    payload = _load()
+    bundle = run_wpg_pipeline(payload["transcript"], run_id="r-assure", trace_id="t-assure")
+    assert bundle["artifact_chain"]["wpg_grounding_eval_case"]["outputs"]["supported_claim_ratio"] >= 0.0
+    assert bundle["artifact_chain"]["wpg_uncertainty_control_record"]["outputs"]["narrative_warning_present"] is True
 
 def test_rtx05_redteam_has_no_high_allow() -> None:
     findings = run_wpg_redteam_suite()

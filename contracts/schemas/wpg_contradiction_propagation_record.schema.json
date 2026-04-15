@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/wpg_contradiction_propagation_record.schema.json",
+  "title": "WPG Contradiction Propagation Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "trace_id", "outputs"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "wpg_contradiction_propagation_record"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "trace_id": {"type": "string", "minLength": 1},
+    "outputs": {
+      "type": "object",
+      "required": ["conflict_count", "faq_conflict_ids", "section_conflict_annotation", "paper_conflict_annotation"],
+      "properties": {
+        "conflict_count": {"type": "integer", "minimum": 0},
+        "faq_conflict_ids": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "section_conflict_annotation": {"type": "integer", "minimum": 0},
+        "paper_conflict_annotation": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    }
+  }
+}

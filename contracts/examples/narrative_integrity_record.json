@@ -1,0 +1,13 @@
+{
+  "artifact_type": "narrative_integrity_record",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-example",
+  "outputs": {
+    "section_count": 2,
+    "chronology_justifications": [
+      "Ordered by cluster evidence and cross-theme dependency.",
+      "Ordered by cluster evidence and cross-theme dependency."
+    ],
+    "synthetic_ordering_rationale_present": true
+  }
+}
