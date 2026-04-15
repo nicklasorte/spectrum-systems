@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/mnt_promotion_enforcement_result.schema.json",
+  "title": "mnt_promotion_enforcement_result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "created_at",
+    "entrypoint",
+    "mnt_002_executed",
+    "certification_bundle_ref",
+    "status",
+    "blocked_reasons"
+  ],
+  "properties": {
+    "artifact_type": {"const": "mnt_promotion_enforcement_result"},
+    "artifact_id": {"type": "string", "minLength": 1},
+    "artifact_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "schema_version": {"const": "1.0.0"},
+    "standards_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "entrypoint": {"type": "string", "minLength": 1},
+    "mnt_002_executed": {"type": "boolean"},
+    "certification_bundle_ref": {"type": ["string", "null"]},
+    "status": {"type": "string", "enum": ["pass", "block"]},
+    "blocked_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "unknown_promotion_entrypoint",
+          "mnt_002_required_before_advancement",
+          "missing_certification_bundle"
+        ]
+      },
+      "uniqueItems": true
+    }
+  }
+}

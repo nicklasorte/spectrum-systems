@@ -3,7 +3,14 @@ import pytest
 from spectrum_systems.modules.runtime.dag_runtime import build_dependency_graph, detect_cycles, DAGRuntimeError
 from spectrum_systems.modules.runtime.ext_runtime import build_runtime_provenance, enforce_constraints, EXTRuntimeError
 from spectrum_systems.modules.runtime.jdx_runtime import create_judgment_record, evaluate_judgment, run_jdx_redteam, JDXRuntimeError
-from spectrum_systems.modules.runtime.mnt_enforcement_runtime import audit_promotion_entrypoints, consistency_check
+from spectrum_systems.modules.runtime.mnt_enforcement_runtime import (
+    audit_advancement_path_coverage,
+    audit_promotion_entrypoints,
+    consistency_check,
+    enforce_promotion_entrypoint,
+    run_mnt_red_team_round,
+    validate_real_flow,
+)
 from spectrum_systems.modules.runtime.rel_runtime import build_canary_metrics, build_release_record, freeze_on_budget
 from spectrum_systems.modules.runtime.rux_runtime import create_reuse_record, enforce_reuse_boundary, RUXRuntimeError
 from spectrum_systems.modules.runtime.xpl_runtime import create_artifact_card, XPLRuntimeError
@@ -84,3 +91,47 @@ def test_mnt_coverage_and_consistency() -> None:
     assert coverage["status"] == "fail"
     consistency = consistency_check(gate_results={"g1": "pass", "g2": "weird"}, created_at=CREATED)
     assert consistency["status"] == "fail"
+
+
+def test_mnt_promotion_guard_blocks_bypass_and_missing_bundle() -> None:
+    blocked = enforce_promotion_entrypoint(
+        entrypoint="promotion_gate",
+        mnt_002_executed=False,
+        certification_bundle_ref=None,
+        created_at=CREATED,
+    )
+    assert blocked["status"] == "block"
+    assert "mnt_002_required_before_advancement" in blocked["blocked_reasons"]
+    assert "missing_certification_bundle" in blocked["blocked_reasons"]
+
+
+def test_mnt_coverage_audit_completeness_and_real_flow_validation() -> None:
+    audit = audit_advancement_path_coverage(
+        required_paths={"promotion_gate", "release_gate", "control_loop_certification"},
+        audited_paths={"promotion_gate", "release_gate"},
+        created_at=CREATED,
+    )
+    assert audit["complete"] is False
+    assert "control_loop_certification" in audit["uncovered_paths"]
+
+    flow = validate_real_flow(
+        flow_id="flow-001",
+        step_results={"s1": "pass", "s2": "freeze", "s3": "bad"},
+        created_at=CREATED,
+    )
+    assert flow["status"] == "fail"
+    assert "s3:invalid_state" in flow["reason_codes"]
+
+
+def test_mnt_red_team_requires_guard_eval_test_conversion() -> None:
+    report = run_mnt_red_team_round(
+        round_id="RT3",
+        generated_at=CREATED,
+        exploits=[
+            {"exploit_id": "exp-1", "guard_test_id": "t-1", "eval_case_id": "e-1", "guard_rule_id": "g-1"},
+            {"exploit_id": "exp-2", "guard_test_id": "t-2", "eval_case_id": "e-2", "guard_rule_id": ""},
+        ],
+    )
+    assert report["all_exploits_converted_to_tests"] is True
+    assert report["all_exploits_converted_to_evals"] is True
+    assert report["all_exploits_converted_to_guards"] is False
