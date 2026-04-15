@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.135",
+  "artifact_version": "1.3.136",
   "schema_version": "1.3.99",
-  "standards_version": "1.0.85",
-  "record_id": "REC-STD-2026-04-14-AUD-02-REQUIRED-CHECK-ALIGNMENT-AND-TRUST-GAP-BACKTEST",
-  "run_id": "run-20260414T000000Z-aud-02-required-check-alignment-and-trust-gap-backtest",
-  "created_at": "2026-04-14T00:00:00Z",
+  "standards_version": "1.0.86",
+  "record_id": "REC-STD-2026-04-15-WPG-00",
+  "run_id": "run-20260415T000000Z-wpg-00",
+  "created_at": "2026-04-15T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.135",
+  "source_repo_version": "1.3.136",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -2851,6 +2851,71 @@
       "artifact_type": "failure_taxonomy_record",
       "example_path": "contracts/examples/failure_taxonomy_record.json",
       "notes": "BATCH-11 deterministic normalized failure taxonomy artifact turning governed failures into recurring structured inputs."
+    },
+    {
+      "artifact_type": "faq_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.136",
+      "last_updated_in": "1.3.136",
+      "example_path": "contracts/examples/faq_artifact.json",
+      "notes": "WPG-00 governed working paper generator artifact chain."
+    },
+    {
+      "artifact_type": "faq_cluster_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.136",
+      "last_updated_in": "1.3.136",
+      "example_path": "contracts/examples/faq_cluster_artifact.json",
+      "notes": "WPG-00 governed working paper generator artifact chain."
+    },
+    {
+      "artifact_type": "faq_confidence_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.136",
+      "last_updated_in": "1.3.136",
+      "example_path": "contracts/examples/faq_confidence_artifact.json",
+      "notes": "WPG-00 governed working paper generator artifact chain."
+    },
+    {
+      "artifact_type": "faq_conflict_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.136",
+      "last_updated_in": "1.3.136",
+      "example_path": "contracts/examples/faq_conflict_artifact.json",
+      "notes": "WPG-00 governed working paper generator artifact chain."
+    },
+    {
+      "artifact_type": "faq_report_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.136",
+      "last_updated_in": "1.3.136",
+      "example_path": "contracts/examples/faq_report_artifact.json",
+      "notes": "WPG-00 governed working paper generator artifact chain."
     },
     {
       "artifact_type": "fix_plan_artifact",
@@ -6150,6 +6215,19 @@
       "notes": "CDX-01 next-phase governed contract surface."
     },
     {
+      "artifact_type": "question_set_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.136",
+      "last_updated_in": "1.3.136",
+      "example_path": "contracts/examples/question_set_artifact.json",
+      "notes": "WPG-00 governed working paper generator artifact chain."
+    },
+    {
       "artifact_type": "rax_adversarial_pattern_candidate",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -8818,6 +8896,19 @@
       "notes": "BATCH-10 explicit unknown-state modeling artifact with severity/blocking semantics for fail-closed control."
     },
     {
+      "artifact_type": "unknowns_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.136",
+      "last_updated_in": "1.3.136",
+      "example_path": "contracts/examples/unknowns_artifact.json",
+      "notes": "WPG-00 governed working paper generator artifact chain."
+    },
+    {
       "artifact_type": "validation_result_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -8844,6 +8935,19 @@
       "notes": "Strategic viewpoint package with supporting and counter evidence."
     },
     {
+      "artifact_type": "working_paper_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.136",
+      "last_updated_in": "1.3.136",
+      "example_path": "contracts/examples/working_paper_artifact.json",
+      "notes": "WPG-00 governed working paper generator artifact chain."
+    },
+    {
       "artifact_type": "working_paper_input",
       "artifact_class": "work",
       "schema_version": "1.0.0",
@@ -8856,6 +8960,32 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/working_paper_input.json",
       "notes": "Initial canonical intake contract. Payload is expected to travel inside the artifact envelope standard for orchestration and data lake manifests."
+    },
+    {
+      "artifact_type": "working_section_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.136",
+      "last_updated_in": "1.3.136",
+      "example_path": "contracts/examples/working_section_artifact.json",
+      "notes": "WPG-00 governed working paper generator artifact chain."
+    },
+    {
+      "artifact_type": "wpg_delta_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.136",
+      "last_updated_in": "1.3.136",
+      "example_path": "contracts/examples/wpg_delta_artifact.json",
+      "notes": "WPG-00 governed working paper generator artifact chain."
     },
     {
       "artifact_type": "xpl_artifact_card",

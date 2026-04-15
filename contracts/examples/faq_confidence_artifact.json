@@ -1,0 +1,43 @@
+{
+  "artifact_type": "faq_confidence_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-001",
+  "inputs_ref": [
+    "input"
+  ],
+  "outputs": {
+    "confidence_rows": [
+      {
+        "question_id": "Q001",
+        "confidence": 0.9,
+        "source_count": 1,
+        "agreement": 1.0,
+        "eval_factor": 1.0
+      }
+    ],
+    "low_confidence_count": 0
+  },
+  "provenance": {
+    "stage": "stage",
+    "run_id": "wpg-run-001",
+    "trace_id": "wpg-trace-001",
+    "policy_version": "1.0.0",
+    "eval_version": "1.0.0",
+    "input_hash": "abc"
+  },
+  "evaluation_refs": {
+    "eval_case": [],
+    "eval_result": [],
+    "eval_summary": {
+      "artifact_type": "eval_summary",
+      "schema_version": "1.0.0",
+      "trace_id": "wpg-trace-001",
+      "eval_run_id": "wpg-run-001:stage",
+      "pass_rate": 1.0,
+      "failure_rate": 0.0,
+      "drift_rate": 0.0,
+      "reproducibility_score": 1.0,
+      "system_status": "healthy"
+    }
+  }
+}

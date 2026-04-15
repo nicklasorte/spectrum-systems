@@ -141,6 +141,7 @@ CDE is the only system allowed to emit:
 - **REP** — replay integrity and replay gating authority
 - **ENT** — entropy accumulation and correction-mining governance authority
 - **CON** — interface contract hardening authority
+- **WPG** — governed working paper generator pipeline (artifact-first FAQ-to-paper synthesis)
 
 ## Recurring Cross-System Phase Labels (Non-Owner)
 
@@ -2049,3 +2050,35 @@ This note records concrete artifact mappings for MNT enforcement hardening witho
 - **PRG (non-authoritative)**: `mnt_advancement_coverage_audit` reports required vs audited advancement paths and uncovered paths only; it does not enforce.
 - **SEL semantics**: pass/block/freeze normalization remains enforced through `mnt_enforcement_consistency_result` and real-flow checks.
 - **RIL red-team loop**: `mnt_red_team_round_report` remains the exploit conversion evidence artifact, with explicit test/eval/guard conversion flags.
+
+
+### WPG
+- **acronym:** `WPG`
+- **full_name:** Working Paper Generator
+- **role:** Owns deterministic transcript-to-working-paper generation with mandatory schema-validated artifacts, evaluation, control-loop decisioning, and replay integrity for working-paper output modes.
+- **owns:**
+  - working_paper_generation_pipeline
+  - transcript_question_extraction
+  - faq_generation_formatting_clustering
+  - section_narrative_assembly
+  - unknowns_and_delta_tracking
+- **consumes:**
+  - transcript artifacts
+  - resolved comment artifacts
+  - policy/eval versions from governance runtime
+- **produces:**
+  - question_set_artifact
+  - faq_artifact
+  - faq_report_artifact
+  - faq_cluster_artifact
+  - faq_conflict_artifact
+  - faq_confidence_artifact
+  - working_section_artifact
+  - unknowns_artifact
+  - working_paper_artifact
+  - wpg_delta_artifact
+- **must_not_do:**
+  - bypass control-loop decisioning
+  - emit unvalidated ad-hoc artifacts
+  - bypass replay linkage, policy_version, or eval_version
+  - redefine ownership of PQX execution authority, RAX evaluation authority, SEL enforcement authority, or artifact-boundary trust authority

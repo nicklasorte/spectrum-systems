@@ -1,0 +1,48 @@
+{
+  "artifact_type": "faq_report_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-001",
+  "inputs_ref": [
+    "input"
+  ],
+  "outputs": {
+    "mode": "working_paper",
+    "report_rows": [
+      {
+        "question": "What policy applies?",
+        "answer": "Policy X applies.",
+        "source_trace": [
+          {
+            "segment_ref": "seg-1",
+            "speaker": "Analyst",
+            "agency": "NTIA"
+          }
+        ],
+        "mode": "working_paper"
+      }
+    ]
+  },
+  "provenance": {
+    "stage": "stage",
+    "run_id": "wpg-run-001",
+    "trace_id": "wpg-trace-001",
+    "policy_version": "1.0.0",
+    "eval_version": "1.0.0",
+    "input_hash": "abc"
+  },
+  "evaluation_refs": {
+    "eval_case": [],
+    "eval_result": [],
+    "eval_summary": {
+      "artifact_type": "eval_summary",
+      "schema_version": "1.0.0",
+      "trace_id": "wpg-trace-001",
+      "eval_run_id": "wpg-run-001:stage",
+      "pass_rate": 1.0,
+      "failure_rate": 0.0,
+      "drift_rate": 0.0,
+      "reproducibility_score": 1.0,
+      "system_status": "healthy"
+    }
+  }
+}

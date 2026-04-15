@@ -1,5 +1,5 @@
 {
-  "policy_version": "1.0.0",
+  "policy_version": "1.1.0",
   "default_decision": "fail_closed",
   "system_like_path_prefixes": [
     "scripts/",
@@ -52,6 +52,32 @@
       ],
       "artifact_boundary_coverage_mandatory": true,
       "pytest_visibility_mandatory": false,
+      "system_registry_review_mandatory": true
+    },
+    "WPG": {
+      "owned_paths": [
+        "spectrum_systems/modules/wpg/",
+        "spectrum_systems/orchestration/wpg_pipeline.py",
+        "scripts/run_wpg_pipeline.py",
+        "contracts/schemas/question_set_artifact.schema.json",
+        "contracts/schemas/faq_artifact.schema.json",
+        "contracts/schemas/faq_report_artifact.schema.json",
+        "contracts/schemas/faq_cluster_artifact.schema.json",
+        "contracts/schemas/faq_conflict_artifact.schema.json",
+        "contracts/schemas/faq_confidence_artifact.schema.json",
+        "contracts/schemas/working_section_artifact.schema.json",
+        "contracts/schemas/working_paper_artifact.schema.json",
+        "contracts/schemas/unknowns_artifact.schema.json",
+        "contracts/schemas/wpg_delta_artifact.schema.json"
+      ],
+      "criticality": "high",
+      "minimum_required_tests": [
+        "tests/test_wpg_contracts.py",
+        "tests/test_wpg_pipeline.py",
+        "tests/test_three_letter_system_enforcement.py"
+      ],
+      "artifact_boundary_coverage_mandatory": true,
+      "pytest_visibility_mandatory": true,
       "system_registry_review_mandatory": true
     }
   }
