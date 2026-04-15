@@ -275,6 +275,20 @@
       "notes": "HS-X1 canonical response artifact for structured-generation enforcement outcome, target-schema linkage, and fail-closed normalization status."
     },
     {
+      "artifact_type": "ail_correction_pattern_roadmap_candidate_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/ail_correction_pattern_roadmap_candidate_record.schema.json",
+      "example_path": "contracts/examples/ail_correction_pattern_roadmap_candidate_record.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
       "artifact_type": "ail_derived_artifact_job",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -327,6 +341,19 @@
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
+      "artifact_type": "ail_recurring_exploit_family_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/ail_recurring_exploit_family_record.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
       "artifact_type": "ail_trend_cluster_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -338,6 +365,20 @@
       "last_updated_in": "1.3.200",
       "example_path": "contracts/examples/ail_trend_cluster_report.json",
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "ail_trust_posture_trend_delta_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/ail_trust_posture_trend_delta_record.schema.json",
+      "example_path": "contracts/examples/ail_trust_posture_trend_delta_record.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
       "artifact_type": "alert_trigger",
@@ -807,6 +848,46 @@
       "notes": "BATCH-12 ST-17 canary-first rollout governance record with promotion block/rollback decisions."
     },
     {
+      "artifact_type": "cap_parallelism_ceiling_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/cap_parallelism_ceiling_record.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "cap_reviewer_load_pressure_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/cap_reviewer_load_pressure_record.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "cap_roadmap_capacity_budget_posture",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/cap_roadmap_capacity_budget_posture.schema.json",
+      "example_path": "contracts/examples/cap_roadmap_capacity_budget_posture.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
       "artifact_type": "capability_readiness_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -844,6 +925,75 @@
       "last_updated_in": "1.3.115",
       "example_path": "contracts/examples/cde_closeout_gate_record.json",
       "notes": "CDE-10 closeout gate proving CDE decision outputs are operationally consumable by SEL."
+    },
+    {
+      "artifact_type": "cde_composite_posture_consumption_contract",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/cde_composite_posture_consumption_contract.schema.json",
+      "example_path": "contracts/examples/cde_composite_posture_consumption_contract.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "cde_continue_vs_halt_decision",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/cde_continue_vs_halt_decision.schema.json",
+      "example_path": "contracts/examples/cde_continue_vs_halt_decision.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "cde_escalation_to_human_decision",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/cde_escalation_to_human_decision.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "cde_global_execution_readiness_decision",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/cde_global_execution_readiness_decision.schema.json",
+      "example_path": "contracts/examples/cde_global_execution_readiness_decision.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "cde_invariant_breach_stop_decision",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/cde_invariant_breach_stop_decision.schema.json",
+      "example_path": "contracts/examples/cde_invariant_breach_stop_decision.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
       "artifact_type": "cde_repair_continuation_input",
@@ -1057,6 +1207,32 @@
       "last_updated_in": "1.3.69",
       "example_path": "contracts/examples/complexity_trend.json",
       "notes": "TPA complexity governance artifact for deterministic budget/trend/campaign enforcement and PQX cleanup scheduling."
+    },
+    {
+      "artifact_type": "con_cross_owner_contract_compatibility_matrix",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/con_cross_owner_contract_compatibility_matrix.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "con_interface_drift_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/con_interface_drift_report.json",
+      "notes": "R100-001 integration fabric extension artifact."
     },
     {
       "artifact_type": "confidence_drift_record",
@@ -1486,6 +1662,86 @@
       "notes": "XRUN-01 deterministic decision-driving cross-run artifact with trend metrics, detected patterns, recommended actions, and stable|warning|unstable system signal."
     },
     {
+      "artifact_type": "crs_consistency_severity_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/crs_consistency_severity_record.schema.json",
+      "example_path": "contracts/examples/crs_consistency_severity_record.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "crs_contradiction_cluster_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/crs_contradiction_cluster_record.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "crs_cross_owner_contradiction_history",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/crs_cross_owner_contradiction_history.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "crs_cross_phase_consistency_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/crs_cross_phase_consistency_report.schema.json",
+      "example_path": "contracts/examples/crs_cross_phase_consistency_report.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "ctx_context_recipe_conformity_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/ctx_context_recipe_conformity_report.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "ctx_roadmap_scale_context_preflight_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/ctx_roadmap_scale_context_preflight_report.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
       "artifact_type": "cvx_consistency_bundle",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1590,6 +1846,20 @@
       "notes": "CTRL-LOOP-01 grouped observability extension: deterministic per-cycle status projection with normalized blocked reasons and artifact references."
     },
     {
+      "artifact_type": "dag_critical_path_bottleneck_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/dag_critical_path_bottleneck_record.schema.json",
+      "example_path": "contracts/examples/dag_critical_path_bottleneck_record.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
       "artifact_type": "dag_critical_path_signal",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1629,6 +1899,19 @@
       "notes": "NEXT-WAVE-001 governed runtime artifact."
     },
     {
+      "artifact_type": "dag_dependency_fanout_risk_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/dag_dependency_fanout_risk_record.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
       "artifact_type": "dag_dependency_graph_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1640,6 +1923,46 @@
       "last_updated_in": "1.3.130",
       "example_path": "contracts/examples/dag_dependency_graph_record.json",
       "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "dag_full_roadmap_dependency_validation",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/dag_full_roadmap_dependency_validation.schema.json",
+      "example_path": "contracts/examples/dag_full_roadmap_dependency_validation.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "dag_hidden_dependency_suspicion_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/dag_hidden_dependency_suspicion_report.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "dag_umbrella_boundary_dependency_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/dag_umbrella_boundary_dependency_report.json",
+      "notes": "R100-001 integration fabric extension artifact."
     },
     {
       "artifact_type": "dashboard_freshness_contract",
@@ -1838,6 +2161,33 @@
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
+      "artifact_type": "dep_chain_regression_pack",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/dep_chain_regression_pack.schema.json",
+      "example_path": "contracts/examples/dep_chain_regression_pack.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "dep_critical_chain_replay_fixture_pack",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/dep_critical_chain_replay_fixture_pack.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
       "artifact_type": "dep_dependency_bundle",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1862,6 +2212,19 @@
       "last_updated_in": "1.3.200",
       "example_path": "contracts/examples/dep_dependency_test_bundle.json",
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "dep_post_fix_chain_regression_bundle",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/dep_post_fix_chain_regression_bundle.json",
+      "notes": "R100-001 integration fabric extension artifact."
     },
     {
       "artifact_type": "dep_regression_surface_report",
@@ -2582,6 +2945,47 @@
       "notes": "SF-14 deterministic release decision artifact for baseline-versus-candidate canary evaluation, governed promotion, and deterministic rollback targeting."
     },
     {
+      "artifact_type": "evd_evidence_thinning_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/evd_evidence_thinning_report.schema.json",
+      "example_path": "contracts/examples/evd_evidence_thinning_report.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "evd_roadmap_evidence_sufficiency_map",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/evd_roadmap_evidence_sufficiency_map.schema.json",
+      "example_path": "contracts/examples/evd_roadmap_evidence_sufficiency_map.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "evd_step_class_evidence_profile_library",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/evd_step_class_evidence_profile_library.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
       "artifact_type": "evidence_binding_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2645,6 +3049,60 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/evidence_sufficiency_result.json",
       "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
+      "artifact_type": "evl_phase_required_eval_set",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/evl_phase_required_eval_set.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "evl_red_team_coverage_ledger",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/evl_red_team_coverage_ledger.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "evl_required_eval_debt_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/evl_required_eval_debt_record.schema.json",
+      "example_path": "contracts/examples/evl_required_eval_debt_record.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "evl_roadmap_eval_completeness_map",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/evl_roadmap_eval_completeness_map.schema.json",
+      "example_path": "contracts/examples/evl_roadmap_eval_completeness_map.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
       "artifact_class": "coordination",
@@ -3334,6 +3792,19 @@
       "notes": "HNX checkpoint artifact with freshness+lineage semantics for resume integrity."
     },
     {
+      "artifact_type": "hnx_checkpoint_resume_integrity_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/hnx_checkpoint_resume_integrity_report.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
       "artifact_type": "hnx_continuity_debt_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3347,6 +3818,20 @@
       "notes": "HNX continuity debt tracker artifact for repeated continuity violations."
     },
     {
+      "artifact_type": "hnx_continuity_drift_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/hnx_continuity_drift_report.schema.json",
+      "example_path": "contracts/examples/hnx_continuity_drift_report.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
       "artifact_type": "hnx_continuity_state_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3358,6 +3843,33 @@
       "last_updated_in": "1.3.121",
       "example_path": "contracts/examples/hnx_continuity_state_record.example.json",
       "notes": "HNX continuity state artifact for checkpoint freshness and continuity references."
+    },
+    {
+      "artifact_type": "hnx_forward_validity_projection",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/hnx_forward_validity_projection.schema.json",
+      "example_path": "contracts/examples/hnx_forward_validity_projection.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "hnx_handoff_completeness_requirement_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/hnx_handoff_completeness_requirement_record.json",
+      "notes": "R100-001 integration fabric extension artifact."
     },
     {
       "artifact_type": "hnx_harness_bundle",
@@ -3438,6 +3950,19 @@
       "notes": "HNX resume attempt artifact with downstream lineage continuity checks."
     },
     {
+      "artifact_type": "hnx_resume_risk_classification_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/hnx_resume_risk_classification_record.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
       "artifact_type": "hnx_stage_contract_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -3449,6 +3974,20 @@
       "last_updated_in": "1.3.121",
       "example_path": "contracts/examples/hnx_stage_contract_record.example.json",
       "notes": "HNX stage contract boundary for deterministic stage topology and allowed transitions."
+    },
+    {
+      "artifact_type": "hnx_step_temporal_validity_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/hnx_step_temporal_validity_record.schema.json",
+      "example_path": "contracts/examples/hnx_step_temporal_validity_record.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
       "artifact_type": "hnx_stop_condition_record",
@@ -3709,6 +4248,20 @@
       "last_updated_in": "1.3.130",
       "example_path": "contracts/examples/jdx_judgment_policy.json",
       "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "jdx_judgment_quality_feedback_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/jdx_judgment_quality_feedback_record.schema.json",
+      "example_path": "contracts/examples/jdx_judgment_quality_feedback_record.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
       "artifact_type": "jdx_judgment_record",
@@ -4060,6 +4613,47 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/latency_budget_status.json",
       "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
+      "artifact_type": "lin_advancement_lineage_sufficiency_map",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/lin_advancement_lineage_sufficiency_map.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "lin_full_chain_lineage_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/lin_full_chain_lineage_report.schema.json",
+      "example_path": "contracts/examples/lin_full_chain_lineage_report.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "lin_lineage_decay_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/lin_lineage_decay_report.schema.json",
+      "example_path": "contracts/examples/lin_lineage_decay_report.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
       "artifact_type": "lineage_completeness_report",
@@ -4591,6 +5185,60 @@
       "notes": "PRG-owned recommendation-only roadmap candidate persistence artifact from NX feedback."
     },
     {
+      "artifact_type": "obs_gap_to_step_map",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/obs_gap_to_step_map.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "obs_missing_signal_provenance_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/obs_missing_signal_provenance_report.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "obs_roadmap_observability_completeness_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/obs_roadmap_observability_completeness_report.schema.json",
+      "example_path": "contracts/examples/obs_roadmap_observability_completeness_report.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "obs_trace_correlation_decay_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/obs_trace_correlation_decay_report.schema.json",
+      "example_path": "contracts/examples/obs_trace_correlation_decay_report.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
       "artifact_type": "observability_contract_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -4868,6 +5516,20 @@
       "last_updated_in": "1.3.200",
       "example_path": "contracts/examples/pol_policy_lifecycle_bundle.json",
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "pol_policy_release_performance_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/pol_policy_release_performance_record.schema.json",
+      "example_path": "contracts/examples/pol_policy_release_performance_record.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
       "artifact_type": "pol_rollout_record",
@@ -5611,6 +6273,20 @@
       "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
     },
     {
+      "artifact_type": "prg_prioritized_control_signal_bundle",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/prg_prioritized_control_signal_bundle.schema.json",
+      "example_path": "contracts/examples/prg_prioritized_control_signal_bundle.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
       "artifact_type": "prg_recommendation_rework_debt_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5622,6 +6298,74 @@
       "last_updated_in": "1.3.123",
       "example_path": "contracts/examples/prg_recommendation_rework_debt_record.json",
       "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
+    },
+    {
+      "artifact_type": "prg_roadmap_halt_recommendation",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/prg_roadmap_halt_recommendation.schema.json",
+      "example_path": "contracts/examples/prg_roadmap_halt_recommendation.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "prg_roadmap_recut_recommendation",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/prg_roadmap_recut_recommendation.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "prg_roadmap_risk_stack",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/prg_roadmap_risk_stack.schema.json",
+      "example_path": "contracts/examples/prg_roadmap_risk_stack.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "prg_signal_prioritization_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/prg_signal_prioritization_record.schema.json",
+      "example_path": "contracts/examples/prg_signal_prioritization_record.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "prg_smallest_safe_next_batch_recommendation",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/prg_smallest_safe_next_batch_recommendation.json",
+      "notes": "R100-001 integration fabric extension artifact."
     },
     {
       "artifact_type": "prioritized_adoption_candidate_set",
@@ -6267,6 +7011,20 @@
       "notes": "ADV-001 deterministic prx_precedent_record artifact contract."
     },
     {
+      "artifact_type": "prx_precedent_reinforcement_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/prx_precedent_reinforcement_record.schema.json",
+      "example_path": "contracts/examples/prx_precedent_reinforcement_record.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
       "artifact_type": "prx_precedent_score_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -6395,6 +7153,33 @@
       "last_updated_in": "1.3.200",
       "example_path": "contracts/examples/qos_retry_budget_record.json",
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "qos_retry_storm_susceptibility_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/qos_retry_storm_susceptibility_record.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "qos_roadmap_queue_pressure_forecast",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/qos_roadmap_queue_pressure_forecast.schema.json",
+      "example_path": "contracts/examples/qos_roadmap_queue_pressure_forecast.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
       "artifact_type": "query_index_manifest",
@@ -6761,6 +7546,33 @@
       "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
     },
     {
+      "artifact_type": "rdx_global_execution_validity_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/rdx_global_execution_validity_report.schema.json",
+      "example_path": "contracts/examples/rdx_global_execution_validity_report.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "rdx_must_revalidate_set",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/rdx_must_revalidate_set.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
       "artifact_type": "rdx_rework_debt_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -6774,6 +7586,34 @@
       "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
     },
     {
+      "artifact_type": "rdx_roadmap_contract_diff",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/rdx_roadmap_contract_diff.schema.json",
+      "example_path": "contracts/examples/rdx_roadmap_contract_diff.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "rdx_roadmap_execution_contract",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/rdx_roadmap_execution_contract.schema.json",
+      "example_path": "contracts/examples/rdx_roadmap_execution_contract.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
       "artifact_type": "rdx_roadmap_governance_bundle",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -6785,6 +7625,19 @@
       "last_updated_in": "1.3.122",
       "example_path": "contracts/examples/rdx_roadmap_governance_bundle.example.json",
       "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
+    },
+    {
+      "artifact_type": "rdx_roadmap_prerequisite_graph",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/rdx_roadmap_prerequisite_graph.json",
+      "notes": "R100-001 integration fabric extension artifact."
     },
     {
       "artifact_type": "rdx_roadmap_selection_record",
@@ -6994,6 +7847,47 @@
       "last_updated_in": "1.9.1",
       "example_path": "contracts/examples/release_record.json",
       "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
+      "artifact_type": "rep_replay_after_n_steps_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/rep_replay_after_n_steps_record.schema.json",
+      "example_path": "contracts/examples/rep_replay_after_n_steps_record.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "rep_replay_window_regression_pack",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/rep_replay_window_regression_pack.schema.json",
+      "example_path": "contracts/examples/rep_replay_window_regression_pack.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "rep_selective_replay_sampling_policy_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/rep_selective_replay_sampling_policy_record.json",
+      "notes": "R100-001 integration fabric extension artifact."
     },
     {
       "artifact_type": "repair_attempt_record",
@@ -7663,6 +8557,20 @@
       "notes": "Normalized reviewer comments with provenance links; payloads should be wrapped in the artifact envelope standard."
     },
     {
+      "artifact_type": "ril_budget_readiness_red_team_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/ril_budget_readiness_red_team_report.schema.json",
+      "example_path": "contracts/examples/ril_budget_readiness_red_team_report.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
       "artifact_type": "ril_closeout_gate_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -7674,6 +8582,48 @@
       "last_updated_in": "1.3.114",
       "example_path": "contracts/examples/ril_closeout_gate_record.json",
       "notes": "CDE-001 bounded decision authority and RIL closeout contract."
+    },
+    {
+      "artifact_type": "ril_plan_wide_coherence_red_team_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/ril_plan_wide_coherence_red_team_report.schema.json",
+      "example_path": "contracts/examples/ril_plan_wide_coherence_red_team_report.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "ril_signal_overload_red_team_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/ril_signal_overload_red_team_report.schema.json",
+      "example_path": "contracts/examples/ril_signal_overload_red_team_report.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "ril_temporal_dependency_red_team_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/ril_temporal_dependency_red_team_report.schema.json",
+      "example_path": "contracts/examples/ril_temporal_dependency_red_team_report.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
       "artifact_type": "risk_classification_record",
@@ -8360,6 +9310,46 @@
       "last_updated_in": "1.0.0",
       "example_path": null,
       "notes": "Governed derived artifact produced by the Slide Intelligence Layer. Carries paper candidates, extracted claims, assumptions, KG edges, gaps, and traceability."
+    },
+    {
+      "artifact_type": "slo_roadmap_burn_rate_forecast",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/slo_roadmap_burn_rate_forecast.json",
+      "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "slo_roadmap_error_budget_posture",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.137",
+      "last_updated_in": "1.3.137",
+      "schema_path": "contracts/schemas/slo_roadmap_error_budget_posture.schema.json",
+      "example_path": "contracts/examples/slo_roadmap_error_budget_posture.json",
+      "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "slo_roadmap_freeze_threshold_profile",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.0.83",
+      "last_updated_in": "1.0.83",
+      "example_path": "contracts/examples/slo_roadmap_freeze_threshold_profile.json",
+      "notes": "R100-001 integration fabric extension artifact."
     },
     {
       "artifact_type": "stage_contract",
@@ -9324,580 +10314,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "rdx_roadmap_execution_contract",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/rdx_roadmap_execution_contract.schema.json",
-      "example_path": "contracts/examples/rdx_roadmap_execution_contract.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "rdx_global_execution_validity_report",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/rdx_global_execution_validity_report.schema.json",
-      "example_path": "contracts/examples/rdx_global_execution_validity_report.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "rdx_roadmap_contract_diff",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/rdx_roadmap_contract_diff.schema.json",
-      "example_path": "contracts/examples/rdx_roadmap_contract_diff.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "hnx_step_temporal_validity_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/hnx_step_temporal_validity_record.schema.json",
-      "example_path": "contracts/examples/hnx_step_temporal_validity_record.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "hnx_continuity_drift_report",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/hnx_continuity_drift_report.schema.json",
-      "example_path": "contracts/examples/hnx_continuity_drift_report.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "hnx_forward_validity_projection",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/hnx_forward_validity_projection.schema.json",
-      "example_path": "contracts/examples/hnx_forward_validity_projection.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "dag_full_roadmap_dependency_validation",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/dag_full_roadmap_dependency_validation.schema.json",
-      "example_path": "contracts/examples/dag_full_roadmap_dependency_validation.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "dag_critical_path_bottleneck_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/dag_critical_path_bottleneck_record.schema.json",
-      "example_path": "contracts/examples/dag_critical_path_bottleneck_record.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "dep_chain_regression_pack",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/dep_chain_regression_pack.schema.json",
-      "example_path": "contracts/examples/dep_chain_regression_pack.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "crs_cross_phase_consistency_report",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/crs_cross_phase_consistency_report.schema.json",
-      "example_path": "contracts/examples/crs_cross_phase_consistency_report.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "crs_consistency_severity_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/crs_consistency_severity_record.schema.json",
-      "example_path": "contracts/examples/crs_consistency_severity_record.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "lin_full_chain_lineage_report",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/lin_full_chain_lineage_report.schema.json",
-      "example_path": "contracts/examples/lin_full_chain_lineage_report.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "lin_lineage_decay_report",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/lin_lineage_decay_report.schema.json",
-      "example_path": "contracts/examples/lin_lineage_decay_report.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "rep_replay_after_n_steps_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/rep_replay_after_n_steps_record.schema.json",
-      "example_path": "contracts/examples/rep_replay_after_n_steps_record.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "rep_replay_window_regression_pack",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/rep_replay_window_regression_pack.schema.json",
-      "example_path": "contracts/examples/rep_replay_window_regression_pack.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "evl_roadmap_eval_completeness_map",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/evl_roadmap_eval_completeness_map.schema.json",
-      "example_path": "contracts/examples/evl_roadmap_eval_completeness_map.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "evl_required_eval_debt_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/evl_required_eval_debt_record.schema.json",
-      "example_path": "contracts/examples/evl_required_eval_debt_record.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "evd_roadmap_evidence_sufficiency_map",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/evd_roadmap_evidence_sufficiency_map.schema.json",
-      "example_path": "contracts/examples/evd_roadmap_evidence_sufficiency_map.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "evd_evidence_thinning_report",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/evd_evidence_thinning_report.schema.json",
-      "example_path": "contracts/examples/evd_evidence_thinning_report.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "obs_roadmap_observability_completeness_report",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/obs_roadmap_observability_completeness_report.schema.json",
-      "example_path": "contracts/examples/obs_roadmap_observability_completeness_report.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "obs_trace_correlation_decay_report",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/obs_trace_correlation_decay_report.schema.json",
-      "example_path": "contracts/examples/obs_trace_correlation_decay_report.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "prg_signal_prioritization_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/prg_signal_prioritization_record.schema.json",
-      "example_path": "contracts/examples/prg_signal_prioritization_record.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "prg_prioritized_control_signal_bundle",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/prg_prioritized_control_signal_bundle.schema.json",
-      "example_path": "contracts/examples/prg_prioritized_control_signal_bundle.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "prg_roadmap_risk_stack",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/prg_roadmap_risk_stack.schema.json",
-      "example_path": "contracts/examples/prg_roadmap_risk_stack.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "prg_roadmap_halt_recommendation",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/prg_roadmap_halt_recommendation.schema.json",
-      "example_path": "contracts/examples/prg_roadmap_halt_recommendation.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "ail_correction_pattern_roadmap_candidate_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/ail_correction_pattern_roadmap_candidate_record.schema.json",
-      "example_path": "contracts/examples/ail_correction_pattern_roadmap_candidate_record.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "ail_trust_posture_trend_delta_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/ail_trust_posture_trend_delta_record.schema.json",
-      "example_path": "contracts/examples/ail_trust_posture_trend_delta_record.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "jdx_judgment_quality_feedback_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/jdx_judgment_quality_feedback_record.schema.json",
-      "example_path": "contracts/examples/jdx_judgment_quality_feedback_record.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "pol_policy_release_performance_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/pol_policy_release_performance_record.schema.json",
-      "example_path": "contracts/examples/pol_policy_release_performance_record.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "prx_precedent_reinforcement_record",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/prx_precedent_reinforcement_record.schema.json",
-      "example_path": "contracts/examples/prx_precedent_reinforcement_record.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "slo_roadmap_error_budget_posture",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/slo_roadmap_error_budget_posture.schema.json",
-      "example_path": "contracts/examples/slo_roadmap_error_budget_posture.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "cap_roadmap_capacity_budget_posture",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/cap_roadmap_capacity_budget_posture.schema.json",
-      "example_path": "contracts/examples/cap_roadmap_capacity_budget_posture.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "qos_roadmap_queue_pressure_forecast",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/qos_roadmap_queue_pressure_forecast.schema.json",
-      "example_path": "contracts/examples/qos_roadmap_queue_pressure_forecast.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "cde_global_execution_readiness_decision",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/cde_global_execution_readiness_decision.schema.json",
-      "example_path": "contracts/examples/cde_global_execution_readiness_decision.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "cde_composite_posture_consumption_contract",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/cde_composite_posture_consumption_contract.schema.json",
-      "example_path": "contracts/examples/cde_composite_posture_consumption_contract.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "cde_invariant_breach_stop_decision",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/cde_invariant_breach_stop_decision.schema.json",
-      "example_path": "contracts/examples/cde_invariant_breach_stop_decision.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "cde_continue_vs_halt_decision",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/cde_continue_vs_halt_decision.schema.json",
-      "example_path": "contracts/examples/cde_continue_vs_halt_decision.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "ril_plan_wide_coherence_red_team_report",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/ril_plan_wide_coherence_red_team_report.schema.json",
-      "example_path": "contracts/examples/ril_plan_wide_coherence_red_team_report.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "ril_temporal_dependency_red_team_report",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/ril_temporal_dependency_red_team_report.schema.json",
-      "example_path": "contracts/examples/ril_temporal_dependency_red_team_report.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "ril_signal_overload_red_team_report",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/ril_signal_overload_red_team_report.schema.json",
-      "example_path": "contracts/examples/ril_signal_overload_red_team_report.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
-    },
-    {
-      "artifact_type": "ril_budget_readiness_red_team_report",
-      "artifact_class": "governance",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.137",
-      "last_updated_in": "1.3.137",
-      "schema_path": "contracts/schemas/ril_budget_readiness_red_team_report.schema.json",
-      "example_path": "contracts/examples/ril_budget_readiness_red_team_report.json",
-      "notes": "IFB-001 roadmap integration fabric contract surface."
     }
   ]
 }
