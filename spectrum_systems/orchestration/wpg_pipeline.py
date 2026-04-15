@@ -6,6 +6,7 @@ from typing import Any, Dict
 
 from spectrum_systems.modules.wpg import (
     StageContext,
+    WPGError,
     assemble_working_paper,
     build_faq,
     cluster_faqs,
@@ -13,10 +14,22 @@ from spectrum_systems.modules.wpg import (
     format_faq_for_report,
     write_sections,
 )
-from spectrum_systems.modules.wpg.common import deterministic_copy, stable_hash
+from spectrum_systems.modules.wpg.common import deterministic_copy, ensure_contract, stable_hash
 
 
 REQUIRED_ENFORCEMENT = {"ALLOW": "proceed", "WARN": "annotate", "BLOCK": "trigger_repair", "FREEZE": "halt"}
+
+
+def _assert_stage_control(name: str, artifact: Dict[str, Any]) -> None:
+    control = artifact.get("evaluation_refs", {}).get("control_decision")
+    if not control:
+        raise WPGError(f"missing control_decision on stage artifact: {name}")
+    decision = control.get("decision")
+    if decision not in REQUIRED_ENFORCEMENT:
+        raise WPGError(f"invalid control decision on {name}: {decision}")
+    enforcement = control.get("enforcement", {}).get("action")
+    if REQUIRED_ENFORCEMENT[decision] != enforcement:
+        raise WPGError(f"enforcement mismatch for {name}: {decision} -> {enforcement}")
 
 
 def run_wpg_pipeline(
@@ -29,12 +42,15 @@ def run_wpg_pipeline(
     resolved_comments: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     ctx = StageContext(run_id=run_id, trace_id=trace_id)
-    transcript_artifact = {
-        "artifact_type": "transcript_artifact",
-        "schema_version": "1.0.0",
-        "trace_id": trace_id,
-        "outputs": deterministic_copy(transcript_payload),
-    }
+    transcript_artifact = ensure_contract(
+        {
+            "artifact_type": "transcript_artifact",
+            "schema_version": "1.0.0",
+            "trace_id": trace_id,
+            "outputs": deterministic_copy(transcript_payload),
+        },
+        "transcript_artifact",
+    )
 
     question_set = extract_questions(transcript_artifact, ctx)
     faq_bundle = build_faq(question_set, transcript_artifact, ctx)
@@ -62,16 +78,12 @@ def run_wpg_pipeline(
     failure_capture = []
     repair_suggestions = []
     for name, artifact in artifact_chain.items():
-        control = artifact.get("evaluation_refs", {}).get("control_decision")
-        if not control:
-            continue
+        _assert_stage_control(name, artifact)
+        control = artifact.get("evaluation_refs", {}).get("control_decision") or {}
         decision = control.get("decision")
         if decision in {"BLOCK", "FREEZE"}:
             failure_capture.append({"artifact": name, "decision": decision, "reasons": control.get("reasons", [])})
             repair_suggestions.append({"artifact": name, "suggestion": "increase grounding evidence and resolve contradictions"})
-        enforcement = control.get("enforcement", {}).get("action")
-        if enforcement and REQUIRED_ENFORCEMENT.get(decision) != enforcement:
-            raise ValueError(f"enforcement mismatch for {name}: {decision} -> {enforcement}")
 
     replay_signature = stable_hash(artifact_chain)
     return {

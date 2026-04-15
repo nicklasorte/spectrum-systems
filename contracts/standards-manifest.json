@@ -8844,6 +8844,19 @@
       "notes": "TPA gate artifacts now require verified TPA authenticity issuance binding; local file/token artifacts are audit-only and non-authoritative."
     },
     {
+      "artifact_type": "transcript_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.136",
+      "last_updated_in": "1.3.136",
+      "example_path": "contracts/examples/transcript_artifact.json",
+      "notes": "Ingress transcript boundary artifact for WPG fail-closed admission."
+    },
+    {
       "artifact_type": "transcript_intelligence_pack",
       "artifact_class": "work",
       "schema_version": "1.0.0",
@@ -8986,6 +8999,19 @@
       "last_updated_in": "1.3.136",
       "example_path": "contracts/examples/wpg_delta_artifact.json",
       "notes": "WPG-00 governed working paper generator artifact chain."
+    },
+    {
+      "artifact_type": "wpg_redteam_findings",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.136",
+      "last_updated_in": "1.3.136",
+      "example_path": "contracts/examples/wpg_redteam_findings_post_fix.json",
+      "notes": "Deterministic red-team findings for WPG RTX post-fix closure gate."
     },
     {
       "artifact_type": "xpl_artifact_card",

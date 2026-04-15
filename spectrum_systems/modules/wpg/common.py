@@ -2,14 +2,46 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterable, List, Sequence, Set
 
 from spectrum_systems.contracts import validate_artifact
 
 POLICY_VERSION = "1.0.0"
 EVAL_VERSION = "1.0.0"
+_STOPWORDS = {
+    "a",
+    "an",
+    "and",
+    "are",
+    "as",
+    "at",
+    "be",
+    "by",
+    "for",
+    "from",
+    "how",
+    "in",
+    "is",
+    "it",
+    "of",
+    "on",
+    "or",
+    "that",
+    "the",
+    "this",
+    "to",
+    "was",
+    "what",
+    "when",
+    "where",
+    "which",
+    "who",
+    "why",
+    "with",
+}
 
 
 class WPGError(Exception):
@@ -38,6 +70,24 @@ def stage_provenance(stage_name: str, ctx: StageContext, input_refs: Iterable[st
         "eval_version": ctx.eval_version,
         "input_hash": stable_hash(sorted(input_refs)),
     }
+
+
+def normalize_text_tokens(text: str) -> Set[str]:
+    return {
+        token
+        for token in re.findall(r"[a-z0-9]+", text.lower())
+        if token and token not in _STOPWORDS
+    }
+
+
+def jaccard_similarity(left: Sequence[str] | Set[str], right: Sequence[str] | Set[str]) -> float:
+    left_set = set(left)
+    right_set = set(right)
+    if not left_set and not right_set:
+        return 1.0
+    if not left_set or not right_set:
+        return 0.0
+    return len(left_set & right_set) / len(left_set | right_set)
 
 
 def make_eval_artifacts(stage: str, checks: List[Dict[str, Any]], ctx: StageContext) -> Dict[str, Any]:
@@ -97,6 +147,8 @@ def control_decision_from_eval(
     contradictions_unresolved: int = 0,
     low_confidence_count: int = 0,
     no_content: bool = False,
+    unknown_count: int = 0,
+    grounding_failures: int = 0,
 ) -> Dict[str, Any]:
     decision = "ALLOW"
     reasons: List[str] = []
@@ -107,9 +159,15 @@ def control_decision_from_eval(
     if no_content:
         reasons.append("no_content")
         decision = "BLOCK"
+    if grounding_failures > 0:
+        reasons.append("grounding_failure")
+        decision = "BLOCK"
     if contradictions_unresolved > 0:
         reasons.append("contradictions_unresolved")
         decision = "BLOCK" if contradictions_unresolved > 1 else "WARN"
+    if unknown_count > 0 and decision == "ALLOW":
+        decision = "WARN"
+        reasons.append("unknown_state")
     if low_confidence_count > 0 and decision == "ALLOW":
         decision = "WARN"
         reasons.append("low_confidence")

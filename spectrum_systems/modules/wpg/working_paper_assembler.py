@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from typing import Dict, List
 
-from spectrum_systems.modules.wpg.common import StageContext, ensure_contract, make_eval_artifacts, stable_hash, stage_provenance
+from spectrum_systems.modules.wpg.common import (
+    StageContext,
+    control_decision_from_eval,
+    ensure_contract,
+    make_eval_artifacts,
+    stable_hash,
+    stage_provenance,
+)
 
 
 def _render_mode(mode: str, sections: List[Dict]) -> str:
@@ -33,13 +40,35 @@ def assemble_working_paper(
     conflicts = faq_conflict_artifact.get("outputs", {}).get("conflicts", [])
 
     content = _render_mode(mode, sections)
+    if unknowns:
+        content += "\n\nUnknowns requiring follow-up:\n" + "\n".join(
+            f"- {u.get('question', 'unknown question')}: {u.get('reason', 'unknown')}" for u in unknowns
+        )
     if resolved:
         content += "\n\nResolved comments incorporated:\n" + "\n".join(f"- {c['comment_id']}: {c['resolution']}" for c in resolved)
 
     eval_pack = make_eval_artifacts(
         "working_paper_assembly",
-        [{"description": "narrative content exists", "passed": bool(content.strip()), "failure_mode": "no_content"}],
+        [
+            {
+                "description": "narrative content exists",
+                "passed": bool(content.strip()),
+                "failure_mode": "no_content",
+            },
+            {
+                "description": "unknowns are surfaced in narrative when present",
+                "passed": (not unknowns) or ("Unknowns requiring follow-up:" in content),
+                "failure_mode": "unknown_suppression",
+            },
+        ],
         ctx,
+    )
+    control = control_decision_from_eval(
+        stage="working_paper_assembly",
+        eval_summary=eval_pack["eval_summary"],
+        no_content=not bool(content.strip()),
+        unknown_count=len(unknowns),
+        contradictions_unresolved=len(conflicts),
     )
 
     working_paper = ensure_contract(
@@ -58,13 +87,34 @@ def assemble_working_paper(
                 "resolved_comments": resolved,
             },
             "provenance": stage_provenance("working_paper_assembly", ctx, ["working_section_artifact"]),
-            "evaluation_refs": eval_pack,
+            "evaluation_refs": {**eval_pack, "control_decision": control},
         },
         "working_paper_artifact",
     )
 
     prev_hash = stable_hash(prior_working_paper_artifact["outputs"]) if prior_working_paper_artifact else ""
     curr_hash = stable_hash(working_paper["outputs"])
+    delta_eval = make_eval_artifacts(
+        "delta_tracking",
+        [
+            {
+                "description": "delta hash computed",
+                "passed": bool(curr_hash),
+                "failure_mode": "missing_hash",
+            },
+            {
+                "description": "identical input yields stable hash",
+                "passed": (not prior_working_paper_artifact) or isinstance(prev_hash, str),
+                "failure_mode": "delta_instability",
+            },
+        ],
+        ctx,
+    )
+    delta_control = control_decision_from_eval(
+        stage="delta_tracking",
+        eval_summary=delta_eval["eval_summary"],
+        no_content=not bool(curr_hash),
+    )
     delta = ensure_contract(
         {
             "artifact_type": "wpg_delta_artifact",
@@ -77,7 +127,7 @@ def assemble_working_paper(
                 "changed": prev_hash != curr_hash,
             },
             "provenance": stage_provenance("delta_tracking", ctx, ["working_paper_artifact"]),
-            "evaluation_refs": eval_pack,
+            "evaluation_refs": {**delta_eval, "control_decision": delta_control},
         },
         "wpg_delta_artifact",
     )

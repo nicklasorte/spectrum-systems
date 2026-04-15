@@ -16,6 +16,7 @@ def _segments(transcript_artifact: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 
 def extract_questions(transcript_artifact: Dict[str, Any], ctx: StageContext) -> Dict[str, Any]:
+    ensure_contract(transcript_artifact, "transcript_artifact")
     segments = _segments(transcript_artifact)
     questions: List[Dict[str, Any]] = []
     for idx, seg in enumerate(segments, start=1):
@@ -25,10 +26,11 @@ def extract_questions(transcript_artifact: Dict[str, Any], ctx: StageContext) ->
         questions.append(
             {
                 "question_id": f"Q{idx:03d}",
-                "question": text,
+                "question": text.split("?", 1)[0].strip() + "?",
                 "speaker": seg.get("speaker", "unknown"),
                 "segment_ref": seg.get("segment_id", f"seg-{idx}"),
                 "agency": seg.get("agency", "unknown"),
+                "sequence": idx,
             }
         )
 
@@ -36,13 +38,22 @@ def extract_questions(transcript_artifact: Dict[str, Any], ctx: StageContext) ->
         "question_extraction",
         [
             {
-                "description": "question quality includes question marks",
-                "passed": all("?" in q["question"] for q in questions),
+                "description": "question text ends with question mark",
+                "passed": all(q["question"].endswith("?") for q in questions),
+                "failure_mode": "question_parse_failure",
             },
             {
-                "description": "non-empty output",
+                "description": "question output exists",
                 "passed": len(questions) > 0,
                 "failure_mode": "no_content",
+            },
+            {
+                "description": "all segment references resolve in transcript",
+                "passed": all(
+                    any(seg.get("segment_id") == q.get("segment_ref") for seg in segments)
+                    for q in questions
+                ),
+                "failure_mode": "dangling_segment_reference",
             },
         ],
         ctx,
@@ -59,7 +70,7 @@ def extract_questions(transcript_artifact: Dict[str, Any], ctx: StageContext) ->
         "trace_id": ctx.trace_id,
         "inputs_ref": [transcript_artifact.get("artifact_type", "transcript")],
         "outputs": {"questions": questions},
-        "provenance": stage_provenance("question_extraction", ctx, ["transcript"]),
+        "provenance": stage_provenance("question_extraction", ctx, ["transcript_artifact"]),
         "evaluation_refs": {
             **eval_pack,
             "control_decision": control,
