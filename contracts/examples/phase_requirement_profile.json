@@ -1,0 +1,8 @@
+{
+  "artifact_type": "phase_requirement_profile",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-001",
+  "phase_id": "PHASE_B",
+  "required_reviews": ["RTX-11", "RTX-12"],
+  "required_evals": ["wpg_grounding_eval_case", "wpg_uncertainty_control_record"]
+}

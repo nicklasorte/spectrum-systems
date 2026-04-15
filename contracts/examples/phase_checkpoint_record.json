@@ -1,0 +1,16 @@
+{
+  "artifact_type": "phase_checkpoint_record",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-001",
+  "phase_id": "PHASE_A",
+  "phase_label": "Core hardening",
+  "status": "COMPLETE",
+  "blocking_reason_codes": [],
+  "required_fix_refs": [],
+  "required_review_refs": [],
+  "completed_step_refs": ["WPG-25", "WPG-26", "WPG-27"],
+  "next_phase": "PHASE_B",
+  "resume_ready": true,
+  "policy_version": "1.0.0",
+  "replay_signature_refs": ["sig:phase-a-001"]
+}

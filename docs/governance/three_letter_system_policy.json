@@ -79,6 +79,29 @@
       "artifact_boundary_coverage_mandatory": true,
       "pytest_visibility_mandatory": true,
       "system_registry_review_mandatory": true
+    },
+    "CHK": {
+      "owned_paths": [
+        "scripts/run_phase_transition.py",
+        "contracts/schemas/phase_checkpoint_record.schema.json",
+        "contracts/schemas/phase_transition_policy_result.schema.json",
+        "contracts/schemas/phase_resume_record.schema.json",
+        "contracts/schemas/phase_handoff_record.schema.json",
+        "contracts/schemas/phase_registry.schema.json",
+        "contracts/schemas/phase_requirement_profile.schema.json",
+        "contracts/schemas/artifact_family_phase_map.schema.json"
+      ],
+      "criticality": "high",
+      "minimum_required_tests": [
+        "tests/test_phase_transition_policy.py",
+        "tests/test_phase_resume_record.py",
+        "tests/test_phase_handoff_record.py",
+        "tests/test_run_phase_transition.py",
+        "tests/test_phase_registry.py"
+      ],
+      "artifact_boundary_coverage_mandatory": true,
+      "pytest_visibility_mandatory": true,
+      "system_registry_review_mandatory": true
     }
   }
 }

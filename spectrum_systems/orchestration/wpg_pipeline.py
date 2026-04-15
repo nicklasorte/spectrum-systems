@@ -8,8 +8,13 @@ from spectrum_systems.modules.wpg import (
     StageContext,
     WPGError,
     assemble_working_paper,
+    build_phase_checkpoint_record,
+    build_phase_handoff_record,
+    build_phase_resume_record,
     build_faq,
     cluster_faqs,
+    default_phase_registry,
+    evaluate_phase_transition,
     extract_questions,
     format_faq_for_report,
     write_sections,
@@ -513,8 +518,32 @@ def run_wpg_pipeline(
     resolved_comments: Dict[str, Any] | None = None,
     meeting_artifact: Dict[str, Any] | None = None,
     comment_artifact: Dict[str, Any] | None = None,
+    phase_checkpoint_record: Dict[str, Any] | None = None,
+    phase_registry: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     ctx = StageContext(run_id=run_id, trace_id=trace_id)
+    registry = ensure_contract(phase_registry, "phase_registry") if phase_registry else default_phase_registry(trace_id)
+    checkpoint = (
+        ensure_contract(phase_checkpoint_record, "phase_checkpoint_record")
+        if phase_checkpoint_record
+        else build_phase_checkpoint_record(
+            phase_id="PHASE_A",
+            phase_label="Core hardening",
+            status="COMPLETE",
+            trace_id=trace_id,
+            completed_step_refs=["WPG-25", "WPG-26", "WPG-27", "WPG-28", "WPG-29", "WPG-30"],
+        )
+    )
+    transition = evaluate_phase_transition(
+        phase_checkpoint_record=checkpoint,
+        phase_registry=registry,
+        requested_action="continue",
+        redteam_open_high=0,
+        validation_passed=True,
+    )
+    if transition["decision"] == "BLOCK":
+        reasons = ",".join(transition["reason_codes"])
+        raise WPGError(f"phase transition blocked: {reasons}")
 
     transcript_artifact = ensure_contract(normalize_transcript_payload(transcript_payload, trace_id=trace_id), "transcript_artifact")
     meeting_normalized = _normalize_meeting_payload(meeting_artifact or {}, trace_id=trace_id)
@@ -573,7 +602,22 @@ def run_wpg_pipeline(
         "comment_disposition_record": comment_disposition_record,
         **assembly,
         **assurance,
+        "phase_registry": registry,
+        "phase_checkpoint_record": checkpoint,
+        "phase_transition_policy_result": transition,
     }
+    phase_resume = build_phase_resume_record(
+        checkpoint=checkpoint,
+        next_executable_slice=transition["next_phase"] or checkpoint["phase_id"],
+        remaining_required_slices=[transition["next_phase"] or checkpoint["phase_id"]],
+    )
+    phase_handoff = build_phase_handoff_record(
+        checkpoint=checkpoint,
+        resume_record=phase_resume,
+        handoff_notes=["Transition evaluated by governed phase policy."],
+    )
+    artifact_chain["phase_resume_record"] = phase_resume
+    artifact_chain["phase_handoff_record"] = phase_handoff
     failure_capture = []
     repair_suggestions = []
     for name, artifact in artifact_chain.items():
@@ -617,6 +661,8 @@ def run_wpg_pipeline_from_file(input_path: Path, output_dir: Path, mode: str = "
     resolved_comments = payload.get("resolved_comments", {"resolved_comments": []})
     meeting_artifact = payload.get("meeting_artifact")
     comment_artifact = payload.get("comment_artifact")
+    phase_checkpoint_record = payload.get("phase_checkpoint_record")
+    phase_registry = payload.get("phase_registry")
 
     bundle = run_wpg_pipeline(
         transcript,
@@ -627,6 +673,8 @@ def run_wpg_pipeline_from_file(input_path: Path, output_dir: Path, mode: str = "
         resolved_comments=resolved_comments,
         meeting_artifact=meeting_artifact,
         comment_artifact=comment_artifact,
+        phase_checkpoint_record=phase_checkpoint_record,
+        phase_registry=phase_registry,
     )
 
     output_dir.mkdir(parents=True, exist_ok=True)

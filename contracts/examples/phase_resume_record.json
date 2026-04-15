@@ -1,0 +1,8 @@
+{
+  "artifact_type": "phase_resume_record",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-001",
+  "phase_id": "PHASE_B",
+  "next_executable_slice": "RTX-11",
+  "remaining_required_slices": ["RTX-11", "FIX-15", "PHASE-B-VAL"]
+}

@@ -1,0 +1,7 @@
+{
+  "artifact_type": "artifact_family_phase_map",
+  "schema_version": "1.0.0",
+  "trace_id": "wpg-trace-001",
+  "artifact_family": "wpg_pipeline_bundle",
+  "phase_ids": ["PHASE_A", "PHASE_B", "PHASE_C", "PHASE_D", "PHASE_E", "PHASE_F", "PHASE_G", "PHASE_H"]
+}
