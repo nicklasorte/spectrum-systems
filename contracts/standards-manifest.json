@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.128",
+  "artifact_version": "1.3.129",
   "schema_version": "1.3.99",
   "standards_version": "1.9.1",
-  "record_id": "REC-STD-2026-04-15-R100-NP-001-FIXED",
-  "run_id": "run-20260415T180000Z-r100-np-001-fixed",
+  "record_id": "REC-STD-2026-04-15-RGP-02",
+  "run_id": "run-20260415T210000Z-rgp-02",
   "created_at": "2026-04-15T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.141",
+  "source_repo_version": "1.3.142",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -705,6 +705,19 @@
       "notes": "BATCH-A1 deterministic governed autonomy policy contract defining explicit continue/stop/review/escalate thresholds and fail-closed handling."
     },
     {
+      "artifact_type": "backpressure_signal",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/backpressure_signal.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
+    },
+    {
       "artifact_type": "baseline_gate_decision",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -952,6 +965,32 @@
       "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
     },
     {
+      "artifact_type": "canary_analysis_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/canary_analysis_record.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
+    },
+    {
+      "artifact_type": "canary_rollback_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/canary_rollback_record.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
+    },
+    {
       "artifact_type": "canary_rollout_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -976,6 +1015,19 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/cap_ai_cost_budget_posture.json",
       "notes": "AIG-001 governed AI integration artifact"
+    },
+    {
+      "artifact_type": "cap_budget_status_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/cap_budget_status_record.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
     },
     {
       "artifact_type": "cap_operator_review_saturation_forecast",
@@ -1961,6 +2013,19 @@
       "notes": "BATCH-Z governed cross-layer integration validation artifact covering authority boundaries, determinism, replayability, and fail-closed bounded execution seams."
     },
     {
+      "artifact_type": "correction_mining_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/correction_mining_report.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
+    },
+    {
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
@@ -2823,6 +2888,19 @@
       "last_updated_in": "1.3.200",
       "example_path": "contracts/examples/dep_regression_surface_report.json",
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "dependency_integrity_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/dependency_integrity_report.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
     },
     {
       "artifact_type": "dex_explanation_bundle",
@@ -4518,6 +4596,19 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_e7.json",
       "notes": "R100-NP-001 fix-pack along FRE->TPA->SEL->PQX path."
+    },
+    {
+      "artifact_type": "freeze_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/freeze_record.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
     },
     {
       "artifact_type": "fused_signal_record",
@@ -6418,6 +6509,19 @@
       "last_updated_in": "1.3.48",
       "example_path": "contracts/examples/next_step_recommendation.json",
       "notes": "BATCH-CYCLE-LOOP recommendation surface now includes governed next-cycle decision outputs and handoff bundle reference."
+    },
+    {
+      "artifact_type": "normalized_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/normalized_artifact.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
     },
     {
       "artifact_type": "normalized_execution_request",
@@ -8898,6 +9002,19 @@
       "notes": "WPG-00 governed working paper generator artifact chain."
     },
     {
+      "artifact_type": "queue_governance_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/queue_governance_record.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
+    },
+    {
       "artifact_type": "rax_adversarial_pattern_candidate",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -11214,6 +11331,45 @@
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
+      "artifact_type": "schema_compatibility_result",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/schema_compatibility_result.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
+    },
+    {
+      "artifact_type": "sec_control_integration_signal",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/sec_control_integration_signal.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
+    },
+    {
+      "artifact_type": "sec_guardrail_event_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/sec_guardrail_event_record.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
+    },
+    {
       "artifact_type": "service_level_objective",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -11344,6 +11500,19 @@
       "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
     },
     {
+      "artifact_type": "slice_trend_report",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/slice_trend_report.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
+    },
+    {
       "artifact_type": "slide_deck",
       "artifact_class": "work",
       "schema_version": "1.0.0",
@@ -11377,6 +11546,19 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/slo_ai_reliability_budget_posture.json",
       "notes": "AIG-001 governed AI integration artifact"
+    },
+    {
+      "artifact_type": "slo_budget_status_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/slo_budget_status_artifact.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
     },
     {
       "artifact_type": "slo_roadmap_burn_rate_forecast",
@@ -11795,6 +11977,19 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/termination_signal_record.json",
       "notes": "CDE/BAX/CDE governed authority contract."
+    },
+    {
+      "artifact_type": "test_asset_governance_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/test_asset_governance_record.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
     },
     {
       "artifact_type": "test_inventory_integrity_result",
@@ -12289,6 +12484,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/transcript_intelligence_pack.json",
       "notes": "Extracted strategic intelligence pack from transcript sources with evidence anchors."
+    },
+    {
+      "artifact_type": "translation_artifact",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.142",
+      "last_updated_in": "1.3.142",
+      "example_path": "contracts/examples/translation_artifact.json",
+      "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
     },
     {
       "artifact_type": "trust_posture_snapshot",

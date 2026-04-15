@@ -1,0 +1,15 @@
+{
+  "artifact_type": "dependency_integrity_report",
+  "artifact_id": "DEPENDENCY_INTEGRITY_REPORT-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.1",
+  "trace_id": "trace-rgp02-001",
+  "created_at": "2026-04-15T00:00:00Z",
+  "owner_system": "CON",
+  "dependency_chain_id": "dependency_chain_id-value",
+  "integrity_status": "pass",
+  "missing_dependencies": [
+    "item-1"
+  ]
+}

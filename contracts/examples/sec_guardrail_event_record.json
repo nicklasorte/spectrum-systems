@@ -1,0 +1,14 @@
+{
+  "artifact_type": "sec_guardrail_event_record",
+  "artifact_id": "SEC_GUARDRAIL_EVENT_RECORD-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.1",
+  "trace_id": "trace-rgp02-001",
+  "created_at": "2026-04-15T00:00:00Z",
+  "owner_system": "CON",
+  "guardrail_id": "guardrail_id-value",
+  "event_type": "event_type-value",
+  "outcome": "allow",
+  "freeze_required": true
+}
