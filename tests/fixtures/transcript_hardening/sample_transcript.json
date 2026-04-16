@@ -1,0 +1,22 @@
+{
+  "segments": [
+    {
+      "segment_id": "seg-1",
+      "speaker": "Facilitator",
+      "timestamp": "2026-04-16T10:00:00Z",
+      "text": "Agenda topic: review transcript hardening scope."
+    },
+    {
+      "segment_id": "seg-2",
+      "speaker": "Lead",
+      "timestamp": "2026-04-16T10:01:00Z",
+      "text": "We decided to approve the extraction baseline and owner will publish evidence mappings."
+    },
+    {
+      "segment_id": "seg-3",
+      "speaker": "Ops",
+      "timestamp": "2026-04-16T10:02:00Z",
+      "text": "Risk: replay drift if chunking changes. What control blocks promotion?"
+    }
+  ]
+}

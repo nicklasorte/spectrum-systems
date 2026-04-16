@@ -1,0 +1,383 @@
+{
+  "artifact_type": "transcript_hardening_run",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-example",
+  "run_id": "run-example",
+  "generated_at": "2026-04-16T23:23:18.029604+00:00",
+  "normalization": {
+    "artifact_type": "transcript_artifact",
+    "schema_version": "1.0.0",
+    "segments": [
+      {
+        "segment_id": "seg-1",
+        "speaker": "A",
+        "text": "Agenda topic: licensing review.",
+        "timestamp": "2026-04-16T10:00:00Z",
+        "ordinal": 1
+      },
+      {
+        "segment_id": "seg-2",
+        "speaker": "B",
+        "text": "We decided to approve the pilot action and owner will file update.",
+        "timestamp": "2026-04-16T10:01:00Z",
+        "ordinal": 2
+      },
+      {
+        "segment_id": "seg-3",
+        "speaker": "C",
+        "text": "Risk: delayed procurement. What is the fallback?",
+        "timestamp": "2026-04-16T10:02:00Z",
+        "ordinal": 3
+      }
+    ],
+    "chunking": {
+      "chunk_size": 2,
+      "chunk_count": 2,
+      "chunk_hashes": [
+        "175672829fb17719a748ab6d3b08903cd50751b6b8a9ebad04a5cac0f3f607af",
+        "cf2c6093b9dbf3af6fe6172ec1f0b12143bebd565f6cbaab96d283c66cbc6342"
+      ]
+    },
+    "replay_hash": "71ef8590790e4e32ea388ec994c647f7acbe5ae129268843ee031310678bbce5"
+  },
+  "context_bundle": {
+    "artifact_type": "transcript_context_bundle",
+    "schema_version": "1.0.0",
+    "bundle_id": "ctx-0b299f50e058ed7c",
+    "ttl_seconds": 3600,
+    "trust_level": "high",
+    "provenance": {
+      "source_artifact": "transcript_artifact",
+      "replay_hash": "71ef8590790e4e32ea388ec994c647f7acbe5ae129268843ee031310678bbce5",
+      "segment_refs": [
+        "segment:seg-1",
+        "segment:seg-2",
+        "segment:seg-3"
+      ]
+    }
+  },
+  "ai": {
+    "routing_policy": {
+      "allowed_tasks": [
+        "extract",
+        "critique",
+        "detect_contradictions",
+        "synthesize_structured_outputs"
+      ],
+      "disallowed_tasks": [
+        "control_decision",
+        "promotion",
+        "schema_bypass"
+      ]
+    },
+    "extraction": {
+      "topics": [
+        {
+          "text": "Agenda topic: licensing review.",
+          "evidence": [
+            {
+              "segment_id": "seg-1",
+              "start_char": 0,
+              "end_char": 31,
+              "timestamp": "2026-04-16T10:00:00Z"
+            }
+          ]
+        }
+      ],
+      "claims": [],
+      "decisions": [
+        {
+          "text": "We decided to approve the pilot action and owner will file update.",
+          "evidence": [
+            {
+              "segment_id": "seg-2",
+              "start_char": 0,
+              "end_char": 66,
+              "timestamp": "2026-04-16T10:01:00Z"
+            }
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "text": "We decided to approve the pilot action and owner will file update.",
+          "evidence": [
+            {
+              "segment_id": "seg-2",
+              "start_char": 0,
+              "end_char": 66,
+              "timestamp": "2026-04-16T10:01:00Z"
+            }
+          ]
+        }
+      ],
+      "risks": [
+        {
+          "text": "Risk: delayed procurement. What is the fallback?",
+          "evidence": [
+            {
+              "segment_id": "seg-3",
+              "start_char": 0,
+              "end_char": 48,
+              "timestamp": "2026-04-16T10:02:00Z"
+            }
+          ]
+        }
+      ],
+      "open_questions": [
+        {
+          "text": "Risk: delayed procurement. What is the fallback?",
+          "evidence": [
+            {
+              "segment_id": "seg-3",
+              "start_char": 0,
+              "end_char": 48,
+              "timestamp": "2026-04-16T10:02:00Z"
+            }
+          ]
+        }
+      ]
+    },
+    "critique": {
+      "contradictions": [],
+      "gaps": []
+    },
+    "grounding_enforced": true
+  },
+  "eval": {
+    "required_evals": {
+      "schema": true,
+      "completeness": true,
+      "evidence_coverage": true,
+      "contradiction_detection": true,
+      "replay_consistency": true,
+      "policy_alignment": true
+    },
+    "missing_required_evals": [],
+    "pass": true
+  },
+  "judgment": {
+    "status": "approve",
+    "rationale": "evidence_and_eval_sufficient"
+  },
+  "control": {
+    "decision": "ALLOW",
+    "reasons": [],
+    "enforcement": "proceed"
+  },
+  "feedback_loop": {
+    "failure_classes": {
+      "parse": 0,
+      "schema": 0,
+      "evidence": 0,
+      "contradiction": 0,
+      "replay": 0,
+      "policy": 0,
+      "drift": 0
+    },
+    "failure_derived_evals": [],
+    "override_policy_updates": [],
+    "patch_library": [
+      "deterministic_sort_segments",
+      "enforce_evidence_anchor",
+      "block_missing_required_eval"
+    ],
+    "observability": {
+      "failure_to_eval_count": 0,
+      "override_to_policy_count": 0
+    }
+  },
+  "red_team_reviews": [
+    {
+      "review_id": "THR-24",
+      "attack_surface": [
+        "prompt injection",
+        "instruction/data mixing",
+        "unsafe context inclusion"
+      ],
+      "findings": [
+        {
+          "severity": "S2",
+          "finding": "missing_mitigation:sanitize_instructional_phrases",
+          "attack_surface": [
+            "prompt injection",
+            "instruction/data mixing",
+            "unsafe context inclusion"
+          ]
+        }
+      ],
+      "fixes_applied": [
+        "sanitize_instructional_phrases"
+      ],
+      "unresolved_s2_plus": 0
+    },
+    {
+      "review_id": "THR-11",
+      "attack_surface": [
+        "determinism",
+        "schema",
+        "replay",
+        "fail-open"
+      ],
+      "findings": [
+        {
+          "severity": "S2",
+          "finding": "missing_mitigation:enforce_replay_hash_gate",
+          "attack_surface": [
+            "determinism",
+            "schema",
+            "replay",
+            "fail-open"
+          ]
+        }
+      ],
+      "fixes_applied": [
+        "enforce_replay_hash_gate"
+      ],
+      "unresolved_s2_plus": 0
+    },
+    {
+      "review_id": "THR-14B",
+      "attack_surface": [
+        "hallucination",
+        "grounding",
+        "eval blind spots",
+        "judge drift"
+      ],
+      "findings": [
+        {
+          "severity": "S2",
+          "finding": "missing_mitigation:require_evidence_anchor_on_all_outputs",
+          "attack_surface": [
+            "hallucination",
+            "grounding",
+            "eval blind spots",
+            "judge drift"
+          ]
+        }
+      ],
+      "fixes_applied": [
+        "require_evidence_anchor_on_all_outputs"
+      ],
+      "unresolved_s2_plus": 0
+    },
+    {
+      "review_id": "THR-18",
+      "attack_surface": [
+        "scaling",
+        "backlog",
+        "failure propagation"
+      ],
+      "findings": [
+        {
+          "severity": "S2",
+          "finding": "missing_mitigation:add_queue_backpressure_signal",
+          "attack_surface": [
+            "scaling",
+            "backlog",
+            "failure propagation"
+          ]
+        }
+      ],
+      "fixes_applied": [
+        "add_queue_backpressure_signal"
+      ],
+      "unresolved_s2_plus": 0
+    },
+    {
+      "review_id": "THR-21",
+      "attack_surface": [
+        "end-to-end bypass",
+        "control bypass",
+        "promotion bypass"
+      ],
+      "findings": [
+        {
+          "severity": "S2",
+          "finding": "missing_mitigation:bind_control_to_certification",
+          "attack_surface": [
+            "end-to-end bypass",
+            "control bypass",
+            "promotion bypass"
+          ]
+        }
+      ],
+      "fixes_applied": [
+        "bind_control_to_certification"
+      ],
+      "unresolved_s2_plus": 0
+    },
+    {
+      "review_id": "THR-33",
+      "attack_surface": [
+        "stale policy",
+        "override accumulation",
+        "review fatigue"
+      ],
+      "findings": [
+        {
+          "severity": "S2",
+          "finding": "missing_mitigation:activate_policy_staleness_alarm",
+          "attack_surface": [
+            "stale policy",
+            "override accumulation",
+            "review fatigue"
+          ]
+        }
+      ],
+      "fixes_applied": [
+        "activate_policy_staleness_alarm"
+      ],
+      "unresolved_s2_plus": 0
+    },
+    {
+      "review_id": "THR-41",
+      "attack_surface": [
+        "failure-to-eval linkage",
+        "override-to-policy linkage",
+        "fix efficacy"
+      ],
+      "findings": [
+        {
+          "severity": "S2",
+          "finding": "missing_mitigation:enforce_feedback_derivation_contract",
+          "attack_surface": [
+            "failure-to-eval linkage",
+            "override-to-policy linkage",
+            "fix efficacy"
+          ]
+        }
+      ],
+      "fixes_applied": [
+        "enforce_feedback_derivation_contract"
+      ],
+      "unresolved_s2_plus": 0
+    }
+  ],
+  "observability": {
+    "ambiguity_rate": 0.333,
+    "evidence_coverage": 1.0,
+    "contradiction_rate": 0.0,
+    "replay_match_rate": 1.0,
+    "latency_ms": 0,
+    "blocked_rate": 0.0,
+    "queue_depth": 0,
+    "backlog_age_seconds": 0,
+    "retry_storm_detected": false,
+    "input_drift": 0.0,
+    "output_drift": 0.0,
+    "calibration_drift": 0.0
+  },
+  "certification": {
+    "ready": true,
+    "blocked_reasons": [],
+    "required_checks": {
+      "determinism": true,
+      "schema": true,
+      "replay": true,
+      "fail_closed": true,
+      "control_integration": true,
+      "statelessness": true
+    }
+  }
+}

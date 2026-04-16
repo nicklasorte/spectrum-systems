@@ -383,3 +383,5 @@ Closed plans are not deleted — they remain as execution history.
 | docs/review-actions/PLAN-DASHBOARD-NEXT-PHASE-SERIAL-04-2026-04-12.md | DASHBOARD-NEXT-PHASE-SERIAL-04 — Governed operator coordination surface | Active |
 
 | docs/review-actions/PLAN-PRG-001-2026-04-13.md | PRG-001 — RDX closeout + PRG bounded governance foundation + red-team fix loops | Active |
+
+| docs/review-actions/PLAN-TRN-02-2026-04-16.md | TRN-02 — Full transcript hardening execution, red-team loops, fixes, and certification gate | Active |
