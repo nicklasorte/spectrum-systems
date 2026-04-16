@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.130",
+  "artifact_version": "1.3.131",
   "schema_version": "1.3.99",
-  "standards_version": "1.9.1",
-  "record_id": "REC-STD-2026-04-15-RGP-02",
-  "run_id": "run-20260415T210000Z-rgp-02",
-  "created_at": "2026-04-15T00:00:00Z",
+  "standards_version": "1.9.2",
+  "record_id": "REC-STD-2026-04-16-MAL-001",
+  "run_id": "run-20260416T000000Z-mal-001",
+  "created_at": "2026-04-16T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.143",
+  "source_repo_version": "1.3.144",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -550,6 +550,19 @@
       "notes": "Canonical governed artifact envelope for deterministic identity, timestamp, schema version, and trace reference normalization."
     },
     {
+      "artifact_type": "artifact_eval_requirement_profile",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/artifact_eval_requirement_profile.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "artifact_family_health_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -587,6 +600,32 @@
       "last_updated_in": "1.3.113",
       "example_path": "contracts/examples/artifact_intelligence_index.json",
       "notes": "RIL-owned deterministic index over governed artifact telemetry for non-authoritative retrieval and analysis."
+    },
+    {
+      "artifact_type": "artifact_intelligence_index_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/artifact_intelligence_index_record.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
+      "artifact_type": "artifact_intelligence_redteam_findings",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/artifact_intelligence_redteam_findings.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "artifact_intelligence_report",
@@ -807,6 +846,32 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/book_intelligence_pack.json",
       "notes": "Extracted strategic intelligence pack from book sources with evidence anchors."
+    },
+    {
+      "artifact_type": "bottleneck_alert_trigger_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/bottleneck_alert_trigger_result.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
+      "artifact_type": "bottleneck_wave_certification_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/bottleneck_wave_certification_record.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "bounded_repair_candidate_artifact",
@@ -1228,6 +1293,19 @@
       "notes": "R100-001 integration fabric extension artifact."
     },
     {
+      "artifact_type": "cde_fix_completion_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/cde_fix_completion_decision.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
       "artifact_type": "cde_global_execution_readiness_decision",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -1308,6 +1386,19 @@
       "notes": "CDE decision input derived from failure packet + bounded repair candidate."
     },
     {
+      "artifact_type": "cde_review_completion_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/cde_review_completion_decision.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
       "artifact_type": "cde_roadmap_continuation_readiness_bundle_contract",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1334,6 +1425,45 @@
       "notes": "VAL-11 governed DONE-01 integrity validation artifact proving fail-closed certification behavior under inconsistent, partial, and conflicting signal combinations."
     },
     {
+      "artifact_type": "certification_remediation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/certification_remediation_record.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
+      "artifact_type": "checkpoint_hibernate_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/checkpoint_hibernate_record.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
+      "artifact_type": "checkpoint_policy_maintain_redteam_findings",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/checkpoint_policy_maintain_redteam_findings.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "checkpoint_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -1345,6 +1475,32 @@
       "last_updated_in": "1.3.92",
       "example_path": "contracts/examples/checkpoint_record.json",
       "notes": "HR-B canonical checkpoint continuity artifact for long-running governed execution."
+    },
+    {
+      "artifact_type": "checkpoint_stage_contract_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/checkpoint_stage_contract_record.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
+      "artifact_type": "checkpoint_wake_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/checkpoint_wake_record.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "chx_campaign_result",
@@ -1573,6 +1729,19 @@
       "notes": "TPA complexity governance artifact for deterministic budget/trend/campaign enforcement and PQX cleanup scheduling."
     },
     {
+      "artifact_type": "con_composition_only_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/con_composition_only_result.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
       "artifact_type": "con_contract_evolution_pressure_map",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1636,6 +1805,32 @@
       "last_updated_in": "1.9.1",
       "example_path": "contracts/examples/confidence_drift_record.json",
       "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
+      "artifact_type": "confidence_usage_policy",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/confidence_usage_policy.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
+      "artifact_type": "confidence_violation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/confidence_violation_record.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "context_admission_decision",
@@ -1818,6 +2013,19 @@
       "last_updated_in": "1.3.61",
       "example_path": "contracts/examples/continuous_eval_run_record.json",
       "notes": "BATCH-12 ST-10 governed stage-explicit deterministic continuous evaluation record."
+    },
+    {
+      "artifact_type": "contract_compatibility_evaluation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/contract_compatibility_evaluation_record.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "contract_impact_artifact",
@@ -2078,6 +2286,19 @@
       "notes": "CDX-01 next-phase governed contract surface."
     },
     {
+      "artifact_type": "cross_run_bottleneck_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/cross_run_bottleneck_report.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "cross_run_intelligence_decision",
       "artifact_class": "coordination",
       "schema_version": "2.0.0",
@@ -2089,6 +2310,19 @@
       "last_updated_in": "1.0.67",
       "example_path": null,
       "notes": "XRUN-01 deterministic decision-driving cross-run artifact with trend metrics, detected patterns, recommended actions, and stable|warning|unstable system signal."
+    },
+    {
+      "artifact_type": "cross_run_redteam_findings",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/cross_run_redteam_findings.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "crs_active_rule_ambiguity_report",
@@ -3343,6 +3577,19 @@
       "notes": "Legacy executable eval-case specification consumed by eval_engine with trace-linked inputs, expected outputs, scoring rubric, and optional slice/risk metadata for SF-07 coverage reporting."
     },
     {
+      "artifact_type": "eval_coverage_redteam_findings",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/eval_coverage_redteam_findings.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "eval_coverage_registry",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -4221,6 +4468,19 @@
       "notes": "BATCH-11 deterministic normalized failure taxonomy artifact turning governed failures into recurring structured inputs."
     },
     {
+      "artifact_type": "failure_to_eval_conversion_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/failure_to_eval_conversion_record.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "faq_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -4338,6 +4598,32 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
+      "artifact_type": "final_auto_review_fix_scenario",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/final_auto_review_fix_scenario.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
+      "artifact_type": "final_bottleneck_wave_redteam_findings",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/final_bottleneck_wave_redteam_findings.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "final_impacted_suite_rerun_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -4349,6 +4635,32 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/final_impacted_suite_rerun_report.json",
       "notes": "R100-NP-001 final integration and rerun evidence."
+    },
+    {
+      "artifact_type": "final_minimal_prompt_scenario",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/final_minimal_prompt_scenario.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
+      "artifact_type": "final_rerun_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/final_rerun_report.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
     },
     {
       "artifact_type": "final_umbrella_boundary_continue_halt_test_matrix",
@@ -4401,6 +4713,45 @@
       "last_updated_in": "1.3.38",
       "example_path": "contracts/examples/fre_closeout_gate_record.json",
       "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
+    },
+    {
+      "artifact_type": "fre_fix_compilation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/fre_fix_compilation_record.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
+      "artifact_type": "fre_fix_pack_m1",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/fre_fix_pack_m1.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
+      "artifact_type": "fre_fix_pack_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/fre_fix_pack_record.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
     },
     {
       "artifact_class": "coordination",
@@ -5251,6 +5602,19 @@
       "notes": "AUTONOMOUS-LOOP-01 dual implementation review artifact for Claude/Codex findings ingestion."
     },
     {
+      "artifact_type": "improvement_recommendation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/improvement_recommendation_record.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "industry_critique_profile",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5551,6 +5915,19 @@
       "notes": "R100-NP-001 learning and pressure posture."
     },
     {
+      "artifact_type": "judge_disagreement_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/judge_disagreement_report.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "judgment_active_set_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5733,6 +6110,19 @@
       "notes": "CL-05 longitudinal calibration outcome linkage contract with required judgment/decision/policy/trace binding and observation timestamp."
     },
     {
+      "artifact_type": "judgment_override_redteam_findings",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/judgment_override_redteam_findings.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "judgment_policy",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5744,6 +6134,19 @@
       "last_updated_in": "1.0.99",
       "example_path": "contracts/examples/judgment_policy.json",
       "notes": "Versioned deterministic judgment policy now includes learning_control_policy thresholds for drift, calibration, and error-budget enforcement seams. Extended status enum with revoked for explicit lifecycle revocation governance."
+    },
+    {
+      "artifact_type": "judgment_policy_candidate_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/judgment_policy_candidate_artifact.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "judgment_policy_extraction_record",
@@ -6006,6 +6409,19 @@
       "last_updated_in": "1.3.131",
       "example_path": "contracts/examples/maintain_cycle_record.json",
       "notes": "RAX serial operating substrate governance contract."
+    },
+    {
+      "artifact_type": "maintain_drift_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/maintain_drift_report.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "map_projection_bundle",
@@ -6695,6 +7111,19 @@
       "notes": "SRE-10 deterministic metrics aggregation artifact for replay/runtime control outputs with strict bounded metric vocabulary and optional SLO breach summary."
     },
     {
+      "artifact_type": "observability_redteam_findings",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/observability_redteam_findings.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "operations_execution_schedule",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -6787,6 +7216,19 @@
       "last_updated_in": "1.3.36",
       "example_path": "contracts/examples/operator_friction_report.json",
       "notes": "BATCH-Y deterministic operator-friction harvest report emitted from realistic governed system-cycle scenarios."
+    },
+    {
+      "artifact_type": "operator_trust_bottleneck_view",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/operator_trust_bottleneck_view.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "opx_005_integration_artifact",
@@ -6920,6 +7362,19 @@
       "last_updated_in": "BATCH-HR-C",
       "example_path": "contracts/examples/permission_request_record.json",
       "notes": "HR-C canonical control-surface artifact family"
+    },
+    {
+      "artifact_type": "phase_certified_expansion_gate_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/phase_certified_expansion_gate_result.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "phase_checkpoint_record",
@@ -7157,6 +7612,19 @@
       "notes": "WPG EXEC C-H governed execution artifact."
     },
     {
+      "artifact_type": "policy_canary_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/policy_canary_record.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "policy_candidate_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -7233,6 +7701,32 @@
       "last_updated_in": "1.9.1",
       "example_path": "contracts/examples/policy_lifecycle_record.json",
       "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
+      "artifact_type": "policy_regression_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/policy_regression_report.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
+      "artifact_type": "policy_rollback_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/policy_rollback_record.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "pqx_block_record",
@@ -7690,6 +8184,19 @@
       "notes": "LT-02 explicit precedent conflict classification, severity, blocking state, and required follow-up governance."
     },
     {
+      "artifact_type": "precedent_ranking_evaluation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/precedent_ranking_evaluation_record.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "precedent_retrieval",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -8084,6 +8591,58 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
+      "artifact_type": "prm_authority_language_scrubber_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/prm_authority_language_scrubber_result.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
+      "artifact_type": "prm_owner_scope_expansion_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/prm_owner_scope_expansion_record.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
+      "artifact_type": "prm_prompt_minimalism_profile",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/prm_prompt_minimalism_profile.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
+      "artifact_type": "prm_step_template_registry_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/prm_step_template_registry_record.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
       "artifact_type": "program_alignment_assessment",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -8226,6 +8785,32 @@
       "last_updated_in": "1.3.90",
       "example_path": "contracts/examples/promotion_gate_decision_artifact.json",
       "notes": "BATCH-MB-02 deterministic fail-closed promotion gate decision artifact requiring ready_for_merge plus certified governed evidence before merge-ready visibility."
+    },
+    {
+      "artifact_type": "promotion_requirement_evaluation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/promotion_requirement_evaluation_record.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
+      "artifact_type": "promotion_requirement_profile",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/promotion_requirement_profile.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "promotion_requirements",
@@ -9353,6 +9938,19 @@
       "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
     },
     {
+      "artifact_type": "rdx_change_budget_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/rdx_change_budget_record.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
       "artifact_type": "rdx_execution_loop_readiness_handoff_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -9391,6 +9989,32 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/rdx_must_revalidate_set.json",
       "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "rdx_narrowest_owner_resolution_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/rdx_narrowest_owner_resolution_record.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
+      "artifact_type": "rdx_prompt_to_plan_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/rdx_prompt_to_plan_record.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
     },
     {
       "artifact_type": "rdx_rework_debt_record",
@@ -9564,6 +10188,19 @@
       "notes": "RDX bounded roadmap-governance hardening contract for deterministic selection, eval, replay, readiness, and fail-closed integrity checks."
     },
     {
+      "artifact_type": "rdx_step_render_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/rdx_step_render_record.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
       "artifact_type": "rdx_umbrella_dependency_seal",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -9601,6 +10238,19 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/rdx_unsafe_breadth_report.json",
       "notes": "R100-NP-001 long-roadmap fabric."
+    },
+    {
+      "artifact_type": "readiness_promotion_redteam_findings",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/readiness_promotion_redteam_findings.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "readiness_review_dashboard_artifact",
@@ -9682,6 +10332,19 @@
       "notes": "WPG EXEC C-H governed execution artifact."
     },
     {
+      "artifact_type": "registry_divergence_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/registry_divergence_report.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "rel_canary_metrics_breakdown",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -9732,6 +10395,19 @@
       "last_updated_in": "1.3.130",
       "example_path": "contracts/examples/rel_release_record.json",
       "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "release_readiness_policy_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/release_readiness_policy_result.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "release_record",
@@ -10730,6 +11406,45 @@
       "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
+      "artifact_type": "ril_prompt_minimalism_red_team_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/ril_prompt_minimalism_red_team_report.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
+      "artifact_type": "ril_red_team_package_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/ril_red_team_package_record.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
+      "artifact_type": "ril_review_type_selection_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/ril_review_type_selection_record.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
       "artifact_type": "ril_roadmap_contract_structure_red_team_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -11095,6 +11810,19 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/route_candidate_set.json",
       "notes": "CDX-01 next-phase governed contract surface."
+    },
+    {
+      "artifact_type": "route_efficiency_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/route_efficiency_report.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "routing_decision",
@@ -11653,6 +12381,19 @@
       "notes": "WPG EXEC C-H governed execution artifact."
     },
     {
+      "artifact_type": "stale_assumption_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/stale_assumption_report.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "standards_manifest",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -12070,6 +12811,32 @@
       "notes": "Candidate-only TLC orchestration readiness artifact with non-authority assertions."
     },
     {
+      "artifact_type": "tlc_rerun_cycle_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/tlc_rerun_cycle_record.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
+      "artifact_type": "tlc_review_fix_cycle_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/tlc_review_fix_cycle_record.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
       "artifact_type": "tlc_routing_bundle",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -12107,6 +12874,19 @@
       "last_updated_in": "1.3.119",
       "example_path": "contracts/examples/tlc_routing_eval_result.json",
       "notes": "TLC routing evaluation result with fail-closed checks and explicit fail reasons."
+    },
+    {
+      "artifact_type": "tlc_validation_ladder_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.144",
+      "last_updated_in": "1.3.144",
+      "example_path": "contracts/examples/tlc_validation_ladder_result.json",
+      "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
     },
     {
       "artifact_type": "tlx_ai_adapter_dispatch_record",
@@ -12499,6 +13279,19 @@
       "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
     },
     {
+      "artifact_type": "trend_report_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/trend_report_artifact.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "trust_posture_snapshot",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -12616,6 +13409,32 @@
       "notes": "Strategic viewpoint package with supporting and counter evidence."
     },
     {
+      "artifact_type": "workflow_semantic_audit_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/workflow_semantic_audit_result.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
+      "artifact_type": "workflow_trust_redteam_findings",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/workflow_trust_redteam_findings.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "working_paper_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -12695,6 +13514,19 @@
       "notes": "WPG-00 governed working paper generator artifact chain."
     },
     {
+      "artifact_type": "wpg_eval_coverage_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/wpg_eval_coverage_artifact.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
       "artifact_type": "wpg_grounding_eval_case",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -12758,6 +13590,19 @@
       "last_updated_in": "1.3.140",
       "example_path": "contracts/examples/wpg_redteam_findings_phase_b.json",
       "notes": "WPG Phase B governed workflow loop contract."
+    },
+    {
+      "artifact_type": "wpg_release_readiness_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.143",
+      "last_updated_in": "1.3.143",
+      "example_path": "contracts/examples/wpg_release_readiness_artifact.json",
+      "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
       "artifact_type": "wpg_reusable_template",
@@ -12875,552 +13720,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "artifact_eval_requirement_profile",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/artifact_eval_requirement_profile.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "wpg_eval_coverage_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/wpg_eval_coverage_artifact.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "failure_to_eval_conversion_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/failure_to_eval_conversion_record.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "eval_coverage_redteam_findings",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/eval_coverage_redteam_findings.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "wpg_release_readiness_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/wpg_release_readiness_artifact.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "release_readiness_policy_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/release_readiness_policy_result.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "promotion_requirement_profile",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/promotion_requirement_profile.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "promotion_requirement_evaluation_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/promotion_requirement_evaluation_record.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "readiness_promotion_redteam_findings",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/readiness_promotion_redteam_findings.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "contract_compatibility_evaluation_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/contract_compatibility_evaluation_record.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "workflow_semantic_audit_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/workflow_semantic_audit_result.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "workflow_trust_redteam_findings",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/workflow_trust_redteam_findings.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "artifact_intelligence_index_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/artifact_intelligence_index_record.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "trend_report_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/trend_report_artifact.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "improvement_recommendation_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/improvement_recommendation_record.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "artifact_intelligence_redteam_findings",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/artifact_intelligence_redteam_findings.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "judgment_policy_candidate_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/judgment_policy_candidate_artifact.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "precedent_ranking_evaluation_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/precedent_ranking_evaluation_record.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "judge_disagreement_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/judge_disagreement_report.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "judgment_override_redteam_findings",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/judgment_override_redteam_findings.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "cross_run_bottleneck_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/cross_run_bottleneck_report.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "route_efficiency_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/route_efficiency_report.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "cross_run_redteam_findings",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/cross_run_redteam_findings.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "policy_regression_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/policy_regression_report.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "policy_canary_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/policy_canary_record.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "policy_rollback_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/policy_rollback_record.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "confidence_usage_policy",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/confidence_usage_policy.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "confidence_violation_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/confidence_violation_record.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "checkpoint_stage_contract_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/checkpoint_stage_contract_record.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "checkpoint_hibernate_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/checkpoint_hibernate_record.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "checkpoint_wake_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/checkpoint_wake_record.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "maintain_drift_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/maintain_drift_report.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "stale_assumption_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/stale_assumption_report.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "registry_divergence_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/registry_divergence_report.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "checkpoint_policy_maintain_redteam_findings",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/checkpoint_policy_maintain_redteam_findings.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "operator_trust_bottleneck_view",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/operator_trust_bottleneck_view.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "bottleneck_alert_trigger_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/bottleneck_alert_trigger_result.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "observability_redteam_findings",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/observability_redteam_findings.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "phase_certified_expansion_gate_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/phase_certified_expansion_gate_result.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "final_bottleneck_wave_redteam_findings",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/final_bottleneck_wave_redteam_findings.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "bottleneck_wave_certification_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/bottleneck_wave_certification_record.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
-    },
-    {
-      "artifact_type": "certification_remediation_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.143",
-      "last_updated_in": "1.3.143",
-      "example_path": "contracts/examples/certification_remediation_record.json",
-      "notes": "BNE-00 bottleneck attack wave governed artifact."
     }
   ]
 }

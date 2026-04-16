@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tlc_rerun_cycle_record.schema.json",
+  "title": "tlc_rerun_cycle_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "created_at",
+    "owner",
+    "status",
+    "fix_pack_ref",
+    "impacted_tests",
+    "rerun_status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "tlc_rerun_cycle_record"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner": {
+      "type": "string",
+      "const": "TLC"
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fix_pack_ref": {
+      "type": "string"
+    },
+    "impacted_tests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "rerun_status": {
+      "enum": [
+        "completed",
+        "blocked"
+      ]
+    }
+  }
+}

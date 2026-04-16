@@ -1,0 +1,16 @@
+{
+  "artifact_type": "prm_authority_language_scrubber_result",
+  "artifact_id": "prm_authority_language_scrubber_result-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.2",
+  "created_at": "2026-04-16T00:00:00Z",
+  "owner": "PRM",
+  "status": "fail_closed",
+  "prompt_ref": "prm_prompt_minimalism_profile:001",
+  "forbidden_terms": [
+    "unauthorized gate",
+    "external decision"
+  ],
+  "violations_detected": 1
+}

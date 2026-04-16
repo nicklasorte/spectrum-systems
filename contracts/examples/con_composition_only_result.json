@@ -1,0 +1,14 @@
+{
+  "artifact_type": "con_composition_only_result",
+  "artifact_id": "con_composition_only_result-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.2",
+  "created_at": "2026-04-16T00:00:00Z",
+  "owner": "CON",
+  "status": "pass",
+  "checked_artifact_refs": [
+    "contracts/schemas/prm_prompt_minimalism_profile.schema.json"
+  ],
+  "overlap_found": false
+}
