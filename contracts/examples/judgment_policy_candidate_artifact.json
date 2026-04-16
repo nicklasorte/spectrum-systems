@@ -1,0 +1,10 @@
+{
+  "artifact_type": "judgment_policy_candidate_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-bne-00",
+  "run_id": "run-bne-00",
+  "outputs": {
+    "status": "ok",
+    "records": []
+  }
+}

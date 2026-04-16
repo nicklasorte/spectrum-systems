@@ -1,0 +1,10 @@
+{
+  "artifact_type": "policy_regression_report",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-bne-00",
+  "run_id": "run-bne-00",
+  "outputs": {
+    "status": "ok",
+    "records": []
+  }
+}

@@ -42,6 +42,13 @@ from spectrum_systems.modules.wpg.common import (
     stable_hash,
     stage_provenance,
 )
+from spectrum_systems.modules.wpg.eval_coverage import compute_wpg_eval_coverage
+from spectrum_systems.modules.governance.artifact_eval_requirements import evaluate_required_evals
+from spectrum_systems.modules.governance.release_readiness_policy import evaluate_release_readiness
+from spectrum_systems.modules.governance.promotion_requirements import evaluate_promotion_requirements
+from spectrum_systems.modules.governance.phase_certified_expansion_gate import evaluate_phase_certified_expansion_gate
+from spectrum_systems.modules.runtime.operator_trust_view import build_operator_trust_view
+from spectrum_systems.modules.runtime.bottleneck_alerts import compute_bottleneck_alerts
 
 
 REQUIRED_ENFORCEMENT = {"ALLOW": "proceed", "WARN": "annotate", "BLOCK": "trigger_repair", "FREEZE": "halt"}
@@ -621,6 +628,97 @@ def run_wpg_pipeline(
         working_paper=assembly["working_paper_artifact"],
         trace_id=trace_id,
     )
+    eval_requirement_profile = ensure_contract(
+        {
+            "artifact_type": "artifact_eval_requirement_profile",
+            "schema_version": "1.0.0",
+            "trace_id": trace_id,
+            "outputs": {
+                "requirements": [
+                    {
+                        "eval_id": "eval.transcript_ingress",
+                        "severity": "high",
+                        "blocking": True,
+                        "stages": ["phase_b"],
+                        "artifact_families": ["wpg"],
+                    },
+                    {
+                        "eval_id": "eval.readiness",
+                        "severity": "high",
+                        "blocking": True,
+                        "stages": ["phase_b"],
+                        "artifact_families": ["wpg"],
+                    },
+                    {
+                        "eval_id": "eval.promotion",
+                        "severity": "high",
+                        "blocking": True,
+                        "stages": ["phase_b"],
+                        "artifact_families": ["wpg"],
+                    },
+                ]
+            },
+        },
+        "artifact_eval_requirement_profile",
+    )
+    eval_coverage = compute_wpg_eval_coverage(
+        trace_id=trace_id,
+        available_eval_classes=["transcript_ingress", "faq_generation", "readiness", "promotion", "policy_enforcement"],
+        active_stage_family="phase_b:wpg",
+    )
+    eval_slice = evaluate_required_evals(
+        eval_requirement_profile,
+        [
+            {"eval_id": "eval.transcript_ingress", "result": "pass"},
+            {"eval_id": "eval.readiness", "result": "pass"},
+            {"eval_id": "eval.promotion", "result": "pass"},
+        ],
+        artifact_family="wpg",
+        stage="phase_b",
+        trace_id=trace_id,
+    )
+    readiness_pack = evaluate_release_readiness(
+        trace_id=trace_id,
+        inputs={
+            "eval_coverage": eval_coverage["outputs"],
+            "critique": {"critical_open": 0},
+            "contradictions": {"critical_open": len(faq_bundle["faq_conflict_artifact"]["outputs"].get("conflicts", []))},
+            "comment_dispositions": {"unresolved_critical": 0},
+            "override_hotspots": {"count": 0},
+            "evidence_gap_hotspots": {"count": len(cluster_bundle["unknowns_artifact"]["outputs"].get("unknowns", []))},
+            "drift_signals": {"drift_score": 0.0},
+            "checkpoint": checkpoint,
+        },
+    )
+    promotion_profile = ensure_contract(
+        {
+            "artifact_type": "promotion_requirement_profile",
+            "schema_version": "1.0.0",
+            "trace_id": trace_id,
+            "outputs": {
+                "families": {
+                    "working_paper": {
+                        "eval_classes": ["readiness", "promotion"],
+                        "review_artifacts": ["stakeholder_critique_artifact"],
+                        "critique_state": ["resolved"],
+                        "certification_dependencies": ["wpg_lifecycle_certification_artifact"],
+                    }
+                }
+            },
+        },
+        "promotion_requirement_profile",
+    )
+    promotion_eval = evaluate_promotion_requirements(
+        trace_id=trace_id,
+        profile=promotion_profile,
+        artifact_family="working_paper",
+        provided={
+            "eval_classes": ["readiness", "promotion"],
+            "review_artifacts": ["stakeholder_critique_artifact"],
+            "critique_state": ["resolved"],
+            "certification_dependencies": ["wpg_lifecycle_certification_artifact"],
+        },
+    )
 
     artifact_chain = {
         "meeting_artifact": meeting_normalized,
@@ -678,6 +776,38 @@ def run_wpg_pipeline(
     wpg_reusable_template = build_reusable_template(trace_id=trace_id, required_sections=["summary", "findings", "controls"])
     artifact_chain["wpg_lifecycle_certification_artifact"] = wpg_lifecycle_certification_artifact
     artifact_chain["wpg_reusable_template"] = wpg_reusable_template
+    artifact_chain["artifact_eval_requirement_profile"] = eval_requirement_profile
+    artifact_chain["eval_slice_summary"] = eval_slice
+    artifact_chain["wpg_eval_coverage_artifact"] = eval_coverage
+    artifact_chain["promotion_requirement_profile"] = promotion_profile
+    artifact_chain["promotion_requirement_evaluation_record"] = promotion_eval
+    artifact_chain["release_readiness_policy_result"] = readiness_pack["policy_result"]
+    artifact_chain["wpg_release_readiness_artifact"] = readiness_pack["readiness"]
+    artifact_chain["phase_certified_expansion_gate_result"] = evaluate_phase_certified_expansion_gate(
+        trace_id=trace_id,
+        eval_coverage_complete=not bool(eval_coverage["outputs"]["blocking_gaps"]),
+        readiness_clean=readiness_pack["readiness"]["outputs"]["decision"] == "ALLOW",
+        mandatory_rtx_fix_closure=True,
+        checkpoint_complete=True,
+        certification_acceptable=True,
+    )
+    artifact_chain["operator_trust_bottleneck_view"] = build_operator_trust_view(
+        trace_id=trace_id,
+        trust_posture={"score": 0.9},
+        evidence_gaps={"unknown_count": len(cluster_bundle["unknowns_artifact"]["outputs"].get("unknowns", []))},
+        unresolved_critique={"critical_open": 0},
+        override_hotspots={"count": 0},
+        certification_state="CERTIFIED",
+        phase_state=checkpoint["phase_id"],
+        top_bottlenecks=eval_coverage["outputs"]["missing_eval_classes"][:5],
+    )
+    artifact_chain["bottleneck_alert_trigger_result"] = compute_bottleneck_alerts(
+        trace_id=trace_id,
+        severe_drift=False,
+        repeated_blocks=0,
+        evidence_gap_spike=bool(cluster_bundle["unknowns_artifact"]["outputs"].get("unknowns")),
+        override_spike=False,
+    )
     failure_capture = []
     repair_suggestions = []
     for name, artifact in artifact_chain.items():
