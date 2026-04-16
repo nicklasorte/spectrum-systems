@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/comment_resolution_artifact.schema.json",
+  "title": "Comment Resolution Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "schema_version",
+    "run_id",
+    "trace_id",
+    "lineage_refs",
+    "comment_id",
+    "resolution",
+    "evidence_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "comment_resolution_artifact"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "1.9.5"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "lineage_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "comment_id": {
+      "type": "string"
+    },
+    "resolution": {
+      "type": "string"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
