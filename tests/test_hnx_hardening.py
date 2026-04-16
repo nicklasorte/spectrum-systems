@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import copy
+import json
+from pathlib import Path
 
 import pytest
 
@@ -408,3 +410,35 @@ def test_hnx_closeout_evidence_is_operationally_real() -> None:
         checkpoint_resume_failures=[],
     )
     assert closeout["structural_evidence_status"] == "sufficient"
+
+
+def test_hnx_manifest_entries_resolve_to_schema_and_example_files() -> None:
+    manifest = json.loads(Path("contracts/standards-manifest.json").read_text(encoding="utf-8"))
+    hnx_types = {
+        "hnx_feedback_record",
+        "hnx_feedback_routing_record",
+        "hnx_feedback_eval_scaffold",
+        "hnx_contract_tightening_advisory",
+        "hnx_structural_health_signal",
+        "hnx_feedback_gate_signal",
+        "hnx_readiness_evidence_record",
+        "hnx_maintain_cycle_record",
+    }
+    by_type = {row["artifact_type"]: row for row in manifest["contracts"] if row["artifact_type"] in hnx_types}
+    assert set(by_type) == hnx_types
+
+    for artifact_type, row in by_type.items():
+        example_path = Path(str(row["example_path"]))
+        schema_path = Path(f"contracts/schemas/{artifact_type}.schema.json")
+        assert example_path.exists()
+        assert schema_path.exists()
+        validate_artifact(load_example(artifact_type), artifact_type)
+
+
+def test_stale_authority_shaped_hnx_artifacts_are_not_registered() -> None:
+    manifest = json.loads(Path("contracts/standards-manifest.json").read_text(encoding="utf-8"))
+    artifact_types = {row["artifact_type"] for row in manifest["contracts"]}
+    assert "hnx_feedback_gate_decision" not in artifact_types
+    assert "hnx_readiness_certification_record" not in artifact_types
+    assert "hnx_control_signal_record" not in artifact_types
+    assert "hnx_contract_tightening_record" not in artifact_types

@@ -89,3 +89,9 @@
 ## Authority narrowing update
 - HNX artifacts were narrowed from authority-shaped outputs to evidence/signal-only outputs (`hnx_feedback_gate_signal`, `hnx_readiness_evidence_record`, `hnx_structural_health_signal`, `hnx_contract_tightening_advisory`).
 - HNX emits recommended control posture signals only; downstream owner systems consume these signals using their own owner-scoped logic.
+
+
+## HNX-01-FIX-02 Repair Note
+- Preflight failure was reproduced as a ref-context gating issue when refs were omitted in local mode; rerun with explicit refs (`--base-ref HEAD~3 --head-ref HEAD`) passed contract preflight.
+- Added targeted tests to assert HNX manifest registrations resolve to existing schema/example files and that stale authority-shaped HNX artifact names are absent from the manifest.
+- No authority semantics were reintroduced; HNX artifacts remain structural evidence/signal only.
