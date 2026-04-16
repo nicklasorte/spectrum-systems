@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hnx_feedback_record.schema.json",
+  "title": "HNX Feedback Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "feedback_id",
+    "created_at",
+    "schema_ref",
+    "trace_id",
+    "source",
+    "stage_ref",
+    "failure_type",
+    "severity",
+    "affected_artifact_ids",
+    "reproduction_context",
+    "structural_root_cause",
+    "recommended_action",
+    "requires_eval_update",
+    "requires_contract_update",
+    "requires_policy_signal",
+    "resolution_status",
+    "resolution_refs",
+    "feedback_hash"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "hnx_feedback_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "feedback_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "schema_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "enum": [
+        "eval",
+        "redteam",
+        "replay",
+        "runtime",
+        "contract",
+        "handoff",
+        "checkpoint",
+        "maintain"
+      ]
+    },
+    "stage_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failure_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "severity": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "affected_artifact_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "reproduction_context": {
+      "type": "string",
+      "minLength": 1
+    },
+    "structural_root_cause": {
+      "type": "string",
+      "minLength": 1
+    },
+    "recommended_action": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requires_eval_update": {
+      "type": "boolean"
+    },
+    "requires_contract_update": {
+      "type": "boolean"
+    },
+    "requires_policy_signal": {
+      "type": "boolean"
+    },
+    "resolution_status": {
+      "enum": [
+        "open",
+        "in_progress",
+        "resolved",
+        "invalid"
+      ]
+    },
+    "resolution_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "feedback_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

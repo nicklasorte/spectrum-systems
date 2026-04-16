@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hnx_structural_health_signal.schema.json",
+  "title": "HNX Structural Health Signal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "signal_id",
+    "structural_risk_level",
+    "continuity_status",
+    "replay_integrity_status",
+    "unresolved_critical_feedback",
+    "trace_id",
+    "recommended_control_posture",
+    "created_at",
+    "non_authority_note"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "hnx_structural_health_signal"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "signal_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "structural_risk_level": {
+      "enum": [
+        "normal",
+        "elevated"
+      ]
+    },
+    "continuity_status": {
+      "enum": [
+        "healthy",
+        "at_risk"
+      ]
+    },
+    "replay_integrity_status": {
+      "enum": [
+        "consistent",
+        "mismatch_detected"
+      ]
+    },
+    "unresolved_critical_feedback": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "recommended_control_posture": {
+      "enum": [
+        "normal_monitoring",
+        "review_required_for_critical_findings"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "non_authority_note": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

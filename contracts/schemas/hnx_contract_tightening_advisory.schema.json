@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hnx_contract_tightening_advisory.schema.json",
+  "title": "HNX Contract Tightening Advisory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "advisory_id",
+    "feedback_id",
+    "trace_id",
+    "recommended_contract_fields",
+    "failure_type",
+    "advisory_scope",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "hnx_contract_tightening_advisory"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "advisory_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "feedback_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "recommended_contract_fields": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "failure_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "advisory_scope": {
+      "const": "contract_authority_external_to_hnx"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

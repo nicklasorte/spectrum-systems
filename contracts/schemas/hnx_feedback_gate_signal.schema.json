@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hnx_feedback_gate_signal.schema.json",
+  "title": "HNX Feedback Gate Signal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "signal_id",
+    "unresolved_critical_feedback_ids",
+    "unresolved_high_feedback_ids",
+    "blocking_findings_present",
+    "structural_risk_level",
+    "recommended_control_posture",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "hnx_feedback_gate_signal"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "signal_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "unresolved_critical_feedback_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "unresolved_high_feedback_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "blocking_findings_present": {
+      "type": "boolean"
+    },
+    "structural_risk_level": {
+      "enum": [
+        "normal",
+        "elevated",
+        "critical"
+      ]
+    },
+    "recommended_control_posture": {
+      "enum": [
+        "normal",
+        "high_findings_present",
+        "critical_findings_present"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

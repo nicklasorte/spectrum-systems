@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.131",
+  "artifact_version": "1.3.133",
   "schema_version": "1.3.99",
-  "standards_version": "1.9.2",
-  "record_id": "REC-STD-2026-04-16-MAL-001",
-  "run_id": "run-20260416T000000Z-mal-001",
+  "standards_version": "1.9.4",
+  "record_id": "REC-STD-2026-04-16-HNX-01-FIX",
+  "run_id": "run-20260416T150000Z-hnx-01-fix",
   "created_at": "2026-04-16T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -5340,6 +5340,19 @@
       "notes": "HNX continuity state artifact for checkpoint freshness and continuity references."
     },
     {
+      "artifact_type": "hnx_contract_tightening_advisory",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.4",
+      "last_updated_in": "1.9.4",
+      "example_path": "contracts/examples/hnx_contract_tightening_advisory.example.json",
+      "notes": "HNX-01-FIX non-authoritative structural signal/evidence artifact."
+    },
+    {
       "artifact_type": "hnx_delayed_invalidity_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5351,6 +5364,58 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/hnx_delayed_invalidity_report.json",
       "notes": "R100-NP-001 long-roadmap temporal hardening."
+    },
+    {
+      "artifact_type": "hnx_feedback_eval_scaffold",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.3",
+      "last_updated_in": "1.9.3",
+      "example_path": "contracts/examples/hnx_feedback_eval_scaffold.example.json",
+      "notes": "HNX-01 governed stage-harness feedback loop hardening artifact."
+    },
+    {
+      "artifact_type": "hnx_feedback_gate_signal",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.4",
+      "last_updated_in": "1.9.4",
+      "example_path": "contracts/examples/hnx_feedback_gate_signal.example.json",
+      "notes": "HNX-01-FIX non-authoritative structural signal/evidence artifact."
+    },
+    {
+      "artifact_type": "hnx_feedback_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.3",
+      "last_updated_in": "1.9.3",
+      "example_path": "contracts/examples/hnx_feedback_record.example.json",
+      "notes": "HNX-01 governed stage-harness feedback loop hardening artifact."
+    },
+    {
+      "artifact_type": "hnx_feedback_routing_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.3",
+      "last_updated_in": "1.9.3",
+      "example_path": "contracts/examples/hnx_feedback_routing_record.example.json",
+      "notes": "HNX-01 governed stage-harness feedback loop hardening artifact."
     },
     {
       "artifact_type": "hnx_forward_validity_projection",
@@ -5471,6 +5536,19 @@
       "notes": "Candidate-only HNX readiness artifact with explicit non-authority assertions."
     },
     {
+      "artifact_type": "hnx_maintain_cycle_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.3",
+      "last_updated_in": "1.9.3",
+      "example_path": "contracts/examples/hnx_maintain_cycle_record.example.json",
+      "notes": "HNX-01 governed stage-harness feedback loop hardening artifact."
+    },
+    {
       "artifact_type": "hnx_phase_window_continuity_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5482,6 +5560,19 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/hnx_phase_window_continuity_record.json",
       "notes": "R100-NP-001 long-roadmap temporal hardening."
+    },
+    {
+      "artifact_type": "hnx_readiness_evidence_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.4",
+      "last_updated_in": "1.9.4",
+      "example_path": "contracts/examples/hnx_readiness_evidence_record.example.json",
+      "notes": "HNX-01-FIX non-authoritative structural signal/evidence artifact."
     },
     {
       "artifact_type": "hnx_resume_record",
@@ -5561,6 +5652,19 @@
       "last_updated_in": "1.3.121",
       "example_path": "contracts/examples/hnx_stop_condition_record.example.json",
       "notes": "HNX stop/freeze/human-checkpoint artifact for bypass-proof stop semantics."
+    },
+    {
+      "artifact_type": "hnx_structural_health_signal",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.4",
+      "last_updated_in": "1.9.4",
+      "example_path": "contracts/examples/hnx_structural_health_signal.example.json",
+      "notes": "HNX-01-FIX non-authoritative structural signal/evidence artifact."
     },
     {
       "artifact_type": "human_checkpoint_decision",
