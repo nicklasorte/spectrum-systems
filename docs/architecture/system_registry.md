@@ -93,6 +93,7 @@ CDE is the only system allowed to emit:
 - **CDE** — closure-state decision authority
 - **TLC** — top-level orchestration and routing across subsystems
 - **PRG** — program-level planning, priority, and governance
+- **GOV** — governance policy and fail-closed gate implementation authority
 - **RSM** — reconciliation state manager for desired-vs-actual state artifacts (non-authoritative planning support)
 - **DEM** — decision economics modeler for recommendation-grade tradeoff scoring (non-authoritative)
 - **MCL** — memory compaction layer for retention, archival, and entropy control artifacts (non-authoritative)
@@ -228,6 +229,27 @@ CDE is the only system allowed to emit:
   - perform trust-policy adjudication (TPA-owned)
   - perform failure diagnosis/repair generation (FRE-owned)
   - issue closure-state decisions (CDE-owned)
+
+### GOV
+- **acronym:** `GOV`
+- **full_name:** Governance Control Authority
+- **role:** Owns executable governance policy modules and fail-closed expansion/readiness/promotion gates.
+- **owns:**
+  - governance_policy_execution
+  - readiness_and_promotion_gate_policy
+  - expansion_gate_policy
+  - certification_remediation_policy
+- **consumes:**
+  - governed_artifacts
+  - evaluation_coverage_artifacts
+  - redteam_and_fix_closure_artifacts
+- **produces:**
+  - governance_gate_results
+  - remediation_records
+  - policy_regression_records
+- **must_not_do:**
+  - emit non-deterministic execution side effects
+  - bypass declared contract schemas
 
 ### HNX
 - **acronym:** `HNX`

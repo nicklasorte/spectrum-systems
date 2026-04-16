@@ -10,6 +10,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
 from spectrum_systems.modules.wpg.phase_governance import default_phase_registry, evaluate_phase_transition
+from spectrum_systems.modules.runtime.checkpoint_stage_contracts import evaluate_checkpoint_transition
 
 
 def _load_json(path: Path) -> dict:
@@ -36,6 +37,11 @@ def main() -> int:
         requested_action=args.action,
         redteam_open_high=args.redteam_open_high,
         validation_passed=args.validation_passed == "true",
+    )
+    evaluate_checkpoint_transition(
+        trace_id=checkpoint["trace_id"],
+        current_state="ACTIVE",
+        action="COMPLETE" if result["decision"] == "ALLOW" else "HIBERNATE",
     )
     print(json.dumps(result, indent=2))
     return 0 if result["decision"] == "ALLOW" else 2

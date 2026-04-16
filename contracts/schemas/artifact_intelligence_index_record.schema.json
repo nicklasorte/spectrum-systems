@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "artifact_intelligence_index_record",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "outputs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "artifact_intelligence_index_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "outputs": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}
