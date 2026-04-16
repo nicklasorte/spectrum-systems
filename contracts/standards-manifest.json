@@ -15128,7 +15128,7 @@
     {
       "artifact_type": "raw_meeting_record_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "proposed",
       "intended_consumers": [
         "spectrum-systems"
@@ -15141,7 +15141,7 @@
     {
       "artifact_type": "normalized_transcript_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "proposed",
       "intended_consumers": [
         "spectrum-systems"
@@ -15154,7 +15154,7 @@
     {
       "artifact_type": "transcript_chunk_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "proposed",
       "intended_consumers": [
         "spectrum-systems"
@@ -15180,7 +15180,7 @@
     {
       "artifact_type": "transcript_fact_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "proposed",
       "intended_consumers": [
         "spectrum-systems"
@@ -15193,7 +15193,7 @@
     {
       "artifact_type": "meeting_decision_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "proposed",
       "intended_consumers": [
         "spectrum-systems"
@@ -15206,7 +15206,7 @@
     {
       "artifact_type": "meeting_action_item_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "proposed",
       "intended_consumers": [
         "spectrum-systems"
@@ -15219,7 +15219,7 @@
     {
       "artifact_type": "meeting_risk_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "proposed",
       "intended_consumers": [
         "spectrum-systems"
@@ -15232,7 +15232,7 @@
     {
       "artifact_type": "meeting_open_question_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "proposed",
       "intended_consumers": [
         "spectrum-systems"
@@ -15245,7 +15245,7 @@
     {
       "artifact_type": "meeting_contradiction_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "proposed",
       "intended_consumers": [
         "spectrum-systems"
@@ -15258,7 +15258,7 @@
     {
       "artifact_type": "meeting_gap_artifact",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "proposed",
       "intended_consumers": [
         "spectrum-systems"

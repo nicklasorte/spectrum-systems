@@ -1,31 +1,43 @@
 {
-  "artifact_type": "transcript_fact_artifact",
-  "artifact_id": "TRANSCRIPT_FACT_ARTIFACT-001",
-  "schema_version": "1.0.0",
-  "artifact_version": "1.0.0",
+  "artifact_version": "1.1.0",
+  "schema_version": "1.1.0",
   "standards_version": "1.9.5",
-  "run_id": "run-rdm-01",
-  "trace_id": "trace-rdm-01",
+  "run_id": "run-example-trn01",
+  "trace_id": "trace-example-trn01",
   "lineage_refs": [
-    "seed-001"
+    "raw:SRC-001"
   ],
+  "artifact_type": "transcript_fact_artifact",
+  "artifact_id": "TFA-NTA-EXAMPLE000001",
   "topics": [
-    "budget",
-    "timeline"
+    "governance",
+    "dependency"
   ],
   "participants": [
-    "Alice"
+    "ALICE"
   ],
   "key_claims": [
-    "Budget will be reforecast"
+    "Kickoff governance review.",
+    "Need owner for dependency."
   ],
   "evidence_spans": [
     {
       "line_ref": "LINE-0001",
       "timestamp": "09:00:00",
-      "quote": "Budget will be reforecast",
-      "confidence": 0.9,
+      "quote": "Kickoff governance review.",
+      "confidence": 0.98,
       "ambiguity_flags": []
+    },
+    {
+      "line_ref": "LINE-0002",
+      "timestamp": null,
+      "quote": "Need owner for dependency.",
+      "confidence": 0.45,
+      "ambiguity_flags": [
+        "missing_timestamp",
+        "unknown_speaker",
+        "low_confidence_region"
+      ]
     }
   ]
 }

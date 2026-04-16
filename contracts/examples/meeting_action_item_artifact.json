@@ -1,24 +1,24 @@
 {
-  "artifact_type": "meeting_action_item_artifact",
-  "artifact_id": "MEETING_ACTION_ITEM_ARTIFACT-001",
-  "schema_version": "1.0.0",
-  "artifact_version": "1.0.0",
+  "artifact_version": "1.1.0",
+  "schema_version": "1.1.0",
   "standards_version": "1.9.5",
-  "run_id": "run-rdm-01",
-  "trace_id": "trace-rdm-01",
+  "run_id": "run-example-trn01",
+  "trace_id": "trace-example-trn01",
   "lineage_refs": [
-    "seed-001"
+    "raw:SRC-001"
   ],
   "evidence_refs": [
     "LINE-0001"
   ],
   "timestamp": "09:00:00",
-  "confidence": 0.9,
+  "confidence": 0.94,
   "ambiguity_flags": [],
-  "action": "Publish tracker",
+  "artifact_type": "meeting_action_item_artifact",
+  "artifact_id": "MEETING_ACTION_ITEM_ARTIFACT-001",
+  "action": "Publish action backlog.",
   "owner": "PMO",
   "due_date": "2026-05-01",
   "dependency_refs": [
-    "DEP-1"
+    "DEP-001"
   ]
 }
