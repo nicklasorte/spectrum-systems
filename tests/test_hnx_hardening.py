@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import copy
+import json
+from pathlib import Path
 
 import pytest
 
@@ -8,13 +10,21 @@ from spectrum_systems.contracts import load_example, validate_artifact
 from spectrum_systems.modules.runtime.hnx_hardening import (
     HNXHardeningError,
     build_continuity_debt_record,
+    build_feedback_completeness_signal,
     build_harness_bundle,
     build_harness_readiness,
     build_hnx_conflict_record,
+    build_hnx_feedback_record,
+    build_hnx_maintain_cycle_record,
+    build_hnx_readiness_evidence,
+    compile_feedback_to_eval,
     compute_harness_effectiveness,
+    emit_hnx_structural_health_signal,
     enforce_hnx_boundary,
     evaluate_harness_contracts,
     evaluate_stage_transition,
+    feedback_to_contract_tightening_advisory,
+    route_hnx_feedback,
     run_hnx_boundary_redteam,
     run_hnx_semantic_redteam,
     validate_checkpoint_resume_integrity,
@@ -47,6 +57,14 @@ def test_hnx_contract_examples_validate() -> None:
         "hnx_harness_bundle",
         "hnx_harness_effectiveness_record",
         "hnx_continuity_debt_record",
+        "hnx_feedback_record",
+        "hnx_feedback_routing_record",
+        "hnx_feedback_eval_scaffold",
+        "hnx_contract_tightening_advisory",
+        "hnx_structural_health_signal",
+        "hnx_feedback_gate_signal",
+        "hnx_readiness_evidence_record",
+        "hnx_maintain_cycle_record",
     ):
         validate_artifact(load_example(name), name)
 
@@ -54,10 +72,10 @@ def test_hnx_contract_examples_validate() -> None:
 def test_boundary_fencing_blocks_forbidden_owner_overlap() -> None:
     failures = enforce_hnx_boundary(
         consumed_inputs=["hnx_stage_contract_record", "pqx_execution_result"],
-        emitted_outputs=["hnx_harness_eval_result", "cde_closeout_decision"],
+        emitted_outputs=["hnx_harness_eval_result", "promotion_decision_record"],
     )
     assert "invalid_hnx_upstream_input:pqx_execution_result" in failures
-    assert "invalid_hnx_downstream_output:cde_closeout_decision" in failures
+    assert "invalid_hnx_downstream_output:promotion_decision_record" in failures
 
 
 def test_deterministic_stage_machine_and_stage_skip_detector() -> None:
@@ -78,10 +96,12 @@ def test_deterministic_stage_machine_and_stage_skip_detector() -> None:
         next_stage_index=4,
         required_human_checkpoint=True,
         human_checkpoint_recorded=False,
+        stop_required=True,
     )
     assert skipped["allowed"] is False
     assert "STAGE_SKIP_DETECTED" in skipped["reason_codes"]
     assert "HUMAN_CHECKPOINT_REQUIRED" in skipped["reason_codes"]
+    assert "STOP_REQUIRED_TRANSITION_BREACH" in skipped["reason_codes"]
 
 
 def test_harness_eval_checkpoint_resume_and_readiness_fail_closed() -> None:
@@ -93,7 +113,7 @@ def test_harness_eval_checkpoint_resume_and_readiness_fail_closed() -> None:
         continuity_state=fx["continuity"],
         stop_condition_record=fx["stop"],
         expected_lineage_chain=["AEX", "TLC", "TPA", "PQX"],
-        evaluated_at="2026-04-12T00:06:00Z",
+        evaluated_at="2026-04-16T00:06:00Z",
     )
     assert eval_result["evaluation_status"] == "pass"
 
@@ -112,7 +132,7 @@ def test_harness_eval_checkpoint_resume_and_readiness_fail_closed() -> None:
         trace_id="trace-hnx-1",
         eval_result=eval_result,
         continuity_failures=integrity_failures,
-        created_at="2026-04-12T00:06:00Z",
+        created_at="2026-04-16T00:06:00Z",
     )
     assert readiness["readiness_status"] == "blocked"
 
@@ -133,7 +153,7 @@ def test_stop_condition_integrity_and_replay_validation() -> None:
         continuity_state=fx["continuity"],
         stop_condition_record=fx["stop"],
         expected_lineage_chain=["AEX", "TLC", "TPA", "PQX"],
-        evaluated_at="2026-04-12T00:06:00Z",
+        evaluated_at="2026-04-16T00:06:00Z",
     )
     bundle = build_harness_bundle(
         run_id="run-1",
@@ -144,7 +164,7 @@ def test_stop_condition_integrity_and_replay_validation() -> None:
         continuity_state=fx["continuity"],
         stop_condition_record=fx["stop"],
         eval_result=eval_result,
-        created_at="2026-04-12T00:06:00Z",
+        created_at="2026-04-16T00:06:00Z",
     )
     replay_ok, replay_fails = validate_harness_replay(
         prior_bundle=bundle,
@@ -154,6 +174,183 @@ def test_stop_condition_integrity_and_replay_validation() -> None:
     )
     assert replay_ok is True
     assert replay_fails == []
+
+
+def test_hidden_state_variance_detection() -> None:
+    fx = _fixtures()
+    eval_result = evaluate_harness_contracts(
+        stage_contract=fx["stage_contract"],
+        checkpoint_record=fx["checkpoint"],
+        resume_record=fx["resume"],
+        continuity_state=fx["continuity"],
+        stop_condition_record=fx["stop"],
+        expected_lineage_chain=["AEX", "TLC", "TPA", "PQX"],
+        evaluated_at="2026-04-16T00:06:00Z",
+    )
+    bundle = build_harness_bundle(
+        run_id="run-1",
+        trace_id="trace-hnx-1",
+        stage_contract=fx["stage_contract"],
+        checkpoint_record=fx["checkpoint"],
+        resume_record=fx["resume"],
+        continuity_state=fx["continuity"],
+        stop_condition_record=fx["stop"],
+        eval_result=eval_result,
+        created_at="2026-04-16T00:06:00Z",
+    )
+    replay_eval = copy.deepcopy(eval_result)
+    replay_eval["fail_reasons"] = ["REPLAY_OUTPUT_DRIFT"]
+    ok, fails = validate_harness_replay(
+        prior_bundle=bundle,
+        replay_bundle=copy.deepcopy(bundle),
+        prior_eval=eval_result,
+        replay_eval=replay_eval,
+        prior_runs=[eval_result],
+    )
+    assert ok is False
+    assert "HIDDEN_STATE_VARIANCE_DETECTED" in fails
+
+
+def test_feedback_router_and_signal_behavior() -> None:
+    feedback = build_hnx_feedback_record(
+        created_at="2026-04-16T01:00:00Z",
+        trace_id="trace-hnx-1",
+        source="replay",
+        stage_ref="checkpointed->resumed",
+        failure_type="replay_mismatch",
+        severity="critical",
+        affected_artifact_ids=["hnx_checkpoint_record:cp-1"],
+        reproduction_context="deterministic replay produced mismatch",
+        structural_root_cause="resume linkage incomplete",
+        recommended_action="tighten contract + add eval",
+        requires_eval_update=True,
+        requires_contract_update=True,
+        requires_policy_signal=True,
+        resolution_status="open",
+        resolution_refs=[],
+    )
+    routes = route_hnx_feedback(feedback_record=feedback, created_at="2026-04-16T01:01:00Z")
+    assert "eval_expansion" in routes["routes"]
+    assert "redteam_regression_bundle" in routes["routes"]
+
+    scaffold = compile_feedback_to_eval(feedback_record=feedback, created_at="2026-04-16T01:02:00Z")
+    assert scaffold["eval_family"] == "replay_mismatch_eval"
+    assert scaffold["critical_findings_present"] is True
+
+    tightening = feedback_to_contract_tightening_advisory(feedback_record=feedback, created_at="2026-04-16T01:03:00Z")
+    assert tightening["advisory_scope"] == "contract_authority_external_to_hnx"
+
+    signal = build_feedback_completeness_signal(feedback_records=[feedback], created_at="2026-04-16T01:04:00Z")
+    assert signal["blocking_findings_present"] is True
+    assert signal["recommended_control_posture"] == "critical_findings_present"
+
+
+def test_integration_hnx_structural_signal_and_readiness_evidence_path() -> None:
+    fx = _fixtures()
+    eval_result = evaluate_harness_contracts(
+        stage_contract=fx["stage_contract"],
+        checkpoint_record=fx["checkpoint"],
+        resume_record=fx["resume"],
+        continuity_state=fx["continuity"],
+        stop_condition_record=fx["stop"],
+        expected_lineage_chain=["AEX", "TLC", "TPA", "PQX"],
+        evaluated_at="2026-04-16T01:10:00Z",
+    )
+    feedback = build_hnx_feedback_record(
+        created_at="2026-04-16T01:11:00Z",
+        trace_id="trace-hnx-1",
+        source="handoff",
+        stage_ref="candidate_ready->checkpointed",
+        failure_type="handoff_incomplete",
+        severity="high",
+        affected_artifact_ids=["handoff_record:1"],
+        reproduction_context="missing semantic transfer field",
+        structural_root_cause="handoff contract incompleteness",
+        recommended_action="add completeness eval",
+        requires_eval_update=True,
+        requires_contract_update=True,
+        requires_policy_signal=True,
+        resolution_status="in_progress",
+        resolution_refs=["docs/reviews/HNX-01-redteam-review-1.md"],
+    )
+    feedback_signal = build_feedback_completeness_signal(feedback_records=[feedback], created_at="2026-04-16T01:12:00Z")
+    assert feedback_signal["recommended_control_posture"] == "high_findings_present"
+
+    debt = build_continuity_debt_record(
+        run_id="run-1",
+        trace_id="trace-hnx-1",
+        violations=["CHECKPOINT_STALE", "CHECKPOINT_STALE", "HANDOFF_INCOMPLETE"],
+        created_at="2026-04-16T01:13:00Z",
+    )
+    effectiveness = compute_harness_effectiveness(
+        window_id="win-1",
+        created_at="2026-04-16T01:14:00Z",
+        outcomes=[
+            {
+                "completed": True,
+                "broken_resume": False,
+                "stop_bypass_blocked": True,
+                "invalid_transition": False,
+                "handoff_complete": True,
+                "stale_checkpoint": False,
+                "replay_mismatch": False,
+                "unresolved_feedback": False,
+            },
+            {
+                "completed": False,
+                "broken_resume": True,
+                "stop_bypass_blocked": True,
+                "invalid_transition": True,
+                "handoff_complete": False,
+                "stale_checkpoint": True,
+                "replay_mismatch": True,
+                "unresolved_feedback": True,
+            },
+        ],
+    )
+    structural_signal = emit_hnx_structural_health_signal(
+        effectiveness_record=effectiveness,
+        unresolved_feedback_count=1,
+        continuity_debt_record=debt,
+        created_at="2026-04-16T01:15:00Z",
+    )
+    assert structural_signal["recommended_control_posture"] == "review_required_for_critical_findings"
+
+    evidence = build_hnx_readiness_evidence(
+        run_id="run-1",
+        trace_id="trace-hnx-1",
+        harness_eval=eval_result,
+        replay_pass=True,
+        trace_complete=True,
+        required_eval_complete=True,
+        feedback_signal={"blocking_findings_present": False},
+        redteam_clean=True,
+        non_authority_proof_refs=["docs/architecture/system_registry.md#hnx"],
+        created_at="2026-04-16T01:16:00Z",
+    )
+    assert evidence["readiness_findings"] == []
+    assert "recommended_control_posture" in evidence
+
+    maintain = build_hnx_maintain_cycle_record(
+        maintain_cycle_id="mnt-1",
+        trace_id="trace-hnx-1",
+        continuity_drift_detected=True,
+        stage_contract_drift_detected=False,
+        docs_runtime_drift_detected=False,
+        incidents_converted_to_evals=["hnx_feedback_eval_scaffold:1"],
+        structural_debt_refs=["hnx_continuity_debt_record:1"],
+        created_at="2026-04-16T01:17:00Z",
+    )
+    assert maintain["maintain_status"] == "action_required"
+
+
+def test_hnx_emits_signals_not_authority_decisions() -> None:
+    signal = load_example("hnx_feedback_gate_signal")
+    evidence = load_example("hnx_readiness_evidence_record")
+    structural_signal = load_example("hnx_structural_health_signal")
+    serialized = " ".join([str(signal), str(evidence), str(structural_signal)]).lower()
+    for forbidden in ("allow_decision", "freeze_decision", "certification_decision", "approved", "promotion_ready"):
+        assert forbidden not in serialized
 
 
 def test_rt1_rt2_exploits_converted_to_regressions_and_fixes() -> None:
@@ -177,36 +374,17 @@ def test_rt1_rt2_exploits_converted_to_regressions_and_fixes() -> None:
         run_id="run-1",
         trace_id="trace-hnx-1",
         conflict_codes=["RT1-STAGE-BYPASS", "RT2-CONTEXT-ROT"],
-        created_at="2026-04-12T00:06:00Z",
+        created_at="2026-04-16T00:06:00Z",
     )
     assert len(conflict["conflict_codes"]) == 2
-
-    debt = build_continuity_debt_record(
-        run_id="run-1",
-        trace_id="trace-hnx-1",
-        violations=["CHECKPOINT_STALE", "CHECKPOINT_STALE", "STAGE_SKIP_DETECTED"],
-        created_at="2026-04-12T00:06:00Z",
-    )
-    assert debt["debt_status"] == "elevated"
-    assert "CHECKPOINT_STALE" in debt["repeat_violation_codes"]
 
 
 def test_harness_effectiveness_requires_outcomes() -> None:
     with pytest.raises(HNXHardeningError, match="harness_effectiveness_requires_outcomes"):
-        compute_harness_effectiveness(window_id="win", created_at="2026-04-12T00:06:00Z", outcomes=[])
-
-    artifact = compute_harness_effectiveness(
-        window_id="win",
-        created_at="2026-04-12T00:06:00Z",
-        outcomes=[
-            {"completed": True, "broken_resume": False, "stop_bypass_blocked": True},
-            {"completed": False, "broken_resume": True, "stop_bypass_blocked": True},
-        ],
-    )
-    assert artifact["runs_evaluated"] == 2
+        compute_harness_effectiveness(window_id="win", created_at="2026-04-16T00:06:00Z", outcomes=[])
 
 
-def test_hnx_10_closeout_gate_is_operationally_real() -> None:
+def test_hnx_closeout_evidence_is_operationally_real() -> None:
     fx = _fixtures()
     eval_result = evaluate_harness_contracts(
         stage_contract=fx["stage_contract"],
@@ -215,14 +393,14 @@ def test_hnx_10_closeout_gate_is_operationally_real() -> None:
         continuity_state=fx["continuity"],
         stop_condition_record=fx["stop"],
         expected_lineage_chain=["AEX", "TLC", "TPA", "PQX"],
-        evaluated_at="2026-04-13T00:00:00Z",
+        evaluated_at="2026-04-16T00:00:00Z",
     )
     readiness = build_harness_readiness(
         run_id="run-closeout",
         trace_id="trace-hnx-closeout",
         eval_result=eval_result,
         continuity_failures=[],
-        created_at="2026-04-13T00:00:00Z",
+        created_at="2026-04-16T00:00:00Z",
     )
     closeout = verify_hnx_closeout_gate(
         harness_eval=eval_result,
@@ -231,4 +409,36 @@ def test_hnx_10_closeout_gate_is_operationally_real() -> None:
         stop_failures=[],
         checkpoint_resume_failures=[],
     )
-    assert closeout["closeout_status"] == "closed"
+    assert closeout["structural_evidence_status"] == "sufficient"
+
+
+def test_hnx_manifest_entries_resolve_to_schema_and_example_files() -> None:
+    manifest = json.loads(Path("contracts/standards-manifest.json").read_text(encoding="utf-8"))
+    hnx_types = {
+        "hnx_feedback_record",
+        "hnx_feedback_routing_record",
+        "hnx_feedback_eval_scaffold",
+        "hnx_contract_tightening_advisory",
+        "hnx_structural_health_signal",
+        "hnx_feedback_gate_signal",
+        "hnx_readiness_evidence_record",
+        "hnx_maintain_cycle_record",
+    }
+    by_type = {row["artifact_type"]: row for row in manifest["contracts"] if row["artifact_type"] in hnx_types}
+    assert set(by_type) == hnx_types
+
+    for artifact_type, row in by_type.items():
+        example_path = Path(str(row["example_path"]))
+        schema_path = Path(f"contracts/schemas/{artifact_type}.schema.json")
+        assert example_path.exists()
+        assert schema_path.exists()
+        validate_artifact(load_example(artifact_type), artifact_type)
+
+
+def test_stale_authority_shaped_hnx_artifacts_are_not_registered() -> None:
+    manifest = json.loads(Path("contracts/standards-manifest.json").read_text(encoding="utf-8"))
+    artifact_types = {row["artifact_type"] for row in manifest["contracts"]}
+    assert "hnx_feedback_gate_decision" not in artifact_types
+    assert "hnx_readiness_certification_record" not in artifact_types
+    assert "hnx_control_signal_record" not in artifact_types
+    assert "hnx_contract_tightening_record" not in artifact_types

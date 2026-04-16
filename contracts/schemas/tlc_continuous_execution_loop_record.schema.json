@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "tlc_continuous_execution_loop_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "record_id",
+    "created_at",
+    "owner_system",
+    "status",
+    "evidence_refs",
+    "details"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "tlc_continuous_execution_loop_record"
+    },
+    "artifact_version": {
+      "type": "string",
+      "pattern": "^1\\.0\\.0$"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^1\\.0\\.0$"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^1\\.0\\.0$"
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 8
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner_system": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "hold",
+        "suspend",
+        "advisory",
+        "pass",
+        "fail",
+        "completed"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "details": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

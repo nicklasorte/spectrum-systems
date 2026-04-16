@@ -1,0 +1,22 @@
+{
+  "artifact_type": "tlc_validation_ladder_result",
+  "artifact_id": "tlc_validation_ladder_result-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.2",
+  "created_at": "2026-04-16T00:00:00Z",
+  "owner": "TLC",
+  "status": "pass",
+  "ladder_order": [
+    "registry",
+    "contracts",
+    "owner_tests",
+    "integration"
+  ],
+  "executed_order": [
+    "registry",
+    "contracts",
+    "owner_tests",
+    "integration"
+  ]
+}

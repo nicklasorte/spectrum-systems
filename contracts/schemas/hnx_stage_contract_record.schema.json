@@ -13,7 +13,14 @@
     "allowed_transitions",
     "stop_states",
     "created_at",
-    "provenance"
+    "provenance",
+    "run_id",
+    "required_inputs",
+    "required_outputs",
+    "required_evals",
+    "required_trace_fields",
+    "required_continuity_artifacts",
+    "stop_conditions"
   ],
   "properties": {
     "artifact_type": {
@@ -94,6 +101,88 @@
         "version": {
           "type": "string",
           "minLength": 1
+        }
+      }
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "required_inputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "required_outputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "required_evals": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "required_trace_fields": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "required_continuity_artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "stop_conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_stage_minutes",
+        "stop_required_states",
+        "freeze_required_states"
+      ],
+      "properties": {
+        "max_stage_minutes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "stop_required_states": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "freeze_required_states": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
         }
       }
     }

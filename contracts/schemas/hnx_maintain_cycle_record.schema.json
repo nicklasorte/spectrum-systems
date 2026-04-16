@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hnx_maintain_cycle_record.schema.json",
+  "title": "HNX Maintain Cycle Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "maintain_cycle_id",
+    "trace_id",
+    "continuity_drift_detected",
+    "stage_contract_drift_detected",
+    "docs_runtime_drift_detected",
+    "incidents_converted_to_evals",
+    "structural_debt_refs",
+    "maintain_status",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "hnx_maintain_cycle_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "maintain_cycle_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuity_drift_detected": {
+      "type": "boolean"
+    },
+    "stage_contract_drift_detected": {
+      "type": "boolean"
+    },
+    "docs_runtime_drift_detected": {
+      "type": "boolean"
+    },
+    "incidents_converted_to_evals": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "structural_debt_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "maintain_status": {
+      "enum": [
+        "healthy",
+        "action_required"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

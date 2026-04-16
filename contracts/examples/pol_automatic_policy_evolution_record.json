@@ -1,0 +1,19 @@
+{
+  "artifact_type": "pol_automatic_policy_evolution_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "record_id": "POL-FAE001-REC-0001",
+  "run_id": "FAE-001-RUN-0001",
+  "plan_id": "PLAN-FAE-001-2026-04-16",
+  "created_at": "2026-04-16T00:00:00Z",
+  "owner_system": "POL",
+  "status": "advisory",
+  "evidence_refs": [
+    "trace://fae-001/bootstrap"
+  ],
+  "details": {
+    "batch": "FAE-001",
+    "label": "FULL-AUTONOMY-EXECUTION-001"
+  }
+}

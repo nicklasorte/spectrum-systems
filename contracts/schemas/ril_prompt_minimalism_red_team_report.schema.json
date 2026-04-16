@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/ril_prompt_minimalism_red_team_report.schema.json",
+  "title": "ril_prompt_minimalism_red_team_report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "created_at",
+    "owner",
+    "status",
+    "prompt_ref",
+    "exploit_count",
+    "findings_ref",
+    "all_exploits_converted"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "ril_prompt_minimalism_red_team_report"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner": {
+      "type": "string",
+      "const": "RIL"
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prompt_ref": {
+      "type": "string"
+    },
+    "exploit_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "findings_ref": {
+      "type": "string"
+    },
+    "all_exploits_converted": {
+      "type": "boolean"
+    }
+  }
+}

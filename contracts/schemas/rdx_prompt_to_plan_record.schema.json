@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rdx_prompt_to_plan_record.schema.json",
+  "title": "rdx_prompt_to_plan_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "created_at",
+    "owner",
+    "status",
+    "prompt_ref",
+    "compiled_plan_ref",
+    "injected_owner_scope_ref",
+    "authority_added"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "rdx_prompt_to_plan_record"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner": {
+      "type": "string",
+      "const": "RDX"
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prompt_ref": {
+      "type": "string"
+    },
+    "compiled_plan_ref": {
+      "type": "string"
+    },
+    "injected_owner_scope_ref": {
+      "type": "string"
+    },
+    "authority_added": {
+      "type": "boolean",
+      "const": false
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "artifact_type": "hnx_maintain_cycle_record",
+  "schema_version": "1.0.0",
+  "maintain_cycle_id": "mnt-hnx-2026-04-16",
+  "trace_id": "trace-hnx-1",
+  "continuity_drift_detected": true,
+  "stage_contract_drift_detected": false,
+  "docs_runtime_drift_detected": true,
+  "incidents_converted_to_evals": [
+    "hnx-eval-scaffold-001"
+  ],
+  "structural_debt_refs": [
+    "hnx_continuity_debt_record:hnx-debt-001"
+  ],
+  "maintain_status": "action_required",
+  "created_at": "2026-04-16T00:00:00Z"
+}

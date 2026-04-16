@@ -1,0 +1,14 @@
+{
+  "artifact_type": "tlc_review_fix_cycle_record",
+  "artifact_id": "tlc_review_fix_cycle_record-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.2",
+  "created_at": "2026-04-16T00:00:00Z",
+  "owner": "TLC",
+  "status": "pass",
+  "review_ref": "review:001",
+  "fix_pack_ref": "fre_fix_pack_record:001",
+  "rerun_ref": "tlc_rerun_cycle_record:001",
+  "cycle_status": "completed"
+}

@@ -40,5 +40,36 @@
   "provenance": {
     "source": "hnx",
     "version": "1.0.0"
+  },
+  "run_id": "run-hnx-1",
+  "required_inputs": [
+    "hnx_checkpoint_record",
+    "hnx_resume_record"
+  ],
+  "required_outputs": [
+    "hnx_harness_eval_result",
+    "hnx_harness_bundle"
+  ],
+  "required_evals": [
+    "hnx_harness_eval_result"
+  ],
+  "required_trace_fields": [
+    "trace_id",
+    "contract_id"
+  ],
+  "required_continuity_artifacts": [
+    "hnx_checkpoint_record",
+    "hnx_resume_record",
+    "hnx_continuity_state_record"
+  ],
+  "stop_conditions": {
+    "max_stage_minutes": 120,
+    "stop_required_states": [
+      "halted",
+      "human_checkpoint"
+    ],
+    "freeze_required_states": [
+      "frozen"
+    ]
   }
 }

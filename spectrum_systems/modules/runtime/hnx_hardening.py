@@ -1,4 +1,4 @@
-"""HNX bounded harness semantics: contracts, state machine, continuity integrity, replay, and red-team hardening."""
+"""HNX bounded harness semantics: contracts, stage integrity, continuity integrity, replay, and governed structural feedback signals."""
 
 from __future__ import annotations
 
@@ -15,11 +15,12 @@ class HNXHardeningError(ValueError):
 
 
 _ALLOWED_STATES: dict[str, set[str]] = {
-    "initialized": {"candidate_ready", "halted"},
-    "candidate_ready": {"checkpointed", "halted"},
-    "checkpointed": {"resumed", "halted", "frozen"},
-    "resumed": {"completed", "checkpointed", "halted", "frozen"},
-    "frozen": {"resumed", "halted"},
+    "initialized": {"candidate_ready", "halted", "frozen", "human_checkpoint"},
+    "candidate_ready": {"checkpointed", "halted", "frozen", "human_checkpoint"},
+    "checkpointed": {"resumed", "halted", "frozen", "human_checkpoint"},
+    "resumed": {"completed", "checkpointed", "halted", "frozen", "human_checkpoint"},
+    "human_checkpoint": {"resumed", "halted", "frozen"},
+    "frozen": {"resumed", "halted", "human_checkpoint"},
     "completed": set(),
     "halted": set(),
 }
@@ -36,13 +37,14 @@ def _require_ref(value: Any, name: str) -> str:
 
 
 def enforce_hnx_boundary(*, consumed_inputs: list[str], emitted_outputs: list[str]) -> list[str]:
-    """HNX consumes only harness/state inputs and emits harness artifacts only."""
+    """HNX consumes harness/state inputs and emits structure/evidence/signal artifacts only."""
     allowed_inputs = {
         "hnx_stage_contract_record",
         "hnx_checkpoint_record",
         "hnx_resume_record",
         "hnx_continuity_state_record",
         "hnx_stop_condition_record",
+        "hnx_feedback_record",
     }
     allowed_outputs = {
         "hnx_harness_eval_result",
@@ -51,8 +53,28 @@ def enforce_hnx_boundary(*, consumed_inputs: list[str], emitted_outputs: list[st
         "hnx_harness_bundle",
         "hnx_harness_effectiveness_record",
         "hnx_continuity_debt_record",
+        "hnx_feedback_routing_record",
+        "hnx_feedback_eval_scaffold",
+        "hnx_contract_tightening_advisory",
+        "hnx_structural_health_signal",
+        "hnx_feedback_gate_signal",
+        "hnx_readiness_evidence_record",
+        "hnx_maintain_cycle_record",
     }
-    forbidden_terms = ("pqx_execution", "tlc_route", "tpa_policy", "cde_closeout", "sel_enforcement", "fre_repair", "ril_interpretation")
+    forbidden_terms = (
+        "pqx_execution",
+        "tlc_route",
+        "tpa_policy",
+        "cde_closeout",
+        "sel_enforcement",
+        "fre_repair",
+        "ril_interpretation",
+        "promotion_decision",
+        "policy_decision",
+        "release_decision",
+        "certification_decision",
+        "gate_decision",
+    )
     failures: list[str] = []
     for name in consumed_inputs:
         if name not in allowed_inputs:
@@ -65,7 +87,17 @@ def enforce_hnx_boundary(*, consumed_inputs: list[str], emitted_outputs: list[st
     return sorted(set(failures))
 
 
-def evaluate_stage_transition(*, from_state: str, to_state: str, stage_index: int, next_stage_index: int, required_human_checkpoint: bool, human_checkpoint_recorded: bool) -> dict[str, Any]:
+def evaluate_stage_transition(
+    *,
+    from_state: str,
+    to_state: str,
+    stage_index: int,
+    next_stage_index: int,
+    required_human_checkpoint: bool,
+    human_checkpoint_recorded: bool,
+    stop_required: bool = False,
+    freeze_required: bool = False,
+) -> dict[str, Any]:
     failures: list[str] = []
     allowed_next = _ALLOWED_STATES.get(from_state)
     if allowed_next is None:
@@ -73,11 +105,20 @@ def evaluate_stage_transition(*, from_state: str, to_state: str, stage_index: in
     elif to_state not in allowed_next:
         failures.append("ILLEGAL_TRANSITION")
 
-    if next_stage_index != stage_index + 1:
+    if from_state in {"completed", "halted"}:
+        failures.append("TERMINAL_STATE_VIOLATION")
+
+    if next_stage_index != stage_index + 1 and to_state not in {"halted", "frozen", "human_checkpoint"}:
         failures.append("STAGE_SKIP_DETECTED")
 
     if required_human_checkpoint and not human_checkpoint_recorded:
         failures.append("HUMAN_CHECKPOINT_REQUIRED")
+
+    if stop_required and to_state not in {"halted", "frozen", "human_checkpoint"}:
+        failures.append("STOP_REQUIRED_TRANSITION_BREACH")
+
+    if freeze_required and to_state not in {"frozen", "halted"}:
+        failures.append("FREEZE_REQUIRED_TRANSITION_BREACH")
 
     return {
         "allowed": not failures,
@@ -96,8 +137,22 @@ def evaluate_harness_contracts(
     expected_lineage_chain: list[str],
     evaluated_at: str,
 ) -> dict[str, Any]:
+    required_stage_fields = {
+        "contract_id",
+        "run_id",
+        "trace_id",
+        "required_inputs",
+        "required_outputs",
+        "required_evals",
+        "required_trace_fields",
+        "required_continuity_artifacts",
+        "stop_conditions",
+    }
+    stage_fields = set(stage_contract.keys())
+    missing_stage_fields = sorted(required_stage_fields - stage_fields)
+
     checks = {
-        "stage_contract_complete": isinstance(stage_contract.get("required_stages"), list) and bool(stage_contract.get("required_stages")),
+        "stage_contract_complete": not missing_stage_fields,
         "checkpoint_valid": isinstance(checkpoint_record, Mapping) and checkpoint_record.get("artifact_type") == "hnx_checkpoint_record",
         "resume_valid": isinstance(resume_record, Mapping) and resume_record.get("artifact_type") == "hnx_resume_record",
         "continuity_complete": isinstance(continuity_state, Mapping) and bool(continuity_state.get("continuity_refs")),
@@ -105,16 +160,29 @@ def evaluate_harness_contracts(
     }
 
     fail_reasons = [name for name, passed in checks.items() if not passed]
+    if missing_stage_fields:
+        fail_reasons.extend([f"stage_contract_missing:{field}" for field in missing_stage_fields])
+
     if isinstance(resume_record, Mapping) and resume_record.get("downstream_lineage") != expected_lineage_chain:
         checks["resume_to_execution_integrity"] = False
         fail_reasons.append("resume_to_execution_integrity")
     else:
         checks["resume_to_execution_integrity"] = True
 
+    if isinstance(checkpoint_record, Mapping) and isinstance(resume_record, Mapping):
+        if checkpoint_record.get("trace_id") != resume_record.get("trace_id"):
+            checks["trace_linkage_integrity"] = False
+            fail_reasons.append("trace_linkage_integrity")
+        else:
+            checks["trace_linkage_integrity"] = True
+    else:
+        checks["trace_linkage_integrity"] = False
+        fail_reasons.append("trace_linkage_integrity")
+
     result = {
         "artifact_type": "hnx_harness_eval_result",
         "schema_version": "1.0.0",
-        "eval_id": f"hnx-eval-{_hash([stage_contract.get('contract_id'), fail_reasons, evaluated_at])[:12]}",
+        "eval_id": f"hnx-eval-{_hash([stage_contract.get('contract_id'), sorted(set(fail_reasons)), evaluated_at])[:12]}",
         "evaluation_status": "pass" if not fail_reasons else "fail",
         "checks": checks,
         "fail_reasons": sorted(set(fail_reasons)),
@@ -133,6 +201,10 @@ def validate_checkpoint_resume_integrity(*, checkpoint_record: Mapping[str, Any]
         fails.append("CHECKPOINT_HASH_MISMATCH")
     if checkpoint_record.get("lineage_ref") not in set(continuity_state.get("continuity_refs") or []):
         fails.append("CONTINUITY_LINEAGE_MISSING")
+    if checkpoint_record.get("trace_id") != resume_record.get("trace_id"):
+        fails.append("TRACE_LINKAGE_MISMATCH")
+    if "resume_lineage_ref" in resume_record and resume_record.get("resume_lineage_ref") != checkpoint_record.get("lineage_ref"):
+        fails.append("RESUME_LINEAGE_MISMATCH")
 
     created = int(checkpoint_record.get("created_epoch_minutes") or -1)
     max_age = int(continuity_state.get("max_checkpoint_age_minutes") or -1)
@@ -145,7 +217,7 @@ def validate_checkpoint_resume_integrity(*, checkpoint_record: Mapping[str, Any]
 
 def validate_stop_conditions(*, stop_condition_record: Mapping[str, Any], requested_transition: str) -> list[str]:
     fails: list[str] = []
-    if stop_condition_record.get("stop_required") is True and requested_transition not in {"halted", "frozen"}:
+    if stop_condition_record.get("stop_required") is True and requested_transition not in {"halted", "frozen", "human_checkpoint"}:
         fails.append("STOP_CONDITION_BYPASS")
     if stop_condition_record.get("freeze_required") is True and requested_transition not in {"frozen", "halted"}:
         fails.append("FREEZE_BYPASS")
@@ -178,7 +250,7 @@ def build_harness_bundle(*, run_id: str, trace_id: str, stage_contract: Mapping[
     return bundle
 
 
-def validate_harness_replay(*, prior_bundle: Mapping[str, Any], replay_bundle: Mapping[str, Any], prior_eval: Mapping[str, Any], replay_eval: Mapping[str, Any]) -> tuple[bool, list[str]]:
+def validate_harness_replay(*, prior_bundle: Mapping[str, Any], replay_bundle: Mapping[str, Any], prior_eval: Mapping[str, Any], replay_eval: Mapping[str, Any], prior_runs: list[Mapping[str, Any]] | None = None) -> tuple[bool, list[str]]:
     fails: list[str] = []
     if prior_bundle.get("input_fingerprint") != replay_bundle.get("input_fingerprint"):
         fails.append("REPLAY_INPUT_DRIFT")
@@ -186,7 +258,15 @@ def validate_harness_replay(*, prior_bundle: Mapping[str, Any], replay_bundle: M
         fails.append("REPLAY_OUTPUT_DRIFT")
     if not prior_bundle.get("continuity_refs") or not replay_bundle.get("continuity_refs"):
         fails.append("REPLAY_EVIDENCE_INCOMPLETE")
-    return (not fails, fails)
+
+    prior_runs = prior_runs or []
+    if prior_runs:
+        baseline = sorted(set(tuple(sorted((row.get("fail_reasons") or []))) for row in prior_runs))
+        candidate = tuple(sorted((replay_eval.get("fail_reasons") or [])))
+        if candidate not in baseline:
+            fails.append("HIDDEN_STATE_VARIANCE_DETECTED")
+
+    return (not fails, sorted(set(fails)))
 
 
 def build_harness_readiness(*, run_id: str, trace_id: str, eval_result: Mapping[str, Any], continuity_failures: list[str], created_at: str) -> dict[str, Any]:
@@ -237,6 +317,11 @@ def compute_harness_effectiveness(*, window_id: str, created_at: str, outcomes: 
     success = sum(1 for row in outcomes if row.get("completed") is True)
     broken_resumes = sum(1 for row in outcomes if row.get("broken_resume") is True)
     stop_bypass_blocked = sum(1 for row in outcomes if row.get("stop_bypass_blocked") is True)
+    invalid_transitions = sum(1 for row in outcomes if row.get("invalid_transition") is True)
+    unresolved_feedback = sum(1 for row in outcomes if row.get("unresolved_feedback") is True)
+    stale_checkpoints = sum(1 for row in outcomes if row.get("stale_checkpoint") is True)
+    replay_mismatch = sum(1 for row in outcomes if row.get("replay_mismatch") is True)
+    handoff_incomplete = sum(1 for row in outcomes if row.get("handoff_complete") is False)
     completion_quality = success / total
     broken_resume_rate = broken_resumes / total
     stop_guard_rate = stop_bypass_blocked / total
@@ -250,6 +335,12 @@ def compute_harness_effectiveness(*, window_id: str, created_at: str, outcomes: 
         "completion_quality": completion_quality,
         "broken_resume_rate": broken_resume_rate,
         "stop_bypass_block_rate": stop_guard_rate,
+        "invalid_transition_rate": invalid_transitions / total,
+        "handoff_completeness_rate": (total - handoff_incomplete) / total,
+        "stale_checkpoint_rate": stale_checkpoints / total,
+        "resume_breakage_rate": broken_resume_rate,
+        "replay_mismatch_rate": replay_mismatch / total,
+        "unresolved_feedback_count": unresolved_feedback,
         "value_status": value_status,
         "created_at": created_at,
     }
@@ -279,8 +370,169 @@ def build_hnx_conflict_record(*, run_id: str, trace_id: str, conflict_codes: lis
     return artifact
 
 
+def build_hnx_feedback_record(
+    *,
+    created_at: str,
+    trace_id: str,
+    source: str,
+    stage_ref: str,
+    failure_type: str,
+    severity: str,
+    affected_artifact_ids: list[str],
+    reproduction_context: str,
+    structural_root_cause: str,
+    recommended_action: str,
+    requires_eval_update: bool,
+    requires_contract_update: bool,
+    requires_policy_signal: bool,
+    resolution_status: str,
+    resolution_refs: list[str],
+) -> dict[str, Any]:
+    seed = [trace_id, source, stage_ref, failure_type, severity, sorted(affected_artifact_ids)]
+    feedback_hash = _hash(seed)
+    artifact = {
+        "artifact_type": "hnx_feedback_record",
+        "schema_version": "1.0.0",
+        "feedback_id": f"hnx-feedback-{feedback_hash[:12]}",
+        "created_at": created_at,
+        "schema_ref": "contracts/schemas/hnx_feedback_record.schema.json",
+        "trace_id": trace_id,
+        "source": source,
+        "stage_ref": stage_ref,
+        "failure_type": failure_type,
+        "severity": severity,
+        "affected_artifact_ids": sorted(set(affected_artifact_ids)),
+        "reproduction_context": reproduction_context,
+        "structural_root_cause": structural_root_cause,
+        "recommended_action": recommended_action,
+        "requires_eval_update": requires_eval_update,
+        "requires_contract_update": requires_contract_update,
+        "requires_policy_signal": requires_policy_signal,
+        "resolution_status": resolution_status,
+        "resolution_refs": sorted(set(resolution_refs)),
+        "feedback_hash": feedback_hash,
+    }
+    validate_artifact(artifact, "hnx_feedback_record")
+    return artifact
+
+
+def route_hnx_feedback(*, feedback_record: Mapping[str, Any], created_at: str) -> dict[str, Any]:
+    routes: list[str] = []
+    if feedback_record.get("requires_eval_update") is True:
+        routes.append("eval_expansion")
+    if feedback_record.get("requires_contract_update") is True:
+        routes.append("stage_contract_tightening_advisory")
+    if str(feedback_record.get("source")) in {"replay", "checkpoint", "handoff", "maintain"}:
+        routes.append("continuity_replay_hardening")
+    routes.append("drift_structural_health_signal")
+    if feedback_record.get("requires_policy_signal") is True:
+        routes.append("control_facing_structural_signal")
+    if str(feedback_record.get("severity")) in {"high", "critical"}:
+        routes.append("redteam_regression_bundle")
+
+    artifact = {
+        "artifact_type": "hnx_feedback_routing_record",
+        "schema_version": "1.0.0",
+        "routing_id": f"hnx-route-{_hash([feedback_record.get('feedback_id'), routes])[:12]}",
+        "feedback_id": feedback_record.get("feedback_id"),
+        "trace_id": feedback_record.get("trace_id"),
+        "routes": sorted(set(routes)),
+        "created_at": created_at,
+    }
+    validate_artifact(artifact, "hnx_feedback_routing_record")
+    return artifact
+
+
+def compile_feedback_to_eval(*, feedback_record: Mapping[str, Any], created_at: str) -> dict[str, Any]:
+    failure_type = str(feedback_record.get("failure_type"))
+    eval_family = {
+        "invalid_transition": "invalid_transition_eval",
+        "handoff_incomplete": "handoff_completeness_eval",
+        "stale_checkpoint": "stale_checkpoint_eval",
+        "replay_mismatch": "replay_mismatch_eval",
+        "hidden_state_variance": "hidden_state_consistency_eval",
+        "unresolved_feedback": "unresolved_feedback_structural_eval",
+    }.get(failure_type, "hnx_structural_failure_eval")
+    artifact = {
+        "artifact_type": "hnx_feedback_eval_scaffold",
+        "schema_version": "1.0.0",
+        "scaffold_id": f"hnx-eval-scaffold-{_hash([feedback_record.get('feedback_id'), eval_family])[:12]}",
+        "feedback_id": feedback_record.get("feedback_id"),
+        "trace_id": feedback_record.get("trace_id"),
+        "eval_family": eval_family,
+        "critical_findings_present": str(feedback_record.get("severity")) == "critical",
+        "created_at": created_at,
+    }
+    validate_artifact(artifact, "hnx_feedback_eval_scaffold")
+    return artifact
+
+
+def feedback_to_contract_tightening_advisory(*, feedback_record: Mapping[str, Any], created_at: str) -> dict[str, Any]:
+    required_contract_fields = [
+        "required_inputs",
+        "required_outputs",
+        "required_trace_fields",
+        "required_evals",
+        "required_continuity_artifacts",
+        "stop_conditions",
+    ]
+    artifact = {
+        "artifact_type": "hnx_contract_tightening_advisory",
+        "schema_version": "1.0.0",
+        "advisory_id": f"hnx-tighten-advisory-{_hash([feedback_record.get('feedback_id'), required_contract_fields])[:12]}",
+        "feedback_id": feedback_record.get("feedback_id"),
+        "trace_id": feedback_record.get("trace_id"),
+        "recommended_contract_fields": required_contract_fields,
+        "failure_type": feedback_record.get("failure_type"),
+        "advisory_scope": "contract_authority_external_to_hnx",
+        "created_at": created_at,
+    }
+    validate_artifact(artifact, "hnx_contract_tightening_advisory")
+    return artifact
+
+
+def emit_hnx_structural_health_signal(*, effectiveness_record: Mapping[str, Any], unresolved_feedback_count: int, continuity_debt_record: Mapping[str, Any], created_at: str) -> dict[str, Any]:
+    structural_risk_level = "elevated" if unresolved_feedback_count > 0 or continuity_debt_record.get("debt_status") == "elevated" else "normal"
+    replay_integrity_status = "mismatch_detected" if (effectiveness_record.get("replay_mismatch_rate") or 0.0) > 0 else "consistent"
+    artifact = {
+        "artifact_type": "hnx_structural_health_signal",
+        "schema_version": "1.0.0",
+        "signal_id": f"hnx-structural-health-{_hash([effectiveness_record.get('effectiveness_id'), unresolved_feedback_count, continuity_debt_record.get('debt_id')])[:12]}",
+        "structural_risk_level": structural_risk_level,
+        "continuity_status": "at_risk" if continuity_debt_record.get("debt_status") == "elevated" else "healthy",
+        "replay_integrity_status": replay_integrity_status,
+        "unresolved_critical_feedback": int(unresolved_feedback_count),
+        "trace_id": continuity_debt_record.get("trace_id") or "unknown",
+        "recommended_control_posture": "review_required_for_critical_findings" if unresolved_feedback_count > 0 else "normal_monitoring",
+        "created_at": created_at,
+        "non_authority_note": "signal_only_hnx_has_no_control_or_promotion_authority",
+    }
+    validate_artifact(artifact, "hnx_structural_health_signal")
+    return artifact
+
+
+def build_feedback_completeness_signal(*, feedback_records: list[Mapping[str, Any]], created_at: str) -> dict[str, Any]:
+    unresolved_critical = [
+        rec for rec in feedback_records if rec.get("resolution_status") != "resolved" and rec.get("severity") == "critical"
+    ]
+    unresolved_high = [rec for rec in feedback_records if rec.get("resolution_status") != "resolved" and rec.get("severity") == "high"]
+    artifact = {
+        "artifact_type": "hnx_feedback_gate_signal",
+        "schema_version": "1.0.0",
+        "signal_id": f"hnx-feedback-signal-{_hash([[r.get('feedback_id') for r in unresolved_critical], [r.get('feedback_id') for r in unresolved_high]])[:12]}",
+        "unresolved_critical_feedback_ids": [str(r.get("feedback_id")) for r in unresolved_critical],
+        "unresolved_high_feedback_ids": [str(r.get("feedback_id")) for r in unresolved_high],
+        "blocking_findings_present": bool(unresolved_critical),
+        "structural_risk_level": "critical" if unresolved_critical else ("elevated" if unresolved_high else "normal"),
+        "recommended_control_posture": "critical_findings_present" if unresolved_critical else ("high_findings_present" if unresolved_high else "normal"),
+        "created_at": created_at,
+    }
+    validate_artifact(artifact, "hnx_feedback_gate_signal")
+    return artifact
+
+
 def verify_hnx_closeout_gate(*, harness_eval: Mapping[str, Any], readiness: Mapping[str, Any], replay_match: bool, stop_failures: list[str], checkpoint_resume_failures: list[str]) -> dict[str, Any]:
-    """HNX-10 closeout gate proving checkpoint/resume, stop-guard, replay, and continuity are operationally real."""
+    """HNX closeout evidence proving checkpoint/resume, stop-guard, replay, and continuity are operationally real."""
     checks = {
         "checkpoint_resume_integrity": not checkpoint_resume_failures,
         "stop_condition_integrity": not stop_failures,
@@ -289,4 +541,77 @@ def verify_hnx_closeout_gate(*, harness_eval: Mapping[str, Any], readiness: Mapp
         "hnx_bounded_scope_preserved": "does_not_replace_pqx_execution_authority" in readiness.get("non_authority_assertions", []),
     }
     fail_reasons = [name for name, passed in checks.items() if not passed]
-    return {"closeout_status": "closed" if not fail_reasons else "open", "checks": checks, "fail_reasons": fail_reasons}
+    return {
+        "structural_evidence_status": "sufficient" if not fail_reasons else "insufficient",
+        "checks": checks,
+        "fail_reasons": fail_reasons,
+        "recommended_control_posture": "escalated_review_required" if fail_reasons else "normal_monitoring",
+    }
+
+
+def build_hnx_readiness_evidence(
+    *,
+    run_id: str,
+    trace_id: str,
+    harness_eval: Mapping[str, Any],
+    replay_pass: bool,
+    trace_complete: bool,
+    required_eval_complete: bool,
+    feedback_signal: Mapping[str, Any],
+    redteam_clean: bool,
+    non_authority_proof_refs: list[str],
+    created_at: str,
+) -> dict[str, Any]:
+    checks = {
+        "schema_contract_pass": harness_eval.get("evaluation_status") == "pass",
+        "replay_pass": replay_pass,
+        "trace_completeness": trace_complete,
+        "required_eval_completeness": required_eval_complete,
+        "no_unresolved_critical_hnx_feedback": feedback_signal.get("blocking_findings_present") is False,
+        "redteam_clean": redteam_clean,
+        "hnx_non_authority_boundary_proven": bool(non_authority_proof_refs),
+    }
+    readiness_findings = [name for name, passed in checks.items() if not passed]
+    artifact = {
+        "artifact_type": "hnx_readiness_evidence_record",
+        "schema_version": "1.0.0",
+        "evidence_id": f"hnx-readiness-evidence-{_hash([run_id, trace_id, sorted(readiness_findings)])[:12]}",
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "stage_contract_completeness": checks["schema_contract_pass"],
+        "replay_integrity_status": "consistent" if checks["replay_pass"] else "mismatch_detected",
+        "readiness_findings": readiness_findings,
+        "recommended_control_posture": "escalated_review_required" if readiness_findings else "normal_monitoring",
+        "non_authority_proof_refs": sorted(set(non_authority_proof_refs)),
+        "created_at": created_at,
+    }
+    validate_artifact(artifact, "hnx_readiness_evidence_record")
+    return artifact
+
+
+def build_hnx_maintain_cycle_record(
+    *,
+    maintain_cycle_id: str,
+    trace_id: str,
+    continuity_drift_detected: bool,
+    stage_contract_drift_detected: bool,
+    docs_runtime_drift_detected: bool,
+    incidents_converted_to_evals: list[str],
+    structural_debt_refs: list[str],
+    created_at: str,
+) -> dict[str, Any]:
+    artifact = {
+        "artifact_type": "hnx_maintain_cycle_record",
+        "schema_version": "1.0.0",
+        "maintain_cycle_id": maintain_cycle_id,
+        "trace_id": trace_id,
+        "continuity_drift_detected": continuity_drift_detected,
+        "stage_contract_drift_detected": stage_contract_drift_detected,
+        "docs_runtime_drift_detected": docs_runtime_drift_detected,
+        "incidents_converted_to_evals": sorted(set(incidents_converted_to_evals)),
+        "structural_debt_refs": sorted(set(structural_debt_refs)),
+        "maintain_status": "action_required" if continuity_drift_detected or stage_contract_drift_detected or docs_runtime_drift_detected else "healthy",
+        "created_at": created_at,
+    }
+    validate_artifact(artifact, "hnx_maintain_cycle_record")
+    return artifact

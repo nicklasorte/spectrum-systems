@@ -1,0 +1,18 @@
+{
+  "artifact_type": "ril_false_continuation_red_team_report_pm9",
+  "artifact_id": "ril_false_continuation_red_team_report_pm9-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.4",
+  "created_at": "2026-04-16T00:00:00Z",
+  "owner": "RIL",
+  "status": "pass",
+  "run_id": "pmh-002-run",
+  "details": [
+    "ril_false_continuation_red_team_report_pm9 deterministic example"
+  ],
+  "reason_codes": [
+    "artifact_first"
+  ],
+  "non_authoritative": true
+}

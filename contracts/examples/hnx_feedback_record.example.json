@@ -1,0 +1,25 @@
+{
+  "artifact_type": "hnx_feedback_record",
+  "schema_version": "1.0.0",
+  "feedback_id": "hnx-feedback-a1b2c3d4e5f6",
+  "created_at": "2026-04-16T00:00:00Z",
+  "schema_ref": "contracts/schemas/hnx_feedback_record.schema.json",
+  "trace_id": "trace-hnx-1",
+  "source": "replay",
+  "stage_ref": "checkpointed->resumed",
+  "failure_type": "replay_mismatch",
+  "severity": "critical",
+  "affected_artifact_ids": [
+    "hnx_checkpoint_record:cp-1",
+    "hnx_resume_record:resume-1"
+  ],
+  "reproduction_context": "same checkpoint replayed twice with divergent fail_reasons",
+  "structural_root_cause": "resume lineage missing deterministic linkage field",
+  "recommended_action": "tighten resume lineage + add replay mismatch eval",
+  "requires_eval_update": true,
+  "requires_contract_update": true,
+  "requires_policy_signal": true,
+  "resolution_status": "open",
+  "resolution_refs": [],
+  "feedback_hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+}

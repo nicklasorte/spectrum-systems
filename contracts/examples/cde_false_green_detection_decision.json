@@ -1,0 +1,17 @@
+{
+  "artifact_type": "cde_false_green_detection_decision",
+  "artifact_id": "cde_false_green_detection_decision-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.4",
+  "created_at": "2026-04-16T00:00:00Z",
+  "owner": "CDE",
+  "status": "pass",
+  "run_id": "pmh-002-run",
+  "details": [
+    "cde_false_green_detection_decision deterministic example"
+  ],
+  "reason_codes": [
+    "artifact_first"
+  ]
+}

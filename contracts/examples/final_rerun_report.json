@@ -1,0 +1,12 @@
+{
+  "artifact_type": "final_rerun_report",
+  "artifact_id": "final_rerun_report-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.2",
+  "created_at": "2026-04-16T00:00:00Z",
+  "owner": "TLC",
+  "status": "pass",
+  "impacted_suite_count": 4,
+  "failed_suites": 0
+}
