@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.131",
+  "artifact_version": "1.3.132",
   "schema_version": "1.3.99",
   "standards_version": "1.9.1",
   "record_id": "REC-STD-2026-04-15-RGP-02",
@@ -1082,19 +1082,6 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
-      "artifact_type": "cap_ai_cost_overrun_guard_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/cap_ai_cost_overrun_guard_result.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by CAP."
-    },
-    {
       "artifact_type": "cap_budget_status_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -1187,19 +1174,6 @@
       "notes": "BATCH-A2 deterministic capability readiness posture signal for unattended-operation supervision gating."
     },
     {
-      "artifact_type": "cde_ai_bypass_kill_switch_decision",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/cde_ai_bypass_kill_switch_decision.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by CDE."
-    },
-    {
       "artifact_type": "cde_ai_failure_escalation_decision",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -1211,19 +1185,6 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/cde_ai_failure_escalation_decision.json",
       "notes": "AIG-001 governed AI integration artifact"
-    },
-    {
-      "artifact_type": "cde_ai_trust_posture_decision",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/cde_ai_trust_posture_decision.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by CDE."
     },
     {
       "artifact_type": "cde_ai_usage_continuation_decision",
@@ -1371,19 +1332,6 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/cde_partial_continuation_decision.json",
       "notes": "R100-NP-001 context/contract/final authority."
-    },
-    {
-      "artifact_type": "cde_partial_disable_ai_decision",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/cde_partial_disable_ai_decision.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by CDE."
     },
     {
       "artifact_type": "cde_phase_boundary_continue_halt_escalate_decision",
@@ -1755,19 +1703,6 @@
       "notes": "TPA complexity governance artifact for deterministic budget/trend/campaign enforcement and PQX cleanup scheduling."
     },
     {
-      "artifact_type": "con_ai_wiring_compliance_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/con_ai_wiring_compliance_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by CON."
-    },
-    {
       "artifact_type": "con_contract_evolution_pressure_map",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1792,19 +1727,6 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/con_cross_owner_contract_compatibility_matrix.json",
       "notes": "R100-001 integration fabric extension artifact."
-    },
-    {
-      "artifact_type": "con_forbidden_direct_ai_call_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/con_forbidden_direct_ai_call_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by CON."
     },
     {
       "artifact_type": "con_hidden_coupling_severity_record",
@@ -2481,19 +2403,6 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/ctx_ai_context_filter_result.json",
       "notes": "AIG-001 governed AI integration artifact"
-    },
-    {
-      "artifact_type": "ctx_ai_context_integrity_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/ctx_ai_context_integrity_result.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by CTX."
     },
     {
       "artifact_type": "ctx_ai_ready_context_bundle",
@@ -3946,19 +3855,6 @@
       "notes": "SF-14 deterministic release decision artifact for baseline-versus-candidate canary evaluation, governed promotion, and deterministic rollback targeting."
     },
     {
-      "artifact_type": "evd_ai_evidence_strength_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/evd_ai_evidence_strength_result.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by EVD."
-    },
-    {
       "artifact_type": "evd_commentary_vs_authority_evidence_split_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -4117,19 +4013,6 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
-      "artifact_type": "evl_ai_eval_coverage_completeness_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/evl_ai_eval_coverage_completeness_result.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by EVL."
-    },
-    {
       "artifact_type": "evl_ai_judge_evaluation_result",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -4260,19 +4143,6 @@
       "last_updated_in": "1.3.139",
       "example_path": "contracts/examples/evl_route_by_route_eval_debt_map.json",
       "notes": "R100-NP-001-FIXED reference-only composition artifact (no shadow recomputation)."
-    },
-    {
-      "artifact_type": "evl_stale_ai_eval_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/evl_stale_ai_eval_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by EVL."
     },
     {
       "artifact_class": "coordination",
@@ -4650,19 +4520,6 @@
       "notes": "R100-NP-001 final integration and rerun evidence."
     },
     {
-      "artifact_type": "final_ai_coverage_100_validation_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/final_ai_coverage_100_validation_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by TLC."
-    },
-    {
       "artifact_type": "final_ai_failure_cascade_simulation",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -4674,19 +4531,6 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/final_ai_failure_cascade_simulation.json",
       "notes": "AIG-001 governed AI integration artifact"
-    },
-    {
-      "artifact_type": "final_ai_full_system_rerun_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/final_ai_full_system_rerun_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by TLC."
     },
     {
       "artifact_type": "final_ai_impacted_suite_rerun_report",
@@ -4713,19 +4557,6 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/final_ai_roadmap_integration_scenario_pack.json",
       "notes": "AIG-001 governed AI integration artifact"
-    },
-    {
-      "artifact_type": "final_ai_tlx_enforcement_audit_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/final_ai_tlx_enforcement_audit_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by TLC."
     },
     {
       "artifact_type": "final_bottleneck_wave_redteam_findings",
@@ -4908,97 +4739,6 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/fre_tpa_sel_pqx_ai_fix_pack_g7.json",
       "notes": "AIG-001 governed AI integration artifact"
-    },
-    {
-      "artifact_type": "fre_tpa_sel_pqx_ai_fix_pack_h1",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/fre_tpa_sel_pqx_ai_fix_pack_h1.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by FRE."
-    },
-    {
-      "artifact_type": "fre_tpa_sel_pqx_ai_fix_pack_h2",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/fre_tpa_sel_pqx_ai_fix_pack_h2.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by FRE."
-    },
-    {
-      "artifact_type": "fre_tpa_sel_pqx_ai_fix_pack_h3",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/fre_tpa_sel_pqx_ai_fix_pack_h3.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by FRE."
-    },
-    {
-      "artifact_type": "fre_tpa_sel_pqx_ai_fix_pack_h4",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/fre_tpa_sel_pqx_ai_fix_pack_h4.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by FRE."
-    },
-    {
-      "artifact_type": "fre_tpa_sel_pqx_ai_fix_pack_h5",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/fre_tpa_sel_pqx_ai_fix_pack_h5.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by FRE."
-    },
-    {
-      "artifact_type": "fre_tpa_sel_pqx_ai_fix_pack_h6",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/fre_tpa_sel_pqx_ai_fix_pack_h6.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by FRE."
-    },
-    {
-      "artifact_type": "fre_tpa_sel_pqx_ai_fix_pack_h7",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/fre_tpa_sel_pqx_ai_fix_pack_h7.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by FRE."
     },
     {
       "artifact_type": "fre_tpa_sel_pqx_fix_pack_e1",
@@ -6474,19 +6214,6 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
-      "artifact_type": "lin_ai_execution_lineage_completeness_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/lin_ai_execution_lineage_completeness_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by LIN."
-    },
-    {
       "artifact_type": "lin_full_chain_lineage_report",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -7133,19 +6860,6 @@
       "last_updated_in": "1.3.113",
       "example_path": "contracts/examples/nx_roadmap_candidate_artifact.json",
       "notes": "PRG-owned recommendation-only roadmap candidate persistence artifact from NX feedback."
-    },
-    {
-      "artifact_type": "obs_ai_call_coverage_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/obs_ai_call_coverage_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by OBS."
     },
     {
       "artifact_type": "obs_ai_call_observability_record",
@@ -8496,19 +8210,6 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
-      "artifact_type": "prg_ai_usage_anomaly_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/prg_ai_usage_anomaly_record.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by PRG."
-    },
-    {
       "artifact_type": "prg_bottleneck_severity_rank_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -8771,32 +8472,6 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/prm_ai_task_registry_record.json",
       "notes": "AIG-001 governed AI integration artifact"
-    },
-    {
-      "artifact_type": "prm_prompt_drift_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/prm_prompt_drift_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by PRM."
-    },
-    {
-      "artifact_type": "prm_prompt_shadow_detection_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/prm_prompt_shadow_detection_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by PRM."
     },
     {
       "artifact_type": "program_alignment_assessment",
@@ -9610,19 +9285,6 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/qos_ai_queue_pressure_record.json",
       "notes": "AIG-001 governed AI integration artifact"
-    },
-    {
-      "artifact_type": "qos_ai_retry_storm_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/qos_ai_retry_storm_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by QOS."
     },
     {
       "artifact_type": "qos_backlog_aging_hotspot_record",
@@ -10540,19 +10202,6 @@
       "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
     },
     {
-      "artifact_type": "rep_ai_replay_completeness_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/rep_ai_replay_completeness_result.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by REP."
-    },
-    {
       "artifact_type": "rep_ai_replay_request_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -11352,32 +11001,6 @@
       "notes": "WPG Phase B governed workflow loop contract."
     },
     {
-      "artifact_type": "ril_ai_bypass_red_team_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/ril_ai_bypass_red_team_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by RIL."
-    },
-    {
-      "artifact_type": "ril_ai_context_injection_red_team_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/ril_ai_context_injection_red_team_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by RIL."
-    },
-    {
       "artifact_type": "ril_ai_cost_runaway_red_team_report",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -11389,32 +11012,6 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/ril_ai_cost_runaway_red_team_report.json",
       "notes": "AIG-001 governed AI integration artifact"
-    },
-    {
-      "artifact_type": "ril_ai_cost_runaway_red_team_report_h6",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/ril_ai_cost_runaway_red_team_report_h6.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by RIL."
-    },
-    {
-      "artifact_type": "ril_ai_end_to_end_autonomy_red_team_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/ril_ai_end_to_end_autonomy_red_team_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by RIL."
     },
     {
       "artifact_type": "ril_ai_eval_bypass_red_team_report",
@@ -11469,19 +11066,6 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
-      "artifact_type": "ril_ai_replay_gap_red_team_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/ril_ai_replay_gap_red_team_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by RIL."
-    },
-    {
       "artifact_type": "ril_ai_replay_inconsistency_red_team_report",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -11493,19 +11077,6 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/ril_ai_replay_inconsistency_red_team_report.json",
       "notes": "AIG-001 governed AI integration artifact"
-    },
-    {
-      "artifact_type": "ril_ai_schema_drift_red_team_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/ril_ai_schema_drift_red_team_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by RIL."
     },
     {
       "artifact_type": "ril_ai_structured_output_bypass_red_team_report",
@@ -12445,19 +12016,6 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
-      "artifact_type": "slo_ai_reliability_threshold_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/slo_ai_reliability_threshold_result.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by SLO."
-    },
-    {
       "artifact_type": "slo_budget_status_artifact",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -13045,32 +12603,6 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
-      "artifact_type": "tlx_ai_call_site_detection_report",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/tlx_ai_call_site_detection_report.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by TLX."
-    },
-    {
-      "artifact_type": "tlx_ai_dispatch_audit_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/tlx_ai_dispatch_audit_record.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by TLX."
-    },
-    {
       "artifact_type": "tlx_ai_failure_classification_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -13121,19 +12653,6 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/tlx_ai_usage_record.json",
       "notes": "AIG-001 governed AI integration artifact"
-    },
-    {
-      "artifact_type": "tlx_ai_wiring_enforcement_result",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/tlx_ai_wiring_enforcement_result.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by TLX."
     },
     {
       "artifact_type": "tool_contract",
@@ -13511,45 +13030,6 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/tst_adversarial_fixture_freshness_record.json",
       "notes": "R100-NP-001 test/data/signal/handoff support."
-    },
-    {
-      "artifact_type": "tst_ai_bypass_fixture_suite",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/tst_ai_bypass_fixture_suite.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by TST."
-    },
-    {
-      "artifact_type": "tst_ai_replay_eval_chain_test_pack",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/tst_ai_replay_eval_chain_test_pack.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by TST."
-    },
-    {
-      "artifact_type": "tst_ai_schema_enforcement_test_pack",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.144",
-      "last_updated_in": "1.3.144",
-      "example_path": "contracts/examples/tst_ai_schema_enforcement_test_pack.json",
-      "notes": "AEA-001 AI enforcement autonomy hardening artifact owned by TST."
     },
     {
       "artifact_type": "tst_long_roadmap_fixture_governance_pack",

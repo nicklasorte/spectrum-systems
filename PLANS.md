@@ -101,7 +101,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-BATCH-GHA-07-2026-04-06.md | BATCH-GHA-07 — Roadmap Execution Bridge (Artifact → Execution) | Active |
 | docs/review-actions/PLAN-BATCH-RIL-05-2026-04-05.md | BATCH-RIL-05 — Consumer Wiring / Validation Layer (RIL-005 + RIL-ARCH-01 + RIL-ARCH-02) | Active |
 | docs/review-actions/PLAN-BATCH-FRE-01-2026-04-05.md | BATCH-FRE-01 — Failure Diagnosis Engine (FRE-001/FRE-002/FRE-003) | Active |
-| docs/review-actions/PLAN-BATCH-TPA-09A-INTEGRATION-FIX-2026-04-05.md | BATCH-TPA-09A integration fix — preflight blocker + override test drift alignment | Active |
+| docs/review-actions/PLAN-BATCH-TPA-09A-INTEGRATION-FIX-2026-04-05.md | BATCH-TPA-09A integration fix — preflight blocker + test drift alignment | Active |
 | docs/review-actions/PLAN-BATCH-TPA-09A-2026-04-05.md | BATCH-TPA-09A — Trust Boundary Hardening (TPA-ACT-08B-AR-01, TPA-ACT-08B-AR-02) | Active |
 | docs/review-actions/PLAN-BATCH-TPA-04-2026-04-04.md | BATCH-TPA-04 — TPA Default Routing + Bypass Detection (TPA-014, TPA-017, TPA-018) | Active |
 | docs/review-actions/PLAN-BATCH-TPA-02-2026-04-04.md | BATCH-TPA-02 — TPA Completion Hardening (TPA-006..TPA-012) | Active |
@@ -264,7 +264,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 | docs/review-actions/PLAN-CTRL-LOOP-05-POLICY-LIFECYCLE-2026-03-30.md | CTRL-LOOP-05 grouped PQX slice — judgment policy lifecycle governance (canary/promotion/rollback/revoke) | Active |
 | docs/review-actions/PLAN-CTRL-LOOP-05-LIFECYCLE-ENFORCEMENT-HARDENING-2026-03-30.md | CTRL-LOOP-05 grouped PQX slice — mandatory lifecycle/rollout enforcement in governed runtime/control paths | Active |
 | docs/review-actions/PLAN-CTRL-LOOP-05-CYCLE-MANIFEST-PROPAGATION-FIX-2026-03-30.md | CTRL-LOOP-05 surgical hardening — cycle_manifest lifecycle/rollout producer propagation fix | Active |
-| docs/review-actions/PLAN-STRATEGY-SOURCE-GOVERNANCE-HARDENING-2026-03-30.md | Grouped PQX slice — strategy/source authority enforcement for roadmap/review/progression seams | Active |
+| docs/review-actions/PLAN-STRATEGY-SOURCE-GOVERNANCE-HARDENING-2026-03-30.md | Grouped PQX slice — strategy/source roadmap alignment for roadmap/review/progression seams | Active |
 | docs/review-actions/PLAN-CTRL-LOOP-03-STRATEGY-SOURCE-AUTHORITY-2026-03-30.md | CTRL-LOOP-03 grouped PQX slice — strategy/source authority loop hard-gate wiring | Active |
 
 | docs/review-actions/PLAN-PQX-NEXT-STEP-DECISION-POLICY-2026-03-30.md | PQX Next-Step Decision Policy Externalization | Active |
