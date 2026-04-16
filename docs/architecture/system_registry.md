@@ -159,6 +159,11 @@ CDE is the only system allowed to emit:
 - **CON** — interface contract hardening authority
 - **WPG** — governed working paper generator pipeline (artifact-first FAQ-to-paper synthesis)
 
+### Transcript hardening boundary note
+- Transcript hardening in `spectrum_systems/modules/transcript_hardening.py` is a bounded transcript-domain transform seam.
+- It prepares deterministic transcript artifacts and handoff input signals only.
+- It does not issue eval/control/judgment/enforcement/certification outcomes; those remain with canonical owners.
+
 ## Recurring Cross-System Phase Labels (Non-Owner)
 
 ### MNT — Maintain / Cross-System Trust Integration
