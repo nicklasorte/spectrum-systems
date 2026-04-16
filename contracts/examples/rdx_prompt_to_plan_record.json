@@ -1,0 +1,14 @@
+{
+  "artifact_type": "rdx_prompt_to_plan_record",
+  "artifact_id": "rdx_prompt_to_plan_record-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.2",
+  "created_at": "2026-04-16T00:00:00Z",
+  "owner": "RDX",
+  "status": "pass",
+  "prompt_ref": "prm_prompt_minimalism_profile:001",
+  "compiled_plan_ref": "rdx_compiled_plan:001",
+  "injected_owner_scope_ref": "prm_owner_scope_expansion_record:001",
+  "authority_added": false
+}

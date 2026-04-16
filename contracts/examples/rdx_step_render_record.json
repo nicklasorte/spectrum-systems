@@ -1,0 +1,18 @@
+{
+  "artifact_type": "rdx_step_render_record",
+  "artifact_id": "rdx_step_render_record-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.2",
+  "created_at": "2026-04-16T00:00:00Z",
+  "owner": "RDX",
+  "status": "pass",
+  "plan_ref": "rdx_prompt_to_plan_record:001",
+  "template_ref": "prm_step_template_registry_record:001",
+  "rendered_steps": [
+    {
+      "step_id": "S1",
+      "description": "Render step"
+    }
+  ]
+}
