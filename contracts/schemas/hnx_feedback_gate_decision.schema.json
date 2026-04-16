@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hnx_feedback_gate_decision.schema.json",
+  "title": "HNX Feedback Gate Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "gate_id",
+    "decision",
+    "unresolved_critical_feedback_ids",
+    "unresolved_high_feedback_ids",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "hnx_feedback_gate_decision"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "gate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision": {
+      "enum": [
+        "allow",
+        "freeze",
+        "block"
+      ]
+    },
+    "unresolved_critical_feedback_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "unresolved_high_feedback_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

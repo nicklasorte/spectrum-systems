@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hnx_feedback_eval_scaffold.schema.json",
+  "title": "HNX Feedback Eval Scaffold",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "scaffold_id",
+    "feedback_id",
+    "trace_id",
+    "eval_family",
+    "expected_block_on_failure",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "hnx_feedback_eval_scaffold"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "scaffold_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "feedback_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eval_family": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_block_on_failure": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

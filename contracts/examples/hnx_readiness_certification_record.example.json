@@ -1,0 +1,22 @@
+{
+  "artifact_type": "hnx_readiness_certification_record",
+  "schema_version": "1.0.0",
+  "certification_id": "hnx-cert-001",
+  "run_id": "run-hnx-1",
+  "trace_id": "trace-hnx-1",
+  "status": "pass",
+  "checks": {
+    "schema_contract_pass": true,
+    "replay_pass": true,
+    "trace_completeness": true,
+    "required_eval_completeness": true,
+    "no_unresolved_critical_hnx_feedback": true,
+    "redteam_clean": true,
+    "hnx_non_authority_boundary_proven": true
+  },
+  "fail_reasons": [],
+  "non_authority_proof_refs": [
+    "docs/architecture/system_registry.md#hnx"
+  ],
+  "created_at": "2026-04-16T00:00:00Z"
+}

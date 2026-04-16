@@ -60,6 +60,35 @@
     "created_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "invalid_transition_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "handoff_completeness_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "stale_checkpoint_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "resume_breakage_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "replay_mismatch_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "unresolved_feedback_count": {
+      "type": "integer",
+      "minimum": 0
     }
   }
 }
