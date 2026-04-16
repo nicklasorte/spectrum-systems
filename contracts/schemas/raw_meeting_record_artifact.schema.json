@@ -8,48 +8,48 @@
     "artifact_type",
     "artifact_id",
     "schema_version",
+    "artifact_version",
+    "standards_version",
     "run_id",
     "trace_id",
-    "lineage_refs",
     "source_id",
     "source_document_path",
     "content_hash",
     "ingest_timestamp",
     "parser_version",
+    "lineage_refs",
     "provenance"
   ],
   "properties": {
-    "artifact_type": {
-      "type": "string",
-      "const": "raw_meeting_record_artifact"
-    },
     "artifact_id": {
       "type": "string",
       "minLength": 3
     },
     "schema_version": {
-      "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "artifact_version": {
-      "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "standards_version": {
-      "type": "string",
-      "const": "1.9.5"
+      "type": "string"
     },
     "run_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "trace_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "lineage_refs": {
       "type": "array",
       "items": {
         "type": "string"
       }
+    },
+    "artifact_type": {
+      "const": "raw_meeting_record_artifact"
     },
     "source_id": {
       "type": "string"
@@ -58,7 +58,8 @@
       "type": "string"
     },
     "content_hash": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
     },
     "ingest_timestamp": {
       "type": "string",
@@ -68,7 +69,21 @@
       "type": "string"
     },
     "provenance": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_format",
+        "source_hash"
+      ],
+      "properties": {
+        "source_format": {
+          "const": "docx"
+        },
+        "source_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
     }
   }
 }

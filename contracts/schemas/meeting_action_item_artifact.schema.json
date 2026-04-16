@@ -1,13 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/meeting_action_item_artifact.schema.json",
-  "title": "Meeting Action Item Artifact",
+  "title": "meeting_action_item_artifact",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "artifact_type",
     "artifact_id",
     "schema_version",
+    "artifact_version",
+    "standards_version",
     "run_id",
     "trace_id",
     "lineage_refs",
@@ -21,31 +23,26 @@
     "dependency_refs"
   ],
   "properties": {
-    "artifact_type": {
-      "type": "string",
-      "const": "meeting_action_item_artifact"
-    },
     "artifact_id": {
       "type": "string",
       "minLength": 3
     },
     "schema_version": {
-      "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "artifact_version": {
-      "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "standards_version": {
-      "type": "string",
-      "const": "1.9.5"
+      "type": "string"
     },
     "run_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "trace_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "lineage_refs": {
       "type": "array",
@@ -53,8 +50,12 @@
         "type": "string"
       }
     },
+    "artifact_type": {
+      "const": "meeting_action_item_artifact"
+    },
     "evidence_refs": {
       "type": "array",
+      "minItems": 1,
       "items": {
         "type": "string"
       }
@@ -77,14 +78,14 @@
       }
     },
     "action": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "owner": {
       "type": "string"
     },
     "due_date": {
-      "type": "string",
-      "format": "date"
+      "type": "string"
     },
     "dependency_refs": {
       "type": "array",

@@ -8,6 +8,8 @@
     "artifact_type",
     "artifact_id",
     "schema_version",
+    "artifact_version",
+    "standards_version",
     "run_id",
     "trace_id",
     "lineage_refs",
@@ -20,37 +22,35 @@
     "provenance"
   ],
   "properties": {
-    "artifact_type": {
-      "type": "string",
-      "const": "normalized_transcript_artifact"
-    },
     "artifact_id": {
       "type": "string",
       "minLength": 3
     },
     "schema_version": {
-      "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "artifact_version": {
-      "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "standards_version": {
-      "type": "string",
-      "const": "1.9.5"
+      "type": "string"
     },
     "run_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "trace_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "lineage_refs": {
       "type": "array",
       "items": {
         "type": "string"
       }
+    },
+    "artifact_type": {
+      "const": "normalized_transcript_artifact"
     },
     "source_id": {
       "type": "string"
@@ -59,7 +59,8 @@
       "type": "string"
     },
     "source_document_hash": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
     },
     "ingest_timestamp": {
       "type": "string",
@@ -69,12 +70,69 @@
       "type": "string"
     },
     "provenance": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ingested_by",
+        "ingest_mode",
+        "source_hash"
+      ],
+      "properties": {
+        "ingested_by": {
+          "type": "string"
+        },
+        "ingest_mode": {
+          "const": "docx"
+        },
+        "source_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
     },
     "lines": {
       "type": "array",
+      "minItems": 1,
       "items": {
-        "type": "object"
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "line_id",
+          "speaker",
+          "timestamp",
+          "text",
+          "confidence",
+          "ambiguity_flags"
+        ],
+        "properties": {
+          "line_id": {
+            "type": "string"
+          },
+          "speaker": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "ambiguity_flags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
       }
     }
   }

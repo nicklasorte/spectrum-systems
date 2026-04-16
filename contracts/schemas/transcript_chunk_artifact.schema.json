@@ -8,6 +8,8 @@
     "artifact_type",
     "artifact_id",
     "schema_version",
+    "artifact_version",
+    "standards_version",
     "run_id",
     "trace_id",
     "lineage_refs",
@@ -17,40 +19,39 @@
     "content",
     "content_hash",
     "ambiguity_flags",
-    "confidence"
+    "confidence",
+    "evidence_spans"
   ],
   "properties": {
-    "artifact_type": {
-      "type": "string",
-      "const": "transcript_chunk_artifact"
-    },
     "artifact_id": {
       "type": "string",
       "minLength": 3
     },
     "schema_version": {
-      "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "artifact_version": {
-      "type": "string",
-      "const": "1.0.0"
+      "const": "1.1.0"
     },
     "standards_version": {
-      "type": "string",
-      "const": "1.9.5"
+      "type": "string"
     },
     "run_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "trace_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "lineage_refs": {
       "type": "array",
       "items": {
         "type": "string"
       }
+    },
+    "artifact_type": {
+      "const": "transcript_chunk_artifact"
     },
     "normalized_transcript_artifact_id": {
       "type": "string"
@@ -61,15 +62,18 @@
     },
     "line_refs": {
       "type": "array",
+      "minItems": 1,
       "items": {
         "type": "string"
       }
     },
     "content": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "content_hash": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
     },
     "ambiguity_flags": {
       "type": "array",
@@ -81,6 +85,33 @@
       "type": "number",
       "minimum": 0,
       "maximum": 1
+    },
+    "evidence_spans": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "line_ref",
+          "timestamp",
+          "speaker"
+        ],
+        "properties": {
+          "line_ref": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "speaker": {
+            "type": "string"
+          }
+        }
+      }
     }
   }
 }
