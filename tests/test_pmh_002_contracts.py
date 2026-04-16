@@ -1,0 +1,58 @@
+from spectrum_systems.contracts import load_example, validate_artifact
+
+
+PMH_002_CONTRACTS = (
+    "con_autonomy_artifact_boundary_audit_result",
+    "con_runtime_centralization_detection_result",
+    "prm_artifact_taxonomy_validation_result",
+    "tst_taxonomy_regression_pack",
+    "tlc_runtime_decomposition_record",
+    "con_cross_owner_logic_detection_result",
+    "con_one_owner_per_function_enforcement_result",
+    "tst_centralization_regression_pack",
+    "prm_strict_minimal_prompt_validation_result",
+    "prm_prompt_antipattern_rejection_result",
+    "rdx_minimal_prompt_to_plan_v2_record",
+    "ctx_context_sufficiency_enforcement_result",
+    "evl_minimalism_regression_gate_result",
+    "tlc_mandatory_loop_enforcement_record",
+    "ril_expanded_review_trigger_record",
+    "fre_mandatory_fix_conversion_record",
+    "evl_required_eval_enforcement_result",
+    "cde_no_loop_no_continue_decision",
+    "cde_aggressive_halt_threshold_decision",
+    "cde_false_green_detection_decision",
+    "slo_tighter_error_budget_posture",
+    "evl_eval_debt_blocking_result",
+    "obs_weak_trace_detection_result",
+    "tst_20_step_run_pack",
+    "tst_50_step_run_pack",
+    "tst_100_step_run_pack",
+    "tst_delayed_failure_scenario_pack",
+    "lin_long_horizon_lineage_audit_report",
+    "rep_long_horizon_replay_validation_result",
+    "ail_failure_to_roadmap_conversion_record",
+    "ail_prompt_fragment_miner_record",
+    "mnt_auto_hardening_cycle_record",
+    "evl_failure_driven_eval_expansion_record",
+    "pol_policy_evolution_candidate_record",
+    "ril_centralization_red_team_report_pm6",
+    "fre_tpa_sel_pqx_fix_pack_pm6",
+    "ril_prompt_minimalism_failure_red_team_report_pm7",
+    "fre_tpa_sel_pqx_fix_pack_pm7",
+    "ril_loop_bypass_red_team_report_pm8",
+    "fre_tpa_sel_pqx_fix_pack_pm8",
+    "ril_false_continuation_red_team_report_pm9",
+    "fre_tpa_sel_pqx_fix_pack_pm9",
+    "ril_long_horizon_drift_red_team_report_pm10",
+    "fre_tpa_sel_pqx_fix_pack_pm10",
+    "final_pm04_thin_prompt_execution_proof",
+    "final_pm05_overloaded_loop_proof",
+    "final_pm06_real_repo_mutation_proof",
+    "final_pm07_full_rerun_validation_report",
+)
+
+
+def test_pmh_002_contract_examples_validate() -> None:
+    for artifact_type in PMH_002_CONTRACTS:
+        validate_artifact(load_example(artifact_type), artifact_type)

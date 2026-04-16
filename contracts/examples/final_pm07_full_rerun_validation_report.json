@@ -1,0 +1,17 @@
+{
+  "artifact_type": "final_pm07_full_rerun_validation_report",
+  "artifact_id": "final_pm07_full_rerun_validation_report-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.4",
+  "created_at": "2026-04-16T00:00:00Z",
+  "owner": "TLC",
+  "status": "pass",
+  "run_id": "pmh-002-run",
+  "details": [
+    "final_pm07_full_rerun_validation_report deterministic example"
+  ],
+  "reason_codes": [
+    "artifact_first"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "artifact_type": "tlc_runtime_decomposition_record",
+  "artifact_id": "tlc_runtime_decomposition_record-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.4",
+  "created_at": "2026-04-16T00:00:00Z",
+  "owner": "TLC",
+  "status": "pass",
+  "run_id": "pmh-002-run",
+  "details": [
+    "tlc_runtime_decomposition_record deterministic example"
+  ],
+  "reason_codes": [
+    "artifact_first"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/cde_no_loop_no_continue_decision.schema.json",
+  "title": "cde_no_loop_no_continue_decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "created_at",
+    "owner",
+    "status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "cde_no_loop_no_continue_decision"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner": {
+      "type": "string",
+      "const": "CDE"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "triggered",
+        "idle"
+      ]
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "details": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "non_authoritative": {
+      "type": "boolean"
+    }
+  }
+}
