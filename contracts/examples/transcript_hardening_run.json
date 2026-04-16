@@ -1,0 +1,138 @@
+{
+  "artifact_type": "transcript_hardening_run",
+  "schema_version": "1.0.0",
+  "artifact_id": "trn-run-a265b43a7ad89d34",
+  "trace_id": "trace-example",
+  "run_id": "run-example",
+  "generated_at": "2026-04-16T23:38:20.320234+00:00",
+  "source_refs": [
+    "docx://meeting-001"
+  ],
+  "processor_versions": {
+    "normalizer": "trn-normalizer-1.0.0",
+    "evidence_preparation": "trn-evidence-1.0.0"
+  },
+  "normalization": {
+    "segment_count": 3,
+    "segments": [
+      {
+        "segment_id": "seg-1",
+        "speaker": "Facilitator",
+        "text": "Agenda topic: licensing review.",
+        "timestamp": "2026-04-16T10:00:00Z",
+        "ordinal": 1
+      },
+      {
+        "segment_id": "seg-2",
+        "speaker": "Lead",
+        "text": "Claim indicates the baseline parser is stable and action owners will publish references.",
+        "timestamp": "2026-04-16T10:01:00Z",
+        "ordinal": 2
+      },
+      {
+        "segment_id": "seg-3",
+        "speaker": "Ops",
+        "text": "What ambiguity remains for timestamp drift?",
+        "timestamp": "2026-04-16T10:02:00Z",
+        "ordinal": 3
+      }
+    ],
+    "replay_hash": "92da0dea453aafc669f4b50415257ca064c9e2c07880f155ed515b70fd6806f4",
+    "chunking": {
+      "chunk_size": 2,
+      "chunk_count": 2,
+      "chunk_hashes": [
+        "b06a4012de47852f1fd41151f6a5e976d6f3f217c13bba521759d1ff55028569",
+        "8e512f7f5be61db7b38415fef3f6a962c859985dfed8279903fa38738bf18e04"
+      ]
+    }
+  },
+  "observations": {
+    "topics": [
+      {
+        "text": "Agenda topic: licensing review.",
+        "evidence": [
+          {
+            "segment_id": "seg-1",
+            "start_char": 0,
+            "end_char": 31,
+            "timestamp": "2026-04-16T10:00:00Z"
+          }
+        ]
+      }
+    ],
+    "claims": [
+      {
+        "text": "Claim indicates the baseline parser is stable and action owners will publish references.",
+        "evidence": [
+          {
+            "segment_id": "seg-2",
+            "start_char": 0,
+            "end_char": 88,
+            "timestamp": "2026-04-16T10:01:00Z"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "text": "Claim indicates the baseline parser is stable and action owners will publish references.",
+        "evidence": [
+          {
+            "segment_id": "seg-2",
+            "start_char": 0,
+            "end_char": 88,
+            "timestamp": "2026-04-16T10:01:00Z"
+          }
+        ]
+      }
+    ],
+    "ambiguities": [
+      {
+        "text": "What ambiguity remains for timestamp drift?",
+        "evidence": [
+          {
+            "segment_id": "seg-3",
+            "start_char": 0,
+            "end_char": 43,
+            "timestamp": "2026-04-16T10:02:00Z"
+          }
+        ]
+      }
+    ],
+    "evidence_anchor_count": 4
+  },
+  "handoff_artifacts": {
+    "eval_input": {
+      "artifact_type": "transcript_eval_input_signal",
+      "trace_id": "trace-example",
+      "run_id": "run-example",
+      "transcript_run_ref": "trn-run-a265b43a7ad89d34",
+      "replay_hash": "92da0dea453aafc669f4b50415257ca064c9e2c07880f155ed515b70fd6806f4"
+    },
+    "control_input": {
+      "artifact_type": "transcript_control_input_signal",
+      "trace_id": "trace-example",
+      "run_id": "run-example",
+      "transcript_run_ref": "trn-run-a265b43a7ad89d34"
+    },
+    "judgment_input": {
+      "artifact_type": "transcript_judgment_input_signal",
+      "trace_id": "trace-example",
+      "run_id": "run-example",
+      "transcript_run_ref": "trn-run-a265b43a7ad89d34"
+    },
+    "certification_input": {
+      "artifact_type": "transcript_certification_input_signal",
+      "trace_id": "trace-example",
+      "run_id": "run-example",
+      "transcript_run_ref": "trn-run-a265b43a7ad89d34"
+    }
+  },
+  "lineage": {
+    "input_hash": "ec762e2e9fd8bbe0e86f580248f9f60e9262763158f06261d9acaa6937cb8519",
+    "output_hash": "0a339848690b0fbd5caa6dc45c4794c649134492525dcfeb3f1669deb0224f99",
+    "replay_hash": "92da0dea453aafc669f4b50415257ca064c9e2c07880f155ed515b70fd6806f4"
+  },
+  "processing_status": "processed"
+}

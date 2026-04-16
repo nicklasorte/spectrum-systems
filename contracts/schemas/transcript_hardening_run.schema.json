@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/transcript_hardening_run.schema.json",
+  "title": "Transcript Hardening Run",
+  "description": "Transcript-domain processing artifact (normalization, evidence preparation, and handoff signal references).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "artifact_id",
+    "trace_id",
+    "run_id",
+    "generated_at",
+    "source_refs",
+    "processor_versions",
+    "normalization",
+    "observations",
+    "handoff_artifacts",
+    "lineage",
+    "processing_status"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "transcript_hardening_run" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "artifact_id": { "type": "string", "pattern": "^trn-run-[a-f0-9]{16}$" },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "source_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "processor_versions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["normalizer", "evidence_preparation"],
+      "properties": {
+        "normalizer": { "type": "string", "minLength": 1 },
+        "evidence_preparation": { "type": "string", "minLength": 1 }
+      }
+    },
+    "normalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["segment_count", "segments", "replay_hash", "chunking"],
+      "properties": {
+        "segment_count": { "type": "integer", "minimum": 1 },
+        "segments": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["segment_id", "speaker", "text", "timestamp", "ordinal"],
+            "properties": {
+              "segment_id": { "type": "string", "minLength": 1 },
+              "speaker": { "type": "string", "minLength": 1 },
+              "text": { "type": "string", "minLength": 1 },
+              "timestamp": { "type": "string" },
+              "ordinal": { "type": "integer", "minimum": 1 }
+            }
+          }
+        },
+        "replay_hash": { "type": "string", "minLength": 64, "maxLength": 64 },
+        "chunking": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["chunk_size", "chunk_count", "chunk_hashes"],
+          "properties": {
+            "chunk_size": { "type": "integer", "minimum": 1 },
+            "chunk_count": { "type": "integer", "minimum": 1 },
+            "chunk_hashes": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 64, "maxLength": 64 }
+            }
+          }
+        }
+      }
+    },
+    "observations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["topics", "claims", "actions", "ambiguities", "evidence_anchor_count"],
+      "properties": {
+        "topics": { "$ref": "#/$defs/evidence_rows" },
+        "claims": { "$ref": "#/$defs/evidence_rows" },
+        "actions": { "$ref": "#/$defs/evidence_rows" },
+        "ambiguities": { "$ref": "#/$defs/evidence_rows" },
+        "evidence_anchor_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "handoff_artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eval_input", "control_input", "judgment_input", "certification_input"],
+      "properties": {
+        "eval_input": { "$ref": "#/$defs/handoff_signal" },
+        "control_input": { "$ref": "#/$defs/handoff_signal" },
+        "judgment_input": { "$ref": "#/$defs/handoff_signal" },
+        "certification_input": { "$ref": "#/$defs/handoff_signal" }
+      }
+    },
+    "lineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_hash", "output_hash", "replay_hash"],
+      "properties": {
+        "input_hash": { "type": "string", "minLength": 64, "maxLength": 64 },
+        "output_hash": { "type": "string", "minLength": 64, "maxLength": 64 },
+        "replay_hash": { "type": "string", "minLength": 64, "maxLength": 64 }
+      }
+    },
+    "processing_status": { "type": "string", "enum": ["processed"] }
+  },
+  "$defs": {
+    "evidence_anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["segment_id", "start_char", "end_char", "timestamp"],
+      "properties": {
+        "segment_id": { "type": "string", "minLength": 1 },
+        "start_char": { "type": "integer", "minimum": 0 },
+        "end_char": { "type": "integer", "minimum": 1 },
+        "timestamp": { "type": "string" }
+      }
+    },
+    "evidence_rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "evidence"],
+        "properties": {
+          "text": { "type": "string", "minLength": 1 },
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/$defs/evidence_anchor" }
+          }
+        }
+      }
+    },
+    "handoff_signal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_type", "trace_id", "run_id", "transcript_run_ref"],
+      "properties": {
+        "artifact_type": { "type": "string", "minLength": 1 },
+        "trace_id": { "type": "string", "minLength": 1 },
+        "run_id": { "type": "string", "minLength": 1 },
+        "transcript_run_ref": { "type": "string", "pattern": "^trn-run-[a-f0-9]{16}$" },
+        "replay_hash": { "type": "string", "minLength": 64, "maxLength": 64 }
+      }
+    }
+  }
+}
