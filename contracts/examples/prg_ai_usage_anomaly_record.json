@@ -1,0 +1,16 @@
+{
+  "artifact_type": "prg_ai_usage_anomaly_record",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "record_id": "REC-PRG_AI_USAGE_ANOMALY_RECORD",
+  "run_id": "run-aea-001",
+  "owner": "PRG",
+  "status": "pass",
+  "evidence_refs": [
+    "artifact:seed-001"
+  ],
+  "payload": {
+    "step": "prg_ai_usage_anomaly_record",
+    "note": "AEA-001 governed AI enforcement autonomy artifact"
+  }
+}

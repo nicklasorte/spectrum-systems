@@ -89,6 +89,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 ## Active plans
 
+| docs/review-actions/PLAN-AEA-001-2026-04-16.md | AEA-001 — Enforce TLX-only governed AI execution with red-team/fix rerun hardening | Active |
 | docs/review-actions/PLAN-MAP-001-PRG10-2026-04-13.md | MAP-001 — PRG-10 closeout + MAP bounded mediation/projection hardening with RT/FX loops | Active |
 | docs/review-actions/PLAN-BATCH-RIL-001-2026-04-12.md | BATCH-RIL-001 — FRE closeout + RIL bounded interpretation foundation/hardening | Active |
 | docs/review-actions/PLAN-REAL-WORLD-EXECUTION-CYCLE-01-2026-04-10.md | REAL-WORLD-EXECUTION-CYCLE-01 — Governed execution on real task input | Active |

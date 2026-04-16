@@ -1,0 +1,16 @@
+{
+  "artifact_type": "tst_ai_bypass_fixture_suite",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "record_id": "REC-TST_AI_BYPASS_FIXTURE_SUITE",
+  "run_id": "run-aea-001",
+  "owner": "TST",
+  "status": "pass",
+  "evidence_refs": [
+    "artifact:seed-001"
+  ],
+  "payload": {
+    "step": "tst_ai_bypass_fixture_suite",
+    "note": "AEA-001 governed AI enforcement autonomy artifact"
+  }
+}

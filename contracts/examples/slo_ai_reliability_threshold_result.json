@@ -1,0 +1,16 @@
+{
+  "artifact_type": "slo_ai_reliability_threshold_result",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "record_id": "REC-SLO_AI_RELIABILITY_THRESHOLD_RESULT",
+  "run_id": "run-aea-001",
+  "owner": "SLO",
+  "status": "pass",
+  "evidence_refs": [
+    "artifact:seed-001"
+  ],
+  "payload": {
+    "step": "slo_ai_reliability_threshold_result",
+    "note": "AEA-001 governed AI enforcement autonomy artifact"
+  }
+}

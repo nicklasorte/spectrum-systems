@@ -1,0 +1,16 @@
+{
+  "artifact_type": "con_ai_wiring_compliance_report",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "record_id": "REC-CON_AI_WIRING_COMPLIANCE_REPORT",
+  "run_id": "run-aea-001",
+  "owner": "CON",
+  "status": "pass",
+  "evidence_refs": [
+    "artifact:seed-001"
+  ],
+  "payload": {
+    "step": "con_ai_wiring_compliance_report",
+    "note": "AEA-001 governed AI enforcement autonomy artifact"
+  }
+}

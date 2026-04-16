@@ -1,0 +1,16 @@
+{
+  "artifact_type": "evl_stale_ai_eval_report",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "record_id": "REC-EVL_STALE_AI_EVAL_REPORT",
+  "run_id": "run-aea-001",
+  "owner": "EVL",
+  "status": "pass",
+  "evidence_refs": [
+    "artifact:seed-001"
+  ],
+  "payload": {
+    "step": "evl_stale_ai_eval_report",
+    "note": "AEA-001 governed AI enforcement autonomy artifact"
+  }
+}
