@@ -340,6 +340,19 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
+      "artifact_type": "ail_continuous_pattern_learning_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/ail_continuous_pattern_learning_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "ail_correction_pattern_roadmap_candidate_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -365,6 +378,19 @@
       "last_updated_in": "1.3.200",
       "example_path": "contracts/examples/ail_derived_artifact_job.json",
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "ail_failure_clustering_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/ail_failure_clustering_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "ail_fix_effectiveness_trend_record",
@@ -887,6 +913,19 @@
       "notes": "FRE bounded repair candidate derived from canonical failure packet without execution authority."
     },
     {
+      "artifact_type": "brm_blast_radius_prediction_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/brm_blast_radius_prediction_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "budget_consumption_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1082,6 +1121,19 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
+      "artifact_type": "cap_autonomy_cost_budget_posture",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/cap_autonomy_cost_budget_posture.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "cap_budget_status_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -1093,6 +1145,19 @@
       "last_updated_in": "1.3.142",
       "example_path": "contracts/examples/cap_budget_status_record.json",
       "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
+    },
+    {
+      "artifact_type": "cap_human_load_balancing_posture",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/cap_human_load_balancing_posture.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "cap_operator_review_saturation_forecast",
@@ -1213,6 +1278,32 @@
       "notes": "CDE/BAX/CDE governed authority contract."
     },
     {
+      "artifact_type": "cde_autonomous_execution_authorization_decision",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/cde_autonomous_execution_authorization_decision.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "cde_autonomy_suspension_decision",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/cde_autonomy_suspension_decision.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "cde_closeout_gate_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1278,6 +1369,19 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/cde_debt_threshold_stop_decision.json",
       "notes": "R100-NP-001 context/contract/final authority."
+    },
+    {
+      "artifact_type": "cde_dynamic_autonomy_scaling_decision",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/cde_dynamic_autonomy_scaling_decision.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "cde_escalation_to_human_decision",
@@ -1514,6 +1618,19 @@
       "last_updated_in": "1.3.128",
       "example_path": "contracts/examples/chx_campaign_result.json",
       "notes": "ADV-001 deterministic chx_campaign_result artifact contract."
+    },
+    {
+      "artifact_type": "chx_continuous_chaos_injection_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/chx_continuous_chaos_injection_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "chx_failure_surface_report",
@@ -2431,6 +2548,19 @@
       "notes": "R100-NP-001 coherence and replay posture."
     },
     {
+      "artifact_type": "crs_system_wide_consistency_report",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/crs_system_wide_consistency_report.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "ctx_ai_context_filter_result",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -2991,6 +3121,19 @@
       "last_updated_in": "1.3.114",
       "example_path": "contracts/examples/decision_replay_validation_record.json",
       "notes": "CDE-001 bounded decision authority and RIL closeout contract."
+    },
+    {
+      "artifact_type": "dem_cost_risk_tradeoff_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/dem_cost_risk_tradeoff_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "dep_chain_break_replay_probe_pack",
@@ -4091,6 +4234,19 @@
       "notes": "R100-NP-001 coverage and evidence hardening."
     },
     {
+      "artifact_type": "evl_evolving_eval_set_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/evl_evolving_eval_set_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "evl_phase_required_eval_set",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -4624,6 +4780,45 @@
       "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
+      "artifact_type": "final_explainability_audit_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/final_explainability_audit_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "final_failure_recovery_proof_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/final_failure_recovery_proof_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "final_fully_autonomous_run_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/final_fully_autonomous_run_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "final_impacted_suite_rerun_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -4635,6 +4830,19 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/final_impacted_suite_rerun_report.json",
       "notes": "R100-NP-001 final integration and rerun evidence."
+    },
+    {
+      "artifact_type": "final_long_horizon_stability_proof_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/final_long_horizon_stability_proof_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "final_minimal_prompt_scenario",
@@ -4715,6 +4923,19 @@
       "notes": "RIL-001 batch deterministic fail-closed bounded interpretation/FRE closeout artifact contract."
     },
     {
+      "artifact_type": "fre_cross_step_fix_coordination_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/fre_cross_step_fix_coordination_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "fre_fix_compilation_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -4752,6 +4973,19 @@
       "last_updated_in": "1.3.144",
       "example_path": "contracts/examples/fre_fix_pack_record.json",
       "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
+      "artifact_type": "fre_multi_step_repair_plan_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/fre_multi_step_repair_plan_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_class": "coordination",
@@ -4856,6 +5090,84 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/fre_tpa_sel_pqx_ai_fix_pack_g7.json",
       "notes": "AIG-001 governed AI integration artifact"
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_fix_pack_a1",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_a1.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_fix_pack_a2",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_a2.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_fix_pack_a3",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_a3.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_fix_pack_a4",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_a4.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_fix_pack_a5",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_a5.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_fix_pack_a6",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_a6.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "fre_tpa_sel_pqx_fix_pack_e1",
@@ -5144,6 +5456,19 @@
       "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
     },
     {
+      "artifact_type": "hit_override_capture_learning_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/hit_override_capture_learning_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "hit_override_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -5220,6 +5545,19 @@
       "last_updated_in": "1.3.128",
       "example_path": "contracts/examples/hix_human_interaction_bundle.json",
       "notes": "ADV-001 deterministic hix_human_interaction_bundle artifact contract."
+    },
+    {
+      "artifact_type": "hix_human_intervention_protocol_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/hix_human_intervention_protocol_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "hix_override_audit_record",
@@ -5914,6 +6252,19 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
+      "artifact_type": "jdx_decision_confidence_score_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/jdx_decision_confidence_score_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "jdx_judgment_application_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -6017,6 +6368,19 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/jdx_judgment_to_policy_compilation_debt_record.json",
       "notes": "R100-NP-001 learning and pressure posture."
+    },
+    {
+      "artifact_type": "jdx_multi_source_evidence_fusion_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/jdx_multi_source_evidence_fusion_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "judge_disagreement_report",
@@ -6742,6 +7106,19 @@
       "last_updated_in": "1.3.131",
       "example_path": "contracts/examples/mnt_advancement_coverage_audit.json",
       "notes": "FSG-RA-001 PRG non-authoritative advancement-path coverage completeness artifact."
+    },
+    {
+      "artifact_type": "mnt_continuous_system_hardening_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/mnt_continuous_system_hardening_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "mnt_enforcement_consistency_result",
@@ -7570,6 +7947,19 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/pol_ai_policy_candidate_record.json",
       "notes": "AIG-001 governed AI integration artifact"
+    },
+    {
+      "artifact_type": "pol_automatic_policy_evolution_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/pol_automatic_policy_evolution_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "pol_backtest_report",
@@ -9469,6 +9859,19 @@
       "notes": "ADV-001 deterministic prx_precedent_score_report artifact contract."
     },
     {
+      "artifact_type": "prx_precedent_weighting_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/prx_precedent_weighting_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "prx_stale_precedent_pressure_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -9558,6 +9961,19 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/qos_ai_queue_pressure_record.json",
       "notes": "AIG-001 governed AI integration artifact"
+    },
+    {
+      "artifact_type": "qos_autonomy_load_governor_signal",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/qos_autonomy_load_governor_signal.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "qos_backlog_aging_hotspot_record",
@@ -10016,6 +10432,19 @@
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
+      "artifact_type": "rdx_adaptive_roadmap_reshaping_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/rdx_adaptive_roadmap_reshaping_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "rdx_advancement_precondition_bundle",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -10053,6 +10482,19 @@
       "last_updated_in": "1.3.144",
       "example_path": "contracts/examples/rdx_change_budget_record.json",
       "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
+    },
+    {
+      "artifact_type": "rdx_dynamic_step_injection_removal_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/rdx_dynamic_step_injection_removal_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "rdx_execution_loop_readiness_handoff_record",
@@ -11417,6 +11859,32 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
+      "artifact_type": "ril_anomaly_detection_beyond_rules_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/ril_anomaly_detection_beyond_rules_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "ril_autonomy_illusion_red_team_report",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/ril_autonomy_illusion_red_team_report.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "ril_budget_capacity_queue_red_team_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -11483,6 +11951,19 @@
       "notes": "R100-NP-001 adversarial artifact report."
     },
     {
+      "artifact_type": "ril_entropy_accumulation_long_horizon_decay_red_team_report",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/ril_entropy_accumulation_long_horizon_decay_red_team_report.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "ril_eval_evidence_observability_red_team_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -11494,6 +11975,45 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/ril_eval_evidence_observability_red_team_report.json",
       "notes": "R100-NP-001 adversarial artifact report."
+    },
+    {
+      "artifact_type": "ril_hidden_coupling_dependency_drift_red_team_report",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/ril_hidden_coupling_dependency_drift_red_team_report.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "ril_human_bottleneck_escalation_overload_red_team_report",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/ril_human_bottleneck_escalation_overload_red_team_report.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "ril_overconfidence_false_continue_red_team_report",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/ril_overconfidence_false_continue_red_team_report.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "ril_plan_wide_coherence_red_team_report",
@@ -11560,6 +12080,19 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/ril_roadmap_contract_structure_red_team_report.json",
       "notes": "R100-NP-001 adversarial artifact report."
+    },
+    {
+      "artifact_type": "ril_runaway_learning_policy_drift_red_team_report",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/ril_runaway_learning_policy_drift_red_team_report.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "ril_signal_overload_prioritization_red_team_report",
@@ -12176,6 +12709,19 @@
       "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
     },
     {
+      "artifact_type": "sec_autonomous_safety_guardrail_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/sec_autonomous_safety_guardrail_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "sec_control_integration_signal",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -12380,6 +12926,19 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
+      "artifact_type": "slo_autonomy_error_budget_posture",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/slo_autonomy_error_budget_posture.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "slo_budget_status_artifact",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -12391,6 +12950,19 @@
       "last_updated_in": "1.3.142",
       "example_path": "contracts/examples/slo_budget_status_artifact.json",
       "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
+    },
+    {
+      "artifact_type": "slo_failure_escalation_trigger_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/slo_failure_escalation_trigger_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "slo_roadmap_burn_rate_forecast",
@@ -12863,6 +13435,19 @@
       "notes": "BXT-01 deterministic 3LS ownership and gate expectation audit result with fail-closed violations."
     },
     {
+      "artifact_type": "tlc_continuous_execution_loop_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/tlc_continuous_execution_loop_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "tlc_handoff_debt_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -12978,6 +13563,19 @@
       "last_updated_in": "1.3.119",
       "example_path": "contracts/examples/tlc_routing_eval_result.json",
       "notes": "TLC routing evaluation result with fail-closed checks and explicit fail reasons."
+    },
+    {
+      "artifact_type": "tlc_self_triggering_workflow_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/tlc_self_triggering_workflow_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "tlc_validation_ladder_result",
@@ -13422,6 +14020,32 @@
       "notes": "CON-033 deterministic fail-closed cohesion proof for trust-spine evidence continuity across manifest/enforcement/obedience/invariant/certification/promotion/preflight seams."
     },
     {
+      "artifact_type": "tst_200_step_scenario_bank",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/tst_200_step_scenario_bank.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "tst_adversarial_chaos_pack",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/tst_adversarial_chaos_pack.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
       "artifact_type": "tst_adversarial_fixture_freshness_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -13459,6 +14083,19 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/tst_long_window_replay_fixture_bank.json",
       "notes": "R100-NP-001 test/data/signal/handoff support."
+    },
+    {
+      "artifact_type": "tst_real_world_simulation_pack",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/tst_real_world_simulation_pack.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "unknown_state_signal",
@@ -13811,6 +14448,45 @@
       "last_updated_in": "1.3.130",
       "example_path": "contracts/examples/xpl_generator_risk_record.json",
       "notes": "NEXT-WAVE-001 governed runtime artifact."
+    },
+    {
+      "artifact_type": "xrl_feedback_to_policy_loop_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/xrl_feedback_to_policy_loop_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "xrl_outcome_trust_weight_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/xrl_outcome_trust_weight_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "xrl_real_world_outcome_integration_record",
+      "artifact_class": "governed_artifact",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "FAE-001",
+      "last_updated_in": "FAE-001",
+      "example_path": "contracts/examples/xrl_real_world_outcome_integration_record.json",
+      "notes": "FAE-001 autonomous governed execution contract."
     },
     {
       "artifact_type": "xrun_signal_quality_result",
