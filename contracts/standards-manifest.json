@@ -341,7 +341,7 @@
     },
     {
       "artifact_type": "ail_continuous_pattern_learning_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -381,7 +381,7 @@
     },
     {
       "artifact_type": "ail_failure_clustering_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -914,7 +914,7 @@
     },
     {
       "artifact_type": "brm_blast_radius_prediction_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -1122,7 +1122,7 @@
     },
     {
       "artifact_type": "cap_autonomy_cost_budget_posture",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -1148,7 +1148,7 @@
     },
     {
       "artifact_type": "cap_human_load_balancing_posture",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -1279,7 +1279,7 @@
     },
     {
       "artifact_type": "cde_autonomous_execution_authorization_decision",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -1292,7 +1292,7 @@
     },
     {
       "artifact_type": "cde_autonomy_suspension_decision",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -1372,7 +1372,7 @@
     },
     {
       "artifact_type": "cde_dynamic_autonomy_scaling_decision",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -1621,7 +1621,7 @@
     },
     {
       "artifact_type": "chx_continuous_chaos_injection_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -2549,7 +2549,7 @@
     },
     {
       "artifact_type": "crs_system_wide_consistency_report",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -3124,7 +3124,7 @@
     },
     {
       "artifact_type": "dem_cost_risk_tradeoff_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -4235,7 +4235,7 @@
     },
     {
       "artifact_type": "evl_evolving_eval_set_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -4781,7 +4781,7 @@
     },
     {
       "artifact_type": "final_explainability_audit_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -4794,7 +4794,7 @@
     },
     {
       "artifact_type": "final_failure_recovery_proof_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -4807,7 +4807,7 @@
     },
     {
       "artifact_type": "final_fully_autonomous_run_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -4833,7 +4833,7 @@
     },
     {
       "artifact_type": "final_long_horizon_stability_proof_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -4924,7 +4924,7 @@
     },
     {
       "artifact_type": "fre_cross_step_fix_coordination_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -4976,7 +4976,7 @@
     },
     {
       "artifact_type": "fre_multi_step_repair_plan_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -5093,7 +5093,7 @@
     },
     {
       "artifact_type": "fre_tpa_sel_pqx_fix_pack_a1",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -5106,7 +5106,7 @@
     },
     {
       "artifact_type": "fre_tpa_sel_pqx_fix_pack_a2",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -5119,7 +5119,7 @@
     },
     {
       "artifact_type": "fre_tpa_sel_pqx_fix_pack_a3",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -5132,7 +5132,7 @@
     },
     {
       "artifact_type": "fre_tpa_sel_pqx_fix_pack_a4",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -5145,7 +5145,7 @@
     },
     {
       "artifact_type": "fre_tpa_sel_pqx_fix_pack_a5",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -5158,7 +5158,7 @@
     },
     {
       "artifact_type": "fre_tpa_sel_pqx_fix_pack_a6",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -5457,7 +5457,7 @@
     },
     {
       "artifact_type": "hit_override_capture_learning_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -5548,7 +5548,7 @@
     },
     {
       "artifact_type": "hix_human_intervention_protocol_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -6253,7 +6253,7 @@
     },
     {
       "artifact_type": "jdx_decision_confidence_score_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -6371,7 +6371,7 @@
     },
     {
       "artifact_type": "jdx_multi_source_evidence_fusion_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -7109,7 +7109,7 @@
     },
     {
       "artifact_type": "mnt_continuous_system_hardening_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -7950,7 +7950,7 @@
     },
     {
       "artifact_type": "pol_automatic_policy_evolution_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -9860,7 +9860,7 @@
     },
     {
       "artifact_type": "prx_precedent_weighting_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -9964,7 +9964,7 @@
     },
     {
       "artifact_type": "qos_autonomy_load_governor_signal",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -10433,7 +10433,7 @@
     },
     {
       "artifact_type": "rdx_adaptive_roadmap_reshaping_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -10485,7 +10485,7 @@
     },
     {
       "artifact_type": "rdx_dynamic_step_injection_removal_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -11860,7 +11860,7 @@
     },
     {
       "artifact_type": "ril_anomaly_detection_beyond_rules_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -11873,7 +11873,7 @@
     },
     {
       "artifact_type": "ril_autonomy_illusion_red_team_report",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -11952,7 +11952,7 @@
     },
     {
       "artifact_type": "ril_entropy_accumulation_long_horizon_decay_red_team_report",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -11978,7 +11978,7 @@
     },
     {
       "artifact_type": "ril_hidden_coupling_dependency_drift_red_team_report",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -11991,7 +11991,7 @@
     },
     {
       "artifact_type": "ril_human_bottleneck_escalation_overload_red_team_report",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -12004,7 +12004,7 @@
     },
     {
       "artifact_type": "ril_overconfidence_false_continue_red_team_report",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -12083,7 +12083,7 @@
     },
     {
       "artifact_type": "ril_runaway_learning_policy_drift_red_team_report",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "review",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -12710,7 +12710,7 @@
     },
     {
       "artifact_type": "sec_autonomous_safety_guardrail_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -12927,7 +12927,7 @@
     },
     {
       "artifact_type": "slo_autonomy_error_budget_posture",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -12953,7 +12953,7 @@
     },
     {
       "artifact_type": "slo_failure_escalation_trigger_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -13436,7 +13436,7 @@
     },
     {
       "artifact_type": "tlc_continuous_execution_loop_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -13566,7 +13566,7 @@
     },
     {
       "artifact_type": "tlc_self_triggering_workflow_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -14021,7 +14021,7 @@
     },
     {
       "artifact_type": "tst_200_step_scenario_bank",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -14034,7 +14034,7 @@
     },
     {
       "artifact_type": "tst_adversarial_chaos_pack",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -14086,7 +14086,7 @@
     },
     {
       "artifact_type": "tst_real_world_simulation_pack",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -14451,7 +14451,7 @@
     },
     {
       "artifact_type": "xrl_feedback_to_policy_loop_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -14464,7 +14464,7 @@
     },
     {
       "artifact_type": "xrl_outcome_trust_weight_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -14477,7 +14477,7 @@
     },
     {
       "artifact_type": "xrl_real_world_outcome_integration_record",
-      "artifact_class": "governed_artifact",
+      "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
