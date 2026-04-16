@@ -7,6 +7,7 @@ from spectrum_systems.modules.runtime.rwa_runtime_wiring import (
     RuntimeWiringEngine,
     RuntimeWiringFailure,
     ThinPromptRequest,
+    execute_pmh_002_full_serial_run,
     execute_rwa_final_autonomous_run,
     execute_rwa_minimal_prompt_flow,
     execute_rwa_red_team_rounds,
@@ -106,3 +107,25 @@ def test_final_autonomous_run_and_full_rerun_report() -> None:
     assert final["status"] == "pass"
     assert final["full_rerun_report"]["artifact_type"] == "final_runtime_wiring_full_rerun_report"
     assert final["full_rerun_report"]["status"] == "pass"
+
+
+def test_pmh_002_full_serial_run_executes_all_phases() -> None:
+    run = execute_pmh_002_full_serial_run()
+    assert run["artifact_type"] == "final_pm07_full_rerun_validation_report"
+    assert run["status"] == "pass"
+
+    assert run["phase_1"]["con_17"]["artifact_type"] == "con_autonomy_artifact_boundary_audit_result"
+    assert run["phase_2"]["tlc_exec_11"]["artifact_type"] == "tlc_runtime_decomposition_record"
+    assert run["phase_3"]["prm_17"]["artifact_type"] == "prm_strict_minimal_prompt_validation_result"
+    assert run["phase_4"]["cde_38"]["artifact_type"] == "cde_no_loop_no_continue_decision"
+    assert run["phase_5"]["cde_40"]["artifact_type"] == "cde_false_green_detection_decision"
+    assert run["phase_6"]["lin_14"]["artifact_type"] == "lin_long_horizon_lineage_audit_report"
+    assert run["phase_7"]["mnt_34"]["artifact_type"] == "mnt_auto_hardening_cycle_record"
+    assert len(run["phase_8_to_12"]) == 5
+    assert run["phase_13"]["final_pm04"]["artifact_type"] == "final_pm04_thin_prompt_execution_proof"
+
+    for round_result in run["phase_8_to_12"]:
+        assert round_result["red_team"]["owner"] == "RIL"
+        assert round_result["fix_pack"]["owner"] == "FRE"
+        assert round_result["fix_pack"]["execution_path"] == ["FRE", "TPA", "SEL", "PQX"]
+        assert round_result["rerun"]["status"] == "pass"

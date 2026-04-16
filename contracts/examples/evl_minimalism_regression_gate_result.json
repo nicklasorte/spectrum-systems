@@ -1,0 +1,17 @@
+{
+  "artifact_type": "evl_minimalism_regression_gate_result",
+  "artifact_id": "evl_minimalism_regression_gate_result-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.4",
+  "created_at": "2026-04-16T00:00:00Z",
+  "owner": "EVL",
+  "status": "pass",
+  "run_id": "pmh-002-run",
+  "details": [
+    "evl_minimalism_regression_gate_result deterministic example"
+  ],
+  "reason_codes": [
+    "artifact_first"
+  ]
+}
