@@ -1,24 +1,25 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum-systems.org/contracts/hnx_control_signal_record.schema.json",
-  "title": "HNX Control Signal Record",
+  "$id": "https://spectrum-systems.org/contracts/hnx_structural_health_signal.schema.json",
+  "title": "HNX Structural Health Signal",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "artifact_type",
     "schema_version",
     "signal_id",
-    "structural_health",
+    "structural_risk_level",
     "continuity_status",
-    "replay_status",
-    "unresolved_feedback_count",
+    "replay_integrity_status",
+    "unresolved_critical_feedback",
     "trace_id",
+    "recommended_control_posture",
     "created_at",
     "non_authority_note"
   ],
   "properties": {
     "artifact_type": {
-      "const": "hnx_control_signal_record"
+      "const": "hnx_structural_health_signal"
     },
     "schema_version": {
       "const": "1.0.0"
@@ -27,10 +28,10 @@
       "type": "string",
       "minLength": 1
     },
-    "structural_health": {
+    "structural_risk_level": {
       "enum": [
-        "stable",
-        "degraded"
+        "normal",
+        "elevated"
       ]
     },
     "continuity_status": {
@@ -39,19 +40,25 @@
         "at_risk"
       ]
     },
-    "replay_status": {
+    "replay_integrity_status": {
       "enum": [
         "consistent",
-        "mismatch_risk"
+        "mismatch_detected"
       ]
     },
-    "unresolved_feedback_count": {
+    "unresolved_critical_feedback": {
       "type": "integer",
       "minimum": 0
     },
     "trace_id": {
       "type": "string",
       "minLength": 1
+    },
+    "recommended_control_posture": {
+      "enum": [
+        "normal_monitoring",
+        "review_required_for_critical_findings"
+      ]
     },
     "created_at": {
       "type": "string",

@@ -11,8 +11,8 @@
     "feedback_id",
     "trace_id",
     "eval_family",
-    "expected_block_on_failure",
-    "created_at"
+    "created_at",
+    "critical_findings_present"
   ],
   "properties": {
     "artifact_type": {
@@ -37,12 +37,12 @@
       "type": "string",
       "minLength": 1
     },
-    "expected_block_on_failure": {
-      "type": "boolean"
-    },
     "created_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "critical_findings_present": {
+      "type": "boolean"
     }
   }
 }

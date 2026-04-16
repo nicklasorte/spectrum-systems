@@ -1,29 +1,30 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum-systems.org/contracts/hnx_readiness_certification_record.schema.json",
-  "title": "HNX Readiness Certification Record",
+  "$id": "https://spectrum-systems.org/contracts/hnx_readiness_evidence_record.schema.json",
+  "title": "HNX Readiness Evidence Record",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "artifact_type",
     "schema_version",
-    "certification_id",
+    "evidence_id",
     "run_id",
     "trace_id",
-    "status",
-    "checks",
-    "fail_reasons",
+    "stage_contract_completeness",
+    "replay_integrity_status",
+    "readiness_findings",
+    "recommended_control_posture",
     "non_authority_proof_refs",
     "created_at"
   ],
   "properties": {
     "artifact_type": {
-      "const": "hnx_readiness_certification_record"
+      "const": "hnx_readiness_evidence_record"
     },
     "schema_version": {
       "const": "1.0.0"
     },
-    "certification_id": {
+    "evidence_id": {
       "type": "string",
       "minLength": 1
     },
@@ -35,25 +36,28 @@
       "type": "string",
       "minLength": 1
     },
-    "status": {
+    "stage_contract_completeness": {
+      "type": "boolean"
+    },
+    "replay_integrity_status": {
       "enum": [
-        "pass",
-        "fail"
+        "consistent",
+        "mismatch_detected"
       ]
     },
-    "checks": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "boolean"
-      }
-    },
-    "fail_reasons": {
+    "readiness_findings": {
       "type": "array",
       "items": {
         "type": "string",
         "minLength": 1
       },
       "uniqueItems": true
+    },
+    "recommended_control_posture": {
+      "enum": [
+        "normal_monitoring",
+        "escalated_review_required"
+      ]
     },
     "non_authority_proof_refs": {
       "type": "array",

@@ -12,3 +12,6 @@
 - Enforce stale checkpoint rejection and trace linkage match.
 - Add repeated-run variance detection in replay validation.
 - Expand effectiveness metrics for replay mismatch/unresolved feedback rates.
+
+## Authority boundary note
+HNX remains non-authoritative beyond harness and continuity ownership; outputs are structural evidence and signals for external control/governance authorities.

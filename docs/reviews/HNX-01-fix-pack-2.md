@@ -12,3 +12,6 @@ All Review 2 findings closed.
 ## Regression mapping
 - stale resume artifact -> `test_harness_eval_checkpoint_resume_and_readiness_fail_closed`
 - hidden-state dependence -> `test_hidden_state_variance_detection_blocks`
+
+## Authority boundary note
+HNX remains non-authoritative beyond harness and continuity ownership; outputs are structural evidence and signals for external control/governance authorities.

@@ -1,35 +1,30 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum-systems.org/contracts/hnx_feedback_gate_decision.schema.json",
-  "title": "HNX Feedback Gate Decision",
+  "$id": "https://spectrum-systems.org/contracts/hnx_feedback_gate_signal.schema.json",
+  "title": "HNX Feedback Gate Signal",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "artifact_type",
     "schema_version",
-    "gate_id",
-    "decision",
+    "signal_id",
     "unresolved_critical_feedback_ids",
     "unresolved_high_feedback_ids",
+    "blocking_findings_present",
+    "structural_risk_level",
+    "recommended_control_posture",
     "created_at"
   ],
   "properties": {
     "artifact_type": {
-      "const": "hnx_feedback_gate_decision"
+      "const": "hnx_feedback_gate_signal"
     },
     "schema_version": {
       "const": "1.0.0"
     },
-    "gate_id": {
+    "signal_id": {
       "type": "string",
       "minLength": 1
-    },
-    "decision": {
-      "enum": [
-        "allow",
-        "freeze",
-        "block"
-      ]
     },
     "unresolved_critical_feedback_ids": {
       "type": "array",
@@ -46,6 +41,23 @@
         "minLength": 1
       },
       "uniqueItems": true
+    },
+    "blocking_findings_present": {
+      "type": "boolean"
+    },
+    "structural_risk_level": {
+      "enum": [
+        "normal",
+        "elevated",
+        "critical"
+      ]
+    },
+    "recommended_control_posture": {
+      "enum": [
+        "normal",
+        "high_findings_present",
+        "critical_findings_present"
+      ]
     },
     "created_at": {
       "type": "string",

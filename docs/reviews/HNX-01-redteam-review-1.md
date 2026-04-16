@@ -16,3 +16,6 @@ HNX remains structure+signal only. It must not emit policy, promotion, or releas
 - Enforce stage skip + stop/freeze deterministic blocks.
 - Expand forbidden output overlap checks.
 - Add adversarial regression tests for authority smuggling and invalid transition insertion.
+
+## Authority boundary note
+HNX remains non-authoritative beyond harness and continuity ownership; outputs are structural evidence and signals for external control/governance authorities.

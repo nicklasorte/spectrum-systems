@@ -11,3 +11,6 @@ All Review 1 findings closed.
 ## Regression mapping
 - RT1-STAGE-BYPASS -> `test_deterministic_stage_machine_and_stage_skip_detector`
 - Authority smuggling -> `test_boundary_fencing_blocks_forbidden_owner_overlap`
+
+## Authority boundary note
+HNX remains non-authoritative beyond harness and continuity ownership; outputs are structural evidence and signals for external control/governance authorities.
