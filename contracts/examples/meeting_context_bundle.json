@@ -1,0 +1,22 @@
+{
+  "artifact_type": "meeting_context_bundle",
+  "artifact_id": "MEETING_CONTEXT_BUNDLE-001",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.9.5",
+  "run_id": "run-rdm-01",
+  "trace_id": "trace-rdm-01",
+  "lineage_refs": [
+    "seed-001"
+  ],
+  "included_artifact_refs": [
+    "NTA-001",
+    "TFA-001"
+  ],
+  "excluded_artifact_refs": [
+    "RAW-UNAPPROVED-001"
+  ],
+  "recipe_version": "recipe-1.0.0",
+  "manifest_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "replay_token": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+}

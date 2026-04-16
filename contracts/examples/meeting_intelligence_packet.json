@@ -1,0 +1,31 @@
+{
+  "artifact_type": "meeting_intelligence_packet",
+  "artifact_id": "MEETING_INTELLIGENCE_PACKET-001",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.9.5",
+  "run_id": "run-rdm-01",
+  "trace_id": "trace-rdm-01",
+  "lineage_refs": [
+    "seed-001"
+  ],
+  "decision_refs": [
+    "MEETING_DECISION_ARTIFACT-001"
+  ],
+  "action_item_refs": [
+    "MEETING_ACTION_ITEM_ARTIFACT-001"
+  ],
+  "risk_refs": [
+    "MEETING_RISK_ARTIFACT-001"
+  ],
+  "open_question_refs": [
+    "MEETING_OPEN_QUESTION_ARTIFACT-001"
+  ],
+  "contradiction_refs": [
+    "MEETING_CONTRADICTION_ARTIFACT-001"
+  ],
+  "gap_refs": [
+    "MEETING_GAP_ARTIFACT-001"
+  ],
+  "summary": "Structured meeting intelligence summary."
+}

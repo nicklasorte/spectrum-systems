@@ -1,0 +1,17 @@
+{
+  "artifact_type": "product_readiness_artifact",
+  "artifact_id": "PRODUCT_READINESS_ARTIFACT-001",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.9.5",
+  "run_id": "run-rdm-01",
+  "trace_id": "trace-rdm-01",
+  "lineage_refs": [
+    "seed-001"
+  ],
+  "certification_status": "certified",
+  "blocking_reasons": [],
+  "artifact_refs": [
+    "MEETING_INTELLIGENCE_PACKET-001"
+  ]
+}

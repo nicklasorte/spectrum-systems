@@ -1,0 +1,23 @@
+{
+  "artifact_type": "faq_answer_artifact",
+  "artifact_id": "FAQ_ANSWER_ARTIFACT-001",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.9.5",
+  "run_id": "run-rdm-01",
+  "trace_id": "trace-rdm-01",
+  "lineage_refs": [
+    "seed-001"
+  ],
+  "faq_source_ref": "FAQ_SOURCE_ARTIFACT-001",
+  "answers": [
+    {
+      "question": "What changed?",
+      "answer": "Pilot approved",
+      "evidence_refs": [
+        "LINE-0001"
+      ]
+    }
+  ],
+  "grounding_check": "pass"
+}

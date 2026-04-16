@@ -1,0 +1,30 @@
+{
+  "artifact_type": "normalized_transcript_artifact",
+  "artifact_id": "NORMALIZED_TRANSCRIPT_ARTIFACT-001",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.9.5",
+  "run_id": "run-rdm-01",
+  "trace_id": "trace-rdm-01",
+  "lineage_refs": [
+    "seed-001"
+  ],
+  "source_id": "SRC-001",
+  "source_document_path": "spectrum-data-lake/raw/meetings/m1.docx",
+  "source_document_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "ingest_timestamp": "2026-04-16T00:00:00Z",
+  "parser_version": "docx-normalizer-1.0.0",
+  "provenance": {
+    "ingest_mode": "docx"
+  },
+  "lines": [
+    {
+      "line_id": "LINE-0001",
+      "speaker": "Alice",
+      "timestamp": "09:00:00",
+      "text": "Kickoff agenda",
+      "confidence": 0.98,
+      "ambiguity_flags": []
+    }
+  ]
+}

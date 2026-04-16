@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/study_plan_artifact.schema.json",
+  "title": "Study Plan Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "schema_version",
+    "run_id",
+    "trace_id",
+    "lineage_refs",
+    "plan_title",
+    "steps",
+    "source_refs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "study_plan_artifact"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "const": "1.9.5"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "lineage_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "plan_title": {
+      "type": "string"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

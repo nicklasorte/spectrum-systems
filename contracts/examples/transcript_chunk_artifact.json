@@ -1,0 +1,21 @@
+{
+  "artifact_type": "transcript_chunk_artifact",
+  "artifact_id": "TRANSCRIPT_CHUNK_ARTIFACT-001",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.9.5",
+  "run_id": "run-rdm-01",
+  "trace_id": "trace-rdm-01",
+  "lineage_refs": [
+    "seed-001"
+  ],
+  "normalized_transcript_artifact_id": "NTA-001",
+  "chunk_index": 1,
+  "line_refs": [
+    "LINE-0001"
+  ],
+  "content": "Alice: Kickoff agenda",
+  "content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "ambiguity_flags": [],
+  "confidence": 0.98
+}

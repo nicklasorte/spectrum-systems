@@ -1,0 +1,29 @@
+{
+  "artifact_type": "working_paper_insert_artifact",
+  "artifact_id": "WORKING_PAPER_INSERT_ARTIFACT-001",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.9.5",
+  "run_id": "run-rdm-01",
+  "trace_id": "trace-rdm-01",
+  "lineage_refs": [
+    "seed-001"
+  ],
+  "statement": "Program readiness update",
+  "section_content": "Readiness depends on dependency closure.",
+  "evidence_refs": [
+    "LINE-0001"
+  ],
+  "assumptions": [
+    "Budget remains stable"
+  ],
+  "unresolved_questions": [
+    "Who approves final plan?"
+  ],
+  "risks": [
+    "Late dependency closure"
+  ],
+  "provenance": {
+    "generator": "wpg"
+  }
+}

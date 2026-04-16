@@ -1,0 +1,17 @@
+{
+  "artifact_type": "comment_resolution_artifact",
+  "artifact_id": "COMMENT_RESOLUTION_ARTIFACT-001",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.9.5",
+  "run_id": "run-rdm-01",
+  "trace_id": "trace-rdm-01",
+  "lineage_refs": [
+    "seed-001"
+  ],
+  "comment_id": "C-1",
+  "resolution": "Accepted with edits",
+  "evidence_refs": [
+    "LINE-0001"
+  ]
+}

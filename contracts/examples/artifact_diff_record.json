@@ -1,0 +1,19 @@
+{
+  "artifact_type": "artifact_diff_record",
+  "artifact_id": "ARTIFACT_DIFF_RECORD-001",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.9.5",
+  "run_id": "run-rdm-01",
+  "trace_id": "trace-rdm-01",
+  "lineage_refs": [
+    "seed-001"
+  ],
+  "before_artifact_ref": "A-1",
+  "after_artifact_ref": "A-2",
+  "changed_fields": [
+    "owner",
+    "due_date"
+  ],
+  "reason": "Human correction after review"
+}

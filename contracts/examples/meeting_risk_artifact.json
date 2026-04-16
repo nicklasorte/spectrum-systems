@@ -1,0 +1,20 @@
+{
+  "artifact_type": "meeting_risk_artifact",
+  "artifact_id": "MEETING_RISK_ARTIFACT-001",
+  "schema_version": "1.0.0",
+  "artifact_version": "1.0.0",
+  "standards_version": "1.9.5",
+  "run_id": "run-rdm-01",
+  "trace_id": "trace-rdm-01",
+  "lineage_refs": [
+    "seed-001"
+  ],
+  "evidence_refs": [
+    "LINE-0001"
+  ],
+  "timestamp": "09:00:00",
+  "confidence": 0.9,
+  "ambiguity_flags": [],
+  "risk": "Dependency slippage",
+  "severity": "high"
+}
