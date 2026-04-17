@@ -589,6 +589,19 @@
       "notes": "HR-C canonical control-surface artifact family"
     },
     {
+      "artifact_type": "artifact_diff_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/artifact_diff_record.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
+    },
+    {
       "artifact_type": "artifact_envelope",
       "artifact_class": "coordination",
       "schema_version": "1.2.0",
@@ -1814,6 +1827,19 @@
       "last_updated_in": "1.3.141",
       "example_path": "contracts/examples/comment_matrix_signal_artifact.json",
       "notes": "WPG EXEC C-H governed execution artifact."
+    },
+    {
+      "artifact_type": "comment_resolution_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/comment_resolution_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
     },
     {
       "artifact_type": "comment_resolution_matrix",
@@ -3199,6 +3225,19 @@
       "last_updated_in": "1.0.0",
       "example_path": "contracts/examples/decision_log.json",
       "notes": "Structured decision tracking with readiness, options, dependencies, and evidence."
+    },
+    {
+      "artifact_type": "decision_log_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/decision_log_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
     },
     {
       "artifact_type": "decision_proof_record",
@@ -4819,6 +4858,19 @@
       "notes": "BNE-00 bottleneck attack wave governed artifact."
     },
     {
+      "artifact_type": "faq_answer_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/faq_answer_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
+    },
+    {
       "artifact_type": "faq_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -4882,6 +4934,19 @@
       "last_updated_in": "1.3.136",
       "example_path": "contracts/examples/faq_report_artifact.json",
       "notes": "WPG-00 governed working paper generator artifact chain."
+    },
+    {
+      "artifact_type": "faq_source_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/faq_source_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
     },
     {
       "artifact_type": "final_100_step_synthetic_scenario_pack",
@@ -7308,6 +7373,19 @@
       "notes": "MAP-001 bounded mediation/projection hardening contract with deterministic fail-closed behavior."
     },
     {
+      "artifact_type": "meeting_action_item_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/meeting_action_item_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
+    },
+    {
       "artifact_type": "meeting_agenda_contract",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -7335,6 +7413,71 @@
       "last_updated_in": "1.3.140",
       "example_path": "contracts/examples/meeting_artifact.json",
       "notes": "WPG Phase B governed workflow loop contract."
+    },
+    {
+      "artifact_type": "meeting_context_bundle",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/meeting_context_bundle.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
+    },
+    {
+      "artifact_type": "meeting_contradiction_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/meeting_contradiction_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
+    },
+    {
+      "artifact_type": "meeting_decision_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/meeting_decision_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
+    },
+    {
+      "artifact_type": "meeting_gap_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/meeting_gap_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
+    },
+    {
+      "artifact_type": "meeting_intelligence_packet",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/meeting_intelligence_packet.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
     },
     {
       "artifact_type": "meeting_minutes",
@@ -7378,6 +7521,32 @@
       "last_updated_in": "1.0.88",
       "example_path": "contracts/examples/meeting_minutes_record.example.json",
       "notes": "Machine-validated meeting minutes record emitted from meeting-minutes-engine for downstream consumption and DOCX rendering; payloads should be wrapped in the artifact envelope standard."
+    },
+    {
+      "artifact_type": "meeting_open_question_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/meeting_open_question_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
+    },
+    {
+      "artifact_type": "meeting_risk_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/meeting_risk_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
     },
     {
       "artifact_type": "migration_plan_record",
@@ -7770,6 +7939,19 @@
       "last_updated_in": "1.3.105",
       "example_path": "contracts/examples/normalized_execution_request.example.json",
       "notes": "AEX normalized execution request authenticity now carries issuer-scoped key binding plus freshness/audience/scope/token fields required for fail-closed PQX repo-write lineage verification."
+    },
+    {
+      "artifact_type": "normalized_transcript_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/normalized_transcript_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
     },
     {
       "artifact_type": "nx_review_intelligence_link_artifact",
@@ -9540,6 +9722,19 @@
       "notes": "authoritative strict minimal prompt validation result"
     },
     {
+      "artifact_type": "product_readiness_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/product_readiness_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
+    },
+    {
       "artifact_type": "program_alignment_assessment",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -10521,6 +10716,19 @@
       "last_updated_in": "1.3.142",
       "example_path": "contracts/examples/queue_governance_record.json",
       "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
+    },
+    {
+      "artifact_type": "raw_meeting_record_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/raw_meeting_record_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
     },
     {
       "artifact_type": "rax_adversarial_pattern_candidate",
@@ -13654,6 +13862,19 @@
       "notes": "Admission decision artifact for strategic knowledge candidates with deterministic trust and fail-closed governance responses."
     },
     {
+      "artifact_type": "study_plan_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/study_plan_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
+    },
+    {
       "artifact_type": "study_readiness_assessment",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -14501,6 +14722,84 @@
       "notes": "Ingress transcript boundary artifact for WPG fail-closed admission."
     },
     {
+      "artifact_type": "transcript_certification_input_signal",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.6",
+      "last_updated_in": "1.9.6",
+      "example_path": "contracts/examples/transcript_certification_input_signal.json",
+      "notes": "Preparatory-only transcript certification input signal. No certification authority."
+    },
+    {
+      "artifact_type": "transcript_chunk_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/transcript_chunk_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
+    },
+    {
+      "artifact_type": "transcript_control_input_signal",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.6",
+      "last_updated_in": "1.9.6",
+      "example_path": "contracts/examples/transcript_control_input_signal.json",
+      "notes": "Preparatory-only transcript control input signal. No decision or enforcement authority."
+    },
+    {
+      "artifact_type": "transcript_fact_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/transcript_fact_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
+    },
+    {
+      "artifact_type": "transcript_hardening_failure",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.6",
+      "last_updated_in": "1.9.6",
+      "example_path": "contracts/examples/transcript_hardening_failure.json",
+      "notes": "Fail-closed transcript hardening failure artifact with trace/run linkage."
+    },
+    {
+      "artifact_type": "transcript_hardening_run",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.6",
+      "last_updated_in": "1.9.6",
+      "example_path": "contracts/examples/transcript_hardening_run.json",
+      "notes": "TRN hardening preparatory-only run artifact with replay/trace continuity requirements."
+    },
+    {
       "artifact_type": "transcript_intelligence_pack",
       "artifact_class": "work",
       "schema_version": "1.0.0",
@@ -14827,6 +15126,19 @@
       "notes": "Initial canonical intake contract. Payload is expected to travel inside the artifact envelope standard for orchestration and data lake manifests."
     },
     {
+      "artifact_type": "working_paper_insert_artifact",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.5",
+      "last_updated_in": "1.9.5",
+      "example_path": "contracts/examples/working_paper_insert_artifact.json",
+      "notes": "RDM-01 downstream product governed substrate contract."
+    },
+    {
       "artifact_type": "working_section_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -15124,266 +15436,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "raw_meeting_record_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/raw_meeting_record_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "normalized_transcript_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/normalized_transcript_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "transcript_chunk_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/transcript_chunk_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "meeting_context_bundle",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/meeting_context_bundle.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "transcript_fact_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/transcript_fact_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "meeting_decision_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/meeting_decision_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "meeting_action_item_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/meeting_action_item_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "meeting_risk_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/meeting_risk_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "meeting_open_question_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/meeting_open_question_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "meeting_contradiction_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/meeting_contradiction_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "meeting_gap_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/meeting_gap_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "meeting_intelligence_packet",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/meeting_intelligence_packet.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "faq_source_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/faq_source_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "faq_answer_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/faq_answer_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "working_paper_insert_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/working_paper_insert_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "decision_log_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/decision_log_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "product_readiness_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/product_readiness_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "artifact_diff_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/artifact_diff_record.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "comment_resolution_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/comment_resolution_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
-    },
-    {
-      "artifact_type": "study_plan_artifact",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.9.5",
-      "last_updated_in": "1.9.5",
-      "example_path": "contracts/examples/study_plan_artifact.json",
-      "notes": "RDM-01 downstream product governed substrate contract."
     }
   ]
 }

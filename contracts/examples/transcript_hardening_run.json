@@ -1,6 +1,6 @@
 {
   "artifact_type": "transcript_hardening_run",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "artifact_id": "trn-run-a265b43a7ad89d34",
   "trace_id": "trace-example",
   "run_id": "run-example",
@@ -58,7 +58,8 @@
             "end_char": 31,
             "timestamp": "2026-04-16T10:00:00Z"
           }
-        ]
+        ],
+        "classification_confidence": 0.92
       }
     ],
     "claims": [
@@ -71,7 +72,8 @@
             "end_char": 88,
             "timestamp": "2026-04-16T10:01:00Z"
           }
-        ]
+        ],
+        "classification_confidence": 0.92
       }
     ],
     "actions": [
@@ -84,7 +86,8 @@
             "end_char": 88,
             "timestamp": "2026-04-16T10:01:00Z"
           }
-        ]
+        ],
+        "classification_confidence": 0.92
       }
     ],
     "ambiguities": [
@@ -97,10 +100,21 @@
             "end_char": 43,
             "timestamp": "2026-04-16T10:02:00Z"
           }
-        ]
+        ],
+        "classification_confidence": 0.92
       }
     ],
-    "evidence_anchor_count": 4
+    "evidence_anchor_count": 4,
+    "classification_mode": "deterministic_preparatory",
+    "eval_hook_refs": [
+      "eval:transcript_classification_goldens",
+      "eval:transcript_classification_adversarial"
+    ],
+    "non_authority_assertions": [
+      "preparatory_only",
+      "not_judgment_authority",
+      "requires_ril_or_jdx_interpretation"
+    ]
   },
   "handoff_artifacts": {
     "eval_input": {
@@ -114,19 +128,22 @@
       "artifact_type": "transcript_control_input_signal",
       "trace_id": "trace-example",
       "run_id": "run-example",
-      "transcript_run_ref": "trn-run-a265b43a7ad89d34"
+      "transcript_run_ref": "trn-run-a265b43a7ad89d34",
+      "replay_hash": "92da0dea453aafc669f4b50415257ca064c9e2c07880f155ed515b70fd6806f4"
     },
     "judgment_input": {
       "artifact_type": "transcript_judgment_input_signal",
       "trace_id": "trace-example",
       "run_id": "run-example",
-      "transcript_run_ref": "trn-run-a265b43a7ad89d34"
+      "transcript_run_ref": "trn-run-a265b43a7ad89d34",
+      "replay_hash": "92da0dea453aafc669f4b50415257ca064c9e2c07880f155ed515b70fd6806f4"
     },
     "certification_input": {
       "artifact_type": "transcript_certification_input_signal",
       "trace_id": "trace-example",
       "run_id": "run-example",
-      "transcript_run_ref": "trn-run-a265b43a7ad89d34"
+      "transcript_run_ref": "trn-run-a265b43a7ad89d34",
+      "replay_hash": "92da0dea453aafc669f4b50415257ca064c9e2c07880f155ed515b70fd6806f4"
     }
   },
   "lineage": {

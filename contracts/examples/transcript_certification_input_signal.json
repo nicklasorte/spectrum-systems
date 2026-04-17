@@ -1,0 +1,18 @@
+{
+  "artifact_type": "transcript_certification_input_signal",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-example",
+  "run_id": "run-example",
+  "transcript_run_ref": "trn-run-a265b43a7ad89d34",
+  "replay_hash": "92da0dea453aafc669f4b50415257ca064c9e2c07880f155ed515b70fd6806f4",
+  "readiness_assessment": "ready_for_certification",
+  "blocking_signals": [],
+  "artifact_refs": [
+    "transcript_hardening_run:trn-run-a265b43a7ad89d34"
+  ],
+  "non_authority_assertions": [
+    "preparatory_only",
+    "not_certification_authority",
+    "requires_canonical_certification_owner"
+  ]
+}

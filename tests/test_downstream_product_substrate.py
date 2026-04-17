@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import json
 import zipfile
 from pathlib import Path
 
+import pytest
+
 from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.modules.runtime.trace_engine import clear_trace_store, start_trace
 from spectrum_systems.modules.runtime.downstream_product_substrate import (
     DownstreamFailClosedError,
     apply_policy_thresholds,
@@ -26,8 +30,8 @@ from spectrum_systems.modules.runtime.downstream_product_substrate import (
     build_meeting_intelligence,
     build_operability_report,
     build_chaos_scenarios,
-    certify_product_readiness,
-    control_decision,
+    build_transcript_certification_input,
+    build_transcript_control_input,
     decide_ai_route_by_risk,
     derive_review_triggers,
     detect_transcript_drift,
@@ -42,6 +46,11 @@ from spectrum_systems.modules.runtime.downstream_product_substrate import (
 )
 
 
+def _trace(trace_id: str, run_id: str) -> str:
+    clear_trace_store()
+    return start_trace({"trace_id": trace_id, "run_id": run_id})
+
+
 def _write_docx(path: Path, lines: list[str]) -> None:
     xml_lines = "".join(f"<w:p><w:r><w:t>{line}</w:t></w:r></w:p>" for line in lines)
     xml = (
@@ -54,6 +63,7 @@ def _write_docx(path: Path, lines: list[str]) -> None:
 
 
 def test_rdm01_pipeline_artifacts_validate(tmp_path: Path) -> None:
+    trace_id = _trace("trace-rdm-01", "run-rdm-01")
     docx = tmp_path / "meeting.docx"
     _write_docx(docx, [
         "[09:00:00] Alice: Kickoff governance review",
@@ -65,7 +75,7 @@ def test_rdm01_pipeline_artifacts_validate(tmp_path: Path) -> None:
         source_docx_path=str(docx),
         source_id="SRC-001",
         run_id="run-rdm-01",
-        trace_id="trace-rdm-01",
+        trace_id=trace_id,
         parser_version="docx-normalizer-1.1.0",
         chunk_size=2,
         ingest_timestamp="2026-04-16T00:00:00Z",
@@ -84,7 +94,7 @@ def test_rdm01_pipeline_artifacts_validate(tmp_path: Path) -> None:
 
     context = assemble_meeting_context_bundle(
         run_id="run-rdm-01",
-        trace_id="trace-rdm-01",
+        trace_id=trace_id,
         included_artifacts=[ingest["normalized_transcript_artifact"], facts],
         excluded_refs=["raw:SRC-legacy"],
         recipe_version="recipe-1.0.0",
@@ -93,6 +103,7 @@ def test_rdm01_pipeline_artifacts_validate(tmp_path: Path) -> None:
 
 
 def test_deterministic_replay_and_multi_pass(tmp_path: Path) -> None:
+    trace_id = _trace("trace-det", "run-det")
     docx = tmp_path / "meeting.docx"
     _write_docx(docx, [
         "[10:00:00] Alice: Decision approved",
@@ -103,7 +114,7 @@ def test_deterministic_replay_and_multi_pass(tmp_path: Path) -> None:
         source_docx_path=str(docx),
         source_id="SRC-DET",
         run_id="run-det",
-        trace_id="trace-det",
+        trace_id=trace_id,
         parser_version="docx-normalizer-1.1.0",
         ingest_timestamp="2026-04-16T00:00:00Z",
     )
@@ -111,7 +122,7 @@ def test_deterministic_replay_and_multi_pass(tmp_path: Path) -> None:
         source_docx_path=str(docx),
         source_id="SRC-DET",
         run_id="run-det",
-        trace_id="trace-det",
+        trace_id=trace_id,
         parser_version="docx-normalizer-1.1.0",
         ingest_timestamp="2026-04-16T00:00:00Z",
     )
@@ -135,17 +146,29 @@ def test_deterministic_replay_and_multi_pass(tmp_path: Path) -> None:
 
 def test_eval_policy_review_and_certification_gate() -> None:
     eval_summary = build_eval_summary(required_eval_suite(), {"schema_conformance": "pass"})
-    control = control_decision(eval_summary, trace_complete=False, replay_match=True)
-    readiness = certify_product_readiness(
+    control = build_transcript_control_input(
+        trace_id="trace-policy-1",
+        run_id="run-policy-1",
+        transcript_run_ref="trn-run-0123456789abcdef",
+        replay_hash="a" * 64,
+        eval_summary=eval_summary,
+        trace_complete=False,
+        replay_match=True,
+    )
+    readiness = build_transcript_certification_input(
+        trace_id="trace-policy-1",
+        run_id="run-policy-1",
+        transcript_run_ref="trn-run-0123456789abcdef",
+        replay_hash="a" * 64,
         artifact_refs=["MEETING_INTELLIGENCE_PACKET-001"],
         eval_summary=eval_summary,
-        control=control,
+        control_input=control,
         replay_linkage=False,
         trace_complete=False,
     )
     assert eval_summary["status"] == "block"
-    assert control["decision"] == "block"
-    assert readiness["certification_status"] == "blocked"
+    assert control["readiness_assessment"] == "not_ready_for_control_review"
+    assert readiness["readiness_assessment"] == "not_ready"
 
     thresholds = apply_policy_thresholds(
         evidence_coverage=0.8,
@@ -204,6 +227,7 @@ def test_eval_suite_observability_drift_capacity() -> None:
 
 
 def test_fail_closed_on_malformed_source_input_and_chaos_registry(tmp_path: Path) -> None:
+    trace_id = _trace("trace-rdm-01", "run-rdm-01")
     bad = tmp_path / "meeting.txt"
     bad.write_text("not a docx", encoding="utf-8")
 
@@ -212,14 +236,14 @@ def test_fail_closed_on_malformed_source_input_and_chaos_registry(tmp_path: Path
             source_docx_path=str(bad),
             source_id="SRC-002",
             run_id="run-rdm-01",
-            trace_id="trace-rdm-01",
+            trace_id=trace_id,
             parser_version="docx-normalizer-1.1.0",
         )
     except DownstreamFailClosedError as exc:
         failure = build_failure_artifact(
             source_id="SRC-002",
             run_id="run-rdm-01",
-            trace_id="trace-rdm-01",
+            trace_id=trace_id,
             parser_version="docx-normalizer-1.1.0",
             reason=str(exc),
         )
@@ -313,3 +337,44 @@ def test_thr1098_feedback_review_quality_active_set_and_health() -> None:
 
     family = build_transcript_family_intelligence(evidence_gap_count=0, override_count=1, contradiction_count=0, blocked_rate=0.05)
     assert family["readiness_state"] == "certifiable"
+
+
+def test_transcript_preparatory_signals_forbid_authority_vocabulary() -> None:
+    eval_summary = {"status": "pass", "blocking_reasons": []}
+    control = build_transcript_control_input(
+        trace_id="trace-noauth",
+        run_id="run-noauth",
+        transcript_run_ref="trn-run-0123456789abcdef",
+        replay_hash="c" * 64,
+        eval_summary=eval_summary,
+        trace_complete=True,
+        replay_match=True,
+    )
+    certification = build_transcript_certification_input(
+        trace_id="trace-noauth",
+        run_id="run-noauth",
+        transcript_run_ref="trn-run-0123456789abcdef",
+        replay_hash="c" * 64,
+        artifact_refs=["TRN-ART-1"],
+        eval_summary=eval_summary,
+        control_input=control,
+        replay_linkage=True,
+        trace_complete=True,
+    )
+    assert "decision" not in control
+    assert "enforcement_action" not in control
+    assert "certification_status" not in certification
+    assert certification["readiness_assessment"] in {"ready_for_certification", "not_ready"}
+
+
+def test_normalize_docx_rejects_missing_trace_context(tmp_path: Path) -> None:
+    docx = tmp_path / "meeting.docx"
+    _write_docx(docx, ["[11:00:00] Alice: topic review"])
+    with pytest.raises(DownstreamFailClosedError):
+        normalize_docx_transcript(
+            source_docx_path=str(docx),
+            source_id="SRC-BADTRACE",
+            run_id="run-badtrace",
+            trace_id="trace-does-not-exist",
+            parser_version="docx-normalizer-1.1.0",
+        )

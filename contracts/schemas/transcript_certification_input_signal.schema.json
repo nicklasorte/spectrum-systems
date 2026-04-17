@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/transcript_certification_input_signal.schema.json",
+  "title": "Transcript Certification Input Signal",
+  "description": "Preparatory-only transcript readiness signal consumed by canonical certification owners.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "run_id",
+    "transcript_run_ref",
+    "replay_hash",
+    "readiness_assessment",
+    "blocking_signals",
+    "artifact_refs",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "transcript_certification_input_signal" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "transcript_run_ref": { "type": "string", "minLength": 1 },
+    "replay_hash": { "type": "string", "minLength": 64, "maxLength": 64 },
+    "readiness_assessment": {
+      "type": "string",
+      "enum": ["ready_for_certification", "not_ready"]
+    },
+    "blocking_signals": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "artifact_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "allOf": [
+        { "contains": { "const": "preparatory_only" } },
+        { "contains": { "const": "not_certification_authority" } }
+      ]
+    }
+  }
+}

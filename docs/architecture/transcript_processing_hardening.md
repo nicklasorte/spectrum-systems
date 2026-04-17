@@ -4,31 +4,37 @@
 BUILD
 
 ## Intent
-This architecture hardens transcript processing into deterministic, fail-closed execution from DOCX ingress through extraction, evaluation, control, certification, and promotion gating.
+Transcript processing is a bounded preparation/hardening seam. It produces deterministic transcript artifacts and preparatory handoff inputs; it does **not** own control decisions, enforcement actions, or certification authority.
 
 ## Canonical execution path
-1. Raw DOCX source is ingested via deterministic parser.
-2. `raw_meeting_record_artifact` and `normalized_transcript_artifact` are emitted with stable hashes and parser/source metadata.
-3. Transcript is chunked deterministically into `transcript_chunk_artifact` records.
-4. Bounded multi-pass extraction emits evidence-anchored structures across 5 passes.
-5. `transcript_fact_artifact` and meeting intelligence artifacts are emitted with required evidence anchors.
-6. Eval suite computes governed statuses and slice coverage.
-7. Policy thresholds + review triggers enforce fail-closed behavior.
-8. Replay integrity is checked before control and certification decisions.
-9. Certification gate blocks promotion on missing artifact/eval/trace/replay prerequisites.
+1. Raw DOCX source is ingested via deterministic parser and normalized into replayable transcript artifacts.
+2. Transcript hardening validates trace context at entry, starts a trace span, and records classification/hardening trace events.
+3. Transcript observations are produced as deterministic preparatory classifications with confidence values and explicit non-authority assertions.
+4. Transcript hardening emits handoff signals for eval/control/judgment/certification, each with required `replay_hash` continuity.
+5. Downstream canonical owners (Eval/Judgment/Control/Certification) consume preparatory signals and issue authority artifacts in their own seams.
+6. Transcript hardening emits either:
+   - `transcript_hardening_run` (`processing_status: processed`), or
+   - `transcript_hardening_failure` (`processing_status: failed`).
 
-## Non-negotiable guardrails enforced
-- Artifact-first execution.
-- Fail-closed behavior on missing required inputs/evals/traceability.
-- Promotion only after certification status is `certified`.
-- AI extraction is bounded to schema-shaped structured outputs with evidence refs.
-- AI has no control/promotion authority.
+## Authority boundaries (hard law)
+- Transcript modules MUST NOT emit authority vocabulary/artifacts such as `decision`, `enforcement_action`, `certification_status`, `allow`, `block`, `freeze`, or promotion outcomes.
+- Transcript preparatory signals MUST include explicit `non_authority_assertions`.
+- Promotion remains gated by canonical certification/control owners only.
 
-## Operational seams
-- **Observability**: parse success, ambiguity, evidence coverage, contradiction rate, eval status counts, replay match rate, blocked/frozen rates, review queue volume.
-- **Drift**: baseline vs current metric deltas with freeze trigger.
-- **Capacity**: queue depth, backlog age, timeout rate, retry storm risk, concurrency bounds.
-- **Chaos**: governed scenario registry for transcript failure injections.
+## Observation-layer architecture choice
+**Choice B: keep observation layer in place with governance seams.**
+- Observation classification remains deterministic and preparatory-only.
+- Every classification includes confidence + evidence anchors.
+- Classification trace events are recorded.
+- Eval hooks are declared (`golden` + `adversarial`) and required in the run artifact.
+- Interpretation authority remains downstream (RIL/JDX/CDE owners).
 
-## Review loops
-TRN-11, TRN-14B, TRN-18, and TRN-21 red-team artifacts are produced and immediately fixed with regression coverage.
+## Fail-closed guarantees
+- Missing or invalid trace context at transcript entry is fail-closed.
+- Missing replay continuity across required handoff signals is contract-invalid.
+- Missing eval/trace/replay/certification prerequisites remain fail-closed at canonical owner seams.
+- Transcript hardening failure always emits a governed failure artifact; no silent exception-only path.
+
+## Guard surface
+- Transcript authority-vocabulary guard script (`scripts/validate_forbidden_authority_vocabulary.py`) blocks forbidden authority keys in transcript preparation modules.
+- Schema strictness (`additionalProperties: false`) enforced for transcript preparatory/failure artifacts.

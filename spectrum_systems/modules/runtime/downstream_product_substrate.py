@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping
 from xml.etree import ElementTree as ET
 
+from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.modules.runtime.trace_engine import end_span, record_event, start_span, validate_trace_context
 
 NS = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
 _REQUIRED_EVALS = (
@@ -140,12 +142,18 @@ def normalize_docx_transcript(
 ) -> Dict[str, Any]:
     if not trace_id or not run_id or not source_id:
         raise DownstreamFailClosedError("trace_id, run_id, and source_id are required")
+    trace_errors = validate_trace_context(trace_id)
+    if trace_errors:
+        raise DownstreamFailClosedError("; ".join(trace_errors))
+    span_id = start_span(trace_id, "transcript_substrate.normalize_docx_transcript")
 
     try:
+        record_event(span_id, "transcript_normalization_start", {"run_id": run_id, "source_id": source_id})
         source_path = Path(source_docx_path)
         paragraphs = _read_docx_text(source_path)
         lines = [_parse_line(raw, idx + 1) for idx, raw in enumerate(paragraphs)]
     except Exception as exc:
+        end_span(span_id, "blocked")
         if isinstance(exc, DownstreamFailClosedError):
             raise
         raise DownstreamFailClosedError(str(exc)) from exc
@@ -206,7 +214,7 @@ def normalize_docx_transcript(
             }
         )
 
-    return {
+    payload = {
         "raw_meeting_record_artifact": {
             "artifact_type": "raw_meeting_record_artifact",
             "artifact_id": f"RMR-{source_id}",
@@ -226,6 +234,13 @@ def normalize_docx_transcript(
         "normalized_transcript_artifact": normalized_payload,
         "transcript_chunk_artifacts": chunks,
     }
+    record_event(
+        span_id,
+        "transcript_normalization_success",
+        {"normalized_artifact_id": normalized_artifact_id, "chunk_count": len(chunks)},
+    )
+    end_span(span_id, "ok")
+    return payload
 
 
 def extract_transcript_facts(normalized_transcript: Mapping[str, Any]) -> Dict[str, Any]:
@@ -502,20 +517,54 @@ def derive_review_triggers(*, ambiguity_rate: float, contradiction_density: floa
     return {"requires_human_review": any(triggers.values()), "trigger_reasons": [k for k, v in triggers.items() if v]}
 
 
-def control_decision(eval_summary: Mapping[str, Any], trace_complete: bool, replay_match: bool) -> Dict[str, Any]:
+def build_transcript_control_input(
+    *,
+    trace_id: str,
+    run_id: str,
+    transcript_run_ref: str,
+    replay_hash: str,
+    eval_summary: Mapping[str, Any],
+    trace_complete: bool,
+    replay_match: bool,
+) -> Dict[str, Any]:
     reasons = list(eval_summary.get("blocking_reasons", []))
     if not trace_complete:
         reasons.append("missing_traceability")
     if not replay_match:
         reasons.append("replay_mismatch")
-    return {
-        "decision": "allow" if not reasons and eval_summary.get("status") == "pass" else "block",
-        "enforcement_action": "promote" if not reasons and eval_summary.get("status") == "pass" else "freeze",
-        "reasons": reasons,
+    signal = {
+        "artifact_type": "transcript_control_input_signal",
+        "schema_version": "1.0.0",
+        "trace_id": trace_id,
+        "run_id": run_id,
+        "transcript_run_ref": transcript_run_ref,
+        "replay_hash": replay_hash,
+        "readiness_assessment": "ready_for_control_review"
+        if not reasons and eval_summary.get("status") == "pass"
+        else "not_ready_for_control_review",
+        "blocking_signals": reasons,
+        "non_authority_assertions": [
+            "preparatory_only",
+            "not_control_authority",
+            "requires_canonical_control_owner",
+        ],
     }
+    validate_artifact(signal, "transcript_control_input_signal")
+    return signal
 
 
-def certify_product_readiness(*, artifact_refs: Iterable[str], eval_summary: Mapping[str, Any], control: Mapping[str, Any], replay_linkage: bool, trace_complete: bool) -> Dict[str, Any]:
+def build_transcript_certification_input(
+    *,
+    trace_id: str,
+    run_id: str,
+    transcript_run_ref: str,
+    replay_hash: str,
+    artifact_refs: Iterable[str],
+    eval_summary: Mapping[str, Any],
+    control_input: Mapping[str, Any],
+    replay_linkage: bool,
+    trace_complete: bool,
+) -> Dict[str, Any]:
     refs = list(artifact_refs)
     failures: List[str] = []
     if not refs:
@@ -526,21 +575,26 @@ def certify_product_readiness(*, artifact_refs: Iterable[str], eval_summary: Map
         failures.append("missing_replay_linkage")
     if not trace_complete:
         failures.append("missing_trace_completeness")
-    if control.get("decision") != "allow":
+    if control_input.get("readiness_assessment") != "ready_for_control_review":
         failures.append("policy_control_bypass_or_block")
-    return {
-        "artifact_type": "product_readiness_artifact",
-        "artifact_id": f"PRA-{_sha256_text('|'.join(refs))[:12].upper() if refs else 'EMPTY'}",
+    signal = {
+        "artifact_type": "transcript_certification_input_signal",
         "schema_version": "1.0.0",
-        "artifact_version": "1.0.0",
-        "standards_version": "1.9.5",
-        "run_id": "run-certification-rdm-01",
-        "trace_id": "trace-certification-rdm-01",
-        "lineage_refs": refs,
-        "certification_status": "certified" if not failures else "blocked",
-        "blocking_reasons": failures,
+        "run_id": run_id,
+        "trace_id": trace_id,
+        "transcript_run_ref": transcript_run_ref,
+        "replay_hash": replay_hash,
+        "readiness_assessment": "ready_for_certification" if not failures else "not_ready",
+        "blocking_signals": failures,
         "artifact_refs": refs,
+        "non_authority_assertions": [
+            "preparatory_only",
+            "not_certification_authority",
+            "requires_canonical_certification_owner",
+        ],
     }
+    validate_artifact(signal, "transcript_certification_input_signal")
+    return signal
 
 
 def build_operability_report(metrics: Mapping[str, float]) -> Dict[str, Any]:
