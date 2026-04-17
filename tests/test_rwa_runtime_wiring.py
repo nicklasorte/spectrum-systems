@@ -8,6 +8,7 @@ from spectrum_systems.modules.runtime.rwa_runtime_wiring import (
     RuntimeWiringFailure,
     ThinPromptRequest,
     execute_pmh_002_full_serial_run,
+    execute_pmh_003_full_serial_run,
     execute_rwa_final_autonomous_run,
     execute_rwa_minimal_prompt_flow,
     execute_rwa_red_team_rounds,
@@ -129,3 +130,27 @@ def test_pmh_002_full_serial_run_executes_all_phases() -> None:
         assert round_result["fix_pack"]["owner"] == "FRE"
         assert round_result["fix_pack"]["execution_path"] == ["FRE", "TPA", "SEL", "PQX"]
         assert round_result["rerun"]["status"] == "pass"
+
+
+def test_pmh_003_full_serial_run_executes_all_phases() -> None:
+    run = execute_pmh_003_full_serial_run()
+    assert run["artifact_type"] == "final_pm11_full_stack_parity_validation_report"
+    assert run["status"] == "pass"
+
+    assert run["phase_a"]["prm_19"]["artifact_type"] == "prm_prompt_residue_registry_record"
+    assert run["phase_a"]["con_23"]["artifact_type"] == "con_owner_native_adoption_audit_report"
+    assert run["phase_b"]["ctx_23"]["artifact_type"] == "ctx_no_recipe_no_compile_gate_result"
+    assert run["phase_b"]["tlx_04"]["artifact_type"] == "tlx_tool_error_next_step_contract"
+    assert run["phase_c"]["evl_33"]["artifact_type"] == "evl_proof_runtime_parity_gate_result"
+    assert run["phase_d"]["cde_41"]["artifact_type"] == "cde_runtime_adoption_readiness_decision"
+    assert run["phase_e"]["obs_19"]["artifact_type"] == "obs_proof_runtime_observability_parity_pack"
+    assert run["phase_f"]["ail_32"]["artifact_type"] == "ail_manual_workaround_miner_v2_record"
+    assert run["phase_i"]["final_pm11"]["artifact_type"] == "final_pm11_full_stack_parity_validation_report"
+
+    assert len(run["phase_h"]) == 5
+    for round_result in run["phase_h"]:
+        assert round_result["red_team_report"]["owner"] == "RIL"
+        assert round_result["fix_pack"]["owner"] == "FRE"
+        assert round_result["fix_pack"]["execution_path"] == ["FRE", "TPA", "SEL", "PQX"]
+        assert round_result["rerun_validation"]["status"] == "pass"
+        assert round_result["parity_status"]["status"] == "pass"

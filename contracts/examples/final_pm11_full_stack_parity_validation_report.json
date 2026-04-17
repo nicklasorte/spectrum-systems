@@ -1,0 +1,25 @@
+{
+  "artifact_type": "final_pm11_full_stack_parity_validation_report",
+  "artifact_id": "final_pm11_full_stack_parity_validation_report-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.4",
+  "created_at": "2026-04-17T00:00:00Z",
+  "owner": "TLC",
+  "status": "pass",
+  "run_id": "pmh-003-run",
+  "checks": [
+    "replay_parity",
+    "observability_parity",
+    "lineage_parity",
+    "eval_parity",
+    "readiness_halt_posture"
+  ],
+  "details": [
+    "FINAL-PM-11 deterministic full-stack parity validation proof"
+  ],
+  "reason_codes": [
+    "artifact_first",
+    "fail_closed"
+  ]
+}
