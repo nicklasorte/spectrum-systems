@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+import subprocess
+
 from spectrum_systems.modules.runtime.shift_left_hardening_superlayer import (
     apply_fix_pack,
     classify_fix,
@@ -54,6 +58,18 @@ def test_sl_core_guard_chain_fail_fast() -> None:
     assert len(chain["checks_executed"]) == 1
 
 
+def test_manifest_strict_validation_blocks_empty_evidence() -> None:
+    created_at = "2026-04-17T00:00:00Z"
+    result = evaluate_manifest_strict_validation(
+        manifest_contracts=[],
+        forbidden_classes={"forbidden"},
+        created_at=created_at,
+    )
+    assert result["status"] == "fail"
+    assert "empty_evidence_set" in result["reason_codes"]
+    assert "missing_manifest_contracts" in result["reason_codes"]
+
+
 def test_sl_core_and_structure_pass_path() -> None:
     created_at = "2026-04-17T00:00:00Z"
     results = [
@@ -88,6 +104,52 @@ def test_sl_core_and_structure_pass_path() -> None:
     )
     assert structure["concentration"]["status"] == "fail"
     assert structure["metrics"]["total_pressure"] == 1
+
+
+def test_mini_cert_requires_all_critical_dimensions() -> None:
+    created_at = "2026-04-17T00:00:00Z"
+    mini = decide_pre_execution_certification(
+        checks={
+            "sl_core": {"status": "pass"},
+            "sl_structure": {"status": "pass"},
+            "sl_memory": {"status": "pass"},
+            "sl_router": {"status": "pass"},
+            "sl_cert": {"status": "pass"},
+            "dependency_graph": {"status": "pass"},
+            "runtime_parity": {"status": "pass", "parity_strength": "strong"},
+        },
+        created_at=created_at,
+    )
+    assert mini["status"] == "fail"
+    assert "missing_check:eval" in mini["reason_codes"]
+    assert "missing_check:hidden_state" in mini["reason_codes"]
+    assert "missing_check:lineage" in mini["reason_codes"]
+    assert "missing_check:observability" in mini["reason_codes"]
+    assert "missing_check:replay" in mini["reason_codes"]
+
+
+def test_mini_cert_emits_missing_evidence_and_parity_weakness_reason_codes() -> None:
+    created_at = "2026-04-17T00:00:00Z"
+    mini = decide_pre_execution_certification(
+        checks={
+            "sl_core": {"status": "pass"},
+            "sl_structure": {"status": "pass"},
+            "sl_memory": {"status": "pass"},
+            "sl_router": {"status": "pass"},
+            "sl_cert": {"status": "pass"},
+            "dependency_graph": {"status": "pass"},
+            "runtime_parity": {"status": "pass", "parity_strength": "weak"},
+            "eval": {"status": "pass", "reason_codes": ["missing_evidence:eval_registry"]},
+            "replay": {"status": "pass"},
+            "lineage": {"status": "pass"},
+            "observability": {"status": "pass"},
+            "hidden_state": {"status": "pass"},
+        },
+        created_at=created_at,
+    )
+    assert mini["status"] == "fail"
+    assert "missing_evidence:eval" in mini["reason_codes"]
+    assert "parity_weakness:runtime_parity" in mini["reason_codes"]
 
 
 def test_sl_memory_and_coverage_gate() -> None:
@@ -177,3 +239,41 @@ def test_sl_cert_and_red_team_loops_and_final_proof() -> None:
     assert rt["status"] == "fail"
     assert fix["rerun_validated"] is True
     assert set(proofs) == {"FINAL-SL-01", "FINAL-SL-02", "FINAL-SL-03", "FINAL-SL-04", "FINAL-SL-05", "FINAL-SL-06"}
+
+
+def test_runner_uses_repo_derived_signals(tmp_path: Path) -> None:
+    output_path = tmp_path / "slh.json"
+    cmd = [
+        "python",
+        "scripts/run_shift_left_hardening_superlayer.py",
+        "--output",
+        str(output_path),
+        "--changed-files",
+        "scripts/run_shift_left_hardening_superlayer.py",
+        "tests/test_shift_left_hardening_superlayer.py",
+    ]
+    proc = subprocess.run(cmd, check=False, capture_output=True, text=True)
+    assert proc.returncode in {0, 1}
+    assert output_path.exists()
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    signals = payload["repo_derived_signals"]
+    assert signals["manifest_path"] == "contracts/standards-manifest.json"
+    assert "scripts/build_dependency_graph.py" in signals["dependency_graph_command"]
+    assert "scripts/run_shift_left_hardening_superlayer.py" in signals["changed_files"]
+    assert payload["shift_left_guard_chain"]["checks_executed"][0]["check"] == "con_standards_manifest_strict_validation_result"
+
+
+def test_runner_blocks_proof_only_changed_scope(tmp_path: Path) -> None:
+    output_path = tmp_path / "slh-proof-only.json"
+    cmd = [
+        "python",
+        "scripts/run_shift_left_hardening_superlayer.py",
+        "--output",
+        str(output_path),
+        "--changed-files",
+        "docs/reviews/SLH-001-HARDENING-001_delivery_report.md",
+    ]
+    proc = subprocess.run(cmd, check=False, capture_output=True, text=True)
+    assert proc.returncode == 1
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["mini_certification_decision"]["status"] == "fail"
