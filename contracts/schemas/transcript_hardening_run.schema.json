@@ -22,7 +22,7 @@
   ],
   "properties": {
     "artifact_type": { "type": "string", "const": "transcript_hardening_run" },
-    "schema_version": { "type": "string", "const": "1.0.0" },
+    "schema_version": { "type": "string", "const": "1.1.0" },
     "artifact_id": { "type": "string", "pattern": "^trn-run-[a-f0-9]{16}$" },
     "trace_id": { "type": "string", "minLength": 1 },
     "run_id": { "type": "string", "minLength": 1 },
@@ -79,12 +79,32 @@
     "observations": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["topics", "claims", "actions", "ambiguities", "evidence_anchor_count"],
+      "required": [
+        "topics",
+        "claims",
+        "actions",
+        "ambiguities",
+        "classification_mode",
+        "eval_hook_refs",
+        "non_authority_assertions",
+        "evidence_anchor_count"
+      ],
       "properties": {
         "topics": { "$ref": "#/$defs/evidence_rows" },
         "claims": { "$ref": "#/$defs/evidence_rows" },
         "actions": { "$ref": "#/$defs/evidence_rows" },
         "ambiguities": { "$ref": "#/$defs/evidence_rows" },
+        "classification_mode": { "type": "string", "const": "deterministic_preparatory" },
+        "eval_hook_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "non_authority_assertions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
         "evidence_anchor_count": { "type": "integer", "minimum": 0 }
       }
     },
@@ -128,9 +148,10 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["text", "evidence"],
+        "required": ["text", "evidence", "classification_confidence"],
         "properties": {
           "text": { "type": "string", "minLength": 1 },
+          "classification_confidence": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
           "evidence": {
             "type": "array",
             "minItems": 1,
@@ -142,7 +163,7 @@
     "handoff_signal": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["artifact_type", "trace_id", "run_id", "transcript_run_ref"],
+      "required": ["artifact_type", "trace_id", "run_id", "transcript_run_ref", "replay_hash"],
       "properties": {
         "artifact_type": { "type": "string", "minLength": 1 },
         "trace_id": { "type": "string", "minLength": 1 },

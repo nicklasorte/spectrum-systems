@@ -1,0 +1,14 @@
+{
+  "artifact_type": "transcript_hardening_failure",
+  "schema_version": "1.0.0",
+  "artifact_id": "trn-fail-a265b43a7ad89d34",
+  "trace_id": "trace-example",
+  "run_id": "run-example",
+  "failure_reason": "validate_trace_context: trace_id 'trace-example' not found in store",
+  "failed_at": "2026-04-17T00:00:00+00:00",
+  "processing_status": "failed",
+  "non_authority_assertions": [
+    "failure_artifact_only",
+    "no_control_or_certification_authority"
+  ]
+}
