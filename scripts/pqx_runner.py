@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 from spectrum_systems.modules.runtime.pqx_execution_policy import evaluate_pqx_execution_policy
 from spectrum_systems.modules.runtime.pqx_required_context_enforcement import (
@@ -130,6 +132,18 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    preflight_cmd = [sys.executable, "scripts/run_shift_left_preflight.py"]
+    for changed in list(args.changed_path) + list(args.changed_contract_path) + list(args.changed_example_path):
+        preflight_cmd.extend(["--changed-file", changed])
+    preflight = subprocess.run(preflight_cmd, cwd=REPO_ROOT, check=False, capture_output=True, text=True)
+    if preflight.stdout:
+        print(preflight.stdout, end="")
+    if preflight.stderr:
+        print(preflight.stderr, end="")
+    if preflight.returncode != 0:
+        print({"status": "blocked", "block_type": "SLH_PREFLIGHT_BLOCKED"})
+        return 2
+
     pqx_output_text = None
     if args.pqx_output_file:
         pqx_output_text = args.pqx_output_file.read_text(encoding="utf-8")

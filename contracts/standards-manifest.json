@@ -5625,6 +5625,19 @@
       "notes": "Fail-closed FRE promotion hard gate evidence record."
     },
     {
+      "artifact_type": "fre_shift_left_remediation_hint_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.9.6",
+      "last_updated_in": "1.9.6",
+      "example_path": "contracts/examples/fre_shift_left_remediation_hint_record.json",
+      "notes": "SLH-001 deterministic remediation hint artifact for fail-closed routing."
+    },
+    {
       "artifact_type": "fre_targeted_rerun_plan_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",

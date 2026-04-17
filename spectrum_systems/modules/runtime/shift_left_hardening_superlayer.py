@@ -461,9 +461,14 @@ def enforce_exploit_coverage_gate(
 
 def classify_fix(*, failure_signature: str, created_at: str) -> dict[str, Any]:
     mapping = {
-        "manifest": "schema_manifest_fix",
-        "boundary": "owner_boundary_fix",
-        "parity": "runtime_parity_fix",
+        "taxonomy": "taxonomy_fix",
+        "manifest": "taxonomy_fix",
+        "registry": "registry_fix",
+        "boundary": "registry_fix",
+        "lineage": "lineage_fix",
+        "observability": "observability_fix",
+        "parity": "runtime_fix",
+        "runtime": "runtime_fix",
         "control": "control_fix",
         "loop": "persistent_fix_loop",
     }
@@ -484,9 +489,11 @@ def classify_fix(*, failure_signature: str, created_at: str) -> dict[str, Any]:
 
 def plan_targeted_rerun(*, fix_class: str, created_at: str) -> dict[str, Any]:
     plan_map = {
-        "schema_manifest_fix": ["taxonomy_contract_checks", "manifest_validation"],
-        "owner_boundary_fix": ["system_registry_guard", "owner_boundary_tests"],
-        "runtime_parity_fix": ["runtime_parity_tests", "replay_preconditions"],
+        "taxonomy_fix": ["taxonomy_contract_checks", "manifest_validation"],
+        "registry_fix": ["system_registry_guard", "owner_boundary_tests"],
+        "lineage_fix": ["lineage_precondition_gate", "lineage_integrity_tests"],
+        "observability_fix": ["trace_contract_checks", "observability_integrity_tests"],
+        "runtime_fix": ["runtime_parity_tests", "replay_preconditions"],
         "control_fix": ["control_chaos_tests", "policy_enforcement"],
         "persistent_fix_loop": ["halt_and_escalate"],
         "safe_mechanical_fix": ["targeted_unit_tests"],
@@ -629,6 +636,7 @@ def decide_pre_execution_certification(*, checks: Mapping[str, Mapping[str, Any]
             for reason in item.get("reason_codes", [])
         )
         or item.get("evidence_present") is False
+        or item.get("evidence_present") is None
     )
     parity_weakness = []
     runtime_parity = checks.get("runtime_parity", {})
@@ -659,6 +667,86 @@ def decide_pre_execution_certification(*, checks: Mapping[str, Mapping[str, Any]
             "parity_weakness_checks": sorted(set(parity_weakness)),
         },
     )
+
+
+def generate_shift_left_remediation_hint(
+    *,
+    failure_class: str,
+    reason_codes: list[str],
+    impacted_files: list[str],
+    created_at: str,
+) -> dict[str, Any]:
+    hint_map = {
+        "lineage": "add lineage link in manifest and verify producer linkage in affected runtime artifact.",
+        "observability": "add trace/span emission in impacted module and re-run minimal trace contract checks.",
+        "dependency_graph": "run graph builder and fix missing nodes/edges in ecosystem dependency graph.",
+        "taxonomy": "repair artifact taxonomy/manifest classification and validate standards-manifest contract entries.",
+        "registry": "resolve ownership overlap and run system registry guard for changed scope.",
+        "runtime": "repair runtime parity gaps and rerun targeted runtime + replay checks.",
+        "control": "repair control routing policy and rerun control policy enforcement checks.",
+    }
+    normalized_class = failure_class.strip().lower() or "runtime"
+    instructions = hint_map.get(normalized_class, "repair deterministic failure root-cause and rerun targeted guarded checks.")
+    payload = _result(
+        artifact_type="fre_shift_left_remediation_hint_record",
+        artifact_id=f"fre-slh-remediation-{normalized_class}-001",
+        created_at=created_at,
+        status="triggered",
+        reason_codes=normalize_reason_codes(
+            check_name=f"slh_remediation:{normalized_class}",
+            failure_type=normalized_class,
+            evidence_state="present" if impacted_files else "missing",
+            reasons=reason_codes,
+        ),
+        payload={
+            "failure_class": normalized_class,
+            "impacted_files": sorted(set(impacted_files)),
+            "fix_instructions": instructions,
+        },
+    )
+    return payload
+
+
+def normalize_reason_codes(
+    *,
+    check_name: str,
+    failure_type: str,
+    evidence_state: str,
+    reasons: Iterable[str],
+) -> list[str]:
+    normalized = [str(reason).strip() for reason in reasons if str(reason).strip()]
+    if evidence_state == "missing":
+        normalized.append(f"missing_evidence:{check_name}")
+    elif evidence_state == "unknown":
+        normalized.append(f"missing_evidence:{check_name}")
+    elif evidence_state == "weak":
+        normalized.append(f"parity_weakness:{check_name}")
+    else:
+        normalized.append(f"failed_check:{check_name}")
+    normalized.append(f"failed_check:{failure_type}")
+    return sorted(set(normalized))
+
+
+def detect_fail_open_conditions(*, checks: Mapping[str, Mapping[str, Any]]) -> list[str]:
+    findings: list[str] = []
+    for name, item in checks.items():
+        status = str(item.get("status") or "unknown")
+        evidence_present = item.get("evidence_present")
+        if status == "pass" and evidence_present is not True:
+            findings.append(f"missing_evidence_treated_as_pass:{name}")
+        reasons = [str(code) for code in item.get("reason_codes", [])]
+        if status == "pass" and any(code.startswith("missing_") for code in reasons):
+            findings.append(f"missing_signal_treated_as_pass:{name}")
+        if status == "skip":
+            findings.append(f"skipped_check:{name}")
+    return sorted(set(findings))
+
+
+def detect_front_door_bypass(*, entrypoints: Mapping[str, str]) -> list[str]:
+    bypasses = [
+        name for name, route in sorted(entrypoints.items()) if "run_shift_left_preflight.py" not in str(route)
+    ]
+    return bypasses
 
 
 def run_red_team_round(*, artifact_type: str, round_id: str, scenarios: list[dict[str, Any]], created_at: str) -> dict[str, Any]:

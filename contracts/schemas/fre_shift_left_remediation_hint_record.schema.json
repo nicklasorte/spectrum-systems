@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/fre_shift_left_remediation_hint_record.schema.json",
+  "title": "fre_shift_left_remediation_hint_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "created_at",
+    "status",
+    "reason_codes",
+    "failure_class",
+    "impacted_files",
+    "fix_instructions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "fre_shift_left_remediation_hint_record"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["triggered", "pass", "fail"]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1
+    },
+    "failure_class": {
+      "type": "string",
+      "enum": ["taxonomy", "registry", "lineage", "observability", "runtime", "control", "dependency_graph"]
+    },
+    "impacted_files": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "fix_instructions": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

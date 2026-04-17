@@ -25,8 +25,11 @@ from spectrum_systems.modules.runtime.shift_left_hardening_superlayer import (
     evaluate_structure_controls,
     evaluate_system_registry_overlap,
     extract_failure_signatures,
+    generate_shift_left_remediation_hint,
     generate_auto_eval,
     generate_auto_regression_pack,
+    detect_fail_open_conditions,
+    normalize_reason_codes,
     plan_targeted_rerun,
     register_exploit_family,
     run_red_team_round,
@@ -192,6 +195,7 @@ def test_sl_router_and_escalation() -> None:
     assert rerun["status"] == "pass"
     assert retry["status"] == "fail"
     assert esc["escalate"] is True
+    assert classified["fix_class"] == "control_fix"
 
 
 def test_sl_cert_and_red_team_loops_and_final_proof() -> None:
@@ -277,3 +281,45 @@ def test_runner_blocks_proof_only_changed_scope(tmp_path: Path) -> None:
     assert proc.returncode == 1
     payload = json.loads(output_path.read_text(encoding="utf-8"))
     assert payload["mini_certification_decision"]["status"] == "fail"
+
+
+def test_remediation_hint_is_deterministic_for_same_failure() -> None:
+    created_at = "2026-04-17T00:00:00Z"
+    first = generate_shift_left_remediation_hint(
+        failure_class="lineage",
+        reason_codes=["failed_check:lineage", "missing_evidence:lineage"],
+        impacted_files=["contracts/standards-manifest.json", "scripts/pqx_runner.py"],
+        created_at=created_at,
+    )
+    second = generate_shift_left_remediation_hint(
+        failure_class="lineage",
+        reason_codes=["failed_check:lineage", "missing_evidence:lineage"],
+        impacted_files=["scripts/pqx_runner.py", "contracts/standards-manifest.json"],
+        created_at=created_at,
+    )
+    assert first["fix_instructions"] == second["fix_instructions"]
+    assert first["impacted_files"] == second["impacted_files"]
+
+
+def test_fail_open_detector_flags_unknown_and_skipped_evidence() -> None:
+    findings = detect_fail_open_conditions(
+        checks={
+            "taxonomy": {"status": "pass", "evidence_present": None, "reason_codes": []},
+            "registry": {"status": "skip", "evidence_present": True, "reason_codes": []},
+            "lineage": {"status": "pass", "evidence_present": True, "reason_codes": ["missing_signal"]},
+        }
+    )
+    assert "missing_evidence_treated_as_pass:taxonomy" in findings
+    assert "skipped_check:registry" in findings
+    assert "missing_signal_treated_as_pass:lineage" in findings
+
+
+def test_reason_code_normalization_uses_machine_readable_prefixes() -> None:
+    codes = normalize_reason_codes(
+        check_name="lineage_gate",
+        failure_type="lineage",
+        evidence_state="unknown",
+        reasons=["lineage_precondition_missing"],
+    )
+    assert "missing_evidence:lineage_gate" in codes
+    assert "failed_check:lineage" in codes
