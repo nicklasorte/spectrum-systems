@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.134",
+  "artifact_version": "1.3.146",
   "schema_version": "1.3.99",
-  "standards_version": "1.9.5",
-  "record_id": "REC-STD-2026-04-16-HNX-01-FIX",
-  "run_id": "run-20260416T150000Z-hnx-01-fix",
-  "created_at": "2026-04-16T00:00:00Z",
+  "standards_version": "1.9.6",
+  "record_id": "REC-STD-2026-04-17-SLH-001",
+  "run_id": "run-20260417T000000Z-slh-001",
+  "created_at": "2026-04-17T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.145",
+  "source_repo_version": "1.3.146",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -380,6 +380,19 @@
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
+      "artifact_type": "ail_exploit_family_registry_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/ail_exploit_family_registry_record.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "ail_failure_clustering_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -391,6 +404,19 @@
       "last_updated_in": "FAE-001",
       "example_path": "contracts/examples/ail_failure_clustering_record.json",
       "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "ail_failure_signature_extraction_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/ail_failure_signature_extraction_record.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "ail_failure_to_roadmap_conversion_record",
@@ -1238,6 +1264,19 @@
       "notes": "R100-NP-001 budget and queue pressure."
     },
     {
+      "artifact_type": "cap_repair_capacity_tracker_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/cap_repair_capacity_tracker_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "cap_reviewer_load_pressure_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -1475,6 +1514,19 @@
       "notes": "MAL-001 prompt minimalism + automatic review/fix enforcement surface."
     },
     {
+      "artifact_type": "cde_fix_escalation_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/cde_fix_escalation_decision.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "cde_global_execution_readiness_decision",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -1487,6 +1539,19 @@
       "schema_path": "contracts/schemas/cde_global_execution_readiness_decision.schema.json",
       "example_path": "contracts/examples/cde_global_execution_readiness_decision.json",
       "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "cde_hidden_state_detection_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/cde_hidden_state_detection_decision.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "cde_invariant_breach_stop_decision",
@@ -1592,6 +1657,19 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/cde_roadmap_continuation_readiness_bundle_contract.json",
       "notes": "R100-NP-001 context/contract/final authority."
+    },
+    {
+      "artifact_type": "cde_shift_left_pre_execution_certification_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/cde_shift_left_pre_execution_certification_decision.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "certification_integrity_result",
@@ -1937,6 +2015,19 @@
       "notes": "TPA complexity governance artifact for deterministic budget/trend/campaign enforcement and PQX cleanup scheduling."
     },
     {
+      "artifact_type": "con_artifact_explosion_detection_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/con_artifact_explosion_detection_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "con_autonomy_artifact_boundary_audit_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2002,6 +2093,19 @@
       "notes": "authoritative gate input for cross-owner logic detection"
     },
     {
+      "artifact_type": "con_forbidden_vocabulary_guard_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/con_forbidden_vocabulary_guard_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "con_hidden_coupling_severity_record",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -2028,6 +2132,19 @@
       "notes": "R100-001 integration fabric extension artifact."
     },
     {
+      "artifact_type": "con_multi_owner_function_block_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/con_multi_owner_function_block_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "con_one_owner_per_function_enforcement_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2041,6 +2158,58 @@
       "notes": "authoritative gate input for one-owner-per-function enforcement"
     },
     {
+      "artifact_type": "con_orchestration_concentration_detection_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/con_orchestration_concentration_detection_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "con_owner_boundary_lint_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/con_owner_boundary_lint_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "con_proof_only_artifact_detection_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/con_proof_only_artifact_detection_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "con_proof_runner_substitution_detection_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/con_proof_runner_substitution_detection_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "con_runtime_centralization_detection_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2052,6 +2221,58 @@
       "last_updated_in": "1.3.145",
       "example_path": "contracts/examples/con_runtime_centralization_detection_result.json",
       "notes": "authoritative gate input for runtime centralization detection"
+    },
+    {
+      "artifact_type": "con_shift_left_dependency_graph_validation_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/con_shift_left_dependency_graph_validation_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "con_shift_left_guard_pipeline_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/con_shift_left_guard_pipeline_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "con_standards_manifest_strict_validation_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/con_standards_manifest_strict_validation_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "con_system_registry_overlap_block_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/con_system_registry_overlap_block_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "confidence_drift_record",
@@ -2793,6 +3014,19 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/ctx_roadmap_scale_context_preflight_report.json",
       "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "ctx_shift_left_context_sufficiency_gate_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/ctx_shift_left_context_sufficiency_gate_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "cvx_consistency_bundle",
@@ -4390,6 +4624,19 @@
       "notes": "AIG-001 governed AI integration artifact"
     },
     {
+      "artifact_type": "evl_auto_generated_failure_eval_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/evl_auto_generated_failure_eval_record.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "evl_eval_debt_blocking_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -4427,6 +4674,19 @@
       "last_updated_in": "FAE-001",
       "example_path": "contracts/examples/evl_evolving_eval_set_record.json",
       "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "evl_exploit_coverage_gate_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/evl_exploit_coverage_gate_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "evl_failure_driven_eval_expansion_record",
@@ -4521,6 +4781,19 @@
       "notes": "authoritative required eval enforcement result"
     },
     {
+      "artifact_type": "evl_required_eval_presence_gate_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/evl_required_eval_presence_gate_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "evl_roadmap_eval_completeness_map",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -4559,6 +4832,19 @@
       "last_updated_in": "1.3.139",
       "example_path": "contracts/examples/evl_route_by_route_eval_debt_map.json",
       "notes": "R100-NP-001-FIXED reference-only composition artifact (no shadow recomputation)."
+    },
+    {
+      "artifact_type": "evl_shift_left_eval_completeness_verification_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/evl_shift_left_eval_completeness_verification_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_class": "coordination",
@@ -5248,6 +5534,19 @@
       "notes": "FAE-001 autonomous governed execution contract."
     },
     {
+      "artifact_type": "fre_fix_classification_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/fre_fix_classification_record.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "fre_fix_compilation_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5324,6 +5623,19 @@
       "artifact_type": "fre_promotion_gate_record",
       "example_path": "contracts/examples/fre_promotion_gate_record.json",
       "notes": "Fail-closed FRE promotion hard gate evidence record."
+    },
+    {
+      "artifact_type": "fre_targeted_rerun_plan_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/fre_targeted_rerun_plan_record.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "fre_tpa_sel_pqx_ai_fix_pack_g1",
@@ -5415,6 +5727,19 @@
       "last_updated_in": "1.3.124",
       "example_path": "contracts/examples/fre_tpa_sel_pqx_ai_fix_pack_g7.json",
       "notes": "AIG-001 governed AI integration artifact"
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_exploit_memory_fix_pack",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_exploit_memory_fix_pack.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "fre_tpa_sel_pqx_fix_pack_a1",
@@ -5649,6 +5974,58 @@
       "last_updated_in": "1.3.145",
       "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_pm9.json",
       "notes": "PM9 fix pack routed through FRE->TPA->SEL->PQX"
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_rerun_router_fix_pack",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_rerun_router_fix_pack.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_shift_left_cert_fix_pack",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_shift_left_cert_fix_pack.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_shift_left_guard_fix_pack",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_shift_left_guard_fix_pack.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_structure_fix_pack",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_structure_fix_pack.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "freeze_record",
@@ -7217,6 +7594,19 @@
       "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
+      "artifact_type": "lin_lineage_precondition_gate_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/lin_lineage_precondition_gate_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "lin_lineage_survivability_after_fix_report",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -7254,6 +7644,19 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/lin_promotion_lineage_gap_classifier.json",
       "notes": "R100-NP-001 coherence and replay posture."
+    },
+    {
+      "artifact_type": "lin_shift_left_lineage_integrity_verification_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/lin_shift_left_lineage_integrity_verification_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "lineage_completeness_report",
@@ -7654,6 +8057,19 @@
       "notes": "NEXT-WAVE-001 governed runtime artifact."
     },
     {
+      "artifact_type": "mnt_exploit_persistence_tracker_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/mnt_exploit_persistence_tracker_record.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "mnt_maintain_cycle_report",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -8019,6 +8435,19 @@
       "notes": "R100-001 integration fabric extension artifact."
     },
     {
+      "artifact_type": "obs_minimal_trace_contract_enforcement_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/obs_minimal_trace_contract_enforcement_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "obs_missing_signal_provenance_report",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -8070,6 +8499,32 @@
       "schema_path": "contracts/schemas/obs_roadmap_observability_completeness_report.schema.json",
       "example_path": "contracts/examples/obs_roadmap_observability_completeness_report.json",
       "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "obs_shift_left_observability_completeness_verification_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/obs_shift_left_observability_completeness_verification_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "obs_structural_complexity_metrics_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/obs_structural_complexity_metrics_record.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "obs_trace_correlation_decay_report",
@@ -10678,6 +11133,19 @@
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
     },
     {
+      "artifact_type": "qos_retry_storm_detection_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/qos_retry_storm_detection_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "qos_retry_storm_susceptibility_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -11672,6 +12140,19 @@
       "notes": "R100-NP-001-FIXED reference-only composition artifact (no shadow recomputation)."
     },
     {
+      "artifact_type": "rep_replay_precondition_gate_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/rep_replay_precondition_gate_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "rep_replay_sufficiency_profile_by_phase",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -11710,6 +12191,19 @@
       "last_updated_in": "1.0.83",
       "example_path": "contracts/examples/rep_selective_replay_sampling_policy_record.json",
       "notes": "R100-001 integration fabric extension artifact."
+    },
+    {
+      "artifact_type": "rep_shift_left_replay_integrity_verification_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/rep_shift_left_replay_integrity_verification_result.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "repair_attempt_record",
@@ -12575,6 +13069,19 @@
       "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
+      "artifact_type": "ril_centralization_creep_red_team_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/ril_centralization_creep_red_team_report.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "ril_centralization_red_team_report_pm6",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -12666,6 +13173,19 @@
       "notes": "non-authoritative expanded review trigger record"
     },
     {
+      "artifact_type": "ril_exploit_leakage_red_team_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/ril_exploit_leakage_red_team_report.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
       "artifact_type": "ril_false_continuation_red_team_report_pm9",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -12677,6 +13197,19 @@
       "last_updated_in": "1.3.145",
       "example_path": "contracts/examples/ril_false_continuation_red_team_report_pm9.json",
       "notes": "non-authoritative PM9 red-team report"
+    },
+    {
+      "artifact_type": "ril_fix_loop_inefficiency_red_team_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/ril_fix_loop_inefficiency_red_team_report.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "ril_hidden_coupling_dependency_drift_red_team_report",
@@ -12834,6 +13367,32 @@
       "last_updated_in": "FAE-001",
       "example_path": "contracts/examples/ril_runaway_learning_policy_drift_red_team_report.json",
       "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "ril_shift_left_certification_bypass_red_team_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/ril_shift_left_certification_bypass_red_team_report.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "ril_shift_left_guard_bypass_red_team_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/ril_shift_left_guard_bypass_red_team_report.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "ril_signal_overload_prioritization_red_team_report",
@@ -13604,6 +14163,84 @@
       "last_updated_in": "1.3.200",
       "example_path": "contracts/examples/simx_simulation_integrity_bundle.json",
       "notes": "MASTER-ROADMAP-001 governed advanced control-plane contract artifact."
+    },
+    {
+      "artifact_type": "sl_final_centralization_drift_block_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/sl_final_centralization_drift_block_record.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "sl_final_fixes_produce_durable_traps_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/sl_final_fixes_produce_durable_traps_record.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "sl_final_full_rerun_validation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/sl_final_full_rerun_validation_record.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "sl_final_mini_cert_blocks_false_green_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/sl_final_mini_cert_blocks_false_green_record.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "sl_final_shift_left_catches_failures_early_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/sl_final_shift_left_catches_failures_early_record.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "sl_final_targeted_rerun_routing_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/sl_final_targeted_rerun_routing_record.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "slice_contract_update_candidate",
@@ -14967,6 +15604,19 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/tst_adversarial_fixture_freshness_record.json",
       "notes": "R100-NP-001 test/data/signal/handoff support."
+    },
+    {
+      "artifact_type": "tst_auto_generated_exploit_regression_pack",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.146",
+      "last_updated_in": "1.3.146",
+      "example_path": "contracts/examples/tst_auto_generated_exploit_regression_pack.json",
+      "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
       "artifact_type": "tst_centralization_regression_pack",
