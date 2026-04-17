@@ -5157,6 +5157,19 @@
       "notes": "multi-owner full rerun validation report"
     },
     {
+      "artifact_type": "final_pm11_full_stack_parity_validation_report",
+      "artifact_class": "report",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PMH-003",
+      "last_updated_in": "PMH-003",
+      "example_path": "contracts/examples/final_pm11_full_stack_parity_validation_report.json",
+      "notes": "PMH-003 final full-stack proof parity report."
+    },
+    {
       "artifact_type": "final_rerun_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -8467,6 +8480,19 @@
       "last_updated_in": "1.3.141",
       "example_path": "contracts/examples/phase_transition_policy_result.json",
       "notes": "CHK/GOV fail-closed transition decision artifact."
+    },
+    {
+      "artifact_type": "pmh_003_delivery_report",
+      "artifact_class": "report",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PMH-003",
+      "last_updated_in": "PMH-003",
+      "example_path": "contracts/examples/pmh_003_delivery_report.json",
+      "notes": "PMH-003 delivery contract artifact."
     },
     {
       "artifact_type": "pol_ai_policy_candidate_record",
