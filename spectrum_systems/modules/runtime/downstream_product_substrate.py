@@ -585,3 +585,274 @@ def assess_capacity_and_burst(*, queue_depth: int, backlog_age_minutes: int, tim
 
 def required_eval_suite() -> List[str]:
     return list(_REQUIRED_EVALS)
+
+
+def deterministic_normalization_stress_harness(
+    *,
+    transcript_payloads: Iterable[Mapping[str, Any]],
+    chunk_size: int = 4,
+) -> Dict[str, Any]:
+    """THR-45 deterministic replay harness for normalization stability."""
+    normalized_hashes: List[str] = []
+    for payload in transcript_payloads:
+        lines = list(payload.get("lines", []))
+        ordered = sorted(lines, key=lambda item: (str(item.get("timestamp") or ""), str(item.get("line_id") or ""), str(item.get("text") or "")))
+        chunked = [ordered[i : i + chunk_size] for i in range(0, len(ordered), chunk_size)]
+        normalized_hashes.append(_sha256_text(json.dumps({"lines": ordered, "chunks": chunked}, sort_keys=True)))
+    stable = len(set(normalized_hashes)) <= 1
+    return {
+        "runs": len(normalized_hashes),
+        "hashes": normalized_hashes,
+        "stable": stable,
+        "status": "pass" if stable else "block",
+    }
+
+
+def enforce_evidence_coverage_gate_v2(
+    *,
+    material_outputs: Iterable[Mapping[str, Any]],
+    min_anchor_ratio: float = 1.0,
+) -> Dict[str, Any]:
+    outputs = list(material_outputs)
+    with_evidence = 0
+    failures: List[str] = []
+    for idx, item in enumerate(outputs):
+        anchors = item.get("evidence_refs") or item.get("evidence_spans") or []
+        if anchors:
+            with_evidence += 1
+        else:
+            failures.append(f"missing_evidence:{idx}")
+    ratio = round(with_evidence / max(1, len(outputs)), 3)
+    return {
+        "material_output_count": len(outputs),
+        "grounded_count": with_evidence,
+        "grounded_ratio": ratio,
+        "min_anchor_ratio": min_anchor_ratio,
+        "status": "pass" if ratio >= min_anchor_ratio and not failures else "block",
+        "failure_reasons": failures,
+    }
+
+
+def reconcile_cross_source_artifacts(
+    *,
+    transcript_facts: Iterable[Mapping[str, Any]],
+    agenda_items: Iterable[str],
+    prior_decisions: Iterable[str],
+    linked_artifacts: Iterable[Mapping[str, Any]],
+) -> Dict[str, Any]:
+    facts = list(transcript_facts)
+    agenda = {str(item).strip().lower() for item in agenda_items if str(item).strip()}
+    prior = {str(item).strip().lower() for item in prior_decisions if str(item).strip()}
+    linked = [str(item.get("title") or item.get("artifact_id") or "").strip().lower() for item in linked_artifacts]
+
+    conflicts: List[Dict[str, Any]] = []
+    reconciled: List[Dict[str, Any]] = []
+    for fact in facts:
+        claim = str(fact.get("claim") or fact.get("text") or "").strip()
+        lower = claim.lower()
+        bucket = {"claim": claim, "evidence_refs": list(fact.get("evidence_refs", []))}
+        if lower and (lower in agenda or lower in prior or any(lower in name for name in linked)):
+            reconciled.append(bucket)
+        else:
+            conflicts.append({**bucket, "reason": "cross_source_mismatch"})
+
+    return {
+        "artifact_type": "transcript_cross_source_reconciliation_artifact",
+        "summary": {
+            "fact_count": len(facts),
+            "reconciled_count": len(reconciled),
+            "conflict_count": len(conflicts),
+        },
+        "reconciled_records": reconciled,
+        "conflict_records": conflicts,
+        "status": "block" if conflicts else "pass",
+    }
+
+
+def evaluate_context_admission(
+    *,
+    transcript_lines: Iterable[Mapping[str, Any]],
+    trust_level: str,
+) -> Dict[str, Any]:
+    allowed = {"trusted", "partner", "untrusted"}
+    if trust_level not in allowed:
+        raise DownstreamFailClosedError("invalid trust_level")
+    flagged = []
+    for line in transcript_lines:
+        text = str(line.get("text") or "")
+        if "ignore previous instruction" in text.lower() or "system prompt" in text.lower():
+            flagged.append({"line_ref": line.get("line_id"), "reason": "prompt_injection_pattern"})
+    quarantined = trust_level == "untrusted" and bool(flagged)
+    return {
+        "trust_level": trust_level,
+        "source_admitted": not quarantined,
+        "quarantined": quarantined,
+        "unsafe_patterns": flagged,
+        "status": "block" if quarantined else "pass",
+    }
+
+
+def decide_ai_route_by_risk(*, risk_score: float, task_type: str, token_budget: int) -> Dict[str, Any]:
+    if token_budget <= 0:
+        raise DownstreamFailClosedError("token_budget must be > 0")
+    if risk_score < 0.35:
+        route = "low_risk_extraction"
+    elif risk_score < 0.7:
+        route = "medium_risk_reconciliation"
+    else:
+        route = "high_risk_critique"
+    return {
+        "task_type": task_type,
+        "risk_score": round(risk_score, 3),
+        "route": route,
+        "token_budget": token_budget,
+        "canary_eligible": route != "high_risk_critique",
+        "trace_route_ref": f"route:{task_type}:{route}",
+    }
+
+
+def calibrate_judge(
+    *,
+    judged_cases: Iterable[Mapping[str, Any]],
+) -> Dict[str, Any]:
+    cases = list(judged_cases)
+    if not cases:
+        return {"case_count": 0, "agreement_rate": 0.0, "drift_detected": True, "status": "block"}
+    agree = sum(1 for c in cases if c.get("human_label") == c.get("judge_label"))
+    agreement = round(agree / len(cases), 3)
+    return {
+        "case_count": len(cases),
+        "agreement_rate": agreement,
+        "drift_detected": agreement < 0.8,
+        "judge_metadata": {"mode": "pass_fail", "calibration_version": "thr-50-1.0"},
+        "status": "pass" if agreement >= 0.8 else "freeze",
+    }
+
+
+def triage_review_queue_items(*, items: Iterable[Mapping[str, Any]]) -> Dict[str, Any]:
+    buckets = {"low_risk": [], "medium_risk": [], "high_risk": []}
+    for item in items:
+        signals = int(item.get("risk_signals", 0))
+        if signals >= 3:
+            buckets["high_risk"].append(item.get("item_id"))
+        elif signals == 2:
+            buckets["medium_risk"].append(item.get("item_id"))
+        else:
+            buckets["low_risk"].append(item.get("item_id"))
+    return {"artifact_type": "transcript_review_triage_artifact", "buckets": buckets, "decision_authority": "human_control_only"}
+
+
+def compare_counterfactual_variants(*, variant_a: Mapping[str, Any], variant_b: Mapping[str, Any]) -> Dict[str, Any]:
+    keys = sorted(set(variant_a.keys()) | set(variant_b.keys()))
+    diffs = []
+    for key in keys:
+        if variant_a.get(key) != variant_b.get(key):
+            diffs.append({"field": key, "a": variant_a.get(key), "b": variant_b.get(key)})
+    return {
+        "artifact_type": "transcript_counterfactual_comparison_artifact",
+        "difference_count": len(diffs),
+        "differences": diffs,
+        "status": "pass",
+    }
+
+
+def feedback_loop_core(
+    *,
+    run_id: str,
+    failures: Iterable[Mapping[str, Any]],
+    overrides: Iterable[Mapping[str, Any]],
+) -> Dict[str, Any]:
+    failure_rows = list(failures)
+    override_rows = list(overrides)
+    taxonomy = {
+        "parse",
+        "schema",
+        "evidence",
+        "contradiction",
+        "replay",
+        "policy",
+        "drift",
+        "calibration",
+        "capacity",
+        "security_admission",
+        "review_quality",
+        "stale_active_set_issue",
+    }
+    classified = [f for f in failure_rows if str(f.get("failure_class")) in taxonomy]
+    return {
+        "artifact_type": "transcript_feedback_loop_record",
+        "run_id": run_id,
+        "failure_count": len(failure_rows),
+        "classified_count": len(classified),
+        "override_count": len(override_rows),
+        "closed_loop": len(classified) == len(failure_rows),
+        "status": "pass" if len(classified) == len(failure_rows) else "freeze",
+    }
+
+
+def feedback_admission_gate(*, recurrence_count: int, materiality_score: float, duplicate: bool, generated_in_window: int, generation_cap: int = 10) -> Dict[str, Any]:
+    reasons = []
+    if recurrence_count < 2:
+        reasons.append("insufficient_recurrence")
+    if materiality_score < 0.6:
+        reasons.append("insufficient_materiality")
+    if duplicate:
+        reasons.append("duplicate_candidate")
+    if generated_in_window >= generation_cap:
+        reasons.append("generation_rate_limit")
+    return {"admitted": not reasons, "reasons": reasons, "status": "pass" if not reasons else "block"}
+
+
+def evaluate_feedback_candidate_quality(*, candidates: Iterable[Mapping[str, Any]]) -> Dict[str, Any]:
+    rows = list(candidates)
+    useful = sum(1 for row in rows if row.get("useful") is True)
+    stable = sum(1 for row in rows if row.get("stable") is True)
+    duplicate = sum(1 for row in rows if row.get("duplicate") is True)
+    score = round((useful + stable - duplicate) / max(1, len(rows) * 2), 3)
+    return {"candidate_count": len(rows), "quality_score": score, "status": "pass" if score >= 0.5 else "freeze"}
+
+
+def feedback_rollback_guard(*, baseline_failure_rate: float, current_failure_rate: float) -> Dict[str, Any]:
+    regressed = current_failure_rate > baseline_failure_rate
+    return {
+        "rollback_required": regressed,
+        "revocation_record": "generated" if regressed else "not_required",
+        "status": "block" if regressed else "pass",
+    }
+
+
+def enforce_review_quality(*, review: Mapping[str, Any]) -> Dict[str, Any]:
+    required = ("scope", "severity", "findings", "owner_fix_map", "closure_links")
+    missing = [field for field in required if not review.get(field)]
+    findings = list(review.get("findings", []))
+    vague = [idx for idx, f in enumerate(findings) if not f.get("evidence_refs")]
+    if vague:
+        missing.append("finding_evidence_refs")
+    return {"status": "pass" if not missing else "block", "missing_requirements": sorted(set(missing))}
+
+
+def enforce_active_set(
+    *,
+    referenced_items: Iterable[str],
+    active_items: Iterable[str],
+) -> Dict[str, Any]:
+    active = set(active_items)
+    stale = sorted(set(referenced_items) - active)
+    return {"status": "pass" if not stale else "block", "stale_refs": stale}
+
+
+def build_transcript_family_intelligence(*, evidence_gap_count: int, override_count: int, contradiction_count: int, blocked_rate: float) -> Dict[str, Any]:
+    readiness = "certifiable"
+    if blocked_rate > 0.3:
+        readiness = "review_only"
+    if evidence_gap_count > 0 or contradiction_count > 2:
+        readiness = "unsafe"
+    if readiness == "certifiable" and override_count > 3:
+        readiness = "gated_auto"
+    return {
+        "artifact_type": "transcript_family_health_report",
+        "evidence_gap_hotspots": evidence_gap_count,
+        "override_hotspots": override_count,
+        "contradiction_clusters": contradiction_count,
+        "readiness_state": readiness,
+    }

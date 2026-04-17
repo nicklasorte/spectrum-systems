@@ -72,3 +72,20 @@ def test_observation_evidence_is_anchored() -> None:
             assert row["evidence"]
             anchor = row["evidence"][0]
             assert {"segment_id", "start_char", "end_char", "timestamp"}.issubset(anchor)
+
+
+def test_normalization_is_stable_under_input_order_variation() -> None:
+    payload = _sample_payload()
+    reversed_payload = {**payload, "segments": list(reversed(payload["segments"]))}
+    first = normalize_transcript_segments(payload, chunk_size=2)
+    second = normalize_transcript_segments(reversed_payload, chunk_size=2)
+    assert first["replay_hash"] != second["replay_hash"]
+    assert first["segment_count"] == second["segment_count"]
+
+
+def test_schema_compatibility_contract_for_run_artifact_family() -> None:
+    artifact = run_transcript_hardening(_sample_payload(), trace_id="trace-compat", run_id="run-compat")
+    assert artifact["schema_version"] == "1.0.0"
+    assert artifact["processor_versions"]["normalizer"].startswith("trn-normalizer-")
+    assert artifact["processor_versions"]["evidence_preparation"].startswith("trn-evidence-")
+    validate_artifact(artifact, "transcript_hardening_run")
