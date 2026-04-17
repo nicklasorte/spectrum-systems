@@ -1,0 +1,16 @@
+{
+  "artifact_type": "nsx_fix_now_vs_later_record",
+  "artifact_id": "nsx_fix_now_vs_later_record-example-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.6",
+  "created_at": "2026-04-17T00:00:00Z",
+  "owner": "NSX",
+  "classifier_basis": "classifier_basis_value",
+  "fix_now": [
+    "fix_now_item"
+  ],
+  "later": [
+    "later_item"
+  ]
+}

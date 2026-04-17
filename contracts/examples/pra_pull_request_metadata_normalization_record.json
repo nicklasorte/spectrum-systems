@@ -1,0 +1,32 @@
+{
+  "artifact_type": "pra_pull_request_metadata_normalization_record",
+  "artifact_id": "pra_pull_request_metadata_normalization_record-example-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.6",
+  "created_at": "2026-04-17T00:00:00Z",
+  "owner": "PRA",
+  "pr_number": 1,
+  "pr_url": "pr_url_value",
+  "title": "title_value",
+  "body": "body_value",
+  "changed_files": [
+    "changed_files_item"
+  ],
+  "additions": 1,
+  "deletions": 1,
+  "mergeable": false,
+  "ci_status": "ci_status_value",
+  "failed_checks": [
+    "failed_checks_item"
+  ],
+  "review_summaries": [
+    {
+      "author": "x",
+      "state": "x",
+      "summary": "x"
+    }
+  ],
+  "created_at_pr": "created_at_pr_value",
+  "updated_at_pr": "updated_at_pr_value"
+}

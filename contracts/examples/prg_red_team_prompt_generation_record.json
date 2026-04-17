@@ -1,0 +1,14 @@
+{
+  "artifact_type": "prg_red_team_prompt_generation_record",
+  "artifact_id": "prg_red_team_prompt_generation_record-example-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.6",
+  "created_at": "2026-04-17T00:00:00Z",
+  "owner": "PRG",
+  "authoritative": false,
+  "required": false,
+  "prompt_candidates": [
+    "prompt_candidates_item"
+  ]
+}

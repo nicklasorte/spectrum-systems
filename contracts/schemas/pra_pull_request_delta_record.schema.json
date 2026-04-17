@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/pra_pull_request_delta_record.schema.json",
+  "title": "pra_pull_request_delta_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "created_at",
+    "owner",
+    "current_pr_number",
+    "previous_pr_number",
+    "new_systems_touched",
+    "new_risks_introduced",
+    "resolved_weaknesses",
+    "remaining_gaps"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "pra_pull_request_delta_record"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner": {
+      "const": "PRA"
+    },
+    "current_pr_number": {
+      "type": "integer"
+    },
+    "previous_pr_number": {
+      "type": "integer"
+    },
+    "new_systems_touched": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "new_risks_introduced": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "resolved_weaknesses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "remaining_gaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

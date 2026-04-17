@@ -1,0 +1,15 @@
+{
+  "artifact_type": "nsx_safe_next_slice_recommendation_record",
+  "artifact_id": "nsx_safe_next_slice_recommendation_record-example-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.6",
+  "created_at": "2026-04-17T00:00:00Z",
+  "owner": "NSX",
+  "pr_number": 1,
+  "recommended_slice": "recommended_slice_value",
+  "bounded_scope_systems": [
+    "bounded_scope_systems_item"
+  ],
+  "stays_within_changed_scope": false
+}

@@ -1,0 +1,12 @@
+{
+  "artifact_type": "final_pra_03_automated_prompt_proof",
+  "artifact_id": "final_pra_03_automated_prompt_proof-example-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.6",
+  "created_at": "2026-04-17T00:00:00Z",
+  "owner": "PRG",
+  "status": "status_value",
+  "proof": "proof_value",
+  "prompt_ref": "prompt_ref_value"
+}

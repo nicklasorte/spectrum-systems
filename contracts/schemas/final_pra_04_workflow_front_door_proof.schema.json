@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/final_pra_04_workflow_front_door_proof.schema.json",
+  "title": "final_pra_04_workflow_front_door_proof",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "created_at",
+    "owner",
+    "status",
+    "proof",
+    "workflow_ref"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "final_pra_04_workflow_front_door_proof"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner": {
+      "const": "CON"
+    },
+    "status": {
+      "type": "string"
+    },
+    "proof": {
+      "type": "string"
+    },
+    "workflow_ref": {
+      "type": "string"
+    }
+  }
+}

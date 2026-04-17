@@ -1,0 +1,16 @@
+{
+  "artifact_type": "nsx_fragility_detection_record",
+  "artifact_id": "nsx_fragility_detection_record-example-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.6",
+  "created_at": "2026-04-17T00:00:00Z",
+  "owner": "NSX",
+  "pr_number": 1,
+  "fragility_scores": [
+    {
+      "area": "x",
+      "score": 0.5
+    }
+  ]
+}

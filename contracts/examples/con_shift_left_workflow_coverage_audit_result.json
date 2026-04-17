@@ -1,0 +1,17 @@
+{
+  "artifact_type": "con_shift_left_workflow_coverage_audit_result",
+  "artifact_id": "con_shift_left_workflow_coverage_audit_result-example-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.6",
+  "created_at": "2026-04-17T00:00:00Z",
+  "owner": "CON",
+  "status": "pass",
+  "required_front_door": "required_front_door_value",
+  "workflows_checked": [
+    "workflows_checked_item"
+  ],
+  "uncovered_workflows": [
+    "uncovered_workflows_item"
+  ]
+}

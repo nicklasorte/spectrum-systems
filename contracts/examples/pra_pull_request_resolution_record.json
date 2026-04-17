@@ -1,0 +1,18 @@
+{
+  "artifact_type": "pra_pull_request_resolution_record",
+  "artifact_id": "pra_pull_request_resolution_record-example-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.6",
+  "created_at": "2026-04-17T00:00:00Z",
+  "owner": "PRA",
+  "repo_name": "repo_name_value",
+  "selection_mode": "default_latest",
+  "override_used": false,
+  "selected_pr_reason": "selected_pr_reason_value",
+  "pr_number": 1,
+  "pr_url": "pr_url_value",
+  "base_sha": "base_sha_value",
+  "head_sha": "head_sha_value",
+  "state": "state_value"
+}

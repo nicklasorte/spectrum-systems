@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prg_red_team_prompt_generation_record.schema.json",
+  "title": "prg_red_team_prompt_generation_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "created_at",
+    "owner",
+    "authoritative",
+    "required",
+    "prompt_candidates"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "prg_red_team_prompt_generation_record"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner": {
+      "const": "PRG"
+    },
+    "authoritative": {
+      "type": "boolean",
+      "const": false
+    },
+    "required": {
+      "type": "boolean"
+    },
+    "prompt_candidates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

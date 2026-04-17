@@ -1488,6 +1488,19 @@
       "notes": "R100-001 integration fabric extension artifact."
     },
     {
+      "artifact_type": "cde_execution_mode_selection_decision",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/cde_execution_mode_selection_decision.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
       "artifact_type": "cde_false_green_detection_decision",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2041,6 +2054,19 @@
       "notes": "authoritative gate input for autonomy artifact boundary audit"
     },
     {
+      "artifact_type": "con_changed_scope_false_negative_audit_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/con_changed_scope_false_negative_audit_result.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
       "artifact_type": "con_composition_only_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2247,6 +2273,32 @@
       "last_updated_in": "1.3.146",
       "example_path": "contracts/examples/con_shift_left_guard_pipeline_result.json",
       "notes": "SLH-001 shift-left hardening superlayer contract."
+    },
+    {
+      "artifact_type": "con_shift_left_workflow_coverage_audit_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/con_shift_left_workflow_coverage_audit_result.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "con_shift_left_workflow_front_door_enforcement_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/con_shift_left_workflow_front_door_enforcement_result.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
     },
     {
       "artifact_type": "con_standards_manifest_strict_validation_result",
@@ -5456,6 +5508,71 @@
       "notes": "PMH-003 final full-stack proof parity report."
     },
     {
+      "artifact_type": "final_pra_01_pr_anchor_proof",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/final_pra_01_pr_anchor_proof.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "final_pra_02_automated_next_step_proof",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/final_pra_02_automated_next_step_proof.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "final_pra_03_automated_prompt_proof",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/final_pra_03_automated_prompt_proof.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "final_pra_04_workflow_front_door_proof",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/final_pra_04_workflow_front_door_proof.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "final_pra_05_full_rerun_validation_proof",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/final_pra_05_full_rerun_validation_proof.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
       "artifact_type": "final_rerun_report",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -5532,6 +5649,19 @@
       "last_updated_in": "FAE-001",
       "example_path": "contracts/examples/fre_cross_step_fix_coordination_record.json",
       "notes": "FAE-001 autonomous governed execution contract."
+    },
+    {
+      "artifact_type": "fre_failure_class_rerun_lock_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/fre_failure_class_rerun_lock_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
     },
     {
       "artifact_type": "fre_fix_classification_record",
@@ -5987,6 +6117,19 @@
       "last_updated_in": "1.3.145",
       "example_path": "contracts/examples/fre_tpa_sel_pqx_fix_pack_pm9.json",
       "notes": "PM9 fix pack routed through FRE->TPA->SEL->PQX"
+    },
+    {
+      "artifact_type": "fre_tpa_sel_pqx_pra_slh_bypass_fix_pack",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/fre_tpa_sel_pqx_pra_slh_bypass_fix_pack.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
     },
     {
       "artifact_type": "fre_tpa_sel_pqx_rerun_router_fix_pack",
@@ -7659,6 +7802,19 @@
       "notes": "R100-NP-001 coherence and replay posture."
     },
     {
+      "artifact_type": "lin_required_lineage_producer_audit_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/lin_required_lineage_producer_audit_result.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
       "artifact_type": "lin_shift_left_lineage_integrity_verification_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -8396,6 +8552,71 @@
       "notes": "RDM-01 downstream product governed substrate contract."
     },
     {
+      "artifact_type": "nsx_bottleneck_detection_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/nsx_bottleneck_detection_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "nsx_fix_now_vs_later_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/nsx_fix_now_vs_later_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "nsx_fragility_detection_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/nsx_fragility_detection_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "nsx_next_step_ranking_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/nsx_next_step_ranking_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "nsx_safe_next_slice_recommendation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/nsx_safe_next_slice_recommendation_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
       "artifact_type": "nx_review_intelligence_link_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -8498,6 +8719,19 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/obs_observability_survival_after_repair_loop_report.json",
       "notes": "R100-NP-001 coverage and evidence hardening."
+    },
+    {
+      "artifact_type": "obs_required_observability_producer_audit_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/obs_required_observability_producer_audit_result.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
     },
     {
       "artifact_type": "obs_roadmap_observability_completeness_report",
@@ -9705,6 +9939,97 @@
       "notes": "B10 planning-only deterministic triage rack-and-stack artifact translating governed review and fix-gate outcomes into bounded insertion/defer/block recommendations without auto-execution."
     },
     {
+      "artifact_type": "pra_changed_scope_extraction_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/pra_changed_scope_extraction_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "pra_ci_review_extraction_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/pra_ci_review_extraction_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "pra_pull_request_anchor_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/pra_pull_request_anchor_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "pra_pull_request_delta_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/pra_pull_request_delta_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "pra_pull_request_metadata_normalization_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/pra_pull_request_metadata_normalization_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "pra_pull_request_resolution_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/pra_pull_request_resolution_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "pra_system_impact_mapping_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/pra_system_impact_mapping_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
       "artifact_type": "precedent_conflict_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -9874,6 +10199,32 @@
       "notes": "R100-NP-001 learning and pressure posture."
     },
     {
+      "artifact_type": "prg_codex_prompt_generation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/prg_codex_prompt_generation_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
+      "artifact_type": "prg_failure_to_fix_prompt_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/prg_failure_to_fix_prompt_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
       "artifact_type": "prg_governance_bundle",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -9965,6 +10316,19 @@
       "notes": "R100-NP-001 learning and pressure posture."
     },
     {
+      "artifact_type": "prg_plan_first_artifact_generation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/prg_plan_first_artifact_generation_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
       "artifact_type": "prg_prioritized_control_signal_bundle",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -9977,6 +10341,19 @@
       "schema_path": "contracts/schemas/prg_prioritized_control_signal_bundle.schema.json",
       "example_path": "contracts/examples/prg_prioritized_control_signal_bundle.json",
       "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "prg_prompt_size_governor_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/prg_prompt_size_governor_result.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
     },
     {
       "artifact_type": "prg_recommendation_rework_debt_record",
@@ -9992,6 +10369,19 @@
       "notes": "PRG-001 bounded governance hardening artifact with non-authoritative recommendation semantics."
     },
     {
+      "artifact_type": "prg_red_team_prompt_generation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/prg_red_team_prompt_generation_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
       "artifact_type": "prg_roadmap_batch_shrink_recommendation",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -10003,6 +10393,19 @@
       "last_updated_in": "1.3.138",
       "example_path": "contracts/examples/prg_roadmap_batch_shrink_recommendation.json",
       "notes": "R100-NP-001 learning and pressure posture."
+    },
+    {
+      "artifact_type": "prg_roadmap_delta_generation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/prg_roadmap_delta_generation_record.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
     },
     {
       "artifact_type": "prg_roadmap_halt_recommendation",
@@ -12193,6 +12596,19 @@
       "notes": "IFB-001 roadmap integration fabric contract surface."
     },
     {
+      "artifact_type": "rep_replayability_gap_explainer_result",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/rep_replayability_gap_explainer_result.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
+    },
+    {
       "artifact_type": "rep_selective_replay_sampling_policy_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -13302,6 +13718,19 @@
       "schema_path": "contracts/schemas/ril_plan_wide_coherence_red_team_report.schema.json",
       "example_path": "contracts/examples/ril_plan_wide_coherence_red_team_report.json",
       "notes": "IFB-001 roadmap integration fabric contract surface."
+    },
+    {
+      "artifact_type": "ril_pra_slh_bypass_red_team_report",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "PRA-NSX-PRG-001",
+      "last_updated_in": "PRA-NSX-PRG-001",
+      "example_path": "contracts/examples/ril_pra_slh_bypass_red_team_report.json",
+      "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
     },
     {
       "artifact_type": "ril_prompt_minimalism_failure_red_team_report_pm7",

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/con_shift_left_workflow_front_door_enforcement_result.schema.json",
+  "title": "con_shift_left_workflow_front_door_enforcement_result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "created_at",
+    "owner",
+    "status",
+    "enforced_entrypoint",
+    "blocked_workflows",
+    "block_reason"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "con_shift_left_workflow_front_door_enforcement_result"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner": {
+      "const": "CON"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "enforced_entrypoint": {
+      "type": "string"
+    },
+    "blocked_workflows": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "block_reason": {
+      "type": "string"
+    }
+  }
+}
