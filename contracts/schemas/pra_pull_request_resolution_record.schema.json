@@ -67,7 +67,7 @@
     },
     "pr_number": {
       "type": "integer",
-      "minimum": 1
+      "minimum": 0
     },
     "pr_url": {
       "type": "string"

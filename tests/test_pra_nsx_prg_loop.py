@@ -76,8 +76,9 @@ def test_workflow_coverage_audit_includes_yaml_extension(tmp_path: Path) -> None
 
 def test_resolution_failure_record_is_schema_valid() -> None:
     payload = build_resolution_failure_record(repo_name="acme/spectrum-systems", reason="no_resolvable_pr_anchor")
-    validate_artifact(payload, "pra_pull_request_resolution_failure_record")
-    assert payload["failed_pr_number"] is None
+    validate_artifact(payload, "pra_pull_request_resolution_record")
+    assert payload["pr_number"] == 0
+    assert payload["selected_pr_reason"] == "resolution_failed:no_resolvable_pr_anchor"
     assert payload["state"] == "unresolved"
 
 
@@ -92,9 +93,9 @@ def test_script_emits_schema_valid_failure_record_for_empty_prs(tmp_path: Path) 
         text=True,
     )
     assert proc.returncode == 1
-    payload = json.loads((out / "pra_pull_request_resolution_failure_record.json").read_text(encoding="utf-8"))
-    validate_artifact(payload, "pra_pull_request_resolution_failure_record")
-    assert payload["failure_reason"] == "no_resolvable_pr_anchor"
+    payload = json.loads((out / "pra_pull_request_resolution_record.json").read_text(encoding="utf-8"))
+    validate_artifact(payload, "pra_pull_request_resolution_record")
+    assert payload["selected_pr_reason"] == "resolution_failed:no_resolvable_pr_anchor"
 
 
 def test_script_emits_schema_valid_failure_record_for_unmatched_override(tmp_path: Path) -> None:
@@ -117,9 +118,9 @@ def test_script_emits_schema_valid_failure_record_for_unmatched_override(tmp_pat
         text=True,
     )
     assert proc.returncode == 1
-    payload = json.loads((out / "pra_pull_request_resolution_failure_record.json").read_text(encoding="utf-8"))
-    validate_artifact(payload, "pra_pull_request_resolution_failure_record")
-    assert payload["failure_reason"] == "override_pr_not_found"
+    payload = json.loads((out / "pra_pull_request_resolution_record.json").read_text(encoding="utf-8"))
+    validate_artifact(payload, "pra_pull_request_resolution_record")
+    assert payload["selected_pr_reason"] == "resolution_failed:override_pr_not_found"
 
 
 def test_build_pr_delta_supports_previous_anchor_and_impact_mapping() -> None:

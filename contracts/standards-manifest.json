@@ -10004,19 +10004,6 @@
       "notes": "PRA-NSX-PRG-001 governed automation roadmap contract surface."
     },
     {
-      "artifact_type": "pra_pull_request_resolution_failure_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "PRA-NSX-PRG-001-HARDENING-001",
-      "last_updated_in": "PRA-NSX-PRG-001-HARDENING-001",
-      "example_path": "contracts/examples/pra_pull_request_resolution_failure_record.json",
-      "notes": "Hardening companion artifact for fail-closed PR resolution errors with schema-valid emission."
-    },
-    {
       "artifact_type": "pra_pull_request_resolution_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",

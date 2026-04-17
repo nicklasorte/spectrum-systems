@@ -110,16 +110,18 @@ def build_resolution_failure_record(
     created_at: str | None = None,
 ) -> dict[str, Any]:
     return _record(
-        "pra_pull_request_resolution_failure_record",
+        "pra_pull_request_resolution_record",
         owner="PRA",
         created_at=created_at,
         body={
             "repo_name": repo_name,
             "selection_mode": "override" if override else "default_latest",
             "override_used": bool(override),
-            "failure_reason": str(reason),
-            "failed_pr_number": int(override.number) if override else None,
-            "failed_pr_url": str(override.url) if override else "",
+            "selected_pr_reason": f"resolution_failed:{reason}",
+            "pr_number": int(override.number) if override else 0,
+            "pr_url": str(override.url) if override else "",
+            "base_sha": "",
+            "head_sha": "",
             "state": "unresolved",
         },
     )
@@ -367,7 +369,7 @@ def prg_records(*, anchor: dict[str, Any], nsx: dict[str, dict[str, Any]], delta
         "codex_prompt": _record("prg_codex_prompt_generation_record", owner="PRG", created_at=created_at, body={"authoritative": False, "prompt": prompt, "bounded_scope": top_slices, "source_pr_anchor_ref": anchor.get("artifact_id"), "source_nsx_ref": nsx["ranking"].get("artifact_id")}),
         "failure_to_fix": _record("prg_failure_to_fix_prompt_record", owner="PRG", created_at=created_at, body={"authoritative": False, "failure_classes": anchor.get("failed_checks", []) or ["none"], "fix_prompt": f"Address failures for PR #{anchor.get('pr_number')} with targeted reruns only."}),
         "roadmap_delta": _record("prg_roadmap_delta_generation_record", owner="PRG", created_at=created_at, body={"authoritative": False, "new_priorities": delta.get("new_risks_introduced", []), "resolved_priorities": delta.get("resolved_weaknesses", []), "remaining_priorities": delta.get("remaining_gaps", [])}),
-        "red_team_prompt": _record("prg_red_team_prompt_generation_record", owner="PRG", created_at=created_at, body={"authoritative": False, "required": red_team_needed, "prompt_candidates": ["Exercise PRA override confusion", "Exercise workflow front-door bypass"] if red_team_needed else []}),
+        "red_team_prompt": _record("prg_red_team_prompt_generation_record", owner="PRG", created_at=created_at, body={"authoritative": False, "required": red_team_needed, "prompt_candidates": ["Exercise PRA manual-selection confusion", "Exercise workflow front-door bypass"] if red_team_needed else []}),
         "size_governor": _record("prg_prompt_size_governor_result", owner="PRG", created_at=created_at, body={"status": status, "max_tokens": 120, "observed_tokens": tokens, "action": "trimmed" if status == "fail" else "accepted"}),
         "plan_first": _record("prg_plan_first_artifact_generation_record", owner="PRG", created_at=created_at, body={"authoritative": False, "plan_skeleton": ["Intent", "Scope", "Owner boundaries", "Validation", "Risks"], "generated_for_pr": int(anchor.get("pr_number") or 0)}),
     }

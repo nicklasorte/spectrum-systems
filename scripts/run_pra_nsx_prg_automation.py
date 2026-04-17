@@ -48,8 +48,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run PRA/NSX/PRG governed automation loop")
     parser.add_argument("--pr-input", required=True, help="JSON payload with key pull_requests")
     parser.add_argument("--previous-anchor", help="Optional previous anchor artifact")
-    parser.add_argument("--pr-number", type=int, help="Manual PR override number")
-    parser.add_argument("--pr-url", help="Manual PR override URL")
+    parser.add_argument("--pr-number", type=int, help="Manual PR number input")
+    parser.add_argument("--pr-url", help="Manual PR URL input")
     parser.add_argument("--output-dir", default="outputs/pra_nsx_prg")
     args = parser.parse_args(argv)
 
@@ -63,7 +63,7 @@ def main(argv: list[str] | None = None) -> int:
         resolution, selected_raw = resolve_pull_request(pull_requests=pull_requests, repo_name=repo_name, override=override)
     except PRAnchorError as exc:
         blocked = build_resolution_failure_record(repo_name=repo_name, reason=str(exc), override=override)
-        out = Path(args.output_dir) / "pra_pull_request_resolution_failure_record.json"
+        out = Path(args.output_dir) / "pra_pull_request_resolution_record.json"
         _write(out, blocked)
         print(json.dumps({"status": "blocked", "reason": str(exc), "resolution_artifact": str(out)}, indent=2))
         return 1
