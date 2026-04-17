@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from pathlib import Path
 from typing import Optional
@@ -32,6 +33,21 @@ _EXIT_CODES = {
 }
 
 
+def _run_shift_left_preflight(changed_files: list[str]) -> int:
+    command = [
+        sys.executable,
+        "scripts/run_shift_left_preflight.py",
+    ]
+    for changed in changed_files:
+        command.extend(["--changed-file", changed])
+    result = subprocess.run(command, cwd=_REPO_ROOT, check=False, capture_output=True, text=True)
+    if result.stdout:
+        print(result.stdout, end="")
+    if result.stderr:
+        print(result.stderr, file=sys.stderr, end="")
+    return result.returncode
+
+
 def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Run enforced execution for a run bundle.")
     parser.add_argument("--bundle", required=True, help="Path to run bundle directory.")
@@ -40,6 +56,10 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--pr-number", default="", help="Execution PR number.")
     parser.add_argument("--tests-passed", action="store_true", help="Flag indicating required tests passed.")
     args = parser.parse_args(argv)
+
+    preflight_exit = _run_shift_left_preflight(args.changed_file)
+    if preflight_exit != 0:
+        return 2
 
     contract = evaluate_execution_contracts(
         changed_files=args.changed_file,

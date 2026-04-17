@@ -1,0 +1,19 @@
+{
+  "artifact_type": "fre_shift_left_remediation_hint_record",
+  "artifact_id": "fre_shift_left_remediation_hint_record-example-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.6",
+  "created_at": "2026-04-17T00:00:00Z",
+  "status": "triggered",
+  "reason_codes": [
+    "failed_check:lineage",
+    "missing_evidence:lin_lineage_precondition_gate_result"
+  ],
+  "failure_class": "lineage",
+  "impacted_files": [
+    "contracts/standards-manifest.json",
+    "spectrum_systems/modules/runtime/shift_left_hardening_superlayer.py"
+  ],
+  "fix_instructions": "add lineage link in manifest and verify producer linkage in affected runtime artifact."
+}
