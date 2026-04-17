@@ -45,6 +45,11 @@ _REQUIRED_CHECKS = {
     "sl_cert",
     "dependency_graph",
     "runtime_parity",
+    "eval",
+    "replay",
+    "lineage",
+    "observability",
+    "hidden_state",
 }
 
 
@@ -87,12 +92,16 @@ def evaluate_manifest_strict_validation(
     forbidden_classes: set[str],
     created_at: str,
 ) -> dict[str, Any]:
+    contracts = [dict(entry) for entry in manifest_contracts]
     missing_links = 0
     invalid_types = 0
     forbidden_hits = 0
-    for entry in manifest_contracts:
+    missing_evidence = 0
+    for entry in contracts:
         artifact_class = str(entry.get("artifact_class") or "")
         artifact_type = str(entry.get("artifact_type") or "")
+        if not artifact_class or not artifact_type:
+            missing_evidence += 1
         if artifact_class in forbidden_classes:
             forbidden_hits += 1
         if "_" not in artifact_type or artifact_type.lower() != artifact_type:
@@ -101,9 +110,17 @@ def evaluate_manifest_strict_validation(
             missing_links += 1
 
     reasons: list[str] = []
+    if not contracts:
+        reasons.append("empty_evidence_set")
+        reasons.append("missing_manifest_contracts")
     if invalid_types:
+        reasons.append("invalid_evidence")
         reasons.append("invalid_artifact_type_shape")
+    if missing_evidence:
+        reasons.append("missing_evidence")
+        reasons.append("missing_manifest_fields")
     if missing_links:
+        reasons.append("missing_evidence")
         reasons.append("missing_contract_links")
     if forbidden_hits:
         reasons.append("forbidden_class_drift")
@@ -114,9 +131,11 @@ def evaluate_manifest_strict_validation(
         status="pass" if not reasons else "fail",
         reason_codes=reasons,
         payload={
+            "manifest_contract_count": len(contracts),
             "invalid_type_count": invalid_types,
             "missing_link_count": missing_links,
             "forbidden_class_count": forbidden_hits,
+            "missing_evidence_count": missing_evidence,
         },
     )
 
@@ -602,14 +621,43 @@ def detect_hidden_state(*, hidden_state_findings: list[str], created_at: str) ->
 def decide_pre_execution_certification(*, checks: Mapping[str, Mapping[str, Any]], created_at: str) -> dict[str, Any]:
     missing = sorted(_REQUIRED_CHECKS - set(checks.keys()))
     failing = sorted(name for name, item in checks.items() if str(item.get("status")) != "pass")
-    reasons = [f"missing_check:{name}" for name in missing] + [f"failed_check:{name}" for name in failing]
+    missing_evidence = sorted(
+        name
+        for name, item in checks.items()
+        if any(
+            str(reason).startswith(("missing_evidence", "empty_evidence_set", "missing_"))
+            for reason in item.get("reason_codes", [])
+        )
+        or item.get("evidence_present") is False
+    )
+    parity_weakness = []
+    runtime_parity = checks.get("runtime_parity", {})
+    if runtime_parity:
+        parity_strength = str(runtime_parity.get("parity_strength") or "")
+        parity_ok = runtime_parity.get("parity_ok")
+        if parity_strength and parity_strength != "strong":
+            parity_weakness.append("runtime_parity")
+        elif parity_ok is False:
+            parity_weakness.append("runtime_parity")
+
+    reasons = (
+        [f"missing_check:{name}" for name in missing]
+        + [f"failed_check:{name}" for name in failing]
+        + [f"missing_evidence:{name}" for name in missing_evidence]
+        + [f"parity_weakness:{name}" for name in sorted(set(parity_weakness))]
+    )
     return _result(
         artifact_type="cde_shift_left_pre_execution_certification_decision",
         artifact_id="cde-mini-cert-001",
         created_at=created_at,
         status="pass" if not reasons else "fail",
         reason_codes=reasons,
-        payload={"missing_checks": missing, "failing_checks": failing},
+        payload={
+            "missing_checks": missing,
+            "failing_checks": failing,
+            "missing_evidence_checks": missing_evidence,
+            "parity_weakness_checks": sorted(set(parity_weakness)),
+        },
     )
 
 
