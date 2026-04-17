@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -251,6 +252,7 @@ def test_enabled_injection_with_missing_defs_unresolved_when_not_required() -> N
     assert bundle["glossary_canonicalization"]["injection_enabled"] is True
 
 from spectrum_systems.modules.runtime.context_selector import (
+    ContextSelectorError,
     build_context_bundle,
     canonical_serialize_context_bundle,
 )
@@ -264,6 +266,7 @@ def test_context_bundle_v2_schema_example_validation() -> None:
 
 
 def test_context_bundle_v2_canonical_serialization_is_deterministic() -> None:
+    fixed_now = datetime(2026, 4, 3, 12, 0, tzinfo=timezone.utc)
     bundle = build_context_bundle(
         roadmap_state={"source_refs": ["roadmap:1"]},
         target_scope={"scope_type": "batch_id", "scope_id": "BATCH-O"},
@@ -301,5 +304,89 @@ def test_context_bundle_v2_canonical_serialization_is_deterministic() -> None:
         active_risks=[],
         intent_refs=[],
         trace_id="trace-ctx-1",
+        now=fixed_now,
     )
-    assert canonical_serialize_context_bundle(bundle) == canonical_serialize_context_bundle(bundle)
+    bundle_replay = build_context_bundle(
+        roadmap_state={"source_refs": ["roadmap:1"]},
+        target_scope={"scope_type": "batch_id", "scope_id": "BATCH-O"},
+        review_artifacts=[
+            {
+                "artifact_type": "review_artifact",
+                "artifact_id": "rvw-1",
+                "created_at": "2026-04-03T00:00:00Z",
+                "batch_id": "BATCH-O",
+                "module_refs": ["m/a.py"],
+            }
+        ],
+        eval_artifacts=[],
+        failure_artifacts=[],
+        build_report_artifacts=[
+            {
+                "artifact_type": "build_report",
+                "artifact_id": "br-1",
+                "created_at": "2026-04-03T00:00:00Z",
+                "batch_id": "BATCH-O",
+                "module_refs": ["m/a.py"],
+            }
+        ],
+        handoff_artifacts=[
+            {
+                "artifact_type": "next_slice_handoff",
+                "artifact_id": "handoff-1",
+                "created_at": "2026-04-03T00:00:00Z",
+                "batch_id": "BATCH-O",
+                "module_refs": ["m/a.py"],
+            }
+        ],
+        pqx_execution_artifacts=[],
+        touched_module_refs=["m/a.py"],
+        active_risks=[],
+        intent_refs=[],
+        trace_id="trace-ctx-1",
+        now=fixed_now,
+    )
+    assert canonical_serialize_context_bundle(bundle) == canonical_serialize_context_bundle(bundle_replay)
+
+
+def test_context_bundle_v2_empty_selected_refs_fail_closed() -> None:
+    with pytest.raises(ContextSelectorError, match="non-empty"):
+        build_context_bundle(
+            roadmap_state={"source_refs": ["roadmap:1"]},
+            target_scope={"scope_type": "batch_id", "scope_id": "BATCH-O"},
+            review_artifacts=[
+                {
+                    "artifact_type": "review_artifact",
+                    "artifact_id": "rvw-stale",
+                    "created_at": "2026-04-01T00:00:00Z",
+                    "batch_id": "BATCH-O",
+                    "module_refs": ["m/a.py"],
+                }
+            ],
+            eval_artifacts=[],
+            failure_artifacts=[],
+            build_report_artifacts=[
+                {
+                    "artifact_type": "build_report",
+                    "artifact_id": "br-stale",
+                    "created_at": "2026-04-01T00:00:00Z",
+                    "batch_id": "BATCH-O",
+                    "module_refs": ["m/a.py"],
+                }
+            ],
+            handoff_artifacts=[
+                {
+                    "artifact_type": "next_slice_handoff",
+                    "artifact_id": "handoff-stale",
+                    "created_at": "2026-04-01T00:00:00Z",
+                    "batch_id": "BATCH-O",
+                    "module_refs": ["m/a.py"],
+                }
+            ],
+            pqx_execution_artifacts=[],
+            touched_module_refs=["m/a.py"],
+            active_risks=[],
+            intent_refs=[],
+            trace_id="trace-ctx-stale",
+            now=datetime(2026, 4, 17, 12, 0, tzinfo=timezone.utc),
+            stale_after_days=14,
+        )
