@@ -13,6 +13,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from spectrum_systems.modules.runtime.pra_nsx_prg_loop import (  # noqa: E402
     PRAnchorError,
+    build_resolution_failure_record,
     build_pr_anchor,
     build_pr_delta,
     cde_execution_mode,
@@ -56,19 +57,15 @@ def main(argv: list[str] | None = None) -> int:
     repo_name = str(payload.get("repo_name") or get_repo_name(REPO_ROOT))
     pull_requests = payload.get("pull_requests") if isinstance(payload.get("pull_requests"), list) else []
 
+    override = None
     try:
         override = parse_pr_override(pr_number=args.pr_number, pr_url=args.pr_url)
         resolution, selected_raw = resolve_pull_request(pull_requests=pull_requests, repo_name=repo_name, override=override)
     except PRAnchorError as exc:
-        blocked = {
-            "artifact_type": "pra_pull_request_resolution_record",
-            "status": "fail",
-            "reason": str(exc),
-            "repo_name": repo_name,
-        }
-        out = Path(args.output_dir) / "pra_pull_request_resolution_record.json"
+        blocked = build_resolution_failure_record(repo_name=repo_name, reason=str(exc), override=override)
+        out = Path(args.output_dir) / "pra_pull_request_resolution_failure_record.json"
         _write(out, blocked)
-        print(json.dumps(blocked, indent=2))
+        print(json.dumps({"status": "blocked", "reason": str(exc), "resolution_artifact": str(out)}, indent=2))
         return 1
 
     normalized = normalize_pr_metadata(pr_data=selected_raw)
@@ -78,7 +75,11 @@ def main(argv: list[str] | None = None) -> int:
     anchor = build_pr_anchor(resolution=resolution, normalized=normalized, changed_scope=changed_scope, ci_review=ci_review)
 
     previous_anchor = _read_json(Path(args.previous_anchor)) if args.previous_anchor else None
-    delta = build_pr_delta(previous_anchor=previous_anchor, current_anchor=anchor, impact=impact)
+    try:
+        delta = build_pr_delta(previous_anchor=previous_anchor, current_anchor=anchor, impact=impact)
+    except PRAnchorError as exc:
+        print(json.dumps({"status": "blocked", "reason": str(exc), "previous_anchor": args.previous_anchor}, indent=2))
+        return 1
 
     workflow_audit = con_workflow_coverage_audit(repo_root=REPO_ROOT)
     workflow_enforcement = con_workflow_front_door_enforcement(coverage=workflow_audit)

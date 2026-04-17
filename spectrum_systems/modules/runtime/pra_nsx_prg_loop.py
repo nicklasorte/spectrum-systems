@@ -102,6 +102,29 @@ def resolve_pull_request(
     return resolution, selected
 
 
+def build_resolution_failure_record(
+    *,
+    repo_name: str,
+    reason: str,
+    override: PullRequestRef | None = None,
+    created_at: str | None = None,
+) -> dict[str, Any]:
+    return _record(
+        "pra_pull_request_resolution_failure_record",
+        owner="PRA",
+        created_at=created_at,
+        body={
+            "repo_name": repo_name,
+            "selection_mode": "override" if override else "default_latest",
+            "override_used": bool(override),
+            "failure_reason": str(reason),
+            "failed_pr_number": int(override.number) if override else None,
+            "failed_pr_url": str(override.url) if override else "",
+            "state": "unresolved",
+        },
+    )
+
+
 def normalize_pr_metadata(*, pr_data: dict[str, Any], created_at: str | None = None) -> dict[str, Any]:
     files = sorted({str(file.get("filename")) for file in pr_data.get("files", []) if file.get("filename")})
     checks = pr_data.get("checks", [])
@@ -208,8 +231,24 @@ def build_pr_anchor(*, resolution: dict[str, Any], normalized: dict[str, Any], c
     )
 
 
+def _derive_systems_from_changed_files(changed_files: list[str]) -> set[str]:
+    return {
+        path.split("/")[1].upper() if path.startswith("spectrum_systems/modules/") else ("CON" if path.startswith("contracts/") else "GEN")
+        for path in changed_files
+    }
+
+
+def _derive_previous_impacted_systems(previous: dict[str, Any]) -> set[str]:
+    artifact_type = str(previous.get("artifact_type") or "")
+    if artifact_type == "pra_system_impact_mapping_record":
+        return set(previous.get("impacted_systems") or [])
+    if artifact_type == "pra_pull_request_anchor_record":
+        return _derive_systems_from_changed_files([str(path) for path in previous.get("changed_files", [])])
+    raise PRAnchorError("previous_artifact_incompatible_for_delta_comparison")
+
+
 def build_pr_delta(*, previous_anchor: dict[str, Any] | None, current_anchor: dict[str, Any], impact: dict[str, Any], created_at: str | None = None) -> dict[str, Any]:
-    prev_systems = set((previous_anchor or {}).get("impacted_systems") or [])
+    prev_systems = _derive_previous_impacted_systems(previous_anchor) if previous_anchor else set()
     curr_systems = set(impact.get("impacted_systems") or [])
     return _record(
         "pra_pull_request_delta_record",
@@ -230,7 +269,8 @@ def con_workflow_coverage_audit(*, repo_root: Path, created_at: str | None = Non
     workflow_root = repo_root / ".github" / "workflows"
     uncovered: list[str] = []
     checked: list[str] = []
-    for path in sorted(workflow_root.glob("*.yml")):
+    workflow_paths = sorted({*workflow_root.glob("*.yml"), *workflow_root.glob("*.yaml")}, key=lambda p: str(p))
+    for path in workflow_paths:
         text = path.read_text(encoding="utf-8")
         checked.append(str(path.relative_to(repo_root)))
         if "pytest" in text and "scripts/run_shift_left_preflight.py" not in text:
@@ -378,7 +418,9 @@ def get_repo_name(repo_root: Path) -> str:
     try:
         proc = subprocess.run(["git", "remote", "get-url", "origin"], cwd=repo_root, check=False, capture_output=True, text=True)
         if proc.returncode == 0 and proc.stdout.strip():
-            txt = proc.stdout.strip().rstrip(".git")
+            txt = proc.stdout.strip()
+            if txt.endswith(".git"):
+                txt = txt[:-4]
             if ":" in txt and "/" in txt:
                 txt = txt.split(":", 1)[1]
             parts = txt.split("/")
