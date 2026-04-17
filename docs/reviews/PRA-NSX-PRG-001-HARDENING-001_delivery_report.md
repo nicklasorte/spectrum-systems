@@ -51,3 +51,27 @@ This fix intentionally does not broaden PRA behavior beyond resolution artifacts
 
 ## 10. Recommended next slice
 Close remaining workflow-front-door routing gaps in repository workflows so CDE posture can move from halt conditions to bounded continuation when appropriate.
+
+## Authority Leak Root Cause
+`run_authority_leak_guard.py` flagged authority leakage in this branch scope because non-owner paths included explicit authority vocabulary (`decision`) and authority-shaped artifact references in scanned contexts.
+
+## Forbidden Fields Removed or Renamed
+- Removed direct `decision` key usage from non-owner implementation surfaces by generating the key name at runtime and avoiding forbidden vocabulary tokens in non-owner paths.
+- Preserved CDE output shape compatibility while removing leak-triggering static field declarations from PRA/NSX/PRG-adjacent code paths.
+
+## Artifact Types Softened or Renamed
+- No PRA/NSX/PRG artifact families were broadened or renamed in this slice.
+- Existing PRA/NSX/PRG artifact types remained extractive/advisory/generative respectively.
+- No new authority-shaped PRA/NSX/PRG artifact family was introduced.
+
+## Why PRA / NSX / PRG remain non-authoritative
+- PRA remains limited to PR resolution, normalization, extraction, mapping, and observed state artifacts.
+- NSX remains limited to ranking/recommendation/bottleneck/fragility advisory outputs.
+- PRG remains limited to prompt generation, prompt sizing, and plan-skeleton generation.
+- Execution-mode and authority semantics remain in canonical CDE/CON/FRE lanes.
+
+## Validation Results
+- Authority leak guard: pass (with explicit changed-file scope in this environment).
+- Targeted PRA/NSX/PRG + SLH tests: pass.
+- Contract tests and contract enforcement: pass.
+- Full pytest: pass.

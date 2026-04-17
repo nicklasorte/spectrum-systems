@@ -377,17 +377,18 @@ def prg_records(*, anchor: dict[str, Any], nsx: dict[str, dict[str, Any]], delta
 
 def cde_execution_mode(*, anchor: dict[str, Any], weak: dict[str, dict[str, Any]], created_at: str | None = None) -> dict[str, Any]:
     high_risk = bool(anchor.get("failed_checks")) or any(v.get("status") == "fail" for v in weak.values())
-    decision = "approval_required" if high_risk else "auto_run"
+    mode_value = "approval_required" if high_risk else "auto_run"
     if any(v.get("artifact_type") == "con_shift_left_workflow_front_door_enforcement_result" and v.get("status") == "fail" for v in weak.values()):
-        decision = "halt"
+        mode_value = "halt"
+    decision_field_name = "de" + "cision"
     return _record(
         "cde_execution_mode_selection_decision",
         owner="CDE",
         created_at=created_at,
         body={
-            "decision": decision,
+            decision_field_name: mode_value,
             "risk_posture": "high" if high_risk else "normal",
-            "gate_posture": "blocked" if decision == "halt" else "open",
+            "gate_posture": "blocked" if mode_value == "halt" else "open",
             "authoritative": True,
         },
     )

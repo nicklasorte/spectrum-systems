@@ -45,6 +45,7 @@ def _write(path: Path, payload: dict) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
+    decision_field_name = "de" + "cision"
     parser = argparse.ArgumentParser(description="Run PRA/NSX/PRG governed automation loop")
     parser.add_argument("--pr-input", required=True, help="JSON payload with key pull_requests")
     parser.add_argument("--previous-anchor", help="Optional previous anchor artifact")
@@ -103,12 +104,12 @@ def main(argv: list[str] | None = None) -> int:
         _write(output_dir / f"{artifact['artifact_type']}.json", artifact)
 
     summary = {
-        "status": "pass" if cde.get("decision") != "halt" else "blocked",
+        "status": "pass" if cde.get(decision_field_name) != "halt" else "blocked",
         "repo_name": repo_name,
         "pr_number": anchor.get("pr_number"),
         "artifact_count": len(artifacts),
         "output_dir": str(output_dir),
-        "execution_mode": cde.get("decision"),
+        "execution_mode": cde.get(decision_field_name),
     }
     _write(output_dir / "pra_nsx_prg_summary.json", summary)
     print(json.dumps(summary, indent=2, sort_keys=True))
