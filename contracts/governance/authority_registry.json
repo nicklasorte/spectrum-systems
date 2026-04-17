@@ -49,7 +49,9 @@
           "owner_path_prefixes": [
             "spectrum_systems/modules/runtime/cde_decision_flow.py",
             "spectrum_systems/modules/runtime/closure_decision_engine.py",
-            "spectrum_systems/modules/governance/done_certification.py"
+            "spectrum_systems/modules/governance/done_certification.py",
+            "contracts/examples/cde_execution_mode_selection_decision.json",
+            "contracts/schemas/cde_execution_mode_selection_decision.schema.json"
           ]
         }
       ],
