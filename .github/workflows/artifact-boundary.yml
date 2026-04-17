@@ -97,6 +97,13 @@ jobs:
             --head-ref "${{ steps.srg-refs.outputs.head_ref }}" \
             --output outputs/system_registry_guard/system_registry_guard_result.json
 
+      - name: Run authority leak guard
+        run: |
+          python scripts/run_authority_leak_guard.py \
+            --base-ref "${{ steps.srg-refs.outputs.base_ref }}" \
+            --head-ref "${{ steps.srg-refs.outputs.head_ref }}" \
+            --output outputs/authority_leak_guard/authority_leak_guard_result.json
+
       - name: Upload system registry guard outputs
         if: always()
         uses: actions/upload-artifact@v4
@@ -104,6 +111,14 @@ jobs:
           name: system-registry-guard-outputs
           if-no-files-found: warn
           path: outputs/system_registry_guard/system_registry_guard_result.json
+
+      - name: Upload authority leak guard outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authority-leak-guard-outputs
+          if-no-files-found: warn
+          path: outputs/authority_leak_guard/authority_leak_guard_result.json
 
   governed-contract-preflight:
     if: github.event_name == 'push'

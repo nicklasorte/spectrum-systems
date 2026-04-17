@@ -1,0 +1,126 @@
+{
+  "artifact_type": "authority_registry",
+  "artifact_version": "1.0.0",
+  "categories": {
+    "control_decision": {
+      "canonical_owners": [
+        {
+          "system": "TPA",
+          "owner_path_prefixes": [
+            "spectrum_systems/modules/runtime/evaluation_control.py",
+            "spectrum_systems/modules/runtime/tpa_policy_authority.py",
+            "spectrum_systems/modules/runtime/control_executor.py"
+          ]
+        }
+      ],
+      "allowed_artifact_kinds": [
+        "control_decision_artifact",
+        "policy_decision_record"
+      ],
+      "allowed_schema_refs": [
+        "control_decision",
+        "policy_decision"
+      ]
+    },
+    "enforcement": {
+      "canonical_owners": [
+        {
+          "system": "SEL",
+          "owner_path_prefixes": [
+            "spectrum_systems/modules/runtime/enforcement_engine.py",
+            "spectrum_systems/modules/runtime/sel_enforcement_foundation.py",
+            "spectrum_systems/modules/runtime/system_enforcement_layer.py"
+          ]
+        }
+      ],
+      "allowed_artifact_kinds": [
+        "enforcement_record",
+        "enforcement_result"
+      ],
+      "allowed_schema_refs": [
+        "enforcement",
+        "runtime_enforcement"
+      ]
+    },
+    "certification": {
+      "canonical_owners": [
+        {
+          "system": "CDE",
+          "owner_path_prefixes": [
+            "spectrum_systems/modules/runtime/cde_decision_flow.py",
+            "spectrum_systems/modules/runtime/closure_decision_engine.py",
+            "spectrum_systems/modules/governance/done_certification.py"
+          ]
+        }
+      ],
+      "allowed_artifact_kinds": [
+        "certification_decision",
+        "closure_decision_artifact"
+      ],
+      "allowed_schema_refs": [
+        "certification",
+        "closure_decision"
+      ]
+    },
+    "promotion": {
+      "canonical_owners": [
+        {
+          "system": "CDE",
+          "owner_path_prefixes": [
+            "spectrum_systems/modules/review_promotion_gate.py",
+            "spectrum_systems/modules/runtime/promotion_readiness_checkpoint.py",
+            "spectrum_systems/modules/governance/promotion_requirements.py"
+          ]
+        }
+      ],
+      "allowed_artifact_kinds": [
+        "promotion_readiness_decision",
+        "promotion_gate_decision"
+      ],
+      "allowed_schema_refs": [
+        "promotion_readiness",
+        "promotion_gate"
+      ]
+    }
+  },
+  "forbidden_contexts": {
+    "default_scope_prefixes": [
+      "spectrum_systems/modules/",
+      "contracts/examples/"
+    ],
+    "excluded_path_prefixes": [
+      "spectrum_systems/modules/runtime/evaluation_control.py",
+      "spectrum_systems/modules/runtime/tpa_policy_authority.py",
+      "spectrum_systems/modules/runtime/control_executor.py",
+      "spectrum_systems/modules/runtime/enforcement_engine.py",
+      "spectrum_systems/modules/runtime/sel_enforcement_foundation.py",
+      "spectrum_systems/modules/runtime/system_enforcement_layer.py",
+      "spectrum_systems/modules/runtime/cde_decision_flow.py",
+      "spectrum_systems/modules/runtime/closure_decision_engine.py",
+      "spectrum_systems/modules/governance/done_certification.py",
+      "spectrum_systems/modules/review_promotion_gate.py",
+      "spectrum_systems/modules/runtime/promotion_readiness_checkpoint.py",
+      "spectrum_systems/modules/governance/promotion_requirements.py"
+    ]
+  },
+  "vocabulary_overrides": {
+    "allowed_path_prefixes": [],
+    "allowed_fields": {},
+    "allowed_values": {}
+  },
+  "preparatory_only": {
+    "required_non_authority_assertions": [
+      "preparatory_only",
+      "not_control_authority",
+      "not_certification_authority"
+    ],
+    "allowed_fields": [
+      "observations",
+      "counts",
+      "refs",
+      "replay_hash",
+      "trace_refs",
+      "non_authority_assertions"
+    ]
+  }
+}
