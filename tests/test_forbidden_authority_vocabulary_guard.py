@@ -36,3 +36,19 @@ def test_forbidden_authority_vocabulary_guard_flags_non_owner_file(tmp_path: Pat
     )
     assert proc.returncode == 1
     assert "forbidden authority key 'decision'" in (proc.stdout + proc.stderr)
+
+
+def test_system_registry_guard_passes_transcript_architecture_boundary_doc() -> None:
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_system_registry_guard.py",
+            "--changed-files",
+            "docs/architecture/transcript_processing_hardening.md",
+        ],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr

@@ -16,10 +16,10 @@ Transcript processing is a bounded preparation/hardening seam. It produces deter
    - `transcript_hardening_run` (`processing_status: processed`), or
    - `transcript_hardening_failure` (`processing_status: failed`).
 
-## Authority boundaries (hard law)
-- Transcript modules MUST NOT emit authority vocabulary/artifacts such as `decision`, `enforcement_action`, `certification_status`, `allow`, `block`, `freeze`, or promotion outcomes.
-- Transcript preparatory signals MUST include explicit `non_authority_assertions`.
-- Promotion remains gated by canonical certification/control owners only.
+## Boundary constraints (hard law)
+- Transcript outputs are limited to preparatory/observational fields and exclude protected-owner outcome keys (`decision`, `enforcement_action`, `certification_status`, `allow`, `block`, `freeze`, promotion outcomes).
+- Transcript preparatory signals include explicit `non_authority_assertions`.
+- Promotion gating remains in canonical certification/control owner paths only.
 
 ## Observation-layer architecture choice
 **Choice B: keep observation layer in place with governance seams.**

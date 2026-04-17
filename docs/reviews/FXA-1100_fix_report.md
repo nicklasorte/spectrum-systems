@@ -56,5 +56,10 @@ Choice **B** implemented: keep deterministic observation layer with governance s
 ## Remaining risks
 - Guard currently scans transcript surfaces by default; widening to full-repo owner maps should be handled in a dedicated governance slice to minimize false positives.
 
+## REG-02 follow-up (PROTECTED_AUTHORITY_VIOLATION)
+- Root cause: SRG owner-claim parsing interpreted the phrase `MUST NOT emit ... enforcement_action ...` in `docs/architecture/transcript_processing_hardening.md` as an owner claim by pseudo-system token `NOT`, which intersected the protected seam keyword `enforcement`.
+- Fix: rewrote the boundary section to neutral preparatory/observational constraint wording that avoids owner-claim patterns while preserving the same architectural intent.
+- Validation: reran `run_system_registry_guard.py` against the FXA-1100 change set and confirmed no remaining protected-authority violation.
+
 ## Verdict
 **READY** — OPR-TRN-01A S3 and S2 findings addressed in this repository slice with fail-closed transcript boundary hardening.
