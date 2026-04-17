@@ -5158,7 +5158,7 @@
     },
     {
       "artifact_type": "final_pm11_full_stack_parity_validation_report",
-      "artifact_class": "report",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
@@ -8483,7 +8483,7 @@
     },
     {
       "artifact_type": "pmh_003_delivery_report",
-      "artifact_class": "report",
+      "artifact_class": "governance",
       "schema_version": "1.0.0",
       "status": "stable",
       "intended_consumers": [
