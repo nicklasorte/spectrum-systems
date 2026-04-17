@@ -52,3 +52,21 @@ def test_system_registry_guard_passes_transcript_architecture_boundary_doc() -> 
         text=True,
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
+
+
+def test_authority_leak_guard_passes_transcript_boundary_doc() -> None:
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_authority_leak_guard.py",
+            "--changed-files",
+            "docs/architecture/transcript_processing_hardening.md",
+            "--output",
+            "outputs/authority_leak_guard/test_transcript_boundary_doc.json",
+        ],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
