@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/schemas/artifacts/control_decision.schema.json",
+  "title": "Control Decision Artifact",
+  "description": "Control loop decision record",
+  "$ref": "#/$defs/control_decision",
+  "$defs": {
+    "control_decision": {
+      "type": "object",
+      "properties": {
+        "artifact_kind": {
+          "const": "control_decision"
+        },
+        "artifact_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "created_at": {
+          "$ref": "common.schema.json#/$defs/datetime"
+        },
+        "schema_ref": {
+          "$ref": "common.schema.json#/$defs/schema_ref"
+        },
+        "trace": {
+          "$ref": "common.schema.json#/$defs/trace_context"
+        },
+        "eval_summary_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "policy_applied": {
+          "type": "string",
+          "description": "Name of policy applied"
+        },
+        "decision": {
+          "type": "string",
+          "enum": ["allow", "block", "freeze_pipeline"]
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Explanation of the decision"
+        },
+        "next_step": {
+          "type": "string",
+          "description": "What action to take next"
+        },
+        "blocks_until": {
+          "$ref": "common.schema.json#/$defs/datetime",
+          "description": "If decision is block, when the block expires"
+        }
+      },
+      "required": [
+        "artifact_kind",
+        "artifact_id",
+        "created_at",
+        "schema_ref",
+        "trace",
+        "eval_summary_id",
+        "policy_applied",
+        "decision",
+        "rationale",
+        "next_step"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

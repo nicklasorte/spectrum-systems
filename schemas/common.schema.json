@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/schemas/common.schema.json",
+  "title": "Common Definitions",
+  "description": "Reusable schema definitions for all artifacts",
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "description": "UUID v4 format"
+    },
+    "datetime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime format"
+    },
+    "sha256_prefixed": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "description": "SHA256 hash with 'sha256:' prefix"
+    },
+    "schema_ref": {
+      "type": "string",
+      "pattern": "^[a-z_]+\\.schema\\.json$",
+      "description": "Reference to a schema file"
+    },
+    "trace_context": {
+      "type": "object",
+      "properties": {
+        "trace_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "parent_trace_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "created_at": {
+          "$ref": "#/$defs/datetime"
+        }
+      },
+      "required": ["trace_id", "created_at"],
+      "additionalProperties": false
+    },
+    "reason_code": {
+      "type": "string",
+      "enum": [
+        "schema_violation",
+        "missing_artifact",
+        "policy_block",
+        "timeout",
+        "eval_failure",
+        "control_block"
+      ],
+      "description": "Classification of failure reasons"
+    }
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/schemas/artifacts/pqx_execution_record.schema.json",
+  "title": "PQX Execution Record Artifact",
+  "description": "Record of a single pipeline step execution",
+  "$ref": "#/$defs/pqx_execution_record",
+  "$defs": {
+    "pqx_execution_record": {
+      "type": "object",
+      "properties": {
+        "artifact_kind": {
+          "const": "pqx_execution_record"
+        },
+        "artifact_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "created_at": {
+          "$ref": "common.schema.json#/$defs/datetime"
+        },
+        "schema_ref": {
+          "$ref": "common.schema.json#/$defs/schema_ref"
+        },
+        "trace": {
+          "$ref": "common.schema.json#/$defs/trace_context"
+        },
+        "pqx_step": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          },
+          "required": ["name", "version"],
+          "additionalProperties": false
+        },
+        "execution_status": {
+          "type": "string",
+          "enum": ["queued", "running", "succeeded", "failed", "canceled"]
+        },
+        "inputs": {
+          "type": "object",
+          "properties": {
+            "artifact_ids": {
+              "type": "array",
+              "items": {
+                "$ref": "common.schema.json#/$defs/uuid"
+              }
+            }
+          },
+          "required": ["artifact_ids"],
+          "additionalProperties": false
+        },
+        "outputs": {
+          "type": "object",
+          "properties": {
+            "artifact_ids": {
+              "type": "array",
+              "items": {
+                "$ref": "common.schema.json#/$defs/uuid"
+              }
+            }
+          },
+          "required": ["artifact_ids"],
+          "additionalProperties": false
+        },
+        "timing": {
+          "type": "object",
+          "properties": {
+            "started_at": {
+              "$ref": "common.schema.json#/$defs/datetime"
+            },
+            "ended_at": {
+              "$ref": "common.schema.json#/$defs/datetime"
+            }
+          },
+          "required": ["started_at"],
+          "additionalProperties": false
+        },
+        "failure": {
+          "type": "object",
+          "properties": {
+            "reason_codes": {
+              "type": "array",
+              "items": {
+                "$ref": "common.schema.json#/$defs/reason_code"
+              }
+            },
+            "error_message": {
+              "type": "string"
+            }
+          },
+          "required": ["reason_codes", "error_message"],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "artifact_kind",
+        "artifact_id",
+        "created_at",
+        "schema_ref",
+        "trace",
+        "pqx_step",
+        "execution_status",
+        "inputs",
+        "outputs",
+        "timing"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

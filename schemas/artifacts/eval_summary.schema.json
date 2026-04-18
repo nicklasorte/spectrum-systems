@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/schemas/artifacts/eval_summary.schema.json",
+  "title": "Eval Summary Artifact",
+  "description": "Aggregated evaluation results",
+  "$ref": "#/$defs/eval_summary",
+  "$defs": {
+    "eval_summary": {
+      "type": "object",
+      "properties": {
+        "artifact_kind": {
+          "const": "eval_summary"
+        },
+        "artifact_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "created_at": {
+          "$ref": "common.schema.json#/$defs/datetime"
+        },
+        "schema_ref": {
+          "$ref": "common.schema.json#/$defs/schema_ref"
+        },
+        "trace": {
+          "$ref": "common.schema.json#/$defs/trace_context"
+        },
+        "target_artifact_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "eval_case_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          },
+          "description": "UUIDs of eval cases run"
+        },
+        "eval_result_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          },
+          "description": "UUIDs of evaluation results"
+        },
+        "overall_status": {
+          "type": "string",
+          "enum": ["pass", "fail", "indeterminate"]
+        },
+        "pass_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentage of passed evaluations"
+        },
+        "metrics": {
+          "type": "object",
+          "description": "Aggregated evaluation metrics"
+        }
+      },
+      "required": [
+        "artifact_kind",
+        "artifact_id",
+        "created_at",
+        "schema_ref",
+        "trace",
+        "target_artifact_id",
+        "eval_case_ids",
+        "eval_result_ids",
+        "overall_status",
+        "pass_rate",
+        "metrics"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/schemas/artifacts/agent_execution_trace.schema.json",
+  "title": "Agent Execution Trace Artifact",
+  "description": "Record of agent execution",
+  "$ref": "#/$defs/agent_execution_trace",
+  "$defs": {
+    "agent_execution_trace": {
+      "type": "object",
+      "properties": {
+        "artifact_kind": {
+          "const": "agent_execution_trace"
+        },
+        "artifact_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "created_at": {
+          "$ref": "common.schema.json#/$defs/datetime"
+        },
+        "schema_ref": {
+          "$ref": "common.schema.json#/$defs/schema_ref"
+        },
+        "trace": {
+          "$ref": "common.schema.json#/$defs/trace_context"
+        },
+        "context_bundle_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "agent_name": {
+          "type": "string",
+          "description": "Name of the agent"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "step_number": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "description": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": ["running", "succeeded", "failed"]
+              },
+              "output": {},
+              "error": {
+                "type": "string"
+              }
+            },
+            "required": ["step_number", "description", "status"],
+            "additionalProperties": false
+          },
+          "description": "Ordered list of execution steps"
+        },
+        "final_output": {
+          "type": "object",
+          "description": "Final output from agent execution"
+        },
+        "model_used": {
+          "type": "string",
+          "description": "Name and version of model used"
+        },
+        "total_duration_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total execution time in milliseconds"
+        },
+        "random_seed": {
+          "type": "number",
+          "description": "Random seed for reproducibility"
+        }
+      },
+      "required": [
+        "artifact_kind",
+        "artifact_id",
+        "created_at",
+        "schema_ref",
+        "trace",
+        "context_bundle_id",
+        "agent_name",
+        "steps",
+        "final_output",
+        "model_used",
+        "total_duration_ms",
+        "random_seed"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

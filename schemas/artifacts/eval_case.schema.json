@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/schemas/artifacts/eval_case.schema.json",
+  "title": "Eval Case Artifact",
+  "description": "Evaluation test case definition",
+  "$ref": "#/$defs/eval_case",
+  "$defs": {
+    "eval_case": {
+      "type": "object",
+      "properties": {
+        "artifact_kind": {
+          "const": "eval_case"
+        },
+        "artifact_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "created_at": {
+          "$ref": "common.schema.json#/$defs/datetime"
+        },
+        "schema_ref": {
+          "$ref": "common.schema.json#/$defs/schema_ref"
+        },
+        "trace": {
+          "$ref": "common.schema.json#/$defs/trace_context"
+        },
+        "eval_type": {
+          "type": "string",
+          "description": "Type of evaluation (e.g., 'schema_conformance', 'content_quality')"
+        },
+        "target_artifact_kind": {
+          "type": "string",
+          "description": "The artifact_kind being evaluated"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the test case"
+        },
+        "input_artifact_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          },
+          "description": "UUIDs of input artifacts for this eval"
+        },
+        "expected_output": {
+          "type": "object",
+          "description": "Expected output structure"
+        },
+        "success_criteria": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of success criteria"
+        }
+      },
+      "required": [
+        "artifact_kind",
+        "artifact_id",
+        "created_at",
+        "schema_ref",
+        "trace",
+        "eval_type",
+        "target_artifact_kind",
+        "description",
+        "input_artifact_refs",
+        "expected_output",
+        "success_criteria"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
