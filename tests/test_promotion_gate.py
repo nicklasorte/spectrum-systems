@@ -1,4 +1,5 @@
 from spectrum_systems.modules.runtime.bne02_full_wave import evaluate_promotion_gate
+from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.governance.promotion_requirements import (
     issue_promotion_gate_decision_from_evidence,
 )
@@ -64,4 +65,23 @@ def test_canonical_owner_emits_blocked_promotion_decision_with_valid_certificati
     )
     assert decision["artifact_type"] == "promotion_gate_decision_artifact"
     assert decision["terminal_state"] == "blocked"
+    assert decision["certification_status"] == "missing_or_incomplete"
+
+
+def test_blocked_promotion_decision_validates_against_contract() -> None:
+    evidence = evaluate_promotion_gate(
+        trace_id="trace-5",
+        run_id="run-5",
+        eval_pass=True,
+        lineage_complete=False,
+        judgment_present=True,
+        policy_aligned=False,
+    )
+    decision = issue_promotion_gate_decision_from_evidence(
+        evidence=evidence,
+        run_id="run-5",
+        trace_id="trace-5",
+    )
+    validate_artifact(decision, "promotion_gate_decision_artifact")
+    assert decision["promotion_allowed"] is False
     assert decision["certification_status"] == "missing_or_incomplete"
