@@ -1,84 +1,55 @@
-# System Registry — Support Families
+# System Registry — Support Families (Companion View)
 
-This document is an additive explanatory view. Canonical compatibility and enforcement source remains `docs/architecture/system_registry.md` until dedicated tooling migration is completed.
+This document is an explanatory companion only.
 
-This document groups non-core surfaces as support families.
+`docs/architecture/system_registry.md` remains the sole canonical ownership and enforcement source.
 
-These families are important, but they are not peer canonical runtime authorities.
+This file must not define or restate canonical ownership.
 
-## 1) Judgment subsystem family
+## Purpose
 
-Purpose: govern judgment artifact lifecycle and interpretation support.
+Provide a descriptive grouping of non-core surfaces so readers can navigate related areas quickly.
 
-Includes grouped surfaces such as:
-- JDX, JSX, SUP, RET, RUX, PRX, DEX, XPL
+For canonical definitions, see `docs/architecture/system_registry.md`.
 
-Rules:
-- Must produce explicit artifact records.
-- Must not issue final closure/promotion decisions.
-- Must not bypass EVL/TPA/CDE/SEL gates.
+## Family summaries
 
-## 2) Contract and integrity subsystem family
+### Judgment family
 
-Purpose: maintain contract validity, schema integrity, migration safety, and cross-artifact consistency.
+Reference grouping for judgment-oriented records and related interpretation context.
 
-Includes grouped surfaces such as:
-- CON, SCH, MIG, CRS, DAG, DEP
+Examples: JDX, JSX, SUP, RET, RUX, PRX, DEX, XPL.
 
-Rules:
-- Contract/schema failure is blocking input to runtime gates.
-- Integrity signals feed EVL/TPA/CDE/SEL; they do not replace them.
+### Contract and integrity family
 
-## 3) Intelligence and drift subsystem family
+Reference grouping for schema, contract, migration, and consistency topics.
 
-Purpose: provide non-authoritative analysis, drift detection, and recommendation signals.
+Examples: CON, SCH, MIG, CRS, DAG, DEP.
 
-Includes grouped surfaces such as:
-- DRT, DRX, ENT, AIL, QRY, SYN, RSM, DEM, MCL, BRM, DCL, XRL
+### Intelligence and drift family
 
-Rules:
-- Outputs are support evidence and governance inputs.
-- Drift threshold breach can trigger FREEZE via authoritative enforcement.
-- Family members are not independent promotion authorities.
+Reference grouping for analysis, drift, and trend signals.
 
-## 4) Dataset and test governance family
+Examples: DRT, DRX, ENT, AIL, QRY, SYN, RSM, DEM, MCL, BRM, DCL, XRL.
 
-Purpose: govern evaluation dataset/test quality as EVL support.
+### Dataset and test family
 
-Includes grouped surfaces such as:
-- DAT, TST
+Reference grouping for eval data and test assets.
 
-Rules:
-- Dataset/test integrity feeds required eval outcomes.
-- Missing or stale required eval assets can trigger BLOCK.
-- Family members are subordinate to EVL authority.
+Examples: DAT, TST.
 
-## 5) Human override and audit family
+### Human override and audit family
 
-Purpose: governed human override/correction and audit traceability.
+Reference grouping for human intervention and audit traces.
 
-Includes grouped surfaces such as:
-- HIT, HIX (unified as one family)
+Examples: HIT, HIX.
 
-Rules:
-- Human intervention must be explicit, auditable, and artifact-backed.
-- Human signals do not bypass fail-closed runtime gates.
+### Routing, prompt, and context family
 
-## 6) Routing, prompt, and context support family
+Reference grouping for routing, prompt, and context surfaces.
 
-Purpose: support admissibility and evaluation preparation without independent final authority.
+Examples: CTX, PRM, ROU.
 
-Includes grouped surfaces such as:
-- CTX, PRM, ROU
+## Usage note
 
-Rules:
-- CTX is admission/policy/eval support, not peer runtime authority.
-- PRM and ROU are policy admissibility governance support unless elevated by canonical proof.
-- Missing required routing/prompt/context artifacts can block via AEX/TPA/EVL contracts.
-
-## Policy and evidence input grouping
-
-The following are treated as policy/evidence inputs, not peer runtime authorities:
-- RSK, EVD
-
-They must feed admissibility and decision evidence bundles.
+Treat this document as a map for navigation only; use the canonical registry for compatibility details.

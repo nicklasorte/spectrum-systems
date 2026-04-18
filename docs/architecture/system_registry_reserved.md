@@ -1,28 +1,34 @@
-# System Registry — Reserved and Non-Active
+# System Registry — Reserved Names (Companion View)
 
-This document is an additive explanatory view. Canonical compatibility and enforcement source remains `docs/architecture/system_registry.md` until dedicated tooling migration is completed.
+This document is an explanatory companion only.
 
-This document tracks reserved acronyms, placeholder seams, and future candidates.
+`docs/architecture/system_registry.md` remains the sole canonical ownership and enforcement source.
 
-## Status rule
+This file must not define or restate canonical ownership.
 
-Reserved entries are **non-active by default**.
+## Purpose
 
-Reserved entries are naming reservations only. They are not architecture commitments, not authority grants, and not implementation promises.
+Track reserved or inactive names as a lightweight reference list.
 
-## Activation requirement
+For canonical compatibility details, see `docs/architecture/system_registry.md`.
 
-A reserved entry may move to active status only by same-change updates that include:
+## Interpretation
 
-1. Canonical owner registration in `system_registry_core.md` or explicit support-family placement in `system_registry_support.md`.
-2. Enforced contract surface definition.
-3. Tested fail-closed boundary.
-4. Explicit authority boundary and must-not-do clauses.
-5. Documentation updates in `runtime_spine.md` where gate semantics are affected.
+Reserved entries are non-active by default.
 
-## Current reserved/non-active set
+Reserved entries are naming references only and are not implementation commitments.
 
-Examples (non-exhaustive):
-- LCE, ABX, DBB, SAL, SAS, SHA, RAX, SIV
+## Current reserved examples
 
-Legacy placeholders and future seams should be listed here rather than modeled as peer runtime authorities.
+- LCE
+- ABX
+- DBB
+- SAL
+- SAS
+- SHA
+- RAX
+- SIV
+
+## Activation note
+
+If a reserved name later becomes active, the canonical registry must be updated in the same change.
