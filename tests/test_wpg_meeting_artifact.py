@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from spectrum_systems.orchestration.wpg_pipeline import run_wpg_pipeline
+from tests.wpg_context_helpers import build_complete_context_bundle
 
 FIXTURE = Path("tests/fixtures/wpg/sample_workflow_loop_input.json")
 
@@ -21,6 +22,7 @@ def test_wpg31_meeting_artifact_ingested_as_governed_input() -> None:
         run_id=payload["run_id"],
         trace_id=payload["trace_id"],
         meeting_artifact=payload["meeting_artifact"],
+        context_bundle_artifact=build_complete_context_bundle(trace_id=payload["trace_id"], run_id=payload["run_id"]),
     )
     meeting = bundle["artifact_chain"]["meeting_artifact"]
     assert meeting["artifact_type"] == "meeting_artifact"
@@ -32,4 +34,10 @@ def test_wpg31_invalid_meeting_artifact_blocks() -> None:
     bad_meeting = dict(payload["meeting_artifact"])
     bad_meeting.pop("participants", None)
     with pytest.raises(Exception):
-        run_wpg_pipeline(payload["transcript"], run_id="bad-meeting", trace_id="bad-meeting", meeting_artifact=bad_meeting)
+        run_wpg_pipeline(
+            payload["transcript"],
+            run_id="bad-meeting",
+            trace_id="bad-meeting",
+            meeting_artifact=bad_meeting,
+            context_bundle_artifact=build_complete_context_bundle(trace_id="bad-meeting", run_id="bad-meeting"),
+        )

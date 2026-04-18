@@ -71,6 +71,12 @@ def _extract_statements(component: Mapping[str, Any]) -> list[dict[str, str]]:
     return findings
 
 
+def _component_is_placeholder(component: Mapping[str, Any]) -> bool:
+    source_ref = str(component.get("source_ref") or "").strip().lower()
+    source_uri = str(((component.get("provenance") or {}) if isinstance(component.get("provenance"), Mapping) else {}).get("source_uri") or "").strip().lower()
+    return source_ref.endswith("_input") or source_ref.startswith("placeholder_") or source_uri.endswith("_input")
+
+
 
 def detect_context_contradictions(components: Sequence[Mapping[str, Any]]) -> list[dict[str, str]]:
     by_topic: dict[str, list[tuple[str, str]]] = {}
@@ -163,12 +169,18 @@ def build_context_bundle_artifact(
     created_at: str | None = None,
 ) -> dict[str, Any]:
     items: list[dict[str, Any]] = []
+    default_created_at = created_at or _utc_now_iso()
     for component_type in CRITICAL_COMPONENTS:
+        if component_type not in components:
+            continue
         payload = dict(components.get(component_type, {}))
         source_ref = str(payload.get("source_ref") or f"{component_type}_artifact")
-        captured_at = str(payload.get("captured_at") or created_at or _utc_now_iso())
+        source_metadata = payload.get("source_metadata") if isinstance(payload.get("source_metadata"), Mapping) else {}
+        captured_value = payload.get("captured_at") or payload.get("source_captured_at") or source_metadata.get("captured_at")
+        captured_at = str(captured_value) if captured_value is not None else ""
         statements = payload.get("statements") if isinstance(payload.get("statements"), list) else []
         content = payload.get("content", {})
+        collected_at = str(payload.get("collected_at") or default_created_at)
         items.append(
             {
                 "component_type": component_type,
@@ -182,7 +194,7 @@ def build_context_bundle_artifact(
                     "source_uri": str(payload.get("source_uri") or f"artifact://{source_ref}"),
                     "source_system": str(payload.get("source_system") or "wpg"),
                     "collected_by": str(payload.get("collected_by") or "wpg_context_governance"),
-                    "collected_at": captured_at,
+                    "collected_at": collected_at,
                     "attribution": str(payload.get("attribution") or source_ref),
                 },
             }
@@ -193,7 +205,7 @@ def build_context_bundle_artifact(
         "schema_version": "1.0.0",
         "context_bundle_id": f"ctxb-{stable_hash({'trace_id': trace_id, 'run_id': run_id, 'items': items})[:12]}",
         "trace": {"trace_id": trace_id, "run_id": run_id},
-        "created_at": created_at or _utc_now_iso(),
+        "created_at": default_created_at,
         "components": items,
     }
     return artifact
@@ -209,7 +221,11 @@ def evaluate_context_admission(
     if not isinstance(components, list):
         components = []
 
-    present_types = {str(item.get("component_type") or "") for item in components if isinstance(item, Mapping)}
+    present_types = {
+        str(item.get("component_type") or "")
+        for item in components
+        if isinstance(item, Mapping) and not _component_is_placeholder(item)
+    }
     missing = sorted([name for name in CRITICAL_COMPONENTS if name not in present_types])
 
     blocking_reasons: list[str] = []

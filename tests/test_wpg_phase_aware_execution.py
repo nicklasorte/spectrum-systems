@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from spectrum_systems.orchestration.wpg_pipeline import run_wpg_pipeline
+from tests.wpg_context_helpers import build_complete_context_bundle
 
 
 def test_wpg_pipeline_emits_phase_governance_artifacts() -> None:
@@ -10,6 +11,7 @@ def test_wpg_pipeline_emits_phase_governance_artifacts() -> None:
         {"segments": [{"segment_id": "s1", "speaker": "A", "agency": "FCC", "text": "Can we proceed? Yes we can proceed."}]},
         run_id="phase-aware",
         trace_id="phase-aware",
+        context_bundle_artifact=build_complete_context_bundle(trace_id="phase-aware", run_id="phase-aware"),
     )
     assert "phase_transition_policy_result" in bundle["artifact_chain"]
     assert "phase_resume_record" in bundle["artifact_chain"]

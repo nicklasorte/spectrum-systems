@@ -29,6 +29,12 @@ def _run(command: list[str]) -> tuple[int, str]:
 def _resolve_changed_files(base_ref: str, head_ref: str, explicit: list[str]) -> list[str]:
     if explicit:
         return sorted(set(path.strip() for path in explicit if path.strip()))
+    zero_sha = "0" * 40
+    if base_ref == zero_sha:
+        code, output = _run(["git", "diff-tree", "--no-commit-id", "--name-only", "-r", head_ref])
+        if code != 0:
+            raise SystemRegistryGuardError(f"failed to resolve changed files from head commit {head_ref}: {output}")
+        return sorted(set(line.strip() for line in output.splitlines() if line.strip()))
     code, output = _run(["git", "diff", "--name-only", f"{base_ref}..{head_ref}"])
     if code != 0:
         raise SystemRegistryGuardError(f"failed to resolve changed files from {base_ref}..{head_ref}: {output}")

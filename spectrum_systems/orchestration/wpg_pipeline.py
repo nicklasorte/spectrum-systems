@@ -580,43 +580,55 @@ def run_wpg_pipeline(
 
     transcript_artifact = ensure_contract(normalize_transcript_payload(transcript_payload, trace_id=trace_id), "transcript_artifact")
     meeting_normalized = _normalize_meeting_payload(meeting_artifact or {}, trace_id=trace_id)
+    derived_components: Dict[str, Dict[str, Any]] = {
+        "transcript": {
+            "source_ref": "transcript_artifact",
+            "content": transcript_artifact.get("outputs", {}),
+            "source_uri": "artifact://transcript_artifact",
+            "source_system": "wpg_pipeline",
+            "captured_at": transcript_artifact.get("outputs", {}).get("captured_at"),
+        },
+        "meeting_minutes": {
+            "source_ref": "meeting_artifact",
+            "content": meeting_normalized.get("outputs", {}),
+            "source_uri": "artifact://meeting_artifact",
+            "source_system": "wpg_pipeline",
+            "captured_at": meeting_normalized.get("outputs", {}).get("date"),
+        },
+    }
+    if isinstance(prior_working_paper, dict):
+        derived_components["prior_wpg_outputs"] = {
+            "source_ref": "prior_working_paper_artifact",
+            "content": prior_working_paper,
+            "source_uri": "artifact://prior_working_paper_artifact",
+            "captured_at": prior_working_paper.get("created_at"),
+        }
+    if isinstance(transcript_payload, dict):
+        if isinstance(transcript_payload.get("slides"), dict):
+            derived_components["slides"] = {
+                "source_ref": "slides_artifact_input",
+                "content": transcript_payload.get("slides", {}),
+                "source_uri": "artifact://slides_artifact_input",
+                "captured_at": transcript_payload.get("slides", {}).get("captured_at"),
+            }
+        if isinstance(transcript_payload.get("critique_artifacts"), dict):
+            derived_components["critique_artifacts"] = {
+                "source_ref": "critique_artifacts_input",
+                "content": transcript_payload.get("critique_artifacts", {}),
+                "source_uri": "artifact://critique_artifacts_input",
+                "captured_at": transcript_payload.get("critique_artifacts", {}).get("captured_at"),
+            }
+        if isinstance(transcript_payload.get("eval_outputs"), dict):
+            derived_components["eval_outputs"] = {
+                "source_ref": "eval_outputs_input",
+                "content": transcript_payload.get("eval_outputs", {}),
+                "source_uri": "artifact://eval_outputs_input",
+                "captured_at": transcript_payload.get("eval_outputs", {}).get("captured_at"),
+            }
     initial_context_bundle = context_bundle_artifact or build_context_bundle_artifact(
         trace_id=trace_id,
         run_id=run_id,
-        components={
-            "transcript": {
-                "source_ref": "transcript_artifact",
-                "content": transcript_artifact.get("outputs", {}),
-                "source_uri": "artifact://transcript_artifact",
-                "source_system": "wpg_pipeline",
-            },
-            "meeting_minutes": {
-                "source_ref": "meeting_artifact",
-                "content": meeting_normalized.get("outputs", {}),
-                "source_uri": "artifact://meeting_artifact",
-                "source_system": "wpg_pipeline",
-            },
-            "slides": {
-                "source_ref": "slides_artifact_input",
-                "content": {"status": "not_provided", "fallback": "pipeline_managed"},
-                "source_uri": "artifact://slides_artifact_input",
-            },
-            "critique_artifacts": {
-                "source_ref": "critique_artifacts_input",
-                "content": {"status": "not_provided", "fallback": "pipeline_managed"},
-                "source_uri": "artifact://critique_artifacts_input",
-            },
-            "prior_wpg_outputs": {
-                "source_ref": "prior_working_paper_artifact",
-                "content": prior_working_paper or {"status": "no_prior_outputs"},
-                "source_uri": "artifact://prior_working_paper_artifact",
-            },
-            "eval_outputs": {
-                "source_ref": "eval_outputs_input",
-                "content": {"status": "pending_runtime_eval"},
-                "source_uri": "artifact://eval_outputs_input",
-            },
-        },
+        components=derived_components,
     )
     context_admission_result = evaluate_context_admission(initial_context_bundle)
     if context_admission_result["admission_status"] != "pass":

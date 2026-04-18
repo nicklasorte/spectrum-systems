@@ -5,6 +5,7 @@ from pathlib import Path
 
 from spectrum_systems.contracts import load_example, validate_artifact
 from spectrum_systems.orchestration.wpg_pipeline import run_wpg_pipeline
+from tests.wpg_context_helpers import build_complete_context_bundle
 
 FIXTURE = Path("tests/fixtures/wpg/sample_workflow_loop_input.json")
 
@@ -26,6 +27,7 @@ def test_fix16_revision_loop_fail_closed() -> None:
         trace_id="phase-b-reg",
         meeting_artifact=payload["meeting_artifact"],
         comment_artifact=payload["comment_artifact"],
+        context_bundle_artifact=build_complete_context_bundle(trace_id="phase-b-reg", run_id="phase-b-reg"),
     )
     critical_unresolved = bundle["artifact_chain"]["comment_disposition_record"]["outputs"]["critical_unresolved"]
     decision = bundle["artifact_chain"]["comment_disposition_record"]["evaluation_refs"]["control_decision"]["decision"]

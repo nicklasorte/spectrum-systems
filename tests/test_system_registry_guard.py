@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
+from scripts import run_system_registry_guard as registry_guard_script
 from spectrum_systems.modules.governance.system_registry_guard import (
     evaluate_system_registry_guard,
     load_guard_policy,
@@ -307,3 +310,31 @@ def test_current_fix02_changed_surface_passes_with_non_authority_classification(
     )
     assert result["status"] == "pass"
     assert result["normalized_reason_codes"] == []
+
+
+def test_resolve_changed_files_uses_diff_tree_for_zero_base_sha(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[list[str]] = []
+
+    def _fake_run(command: list[str]) -> tuple[int, str]:
+        calls.append(command)
+        return 0, "a.py\nb.py\na.py\n"
+
+    monkeypatch.setattr(registry_guard_script, "_run", _fake_run)
+    files = registry_guard_script._resolve_changed_files("0" * 40, "HEAD", [])
+
+    assert calls == [["git", "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"]]
+    assert files == ["a.py", "b.py"]
+
+
+def test_resolve_changed_files_uses_normal_diff_for_non_zero_base(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[list[str]] = []
+
+    def _fake_run(command: list[str]) -> tuple[int, str]:
+        calls.append(command)
+        return 0, "x.py\ny.py\nx.py\n"
+
+    monkeypatch.setattr(registry_guard_script, "_run", _fake_run)
+    files = registry_guard_script._resolve_changed_files("origin/main", "HEAD", [])
+
+    assert calls == [["git", "diff", "--name-only", "origin/main..HEAD"]]
+    assert files == ["x.py", "y.py"]

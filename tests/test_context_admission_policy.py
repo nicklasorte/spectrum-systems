@@ -124,3 +124,31 @@ def test_context_admission_policy_freezes_for_stale_critical_source() -> None:
     result = evaluate_context_admission(bundle, now=datetime(2026, 4, 18, tzinfo=timezone.utc))
     assert result["admission_status"] == "fail"
     assert result["enforcement_action"] == "FREEZE"
+
+
+def test_context_admission_policy_blocks_when_slides_missing() -> None:
+    bundle = _bundle()
+    bundle["components"] = [item for item in bundle["components"] if item["component_type"] != "slides"]
+    result = evaluate_context_admission(bundle, now=datetime(2026, 4, 18, tzinfo=timezone.utc))
+    assert result["admission_status"] == "fail"
+    assert "missing_required_component:slides" in result["blocking_reasons"]
+
+
+def test_context_admission_policy_blocks_when_critique_missing() -> None:
+    bundle = _bundle()
+    bundle["components"] = [item for item in bundle["components"] if item["component_type"] != "critique_artifacts"]
+    result = evaluate_context_admission(bundle, now=datetime(2026, 4, 18, tzinfo=timezone.utc))
+    assert result["admission_status"] == "fail"
+    assert "missing_required_component:critique_artifacts" in result["blocking_reasons"]
+
+
+def test_context_admission_policy_rejects_placeholder_component() -> None:
+    bundle = _bundle()
+    for component in bundle["components"]:
+        if component["component_type"] == "slides":
+            component["source_ref"] = "slides_artifact_input"
+            component["provenance"]["source_uri"] = "artifact://slides_artifact_input"
+            component["provenance"]["attribution"] = "slides_artifact_input"
+    result = evaluate_context_admission(bundle, now=datetime(2026, 4, 18, tzinfo=timezone.utc))
+    assert result["admission_status"] == "fail"
+    assert "missing_required_component:slides" in result["blocking_reasons"]
