@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
 
@@ -15,24 +14,14 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.authority_leak_rules import find_forbidden_vocabulary, load_authority_registry
 from scripts.authority_shape_detector import detect_authority_shapes
+from spectrum_systems.modules.governance.changed_files import (
+    ChangedFilesResolutionError,
+    resolve_changed_files,
+)
 
 
 class AuthorityLeakGuardError(ValueError):
     """Raised when authority leak guard cannot complete deterministically."""
-
-
-def _run(command: list[str]) -> tuple[int, str]:
-    proc = subprocess.run(command, cwd=REPO_ROOT, check=False, capture_output=True, text=True)
-    return proc.returncode, proc.stdout.strip() or proc.stderr.strip()
-
-
-def _resolve_changed_files(base_ref: str, head_ref: str, explicit: list[str]) -> list[str]:
-    if explicit:
-        return sorted(set(path.strip() for path in explicit if path.strip()))
-    code, output = _run(["git", "diff", "--name-only", f"{base_ref}..{head_ref}"])
-    if code != 0:
-        raise AuthorityLeakGuardError(f"failed to resolve changed files from {base_ref}..{head_ref}: {output}")
-    return sorted(set(line.strip() for line in output.splitlines() if line.strip()))
 
 
 def _parse_args() -> argparse.Namespace:
@@ -55,7 +44,15 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
-    changed_files = _resolve_changed_files(args.base_ref, args.head_ref, list(args.changed_files or []))
+    try:
+        changed_files = resolve_changed_files(
+            repo_root=REPO_ROOT,
+            base_ref=args.base_ref,
+            head_ref=args.head_ref,
+            explicit_changed_files=list(args.changed_files or []),
+        )
+    except ChangedFilesResolutionError as exc:
+        raise AuthorityLeakGuardError(str(exc)) from exc
 
     registry_path = REPO_ROOT / args.registry
     if not registry_path.is_file():
