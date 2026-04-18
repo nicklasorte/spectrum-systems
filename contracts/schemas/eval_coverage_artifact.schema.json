@@ -29,6 +29,9 @@
     "coverage_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
     "gate_status": { "type": "string", "enum": ["pass", "fail"] },
     "blocking_reasons": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
-    "authority_required": { "type": "boolean", "const": true }
+    "authority_required": {
+      "type": "boolean",
+      "const": true
+    }
   }
 }

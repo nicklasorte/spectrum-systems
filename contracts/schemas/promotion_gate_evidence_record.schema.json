@@ -36,6 +36,9 @@
       "items": { "type": "string", "minLength": 1 },
       "uniqueItems": true
     },
-    "authority_required": { "type": "boolean", "const": true }
+    "authority_required": {
+      "type": "boolean",
+      "const": true
+    }
   }
 }

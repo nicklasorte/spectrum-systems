@@ -39,6 +39,9 @@
         "critical_eval_determinate": { "type": "boolean" }
       }
     },
-    "authority_required": { "type": "boolean", "const": true }
+    "authority_required": {
+      "type": "boolean",
+      "const": true
+    }
   }
 }
