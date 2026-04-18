@@ -15,4 +15,4 @@ def test_eval_slice_summary_is_slice_aware() -> None:
     assert summary["slices"]["agency"] == {"A1": 2, "A2": 1}
     assert summary["slices"]["risk"] == {"high": 2, "low": 1}
     assert summary["slices"]["topic"] == {"policy": 2, "lineage": 1}
-    assert summary["decision"] == "BLOCK"
+    assert summary["gate_status"] == "fail"

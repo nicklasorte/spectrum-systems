@@ -1,0 +1,17 @@
+{
+  "artifact_type": "global_invariant_check_record",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-bne02-fix-001",
+  "run_id": "run-bne02-fix-001",
+  "gate": "pipeline_exit",
+  "gate_status": "pass",
+  "blocking_reasons": [],
+  "requirements_satisfied": {
+    "eval_present": true,
+    "control_signal_present": true,
+    "lineage_present": true,
+    "schema_valid": true,
+    "critical_eval_determinate": true
+  },
+  "authority_required": true
+}

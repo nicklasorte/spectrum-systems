@@ -17,45 +17,53 @@ def _validate(instance: dict[str, Any], schema_name: str) -> dict[str, Any]:
 
 def enforce_global_invariants(*, gate: str, trace_id: str, run_id: str, artifact: dict[str, Any]) -> dict[str, Any]:
     eval_present = bool(artifact.get("eval"))
-    control_decision_present = bool(artifact.get("control_decision"))
+    control_signal_present = bool(artifact.get("control_signal"))
     lineage_present = bool(artifact.get("lineage"))
     schema_valid = bool(artifact.get("schema_valid", False))
-    critical_eval_determinate = artifact.get("critical_eval_status") in {"pass", "fail"}
+    critical_status = artifact.get("critical_eval_status")
+    critical_eval_determinate = critical_status in {"pass", "fail"}
 
     reasons: list[str] = []
-    decision = "ALLOW"
+    gate_status = "pass"
     if not eval_present:
         reasons.append("missing_eval")
-    if not control_decision_present:
-        reasons.append("missing_control_decision")
+    if not control_signal_present:
+        reasons.append("missing_control_signal")
     if not lineage_present:
         reasons.append("missing_lineage")
     if not schema_valid:
         reasons.append("schema_validation_failed")
-    if artifact.get("critical_eval_status") == "indeterminate":
+    if critical_status == "indeterminate":
         reasons.append("critical_eval_indeterminate")
-        decision = "FREEZE"
+        gate_status = "indeterminate"
+    elif critical_status is None:
+        reasons.append("critical_eval_status_missing")
+        gate_status = "fail"
+    elif critical_status not in {"pass", "fail"}:
+        reasons.append("critical_eval_status_unknown")
+        gate_status = "fail"
 
-    if reasons and decision != "FREEZE":
-        decision = "BLOCK"
+    if reasons and gate_status == "pass":
+        gate_status = "fail"
 
     result = {
-        "artifact_type": "global_invariant_enforcement_result",
+        "artifact_type": "global_invariant_check_record",
         "schema_version": "1.0.0",
         "trace_id": trace_id,
         "run_id": run_id,
         "gate": gate,
-        "decision": decision,
-        "reason_codes": sorted(set(reasons)),
-        "invariants": {
+        "gate_status": gate_status,
+        "blocking_reasons": sorted(set(reasons)),
+        "requirements_satisfied": {
             "eval_present": eval_present,
-            "control_decision_present": control_decision_present,
+            "control_signal_present": control_signal_present,
             "lineage_present": lineage_present,
             "schema_valid": schema_valid,
             "critical_eval_determinate": critical_eval_determinate,
         },
+        "authority_required": True,
     }
-    return _validate(result, "global_invariant_enforcement_result")
+    return _validate(result, "global_invariant_check_record")
 
 
 def enforce_artifact_eval_requirement_profile(
@@ -83,8 +91,8 @@ def compute_eval_coverage_artifact(
     observed = sorted(set(observed_eval_ids))
     missing = sorted(set(required) - set(observed))
     coverage_ratio = 1.0 if not required else (len(required) - len(missing)) / len(required)
-    decision = "BLOCK" if missing else "ALLOW"
-    reason_codes = ["required_eval_missing"] if missing else []
+    gate_status = "fail" if missing else "pass"
+    blocking_reasons = ["required_eval_missing"] if missing else []
     artifact = {
         "artifact_type": "eval_coverage_artifact",
         "schema_version": "1.0.0",
@@ -95,8 +103,9 @@ def compute_eval_coverage_artifact(
         "observed_eval_ids": observed,
         "missing_eval_ids": missing,
         "coverage_ratio": coverage_ratio,
-        "decision": decision,
-        "reason_codes": reason_codes,
+        "gate_status": gate_status,
+        "blocking_reasons": blocking_reasons,
+        "authority_required": True,
     }
     return _validate(artifact, "eval_coverage_artifact")
 
@@ -115,7 +124,8 @@ def build_eval_slice_summary(*, eval_cases: list[dict[str, Any]]) -> dict[str, A
             "risk": dict(by_risk),
             "topic": dict(by_topic),
         },
-        "decision": "BLOCK" if missing else "ALLOW",
+        "gate_status": "fail" if missing else "pass",
+        "authority_required": True,
     }
 
 
@@ -161,23 +171,24 @@ def evaluate_promotion_gate(
     policy_aligned: bool,
 ) -> dict[str, Any]:
     reqs = {
-        "eval_pass": bool(eval_pass),
+        "eval_complete": bool(eval_pass),
         "lineage_complete": bool(lineage_complete),
         "judgment_present": bool(judgment_present),
         "policy_aligned": bool(policy_aligned),
     }
     reasons = [f"missing_{name}" for name, status in reqs.items() if not status]
-    decision = "BLOCK" if reasons else "ALLOW"
+    gate_status = "fail" if reasons else "pass"
     artifact = {
-        "artifact_type": "promotion_gate_result",
+        "artifact_type": "readiness_gate_evidence_record",
         "schema_version": "1.0.0",
         "trace_id": trace_id,
         "run_id": run_id,
-        "decision": decision,
-        "requirements": reqs,
-        "reason_codes": reasons,
+        "gate_status": gate_status,
+        "requirements_satisfied": reqs,
+        "blocking_reasons": reasons,
+        "authority_required": True,
     }
-    return _validate(artifact, "promotion_gate_result")
+    return _validate(artifact, "promotion_gate_evidence_record")
 
 
 def build_certification_record(
@@ -199,23 +210,25 @@ def build_certification_record(
         if not is_fixed:
             unresolved.append(finding_id)
 
-    required_checks = ["eval_coverage", "promotion_gates", "policy_enforcement", "context_integrity", "drift_control"]
+    required_checks = ["eval_coverage", "promotion_prereqs", "policy_coverage", "context_integrity", "drift_control"]
     check_status = {name: bool(checks.get(name, False)) for name in required_checks}
+    normalized_remaining_risks = [risk.strip() for risk in remaining_risks if isinstance(risk, str) and risk.strip()]
     checks_ok = all(check_status.values())
-    verdict = "CERTIFIED" if checks_ok and not unresolved and not remaining_risks else "BLOCKED"
+    gate_status = "pass" if checks_ok and not unresolved and not normalized_remaining_risks else "fail"
 
     artifact = {
-        "artifact_type": "certification_record",
+        "artifact_type": "readiness_closeout_evidence_record",
         "schema_version": "1.0.0",
         "trace_id": trace_id,
         "run_id": run_id,
-        "verdict": verdict,
-        "checks": check_status,
+        "gate_status": gate_status,
+        "requirements_satisfied": check_status,
         "redteam_findings": normalized_findings,
         "fixes": [
             {"finding_id": str(entry["finding_id"]), "fix_id": str(entry["fix_id"])}
             for entry in fixes
         ],
-        "remaining_risks": [risk for risk in remaining_risks if risk],
+        "remaining_risks": normalized_remaining_risks,
+        "authority_required": True,
     }
-    return _validate(artifact, "certification_record")
+    return _validate(artifact, "certification_evidence_record")

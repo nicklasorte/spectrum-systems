@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum-systems/contracts/certification_record.schema.json",
-  "title": "Certification Record",
+  "$id": "https://spectrum-systems/contracts/certification_evidence_record.schema.json",
+  "title": "Certification Evidence Record",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -9,26 +9,27 @@
     "schema_version",
     "trace_id",
     "run_id",
-    "verdict",
-    "checks",
+    "gate_status",
+    "requirements_satisfied",
     "redteam_findings",
     "fixes",
-    "remaining_risks"
+    "remaining_risks",
+    "authority_required"
   ],
   "properties": {
-    "artifact_type": { "const": "certification_record" },
+    "artifact_type": { "const": "readiness_closeout_evidence_record" },
     "schema_version": { "type": "string", "const": "1.0.0" },
     "trace_id": { "type": "string", "minLength": 1 },
     "run_id": { "type": "string", "minLength": 1 },
-    "verdict": { "type": "string", "enum": ["CERTIFIED", "BLOCKED"] },
-    "checks": {
+    "gate_status": { "type": "string", "enum": ["pass", "fail"] },
+    "requirements_satisfied": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["eval_coverage", "promotion_gates", "policy_enforcement", "context_integrity", "drift_control"],
+      "required": ["eval_coverage", "promotion_prereqs", "policy_coverage", "context_integrity", "drift_control"],
       "properties": {
         "eval_coverage": { "type": "boolean" },
-        "promotion_gates": { "type": "boolean" },
-        "policy_enforcement": { "type": "boolean" },
+        "promotion_prereqs": { "type": "boolean" },
+        "policy_coverage": { "type": "boolean" },
         "context_integrity": { "type": "boolean" },
         "drift_control": { "type": "boolean" }
       }
@@ -60,6 +61,7 @@
     "remaining_risks": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 }
-    }
+    },
+    "authority_required": { "type": "boolean", "const": true }
   }
 }

@@ -14,7 +14,8 @@
     "observed_eval_ids",
     "missing_eval_ids",
     "coverage_ratio",
-    "decision"
+    "gate_status",
+    "authority_required"
   ],
   "properties": {
     "artifact_type": { "const": "eval_coverage_artifact" },
@@ -26,7 +27,8 @@
     "observed_eval_ids": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
     "missing_eval_ids": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
     "coverage_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
-    "decision": { "type": "string", "enum": ["ALLOW", "BLOCK"] },
-    "reason_codes": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+    "gate_status": { "type": "string", "enum": ["pass", "fail"] },
+    "blocking_reasons": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "authority_required": { "type": "boolean", "const": true }
   }
 }

@@ -1,13 +1,13 @@
 {
-  "artifact_type": "certification_record",
+  "artifact_type": "readiness_closeout_evidence_record",
   "schema_version": "1.0.0",
-  "trace_id": "trace-bne02-004",
-  "run_id": "run-bne02-004",
-  "verdict": "CERTIFIED",
-  "checks": {
+  "trace_id": "trace-bne02-fix-003",
+  "run_id": "run-bne02-fix-003",
+  "gate_status": "pass",
+  "requirements_satisfied": {
     "eval_coverage": true,
-    "promotion_gates": true,
-    "policy_enforcement": true,
+    "promotion_prereqs": true,
+    "policy_coverage": true,
     "context_integrity": true,
     "drift_control": true
   },
@@ -23,5 +23,6 @@
       "fix_id": "FIX-13-RTX-13-1"
     }
   ],
-  "remaining_risks": []
+  "remaining_risks": [],
+  "authority_required": true
 }

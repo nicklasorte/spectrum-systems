@@ -9,7 +9,7 @@ def test_eval_coverage_blocks_when_required_eval_missing() -> None:
         required_eval_ids=["eval.a", "eval.b"],
         observed_eval_ids=["eval.a"],
     )
-    assert artifact["decision"] == "BLOCK"
+    assert artifact["gate_status"] == "fail"
     assert artifact["missing_eval_ids"] == ["eval.b"]
     assert artifact["coverage_ratio"] == 0.5
 
@@ -22,5 +22,5 @@ def test_eval_coverage_allows_when_full() -> None:
         required_eval_ids=["eval.a"],
         observed_eval_ids=["eval.a"],
     )
-    assert artifact["decision"] == "ALLOW"
+    assert artifact["gate_status"] == "pass"
     assert artifact["missing_eval_ids"] == []

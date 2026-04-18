@@ -8,10 +8,10 @@ def test_global_fail_closed_blocks_missing_eval_control_lineage_and_schema() -> 
         run_id="run-1",
         artifact={"critical_eval_status": "pass", "schema_valid": False},
     )
-    assert result["decision"] == "BLOCK"
-    assert set(result["reason_codes"]) == {
+    assert result["gate_status"] == "fail"
+    assert set(result["blocking_reasons"]) == {
         "missing_eval",
-        "missing_control_decision",
+        "missing_control_signal",
         "missing_lineage",
         "schema_validation_failed",
     }
@@ -24,11 +24,28 @@ def test_global_fail_closed_freezes_indeterminate_critical_eval() -> None:
         run_id="run-2",
         artifact={
             "eval": {"status": "pass"},
-            "control_decision": {"decision": "ALLOW"},
+            "control_signal": {"status": "ok"},
             "lineage": {"upstream": ["a"]},
             "schema_valid": True,
             "critical_eval_status": "indeterminate",
         },
     )
-    assert result["decision"] == "FREEZE"
-    assert "critical_eval_indeterminate" in result["reason_codes"]
+    assert result["gate_status"] == "indeterminate"
+    assert "critical_eval_indeterminate" in result["blocking_reasons"]
+
+
+def test_global_fail_closed_fails_unknown_critical_eval_status() -> None:
+    result = enforce_global_invariants(
+        gate="phase_transition",
+        trace_id="trace-3",
+        run_id="run-3",
+        artifact={
+            "eval": {"status": "pass"},
+            "control_signal": {"status": "ok"},
+            "lineage": {"upstream": ["a"]},
+            "schema_valid": True,
+            "critical_eval_status": "unknown",
+        },
+    )
+    assert result["gate_status"] == "fail"
+    assert "critical_eval_status_unknown" in result["blocking_reasons"]

@@ -102,3 +102,16 @@ def test_authority_leak_guard_cli_fails_on_non_owner_authority() -> None:
         assert "forbidden_field" in (proc.stdout + proc.stderr)
     finally:
         violator.unlink(missing_ok=True)
+
+
+def test_bne_fix_evidence_examples_are_authority_clean() -> None:
+    registry = load_authority_registry(REGISTRY_PATH)
+    for rel in (
+        "contracts/examples/global_invariant_check_record.json",
+        "contracts/examples/eval_coverage_artifact.json",
+        "contracts/examples/promotion_gate_evidence_record.json",
+        "contracts/examples/certification_evidence_record.json",
+    ):
+        path = REPO_ROOT / rel
+        assert find_forbidden_vocabulary(path, registry) == []
+        assert detect_authority_shapes(path, registry) == []

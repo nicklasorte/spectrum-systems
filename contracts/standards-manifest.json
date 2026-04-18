@@ -1,9 +1,9 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.147",
+  "artifact_version": "1.3.148",
   "schema_version": "1.3.99",
-  "standards_version": "1.9.7",
+  "standards_version": "1.9.8",
   "record_id": "REC-STD-2026-04-17-SLH-001",
   "run_id": "run-20260417T000000Z-slh-001",
   "created_at": "2026-04-17T00:00:00Z",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.147",
+  "source_repo_version": "1.3.148",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -1685,6 +1685,19 @@
       "notes": "SLH-001 shift-left hardening superlayer contract."
     },
     {
+      "artifact_type": "certification_evidence_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.148",
+      "last_updated_in": "1.3.148",
+      "example_path": "contracts/examples/certification_evidence_record.json",
+      "notes": "BNE-02-FIX evidence-only closeout record consumed by canonical certification authority modules."
+    },
+    {
       "artifact_type": "certification_integrity_result",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -1696,19 +1709,6 @@
       "last_updated_in": "1.0.79",
       "example_path": "contracts/examples/certification_integrity_result.json",
       "notes": "VAL-11 governed DONE-01 integrity validation artifact proving fail-closed certification behavior under inconsistent, partial, and conflicting signal combinations."
-    },
-    {
-      "artifact_type": "certification_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.147",
-      "last_updated_in": "1.3.147",
-      "example_path": "contracts/examples/certification_record.json",
-      "notes": "BNE-02 WPG-65 auditable readiness and certification verdict record."
     },
     {
       "artifact_type": "certification_remediation_record",
@@ -6249,17 +6249,17 @@
       "notes": "BATCH-GHA-CORE-01 deterministic GHA-01\u2192GHA-02 handoff index for fail-closed artifact routing without adding workflow decision logic."
     },
     {
-      "artifact_type": "global_invariant_enforcement_result",
+      "artifact_type": "global_invariant_check_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
       "intended_consumers": [
         "spectrum-systems"
       ],
-      "introduced_in": "1.3.147",
-      "last_updated_in": "1.3.147",
-      "example_path": "contracts/examples/global_invariant_enforcement_result.json",
-      "notes": "BNE-02 WPG-60 global fail-closed invariant enforcement gate output."
+      "introduced_in": "1.3.148",
+      "last_updated_in": "1.3.148",
+      "example_path": "contracts/examples/global_invariant_check_record.json",
+      "notes": "BNE-02-FIX evidence-only invariant prerequisite record for canonical authority consumption."
     },
     {
       "artifact_type": "glossary_entry",
@@ -10815,17 +10815,17 @@
       "notes": "BATCH-MB-02 deterministic fail-closed promotion gate decision artifact requiring ready_for_merge plus certified governed evidence before merge-ready visibility."
     },
     {
-      "artifact_type": "promotion_gate_result",
+      "artifact_type": "promotion_gate_evidence_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
       "status": "proposed",
       "intended_consumers": [
         "spectrum-systems"
       ],
-      "introduced_in": "1.3.147",
-      "last_updated_in": "1.3.147",
-      "example_path": "contracts/examples/promotion_gate_result.json",
-      "notes": "BNE-02 WPG-64 promotion gate decision requiring eval/lineage/judgment/policy."
+      "introduced_in": "1.3.148",
+      "last_updated_in": "1.3.148",
+      "example_path": "contracts/examples/promotion_gate_evidence_record.json",
+      "notes": "BNE-02-FIX evidence-only readiness record consumed by canonical promotion authority modules."
     },
     {
       "artifact_type": "promotion_requirement_evaluation_record",

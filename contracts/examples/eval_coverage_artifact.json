@@ -8,6 +8,7 @@
   "observed_eval_ids": ["eval.readiness", "eval.promotion"],
   "missing_eval_ids": [],
   "coverage_ratio": 1.0,
-  "decision": "ALLOW",
-  "reason_codes": []
+  "gate_status": "pass",
+  "blocking_reasons": [],
+  "authority_required": true
 }
