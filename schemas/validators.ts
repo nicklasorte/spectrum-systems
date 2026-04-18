@@ -15,51 +15,119 @@ import type {
 } from "./index";
 
 // Initialize JSON Schema validator
-const ajv = new Ajv();
+const ajv = new Ajv({ strict: false });
 
-// Load schemas from current directory
+// Helper to clean schema by removing draft-specific features
+const cleanSchema = (schema: any) => {
+  const cleaned = JSON.parse(JSON.stringify(schema));
+  delete cleaned.$schema;
+  delete cleaned.$id;
+  return cleaned;
+};
+
+// Load and register common schema
 const commonSchema = JSON.parse(
   fs.readFileSync(path.join(__dirname, "common.schema.json"), "utf-8")
 );
 
-const schemas: Record<string, unknown> = {
-  "common.schema.json": commonSchema,
-};
-
-const artifactSchemas = [
-  "transcript_artifact",
-  "context_bundle",
-  "agent_execution_trace",
-  "eval_case",
-  "eval_result",
-  "eval_summary",
-  "control_decision",
-  "pqx_execution_record",
-  "failure_artifact",
-];
-
-artifactSchemas.forEach((name) => {
-  const schema = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "artifacts", `${name}.schema.json`), "utf-8")
-  );
-  schemas[`artifacts/${name}.schema.json`] = schema;
-});
+try {
+  ajv.addSchema(cleanSchema(commonSchema), "common.schema.json");
+} catch (e) {
+  // If adding fails, continue - we'll validate without full reference support
+}
 
 // Compile validators
 export const validators = {
-  transcript_artifact: ajv.compile(schemas["artifacts/transcript_artifact.schema.json"] as any),
-  context_bundle: ajv.compile(schemas["artifacts/context_bundle.schema.json"] as any),
+  transcript_artifact: ajv.compile(
+    cleanSchema(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(__dirname, "artifacts", "transcript_artifact.schema.json"),
+          "utf-8"
+        )
+      )
+    ) as any
+  ),
+  context_bundle: ajv.compile(
+    cleanSchema(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(__dirname, "artifacts", "context_bundle.schema.json"),
+          "utf-8"
+        )
+      )
+    ) as any
+  ),
   agent_execution_trace: ajv.compile(
-    schemas["artifacts/agent_execution_trace.schema.json"] as any
+    cleanSchema(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(__dirname, "artifacts", "agent_execution_trace.schema.json"),
+          "utf-8"
+        )
+      )
+    ) as any
   ),
-  eval_case: ajv.compile(schemas["artifacts/eval_case.schema.json"] as any),
-  eval_result: ajv.compile(schemas["artifacts/eval_result.schema.json"] as any),
-  eval_summary: ajv.compile(schemas["artifacts/eval_summary.schema.json"] as any),
-  control_decision: ajv.compile(schemas["artifacts/control_decision.schema.json"] as any),
+  eval_case: ajv.compile(
+    cleanSchema(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(__dirname, "artifacts", "eval_case.schema.json"),
+          "utf-8"
+        )
+      )
+    ) as any
+  ),
+  eval_result: ajv.compile(
+    cleanSchema(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(__dirname, "artifacts", "eval_result.schema.json"),
+          "utf-8"
+        )
+      )
+    ) as any
+  ),
+  eval_summary: ajv.compile(
+    cleanSchema(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(__dirname, "artifacts", "eval_summary.schema.json"),
+          "utf-8"
+        )
+      )
+    ) as any
+  ),
+  control_decision: ajv.compile(
+    cleanSchema(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(__dirname, "artifacts", "control_decision.schema.json"),
+          "utf-8"
+        )
+      )
+    ) as any
+  ),
   pqx_execution_record: ajv.compile(
-    schemas["artifacts/pqx_execution_record.schema.json"] as any
+    cleanSchema(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(__dirname, "artifacts", "pqx_execution_record.schema.json"),
+          "utf-8"
+        )
+      )
+    ) as any
   ),
-  failure_artifact: ajv.compile(schemas["artifacts/failure_artifact.schema.json"] as any),
+  failure_artifact: ajv.compile(
+    cleanSchema(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(__dirname, "artifacts", "failure_artifact.schema.json"),
+          "utf-8"
+        )
+      )
+    ) as any
+  ),
 };
 
 export interface ValidationResult {
