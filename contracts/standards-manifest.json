@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.148",
+  "artifact_version": "1.3.149",
   "schema_version": "1.3.99",
   "standards_version": "1.9.8",
-  "record_id": "REC-STD-2026-04-17-SLH-001",
-  "run_id": "run-20260417T000000Z-slh-001",
-  "created_at": "2026-04-17T00:00:00Z",
+  "record_id": "REC-STD-2026-04-18-ENF-01",
+  "run_id": "run-20260418T000000Z-enf-01",
+  "created_at": "2026-04-18T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.148",
+  "source_repo_version": "1.3.149",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -2028,6 +2028,19 @@
       "notes": "Governed complexity-budget recalibration cadence/trigger/review-owner artifact preventing silent drift."
     },
     {
+      "artifact_type": "complexity_justification_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.149",
+      "last_updated_in": "1.3.149",
+      "example_path": "contracts/examples/complexity_justification_record.json",
+      "notes": "ENF-01 required precondition artifact proving complexity justification before control progression."
+    },
+    {
       "artifact_type": "complexity_trend",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -2754,6 +2767,19 @@
       "notes": "CON-031 deterministic fail-closed obedience-proof artifact proving manifest-declared promotion/certification trust-spine surfaces are behaviorally obeyed at runtime seams."
     },
     {
+      "artifact_type": "core_loop_alignment_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.149",
+      "last_updated_in": "1.3.149",
+      "example_path": "contracts/examples/core_loop_alignment_record.json",
+      "notes": "ENF-01 required precondition artifact proving alignment to execution\u2192evaluation\u2192control\u2192enforcement loop."
+    },
+    {
       "artifact_type": "core_system_integration_validation",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -3432,6 +3458,19 @@
       "last_updated_in": "1.9.1",
       "example_path": "contracts/examples/dataset_lineage_record.json",
       "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
+    },
+    {
+      "artifact_type": "debuggability_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.149",
+      "last_updated_in": "1.3.149",
+      "example_path": "contracts/examples/debuggability_record.json",
+      "notes": "ENF-01 required precondition artifact proving traceability, lineage, replay, and reason-code debuggability."
     },
     {
       "artifact_type": "decision_bundle",

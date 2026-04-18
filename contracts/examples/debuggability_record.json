@@ -1,0 +1,26 @@
+{
+  "artifact_type": "debuggability_record",
+  "artifact_id": "dbr-enf01-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.8",
+  "trace_id": "trace-enf01-001",
+  "run_id": "run-enf01-001",
+  "policy_id": "policy-enf01-required-preconditions",
+  "subject_name": "runtime.required_eval_coverage",
+  "trace_complete": true,
+  "lineage_complete": true,
+  "replay_expected": true,
+  "replay_supported": true,
+  "failure_modes_defined": [
+    "missing_required_eval_artifact",
+    "indeterminate_required_eval",
+    "required_eval_failed"
+  ],
+  "reason_codes_defined": true,
+  "diagnostics_entrypoints": [
+    "tests/test_required_eval_coverage.py",
+    "spectrum_systems/modules/runtime/required_eval_coverage.py"
+  ],
+  "emitted_at": "2026-04-18T00:00:00Z"
+}

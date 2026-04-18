@@ -1,0 +1,22 @@
+{
+  "artifact_type": "core_loop_alignment_record",
+  "artifact_id": "clar-enf01-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.8",
+  "trace_id": "trace-enf01-001",
+  "run_id": "run-enf01-001",
+  "policy_id": "policy-enf01-required-preconditions",
+  "subject_name": "runtime.required_eval_coverage",
+  "maps_to_stages": [
+    "execution",
+    "evaluation",
+    "control",
+    "enforcement"
+  ],
+  "strengthens_existing_loop": true,
+  "introduces_parallel_loop": false,
+  "loop_justification": "The slice only adds required precondition evidence on the canonical execution→evaluation→control→enforcement path.",
+  "loop_impact_score": 0.86,
+  "emitted_at": "2026-04-18T00:00:00Z"
+}

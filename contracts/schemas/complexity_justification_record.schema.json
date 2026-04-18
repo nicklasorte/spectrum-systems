@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/complexity_justification_record.schema.json",
+  "title": "complexity_justification_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "trace_id",
+    "run_id",
+    "policy_id",
+    "subject_name",
+    "subject_type",
+    "failure_prevented",
+    "signal_improved",
+    "measurable_metric",
+    "why_not_existing_owner",
+    "justification_status",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "complexity_justification_record"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "policy_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subject_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subject_type": {
+      "type": "string",
+      "enum": [
+        "system",
+        "subsystem",
+        "control_surface",
+        "major_change"
+      ]
+    },
+    "failure_prevented": {
+      "type": "string",
+      "minLength": 1
+    },
+    "signal_improved": {
+      "type": "string",
+      "minLength": 1
+    },
+    "measurable_metric": {
+      "type": "string",
+      "minLength": 1
+    },
+    "why_not_existing_owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "duplicate_of_system": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "justification_status": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "approved",
+        "rejected",
+        "blocked"
+      ]
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

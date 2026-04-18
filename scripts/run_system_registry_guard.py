@@ -26,13 +26,68 @@ def _run(command: list[str]) -> tuple[int, str]:
     return proc.returncode, proc.stdout.strip() or proc.stderr.strip()
 
 
+def _ref_exists(ref: str) -> bool:
+    code, _ = _run(["git", "rev-parse", "--verify", f"{ref}^{{commit}}"])
+    return code == 0
+
+
+def _diff_name_only(range_expr: str) -> tuple[list[str] | None, str | None]:
+    code, output = _run(["git", "diff", "--name-only", range_expr])
+    if code != 0:
+        return None, output
+    files = sorted(set(line.strip() for line in output.splitlines() if line.strip()))
+    return files, None
+
+
 def _resolve_changed_files(base_ref: str, head_ref: str, explicit: list[str]) -> list[str]:
     if explicit:
         return sorted(set(path.strip() for path in explicit if path.strip()))
-    code, output = _run(["git", "diff", "--name-only", f"{base_ref}..{head_ref}"])
-    if code != 0:
-        raise SystemRegistryGuardError(f"failed to resolve changed files from {base_ref}..{head_ref}: {output}")
-    return sorted(set(line.strip() for line in output.splitlines() if line.strip()))
+
+    requested_range = f"{base_ref}..{head_ref}"
+    files, error = _diff_name_only(requested_range)
+    if files is not None:
+        return files
+
+    attempted_fallbacks: list[str] = [f"requested_range={requested_range} failed: {error}"]
+
+    if _ref_exists("origin/main") and _ref_exists("HEAD"):
+        fallback_range = "origin/main...HEAD"
+        files, fallback_error = _diff_name_only(fallback_range)
+        if files is not None:
+            return files
+        attempted_fallbacks.append(f"fallback_origin_main_triple_dot={fallback_range} failed: {fallback_error}")
+
+        merge_base_code, merge_base_output = _run(["git", "merge-base", "origin/main", "HEAD"])
+        if merge_base_code == 0 and merge_base_output:
+            merge_base = merge_base_output.splitlines()[0].strip()
+            merge_range = f"{merge_base}..HEAD"
+            files, merge_error = _diff_name_only(merge_range)
+            if files is not None:
+                return files
+            attempted_fallbacks.append(f"fallback_merge_base={merge_range} failed: {merge_error}")
+        else:
+            attempted_fallbacks.append(
+                "fallback_merge_base=origin/main HEAD failed: "
+                + (merge_base_output or "merge-base resolution failed")
+            )
+    else:
+        attempted_fallbacks.append("fallback_origin_main_triple_dot skipped: missing origin/main or HEAD commit")
+        attempted_fallbacks.append("fallback_merge_base skipped: missing origin/main or HEAD commit")
+
+    if _ref_exists("HEAD~1"):
+        head_parent_range = "HEAD~1..HEAD"
+        files, head_parent_error = _diff_name_only(head_parent_range)
+        if files is not None:
+            return files
+        attempted_fallbacks.append(f"fallback_head_parent={head_parent_range} failed: {head_parent_error}")
+    else:
+        attempted_fallbacks.append("fallback_head_parent skipped: missing HEAD~1 commit")
+
+    raise SystemRegistryGuardError(
+        "failed to resolve changed files; "
+        f"requested_range={requested_range}; "
+        "attempts=" + " | ".join(attempted_fallbacks)
+    )
 
 
 def _parse_args() -> argparse.Namespace:
