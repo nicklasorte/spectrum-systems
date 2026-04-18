@@ -1,88 +1,102 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Execution } from '@/components/dashboard/types';
+import { createArtifactStore, MemoryStorageBackend } from '@/src/artifact-store';
+import type { Execution, PipelineMetrics } from '@/components/dashboard/types';
 
-// TODO: Integrate with artifact store
-// Steps to implement:
-// 1. Query artifact store for pqx_execution_record artifacts
-// 2. Filter by created_at DESC to get recent executions
-// 3. Apply pagination with limit and offset
-// 4. Extract these fields from artifact payload:
-//    - trace_id: from artifact metadata or payload
-//    - phase: execution phase (e.g., "RIL", "CDE", "TLC", "PQX", "FRE", "SEL")
-//    - status: from execution result (PASS, FAIL, RUN, PENDING, BLOCK, ALLOW)
-//    - created_at: ISO timestamp of execution
-//    - control_decision: extracted from control_decision artifact (ALLOW or BLOCK)
-//
-// Example response structure:
-// {
-//   "executions": [
-//     {
-//       "trace_id": "trace-abc123def456",
-//       "phase": "PQX",
-//       "status": "PASS",
-//       "created_at": "2026-04-18T10:30:00Z",
-//       "control_decision": "ALLOW"
-//     },
-//     {
-//       "trace_id": "trace-xyz789uvw012",
-//       "phase": "CDE",
-//       "status": "FAIL",
-//       "created_at": "2026-04-18T10:25:00Z",
-//       "control_decision": "BLOCK"
-//     }
-//   ]
-// }
-
-const MOCK_EXECUTIONS: Execution[] = [
-  {
-    trace_id: 'trace-abc123def456',
-    phase: 'PQX',
-    status: 'PASS',
-    created_at: '2026-04-18T10:30:00Z',
-    control_decision: 'ALLOW',
-  },
-  {
-    trace_id: 'trace-xyz789uvw012',
-    phase: 'CDE',
-    status: 'FAIL',
-    created_at: '2026-04-18T10:25:00Z',
-    control_decision: 'BLOCK',
-  },
-  {
-    trace_id: 'trace-ghi345jkl678',
-    phase: 'TLC',
-    status: 'RUN',
-    created_at: '2026-04-18T10:20:00Z',
-    control_decision: null,
-  },
-  {
-    trace_id: 'trace-mno567pqr890',
-    phase: 'FRE',
-    status: 'PASS',
-    created_at: '2026-04-18T10:15:00Z',
-    control_decision: 'ALLOW',
-  },
-  {
-    trace_id: 'trace-stu901vwx234',
-    phase: 'RIL',
-    status: 'PENDING',
-    created_at: '2026-04-18T10:10:00Z',
-    control_decision: null,
-  },
-];
+// Initialize artifact store (TODO: use persistent backend in production)
+const backend = new MemoryStorageBackend();
+const artifactStore = createArtifactStore(backend);
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const limit = parseInt(searchParams.get('limit') ?? '20', 10);
   const offset = parseInt(searchParams.get('offset') ?? '0', 10);
 
-  // Apply pagination to mock data
-  const paginatedExecutions = MOCK_EXECUTIONS.slice(
-    offset,
-    offset + limit
-  );
+  try {
+    // Query pqx_execution_record artifacts from store
+    // These represent pipeline step executions
+    const executionRecords = await artifactStore.query({
+      artifactKind: 'pqx_execution_record',
+      limit: limit + 10, // Fetch extra to filter/sort
+      offset,
+    });
 
-  return NextResponse.json({
-    executions: paginatedExecutions,
-  });
+    // Transform stored artifacts into dashboard Execution format
+    const executions: Execution[] = executionRecords
+      .map((record) => {
+        const payload = record.payload as any;
+        const pqxStep = payload.pqx_step || {};
+        const timing = payload.timing || {};
+        const failure = payload.failure;
+
+        // Determine status
+        let status: 'PASS' | 'FAIL' | 'RUN' | 'PENDING' | 'BLOCK' | 'ALLOW' = 'RUN';
+        if (payload.execution_status === 'succeeded') {
+          status = 'PASS';
+        } else if (payload.execution_status === 'failed') {
+          status = 'FAIL';
+        } else if (payload.execution_status === 'queued') {
+          status = 'PENDING';
+        }
+
+        // Extract phase from step name (e.g., "MVP-1: Transcript Ingestion" → "Transcript Ingestion")
+        const phase = pqxStep.name
+          ? pqxStep.name.split(': ')[1] || pqxStep.name
+          : 'Unknown';
+
+        // Calculate duration
+        const startTime = timing.started_at
+          ? new Date(timing.started_at).getTime()
+          : 0;
+        const endTime = timing.ended_at
+          ? new Date(timing.ended_at).getTime()
+          : Date.now();
+        const durationMs = endTime - startTime;
+
+        // Determine control decision from status
+        const controlDecision =
+          status === 'PASS' ? ('ALLOW' as const) : status === 'FAIL' ? ('BLOCK' as const) : null;
+
+        return {
+          trace_id: record.artifactId,
+          phase,
+          status,
+          created_at: record.createdAt,
+          control_decision: controlDecision,
+        };
+      })
+      .slice(0, limit); // Apply limit after transformation
+
+    // Query all records to compute metrics
+    const allRecords = await artifactStore.query({
+      artifactKind: 'pqx_execution_record',
+      limit: 1000, // Get all for metrics
+    });
+
+    const metrics: PipelineMetrics = {
+      total_runs: allRecords.length,
+      passed: allRecords.filter(
+        (r) => (r.payload as any).execution_status === 'succeeded'
+      ).length,
+      failed: allRecords.filter(
+        (r) => (r.payload as any).execution_status === 'failed'
+      ).length,
+      in_progress: allRecords.filter(
+        (r) =>
+          (r.payload as any).execution_status === 'queued' ||
+          (r.payload as any).execution_status === 'running'
+      ).length,
+    };
+
+    return NextResponse.json({
+      executions,
+      metrics,
+      total: allRecords.length,
+    });
+  } catch (error) {
+    console.error('Error fetching executions:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch executions' },
+      { status: 500 }
+    );
+  }
 }

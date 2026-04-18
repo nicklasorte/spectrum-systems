@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { fetchExecutions, fetchTraceDetail } from '@/lib/api';
 import PipelineOverview from '@/components/dashboard/PipelineOverview';
 import ExecutionTable from '@/components/dashboard/ExecutionTable';
 import ExecutionTraceViewer from '@/components/dashboard/ExecutionTraceViewer';
@@ -20,45 +21,47 @@ export default function PipelinePage() {
     in_progress: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const loadExecutions = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/executions?limit=20');
-        const data = await response.json();
+        const data = await fetchExecutions(20, 0);
         setExecutions(data.executions);
-
-        const computedMetrics: PipelineMetrics = {
-          total_runs: data.executions.length,
-          passed: data.executions.filter(
-            (e: Execution) => e.status === 'PASS' || e.status === 'ALLOW'
-          ).length,
-          failed: data.executions.filter(
-            (e: Execution) => e.status === 'FAIL' || e.status === 'BLOCK'
-          ).length,
-          in_progress: data.executions.filter(
-            (e: Execution) => e.status === 'RUN' || e.status === 'PENDING'
-          ).length,
-        };
-        setMetrics(computedMetrics);
-      } catch (error) {
-        console.error('Failed to fetch executions:', error);
+        setMetrics({
+          total_runs: data.total,
+          passed: data.metrics.passed,
+          failed: data.metrics.failed,
+          in_progress: data.metrics.in_progress,
+        });
+        setError(null);
+      } catch (err) {
+        console.error('Failed to load executions:', err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Failed to load execution data'
+        );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    loadExecutions();
   }, []);
 
   const handleSelectTrace = async (trace_id: string) => {
     try {
-      const response = await fetch(`/api/executions/${trace_id}`);
-      const data = await response.json();
-      setSelectedTrace(data);
-    } catch (error) {
-      console.error('Failed to fetch trace detail:', error);
+      const trace = await fetchTraceDetail(trace_id);
+      setSelectedTrace(trace);
+    } catch (err) {
+      console.error('Failed to load trace:', err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to load trace details'
+      );
     }
   };
 
@@ -73,6 +76,12 @@ export default function PipelinePage() {
         </p>
       </div>
 
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg">
+          <p className="text-red-700 dark:text-red-100">{error}</p>
+        </div>
+      )}
+
       {loading ? (
         <div className="text-center py-12">
           <p className="text-gray-600 dark:text-gray-400">Loading...</p>
@@ -84,10 +93,16 @@ export default function PipelinePage() {
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Recent Runs
           </h2>
-          <ExecutionTable
-            executions={executions}
-            onSelectTrace={handleSelectTrace}
-          />
+          {executions.length === 0 ? (
+            <div className="p-6 text-center text-gray-500 dark:text-gray-400 border rounded-lg">
+              No executions yet. Start a pipeline run to see data here.
+            </div>
+          ) : (
+            <ExecutionTable
+              executions={executions}
+              onSelectTrace={handleSelectTrace}
+            />
+          )}
 
           {selectedTrace && (
             <div className="mt-8 pt-8 border-t border-gray-300 dark:border-gray-700">
