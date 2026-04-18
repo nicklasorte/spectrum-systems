@@ -1,5 +1,7 @@
 # System Registry — Core
 
+This document is an additive explanatory view. Canonical compatibility and enforcement source remains `docs/architecture/system_registry.md` until dedicated tooling migration is completed.
+
 This document defines only:
 - core runtime authorities
 - support planes

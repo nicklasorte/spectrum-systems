@@ -1,5 +1,7 @@
 # Runtime Spine
 
+This document is an additive explanatory view. Canonical compatibility and enforcement source remains `docs/architecture/system_registry.md` until dedicated tooling migration is completed.
+
 ## Purpose
 
 Define the minimal canonical runtime control architecture and hard enforcement semantics.

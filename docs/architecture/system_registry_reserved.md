@@ -1,5 +1,7 @@
 # System Registry — Reserved and Non-Active
 
+This document is an additive explanatory view. Canonical compatibility and enforcement source remains `docs/architecture/system_registry.md` until dedicated tooling migration is completed.
+
 This document tracks reserved acronyms, placeholder seams, and future candidates.
 
 ## Status rule

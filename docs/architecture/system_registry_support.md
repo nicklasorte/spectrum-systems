@@ -1,5 +1,7 @@
 # System Registry — Support Families
 
+This document is an additive explanatory view. Canonical compatibility and enforcement source remains `docs/architecture/system_registry.md` until dedicated tooling migration is completed.
+
 This document groups non-core surfaces as support families.
 
 These families are important, but they are not peer canonical runtime authorities.
