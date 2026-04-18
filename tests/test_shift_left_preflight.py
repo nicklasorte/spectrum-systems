@@ -48,3 +48,19 @@ def test_shift_left_preflight_blocks_full_pytest_without_targeted_rerun(tmp_path
     assert payload["status"] == "blocked"
     assert "remediation_ref" in payload
     assert remediation_path.is_file()
+
+
+def test_shift_left_workflow_coverage_audit_outputs_artifacts() -> None:
+    proc = subprocess.run(
+        ["python", "scripts/run_shift_left_workflow_coverage_audit.py"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode in {0, 1}
+    coverage = Path("outputs/shift_left_hardening/workflow_coverage_audit.json")
+    enforcement = Path("outputs/shift_left_hardening/workflow_front_door_enforcement.json")
+    assert coverage.is_file()
+    assert enforcement.is_file()
+    payload = json.loads(coverage.read_text(encoding="utf-8"))
+    assert payload["artifact_type"] == "con_shift_left_workflow_coverage_audit_result"

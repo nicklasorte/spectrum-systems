@@ -1,0 +1,12 @@
+{
+  "artifact_type": "final_pra_04_workflow_front_door_proof",
+  "artifact_id": "final_pra_04_workflow_front_door_proof-example-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.6",
+  "created_at": "2026-04-17T00:00:00Z",
+  "owner": "CON",
+  "status": "status_value",
+  "proof": "proof_value",
+  "workflow_ref": "workflow_ref_value"
+}

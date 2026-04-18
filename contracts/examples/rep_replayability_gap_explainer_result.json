@@ -1,0 +1,14 @@
+{
+  "artifact_type": "rep_replayability_gap_explainer_result",
+  "artifact_id": "rep_replayability_gap_explainer_result-example-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.6",
+  "created_at": "2026-04-17T00:00:00Z",
+  "owner": "REP",
+  "status": "pass",
+  "missing_prerequisites": [
+    "missing_prerequisites_item"
+  ],
+  "gap_explanation": "gap_explanation_value"
+}

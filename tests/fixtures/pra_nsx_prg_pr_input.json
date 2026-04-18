@@ -1,0 +1,55 @@
+{
+  "repo_name": "acme/spectrum-systems",
+  "pull_requests": [
+    {
+      "number": 1105,
+      "html_url": "https://github.com/acme/spectrum-systems/pull/1105",
+      "title": "SLH-001 integration",
+      "body": "Adds mandatory SLH preflight entrypoint wiring.",
+      "state": "open",
+      "base": {"sha": "base1105"},
+      "head": {"sha": "head1105"},
+      "additions": 200,
+      "deletions": 10,
+      "mergeable": true,
+      "created_at": "2026-04-16T08:00:00Z",
+      "updated_at": "2026-04-16T10:00:00Z",
+      "files": [
+        {"filename": "scripts/run_shift_left_preflight.py"},
+        {"filename": "tests/test_shift_left_preflight.py"}
+      ],
+      "checks": [
+        {"name": "pytest", "conclusion": "success"}
+      ],
+      "reviews": [
+        {"author": "reviewer-a", "state": "APPROVED", "summary": "Looks good."}
+      ]
+    },
+    {
+      "number": 1106,
+      "html_url": "https://github.com/acme/spectrum-systems/pull/1106",
+      "title": "PRA seed",
+      "body": "Introduces PR anchor pipeline",
+      "state": "open",
+      "base": {"sha": "base1106"},
+      "head": {"sha": "head1106"},
+      "additions": 320,
+      "deletions": 90,
+      "mergeable": true,
+      "created_at": "2026-04-17T08:00:00Z",
+      "updated_at": "2026-04-17T11:00:00Z",
+      "files": [
+        {"filename": "contracts/schemas/pra_pull_request_anchor_record.schema.json"},
+        {"filename": ".github/workflows/pr-pytest.yml"},
+        {"filename": "scripts/run_shift_left_preflight.py"}
+      ],
+      "checks": [
+        {"name": "pytest", "conclusion": "failure"},
+        {"name": "contract-enforcement", "conclusion": "success"}
+      ],
+      "reviews": [
+        {"author": "reviewer-b", "state": "COMMENTED", "summary": "Need workflow routing hardening."}
+      ]
+    }
+  ]
+}

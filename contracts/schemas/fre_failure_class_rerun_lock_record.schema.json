@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/fre_failure_class_rerun_lock_record.schema.json",
+  "title": "fre_failure_class_rerun_lock_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "created_at",
+    "owner",
+    "failure_class",
+    "targeted_rerun_required",
+    "targeted_subset",
+    "attempted_full_pytest",
+    "status",
+    "lock_reason"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "fre_failure_class_rerun_lock_record"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner": {
+      "const": "FRE"
+    },
+    "failure_class": {
+      "type": "string"
+    },
+    "targeted_rerun_required": {
+      "type": "boolean"
+    },
+    "targeted_subset": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "attempted_full_pytest": {
+      "type": "boolean"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ]
+    },
+    "lock_reason": {
+      "type": "string"
+    }
+  }
+}

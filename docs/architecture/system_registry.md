@@ -92,6 +92,8 @@ CDE is the only system allowed to emit:
 - **SEL** — enforcement and fail-closed control actions
 - **CDE** — closure-state decision authority
 - **TLC** — top-level orchestration and routing across subsystems
+- **PRA** — pull-request anchor discovery/normalization and authoritative PR-state artifact production
+- **NSX** — non-authoritative next-step extraction and bottleneck/fragility recommendation
 - **PRG** — program-level planning, priority, and governance
 - **GOV** — governance policy and fail-closed gate implementation authority
 - **RSM** — reconciliation state manager for desired-vs-actual state artifacts (non-authoritative planning support)
@@ -591,6 +593,63 @@ CDE is the only system allowed to emit:
   - issue closure authority decisions (CDE-owned)
   - issue policy authority decisions (TPA-owned)
   - influence runtime execution authority or admission decisions (PQX/AEX-owned)
+
+### PRA
+- **acronym:** `PRA`
+- **full_name:** Pull Request Anchor
+- **role:** Resolves and normalizes current pull-request state into canonical anchor artifacts for downstream governed execution planning.
+- **owns:**
+  - pull_request_anchor_resolution
+  - pull_request_metadata_normalization
+  - pull_request_anchor_artifact_emission
+  - changed_scope_extraction
+  - ci_review_extraction
+  - system_impact_mapping
+  - pull_request_delta_artifact_emission
+- **consumes:**
+  - repository pull request metadata
+  - review summaries
+  - CI check summaries
+  - system registry ownership mapping
+- **produces:**
+  - pra_pull_request_resolution_record
+  - pra_pull_request_metadata_normalization_record
+  - pra_pull_request_anchor_record
+  - pra_changed_scope_extraction_record
+  - pra_ci_review_extraction_record
+  - pra_system_impact_mapping_record
+  - pra_pull_request_delta_record
+- **must_not_do:**
+  - rank or prioritize next work slices (NSX-owned)
+  - issue execution/promotion/closure authority decisions (CDE-owned)
+  - execute runtime work or bypass front-door enforcement (PQX/SLH-owned)
+  - enforce policy actions (SEL/TPA-owned)
+
+### NSX
+- **acronym:** `NSX`
+- **full_name:** Next Step eXtractor
+- **role:** Produces deterministic non-authoritative next-step ranking, bottleneck extraction, fragility scoring, and safe bounded slice recommendations from governed inputs.
+- **owns:**
+  - next_step_ranking
+  - bottleneck_detection
+  - fragility_detection
+  - safe_next_slice_recommendation
+  - fix_now_vs_later_classification
+- **consumes:**
+  - pra_pull_request_anchor_record
+  - pra_system_impact_mapping_record
+  - shift-left and weak-seam gate findings
+- **produces:**
+  - nsx_next_step_ranking_record
+  - nsx_bottleneck_detection_record
+  - nsx_fragility_detection_record
+  - nsx_safe_next_slice_recommendation_record
+  - nsx_fix_now_vs_later_record
+- **must_not_do:**
+  - emit authoritative execution decisions (CDE-owned)
+  - mutate execution routing (TLC-owned)
+  - execute or enforce runtime actions (PQX/SEL-owned)
+  - replace PRA anchor authority
 
 ### RSM
 - **acronym:** `RSM`

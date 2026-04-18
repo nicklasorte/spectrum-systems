@@ -1,0 +1,17 @@
+{
+  "artifact_type": "fre_failure_class_rerun_lock_record",
+  "artifact_id": "fre_failure_class_rerun_lock_record-example-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.6",
+  "created_at": "2026-04-17T00:00:00Z",
+  "owner": "FRE",
+  "failure_class": "failure_class_value",
+  "targeted_rerun_required": false,
+  "targeted_subset": [
+    "targeted_subset_item"
+  ],
+  "attempted_full_pytest": false,
+  "status": "pass",
+  "lock_reason": "lock_reason_value"
+}

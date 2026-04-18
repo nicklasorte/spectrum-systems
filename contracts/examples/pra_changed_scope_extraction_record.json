@@ -1,0 +1,22 @@
+{
+  "artifact_type": "pra_changed_scope_extraction_record",
+  "artifact_id": "pra_changed_scope_extraction_record-example-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.6",
+  "created_at": "2026-04-17T00:00:00Z",
+  "owner": "PRA",
+  "pr_number": 1,
+  "changed_files": [
+    "changed_files_item"
+  ],
+  "changed_systems": [
+    "changed_systems_item"
+  ],
+  "changed_contract_families": [
+    "changed_contract_families_item"
+  ],
+  "changed_runtime_seams": [
+    "changed_runtime_seams_item"
+  ]
+}

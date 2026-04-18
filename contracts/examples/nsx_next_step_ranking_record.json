@@ -1,0 +1,18 @@
+{
+  "artifact_type": "nsx_next_step_ranking_record",
+  "artifact_id": "nsx_next_step_ranking_record-example-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.6",
+  "created_at": "2026-04-17T00:00:00Z",
+  "owner": "NSX",
+  "pr_number": 1,
+  "deterministic_basis": "deterministic_basis_value",
+  "ranked_slices": [
+    {
+      "slice_id": "x",
+      "score": 1,
+      "reason": "x"
+    }
+  ]
+}
