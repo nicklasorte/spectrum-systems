@@ -16,6 +16,7 @@ Categories covered:
 - `promotion`
 
 Only declared canonical owners for each category may emit authority artifacts or authority vocabulary.
+Owner matching is boundary-safe: canonical-owner status applies only to the exact registered file path, or to an explicitly declared directory boundary path ending with `/`.
 
 ## Forbidden vocabulary boundary
 Guard rules are defined in:
@@ -45,7 +46,8 @@ The detector blocks non-owner artifacts that:
 - combine outcome + action semantics in one object,
 - resemble certification/promotion verdict artifacts,
 - advertise authority-shaped `artifact_type` or `schema_ref`,
-- declare preparatory assertions but still carry authority semantics.
+- declare preparatory assertions but still carry authority semantics,
+- declare preparatory assertions while containing undeclared fields outside `preparatory_only.allowed_fields`.
 
 ## Preparatory-only convention
 Preparatory artifacts are observational only.
@@ -68,6 +70,7 @@ Allowed preparatory fields:
 - `non_authority_assertions`
 
 Preparatory artifacts must not include final-state authority fields or authority verdict values.
+Preparatory artifacts are allowlist-enforced: when `non_authority_assertions` is declared, every field in the artifact must be present in `preparatory_only.allowed_fields` unless explicitly allowlisted by policy.
 
 ## CI/guard enforcement
 Runner:

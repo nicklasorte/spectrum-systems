@@ -23,8 +23,10 @@ Shadow authority paths were possible when non-owner files emitted authority voca
 
 ## 4) Examples caught
 - Non-owner file emitting `decision: allow` is blocked.
+- Filename-prefix shadow files (for example `control_executor.py_shadow.py`) do not inherit canonical-owner status.
 - Non-owner object combining `decision` + `enforcement_action` is blocked.
 - Preparatory artifact with required non-authority assertions but hidden authority field is blocked (FXA-1100 style regression shape).
+- Preparatory artifact fields are allowlist-enforced: undeclared fields (for example `closure_decision`) fail unless explicitly allowlisted by policy/registry.
 
 ## 5) Tests added
 - `tests/test_authority_leak_detection.py`
@@ -42,5 +44,4 @@ Shadow authority paths were possible when non-owner files emitted authority voca
 
 ## 7) Future extensions
 - Add optional AST flow analysis to detect computed authority fields before serialization.
-- Add policy-tunable strict mode to fail on preparatory artifacts that include non-whitelisted fields.
 - Integrate authority leak guard invocation into preflight orchestration runner once adoption matures.

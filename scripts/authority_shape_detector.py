@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from scripts.authority_leak_rules import FORBIDDEN_FIELDS, FORBIDDEN_VALUES, is_owner_path
+from scripts.authority_leak_rules import FORBIDDEN_FIELDS, FORBIDDEN_VALUES, _matches_scope_entry, is_owner_path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -18,15 +18,15 @@ _ARTIFACT_AUTHORITY_PATTERN = re.compile(r"(decision|certification|promotion|enf
 
 
 def _in_forbidden_context_scope(path: str, registry: dict[str, Any]) -> bool:
-    normalized = path.replace("\\", "/")
+    normalized = path.replace("\\", "/").strip("/")
     contexts = registry.get("forbidden_contexts", {})
     if not isinstance(contexts, dict):
         return True
     scope_prefixes = tuple(str(item) for item in contexts.get("default_scope_prefixes", []) if str(item).strip())
     excluded_prefixes = tuple(str(item) for item in contexts.get("excluded_path_prefixes", []) if str(item).strip())
-    if scope_prefixes and not normalized.startswith(scope_prefixes):
+    if scope_prefixes and not any(_matches_scope_entry(normalized, item) for item in scope_prefixes):
         return False
-    if excluded_prefixes and normalized.startswith(excluded_prefixes):
+    if excluded_prefixes and any(_matches_scope_entry(normalized, item) for item in excluded_prefixes):
         return False
     return True
 
@@ -97,6 +97,10 @@ def detect_authority_shapes(path: Path, registry: dict[str, Any]) -> list[dict[s
         str(item).strip().lower()
         for item in registry.get("preparatory_only", {}).get("required_non_authority_assertions", [])
     )
+    allowed_preparatory_fields = set(
+        str(item).strip().lower()
+        for item in registry.get("preparatory_only", {}).get("allowed_fields", [])
+    )
 
     violations: list[dict[str, Any]] = []
     for index, obj in enumerate(objects, start=1):
@@ -159,6 +163,18 @@ def detect_authority_shapes(path: Path, registry: dict[str, Any]) -> list[dict[s
                         "expected": sorted(required_assertions),
                         "actual": sorted(assertion_set),
                         "message": "preparatory artifact missing required non_authority_assertions",
+                    }
+                )
+            undeclared_fields = sorted(key for key in keys if key not in allowed_preparatory_fields)
+            if undeclared_fields:
+                violations.append(
+                    {
+                        "rule": "preparatory_fields_not_allowlisted",
+                        "path": rel_path,
+                        "object_index": index,
+                        "allowed_fields": sorted(allowed_preparatory_fields),
+                        "undeclared_fields": undeclared_fields,
+                        "message": "preparatory-only artifact contains fields outside preparatory_only.allowed_fields",
                     }
                 )
 
