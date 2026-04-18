@@ -41,6 +41,17 @@ def test_non_owner_emits_authority_field_fails() -> None:
         test_file.unlink(missing_ok=True)
 
 
+def test_filename_prefix_shadow_does_not_inherit_owner_status() -> None:
+    registry = load_authority_registry(REGISTRY_PATH)
+    test_file = REPO_ROOT / "spectrum_systems" / "modules" / "runtime" / "control_executor.py_shadow.py"
+    test_file.write_text("payload = {'decision': 'allow'}\n", encoding="utf-8")
+    try:
+        violations = find_forbidden_vocabulary(test_file, registry)
+        assert any(v["rule"] == "forbidden_field" and v["token"] == "decision" for v in violations)
+    finally:
+        test_file.unlink(missing_ok=True)
+
+
 def test_disguised_authority_shape_fails() -> None:
     registry = load_authority_registry(REGISTRY_PATH)
     payload = {
@@ -54,6 +65,28 @@ def test_disguised_authority_shape_fails() -> None:
     try:
         violations = detect_authority_shapes(path, registry)
         assert any(v["rule"] == "authority_shape_outcome_action" for v in violations)
+    finally:
+        path.unlink(missing_ok=True)
+
+
+def test_preparatory_artifact_undeclared_field_fails_allowlist() -> None:
+    registry = load_authority_registry(REGISTRY_PATH)
+    payload = {
+        "artifact_type": "transcript_control_input_signal",
+        "non_authority_assertions": [
+            "preparatory_only",
+            "not_control_authority",
+            "not_certification_authority",
+        ],
+        "observations": ["candidate signal"],
+        "replay_hash": "abc123",
+        "closure_decision": "pending",
+    }
+    path = REPO_ROOT / "contracts" / "examples" / "tmp_preparatory_allowlist_violation.json"
+    _write_json(path, payload)
+    try:
+        violations = detect_authority_shapes(path, registry)
+        assert any(v["rule"] == "preparatory_fields_not_allowlisted" for v in violations)
     finally:
         path.unlink(missing_ok=True)
 

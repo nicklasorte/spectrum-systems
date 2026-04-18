@@ -55,26 +55,43 @@ def _owner_prefixes(registry: dict[str, Any]) -> tuple[str, ...]:
     return tuple(sorted(set(prefixes)))
 
 
+def _matches_declared_owner_path(normalized_path: str, declared_path: str) -> bool:
+    normalized_declared = _normalize(str(declared_path)).strip()
+    if not normalized_declared:
+        return False
+    if normalized_declared.endswith("/"):
+        boundary = normalized_declared.strip("/") + "/"
+        return normalized_path.startswith(boundary)
+    return normalized_path == normalized_declared.strip("/")
+
+
+def _matches_scope_entry(normalized_path: str, entry: str) -> bool:
+    normalized_entry = _normalize(entry).strip()
+    if not normalized_entry:
+        return False
+    if normalized_entry.endswith("/"):
+        return normalized_path.startswith(normalized_entry.strip("/") + "/")
+    return normalized_path == normalized_entry.strip("/")
+
+
 def is_owner_path(path: str, registry: dict[str, Any]) -> bool:
-    normalized = _normalize(path)
+    normalized = _normalize(path).strip("/")
     for prefix in _owner_prefixes(registry):
-        if normalized.startswith(prefix):
-            return True
-        if f"/{prefix}" in normalized:
+        if _matches_declared_owner_path(normalized, prefix):
             return True
     return False
 
 
 def _in_forbidden_context_scope(path: str, registry: dict[str, Any]) -> bool:
-    normalized = _normalize(path)
+    normalized = _normalize(path).strip("/")
     contexts = registry.get("forbidden_contexts", {})
     if not isinstance(contexts, dict):
         return True
     scope_prefixes = tuple(str(item) for item in contexts.get("default_scope_prefixes", []) if str(item).strip())
     excluded_prefixes = tuple(str(item) for item in contexts.get("excluded_path_prefixes", []) if str(item).strip())
-    if scope_prefixes and not normalized.startswith(scope_prefixes):
+    if scope_prefixes and not any(_matches_scope_entry(normalized, item) for item in scope_prefixes):
         return False
-    if excluded_prefixes and normalized.startswith(excluded_prefixes):
+    if excluded_prefixes and any(_matches_scope_entry(normalized, item) for item in excluded_prefixes):
         return False
     return True
 
