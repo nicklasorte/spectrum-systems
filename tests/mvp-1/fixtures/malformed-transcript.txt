@@ -1,0 +1,4 @@
+This is a transcript without proper speaker labels.
+Just regular text on multiple lines.
+No colons or structure.
+How will the parser handle this?
