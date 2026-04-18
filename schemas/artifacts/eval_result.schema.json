@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/schemas/artifacts/eval_result.schema.json",
+  "title": "Eval Result Artifact",
+  "description": "Result of a single evaluation",
+  "$ref": "#/$defs/eval_result",
+  "$defs": {
+    "eval_result": {
+      "type": "object",
+      "properties": {
+        "artifact_kind": {
+          "const": "eval_result"
+        },
+        "artifact_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "created_at": {
+          "$ref": "common.schema.json#/$defs/datetime"
+        },
+        "schema_ref": {
+          "$ref": "common.schema.json#/$defs/schema_ref"
+        },
+        "trace": {
+          "$ref": "common.schema.json#/$defs/trace_context"
+        },
+        "eval_case_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "target_artifact_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pass", "fail", "indeterminate"]
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Evaluation score from 0-100"
+        },
+        "details": {
+          "type": "object",
+          "description": "Detailed evaluation results"
+        },
+        "error": {
+          "type": "string",
+          "description": "Error message if evaluation failed"
+        }
+      },
+      "required": [
+        "artifact_kind",
+        "artifact_id",
+        "created_at",
+        "schema_ref",
+        "trace",
+        "eval_case_id",
+        "target_artifact_id",
+        "status",
+        "score",
+        "details"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

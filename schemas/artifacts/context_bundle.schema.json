@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/schemas/artifacts/context_bundle.schema.json",
+  "title": "Context Bundle Artifact",
+  "description": "Assembled context for agents",
+  "$ref": "#/$defs/context_bundle",
+  "$defs": {
+    "context_bundle": {
+      "type": "object",
+      "properties": {
+        "artifact_kind": {
+          "const": "context_bundle"
+        },
+        "artifact_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "created_at": {
+          "$ref": "common.schema.json#/$defs/datetime"
+        },
+        "schema_ref": {
+          "$ref": "common.schema.json#/$defs/schema_ref"
+        },
+        "trace": {
+          "$ref": "common.schema.json#/$defs/trace_context"
+        },
+        "input_artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          },
+          "description": "UUIDs of artifacts used to create this bundle"
+        },
+        "context": {
+          "type": "object",
+          "properties": {
+            "transcript_id": {
+              "$ref": "common.schema.json#/$defs/uuid"
+            },
+            "task_description": {
+              "type": "string"
+            },
+            "instructions": {
+              "type": "string"
+            },
+            "prior_outputs": {
+              "type": "array",
+              "items": {},
+              "description": "Prior agent outputs for context"
+            }
+          },
+          "required": ["transcript_id", "task_description", "instructions"],
+          "additionalProperties": false
+        },
+        "content_hash": {
+          "$ref": "common.schema.json#/$defs/sha256_prefixed"
+        }
+      },
+      "required": [
+        "artifact_kind",
+        "artifact_id",
+        "created_at",
+        "schema_ref",
+        "trace",
+        "input_artifacts",
+        "context",
+        "content_hash"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

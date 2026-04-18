@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/schemas/artifacts/transcript_artifact.schema.json",
+  "title": "Transcript Artifact",
+  "description": "Raw transcript with metadata",
+  "$ref": "#/$defs/transcript_artifact",
+  "$defs": {
+    "transcript_artifact": {
+      "type": "object",
+      "properties": {
+        "artifact_kind": {
+          "const": "transcript_artifact"
+        },
+        "artifact_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "created_at": {
+          "$ref": "common.schema.json#/$defs/datetime"
+        },
+        "schema_ref": {
+          "$ref": "common.schema.json#/$defs/schema_ref"
+        },
+        "trace": {
+          "$ref": "common.schema.json#/$defs/trace_context"
+        },
+        "content": {
+          "type": "string",
+          "description": "Raw transcript text"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "speaker_labels": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of speaker names or IDs"
+            },
+            "duration_minutes": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Duration of transcript in minutes"
+            },
+            "language": {
+              "type": "string",
+              "default": "en",
+              "description": "Language code (e.g., 'en', 'es', 'fr')"
+            },
+            "source_file": {
+              "type": "string",
+              "description": "Path or identifier of source file"
+            }
+          },
+          "required": ["speaker_labels", "duration_minutes", "language", "source_file"],
+          "additionalProperties": false
+        },
+        "content_hash": {
+          "$ref": "common.schema.json#/$defs/sha256_prefixed"
+        }
+      },
+      "required": [
+        "artifact_kind",
+        "artifact_id",
+        "created_at",
+        "schema_ref",
+        "trace",
+        "content",
+        "metadata",
+        "content_hash"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/schemas/artifacts/failure_artifact.schema.json",
+  "title": "Failure Artifact",
+  "description": "Explicit failure record",
+  "$ref": "#/$defs/failure_artifact",
+  "$defs": {
+    "failure_artifact": {
+      "type": "object",
+      "properties": {
+        "artifact_kind": {
+          "const": "failure_artifact"
+        },
+        "artifact_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "created_at": {
+          "$ref": "common.schema.json#/$defs/datetime"
+        },
+        "schema_ref": {
+          "$ref": "common.schema.json#/$defs/schema_ref"
+        },
+        "trace": {
+          "$ref": "common.schema.json#/$defs/trace_context"
+        },
+        "failed_step": {
+          "type": "string",
+          "description": "Name of the step that failed"
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/reason_code"
+          },
+          "minItems": 1,
+          "description": "Classification of failure reasons"
+        },
+        "error_message": {
+          "type": "string",
+          "description": "Human-readable error message"
+        },
+        "input_artifact_id": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "recovery_suggested": {
+          "type": "string",
+          "description": "Suggested recovery action"
+        }
+      },
+      "required": [
+        "artifact_kind",
+        "artifact_id",
+        "created_at",
+        "schema_ref",
+        "trace",
+        "failed_step",
+        "reason_codes",
+        "error_message",
+        "input_artifact_id"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
