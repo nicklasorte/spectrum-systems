@@ -1,0 +1,22 @@
+{
+  "artifact_type": "context_admission_result",
+  "schema_version": "1.0.0",
+  "admission_id": "ctxa-example-001",
+  "context_bundle_id": "ctxb-example-001",
+  "trace": {
+    "trace_id": "trace-ctx-001",
+    "run_id": "run-ctx-001"
+  },
+  "admission_status": "pass",
+  "enforcement_action": "ALLOW",
+  "blocking_reasons": [],
+  "stale_sources": [],
+  "contradictions": [],
+  "created_at": "2026-04-18T00:00:00Z",
+  "checks": {
+    "completeness": true,
+    "freshness": true,
+    "contradiction": true,
+    "provenance": true
+  }
+}

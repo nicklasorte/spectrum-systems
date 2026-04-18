@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/context_bundle_artifact.schema.json",
+  "title": "context_bundle_artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "artifact_type": { "type": "string", "const": "context_bundle_artifact" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "context_bundle_id": { "type": "string", "minLength": 1 },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trace_id": { "type": "string", "minLength": 1 },
+        "run_id": { "type": "string", "minLength": 1 }
+      },
+      "required": ["trace_id", "run_id"]
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "component_type": {
+            "type": "string",
+            "enum": ["transcript", "meeting_minutes", "slides", "critique_artifacts", "prior_wpg_outputs", "eval_outputs"]
+          },
+          "required": { "type": "boolean" },
+          "source_type": { "type": "string", "minLength": 1 },
+          "source_ref": { "type": "string", "minLength": 1 },
+          "captured_at": { "type": "string", "format": "date-time" },
+          "content_hash": { "type": "string", "minLength": 1 },
+          "statements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "topic": { "type": "string", "minLength": 1 },
+                "polarity": { "type": "string", "enum": ["affirm", "deny"] },
+                "text": { "type": "string", "minLength": 1 }
+              },
+              "required": ["topic", "polarity", "text"]
+            }
+          },
+          "provenance": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_uri": { "type": "string", "minLength": 1 },
+              "source_system": { "type": "string", "minLength": 1 },
+              "collected_by": { "type": "string", "minLength": 1 },
+              "collected_at": { "type": "string", "format": "date-time" },
+              "attribution": { "type": "string", "minLength": 1 }
+            },
+            "required": ["source_uri", "source_system", "collected_by", "collected_at", "attribution"]
+          }
+        },
+        "required": ["component_type", "required", "source_type", "source_ref", "captured_at", "content_hash", "provenance"]
+      }
+    }
+  },
+  "required": ["artifact_type", "schema_version", "context_bundle_id", "trace", "created_at", "components"]
+}

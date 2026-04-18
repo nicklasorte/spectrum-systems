@@ -1,0 +1,34 @@
+{
+  "artifact_type": "context_bundle_artifact",
+  "schema_version": "1.0.0",
+  "context_bundle_id": "ctxb-example-001",
+  "trace": {
+    "trace_id": "trace-ctx-001",
+    "run_id": "run-ctx-001"
+  },
+  "created_at": "2026-04-18T00:00:00Z",
+  "components": [
+    {
+      "component_type": "transcript",
+      "required": true,
+      "source_type": "transcript",
+      "source_ref": "transcript_artifact",
+      "captured_at": "2026-04-18T00:00:00Z",
+      "content_hash": "sha256:aaa",
+      "statements": [
+        {
+          "topic": "deployment_readiness",
+          "polarity": "affirm",
+          "text": "Deployment can start after control review."
+        }
+      ],
+      "provenance": {
+        "source_uri": "artifact://transcript_artifact",
+        "source_system": "wpg_pipeline",
+        "collected_by": "wpg_context_governance",
+        "collected_at": "2026-04-18T00:00:00Z",
+        "attribution": "transcript_artifact"
+      }
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/context_admission_result.schema.json",
+  "title": "context_admission_result",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "artifact_type": { "type": "string", "const": "context_admission_result" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "admission_id": { "type": "string", "minLength": 1 },
+    "context_bundle_id": { "type": "string", "minLength": 1 },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trace_id": { "type": "string", "minLength": 1 },
+        "run_id": { "type": "string", "minLength": 1 }
+      },
+      "required": ["trace_id", "run_id"]
+    },
+    "admission_status": { "type": "string", "enum": ["pass", "fail"] },
+    "enforcement_action": { "type": "string", "enum": ["ALLOW", "BLOCK", "FREEZE"] },
+    "blocking_reasons": { "type": "array", "items": { "type": "string" } },
+    "stale_sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "source_ref": { "type": "string" },
+          "source_type": { "type": "string" },
+          "classification": { "type": "string" },
+          "reason": { "type": "string" },
+          "critical": { "type": "boolean" }
+        },
+        "required": ["source_ref", "source_type", "classification", "reason", "critical"]
+      }
+    },
+    "contradictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "topic": { "type": "string" },
+          "left_ref": { "type": "string" },
+          "right_ref": { "type": "string" },
+          "left_polarity": { "type": "string" },
+          "right_polarity": { "type": "string" },
+          "status": { "type": "string", "const": "unresolved" }
+        },
+        "required": ["topic", "left_ref", "right_ref", "left_polarity", "right_polarity", "status"]
+      }
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "completeness": { "type": "boolean" },
+        "freshness": { "type": "boolean" },
+        "contradiction": { "type": "boolean" },
+        "provenance": { "type": "boolean" }
+      },
+      "required": ["completeness", "freshness", "contradiction", "provenance"]
+    }
+  },
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "admission_id",
+    "context_bundle_id",
+    "trace",
+    "admission_status",
+    "enforcement_action",
+    "blocking_reasons",
+    "stale_sources",
+    "contradictions",
+    "created_at",
+    "checks"
+  ]
+}

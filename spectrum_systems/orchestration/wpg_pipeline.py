@@ -54,6 +54,12 @@ from spectrum_systems.modules.runtime.bottleneck_alerts import compute_bottlenec
 from spectrum_systems.modules.runtime.semantic_eval import evaluate_semantic_classes, summarize_semantic_evidence
 from spectrum_systems.modules.runtime.failure_to_eval import convert_failures_to_eval_cases
 from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision
+from spectrum_systems.modules.wpg.context_governance import (
+    build_context_bundle_artifact,
+    build_context_redteam_findings,
+    evaluate_context_admission,
+    evaluate_context_readiness_integration,
+)
 
 
 REQUIRED_ENFORCEMENT = {"ALLOW": "proceed", "WARN": "annotate", "BLOCK": "trigger_repair", "FREEZE": "halt"}
@@ -546,6 +552,7 @@ def run_wpg_pipeline(
     comment_artifact: Dict[str, Any] | None = None,
     phase_checkpoint_record: Dict[str, Any] | None = None,
     phase_registry: Dict[str, Any] | None = None,
+    context_bundle_artifact: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     ctx = StageContext(run_id=run_id, trace_id=trace_id)
     registry = ensure_contract(phase_registry, "phase_registry") if phase_registry else default_phase_registry(trace_id)
@@ -573,6 +580,49 @@ def run_wpg_pipeline(
 
     transcript_artifact = ensure_contract(normalize_transcript_payload(transcript_payload, trace_id=trace_id), "transcript_artifact")
     meeting_normalized = _normalize_meeting_payload(meeting_artifact or {}, trace_id=trace_id)
+    initial_context_bundle = context_bundle_artifact or build_context_bundle_artifact(
+        trace_id=trace_id,
+        run_id=run_id,
+        components={
+            "transcript": {
+                "source_ref": "transcript_artifact",
+                "content": transcript_artifact.get("outputs", {}),
+                "source_uri": "artifact://transcript_artifact",
+                "source_system": "wpg_pipeline",
+            },
+            "meeting_minutes": {
+                "source_ref": "meeting_artifact",
+                "content": meeting_normalized.get("outputs", {}),
+                "source_uri": "artifact://meeting_artifact",
+                "source_system": "wpg_pipeline",
+            },
+            "slides": {
+                "source_ref": "slides_artifact_input",
+                "content": {"status": "not_provided", "fallback": "pipeline_managed"},
+                "source_uri": "artifact://slides_artifact_input",
+            },
+            "critique_artifacts": {
+                "source_ref": "critique_artifacts_input",
+                "content": {"status": "not_provided", "fallback": "pipeline_managed"},
+                "source_uri": "artifact://critique_artifacts_input",
+            },
+            "prior_wpg_outputs": {
+                "source_ref": "prior_working_paper_artifact",
+                "content": prior_working_paper or {"status": "no_prior_outputs"},
+                "source_uri": "artifact://prior_working_paper_artifact",
+            },
+            "eval_outputs": {
+                "source_ref": "eval_outputs_input",
+                "content": {"status": "pending_runtime_eval"},
+                "source_uri": "artifact://eval_outputs_input",
+            },
+        },
+    )
+    context_admission_result = evaluate_context_admission(initial_context_bundle)
+    if context_admission_result["admission_status"] != "pass":
+        reasons = ",".join(context_admission_result["blocking_reasons"]) or context_admission_result["enforcement_action"]
+        raise WPGError(f"context admission blocked pipeline execution: {reasons}")
+
     meeting_minutes_artifact = _build_meeting_minutes(transcript_artifact, meeting_normalized, trace_id, run_id)
     action_item_artifact = _extract_action_items(transcript_artifact, meeting_minutes_artifact, trace_id, run_id)
 
@@ -689,6 +739,12 @@ def run_wpg_pipeline(
             "checkpoint": checkpoint,
         },
     )
+    context_readiness = evaluate_context_readiness_integration(context_admission_result)
+    if context_readiness["readiness_decision"] == "BLOCK":
+        readiness_pack["readiness"]["outputs"]["decision"] = "BLOCK"
+        readiness_pack["readiness"]["outputs"]["blocking_reasons"] = sorted(
+            set(readiness_pack["readiness"]["outputs"].get("blocking_reasons", []) + ["context_admission_invalid"])
+        )
     promotion_profile = ensure_contract(
         {
             "artifact_type": "promotion_requirement_profile",
@@ -765,6 +821,10 @@ def run_wpg_pipeline(
         "phase_registry": registry,
         "phase_checkpoint_record": checkpoint,
         "phase_transition_policy_result": transition,
+        "context_bundle_artifact": initial_context_bundle,
+        "context_admission_result": context_admission_result,
+        "context_readiness_integration": context_readiness,
+        "context_redteam_findings": build_context_redteam_findings(trace_id=trace_id),
     }
     phase_resume = build_phase_resume_record(
         checkpoint=checkpoint,
@@ -967,6 +1027,7 @@ def run_wpg_pipeline_from_file(input_path: Path, output_dir: Path, mode: str = "
     comment_artifact = payload.get("comment_artifact")
     phase_checkpoint_record = payload.get("phase_checkpoint_record")
     phase_registry = payload.get("phase_registry")
+    context_bundle_artifact = payload.get("context_bundle_artifact")
 
     bundle = run_wpg_pipeline(
         transcript,
@@ -979,6 +1040,7 @@ def run_wpg_pipeline_from_file(input_path: Path, output_dir: Path, mode: str = "
         comment_artifact=comment_artifact,
         phase_checkpoint_record=phase_checkpoint_record,
         phase_registry=phase_registry,
+        context_bundle_artifact=context_bundle_artifact,
     )
 
     output_dir.mkdir(parents=True, exist_ok=True)
