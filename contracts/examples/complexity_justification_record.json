@@ -1,0 +1,19 @@
+{
+  "artifact_type": "complexity_justification_record",
+  "artifact_id": "cjr-enf01-001",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.9.8",
+  "trace_id": "trace-enf01-001",
+  "run_id": "run-enf01-001",
+  "policy_id": "policy-enf01-required-preconditions",
+  "subject_name": "runtime.evaluation-control-enforcement-spine",
+  "subject_type": "major_change",
+  "failure_prevented": "unbounded progression without governed precondition evidence",
+  "signal_improved": "pre-execution control readiness confidence",
+  "measurable_metric": "required_eval_precondition_coverage_rate",
+  "why_not_existing_owner": "Existing owners enforce stages but do not carry explicit complexity intent evidence for new control surfaces.",
+  "duplicate_of_system": null,
+  "justification_status": "approved",
+  "emitted_at": "2026-04-18T00:00:00Z"
+}

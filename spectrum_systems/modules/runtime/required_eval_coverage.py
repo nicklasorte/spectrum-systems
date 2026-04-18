@@ -19,6 +19,12 @@ class RequiredEvalCoverageError(Exception):
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _DEFAULT_REGISTRY_PATH = _REPO_ROOT / "contracts" / "examples" / "required_eval_registry.json"
 
+_ENF01_REQUIRED_EVALS = {
+    "complexity_justification_valid",
+    "core_loop_alignment_valid",
+    "debuggability_valid",
+}
+
 
 def _validate(payload: dict[str, Any], schema_name: str) -> None:
     validator = Draft202012Validator(load_schema(schema_name), format_checker=FormatChecker())
@@ -31,6 +37,102 @@ def _validate(payload: dict[str, Any], schema_name: str) -> None:
 def _digest(prefix: str, payload: dict[str, Any]) -> str:
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return f"{prefix}-{hashlib.sha256(canonical.encode('utf-8')).hexdigest()[:12].upper()}"
+
+
+def _is_non_empty_text(value: Any) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _is_non_empty_list(value: Any) -> bool:
+    return isinstance(value, list) and any(isinstance(item, str) and item.strip() for item in value)
+
+
+def _enf01_enforcement_from_eval_records(
+    *,
+    required_declared: list[str],
+    result_by_id: dict[str, dict[str, Any]],
+) -> tuple[str, str, str, list[str]]:
+    if set(required_declared) != _ENF01_REQUIRED_EVALS:
+        return "allow", "none", "complete", []
+
+    blocking_reasons: list[str] = []
+    freeze_reasons: list[str] = []
+
+    complexity = result_by_id.get("complexity_justification_valid")
+    complexity_record = complexity.get("complexity_justification_record") if isinstance(complexity, dict) else None
+    if not isinstance(complexity_record, dict):
+        blocking_reasons.append("missing required artifact: complexity_justification_record")
+    else:
+        if not _is_non_empty_text(complexity_record.get("failure_prevented")):
+            blocking_reasons.append("complexity_justification_record.failure_prevented must be present")
+        metric_present = _is_non_empty_text(complexity_record.get("measurable_metric")) or _is_non_empty_text(complexity_record.get("signal_improved"))
+        if not metric_present:
+            blocking_reasons.append("complexity_justification_record must include measurable_metric or signal_improved")
+        if not _is_non_empty_text(complexity_record.get("why_not_existing_owner")):
+            blocking_reasons.append("complexity_justification_record.why_not_existing_owner must be present")
+        duplicate_of_system = complexity_record.get("duplicate_of_system")
+        if isinstance(duplicate_of_system, str) and duplicate_of_system.strip():
+            justification_status = str(complexity_record.get("justification_status") or "")
+            if justification_status not in {"rejected", "blocked"}:
+                blocking_reasons.append("duplicate ownership signal detected via complexity_justification_record.duplicate_of_system")
+
+    loop = result_by_id.get("core_loop_alignment_valid")
+    loop_record = loop.get("core_loop_alignment_record") if isinstance(loop, dict) else None
+    if not isinstance(loop_record, dict):
+        blocking_reasons.append("missing required artifact: core_loop_alignment_record")
+    else:
+        loop_mapping_status = str(loop_record.get("loop_mapping_status") or "").lower()
+        if loop_mapping_status == "indeterminate":
+            freeze_reasons.append("loop mapping is indeterminate")
+        maps_to_stages = loop_record.get("maps_to_stages")
+        if not isinstance(maps_to_stages, list) or not maps_to_stages:
+            blocking_reasons.append("core_loop_alignment_record.maps_to_stages must be non-empty")
+        strengthens_existing_loop = loop_record.get("strengthens_existing_loop")
+        explicitly_acceptable = bool(loop_record.get("explicitly_acceptable"))
+        if strengthens_existing_loop is not True and not explicitly_acceptable:
+            blocking_reasons.append("core_loop_alignment_record must strengthen existing loop or be explicitly acceptable")
+        introduces_parallel_loop = loop_record.get("introduces_parallel_loop")
+        if introduces_parallel_loop is True:
+            blocking_reasons.append("core_loop_alignment_record introduces parallel loop")
+        score = loop_record.get("loop_impact_score")
+        if not isinstance(score, (int, float)):
+            blocking_reasons.append("core_loop_alignment_record.loop_impact_score must be numeric")
+        elif float(score) < 0.6 or float(score) > 1.0:
+            blocking_reasons.append("core_loop_alignment_record.loop_impact_score must be between 0.6 and 1.0")
+
+    debug = result_by_id.get("debuggability_valid")
+    debug_record = debug.get("debuggability_record") if isinstance(debug, dict) else None
+    if not isinstance(debug_record, dict):
+        blocking_reasons.append("missing required artifact: debuggability_record")
+    else:
+        if debug_record.get("trace_complete") is not True:
+            blocking_reasons.append("debuggability_record.trace_complete must be true")
+        if debug_record.get("lineage_complete") is not True:
+            blocking_reasons.append("debuggability_record.lineage_complete must be true")
+        if not _is_non_empty_list(debug_record.get("failure_modes_defined")):
+            blocking_reasons.append("debuggability_record.failure_modes_defined must be non-empty")
+        if debug_record.get("reason_codes_defined") is not True:
+            blocking_reasons.append("debuggability_record.reason_codes_defined must be true")
+
+        if debug_record.get("debug_expectations_clear") is False:
+            freeze_reasons.append("replay/debug trace expectations are unclear for target surface")
+
+        replay_expected = debug_record.get("replay_expected")
+        replay_supported = debug_record.get("replay_supported")
+        if replay_expected is True:
+            if replay_supported is not True:
+                if replay_supported is None:
+                    freeze_reasons.append("debuggability evidence is incomplete for required replay support")
+                else:
+                    blocking_reasons.append("debuggability_record.replay_supported must be true when replay_expected is true")
+        elif replay_expected is None:
+            freeze_reasons.append("replay expectation is unclear for target surface")
+
+    if blocking_reasons:
+        return "block", "required_eval_failed", "incomplete", blocking_reasons
+    if freeze_reasons:
+        return "freeze", "indeterminate_required_eval", "indeterminate_blocking", freeze_reasons
+    return "allow", "none", "complete", []
 
 
 def load_required_eval_registry(path: str | Path | None = None) -> dict[str, Any]:
@@ -137,6 +239,15 @@ def enforce_required_eval_coverage(
             blocking_reasons.extend(
                 [f"failing required judgment eval: {eval_id}" for eval_id in failed]
             )
+        else:
+            enf01_decision, enf01_reason_code, enf01_completeness, enf01_reasons = _enf01_enforcement_from_eval_records(
+                required_declared=required_declared,
+                result_by_id=result_by_id,
+            )
+            decision = enf01_decision
+            reason_code = enf01_reason_code
+            completeness = enf01_completeness
+            blocking_reasons = enf01_reasons
 
     signal_reason = {
         "none": "none",

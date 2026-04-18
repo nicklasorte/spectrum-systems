@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/core_loop_alignment_record.schema.json",
+  "title": "core_loop_alignment_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "schema_version",
+    "standards_version",
+    "trace_id",
+    "run_id",
+    "policy_id",
+    "subject_name",
+    "maps_to_stages",
+    "strengthens_existing_loop",
+    "introduces_parallel_loop",
+    "loop_justification",
+    "loop_impact_score",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "core_loop_alignment_record"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "standards_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "policy_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subject_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "maps_to_stages": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "execution",
+          "evaluation",
+          "control",
+          "enforcement"
+        ]
+      }
+    },
+    "strengthens_existing_loop": {
+      "type": "boolean"
+    },
+    "introduces_parallel_loop": {
+      "type": "boolean"
+    },
+    "loop_justification": {
+      "type": "string",
+      "minLength": 1
+    },
+    "loop_impact_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
