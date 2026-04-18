@@ -1,0 +1,17 @@
+{
+  "artifact_type": "eval_coverage_requirement_profile",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-ecv-06",
+  "outputs": {
+    "stage_requirements": [
+      {
+        "stage": "working_paper_assembly",
+        "required_eval_classes": [
+          "contradiction_detection",
+          "grounding_check",
+          "uncertainty_detection"
+        ]
+      }
+    ]
+  }
+}

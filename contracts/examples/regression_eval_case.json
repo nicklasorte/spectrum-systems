@@ -1,0 +1,11 @@
+{
+  "artifact_type": "regression_eval_case",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-ecv-05",
+  "eval_case_id": "reg-find-001",
+  "failure_class": "semantic_blind_spot",
+  "source_eval_case_id": "fde-find-001",
+  "expected_behavior": "block contradictory output",
+  "binding_scope": "wpg_pipeline",
+  "active": true
+}

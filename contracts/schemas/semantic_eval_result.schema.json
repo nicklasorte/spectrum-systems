@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "semantic_eval_result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "trace_id", "stage", "eval_class", "result", "severity", "indeterminate", "details"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "semantic_eval_result"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "trace_id": {"type": "string", "minLength": 1},
+    "stage": {"type": "string", "minLength": 1},
+    "eval_class": {"type": "string", "enum": ["contradiction_detection", "grounding_check", "uncertainty_detection", "missing_question_detection", "answer_support_check"]},
+    "result": {"type": "string", "enum": ["pass", "fail"]},
+    "severity": {"type": "string", "enum": ["LOW", "MEDIUM", "HIGH"]},
+    "indeterminate": {"type": "boolean"},
+    "details": {"type": "object", "additionalProperties": true}
+  }
+}

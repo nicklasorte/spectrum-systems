@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "regression_eval_case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_type", "schema_version", "trace_id", "eval_case_id", "failure_class", "source_eval_case_id", "expected_behavior", "binding_scope", "active"],
+  "properties": {
+    "artifact_type": {"type": "string", "const": "regression_eval_case"},
+    "schema_version": {"type": "string", "const": "1.0.0"},
+    "trace_id": {"type": "string", "minLength": 1},
+    "eval_case_id": {"type": "string", "minLength": 1},
+    "failure_class": {"type": "string", "minLength": 1},
+    "source_eval_case_id": {"type": "string", "minLength": 1},
+    "expected_behavior": {"type": "string", "minLength": 1},
+    "binding_scope": {"type": "string", "minLength": 1},
+    "active": {"type": "boolean"}
+  }
+}

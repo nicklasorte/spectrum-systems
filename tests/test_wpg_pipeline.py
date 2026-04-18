@@ -139,10 +139,10 @@ def test_phase_a_assurance_artifacts_emitted() -> None:
     assert bundle["artifact_chain"]["wpg_grounding_eval_case"]["outputs"]["supported_claim_ratio"] >= 0.0
     assert bundle["artifact_chain"]["wpg_uncertainty_control_record"]["outputs"]["narrative_warning_present"] is True
 
-def test_rtx05_redteam_has_no_high_allow() -> None:
+def test_rtx05_redteam_has_no_high_green_proceed() -> None:
     findings = run_wpg_redteam_suite()
     assert all(
-        not (entry["severity"] == "HIGH" and entry["decision"] == "ALLOW")
+        not (entry["severity"] == "HIGH" and entry["control_outcome"] == "proceed")
         for entry in findings["findings"]
     )
 
