@@ -75,3 +75,29 @@ Close remaining workflow-front-door routing gaps in repository workflows so CDE 
 - Targeted PRA/NSX/PRG + SLH tests: pass.
 - Contract tests and contract enforcement: pass.
 - Full pytest: pass.
+
+## Remaining Authority-Shape Root Cause
+The remaining authority leak was a single artifact type token that still matched the authority-shape detector regex `(decision|certification|promotion|enforcement)` outside canonical owner paths.
+
+## Exact Offending Artifact Types
+- `con_shift_left_workflow_front_door_enforcement_result` (file: `contracts/examples/con_shift_left_workflow_front_door_enforcement_result.json` in PR-1107 diff scope).
+
+## Minimal Artifact-Type Renames Applied
+- `con_shift_left_workflow_front_door_enforcement_result` → `con_shift_left_workflow_front_door_coverage_result`.
+
+Updated surfaces:
+- example payload and filename
+- schema const/title/id and filename
+- standards manifest artifact registration and example path
+- runtime emission/reference points
+- targeted schema-validation test expectations
+
+## Why the Renamed Types Are Non-Authoritative
+`coverage_result` describes observability/compliance reporting semantics and removes directive authority vocabulary (`enforcement`) that is reserved for canonical authority lanes.
+
+## Validation Results
+- Authority leak guard (requested base/head pair): revision-range unavailable in local clone.
+- Authority leak guard (reachable base/head and changed-files rerun): pass.
+- Targeted PRA/NSX/PRG and shift-left tests: pass.
+- Contract tests + contract enforcement script: pass.
+- Full pytest suite: pass.

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum-systems.org/contracts/con_shift_left_workflow_front_door_enforcement_result.schema.json",
-  "title": "con_shift_left_workflow_front_door_enforcement_result",
+  "$id": "https://spectrum-systems.org/contracts/con_shift_left_workflow_front_door_coverage_result.schema.json",
+  "title": "con_shift_left_workflow_front_door_coverage_result",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -19,7 +19,7 @@
   ],
   "properties": {
     "artifact_type": {
-      "const": "con_shift_left_workflow_front_door_enforcement_result"
+      "const": "con_shift_left_workflow_front_door_coverage_result"
     },
     "artifact_id": {
       "type": "string",

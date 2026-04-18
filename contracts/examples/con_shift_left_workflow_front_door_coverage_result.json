@@ -1,6 +1,6 @@
 {
-  "artifact_type": "con_shift_left_workflow_front_door_enforcement_result",
-  "artifact_id": "con_shift_left_workflow_front_door_enforcement_result-example-001",
+  "artifact_type": "con_shift_left_workflow_front_door_coverage_result",
+  "artifact_id": "con_shift_left_workflow_front_door_coverage_result-example-001",
   "artifact_version": "1.0.0",
   "schema_version": "1.0.0",
   "standards_version": "1.9.6",

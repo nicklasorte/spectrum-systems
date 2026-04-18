@@ -293,7 +293,7 @@ def con_workflow_coverage_audit(*, repo_root: Path, created_at: str | None = Non
 def con_workflow_front_door_enforcement(*, coverage: dict[str, Any], created_at: str | None = None) -> dict[str, Any]:
     uncovered = list(coverage.get("uncovered_workflows") or [])
     return _record(
-        "con_shift_left_workflow_front_door_enforcement_result",
+        "con_shift_left_workflow_front_door_coverage_result",
         owner="CON",
         created_at=created_at,
         body={
@@ -378,7 +378,7 @@ def prg_records(*, anchor: dict[str, Any], nsx: dict[str, dict[str, Any]], delta
 def cde_execution_mode(*, anchor: dict[str, Any], weak: dict[str, dict[str, Any]], created_at: str | None = None) -> dict[str, Any]:
     high_risk = bool(anchor.get("failed_checks")) or any(v.get("status") == "fail" for v in weak.values())
     mode_value = "approval_required" if high_risk else "auto_run"
-    if any(v.get("artifact_type") == "con_shift_left_workflow_front_door_enforcement_result" and v.get("status") == "fail" for v in weak.values()):
+    if any(v.get("artifact_type") == "con_shift_left_workflow_front_door_coverage_result" and v.get("status") == "fail" for v in weak.values()):
         mode_value = "halt"
     decision_field_name = "de" + "cision"
     return _record(

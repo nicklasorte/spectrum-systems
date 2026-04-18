@@ -222,7 +222,7 @@ def test_chain_script_emits_schema_valid_artifacts(tmp_path: Path) -> None:
         "prg_codex_prompt_generation_record",
         "cde_execution_mode_selection_decision",
         "con_shift_left_workflow_coverage_audit_result",
-        "con_shift_left_workflow_front_door_enforcement_result",
+        "con_shift_left_workflow_front_door_coverage_result",
         "lin_required_lineage_producer_audit_result",
         "obs_required_observability_producer_audit_result",
         "rep_replayability_gap_explainer_result",
