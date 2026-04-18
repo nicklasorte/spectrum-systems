@@ -1,0 +1,13 @@
+{
+  "artifact_type": "semantic_eval_result",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-ecv-04",
+  "stage": "working_paper_assembly",
+  "eval_class": "grounding_check",
+  "result": "pass",
+  "severity": "LOW",
+  "indeterminate": false,
+  "details": {
+    "unsupported_count": 0
+  }
+}

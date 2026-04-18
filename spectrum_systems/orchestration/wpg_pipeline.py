@@ -43,12 +43,15 @@ from spectrum_systems.modules.wpg.common import (
     stage_provenance,
 )
 from spectrum_systems.modules.wpg.eval_coverage import compute_wpg_eval_coverage
+from spectrum_systems.modules.wpg.eval_coverage import build_eval_coverage_requirement_profile
 from spectrum_systems.modules.governance.artifact_eval_requirements import evaluate_required_evals
 from spectrum_systems.modules.governance.release_readiness_policy import evaluate_release_readiness
 from spectrum_systems.modules.governance.promotion_requirements import evaluate_promotion_requirements
 from spectrum_systems.modules.governance.phase_certified_expansion_gate import evaluate_phase_certified_expansion_gate
 from spectrum_systems.modules.runtime.operator_trust_view import build_operator_trust_view
 from spectrum_systems.modules.runtime.bottleneck_alerts import compute_bottleneck_alerts
+from spectrum_systems.modules.runtime.semantic_eval import evaluate_semantic_classes, semantic_control_decision
+from spectrum_systems.modules.runtime.failure_to_eval import convert_failures_to_eval_cases
 
 
 REQUIRED_ENFORCEMENT = {"ALLOW": "proceed", "WARN": "annotate", "BLOCK": "trigger_repair", "FREEZE": "halt"}
@@ -635,36 +638,27 @@ def run_wpg_pipeline(
             "trace_id": trace_id,
             "outputs": {
                 "requirements": [
-                    {
-                        "eval_id": "eval.transcript_ingress",
-                        "severity": "high",
-                        "blocking": True,
-                        "stages": ["phase_b"],
-                        "artifact_families": ["wpg"],
-                    },
-                    {
-                        "eval_id": "eval.readiness",
-                        "severity": "high",
-                        "blocking": True,
-                        "stages": ["phase_b"],
-                        "artifact_families": ["wpg"],
-                    },
-                    {
-                        "eval_id": "eval.promotion",
-                        "severity": "high",
-                        "blocking": True,
-                        "stages": ["phase_b"],
-                        "artifact_families": ["wpg"],
-                    },
+                    {"eval_id": "eval.transcript_ingress", "severity": "high", "blocking": True, "stages": ["phase_b"], "artifact_families": ["wpg"]},
+                    {"eval_id": "eval.readiness", "severity": "high", "blocking": True, "stages": ["phase_b"], "artifact_families": ["wpg"]},
+                    {"eval_id": "eval.promotion", "severity": "high", "blocking": True, "stages": ["phase_b"], "artifact_families": ["wpg"]},
                 ]
             },
         },
         "artifact_eval_requirement_profile",
     )
+    semantic_results = evaluate_semantic_classes(
+        trace_id=trace_id,
+        stage="working_paper_assembly",
+        transcript=transcript_artifact["outputs"],
+        faqs=faq_bundle["faq_artifact"]["outputs"].get("faqs", []),
+    )
+    semantic_decision = semantic_control_decision(semantic_results)
+    semantic_eval_classes = [row["eval_class"] for row in semantic_results if row.get("result") == "pass"]
+    eval_coverage_requirement_profile = build_eval_coverage_requirement_profile(trace_id=trace_id)
     eval_coverage = compute_wpg_eval_coverage(
         trace_id=trace_id,
-        available_eval_classes=["transcript_ingress", "faq_generation", "readiness", "promotion", "policy_enforcement"],
-        active_stage_family="phase_b:wpg",
+        available_eval_classes=semantic_eval_classes,
+        active_stage_family="working_paper_assembly",
     )
     eval_slice = evaluate_required_evals(
         eval_requirement_profile,
@@ -682,7 +676,10 @@ def run_wpg_pipeline(
         inputs={
             "eval_coverage": eval_coverage["outputs"],
             "critique": {"critical_open": 0},
-            "contradictions": {"critical_open": len(faq_bundle["faq_conflict_artifact"]["outputs"].get("conflicts", []))},
+            "contradictions": {
+                "critical_open": len(faq_bundle["faq_conflict_artifact"]["outputs"].get("conflicts", []))
+                + (1 if "contradiction_detected" in semantic_decision.reasons else 0)
+            },
             "comment_dispositions": {"unresolved_critical": 0},
             "override_hotspots": {"count": 0},
             "evidence_gap_hotspots": {"count": len(cluster_bundle["unknowns_artifact"]["outputs"].get("unknowns", []))},
@@ -751,6 +748,12 @@ def run_wpg_pipeline(
         **governance_policy_pack,
         **assembly,
         **assurance,
+        "semantic_eval_results": {
+            "artifact_type": "semantic_eval_bundle",
+            "schema_version": "1.0.0",
+            "trace_id": trace_id,
+            "outputs": {"results": semantic_results, "decision": semantic_decision.decision, "reasons": semantic_decision.reasons},
+        },
         "phase_registry": registry,
         "phase_checkpoint_record": checkpoint,
         "phase_transition_policy_result": transition,
@@ -777,6 +780,7 @@ def run_wpg_pipeline(
     artifact_chain["wpg_lifecycle_certification_artifact"] = wpg_lifecycle_certification_artifact
     artifact_chain["wpg_reusable_template"] = wpg_reusable_template
     artifact_chain["artifact_eval_requirement_profile"] = eval_requirement_profile
+    artifact_chain["eval_coverage_requirement_profile"] = eval_coverage_requirement_profile
     artifact_chain["eval_slice_summary"] = eval_slice
     artifact_chain["wpg_eval_coverage_artifact"] = eval_coverage
     artifact_chain["promotion_requirement_profile"] = promotion_profile
@@ -818,6 +822,32 @@ def run_wpg_pipeline(
             if decision in {"BLOCK", "FREEZE"}:
                 failure_capture.append({"artifact": name, "decision": decision, "reasons": control.get("reasons", [])})
                 repair_suggestions.append({"artifact": name, "suggestion": "increase grounding evidence and resolve contradictions"})
+    if semantic_decision.decision in {"BLOCK", "FREEZE"}:
+        failure_capture.append({"artifact": "semantic_eval_results", "decision": semantic_decision.decision, "reasons": semantic_decision.reasons})
+
+    failure_loop = convert_failures_to_eval_cases(
+        trace_id=trace_id,
+        failures=[
+            {"source_type": "redteam_finding", "source_record": {"finding_id": "rtx-28-semantic", "failure_class": "semantic_blind_spot", "expected_behavior": "block contradictory or unsupported outputs", "severity": "HIGH"}}
+            for item in failure_capture
+            if item["decision"] in {"BLOCK", "FREEZE"}
+        ],
+    )
+    artifact_chain["failure_to_eval_conversion_record"] = {
+        "artifact_type": failure_loop["artifact_type"],
+        "schema_version": failure_loop["schema_version"],
+        "trace_id": failure_loop["trace_id"],
+        "outputs": failure_loop["outputs"],
+    }
+    artifact_chain["regression_eval_cases"] = {
+        "artifact_type": "regression_eval_case_bundle",
+        "schema_version": "1.0.0",
+        "trace_id": trace_id,
+        "outputs": {
+            "cases": [row["regression_eval_case"] for row in failure_loop.get("conversions", [])],
+            "repeated_failure_class_blocked": bool(failure_capture),
+        },
+    }
 
     replay_signature = stable_hash(artifact_chain)
     return {
