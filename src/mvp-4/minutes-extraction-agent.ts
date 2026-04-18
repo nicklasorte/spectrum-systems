@@ -6,23 +6,44 @@ const client = new Anthropic();
 
 /**
  * MVP-4: Meeting Minutes Extraction
- * First AI-driven step. Haiku for structured extraction.
- * Output must conform to schema — fail-closed on mismatch.
+ *
+ * Input: context_bundle
+ * Output: meeting_minutes_artifact
+ *
+ * Uses Claude Haiku to extract structured meeting minutes.
+ * Output must conform to schema — no free-form text escapes.
+ * Fails-closed on schema mismatch.
+ *
+ * LLM: Claude Haiku (structured extraction, low complexity)
  */
 
 export async function extractMeetingMinutes(
   contextBundle: any
 ): Promise<MinutesExtractionResult> {
   const traceId = uuidv4();
-  const traceContext = { trace_id: traceId, created_at: new Date().toISOString() };
+  const traceContext = {
+    trace_id: traceId,
+    created_at: new Date().toISOString(),
+  };
 
   const prompt = `Extract structured meeting minutes from this transcript.
 Return ONLY valid JSON matching this exact structure:
 
 {
   "agenda_items": ["item1", "item2"],
-  "decisions": [{"decision": "text", "rationale": "text"}],
-  "action_items": [{"item": "text", "owner": "name", "due_date": "YYYY-MM-DD"}],
+  "decisions": [
+    {
+      "decision": "decision text",
+      "rationale": "why this decision was made"
+    }
+  ],
+  "action_items": [
+    {
+      "item": "action description",
+      "owner": "person responsible",
+      "due_date": "YYYY-MM-DD"
+    }
+  ],
   "attendees": ["name1", "name2"]
 }
 
@@ -30,13 +51,13 @@ Transcript:
 ${contextBundle.context.transcript_content}
 
 Rules:
-1. Only include items explicitly mentioned
+1. Be strict: only include items explicitly mentioned
 2. Return ONLY valid JSON, nothing else
-3. No markdown, no preamble
-4. agenda_items: discussion topics
-5. decisions: with rationale
-6. action_items: tasks with owner (optional) and due date (optional)
-7. attendees: people mentioned
+3. No markdown, no preamble, no explanation
+4. agenda_items: list of discussion topics
+5. decisions: each decision with its rationale
+6. action_items: tasks assigned with owner (optional) and due date (optional)
+7. attendees: people mentioned in transcript
 
 JSON response:`;
 
@@ -48,18 +69,34 @@ JSON response:`;
     });
 
     const textContent = response.content.find((c) => c.type === "text");
-    if (!textContent || textContent.type !== "text") throw new Error("No text response");
-
-    const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("Could not parse JSON");
-
-    const minutesData: MeetingMinutesOutput = JSON.parse(jsonMatch[0]);
-
-    if (!Array.isArray(minutesData.agenda_items) || !Array.isArray(minutesData.decisions) ||
-        !Array.isArray(minutesData.action_items) || !Array.isArray(minutesData.attendees)) {
-      throw new Error("Invalid minutes structure");
+    if (!textContent || textContent.type !== "text") {
+      throw new Error("No text response from model");
     }
 
+    // Extract JSON from response
+    const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Could not parse JSON from response");
+    }
+
+    let minutesData: MeetingMinutesOutput;
+    try {
+      minutesData = JSON.parse(jsonMatch[0]);
+    } catch (parseError) {
+      throw new Error(`Invalid JSON from model: ${parseError}`);
+    }
+
+    // Validate structure (fail-closed)
+    if (
+      !Array.isArray(minutesData.agenda_items) ||
+      !Array.isArray(minutesData.decisions) ||
+      !Array.isArray(minutesData.action_items) ||
+      !Array.isArray(minutesData.attendees)
+    ) {
+      throw new Error("Invalid minutes structure: missing required arrays");
+    }
+
+    // Build meeting_minutes_artifact
     const minutesArtifact = {
       artifact_kind: "meeting_minutes_artifact",
       artifact_id: uuidv4(),
@@ -73,19 +110,30 @@ JSON response:`;
       content_hash: computeHash(JSON.stringify(minutesData)),
     };
 
+    // Emit execution record
     const executionRecord = {
       artifact_kind: "pqx_execution_record",
       artifact_id: uuidv4(),
       created_at: new Date().toISOString(),
       trace: traceContext,
-      pqx_step: { name: "MVP-4: Meeting Minutes Extraction", version: "1.0" },
+      pqx_step: {
+        name: "MVP-4: Meeting Minutes Extraction",
+        version: "1.0",
+      },
       execution_status: "succeeded",
       inputs: { artifact_ids: [contextBundle.artifact_id] },
       outputs: { artifact_ids: [minutesArtifact.artifact_id] },
-      timing: { started_at: traceContext.created_at, ended_at: new Date().toISOString() },
+      timing: {
+        started_at: traceContext.created_at,
+        ended_at: new Date().toISOString(),
+      },
     };
 
-    return { success: true, meeting_minutes_artifact: minutesArtifact, execution_record: executionRecord };
+    return {
+      success: true,
+      meeting_minutes_artifact: minutesArtifact,
+      execution_record: executionRecord,
+    };
   } catch (error) {
     return {
       success: false,
@@ -94,8 +142,12 @@ JSON response:`;
       execution_record: {
         artifact_kind: "pqx_execution_record",
         artifact_id: uuidv4(),
+        created_at: new Date().toISOString(),
         execution_status: "failed",
-        failure: { reason_codes: ["extraction_error"], error_message: error instanceof Error ? error.message : "" },
+        failure: {
+          reason_codes: ["extraction_error"],
+          error_message: error instanceof Error ? error.message : String(error),
+        },
       },
     };
   }
