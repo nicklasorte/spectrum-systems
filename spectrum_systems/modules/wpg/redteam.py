@@ -7,12 +7,12 @@ from spectrum_systems.modules.wpg.critique_memory import ingest_comment_matrix_s
 from spectrum_systems.orchestration.wpg_pipeline import run_wpg_pipeline
 
 
-def _highest_decision(decisions: List[str]) -> str:
-    if any(d in {"BLOCK", "FREEZE"} for d in decisions):
-        return "BLOCK"
-    if any(d == "WARN" for d in decisions):
-        return "WARN"
-    return "ALLOW"
+def _highest_control_outcome(actions: List[str]) -> str:
+    if any(action in {"trigger_repair", "halt"} for action in actions):
+        return "halt_or_repair"
+    if any(action == "annotate" for action in actions):
+        return "annotate"
+    return "proceed"
 
 
 def run_wpg_redteam_suite() -> Dict[str, Any]:
@@ -38,25 +38,25 @@ def run_redteam_eval_blind_spots() -> Dict[str, Any]:
                     {"segment_id": "s2", "speaker": "B", "agency": "DoD", "text": "Can we deploy now? No we cannot deploy now."},
                 ]
             },
-            "expect_non_allow": True,
+            "expect_requires_review": True,
         },
         {
             "scenario_id": "unsupported_claims",
             "severity": "HIGH",
             "transcript": {"segments": [{"segment_id": "s3", "speaker": "C", "agency": "NTIA", "text": "What is the schedule? Schedule is unknown."}]},
-            "expect_non_allow": True,
+            "expect_requires_review": True,
         },
         {
             "scenario_id": "missing_context_answers",
             "severity": "MEDIUM",
             "transcript": {"segments": [{"segment_id": "s4", "speaker": "D", "agency": "FCC", "text": "Who owns approval?"}]},
-            "expect_non_allow": True,
+            "expect_requires_review": True,
         },
         {
             "scenario_id": "overconfident_unknowns",
             "severity": "HIGH",
             "transcript": {"segments": [{"segment_id": "s5", "speaker": "E", "agency": "NOAA", "text": "When is release? It is definitely unknown and certainly approved."}]},
-            "expect_non_allow": True,
+            "expect_requires_review": True,
         },
     ]
 
@@ -69,22 +69,22 @@ def run_redteam_eval_blind_spots() -> Dict[str, Any]:
             trace_id=f"rtx-28-{scenario['scenario_id']}",
             mode="working_paper",
         )
-        decisions = [
-            artifact.get("evaluation_refs", {}).get("control_decision", {}).get("decision")
+        actions = [
+            artifact.get("evaluation_refs", {}).get("control_decision", {}).get("enforcement", {}).get("action")
             for artifact in run["artifact_chain"].values()
             if isinstance(artifact, dict)
         ]
-        decision = _highest_decision([d for d in decisions if d])
-        fake_green = bool(scenario.get("expect_non_allow")) and decision == "ALLOW"
+        control_outcome = _highest_control_outcome([a for a in actions if a])
+        fake_green = bool(scenario.get("expect_requires_review")) and control_outcome == "proceed"
         if fake_green:
             fake_green_passes += 1
         findings.append(
             {
                 "scenario_id": scenario["scenario_id"],
                 "severity": scenario["severity"],
-                "decision": decision,
+                "control_outcome": control_outcome,
                 "fake_green": fake_green,
-                "stage_decisions": decisions,
+                "stage_enforcement_actions": actions,
             }
         )
 
@@ -96,7 +96,7 @@ def run_redteam_eval_blind_spots() -> Dict[str, Any]:
         "summary": {
             "scenario_count": len(findings),
             "fake_green_passes": fake_green_passes,
-            "status": "PASS" if fake_green_passes == 0 else "BLOCK",
+            "status": "PASS" if fake_green_passes == 0 else "REVIEW_REQUIRED",
         },
     }
 
@@ -109,12 +109,12 @@ def run_wpg_phase_c_redteam() -> Dict[str, Any]:
         "outputs": {"rows": [{"issue_class": "bias"}]},
     }
     signal = ingest_comment_matrix_signal(malformed, type("Ctx", (), {"run_id": "rtx-13", "trace_id": "rtx-13"})())
-    decision = signal["evaluation_refs"]["control_decision"]["decision"]
+    control_action = signal["evaluation_refs"]["control_decision"]["enforcement"]["action"]
     finding = {
         "scenario_id": "bad_retrieve_matrix_shape",
         "severity": "high",
-        "decision": decision,
-        "passed": decision == "BLOCK",
+        "control_outcome": control_action,
+        "passed": control_action == "trigger_repair",
         "attack_class": "bad_retrieve",
     }
     return {

@@ -12,6 +12,9 @@ STAGE_REQUIREMENTS = {
     "section_writing": ["grounding_check", "answer_support_check"],
     "working_paper_assembly": ["contradiction_detection", "grounding_check", "uncertainty_detection"],
 }
+_STAGE_ALIASES = {
+    "phase_b:wpg": "working_paper_assembly",
+}
 
 
 def build_eval_coverage_requirement_profile(*, trace_id: str) -> Dict[str, Any]:
@@ -32,13 +35,14 @@ def build_eval_coverage_requirement_profile(*, trace_id: str) -> Dict[str, Any]:
 
 
 def enforce_eval_coverage(*, trace_id: str, stage: str, available_eval_classes: List[str]) -> Dict[str, Any]:
-    required = STAGE_REQUIREMENTS.get(stage)
+    normalized_stage = _STAGE_ALIASES.get(stage, stage)
+    required = STAGE_REQUIREMENTS.get(normalized_stage)
     if required is None:
         raise BNEBlockError(f"missing required eval coverage mapping for stage={stage}")
 
     covered = sorted(set(available_eval_classes))
     missing = sorted(set(required) - set(covered))
-    decision = "BLOCK" if missing else "ALLOW"
+    coverage_status = "complete" if not missing else "incomplete"
 
     return ensure_contract(
         {
@@ -49,9 +53,10 @@ def enforce_eval_coverage(*, trace_id: str, stage: str, available_eval_classes: 
                 "active_stage_family": stage,
                 "covered_eval_classes": sorted(set(covered) & set(required)),
                 "missing_eval_classes": missing,
+                "missing_required_eval_classes": missing,
                 "blocking_gaps": missing,
-                "confidence_only_weak_spots": [],
-                "decision": decision,
+                "coverage_status": coverage_status,
+                "blocking_required": bool(missing),
             },
         },
         "wpg_eval_coverage_artifact",

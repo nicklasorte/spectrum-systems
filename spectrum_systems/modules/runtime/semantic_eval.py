@@ -17,9 +17,11 @@ SEMANTIC_EVAL_CLASSES = (
 
 
 @dataclass(frozen=True)
-class SemanticEvalDecision:
-    decision: str
-    reasons: List[str]
+class SemanticEvalEvidence:
+    recommended_action: str
+    requires_control_review: bool
+    blocking_reasons: List[str]
+    severity_rollup: str
 
 
 def _contains_any(text: str, needles: Iterable[str]) -> bool:
@@ -156,26 +158,36 @@ def evaluate_semantic_classes(*, trace_id: str, stage: str, transcript: Dict[str
     return results
 
 
-def semantic_control_decision(results: List[Dict[str, Any]]) -> SemanticEvalDecision:
+def summarize_semantic_evidence(results: List[Dict[str, Any]]) -> SemanticEvalEvidence:
     reasons: List[str] = []
-    decision = "ALLOW"
+    highest_severity = "LOW"
+    severity_rank = {"LOW": 0, "MEDIUM": 1, "HIGH": 2}
+
     by_class = {row.get("eval_class"): row for row in results}
+    for row in results:
+        severity = str(row.get("severity", "LOW")).upper()
+        if severity_rank.get(severity, 0) > severity_rank[highest_severity]:
+            highest_severity = severity
 
     contradiction = by_class.get("contradiction_detection", {})
     if contradiction.get("indeterminate"):
         reasons.append("contradiction_indeterminate")
-        decision = "FREEZE"
     elif contradiction.get("result") == "fail":
         reasons.append("contradiction_detected")
-        decision = "BLOCK"
 
     grounding = by_class.get("grounding_check", {})
     if grounding.get("result") == "fail":
         reasons.append("grounding_failure")
-        decision = "BLOCK"
 
-    if any(row.get("indeterminate") for row in results) and decision == "ALLOW":
+    if any(row.get("indeterminate") for row in results):
         reasons.append("indeterminate_eval")
-        decision = "FREEZE"
 
-    return SemanticEvalDecision(decision=decision, reasons=reasons)
+    requires_control_review = bool(reasons)
+    recommended_action = "control_review_required" if requires_control_review else "continue_with_monitoring"
+
+    return SemanticEvalEvidence(
+        recommended_action=recommended_action,
+        requires_control_review=requires_control_review,
+        blocking_reasons=reasons,
+        severity_rollup=highest_severity,
+    )

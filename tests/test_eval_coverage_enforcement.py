@@ -10,14 +10,15 @@ def test_eval_coverage_requirement_profile_contract_shape() -> None:
     assert profile["outputs"]["stage_requirements"]
 
 
-def test_missing_required_eval_blocks() -> None:
+def test_missing_required_eval_marks_incomplete_and_requires_blocking() -> None:
     coverage = enforce_eval_coverage(
         trace_id="trace-cov",
         stage="working_paper_assembly",
         available_eval_classes=["contradiction_detection", "grounding_check"],
     )
-    assert coverage["outputs"]["decision"] == "BLOCK"
-    assert "uncertainty_detection" in coverage["outputs"]["missing_eval_classes"]
+    assert coverage["outputs"]["coverage_status"] == "incomplete"
+    assert coverage["outputs"]["blocking_required"] is True
+    assert "uncertainty_detection" in coverage["outputs"]["missing_required_eval_classes"]
 
 
 def test_unknown_stage_freeze_via_block_error() -> None:

@@ -35,9 +35,28 @@ def _conversion_inputs(source_type: str, source_record: Dict[str, Any]) -> tuple
     raise BNEBlockError(f"unsupported conversion source_type: {source_type}")
 
 
-def convert_failure_to_eval_case(*, trace_id: str, source_type: str, source_record: Dict[str, Any]) -> Dict[str, Any]:
+def convert_failure_to_eval_case(
+    *,
+    trace_id: str,
+    source_type: str | None = None,
+    source_record: Dict[str, Any] | None = None,
+    source_finding_id: str | None = None,
+    failure_class: str | None = None,
+    expected_behavior: str | None = None,
+    blocking_severity: str | None = None,
+) -> Dict[str, Any]:
+    if source_type is None and source_finding_id:
+        source_type = "redteam_finding"
+        source_record = {
+            "finding_id": source_finding_id,
+            "failure_class": failure_class or "redteam_failure",
+            "expected_behavior": expected_behavior or "block unsafe output",
+            "severity": blocking_severity or "HIGH",
+        }
+
     if source_type not in _ALLOWED_FAILURE_SOURCES:
         raise BNEBlockError(f"unsupported source_type: {source_type}")
+    source_record = source_record or {}
 
     source_id, failure_class, expected_behavior, blocking_severity = _conversion_inputs(source_type, source_record)
     eval_case_id = f"fde-{source_id}"
