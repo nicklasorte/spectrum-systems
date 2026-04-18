@@ -42,7 +42,7 @@ def issue_promotion_gate_decision_from_evidence(
         "decision_id": decision_id,
         "run_id": run_id,
         "terminal_state": "ready_for_merge" if promotion_allowed else "blocked",
-        "certification_status": "certified" if promotion_allowed else "not_certified",
+        "certification_status": "certified" if promotion_allowed else "missing_or_incomplete",
         "promotion_allowed": promotion_allowed,
         "missing_requirements": deepcopy(reasons),
         "supporting_artifact_refs": supporting_artifact_refs or [f"promotion_gate_evidence_record:{trace_id}"],

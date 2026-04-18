@@ -46,3 +46,22 @@ def test_canonical_owner_emits_promotion_authority_decision() -> None:
     )
     assert decision["artifact_type"] == "promotion_gate_decision_artifact"
     assert decision["terminal_state"] == "ready_for_merge"
+
+
+def test_canonical_owner_emits_blocked_promotion_decision_with_valid_certification_status() -> None:
+    evidence = evaluate_promotion_gate(
+        trace_id="trace-4",
+        run_id="run-4",
+        eval_pass=True,
+        lineage_complete=False,
+        judgment_present=True,
+        policy_aligned=True,
+    )
+    decision = issue_promotion_gate_decision_from_evidence(
+        evidence=evidence,
+        run_id="run-4",
+        trace_id="trace-4",
+    )
+    assert decision["artifact_type"] == "promotion_gate_decision_artifact"
+    assert decision["terminal_state"] == "blocked"
+    assert decision["certification_status"] == "missing_or_incomplete"
