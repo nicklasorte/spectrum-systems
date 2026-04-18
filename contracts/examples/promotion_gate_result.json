@@ -1,0 +1,14 @@
+{
+  "artifact_type": "promotion_gate_result",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-bne02-003",
+  "run_id": "run-bne02-003",
+  "decision": "ALLOW",
+  "requirements": {
+    "eval_pass": true,
+    "lineage_complete": true,
+    "judgment_present": true,
+    "policy_aligned": true
+  },
+  "reason_codes": []
+}

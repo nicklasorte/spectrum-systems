@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/global_invariant_enforcement_result.schema.json",
+  "title": "Global Invariant Enforcement Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "run_id",
+    "gate",
+    "decision",
+    "reason_codes",
+    "invariants"
+  ],
+  "properties": {
+    "artifact_type": { "const": "global_invariant_enforcement_result" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "gate": { "type": "string", "enum": ["pipeline_exit", "promotion_gate", "phase_transition"] },
+    "decision": { "type": "string", "enum": ["ALLOW", "BLOCK", "FREEZE"] },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "invariants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eval_present", "control_decision_present", "lineage_present", "schema_valid", "critical_eval_determinate"],
+      "properties": {
+        "eval_present": { "type": "boolean" },
+        "control_decision_present": { "type": "boolean" },
+        "lineage_present": { "type": "boolean" },
+        "schema_valid": { "type": "boolean" },
+        "critical_eval_determinate": { "type": "boolean" }
+      }
+    }
+  }
+}

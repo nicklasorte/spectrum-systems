@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/certification_record.schema.json",
+  "title": "Certification Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "run_id",
+    "verdict",
+    "checks",
+    "redteam_findings",
+    "fixes",
+    "remaining_risks"
+  ],
+  "properties": {
+    "artifact_type": { "const": "certification_record" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "verdict": { "type": "string", "enum": ["CERTIFIED", "BLOCKED"] },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eval_coverage", "promotion_gates", "policy_enforcement", "context_integrity", "drift_control"],
+      "properties": {
+        "eval_coverage": { "type": "boolean" },
+        "promotion_gates": { "type": "boolean" },
+        "policy_enforcement": { "type": "boolean" },
+        "context_integrity": { "type": "boolean" },
+        "drift_control": { "type": "boolean" }
+      }
+    },
+    "redteam_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "status"],
+        "properties": {
+          "finding_id": { "type": "string", "minLength": 1 },
+          "status": { "type": "string", "enum": ["open", "fixed"] }
+        }
+      }
+    },
+    "fixes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "fix_id"],
+        "properties": {
+          "finding_id": { "type": "string", "minLength": 1 },
+          "fix_id": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "remaining_risks": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

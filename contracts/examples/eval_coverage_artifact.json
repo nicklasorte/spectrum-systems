@@ -1,0 +1,13 @@
+{
+  "artifact_type": "eval_coverage_artifact",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-bne02-002",
+  "artifact_family": "wpg",
+  "stage": "readiness",
+  "required_eval_ids": ["eval.readiness", "eval.promotion"],
+  "observed_eval_ids": ["eval.readiness", "eval.promotion"],
+  "missing_eval_ids": [],
+  "coverage_ratio": 1.0,
+  "decision": "ALLOW",
+  "reason_codes": []
+}

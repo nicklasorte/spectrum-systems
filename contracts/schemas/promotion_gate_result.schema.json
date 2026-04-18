@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/promotion_gate_result.schema.json",
+  "title": "Promotion Gate Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "run_id",
+    "decision",
+    "requirements",
+    "reason_codes"
+  ],
+  "properties": {
+    "artifact_type": { "const": "promotion_gate_result" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "decision": { "type": "string", "enum": ["ALLOW", "BLOCK"] },
+    "requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eval_pass", "lineage_complete", "judgment_present", "policy_aligned"],
+      "properties": {
+        "eval_pass": { "type": "boolean" },
+        "lineage_complete": { "type": "boolean" },
+        "judgment_present": { "type": "boolean" },
+        "policy_aligned": { "type": "boolean" }
+      }
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  }
+}
