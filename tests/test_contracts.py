@@ -145,6 +145,16 @@ class ContractSchemaTests(unittest.TestCase):
             instance = load_example(name)
             validate_artifact(instance, name)
 
+    def test_bne_fix_evidence_contract_examples_validate(self) -> None:
+        for name in (
+            "global_invariant_check_record",
+            "eval_coverage_artifact",
+            "promotion_gate_evidence_record",
+            "certification_evidence_record",
+        ):
+            instance = load_example(name)
+            validate_artifact(instance, name)
+
     def test_roadmap_eligibility_contract_examples_validate(self) -> None:
         for name in ("governed_roadmap_artifact", "roadmap_eligibility_artifact", "pqx_strategy_status_artifact"):
             instance = load_example(name)

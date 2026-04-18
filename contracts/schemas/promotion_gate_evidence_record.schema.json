@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/promotion_gate_evidence_record.schema.json",
+  "title": "Promotion Gate Evidence Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "run_id",
+    "gate_status",
+    "requirements_satisfied",
+    "blocking_reasons",
+    "authority_required"
+  ],
+  "properties": {
+    "artifact_type": { "const": "readiness_gate_evidence_record" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "gate_status": { "type": "string", "enum": ["pass", "fail"] },
+    "requirements_satisfied": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eval_complete", "lineage_complete", "judgment_present", "policy_aligned"],
+      "properties": {
+        "eval_complete": { "type": "boolean" },
+        "lineage_complete": { "type": "boolean" },
+        "judgment_present": { "type": "boolean" },
+        "policy_aligned": { "type": "boolean" }
+      }
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "authority_required": { "type": "boolean", "const": true }
+  }
+}

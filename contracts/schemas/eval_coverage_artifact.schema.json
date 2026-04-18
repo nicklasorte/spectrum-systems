@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/eval_coverage_artifact.schema.json",
+  "title": "Eval Coverage Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "artifact_family",
+    "stage",
+    "required_eval_ids",
+    "observed_eval_ids",
+    "missing_eval_ids",
+    "coverage_ratio",
+    "gate_status",
+    "authority_required"
+  ],
+  "properties": {
+    "artifact_type": { "const": "eval_coverage_artifact" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "artifact_family": { "type": "string", "minLength": 1 },
+    "stage": { "type": "string", "minLength": 1 },
+    "required_eval_ids": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "observed_eval_ids": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "missing_eval_ids": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "coverage_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+    "gate_status": { "type": "string", "enum": ["pass", "fail"] },
+    "blocking_reasons": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "authority_required": { "type": "boolean", "const": true }
+  }
+}

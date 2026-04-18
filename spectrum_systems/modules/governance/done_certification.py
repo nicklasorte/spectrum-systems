@@ -66,6 +66,64 @@ def _stable_hash(payload: Dict[str, Any]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def issue_canonical_certification_decision_from_evidence(
+    *,
+    evidence: Dict[str, Any],
+    artifact_id: str,
+    created_at: str = "2026-04-18T00:00:00Z",
+    standards_version: str = "1.9.7",
+) -> Dict[str, Any]:
+    """
+    Canonical certification authority issuance from non-authoritative evidence.
+
+    The evidence artifact is preparatory; this function is the authority boundary.
+    """
+    _validate_schema(evidence, "certification_evidence_record", label="certification_evidence_record")
+    remaining_risks = [str(item).strip() for item in evidence.get("remaining_risks", []) if str(item).strip()]
+    unresolved_findings = [
+        item for item in evidence.get("redteam_findings", [])
+        if isinstance(item, dict) and str(item.get("status", "")).strip().lower() != "fixed"
+    ]
+    requirements_satisfied = evidence.get("requirements_satisfied", {})
+    requirements_complete = all(bool(requirements_satisfied.get(key, False)) for key in (
+        "eval_coverage",
+        "promotion_prereqs",
+        "policy_coverage",
+        "context_integrity",
+        "drift_control",
+    ))
+    pass_gate = (
+        evidence.get("gate_status") == "pass"
+        and requirements_complete
+        and not remaining_risks
+        and not unresolved_findings
+    )
+    reason_codes: List[str] = []
+    if evidence.get("gate_status") != "pass":
+        reason_codes.append("evidence_gate_failed")
+    if not requirements_complete:
+        reason_codes.append("requirements_incomplete")
+    if remaining_risks:
+        reason_codes.append("remaining_risk_present")
+    if unresolved_findings:
+        reason_codes.append("redteam_findings_unresolved")
+    if not reason_codes:
+        reason_codes.append("ok")
+
+    decision = {
+        "artifact_type": "cde_shift_left_pre_execution_certification_decision",
+        "artifact_id": artifact_id,
+        "artifact_version": "1.0.0",
+        "schema_version": "1.0.0",
+        "standards_version": standards_version,
+        "created_at": created_at,
+        "status": "pass" if pass_gate else "fail",
+        "reason_codes": reason_codes,
+    }
+    _validate_schema(decision, "cde_shift_left_pre_execution_certification_decision", label="cde_shift_left_pre_execution_certification_decision")
+    return decision
+
+
 
 
 def _resolve_run_id(*, replay: Dict[str, Any], regression: Dict[str, Any], certification_pack: Dict[str, Any]) -> str:

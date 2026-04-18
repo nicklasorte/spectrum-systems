@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/certification_evidence_record.schema.json",
+  "title": "Certification Evidence Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "run_id",
+    "gate_status",
+    "requirements_satisfied",
+    "redteam_findings",
+    "fixes",
+    "remaining_risks",
+    "authority_required"
+  ],
+  "properties": {
+    "artifact_type": { "const": "readiness_closeout_evidence_record" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "gate_status": { "type": "string", "enum": ["pass", "fail"] },
+    "requirements_satisfied": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eval_coverage", "promotion_prereqs", "policy_coverage", "context_integrity", "drift_control"],
+      "properties": {
+        "eval_coverage": { "type": "boolean" },
+        "promotion_prereqs": { "type": "boolean" },
+        "policy_coverage": { "type": "boolean" },
+        "context_integrity": { "type": "boolean" },
+        "drift_control": { "type": "boolean" }
+      }
+    },
+    "redteam_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "status"],
+        "properties": {
+          "finding_id": { "type": "string", "minLength": 1 },
+          "status": { "type": "string", "enum": ["open", "fixed"] }
+        }
+      }
+    },
+    "fixes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "fix_id"],
+        "properties": {
+          "finding_id": { "type": "string", "minLength": 1 },
+          "fix_id": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "remaining_risks": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "authority_required": { "type": "boolean", "const": true }
+  }
+}
