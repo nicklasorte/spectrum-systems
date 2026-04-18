@@ -29,7 +29,8 @@
           "owner_path_prefixes": [
             "spectrum_systems/modules/runtime/enforcement_engine.py",
             "spectrum_systems/modules/runtime/sel_enforcement_foundation.py",
-            "spectrum_systems/modules/runtime/system_enforcement_layer.py"
+            "spectrum_systems/modules/runtime/system_enforcement_layer.py",
+            "spectrum_systems/modules/runtime/required_eval_coverage.py"
           ]
         }
       ],
@@ -102,7 +103,8 @@
       "spectrum_systems/modules/governance/done_certification.py",
       "spectrum_systems/modules/review_promotion_gate.py",
       "spectrum_systems/modules/runtime/promotion_readiness_checkpoint.py",
-      "spectrum_systems/modules/governance/promotion_requirements.py"
+      "spectrum_systems/modules/governance/promotion_requirements.py",
+      "spectrum_systems/modules/runtime/required_eval_coverage.py"
     ]
   },
   "vocabulary_overrides": {
