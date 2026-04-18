@@ -2,160 +2,79 @@
 
 Spectrum Systems is a governed execution runtime and control-plane repository.
 
-It defines how governed execution is planned, routed, enforced, evaluated, repaired, and promoted. It does **not** serve as a generic chat wrapper and does **not** host production business pipelines. The durable value here is control: contracts, artifacts, rules, and evidence that make execution predictable and auditable.
+Its durable value is control: governed artifact contracts, deterministic execution rules, and evidence that makes decisions auditable. Promotion is evidence-based and fails closed when evidence is missing.
 
-## Overview
+## Runtime Spine (Authoritative)
 
-This repository is the governance surface for a bounded runtime:
+The canonical runtime spine is:
 
-- It defines canonical artifacts, schemas, prompts, and enforcement rules.
-- It defines which subsystem owns each responsibility.
-- It ensures promotion decisions are evidence-based and fail closed when evidence is missing.
+**AEX → PQX → EVL → TPA → CDE → SEL**
 
-Downstream implementations can change over time. The control model and governed artifacts are the stable layer.
+Mandatory gate overlays on this spine:
 
-## Core Principle
+- **REP** — replay integrity gate
+- **LIN** — lineage completeness gate
+- **OBS** — observability completeness gate
 
-Spectrum Systems operates as a governed sequence:
+These nine authorities are the minimal hard runtime architecture. They are the only first-class canonical runtime authorities.
 
-**input → structure → decision → orchestration → execution → repair → enforcement → certification → promotion**
+## Architecture Layers
 
-In practice, this means:
+### 1) Hard runtime authorities
+Hard runtime authorities can block progression and enforce fail-closed behavior:
 
-1. Inputs are captured as explicit artifacts.
-2. Artifacts are structured into deterministic system-readable forms.
-3. Decisions are made from governed evidence, not implicit agent behavior.
-4. Orchestration routes work to the correct owner system.
-5. Execution runs in bounded scopes.
-6. Failures trigger diagnosis and bounded repair planning.
-7. Enforcement applies hard gates and fail-closed blocking.
-8. Certification validates required evidence.
-9. Promotion occurs only when certification conditions are met.
+- AEX, PQX, EVL, TPA, CDE, SEL, REP, LIN, OBS
 
-## System Components
+### 2) Support planes (important, non-spine)
+Support planes are required for runtime quality and operations but are not peer authorities in the minimal spine:
 
-Canonical system names, acronyms, ownership, and placeholder status are defined only in `docs/architecture/system_registry.md`.
+- TLC — orchestration
+- FRE — repair planning
+- RIL — interpretation
+- PRG — program governance
 
-This README provides a runtime summary only:
-- admission and execution boundary control
-- orchestration and bounded execution
-- trust/policy gating, review interpretation, and review-loop execution
-- failure diagnosis and enforcement
-- roadmap/program governance and closure decisioning
-- placeholder seams for lifecycle, transfer, shared data, and source authority surfaces
+### 3) Subsystems and supporting surfaces
+Judgment, contract/integrity, intelligence/drift, dataset/test, override/audit, and routing/prompt/context surfaces are grouped support constructs. They are not peer runtime authorities unless promoted through canonical system-addition rules.
 
-For complete and current subsystem definitions (including placeholder status and reserved acronyms), defer to the canonical registry.
+Advisory, analytical, and placeholder surfaces are not authoritative runtime peers.
 
-## Execution Model
+## Non-Negotiable Runtime Rules
 
-The runtime is designed to be:
+1. **Artifact-first execution**: required state transitions must be represented as governed artifact records.
+2. **Fail-closed behavior**: missing or invalid required evidence blocks progression.
+3. **Promotion requires certification**: no promotion without required certification evidence.
 
-- **Artifact-first**: important state transitions are represented as governed artifacts.
-- **Deterministic**: the same valid inputs should produce the same governed outcomes.
-- **Fail-closed**: when required evidence is missing or invalid, the system blocks rather than guessing.
-- **Traceable**: decisions and outcomes map back to explicit records.
+Additional hard constraints:
 
-No hidden execution paths are permitted.
+- no hidden execution paths
+- no duplicated ownership
+- no downstream progression without required evidence
 
-## Promotion Rules
+## Brutal Enforcement Semantics
 
-Promotion is gated by governed evidence.
+The runtime must apply explicit gate outcomes:
 
-- `ready_for_merge` is a gate outcome, not a default.
-- Promotion requires certification evidence to be present and valid.
-- Repair completion alone does not grant promotion authority.
-- Closure and promotion decisions are separate from execution and repair generation.
+- **BLOCK** when required artifact/eval/policy/lineage/observability/replay/certification evidence is missing or schema-invalid.
+- **FREEZE** when replay mismatch, indeterminate required eval, drift threshold breach, or budget/governance threshold exhaustion occurs.
+- **ALLOW** only when all required artifacts, evals, policy admissibility, lineage, observability, replay (where required), and certification evidence pass.
 
-## Failure Handling
+## Canonical Architecture Documents
 
-Failures are handled as a bounded loop:
+- Canonical index and rules: `docs/architecture/system_registry.md`
+- Core authorities and support planes: `docs/architecture/system_registry_core.md`
+- Grouped support families: `docs/architecture/system_registry_support.md`
+- Reserved/non-active systems: `docs/architecture/system_registry_reserved.md`
+- Runtime enforcement semantics: `docs/architecture/runtime_spine.md`
 
-1. Capture failure evidence.
-2. Diagnose the failure class.
-3. Generate a bounded repair candidate.
-4. Re-run governed checks/tests.
-5. Re-evaluate closure and promotion gates.
+## How to Use This Repository
 
-If evidence remains insufficient, the system stays blocked.
-
-## Learning Loop
-
-Failure handling also feeds system learning:
-
-1. Failure patterns are captured as structured artifacts.
-2. Candidate evaluation improvements are proposed.
-3. Improvements are adopted through governed review and evidence.
-4. Accepted outcomes become roadmap and governance signals.
-
-This loop improves the runtime without bypassing enforcement.
-
-## Roadmap and Input Origins
-
-Roadmap and execution inputs come from governed sources, including:
-
-- design and architecture reviews
-- source documents and contracts
-- operator commands and run artifacts
-- structured evaluation outputs
-- program governance signals
-
-Roadmap sequencing authority lives in `docs/roadmaps/system_roadmap.md`.
-
-## Design Constraints
-
-The runtime enforces hard constraints:
-
-1. **No hidden execution**: behavior must be explicit in governed artifacts/docs.
-2. **No promotion without certification**: evidence is mandatory.
-3. **No duplicate responsibilities**: each responsibility has one canonical owner.
-4. **Bounded execution only**: work is scoped, routed, and controlled.
-
-## Prompt Contract Constraint
-
-Governed prompts must declare exactly one primary prompt type:
-
-- `PLAN`
-- `BUILD`
-- `WIRE`
-- `VALIDATE`
-- `REVIEW`
-
-Prompts that omit this declaration or declare multiple primary types are non-compliant and must be corrected before promotion.
-
-## What This Enables
-
-Spectrum Systems enables:
-
-- consistent execution behavior across model/provider changes
-- auditable decision paths for reviews and promotions
-- safe failure recovery without authority leakage
-- clear subsystem boundaries that reduce architectural drift
-
-## Current State
-
-Current architecture centers on a governed runtime with explicit subsystem ownership defined in the canonical registry, with control enforced through artifacts, schemas, and validation surfaces in this repository.
-
-## How to Use
-
-1. Start from canonical architecture ownership in `docs/architecture/system_registry.md`.
-2. Use governed contracts and schemas from `contracts/` and `schemas/`.
-3. Keep prompts and workflow rules explicit under `prompts/` and `docs/`.
-4. Run validation checks before proposing promotion-relevant changes.
-5. Treat this repo as control-plane governance; keep operational runtime code in implementation repositories.
-
-## Related and Historical Documents
-
-- Current and historical system maturity references: `docs/system-maturity-model.md`.
-- Historical maturity guidance references: `docs/level-0-to-20-playbook.md` and `docs/review-maturity-rubric.md`.
-- Study-loop context and prior operating flow framing: `docs/spectrum-study-operating-model.md`.
-- Historical long-range planning reference: `docs/100-step-roadmap.md` (100-step roadmap).
-
-These links are retained for compatibility and historical context. Active runtime guidance remains this README plus the canonical ownership registry in `docs/architecture/system_registry.md`.
+1. Start with the runtime spine and hard gate semantics.
+2. Use governed artifact contracts from `contracts/` and schemas from `schemas/`.
+3. Keep prompts and governance behavior explicit in repository markdown and contracts.
+4. Treat this repository as control-plane governance; place product/business runtime code in implementation repositories.
 
 ## Philosophy
 
-The system, not the model, controls execution.
+The system controls execution.
 
-Models can be replaced. Governance cannot be implicit.
-
-Durable reliability comes from explicit artifacts, bounded execution, fail-closed enforcement, and evidence-based promotion.
+Models can change. Governance cannot be implicit.
