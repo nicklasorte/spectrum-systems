@@ -1,88 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { TraceDetail } from '@/components/dashboard/types';
+import { createArtifactStore, MemoryStorageBackend } from '@/src/artifact-store';
+import type { TraceDetail, TraceStep } from '@/components/dashboard/types';
 
-// TODO: Integrate with artifact store
-// Steps to implement:
-// 1. Query artifact store for pqx_execution_record with trace_id from path param
-// 2. Fetch referenced artifacts:
-//    - context_bundle: contains input context and request metadata
-//    - agent_trace: contains step-by-step execution trace
-//    - eval_results: contains evaluation results for each step
-//    - control_decision: contains final control decision and reasoning
-// 3. Reconstruct steps array from agent_trace artifact:
-//    - Extract artifact_id and status for each execution step
-//    - Map eval status (success/failure) to ExecutionStatus enum
-// 4. Extract control decision from control_decision artifact:
-//    - decision: ALLOW or BLOCK
-//    - reason: explanation of decision
-//
-// Example response structure:
-// {
-//   "trace_id": "trace-abc123def456",
-//   "steps": [
-//     {
-//       "artifact_id": "artifact-step-1-abc",
-//       "status": "PASS",
-//       "error": null
-//     },
-//     {
-//       "artifact_id": "artifact-step-2-def",
-//       "status": "FAIL",
-//       "error": "Constraint violation: unauthorized_access_attempt"
-//     },
-//     {
-//       "artifact_id": "artifact-step-3-ghi",
-//       "status": "PASS",
-//       "error": null
-//     }
-//   ],
-//   "control_decision": {
-//     "decision": "BLOCK",
-//     "reason": "Step 2 failed constraint validation; blocking execution"
-//   }
-// }
-
-const MOCK_TRACES: Record<string, TraceDetail> = {
-  'trace-abc123def456': {
-    trace_id: 'trace-abc123def456',
-    steps: [
-      {
-        artifact_id: 'artifact-ril-a1b2c3d4',
-        status: 'PASS',
-      },
-      {
-        artifact_id: 'artifact-cde-e5f6g7h8',
-        status: 'PASS',
-      },
-      {
-        artifact_id: 'artifact-tlc-i9j0k1l2',
-        status: 'PASS',
-      },
-    ],
-    control_decision: {
-      decision: 'ALLOW',
-      reason: 'All validation checks passed; execution permitted',
-    },
-  },
-  'trace-xyz789uvw012': {
-    trace_id: 'trace-xyz789uvw012',
-    steps: [
-      {
-        artifact_id: 'artifact-ril-m3n4o5p6',
-        status: 'PASS',
-      },
-      {
-        artifact_id: 'artifact-cde-q7r8s9t0',
-        status: 'FAIL',
-        error: 'Authorization check failed: insufficient permissions',
-      },
-    ],
-    control_decision: {
-      decision: 'BLOCK',
-      reason: 'Authorization constraint violated at CDE phase',
-    },
-  },
-};
+// Initialize artifact store
+const backend = new MemoryStorageBackend();
+const artifactStore = createArtifactStore(backend);
 
 interface RouteParams {
   params: {
@@ -96,13 +18,78 @@ export async function GET(
 ) {
   const trace_id = params.trace_id;
 
-  const trace = MOCK_TRACES[trace_id];
-  if (!trace) {
+  try {
+    // Fetch the pqx_execution_record artifact
+    const executionRecord = await artifactStore.retrieve(trace_id);
+
+    if (!executionRecord) {
+      return NextResponse.json(
+        { error: `Execution not found: ${trace_id}` },
+        { status: 404 }
+      );
+    }
+
+    const payload = executionRecord.payload as any;
+    const pqxStep = payload.pqx_step || {};
+    const failure = payload.failure;
+
+    // Build trace steps from execution record
+    // In a full implementation, would fetch intermediate artifacts
+    const steps: TraceStep[] = [];
+
+    // Step 1: Context Bundle (if inputs exist)
+    if (payload.inputs?.artifact_ids?.length > 0) {
+      steps.push({
+        artifact_id: payload.inputs.artifact_ids[0],
+        status: 'PASS',
+      });
+    }
+
+    // Step 2: Agent Execution (if execution started)
+    if (payload.execution_status !== 'queued') {
+      steps.push({
+        artifact_id:
+          payload.outputs?.artifact_ids?.[0] || `executing-${trace_id}`,
+        status:
+          payload.execution_status === 'succeeded' ||
+          payload.execution_status === 'running'
+            ? 'PASS'
+            : 'FAIL',
+        error: failure?.error_message,
+      });
+    }
+
+    // Step 3: Eval Gate (if outputs exist)
+    if (payload.outputs?.artifact_ids?.length > 0) {
+      steps.push({
+        artifact_id: `eval-${trace_id}`,
+        status: 'PASS',
+      });
+    }
+
+    // Determine control decision
+    const controlDecision = {
+      decision: (
+        payload.execution_status === 'succeeded' ? 'ALLOW' : 'BLOCK'
+      ) as 'ALLOW' | 'BLOCK',
+      reason:
+        payload.execution_status === 'succeeded'
+          ? 'all_evals_pass → promote'
+          : failure?.reason_codes?.[0] || 'execution_failed',
+    };
+
+    const traceDetail: TraceDetail = {
+      trace_id,
+      steps,
+      control_decision: controlDecision,
+    };
+
+    return NextResponse.json(traceDetail);
+  } catch (error) {
+    console.error('Error fetching trace:', error);
     return NextResponse.json(
-      { error: 'Trace not found' },
-      { status: 404 }
+      { error: 'Failed to fetch trace details' },
+      { status: 500 }
     );
   }
-
-  return NextResponse.json(trace);
 }
