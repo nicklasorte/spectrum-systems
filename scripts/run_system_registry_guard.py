@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
 
@@ -19,75 +18,10 @@ from spectrum_systems.modules.governance.system_registry_guard import (  # noqa:
     load_guard_policy,
     parse_system_registry,
 )
-
-
-def _run(command: list[str]) -> tuple[int, str]:
-    proc = subprocess.run(command, cwd=REPO_ROOT, check=False, capture_output=True, text=True)
-    return proc.returncode, proc.stdout.strip() or proc.stderr.strip()
-
-
-def _ref_exists(ref: str) -> bool:
-    code, _ = _run(["git", "rev-parse", "--verify", f"{ref}^{{commit}}"])
-    return code == 0
-
-
-def _diff_name_only(range_expr: str) -> tuple[list[str] | None, str | None]:
-    code, output = _run(["git", "diff", "--name-only", range_expr])
-    if code != 0:
-        return None, output
-    files = sorted(set(line.strip() for line in output.splitlines() if line.strip()))
-    return files, None
-
-
-def _resolve_changed_files(base_ref: str, head_ref: str, explicit: list[str]) -> list[str]:
-    if explicit:
-        return sorted(set(path.strip() for path in explicit if path.strip()))
-
-    requested_range = f"{base_ref}..{head_ref}"
-    files, error = _diff_name_only(requested_range)
-    if files is not None:
-        return files
-
-    attempted_fallbacks: list[str] = [f"requested_range={requested_range} failed: {error}"]
-
-    if _ref_exists("origin/main") and _ref_exists("HEAD"):
-        fallback_range = "origin/main...HEAD"
-        files, fallback_error = _diff_name_only(fallback_range)
-        if files is not None:
-            return files
-        attempted_fallbacks.append(f"fallback_origin_main_triple_dot={fallback_range} failed: {fallback_error}")
-
-        merge_base_code, merge_base_output = _run(["git", "merge-base", "origin/main", "HEAD"])
-        if merge_base_code == 0 and merge_base_output:
-            merge_base = merge_base_output.splitlines()[0].strip()
-            merge_range = f"{merge_base}..HEAD"
-            files, merge_error = _diff_name_only(merge_range)
-            if files is not None:
-                return files
-            attempted_fallbacks.append(f"fallback_merge_base={merge_range} failed: {merge_error}")
-        else:
-            attempted_fallbacks.append(
-                "fallback_merge_base=origin/main HEAD failed: "
-                + (merge_base_output or "merge-base resolution failed")
-            )
-    else:
-        attempted_fallbacks.append("fallback_origin_main_triple_dot skipped: missing origin/main or HEAD commit")
-        attempted_fallbacks.append("fallback_merge_base skipped: missing origin/main or HEAD commit")
-
-    if _ref_exists("HEAD~1"):
-        head_parent_range = "HEAD~1..HEAD"
-        files, head_parent_error = _diff_name_only(head_parent_range)
-        if files is not None:
-            return files
-        attempted_fallbacks.append(f"fallback_head_parent={head_parent_range} failed: {head_parent_error}")
-    else:
-        attempted_fallbacks.append("fallback_head_parent skipped: missing HEAD~1 commit")
-
-    raise SystemRegistryGuardError(
-        "failed to resolve changed files; "
-        f"requested_range={requested_range}; "
-        "attempts=" + " | ".join(attempted_fallbacks)
-    )
+from spectrum_systems.modules.governance.changed_files import (  # noqa: E402
+    ChangedFilesResolutionError,
+    resolve_changed_files,
+)
 
 
 def _parse_args() -> argparse.Namespace:
@@ -105,7 +39,15 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
-    changed_files = _resolve_changed_files(args.base_ref, args.head_ref, list(args.changed_files or []))
+    try:
+        changed_files = resolve_changed_files(
+            repo_root=REPO_ROOT,
+            base_ref=args.base_ref,
+            head_ref=args.head_ref,
+            explicit_changed_files=list(args.changed_files or []),
+        )
+    except ChangedFilesResolutionError as exc:
+        raise SystemRegistryGuardError(str(exc)) from exc
 
     policy = load_guard_policy(REPO_ROOT / "contracts" / "governance" / "system_registry_guard_policy.json")
     registry = parse_system_registry(REPO_ROOT / "docs" / "architecture" / "system_registry.md")
