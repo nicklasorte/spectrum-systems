@@ -52,7 +52,7 @@ def test_missing_complexity_justification_record_blocks() -> None:
 
     result = _run(eval_results=eval_results)
 
-    assert result["enforcement"]["decision"] == "block"
+    assert result["observation"]["observed_outcome"] == "halted"
     assert result["failure_record"] is not None
 
 
@@ -63,7 +63,7 @@ def test_missing_core_loop_alignment_record_blocks() -> None:
 
     result = _run(eval_results=eval_results)
 
-    assert result["enforcement"]["decision"] == "block"
+    assert result["observation"]["observed_outcome"] == "halted"
     assert result["failure_record"] is not None
 
 
@@ -74,7 +74,7 @@ def test_missing_debuggability_record_blocks() -> None:
 
     result = _run(eval_results=eval_results)
 
-    assert result["enforcement"]["decision"] == "block"
+    assert result["observation"]["observed_outcome"] == "halted"
     assert result["failure_record"] is not None
 
 
@@ -82,8 +82,8 @@ def test_missing_trace_or_lineage_blocks() -> None:
     fixture = _fixture()
     result = _run(eval_results=fixture["base_eval_results"], trace_id="", lineage=[])
 
-    assert result["enforcement"]["decision"] == "block"
-    assert result["enforcement"]["reason_code"] == "missing_trace_or_lineage"
+    assert result["observation"]["observed_outcome"] == "halted"
+    assert result["observation"]["reason_code"] == "missing_trace_or_lineage"
     assert result["failure_record"] is not None
 
 
@@ -91,8 +91,8 @@ def test_missing_required_evals_block() -> None:
     fixture = _fixture()
     result = _run(eval_results=fixture["base_eval_results"][:-1])
 
-    assert result["enforcement"]["decision"] == "block"
-    assert result["enforcement"]["reason_code"] == "missing_required_eval_result"
+    assert result["observation"]["observed_outcome"] == "halted"
+    assert result["observation"]["reason_code"] == "missing_required_eval_result"
     assert result["failure_record"] is not None
 
 
@@ -104,8 +104,8 @@ def test_invalid_context_blocks_or_freezes() -> None:
         context={"scope": "global", "target": "slice"},
     )
 
-    assert empty_context_result["enforcement"]["decision"] in {"block", "freeze"}
-    assert conflicting_context_result["enforcement"]["decision"] in {"block", "freeze"}
+    assert empty_context_result["observation"]["observed_outcome"] in {"halted", "paused"}
+    assert conflicting_context_result["observation"]["observed_outcome"] in {"halted", "paused"}
     assert empty_context_result["failure_record"] is not None
     assert conflicting_context_result["failure_record"] is not None
 
@@ -117,8 +117,8 @@ def test_replay_mismatch_freezes() -> None:
         replay={"consistency_status": "mismatch", "expected": "allow", "observed": "block"},
     )
 
-    assert result["enforcement"]["decision"] == "freeze"
-    assert result["enforcement"]["reason_code"] == "replay_mismatch"
+    assert result["observation"]["observed_outcome"] == "paused"
+    assert result["observation"]["reason_code"] == "replay_mismatch"
     assert result["failure_record"] is not None
 
 
@@ -167,5 +167,5 @@ def test_no_chaos_scenario_silently_succeeds() -> None:
     ]
 
     for scenario in scenarios:
-        assert scenario["enforcement"]["decision"] in {"block", "freeze"}
+        assert scenario["observation"]["observed_outcome"] in {"halted", "paused"}
         assert scenario["failure_record"] is not None

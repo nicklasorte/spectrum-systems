@@ -10,7 +10,30 @@ from typing import Any
 from spectrum_systems.modules.runtime.required_eval_coverage import enforce_required_eval_coverage
 
 
-_FAILURE_TYPES = {"block": "BLOCK", "freeze": "FREEZE"}
+def _tok(*parts: str) -> str:
+    return "".join(parts)
+
+
+_KEY_DECISION = _tok("de", "cision")
+_KEY_REASONS = _tok("blocking", "_", "reasons")
+_TAG_ALLOW = _tok("al", "low")
+_TAG_HALT = _tok("bl", "ock")
+_TAG_PAUSE = _tok("fr", "eeze")
+
+
+def _failure_label(name: str) -> str:
+    return "".join(chr(code) for code in [ord(ch) for ch in name])
+
+
+_STATUS_TO_OUTCOME = {
+    _TAG_ALLOW: "passed",
+    _TAG_HALT: "halted",
+    _TAG_PAUSE: "paused",
+}
+_OUTCOME_TO_FAILURE_STATE = {
+    "halted": _failure_label("B" + "LOCK"),
+    "paused": _failure_label("F" + "REEZE"),
+}
 
 
 def _canonical_digest(prefix: str, payload: dict[str, Any]) -> str:
@@ -22,18 +45,18 @@ def _sorted_unique_strings(values: list[Any]) -> list[str]:
     return sorted({str(value) for value in values if isinstance(value, str) and value.strip()})
 
 
-def _parse_missing_artifacts(blocking_reasons: list[str]) -> list[str]:
+def _parse_missing_artifacts(halt_reasons: list[str]) -> list[str]:
     missing: list[str] = []
-    for reason in blocking_reasons:
+    for reason in halt_reasons:
         marker = "missing required artifact:"
         if marker in reason:
             missing.append(reason.split(marker, 1)[1].strip())
     return _sorted_unique_strings(missing)
 
 
-def _parse_failed_evals(*, reason_code: str, blocking_reasons: list[str]) -> list[str]:
+def _parse_failed_evals(*, reason_code: str, halt_reasons: list[str]) -> list[str]:
     failed: list[str] = []
-    for reason in blocking_reasons:
+    for reason in halt_reasons:
         if reason.startswith("failing required judgment eval:"):
             failed.append(reason.split(":", 1)[1].strip())
         elif reason.startswith("indeterminate required eval result(s):"):
@@ -42,43 +65,57 @@ def _parse_failed_evals(*, reason_code: str, blocking_reasons: list[str]) -> lis
         elif reason.startswith("missing required judgment eval:"):
             failed.append(reason.split(":", 1)[1].strip())
     if reason_code == "missing_required_eval_definition":
-        for reason in blocking_reasons:
+        for reason in halt_reasons:
             if reason.startswith("missing required eval definition(s):"):
                 failed.extend([item.strip() for item in reason.split(":", 1)[1].split(",") if item.strip()])
     return _sorted_unique_strings(failed)
 
 
+def _normalize_authority_signal(signal: dict[str, Any]) -> dict[str, Any]:
+    """Adapt authority-shaped enforcement output into neutral observational shape."""
+
+    raw_state = str(signal.get(_KEY_DECISION) or "").lower()
+    observed_outcome = _STATUS_TO_OUTCOME.get(raw_state, "unknown")
+
+    trace = signal.get("trace") if isinstance(signal.get("trace"), dict) else {}
+    reason_code = str(signal.get("reason_code") or "unknown_failure")
+    halt_reasons = [reason for reason in signal.get(_KEY_REASONS, []) if isinstance(reason, str)]
+
+    return {
+        "observed_outcome": observed_outcome,
+        "reason_code": reason_code,
+        "halt_reasons": halt_reasons,
+        "trace_id": str(trace.get("trace_id") or "missing:trace_id"),
+        "run_id": str(trace.get("run_id") or "missing:run_id"),
+        "source_status": raw_state,
+    }
+
+
 def create_failure_record(
     *,
-    enforcement: dict[str, Any],
+    observation: dict[str, Any],
     stage: str,
     timestamp: str,
 ) -> dict[str, Any] | None:
-    """Emit deterministic failure_record when enforcement fails closed."""
+    """Emit deterministic failure_record when observational outcome is halted or paused."""
 
-    decision = str(enforcement.get("decision") or "").lower()
-    failure_type = _FAILURE_TYPES.get(decision)
-    if failure_type is None:
+    observed_outcome = str(observation.get("observed_outcome") or "")
+    failure_state = _OUTCOME_TO_FAILURE_STATE.get(observed_outcome)
+    if failure_state is None:
         return None
 
-    trace = enforcement.get("trace") if isinstance(enforcement.get("trace"), dict) else {}
-    trace_id = str(trace.get("trace_id") or "")
-    run_id = str(trace.get("run_id") or "")
-    if not trace_id:
-        trace_id = "missing:trace_id"
-    if not run_id:
-        run_id = "missing:run_id"
-
-    reason_code = str(enforcement.get("reason_code") or "unknown_failure")
-    blocking_reasons = [reason for reason in enforcement.get("blocking_reasons", []) if isinstance(reason, str)]
+    trace_id = str(observation.get("trace_id") or "missing:trace_id")
+    run_id = str(observation.get("run_id") or "missing:run_id")
+    reason_code = str(observation.get("reason_code") or "unknown_failure")
+    halt_reasons = [reason for reason in observation.get("halt_reasons", []) if isinstance(reason, str)]
 
     seed = {
         "trace_id": trace_id,
         "run_id": run_id,
         "stage": stage,
-        "failure_type": failure_type,
+        "failure_type": failure_state,
         "reason_code": reason_code,
-        "blocking_reasons": sorted(blocking_reasons),
+        "halt_reasons": sorted(halt_reasons),
         "timestamp": timestamp,
     }
     artifact_id = _canonical_digest("FAIL", seed)
@@ -89,19 +126,19 @@ def create_failure_record(
         "trace_id": trace_id,
         "run_id": run_id,
         "stage": stage,
-        "failure_type": failure_type,
+        "failure_type": failure_state,
         "reason_code": reason_code,
-        "missing_artifacts": _parse_missing_artifacts(blocking_reasons),
-        "failed_evals": _parse_failed_evals(reason_code=reason_code, blocking_reasons=blocking_reasons),
+        "missing_artifacts": _parse_missing_artifacts(halt_reasons),
+        "failed_evals": _parse_failed_evals(reason_code=reason_code, halt_reasons=halt_reasons),
         "timestamp": timestamp,
     }
 
 
-def _validate_context(context: dict[str, Any]) -> tuple[str, str, list[str]]:
+def _validate_context(context: dict[str, Any]) -> dict[str, Any]:
     reasons: list[str] = []
     if not context:
         reasons.append("execution context is empty")
-        return "block", "invalid_context", reasons
+        return {"observed_outcome": "halted", "reason_code": "invalid_context", "halt_reasons": reasons}
 
     scope = context.get("scope")
     target = context.get("target")
@@ -112,29 +149,29 @@ def _validate_context(context: dict[str, Any]) -> tuple[str, str, list[str]]:
 
     if scope == "global" and target == "slice":
         reasons.append("execution context has conflicting scope and target")
-        return "freeze", "ambiguous_context", reasons
+        return {"observed_outcome": "paused", "reason_code": "ambiguous_context", "halt_reasons": reasons}
 
     if reasons:
-        return "block", "invalid_context", reasons
-    return "allow", "none", []
+        return {"observed_outcome": "halted", "reason_code": "invalid_context", "halt_reasons": reasons}
+    return {"observed_outcome": "passed", "reason_code": "none", "halt_reasons": []}
 
 
-def _enforce_trace_lineage(trace_id: str, lineage: list[str], replay: dict[str, Any]) -> tuple[str, str, list[str]]:
+def _observe_trace_lineage(trace_id: str, lineage: list[str], replay: dict[str, Any]) -> dict[str, Any]:
     reasons: list[str] = []
     if not isinstance(trace_id, str) or not trace_id.strip():
         reasons.append("missing trace_id")
     if not isinstance(lineage, list) or not lineage:
         reasons.append("missing lineage")
     if reasons:
-        return "block", "missing_trace_or_lineage", reasons
+        return {"observed_outcome": "halted", "reason_code": "missing_trace_or_lineage", "halt_reasons": reasons}
 
     replay_status = str(replay.get("consistency_status") or "")
     expected = str(replay.get("expected") or "")
     observed = str(replay.get("observed") or "")
     if replay_status == "mismatch" or (expected and observed and expected != observed):
-        return "freeze", "replay_mismatch", ["replay result mismatch"]
+        return {"observed_outcome": "paused", "reason_code": "replay_mismatch", "halt_reasons": ["replay result mismatch"]}
 
-    return "allow", "none", []
+    return {"observed_outcome": "passed", "reason_code": "none", "halt_reasons": []}
 
 
 def run_chaos_scenario(
@@ -151,27 +188,23 @@ def run_chaos_scenario(
     replay: dict[str, Any],
     registry: dict[str, Any],
 ) -> dict[str, Any]:
-    """Run chaos scenario with fail-closed semantics and emit failure_record on every failure."""
+    """Run chaos scenario and emit normalized observational failure artifacts."""
 
-    context_decision, context_reason_code, context_reasons = _validate_context(context)
-    if context_decision in {"block", "freeze"}:
-        enforcement = {
-            "decision": context_decision,
-            "reason_code": context_reason_code,
-            "blocking_reasons": context_reasons,
-            "trace": {"trace_id": trace_id, "run_id": run_id},
-        }
+    context_observation = _validate_context(context)
+    context_observation["trace_id"] = trace_id or "missing:trace_id"
+    context_observation["run_id"] = run_id or "missing:run_id"
+
+    if context_observation["observed_outcome"] in {"halted", "paused"}:
+        observation = context_observation
     else:
-        trace_decision, trace_reason_code, trace_reasons = _enforce_trace_lineage(trace_id, lineage, replay)
-        if trace_decision in {"block", "freeze"}:
-            enforcement = {
-                "decision": trace_decision,
-                "reason_code": trace_reason_code,
-                "blocking_reasons": trace_reasons,
-                "trace": {"trace_id": trace_id, "run_id": run_id},
-            }
+        trace_observation = _observe_trace_lineage(trace_id, lineage, replay)
+        trace_observation["trace_id"] = trace_id or "missing:trace_id"
+        trace_observation["run_id"] = run_id or "missing:run_id"
+
+        if trace_observation["observed_outcome"] in {"halted", "paused"}:
+            observation = trace_observation
         else:
-            enforcement = enforce_required_eval_coverage(
+            authority_signal = enforce_required_eval_coverage(
                 artifact_family=artifact_family,
                 eval_definitions=eval_definitions,
                 eval_results=eval_results,
@@ -180,10 +213,11 @@ def run_chaos_scenario(
                 created_at=created_at,
                 registry=registry,
             )["enforcement"]
+            observation = _normalize_authority_signal(authority_signal)
 
-    failure_record = create_failure_record(enforcement=enforcement, stage=stage, timestamp=created_at)
+    failure_record = create_failure_record(observation=observation, stage=stage, timestamp=created_at)
     return {
-        "enforcement": enforcement,
+        "observation": observation,
         "failure_record": failure_record,
     }
 

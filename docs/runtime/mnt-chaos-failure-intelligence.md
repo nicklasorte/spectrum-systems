@@ -4,7 +4,7 @@
 BUILD
 
 ## Purpose
-This slice validates that existing fail-closed enforcement is active under controlled fault injection and that each failure is emitted as a structured artifact.
+This slice validates that existing fail-closed runtime checks are active under controlled fault injection and that each failure is emitted as a structured artifact.
 
 The slice is additive:
 - no system registry changes
@@ -23,10 +23,18 @@ Covered scenarios:
 6. invalid context (empty or conflicting)
 7. replay mismatch
 
-Expected outcome for each scenario: `BLOCK` or `FREEZE` only.
+Expected outcome for each scenario: a halted or paused runtime outcome only (never silent pass-through).
+
+## Adapter vocabulary normalization
+This module is an observational adapter, not an authority surface.
+
+It normalizes authority-shaped source results into neutral fields:
+- `observed_outcome` (`passed` | `halted` | `paused`)
+- `halt_reasons`
+- `reason_code`
 
 ## Failure artifact: `failure_record`
-The runtime emits `failure_record` whenever enforcement decision is `block` or `freeze`.
+The runtime emits `failure_record` whenever normalized observation is `halted` or `paused`.
 
 Schema fields:
 - `artifact_type`
