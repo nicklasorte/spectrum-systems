@@ -786,6 +786,25 @@ def _load_standards_manifest_entries(repo_root: Path) -> dict[str, dict[str, Any
     return entries
 
 
+def _load_standards_manifest_entries_from_ref(*, repo_root: Path, ref: str) -> dict[str, dict[str, Any]]:
+    result = _run(["git", "show", f"{ref}:contracts/standards-manifest.json"], cwd=repo_root)
+    if result.returncode != 0:
+        return {}
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return {}
+    contracts = payload.get("contracts") if isinstance(payload, dict) else []
+    entries: dict[str, dict[str, Any]] = {}
+    for row in contracts if isinstance(contracts, list) else []:
+        if not isinstance(row, dict):
+            continue
+        artifact_type = str(row.get("artifact_type") or "").strip()
+        if artifact_type:
+            entries[artifact_type] = row
+    return entries
+
+
 def _load_json_with_error(path: Path) -> tuple[dict[str, Any] | None, str | None]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -800,7 +819,14 @@ def _tpa_hash_id(prefix: str, payload: dict[str, Any]) -> str:
     return f"{prefix}-{_hash_payload(payload)[:16].upper()}"
 
 
-def run_tpa_contract_sync_check(*, repo_root: Path, changed_paths: list[str], created_at: str) -> dict[str, Any]:
+def run_tpa_contract_sync_check(
+    *,
+    repo_root: Path,
+    changed_paths: list[str],
+    created_at: str,
+    base_ref: str | None = None,
+    head_ref: str | None = None,
+) -> dict[str, Any]:
     schema_paths = sorted(
         repo_root / path
         for path in changed_paths
@@ -816,17 +842,27 @@ def run_tpa_contract_sync_check(*, repo_root: Path, changed_paths: list[str], cr
     )
 
     standards_entries = _load_standards_manifest_entries(repo_root)
+    touched_contract_types = {
+        path.name.removesuffix(".schema.json") for path in schema_paths
+    } | {
+        _schema_name_from_example(path.as_posix().replace(f"{repo_root.as_posix()}/", "", 1))
+        for path in example_paths
+    }
     manifest_path_changed = "contracts/standards-manifest.json" in set(changed_paths)
-    manifest_declared_types = set(standards_entries.keys()) if manifest_path_changed else set()
+    manifest_declared_types: set[str] = set()
+    if manifest_path_changed and base_ref and head_ref:
+        base_entries = _load_standards_manifest_entries_from_ref(repo_root=repo_root, ref=base_ref)
+        head_entries = _load_standards_manifest_entries_from_ref(repo_root=repo_root, ref=head_ref)
+        if head_entries:
+            standards_entries = head_entries
+        for artifact_type in set(base_entries.keys()) | set(standards_entries.keys()):
+            if base_entries.get(artifact_type) != standards_entries.get(artifact_type):
+                manifest_declared_types.add(artifact_type)
+    elif manifest_path_changed:
+        manifest_declared_types = set(touched_contract_types)
 
     checked_artifact_types = sorted(
-        {
-            path.name.removesuffix(".schema.json") for path in schema_paths
-        }
-        | {
-            _schema_name_from_example(path.as_posix().replace(f"{repo_root.as_posix()}/", "", 1))
-            for path in example_paths
-        }
+        touched_contract_types
         | manifest_declared_types
     )
 
@@ -839,6 +875,46 @@ def run_tpa_contract_sync_check(*, repo_root: Path, changed_paths: list[str], cr
         "example_missing_required_fields",
         "manifest_declared_schema_const_mismatch",
     }
+    changed_file_refs = sorted({str(path) for path in changed_paths})
+
+    def _append_mismatch(
+        *,
+        mismatch_type: str,
+        artifact_type: str,
+        detail: str,
+        files: list[str],
+        schema_const_value: str = "",
+        example_artifact_type_value: str = "",
+        schema_required_fields: list[str] | None = None,
+        example_fields: list[str] | None = None,
+        missing_required_fields: list[str] | None = None,
+        unexpected_example_fields: list[str] | None = None,
+        schema_path_ref: str = "",
+        example_path_ref: str = "",
+    ) -> None:
+        mismatches.append(
+            {
+                "mismatch_type": mismatch_type,
+                "artifact_type": artifact_type,
+                "detail": detail,
+                "files": files,
+                "artifact_type_declared": artifact_type,
+                "schema_const_value": schema_const_value,
+                "example_artifact_type_value": example_artifact_type_value,
+                "schema_required_fields": sorted(schema_required_fields or []),
+                "example_fields": sorted(example_fields or []),
+                "missing_required_fields": sorted(missing_required_fields or []),
+                "unexpected_example_fields": sorted(unexpected_example_fields or []),
+                "field_alignment_status": "mismatch",
+                "trace_id": f"trace-tpa-sync-{_hash_payload({'artifact_type': artifact_type, 'mismatch_type': mismatch_type, 'created_at': created_at})[:12]}",
+                "run_id": f"run-tpa-sync-{created_at}",
+                "changed_file_refs": changed_file_refs,
+                "manifest_entry_ref": f"contracts/standards-manifest.json#contracts[artifact_type={artifact_type}]",
+                "schema_path": schema_path_ref,
+                "example_path": example_path_ref,
+                "runtime_source_ref": "scripts/run_contract_preflight.py::run_tpa_contract_sync_autorepair",
+            }
+        )
 
     for artifact_type in checked_artifact_types:
         schema_path = repo_root / "contracts" / "schemas" / f"{artifact_type}.schema.json"
@@ -860,13 +936,15 @@ def run_tpa_contract_sync_check(*, repo_root: Path, changed_paths: list[str], cr
                     artifact_prop = properties.get("artifact_type") if isinstance(properties, dict) else {}
                     schema_const = str((artifact_prop or {}).get("const") or "").strip()
             if not schema_exists:
-                mismatches.append(
+                _append_mismatch(
+                    mismatch_type="manifest_declared_schema_missing",
+                    artifact_type=artifact_type,
+                    detail=f"manifest-declared artifact missing canonical schema path {expected_schema_path}",
+                    files=["contracts/standards-manifest.json"],
+                    schema_path_ref=expected_schema_path,
+                )
+                mismatches[-1].update(
                     {
-                        "mismatch_type": "manifest_declared_schema_missing",
-                        "artifact_type": artifact_type,
-                        "detail": f"manifest-declared artifact missing canonical schema path {expected_schema_path}",
-                        "files": ["contracts/standards-manifest.json"],
-                        "artifact_type_declared": artifact_type,
                         "expected_schema_path": expected_schema_path,
                         "path_exists": False,
                         "json_parse_valid": False,
@@ -874,13 +952,15 @@ def run_tpa_contract_sync_check(*, repo_root: Path, changed_paths: list[str], cr
                     }
                 )
             elif schema_error is not None:
-                mismatches.append(
+                _append_mismatch(
+                    mismatch_type="manifest_declared_schema_invalid_json",
+                    artifact_type=artifact_type,
+                    detail=f"canonical schema is not valid JSON: {schema_error}",
+                    files=[str(schema_path.relative_to(repo_root))],
+                    schema_path_ref=str(schema_path.relative_to(repo_root)),
+                )
+                mismatches[-1].update(
                     {
-                        "mismatch_type": "manifest_declared_schema_invalid_json",
-                        "artifact_type": artifact_type,
-                        "detail": f"canonical schema is not valid JSON: {schema_error}",
-                        "files": [str(schema_path.relative_to(repo_root))],
-                        "artifact_type_declared": artifact_type,
                         "expected_schema_path": expected_schema_path,
                         "path_exists": True,
                         "json_parse_valid": False,
@@ -888,13 +968,16 @@ def run_tpa_contract_sync_check(*, repo_root: Path, changed_paths: list[str], cr
                     }
                 )
             elif schema_const != artifact_type:
-                mismatches.append(
+                _append_mismatch(
+                    mismatch_type="manifest_declared_schema_const_mismatch",
+                    artifact_type=artifact_type,
+                    detail=f"schema artifact_type.const={schema_const} expected={artifact_type}",
+                    files=[str(schema_path.relative_to(repo_root))],
+                    schema_const_value=schema_const,
+                    schema_path_ref=str(schema_path.relative_to(repo_root)),
+                )
+                mismatches[-1].update(
                     {
-                        "mismatch_type": "manifest_declared_schema_const_mismatch",
-                        "artifact_type": artifact_type,
-                        "detail": f"schema artifact_type.const={schema_const} expected={artifact_type}",
-                        "files": [str(schema_path.relative_to(repo_root))],
-                        "artifact_type_declared": artifact_type,
                         "expected_schema_path": expected_schema_path,
                         "path_exists": True,
                         "json_parse_valid": True,
@@ -914,71 +997,165 @@ def run_tpa_contract_sync_check(*, repo_root: Path, changed_paths: list[str], cr
         example_artifact_type = _artifact_type_from_example(example_path)
         required_fields = [str(item) for item in (schema_payload.get("required") or []) if isinstance(item, str)]
         example_payload = json.loads(example_path.read_text(encoding="utf-8"))
+        example_fields = sorted(str(item) for item in (example_payload.keys() if isinstance(example_payload, dict) else []))
+        schema_properties = schema_payload.get("properties") if isinstance(schema_payload, dict) else {}
+        schema_property_fields = (
+            sorted(str(item) for item in schema_properties.keys()) if isinstance(schema_properties, dict) else []
+        )
 
         if schema_artifact_type and schema_artifact_type != artifact_type:
-            mismatches.append(
-                {
-                    "mismatch_type": "schema_artifact_type_mismatch",
-                    "artifact_type": artifact_type,
-                    "detail": f"schema const={schema_artifact_type} expected={artifact_type}",
-                    "files": [str(schema_path.relative_to(repo_root))],
-                }
+            _append_mismatch(
+                mismatch_type="schema_artifact_type_mismatch",
+                artifact_type=artifact_type,
+                detail=f"schema const={schema_artifact_type} expected={artifact_type}",
+                files=[str(schema_path.relative_to(repo_root))],
+                schema_const_value=schema_artifact_type,
+                schema_required_fields=required_fields,
+                example_artifact_type_value=example_artifact_type,
+                example_fields=example_fields,
+                schema_path_ref=str(schema_path.relative_to(repo_root)),
+                example_path_ref=str(example_path.relative_to(repo_root)),
             )
         if example_artifact_type and example_artifact_type != artifact_type:
-            mismatches.append(
-                {
-                    "mismatch_type": "example_artifact_type_mismatch",
-                    "artifact_type": artifact_type,
-                    "detail": f"example artifact_type={example_artifact_type} expected={artifact_type}",
-                    "files": [str(example_path.relative_to(repo_root))],
-                }
+            _append_mismatch(
+                mismatch_type="example_artifact_type_mismatch",
+                artifact_type=artifact_type,
+                detail=f"example artifact_type={example_artifact_type} expected={artifact_type}",
+                files=[str(example_path.relative_to(repo_root))],
+                schema_const_value=schema_artifact_type,
+                example_artifact_type_value=example_artifact_type,
+                schema_required_fields=required_fields,
+                example_fields=example_fields,
+                schema_path_ref=str(schema_path.relative_to(repo_root)),
+                example_path_ref=str(example_path.relative_to(repo_root)),
             )
         if manifest_entry is None:
-            mismatches.append(
-                {
-                    "mismatch_type": "manifest_entry_missing",
-                    "artifact_type": artifact_type,
-                    "detail": "standards manifest missing artifact_type entry",
-                    "files": ["contracts/standards-manifest.json"],
-                }
+            _append_mismatch(
+                mismatch_type="manifest_entry_missing",
+                artifact_type=artifact_type,
+                detail="standards manifest missing artifact_type entry",
+                files=["contracts/standards-manifest.json"],
+                schema_const_value=schema_artifact_type,
+                example_artifact_type_value=example_artifact_type,
+                schema_required_fields=required_fields,
+                example_fields=example_fields,
+                schema_path_ref=str(schema_path.relative_to(repo_root)),
+                example_path_ref=str(example_path.relative_to(repo_root)),
             )
         else:
             expected_example_path = str(example_path.relative_to(repo_root))
             if str(manifest_entry.get("example_path") or "") != expected_example_path:
-                mismatches.append(
-                    {
-                        "mismatch_type": "manifest_example_path_mismatch",
-                        "artifact_type": artifact_type,
-                        "detail": (
-                            f"manifest example_path={manifest_entry.get('example_path')} expected={expected_example_path}"
-                        ),
-                        "files": ["contracts/standards-manifest.json"],
-                    }
+                _append_mismatch(
+                    mismatch_type="manifest_example_path_mismatch",
+                    artifact_type=artifact_type,
+                    detail=f"manifest example_path={manifest_entry.get('example_path')} expected={expected_example_path}",
+                    files=["contracts/standards-manifest.json"],
+                    schema_const_value=schema_artifact_type,
+                    example_artifact_type_value=example_artifact_type,
+                    schema_required_fields=required_fields,
+                    example_fields=example_fields,
+                    schema_path_ref=str(schema_path.relative_to(repo_root)),
+                    example_path_ref=str(example_path.relative_to(repo_root)),
                 )
         missing_required = sorted(field for field in required_fields if field not in example_payload)
+        unexpected_fields = sorted(field for field in example_fields if field not in schema_property_fields) if schema_property_fields else []
+        if unexpected_fields:
+            _append_mismatch(
+                mismatch_type="example_unexpected_fields",
+                artifact_type=artifact_type,
+                detail=f"unexpected example fields: {', '.join(unexpected_fields)}",
+                files=[str(example_path.relative_to(repo_root))],
+                schema_const_value=schema_artifact_type,
+                example_artifact_type_value=example_artifact_type,
+                schema_required_fields=required_fields,
+                example_fields=example_fields,
+                missing_required_fields=missing_required,
+                unexpected_example_fields=unexpected_fields,
+                schema_path_ref=str(schema_path.relative_to(repo_root)),
+                example_path_ref=str(example_path.relative_to(repo_root)),
+            )
+        runtime_field_surface_map: dict[str, set[str]] = {
+            "tpa_contract_sync_check_record": {
+                "artifact_type",
+                "artifact_id",
+                "checked_artifact_types",
+                "mismatches",
+                "auto_repair_eligible",
+                "created_at",
+            },
+            "tpa_contract_sync_repair_plan_record": {
+                "artifact_type",
+                "artifact_id",
+                "check_artifact_id",
+                "planned_actions",
+                "auto_repair_eligible",
+                "created_at",
+            },
+            "tpa_contract_sync_repair_handoff_record": {
+                "artifact_type",
+                "artifact_id",
+                "check_artifact_id",
+                "repair_plan_artifact_id",
+                "handoff_ready",
+                "candidate_files",
+                "remaining_mismatches",
+                "escalation_required",
+                "created_at",
+            },
+        }
+        runtime_fields = runtime_field_surface_map.get(artifact_type)
+        if runtime_fields is not None:
+            schema_fields = set(schema_property_fields)
+            if schema_fields != runtime_fields:
+                _append_mismatch(
+                    mismatch_type="runtime_field_surface_mismatch",
+                    artifact_type=artifact_type,
+                    detail=f"runtime field surface mismatch (schema={sorted(schema_fields)} runtime={sorted(runtime_fields)})",
+                    files=[str(schema_path.relative_to(repo_root)), "scripts/run_contract_preflight.py"],
+                    schema_const_value=schema_artifact_type,
+                    example_artifact_type_value=example_artifact_type,
+                    schema_required_fields=required_fields,
+                    example_fields=example_fields,
+                    missing_required_fields=missing_required,
+                    unexpected_example_fields=unexpected_fields,
+                    schema_path_ref=str(schema_path.relative_to(repo_root)),
+                    example_path_ref=str(example_path.relative_to(repo_root)),
+                )
         if missing_required:
             derivable = sorted(field for field in missing_required if field in {"artifact_type"})
             non_derivable = sorted(field for field in missing_required if field not in {"artifact_type"})
             if derivable:
-                mismatches.append(
-                    {
-                        "mismatch_type": "example_missing_required_fields",
-                        "artifact_type": artifact_type,
-                        "detail": f"missing required fields: {', '.join(derivable)}",
-                        "fields": derivable,
-                        "files": [str(example_path.relative_to(repo_root))],
-                    }
+                _append_mismatch(
+                    mismatch_type="example_missing_required_fields",
+                    artifact_type=artifact_type,
+                    detail=f"missing required fields: {', '.join(derivable)}",
+                    files=[str(example_path.relative_to(repo_root))],
+                    schema_const_value=schema_artifact_type,
+                    example_artifact_type_value=example_artifact_type,
+                    schema_required_fields=required_fields,
+                    example_fields=example_fields,
+                    missing_required_fields=derivable,
+                    unexpected_example_fields=unexpected_fields,
+                    schema_path_ref=str(schema_path.relative_to(repo_root)),
+                    example_path_ref=str(example_path.relative_to(repo_root)),
                 )
+                mismatches[-1]["fields"] = derivable
             if non_derivable:
-                mismatches.append(
-                    {
-                        "mismatch_type": "example_missing_non_derivable_required_fields",
-                        "artifact_type": artifact_type,
-                        "detail": f"missing non-derivable required fields: {', '.join(non_derivable)}",
-                        "fields": non_derivable,
-                        "files": [str(example_path.relative_to(repo_root))],
-                    }
+                _append_mismatch(
+                    mismatch_type="example_missing_non_derivable_required_fields",
+                    artifact_type=artifact_type,
+                    detail=f"missing non-derivable required fields: {', '.join(non_derivable)}",
+                    files=[str(example_path.relative_to(repo_root))],
+                    schema_const_value=schema_artifact_type,
+                    example_artifact_type_value=example_artifact_type,
+                    schema_required_fields=required_fields,
+                    example_fields=example_fields,
+                    missing_required_fields=non_derivable,
+                    unexpected_example_fields=unexpected_fields,
+                    schema_path_ref=str(schema_path.relative_to(repo_root)),
+                    example_path_ref=str(example_path.relative_to(repo_root)),
                 )
+                mismatches[-1]["fields"] = non_derivable
 
     auto_repair_eligible = bool(mismatches) and all(item.get("mismatch_type") in eligible_types for item in mismatches)
     seed = {
@@ -1867,6 +2044,8 @@ def main() -> int:
         repo_root=REPO_ROOT,
         changed_paths=detection.changed_paths,
         created_at=_utc_now(),
+        base_ref=ref_context.base_ref,
+        head_ref=ref_context.head_ref,
     )
     validate_artifact(tpa_contract_sync_check, "tpa_contract_sync_check_record")
     tpa_contract_sync_check_path = output_dir / "tpa_contract_sync_check_record.json"
@@ -2522,13 +2701,13 @@ def main() -> int:
         report["recommended_repair_areas"] = sorted(
             set(report.get("recommended_repair_areas", []) + ["pytest discovery/collection inventory integrity gate"])
         )
-    if tpa_contract_sync_check.get("mismatches") and not bool((tpa_contract_sync_repair_handoff or {}).get("handoff_ready")):
+    if tpa_contract_sync_check.get("mismatches"):
         report["status"] = "failed"
         report["invariant_violations"] = sorted(
-            set(report.get("invariant_violations", []) + ["TPA_CONTRACT_SYNC_INELIGIBLE_MISMATCH"])
+            set(report.get("invariant_violations", []) + ["TPA_CONTRACT_SURFACE_MISMATCH"])
         )
         report["recommended_repair_areas"] = sorted(
-            set(report.get("recommended_repair_areas", []) + ["TPA contract sync handoff required for authorized repair owner"])
+            set(report.get("recommended_repair_areas", []) + ["TPA contract-surface equivalence mismatch requires canonical alignment"])
         )
     cohesion_decision = (trust_spine_cohesion or {}).get("overall_decision") if isinstance(trust_spine_cohesion, dict) else None
     report["trust_spine_evidence_cohesion"] = trust_spine_cohesion

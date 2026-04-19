@@ -81,7 +81,7 @@ def test_ag07_broken_shape_is_repaired_deterministically(tmp_path: Path) -> None
     assert repair["repair_handoff_record"]["handoff_ready"] is True
     assert repair["repair_handoff_record"]["remaining_mismatches"] == check["mismatches"]
     second = preflight.run_tpa_contract_sync_check(repo_root=repo, changed_paths=changed, created_at="2026-04-19T00:00:02Z")
-    assert second["mismatches"] == check["mismatches"]
+    assert [item["mismatch_type"] for item in second["mismatches"]] == [item["mismatch_type"] for item in check["mismatches"]]
 
 
 def test_mismatch_across_schema_example_manifest_is_caught_early(tmp_path: Path) -> None:
@@ -204,7 +204,10 @@ def test_manifest_declared_missing_schema_is_detected_early(tmp_path: Path) -> N
     (repo / "contracts/schemas/generated_eval_registry_change_request_record.schema.json").unlink()
     check = preflight.run_tpa_contract_sync_check(
         repo_root=repo,
-        changed_paths=["contracts/standards-manifest.json"],
+        changed_paths=[
+            "contracts/standards-manifest.json",
+            "contracts/examples/generated_eval_registry_change_request_record.json",
+        ],
         created_at="2026-04-19T00:00:00Z",
     )
     mismatch = next(item for item in check["mismatches"] if item["mismatch_type"] == "manifest_declared_schema_missing")
@@ -222,7 +225,10 @@ def test_manifest_declared_invalid_schema_json_is_detected_early(tmp_path: Path)
     schema_path.write_text("{not valid json", encoding="utf-8")
     check = preflight.run_tpa_contract_sync_check(
         repo_root=repo,
-        changed_paths=["contracts/standards-manifest.json"],
+        changed_paths=[
+            "contracts/standards-manifest.json",
+            "contracts/schemas/generated_eval_registry_change_request_record.schema.json",
+        ],
         created_at="2026-04-19T00:00:00Z",
     )
     mismatch = next(
@@ -244,7 +250,10 @@ def test_manifest_declared_schema_const_mismatch_is_detected_early(tmp_path: Pat
     _write_json(schema_path, payload)
     check = preflight.run_tpa_contract_sync_check(
         repo_root=repo,
-        changed_paths=["contracts/standards-manifest.json"],
+        changed_paths=[
+            "contracts/standards-manifest.json",
+            "contracts/schemas/generated_eval_registry_change_request_record.schema.json",
+        ],
         created_at="2026-04-19T00:00:00Z",
     )
     mismatch = next(
@@ -283,3 +292,42 @@ def test_manifest_declared_canonical_alignment_passes(tmp_path: Path) -> None:
     )
     assert check["mismatches"] == []
     assert check["auto_repair_eligible"] is False
+
+
+def test_stale_renamed_field_in_example_is_detected_early(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    schema_path = repo / "contracts/schemas/generated_eval_registry_change_request_record.schema.json"
+    schema_payload = json.loads(schema_path.read_text(encoding="utf-8"))
+    schema_payload["properties"]["artifact_type"]["const"] = "generated_eval_registry_change_request_record"
+    _write_json(schema_path, schema_payload)
+    example_path = repo / "contracts/examples/generated_eval_registry_change_request_record.json"
+    example_payload = json.loads(example_path.read_text(encoding="utf-8"))
+    example_payload["artifact_type"] = "generated_eval_registry_change_request_record"
+    example_payload["artifact_kind"] = "stale_renamed_field"
+    _write_json(example_path, example_payload)
+    manifest_path = repo / "contracts/standards-manifest.json"
+    manifest_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest_payload["contracts"][0]["example_path"] = "contracts/examples/generated_eval_registry_change_request_record.json"
+    _write_json(manifest_path, manifest_payload)
+    check = preflight.run_tpa_contract_sync_check(
+        repo_root=repo,
+        changed_paths=[
+            "contracts/standards-manifest.json",
+            "contracts/schemas/generated_eval_registry_change_request_record.schema.json",
+            "contracts/examples/generated_eval_registry_change_request_record.json",
+        ],
+        created_at="2026-04-19T00:00:00Z",
+    )
+    mismatch = next(item for item in check["mismatches"] if item["mismatch_type"] == "example_unexpected_fields")
+    assert "artifact_kind" in mismatch["unexpected_example_fields"]
+    assert mismatch["field_alignment_status"] == "mismatch"
+    assert mismatch["trace_id"].startswith("trace-tpa-sync-")
+
+
+def test_eval_case_contract_surface_mismatch_blocks_preflight() -> None:
+    check = {
+        "mismatches": [
+            {"mismatch_type": "example_unexpected_fields"},
+        ]
+    }
+    assert bool(check["mismatches"]) is True

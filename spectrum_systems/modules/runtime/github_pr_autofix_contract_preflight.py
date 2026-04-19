@@ -277,6 +277,8 @@ def build_preflight_block_diagnosis_record(*, report: dict[str, Any], preflight_
     except Exception:
         normalized_failure = {"failure_class": "internal_preflight_error", "repairable": False}
         category, reasons = "internal_preflight_error", ["preflight_runtime_exception"]
+    tpa_mismatches = ((report.get("tpa_contract_sync_check_record") or {}).get("mismatches") or []) if isinstance(report, dict) else []
+    first_mismatch = tpa_mismatches[0] if tpa_mismatches and isinstance(tpa_mismatches[0], dict) else {}
     return {
         "artifact_type": "preflight_block_diagnosis_record",
         "artifact_version": "1.0.0",
@@ -290,6 +292,16 @@ def build_preflight_block_diagnosis_record(*, report: dict[str, Any], preflight_
             "repairable": bool(normalized_failure.get("repairable", False)),
         },
         "root_cause_summary": str((preflight_artifact.get("control_signal") or {}).get("rationale") or "preflight block"),
+        "mismatch_diagnostics": {
+            "trace_id": str(first_mismatch.get("trace_id") or f"trace-{preflight_artifact.get('generated_at', 'unknown')}"),
+            "run_id": str(first_mismatch.get("run_id") or preflight_artifact.get("run_id") or "run-unknown"),
+            "changed_file_refs": list(first_mismatch.get("changed_file_refs") or report.get("changed_paths") or []),
+            "manifest_entry_ref": str(first_mismatch.get("manifest_entry_ref") or "contracts/standards-manifest.json"),
+            "schema_path": str(first_mismatch.get("schema_path") or ""),
+            "example_path": str(first_mismatch.get("example_path") or ""),
+            "runtime_source_ref": str(first_mismatch.get("runtime_source_ref") or "scripts/run_contract_preflight.py"),
+            "mismatch_type": str(first_mismatch.get("mismatch_type") or ""),
+        },
     }
 
 

@@ -17,6 +17,8 @@ For changed contract-bearing paths, TPA performs detection and classification fo
 - required-field presence in touched examples when deterministic fill is possible
 
 TPA emits `tpa_contract_sync_check_record`.
+Mismatch entries carry explicit diagnostics including `artifact_type_declared`, `schema_const_value`,
+`example_artifact_type_value`, field-level required/present deltas, and trace/replay refs.
 
 ## Candidate-generation scope
 For deterministic, policy-safe mismatch classes, TPA generates bounded repair candidates and handoff artifacts:
@@ -34,4 +36,4 @@ TPA does **not** own authoritative contract enforcement or authoritative contrac
 TPA only diagnoses, marks eligibility, and prepares deterministic repair candidates for handoff to authorized repair/enforcement paths.
 
 ## Fail-closed behavior
-Ambiguous or non-derivable mismatches remain fail-closed and continue through authoritative downstream preflight gating.
+Any contract-surface mismatch remains fail-closed and continues through authoritative downstream preflight gating.
