@@ -117,6 +117,26 @@
         "notes": {
           "type": "string",
           "description": "Optional freeform context."
+        },
+        "repo": {
+          "type": "string",
+          "pattern": "^[a-z0-9_-]+/[a-z0-9._-]+$",
+          "description": "Qualified repo identifier in owner/repo-name format."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Short human-readable description of the system."
+        },
+        "maturity": {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+)?$",
+          "description": "Current maturity score as a decimal string (e.g. '2.5')."
+        },
+        "target_maturity": {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+)?$",
+          "description": "Target maturity score as a decimal string (e.g. '4.0')."
         }
       }
     }
