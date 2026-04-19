@@ -58,7 +58,6 @@ This file intentionally provides operational behavior guidance and does not dupl
 ## Claude Role
 - Claude performs reasoning and review tasks.
 - Claude produces explicit findings, risk calls, and boundary checks.
-- Claude does not execute implementation changes.
 - Claude does not bypass the governed system.
 
 ## Review Behavior
