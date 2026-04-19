@@ -1,348 +1,137 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "id": "spectrum-systems.file-types.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "spectrum-systems://schemas/spectrum-systems.file-types.schema.json",
   "title": "Spectrum Systems Allowed File Types Schema",
-  "description": "Enforces that spectrum-systems is GOVERNANCE-ONLY: no production code, business logic, or implementation. Contains contracts, schemas, documentation, and governance artifacts only.",
+  "description": "Defines governance boundary: which file types are allowed in spectrum-systems (governance-only repo). No production code.",
   "type": "object",
   "properties": {
-    "schema_version": {
-      "type": "string",
-      "default": "1.0.0"
-    },
-    "purpose": {
-      "type": "string",
-      "default": "Boundary enforcement: spectrum-systems is the governance control plane, not an implementation repository"
-    },
     "allowed_file_types": {
       "type": "object",
-      "description": "File types and patterns that are PERMITTED in spectrum-systems",
+      "description": "File types and patterns permitted in spectrum-systems",
       "properties": {
-        "documents": {
+        "governance_artifacts": {
           "type": "array",
-          "description": "Documentation files",
+          "description": "Governance documentation, contracts, schemas",
           "items": {
             "type": "string"
           },
           "default": [
             "*.md",
-            "*.txt",
-            "README",
-            "CLAUDE.md",
-            "CONTRIBUTING.md",
-            "CHANGELOG.md"
-          ]
-        },
-        "governance_artifacts": {
-          "type": "array",
-          "description": "Governance and policy artifacts",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "contracts/*.json",
-            "contracts/**/*.json",
-            "schemas/*.json",
-            "schemas/**/*.json",
-            "governance/**/*.md",
-            "governance/**/*.json",
-            "governance/**/*.yaml",
-            "governance/**/*.yml"
-          ]
-        },
-        "configuration": {
-          "type": "array",
-          "description": "Configuration files (not code)",
-          "items": {
-            "type": "string"
-          },
-          "default": [
+            "*.json",
             "*.yaml",
             "*.yml",
-            "*.json",
+            "*.toml",
+            "*.txt",
+            "*.rst"
+          ]
+        },
+        "schema_files": {
+          "type": "array",
+          "description": "JSON Schema definition files",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "*.schema.json"
+          ]
+        },
+        "contract_files": {
+          "type": "array",
+          "description": "Contract and standards definition files",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "*.contract.json",
+            "*.contract.yaml"
+          ]
+        },
+        "configuration_files": {
+          "type": "array",
+          "description": "Repository and CI configuration",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "*.ini",
+            "*.cfg",
+            "pytest.ini",
+            "pyproject.toml",
+            ".gitignore"
+          ]
+        },
+        "ci_workflows": {
+          "type": "array",
+          "description": "CI/CD workflow definitions",
+          "items": {
+            "type": "string"
+          },
+          "default": [
             ".github/workflows/*.yml",
-            "config/**/*.json",
-            "config/**/*.yaml"
+            ".github/workflows/*.yaml"
           ]
         },
-        "examples_and_fixtures": {
+        "governance_scripts": {
           "type": "array",
-          "description": "Example artifacts and test fixtures",
+          "description": "Governance-only Python scripts (not production code)",
           "items": {
             "type": "string"
           },
           "default": [
-            "examples/**/*.json",
-            "artifacts/**/*.json",
-            "data/**/*",
-            "cases/**/*",
-            "evals/**/*.json",
-            "eval/**/*"
+            "scripts/check_protected_files.py",
+            "scripts/validate-governance-boundary.py",
+            "scripts/run_system_registry_guard.py"
           ]
         },
-        "ci_and_tooling": {
+        "test_files": {
           "type": "array",
-          "description": "CI/CD and tooling configuration",
+          "description": "Governance boundary enforcement tests only",
           "items": {
             "type": "string"
           },
           "default": [
-            ".github/**/*",
-            ".gitignore",
-            "Dockerfile",
-            "docker-compose.yml",
-            ".devcontainer/**/*"
+            "tests/test_governance_*.py",
+            "tests/test_contract_*.py",
+            "tests/test_schema_*.py",
+            "tests/test_compliance_*.py",
+            "tests/test_boundary_*.py"
           ]
         },
-        "ui_and_dashboards": {
+        "examples": {
           "type": "array",
-          "description": "UI/Dashboard frontend code (observability only, not business logic)",
+          "description": "Contract and schema examples",
           "items": {
             "type": "string"
           },
           "default": [
-            "dashboard/**/*.tsx",
-            "dashboard/**/*.ts",
-            "dashboard/**/*.jsx",
-            "dashboard/**/*.js",
-            "dashboard/**/*.json",
-            "components/**/*.tsx",
-            "components/**/*.ts",
-            "lib/**/*.ts",
-            "lib/**/*.tsx"
-          ]
-        },
-        "templates": {
-          "type": "array",
-          "description": "Templates for governance artifacts (not code templates)",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "templates/**/*.json",
-            "templates/**/*.md",
-            "scaffold-templates/**/*"
-          ]
-        },
-        "standards": {
-          "type": "array",
-          "description": "Standards and specifications",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "standards/**/*",
-            "SYSTEMS.md",
-            "CONTRACTS.md",
-            "VALIDATION.md"
-          ]
-        },
-        "design_and_architecture": {
-          "type": "array",
-          "description": "Design artifacts and architecture decisions",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "design/**/*",
-            "design-reviews/**/*",
-            "design-packages/**/*",
-            "architecture-decisions/**/*",
-            "docs/adr/**/*"
-          ]
-        },
-        "metadata": {
-          "type": "array",
-          "description": "Repository metadata",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "CODEX.md",
-            "GLOSSARY.md",
-            "REPO_MAP.md",
-            ".codex/**/*"
-          ]
-        },
-        "test_governance_only": {
-          "type": "array",
-          "description": "Tests for governance rules and enforcement (not implementation tests)",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "tests/test_governance*.py",
-            "tests/test_contract*.py",
-            "tests/test_schema*.py",
-            "tests/test_compliance*.py"
+            "contracts/examples/**",
+            "schemas/examples/**"
           ]
         }
       }
     },
     "forbidden_patterns": {
       "type": "array",
-      "description": "File patterns that are NEVER allowed (production code, implementation)",
+      "description": "File patterns that must never exist in a governance-only repo",
       "items": {
-        "type": "object",
-        "properties": {
-          "pattern": {
-            "type": "string",
-            "description": "Glob pattern to block"
-          },
-          "reason": {
-            "type": "string",
-            "description": "Why this pattern is forbidden"
-          },
-          "severity": {
-            "type": "string",
-            "enum": ["CRITICAL", "HIGH", "MEDIUM"],
-            "description": "Violation severity"
-          }
-        }
+        "type": "string"
       },
       "default": [
-        {
-          "pattern": "spectrum_systems/**/*",
-          "reason": "Production AI execution code must be in dedicated repo (spectrum-pipeline-engine, not here)",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "spectrum_systems/aex/**/*",
-          "reason": "AI execution engine belongs in spectrum-pipeline-engine, not governance repo",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "spectrum_systems/modules/**/*",
-          "reason": "Runtime modules are implementation, not governance",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "spectrum_systems/orchestration/**/*",
-          "reason": "Orchestration logic is implementation, not governance",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "spectrum_systems/study_runner/**/*",
-          "reason": "Study runner belongs in dedicated study execution repo",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "src/**/*",
-          "reason": "src/ is implementation; belongs in dedicated repos, not governance",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "src/mvp-integration/**/*",
-          "reason": "MVP integration is implementation, not governance",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "scripts/*.py",
-          "reason": "Python scripts are implementation; only governance validation scripts allowed (validate-governance-only.py, etc)",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "scripts/study*.py",
-          "reason": "Study running scripts belong in dedicated study execution repo",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "systems/*/src/**/*",
-          "reason": "System implementations belong in dedicated repos, not here",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "systems/*/lib/**/*",
-          "reason": "System libraries belong in dedicated repos",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "systems/*/implementation/**/*",
-          "reason": "System implementation details don't belong in governance repo",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "modules/*/index.ts",
-          "reason": "Module implementations belong in dedicated repos",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "control_plane/*/execution/**/*",
-          "reason": "Execution logic is implementation, not governance",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "app/**/*.py",
-          "reason": "Application code belongs in dedicated repos",
-          "severity": "CRITICAL"
-        },
-        {
-          "pattern": "**/__pycache__/**/*",
-          "reason": "Python cache files; add to .gitignore",
-          "severity": "MEDIUM"
-        },
-        {
-          "pattern": "**/node_modules/**/*",
-          "reason": "Node modules should be in .gitignore, not committed",
-          "severity": "MEDIUM"
-        },
-        {
-          "pattern": "**/dist/**/*",
-          "reason": "Built artifacts belong in .gitignore",
-          "severity": "MEDIUM"
-        },
-        {
-          "pattern": "**/build/**/*",
-          "reason": "Build artifacts belong in .gitignore",
-          "severity": "MEDIUM"
-        },
-        {
-          "pattern": "tests/integration/*",
-          "reason": "Integration tests are implementation-specific; move to dedicated repos",
-          "severity": "HIGH"
-        },
-        {
-          "pattern": "tests/e2e/**/*",
-          "reason": "End-to-end tests are implementation-specific; move to dedicated repos",
-          "severity": "HIGH"
-        }
+        "spectrum_systems/**",
+        "spectrum_systems/__init__.py",
+        "src/mvp-integration/**",
+        "src/observability/**",
+        "src/governance/**",
+        "src/replay/**",
+        "src/trace/**",
+        "src/signing/**",
+        "src/judgment/**",
+        "src/policy/**",
+        "control_plane/**",
+        "working_paper_generator/**",
+        "systems/**/*.py",
+        "modules/**/*.py"
       ]
-    },
-    "exceptions": {
-      "type": "array",
-      "description": "Exceptions to forbidden patterns (must be documented with justification and expiry)",
-      "items": {
-        "type": "object",
-        "properties": {
-          "pattern": {
-            "type": "string",
-            "description": "Glob pattern for exception"
-          },
-          "reason": {
-            "type": "string",
-            "description": "Business justification for exception"
-          },
-          "approved_by": {
-            "type": "string",
-            "description": "Who approved this exception (GitHub username or team)"
-          },
-          "created_date": {
-            "type": "string",
-            "format": "date-time",
-            "description": "When was this exception added"
-          },
-          "expiry_date": {
-            "type": "string",
-            "format": "date",
-            "description": "When does this exception expire (6-month maximum)"
-          },
-          "ticket": {
-            "type": "string",
-            "description": "Link to GitHub issue/decision documenting approval"
-          }
-        },
-        "required": ["pattern", "reason", "approved_by", "expiry_date"]
-      },
-      "default": []
     },
     "validation_rules": {
       "type": "object",
@@ -350,51 +139,28 @@
       "properties": {
         "fail_on_any_forbidden": {
           "type": "boolean",
-          "description": "Block entire PR if ANY forbidden file is found",
+          "description": "CI must fail if any forbidden pattern is found",
           "default": true
         },
         "enforce_in_ci": {
           "type": "boolean",
-          "description": "Run validation as CI check (blocks merge)",
+          "description": "Boundary check runs on every PR",
           "default": true
         },
-        "fail_on_expired_exceptions": {
+        "allow_tests_for_governance_only": {
           "type": "boolean",
-          "description": "Block merge if any exception is expired",
+          "description": "Test files are allowed only if they test governance boundaries",
           "default": true
         },
-        "allow_override_with_approval": {
+        "require_migration_guide_on_removal": {
           "type": "boolean",
-          "description": "Allow override if approved by governance team (requires PR review)",
-          "default": false
-        }
-      }
-    },
-    "migration_guide": {
-      "type": "object",
-      "description": "Where to find removed/relocated code",
-      "properties": {
-        "spectrum_systems_module": {
-          "type": "string",
-          "default": "Moved to spectrum-pipeline-engine (orchestration) + new AI execution repo"
-        },
-        "study_runner": {
-          "type": "string",
-          "default": "Moved to dedicated study-execution-engine repo"
-        },
-        "src_mvp_implementations": {
-          "type": "string",
-          "default": "Each MVP has dedicated repo; see docs/phase-16-migration-guide.md"
-        },
-        "system_implementations": {
-          "type": "string",
-          "default": "Each system in systems/ has dedicated repo; see system-registry.json"
+          "description": "Any removed module must have a migration guide",
+          "default": true
         }
       }
     }
   },
   "required": [
-    "schema_version",
     "allowed_file_types",
     "forbidden_patterns",
     "validation_rules"
