@@ -2,7 +2,7 @@ import { ControlLoopEvaluator } from "@/src/governance/control-loop-decision";
 import { Pool } from "pg";
 import { v4 as uuidv4 } from "uuid";
 
-describe("Control Loop Decision (Governance)", () => {
+describe("Control Loop Decision (Strict Governance)", () => {
   let evaluator: ControlLoopEvaluator;
   let pool: Pool;
 
@@ -20,7 +20,7 @@ describe("Control Loop Decision (Governance)", () => {
     await pool.end();
   });
 
-  it("should evaluate artifact and return decision artifact (never execute)", async () => {
+  it("should evaluate artifact and return decision (read-only)", async () => {
     const decision = await evaluator.evaluateArtifact(
       uuidv4(),
       uuidv4(),
@@ -28,9 +28,9 @@ describe("Control Loop Decision (Governance)", () => {
       uuidv4()
     );
 
+    // Returns decision artifact
     expect(decision.artifact_kind).toBe("control_loop_decision");
     expect(["allow", "warn", "freeze", "block"]).toContain(decision.decision);
-    // Decision is an artifact, not an execution
   });
 
   it("should fail-closed on missing eval summary", async () => {
@@ -41,52 +41,45 @@ describe("Control Loop Decision (Governance)", () => {
       uuidv4()
     );
 
-    // Missing eval → block (fail-closed)
+    // No eval → block (fail-closed)
     expect(decision.decision).toBe("block");
     expect(decision.reason_codes).toContain("missing_eval_summary");
   });
 
-  it("should create enforcement action (pending, not executed)", async () => {
-    const decisionId = uuidv4();
-    const action = await evaluator.createEnforcementAction(
-      decisionId,
-      "promote",
-      "Promote artifact after eval passed",
-      uuidv4()
+  it("should NEVER create enforcement actions in code", async () => {
+    // This test ensures we never call createEnforcementAction
+    // All enforcement is external (CI/orchestration)
+
+    const methods = Object.getOwnPropertyNames(
+      Object.getPrototypeOf(evaluator)
     );
 
-    expect(action.artifact_kind).toBe("enforcement_action");
-    expect(action.status).toBe("pending"); // awaits approval/execution
+    // createEnforcementAction should NOT exist
+    expect(methods).not.toContain("createEnforcementAction");
   });
 
-  it("should query pending enforcement actions (for CI to execute)", async () => {
-    const actions = await evaluator.getPendingEnforcementActions(10);
-    expect(Array.isArray(actions)).toBe(true);
-    // CI polls this and decides whether to execute
+  it("should allow CI to query decisions", async () => {
+    // CI can query pending decisions
+    const decisions = await evaluator.getDecisions(undefined, 10);
+    expect(Array.isArray(decisions)).toBe(true);
   });
 
-  it("should require explicit approval before marking executed", async () => {
-    const decisionId = uuidv4();
-    const action = await evaluator.createEnforcementAction(
-      decisionId,
-      "promote",
-      "Test",
-      uuidv4()
-    );
-
-    await evaluator.approveEnforcementAction(
-      action.artifact_id,
-      "ci-orchestrator"
-    );
-    // (CI executes externally)
-    await evaluator.markEnforcementActionExecuted(action.artifact_id);
-
-    expect(true).toBe(true); // no error = success
+  it("should allow CI to query blocking decisions", async () => {
+    // CI can query block/freeze decisions for prioritization
+    const blocking = await evaluator.getBlockingDecisions(10);
+    expect(Array.isArray(blocking)).toBe(true);
   });
 
-  it("should never execute enforcement directly from evaluator", async () => {
-    // This test ensures we never have direct execution in the evaluator class
-    // All execution flows through CI/orchestration
-    expect(evaluator).toBeDefined();
+  it("should not have enforcement_action creation", async () => {
+    // Verify there's no method for creating enforcement actions
+    // All enforcement is external
+    const evaluatorMethods = Object.getOwnPropertyNames(
+      Object.getPrototypeOf(evaluator)
+    ).join(",");
+
+    expect(evaluatorMethods).not.toContain("createEnforcement");
+    expect(evaluatorMethods).not.toContain("recordEnforcement");
+    expect(evaluatorMethods).not.toContain("approveEnforcement");
+    expect(evaluatorMethods).not.toContain("markEnforcementActionExecuted");
   });
 });

@@ -2,10 +2,20 @@ import { Pool } from "pg";
 import { v4 as uuidv4 } from "uuid";
 
 /**
- * Control Loop Decision
- * GOVERNANCE: All decisions are artifacts, never direct enforcement
- * Separation of authority: AI generates eval_summary, control loop generates decision_artifact
- * Only CI/orchestration layer can execute enforcement actions
+ * Control Loop Decision (STRICT GOVERNANCE)
+ *
+ * GOVERNANCE RULE: AI code never creates enforcement actions
+ *
+ * This evaluator:
+ * - Reads eval_summary and policy artifacts (no side effects)
+ * - Applies deterministic logic
+ * - Returns decision (no creation of enforcement_action)
+ *
+ * CI/orchestration layer:
+ * - Queries control_loop_decisions
+ * - Decides what enforcement action to take
+ * - Creates enforcement_action artifacts (external to this code)
+ * - Executes via GitHub Actions
  */
 
 export interface ControlLoopDecision {
@@ -18,20 +28,7 @@ export interface ControlLoopDecision {
   reason_codes: string[];
   trace_id: string;
   created_at: string;
-  created_by: "system" | "human"; // who made the decision
-}
-
-export interface EnforcementAction {
-  artifact_kind: "enforcement_action";
-  artifact_id: string;
-  control_decision_id: string;
-  action_type: "promote" | "freeze_pipeline" | "rollback" | "escalate";
-  action_details: string;
-  status: "pending" | "approved" | "executed" | "failed";
-  approver?: string; // human who approved
-  executed_at?: string;
-  trace_id: string;
-  created_at: string;
+  created_by: "system";
 }
 
 export class ControlLoopEvaluator {
@@ -43,6 +40,7 @@ export class ControlLoopEvaluator {
 
   async initialize(): Promise<void> {
     // Control loop decisions (immutable, auditable)
+    // NO enforcement_actions table — that's CI's job
     await this.pool.query(`
       CREATE TABLE IF NOT EXISTS control_loop_decisions (
         decision_id UUID PRIMARY KEY,
@@ -53,28 +51,9 @@ export class ControlLoopEvaluator {
         reason_codes JSONB,
         trace_id UUID,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        created_by VARCHAR(50),
         INDEX idx_target_artifact (target_artifact_id),
         INDEX idx_decision (decision),
         INDEX idx_created_at (created_at)
-      )
-    `);
-
-    // Enforcement actions (what CI/orchestration must execute)
-    await this.pool.query(`
-      CREATE TABLE IF NOT EXISTS enforcement_actions (
-        action_id UUID PRIMARY KEY,
-        control_decision_id UUID NOT NULL,
-        action_type VARCHAR(50) NOT NULL,
-        action_details TEXT,
-        status VARCHAR(50) DEFAULT 'pending',
-        approver VARCHAR(255),
-        executed_at TIMESTAMP,
-        trace_id UUID,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_control_decision (control_decision_id),
-        INDEX idx_status (status),
-        INDEX idx_action_type (action_type)
       )
     `);
   }
@@ -164,11 +143,11 @@ export class ControlLoopEvaluator {
       };
     }
 
-    // Simple pass/fail logic based on eval_summary
+    // Check eval status (deterministic logic, no side effects)
     const evalPayload = evalData.payload || {};
-    const passed = evalPayload.status === "pass";
+    const status = evalPayload.status || "unknown";
 
-    if (!passed) {
+    if (status === "block") {
       reasonCodes.push("eval_failed");
       return {
         artifact_kind: "control_loop_decision",
@@ -184,7 +163,24 @@ export class ControlLoopEvaluator {
       };
     }
 
+    if (status === "warn") {
+      reasonCodes.push("eval_warning");
+      return {
+        artifact_kind: "control_loop_decision",
+        artifact_id: uuidv4(),
+        target_artifact_id: targetArtifactId,
+        eval_summary_id: evalSummaryId,
+        policy_version: policyVersion,
+        decision: "warn",
+        reason_codes: reasonCodes,
+        trace_id: traceId,
+        created_at: new Date().toISOString(),
+        created_by: "system",
+      };
+    }
+
     // Default to allow (eval passed)
+    reasonCodes.push("eval_passed");
     return {
       artifact_kind: "control_loop_decision",
       artifact_id: uuidv4(),
@@ -192,7 +188,7 @@ export class ControlLoopEvaluator {
       eval_summary_id: evalSummaryId,
       policy_version: policyVersion,
       decision: "allow",
-      reason_codes: ["eval_passed"],
+      reason_codes: reasonCodes,
       trace_id: traceId,
       created_at: new Date().toISOString(),
       created_by: "system",
@@ -201,8 +197,8 @@ export class ControlLoopEvaluator {
 
   private async recordDecision(decision: ControlLoopDecision): Promise<void> {
     await this.pool.query(
-      `INSERT INTO control_loop_decisions (decision_id, target_artifact_id, eval_summary_id, policy_version, decision, reason_codes, trace_id, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      `INSERT INTO control_loop_decisions (decision_id, target_artifact_id, eval_summary_id, policy_version, decision, reason_codes, trace_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
         uuidv4(),
         decision.target_artifact_id,
@@ -211,98 +207,67 @@ export class ControlLoopEvaluator {
         decision.decision,
         JSON.stringify(decision.reason_codes),
         decision.trace_id,
-        decision.created_by,
       ]
     );
   }
 
   /**
-   * Create enforcement action (orchestration/CI must execute)
-   * Decision artifact → enforcement action artifact → (human/CI execution)
-   * Never execute directly from here
+   * Query decisions (for CI/orchestration to read)
+   * CI uses these to decide what enforcement actions to take
    */
-  async createEnforcementAction(
-    controlDecisionId: string,
-    actionType: "promote" | "freeze_pipeline" | "rollback" | "escalate",
-    actionDetails: string,
-    traceId: string
-  ): Promise<EnforcementAction> {
-    const action: EnforcementAction = {
-      artifact_kind: "enforcement_action",
-      artifact_id: uuidv4(),
-      control_decision_id: controlDecisionId,
-      action_type: actionType,
-      action_details: actionDetails,
-      status: "pending", // waits for CI/human approval
-      trace_id: traceId,
-      created_at: new Date().toISOString(),
-    };
-
-    // Store action artifact
-    await this.pool.query(
-      `INSERT INTO enforcement_actions (action_id, control_decision_id, action_type, action_details, status, trace_id)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [
-        action.artifact_id,
-        controlDecisionId,
-        actionType,
-        actionDetails,
-        action.status,
-        traceId,
-      ]
-    );
-
-    return action;
-  }
-
-  /**
-   * Query pending enforcement actions (for CI/orchestration to execute)
-   * CI/orchestration layer polls this and executes via GitHub Actions, etc.
-   */
-  async getPendingEnforcementActions(
+  async getDecisions(
+    targetArtifactId?: string,
     limit: number = 50
-  ): Promise<EnforcementAction[]> {
-    const result = await this.pool.query(
-      `SELECT * FROM enforcement_actions WHERE status = 'pending' ORDER BY created_at ASC LIMIT $1`,
-      [limit]
-    );
+  ): Promise<ControlLoopDecision[]> {
+    let query = `SELECT * FROM control_loop_decisions`;
+    const params: any[] = [];
+
+    if (targetArtifactId) {
+      query += ` WHERE target_artifact_id = $1`;
+      params.push(targetArtifactId);
+    }
+
+    query += ` ORDER BY created_at DESC LIMIT $${params.length + 1}`;
+    params.push(limit);
+
+    const result = await this.pool.query(query, params);
 
     return result.rows.map((r) => ({
-      artifact_kind: "enforcement_action" as const,
-      artifact_id: r.action_id,
-      control_decision_id: r.control_decision_id,
-      action_type: r.action_type,
-      action_details: r.action_details,
-      status: r.status,
-      approver: r.approver,
-      executed_at: r.executed_at,
+      artifact_kind: "control_loop_decision" as const,
+      artifact_id: r.decision_id,
+      target_artifact_id: r.target_artifact_id,
+      eval_summary_id: r.eval_summary_id,
+      policy_version: r.policy_version,
+      decision: r.decision,
+      reason_codes: JSON.parse(r.reason_codes || "[]"),
       trace_id: r.trace_id,
       created_at: r.created_at,
+      created_by: "system",
     }));
   }
 
   /**
-   * Mark enforcement action as approved by human/CI
-   * (Does not execute; just marks as approved for external orchestration)
+   * Query block/warn decisions (for CI to prioritize)
    */
-  async approveEnforcementAction(
-    actionId: string,
-    approver: string
-  ): Promise<void> {
-    await this.pool.query(
-      `UPDATE enforcement_actions SET approver = $1, status = 'approved' WHERE action_id = $2`,
-      [approver, actionId]
+  async getBlockingDecisions(limit: number = 50): Promise<ControlLoopDecision[]> {
+    const result = await this.pool.query(
+      `SELECT * FROM control_loop_decisions
+       WHERE decision IN ('block', 'freeze')
+       ORDER BY created_at DESC LIMIT $1`,
+      [limit]
     );
-  }
 
-  /**
-   * CI/orchestration calls this after successfully executing action
-   * (e.g., after GitHub Actions runs and completes promotion)
-   */
-  async markEnforcementActionExecuted(actionId: string): Promise<void> {
-    await this.pool.query(
-      `UPDATE enforcement_actions SET status = 'executed', executed_at = NOW() WHERE action_id = $1`,
-      [actionId]
-    );
+    return result.rows.map((r) => ({
+      artifact_kind: "control_loop_decision" as const,
+      artifact_id: r.decision_id,
+      target_artifact_id: r.target_artifact_id,
+      eval_summary_id: r.eval_summary_id,
+      policy_version: r.policy_version,
+      decision: r.decision,
+      reason_codes: JSON.parse(r.reason_codes || "[]"),
+      trace_id: r.trace_id,
+      created_at: r.created_at,
+      created_by: "system",
+    }));
   }
 }
