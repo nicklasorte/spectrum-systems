@@ -118,6 +118,16 @@ def test_invalid_expected_outcome_is_rejected() -> None:
     assert "expected_outcome_not_bounded" in admission["denial_reasons"]
 
 
+def test_expected_outcome_reason_code_suffix_must_match_expected_reason_code() -> None:
+    case = generate_eval_case_from_failure_record(_fixtures()["missing_required_eval_failure"])
+    case["expected_outcome"] = "halt_with_reason_code:other_reason"
+
+    admission = admit_generated_eval_case(case)
+
+    assert admission["admitted"] is False
+    assert "expected_outcome_reason_code_mismatch" in admission["denial_reasons"]
+
+
 def test_valid_bounded_expected_outcome_is_admitted() -> None:
     case = generate_eval_case_from_failure_record(_fixtures()["replay_mismatch_failure"])
     case["expected_outcome"] = "fail_closed_with_reason_code:replay_mismatch"
@@ -125,6 +135,26 @@ def test_valid_bounded_expected_outcome_is_admitted() -> None:
     admission = admit_generated_eval_case(case)
 
     assert admission["admitted"] is True
+
+
+def test_replay_inputs_failed_evals_must_be_list() -> None:
+    case = generate_eval_case_from_failure_record(_fixtures()["missing_required_eval_failure"])
+    case["input_conditions"]["failed_evals"] = "not-a-list"
+
+    admission = admit_generated_eval_case(case)
+
+    assert admission["admitted"] is False
+    assert "failed_evals_not_list" in admission["denial_reasons"]
+
+
+def test_replay_inputs_missing_artifacts_must_be_list() -> None:
+    case = generate_eval_case_from_failure_record(_fixtures()["missing_required_eval_failure"])
+    case["input_conditions"]["missing_artifacts"] = "not-a-list"
+
+    admission = admit_generated_eval_case(case)
+
+    assert admission["admitted"] is False
+    assert "missing_artifacts_not_list" in admission["denial_reasons"]
 
 
 def test_generated_eval_preserves_reason_code_linkage_to_source_failure() -> None:

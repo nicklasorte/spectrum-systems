@@ -59,6 +59,8 @@ Admission rejects generated eval cases when any of the following is true:
   - `halt_with_reason_code:<reason_code>`
   - `pause_with_reason_code:<reason_code>`
   - `fail_closed_with_reason_code:<reason_code>`
+- `expected_outcome` reason-code suffix does not equal `expected_reason_code`
+- replay inputs are malformed (`failed_evals`/`missing_artifacts` must be lists when present)
 
 This yields explicit denial reasons and `admitted=false`.
 

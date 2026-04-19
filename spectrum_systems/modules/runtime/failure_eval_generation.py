@@ -38,9 +38,15 @@ def _scenario_name(failure_state: str, reason_code: str) -> str:
 
 def _normalize_failure_state(raw_failure_type: str) -> str:
     normalized = raw_failure_type.strip().lower()
-    if normalized in {"block", "blocked", "halted"}:
+    if normalized == "halted" or normalized.startswith("ha"):
         return "halted"
-    if normalized in {"freeze", "frozen", "paused"}:
+    if normalized == "paused" or normalized.startswith("pa"):
+        return "paused"
+    if normalized == "failed_closed" or normalized.startswith("fa"):
+        return "failed_closed"
+    if normalized[:2] in {"bl", "de"}:
+        return "halted"
+    if normalized[:2] in {"fr", "ho"}:
         return "paused"
     return "failed_closed"
 
@@ -204,6 +210,10 @@ def admit_generated_eval_case(
 
     if expected_outcome and not _EXPECTED_OUTCOME_PATTERN.match(expected_outcome):
         denial_reasons.append("expected_outcome_not_bounded")
+    elif expected_outcome:
+        expected_outcome_reason_code = expected_outcome.split(":", 1)[1]
+        if expected_outcome_reason_code != expected_reason_code:
+            denial_reasons.append("expected_outcome_reason_code_mismatch")
 
     source_failure_artifact_id = _as_nonempty_string(generated_eval_case.get("source_failure_artifact_id"))
     if not source_failure_artifact_id:
@@ -214,9 +224,26 @@ def admit_generated_eval_case(
         denial_reasons.append("input_conditions_not_object")
         input_conditions = {}
 
+    failed_evals_raw = input_conditions.get("failed_evals")
+    missing_artifacts_raw = input_conditions.get("missing_artifacts")
+
+    failed_evals_list: list[Any] = []
+    missing_artifacts_list: list[Any] = []
+
+    if "failed_evals" in input_conditions:
+        if not isinstance(failed_evals_raw, list):
+            denial_reasons.append("failed_evals_not_list")
+        else:
+            failed_evals_list = failed_evals_raw
+    if "missing_artifacts" in input_conditions:
+        if not isinstance(missing_artifacts_raw, list):
+            denial_reasons.append("missing_artifacts_not_list")
+        else:
+            missing_artifacts_list = missing_artifacts_raw
+
     if generated_eval_case.get("replay_required") is True:
         stage = _as_nonempty_string(input_conditions.get("stage"))
-        has_replay_material = bool(stage and (input_conditions.get("failed_evals") or input_conditions.get("missing_artifacts")))
+        has_replay_material = bool(stage and (failed_evals_list or missing_artifacts_list))
         if not has_replay_material:
             denial_reasons.append("insufficient_replay_information")
 

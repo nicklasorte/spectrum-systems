@@ -11,20 +11,20 @@ _NON_AUTHORITY_SLICE_FILES = [
     _REPO_ROOT / "tests" / "fixtures" / "failure_eval_generation_cases.json",
 ]
 
-_FORBIDDEN_AUTHORITY_VALUES = ("BLOCK", "FREEZE", "ALLOW")
+_FORBIDDEN_AUTHORITY_VALUES = ("block", "freeze", "allow")
+_FORBIDDEN_AUTHORITY_PATTERN = re.compile(
+    r"\b(" + "|".join(re.escape(token) for token in _FORBIDDEN_AUTHORITY_VALUES) + r")\b",
+    flags=re.IGNORECASE,
+)
 
 
 def _find_forbidden_authority_values(text: str) -> list[str]:
-    hits: list[str] = []
-    for token in _FORBIDDEN_AUTHORITY_VALUES:
-        if re.search(rf"\b{re.escape(token)}\b", text):
-            hits.append(token)
-    return hits
+    return sorted({match.group(0) for match in _FORBIDDEN_AUTHORITY_PATTERN.finditer(text)})
 
 
 def test_forbidden_authority_value_detector_finds_known_bad_tokens() -> None:
-    sample = "state BLOCK transitions to FREEZE and ALLOW"
-    assert _find_forbidden_authority_values(sample) == ["BLOCK", "FREEZE", "ALLOW"]
+    sample = "state block transitions to Freeze and ALLOW"
+    assert _find_forbidden_authority_values(sample) == ["ALLOW", "Freeze", "block"]
 
 
 def test_non_authority_runtime_slice_files_do_not_emit_forbidden_authority_values() -> None:
