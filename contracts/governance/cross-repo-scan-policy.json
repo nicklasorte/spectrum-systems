@@ -1,0 +1,53 @@
+{
+  "version": "1.0",
+  "description": "Policy defining how the cross-repo compliance scanner operates across the ecosystem.",
+  "scan_frequency": "daily",
+  "target_repos": [
+    "nicklasorte/spectrum-systems",
+    "nicklasorte/spectrum-data-lake",
+    "nicklasorte/meeting-minutes-engine",
+    "nicklasorte/working-paper-review-engine",
+    "nicklasorte/comment-resolution-engine",
+    "nicklasorte/docx-comment-injection-engine",
+    "nicklasorte/spectrum-pipeline-engine",
+    "nicklasorte/spectrum-program-advisor",
+    "nicklasorte/system-factory"
+  ],
+  "violation_response": "notify",
+  "staged_rollout_plan": {
+    "description": "Graduated activation of cross-repo scanning to minimize disruption.",
+    "phases": [
+      {
+        "phase": 1,
+        "name": "Governance repo only",
+        "start_date": "2026-04-19",
+        "repos": ["nicklasorte/spectrum-systems"],
+        "violation_response": "notify"
+      },
+      {
+        "phase": 2,
+        "name": "Active engines",
+        "start_date": "2026-05-01",
+        "repos": [
+          "nicklasorte/meeting-minutes-engine",
+          "nicklasorte/working-paper-review-engine",
+          "nicklasorte/comment-resolution-engine",
+          "nicklasorte/docx-comment-injection-engine"
+        ],
+        "violation_response": "notify"
+      },
+      {
+        "phase": 3,
+        "name": "Full ecosystem",
+        "start_date": "2026-06-01",
+        "repos": [
+          "nicklasorte/spectrum-data-lake",
+          "nicklasorte/spectrum-pipeline-engine",
+          "nicklasorte/spectrum-program-advisor",
+          "nicklasorte/system-factory"
+        ],
+        "violation_response": "freeze"
+      }
+    ]
+  }
+}
