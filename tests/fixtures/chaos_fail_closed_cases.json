@@ -1,0 +1,57 @@
+{
+  "registry_eval_definitions": [
+    "complexity_justification_valid",
+    "core_loop_alignment_valid",
+    "debuggability_valid"
+  ],
+  "base_eval_results": [
+    {
+      "eval_id": "complexity_justification_valid",
+      "passed": true,
+      "complexity_justification_record": {
+        "failure_prevented": "silent failure",
+        "signal_improved": "fail_closed_rate",
+        "measurable_metric": "fail_closed_rate",
+        "why_not_existing_owner": "existing owner does not cover this constraint"
+      }
+    },
+    {
+      "eval_id": "core_loop_alignment_valid",
+      "passed": true,
+      "core_loop_alignment_record": {
+        "maps_to_stages": ["execution", "evaluation", "control"],
+        "strengthens_existing_loop": true,
+        "introduces_parallel_loop": false,
+        "loop_impact_score": 0.9,
+        "loop_mapping_status": "deterministic"
+      }
+    },
+    {
+      "eval_id": "debuggability_valid",
+      "passed": true,
+      "debuggability_record": {
+        "trace_complete": true,
+        "lineage_complete": true,
+        "failure_modes_defined": ["missing_required_eval_artifact"],
+        "reason_codes_defined": true,
+        "replay_expected": true,
+        "replay_supported": true,
+        "debug_expectations_clear": true
+      }
+    }
+  ],
+  "base_context": {
+    "scope": "slice",
+    "target": "MNT-CHAOS-01"
+  },
+  "base_lineage": [
+    "AEX",
+    "TPA",
+    "PQX"
+  ],
+  "base_replay": {
+    "consistency_status": "match",
+    "expected": "allow",
+    "observed": "allow"
+  }
+}
