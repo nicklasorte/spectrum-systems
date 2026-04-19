@@ -11,6 +11,9 @@ For changed contract-bearing paths, TPA performs detection and classification fo
 - example `artifact_type`
 - standards-manifest `artifact_type` entry
 - standards-manifest `example_path`
+- manifest-declared canonical schema path existence (`contracts/schemas/<artifact_type>.schema.json`)
+- canonical schema JSON parse validity
+- canonical schema `artifact_type.const` alignment to manifest-declared artifact type
 - required-field presence in touched examples when deterministic fill is possible
 
 TPA emits `tpa_contract_sync_check_record`.

@@ -73,7 +73,6 @@ def test_ag07_broken_shape_is_repaired_deterministically(tmp_path: Path) -> None
     changed = [
         "contracts/schemas/generated_eval_registry_change_request_record.schema.json",
         "contracts/examples/generated_eval_registry_change_request_record.json",
-        "contracts/standards-manifest.json",
     ]
     check = preflight.run_tpa_contract_sync_check(repo_root=repo, changed_paths=changed, created_at="2026-04-19T00:00:00Z")
     assert check["auto_repair_eligible"] is True
@@ -90,7 +89,6 @@ def test_mismatch_across_schema_example_manifest_is_caught_early(tmp_path: Path)
     changed = [
         "contracts/schemas/generated_eval_registry_change_request_record.schema.json",
         "contracts/examples/generated_eval_registry_change_request_record.json",
-        "contracts/standards-manifest.json",
     ]
     check = preflight.run_tpa_contract_sync_check(repo_root=repo, changed_paths=changed, created_at="2026-04-19T00:00:00Z")
     kinds = {item["mismatch_type"] for item in check["mismatches"]}
@@ -199,3 +197,89 @@ def test_tpa_doc_states_non_authoritative_boundary() -> None:
     doc = Path("docs/runtime/tpa-contract-sync-autorepair.md").read_text(encoding="utf-8")
     assert "does **not** own authoritative contract enforcement" in doc
     assert "prepares deterministic repair candidates" in doc
+
+
+def test_manifest_declared_missing_schema_is_detected_early(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    (repo / "contracts/schemas/generated_eval_registry_change_request_record.schema.json").unlink()
+    check = preflight.run_tpa_contract_sync_check(
+        repo_root=repo,
+        changed_paths=["contracts/standards-manifest.json"],
+        created_at="2026-04-19T00:00:00Z",
+    )
+    mismatch = next(item for item in check["mismatches"] if item["mismatch_type"] == "manifest_declared_schema_missing")
+    assert mismatch["artifact_type_declared"] == "generated_eval_registry_change_request_record"
+    assert mismatch["expected_schema_path"] == "contracts/schemas/generated_eval_registry_change_request_record.schema.json"
+    assert mismatch["path_exists"] is False
+    assert mismatch["json_parse_valid"] is False
+    assert mismatch["schema_artifact_type_const"] == ""
+    assert check["auto_repair_eligible"] is False
+
+
+def test_manifest_declared_invalid_schema_json_is_detected_early(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    schema_path = repo / "contracts/schemas/generated_eval_registry_change_request_record.schema.json"
+    schema_path.write_text("{not valid json", encoding="utf-8")
+    check = preflight.run_tpa_contract_sync_check(
+        repo_root=repo,
+        changed_paths=["contracts/standards-manifest.json"],
+        created_at="2026-04-19T00:00:00Z",
+    )
+    mismatch = next(
+        item for item in check["mismatches"] if item["mismatch_type"] == "manifest_declared_schema_invalid_json"
+    )
+    assert mismatch["artifact_type_declared"] == "generated_eval_registry_change_request_record"
+    assert mismatch["expected_schema_path"] == "contracts/schemas/generated_eval_registry_change_request_record.schema.json"
+    assert mismatch["path_exists"] is True
+    assert mismatch["json_parse_valid"] is False
+    assert mismatch["schema_artifact_type_const"] == ""
+    assert check["auto_repair_eligible"] is False
+
+
+def test_manifest_declared_schema_const_mismatch_is_detected_early(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    schema_path = repo / "contracts/schemas/generated_eval_registry_change_request_record.schema.json"
+    payload = json.loads(schema_path.read_text(encoding="utf-8"))
+    payload["properties"]["artifact_type"]["const"] = "wrong_type"
+    _write_json(schema_path, payload)
+    check = preflight.run_tpa_contract_sync_check(
+        repo_root=repo,
+        changed_paths=["contracts/standards-manifest.json"],
+        created_at="2026-04-19T00:00:00Z",
+    )
+    mismatch = next(
+        item for item in check["mismatches"] if item["mismatch_type"] == "manifest_declared_schema_const_mismatch"
+    )
+    assert mismatch["artifact_type_declared"] == "generated_eval_registry_change_request_record"
+    assert mismatch["expected_schema_path"] == "contracts/schemas/generated_eval_registry_change_request_record.schema.json"
+    assert mismatch["path_exists"] is True
+    assert mismatch["json_parse_valid"] is True
+    assert mismatch["schema_artifact_type_const"] == "wrong_type"
+    assert check["auto_repair_eligible"] is True
+
+
+def test_manifest_declared_canonical_alignment_passes(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    schema_path = repo / "contracts/schemas/generated_eval_registry_change_request_record.schema.json"
+    schema_payload = json.loads(schema_path.read_text(encoding="utf-8"))
+    schema_payload["properties"]["artifact_type"]["const"] = "generated_eval_registry_change_request_record"
+    _write_json(schema_path, schema_payload)
+    example_path = repo / "contracts/examples/generated_eval_registry_change_request_record.json"
+    example_payload = json.loads(example_path.read_text(encoding="utf-8"))
+    example_payload["artifact_type"] = "generated_eval_registry_change_request_record"
+    _write_json(example_path, example_payload)
+    manifest_path = repo / "contracts/standards-manifest.json"
+    manifest_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest_payload["contracts"][0]["example_path"] = "contracts/examples/generated_eval_registry_change_request_record.json"
+    _write_json(manifest_path, manifest_payload)
+    check = preflight.run_tpa_contract_sync_check(
+        repo_root=repo,
+        changed_paths=[
+            "contracts/standards-manifest.json",
+            "contracts/schemas/generated_eval_registry_change_request_record.schema.json",
+            "contracts/examples/generated_eval_registry_change_request_record.json",
+        ],
+        created_at="2026-04-19T00:00:00Z",
+    )
+    assert check["mismatches"] == []
+    assert check["auto_repair_eligible"] is False

@@ -28,11 +28,13 @@ from run_contract_enforcement import (  # noqa: E402
     build_contract_dependency_graph,
     check_consumer_consistency,
     check_repo_contracts,
+    check_standards_manifest_schema_completeness,
     run_enforcement,
     load_ecosystem_registry,
     load_governance_manifests,
     load_standards_contracts,
 )
+import run_contract_enforcement as contract_enforcement_module  # noqa: E402
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -147,6 +149,30 @@ def test_empty_contracts_section_is_valid() -> None:
     failures, warnings = check_repo_contracts("repo-a", "repo-a", manifest, _standards())
     assert failures == []
     assert warnings == []
+
+
+def test_standards_schema_coverage_fails_for_missing_schema(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(contract_enforcement_module, "SCHEMAS_DIR", tmp_path / "contracts" / "schemas")
+    standards = {"missing_artifact": {"artifact_type": "missing_artifact", "schema_version": "1.0.0"}}
+    failures = check_standards_manifest_schema_completeness(standards)
+    assert len(failures) == 1
+    assert failures[0]["rule"] == "standards-schema-coverage"
+    assert "missing_artifact.schema.json" in failures[0]["error"]
+
+
+def test_standards_schema_coverage_fails_for_const_mismatch(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    schemas_dir = tmp_path / "contracts" / "schemas"
+    schemas_dir.mkdir(parents=True, exist_ok=True)
+    (schemas_dir / "alpha_contract.schema.json").write_text(
+        json.dumps({"type": "object", "properties": {"artifact_type": {"const": "wrong_type"}}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(contract_enforcement_module, "SCHEMAS_DIR", schemas_dir)
+    standards = {"alpha_contract": {"artifact_type": "alpha_contract", "schema_version": "1.0.0"}}
+    failures = check_standards_manifest_schema_completeness(standards)
+    assert len(failures) == 1
+    assert failures[0]["rule"] == "standards-schema-coverage"
+    assert "expected=alpha_contract actual=wrong_type" in failures[0]["error"]
 
 
 # ─────────────────────────────────────────────────────────────────────────────

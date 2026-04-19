@@ -1,11 +1,11 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.154",
+  "artifact_version": "1.3.155",
   "schema_version": "1.3.99",
   "standards_version": "1.9.9",
-  "record_id": "REC-STD-2026-04-19-FIX-TPA-AG07-02",
-  "run_id": "run-20260419T000000Z-fix-tpa-ag07-02",
+  "record_id": "REC-STD-2026-04-19-FIX-TPA-AG07-03",
+  "run_id": "run-20260419T000000Z-fix-tpa-ag07-03",
   "created_at": "2026-04-19T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.154",
+  "source_repo_version": "1.3.155",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -10316,7 +10316,7 @@
       "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
     },
     {
-      "artifact_type": "preflight_repair_handoff_record",
+      "artifact_type": "preflight_repair_result_record",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
       "status": "stable",
@@ -10325,7 +10325,7 @@
       ],
       "introduced_in": "1.3.125",
       "last_updated_in": "1.3.126",
-      "example_path": "contracts/examples/preflight_repair_handoff_record.json",
+      "example_path": "contracts/examples/preflight_repair_result_record.json",
       "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
     },
     {

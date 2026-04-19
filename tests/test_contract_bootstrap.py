@@ -47,6 +47,16 @@ def test_manifest_declared_schema_paths_exist_and_are_json() -> None:
     assert not invalid_json, f"Declared schema files contain invalid JSON: {invalid_json}"
 
 
+def test_manifest_declared_schema_artifact_type_consts_match() -> None:
+    artifact_type = "preflight_repair_result_record"
+    schema_path = SCHEMAS_DIR / f"{artifact_type}.schema.json"
+    payload = json.loads(schema_path.read_text(encoding="utf-8"))
+    properties = payload.get("properties") if isinstance(payload, dict) else {}
+    artifact_prop = properties.get("artifact_type") if isinstance(properties, dict) else {}
+    schema_const = str((artifact_prop or {}).get("const") or "").strip()
+    assert schema_const == artifact_type
+
+
 def test_strategic_schema_files_are_registered() -> None:
     manifest = json.loads(STANDARDS_MANIFEST_PATH.read_text(encoding="utf-8"))
     declared = {entry["artifact_type"] for entry in manifest.get("contracts", [])}
@@ -62,4 +72,3 @@ def test_strategic_schema_files_are_registered() -> None:
         "Strategic Knowledge schemas exist on disk but are not registered in standards-manifest: "
         f"{missing_from_manifest}"
     )
-

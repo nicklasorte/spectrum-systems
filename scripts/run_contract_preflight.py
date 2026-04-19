@@ -786,6 +786,16 @@ def _load_standards_manifest_entries(repo_root: Path) -> dict[str, dict[str, Any
     return entries
 
 
+def _load_json_with_error(path: Path) -> tuple[dict[str, Any] | None, str | None]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return None, str(exc)
+    if not isinstance(payload, dict):
+        return None, "payload is not a JSON object"
+    return payload, None
+
+
 def _tpa_hash_id(prefix: str, payload: dict[str, Any]) -> str:
     return f"{prefix}-{_hash_payload(payload)[:16].upper()}"
 
@@ -805,6 +815,10 @@ def run_tpa_contract_sync_check(*, repo_root: Path, changed_paths: list[str], cr
         and (repo_root / path).is_file()
     )
 
+    standards_entries = _load_standards_manifest_entries(repo_root)
+    manifest_path_changed = "contracts/standards-manifest.json" in set(changed_paths)
+    manifest_declared_types = set(standards_entries.keys()) if manifest_path_changed else set()
+
     checked_artifact_types = sorted(
         {
             path.name.removesuffix(".schema.json") for path in schema_paths
@@ -813,9 +827,9 @@ def run_tpa_contract_sync_check(*, repo_root: Path, changed_paths: list[str], cr
             _schema_name_from_example(path.as_posix().replace(f"{repo_root.as_posix()}/", "", 1))
             for path in example_paths
         }
+        | manifest_declared_types
     )
 
-    standards_entries = _load_standards_manifest_entries(repo_root)
     mismatches: list[dict[str, Any]] = []
     eligible_types = {
         "schema_artifact_type_mismatch",
@@ -823,6 +837,7 @@ def run_tpa_contract_sync_check(*, repo_root: Path, changed_paths: list[str], cr
         "manifest_entry_missing",
         "manifest_example_path_mismatch",
         "example_missing_required_fields",
+        "manifest_declared_schema_const_mismatch",
     }
 
     for artifact_type in checked_artifact_types:
@@ -830,15 +845,75 @@ def run_tpa_contract_sync_check(*, repo_root: Path, changed_paths: list[str], cr
         example_path = repo_root / "contracts" / "examples" / f"{artifact_type}.json"
         if not example_path.exists():
             example_path = repo_root / "contracts" / "examples" / f"{artifact_type}.example.json"
+        manifest_entry = standards_entries.get(artifact_type)
+
+        if manifest_entry is not None:
+            expected_schema_path = f"contracts/schemas/{artifact_type}.schema.json"
+            schema_exists = schema_path.exists()
+            schema_payload: dict[str, Any] | None = None
+            schema_error: str | None = None
+            schema_const = ""
+            if schema_exists:
+                schema_payload, schema_error = _load_json_with_error(schema_path)
+                if isinstance(schema_payload, dict):
+                    properties = schema_payload.get("properties") if isinstance(schema_payload, dict) else {}
+                    artifact_prop = properties.get("artifact_type") if isinstance(properties, dict) else {}
+                    schema_const = str((artifact_prop or {}).get("const") or "").strip()
+            if not schema_exists:
+                mismatches.append(
+                    {
+                        "mismatch_type": "manifest_declared_schema_missing",
+                        "artifact_type": artifact_type,
+                        "detail": f"manifest-declared artifact missing canonical schema path {expected_schema_path}",
+                        "files": ["contracts/standards-manifest.json"],
+                        "artifact_type_declared": artifact_type,
+                        "expected_schema_path": expected_schema_path,
+                        "path_exists": False,
+                        "json_parse_valid": False,
+                        "schema_artifact_type_const": "",
+                    }
+                )
+            elif schema_error is not None:
+                mismatches.append(
+                    {
+                        "mismatch_type": "manifest_declared_schema_invalid_json",
+                        "artifact_type": artifact_type,
+                        "detail": f"canonical schema is not valid JSON: {schema_error}",
+                        "files": [str(schema_path.relative_to(repo_root))],
+                        "artifact_type_declared": artifact_type,
+                        "expected_schema_path": expected_schema_path,
+                        "path_exists": True,
+                        "json_parse_valid": False,
+                        "schema_artifact_type_const": "",
+                    }
+                )
+            elif schema_const != artifact_type:
+                mismatches.append(
+                    {
+                        "mismatch_type": "manifest_declared_schema_const_mismatch",
+                        "artifact_type": artifact_type,
+                        "detail": f"schema artifact_type.const={schema_const} expected={artifact_type}",
+                        "files": [str(schema_path.relative_to(repo_root))],
+                        "artifact_type_declared": artifact_type,
+                        "expected_schema_path": expected_schema_path,
+                        "path_exists": True,
+                        "json_parse_valid": True,
+                        "schema_artifact_type_const": schema_const,
+                    }
+                )
 
         if not schema_path.exists() or not example_path.exists():
             continue
 
-        schema_artifact_type = _artifact_type_from_schema(schema_path)
+        schema_payload, schema_error = _load_json_with_error(schema_path)
+        if schema_error is not None:
+            continue
+        properties = schema_payload.get("properties") if isinstance(schema_payload, dict) else {}
+        artifact_prop = properties.get("artifact_type") if isinstance(properties, dict) else {}
+        schema_artifact_type = str((artifact_prop or {}).get("const") or "").strip()
         example_artifact_type = _artifact_type_from_example(example_path)
-        required_fields = _required_fields_from_schema(schema_path)
+        required_fields = [str(item) for item in (schema_payload.get("required") or []) if isinstance(item, str)]
         example_payload = json.loads(example_path.read_text(encoding="utf-8"))
-        manifest_entry = standards_entries.get(artifact_type)
 
         if schema_artifact_type and schema_artifact_type != artifact_type:
             mismatches.append(
@@ -946,6 +1021,13 @@ def run_tpa_contract_sync_autorepair(*, repo_root: Path, check_record: dict[str,
         elif mismatch_type == "manifest_entry_missing":
             candidate_files.add("contracts/standards-manifest.json")
             actions.append({"action": "append_manifest_entry", "artifact_type": artifact_type})
+        elif mismatch_type in {
+            "manifest_declared_schema_missing",
+            "manifest_declared_schema_invalid_json",
+            "manifest_declared_schema_const_mismatch",
+        }:
+            candidate_files.add(f"contracts/schemas/{artifact_type}.schema.json")
+            actions.append({"action": "repair_manifest_declared_schema", "artifact_type": artifact_type})
 
     remaining_mismatches = mismatches
     handoff_ready = bool(check_record.get("auto_repair_eligible")) and bool(actions)
@@ -2551,7 +2633,7 @@ def main() -> int:
             "preflight_block_diagnosis_record": str(output_dir / "preflight_block_diagnosis_record.json"),
             "preflight_repair_plan_record": str(output_dir / "preflight_repair_plan_record.json"),
             "failure_repair_candidate_artifact": str(output_dir / "failure_repair_candidate_artifact.json"),
-            "preflight_repair_handoff_record": str(output_dir / "preflight_repair_handoff_record.json"),
+            "preflight_repair_result_record": str(output_dir / "preflight_repair_result_record.json"),
             "failure_class": str(bundle["diagnosis"]["failure_class"]),
             "eligibility_decision": str(bundle["plan"]["eligibility_decision"]),
         }
