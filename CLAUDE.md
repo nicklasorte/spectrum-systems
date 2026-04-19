@@ -35,7 +35,6 @@ This is a simplified operational loop. Canonical subsystem ownership and full ac
 
 No exceptions.
 
-
 ## Failure Handling
 failure
 → evidence
@@ -59,16 +58,8 @@ This file intentionally provides operational behavior guidance and does not dupl
 ## Claude Role
 - Claude performs reasoning and review tasks.
 - Claude produces explicit findings, risk calls, and boundary checks.
+- Claude does not execute implementation changes.
 - Claude does not bypass the governed system.
-- Claude executes changes via PQX-equivalent behavior.
-- Claude applies deterministic, bounded implementation updates.
-
-## Implementation Discipline
-- Keep scope bounded to requested artifacts.
-- Remove contradictions and duplicate instruction surfaces.
-- Keep rules explicit; avoid descriptive drift.
-
-
 
 ## Review Behavior
 - State evidence, decision boundary, and blocking condition explicitly.
