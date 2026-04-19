@@ -1,0 +1,45 @@
+[MEETING TRANSCRIPT - REAL DATA]
+
+Meeting: Q2 Planning Sync
+Date: 2026-04-15
+Attendees: Alice (PM), Bob (Eng), Carol (Design), Dave (SRE)
+
+---
+
+ALICE: Good morning everyone. Let's start with the Q2 roadmap. We need to finalize priorities by Friday.
+
+BOB: I've been thinking about the infrastructure debt. The deployment latency has been growing steadily. I'd like to allocate 20% of the sprint to refactoring the CI pipeline.
+
+CAROL: That makes sense from a velocity perspective. But I want to make sure we don't delay the UI redesign. It's been pushed twice already.
+
+DAVE: From ops side, I'm seeing some stability concerns. Our error budget for the transaction service is trending down. If we don't address it this quarter, we'll have to freeze new features in Q3.
+
+ALICE: Let's break that down. What are the top three issues blocking stability?
+
+DAVE:
+1. Memory leaks in the background worker — takes down service every 72 hours
+2. Database connection pool exhaustion under load
+3. Missing observability in the payment processing pipeline
+
+BOB: I can take #1. That's a codebase I know well. For #2 and #3, we need SRE pairing. Carol, can the team contribute time?
+
+CAROL: Sure, we can allocate about 30% of design capacity to support infrastructure improvements.
+
+ALICE: Great. Let's document these action items. Bob, what's your estimate on the memory leak fix?
+
+BOB: I'd say 8 hours for diagnosis and fix, maybe 4 more for testing and deployment.
+
+DAVE: I'll prepare a runbook for the connection pool incident. We need clear escalation paths and mitigation steps. That should be about 4 hours of work.
+
+ALICE: Perfect. Let's sync again on Wednesday to review progress.
+
+ACTION ITEMS:
+- Alice: Schedule design review with Carol by Wednesday
+- Bob: Spike on memory leak (estimate 8 hours)
+- Dave: Prepare runbook for connection pool incident (4 hours)
+- Carol: Finalize UI mockups for next sprint planning
+
+RISKS:
+- Q1 technical debt consuming more time than forecast
+- Uncertainty on third-party API integration timeline
+- Database performance concerns if not addressed immediately
