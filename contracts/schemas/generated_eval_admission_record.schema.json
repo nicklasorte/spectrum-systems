@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/generated_eval_admission_record.schema.json",
+  "title": "generated_eval_admission_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "generated_eval_artifact_id",
+    "source_failure_artifact_id",
+    "admitted",
+    "denial_reasons",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "generated_eval_admission_record" },
+    "artifact_id": { "type": "string", "minLength": 1 },
+    "generated_eval_artifact_id": { "type": "string", "minLength": 1 },
+    "source_failure_artifact_id": { "type": "string", "minLength": 1 },
+    "admitted": { "type": "boolean" },
+    "denial_reasons": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

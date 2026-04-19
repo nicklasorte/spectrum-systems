@@ -1,0 +1,38 @@
+{
+  "missing_trace_lineage_failure": {
+    "artifact_type": "failure_record",
+    "artifact_id": "FAIL-TRACE-LINEAGE-001",
+    "trace_id": "missing:trace_id",
+    "run_id": "run-chaos-01",
+    "stage": "execution_gate",
+    "failure_type": "halted",
+    "reason_code": "missing_trace_or_lineage",
+    "missing_artifacts": [],
+    "failed_evals": ["lineage_consistency_valid"],
+    "timestamp": "2026-04-19T00:00:00Z"
+  },
+  "replay_mismatch_failure": {
+    "artifact_type": "failure_record",
+    "artifact_id": "FAIL-REPLAY-MISMATCH-001",
+    "trace_id": "trace-replay-01",
+    "run_id": "run-chaos-02",
+    "stage": "execution_gate",
+    "failure_type": "paused",
+    "reason_code": "replay_mismatch",
+    "missing_artifacts": [],
+    "failed_evals": ["replay_consistency_valid"],
+    "timestamp": "2026-04-19T00:01:00Z"
+  },
+  "missing_required_eval_failure": {
+    "artifact_type": "failure_record",
+    "artifact_id": "FAIL-MISSING-EVAL-001",
+    "trace_id": "trace-eval-missing-01",
+    "run_id": "run-chaos-03",
+    "stage": "execution_gate",
+    "failure_type": "halted",
+    "reason_code": "missing_required_eval_result",
+    "missing_artifacts": ["debuggability_record"],
+    "failed_evals": ["debuggability_valid"],
+    "timestamp": "2026-04-19T00:02:00Z"
+  }
+}

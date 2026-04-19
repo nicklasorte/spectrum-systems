@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/generated_eval_case.schema.json",
+  "title": "generated_eval_case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "source_failure_artifact_id",
+    "trace_id",
+    "run_id",
+    "reason_code",
+    "scenario_name",
+    "scenario_description",
+    "input_conditions",
+    "expected_outcome",
+    "expected_reason_code",
+    "replay_required",
+    "determinism_requirements",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "generated_eval_case" },
+    "artifact_id": { "type": "string", "minLength": 1 },
+    "source_failure_artifact_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "reason_code": { "type": "string", "minLength": 1 },
+    "scenario_name": { "type": "string", "minLength": 1 },
+    "scenario_description": { "type": "string", "minLength": 1 },
+    "input_conditions": {
+      "type": "object",
+      "required": ["stage", "failure_state", "missing_artifacts", "failed_evals"],
+      "properties": {
+        "stage": { "type": "string", "minLength": 1 },
+        "failure_state": {
+          "type": "string",
+          "enum": ["halted", "paused", "failed_closed"]
+        },
+        "missing_artifacts": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "failed_evals": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "expected_outcome": { "type": "string", "minLength": 1 },
+    "expected_reason_code": { "type": "string", "minLength": 1 },
+    "replay_required": { "type": "boolean" },
+    "determinism_requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "reason_code_normalization": {
+      "type": "object",
+      "required": ["normalized_from_reason_code", "normalized_to_reason_code"],
+      "properties": {
+        "normalized_from_reason_code": { "type": "string", "minLength": 1 },
+        "normalized_to_reason_code": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}
