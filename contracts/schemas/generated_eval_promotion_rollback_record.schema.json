@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/generated_eval_promotion_rollback_record.schema.json",
+  "title": "generated_eval_promotion_rollback_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "generated_eval_artifact_id",
+    "promotion_result_artifact_id",
+    "rollback_reason",
+    "rolled_back",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "generated_eval_promotion_rollback_record" },
+    "artifact_id": { "type": "string", "minLength": 1 },
+    "generated_eval_artifact_id": { "type": "string", "minLength": 1 },
+    "promotion_result_artifact_id": { "type": "string", "minLength": 1 },
+    "rollback_reason": { "type": "string", "minLength": 1 },
+    "rolled_back": { "type": "boolean" },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/generated_eval_promotion_result_record.schema.json",
+  "title": "generated_eval_promotion_result_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "promotion_request_artifact_id",
+    "promotion_decision_artifact_id",
+    "generated_eval_artifact_id",
+    "promoted",
+    "blocked_reasons",
+    "replay_validation_passed",
+    "required_eval_target",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "generated_eval_promotion_result_record" },
+    "artifact_id": { "type": "string", "minLength": 1 },
+    "promotion_request_artifact_id": { "type": "string", "minLength": 1 },
+    "promotion_decision_artifact_id": { "type": "string", "minLength": 1 },
+    "generated_eval_artifact_id": { "type": "string", "minLength": 1 },
+    "promoted": { "type": "boolean" },
+    "blocked_reasons": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "replay_validation_passed": { "type": "boolean" },
+    "required_eval_target": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

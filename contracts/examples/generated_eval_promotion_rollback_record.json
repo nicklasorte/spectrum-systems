@@ -1,0 +1,9 @@
+{
+  "artifact_type": "generated_eval_promotion_rollback_record",
+  "artifact_id": "GERB-386945A1BF57D77C",
+  "generated_eval_artifact_id": "GEC-5C8D88C7B5870A12",
+  "promotion_result_artifact_id": "GEPS-4A41E01D5DC2B1FD",
+  "rollback_reason": "manual_governance_reversal",
+  "rolled_back": true,
+  "created_at": "2026-04-19T00:08:00Z"
+}

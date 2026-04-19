@@ -466,6 +466,322 @@ def build_generated_eval_candidate_assessment_records(
     return recommendations
 
 
+_GENERATED_EVAL_REQUIRED_TARGET = "required_eval_registry.mappings[artifact_family=generated_eval_case].required_evals"
+
+
+def build_generated_eval_promotion_request_record(
+    generated_eval_case: Dict[str, Any],
+    candidate_record: Dict[str, Any],
+    *,
+    request_origin: str,
+    justification: str,
+    created_at: str | None = None,
+) -> Dict[str, Any]:
+    """Build a deterministic governed promotion request artifact."""
+
+    generated_eval_artifact_id = _as_nonempty_string(generated_eval_case.get("artifact_id"), "missing:artifact_id")
+    reason_code = _as_nonempty_string(generated_eval_case.get("reason_code"), "unknown_reason")
+    candidate_occurrence_count = max(
+        1,
+        _as_nonnegative_int(candidate_record.get("occurrence_count"), default=1),
+    )
+    source_failure_artifact_ids = _sorted_unique_strings(
+        [generated_eval_case.get("source_failure_artifact_id")]
+        + list(candidate_record.get("source_failure_artifact_ids") or [])
+        + [candidate_record.get("source_failure_artifact_id")]
+    )
+    request_payload = {
+        "generated_eval_artifact_id": generated_eval_artifact_id,
+        "source_failure_artifact_ids": source_failure_artifact_ids,
+        "reason_code": reason_code,
+        "occurrence_count": candidate_occurrence_count,
+        "request_origin": _as_nonempty_string(request_origin),
+        "justification": _as_nonempty_string(justification, "manual promotion request"),
+    }
+    request_record = {
+        "artifact_type": "generated_eval_promotion_request_record",
+        "artifact_id": _hash_id("GEPR", request_payload),
+        **request_payload,
+        "created_at": _normalized_timestamp(created_at or candidate_record.get("last_seen_at") or generated_eval_case.get("created_at")),
+    }
+    Draft202012Validator(load_schema("generated_eval_promotion_request_record")).validate(request_record)
+    return request_record
+
+
+def build_generated_eval_promotion_decision_record(
+    promotion_request_record: Dict[str, Any],
+    *,
+    decision: str,
+    decided_by: str,
+    rationale: str,
+    created_at: str | None = None,
+) -> Dict[str, Any]:
+    """Build a deterministic governed promotion decision artifact."""
+
+    decision_payload = {
+        "promotion_request_artifact_id": _as_nonempty_string(
+            promotion_request_record.get("artifact_id"),
+            "missing:promotion_request_artifact_id",
+        ),
+        "generated_eval_artifact_id": _as_nonempty_string(
+            promotion_request_record.get("generated_eval_artifact_id"),
+            "missing:generated_eval_artifact_id",
+        ),
+        "decision": _as_nonempty_string(decision),
+        "decided_by": _as_nonempty_string(decided_by),
+        "rationale": _as_nonempty_string(rationale),
+    }
+    decision_record = {
+        "artifact_type": "generated_eval_promotion_decision_record",
+        "artifact_id": _hash_id("GEPD", decision_payload),
+        **decision_payload,
+        "created_at": _normalized_timestamp(created_at or promotion_request_record.get("created_at")),
+    }
+    Draft202012Validator(load_schema("generated_eval_promotion_decision_record")).validate(decision_record)
+    return decision_record
+
+
+def _promotion_replay_validation(
+    generated_eval_case: Dict[str, Any],
+    promotion_request_record: Dict[str, Any] | None,
+) -> bool:
+    expected_reason_code = _as_nonempty_string(generated_eval_case.get("expected_reason_code"))
+    reason_code = _as_nonempty_string(generated_eval_case.get("reason_code"))
+    expected_outcome = _as_nonempty_string(generated_eval_case.get("expected_outcome"))
+    source_failure_artifact_id = _as_nonempty_string(generated_eval_case.get("source_failure_artifact_id"))
+
+    request_source_failure_ids: list[str] = []
+    if isinstance(promotion_request_record, dict):
+        request_source_failure_ids = _sorted_unique_strings(promotion_request_record.get("source_failure_artifact_ids"))
+
+    return bool(
+        expected_reason_code
+        and reason_code
+        and expected_reason_code == reason_code
+        and _EXPECTED_OUTCOME_PATTERN.match(expected_outcome)
+        and source_failure_artifact_id
+        and source_failure_artifact_id in request_source_failure_ids
+    )
+
+
+def _upsert_required_eval_generated_case(
+    required_eval_registry: Dict[str, Any],
+    generated_eval_artifact_id: str,
+) -> Dict[str, Any]:
+    registry = deepcopy(required_eval_registry)
+    mappings = registry.get("mappings")
+    if not isinstance(mappings, list):
+        mappings = []
+    target_mapping: Dict[str, Any] | None = None
+    for mapping in mappings:
+        if isinstance(mapping, dict) and mapping.get("artifact_family") == "generated_eval_case":
+            target_mapping = mapping
+            break
+    if target_mapping is None:
+        target_mapping = {
+            "artifact_family": "generated_eval_case",
+            "notes": "Promoted generated eval candidates requiring durable execution coverage.",
+            "required_evals": [],
+        }
+        mappings.append(target_mapping)
+
+    required_evals = target_mapping.get("required_evals")
+    if not isinstance(required_evals, list):
+        required_evals = []
+    eval_id = f"generated_eval::{generated_eval_artifact_id}"
+    existing_ids = {
+        _as_nonempty_string(item.get("eval_id"))
+        for item in required_evals
+        if isinstance(item, dict)
+    }
+    if eval_id not in existing_ids:
+        required_evals.append(
+            {
+                "eval_id": eval_id,
+                "eval_family": "generated_eval",
+                "mandatory_for_progression": True,
+            }
+        )
+    target_mapping["required_evals"] = sorted(
+        required_evals,
+        key=lambda item: _as_nonempty_string(item.get("eval_id")) if isinstance(item, dict) else "",
+    )
+    registry["mappings"] = sorted(
+        (mapping for mapping in mappings if isinstance(mapping, dict)),
+        key=lambda mapping: _as_nonempty_string(mapping.get("artifact_family")),
+    )
+    Draft202012Validator(load_schema("required_eval_registry")).validate(registry)
+    return registry
+
+
+def _remove_required_eval_generated_case(
+    required_eval_registry: Dict[str, Any],
+    generated_eval_artifact_id: str,
+) -> Dict[str, Any]:
+    registry = deepcopy(required_eval_registry)
+    eval_id = f"generated_eval::{generated_eval_artifact_id}"
+    mappings = registry.get("mappings")
+    if not isinstance(mappings, list):
+        return registry
+    retained_mappings: list[Dict[str, Any]] = []
+    for mapping in mappings:
+        if not isinstance(mapping, dict) or mapping.get("artifact_family") != "generated_eval_case":
+            if isinstance(mapping, dict):
+                retained_mappings.append(mapping)
+            continue
+        required_evals = mapping.get("required_evals")
+        if not isinstance(required_evals, list):
+            continue
+        remaining = [
+            row for row in required_evals if not (isinstance(row, dict) and _as_nonempty_string(row.get("eval_id")) == eval_id)
+        ]
+        if remaining:
+            mapping["required_evals"] = remaining
+            retained_mappings.append(mapping)
+    registry["mappings"] = retained_mappings
+    Draft202012Validator(load_schema("required_eval_registry")).validate(registry)
+    return registry
+
+
+def execute_generated_eval_promotion_gate(
+    *,
+    generated_eval_case: Dict[str, Any] | None,
+    generated_eval_admission_record: Dict[str, Any] | None,
+    candidate_record: Dict[str, Any] | None,
+    promotion_request_record: Dict[str, Any] | None,
+    promotion_decision_record: Dict[str, Any] | None,
+    required_eval_registry: Dict[str, Any],
+    occurrence_threshold: int = 2,
+) -> Dict[str, Any]:
+    """Only controlled mutation path for promoting generated eval candidates into required eval coverage."""
+
+    threshold = occurrence_threshold if occurrence_threshold >= 1 else 1
+    blocked_reasons: list[str] = []
+    generated_eval_artifact_id = _as_nonempty_string((generated_eval_case or {}).get("artifact_id"), "missing:generated_eval")
+
+    if not isinstance(generated_eval_case, dict):
+        blocked_reasons.append("missing_generated_eval_case")
+    if not isinstance(generated_eval_admission_record, dict):
+        blocked_reasons.append("missing_generated_eval_admission_record")
+    elif generated_eval_admission_record.get("admitted") is not True:
+        blocked_reasons.append("generated_eval_not_admitted")
+
+    if not isinstance(candidate_record, dict):
+        blocked_reasons.append("missing_candidate_record")
+        occurrence_count = 0
+    else:
+        occurrence_count = _as_nonnegative_int(candidate_record.get("occurrence_count"))
+        if occurrence_count < threshold:
+            blocked_reasons.append("occurrence_count_below_threshold")
+
+    if not isinstance(promotion_request_record, dict):
+        blocked_reasons.append("missing_promotion_request_record")
+    elif _as_nonempty_string(promotion_request_record.get("generated_eval_artifact_id")) != generated_eval_artifact_id:
+        blocked_reasons.append("promotion_request_generated_eval_mismatch")
+
+    if not isinstance(promotion_decision_record, dict):
+        blocked_reasons.append("missing_promotion_decision_record")
+    else:
+        if _as_nonempty_string(promotion_decision_record.get("generated_eval_artifact_id")) != generated_eval_artifact_id:
+            blocked_reasons.append("promotion_decision_generated_eval_mismatch")
+        if _as_nonempty_string(promotion_decision_record.get("decision")) != "approved":
+            blocked_reasons.append("promotion_decision_not_approved")
+
+    replay_validation_passed = isinstance(generated_eval_case, dict) and _promotion_replay_validation(
+        generated_eval_case,
+        promotion_request_record,
+    )
+    if not replay_validation_passed:
+        blocked_reasons.append("replay_validation_failed")
+
+    promoted = len(blocked_reasons) == 0
+    updated_required_eval_registry = deepcopy(required_eval_registry)
+    if promoted:
+        updated_required_eval_registry = _upsert_required_eval_generated_case(
+            required_eval_registry,
+            generated_eval_artifact_id,
+        )
+
+    promotion_result_record = {
+        "artifact_type": "generated_eval_promotion_result_record",
+        "artifact_id": _hash_id(
+            "GEPS",
+            {
+                "generated_eval_artifact_id": generated_eval_artifact_id,
+                "promotion_request_artifact_id": _as_nonempty_string((promotion_request_record or {}).get("artifact_id"), "missing:request"),
+                "promotion_decision_artifact_id": _as_nonempty_string((promotion_decision_record or {}).get("artifact_id"), "missing:decision"),
+                "promoted": promoted,
+                "blocked_reasons": sorted(set(blocked_reasons)),
+                "replay_validation_passed": replay_validation_passed,
+            },
+        ),
+        "promotion_request_artifact_id": _as_nonempty_string((promotion_request_record or {}).get("artifact_id"), "missing:request"),
+        "promotion_decision_artifact_id": _as_nonempty_string((promotion_decision_record or {}).get("artifact_id"), "missing:decision"),
+        "generated_eval_artifact_id": generated_eval_artifact_id,
+        "promoted": promoted,
+        "blocked_reasons": sorted(set(blocked_reasons)),
+        "replay_validation_passed": replay_validation_passed,
+        "required_eval_target": _GENERATED_EVAL_REQUIRED_TARGET,
+        "created_at": _normalized_timestamp((promotion_decision_record or {}).get("created_at") or (promotion_request_record or {}).get("created_at")),
+    }
+    Draft202012Validator(load_schema("generated_eval_promotion_result_record")).validate(promotion_result_record)
+    return {
+        "generated_eval_promotion_result_record": promotion_result_record,
+        "required_eval_registry": updated_required_eval_registry,
+    }
+
+
+def build_generated_eval_promotion_rollback_record(
+    *,
+    generated_eval_artifact_id: str,
+    promotion_result_record: Dict[str, Any],
+    rollback_reason: str,
+    rolled_back: bool = True,
+    created_at: str | None = None,
+) -> Dict[str, Any]:
+    """Build deterministic rollback artifact for a previously promoted generated eval."""
+
+    rollback_payload = {
+        "generated_eval_artifact_id": _as_nonempty_string(generated_eval_artifact_id),
+        "promotion_result_artifact_id": _as_nonempty_string(
+            promotion_result_record.get("artifact_id"),
+            "missing:promotion_result_artifact_id",
+        ),
+        "rollback_reason": _as_nonempty_string(rollback_reason, "manual_rollback"),
+        "rolled_back": bool(rolled_back),
+    }
+    rollback_record = {
+        "artifact_type": "generated_eval_promotion_rollback_record",
+        "artifact_id": _hash_id("GERB", rollback_payload),
+        **rollback_payload,
+        "created_at": _normalized_timestamp(created_at or promotion_result_record.get("created_at")),
+    }
+    Draft202012Validator(load_schema("generated_eval_promotion_rollback_record")).validate(rollback_record)
+    return rollback_record
+
+
+def execute_generated_eval_promotion_rollback(
+    *,
+    generated_eval_artifact_id: str,
+    promotion_result_record: Dict[str, Any],
+    rollback_reason: str,
+    required_eval_registry: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Deterministic rollback path for a governed generated eval promotion."""
+
+    rollback_record = build_generated_eval_promotion_rollback_record(
+        generated_eval_artifact_id=generated_eval_artifact_id,
+        promotion_result_record=promotion_result_record,
+        rollback_reason=rollback_reason,
+        rolled_back=True,
+    )
+    updated_registry = _remove_required_eval_generated_case(required_eval_registry, generated_eval_artifact_id)
+    return {
+        "generated_eval_promotion_rollback_record": rollback_record,
+        "required_eval_registry": updated_registry,
+    }
+
+
 def generate_eval_candidate_review_bundle(
     generated_eval_cases_with_admission: Sequence[Dict[str, Any]],
     *,
