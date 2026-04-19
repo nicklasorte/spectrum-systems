@@ -11,8 +11,6 @@ describe("PostgreSQL Artifact Store Backend", () => {
       pgDatabase: "spectrum_test",
       pgUser: "postgres",
       pgPassword: "postgres",
-      s3Bucket: "spectrum-artifacts-test",
-      s3Region: "us-east-1",
     });
 
     await backend.initialize();
@@ -40,7 +38,7 @@ describe("PostgreSQL Artifact Store Backend", () => {
     expect(retrieved.artifact_kind).toBe("test_artifact");
   });
 
-  it("should log decision to audit log", async () => {
+  it("should write and read audit entries", async () => {
     const artifactId = uuidv4();
     const artifact = {
       artifact_id: artifactId,
@@ -50,30 +48,36 @@ describe("PostgreSQL Artifact Store Backend", () => {
     };
 
     await backend.store(artifact);
-    await backend.logDecision(artifactId, "allow", ["passed_evals"], "test-system");
+    await backend.writeAuditEntry(
+      artifactId,
+      "eval_completed",
+      "pass",
+      ["eval_passed"],
+      "test-system"
+    );
 
-    const log = await backend.getAuditLog(artifactId);
-    expect(log.length).toBeGreaterThan(0);
-    expect(log[0].decision_outcome).toBe("allow");
+    const entries = await backend.readAuditEntries(artifactId);
+    expect(entries.length).toBeGreaterThan(0);
+    expect(entries[0].outcome).toBe("pass");
   });
 
-  it("should track overrides with expiry", async () => {
+  it("should track exception records with expiry", async () => {
     const artifactId = uuidv4();
-    await backend.recordOverride(
+    await backend.writeExceptionRecord(
       artifactId,
       "reviewer-123",
-      "Manual override for testing",
+      "Testing exception tracking",
       30
     );
 
-    const backlog = await backend.getOverrideBacklog();
+    const backlog = await backend.readExceptionBacklog();
     expect(backlog.length).toBeGreaterThan(0);
 
-    const count = await backend.getOverrideCount();
+    const count = await backend.readExceptionCount();
     expect(count).toBeGreaterThan(0);
   });
 
-  it("should enforce audit log on all operations", async () => {
+  it("should enforce audit trail on all operations", async () => {
     const artifact = {
       artifact_id: uuidv4(),
       artifact_kind: "audit_test",
@@ -82,14 +86,15 @@ describe("PostgreSQL Artifact Store Backend", () => {
     };
 
     await backend.store(artifact);
-    await backend.logDecision(
+    await backend.writeAuditEntry(
       artifact.artifact_id,
-      "warn",
-      ["threshold_exceeded"],
+      "verification",
+      "pass",
+      ["verified"],
       "system"
     );
 
-    const log = await backend.getAuditLog();
-    expect(log.length).toBeGreaterThan(0);
+    const entries = await backend.readAuditEntries();
+    expect(entries.length).toBeGreaterThan(0);
   });
 });

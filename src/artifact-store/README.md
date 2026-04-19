@@ -1,66 +1,67 @@
-# Artifact Store & Provenance Layer
+# Persistent Artifact Store
 
-The artifact store is the central repository for all artifacts in Spectrum Systems. It implements:
+PostgreSQL backend for durable artifact storage.
 
-## Core Responsibilities
+## Tables
 
-1. **Artifact Registration** — Accept, validate, and store artifacts
-2. **Artifact Retrieval** — Fetch artifacts by ID, kind, trace, or date range
-3. **Provenance Tracking** — Record what produced each artifact and why
-4. **Lineage** — Build dependency chains between artifacts
-5. **Immutability** — Artifacts are never mutated, only versioned
+- `artifacts`: All pipeline artifacts with metadata (immutable)
+- `audit_entries`: Event log for all artifact operations
+- `exception_records`: Tracked exception records with expiry dates
 
 ## Usage
 
 ```typescript
-import { DefaultArtifactStore, MemoryStorageBackend } from './artifact-store';
+import { createPostgresBackend } from './postgres-factory';
 
-// Create store with in-memory backend (for testing)
-const backend = new MemoryStorageBackend();
-const store = new DefaultArtifactStore(backend);
+const backend = createPostgresBackend();
+await backend.initialize();
 
-// Register an artifact
-const result = await store.register(transcript_artifact);
+// Store artifact
+await backend.store(artifact);
 
-// Retrieve it
-const artifact = await store.retrieve(result.artifactId);
+// Retrieve artifact
+const artifact = await backend.retrieve(artifactId);
 
-// Query by kind
-const transcripts = await store.query({ artifactKind: 'transcript_artifact' });
+// Write audit entry
+await backend.writeAuditEntry(
+  artifactId,
+  "eval_completed",
+  "pass",
+  ["eval_passed"],
+  "system"
+);
 
-// Get lineage
-const lineage = await store.getLineage(result.artifactId);
+// Read audit entries
+const entries = await backend.readAuditEntries(artifactId);
+
+// Track exception records
+await backend.writeExceptionRecord(
+  artifactId,
+  "reviewer-123",
+  "Exception tracking reason",
+  30  // expiry days
+);
+
+// Query exception records
+const backlog = await backend.readExceptionBacklog();
+const count = await backend.readExceptionCount();
 ```
 
-## Storage Backends
+## Configuration
 
-Currently implemented:
-- `MemoryStorageBackend` — In-memory (for testing and development)
+Via environment variables:
 
-Future backends:
-- `PostgresBackend` — PostgreSQL with JSON storage
-- `S3Backend` — AWS S3 with metadata in DynamoDB
-- `FilesystemBackend` — Local files with index metadata
+```bash
+PG_HOST=localhost
+PG_PORT=5432
+PG_DATABASE=spectrum_systems
+PG_USER=postgres
+PG_PASSWORD=postgres
+```
 
-## Provenance
+## Design
 
-Every artifact records:
-- `producedBy` — Component name and version that created it
-- `inputArtifactIds` — Which artifacts were inputs
-- `executionFingerprint` — Hash of execution context
-- `traceId` — Correlation ID for the request
-- `parentTraceId` — Parent request (for multi-step flows)
-
-## Design Principles
-
-✅ **Fail-Closed** — Invalid artifacts rejected at registration time  
-✅ **Immutable** — Artifacts never change, only new versions created  
-✅ **Traceable** — Every artifact links back to what produced it  
-✅ **Auditable** — Full lineage chain queryable  
-✅ **Validated** — All artifacts match their schemas
-
-## Next Steps
-
-After PRE-2:
-- PRE-3: Integrate with PQX step harness
-- Step 1.2: Wire dashboard API to artifact store queries
+- **Immutable artifacts**: All artifacts stored as-is, never modified
+- **Audit trail**: Every operation logged in audit_entries
+- **Exception tracking**: Exceptional conditions recorded with expiry
+- **Index-optimized**: Efficient queries by artifact kind, trace ID, creation date

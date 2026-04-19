@@ -2,8 +2,8 @@ import * as crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
 
 /**
- * Replay Bundle: captures all inputs needed to re-execute a run deterministically
- * Enables "given the same inputs and seeds, produce identical results"
+ * Replay Bundle: captures all inputs to re-execute a run
+ * Pure data capture — no logic, no enforcement
  */
 
 export interface ReplayBundle {
@@ -27,6 +27,18 @@ export interface ReplayBundle {
     trace_id: string;
     span_id?: string;
   };
+}
+
+export interface ReplayRecord {
+  artifact_kind: "replay_record";
+  artifact_id: string;
+  created_at: string;
+  original_bundle_id: string;
+  replay_run_id: string;
+  outputs_match: boolean;
+  differences?: string[];
+  match_rate: number;
+  trace_context: { trace_id: string };
 }
 
 export function createReplayBundle(
@@ -97,24 +109,10 @@ export function recordInputHash(
   bundle.input_hashes[inputName] = `sha256:${hash}`;
 }
 
-export interface ReplayRecord {
-  artifact_kind: "replay_record";
-  artifact_id: string;
-  created_at: string;
-  original_bundle_id: string;
-  replay_run_id: string;
-  match: boolean;
-  differences?: string[];
-  match_rate: number; // percentage of outputs that match
-  trace_context: {
-    trace_id: string;
-  };
-}
-
 export function createReplayRecord(
   bundleId: string,
   replayRunId: string,
-  match: boolean,
+  outputsMatch: boolean,
   matchRate: number,
   differences?: string[]
 ): ReplayRecord {
@@ -124,7 +122,7 @@ export function createReplayRecord(
     created_at: new Date().toISOString(),
     original_bundle_id: bundleId,
     replay_run_id: replayRunId,
-    match,
+    outputs_match: outputsMatch,
     differences,
     match_rate: matchRate,
     trace_context: {

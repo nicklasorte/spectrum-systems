@@ -6,13 +6,14 @@ import {
 import { v4 as uuidv4 } from "uuid";
 
 /**
- * Replay Executor: re-runs a step with identical seeds and model versions
- * Verifies that outputs match (deterministic within tolerance)
+ * Replay Verifier: re-runs a step with identical seeds and model versions
+ * Verifies outputs match (deterministic within tolerance)
+ * Pure verification — no decisions, no enforcement
  */
 
-export async function replayExecution(
+export async function verifyReplay(
   bundle: ReplayBundle,
-  executeStepFn: (
+  runStepFn: (
     seeds: Record<string, number>,
     modelVersions: Record<string, string>
   ) => Promise<any>,
@@ -22,24 +23,26 @@ export async function replayExecution(
 
   try {
     // Re-execute with same seeds and model versions
-    const replayOutput = await executeStepFn(
+    const replayOutput = await runStepFn(
       bundle.seeds,
       bundle.model_versions
     );
 
     // Compare outputs
-    const match =
+    const outputsMatch =
       JSON.stringify(originalOutput) === JSON.stringify(replayOutput);
-    const matchRate = match ? 100 : computeMatchRate(originalOutput, replayOutput);
+    const matchRate = outputsMatch
+      ? 100
+      : computeMatchRate(originalOutput, replayOutput);
 
-    const differences = !match
+    const differences = !outputsMatch
       ? identifyDifferences(originalOutput, replayOutput)
       : undefined;
 
     return createReplayRecord(
       bundle.artifact_id,
       replayRunId,
-      match,
+      outputsMatch,
       matchRate,
       differences
     );
@@ -49,7 +52,7 @@ export async function replayExecution(
       replayRunId,
       false,
       0,
-      [`Replay execution failed: ${error}`]
+      [`Verification failed: ${error}`]
     );
   }
 }

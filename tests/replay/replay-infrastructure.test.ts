@@ -5,7 +5,7 @@ import {
   recordPromptVersion,
   recordInputHash,
 } from "@/src/replay/replay-bundle";
-import { replayExecution } from "@/src/replay/replay-executor";
+import { verifyReplay } from "@/src/replay/replay-verifier";
 
 describe("Replay Infrastructure", () => {
   it("should create replay bundle", () => {
@@ -64,7 +64,7 @@ describe("Replay Infrastructure", () => {
     expect(bundle.input_hashes.context_bundle).toContain("sha256:");
   });
 
-  it("should replay execution with same seeds", async () => {
+  it("should verify matching replay", async () => {
     const bundle = createReplayBundle(
       "run-123",
       "exec-456",
@@ -76,16 +76,16 @@ describe("Replay Infrastructure", () => {
     recordSeed(bundle, "test", 42);
 
     const originalOutput = { result: "test" };
-    const executeStepFn = async () => ({ result: "test" });
+    const runStepFn = async () => ({ result: "test" });
 
-    const record = await replayExecution(bundle, executeStepFn, originalOutput);
+    const record = await verifyReplay(bundle, runStepFn, originalOutput);
 
     expect(record.artifact_kind).toBe("replay_record");
-    expect(record.match).toBe(true);
+    expect(record.outputs_match).toBe(true);
     expect(record.match_rate).toBe(100);
   });
 
-  it("should detect non-deterministic output", async () => {
+  it("should detect non-matching replay", async () => {
     const bundle = createReplayBundle(
       "run-123",
       "exec-456",
@@ -96,11 +96,11 @@ describe("Replay Infrastructure", () => {
     );
 
     const originalOutput = { result: "original" };
-    const executeStepFn = async () => ({ result: "different" });
+    const runStepFn = async () => ({ result: "different" });
 
-    const record = await replayExecution(bundle, executeStepFn, originalOutput);
+    const record = await verifyReplay(bundle, runStepFn, originalOutput);
 
-    expect(record.match).toBe(false);
+    expect(record.outputs_match).toBe(false);
     expect(record.match_rate).toBeLessThan(100);
     expect(record.differences?.length).toBeGreaterThan(0);
   });
