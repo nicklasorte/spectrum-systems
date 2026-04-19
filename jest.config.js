@@ -7,18 +7,22 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
-  globals: {
-    'ts-jest': {
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', {
       useESM: true,
       tsconfig: {
+        module: 'commonjs',
         esModuleInterop: true,
         allowSyntheticDefaultImports: true,
       },
-    },
+    }],
   },
   extensionsToTreatAsEsm: ['.ts'],
   transformIgnorePatterns: [
-    'node_modules/(?!uuid)',
+    'node_modules/(?!(uuid)/)',
+  ],
+  modulePathIgnorePatterns: [
+    'node_modules',
   ],
   collectCoverageFrom: [
     'src/**/*.ts',
