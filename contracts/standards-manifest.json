@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.149",
+  "artifact_version": "1.3.150",
   "schema_version": "1.3.99",
   "standards_version": "1.9.9",
   "record_id": "REC-STD-2026-04-18-ENF-01",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.149",
+  "source_repo_version": "1.3.150",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -6301,6 +6301,32 @@
       "notes": "EVAL-AUTO-01 deterministic failure_record-to-eval artifact for replayable prevention candidate generation."
     },
     {
+      "artifact_type": "generated_eval_review_queue",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.150",
+      "last_updated_in": "1.3.150",
+      "example_path": "contracts/examples/generated_eval_review_queue.json",
+      "notes": "AG-06 deterministic review queue bundle for admitted generated eval staging candidates."
+    },
+    {
+      "artifact_type": "generated_eval_staging_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.150",
+      "last_updated_in": "1.3.150",
+      "example_path": "contracts/examples/generated_eval_staging_record.json",
+      "notes": "AG-06 deterministic staging aggregate for admitted generated eval candidates grouped by scenario and reason code."
+    },
+    {
       "artifact_type": "github_review_handoff_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -10891,6 +10917,19 @@
       "last_updated_in": "1.3.148",
       "example_path": "contracts/examples/promotion_gate_evidence_record.json",
       "notes": "BNE-02-FIX evidence-only readiness record consumed by canonical promotion authority modules."
+    },
+    {
+      "artifact_type": "promotion_recommendation_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.150",
+      "last_updated_in": "1.3.150",
+      "example_path": "contracts/examples/promotion_recommendation_record.json",
+      "notes": "AG-06 non-authoritative promotion recommendation artifact derived from generated eval staging recurrence."
     },
     {
       "artifact_type": "promotion_requirement_evaluation_record",
