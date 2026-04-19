@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/generated_eval_candidate_queue.schema.json",
+  "title": "generated_eval_candidate_queue",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "generated_eval_ids",
+    "total_candidates",
+    "high_priority_candidates",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "generated_eval_candidate_queue" },
+    "artifact_id": { "type": "string", "minLength": 1 },
+    "generated_eval_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "total_candidates": { "type": "integer", "minimum": 0 },
+    "high_priority_candidates": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

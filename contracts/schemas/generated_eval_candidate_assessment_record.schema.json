@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/generated_eval_candidate_assessment_record.schema.json",
+  "title": "generated_eval_candidate_assessment_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "generated_eval_artifact_id",
+    "reason_code",
+    "occurrence_count",
+    "recommendation",
+    "justification",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "generated_eval_candidate_assessment_record" },
+    "artifact_id": { "type": "string", "minLength": 1 },
+    "generated_eval_artifact_id": { "type": "string", "minLength": 1 },
+    "reason_code": { "type": "string", "minLength": 1 },
+    "occurrence_count": { "type": "integer", "minimum": 1 },
+    "recommendation": { "type": "string", "enum": ["priority_review", "observe"] },
+    "justification": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

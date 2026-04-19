@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.149",
+  "artifact_version": "1.3.150",
   "schema_version": "1.3.99",
   "standards_version": "1.9.9",
   "record_id": "REC-STD-2026-04-18-ENF-01",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.149",
+  "source_repo_version": "1.3.150",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -6286,6 +6286,45 @@
       "last_updated_in": "1.9.9",
       "example_path": "contracts/examples/generated_eval_admission_record.json",
       "notes": "EVAL-AUTO-01 deterministic fail-closed admission result for generated_eval_case artifacts derived from failure_record lineage."
+    },
+    {
+      "artifact_type": "generated_eval_candidate_assessment_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.150",
+      "last_updated_in": "1.3.150",
+      "example_path": "contracts/examples/generated_eval_candidate_assessment_record.json",
+      "notes": "AG-06 non-authoritative candidate assessment artifact derived from generated eval candidate recurrence."
+    },
+    {
+      "artifact_type": "generated_eval_candidate_queue",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.150",
+      "last_updated_in": "1.3.150",
+      "example_path": "contracts/examples/generated_eval_candidate_queue.json",
+      "notes": "AG-06 deterministic candidate queue bundle for admitted generated eval candidates under review."
+    },
+    {
+      "artifact_type": "generated_eval_candidate_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.150",
+      "last_updated_in": "1.3.150",
+      "example_path": "contracts/examples/generated_eval_candidate_record.json",
+      "notes": "AG-06 deterministic candidate aggregation record for admitted generated eval candidates grouped by scenario and reason code."
     },
     {
       "artifact_type": "generated_eval_case",

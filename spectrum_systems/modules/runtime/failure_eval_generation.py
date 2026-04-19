@@ -5,7 +5,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from typing import Any, Dict, List
+from copy import deepcopy
+from typing import Any, Dict, List, Sequence
 
 from jsonschema import Draft202012Validator
 
@@ -291,3 +292,214 @@ def generate_and_admit_failure_eval(
         "generated_eval_case": generated_eval_case,
         "generated_eval_admission_record": admission,
     }
+
+
+def _normalized_timestamp(value: Any) -> str:
+    return _as_nonempty_string(value, "1970-01-01T00:00:00Z")
+
+
+def _as_nonnegative_int(value: Any, default: int = 0) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return default
+    return parsed if parsed >= 0 else default
+
+
+def _admitted_entries(
+    generated_eval_cases_with_admission: Sequence[Dict[str, Any]],
+) -> list[tuple[Dict[str, Any], Dict[str, Any]]]:
+    admitted: list[tuple[Dict[str, Any], Dict[str, Any]]] = []
+    for item in generated_eval_cases_with_admission:
+        if not isinstance(item, dict):
+            continue
+        generated_eval_case = item.get("generated_eval_case")
+        admission = item.get("generated_eval_admission_record")
+        if not isinstance(generated_eval_case, dict) or not isinstance(admission, dict):
+            continue
+        if not admission.get("admitted"):
+            continue
+        if _as_nonempty_string(admission.get("generated_eval_artifact_id")) != _as_nonempty_string(
+            generated_eval_case.get("artifact_id")
+        ):
+            continue
+        admitted.append((generated_eval_case, admission))
+    return admitted
+
+
+def build_generated_eval_candidate_records(
+    generated_eval_cases_with_admission: Sequence[Dict[str, Any]],
+) -> list[Dict[str, Any]]:
+    """Aggregate admitted generated eval cases into deterministic staging records."""
+
+    grouped: dict[tuple[str, str], list[Dict[str, Any]]] = {}
+    for generated_eval_case, _admission in _admitted_entries(generated_eval_cases_with_admission):
+        reason_code = _as_nonempty_string(generated_eval_case.get("reason_code"), "unknown_reason")
+        scenario_name = _as_nonempty_string(generated_eval_case.get("scenario_name"), "unknown_scenario")
+        grouped.setdefault((reason_code, scenario_name), []).append(generated_eval_case)
+
+    candidate_records: list[Dict[str, Any]] = []
+    for reason_code, scenario_name in sorted(grouped.keys()):
+        cases = grouped[(reason_code, scenario_name)]
+        sorted_cases = sorted(cases, key=lambda case: _as_nonempty_string(case.get("artifact_id"), ""))
+        representative = sorted_cases[0]
+        generated_eval_artifact_id = _as_nonempty_string(representative.get("artifact_id"), "missing:artifact_id")
+        timestamps = sorted(_normalized_timestamp(case.get("created_at")) for case in sorted_cases)
+        source_failure_ids = sorted(_as_nonempty_string(case.get("source_failure_artifact_id")) for case in sorted_cases)
+        source_failure_artifact_id = source_failure_ids[0] if source_failure_ids else "missing:source_failure_artifact_id"
+        occurrence_count = len(sorted_cases)
+        first_seen_at = timestamps[0] if timestamps else "1970-01-01T00:00:00Z"
+        last_seen_at = timestamps[-1] if timestamps else "1970-01-01T00:00:00Z"
+
+        staging_record = {
+            "artifact_type": "generated_eval_candidate_record",
+            "artifact_id": _hash_id(
+                "GES",
+                {
+                    "generated_eval_artifact_id": generated_eval_artifact_id,
+                    "reason_code": reason_code,
+                },
+            ),
+            "generated_eval_artifact_id": generated_eval_artifact_id,
+            "source_failure_artifact_id": source_failure_artifact_id,
+            "reason_code": reason_code,
+            "staging_status": "pending_review",
+            "occurrence_count": occurrence_count,
+            "first_seen_at": first_seen_at,
+            "last_seen_at": last_seen_at,
+            "created_at": first_seen_at,
+        }
+        Draft202012Validator(load_schema("generated_eval_candidate_record")).validate(staging_record)
+        candidate_records.append(staging_record)
+
+    return candidate_records
+
+
+def build_generated_eval_candidate_queue(
+    candidate_records: Sequence[Dict[str, Any]],
+    *,
+    high_priority_threshold: int = 2,
+) -> Dict[str, Any]:
+    """Build a deterministic generated eval review queue from staging records."""
+
+    threshold = high_priority_threshold if high_priority_threshold >= 1 else 1
+    sorted_records = sorted(
+        (deepcopy(record) for record in candidate_records if isinstance(record, dict)),
+        key=lambda record: _as_nonempty_string(record.get("generated_eval_artifact_id"), ""),
+    )
+    generated_eval_ids = [
+        _as_nonempty_string(record.get("generated_eval_artifact_id"))
+        for record in sorted_records
+        if _as_nonempty_string(record.get("generated_eval_artifact_id"))
+    ]
+    high_priority_candidates = [
+        _as_nonempty_string(record.get("generated_eval_artifact_id"))
+        for record in sorted_records
+        if _as_nonnegative_int(record.get("occurrence_count")) >= threshold
+        and _as_nonempty_string(record.get("generated_eval_artifact_id"))
+    ]
+    created_at = (
+        max(_normalized_timestamp(record.get("last_seen_at")) for record in sorted_records)
+        if sorted_records
+        else "1970-01-01T00:00:00Z"
+    )
+    candidate_queue = {
+        "artifact_type": "generated_eval_candidate_queue",
+        "artifact_id": _hash_id(
+            "GERQ",
+            {
+                "generated_eval_ids": generated_eval_ids,
+                "high_priority_threshold": threshold,
+            },
+        ),
+        "generated_eval_ids": generated_eval_ids,
+        "total_candidates": len(generated_eval_ids),
+        "high_priority_candidates": high_priority_candidates,
+        "created_at": created_at,
+    }
+    Draft202012Validator(load_schema("generated_eval_candidate_queue")).validate(candidate_queue)
+    return candidate_queue
+
+
+def build_generated_eval_candidate_assessment_records(
+    candidate_records: Sequence[Dict[str, Any]],
+    *,
+    assessment_threshold: int = 2,
+) -> list[Dict[str, Any]]:
+    """Emit deterministic non-authoritative candidate assessments."""
+
+    threshold = assessment_threshold if assessment_threshold >= 1 else 1
+    recommendations: list[Dict[str, Any]] = []
+    sorted_records = sorted(
+        (deepcopy(record) for record in candidate_records if isinstance(record, dict)),
+        key=lambda record: _as_nonempty_string(record.get("generated_eval_artifact_id"), ""),
+    )
+    for record in sorted_records:
+        generated_eval_artifact_id = _as_nonempty_string(record.get("generated_eval_artifact_id"), "missing:artifact_id")
+        reason_code = _as_nonempty_string(record.get("reason_code"), "unknown_reason")
+        occurrence_count = _as_nonnegative_int(record.get("occurrence_count"))
+        should_priority_review = occurrence_count >= threshold
+        recommendation = "priority_review" if should_priority_review else "observe"
+        justification = (
+            f"occurrence_count={occurrence_count} meets threshold={threshold}; recommendation is priority_review."
+            if should_priority_review
+            else f"occurrence_count={occurrence_count} below threshold={threshold}; recommendation is observe."
+        )
+        assessment_record = {
+            "artifact_type": "generated_eval_candidate_assessment_record",
+            "artifact_id": _hash_id(
+                "PRR",
+                {
+                    "generated_eval_artifact_id": generated_eval_artifact_id,
+                    "reason_code": reason_code,
+                },
+            ),
+            "generated_eval_artifact_id": generated_eval_artifact_id,
+            "reason_code": reason_code,
+            "occurrence_count": occurrence_count,
+            "recommendation": recommendation,
+            "justification": justification,
+            "created_at": _normalized_timestamp(record.get("last_seen_at")),
+        }
+        Draft202012Validator(load_schema("generated_eval_candidate_assessment_record")).validate(assessment_record)
+        recommendations.append(assessment_record)
+    return recommendations
+
+
+def generate_eval_candidate_review_bundle(
+    generated_eval_cases_with_admission: Sequence[Dict[str, Any]],
+    *,
+    high_priority_threshold: int = 2,
+    assessment_threshold: int = 2,
+) -> Dict[str, Any]:
+    """Thin deterministic integration that emits staging, queue, and recommendation artifacts."""
+
+    candidate_records = build_generated_eval_candidate_records(generated_eval_cases_with_admission)
+    candidate_queue = build_generated_eval_candidate_queue(
+        candidate_records,
+        high_priority_threshold=high_priority_threshold,
+    )
+    candidate_assessments = build_generated_eval_candidate_assessment_records(
+        candidate_records,
+        assessment_threshold=assessment_threshold,
+    )
+    return {
+        "candidate_records": candidate_records,
+        "candidate_queue": candidate_queue,
+        "candidate_assessments": candidate_assessments,
+    }
+
+
+def generate_eval_staging_and_review_bundle(
+    generated_eval_cases_with_admission: Sequence[Dict[str, Any]],
+    *,
+    high_priority_threshold: int = 2,
+    assessment_threshold: int = 2,
+) -> Dict[str, Any]:
+    """Backward-compatible alias for candidate staging/review bundle generation."""
+
+    return generate_eval_candidate_review_bundle(
+        generated_eval_cases_with_admission,
+        high_priority_threshold=high_priority_threshold,
+        assessment_threshold=assessment_threshold,
+    )
