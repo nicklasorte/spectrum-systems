@@ -25,4 +25,4 @@ Output must conform to schema. Fail-closed on mismatch.
 
 ## Model
 
-Sonnet (high-quality prose). All calls seeded for replay.
+Sonnet. All calls seeded for replay.

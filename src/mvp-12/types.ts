@@ -1,6 +1,9 @@
 export interface FormattedPaperArtifact {
   artifact_kind: "formatted_paper_artifact";
   artifact_id: string;
+  created_at: string;
+  schema_ref: string;
+  trace: { trace_id: string; created_at: string };
   title: string;
   sections: Record<string, string>;
   publication_metadata: {

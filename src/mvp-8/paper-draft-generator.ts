@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "crypto";
 import { Anthropic } from "@anthropic-ai/sdk";
 import type { PaperDraftArtifact, PaperGenerationResult, PaperSection } from "./types";
 
@@ -7,8 +7,8 @@ const client = new Anthropic();
 /**
  * MVP-8: Paper Draft Generation
  * HARDEST STEP: Section-by-section generation with validation
- * Strategy: Generate, validate immediately, retry up to 3 times, fail-closed on all failures
- * Model: Sonnet (high-quality prose)
+ * Strategy: Generate, validate immediately, retry up to 3 times, fail-closed
+ * Model: Sonnet
  */
 
 export async function generatePaperDraft(
@@ -16,7 +16,7 @@ export async function generatePaperDraft(
   structuredIssueSet: any,
   minutesArtifact: any
 ): Promise<PaperGenerationResult> {
-  const traceId = uuidv4();
+  const traceId = randomUUID();
   const traceContext = { trace_id: traceId, created_at: new Date().toISOString() };
 
   const sections = ["abstract", "introduction", "findings", "recommendations", "conclusion"];
@@ -30,15 +30,10 @@ export async function generatePaperDraft(
 
       while (!sectionContent && retries < maxRetries) {
         try {
-          const prompt = buildSectionPrompt(
-            sectionType,
-            structuredIssueSet,
-            minutesArtifact,
-            contextBundle
-          );
+          const prompt = buildSectionPrompt(sectionType, structuredIssueSet, minutesArtifact);
 
           const response = await client.messages.create({
-            model: "claude-opus-4-20250514",
+            model: "claude-sonnet-4-20250514",
             max_tokens: 2000,
             messages: [{ role: "user", content: prompt }],
           });
@@ -50,9 +45,8 @@ export async function generatePaperDraft(
 
           sectionContent = textContent.text;
 
-          // Validate section immediately
           if (!validateSection(sectionType, sectionContent)) {
-            sectionContent = null; // Force retry
+            sectionContent = null;
           }
         } catch (error) {
           retries++;
@@ -67,7 +61,7 @@ export async function generatePaperDraft(
       }
 
       const sourceIssueIds = (structuredIssueSet.issues || [])
-        .filter((i: any) => i.paper_section_id === `section-${sections.indexOf(sectionType)}`)
+        .filter((i: any) => i.paper_section_id === `section-${sections.indexOf(sectionType) + 3}`)
         .map((i: any) => i.issue_id);
 
       generatedSections[sectionType] = {
@@ -79,19 +73,26 @@ export async function generatePaperDraft(
 
     const paperDraft: PaperDraftArtifact = {
       artifact_kind: "paper_draft_artifact",
-      artifact_id: uuidv4(),
+      artifact_id: randomUUID(),
+      created_at: new Date().toISOString(),
+      schema_ref: "artifacts/paper_draft_artifact.schema.json",
+      trace: traceContext,
       sections: generatedSections,
       source_issue_set_id: structuredIssueSet.artifact_id,
-      generation_model: "claude-opus-4-20250514",
+      generation_model: "claude-sonnet-4-20250514",
       content_hash: computeHash(JSON.stringify(generatedSections)),
     };
 
     const executionRecord = {
       artifact_kind: "pqx_execution_record",
-      artifact_id: uuidv4(),
+      artifact_id: randomUUID(),
+      created_at: new Date().toISOString(),
+      trace: traceContext,
       pqx_step: { name: "MVP-8: Paper Draft Generation", version: "1.0" },
       execution_status: "succeeded",
+      inputs: { artifact_ids: [structuredIssueSet.artifact_id] },
       outputs: { artifact_ids: [paperDraft.artifact_id] },
+      timing: { started_at: traceContext.created_at, ended_at: new Date().toISOString() },
     };
 
     return { success: true, paper_draft_artifact: paperDraft, execution_record: executionRecord };
@@ -102,7 +103,8 @@ export async function generatePaperDraft(
       error_codes: ["generation_error"],
       execution_record: {
         artifact_kind: "pqx_execution_record",
-        artifact_id: uuidv4(),
+        artifact_id: randomUUID(),
+        created_at: new Date().toISOString(),
         execution_status: "failed",
         failure: { reason_codes: ["generation_error"] },
       },
@@ -110,30 +112,20 @@ export async function generatePaperDraft(
   }
 }
 
-function buildSectionPrompt(
-  sectionType: string,
-  issueSet: any,
-  minutes: any,
-  context: any
-): string {
-  const basePrompt = `You are writing a section of a spectrum study paper.
+function buildSectionPrompt(sectionType: string, issueSet: any, minutes: any): string {
+  return `Write a ${sectionType} section for a spectrum study paper.
 
-Section type: ${sectionType}
-Context: ${JSON.stringify(context, null, 2)}
-Issues: ${JSON.stringify(issueSet.issues, null, 2)}
-Minutes: ${JSON.stringify(minutes, null, 2)}
+Issues: ${JSON.stringify((issueSet.issues || []).slice(0, 3))}
+Minutes: ${JSON.stringify(minutes, null, 2).slice(0, 500)}
 
-Write the ${sectionType} section. Be professional, concise, and reference relevant issues.`;
-
-  return basePrompt;
+Write ${sectionType} professionally and concisely.`;
 }
 
 function validateSection(sectionType: string, content: string): boolean {
-  // Basic validation: non-empty, some minimum length
-  return content && content.length > 100;
+  return !!(content && content.length > 100);
 }
 
 function computeHash(content: string): string {
-  const crypto = require("crypto");
-  return `sha256:${crypto.createHash("sha256").update(content).digest("hex")}`;
+  const { createHash } = require("crypto");
+  return `sha256:${createHash("sha256").update(content).digest("hex")}`;
 }

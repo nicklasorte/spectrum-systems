@@ -13,7 +13,11 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
   "include": ["src/**/*", "tests/**/*", "schemas/**/*"],
   "exclude": ["node_modules", "dist"]
