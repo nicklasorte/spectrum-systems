@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_contract_sync_check_record.schema.json",
+  "title": "tpa_contract_sync_check_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "checked_artifact_types",
+    "mismatches",
+    "auto_repair_eligible",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "tpa_contract_sync_check_record" },
+    "artifact_id": { "type": "string", "minLength": 1 },
+    "checked_artifact_types": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "mismatches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["mismatch_type", "artifact_type", "detail"],
+        "properties": {
+          "mismatch_type": { "type": "string", "minLength": 1 },
+          "artifact_type": { "type": "string", "minLength": 1 },
+          "detail": { "type": "string", "minLength": 1 },
+          "files": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+        }
+      }
+    },
+    "auto_repair_eligible": { "type": "boolean" },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}
