@@ -1,0 +1,569 @@
+{
+  "roadmap_id": "governance-enforcement-phases-16-22",
+  "title": "Spectrum Systems Phase 16-22: Production Hardening - Cross-Repo Governance Enforcement",
+  "status": "planned",
+  "created_date": "2026-04-19",
+  "last_updated": "2026-04-19",
+  "maturity_transition": {
+    "from": "Documented Governance (Maturity 2.5)",
+    "to": "Enforced Governance (Maturity 4.0)"
+  },
+  "blocking_findings": ["F-1", "F-2", "F-3", "F-4", "F-5", "F-6", "F-7", "F-8", "F-10", "F-12"],
+  "phases": [
+    {
+      "phase_id": "16",
+      "name": "Self-Governance Credibility Closure",
+      "description": "Remove Python source from spectrum-systems; add boundary checks enforcing allowed file types. Spectrum-systems = contracts + schemas + governance docs only.",
+      "priority": "CRITICAL",
+      "blocking_findings": ["F-3", "F-8"],
+      "status": "not_started",
+      "dependencies": [],
+      "success_metrics": [
+        "0% Python source in spectrum-systems",
+        "100% file type compliance against allowed schema",
+        "Boundary check enforces allowed file types at CI"
+      ],
+      "deliverables": [
+        "Allowed file types schema (spectrum-systems.file-types.schema.json)",
+        "Boundary check implementation",
+        "CI validation workflow",
+        "Test suite validating compliance"
+      ],
+      "red_team_reviews": [
+        {
+          "review_id": "RT-16A",
+          "reviewer": "Architecture",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-16B",
+          "reviewer": "SRE",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-16-RB1",
+          "reviewer": "Governance + Change Management",
+          "status": "approved",
+          "findings": ["Add maintenance window coordination", "Add rollback plan"]
+        }
+      ],
+      "estimated_effort": "3-5 days",
+      "target_completion": "2026-05-03"
+    },
+    {
+      "phase_id": "16.5",
+      "name": "Governance Credibility Verification",
+      "description": "Run compliance scanner against spectrum-systems itself; verify 100% self-compliant. Escape hatch: if fails, governance team escalates (no auto-block).",
+      "priority": "CRITICAL",
+      "blocking_findings": ["F-3"],
+      "status": "not_started",
+      "dependencies": ["16"],
+      "success_metrics": [
+        "spectrum-systems passes own compliance scanner",
+        "Escalation path documented if verification fails"
+      ],
+      "deliverables": [
+        "Compliance scanner applied to spectrum-systems",
+        "Escalation process and decision authority documented"
+      ],
+      "red_team_reviews": [
+        {
+          "review_id": "RT-16.5A",
+          "reviewer": "Governance",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-16.5B",
+          "reviewer": "Architecture",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-16.5-RB1",
+          "reviewer": "Governance",
+          "status": "approved",
+          "findings": ["Add explicit escape hatch + escalation decision authority"]
+        }
+      ],
+      "estimated_effort": "2-3 days",
+      "target_completion": "2026-05-06"
+    },
+    {
+      "phase_id": "17",
+      "name": "Complete Ecosystem Registry",
+      "description": "Add all 8 governed repos; document repo_type, status, contracts, consumers. Verify each repo has governance section; test registry consistency.",
+      "priority": "HIGH",
+      "blocking_findings": ["F-2"],
+      "status": "not_started",
+      "dependencies": ["16.5"],
+      "success_metrics": [
+        "8/8 repos registered in ecosystem registry",
+        "All governance sections linked and valid",
+        "Registry consistency tests pass"
+      ],
+      "deliverables": [
+        "Updated ecosystem/system-registry.json with all 8 repos",
+        "Registry validation tests",
+        "Governance section linking verification"
+      ],
+      "red_team_reviews": [
+        {
+          "review_id": "RT-17A",
+          "reviewer": "Architecture",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-17B",
+          "reviewer": "SRE",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-17-RB1",
+          "reviewer": "Governance",
+          "status": "approved",
+          "findings": []
+        }
+      ],
+      "estimated_effort": "4-6 days",
+      "target_completion": "2026-05-12"
+    },
+    {
+      "phase_id": "17.5",
+      "name": "Downstream Compliance Readiness Assessment",
+      "description": "Check: can each repo support contracts? Legacy constraints? Per-repo compliance capacity assessment.",
+      "priority": "HIGH",
+      "blocking_findings": ["F-2"],
+      "status": "not_started",
+      "dependencies": ["17"],
+      "success_metrics": [
+        "Pass/warning/fail classification for all 8 repos",
+        "Legacy constraints documented",
+        "Readiness blockers identified"
+      ],
+      "deliverables": [
+        "Per-repo readiness assessment report",
+        "Constraint documentation for each repo",
+        "Remediation path for warning/fail repos"
+      ],
+      "red_team_reviews": [
+        {
+          "review_id": "RT-17.5A",
+          "reviewer": "SRE",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-17.5B",
+          "reviewer": "Architecture",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-17.5-RB1",
+          "reviewer": "Governance + Change Management",
+          "status": "approved",
+          "findings": ["Discovers blocker too late; must validate capability before Phase 19"]
+        }
+      ],
+      "estimated_effort": "5-7 days",
+      "target_completion": "2026-05-19"
+    },
+    {
+      "phase_id": "18",
+      "name": "Consolidate Schema Authority",
+      "description": "Single source of truth; remove dual-track (schemas/ vs contracts/schemas/); add schema version tests.",
+      "priority": "MEDIUM",
+      "blocking_findings": ["F-4", "F-5"],
+      "status": "not_started",
+      "dependencies": ["17.5"],
+      "success_metrics": [
+        "All schemas imported from single location",
+        "Dual-track removed",
+        "Version compatibility tests pass"
+      ],
+      "deliverables": [
+        "Consolidated schema directory structure",
+        "Schema versioning tests",
+        "Migration guide for downstream repos"
+      ],
+      "red_team_reviews": [
+        {
+          "review_id": "RT-18A",
+          "reviewer": "Architecture",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-18B",
+          "reviewer": "Governance",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-18-RB1",
+          "reviewer": "Governance",
+          "status": "approved",
+          "findings": []
+        }
+      ],
+      "estimated_effort": "4-5 days",
+      "target_completion": "2026-05-24"
+    },
+    {
+      "phase_id": "18.5",
+      "name": "Machineize Review Registry",
+      "description": "Create review-registry.json with CI validation; move from markdown table to machine-readable format.",
+      "priority": "MEDIUM",
+      "blocking_findings": ["F-12"],
+      "status": "not_started",
+      "dependencies": ["18"],
+      "success_metrics": [
+        "review-registry.json created with schema validation",
+        "CI validates against schema",
+        "Markdown table deprecated"
+      ],
+      "deliverables": [
+        "review-registry.json (machine-readable format)",
+        "review-registry.schema.json (validation schema)",
+        "CI validation workflow",
+        "Migration tooling from markdown to JSON"
+      ],
+      "red_team_reviews": [
+        {
+          "review_id": "RT-18.5A",
+          "reviewer": "Architecture",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-18.5B",
+          "reviewer": "SRE",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-18.5-RB1",
+          "reviewer": "Governance",
+          "status": "approved",
+          "findings": []
+        }
+      ],
+      "estimated_effort": "3-4 days",
+      "target_completion": "2026-05-28"
+    },
+    {
+      "phase_id": "19",
+      "name": "Extend Compliance Scanner",
+      "description": "Contract version validation, schema compatibility, governance section checks. Validate against Phase 16-18 contracts. Add eval cases. Staged rollout + capacity planning.",
+      "priority": "HIGH",
+      "blocking_findings": ["F-1", "F-7"],
+      "status": "not_started",
+      "dependencies": ["18.5"],
+      "success_metrics": [
+        "Scanner detects all Phase 16-18 violations",
+        "Eval cases cover each violation type",
+        "Staged rollout plan with capacity estimates"
+      ],
+      "deliverables": [
+        "Enhanced compliance scanner with contract validation",
+        "Eval case suite for Phase 16-18 contracts",
+        "Staged rollout documentation",
+        "Capacity impact assessment"
+      ],
+      "red_team_reviews": [
+        {
+          "review_id": "RT-19A",
+          "reviewer": "Architecture",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-19B",
+          "reviewer": "SRE",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-19-RB1",
+          "reviewer": "Governance",
+          "status": "approved",
+          "findings": ["Consent before enforcement; reorder Phase 20 before Phase 19"]
+        },
+        {
+          "review_id": "RT-19-RB2",
+          "reviewer": "Governance + Capacity",
+          "status": "approved",
+          "findings": ["Pre-flight staged rollout; capacity planning required"]
+        }
+      ],
+      "estimated_effort": "5-7 days",
+      "target_completion": "2026-06-04"
+    },
+    {
+      "phase_id": "20",
+      "name": "Downstream Repo Governance Consent Model",
+      "description": "Change management; explicit consent from 8 repo owners; 3-month rollout plan. Explicit opt-in vs mandatory decision.",
+      "priority": "HIGH",
+      "blocking_findings": ["F-6", "F-10"],
+      "status": "not_started",
+      "dependencies": ["19"],
+      "success_metrics": [
+        "Signed consent from 8 repo owners",
+        "Opt-in vs mandatory decision documented",
+        "3-month rollout schedule agreed"
+      ],
+      "deliverables": [
+        "Change management proposal",
+        "Consent templates and approval process",
+        "Organizational decision: opt-in vs mandatory",
+        "3-month staggered rollout schedule"
+      ],
+      "red_team_reviews": [
+        {
+          "review_id": "RT-20A",
+          "reviewer": "Governance + Org Change",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-20B",
+          "reviewer": "Architecture",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-20-RB1",
+          "reviewer": "Governance + Change Management",
+          "status": "approved",
+          "findings": ["Must come BEFORE Phase 19; consent before enforcement", "Explicit policy needed: opt-in vs mandatory"]
+        }
+      ],
+      "estimated_effort": "4-6 days",
+      "target_completion": "2026-06-10"
+    },
+    {
+      "phase_id": "20.5",
+      "name": "Governance Escalation Policy & Exception Waivers",
+      "description": "Define: warn → freeze → block; exception waivers with 6-month auto-expiry and approval authority.",
+      "priority": "MEDIUM",
+      "blocking_findings": ["F-6"],
+      "status": "not_started",
+      "dependencies": ["20"],
+      "success_metrics": [
+        "Escalation rules documented (warn → freeze → block)",
+        "Exception waiver template created",
+        "Auto-expiry mechanism (6-month sunset) defined",
+        "Approval authority specified"
+      ],
+      "deliverables": [
+        "Escalation policy document",
+        "Exception waiver template",
+        "Approval authority and SLA",
+        "Auto-expiry enforcement mechanism"
+      ],
+      "red_team_reviews": [
+        {
+          "review_id": "RT-20.5A",
+          "reviewer": "Governance",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-20.5B",
+          "reviewer": "Architecture",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-20.5-RB1",
+          "reviewer": "Governance",
+          "status": "approved",
+          "findings": ["Waivers must have sunset dates; governance debt accumulation risk"]
+        }
+      ],
+      "estimated_effort": "2-3 days",
+      "target_completion": "2026-06-13"
+    },
+    {
+      "phase_id": "21",
+      "name": "Implement Phase 1 Enforcement",
+      "description": "Add contract pins to each repo; CI validation templates; staggered rollout. Spectrum-systems pilots first.",
+      "priority": "HIGH",
+      "blocking_findings": ["F-6"],
+      "status": "not_started",
+      "dependencies": ["20.5"],
+      "success_metrics": [
+        "8/8 repos have enforcement CI workflows",
+        "Contract pins defined and validated",
+        "Spectrum-systems pilot completes successfully",
+        "Staggered rollout on 3-month schedule"
+      ],
+      "deliverables": [
+        "CI validation templates for all 8 repos",
+        "Contract pin definitions per repo",
+        "Enforcement playbook",
+        "Staggered rollout schedule with go/no-go gates"
+      ],
+      "red_team_reviews": [
+        {
+          "review_id": "RT-21A",
+          "reviewer": "Architecture",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-21B",
+          "reviewer": "SRE",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-21-RB1",
+          "reviewer": "Governance",
+          "status": "approved",
+          "findings": []
+        }
+      ],
+      "estimated_effort": "6-8 days",
+      "target_completion": "2026-06-21"
+    },
+    {
+      "phase_id": "22",
+      "name": "Automate Cross-Repo Compliance Scanning",
+      "description": "Scheduled workflow; drift detection; daily reports to governance team. Notification targeting and SLA defined.",
+      "priority": "HIGH",
+      "blocking_findings": ["F-7", "F-10"],
+      "status": "not_started",
+      "dependencies": ["21"],
+      "success_metrics": [
+        "Daily drift reports generated and delivered",
+        "Notification routing configured",
+        "SLA metrics tracked",
+        "Governance team acknowledges receipt"
+      ],
+      "deliverables": [
+        "Scheduled compliance scanning workflow",
+        "Drift detection implementation",
+        "Daily report generation and delivery",
+        "Notification SLA and escalation process"
+      ],
+      "red_team_reviews": [
+        {
+          "review_id": "RT-22A",
+          "reviewer": "SRE",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-22B",
+          "reviewer": "Governance",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-22-RB1",
+          "reviewer": "Governance",
+          "status": "approved",
+          "findings": ["Notifications must have explicit target list and on-call schedule"]
+        }
+      ],
+      "estimated_effort": "4-5 days",
+      "target_completion": "2026-06-26"
+    },
+    {
+      "phase_id": "22.5",
+      "name": "Violation Response Automation",
+      "description": "Auto-create issues on violations; escalate to repo owners; SLA enforcement. Violation remediation and tracking.",
+      "priority": "MEDIUM",
+      "blocking_findings": ["F-7"],
+      "status": "not_started",
+      "dependencies": ["22"],
+      "success_metrics": [
+        "Auto-created issues for all violations",
+        "Escalation to repo owners configured",
+        "SLA tracking and breach alerting",
+        "Remediation workflow documented"
+      ],
+      "deliverables": [
+        "Violation issue template",
+        "Escalation automation (owner notification)",
+        "SLA tracking and reporting",
+        "Remediation playbook"
+      ],
+      "red_team_reviews": [
+        {
+          "review_id": "RT-22.5A",
+          "reviewer": "Governance",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-22.5B",
+          "reviewer": "SRE",
+          "status": "approved",
+          "findings": []
+        },
+        {
+          "review_id": "RT-22.5-RB1",
+          "reviewer": "Governance",
+          "status": "approved",
+          "findings": ["Enforcement without remedy is harassment; SLA-driven response needed"]
+        }
+      ],
+      "estimated_effort": "3-4 days",
+      "target_completion": "2026-06-30"
+    }
+  ],
+  "operational_considerations": [
+    {
+      "consideration_id": "OC-1",
+      "title": "Maintenance Windows & Incident Coordination",
+      "description": "Phases 16-17 involve removing code and restructuring repos; must happen during maintenance window with incident coordination plan and rollback procedures.",
+      "severity": "HIGH",
+      "mitigation": "Add scheduled maintenance windows; define rollback triggers and decision authority; communicate with stakeholders 2 weeks in advance"
+    },
+    {
+      "consideration_id": "OC-2",
+      "title": "Opt-In vs Mandatory Decision",
+      "description": "Phase 20 requires organizational decision: is downstream repo governance adoption opt-in or mandatory? Ambiguity creates tension between teams.",
+      "severity": "HIGH",
+      "mitigation": "Board-level decision required before Phase 20 starts; document decision in governance policy"
+    },
+    {
+      "consideration_id": "OC-3",
+      "title": "Phase 19 Capacity Planning",
+      "description": "Compliance scanner finds violations in 8 repos simultaneously; fix capacity will be overwhelmed if not planned.",
+      "severity": "MEDIUM",
+      "mitigation": "Phase 19 includes capacity assessment; staged rollout to identify and fix violations in 2-3 repo batches; allocate 2 engineers per batch"
+    },
+    {
+      "consideration_id": "OC-4",
+      "title": "Escape Hatch for Phase 16.5",
+      "description": "If spectrum-systems fails its own compliance check, no auto-block; requires explicit governance team decision and escalation.",
+      "severity": "MEDIUM",
+      "mitigation": "Document escalation authority; define turnaround time (24-48 hrs); require board approval for any exemptions"
+    },
+    {
+      "consideration_id": "OC-5",
+      "title": "Waiver Accumulation Over Time",
+      "description": "Without sunset dates, exception waivers become permanent governance debt.",
+      "severity": "MEDIUM",
+      "mitigation": "All waivers have 6-month auto-expiry; renewal requires re-approval and re-assessment"
+    }
+  ],
+  "summary": {
+    "total_phases": 12,
+    "critical_phases": 4,
+    "high_priority_phases": 6,
+    "medium_priority_phases": 3,
+    "estimated_total_effort": "51-80 days",
+    "blocking_gate_before_phase_17": "Phase 16.5 (self-compliance verification)",
+    "consent_gate_before_phase_21": "Phase 20 (downstream team buy-in)",
+    "expected_completion": "2026-06-30"
+  }
+}
