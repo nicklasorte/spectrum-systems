@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum-systems.org/contracts/tpa_contract_sync_repair_result_record.schema.json",
-  "title": "tpa_contract_sync_repair_result_record",
+  "$id": "https://spectrum-systems.org/contracts/tpa_contract_sync_repair_handoff_record.schema.json",
+  "title": "tpa_contract_sync_repair_handoff_record",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -9,19 +9,19 @@
     "artifact_id",
     "check_artifact_id",
     "repair_plan_artifact_id",
-    "repaired",
-    "files_touched",
+    "handoff_ready",
+    "candidate_files",
     "remaining_mismatches",
     "escalation_required",
     "created_at"
   ],
   "properties": {
-    "artifact_type": { "type": "string", "const": "tpa_contract_sync_repair_result_record" },
+    "artifact_type": { "type": "string", "const": "tpa_contract_sync_repair_handoff_record" },
     "artifact_id": { "type": "string", "minLength": 1 },
     "check_artifact_id": { "type": "string", "minLength": 1 },
     "repair_plan_artifact_id": { "type": "string", "minLength": 1 },
-    "repaired": { "type": "boolean" },
-    "files_touched": {
+    "handoff_ready": { "type": "boolean" },
+    "candidate_files": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 },
       "uniqueItems": true

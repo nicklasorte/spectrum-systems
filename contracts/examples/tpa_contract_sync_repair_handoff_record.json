@@ -1,10 +1,10 @@
 {
-  "artifact_type": "tpa_contract_sync_repair_result_record",
+  "artifact_type": "tpa_contract_sync_repair_handoff_record",
   "artifact_id": "TPA-SYNC-RESULT-EXAMPLE-01",
   "check_artifact_id": "TPA-SYNC-EXAMPLE-01",
   "repair_plan_artifact_id": "TPA-SYNC-PLAN-EXAMPLE-01",
-  "repaired": true,
-  "files_touched": [
+  "handoff_ready": true,
+  "candidate_files": [
     "contracts/standards-manifest.json"
   ],
   "remaining_mismatches": [],

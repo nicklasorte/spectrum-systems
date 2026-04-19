@@ -1,12 +1,12 @@
-# TPA Early Contract Sync + Auto-Repair
+# TPA Early Contract Sync + Repair-Candidate Handoff
 
-TPA now runs an early, fast contract-sync check before heavy contract preflight evaluation.
+TPA runs an early, fast contract-sync check before heavy contract preflight evaluation.
 
 ## Why
 Late failures were occurring when schema/example/manifest contract surfaces drifted during artifact renames.
 
-## What TPA checks early
-For changed contract-bearing paths, TPA checks alignment between:
+## What TPA does
+For changed contract-bearing paths, TPA performs detection and classification for:
 - schema `artifact_type` const
 - example `artifact_type`
 - standards-manifest `artifact_type` entry
@@ -15,21 +15,20 @@ For changed contract-bearing paths, TPA checks alignment between:
 
 TPA emits `tpa_contract_sync_check_record`.
 
-## Auto-repair scope (bounded)
-When mismatch classes are deterministic and policy-safe, TPA attempts bounded repair and emits:
+## Candidate-generation scope
+For deterministic, policy-safe mismatch classes, TPA generates bounded repair candidates and handoff artifacts:
 - `tpa_contract_sync_repair_plan_record`
-- `tpa_contract_sync_repair_result_record`
+- `tpa_contract_sync_repair_handoff_record`
 
-Eligible auto-repair classes:
+Eligible candidate classes:
 - schema/example artifact_type rename drift
 - manifest example-path drift
 - missing manifest entry for touched artifact type
 - deterministic example required-field fill (`artifact_type`)
 
-## Fail-closed scope
-TPA does **not** auto-repair ambiguous semantic or policy changes.
-If mismatches remain after repair, preflight fails closed and escalates.
+## Boundary
+TPA does **not** own authoritative contract enforcement or authoritative contract mutation.
+TPA only diagnoses, marks eligibility, and prepares deterministic repair candidates for handoff to authorized repair/enforcement paths.
 
-## One-layer rule
-This is an early catch-and-repair layer only.
-The existing contract preflight remains authoritative and still runs.
+## Fail-closed behavior
+Ambiguous or non-derivable mismatches remain fail-closed and continue through authoritative downstream preflight gating.

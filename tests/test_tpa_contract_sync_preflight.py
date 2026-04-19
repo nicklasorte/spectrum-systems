@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from jsonschema import Draft202012Validator
-
 from scripts import run_contract_preflight as preflight
 
 
@@ -81,9 +79,10 @@ def test_ag07_broken_shape_is_repaired_deterministically(tmp_path: Path) -> None
     assert check["auto_repair_eligible"] is True
     repair = preflight.run_tpa_contract_sync_autorepair(repo_root=repo, check_record=check, created_at="2026-04-19T00:00:01Z")
 
-    assert repair["repair_result_record"]["repaired"] is True
+    assert repair["repair_handoff_record"]["handoff_ready"] is True
+    assert repair["repair_handoff_record"]["remaining_mismatches"] == check["mismatches"]
     second = preflight.run_tpa_contract_sync_check(repo_root=repo, changed_paths=changed, created_at="2026-04-19T00:00:02Z")
-    assert second["mismatches"] == []
+    assert second["mismatches"] == check["mismatches"]
 
 
 def test_mismatch_across_schema_example_manifest_is_caught_early(tmp_path: Path) -> None:
@@ -109,10 +108,10 @@ def test_eligible_mismatch_emits_repair_plan_and_result_records(tmp_path: Path) 
     check = preflight.run_tpa_contract_sync_check(repo_root=repo, changed_paths=changed, created_at="2026-04-19T00:00:00Z")
     repair = preflight.run_tpa_contract_sync_autorepair(repo_root=repo, check_record=check, created_at="2026-04-19T00:00:01Z")
     assert repair["repair_plan_record"]["artifact_type"] == "tpa_contract_sync_repair_plan_record"
-    assert repair["repair_result_record"]["artifact_type"] == "tpa_contract_sync_repair_result_record"
+    assert repair["repair_handoff_record"]["artifact_type"] == "tpa_contract_sync_repair_handoff_record"
 
 
-def test_repaired_shape_passes_validate_examples(tmp_path: Path) -> None:
+def test_handoff_generation_does_not_mutate_source_files(tmp_path: Path) -> None:
     repo = _seed_repo(tmp_path)
     changed = [
         "contracts/schemas/generated_eval_registry_change_request_record.schema.json",
@@ -120,11 +119,13 @@ def test_repaired_shape_passes_validate_examples(tmp_path: Path) -> None:
         "contracts/standards-manifest.json",
     ]
     check = preflight.run_tpa_contract_sync_check(repo_root=repo, changed_paths=changed, created_at="2026-04-19T00:00:00Z")
+    schema_before = (repo / "contracts/schemas/generated_eval_registry_change_request_record.schema.json").read_text(encoding="utf-8")
+    example_before = (repo / "contracts/examples/generated_eval_registry_change_request_record.json").read_text(encoding="utf-8")
+    manifest_before = (repo / "contracts/standards-manifest.json").read_text(encoding="utf-8")
     preflight.run_tpa_contract_sync_autorepair(repo_root=repo, check_record=check, created_at="2026-04-19T00:00:01Z")
-
-    schema = json.loads((repo / "contracts/schemas/generated_eval_registry_change_request_record.schema.json").read_text(encoding="utf-8"))
-    example = json.loads((repo / "contracts/examples/generated_eval_registry_change_request_record.json").read_text(encoding="utf-8"))
-    Draft202012Validator(schema).validate(example)
+    assert (repo / "contracts/schemas/generated_eval_registry_change_request_record.schema.json").read_text(encoding="utf-8") == schema_before
+    assert (repo / "contracts/examples/generated_eval_registry_change_request_record.json").read_text(encoding="utf-8") == example_before
+    assert (repo / "contracts/standards-manifest.json").read_text(encoding="utf-8") == manifest_before
 
 
 def test_ineligible_mismatch_stays_fail_closed(tmp_path: Path) -> None:
@@ -171,7 +172,7 @@ def test_tpa_repair_output_is_deterministic(tmp_path: Path) -> None:
     check2 = preflight.run_tpa_contract_sync_check(repo_root=repo2, changed_paths=changed, created_at="2026-04-19T00:00:00Z")
     second = preflight.run_tpa_contract_sync_autorepair(repo_root=repo2, check_record=check2, created_at="2026-04-19T00:00:01Z")
 
-    assert first["repair_result_record"]["artifact_id"] == second["repair_result_record"]["artifact_id"]
+    assert first["repair_handoff_record"]["artifact_id"] == second["repair_handoff_record"]["artifact_id"]
 
 
 def test_integration_changed_ag07_contracts_through_tpa_and_preflight_validation(tmp_path: Path) -> None:
@@ -184,7 +185,17 @@ def test_integration_changed_ag07_contracts_through_tpa_and_preflight_validation
     check = preflight.run_tpa_contract_sync_check(repo_root=repo, changed_paths=changed, created_at="2026-04-19T00:00:00Z")
     repair = preflight.run_tpa_contract_sync_autorepair(repo_root=repo, check_record=check, created_at="2026-04-19T00:00:01Z")
 
-    schema = json.loads((repo / "contracts/schemas/generated_eval_registry_change_request_record.schema.json").read_text(encoding="utf-8"))
-    example = json.loads((repo / "contracts/examples/generated_eval_registry_change_request_record.json").read_text(encoding="utf-8"))
-    assert repair["repair_result_record"]["repaired"] is True
-    Draft202012Validator(schema).validate(example)
+    assert repair["repair_handoff_record"]["handoff_ready"] is True
+    assert sorted(repair["repair_handoff_record"]["candidate_files"]) == sorted(
+        {
+            "contracts/schemas/generated_eval_registry_change_request_record.schema.json",
+            "contracts/examples/generated_eval_registry_change_request_record.json",
+            "contracts/standards-manifest.json",
+        }
+    )
+
+
+def test_tpa_doc_states_non_authoritative_boundary() -> None:
+    doc = Path("docs/runtime/tpa-contract-sync-autorepair.md").read_text(encoding="utf-8")
+    assert "does **not** own authoritative contract enforcement" in doc
+    assert "prepares deterministic repair candidates" in doc

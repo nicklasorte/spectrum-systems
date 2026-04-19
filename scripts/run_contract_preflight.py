@@ -925,83 +925,33 @@ def run_tpa_contract_sync_check(*, repo_root: Path, changed_paths: list[str], cr
 def run_tpa_contract_sync_autorepair(*, repo_root: Path, check_record: dict[str, Any], created_at: str) -> dict[str, Any]:
     mismatches = list(check_record.get("mismatches") or [])
     actions: list[dict[str, Any]] = []
-    touched_files: set[str] = set()
-    standards_manifest_path = repo_root / "contracts" / "standards-manifest.json"
-    standards_manifest = json.loads(standards_manifest_path.read_text(encoding="utf-8"))
+    candidate_files: set[str] = set()
 
     for mismatch in mismatches:
         mismatch_type = str(mismatch.get("mismatch_type") or "")
         artifact_type = str(mismatch.get("artifact_type") or "")
         if mismatch_type == "schema_artifact_type_mismatch":
-            schema_path = repo_root / "contracts" / "schemas" / f"{artifact_type}.schema.json"
-            payload = json.loads(schema_path.read_text(encoding="utf-8"))
-            payload.setdefault("properties", {}).setdefault("artifact_type", {})["const"] = artifact_type
-            schema_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-            touched_files.add(str(schema_path.relative_to(repo_root)))
+            candidate_files.add(f"contracts/schemas/{artifact_type}.schema.json")
             actions.append({"action": "set_schema_artifact_type_const", "artifact_type": artifact_type})
         elif mismatch_type == "example_artifact_type_mismatch":
-            example_path = repo_root / "contracts" / "examples" / f"{artifact_type}.json"
-            if not example_path.exists():
-                example_path = repo_root / "contracts" / "examples" / f"{artifact_type}.example.json"
-            payload = json.loads(example_path.read_text(encoding="utf-8"))
-            payload["artifact_type"] = artifact_type
-            example_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-            touched_files.add(str(example_path.relative_to(repo_root)))
+            candidate_files.add(f"contracts/examples/{artifact_type}.json")
             actions.append({"action": "set_example_artifact_type", "artifact_type": artifact_type})
         elif mismatch_type == "manifest_example_path_mismatch":
-            expected_path = f"contracts/examples/{artifact_type}.json"
-            if not (repo_root / expected_path).exists():
-                expected_path = f"contracts/examples/{artifact_type}.example.json"
-            for row in standards_manifest.get("contracts", []):
-                if isinstance(row, dict) and row.get("artifact_type") == artifact_type:
-                    row["example_path"] = expected_path
-                    touched_files.add("contracts/standards-manifest.json")
-                    actions.append({"action": "set_manifest_example_path", "artifact_type": artifact_type})
-                    break
+            candidate_files.add("contracts/standards-manifest.json")
+            actions.append({"action": "set_manifest_example_path", "artifact_type": artifact_type})
         elif mismatch_type == "example_missing_required_fields":
-            example_path = repo_root / "contracts" / "examples" / f"{artifact_type}.json"
-            if not example_path.exists():
-                example_path = repo_root / "contracts" / "examples" / f"{artifact_type}.example.json"
-            payload = json.loads(example_path.read_text(encoding="utf-8"))
             fields = [str(field) for field in mismatch.get("fields", []) if isinstance(field, str)]
-            if "artifact_type" in fields:
-                payload["artifact_type"] = artifact_type
-            example_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-            touched_files.add(str(example_path.relative_to(repo_root)))
+            candidate_files.add(f"contracts/examples/{artifact_type}.json")
             actions.append({"action": "fill_example_required_fields", "artifact_type": artifact_type, "fields": fields})
         elif mismatch_type == "manifest_entry_missing":
-            expected_path = f"contracts/examples/{artifact_type}.json"
-            if not (repo_root / expected_path).exists():
-                expected_path = f"contracts/examples/{artifact_type}.example.json"
-            standards_manifest.setdefault("contracts", []).append(
-                {
-                    "artifact_type": artifact_type,
-                    "artifact_class": "coordination",
-                    "schema_version": "1.0.0",
-                    "status": "proposed",
-                    "intended_consumers": ["spectrum-systems"],
-                    "introduced_in": str(standards_manifest.get("artifact_version") or "1.0.0"),
-                    "last_updated_in": str(standards_manifest.get("artifact_version") or "1.0.0"),
-                    "example_path": expected_path,
-                    "notes": "TPA deterministic contract sync auto-repair manifest registration.",
-                }
-            )
-            touched_files.add("contracts/standards-manifest.json")
+            candidate_files.add("contracts/standards-manifest.json")
             actions.append({"action": "append_manifest_entry", "artifact_type": artifact_type})
 
-    if "contracts/standards-manifest.json" in touched_files:
-        standards_manifest["contracts"] = sorted(
-            [row for row in standards_manifest.get("contracts", []) if isinstance(row, dict)],
-            key=lambda row: str(row.get("artifact_type") or ""),
-        )
-        standards_manifest_path.write_text(json.dumps(standards_manifest, indent=2) + "\n", encoding="utf-8")
-
-    post_check = run_tpa_contract_sync_check(repo_root=repo_root, changed_paths=list(touched_files), created_at=created_at)
-    remaining_mismatches = list(post_check.get("mismatches") or [])
-    repaired = bool(actions) and not remaining_mismatches
+    remaining_mismatches = mismatches
+    handoff_ready = bool(check_record.get("auto_repair_eligible")) and bool(actions)
     result_seed = {
         "actions": actions,
-        "files_touched": sorted(touched_files),
+        "candidate_files": sorted(candidate_files),
         "remaining_mismatches": remaining_mismatches,
     }
     return {
@@ -1013,15 +963,15 @@ def run_tpa_contract_sync_autorepair(*, repo_root: Path, check_record: dict[str,
             "auto_repair_eligible": bool(check_record.get("auto_repair_eligible")),
             "created_at": created_at,
         },
-        "repair_result_record": {
-            "artifact_type": "tpa_contract_sync_repair_result_record",
+        "repair_handoff_record": {
+            "artifact_type": "tpa_contract_sync_repair_handoff_record",
             "artifact_id": _tpa_hash_id("TPA-SYNC-RESULT", result_seed),
             "check_artifact_id": check_record.get("artifact_id"),
             "repair_plan_artifact_id": _tpa_hash_id("TPA-SYNC-PLAN", {"mismatches": mismatches}),
-            "repaired": repaired,
-            "files_touched": sorted(touched_files),
+            "handoff_ready": handoff_ready,
+            "candidate_files": sorted(candidate_files),
             "remaining_mismatches": remaining_mismatches,
-            "escalation_required": bool(remaining_mismatches),
+            "escalation_required": not handoff_ready,
             "created_at": created_at,
         },
     }
@@ -1840,7 +1790,7 @@ def main() -> int:
     tpa_contract_sync_check_path = output_dir / "tpa_contract_sync_check_record.json"
     tpa_contract_sync_check_path.write_text(json.dumps(tpa_contract_sync_check, indent=2) + "\n", encoding="utf-8")
     tpa_contract_sync_repair_plan: dict[str, Any] | None = None
-    tpa_contract_sync_repair_result: dict[str, Any] | None = None
+    tpa_contract_sync_repair_handoff: dict[str, Any] | None = None
     if tpa_contract_sync_check["mismatches"] and tpa_contract_sync_check["auto_repair_eligible"]:
         repair_bundle = run_tpa_contract_sync_autorepair(
             repo_root=REPO_ROOT,
@@ -1848,20 +1798,13 @@ def main() -> int:
             created_at=_utc_now(),
         )
         tpa_contract_sync_repair_plan = repair_bundle["repair_plan_record"]
-        tpa_contract_sync_repair_result = repair_bundle["repair_result_record"]
+        tpa_contract_sync_repair_handoff = repair_bundle["repair_handoff_record"]
         validate_artifact(tpa_contract_sync_repair_plan, "tpa_contract_sync_repair_plan_record")
-        validate_artifact(tpa_contract_sync_repair_result, "tpa_contract_sync_repair_result_record")
+        validate_artifact(tpa_contract_sync_repair_handoff, "tpa_contract_sync_repair_handoff_record")
         tpa_contract_sync_repair_plan_path = output_dir / "tpa_contract_sync_repair_plan_record.json"
-        tpa_contract_sync_repair_result_path = output_dir / "tpa_contract_sync_repair_result_record.json"
+        tpa_contract_sync_repair_handoff_path = output_dir / "tpa_contract_sync_repair_handoff_record.json"
         tpa_contract_sync_repair_plan_path.write_text(json.dumps(tpa_contract_sync_repair_plan, indent=2) + "\n", encoding="utf-8")
-        tpa_contract_sync_repair_result_path.write_text(json.dumps(tpa_contract_sync_repair_result, indent=2) + "\n", encoding="utf-8")
-        tpa_contract_sync_check = run_tpa_contract_sync_check(
-            repo_root=REPO_ROOT,
-            changed_paths=detection.changed_paths + list(tpa_contract_sync_repair_result.get("files_touched", [])),
-            created_at=_utc_now(),
-        )
-        validate_artifact(tpa_contract_sync_check, "tpa_contract_sync_check_record")
-        tpa_contract_sync_check_path.write_text(json.dumps(tpa_contract_sync_check, indent=2) + "\n", encoding="utf-8")
+        tpa_contract_sync_repair_handoff_path.write_text(json.dumps(tpa_contract_sync_repair_handoff, indent=2) + "\n", encoding="utf-8")
     preflight_mode = (
         "commit_range_inspection"
         if not list(getattr(args, "changed_path", []) or [])
@@ -2070,7 +2013,7 @@ def main() -> int:
             "tpa_contract_sync_check_record": tpa_contract_sync_check,
             "tpa_contract_sync_check_record_ref": str(tpa_contract_sync_check_path),
             "tpa_contract_sync_repair_plan_record": tpa_contract_sync_repair_plan,
-            "tpa_contract_sync_repair_result_record": tpa_contract_sync_repair_result,
+            "tpa_contract_sync_repair_handoff_record": tpa_contract_sync_repair_handoff,
         }
     elif not surface_classification["required_paths"]:
         report = {
@@ -2110,7 +2053,7 @@ def main() -> int:
             "tpa_contract_sync_check_record": tpa_contract_sync_check,
             "tpa_contract_sync_check_record_ref": str(tpa_contract_sync_check_path),
             "tpa_contract_sync_repair_plan_record": tpa_contract_sync_repair_plan,
-            "tpa_contract_sync_repair_result_record": tpa_contract_sync_repair_result,
+            "tpa_contract_sync_repair_handoff_record": tpa_contract_sync_repair_handoff,
         }
     else:
         if changed_contract_paths:
@@ -2211,7 +2154,7 @@ def main() -> int:
             "tpa_contract_sync_check_record": tpa_contract_sync_check,
             "tpa_contract_sync_check_record_ref": str(tpa_contract_sync_check_path),
             "tpa_contract_sync_repair_plan_record": tpa_contract_sync_repair_plan,
-            "tpa_contract_sync_repair_result_record": tpa_contract_sync_repair_result,
+            "tpa_contract_sync_repair_handoff_record": tpa_contract_sync_repair_handoff,
         }
     if is_pull_request_event and report.get("status") == "passed" and not pytest_execution_log:
         fallback_pytest_targets = _resolve_existing_pytest_targets(_GOVERNED_PR_FALLBACK_PYTEST_TARGETS)
@@ -2497,13 +2440,13 @@ def main() -> int:
         report["recommended_repair_areas"] = sorted(
             set(report.get("recommended_repair_areas", []) + ["pytest discovery/collection inventory integrity gate"])
         )
-    if tpa_contract_sync_check.get("mismatches"):
+    if tpa_contract_sync_check.get("mismatches") and not bool((tpa_contract_sync_repair_handoff or {}).get("handoff_ready")):
         report["status"] = "failed"
         report["invariant_violations"] = sorted(
-            set(report.get("invariant_violations", []) + ["TPA_CONTRACT_SYNC_MISMATCH"])
+            set(report.get("invariant_violations", []) + ["TPA_CONTRACT_SYNC_INELIGIBLE_MISMATCH"])
         )
         report["recommended_repair_areas"] = sorted(
-            set(report.get("recommended_repair_areas", []) + ["TPA contract sync auto-repair or manual contract alignment"])
+            set(report.get("recommended_repair_areas", []) + ["TPA contract sync handoff required for authorized repair owner"])
         )
     cohesion_decision = (trust_spine_cohesion or {}).get("overall_decision") if isinstance(trust_spine_cohesion, dict) else None
     report["trust_spine_evidence_cohesion"] = trust_spine_cohesion
@@ -2608,7 +2551,7 @@ def main() -> int:
             "preflight_block_diagnosis_record": str(output_dir / "preflight_block_diagnosis_record.json"),
             "preflight_repair_plan_record": str(output_dir / "preflight_repair_plan_record.json"),
             "failure_repair_candidate_artifact": str(output_dir / "failure_repair_candidate_artifact.json"),
-            "preflight_repair_result_record": str(output_dir / "preflight_repair_result_record.json"),
+            "preflight_repair_handoff_record": str(output_dir / "preflight_repair_handoff_record.json"),
             "failure_class": str(bundle["diagnosis"]["failure_class"]),
             "eligibility_decision": str(bundle["plan"]["eligibility_decision"]),
         }
