@@ -1,3 +1,7 @@
+/**
+ * Type definitions for MVP-6: Extraction Eval Gate
+ */
+
 export interface ExtractionEvalGateResult {
   success: boolean;
   eval_results?: any[];
