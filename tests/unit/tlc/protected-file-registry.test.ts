@@ -43,8 +43,7 @@ describe("ProtectedFileRegistry", () => {
       expect(registry.isProtected("tests/unit/tlc/protected-file-registry.test.ts").protected).toBe(false);
     });
 
-    test("check_protected_files.py script is NOT protected (bootstrap safety)", () => {
-      // The script ships in feature PRs. Only the workflow that wires it into CI is protected.
+    test("check_protected_files.py script is NOT protected (can ship in feature PR)", () => {
       expect(registry.isProtected("scripts/check_protected_files.py").protected).toBe(false);
     });
 
@@ -52,7 +51,7 @@ describe("ProtectedFileRegistry", () => {
       expect(registry.isProtected("scripts/install_hooks.sh").protected).toBe(false);
     });
 
-    test("docs and roadmap files are not protected", () => {
+    test("regular docs files are not protected", () => {
       expect(registry.isProtected("docs/roadmap/phase-5-completion-summary.md").protected).toBe(false);
     });
   });

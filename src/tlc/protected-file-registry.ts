@@ -1,14 +1,14 @@
 /**
  * Protected File Registry
  *
- * Source of truth for which files require a governance PR to modify.
- * Distinguishes two violation classes:
- * - SHADOW_OWNERSHIP_OVERLAP: files that define system behavior (CLAUDE.md, CI, schemas)
- * - PROTECTED_AUTHORITY_VIOLATION: files that declare governance direction (roadmaps, ADRs, architecture)
+ * Source of truth for which files require a [GOVERNANCE] PR to modify.
  *
- * NOTE: scripts/check_protected_files.py is NOT in this list.
- * The script itself is safe to ship in a feature PR.
- * Only .github/workflows/ (which wires the script into CI) is protected.
+ * Two violation classes:
+ * - SHADOW_OWNERSHIP_OVERLAP: system behavior files
+ * - PROTECTED_AUTHORITY_VIOLATION: governance direction files
+ *
+ * Note: This file itself is safe to ship in a feature PR.
+ * The CI workflow that activates it requires a [GOVERNANCE] PR.
  */
 
 export type ViolationClass = "SHADOW_OWNERSHIP_OVERLAP" | "PROTECTED_AUTHORITY_VIOLATION";
@@ -23,11 +23,10 @@ export interface ProtectedFile {
 }
 
 export const PROTECTED_FILES: ProtectedFile[] = [
-  // === SHADOW_OWNERSHIP_OVERLAP paths ===
-  // Files that define system behavior and cannot be self-modified
+  // System behavior files (SHADOW_OWNERSHIP_OVERLAP)
   {
     path: "CLAUDE.md",
-    reason: "Agent authority document — defines agent behavior and system standards",
+    reason: "Agent configuration document",
     owner: "system-authority",
     change_requires: "governance_pr",
     violation_class: "SHADOW_OWNERSHIP_OVERLAP",
@@ -35,7 +34,7 @@ export const PROTECTED_FILES: ProtectedFile[] = [
   },
   {
     path: "AGENTS.md",
-    reason: "Agent standards document — injected agent memory per Canonical Harness spec",
+    reason: "Agent standards document",
     owner: "system-authority",
     change_requires: "governance_pr",
     violation_class: "SHADOW_OWNERSHIP_OVERLAP",
@@ -43,15 +42,15 @@ export const PROTECTED_FILES: ProtectedFile[] = [
   },
   {
     path: "scripts/run_system_registry_guard.py",
-    reason: "Registry guard enforcement — cannot be self-modified via feature PR",
+    reason: "Registry guard — requires [GOVERNANCE] PR to modify",
     owner: "system-authority",
     change_requires: "governance_pr",
     violation_class: "SHADOW_OWNERSHIP_OVERLAP",
-    example_fix: "Open a [GOVERNANCE] PR to modify the registry guard",
+    example_fix: "Open a [GOVERNANCE] PR",
   },
   {
     path: ".github/workflows/",
-    reason: "CI/CD pipelines — changes affect all builds and enforcement gates",
+    reason: "CI/CD pipeline definitions",
     owner: "system-authority",
     change_requires: "governance_pr",
     violation_class: "SHADOW_OWNERSHIP_OVERLAP",
@@ -59,18 +58,16 @@ export const PROTECTED_FILES: ProtectedFile[] = [
   },
   {
     path: "contracts/schemas/",
-    reason: "Core artifact schemas — changes can break backward compatibility",
+    reason: "Artifact schema definitions",
     owner: "schema-registry",
     change_requires: "governance_pr",
     violation_class: "SHADOW_OWNERSHIP_OVERLAP",
     example_fix: "Open a [GOVERNANCE] PR with schema migration plan",
   },
-
-  // === PROTECTED_AUTHORITY_VIOLATION paths ===
-  // Files that declare governance direction and require explicit authorship + ratification
+  // Governance direction files (PROTECTED_AUTHORITY_VIOLATION)
   {
     path: "docs/roadmaps/",
-    reason: "System roadmaps declare governance direction — require explicit authorship + ratification",
+    reason: "Roadmap documents",
     owner: "governance-authority",
     change_requires: "governance_pr",
     violation_class: "PROTECTED_AUTHORITY_VIOLATION",
@@ -78,7 +75,7 @@ export const PROTECTED_FILES: ProtectedFile[] = [
   },
   {
     path: "docs/architecture/",
-    reason: "Architecture decisions are authority documents — require ADR process",
+    reason: "Architecture decision documents",
     owner: "governance-authority",
     change_requires: "governance_pr",
     violation_class: "PROTECTED_AUTHORITY_VIOLATION",
@@ -86,7 +83,7 @@ export const PROTECTED_FILES: ProtectedFile[] = [
   },
   {
     path: "docs/adr/",
-    reason: "Architectural Decision Records — immutable authority once ratified",
+    reason: "Architectural Decision Records",
     owner: "governance-authority",
     change_requires: "governance_pr",
     violation_class: "PROTECTED_AUTHORITY_VIOLATION",
@@ -95,65 +92,48 @@ export const PROTECTED_FILES: ProtectedFile[] = [
 ];
 
 export class ProtectedFileRegistry {
-  private protectedPaths: Map<string, ProtectedFile> = new Map();
+  private entries: ProtectedFile[];
 
-  constructor() {
-    for (const file of PROTECTED_FILES) {
-      this.protectedPaths.set(file.path, file);
-    }
+  constructor(entries: ProtectedFile[] = PROTECTED_FILES) {
+    this.entries = entries;
   }
 
-  /**
-   * Check if a file path is protected
-   * Supports both exact paths and directory prefixes
-   */
   isProtected(filePath: string): { protected: boolean; file?: ProtectedFile } {
-    // Exact match
-    const exactMatch = this.protectedPaths.get(filePath);
-    if (exactMatch) {
-      return { protected: true, file: exactMatch };
-    }
-
-    // Directory prefix match
-    for (const [protectedPath, protectedFile] of this.protectedPaths.entries()) {
-      if (protectedPath.endsWith("/") && filePath.startsWith(protectedPath)) {
-        return { protected: true, file: protectedFile };
+    for (const entry of this.entries) {
+      if (entry.path.endsWith("/")) {
+        if (filePath.startsWith(entry.path)) {
+          return { protected: true, file: entry };
+        }
+      } else {
+        if (filePath === entry.path) {
+          return { protected: true, file: entry };
+        }
       }
     }
-
     return { protected: false };
   }
 
-  /**
-   * Validate a list of changed files
-   * Returns violations grouped by violation class
-   */
   validateChangedFiles(changedFiles: string[]): {
-    violations: Array<{ file: string; reason: string; change_requires: string; violation_class: ViolationClass; example_fix: string }>;
-    reason_codes: ViolationClass[];
+    violations: Array<{
+      file: string;
+      reason: string;
+      change_requires: string;
+      violation_class: ViolationClass;
+      example_fix: string;
+    }>;
     clean: boolean;
   } {
-    const violations: Array<{ file: string; reason: string; change_requires: string; violation_class: ViolationClass; example_fix: string }> = [];
-    const violationClassesFound = new Set<ViolationClass>();
+    const violations = changedFiles
+      .map((f) => ({ file: f, check: this.isProtected(f) }))
+      .filter((x) => x.check.protected)
+      .map((x) => ({
+        file: x.file,
+        reason: x.check.file!.reason,
+        change_requires: x.check.file!.change_requires,
+        violation_class: x.check.file!.violation_class,
+        example_fix: x.check.file!.example_fix,
+      }));
 
-    for (const file of changedFiles) {
-      const check = this.isProtected(file);
-      if (check.protected && check.file) {
-        violations.push({
-          file,
-          reason: check.file.reason,
-          change_requires: check.file.change_requires,
-          violation_class: check.file.violation_class,
-          example_fix: check.file.example_fix,
-        });
-        violationClassesFound.add(check.file.violation_class);
-      }
-    }
-
-    return {
-      violations,
-      reason_codes: Array.from(violationClassesFound),
-      clean: violations.length === 0,
-    };
+    return { violations, clean: violations.length === 0 };
   }
 }
