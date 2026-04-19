@@ -6289,7 +6289,7 @@
     },
     {
       "artifact_type": "generated_eval_case",
-      "artifact_class": "evaluation",
+      "artifact_class": "work",
       "schema_version": "1.0.0",
       "status": "proposed",
       "intended_consumers": [
