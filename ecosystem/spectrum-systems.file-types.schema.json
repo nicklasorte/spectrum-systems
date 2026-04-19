@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Spectrum Systems Governance Boundary File Types",
+  "description": "Defines the governance boundary for files permitted in the spectrum-systems repo. This repo is governance-only: contracts, schemas, policies, tests, and docs.",
+  "version": "1.0.0",
+  "allowed_extensions": ["md", "json", "yaml", "yml", "ts", "toml", "txt"],
+  "allowed_root_directories": [
+    "contracts/",
+    "schemas/",
+    "governance/",
+    "docs/",
+    "ecosystem/",
+    "tests/",
+    ".github/"
+  ],
+  "boundary_violations": [
+    "spectrum_systems/",
+    "src/mvp-integration/",
+    "src/observability/",
+    "control_plane/",
+    "working_paper_generator/"
+  ],
+  "notes": "Files in boundary_violations should be migrated to spectrum-pipeline-engine. See docs/phase-16-migration-guide.md."
+}

@@ -1,11 +1,15 @@
 [
   {
+    "repo": "nicklasorte/spectrum-systems",
     "system_id": "spectrum-systems",
     "repo_name": "spectrum-systems",
     "repo_url": "https://github.com/nicklasorte/spectrum-systems",
     "repo_type": "governance",
+    "description": "Governed artifact pipeline — governance layer",
     "system_role": "Constitutional control plane for contracts, schemas, prompts, and governance standards.",
     "status": "active",
+    "maturity": "2.5",
+    "target_maturity": "4.0",
     "maturity_level": 4,
     "primary_loop_alignment": "governance",
     "consumes_artifact_types": [
@@ -22,12 +26,16 @@
     "interface_standard_expected": false
   },
   {
+    "repo": "nicklasorte/spectrum-data-lake",
     "system_id": "spectrum-data-lake",
     "repo_name": "spectrum-data-lake",
     "repo_url": "https://github.com/nicklasorte/spectrum-data-lake",
     "repo_type": "data_lake",
+    "description": "Governed storage, indexing, and lineage sidecars for ecosystem artifacts.",
     "system_role": "Governed storage, indexing, and lineage sidecars for ecosystem artifacts.",
     "status": "experimental",
+    "maturity": "1.5",
+    "target_maturity": "4.0",
     "maturity_level": 5,
     "primary_loop_alignment": "cross_loop",
     "consumes_artifact_types": [
@@ -48,12 +56,16 @@
     "interface_standard_expected": false
   },
   {
+    "repo": "nicklasorte/meeting-minutes-engine",
     "system_id": "meeting-minutes-engine",
     "repo_name": "meeting-minutes-engine",
     "repo_url": "https://github.com/nicklasorte/meeting-minutes-engine",
     "repo_type": "operational_engine",
+    "description": "Transforms transcripts and agendas into governed meeting minutes and action capture.",
     "system_role": "Transforms transcripts and agendas into governed meeting minutes and action capture.",
     "status": "active",
+    "maturity": "3.0",
+    "target_maturity": "4.0",
     "maturity_level": 5,
     "primary_loop_alignment": "coordination",
     "consumes_artifact_types": [
@@ -72,12 +84,16 @@
     "interface_standard_expected": true
   },
   {
+    "repo": "nicklasorte/working-paper-review-engine",
     "system_id": "working-paper-review-engine",
     "repo_name": "working-paper-review-engine",
     "repo_url": "https://github.com/nicklasorte/working-paper-review-engine",
     "repo_type": "operational_engine",
+    "description": "Generates reviewer comment sets from governed working paper inputs.",
     "system_role": "Generates reviewer comment sets from governed working paper inputs.",
     "status": "active",
+    "maturity": "3.5",
+    "target_maturity": "4.0",
     "maturity_level": 6,
     "primary_loop_alignment": "document_production",
     "consumes_artifact_types": [
@@ -95,12 +111,16 @@
     "interface_standard_expected": true
   },
   {
+    "repo": "nicklasorte/comment-resolution-engine",
     "system_id": "comment-resolution-engine",
     "repo_name": "comment-resolution-engine",
     "repo_url": "https://github.com/nicklasorte/comment-resolution-engine",
     "repo_type": "operational_engine",
+    "description": "Adjudicates reviewer comments and maintains governed resolution matrices.",
     "system_role": "Adjudicates reviewer comments and maintains governed resolution matrices.",
     "status": "active",
+    "maturity": "3.5",
+    "target_maturity": "4.0",
     "maturity_level": 6,
     "primary_loop_alignment": "document_production",
     "consumes_artifact_types": [
@@ -121,12 +141,16 @@
     "interface_standard_expected": true
   },
   {
+    "repo": "nicklasorte/docx-comment-injection-engine",
     "system_id": "docx-comment-injection-engine",
     "repo_name": "docx-comment-injection-engine",
     "repo_url": "https://github.com/nicklasorte/docx-comment-injection-engine",
     "repo_type": "operational_engine",
+    "description": "Applies adjudicated comments into governed DOCX outputs with provenance.",
     "system_role": "Applies adjudicated comments into governed DOCX outputs with provenance.",
     "status": "active",
+    "maturity": "3.5",
+    "target_maturity": "4.0",
     "maturity_level": 6,
     "primary_loop_alignment": "document_production",
     "consumes_artifact_types": [
@@ -145,12 +169,16 @@
     "interface_standard_expected": true
   },
   {
+    "repo": "nicklasorte/spectrum-pipeline-engine",
     "system_id": "spectrum-pipeline-engine",
     "repo_name": "spectrum-pipeline-engine",
     "repo_url": "https://github.com/nicklasorte/spectrum-pipeline-engine",
     "repo_type": "orchestration",
+    "description": "Sequences governed engines, aligns contract versions, and emits pipeline manifests.",
     "system_role": "Sequences governed engines, aligns contract versions, and emits pipeline manifests and readiness bundles.",
     "status": "planned",
+    "maturity": "0.5",
+    "target_maturity": "4.0",
     "maturity_level": 7,
     "primary_loop_alignment": "cross_loop",
     "consumes_artifact_types": [
@@ -171,12 +199,16 @@
     "interface_standard_expected": true
   },
   {
+    "repo": "nicklasorte/spectrum-program-advisor",
     "system_id": "spectrum-program-advisor",
     "repo_name": "spectrum-program-advisor",
     "repo_url": "https://github.com/nicklasorte/spectrum-program-advisor",
     "repo_type": "advisory",
+    "description": "Produces advisory briefs and next-best-action memos from readiness bundles.",
     "system_role": "Produces advisory briefs and next-best-action memos from readiness bundles and pipeline outputs.",
     "status": "experimental",
+    "maturity": "1.0",
+    "target_maturity": "4.0",
     "maturity_level": 9,
     "primary_loop_alignment": "cross_loop",
     "consumes_artifact_types": [
@@ -199,12 +231,16 @@
     "interface_standard_expected": false
   },
   {
+    "repo": "nicklasorte/system-factory",
     "system_id": "system-factory",
     "repo_name": "system-factory",
     "repo_url": "https://github.com/nicklasorte/system-factory",
     "repo_type": "factory",
+    "description": "Scaffolds new governed system repositories with pinned contracts and manifests.",
     "system_role": "Scaffolds new governed system repositories with pinned contracts and manifests.",
     "status": "active",
+    "maturity": "2.0",
+    "target_maturity": "4.0",
     "maturity_level": 3,
     "primary_loop_alignment": "governance",
     "consumes_artifact_types": [

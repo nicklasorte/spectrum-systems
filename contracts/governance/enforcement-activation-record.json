@@ -1,0 +1,27 @@
+{
+  "artifact_type": "governance_activation_record",
+  "version": "1.0",
+  "description": "Artifact recording that Phase 1 governance-guard is active for the spectrum-systems repo.",
+  "activation_date": "2026-04-19",
+  "activated_by": "phase-16-22-implementation",
+  "scope": [
+    "contracts/",
+    "schemas/",
+    "governance/",
+    "docs/",
+    "ecosystem/",
+    "tests/",
+    ".github/"
+  ],
+  "active_checks": [
+    "boundary_file_type_check",
+    "protected_authority_seam_check",
+    "schema_ownership_check",
+    "shadow_ownership_overlap_check",
+    "cross_repo_scan_readiness_check"
+  ],
+  "governance_guard_status": "active",
+  "status": "active",
+  "next_review_date": "2026-07-19",
+  "notes": "Phase 1 governance-guard activates boundary scanning and authority seam checks for this repo."
+}

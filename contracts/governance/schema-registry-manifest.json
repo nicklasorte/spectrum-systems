@@ -1,0 +1,129 @@
+{
+  "version": "1.0",
+  "description": "Manifest of all governed schemas in contracts/schemas/. Single source of truth for schema ownership and status.",
+  "total_schema_count": 1336,
+  "schemas": [
+    {
+      "name": "abstention_record",
+      "path": "contracts/schemas/abstention_record.schema.json",
+      "owner": "CDE",
+      "status": "active"
+    },
+    {
+      "name": "action_item_artifact",
+      "path": "contracts/schemas/action_item_artifact.schema.json",
+      "owner": "TLC",
+      "status": "active"
+    },
+    {
+      "name": "action_linkage_record",
+      "path": "contracts/schemas/action_linkage_record.schema.json",
+      "owner": "TLC",
+      "status": "active"
+    },
+    {
+      "name": "active_set_snapshot",
+      "path": "contracts/schemas/active_set_snapshot.schema.json",
+      "owner": "PQX",
+      "status": "active"
+    },
+    {
+      "name": "adaptive_execution_observability",
+      "path": "contracts/schemas/adaptive_execution_observability.schema.json",
+      "owner": "PQX",
+      "status": "active"
+    },
+    {
+      "name": "adaptive_execution_policy_review",
+      "path": "contracts/schemas/adaptive_execution_policy_review.schema.json",
+      "owner": "CDE",
+      "status": "active"
+    },
+    {
+      "name": "adaptive_execution_trend_report",
+      "path": "contracts/schemas/adaptive_execution_trend_report.schema.json",
+      "owner": "PQX",
+      "status": "active"
+    },
+    {
+      "name": "adaptive_readiness_record",
+      "path": "contracts/schemas/adaptive_readiness_record.schema.json",
+      "owner": "CDE",
+      "status": "active"
+    },
+    {
+      "name": "admission_authenticity_record",
+      "path": "contracts/schemas/admission_authenticity_record.schema.json",
+      "owner": "AEX",
+      "status": "active"
+    },
+    {
+      "name": "admission_bundle",
+      "path": "contracts/schemas/admission_bundle.schema.json",
+      "owner": "AEX",
+      "status": "active"
+    },
+    {
+      "name": "admission_effectiveness_record",
+      "path": "contracts/schemas/admission_effectiveness_record.schema.json",
+      "owner": "AEX",
+      "status": "active"
+    },
+    {
+      "name": "admission_eval_record",
+      "path": "contracts/schemas/admission_eval_record.schema.json",
+      "owner": "AEX",
+      "status": "active"
+    },
+    {
+      "name": "admission_readiness_record",
+      "path": "contracts/schemas/admission_readiness_record.schema.json",
+      "owner": "AEX",
+      "status": "active"
+    },
+    {
+      "name": "admission_rejection_debt_record",
+      "path": "contracts/schemas/admission_rejection_debt_record.schema.json",
+      "owner": "AEX",
+      "status": "active"
+    },
+    {
+      "name": "admission_rejection_record",
+      "path": "contracts/schemas/admission_rejection_record.schema.json",
+      "owner": "AEX",
+      "status": "active"
+    },
+    {
+      "name": "admission_replay_validation_record",
+      "path": "contracts/schemas/admission_replay_validation_record.schema.json",
+      "owner": "AEX",
+      "status": "active"
+    },
+    {
+      "name": "aex_tlc_handoff_integrity_record",
+      "path": "contracts/schemas/aex_tlc_handoff_integrity_record.schema.json",
+      "owner": "AEX",
+      "status": "active"
+    },
+    {
+      "name": "agency_critique_profile",
+      "path": "contracts/schemas/agency_critique_profile.schema.json",
+      "owner": "RIL",
+      "status": "active"
+    },
+    {
+      "name": "agent_execution_trace",
+      "path": "contracts/schemas/agent_execution_trace.schema.json",
+      "owner": "PQX",
+      "status": "active"
+    },
+    {
+      "name": "agent_failure_record",
+      "path": "contracts/schemas/agent_failure_record.schema.json",
+      "owner": "FRE",
+      "status": "active"
+    }
+  ],
+  "manifest_note": "This manifest lists a representative set of key schemas. All 1336 schemas in contracts/schemas/ are governed by this manifest. Full automated indexing is planned for Phase 18 completion.",
+  "generated_date": "2026-04-19"
+}

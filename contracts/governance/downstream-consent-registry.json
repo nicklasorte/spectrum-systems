@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "description": "Registry of downstream repos and their consent status for cross-repo governance scanning.",
+  "repos": [
+    {
+      "repo": "nicklasorte/spectrum-systems",
+      "consent_status": "granted",
+      "waiver_expiry": null,
+      "contact": "governance@nicklasorte",
+      "notes": "Governance repo — consent implicit in governance charter."
+    },
+    {
+      "repo": "nicklasorte/spectrum-data-lake",
+      "consent_status": "pending",
+      "waiver_expiry": null,
+      "contact": "data-lake-owner@nicklasorte",
+      "notes": "Awaiting team acknowledgement of Phase 19 scan policy."
+    },
+    {
+      "repo": "nicklasorte/meeting-minutes-engine",
+      "consent_status": "pending",
+      "waiver_expiry": null,
+      "contact": "meeting-minutes-owner@nicklasorte",
+      "notes": "Awaiting team acknowledgement of Phase 19 scan policy."
+    },
+    {
+      "repo": "nicklasorte/working-paper-review-engine",
+      "consent_status": "pending",
+      "waiver_expiry": null,
+      "contact": "wpr-owner@nicklasorte",
+      "notes": "Awaiting team acknowledgement of Phase 19 scan policy."
+    },
+    {
+      "repo": "nicklasorte/comment-resolution-engine",
+      "consent_status": "pending",
+      "waiver_expiry": null,
+      "contact": "cre-owner@nicklasorte",
+      "notes": "Awaiting team acknowledgement of Phase 19 scan policy."
+    },
+    {
+      "repo": "nicklasorte/docx-comment-injection-engine",
+      "consent_status": "pending",
+      "waiver_expiry": null,
+      "contact": "dci-owner@nicklasorte",
+      "notes": "Awaiting team acknowledgement of Phase 19 scan policy."
+    },
+    {
+      "repo": "nicklasorte/spectrum-pipeline-engine",
+      "consent_status": "waived",
+      "waiver_expiry": "2026-12-31",
+      "contact": "pipeline-owner@nicklasorte",
+      "notes": "Waived until repo reaches active status."
+    },
+    {
+      "repo": "nicklasorte/spectrum-program-advisor",
+      "consent_status": "pending",
+      "waiver_expiry": null,
+      "contact": "advisor-owner@nicklasorte",
+      "notes": "Awaiting team acknowledgement of Phase 19 scan policy."
+    },
+    {
+      "repo": "nicklasorte/system-factory",
+      "consent_status": "pending",
+      "waiver_expiry": null,
+      "contact": "factory-owner@nicklasorte",
+      "notes": "Awaiting team acknowledgement of Phase 19 scan policy."
+    }
+  ]
+}
