@@ -1,5 +1,5 @@
 {
-  "artifact_type": "generated_eval_staging_record",
+  "artifact_type": "generated_eval_candidate_record",
   "artifact_id": "GES-E2F404E36AAE91FA",
   "generated_eval_artifact_id": "GEC-4B9A9F9E26A54D4C",
   "source_failure_artifact_id": "FAIL-MISSING-EVAL-001",

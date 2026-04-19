@@ -1,10 +1,10 @@
 {
-  "artifact_type": "promotion_recommendation_record",
+  "artifact_type": "generated_eval_candidate_assessment_record",
   "artifact_id": "PRR-E2F404E36AAE91FA",
   "generated_eval_artifact_id": "GEC-4B9A9F9E26A54D4C",
   "reason_code": "missing_required_eval_result",
   "occurrence_count": 2,
-  "recommendation": "promote",
-  "justification": "occurrence_count=2 meets threshold=2; recommendation is promote.",
+  "recommendation": "priority_review",
+  "justification": "occurrence_count=2 meets threshold=2; recommendation is priority_review.",
   "created_at": "2026-04-19T00:05:00Z"
 }

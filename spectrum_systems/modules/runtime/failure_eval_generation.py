@@ -327,7 +327,7 @@ def _admitted_entries(
     return admitted
 
 
-def build_generated_eval_staging_records(
+def build_generated_eval_candidate_records(
     generated_eval_cases_with_admission: Sequence[Dict[str, Any]],
 ) -> list[Dict[str, Any]]:
     """Aggregate admitted generated eval cases into deterministic staging records."""
@@ -338,7 +338,7 @@ def build_generated_eval_staging_records(
         scenario_name = _as_nonempty_string(generated_eval_case.get("scenario_name"), "unknown_scenario")
         grouped.setdefault((reason_code, scenario_name), []).append(generated_eval_case)
 
-    staging_records: list[Dict[str, Any]] = []
+    candidate_records: list[Dict[str, Any]] = []
     for reason_code, scenario_name in sorted(grouped.keys()):
         cases = grouped[(reason_code, scenario_name)]
         sorted_cases = sorted(cases, key=lambda case: _as_nonempty_string(case.get("artifact_id"), ""))
@@ -352,7 +352,7 @@ def build_generated_eval_staging_records(
         last_seen_at = timestamps[-1] if timestamps else "1970-01-01T00:00:00Z"
 
         staging_record = {
-            "artifact_type": "generated_eval_staging_record",
+            "artifact_type": "generated_eval_candidate_record",
             "artifact_id": _hash_id(
                 "GES",
                 {
@@ -369,14 +369,14 @@ def build_generated_eval_staging_records(
             "last_seen_at": last_seen_at,
             "created_at": first_seen_at,
         }
-        Draft202012Validator(load_schema("generated_eval_staging_record")).validate(staging_record)
-        staging_records.append(staging_record)
+        Draft202012Validator(load_schema("generated_eval_candidate_record")).validate(staging_record)
+        candidate_records.append(staging_record)
 
-    return staging_records
+    return candidate_records
 
 
-def build_generated_eval_review_queue(
-    staging_records: Sequence[Dict[str, Any]],
+def build_generated_eval_candidate_queue(
+    candidate_records: Sequence[Dict[str, Any]],
     *,
     high_priority_threshold: int = 2,
 ) -> Dict[str, Any]:
@@ -384,7 +384,7 @@ def build_generated_eval_review_queue(
 
     threshold = high_priority_threshold if high_priority_threshold >= 1 else 1
     sorted_records = sorted(
-        (deepcopy(record) for record in staging_records if isinstance(record, dict)),
+        (deepcopy(record) for record in candidate_records if isinstance(record, dict)),
         key=lambda record: _as_nonempty_string(record.get("generated_eval_artifact_id"), ""),
     )
     generated_eval_ids = [
@@ -403,8 +403,8 @@ def build_generated_eval_review_queue(
         if sorted_records
         else "1970-01-01T00:00:00Z"
     )
-    review_queue = {
-        "artifact_type": "generated_eval_review_queue",
+    candidate_queue = {
+        "artifact_type": "generated_eval_candidate_queue",
         "artifact_id": _hash_id(
             "GERQ",
             {
@@ -417,36 +417,36 @@ def build_generated_eval_review_queue(
         "high_priority_candidates": high_priority_candidates,
         "created_at": created_at,
     }
-    Draft202012Validator(load_schema("generated_eval_review_queue")).validate(review_queue)
-    return review_queue
+    Draft202012Validator(load_schema("generated_eval_candidate_queue")).validate(candidate_queue)
+    return candidate_queue
 
 
-def build_promotion_recommendation_records(
-    staging_records: Sequence[Dict[str, Any]],
+def build_generated_eval_candidate_assessment_records(
+    candidate_records: Sequence[Dict[str, Any]],
     *,
-    promotion_threshold: int = 2,
+    assessment_threshold: int = 2,
 ) -> list[Dict[str, Any]]:
-    """Emit deterministic non-authoritative promotion recommendations."""
+    """Emit deterministic non-authoritative candidate assessments."""
 
-    threshold = promotion_threshold if promotion_threshold >= 1 else 1
+    threshold = assessment_threshold if assessment_threshold >= 1 else 1
     recommendations: list[Dict[str, Any]] = []
     sorted_records = sorted(
-        (deepcopy(record) for record in staging_records if isinstance(record, dict)),
+        (deepcopy(record) for record in candidate_records if isinstance(record, dict)),
         key=lambda record: _as_nonempty_string(record.get("generated_eval_artifact_id"), ""),
     )
     for record in sorted_records:
         generated_eval_artifact_id = _as_nonempty_string(record.get("generated_eval_artifact_id"), "missing:artifact_id")
         reason_code = _as_nonempty_string(record.get("reason_code"), "unknown_reason")
         occurrence_count = _as_nonnegative_int(record.get("occurrence_count"))
-        should_promote = occurrence_count >= threshold
-        recommendation = "promote" if should_promote else "monitor"
+        should_priority_review = occurrence_count >= threshold
+        recommendation = "priority_review" if should_priority_review else "observe"
         justification = (
-            f"occurrence_count={occurrence_count} meets threshold={threshold}; recommendation is promote."
-            if should_promote
-            else f"occurrence_count={occurrence_count} below threshold={threshold}; recommendation is monitor."
+            f"occurrence_count={occurrence_count} meets threshold={threshold}; recommendation is priority_review."
+            if should_priority_review
+            else f"occurrence_count={occurrence_count} below threshold={threshold}; recommendation is observe."
         )
-        recommendation_record = {
-            "artifact_type": "promotion_recommendation_record",
+        assessment_record = {
+            "artifact_type": "generated_eval_candidate_assessment_record",
             "artifact_id": _hash_id(
                 "PRR",
                 {
@@ -461,30 +461,45 @@ def build_promotion_recommendation_records(
             "justification": justification,
             "created_at": _normalized_timestamp(record.get("last_seen_at")),
         }
-        Draft202012Validator(load_schema("promotion_recommendation_record")).validate(recommendation_record)
-        recommendations.append(recommendation_record)
+        Draft202012Validator(load_schema("generated_eval_candidate_assessment_record")).validate(assessment_record)
+        recommendations.append(assessment_record)
     return recommendations
+
+
+def generate_eval_candidate_review_bundle(
+    generated_eval_cases_with_admission: Sequence[Dict[str, Any]],
+    *,
+    high_priority_threshold: int = 2,
+    assessment_threshold: int = 2,
+) -> Dict[str, Any]:
+    """Thin deterministic integration that emits staging, queue, and recommendation artifacts."""
+
+    candidate_records = build_generated_eval_candidate_records(generated_eval_cases_with_admission)
+    candidate_queue = build_generated_eval_candidate_queue(
+        candidate_records,
+        high_priority_threshold=high_priority_threshold,
+    )
+    candidate_assessments = build_generated_eval_candidate_assessment_records(
+        candidate_records,
+        assessment_threshold=assessment_threshold,
+    )
+    return {
+        "candidate_records": candidate_records,
+        "candidate_queue": candidate_queue,
+        "candidate_assessments": candidate_assessments,
+    }
 
 
 def generate_eval_staging_and_review_bundle(
     generated_eval_cases_with_admission: Sequence[Dict[str, Any]],
     *,
     high_priority_threshold: int = 2,
-    promotion_threshold: int = 2,
+    assessment_threshold: int = 2,
 ) -> Dict[str, Any]:
-    """Thin deterministic integration that emits staging, queue, and recommendation artifacts."""
+    """Backward-compatible alias for candidate staging/review bundle generation."""
 
-    staging_records = build_generated_eval_staging_records(generated_eval_cases_with_admission)
-    review_queue = build_generated_eval_review_queue(
-        staging_records,
+    return generate_eval_candidate_review_bundle(
+        generated_eval_cases_with_admission,
         high_priority_threshold=high_priority_threshold,
+        assessment_threshold=assessment_threshold,
     )
-    promotion_recommendations = build_promotion_recommendation_records(
-        staging_records,
-        promotion_threshold=promotion_threshold,
-    )
-    return {
-        "staging_records": staging_records,
-        "review_queue": review_queue,
-        "promotion_recommendations": promotion_recommendations,
-    }

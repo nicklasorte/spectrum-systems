@@ -1,5 +1,5 @@
 {
-  "artifact_type": "generated_eval_review_queue",
+  "artifact_type": "generated_eval_candidate_queue",
   "artifact_id": "GERQ-4951A48DF49449B3",
   "generated_eval_ids": [
     "GEC-4B9A9F9E26A54D4C",

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum-systems.org/contracts/generated_eval_review_queue.schema.json",
-  "title": "generated_eval_review_queue",
+  "$id": "https://spectrum-systems.org/contracts/generated_eval_candidate_queue.schema.json",
+  "title": "generated_eval_candidate_queue",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -13,7 +13,7 @@
     "created_at"
   ],
   "properties": {
-    "artifact_type": { "type": "string", "const": "generated_eval_review_queue" },
+    "artifact_type": { "type": "string", "const": "generated_eval_candidate_queue" },
     "artifact_id": { "type": "string", "minLength": 1 },
     "generated_eval_ids": {
       "type": "array",

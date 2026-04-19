@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum-systems.org/contracts/generated_eval_staging_record.schema.json",
-  "title": "generated_eval_staging_record",
+  "$id": "https://spectrum-systems.org/contracts/generated_eval_candidate_record.schema.json",
+  "title": "generated_eval_candidate_record",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -17,14 +17,14 @@
     "created_at"
   ],
   "properties": {
-    "artifact_type": { "type": "string", "const": "generated_eval_staging_record" },
+    "artifact_type": { "type": "string", "const": "generated_eval_candidate_record" },
     "artifact_id": { "type": "string", "minLength": 1 },
     "generated_eval_artifact_id": { "type": "string", "minLength": 1 },
     "source_failure_artifact_id": { "type": "string", "minLength": 1 },
     "reason_code": { "type": "string", "minLength": 1 },
     "staging_status": {
       "type": "string",
-      "enum": ["pending_review", "accepted_for_registry", "rejected", "deferred"]
+      "enum": ["pending_review", "recommended_for_registry_review", "not_recommended", "deferred_review"]
     },
     "occurrence_count": { "type": "integer", "minimum": 1 },
     "first_seen_at": { "type": "string", "format": "date-time" },

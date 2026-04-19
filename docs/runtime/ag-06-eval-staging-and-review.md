@@ -7,7 +7,7 @@ This slice is explicitly **artifact-first**, **fail-closed**, and **non-authorit
 
 ## Flow
 
-`generated_eval_case` → `generated_eval_admission_record` → `generated_eval_staging_record` → `generated_eval_review_queue` → `promotion_recommendation_record`
+`generated_eval_case` → `generated_eval_admission_record` → `generated_eval_candidate_record` → `generated_eval_candidate_queue` → `generated_eval_candidate_assessment_record`
 
 ## Candidate vs required eval coverage
 
@@ -18,7 +18,7 @@ AG-06 does **not** write to required eval registries and does **not** convert ca
 
 ## Staging semantics
 
-`generated_eval_staging_record` groups admitted generated eval candidates by stable recurrence keys (`reason_code` + `scenario_name`) and tracks:
+`generated_eval_candidate_record` groups admitted generated eval candidates by stable recurrence keys (`reason_code` + `scenario_name`) and tracks:
 
 - recurrence (`occurrence_count`)
 - first/last occurrence timestamps (`first_seen_at`, `last_seen_at`)
@@ -26,13 +26,13 @@ AG-06 does **not** write to required eval registries and does **not** convert ca
 
 Staging status values are intentionally bounded:
 - `pending_review`
-- `accepted_for_registry`
-- `rejected`
-- `deferred`
+- `recommended_for_registry_review`
+- `not_recommended`
+- `deferred_review`
 
 ## Review queue semantics
 
-`generated_eval_review_queue` is a deterministic bundle that surfaces:
+`generated_eval_candidate_queue` is a deterministic bundle that surfaces:
 - all generated eval IDs currently staged
 - total candidate count
 - high-priority candidate IDs based on recurrence threshold
@@ -41,9 +41,9 @@ The queue only informs review ordering. It does not grant promotion authority.
 
 ## Promotion recommendation semantics (non-authoritative)
 
-`promotion_recommendation_record` emits a bounded recommendation:
-- `promote` when recurrence threshold is met
-- `monitor` otherwise
+`generated_eval_candidate_assessment_record` emits a bounded recommendation:
+- `priority_review` when recurrence threshold is met
+- `observe` otherwise
 
 This artifact is advisory only and intentionally excludes policy execution, registry mutation, or automatic promotion.
 
