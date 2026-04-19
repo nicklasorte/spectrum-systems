@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from typing import Any, Dict, List
 
 from jsonschema import Draft202012Validator
@@ -31,16 +32,30 @@ def _sorted_unique_strings(items: Any) -> List[str]:
     return sorted({str(item).strip() for item in items if str(item).strip()})
 
 
-def _scenario_name(failure_type: str, reason_code: str) -> str:
-    return f"{failure_type.lower()}__{reason_code.lower()}".replace(" ", "_")
+def _scenario_name(failure_state: str, reason_code: str) -> str:
+    return f"{failure_state.lower()}__{reason_code.lower()}".replace(" ", "_")
 
 
-def _expected_outcome(failure_type: str, reason_code: str) -> str:
-    if failure_type.upper() == "BLOCK":
+def _normalize_failure_state(raw_failure_type: str) -> str:
+    normalized = raw_failure_type.strip().lower()
+    if normalized in {"block", "blocked", "halted"}:
+        return "halted"
+    if normalized in {"freeze", "frozen", "paused"}:
+        return "paused"
+    return "failed_closed"
+
+
+def _expected_outcome(failure_state: str, reason_code: str) -> str:
+    if failure_state == "halted":
         return f"halt_with_reason_code:{reason_code}"
-    if failure_type.upper() == "FREEZE":
+    if failure_state == "paused":
         return f"pause_with_reason_code:{reason_code}"
     return f"fail_closed_with_reason_code:{reason_code}"
+
+
+_EXPECTED_OUTCOME_PATTERN = re.compile(
+    r"^(halt_with_reason_code|pause_with_reason_code|fail_closed_with_reason_code):[A-Za-z0-9_.:-]+$"
+)
 
 
 def generate_eval_case_from_failure_record(
@@ -51,7 +66,7 @@ def generate_eval_case_from_failure_record(
     """Transform a failure_record into a replayable generated_eval_case deterministically."""
 
     reason_code = _as_nonempty_string(failure_record.get("reason_code"), "unknown_failure")
-    failure_type = _as_nonempty_string(failure_record.get("failure_type"), "UNKNOWN")
+    failure_state = _normalize_failure_state(_as_nonempty_string(failure_record.get("failure_type"), "unknown"))
     trace_id = _as_nonempty_string(failure_record.get("trace_id"), "missing:trace_id")
     run_id = _as_nonempty_string(failure_record.get("run_id"), "missing:run_id")
     stage = _as_nonempty_string(failure_record.get("stage"), "unknown_stage")
@@ -64,7 +79,7 @@ def generate_eval_case_from_failure_record(
                 "run_id": run_id,
                 "stage": stage,
                 "reason_code": reason_code,
-                "failure_type": failure_type,
+                "failure_state": failure_state,
             },
         ),
     )
@@ -75,13 +90,13 @@ def generate_eval_case_from_failure_record(
     normalized = _as_nonempty_string(normalized_reason_code)
     expected_reason_code = normalized or reason_code
     scenario_description = (
-        f"Replay {failure_type} failure at stage {stage} and verify fail-closed reason_code linkage "
+        f"Replay {failure_state} failure at stage {stage} and verify fail-closed reason_code linkage "
         f"to {expected_reason_code}."
     )
 
     input_conditions: Dict[str, Any] = {
         "stage": stage,
-        "failure_type": failure_type,
+        "failure_state": failure_state,
         "missing_artifacts": missing_artifacts,
         "failed_evals": failed_evals,
     }
@@ -102,10 +117,10 @@ def generate_eval_case_from_failure_record(
         "trace_id": trace_id,
         "run_id": run_id,
         "reason_code": reason_code,
-        "scenario_name": _scenario_name(failure_type, reason_code),
+        "scenario_name": _scenario_name(failure_state, reason_code),
         "scenario_description": scenario_description,
         "input_conditions": input_conditions,
-        "expected_outcome": _expected_outcome(failure_type, reason_code),
+        "expected_outcome": _expected_outcome(failure_state, reason_code),
         "expected_reason_code": expected_reason_code,
         "replay_required": True,
         "determinism_requirements": [
@@ -174,11 +189,21 @@ def admit_generated_eval_case(
     expected_reason_code = _as_nonempty_string(generated_eval_case.get("expected_reason_code"))
 
     normalization = generated_eval_case.get("reason_code_normalization")
-    has_normalization = isinstance(normalization, dict) and _as_nonempty_string(
-        normalization.get("normalized_from_reason_code")
-    )
-    if reason_code and expected_reason_code and reason_code != expected_reason_code and not has_normalization:
-        denial_reasons.append("missing_reason_code_linkage")
+    if reason_code and expected_reason_code and reason_code != expected_reason_code:
+        if not isinstance(normalization, dict):
+            denial_reasons.append("missing_reason_code_normalization_mapping")
+        else:
+            normalized_from = _as_nonempty_string(normalization.get("normalized_from_reason_code"))
+            normalized_to = _as_nonempty_string(normalization.get("normalized_to_reason_code"))
+            if not normalized_from or not normalized_to:
+                denial_reasons.append("incomplete_reason_code_normalization_mapping")
+            if normalized_from != reason_code:
+                denial_reasons.append("reason_code_normalization_from_mismatch")
+            if normalized_to != expected_reason_code:
+                denial_reasons.append("reason_code_normalization_to_mismatch")
+
+    if expected_outcome and not _EXPECTED_OUTCOME_PATTERN.match(expected_outcome):
+        denial_reasons.append("expected_outcome_not_bounded")
 
     source_failure_artifact_id = _as_nonempty_string(generated_eval_case.get("source_failure_artifact_id"))
     if not source_failure_artifact_id:

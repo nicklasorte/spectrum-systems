@@ -36,8 +36,8 @@ Key semantics:
 Generator: `spectrum_systems/modules/runtime/failure_eval_generation.py`
 
 Rules:
-1. Derive `scenario_name` from `failure_type + reason_code`.
-2. Derive `expected_outcome` from observed failure state (`BLOCK`, `FREEZE`, fallback).
+1. Derive `scenario_name` from normalized `failure_state + reason_code`.
+2. Derive `expected_outcome` from observed failure state (`halted`, `paused`, `failed_closed`).
 3. Carry source linkage (`source_failure_artifact_id`, trace/run IDs, reason code).
 4. Include replay-relevant context (`stage`, `missing_artifacts`, `failed_evals`).
 5. Produce deterministic IDs using canonical JSON hashing.
@@ -54,6 +54,11 @@ Admission rejects generated eval cases when any of the following is true:
 - reason-code linkage is broken without normalization proof
 - source failure lineage is missing or mismatched
 - replay-required case lacks sufficient replay material
+- reason-code normalization mapping is incomplete or inconsistent when reason codes differ
+- `expected_outcome` is outside the bounded pattern set:
+  - `halt_with_reason_code:<reason_code>`
+  - `pause_with_reason_code:<reason_code>`
+  - `fail_closed_with_reason_code:<reason_code>`
 
 This yields explicit denial reasons and `admitted=false`.
 

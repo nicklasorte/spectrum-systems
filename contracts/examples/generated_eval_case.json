@@ -5,11 +5,11 @@
   "trace_id": "trace-chaos-01",
   "run_id": "run-chaos-01",
   "reason_code": "missing_required_eval_result",
-  "scenario_name": "block__missing_required_eval_result",
-  "scenario_description": "Replay BLOCK failure at stage execution_gate and verify fail-closed reason_code linkage to missing_required_eval_result.",
+  "scenario_name": "halted__missing_required_eval_result",
+  "scenario_description": "Replay halted failure at stage execution_gate and verify fail-closed reason_code linkage to missing_required_eval_result.",
   "input_conditions": {
     "stage": "execution_gate",
-    "failure_type": "BLOCK",
+    "failure_state": "halted",
     "missing_artifacts": ["debuggability_record"],
     "failed_evals": ["debuggability_valid"]
   },

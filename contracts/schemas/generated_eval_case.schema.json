@@ -31,10 +31,13 @@
     "scenario_description": { "type": "string", "minLength": 1 },
     "input_conditions": {
       "type": "object",
-      "required": ["stage", "failure_type", "missing_artifacts", "failed_evals"],
+      "required": ["stage", "failure_state", "missing_artifacts", "failed_evals"],
       "properties": {
         "stage": { "type": "string", "minLength": 1 },
-        "failure_type": { "type": "string", "minLength": 1 },
+        "failure_state": {
+          "type": "string",
+          "enum": ["halted", "paused", "failed_closed"]
+        },
         "missing_artifacts": {
           "type": "array",
           "items": { "type": "string", "minLength": 1 },
