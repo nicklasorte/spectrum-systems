@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "DriftSignalRecord",
+  "description": "Immutable record of drift detection across decision entropy, exception rates, eval pass rates, or trace coverage gaps",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "signal_id",
+    "signal_type",
+    "metric_name",
+    "baseline_value",
+    "current_value",
+    "threshold_warn",
+    "threshold_critical",
+    "severity",
+    "timestamp",
+    "affected_artifacts",
+    "remediation_steps",
+    "source_code_version"
+  ],
+  "properties": {
+    "signal_id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "description": "Unique immutable ID for this signal"
+    },
+    "signal_type": {
+      "type": "string",
+      "enum": [
+        "decision_divergence",
+        "exception_rate",
+        "eval_pass_drop",
+        "trace_gap"
+      ],
+      "description": "Category of drift detected"
+    },
+    "metric_name": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "description": "Fully qualified metric name (e.g., spectrum_systems.drift.decision_divergence)"
+    },
+    "baseline_value": {
+      "type": "number",
+      "description": "Historical baseline for this metric"
+    },
+    "current_value": {
+      "type": "number",
+      "description": "Current measured value"
+    },
+    "threshold_warn": {
+      "type": "number",
+      "description": "Threshold above which warning is issued"
+    },
+    "threshold_critical": {
+      "type": "number",
+      "description": "Threshold above which critical action is taken"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["warning", "critical"],
+      "description": "Severity classification"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When drift was detected (ISO 8601)"
+    },
+    "affected_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 200
+      },
+      "description": "List of artifact IDs affected by this drift"
+    },
+    "remediation_steps": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 500
+      },
+      "description": "Suggested remediation actions"
+    },
+    "source_code_version": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "description": "Git commit hash or version string at detection time"
+    }
+  }
+}

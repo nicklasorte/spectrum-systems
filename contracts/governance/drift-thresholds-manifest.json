@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "owner": "governance",
+  "description": "SLI targets and severity mappings for drift detection",
+  "sli_targets": {
+    "decision_divergence": {
+      "baseline": 0.05,
+      "threshold_warn": 0.10,
+      "threshold_critical": 0.15,
+      "description": "Same context_class → different outcomes ratio. SRE pattern: measure divergence over rolling 7-day window."
+    },
+    "exception_rate": {
+      "baseline": 0.01,
+      "threshold_warn": 0.02,
+      "threshold_critical": 0.05,
+      "description": "Exceptions per artifact. Baseline 1%, warn at 2%, critical at 5%."
+    },
+    "eval_pass_rate": {
+      "baseline": 0.98,
+      "threshold_critical": 0.95,
+      "description": "Percentage of evals passing. Critical threshold 95%."
+    },
+    "trace_coverage": {
+      "baseline": 0.999,
+      "threshold_critical": 0.95,
+      "description": "Percentage of artifacts with complete trace linkage. Critical threshold 95%."
+    }
+  },
+  "severity_mapping": {
+    "warning": {
+      "action": "notify governance team, monitor closely",
+      "escalation_sla_hours": 24
+    },
+    "critical": {
+      "action": "freeze non-critical promotions until resolved",
+      "escalation_sla_hours": 2
+    }
+  }
+}
