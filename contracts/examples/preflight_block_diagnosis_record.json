@@ -12,5 +12,17 @@
   "normalized_failure": {
     "failure_class": "invalid_wrapper",
     "repairable": true
+  },
+  "mismatch_diagnostics": {
+    "trace_id": "trace-2026-04-19T00:00:00Z",
+    "run_id": "run-2026-04-19T00:00:00Z",
+    "changed_file_refs": [
+      "contracts/standards-manifest.json"
+    ],
+    "manifest_entry_ref": "contracts/standards-manifest.json#contracts[artifact_type=tpa_contract_sync_check_record]",
+    "schema_path": "contracts/schemas/tpa_contract_sync_check_record.schema.json",
+    "example_path": "contracts/examples/tpa_contract_sync_check_record.json",
+    "runtime_source_ref": "scripts/run_contract_preflight.py::run_tpa_contract_sync_check",
+    "mismatch_type": "manifest_declared_schema_const_mismatch"
   }
 }

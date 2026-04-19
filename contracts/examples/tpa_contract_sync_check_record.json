@@ -1,0 +1,10 @@
+{
+  "artifact_type": "tpa_contract_sync_check_record",
+  "artifact_id": "TPA-SYNC-EXAMPLE-01",
+  "checked_artifact_types": [
+    "generated_eval_registry_change_request_record"
+  ],
+  "mismatches": [],
+  "auto_repair_eligible": false,
+  "created_at": "2026-04-19T00:00:00Z"
+}

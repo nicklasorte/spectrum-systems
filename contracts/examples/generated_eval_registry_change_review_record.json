@@ -1,0 +1,10 @@
+{
+  "artifact_type": "generated_eval_registry_change_review_record",
+  "artifact_id": "GEPD-4ED8B326A036D5DA",
+  "registry_change_request_artifact_id": "GEPR-2F128A8A8E6B44D1",
+  "generated_eval_artifact_id": "GEC-5C8D88C7B5870A12",
+  "review_outcome": "ready",
+  "decided_by": "runtime-reviewer",
+  "rationale": "Registry-change review completed after explicit review and replay-linkage confirmation.",
+  "created_at": "2026-04-19T00:06:00Z"
+}

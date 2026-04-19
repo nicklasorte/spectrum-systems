@@ -92,6 +92,30 @@
           "type": "boolean"
         }
       }
+    },
+    "mismatch_diagnostics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_id",
+        "run_id",
+        "changed_file_refs",
+        "manifest_entry_ref",
+        "schema_path",
+        "example_path",
+        "runtime_source_ref",
+        "mismatch_type"
+      ],
+      "properties": {
+        "trace_id": { "type": "string", "minLength": 1 },
+        "run_id": { "type": "string", "minLength": 1 },
+        "changed_file_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "manifest_entry_ref": { "type": "string", "minLength": 1 },
+        "schema_path": { "type": "string" },
+        "example_path": { "type": "string" },
+        "runtime_source_ref": { "type": "string", "minLength": 1 },
+        "mismatch_type": { "type": "string" }
+      }
     }
   }
 }

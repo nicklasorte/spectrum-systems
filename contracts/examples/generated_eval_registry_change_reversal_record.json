@@ -1,0 +1,9 @@
+{
+  "artifact_type": "generated_eval_registry_change_reversal_record",
+  "artifact_id": "GERB-386945A1BF57D77C",
+  "generated_eval_artifact_id": "GEC-5C8D88C7B5870A12",
+  "registry_change_execution_artifact_id": "GEPS-4A41E01D5DC2B1FD",
+  "rollback_reason": "manual_registry_revert",
+  "reversal_applied": true,
+  "created_at": "2026-04-19T00:08:00Z"
+}

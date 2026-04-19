@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.150",
+  "artifact_version": "1.3.155",
   "schema_version": "1.3.99",
   "standards_version": "1.9.9",
-  "record_id": "REC-STD-2026-04-18-ENF-01",
-  "run_id": "run-20260418T000000Z-enf-01",
-  "created_at": "2026-04-18T00:00:00Z",
+  "record_id": "REC-STD-2026-04-19-FIX-TPA-AG07-03",
+  "run_id": "run-20260419T000000Z-fix-tpa-ag07-03",
+  "created_at": "2026-04-19T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.150",
+  "source_repo_version": "1.3.155",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -6340,6 +6340,58 @@
       "notes": "EVAL-AUTO-01 deterministic failure_record-to-eval artifact for replayable prevention candidate generation."
     },
     {
+      "artifact_type": "generated_eval_registry_change_execution_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/examples/generated_eval_registry_change_execution_record.json",
+      "notes": "AG-07 registry-change execution artifact with fail-closed blocked reasons and required-eval target capture."
+    },
+    {
+      "artifact_type": "generated_eval_registry_change_request_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/examples/generated_eval_registry_change_request_record.json",
+      "notes": "AG-07 governed registry-change request artifact; explicit request required before any registry update execution."
+    },
+    {
+      "artifact_type": "generated_eval_registry_change_reversal_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/examples/generated_eval_registry_change_reversal_record.json",
+      "notes": "AG-07 reversal artifact preserving deterministic registry-change lineage for generated eval required coverage updates."
+    },
+    {
+      "artifact_type": "generated_eval_registry_change_review_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/examples/generated_eval_registry_change_review_record.json",
+      "notes": "AG-07 explicit registry-change review artifact; no implicit registry update allowed."
+    },
+    {
       "artifact_type": "github_review_handoff_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -10264,19 +10316,6 @@
       "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
     },
     {
-      "artifact_type": "preflight_repair_plan_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "stable",
-      "intended_consumers": [
-        "spectrum-systems"
-      ],
-      "introduced_in": "1.3.125",
-      "last_updated_in": "1.3.125",
-      "example_path": "contracts/examples/preflight_repair_plan_record.json",
-      "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
-    },
-    {
       "artifact_type": "preflight_repair_result_record",
       "artifact_class": "coordination",
       "schema_version": "1.1.0",
@@ -10287,6 +10326,19 @@
       "introduced_in": "1.3.125",
       "last_updated_in": "1.3.126",
       "example_path": "contracts/examples/preflight_repair_result_record.json",
+      "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
+    },
+    {
+      "artifact_type": "preflight_repair_plan_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.125",
+      "last_updated_in": "1.3.125",
+      "example_path": "contracts/examples/preflight_repair_plan_record.json",
       "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
     },
     {
@@ -15799,6 +15851,45 @@
       "last_updated_in": "1.3.116",
       "example_path": "contracts/examples/tpa_conflict_record.json",
       "notes": "TPA material/non-material conflict arbitration artifact."
+    },
+    {
+      "artifact_type": "tpa_contract_sync_check_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.153",
+      "last_updated_in": "1.3.154",
+      "example_path": "contracts/examples/tpa_contract_sync_check_record.json",
+      "notes": "TPA early contract-sync structural check artifact for schema/example/manifest alignment before heavier preflight."
+    },
+    {
+      "artifact_type": "tpa_contract_sync_repair_handoff_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.154",
+      "last_updated_in": "1.3.154",
+      "example_path": "contracts/examples/tpa_contract_sync_repair_handoff_record.json",
+      "notes": "TPA deterministic repair-candidate handoff artifact with candidate files, remaining mismatches, and escalation signal for authorized repair owners."
+    },
+    {
+      "artifact_type": "tpa_contract_sync_repair_plan_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "stable",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.153",
+      "last_updated_in": "1.3.154",
+      "example_path": "contracts/examples/tpa_contract_sync_repair_plan_record.json",
+      "notes": "TPA deterministic repair-candidate plan artifact for eligible contract sync drift handoff."
     },
     {
       "artifact_type": "tpa_evidence_requirement_record",

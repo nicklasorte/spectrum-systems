@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/tpa_contract_sync_repair_plan_record.schema.json",
+  "title": "tpa_contract_sync_repair_plan_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "artifact_id",
+    "check_artifact_id",
+    "planned_actions",
+    "auto_repair_eligible",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "tpa_contract_sync_repair_plan_record" },
+    "artifact_id": { "type": "string", "minLength": 1 },
+    "check_artifact_id": { "type": "string", "minLength": 1 },
+    "planned_actions": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+    "auto_repair_eligible": { "type": "boolean" },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

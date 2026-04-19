@@ -466,6 +466,336 @@ def build_generated_eval_candidate_assessment_records(
     return recommendations
 
 
+_GENERATED_EVAL_REQUIRED_TARGET = "required_eval_registry.mappings[artifact_family=generated_eval_case].required_evals"
+
+
+def build_generated_eval_registry_change_request_record(
+    generated_eval_case: Dict[str, Any],
+    candidate_record: Dict[str, Any],
+    *,
+    request_origin: str,
+    justification: str,
+    created_at: str | None = None,
+) -> Dict[str, Any]:
+    """Build a deterministic governed registry-change request artifact."""
+
+    generated_eval_artifact_id = _as_nonempty_string(generated_eval_case.get("artifact_id"), "missing:artifact_id")
+    reason_code = _as_nonempty_string(generated_eval_case.get("reason_code"), "unknown_reason")
+    candidate_occurrence_count = max(
+        1,
+        _as_nonnegative_int(candidate_record.get("occurrence_count"), default=1),
+    )
+    source_failure_artifact_ids = _sorted_unique_strings(
+        [generated_eval_case.get("source_failure_artifact_id")]
+        + list(candidate_record.get("source_failure_artifact_ids") or [])
+        + [candidate_record.get("source_failure_artifact_id")]
+    )
+    request_payload = {
+        "generated_eval_artifact_id": generated_eval_artifact_id,
+        "source_failure_artifact_ids": source_failure_artifact_ids,
+        "reason_code": reason_code,
+        "occurrence_count": candidate_occurrence_count,
+        "request_origin": _as_nonempty_string(request_origin),
+        "justification": _as_nonempty_string(justification, "manual registry change request"),
+    }
+    request_record = {
+        "artifact_type": "generated_eval_registry_change_request_record",
+        "artifact_id": _hash_id("GEPR", request_payload),
+        **request_payload,
+        "created_at": _normalized_timestamp(created_at or candidate_record.get("last_seen_at") or generated_eval_case.get("created_at")),
+    }
+    Draft202012Validator(load_schema("generated_eval_registry_change_request_record")).validate(request_record)
+    return request_record
+
+
+def build_generated_eval_registry_change_review_record(
+    registry_change_request_record: Dict[str, Any],
+    *,
+    review_outcome: str,
+    decided_by: str,
+    rationale: str,
+    created_at: str | None = None,
+) -> Dict[str, Any]:
+    """Build a deterministic governed registry-change review artifact."""
+
+    review_outcome_payload = {
+            "registry_change_request_artifact_id": _as_nonempty_string(
+            registry_change_request_record.get("artifact_id"),
+            "missing:registry_change_request_artifact_id",
+        ),
+        "generated_eval_artifact_id": _as_nonempty_string(
+            registry_change_request_record.get("generated_eval_artifact_id"),
+            "missing:generated_eval_artifact_id",
+        ),
+        "review_outcome": _as_nonempty_string(review_outcome),
+        "decided_by": _as_nonempty_string(decided_by),
+        "rationale": _as_nonempty_string(rationale),
+    }
+    review_outcome_record = {
+        "artifact_type": "generated_eval_registry_change_review_record",
+        "artifact_id": _hash_id("GEPD", review_outcome_payload),
+        **review_outcome_payload,
+        "created_at": _normalized_timestamp(created_at or registry_change_request_record.get("created_at")),
+    }
+    Draft202012Validator(load_schema("generated_eval_registry_change_review_record")).validate(review_outcome_record)
+    return review_outcome_record
+
+
+def _registry_change_replay_validation(
+    generated_eval_case: Dict[str, Any],
+    registry_change_request_record: Dict[str, Any] | None,
+) -> bool:
+    expected_reason_code = _as_nonempty_string(generated_eval_case.get("expected_reason_code"))
+    reason_code = _as_nonempty_string(generated_eval_case.get("reason_code"))
+    expected_outcome = _as_nonempty_string(generated_eval_case.get("expected_outcome"))
+    source_failure_artifact_id = _as_nonempty_string(generated_eval_case.get("source_failure_artifact_id"))
+
+    request_source_failure_ids: list[str] = []
+    if isinstance(registry_change_request_record, dict):
+        request_source_failure_ids = _sorted_unique_strings(registry_change_request_record.get("source_failure_artifact_ids"))
+
+    expected_outcome_reason_code = ""
+    if ":" in expected_outcome:
+        expected_outcome_reason_code = expected_outcome.split(":", 1)[1]
+
+    return bool(
+        expected_reason_code
+        and reason_code
+        and expected_reason_code == reason_code
+        and _EXPECTED_OUTCOME_PATTERN.match(expected_outcome)
+        and expected_outcome_reason_code == expected_reason_code
+        and source_failure_artifact_id
+        and source_failure_artifact_id in request_source_failure_ids
+    )
+
+
+def _upsert_required_eval_generated_case(
+    required_eval_registry: Dict[str, Any],
+    generated_eval_artifact_id: str,
+) -> Dict[str, Any]:
+    registry = deepcopy(required_eval_registry)
+    mappings = registry.get("mappings")
+    if not isinstance(mappings, list):
+        mappings = []
+    target_mapping: Dict[str, Any] | None = None
+    for mapping in mappings:
+        if isinstance(mapping, dict) and mapping.get("artifact_family") == "generated_eval_case":
+            target_mapping = mapping
+            break
+    if target_mapping is None:
+        target_mapping = {
+            "artifact_family": "generated_eval_case",
+            "notes": "Promoted generated eval candidates requiring durable execution coverage.",
+            "required_evals": [],
+        }
+        mappings.append(target_mapping)
+
+    required_evals = target_mapping.get("required_evals")
+    if not isinstance(required_evals, list):
+        required_evals = []
+    eval_id = f"generated_eval::{generated_eval_artifact_id}"
+    existing_ids = {
+        _as_nonempty_string(item.get("eval_id"))
+        for item in required_evals
+        if isinstance(item, dict)
+    }
+    if eval_id not in existing_ids:
+        required_evals.append(
+            {
+                "eval_id": eval_id,
+                "eval_family": "generated_eval",
+                "mandatory_for_progression": True,
+            }
+        )
+    target_mapping["required_evals"] = sorted(
+        required_evals,
+        key=lambda item: _as_nonempty_string(item.get("eval_id")) if isinstance(item, dict) else "",
+    )
+    registry["mappings"] = sorted(
+        (mapping for mapping in mappings if isinstance(mapping, dict)),
+        key=lambda mapping: _as_nonempty_string(mapping.get("artifact_family")),
+    )
+    Draft202012Validator(load_schema("required_eval_registry")).validate(registry)
+    return registry
+
+
+def _remove_required_eval_generated_case(
+    required_eval_registry: Dict[str, Any],
+    generated_eval_artifact_id: str,
+) -> Dict[str, Any]:
+    registry = deepcopy(required_eval_registry)
+    eval_id = f"generated_eval::{generated_eval_artifact_id}"
+    mappings = registry.get("mappings")
+    if not isinstance(mappings, list):
+        return registry
+    retained_mappings: list[Dict[str, Any]] = []
+    for mapping in mappings:
+        if not isinstance(mapping, dict) or mapping.get("artifact_family") != "generated_eval_case":
+            if isinstance(mapping, dict):
+                retained_mappings.append(mapping)
+            continue
+        required_evals = mapping.get("required_evals")
+        if not isinstance(required_evals, list):
+            continue
+        remaining = [
+            row for row in required_evals if not (isinstance(row, dict) and _as_nonempty_string(row.get("eval_id")) == eval_id)
+        ]
+        if remaining:
+            mapping["required_evals"] = remaining
+            retained_mappings.append(mapping)
+    registry["mappings"] = retained_mappings
+    Draft202012Validator(load_schema("required_eval_registry")).validate(registry)
+    return registry
+
+
+def execute_generated_eval_registry_change_gate(
+    *,
+    generated_eval_case: Dict[str, Any] | None,
+    generated_eval_admission_record: Dict[str, Any] | None,
+    candidate_record: Dict[str, Any] | None,
+    registry_change_request_record: Dict[str, Any] | None,
+    registry_change_review_record: Dict[str, Any] | None,
+    required_eval_registry: Dict[str, Any],
+    occurrence_threshold: int = 2,
+) -> Dict[str, Any]:
+    """Only controlled mutation path for registry updates of generated eval required coverage."""
+
+    threshold = occurrence_threshold if occurrence_threshold >= 1 else 1
+    blocked_reasons: list[str] = []
+    generated_eval_artifact_id = _as_nonempty_string((generated_eval_case or {}).get("artifact_id"), "missing:generated_eval")
+
+    if not isinstance(generated_eval_case, dict):
+        blocked_reasons.append("missing_generated_eval_case")
+    if not isinstance(generated_eval_admission_record, dict):
+        blocked_reasons.append("missing_generated_eval_admission_record")
+    elif generated_eval_admission_record.get("admitted") is not True:
+        blocked_reasons.append("generated_eval_not_admitted")
+
+    if not isinstance(candidate_record, dict):
+        blocked_reasons.append("missing_candidate_record")
+        occurrence_count = 0
+    else:
+        candidate_generated_eval_id = _as_nonempty_string(candidate_record.get("generated_eval_artifact_id"))
+        if candidate_generated_eval_id != generated_eval_artifact_id:
+            blocked_reasons.append("candidate_generated_eval_mismatch")
+            occurrence_count = 0
+        else:
+            occurrence_count = _as_nonnegative_int(candidate_record.get("occurrence_count"))
+            if occurrence_count < threshold:
+                blocked_reasons.append("occurrence_count_below_threshold")
+
+    if not isinstance(registry_change_request_record, dict):
+        blocked_reasons.append("missing_registry_change_request_record")
+    elif _as_nonempty_string(registry_change_request_record.get("generated_eval_artifact_id")) != generated_eval_artifact_id:
+        blocked_reasons.append("registry_change_request_generated_eval_mismatch")
+
+    if not isinstance(registry_change_review_record, dict):
+        blocked_reasons.append("missing_registry_change_review_record")
+    else:
+        if _as_nonempty_string(registry_change_review_record.get("generated_eval_artifact_id")) != generated_eval_artifact_id:
+            blocked_reasons.append("registry_change_review_generated_eval_mismatch")
+        if _as_nonempty_string(registry_change_review_record.get("review_outcome")) != "ready":
+            blocked_reasons.append("registry_change_review_not_ready")
+        review_request_id = _as_nonempty_string(registry_change_review_record.get("registry_change_request_artifact_id"))
+        request_id = _as_nonempty_string((registry_change_request_record or {}).get("artifact_id"))
+        if review_request_id != request_id:
+            blocked_reasons.append("registry_change_review_request_mismatch")
+
+    replay_validation_passed = isinstance(generated_eval_case, dict) and _registry_change_replay_validation(
+        generated_eval_case,
+        registry_change_request_record,
+    )
+    if not replay_validation_passed:
+        blocked_reasons.append("replay_validation_failed")
+
+    registry_updated = len(blocked_reasons) == 0
+    updated_required_eval_registry = deepcopy(required_eval_registry)
+    if registry_updated:
+        updated_required_eval_registry = _upsert_required_eval_generated_case(
+            required_eval_registry,
+            generated_eval_artifact_id,
+        )
+
+    registry_change_execution_record = {
+        "artifact_type": "generated_eval_registry_change_execution_record",
+        "artifact_id": _hash_id(
+            "GEPS",
+            {
+                "generated_eval_artifact_id": generated_eval_artifact_id,
+                "registry_change_request_artifact_id": _as_nonempty_string((registry_change_request_record or {}).get("artifact_id"), "missing:request"),
+                "registry_change_review_artifact_id": _as_nonempty_string((registry_change_review_record or {}).get("artifact_id"), "missing:review"),
+                "registry_updated": registry_updated,
+                "blocked_reasons": sorted(set(blocked_reasons)),
+                "replay_validation_passed": replay_validation_passed,
+            },
+        ),
+        "registry_change_request_artifact_id": _as_nonempty_string((registry_change_request_record or {}).get("artifact_id"), "missing:request"),
+        "registry_change_review_artifact_id": _as_nonempty_string((registry_change_review_record or {}).get("artifact_id"), "missing:review"),
+        "generated_eval_artifact_id": generated_eval_artifact_id,
+        "registry_updated": registry_updated,
+        "blocked_reasons": sorted(set(blocked_reasons)),
+        "replay_validation_passed": replay_validation_passed,
+        "required_eval_target": _GENERATED_EVAL_REQUIRED_TARGET,
+        "created_at": _normalized_timestamp((registry_change_review_record or {}).get("created_at") or (registry_change_request_record or {}).get("created_at")),
+    }
+    Draft202012Validator(load_schema("generated_eval_registry_change_execution_record")).validate(registry_change_execution_record)
+    return {
+        "generated_eval_registry_change_execution_record": registry_change_execution_record,
+        "required_eval_registry": updated_required_eval_registry,
+    }
+
+
+def build_generated_eval_registry_change_reversal_record(
+    *,
+    generated_eval_artifact_id: str,
+    registry_change_execution_record: Dict[str, Any],
+    rollback_reason: str,
+    reversal_applied: bool = True,
+    created_at: str | None = None,
+) -> Dict[str, Any]:
+    """Build deterministic rollback artifact for a previously registry_updated generated eval."""
+
+    rollback_payload = {
+        "generated_eval_artifact_id": _as_nonempty_string(generated_eval_artifact_id),
+        "registry_change_execution_artifact_id": _as_nonempty_string(
+            registry_change_execution_record.get("artifact_id"),
+            "missing:registry_change_execution_artifact_id",
+        ),
+        "rollback_reason": _as_nonempty_string(rollback_reason, "manual_rollback"),
+        "reversal_applied": bool(reversal_applied),
+    }
+    rollback_record = {
+        "artifact_type": "generated_eval_registry_change_reversal_record",
+        "artifact_id": _hash_id("GERB", rollback_payload),
+        **rollback_payload,
+        "created_at": _normalized_timestamp(created_at or registry_change_execution_record.get("created_at")),
+    }
+    Draft202012Validator(load_schema("generated_eval_registry_change_reversal_record")).validate(rollback_record)
+    return rollback_record
+
+
+def execute_generated_eval_registry_change_reversal(
+    *,
+    generated_eval_artifact_id: str,
+    registry_change_execution_record: Dict[str, Any],
+    rollback_reason: str,
+    required_eval_registry: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Deterministic reversal path for a governed generated eval registry update."""
+
+    rollback_record = build_generated_eval_registry_change_reversal_record(
+        generated_eval_artifact_id=generated_eval_artifact_id,
+        registry_change_execution_record=registry_change_execution_record,
+        rollback_reason=rollback_reason,
+        reversal_applied=True,
+    )
+    updated_registry = _remove_required_eval_generated_case(required_eval_registry, generated_eval_artifact_id)
+    return {
+        "generated_eval_registry_change_reversal_record": rollback_record,
+        "required_eval_registry": updated_registry,
+    }
+
+
 def generate_eval_candidate_review_bundle(
     generated_eval_cases_with_admission: Sequence[Dict[str, Any]],
     *,

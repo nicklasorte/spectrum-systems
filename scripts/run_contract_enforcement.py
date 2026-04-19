@@ -49,6 +49,13 @@ STANDARDS_MANIFEST_PATH = REPO_ROOT / "contracts" / "standards-manifest.json"
 MANIFESTS_DIR = REPO_ROOT / "governance" / "examples" / "manifests"
 CONTRACT_GRAPH_PATH = REPO_ROOT / "governance" / "reports" / "contract-dependency-graph.json"
 ENFORCEMENT_REPORT_PATH = REPO_ROOT / "docs" / "governance-reports" / "contract-enforcement-report.md"
+SCHEMAS_DIR = REPO_ROOT / "contracts" / "schemas"
+LEGACY_NON_CANONICAL_SCHEMA_LAYOUT = {"meeting_minutes"}
+LEGACY_SCHEMA_CONST_ALIAS_EXCEPTIONS = {
+    "certification_evidence_record",
+    "mnt_trust_integration_bundle",
+    "promotion_gate_evidence_record",
+}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -105,6 +112,69 @@ def _failure(repo: str, system_id: Optional[str], contract: str, rule: str, erro
 def _warning(repo: str, system_id: Optional[str], contract: str, rule: str, message: str) -> dict:
     return {"repo": repo, "system_id": system_id or "", "contract": contract,
             "rule": rule, "message": message}
+
+
+def _display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
+
+
+def check_standards_manifest_schema_completeness(standards: Dict[str, dict]) -> List[dict]:
+    """Fail-closed validation for manifest-declared canonical schema coverage."""
+    failures: List[dict] = []
+    for artifact_type in sorted(standards):
+        if artifact_type in LEGACY_NON_CANONICAL_SCHEMA_LAYOUT:
+            continue
+        schema_path = SCHEMAS_DIR / f"{artifact_type}.schema.json"
+        contract_ref = f"{artifact_type}@{standards[artifact_type].get('schema_version', 'unknown')}"
+        if not schema_path.is_file():
+            failures.append(
+                _failure(
+                    "spectrum-systems",
+                    "SCH/GOV",
+                    contract_ref,
+                    "standards-schema-coverage",
+                    f"canonical schema path missing: {_display_path(schema_path)}",
+                )
+            )
+            continue
+        try:
+            payload = json.loads(schema_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            failures.append(
+                _failure(
+                    "spectrum-systems",
+                    "SCH/GOV",
+                    contract_ref,
+                    "standards-schema-coverage",
+                    f"canonical schema JSON invalid: {_display_path(schema_path)} ({exc})",
+                )
+            )
+            continue
+        properties = payload.get("properties") if isinstance(payload, dict) else {}
+        artifact_prop = properties.get("artifact_type") if isinstance(properties, dict) else {}
+        schema_const_raw = (artifact_prop or {}).get("const")
+        schema_const = str(schema_const_raw or "").strip()
+        if (
+            schema_const
+            and schema_const != artifact_type
+            and artifact_type not in LEGACY_SCHEMA_CONST_ALIAS_EXCEPTIONS
+        ):
+            failures.append(
+                _failure(
+                    "spectrum-systems",
+                    "SCH/GOV",
+                    contract_ref,
+                    "standards-schema-coverage",
+                    (
+                        f"canonical schema artifact_type.const mismatch in "
+                        f"{_display_path(schema_path)}: expected={artifact_type} actual={schema_const}"
+                    ),
+                )
+            )
+    return failures
 
 
 def check_repo_contracts(
@@ -469,6 +539,7 @@ def main() -> int:
     all_failures, all_warnings, not_yet_enforceable, per_repo_results = run_enforcement(
         registry, standards, manifests
     )
+    all_failures.extend(check_standards_manifest_schema_completeness(standards))
 
     for f in all_failures:
         print(format_enforcement_line(f))

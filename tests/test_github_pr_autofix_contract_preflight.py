@@ -99,6 +99,32 @@ def test_preflight_pass_without_execution_invariant_is_classified_for_repair() -
     assert diagnosis["reason_codes"] == ["PREFLIGHT_PASS_WITHOUT_PYTEST_EXECUTION"]
 
 
+def test_diagnosis_includes_trace_mismatch_diagnostics_when_tpa_mismatch_present() -> None:
+    diagnosis = build_preflight_block_diagnosis_record(
+        report={
+            "tpa_contract_sync_check_record": {
+                "mismatches": [
+                    {
+                        "trace_id": "trace-abc",
+                        "run_id": "run-abc",
+                        "changed_file_refs": ["contracts/standards-manifest.json"],
+                        "manifest_entry_ref": "contracts/standards-manifest.json#contracts[artifact_type=x]",
+                        "schema_path": "contracts/schemas/x.schema.json",
+                        "example_path": "contracts/examples/x.json",
+                        "runtime_source_ref": "scripts/run_contract_preflight.py::run_tpa_contract_sync_check",
+                        "mismatch_type": "schema_artifact_type_mismatch",
+                    }
+                ]
+            }
+        },
+        preflight_artifact={"control_signal": {"strategy_gate_decision": "BLOCK"}, "generated_at": "2026"},
+    )
+    mismatch = diagnosis["mismatch_diagnostics"]
+    assert mismatch["trace_id"] == "trace-abc"
+    assert mismatch["run_id"] == "run-abc"
+    assert mismatch["mismatch_type"] == "schema_artifact_type_mismatch"
+
+
 def test_pytest_execution_record_required_invariant_is_classified_for_repair() -> None:
     diagnosis = build_preflight_block_diagnosis_record(
         report={
