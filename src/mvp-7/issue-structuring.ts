@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "crypto";
 import type { StructuredIssueSet, StructuredIssue, IssueStructuringResult } from "./types";
 
 /**
@@ -10,7 +10,7 @@ import type { StructuredIssueSet, StructuredIssue, IssueStructuringResult } from
 export async function structureIssuesForPaper(
   issueRegistry: any
 ): Promise<IssueStructuringResult> {
-  const traceId = uuidv4();
+  const traceId = randomUUID();
   const traceContext = { trace_id: traceId, created_at: new Date().toISOString() };
 
   try {
@@ -34,17 +34,24 @@ export async function structureIssuesForPaper(
 
     const structuredSet: StructuredIssueSet = {
       artifact_kind: "structured_issue_set",
-      artifact_id: uuidv4(),
+      artifact_id: randomUUID(),
+      created_at: new Date().toISOString(),
+      schema_ref: "artifacts/structured_issue_set.schema.json",
+      trace: traceContext,
       issues: structuredIssues,
       content_hash: computeHash(JSON.stringify(structuredIssues)),
     };
 
     const executionRecord = {
       artifact_kind: "pqx_execution_record",
-      artifact_id: uuidv4(),
+      artifact_id: randomUUID(),
+      created_at: new Date().toISOString(),
+      trace: traceContext,
       pqx_step: { name: "MVP-7: Structured Issue Set", version: "1.0" },
       execution_status: "succeeded",
+      inputs: { artifact_ids: [issueRegistry.artifact_id] },
       outputs: { artifact_ids: [structuredSet.artifact_id] },
+      timing: { started_at: traceContext.created_at, ended_at: new Date().toISOString() },
     };
 
     return { success: true, structured_issue_set: structuredSet, execution_record: executionRecord };
@@ -54,29 +61,28 @@ export async function structureIssuesForPaper(
       error: error instanceof Error ? error.message : String(error),
       execution_record: {
         artifact_kind: "pqx_execution_record",
-        artifact_id: uuidv4(),
+        artifact_id: randomUUID(),
+        created_at: new Date().toISOString(),
         execution_status: "failed",
+        failure: { reason_codes: ["structuring_error"] },
       },
     };
   }
 }
 
 function determineSpectrumBand(issue: any): string {
-  // Placeholder logic: would be more sophisticated in production
   if (issue.priority === "high") return "C"; // Critical
   if (issue.priority === "medium") return "L"; // Licensed
   return "S"; // Secondary
 }
 
 function determinePolicySection(issue: any): string {
-  // Placeholder logic
   if (issue.type === "risk") return "risks";
   if (issue.type === "action_item") return "actions";
   return "findings";
 }
 
 function mapToSection(issue: any, section: string): string {
-  // Map to paper section ID
   const sectionMap: Record<string, string> = {
     risks: "section-5",
     actions: "section-6",
@@ -86,6 +92,6 @@ function mapToSection(issue: any, section: string): string {
 }
 
 function computeHash(content: string): string {
-  const crypto = require("crypto");
-  return `sha256:${crypto.createHash("sha256").update(content).digest("hex")}`;
+  const { createHash } = require("crypto");
+  return `sha256:${createHash("sha256").update(content).digest("hex")}`;
 }

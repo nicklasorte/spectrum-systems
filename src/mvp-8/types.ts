@@ -7,6 +7,9 @@ export interface PaperSection {
 export interface PaperDraftArtifact {
   artifact_kind: "paper_draft_artifact";
   artifact_id: string;
+  created_at: string;
+  schema_ref: string;
+  trace: { trace_id: string; created_at: string };
   sections: Record<string, PaperSection>;
   source_issue_set_id: string;
   generation_model: string;

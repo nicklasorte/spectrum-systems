@@ -16,10 +16,6 @@ revised_draft_artifact with:
 - All revised sections
 - revision_diff (finding_id → change)
 
-## Seeding
+## Model
 
-All Sonnet calls seeded for replay.
-
-## Gate-5
-
-Checks: All S2+ findings addressed, schema valid.
+Sonnet. All calls seeded.

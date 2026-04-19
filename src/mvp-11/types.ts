@@ -9,6 +9,9 @@ export interface RevisionFinding {
 export interface RevisedDraftArtifact {
   artifact_kind: "revised_draft_artifact";
   artifact_id: string;
+  created_at: string;
+  schema_ref: string;
+  trace: { trace_id: string; created_at: string };
   sections: Record<string, string>;
   revision_diff: RevisionFinding[];
   source_draft_id: string;

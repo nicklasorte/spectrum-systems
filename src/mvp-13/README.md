@@ -14,13 +14,8 @@ Final governance gate. 6 certification checks.
 ## Status
 
 - PASSED: All 6 checks pass → release_artifact emitted ✨
-- FAILED: Any check fails → block, emit failure
+- FAILED: Any check fails → block
 
 ## No Override
 
 Fail-closed. No human override.
-
-## TLC Routing
-
-Only PASSED certification routes to release namespace.
-FAILED blocks all downstream.

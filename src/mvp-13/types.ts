@@ -1,6 +1,9 @@
 export interface DoneCertificationRecord {
   artifact_kind: "done_certification_record";
   artifact_id: string;
+  created_at: string;
+  schema_ref: string;
+  trace: { trace_id: string; created_at: string };
   status: "PASSED" | "FAILED";
   checks: Record<string, boolean>;
   failures?: string[];
@@ -10,6 +13,9 @@ export interface DoneCertificationRecord {
 export interface ReleaseArtifact {
   artifact_kind: "release_artifact";
   artifact_id: string;
+  created_at: string;
+  schema_ref: string;
+  trace: { trace_id: string; created_at: string };
   formatted_paper_id: string;
   certification_id: string;
   status: "RELEASED";

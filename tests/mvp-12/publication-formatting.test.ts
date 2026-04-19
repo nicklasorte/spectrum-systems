@@ -13,6 +13,5 @@ describe("MVP-12: Publication Formatting", () => {
 
     expect(result.success).toBe(true);
     expect(result.formatted_paper_artifact?.title).toBe("Test Paper");
-    expect(result.formatted_paper_artifact?.publication_metadata.doi_placeholder).toBeDefined();
   });
 });

@@ -11,6 +11,9 @@ export interface StructuredIssue {
 export interface StructuredIssueSet {
   artifact_kind: "structured_issue_set";
   artifact_id: string;
+  created_at: string;
+  schema_ref: string;
+  trace: { trace_id: string; created_at: string };
   issues: StructuredIssue[];
   content_hash: string;
 }
