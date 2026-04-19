@@ -1,42 +1,60 @@
 # Protected File Registry (TLC)
 
-The TLC system maintains a registry of files that cannot be modified via feature PRs.
-
-## Why
-
-The system registry guard enforces SHADOW_OWNERSHIP_OVERLAP to prevent feature PRs from silently modifying files that define system authority, agent behavior, and governance rules.
+Source of truth for which files require a **dedicated governance PR** to modify.
 
 ## Protected Files
 
-| File | Reason | Change Requires |
-|------|--------|-----------------|
-| CLAUDE.md | Agent authority document | governance_pr |
-| AGENTS.md | Agent standards document | governance_pr |
-| scripts/run_system_registry_guard.py | Registry guard enforcement | governance_pr |
-| contracts/schemas/ | Core artifact schemas | governance_pr |
-| .github/workflows/ | CI/CD pipelines | governance_pr |
+| File / Path | Reason | Change Requires |
+|-------------|--------|-----------------|
+| `CLAUDE.md` | Agent authority document | governance_pr |
+| `AGENTS.md` | Agent standards document | governance_pr |
+| `scripts/run_system_registry_guard.py` | Registry guard enforcement | governance_pr |
+| `.github/workflows/` | CI/CD pipelines | governance_pr |
+| `contracts/schemas/` | Core artifact schemas | governance_pr |
 
-## How to Change a Protected File
+## What Is NOT Protected
 
-1. Open a **dedicated governance PR** (not a feature PR)
-2. PR title must start with `[GOVERNANCE]`
-3. PR must include justification for the change
-4. Requires explicit review from system authority owner
-5. Cannot be auto-merged
+- `scripts/check_protected_files.py` — safe to ship in feature PRs
+- `src/tlc/` — TLC source files are safe in feature PRs
+- `docs/`, `tests/`, `src/` (non-schema) — all safe in feature PRs
 
-## How to Catch This Early (Pre-Commit)
+## Bootstrap Rule
 
-```bash
-python scripts/check_protected_files.py --base-ref main --head-ref HEAD
+The protected file check **script** ships in feature PRs.
+The **CI workflow** that wires it into GitHub Actions ships in a governance PR.
+This prevents the script from blocking its own introduction.
+
+## Detection Layers (Earliest to Latest)
+
+```
+1. pre-push hook (local)     → catches before network call
+2. CI protected-file-check   → catches in GitHub Actions (governance PR ships this)
+3. System registry guard     → final authority, always runs
 ```
 
-This runs automatically via the pre-commit hook and GitHub Actions workflow.
+## To Install the Pre-Push Hook
 
-## How to Add a Protected File
+```bash
+bash scripts/install_hooks.sh
+```
 
-1. Add to `PROTECTED_FILES` in `src/tlc/protected-file-registry.ts`
-2. Add to `PROTECTED_FILES` in `scripts/check_protected_files.py`
-3. Open governance PR to add the new entry
+This installs `.git/hooks/pre-push` which runs `check_protected_files.py` before every push.
+
+## To Modify a Protected File
+
+1. Open a PR titled `[GOVERNANCE] <description>`
+2. Include justification for the change
+3. Requires review from system-authority owner
+4. Cannot be auto-merged
+
+## To Add a New Protected File
+
+Update both:
+
+- `src/tlc/protected-file-registry.ts` (TypeScript, used by hooks)
+- `scripts/check_protected_files.py` (Python, used by CI and hooks)
+
+Open a governance PR to add the new entry.
 
 ## How It Works
 

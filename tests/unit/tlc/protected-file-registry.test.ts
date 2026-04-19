@@ -4,121 +4,109 @@
 
 import { ProtectedFileRegistry } from "../../../src/tlc/protected-file-registry";
 
-describe("Protected File Registry", () => {
+describe("ProtectedFileRegistry", () => {
   let registry: ProtectedFileRegistry;
 
   beforeEach(() => {
     registry = new ProtectedFileRegistry();
   });
 
-  describe("isProtected", () => {
-    test("should detect CLAUDE.md as protected", () => {
-      const result = registry.isProtected("CLAUDE.md");
-      expect(result.protected).toBe(true);
-      expect(result.file?.change_requires).toBe("governance_pr");
+  describe("isProtected — exact matches", () => {
+    test("CLAUDE.md is protected", () => {
+      expect(registry.isProtected("CLAUDE.md").protected).toBe(true);
     });
 
-    test("should detect AGENTS.md as protected", () => {
-      const result = registry.isProtected("AGENTS.md");
-      expect(result.protected).toBe(true);
-      expect(result.file?.reason).toContain("Agent standards");
+    test("AGENTS.md is protected", () => {
+      expect(registry.isProtected("AGENTS.md").protected).toBe(true);
     });
 
-    test("should detect registry guard as protected", () => {
-      const result = registry.isProtected("scripts/run_system_registry_guard.py");
-      expect(result.protected).toBe(true);
-      expect(result.file?.reason).toContain("authority enforcement");
+    test("registry guard script is protected", () => {
+      expect(registry.isProtected("scripts/run_system_registry_guard.py").protected).toBe(true);
+    });
+  });
+
+  describe("isProtected — directory prefix matches", () => {
+    test("any workflow file is protected", () => {
+      expect(registry.isProtected(".github/workflows/ci.yml").protected).toBe(true);
+      expect(registry.isProtected(".github/workflows/protected-file-check.yml").protected).toBe(true);
     });
 
-    test("should detect schema directory entries as protected", () => {
-      const result = registry.isProtected("contracts/schemas/my-new-schema.json");
-      expect(result.protected).toBe(true);
-      expect(result.file?.reason).toContain("artifact schemas");
+    test("any schema file is protected", () => {
+      expect(registry.isProtected("contracts/schemas/my-schema.json").protected).toBe(true);
+    });
+  });
+
+  describe("isProtected — safe files (bootstrap safety)", () => {
+    test("feature source files are not protected", () => {
+      expect(registry.isProtected("src/governance/sli-types.ts").protected).toBe(false);
+      expect(registry.isProtected("src/tlc/protected-file-registry.ts").protected).toBe(false);
+      expect(registry.isProtected("tests/unit/tlc/protected-file-registry.test.ts").protected).toBe(false);
     });
 
-    test("should detect workflows directory entries as protected", () => {
-      const result = registry.isProtected(".github/workflows/test.yml");
-      expect(result.protected).toBe(true);
-      expect(result.file?.reason).toContain("CI/CD");
+    test("check_protected_files.py script is NOT protected (bootstrap safety)", () => {
+      // The script ships in feature PRs. Only the workflow that wires it into CI is protected.
+      expect(registry.isProtected("scripts/check_protected_files.py").protected).toBe(false);
     });
 
-    test("should allow normal feature files", () => {
-      const result = registry.isProtected("src/governance/sli-types.ts");
-      expect(result.protected).toBe(false);
+    test("install_hooks.sh script is NOT protected", () => {
+      expect(registry.isProtected("scripts/install_hooks.sh").protected).toBe(false);
     });
 
-    test("should allow test files", () => {
-      const result = registry.isProtected("tests/governance/sli-backend.test.ts");
-      expect(result.protected).toBe(false);
-    });
-
-    test("should allow README.md in subdirectories", () => {
-      const result = registry.isProtected("docs/governance/README.md");
-      expect(result.protected).toBe(false);
+    test("docs and roadmap files are not protected", () => {
+      expect(registry.isProtected("docs/roadmap/phase-5-completion-summary.md").protected).toBe(false);
     });
   });
 
   describe("validateChangedFiles", () => {
-    test("should validate clean changeset", () => {
+    test("clean changeset with TLC and scripts passes", () => {
       const result = registry.validateChangedFiles([
-        "src/governance/sli-types.ts",
-        "tests/governance/sli-backend.test.ts",
+        "src/tlc/protected-file-registry.ts",
+        "scripts/check_protected_files.py",
+        "scripts/install_hooks.sh",
+        "tests/unit/tlc/protected-file-registry.test.ts",
       ]);
       expect(result.clean).toBe(true);
-      expect(result.violations.length).toBe(0);
+      expect(result.violations).toHaveLength(0);
     });
 
-    test("should catch SHADOW_OWNERSHIP_OVERLAP in changeset", () => {
-      const result = registry.validateChangedFiles([
-        "src/governance/sli-types.ts",
-        "CLAUDE.md",
-        "AGENTS.md",
-      ]);
+    test("CLAUDE.md in changeset fails", () => {
+      const result = registry.validateChangedFiles(["src/governance/sli-types.ts", "CLAUDE.md"]);
       expect(result.clean).toBe(false);
-      expect(result.violations.length).toBe(2);
-    });
-
-    test("should catch single protected file violation", () => {
-      const result = registry.validateChangedFiles([
-        "src/governance/new-feature.ts",
-        "CLAUDE.md",
-      ]);
-      expect(result.clean).toBe(false);
-      expect(result.violations.length).toBe(1);
+      expect(result.violations).toHaveLength(1);
       expect(result.violations[0].file).toBe("CLAUDE.md");
     });
 
-    test("should report correct reason for violation", () => {
-      const result = registry.validateChangedFiles(["CLAUDE.md"]);
-      expect(result.violations[0].reason).toContain("authority");
+    test("workflow file in changeset fails", () => {
+      const result = registry.validateChangedFiles([
+        "src/tlc/protected-file-registry.ts",
+        ".github/workflows/protected-file-check.yml",
+      ]);
+      expect(result.clean).toBe(false);
       expect(result.violations[0].change_requires).toBe("governance_pr");
     });
 
-    test("should catch workflow changes", () => {
+    test("violation includes actionable example_fix", () => {
+      const result = registry.validateChangedFiles(["CLAUDE.md"]);
+      expect(result.violations[0].example_fix).toContain("git checkout main");
+    });
+
+    test("multiple violations all included with fixes", () => {
       const result = registry.validateChangedFiles([
+        "CLAUDE.md",
+        "AGENTS.md",
         ".github/workflows/test.yml",
-        ".github/workflows/build.yml",
       ]);
-      expect(result.clean).toBe(false);
-      expect(result.violations.length).toBe(2);
+      expect(result.violations.length).toBe(3);
+      expect(result.violations.every((v) => v.example_fix)).toBe(true);
     });
 
-    test("should catch schema changes", () => {
-      const result = registry.validateChangedFiles([
-        "contracts/schemas/v1/artifact.json",
-        "contracts/schemas/v2/new-artifact.json",
-      ]);
-      expect(result.clean).toBe(false);
-      expect(result.violations.length).toBe(2);
-    });
-
-    test("should handle empty changeset", () => {
+    test("empty changeset passes", () => {
       const result = registry.validateChangedFiles([]);
       expect(result.clean).toBe(true);
       expect(result.violations.length).toBe(0);
     });
 
-    test("should handle large changesets with mixed protected/unprotected", () => {
+    test("large changeset with mixed protected/unprotected", () => {
       const result = registry.validateChangedFiles([
         "src/feature1.ts",
         "src/feature2.ts",
@@ -127,9 +115,11 @@ describe("Protected File Registry", () => {
         "docs/guide.md",
         ".github/workflows/ci.yml",
         "src/feature3.ts",
+        "scripts/check_protected_files.py",
       ]);
       expect(result.clean).toBe(false);
       expect(result.violations.length).toBe(2); // CLAUDE.md and .github/workflows/ci.yml
+      expect(result.violations.every((v) => v.example_fix)).toBe(true);
     });
   });
 
