@@ -1,5 +1,5 @@
 {
-  "artifact_type": "generated_eval_promotion_request_record",
+  "artifact_type": "generated_eval_registry_change_request_record",
   "artifact_id": "GEPR-2F128A8A8E6B44D1",
   "generated_eval_artifact_id": "GEC-5C8D88C7B5870A12",
   "source_failure_artifact_ids": [

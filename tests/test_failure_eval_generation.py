@@ -5,14 +5,14 @@ from pathlib import Path
 
 from spectrum_systems.modules.runtime.failure_eval_generation import (
     admit_generated_eval_case,
-    build_generated_eval_promotion_decision_record,
-    build_generated_eval_promotion_request_record,
-    build_generated_eval_promotion_rollback_record,
+    build_generated_eval_registry_change_review_record,
+    build_generated_eval_registry_change_request_record,
+    build_generated_eval_registry_change_reversal_record,
     build_generated_eval_candidate_queue,
     build_generated_eval_candidate_records,
     build_generated_eval_candidate_assessment_records,
-    execute_generated_eval_promotion_gate,
-    execute_generated_eval_promotion_rollback,
+    execute_generated_eval_registry_change_gate,
+    execute_generated_eval_registry_change_reversal,
     generate_eval_candidate_review_bundle,
     generate_and_admit_failure_eval,
     generate_eval_case_from_failure_record,
@@ -324,7 +324,7 @@ def test_end_to_end_failure_to_candidate_staging_queue_and_assessment_bundle() -
     assert bundle["candidate_queue"]["high_priority_candidates"]
 
 
-def _promotion_setup(*, occurrence_count: int = 2) -> dict:
+def _registry_change_setup(*, occurrence_count: int = 2) -> dict:
     pair = _admitted_pair("missing_required_eval_failure")
     generated_eval_case = pair["generated_eval_case"]
     admission_record = pair["generated_eval_admission_record"]
@@ -341,268 +341,323 @@ def _promotion_setup(*, occurrence_count: int = 2) -> dict:
         "last_seen_at": generated_eval_case["created_at"],
         "created_at": generated_eval_case["created_at"],
     }
-    request = build_generated_eval_promotion_request_record(
+    request = build_generated_eval_registry_change_request_record(
         generated_eval_case,
         candidate_record,
         request_origin="candidate_assessment",
         justification="Recurring admitted candidate with deterministic lineage.",
     )
-    decision = build_generated_eval_promotion_decision_record(
+    review_outcome = build_generated_eval_registry_change_review_record(
         request,
-        decision="approved",
+        review_outcome="accepted",
         decided_by="runtime-governance-reviewer",
-        rationale="Replay linkage and promotion lineage reviewed.",
+        rationale="Replay linkage and registry-change lineage reviewed.",
     )
     return {
         "generated_eval_case": generated_eval_case,
         "admission_record": admission_record,
         "candidate_record": candidate_record,
         "request": request,
-        "decision": decision,
+        "review_outcome": review_outcome,
         "required_eval_registry": load_required_eval_registry(),
     }
 
 
-def test_promotion_without_admission_record_blocks() -> None:
-    setup = _promotion_setup()
-    output = execute_generated_eval_promotion_gate(
+def test_registry_change_without_admission_record_blocks() -> None:
+    setup = _registry_change_setup()
+    output = execute_generated_eval_registry_change_gate(
         generated_eval_case=setup["generated_eval_case"],
         generated_eval_admission_record=None,
         candidate_record=setup["candidate_record"],
-        promotion_request_record=setup["request"],
-        promotion_decision_record=setup["decision"],
+        registry_change_request_record=setup["request"],
+        registry_change_review_record=setup["review_outcome"],
         required_eval_registry=setup["required_eval_registry"],
     )
-    assert output["generated_eval_promotion_result_record"]["promoted"] is False
-    assert "missing_generated_eval_admission_record" in output["generated_eval_promotion_result_record"]["blocked_reasons"]
+    assert output["generated_eval_registry_change_execution_record"]["registry_updated"] is False
+    assert "missing_generated_eval_admission_record" in output["generated_eval_registry_change_execution_record"]["blocked_reasons"]
 
 
-def test_promotion_with_no_candidate_record_blocks() -> None:
-    setup = _promotion_setup()
-    output = execute_generated_eval_promotion_gate(
+def test_registry_change_with_no_candidate_record_blocks() -> None:
+    setup = _registry_change_setup()
+    output = execute_generated_eval_registry_change_gate(
         generated_eval_case=setup["generated_eval_case"],
         generated_eval_admission_record=setup["admission_record"],
         candidate_record=None,
-        promotion_request_record=setup["request"],
-        promotion_decision_record=setup["decision"],
+        registry_change_request_record=setup["request"],
+        registry_change_review_record=setup["review_outcome"],
         required_eval_registry=setup["required_eval_registry"],
     )
-    assert output["generated_eval_promotion_result_record"]["promoted"] is False
-    assert "missing_candidate_record" in output["generated_eval_promotion_result_record"]["blocked_reasons"]
+    assert output["generated_eval_registry_change_execution_record"]["registry_updated"] is False
+    assert "missing_candidate_record" in output["generated_eval_registry_change_execution_record"]["blocked_reasons"]
 
 
-def test_promotion_below_threshold_blocks() -> None:
-    setup = _promotion_setup(occurrence_count=1)
-    output = execute_generated_eval_promotion_gate(
+def test_registry_change_below_threshold_blocks() -> None:
+    setup = _registry_change_setup(occurrence_count=1)
+    output = execute_generated_eval_registry_change_gate(
         generated_eval_case=setup["generated_eval_case"],
         generated_eval_admission_record=setup["admission_record"],
         candidate_record=setup["candidate_record"],
-        promotion_request_record=setup["request"],
-        promotion_decision_record=setup["decision"],
+        registry_change_request_record=setup["request"],
+        registry_change_review_record=setup["review_outcome"],
         required_eval_registry=setup["required_eval_registry"],
         occurrence_threshold=2,
     )
-    assert output["generated_eval_promotion_result_record"]["promoted"] is False
-    assert "occurrence_count_below_threshold" in output["generated_eval_promotion_result_record"]["blocked_reasons"]
+    assert output["generated_eval_registry_change_execution_record"]["registry_updated"] is False
+    assert "occurrence_count_below_threshold" in output["generated_eval_registry_change_execution_record"]["blocked_reasons"]
 
 
-def test_promotion_without_request_artifact_blocks() -> None:
-    setup = _promotion_setup()
-    output = execute_generated_eval_promotion_gate(
+def test_registry_change_without_request_artifact_blocks() -> None:
+    setup = _registry_change_setup()
+    output = execute_generated_eval_registry_change_gate(
         generated_eval_case=setup["generated_eval_case"],
         generated_eval_admission_record=setup["admission_record"],
         candidate_record=setup["candidate_record"],
-        promotion_request_record=None,
-        promotion_decision_record=setup["decision"],
+        registry_change_request_record=None,
+        registry_change_review_record=setup["review_outcome"],
         required_eval_registry=setup["required_eval_registry"],
     )
-    assert output["generated_eval_promotion_result_record"]["promoted"] is False
-    assert "missing_promotion_request_record" in output["generated_eval_promotion_result_record"]["blocked_reasons"]
+    assert output["generated_eval_registry_change_execution_record"]["registry_updated"] is False
+    assert "missing_registry_change_request_record" in output["generated_eval_registry_change_execution_record"]["blocked_reasons"]
 
 
-def test_promotion_without_decision_artifact_blocks() -> None:
-    setup = _promotion_setup()
-    output = execute_generated_eval_promotion_gate(
+def test_registry_change_without_review_outcome_artifact_blocks() -> None:
+    setup = _registry_change_setup()
+    output = execute_generated_eval_registry_change_gate(
         generated_eval_case=setup["generated_eval_case"],
         generated_eval_admission_record=setup["admission_record"],
         candidate_record=setup["candidate_record"],
-        promotion_request_record=setup["request"],
-        promotion_decision_record=None,
+        registry_change_request_record=setup["request"],
+        registry_change_review_record=None,
         required_eval_registry=setup["required_eval_registry"],
     )
-    assert output["generated_eval_promotion_result_record"]["promoted"] is False
-    assert "missing_promotion_decision_record" in output["generated_eval_promotion_result_record"]["blocked_reasons"]
+    assert output["generated_eval_registry_change_execution_record"]["registry_updated"] is False
+    assert "missing_registry_change_review_record" in output["generated_eval_registry_change_execution_record"]["blocked_reasons"]
 
 
-def test_promotion_with_rejected_decision_blocks() -> None:
-    setup = _promotion_setup()
-    rejected_decision = build_generated_eval_promotion_decision_record(
+def test_registry_change_with_declined_review_outcome_blocks() -> None:
+    setup = _registry_change_setup()
+    declined_review_outcome = build_generated_eval_registry_change_review_record(
         setup["request"],
-        decision="rejected",
+        review_outcome="declined",
         decided_by="runtime-governance-reviewer",
         rationale="Insufficient governance confidence.",
     )
-    output = execute_generated_eval_promotion_gate(
+    output = execute_generated_eval_registry_change_gate(
         generated_eval_case=setup["generated_eval_case"],
         generated_eval_admission_record=setup["admission_record"],
         candidate_record=setup["candidate_record"],
-        promotion_request_record=setup["request"],
-        promotion_decision_record=rejected_decision,
+        registry_change_request_record=setup["request"],
+        registry_change_review_record=declined_review_outcome,
         required_eval_registry=setup["required_eval_registry"],
     )
-    assert output["generated_eval_promotion_result_record"]["promoted"] is False
-    assert "promotion_decision_not_approved" in output["generated_eval_promotion_result_record"]["blocked_reasons"]
+    assert output["generated_eval_registry_change_execution_record"]["registry_updated"] is False
+    assert "registry_change_review_not_accepted" in output["generated_eval_registry_change_execution_record"]["blocked_reasons"]
 
 
-def test_promotion_approved_but_replay_validation_fails_blocks() -> None:
-    setup = _promotion_setup()
+def test_registry_change_review_request_linkage_mismatch_blocks() -> None:
+    setup = _registry_change_setup()
+    mismatched_review = dict(setup["review_outcome"])
+    mismatched_review["registry_change_request_artifact_id"] = "GECR-OTHER-REQUEST"
+
+    output = execute_generated_eval_registry_change_gate(
+        generated_eval_case=setup["generated_eval_case"],
+        generated_eval_admission_record=setup["admission_record"],
+        candidate_record=setup["candidate_record"],
+        registry_change_request_record=setup["request"],
+        registry_change_review_record=mismatched_review,
+        required_eval_registry=setup["required_eval_registry"],
+    )
+
+    assert output["generated_eval_registry_change_execution_record"]["registry_updated"] is False
+    assert "registry_change_review_request_mismatch" in output["generated_eval_registry_change_execution_record"]["blocked_reasons"]
+
+
+def test_registry_change_candidate_linkage_mismatch_blocks() -> None:
+    setup = _registry_change_setup()
+    mismatched_candidate = dict(setup["candidate_record"])
+    mismatched_candidate["generated_eval_artifact_id"] = "GEC-OTHER-EVAL"
+
+    output = execute_generated_eval_registry_change_gate(
+        generated_eval_case=setup["generated_eval_case"],
+        generated_eval_admission_record=setup["admission_record"],
+        candidate_record=mismatched_candidate,
+        registry_change_request_record=setup["request"],
+        registry_change_review_record=setup["review_outcome"],
+        required_eval_registry=setup["required_eval_registry"],
+    )
+
+    assert output["generated_eval_registry_change_execution_record"]["registry_updated"] is False
+    assert "candidate_generated_eval_mismatch" in output["generated_eval_registry_change_execution_record"]["blocked_reasons"]
+
+
+def test_registry_change_accepted_but_replay_validation_fails_blocks() -> None:
+    setup = _registry_change_setup()
     setup["generated_eval_case"]["expected_reason_code"] = "mismatched_reason"
-    output = execute_generated_eval_promotion_gate(
+    output = execute_generated_eval_registry_change_gate(
         generated_eval_case=setup["generated_eval_case"],
         generated_eval_admission_record=setup["admission_record"],
         candidate_record=setup["candidate_record"],
-        promotion_request_record=setup["request"],
-        promotion_decision_record=setup["decision"],
+        registry_change_request_record=setup["request"],
+        registry_change_review_record=setup["review_outcome"],
         required_eval_registry=setup["required_eval_registry"],
     )
-    result = output["generated_eval_promotion_result_record"]
-    assert result["promoted"] is False
+    result = output["generated_eval_registry_change_execution_record"]
+    assert result["registry_updated"] is False
     assert result["replay_validation_passed"] is False
     assert "replay_validation_failed" in result["blocked_reasons"]
 
 
-def test_promotion_with_all_requirements_succeeds() -> None:
-    setup = _promotion_setup()
-    output = execute_generated_eval_promotion_gate(
+def test_registry_change_replay_validation_requires_expected_outcome_reason_suffix_match() -> None:
+    setup = _registry_change_setup()
+    setup["generated_eval_case"]["expected_reason_code"] = setup["generated_eval_case"]["reason_code"]
+    setup["generated_eval_case"]["expected_outcome"] = "halt_with_reason_code:wrong_suffix"
+
+    output = execute_generated_eval_registry_change_gate(
         generated_eval_case=setup["generated_eval_case"],
         generated_eval_admission_record=setup["admission_record"],
         candidate_record=setup["candidate_record"],
-        promotion_request_record=setup["request"],
-        promotion_decision_record=setup["decision"],
+        registry_change_request_record=setup["request"],
+        registry_change_review_record=setup["review_outcome"],
         required_eval_registry=setup["required_eval_registry"],
     )
-    result = output["generated_eval_promotion_result_record"]
-    assert result["promoted"] is True
+    result = output["generated_eval_registry_change_execution_record"]
+    assert result["registry_updated"] is False
+    assert result["replay_validation_passed"] is False
+    assert "replay_validation_failed" in result["blocked_reasons"]
+
+
+def test_registry_change_with_all_requirements_succeeds() -> None:
+    setup = _registry_change_setup()
+    output = execute_generated_eval_registry_change_gate(
+        generated_eval_case=setup["generated_eval_case"],
+        generated_eval_admission_record=setup["admission_record"],
+        candidate_record=setup["candidate_record"],
+        registry_change_request_record=setup["request"],
+        registry_change_review_record=setup["review_outcome"],
+        required_eval_registry=setup["required_eval_registry"],
+    )
+    result = output["generated_eval_registry_change_execution_record"]
+    assert result["registry_updated"] is True
     assert result["blocked_reasons"] == []
 
 
-def test_promotion_result_blocked_reasons_are_deterministic() -> None:
-    setup = _promotion_setup(occurrence_count=1)
-    first = execute_generated_eval_promotion_gate(
+def test_registry_change_result_blocked_reasons_are_deterministic() -> None:
+    setup = _registry_change_setup(occurrence_count=1)
+    first = execute_generated_eval_registry_change_gate(
         generated_eval_case=setup["generated_eval_case"],
         generated_eval_admission_record=None,
         candidate_record=setup["candidate_record"],
-        promotion_request_record=None,
-        promotion_decision_record=None,
+        registry_change_request_record=None,
+        registry_change_review_record=None,
         required_eval_registry=setup["required_eval_registry"],
         occurrence_threshold=2,
     )
-    second = execute_generated_eval_promotion_gate(
+    second = execute_generated_eval_registry_change_gate(
         generated_eval_case=setup["generated_eval_case"],
         generated_eval_admission_record=None,
         candidate_record=setup["candidate_record"],
-        promotion_request_record=None,
-        promotion_decision_record=None,
+        registry_change_request_record=None,
+        registry_change_review_record=None,
         required_eval_registry=setup["required_eval_registry"],
         occurrence_threshold=2,
     )
-    assert first["generated_eval_promotion_result_record"]["blocked_reasons"] == second["generated_eval_promotion_result_record"][
+    assert first["generated_eval_registry_change_execution_record"]["blocked_reasons"] == second["generated_eval_registry_change_execution_record"][
         "blocked_reasons"
     ]
 
 
 def test_controlled_update_path_records_required_eval_target() -> None:
-    setup = _promotion_setup()
-    output = execute_generated_eval_promotion_gate(
+    setup = _registry_change_setup()
+    output = execute_generated_eval_registry_change_gate(
         generated_eval_case=setup["generated_eval_case"],
         generated_eval_admission_record=setup["admission_record"],
         candidate_record=setup["candidate_record"],
-        promotion_request_record=setup["request"],
-        promotion_decision_record=setup["decision"],
+        registry_change_request_record=setup["request"],
+        registry_change_review_record=setup["review_outcome"],
         required_eval_registry=setup["required_eval_registry"],
     )
     assert (
-        output["generated_eval_promotion_result_record"]["required_eval_target"]
+        output["generated_eval_registry_change_execution_record"]["required_eval_target"]
         == "required_eval_registry.mappings[artifact_family=generated_eval_case].required_evals"
     )
 
 
-def test_rollback_record_can_be_created_for_promoted_eval() -> None:
-    setup = _promotion_setup()
-    promotion_output = execute_generated_eval_promotion_gate(
+def test_rollback_record_can_be_created_for_registry_updated_eval() -> None:
+    setup = _registry_change_setup()
+    registry_change_output = execute_generated_eval_registry_change_gate(
         generated_eval_case=setup["generated_eval_case"],
         generated_eval_admission_record=setup["admission_record"],
         candidate_record=setup["candidate_record"],
-        promotion_request_record=setup["request"],
-        promotion_decision_record=setup["decision"],
+        registry_change_request_record=setup["request"],
+        registry_change_review_record=setup["review_outcome"],
         required_eval_registry=setup["required_eval_registry"],
     )
-    rollback_record = build_generated_eval_promotion_rollback_record(
+    rollback_record = build_generated_eval_registry_change_reversal_record(
         generated_eval_artifact_id=setup["generated_eval_case"]["artifact_id"],
-        promotion_result_record=promotion_output["generated_eval_promotion_result_record"],
+        registry_change_execution_record=registry_change_output["generated_eval_registry_change_execution_record"],
         rollback_reason="manual_governance_reversal",
     )
-    assert rollback_record["rolled_back"] is True
+    assert rollback_record["reversal_applied"] is True
     assert rollback_record["generated_eval_artifact_id"] == setup["generated_eval_case"]["artifact_id"]
 
 
 def test_rollback_path_is_deterministic() -> None:
-    setup = _promotion_setup()
-    promotion_output = execute_generated_eval_promotion_gate(
+    setup = _registry_change_setup()
+    registry_change_output = execute_generated_eval_registry_change_gate(
         generated_eval_case=setup["generated_eval_case"],
         generated_eval_admission_record=setup["admission_record"],
         candidate_record=setup["candidate_record"],
-        promotion_request_record=setup["request"],
-        promotion_decision_record=setup["decision"],
+        registry_change_request_record=setup["request"],
+        registry_change_review_record=setup["review_outcome"],
         required_eval_registry=setup["required_eval_registry"],
     )
-    first = execute_generated_eval_promotion_rollback(
+    first = execute_generated_eval_registry_change_reversal(
         generated_eval_artifact_id=setup["generated_eval_case"]["artifact_id"],
-        promotion_result_record=promotion_output["generated_eval_promotion_result_record"],
+        registry_change_execution_record=registry_change_output["generated_eval_registry_change_execution_record"],
         rollback_reason="manual_governance_reversal",
-        required_eval_registry=promotion_output["required_eval_registry"],
+        required_eval_registry=registry_change_output["required_eval_registry"],
     )
-    second = execute_generated_eval_promotion_rollback(
+    second = execute_generated_eval_registry_change_reversal(
         generated_eval_artifact_id=setup["generated_eval_case"]["artifact_id"],
-        promotion_result_record=promotion_output["generated_eval_promotion_result_record"],
+        registry_change_execution_record=registry_change_output["generated_eval_registry_change_execution_record"],
         rollback_reason="manual_governance_reversal",
-        required_eval_registry=promotion_output["required_eval_registry"],
+        required_eval_registry=registry_change_output["required_eval_registry"],
     )
-    assert first["generated_eval_promotion_rollback_record"]["artifact_id"] == second["generated_eval_promotion_rollback_record"][
+    assert first["generated_eval_registry_change_reversal_record"]["artifact_id"] == second["generated_eval_registry_change_reversal_record"][
         "artifact_id"
     ]
 
 
-def test_end_to_end_generated_eval_promotion_and_rollback_flow() -> None:
+def test_end_to_end_generated_eval_registry_change_and_reversal_flow() -> None:
     failure = _fixtures()["missing_required_eval_failure"]
     generated = generate_and_admit_failure_eval(failure)
     generated_repeat = generate_and_admit_failure_eval(failure)
     candidate_record = build_generated_eval_candidate_records([generated, generated_repeat])[0]
-    request = build_generated_eval_promotion_request_record(
+    request = build_generated_eval_registry_change_request_record(
         generated["generated_eval_case"],
         candidate_record,
         request_origin="candidate_assessment",
         justification="Recurring admitted candidate.",
     )
-    decision = build_generated_eval_promotion_decision_record(
+    review_outcome = build_generated_eval_registry_change_review_record(
         request,
-        decision="approved",
+        review_outcome="accepted",
         decided_by="runtime-governance-reviewer",
-        rationale="Promotion review complete.",
+        rationale="Registry change review complete.",
     )
-    promoted = execute_generated_eval_promotion_gate(
+    registry_change_output = execute_generated_eval_registry_change_gate(
         generated_eval_case=generated["generated_eval_case"],
         generated_eval_admission_record=generated["generated_eval_admission_record"],
         candidate_record=candidate_record,
-        promotion_request_record=request,
-        promotion_decision_record=decision,
+        registry_change_request_record=request,
+        registry_change_review_record=review_outcome,
         required_eval_registry=load_required_eval_registry(),
     )
-    rollback = execute_generated_eval_promotion_rollback(
+    rollback = execute_generated_eval_registry_change_reversal(
         generated_eval_artifact_id=generated["generated_eval_case"]["artifact_id"],
-        promotion_result_record=promoted["generated_eval_promotion_result_record"],
+        registry_change_execution_record=registry_change_output["generated_eval_registry_change_execution_record"],
         rollback_reason="manual_governance_reversal",
-        required_eval_registry=promoted["required_eval_registry"],
+        required_eval_registry=registry_change_output["required_eval_registry"],
     )
-    assert promoted["generated_eval_promotion_result_record"]["promoted"] is True
-    assert rollback["generated_eval_promotion_rollback_record"]["rolled_back"] is True
+    assert registry_change_output["generated_eval_registry_change_execution_record"]["registry_updated"] is True
+    assert rollback["generated_eval_registry_change_reversal_record"]["reversal_applied"] is True
