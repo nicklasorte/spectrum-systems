@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "owner": "governance",
+  "description": "Rules for converting exceptions into policy candidates",
+  "rules": [
+    {
+      "condition": "5+ exceptions of same affected_resource in 30 days",
+      "action": "auto_generate_policy_candidate",
+      "policy_fields": [
+        "affected_resource",
+        "top_exception_reason",
+        "frequency",
+        "recommendation"
+      ],
+      "escalation": "notify governance team for review"
+    },
+    {
+      "condition": "exception expiry_date reached",
+      "action": "mark as expired, remove from active set",
+      "escalation": "none"
+    },
+    {
+      "condition": "exception never converted to policy after 90 days",
+      "action": "mark as stale",
+      "escalation": "notify issuer for review"
+    }
+  ]
+}

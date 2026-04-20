@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "ExceptionArtifact",
+  "description": "Immutable record of a governance exception with lifecycle tracking",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exception_id",
+    "exception_reason",
+    "issued_by",
+    "issued_date",
+    "expiry_date",
+    "affected_resource",
+    "severity",
+    "conversion_status",
+    "created_timestamp"
+  ],
+  "properties": {
+    "exception_id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "description": "Unique immutable ID"
+    },
+    "exception_reason": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 1000,
+      "description": "Why this exception was granted"
+    },
+    "issued_by": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "description": "User or system actor who issued exception"
+    },
+    "issued_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When exception was issued"
+    },
+    "expiry_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When exception expires (no indefinite exceptions)"
+    },
+    "affected_resource": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 500,
+      "description": "What system component or gate is being granted an exception"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["low", "medium", "high"],
+      "description": "Severity of the exception"
+    },
+    "policy_candidate_generated": {
+      "type": "boolean",
+      "description": "Whether this exception triggered policy_candidate generation"
+    },
+    "conversion_status": {
+      "type": "string",
+      "enum": ["pending", "converted", "expired", "stale"],
+      "description": "Lifecycle status"
+    },
+    "created_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record creation time"
+    }
+  }
+}
