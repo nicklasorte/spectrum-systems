@@ -1,0 +1,466 @@
+{
+  "meeting_date": "2026-04-21T00:00:00Z",
+  "speakers": [
+    "Speaker_0",
+    "Speaker_1",
+    "Speaker_2"
+  ],
+  "duration_seconds": 5400,
+  "segments": [
+    {
+      "timestamp": 0,
+      "speaker": "Speaker_0",
+      "text": "Contribution 1. 90-minute meeting."
+    },
+    {
+      "timestamp": 60,
+      "speaker": "Speaker_1",
+      "text": "Contribution 2. 90-minute meeting."
+    },
+    {
+      "timestamp": 120,
+      "speaker": "Speaker_2",
+      "text": "Contribution 3. 90-minute meeting."
+    },
+    {
+      "timestamp": 180,
+      "speaker": "Speaker_0",
+      "text": "Contribution 4. 90-minute meeting."
+    },
+    {
+      "timestamp": 240,
+      "speaker": "Speaker_1",
+      "text": "Contribution 5. 90-minute meeting."
+    },
+    {
+      "timestamp": 300,
+      "speaker": "Speaker_2",
+      "text": "Contribution 6. 90-minute meeting."
+    },
+    {
+      "timestamp": 360,
+      "speaker": "Speaker_0",
+      "text": "Contribution 7. 90-minute meeting."
+    },
+    {
+      "timestamp": 420,
+      "speaker": "Speaker_1",
+      "text": "Contribution 8. 90-minute meeting."
+    },
+    {
+      "timestamp": 480,
+      "speaker": "Speaker_2",
+      "text": "Contribution 9. 90-minute meeting."
+    },
+    {
+      "timestamp": 540,
+      "speaker": "Speaker_0",
+      "text": "Contribution 10. 90-minute meeting."
+    },
+    {
+      "timestamp": 600,
+      "speaker": "Speaker_1",
+      "text": "Contribution 11. 90-minute meeting."
+    },
+    {
+      "timestamp": 660,
+      "speaker": "Speaker_2",
+      "text": "Contribution 12. 90-minute meeting."
+    },
+    {
+      "timestamp": 720,
+      "speaker": "Speaker_0",
+      "text": "Contribution 13. 90-minute meeting."
+    },
+    {
+      "timestamp": 780,
+      "speaker": "Speaker_1",
+      "text": "Contribution 14. 90-minute meeting."
+    },
+    {
+      "timestamp": 840,
+      "speaker": "Speaker_2",
+      "text": "Contribution 15. 90-minute meeting."
+    },
+    {
+      "timestamp": 900,
+      "speaker": "Speaker_0",
+      "text": "Contribution 16. 90-minute meeting."
+    },
+    {
+      "timestamp": 960,
+      "speaker": "Speaker_1",
+      "text": "Contribution 17. 90-minute meeting."
+    },
+    {
+      "timestamp": 1020,
+      "speaker": "Speaker_2",
+      "text": "Contribution 18. 90-minute meeting."
+    },
+    {
+      "timestamp": 1080,
+      "speaker": "Speaker_0",
+      "text": "Contribution 19. 90-minute meeting."
+    },
+    {
+      "timestamp": 1140,
+      "speaker": "Speaker_1",
+      "text": "Contribution 20. 90-minute meeting."
+    },
+    {
+      "timestamp": 1200,
+      "speaker": "Speaker_2",
+      "text": "Contribution 21. 90-minute meeting."
+    },
+    {
+      "timestamp": 1260,
+      "speaker": "Speaker_0",
+      "text": "Contribution 22. 90-minute meeting."
+    },
+    {
+      "timestamp": 1320,
+      "speaker": "Speaker_1",
+      "text": "Contribution 23. 90-minute meeting."
+    },
+    {
+      "timestamp": 1380,
+      "speaker": "Speaker_2",
+      "text": "Contribution 24. 90-minute meeting."
+    },
+    {
+      "timestamp": 1440,
+      "speaker": "Speaker_0",
+      "text": "Contribution 25. 90-minute meeting."
+    },
+    {
+      "timestamp": 1500,
+      "speaker": "Speaker_1",
+      "text": "Contribution 26. 90-minute meeting."
+    },
+    {
+      "timestamp": 1560,
+      "speaker": "Speaker_2",
+      "text": "Contribution 27. 90-minute meeting."
+    },
+    {
+      "timestamp": 1620,
+      "speaker": "Speaker_0",
+      "text": "Contribution 28. 90-minute meeting."
+    },
+    {
+      "timestamp": 1680,
+      "speaker": "Speaker_1",
+      "text": "Contribution 29. 90-minute meeting."
+    },
+    {
+      "timestamp": 1740,
+      "speaker": "Speaker_2",
+      "text": "Contribution 30. 90-minute meeting."
+    },
+    {
+      "timestamp": 1800,
+      "speaker": "Speaker_0",
+      "text": "Contribution 31. 90-minute meeting."
+    },
+    {
+      "timestamp": 1860,
+      "speaker": "Speaker_1",
+      "text": "Contribution 32. 90-minute meeting."
+    },
+    {
+      "timestamp": 1920,
+      "speaker": "Speaker_2",
+      "text": "Contribution 33. 90-minute meeting."
+    },
+    {
+      "timestamp": 1980,
+      "speaker": "Speaker_0",
+      "text": "Contribution 34. 90-minute meeting."
+    },
+    {
+      "timestamp": 2040,
+      "speaker": "Speaker_1",
+      "text": "Contribution 35. 90-minute meeting."
+    },
+    {
+      "timestamp": 2100,
+      "speaker": "Speaker_2",
+      "text": "Contribution 36. 90-minute meeting."
+    },
+    {
+      "timestamp": 2160,
+      "speaker": "Speaker_0",
+      "text": "Contribution 37. 90-minute meeting."
+    },
+    {
+      "timestamp": 2220,
+      "speaker": "Speaker_1",
+      "text": "Contribution 38. 90-minute meeting."
+    },
+    {
+      "timestamp": 2280,
+      "speaker": "Speaker_2",
+      "text": "Contribution 39. 90-minute meeting."
+    },
+    {
+      "timestamp": 2340,
+      "speaker": "Speaker_0",
+      "text": "Contribution 40. 90-minute meeting."
+    },
+    {
+      "timestamp": 2400,
+      "speaker": "Speaker_1",
+      "text": "Contribution 41. 90-minute meeting."
+    },
+    {
+      "timestamp": 2460,
+      "speaker": "Speaker_2",
+      "text": "Contribution 42. 90-minute meeting."
+    },
+    {
+      "timestamp": 2520,
+      "speaker": "Speaker_0",
+      "text": "Contribution 43. 90-minute meeting."
+    },
+    {
+      "timestamp": 2580,
+      "speaker": "Speaker_1",
+      "text": "Contribution 44. 90-minute meeting."
+    },
+    {
+      "timestamp": 2640,
+      "speaker": "Speaker_2",
+      "text": "Contribution 45. 90-minute meeting."
+    },
+    {
+      "timestamp": 2700,
+      "speaker": "Speaker_0",
+      "text": "Contribution 46. 90-minute meeting."
+    },
+    {
+      "timestamp": 2760,
+      "speaker": "Speaker_1",
+      "text": "Contribution 47. 90-minute meeting."
+    },
+    {
+      "timestamp": 2820,
+      "speaker": "Speaker_2",
+      "text": "Contribution 48. 90-minute meeting."
+    },
+    {
+      "timestamp": 2880,
+      "speaker": "Speaker_0",
+      "text": "Contribution 49. 90-minute meeting."
+    },
+    {
+      "timestamp": 2940,
+      "speaker": "Speaker_1",
+      "text": "Contribution 50. 90-minute meeting."
+    },
+    {
+      "timestamp": 3000,
+      "speaker": "Speaker_2",
+      "text": "Contribution 51. 90-minute meeting."
+    },
+    {
+      "timestamp": 3060,
+      "speaker": "Speaker_0",
+      "text": "Contribution 52. 90-minute meeting."
+    },
+    {
+      "timestamp": 3120,
+      "speaker": "Speaker_1",
+      "text": "Contribution 53. 90-minute meeting."
+    },
+    {
+      "timestamp": 3180,
+      "speaker": "Speaker_2",
+      "text": "Contribution 54. 90-minute meeting."
+    },
+    {
+      "timestamp": 3240,
+      "speaker": "Speaker_0",
+      "text": "Contribution 55. 90-minute meeting."
+    },
+    {
+      "timestamp": 3300,
+      "speaker": "Speaker_1",
+      "text": "Contribution 56. 90-minute meeting."
+    },
+    {
+      "timestamp": 3360,
+      "speaker": "Speaker_2",
+      "text": "Contribution 57. 90-minute meeting."
+    },
+    {
+      "timestamp": 3420,
+      "speaker": "Speaker_0",
+      "text": "Contribution 58. 90-minute meeting."
+    },
+    {
+      "timestamp": 3480,
+      "speaker": "Speaker_1",
+      "text": "Contribution 59. 90-minute meeting."
+    },
+    {
+      "timestamp": 3540,
+      "speaker": "Speaker_2",
+      "text": "Contribution 60. 90-minute meeting."
+    },
+    {
+      "timestamp": 3600,
+      "speaker": "Speaker_0",
+      "text": "Contribution 61. 90-minute meeting."
+    },
+    {
+      "timestamp": 3660,
+      "speaker": "Speaker_1",
+      "text": "Contribution 62. 90-minute meeting."
+    },
+    {
+      "timestamp": 3720,
+      "speaker": "Speaker_2",
+      "text": "Contribution 63. 90-minute meeting."
+    },
+    {
+      "timestamp": 3780,
+      "speaker": "Speaker_0",
+      "text": "Contribution 64. 90-minute meeting."
+    },
+    {
+      "timestamp": 3840,
+      "speaker": "Speaker_1",
+      "text": "Contribution 65. 90-minute meeting."
+    },
+    {
+      "timestamp": 3900,
+      "speaker": "Speaker_2",
+      "text": "Contribution 66. 90-minute meeting."
+    },
+    {
+      "timestamp": 3960,
+      "speaker": "Speaker_0",
+      "text": "Contribution 67. 90-minute meeting."
+    },
+    {
+      "timestamp": 4020,
+      "speaker": "Speaker_1",
+      "text": "Contribution 68. 90-minute meeting."
+    },
+    {
+      "timestamp": 4080,
+      "speaker": "Speaker_2",
+      "text": "Contribution 69. 90-minute meeting."
+    },
+    {
+      "timestamp": 4140,
+      "speaker": "Speaker_0",
+      "text": "Contribution 70. 90-minute meeting."
+    },
+    {
+      "timestamp": 4200,
+      "speaker": "Speaker_1",
+      "text": "Contribution 71. 90-minute meeting."
+    },
+    {
+      "timestamp": 4260,
+      "speaker": "Speaker_2",
+      "text": "Contribution 72. 90-minute meeting."
+    },
+    {
+      "timestamp": 4320,
+      "speaker": "Speaker_0",
+      "text": "Contribution 73. 90-minute meeting."
+    },
+    {
+      "timestamp": 4380,
+      "speaker": "Speaker_1",
+      "text": "Contribution 74. 90-minute meeting."
+    },
+    {
+      "timestamp": 4440,
+      "speaker": "Speaker_2",
+      "text": "Contribution 75. 90-minute meeting."
+    },
+    {
+      "timestamp": 4500,
+      "speaker": "Speaker_0",
+      "text": "Contribution 76. 90-minute meeting."
+    },
+    {
+      "timestamp": 4560,
+      "speaker": "Speaker_1",
+      "text": "Contribution 77. 90-minute meeting."
+    },
+    {
+      "timestamp": 4620,
+      "speaker": "Speaker_2",
+      "text": "Contribution 78. 90-minute meeting."
+    },
+    {
+      "timestamp": 4680,
+      "speaker": "Speaker_0",
+      "text": "Contribution 79. 90-minute meeting."
+    },
+    {
+      "timestamp": 4740,
+      "speaker": "Speaker_1",
+      "text": "Contribution 80. 90-minute meeting."
+    },
+    {
+      "timestamp": 4800,
+      "speaker": "Speaker_2",
+      "text": "Contribution 81. 90-minute meeting."
+    },
+    {
+      "timestamp": 4860,
+      "speaker": "Speaker_0",
+      "text": "Contribution 82. 90-minute meeting."
+    },
+    {
+      "timestamp": 4920,
+      "speaker": "Speaker_1",
+      "text": "Contribution 83. 90-minute meeting."
+    },
+    {
+      "timestamp": 4980,
+      "speaker": "Speaker_2",
+      "text": "Contribution 84. 90-minute meeting."
+    },
+    {
+      "timestamp": 5040,
+      "speaker": "Speaker_0",
+      "text": "Contribution 85. 90-minute meeting."
+    },
+    {
+      "timestamp": 5100,
+      "speaker": "Speaker_1",
+      "text": "Contribution 86. 90-minute meeting."
+    },
+    {
+      "timestamp": 5160,
+      "speaker": "Speaker_2",
+      "text": "Contribution 87. 90-minute meeting."
+    },
+    {
+      "timestamp": 5220,
+      "speaker": "Speaker_0",
+      "text": "Contribution 88. 90-minute meeting."
+    },
+    {
+      "timestamp": 5280,
+      "speaker": "Speaker_1",
+      "text": "Contribution 89. 90-minute meeting."
+    },
+    {
+      "timestamp": 5340,
+      "speaker": "Speaker_2",
+      "text": "Contribution 90. 90-minute meeting."
+    }
+  ],
+  "agenda": [
+    "Item 1",
+    "Item 2",
+    "Item 3"
+  ]
+}

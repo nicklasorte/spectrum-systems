@@ -3,8 +3,8 @@ import { ingestTranscript } from "@/src/mvp-1/transcript-ingestor";
 import { assembleContextBundle } from "@/src/mvp-2/context-bundle-assembler";
 
 describe("MVP-3: Transcript Eval Baseline", () => {
-  let transcriptArtifactId: string;
-  let contextBundleArtifactId: string;
+  let transcriptArtifact: any;
+  let contextBundleArtifact: any;
 
   beforeAll(async () => {
     const ingestResult = await ingestTranscript({
@@ -13,33 +13,33 @@ describe("MVP-3: Transcript Eval Baseline", () => {
       duration_minutes: 30,
     });
     if (ingestResult.success && ingestResult.transcript_artifact) {
-      transcriptArtifactId = ingestResult.transcript_artifact.artifact_id;
-      const assembleResult = await assembleContextBundle(transcriptArtifactId);
+      transcriptArtifact = ingestResult.transcript_artifact;
+      const assembleResult = await assembleContextBundle(ingestResult.transcript_artifact);
       if (assembleResult.success && assembleResult.context_bundle) {
-        contextBundleArtifactId = assembleResult.context_bundle.artifact_id;
+        contextBundleArtifact = assembleResult.context_bundle;
       }
     }
   });
 
   it("should run all 3 eval cases", async () => {
-    const result = await runIngestionEvalGate(transcriptArtifactId, contextBundleArtifactId);
+    const result = await runIngestionEvalGate(transcriptArtifact, contextBundleArtifact);
     expect(result.success).toBe(true);
     expect(result.eval_results?.length).toBe(3);
   });
 
   it("should pass all evals for valid artifacts", async () => {
-    const result = await runIngestionEvalGate(transcriptArtifactId, contextBundleArtifactId);
+    const result = await runIngestionEvalGate(transcriptArtifact, contextBundleArtifact);
     expect(result.eval_summary?.overall_status).toBe("pass");
     expect(result.eval_summary?.pass_rate).toBe(100);
   });
 
   it("should emit allow control decision", async () => {
-    const result = await runIngestionEvalGate(transcriptArtifactId, contextBundleArtifactId);
+    const result = await runIngestionEvalGate(transcriptArtifact, contextBundleArtifact);
     expect(result.control_decision?.decision).toBe("allow");
   });
 
   it("should emit execution record", async () => {
-    const result = await runIngestionEvalGate(transcriptArtifactId, contextBundleArtifactId);
+    const result = await runIngestionEvalGate(transcriptArtifact, contextBundleArtifact);
     expect(result.execution_record?.artifact_kind).toBe("pqx_execution_record");
     expect(result.execution_record?.execution_status).toBe("succeeded");
   });

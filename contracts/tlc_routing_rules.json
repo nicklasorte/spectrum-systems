@@ -1,0 +1,111 @@
+{
+  "version": "1.0",
+  "description": "TLC routing rules. TLC is the sole orchestration authority.",
+  "enforcement": "TLC MUST validate required_gates before routing. No bypass allowed.",
+  "routing_rules": [
+    {
+      "rule_id": "ROUTE-01",
+      "from": "AEX",
+      "artifact_type": "transcript_artifact",
+      "to": "MVP-1",
+      "condition": "artifact_valid",
+      "required_gates": []
+    },
+    {
+      "rule_id": "ROUTE-02",
+      "from": "MVP-1",
+      "artifact_type": "normalized_transcript",
+      "to": "MVP-2",
+      "condition": "eval_summary.pass_rate >= 0.95",
+      "required_gates": ["GATE-1-SCHEMA"]
+    },
+    {
+      "rule_id": "ROUTE-03",
+      "from": "MVP-2",
+      "artifact_type": "context_bundle",
+      "to": "MVP-3",
+      "condition": "eval_summary.pass_rate >= 0.95",
+      "required_gates": ["GATE-1-CONTEXT"]
+    },
+    {
+      "rule_id": "ROUTE-04",
+      "from": "MVP-3",
+      "artifact_type": "ingestion_eval_gate_result",
+      "to": "MVP-4",
+      "condition": "gate_passed",
+      "required_gates": ["GATE-1"]
+    },
+    {
+      "rule_id": "ROUTE-05",
+      "from": "MVP-4",
+      "artifact_type": "meeting_minutes_artifact",
+      "to": "MVP-5",
+      "condition": "eval_summary.pass_rate >= 0.95",
+      "required_gates": ["GATE-2-MINUTES"]
+    },
+    {
+      "rule_id": "ROUTE-06",
+      "from": "MVP-5",
+      "artifact_type": "issue_registry_artifact",
+      "to": "MVP-6",
+      "condition": "eval_summary.pass_rate >= 0.95",
+      "required_gates": ["GATE-2-ISSUES"]
+    },
+    {
+      "rule_id": "ROUTE-07",
+      "from": "MVP-6",
+      "artifact_type": "structured_issue_set",
+      "to": "MVP-7",
+      "condition": "validation_status == 'valid' && eval_summary.pass_rate >= 0.95",
+      "required_gates": ["GATE-2"]
+    },
+    {
+      "rule_id": "ROUTE-08",
+      "from": "MVP-7",
+      "artifact_type": "paper_draft_artifact",
+      "to": "MVP-8",
+      "condition": "eval_summary.pass_rate >= 0.95",
+      "required_gates": ["GATE-3-DRAFT"]
+    },
+    {
+      "rule_id": "ROUTE-09",
+      "from": "MVP-8",
+      "artifact_type": "eval_summary",
+      "to": "MVP-9",
+      "condition": "eval_summary.pass_rate >= 0.95",
+      "required_gates": ["GATE-3-EVAL"]
+    },
+    {
+      "rule_id": "ROUTE-10",
+      "from": "MVP-9",
+      "artifact_type": "review_artifact",
+      "to": "MVP-10",
+      "condition": "decision == 'APPROVED'",
+      "required_gates": ["GATE-3"]
+    },
+    {
+      "rule_id": "ROUTE-11",
+      "from": "MVP-10",
+      "artifact_type": "revised_draft_artifact",
+      "to": "MVP-11",
+      "condition": "eval_summary.pass_rate >= 0.95",
+      "required_gates": ["GATE-4-REVISION"]
+    },
+    {
+      "rule_id": "ROUTE-12",
+      "from": "MVP-11",
+      "artifact_type": "formatted_paper_artifact",
+      "to": "MVP-12",
+      "condition": "eval_summary.pass_rate >= 0.95",
+      "required_gates": ["GATE-4"]
+    },
+    {
+      "rule_id": "ROUTE-13",
+      "from": "MVP-12",
+      "artifact_type": "done_certification_record",
+      "to": "MVP-13",
+      "condition": "status == 'PASSED'",
+      "required_gates": ["GATE-5"]
+    }
+  ]
+}

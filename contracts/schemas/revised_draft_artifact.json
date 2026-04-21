@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://spectrum-systems.org/contracts/revised_draft_artifact.json",
+  "title": "Revised Draft Artifact",
+  "description": "Post-review revision of the paper draft with diff record.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_id", "artifact_type", "sections", "revision_diff"],
+  "properties": {
+    "artifact_id": {"type": "string", "pattern": "^RDR-[0-9a-f]{8}$"},
+    "artifact_type": {"type": "string", "const": "revised_draft_artifact"},
+    "sections": {
+      "type": "object",
+      "required": ["introduction", "findings", "analysis", "implications", "conclusion"],
+      "properties": {
+        "introduction": {"type": "object", "required": ["content"], "properties": {"content": {"type": "string"}}},
+        "findings": {"type": "object", "required": ["content"], "properties": {"content": {"type": "string"}}},
+        "analysis": {"type": "object", "required": ["content"], "properties": {"content": {"type": "string"}}},
+        "implications": {"type": "object", "required": ["content"], "properties": {"content": {"type": "string"}}},
+        "conclusion": {"type": "object", "required": ["content"], "properties": {"content": {"type": "string"}}}
+      }
+    },
+    "revision_diff": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["section", "change_type", "before", "after"],
+        "properties": {
+          "section": {"type": "string"},
+          "change_type": {"type": "string", "enum": ["added", "removed", "modified"]},
+          "before": {"type": "string"},
+          "after": {"type": "string"},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "prior_draft_id": {"type": "string"},
+    "review_artifact_id": {"type": "string"},
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "trace_id": {"type": "string"},
+        "upstream_artifact_id": {"type": "string"},
+        "created_at": {"type": "string"}
+      }
+    }
+  }
+}

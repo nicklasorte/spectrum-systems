@@ -2,7 +2,7 @@
   "artifact_type": "attested_tlc_handoff_record",
   "slice_id": "AH-03",
   "owner": "TLC",
-  "generated_at": "2026-04-21T00:11:52Z",
+  "generated_at": "2026-04-21T01:10:38Z",
   "attested": true,
   "orchestration_only": true,
   "lineage": [

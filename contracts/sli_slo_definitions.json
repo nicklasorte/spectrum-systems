@@ -1,0 +1,77 @@
+{
+  "version": "1.0",
+  "slis": [
+    {
+      "name": "eval_pass_rate",
+      "definition": "Percentage of eval_result artifacts with result_status=pass",
+      "unit": "percent",
+      "target": ">= 95%"
+    },
+    {
+      "name": "replay_determinism",
+      "definition": "Percentage of re-runs producing structurally equivalent output artifacts",
+      "unit": "percent",
+      "target": ">= 95%"
+    },
+    {
+      "name": "lineage_completeness",
+      "definition": "Percentage of non-entry-point artifacts with upstream_artifacts resolved",
+      "unit": "percent",
+      "target": "100%"
+    },
+    {
+      "name": "eval_drift_rate",
+      "definition": "Absolute change in eval_pass_rate between successive runs",
+      "unit": "percent change",
+      "alert_threshold": "> 2%"
+    },
+    {
+      "name": "schema_conformance_rate",
+      "definition": "Percentage of artifacts passing JSON-schema validation",
+      "unit": "percent",
+      "target": "100%"
+    }
+  ],
+  "slos": [
+    {
+      "slo_id": "SLO-1",
+      "name": "Eval Reliability",
+      "sli": "eval_pass_rate",
+      "target": ">= 95%",
+      "measurement_window": "per-run",
+      "breach_action": "FREEZE releases"
+    },
+    {
+      "slo_id": "SLO-2",
+      "name": "System Determinism",
+      "sli": "replay_determinism",
+      "target": ">= 95%",
+      "measurement_window": "per-run",
+      "breach_action": "BLOCK release"
+    },
+    {
+      "slo_id": "SLO-3",
+      "name": "Lineage Traceability",
+      "sli": "lineage_completeness",
+      "target": "100%",
+      "measurement_window": "per-run",
+      "breach_action": "BLOCK release"
+    },
+    {
+      "slo_id": "SLO-4",
+      "name": "Schema Conformance",
+      "sli": "schema_conformance_rate",
+      "target": "100%",
+      "measurement_window": "per-run",
+      "breach_action": "BLOCK release"
+    },
+    {
+      "slo_id": "SLO-5",
+      "name": "Eval Stability",
+      "sli": "eval_drift_rate",
+      "target": "<= 2%",
+      "measurement_window": "rolling 7-day",
+      "breach_action": "WARN and trigger diagnostic run"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "meeting_date": "2026-04-21T00:00:00Z",
+  "speakers": [
+    "Speaker_0",
+    "Speaker_1"
+  ],
+  "duration_seconds": 360,
+  "segments": [
+    {
+      "timestamp": 0,
+      "speaker": "Speaker_0",
+      "text": "Contribution 1. Issue A depends on B, B on A."
+    },
+    {
+      "timestamp": 60,
+      "speaker": "Speaker_1",
+      "text": "Contribution 2. Issue A depends on B, B on A."
+    },
+    {
+      "timestamp": 120,
+      "speaker": "Speaker_0",
+      "text": "Contribution 3. Issue A depends on B, B on A."
+    },
+    {
+      "timestamp": 180,
+      "speaker": "Speaker_1",
+      "text": "Contribution 4. Issue A depends on B, B on A."
+    },
+    {
+      "timestamp": 240,
+      "speaker": "Speaker_0",
+      "text": "Contribution 5. Issue A depends on B, B on A."
+    },
+    {
+      "timestamp": 300,
+      "speaker": "Speaker_1",
+      "text": "Contribution 6. Issue A depends on B, B on A."
+    }
+  ],
+  "agenda": [
+    "Item 1",
+    "Item 2",
+    "Item 3"
+  ]
+}

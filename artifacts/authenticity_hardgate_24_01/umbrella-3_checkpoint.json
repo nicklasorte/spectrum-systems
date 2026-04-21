@@ -1,7 +1,7 @@
 {
   "artifact_type": "authenticity_hardgate_umbrella_checkpoint",
   "batch_id": "AUTHENTICITY-HARDGATE-24-01",
-  "generated_at": "2026-04-21T00:11:52Z",
+  "generated_at": "2026-04-21T01:10:38Z",
   "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
   "umbrella_id": "UMBRELLA-3",
   "umbrella_name": "REPLAY_PROTECTED_REENTRY_AND_REPAIR",

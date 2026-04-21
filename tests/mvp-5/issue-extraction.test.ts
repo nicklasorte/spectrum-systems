@@ -3,7 +3,9 @@ import { extractMeetingMinutes } from "@/src/mvp-4/minutes-extraction-agent";
 import { assembleContextBundle } from "@/src/mvp-2/context-bundle-assembler";
 import { ingestTranscript } from "@/src/mvp-1/transcript-ingestor";
 
-describe("MVP-5: Issue Extraction", () => {
+const describeWithApiKey = process.env.ANTHROPIC_API_KEY ? describe : describe.skip;
+
+describeWithApiKey("MVP-5: Issue Extraction", () => {
   let contextBundlePayload: any;
   let minutesPayload: any;
 
@@ -26,7 +28,7 @@ Alice: Great, let's make sure we track these.`,
 
     if (ingestResult.success && ingestResult.transcript_artifact) {
       const assembleResult = await assembleContextBundle(
-        ingestResult.transcript_artifact.artifact_id
+        ingestResult.transcript_artifact
       );
       if (assembleResult.success && assembleResult.context_bundle) {
         contextBundlePayload = assembleResult.context_bundle;

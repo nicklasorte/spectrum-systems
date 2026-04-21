@@ -1,0 +1,64 @@
+{
+  "meeting_date": "2026-04-21T00:00:00Z",
+  "speakers": [
+    "Speaker_0"
+  ],
+  "duration_seconds": 600,
+  "segments": [
+    {
+      "timestamp": 0,
+      "speaker": "Speaker_0",
+      "text": "Contribution 1. Monologue."
+    },
+    {
+      "timestamp": 60,
+      "speaker": "Speaker_0",
+      "text": "Contribution 2. Monologue."
+    },
+    {
+      "timestamp": 120,
+      "speaker": "Speaker_0",
+      "text": "Contribution 3. Monologue."
+    },
+    {
+      "timestamp": 180,
+      "speaker": "Speaker_0",
+      "text": "Contribution 4. Monologue."
+    },
+    {
+      "timestamp": 240,
+      "speaker": "Speaker_0",
+      "text": "Contribution 5. Monologue."
+    },
+    {
+      "timestamp": 300,
+      "speaker": "Speaker_0",
+      "text": "Contribution 6. Monologue."
+    },
+    {
+      "timestamp": 360,
+      "speaker": "Speaker_0",
+      "text": "Contribution 7. Monologue."
+    },
+    {
+      "timestamp": 420,
+      "speaker": "Speaker_0",
+      "text": "Contribution 8. Monologue."
+    },
+    {
+      "timestamp": 480,
+      "speaker": "Speaker_0",
+      "text": "Contribution 9. Monologue."
+    },
+    {
+      "timestamp": 540,
+      "speaker": "Speaker_0",
+      "text": "Contribution 10. Monologue."
+    }
+  ],
+  "agenda": [
+    "Item 1",
+    "Item 2",
+    "Item 3"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "speakers": [
+    "Alice"
+  ],
+  "duration_seconds": 60,
+  "segments": [
+    {
+      "speaker": "Alice",
+      "text": "Hello"
+    }
+  ]
+}
