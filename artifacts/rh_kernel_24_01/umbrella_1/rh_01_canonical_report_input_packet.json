@@ -1,0 +1,13 @@
+{
+  "artifact_type": "canonical_report_input_packet",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-01",
+  "owner": "RIL",
+  "generated_at": "2026-04-21T00:24:03Z",
+  "inputs": [
+    "artifacts/governed_kernel_24_01/run_summary.json",
+    "artifacts/mg_kernel_24_01/run_summary.json",
+    "dashboard/public/*.json"
+  ],
+  "interpretation_boundary": "interpretation_only_not_authority"
+}

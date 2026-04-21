@@ -2,7 +2,7 @@
   "artifact_type": "attested_build_admission_record",
   "slice_id": "AH-02",
   "owner": "AEX",
-  "generated_at": "2026-04-11T18:59:57Z",
+  "generated_at": "2026-04-21T00:11:52Z",
   "attested": true,
   "issuer": "aex-control-plane",
   "payload_digest": "sha256:attested-build-admission"

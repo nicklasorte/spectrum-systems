@@ -1,0 +1,32 @@
+{
+  "artifact_type": "review_result_artifact",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "review_id": "rqx:pqx-slice-20260329T220000Z:AI-01",
+  "review_name": "rqx_review_pqx_slice_20260329t220000z_ai_01",
+  "review_type": "code_path_review",
+  "scope": "PQX slice execution review for AI-01",
+  "files_inspected": [
+    "artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.request.json"
+  ],
+  "findings": [
+    {
+      "finding_id": "F-1",
+      "title": "No blocking signals detected in declared review inputs",
+      "severity": "low",
+      "evidence": [
+        "artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.pqx_slice_execution_record.json"
+      ],
+      "why_it_matters": "A bounded review still records explicit evidence for replay and traceability."
+    }
+  ],
+  "verdict": "safe_to_merge",
+  "rationale": "No blocker/high/medium findings were detected in the bounded review scope.",
+  "required_follow_up": [],
+  "source_review_request_ref": "review_request_artifact:rqx:pqx-slice-20260329T220000Z:AI-01",
+  "generated_at": "2026-04-21T00:23:31Z",
+  "bounded_review": true,
+  "automatic_fix_execution": "disabled",
+  "run_id": "pqx-slice-20260329T220000Z"
+}

@@ -1,0 +1,14 @@
+{
+  "artifact_type": "anomaly_detection_record",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-17",
+  "owner": "RIL",
+  "generated_at": "2026-04-21T00:24:03Z",
+  "anomalies": [
+    {
+      "signal_combo": "high_truth_with_low_completeness",
+      "classification": "transition_state",
+      "action": "monitor"
+    }
+  ]
+}

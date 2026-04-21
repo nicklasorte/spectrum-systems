@@ -1,0 +1,12 @@
+{
+  "artifact_type": "next_action_outcome_record",
+  "batch_id": "RQ-MASTER-01",
+  "generated_at": "2026-04-21T00:24:12Z",
+  "recommendation_id": "RQ-REC-01",
+  "outcome_classification": "correct",
+  "evidence": [
+    "cycle_03",
+    "cycle_04",
+    "cycle_05"
+  ]
+}

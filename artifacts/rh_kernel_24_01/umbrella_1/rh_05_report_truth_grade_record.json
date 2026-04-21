@@ -1,0 +1,11 @@
+{
+  "artifact_type": "report_truth_grade_record",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-05",
+  "owner": "RQX",
+  "generated_at": "2026-04-21T00:24:03Z",
+  "grade": "A-",
+  "specificity_score": 0.9,
+  "evidence_depth_score": 0.86,
+  "weakness_disclosure_score": 0.91
+}

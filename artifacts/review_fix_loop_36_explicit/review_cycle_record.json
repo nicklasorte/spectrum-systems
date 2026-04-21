@@ -1,14 +1,23 @@
 {
   "artifact_type": "review_cycle_record",
-  "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
-  "step": 1,
-  "phase": 1,
-  "owner": "RQX",
-  "generated_at": "2026-04-11T19:42:05Z",
-  "cycle_id": "RFCYCLE-36-01",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "cycle_id": "rcy-aaaaaaaaaaaaaaaa",
+  "parent_batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
+  "parent_umbrella_id": "UMBRELLA-REVIEW-FIX-36",
   "iteration_number": 1,
   "max_iterations": 3,
-  "termination_state": "continue_until_checkpoint_failure_or_completion",
-  "parent_batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
-  "parent_umbrella_id": "UMBRELLA-REVIEW-FIX-36"
+  "termination_state": "open",
+  "status": "active",
+  "review_request_ref": "review_request_artifact:REVIEW-FIX-LOOP-36-EXPLICIT:initial",
+  "review_result_refs": [],
+  "fix_slice_refs": [],
+  "replay_result_refs": [],
+  "lineage": [
+    "review_loop_entry:REVIEW-FIX-LOOP-36-EXPLICIT",
+    "owner:RQX"
+  ],
+  "created_at": "2026-04-21T00:24:01Z",
+  "updated_at": "2026-04-21T00:24:01Z"
 }

@@ -4,7 +4,7 @@
   "step": 33,
   "phase": 11,
   "owner": "SEL",
-  "generated_at": "2026-04-11T19:42:05Z",
+  "generated_at": "2026-04-21T00:24:01Z",
   "fail_closed": true,
   "contract_schema_drift": "none",
   "required_governed_contract_output": "present",

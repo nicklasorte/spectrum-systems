@@ -1,0 +1,13 @@
+{
+  "artifact_type": "next_action_recommendation_record",
+  "batch_id": "RQ-MASTER-01",
+  "generated_at": "2026-04-21T00:24:12Z",
+  "recommendation_id": "RQ-REC-01",
+  "recommendation": "run_next_governed_cycle_with_bounded_repair",
+  "provenance": [
+    "hard_gate_status_record",
+    "current_run_state_record",
+    "current_bottleneck_record",
+    "recommendation_accuracy_tracker"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "artifact_type": "review_report",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-03",
+  "owner": "RQX",
+  "generated_at": "2026-04-21T00:24:03Z",
+  "checkpoint_state": "all_required_umbrella_1_checks_passed",
+  "validation_surfaces": [
+    "schemas",
+    "artifact lineages",
+    "dashboard truth mirrors"
+  ]
+}

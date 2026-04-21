@@ -1,0 +1,129 @@
+{
+  "certification_id": "2ff39bb75310284e1c6a9ea9243723b9b6d7b8369d8a2c6c86746bc7e4709773",
+  "run_id": "pqx-slice-20260329T220000Z",
+  "timestamp": "2026-03-29T22:00:04Z",
+  "input_refs": {
+    "replay_result_ref": "/home/user/spectrum-systems/artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.replay_result.json",
+    "regression_result_ref": "/home/user/spectrum-systems/artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.regression_run_result.json",
+    "certification_pack_ref": "/home/user/spectrum-systems/artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.control_loop_certification_pack.json",
+    "error_budget_ref": "/home/user/spectrum-systems/artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.error_budget_status.json",
+    "policy_ref": "/home/user/spectrum-systems/artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.control_decision.json"
+  },
+  "check_results": {
+    "replay": {
+      "passed": true,
+      "details": []
+    },
+    "regression": {
+      "passed": true,
+      "details": []
+    },
+    "contracts": {
+      "passed": true,
+      "details": []
+    },
+    "reliability": {
+      "passed": true,
+      "details": []
+    },
+    "fail_closed": {
+      "passed": true,
+      "details": []
+    },
+    "control_consistency": {
+      "passed": true,
+      "details": []
+    },
+    "trace_linkage": {
+      "passed": true,
+      "details": []
+    },
+    "trust_spine_invariants": {
+      "passed": true,
+      "details": []
+    },
+    "trust_spine_evidence_completeness": {
+      "passed": true,
+      "details": []
+    },
+    "trust_spine_evidence_cohesion": {
+      "passed": true,
+      "details": []
+    },
+    "tpa_compliance": {
+      "passed": true,
+      "details": []
+    },
+    "authority_lineage": {
+      "passed": true,
+      "details": []
+    },
+    "system_readiness": {
+      "passed": true,
+      "details": []
+    }
+  },
+  "trust_spine_invariant_result": {
+    "passed": true,
+    "categories_checked": [
+      "threshold_context_consistency",
+      "policy_authority_consistency",
+      "replay_enforcement_promotion_alignment",
+      "coverage_promotion_alignment",
+      "gate_proof_truthfulness",
+      "certification_closure_coherence"
+    ],
+    "blocking_reasons": [],
+    "evaluated_surfaces": {
+      "target_surface": "certification",
+      "replay_result": "replay_result",
+      "evaluation_control_decision": "evaluation_control_decision",
+      "enforcement_result": "enforcement_result",
+      "eval_coverage_summary": "eval_coverage_summary",
+      "gate_proof": "embedded",
+      "done_certification": "absent"
+    }
+  },
+  "trust_spine_evidence_completeness_result": {
+    "passed": true,
+    "categories_checked": [
+      "required_authority_refs_present",
+      "enforcement_evidence_present",
+      "coverage_evidence_present",
+      "certification_supporting_refs_present",
+      "promotion_supporting_refs_present",
+      "active_path_vs_legacy_mode_consistency"
+    ],
+    "blocking_reasons": [],
+    "missing_refs": [],
+    "evaluated_surfaces": {
+      "target_surface": "certification",
+      "authority_path_mode": "reduced_depth_non_authority",
+      "refs_count": "7"
+    },
+    "authority_path_mode": "reduced_depth_non_authority",
+    "promotable": false,
+    "certifiable": false
+  },
+  "trust_spine_evidence_cohesion_result": {
+    "passed": true,
+    "overall_decision": "ALLOW",
+    "deterministic_cohesion_id": "",
+    "contradiction_categories": [],
+    "blocking_reasons": [],
+    "evidence_ref": ""
+  },
+  "tpa_required": false,
+  "tpa_status": "NOT_REQUIRED",
+  "tpa_artifact_refs": [],
+  "final_status": "PASSED",
+  "system_response": "allow",
+  "blocking_reasons": [],
+  "warnings": [],
+  "certification_policy": {
+    "allow_warn_as_pass": true,
+    "allow_warn_promotion": false,
+    "require_system_readiness": false
+  },
+  "trace_id": "trace:pqx-slice-20260329T220000Z:AI-01"
+}

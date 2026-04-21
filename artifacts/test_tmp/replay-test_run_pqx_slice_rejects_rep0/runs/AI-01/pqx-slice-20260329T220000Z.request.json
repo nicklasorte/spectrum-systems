@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "pqx-slice-20260329T220000Z",
+  "step_id": "AI-01",
+  "step_name": "AI request/response boundary",
+  "dependencies": [],
+  "requested_at": "2026-03-29T22:00:01Z",
+  "prompt": "Implement roadmap step AI-01: AI request/response boundary",
+  "roadmap_version": "docs/roadmap/system_roadmap.md",
+  "row_snapshot": {
+    "row_index": 0,
+    "step_id": "AI-01",
+    "step_name": "AI request/response boundary",
+    "dependencies": [],
+    "status": "VALID"
+  }
+}

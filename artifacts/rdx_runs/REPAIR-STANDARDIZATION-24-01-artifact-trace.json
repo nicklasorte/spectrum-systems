@@ -1,0 +1,47 @@
+{
+  "artifact_type": "repair_standardization_artifact_trace",
+  "batch_id": "REPAIR-STANDARDIZATION-24-01",
+  "generated_at": "2026-04-21T00:23:57Z",
+  "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
+  "checkpoint_progression": "stopped_on_first_failure_else_continue",
+  "umbrella_sequence": [
+    "UMBRELLA-1",
+    "UMBRELLA-2",
+    "UMBRELLA-3",
+    "UMBRELLA-4"
+  ],
+  "umbrella_checkpoint_status": {
+    "UMBRELLA-1": "pass",
+    "UMBRELLA-2": "pass",
+    "UMBRELLA-3": "pass",
+    "UMBRELLA-4": "pass"
+  },
+  "artifact_paths": [
+    "artifacts/repair_standardization_24_01/umbrella_1/repair_class_contract_pack.json",
+    "artifacts/repair_standardization_24_01/umbrella_1/repair_class_interpretation_packet.json",
+    "artifacts/repair_standardization_24_01/umbrella_1/repair_class_scope_policy.json",
+    "artifacts/repair_standardization_24_01/umbrella_1/repair_template_parameter_bundle.json",
+    "artifacts/repair_standardization_24_01/umbrella_1/parameterized_repair_execution_record.json",
+    "artifacts/repair_standardization_24_01/umbrella_1/repair_guardrail_policy_record.json",
+    "artifacts/repair_standardization_24_01/umbrella_1/canonical_delivery_report_artifact.json",
+    "artifacts/repair_standardization_24_01/umbrella_1/canonical_review_report_artifact.json",
+    "artifacts/repair_standardization_24_01/umbrella_2/repair_replay_confidence_packet.json",
+    "artifacts/repair_standardization_24_01/umbrella_2/repair_replay_confidence_record.json",
+    "artifacts/repair_standardization_24_01/umbrella_2/weak_repair_replay_enforcement_result.json",
+    "artifacts/repair_standardization_24_01/umbrella_2/repair_review_compression_record.json",
+    "artifacts/repair_standardization_24_01/umbrella_2/repair_merge_readiness_tightening_record.json",
+    "artifacts/repair_standardization_24_01/umbrella_2/repair_confidence_closure_decision.json",
+    "artifacts/repair_standardization_24_01/umbrella_3/repair_debt_liquidation_plan.json",
+    "artifacts/repair_standardization_24_01/umbrella_3/repair_debt_trend_artifact.json",
+    "artifacts/repair_standardization_24_01/umbrella_3/repair_debt_priority_stack.json",
+    "artifacts/repair_standardization_24_01/umbrella_3/repair_debt_batch_artifact.json",
+    "artifacts/repair_standardization_24_01/umbrella_3/repair_debt_umbrella_plan.json",
+    "artifacts/repair_standardization_24_01/umbrella_3/repair_debt_escalation_result.json",
+    "artifacts/repair_standardization_24_01/umbrella_4/closure_proof_input_bundle.json",
+    "artifacts/repair_standardization_24_01/umbrella_4/closure_proof_projection_bundle.json",
+    "artifacts/repair_standardization_24_01/umbrella_4/promotion_restraint_recommendation.json",
+    "artifacts/repair_standardization_24_01/umbrella_4/repair_aware_promotion_readiness_decision.json",
+    "artifacts/repair_standardization_24_01/umbrella_4/promotion_repair_risk_guard_result.json",
+    "artifacts/repair_standardization_24_01/umbrella_4/repair_hardening_program_closeout.json"
+  ]
+}

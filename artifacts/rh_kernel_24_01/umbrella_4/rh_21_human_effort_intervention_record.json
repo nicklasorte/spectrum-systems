@@ -1,0 +1,14 @@
+{
+  "artifact_type": "human_effort_intervention_record",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-21",
+  "owner": "PRG",
+  "generated_at": "2026-04-21T00:24:03Z",
+  "interventions": [
+    {
+      "stage": "review quality reconciliation",
+      "reason": "ambiguous weakness wording",
+      "duration_minutes": 22
+    }
+  ]
+}

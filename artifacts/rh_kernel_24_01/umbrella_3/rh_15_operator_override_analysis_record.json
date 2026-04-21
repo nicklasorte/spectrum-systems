@@ -1,0 +1,12 @@
+{
+  "artifact_type": "operator_override_analysis_record",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-15",
+  "owner": "PRG",
+  "generated_at": "2026-04-21T00:24:03Z",
+  "override_patterns": [
+    "safety_hold",
+    "artifact_gap_block"
+  ],
+  "learning_feedback_applied": true
+}

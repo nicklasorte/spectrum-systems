@@ -1,0 +1,16 @@
+{
+  "artifact_type": "system_map_projection_bundle",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-24",
+  "owner": "MAP",
+  "generated_at": "2026-04-21T00:24:03Z",
+  "projection_constraints": {
+    "semantic_invention": false,
+    "interpreted_inputs_only": true
+  },
+  "overlays": [
+    "node_states",
+    "bottlenecks",
+    "trust"
+  ]
+}

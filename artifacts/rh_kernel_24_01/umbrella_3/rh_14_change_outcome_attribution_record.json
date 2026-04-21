@@ -1,0 +1,19 @@
+{
+  "artifact_type": "change_outcome_attribution_record",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-14",
+  "owner": "PRG",
+  "generated_at": "2026-04-21T00:24:03Z",
+  "attributions": [
+    {
+      "change": "report quality gate",
+      "outcome": "reduced weak-report acceptance",
+      "confidence": 0.84
+    },
+    {
+      "change": "truth probe",
+      "outcome": "eliminated stale publication claims",
+      "confidence": 0.81
+    }
+  ]
+}

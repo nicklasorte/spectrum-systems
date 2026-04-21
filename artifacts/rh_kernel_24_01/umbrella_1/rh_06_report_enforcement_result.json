@@ -1,0 +1,13 @@
+{
+  "artifact_type": "report_enforcement_result",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-06",
+  "owner": "SEL",
+  "generated_at": "2026-04-21T00:24:03Z",
+  "enforcement_decision": "pass",
+  "fail_closed_rules": {
+    "missing_canonical_reports": "pass",
+    "below_quality_threshold": "pass",
+    "not_artifact_backed": "pass"
+  }
+}

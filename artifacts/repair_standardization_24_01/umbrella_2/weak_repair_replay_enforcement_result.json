@@ -1,0 +1,11 @@
+{
+  "artifact_type": "weak_repair_replay_enforcement_result",
+  "slice_id": "RS-09",
+  "owner": "SEL",
+  "generated_at": "2026-04-21T00:23:57Z",
+  "confidence_floor": 0.75,
+  "blocked_classes": [
+    "lineage_patch"
+  ],
+  "fail_closed": true
+}

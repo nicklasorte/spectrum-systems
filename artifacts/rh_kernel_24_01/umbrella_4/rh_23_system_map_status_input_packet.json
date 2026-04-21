@@ -1,0 +1,15 @@
+{
+  "artifact_type": "system_map_status_input_packet",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-23",
+  "owner": "RIL",
+  "generated_at": "2026-04-21T00:24:03Z",
+  "interpretation_boundary": "interpretation_only_not_projection_authority",
+  "status_inputs": [
+    "system_status",
+    "bottlenecks",
+    "drift",
+    "trust",
+    "truth"
+  ]
+}

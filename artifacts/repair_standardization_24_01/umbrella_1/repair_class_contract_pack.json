@@ -1,0 +1,13 @@
+{
+  "artifact_type": "repair_class_contract_pack",
+  "slice_id": "RS-01",
+  "owner": "FRE",
+  "generated_at": "2026-04-21T00:23:57Z",
+  "repair_classes": [
+    "schema_patch",
+    "lineage_patch",
+    "publication_patch",
+    "bounded_fixture_patch"
+  ],
+  "diagnosis_boundary": "diagnose_and_plan_only"
+}

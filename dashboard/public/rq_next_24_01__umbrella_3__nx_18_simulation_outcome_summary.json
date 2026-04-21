@@ -1,7 +1,7 @@
 {
   "artifact_type": "simulation_outcome_summary",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-11T13:16:36Z",
+  "generated_at": "2026-04-21T00:24:23Z",
   "replay_pressure_verdict": "pass_with_constraints",
   "evidence_bound": "claims limited to explicit replay/backtest/simulation scenario set",
   "promotion_implication": "no expansion claim without additional scenario breadth"

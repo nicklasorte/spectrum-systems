@@ -1,16 +1,16 @@
 {
   "artifact_type": "post_run_refresh_invocation_record",
   "owner": "TLC",
-  "generated_at": "2026-04-11T15:31:14Z",
+  "generated_at": "2026-04-21T00:24:20Z",
   "trigger_manifest_ref": "artifacts/rq_master_36_01/dashboard_refresh_trigger_manifest.json",
   "invocation_command": [
     "bash",
-    "/workspace/spectrum-systems/scripts/refresh_dashboard.sh"
+    "/home/user/spectrum-systems/scripts/refresh_dashboard.sh"
   ],
   "eligible_run": true,
   "run_status": "success",
   "refresh_invoked": true,
   "refresh_returncode": 0,
-  "refresh_stdout_tail": "/workspace/spectrum-systems/artifacts/dashboard/repo_snapshot.json\nRefresh complete: /workspace/spectrum-systems/dashboard/public/repo_snapshot.json\nMetadata written: /workspace/spectrum-systems/dashboard/public/repo_snapshot_meta.json\nPublication audit: /workspace/spectrum-systems/dashboard/public/dashboard_publication_sync_audit.json\ndashboard-public-artifacts: pass\n",
+  "refresh_stdout_tail": "/home/user/spectrum-systems/artifacts/dashboard/repo_snapshot.json\ndashboard-public-artifacts: pass\ndashboard refresh/publish complete (mode=manual)\n",
   "refresh_stderr_tail": ""
 }

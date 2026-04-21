@@ -1,0 +1,21 @@
+{
+  "artifact_type": "review_request_artifact",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "review_id": "rqx:pqx-slice-20260329T220000Z:AI-01",
+  "review_name": "rqx_review_pqx_slice_20260329t220000z_ai_01",
+  "review_type": "code_path_review",
+  "scope": "PQX slice execution review for AI-01",
+  "run_id": "pqx-slice-20260329T220000Z",
+  "changed_files": [
+    "artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.request.json"
+  ],
+  "produced_artifact_refs": [
+    "artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.pqx_slice_execution_record.json"
+  ],
+  "validation_result_refs": [
+    "artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.done_certification_record.json"
+  ],
+  "requested_at": "2026-04-21T00:23:31Z"
+}
