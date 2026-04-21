@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "ArtifactFamilyHealthReport",
+  "description": "Multi-dimensional eval report for artifact family: slices > aggregate metrics",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "report_id",
+    "artifact_family",
+    "report_timestamp",
+    "overall_pass_rate",
+    "slice_results",
+    "critical_slice_status",
+    "recommendations"
+  ],
+  "properties": {
+    "report_id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200
+    },
+    "artifact_family": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "description": "Which artifact type (e.g., 'spectrum_artifact', 'control_decision')"
+    },
+    "report_timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "overall_pass_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "slice_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["slice_name", "slice_filter", "pass_rate", "sample_count", "severity"],
+        "properties": {
+          "slice_name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200,
+            "description": "E.g., 'long_context', 'high_confidence', 'critical_domain'"
+          },
+          "slice_filter": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000,
+            "description": "How to identify this slice: 'context_length > 5000' or 'confidence > 0.9'"
+          },
+          "pass_rate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "sample_count": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"],
+            "description": "How critical is this slice?"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["passing", "warning", "failing"],
+            "description": "Pass/fail threshold-based status"
+          }
+        }
+      }
+    },
+    "critical_slice_status": {
+      "type": "string",
+      "enum": ["all_passing", "some_failing", "all_failing"],
+      "description": "Aggregate status of critical slices"
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 500
+      }
+    }
+  }
+}
