@@ -1,0 +1,13 @@
+{
+  "artifact_type": "promotion_repair_risk_guard_result",
+  "slice_id": "RS-23",
+  "owner": "SEL",
+  "generated_at": "2026-04-21T00:15:48Z",
+  "enforcement_only": true,
+  "block_promotion": true,
+  "block_reasons": [
+    "repair_risk",
+    "weak_replay_confidence",
+    "debt_burden"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "artifact_type": "frontend_deploy_preflight_report",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-12",
+  "owner": "AEX",
+  "generated_at": "2026-04-21T00:15:55Z",
+  "preflight": {
+    "configuration": "pass",
+    "dependency_lock": "pass",
+    "build_surface": "pass"
+  },
+  "blocking_issues": []
+}

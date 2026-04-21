@@ -1,0 +1,13 @@
+{
+  "artifact_type": "readiness_threshold_policy_candidate",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-08",
+  "owner": "PRG",
+  "generated_at": "2026-04-21T00:15:55Z",
+  "authoritative": false,
+  "candidate_minimums": {
+    "calibrated_runs": 6,
+    "truth_alignment_streak": 3,
+    "completeness_ratio": 1.0
+  }
+}

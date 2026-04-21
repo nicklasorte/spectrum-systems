@@ -1,26 +1,25 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-03-21T10:41:10Z",
+  "generated_at": "2026-04-21T00:15:07Z",
   "summary": {
     "overall_health": "warning",
-    "total_repos": 13,
+    "total_repos": 15,
     "governance_compliance": {
-      "compliant": 10,
+      "compliant": 12,
       "warning": 3,
       "fail": 0,
       "partial": 0
     },
     "contract_alignment": {
-      "pass": 8,
-      "warning": 4,
-      "governance-repo": 1
+      "pass": 13,
+      "governance-repo": 2
     },
     "schema_integrity": {
-      "compliant": 13
+      "compliant": 15
     },
     "ci_enforcement": {
-      "missing": 5,
-      "compliant": 7,
+      "missing": 6,
+      "compliant": 8,
       "partial": 1
     },
     "repos_missing_required_artifacts": [],
@@ -101,6 +100,31 @@
       },
       "maturity_level": 10,
       "notes": ""
+    },
+    {
+      "repo_name": "governed-prompt-queue",
+      "system_id": "governed-prompt-queue",
+      "repo_type": "pipeline",
+      "architecture_layer": "Layer 4",
+      "status": "planned",
+      "governance_status": "compliant",
+      "contract_status": "pass",
+      "schema_status": "compliant",
+      "ci_status": "missing",
+      "maturity_score": {
+        "raw": 12,
+        "max": 20,
+        "categories": {
+          "governance_artifacts": "compliant",
+          "contract_compliance": "compliant",
+          "schema_alignment": "compliant",
+          "ci_enforcement": "missing",
+          "evaluation_evidence": "missing",
+          "documentation": "compliant"
+        }
+      },
+      "maturity_level": 6,
+      "notes": "repo is planned; ci_enforcement missing; evaluation_evidence missing"
     },
     {
       "repo_name": "knowledge-graph-engine",
@@ -184,22 +208,22 @@
       "architecture_layer": "Layer 4",
       "status": "planned",
       "governance_status": "compliant",
-      "contract_status": "warning",
+      "contract_status": "pass",
       "schema_status": "compliant",
       "ci_status": "missing",
       "maturity_score": {
-        "raw": 14,
+        "raw": 16,
         "max": 20,
         "categories": {
           "governance_artifacts": "compliant",
-          "contract_compliance": "partial",
+          "contract_compliance": "compliant",
           "schema_alignment": "compliant",
           "ci_enforcement": "missing",
           "evaluation_evidence": "compliant",
           "documentation": "compliant"
         }
       },
-      "maturity_level": 7,
+      "maturity_level": 8,
       "notes": "repo is planned; ci_enforcement missing"
     },
     {
@@ -209,22 +233,22 @@
       "architecture_layer": "Layer 5",
       "status": "experimental",
       "governance_status": "warning",
-      "contract_status": "warning",
+      "contract_status": "pass",
       "schema_status": "compliant",
       "ci_status": "partial",
       "maturity_score": {
-        "raw": 16,
+        "raw": 18,
         "max": 20,
         "categories": {
           "governance_artifacts": "compliant",
-          "contract_compliance": "partial",
+          "contract_compliance": "compliant",
           "schema_alignment": "compliant",
           "ci_enforcement": "partial",
           "evaluation_evidence": "compliant",
           "documentation": "compliant"
         }
       },
-      "maturity_level": 8,
+      "maturity_level": 9,
       "notes": "repo is experimental"
     },
     {
@@ -309,23 +333,48 @@
       "architecture_layer": "Layer 1",
       "status": "active",
       "governance_status": "compliant",
-      "contract_status": "warning",
+      "contract_status": "pass",
       "schema_status": "compliant",
       "ci_status": "compliant",
       "maturity_score": {
-        "raw": 16,
+        "raw": 18,
         "max": 20,
         "categories": {
           "governance_artifacts": "compliant",
-          "contract_compliance": "partial",
+          "contract_compliance": "compliant",
           "schema_alignment": "compliant",
           "ci_enforcement": "compliant",
           "evaluation_evidence": "partial",
           "documentation": "compliant"
         }
       },
-      "maturity_level": 8,
+      "maturity_level": 9,
       "notes": ""
+    },
+    {
+      "repo_name": "tlc",
+      "system_id": "",
+      "repo_type": "governance",
+      "architecture_layer": "Layer 2",
+      "status": "planned",
+      "governance_status": "compliant",
+      "contract_status": "governance-repo",
+      "schema_status": "compliant",
+      "ci_status": "compliant",
+      "maturity_score": {
+        "raw": 14,
+        "max": 20,
+        "categories": {
+          "governance_artifacts": "compliant",
+          "contract_compliance": "partial",
+          "schema_alignment": "compliant",
+          "ci_enforcement": "compliant",
+          "evaluation_evidence": "missing",
+          "documentation": "compliant"
+        }
+      },
+      "maturity_level": 7,
+      "notes": "repo is planned; evaluation_evidence missing"
     },
     {
       "repo_name": "working-paper-review-engine",
@@ -334,22 +383,22 @@
       "architecture_layer": "Layer 3",
       "status": "active",
       "governance_status": "compliant",
-      "contract_status": "warning",
+      "contract_status": "pass",
       "schema_status": "compliant",
       "ci_status": "compliant",
       "maturity_score": {
-        "raw": 18,
+        "raw": 20,
         "max": 20,
         "categories": {
           "governance_artifacts": "compliant",
-          "contract_compliance": "partial",
+          "contract_compliance": "compliant",
           "schema_alignment": "compliant",
           "ci_enforcement": "compliant",
           "evaluation_evidence": "compliant",
           "documentation": "compliant"
         }
       },
-      "maturity_level": 9,
+      "maturity_level": 10,
       "notes": ""
     }
   ]

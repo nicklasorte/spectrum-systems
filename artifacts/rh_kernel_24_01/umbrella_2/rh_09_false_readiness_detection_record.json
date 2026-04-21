@@ -1,0 +1,14 @@
+{
+  "artifact_type": "false_readiness_detection_record",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-09",
+  "owner": "SEL",
+  "generated_at": "2026-04-21T00:15:55Z",
+  "detector_result": "pass",
+  "checks": {
+    "evidence_depth": "pass",
+    "calibration_quality": "pass",
+    "truth_state": "pass",
+    "completeness_state": "pass"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "artifact_type": "explainability_bundle",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-22",
+  "owner": "MAP",
+  "generated_at": "2026-04-21T00:15:55Z",
+  "projection_source": "interpreted artifacts only",
+  "layers": {
+    "operator": "state and actionable constraints",
+    "reviewer": "evidence and quality checks",
+    "audit": "lineage and control trace"
+  }
+}

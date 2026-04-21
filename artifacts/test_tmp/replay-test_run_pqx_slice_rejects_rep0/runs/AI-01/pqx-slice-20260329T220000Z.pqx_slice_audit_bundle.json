@@ -1,0 +1,22 @@
+{
+  "bundle_id": "pqx-slice-audit:pqx-slice-20260329T220000Z:AI-01",
+  "step_id": "AI-01",
+  "run_id": "pqx-slice-20260329T220000Z",
+  "trace_id": "trace:pqx-slice-20260329T220000Z:AI-01",
+  "trace_ref": "artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.request.json",
+  "replay_result_ref": "artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.replay_result.json",
+  "eval_artifact_refs": [
+    "artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.regression_run_result.json"
+  ],
+  "control_decision_ref": "artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.control_decision.json",
+  "certification_result_ref": "artifacts/test_tmp/replay-test_run_pqx_slice_rejects_rep0/runs/AI-01/pqx-slice-20260329T220000Z.done_certification_record.json",
+  "replay_comparison": {
+    "comparison_digest": "349d5081b522a7eb841f7def7c4db163f3cc76c94aef25e4c8d4586a3f33921b",
+    "hash_match": false,
+    "fingerprint_match": true,
+    "replay_hash": "43531e9d86339e29a740068c73122bae75f17b4c6788d09dc8553f3c811ef6e8",
+    "baseline_hash": "e20664ced74c92ffe694dfad34eb2c171a438749b4df46db7342906abd3285e6",
+    "replay_fingerprint": "9f7b1968bc312921c8d79df1aef7f7e624287a453acbc4b5323018b2e1d44997",
+    "baseline_fingerprint": "9f7b1968bc312921c8d79df1aef7f7e624287a453acbc4b5323018b2e1d44997"
+  }
+}

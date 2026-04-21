@@ -1,0 +1,15 @@
+{
+  "artifact_type": "review_merge_readiness_artifact",
+  "artifact_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "standards_version": "1.0.0",
+  "review_id": "rqx:pqx-slice-20260329T220000Z:AI-01",
+  "review_name": "rqx_review_pqx_slice_20260329t220000z_ai_01",
+  "review_result_ref": "review_result_artifact:rqx:pqx-slice-20260329T220000Z:AI-01",
+  "verdict": "safe_to_merge",
+  "readiness_signal": "review_safe",
+  "cde_decision_required": true,
+  "rationale": "No blocker/high/medium findings were detected in the bounded review scope.",
+  "required_follow_up": [],
+  "generated_at": "2026-04-21T00:15:19Z"
+}

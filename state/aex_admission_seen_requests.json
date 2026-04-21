@@ -1,0 +1,8 @@
+{
+  "seen": {
+    "req-aex-hardening-dup:sha256:payload-1": {
+      "context_digest": "sha256:ctx-2",
+      "payload_digest": "sha256:payload-1"
+    }
+  }
+}

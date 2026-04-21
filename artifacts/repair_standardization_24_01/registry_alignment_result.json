@@ -1,0 +1,29 @@
+{
+  "artifact_type": "registry_alignment_result",
+  "batch_id": "REPAIR-STANDARDIZATION-24-01",
+  "generated_at": "2026-04-21T00:15:48Z",
+  "authorities": [
+    "README.md",
+    "docs/architecture/system_registry.md",
+    "docs/architecture/strategy-control.md",
+    "docs/architecture/foundation_pqx_eval_control.md",
+    "docs/roadmaps/system_roadmap.md",
+    "docs/roadmaps/roadmap_authority.md"
+  ],
+  "cross_checks": {
+    "1_each_slice_maps_to_exactly_one_canonical_owner": "pass",
+    "2_no_preparatory_artifact_treated_as_authority": "pass",
+    "3_fre_diagnoses_plans_only": "pass",
+    "4_ril_interprets_only": "pass",
+    "5_tpa_gates_policy_scope_only": "pass",
+    "6_pqx_executes_only": "pass",
+    "7_rqx_review_loop_execution_only": "pass",
+    "8_sel_enforces_only": "pass",
+    "9_rdx_sequences_roadmap_selected_work_only": "pass",
+    "10_prg_recommends_scores_aggregates_only": "pass",
+    "11_map_projects_only": "pass",
+    "12_cde_alone_issues_closure_readiness_promotion_authority": "pass",
+    "13_repo_mutation_lineage_aex_tlc_tpa_pqx_preserved": "pass",
+    "14_batch_umbrella_decision_artifacts_not_closure_authority": "pass"
+  }
+}

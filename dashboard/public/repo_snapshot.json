@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-04-12T18:57:32Z",
-  "freshness_timestamp_utc": "2026-04-12T18:57:32Z",
+  "generated_at": "2026-04-21T00:17:16Z",
+  "freshness_timestamp_utc": "2026-04-21T00:17:16Z",
   "repo_name": "spectrum-systems",
   "root_counts": {
-    "files_total": 4526,
-    "runtime_modules": 166,
-    "tests": 379,
-    "contracts_total": 917,
-    "schemas": 495,
-    "examples": 422,
-    "docs": 1121,
+    "files_total": 7332,
+    "runtime_modules": 262,
+    "tests": 560,
+    "contracts_total": 2615,
+    "schemas": 1344,
+    "examples": 1271,
+    "docs": 1466,
     "run_artifacts": 152
   },
   "core_areas": [
@@ -47,7 +47,7 @@
   "runtime_hotspots": [
     {
       "area": "PQX",
-      "count": 17,
+      "count": 19,
       "note": "PQX orchestration and execution pathways."
     },
     {
@@ -57,7 +57,7 @@
     },
     {
       "area": "Roadmap",
-      "count": 14,
+      "count": 15,
       "note": "Roadmap-linked execution and sequencing support."
     },
     {
@@ -67,12 +67,12 @@
     },
     {
       "area": "Judgment",
-      "count": 6,
+      "count": 7,
       "note": "Judgment and policy decision logic."
     },
     {
       "area": "Evaluation",
-      "count": 13,
+      "count": 20,
       "note": "Evaluation and quality validation modules."
     },
     {
@@ -82,7 +82,7 @@
     },
     {
       "area": "Governed repair",
-      "count": 8,
+      "count": 9,
       "note": "Governed repair and remediation pathways."
     }
   ],
@@ -100,17 +100,17 @@
     {
       "title": "Evidence and review density",
       "status": "Strong",
-      "detail": "Review artifacts detected: 843 markdown files."
+      "detail": "Review artifacts detected: 1168 markdown files."
     },
     {
       "title": "Roadmap sprawl risk",
       "status": "Watch",
-      "detail": "Docs-to-runtime ratio: 6.75."
+      "detail": "Docs-to-runtime ratio: 5.60."
     },
     {
       "title": "Runtime concentration",
       "status": "Strong",
-      "detail": "Distinct runtime filename prefixes: 75."
+      "detail": "Distinct runtime filename prefixes: 143."
     },
     {
       "title": "Constitutional center coverage",
@@ -122,7 +122,7 @@
     "current_run_state_record": {
       "artifact_type": "current_run_state_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-11T01:01:56Z",
+      "generated_at": "2026-04-21T00:15:10Z",
       "last_run_id": "OPS-MASTER-01",
       "status": "completed",
       "outcomes": [
@@ -134,7 +134,7 @@
     "current_bottleneck_record": {
       "artifact_type": "current_bottleneck_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-11T01:01:56Z",
+      "generated_at": "2026-04-21T00:15:10Z",
       "bottleneck_name": "repair_loop_latency",
       "evidence": [
         "first_pass_quality_artifact.first_pass_rate=0.71",
@@ -148,7 +148,7 @@
     "hard_gate_status_record": {
       "artifact_type": "hard_gate_status_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-11T01:01:56Z",
+      "generated_at": "2026-04-21T00:15:10Z",
       "required_artifacts": [
         "current_run_state_record",
         "pre_pqx_contract_readiness_artifact",

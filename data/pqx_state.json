@@ -1,4 +1,21 @@
 {
   "schema_version": "1.0.0",
-  "rows": []
+  "rows": [
+    {
+      "step_id": "AI-01",
+      "status": "complete",
+      "last_run": "2026-04-21T00:15:15Z",
+      "dependencies_satisfied": true,
+      "retries": 0,
+      "strategy_gate_decision": "block"
+    },
+    {
+      "step_id": "B11",
+      "status": "complete",
+      "last_run": "2026-04-21T00:15:18Z",
+      "dependencies_satisfied": true,
+      "retries": 0,
+      "strategy_gate_decision": "block"
+    }
+  ]
 }

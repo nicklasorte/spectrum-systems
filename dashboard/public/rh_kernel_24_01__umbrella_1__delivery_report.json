@@ -1,0 +1,13 @@
+{
+  "artifact_type": "delivery_report",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-02",
+  "owner": "PRG",
+  "generated_at": "2026-04-21T00:15:55Z",
+  "canonical_json_authority": true,
+  "report_strength": {
+    "artifact_backing": "strong",
+    "specific_checks": 12,
+    "weaknesses_disclosed": 5
+  }
+}

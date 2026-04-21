@@ -1,0 +1,40 @@
+{
+  "artifact_type": "regression_result",
+  "schema_version": "1.1.0",
+  "run_id": "pqx-slice-20260329T220000Z",
+  "suite_id": "pqx-single-slice",
+  "created_at": "2026-03-29T22:00:06Z",
+  "total_traces": 1,
+  "passed_traces": 1,
+  "failed_traces": 0,
+  "pass_rate": 1.0,
+  "overall_status": "pass",
+  "regression_status": "pass",
+  "blocked": false,
+  "results": [
+    {
+      "trace_id": "trace:pqx-slice-20260329T220000Z:AI-01",
+      "replay_result_id": "replay:pqx-slice-20260329T220000Z",
+      "analysis_id": "analysis:pqx-slice-20260329T220000Z",
+      "decision_status": "consistent",
+      "reproducibility_score": 1.0,
+      "drift_type": "",
+      "passed": true,
+      "failure_reasons": [],
+      "baseline_replay_result_id": "replay:pqx-slice-20260329T220000Z",
+      "current_replay_result_id": "replay:pqx-slice-20260329T220000Z",
+      "baseline_trace_id": "trace:pqx-slice-20260329T220000Z:AI-01",
+      "current_trace_id": "trace:pqx-slice-20260329T220000Z:AI-01",
+      "baseline_reference": "contracts/examples/replay_result.json",
+      "current_reference": "contracts/examples/replay_result.json",
+      "mismatch_summary": [],
+      "comparison_digest": "3e233172066e8e0e09ddade2bde95872cecfd6a4c17f179f8c3d02669132050e"
+    }
+  ],
+  "summary": {
+    "drift_counts": {
+      "none": 1
+    },
+    "average_reproducibility_score": 1.0
+  }
+}

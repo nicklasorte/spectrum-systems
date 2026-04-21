@@ -1,0 +1,23 @@
+{
+  "artifact_type": "evidence_depth_assessment",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-07",
+  "owner": "PRG",
+  "generated_at": "2026-04-21T00:15:55Z",
+  "trend_claim_depth": {
+    "minimum_runs": 5,
+    "observed_runs": 7,
+    "status": "pass"
+  },
+  "readiness_claim_depth": {
+    "minimum_runs": 6,
+    "observed_runs": 7,
+    "status": "pass"
+  },
+  "expansion_claim_depth": {
+    "minimum_runs": 8,
+    "observed_runs": 7,
+    "status": "fail"
+  },
+  "bounded_claim_required": true
+}

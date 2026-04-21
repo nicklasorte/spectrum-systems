@@ -1,0 +1,19 @@
+{
+  "artifact_type": "checkpoint_summary",
+  "batch_id": "REPAIR-STANDARDIZATION-24-01",
+  "generated_at": "2026-04-21T00:15:48Z",
+  "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
+  "umbrella_sequence": [
+    "UMBRELLA-1",
+    "UMBRELLA-2",
+    "UMBRELLA-3",
+    "UMBRELLA-4"
+  ],
+  "checkpoint_status": {
+    "UMBRELLA-1": "pass",
+    "UMBRELLA-2": "pass",
+    "UMBRELLA-3": "pass",
+    "UMBRELLA-4": "pass"
+  },
+  "progression_rule": "stop_on_failure_else_continue"
+}

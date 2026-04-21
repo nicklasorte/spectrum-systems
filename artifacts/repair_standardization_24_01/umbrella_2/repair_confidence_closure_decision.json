@@ -1,0 +1,8 @@
+{
+  "artifact_type": "repair_confidence_closure_decision",
+  "slice_id": "RS-12",
+  "owner": "CDE",
+  "generated_at": "2026-04-21T00:15:48Z",
+  "authority": "closure_readiness_authoritative",
+  "decision": "block_when_confidence_or_debt_evidence_weak"
+}

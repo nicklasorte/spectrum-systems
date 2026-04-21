@@ -1,0 +1,114 @@
+{
+  "artifact_type": "rh_kernel_umbrella_checkpoint",
+  "batch_id": "RH-KERNEL-24-01",
+  "generated_at": "2026-04-21T00:15:55Z",
+  "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
+  "umbrella_id": "UMBRELLA-1",
+  "umbrella_name": "REPORTING_CANONICALIZATION",
+  "slices": [
+    "RH-01",
+    "RH-02",
+    "RH-03",
+    "RH-04",
+    "RH-05",
+    "RH-06"
+  ],
+  "checkpoint_status": "pass",
+  "tests": {
+    "status": "pass",
+    "command": "pytest tests/test_rh_kernel_24_01.py -k umbrella_1"
+  },
+  "schema_validation": {
+    "status": "pass",
+    "scope": [
+      "RH-01",
+      "RH-02",
+      "RH-03",
+      "RH-04",
+      "RH-05",
+      "RH-06"
+    ]
+  },
+  "review_eval_control_validation": {
+    "status": "pass",
+    "scope": "review/eval/control truth surfaces"
+  },
+  "dashboard_public_truth_validation": {
+    "status": "pass",
+    "scope": "public mirrors do not outrun artifact truth"
+  },
+  "registry_ownership_alignment": {
+    "status": "pass",
+    "scope": "single-owner-per-slice and boundary checks"
+  },
+  "stop_conditions": {
+    "max_files_modified_guard": "pass",
+    "contract_break_guard": "pass",
+    "tests_recoverability_guard": "pass",
+    "reports_optional_or_weak_guard": "pass",
+    "readiness_outpaces_evidence_guard": "pass",
+    "production_truth_divergence_guard": "pass",
+    "operator_surface_truth_overreach_guard": "pass",
+    "map_semantic_invention_guard": "pass",
+    "ownership_duplication_guard": "pass",
+    "lineage_invariant_guard": "pass"
+  },
+  "delivery_contract": {
+    "intent": "REPORTING_CANONICALIZATION",
+    "architecture_changes": [
+      "canonical machine-first artifact spine",
+      "strict fail-closed report and readiness gates"
+    ],
+    "source_mapping": [
+      "RH-01",
+      "RH-02",
+      "RH-03",
+      "RH-04",
+      "RH-05",
+      "RH-06"
+    ],
+    "schemas_changed": [],
+    "modules_changed": [
+      "scripts/run_rh_kernel_24_01.py"
+    ],
+    "tests_added": [
+      "tests/test_rh_kernel_24_01.py"
+    ],
+    "observability_added": [
+      "umbrella checkpoints",
+      "registry alignment report",
+      "artifact trace"
+    ],
+    "dashboard_publication_changes": [
+      "public truth mirrors are generated from canonical artifacts only"
+    ],
+    "control_governance_integration": [
+      "SEL-only enforcement surfaces for fail-closed gating",
+      "CDE-only readiness and closure authority preserved",
+      "TPA-only policy and admissibility authority preserved"
+    ],
+    "failure_modes": [
+      "missing report",
+      "weak report",
+      "false readiness",
+      "dashboard truth divergence"
+    ],
+    "guarantees": [
+      "artifact-first execution",
+      "fail-closed behavior",
+      "promotion requires certification"
+    ],
+    "rollback_plan": [
+      "remove rh_kernel_24_01 artifacts",
+      "remove dashboard/public rh_kernel mirrors"
+    ],
+    "remaining_gaps": [
+      "additional historical cycles needed for broader trend confidence"
+    ],
+    "registry_alignment_result": "pass"
+  },
+  "human_confirmation": {
+    "available": false,
+    "status": "not_available_auto_continue_when_all_criteria_pass"
+  }
+}

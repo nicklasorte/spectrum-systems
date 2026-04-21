@@ -1,0 +1,14 @@
+{
+  "artifact_type": "experiment_record",
+  "batch_id": "RH-KERNEL-24-01",
+  "slice_id": "RH-13",
+  "owner": "PRG",
+  "generated_at": "2026-04-21T00:15:55Z",
+  "experiments": [
+    {
+      "experiment_id": "EXP-241",
+      "hypothesis": "quality gates reduce false readiness",
+      "result": "supported"
+    }
+  ]
+}

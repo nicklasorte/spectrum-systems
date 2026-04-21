@@ -2,7 +2,7 @@
   "artifact_type": "forged_lineage_enforcement_result",
   "slice_id": "AH-05",
   "owner": "SEL",
-  "generated_at": "2026-04-11T18:59:57Z",
+  "generated_at": "2026-04-21T00:11:52Z",
   "fail_closed": true,
   "syntactically_valid_non_authentic_lineage": "blocked"
 }
