@@ -160,6 +160,7 @@ CDE is the only system allowed to emit:
 - **HND** — handoff integrity and semantic completeness governance
 - **CON** — interface contract hardening authority
 - **WPG** — governed working paper generator pipeline (artifact-first FAQ-to-paper synthesis)
+- **CHK** — checkpoint and resume governance for machine-readable phase checkpointing, transition gating, resume state, and handoff artifacts across WPG lifecycle phases
 
 ### Transcript hardening boundary note
 - Transcript hardening in `spectrum_systems/modules/transcript_hardening.py` is a bounded transcript-domain transform seam.
