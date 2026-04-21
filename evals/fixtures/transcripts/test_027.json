@@ -1,0 +1,13 @@
+{
+  "speakers": [
+    "Alice"
+  ],
+  "duration_seconds": 60,
+  "segments": [
+    {
+      "timestamp": 0,
+      "speaker": "UNKNOWN_9999",
+      "text": "Hello"
+    }
+  ]
+}

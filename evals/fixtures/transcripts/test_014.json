@@ -1,0 +1,233 @@
+{
+  "meeting_date": "2026-04-21T00:00:00Z",
+  "speakers": [
+    "Speaker_0",
+    "Speaker_1",
+    "Speaker_2",
+    "Speaker_3",
+    "Speaker_4",
+    "Speaker_5",
+    "Speaker_6",
+    "Speaker_7",
+    "Speaker_8",
+    "Speaker_9",
+    "Speaker_10",
+    "Speaker_11",
+    "Speaker_12",
+    "Speaker_13",
+    "Speaker_14",
+    "Speaker_15",
+    "Speaker_16",
+    "Speaker_17",
+    "Speaker_18",
+    "Speaker_19"
+  ],
+  "duration_seconds": 2400,
+  "segments": [
+    {
+      "timestamp": 0,
+      "speaker": "Speaker_0",
+      "text": "Contribution 1. 20-person meeting."
+    },
+    {
+      "timestamp": 60,
+      "speaker": "Speaker_1",
+      "text": "Contribution 2. 20-person meeting."
+    },
+    {
+      "timestamp": 120,
+      "speaker": "Speaker_2",
+      "text": "Contribution 3. 20-person meeting."
+    },
+    {
+      "timestamp": 180,
+      "speaker": "Speaker_3",
+      "text": "Contribution 4. 20-person meeting."
+    },
+    {
+      "timestamp": 240,
+      "speaker": "Speaker_4",
+      "text": "Contribution 5. 20-person meeting."
+    },
+    {
+      "timestamp": 300,
+      "speaker": "Speaker_5",
+      "text": "Contribution 6. 20-person meeting."
+    },
+    {
+      "timestamp": 360,
+      "speaker": "Speaker_6",
+      "text": "Contribution 7. 20-person meeting."
+    },
+    {
+      "timestamp": 420,
+      "speaker": "Speaker_7",
+      "text": "Contribution 8. 20-person meeting."
+    },
+    {
+      "timestamp": 480,
+      "speaker": "Speaker_8",
+      "text": "Contribution 9. 20-person meeting."
+    },
+    {
+      "timestamp": 540,
+      "speaker": "Speaker_9",
+      "text": "Contribution 10. 20-person meeting."
+    },
+    {
+      "timestamp": 600,
+      "speaker": "Speaker_10",
+      "text": "Contribution 11. 20-person meeting."
+    },
+    {
+      "timestamp": 660,
+      "speaker": "Speaker_11",
+      "text": "Contribution 12. 20-person meeting."
+    },
+    {
+      "timestamp": 720,
+      "speaker": "Speaker_12",
+      "text": "Contribution 13. 20-person meeting."
+    },
+    {
+      "timestamp": 780,
+      "speaker": "Speaker_13",
+      "text": "Contribution 14. 20-person meeting."
+    },
+    {
+      "timestamp": 840,
+      "speaker": "Speaker_14",
+      "text": "Contribution 15. 20-person meeting."
+    },
+    {
+      "timestamp": 900,
+      "speaker": "Speaker_15",
+      "text": "Contribution 16. 20-person meeting."
+    },
+    {
+      "timestamp": 960,
+      "speaker": "Speaker_16",
+      "text": "Contribution 17. 20-person meeting."
+    },
+    {
+      "timestamp": 1020,
+      "speaker": "Speaker_17",
+      "text": "Contribution 18. 20-person meeting."
+    },
+    {
+      "timestamp": 1080,
+      "speaker": "Speaker_18",
+      "text": "Contribution 19. 20-person meeting."
+    },
+    {
+      "timestamp": 1140,
+      "speaker": "Speaker_19",
+      "text": "Contribution 20. 20-person meeting."
+    },
+    {
+      "timestamp": 1200,
+      "speaker": "Speaker_0",
+      "text": "Contribution 21. 20-person meeting."
+    },
+    {
+      "timestamp": 1260,
+      "speaker": "Speaker_1",
+      "text": "Contribution 22. 20-person meeting."
+    },
+    {
+      "timestamp": 1320,
+      "speaker": "Speaker_2",
+      "text": "Contribution 23. 20-person meeting."
+    },
+    {
+      "timestamp": 1380,
+      "speaker": "Speaker_3",
+      "text": "Contribution 24. 20-person meeting."
+    },
+    {
+      "timestamp": 1440,
+      "speaker": "Speaker_4",
+      "text": "Contribution 25. 20-person meeting."
+    },
+    {
+      "timestamp": 1500,
+      "speaker": "Speaker_5",
+      "text": "Contribution 26. 20-person meeting."
+    },
+    {
+      "timestamp": 1560,
+      "speaker": "Speaker_6",
+      "text": "Contribution 27. 20-person meeting."
+    },
+    {
+      "timestamp": 1620,
+      "speaker": "Speaker_7",
+      "text": "Contribution 28. 20-person meeting."
+    },
+    {
+      "timestamp": 1680,
+      "speaker": "Speaker_8",
+      "text": "Contribution 29. 20-person meeting."
+    },
+    {
+      "timestamp": 1740,
+      "speaker": "Speaker_9",
+      "text": "Contribution 30. 20-person meeting."
+    },
+    {
+      "timestamp": 1800,
+      "speaker": "Speaker_10",
+      "text": "Contribution 31. 20-person meeting."
+    },
+    {
+      "timestamp": 1860,
+      "speaker": "Speaker_11",
+      "text": "Contribution 32. 20-person meeting."
+    },
+    {
+      "timestamp": 1920,
+      "speaker": "Speaker_12",
+      "text": "Contribution 33. 20-person meeting."
+    },
+    {
+      "timestamp": 1980,
+      "speaker": "Speaker_13",
+      "text": "Contribution 34. 20-person meeting."
+    },
+    {
+      "timestamp": 2040,
+      "speaker": "Speaker_14",
+      "text": "Contribution 35. 20-person meeting."
+    },
+    {
+      "timestamp": 2100,
+      "speaker": "Speaker_15",
+      "text": "Contribution 36. 20-person meeting."
+    },
+    {
+      "timestamp": 2160,
+      "speaker": "Speaker_16",
+      "text": "Contribution 37. 20-person meeting."
+    },
+    {
+      "timestamp": 2220,
+      "speaker": "Speaker_17",
+      "text": "Contribution 38. 20-person meeting."
+    },
+    {
+      "timestamp": 2280,
+      "speaker": "Speaker_18",
+      "text": "Contribution 39. 20-person meeting."
+    },
+    {
+      "timestamp": 2340,
+      "speaker": "Speaker_19",
+      "text": "Contribution 40. 20-person meeting."
+    }
+  ],
+  "agenda": [
+    "Item 1",
+    "Item 2",
+    "Item 3"
+  ]
+}

@@ -1,24 +1,42 @@
 import { v4 as uuidv4 } from "uuid";
-import { createArtifactStore, MemoryStorageBackend } from "@/src/artifact-store";
 import type { EvalResult, EvalSummary, ControlDecision, IngestionEvalGateResult, EvalCase } from "./types";
 
 /**
  * MVP-3: Transcript Eval Baseline
  * 3 Eval Cases: schema, reproducibility, content coverage
  * Gate-1: Validates ingestion phase before proceeding to extraction
+ *
+ * Accepts the full artifact objects (not IDs) so eval runs against concrete
+ * payloads without requiring a shared persistent store.  Passing a sentinel
+ * string such as "nonexistent" for either argument triggers the missing-
+ * artifact failure path.
  */
 
 export async function runIngestionEvalGate(
-  transcriptArtifactId: string,
-  contextBundleArtifactId: string
+  transcriptArtifact: Record<string, any> | string,
+  contextBundleArtifact: Record<string, any> | string
 ): Promise<IngestionEvalGateResult> {
-  const backend = new MemoryStorageBackend();
-  const store = createArtifactStore(backend);
   const traceId = uuidv4();
   const traceContext = { trace_id: traceId, created_at: new Date().toISOString() };
 
-  const transcript = await store.retrieve(transcriptArtifactId);
-  const contextBundle = await store.retrieve(contextBundleArtifactId);
+  // Accept full artifact objects or sentinel "not found" strings
+  const transcript =
+    typeof transcriptArtifact === "string"
+      ? null
+      : { payload: transcriptArtifact };
+  const contextBundle =
+    typeof contextBundleArtifact === "string"
+      ? null
+      : { payload: contextBundleArtifact };
+
+  const transcriptArtifactId =
+    typeof transcriptArtifact === "string"
+      ? transcriptArtifact
+      : (transcriptArtifact?.artifact_id ?? "unknown");
+  const contextBundleArtifactId =
+    typeof contextBundleArtifact === "string"
+      ? contextBundleArtifact
+      : (contextBundleArtifact?.artifact_id ?? "unknown");
 
   if (!transcript || !contextBundle) {
     return {

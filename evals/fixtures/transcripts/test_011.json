@@ -1,0 +1,25 @@
+{
+  "meeting_date": "2026-04-21T00:00:00Z",
+  "speakers": [
+    "Speaker_0",
+    "Speaker_1"
+  ],
+  "duration_seconds": 120,
+  "segments": [
+    {
+      "timestamp": 0,
+      "speaker": "Speaker_0",
+      "text": "Contribution 1. 2-minute meeting."
+    },
+    {
+      "timestamp": 60,
+      "speaker": "Speaker_1",
+      "text": "Contribution 2. 2-minute meeting."
+    }
+  ],
+  "agenda": [
+    "Item 1",
+    "Item 2",
+    "Item 3"
+  ]
+}

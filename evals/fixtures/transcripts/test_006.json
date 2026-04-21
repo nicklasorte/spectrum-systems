@@ -1,0 +1,135 @@
+{
+  "meeting_date": "2026-03-07T00:00:00Z",
+  "speakers": [
+    "Alice",
+    "Bob"
+  ],
+  "duration_seconds": 1380,
+  "segments": [
+    {
+      "timestamp": 0,
+      "speaker": "Alice",
+      "text": "Point 1. This is speaker Alice's contribution to the discussion on agenda item 1."
+    },
+    {
+      "timestamp": 60,
+      "speaker": "Bob",
+      "text": "Point 2. This is speaker Bob's contribution to the discussion on agenda item 1."
+    },
+    {
+      "timestamp": 120,
+      "speaker": "Alice",
+      "text": "Point 3. This is speaker Alice's contribution to the discussion on agenda item 1."
+    },
+    {
+      "timestamp": 180,
+      "speaker": "Bob",
+      "text": "Point 4. This is speaker Bob's contribution to the discussion on agenda item 2."
+    },
+    {
+      "timestamp": 240,
+      "speaker": "Alice",
+      "text": "Point 5. This is speaker Alice's contribution to the discussion on agenda item 2."
+    },
+    {
+      "timestamp": 300,
+      "speaker": "Bob",
+      "text": "Point 6. This is speaker Bob's contribution to the discussion on agenda item 2."
+    },
+    {
+      "timestamp": 360,
+      "speaker": "Alice",
+      "text": "Point 7. This is speaker Alice's contribution to the discussion on agenda item 3."
+    },
+    {
+      "timestamp": 420,
+      "speaker": "Bob",
+      "text": "Point 8. This is speaker Bob's contribution to the discussion on agenda item 3."
+    },
+    {
+      "timestamp": 480,
+      "speaker": "Alice",
+      "text": "Point 9. This is speaker Alice's contribution to the discussion on agenda item 3."
+    },
+    {
+      "timestamp": 540,
+      "speaker": "Bob",
+      "text": "Point 10. This is speaker Bob's contribution to the discussion on agenda item 4."
+    },
+    {
+      "timestamp": 600,
+      "speaker": "Alice",
+      "text": "Point 11. This is speaker Alice's contribution to the discussion on agenda item 4."
+    },
+    {
+      "timestamp": 660,
+      "speaker": "Bob",
+      "text": "Point 12. This is speaker Bob's contribution to the discussion on agenda item 4."
+    },
+    {
+      "timestamp": 720,
+      "speaker": "Alice",
+      "text": "Point 13. This is speaker Alice's contribution to the discussion on agenda item 5."
+    },
+    {
+      "timestamp": 780,
+      "speaker": "Bob",
+      "text": "Point 14. This is speaker Bob's contribution to the discussion on agenda item 5."
+    },
+    {
+      "timestamp": 840,
+      "speaker": "Alice",
+      "text": "Point 15. This is speaker Alice's contribution to the discussion on agenda item 5."
+    },
+    {
+      "timestamp": 900,
+      "speaker": "Bob",
+      "text": "Point 16. This is speaker Bob's contribution to the discussion on agenda item 6."
+    },
+    {
+      "timestamp": 960,
+      "speaker": "Alice",
+      "text": "Point 17. This is speaker Alice's contribution to the discussion on agenda item 6."
+    },
+    {
+      "timestamp": 1020,
+      "speaker": "Bob",
+      "text": "Point 18. This is speaker Bob's contribution to the discussion on agenda item 6."
+    },
+    {
+      "timestamp": 1080,
+      "speaker": "Alice",
+      "text": "Point 19. This is speaker Alice's contribution to the discussion on agenda item 7."
+    },
+    {
+      "timestamp": 1140,
+      "speaker": "Bob",
+      "text": "Point 20. This is speaker Bob's contribution to the discussion on agenda item 7."
+    },
+    {
+      "timestamp": 1200,
+      "speaker": "Alice",
+      "text": "Point 21. This is speaker Alice's contribution to the discussion on agenda item 7."
+    },
+    {
+      "timestamp": 1260,
+      "speaker": "Bob",
+      "text": "Point 22. This is speaker Bob's contribution to the discussion on agenda item 8."
+    },
+    {
+      "timestamp": 1320,
+      "speaker": "Alice",
+      "text": "Point 23. This is speaker Alice's contribution to the discussion on agenda item 8."
+    }
+  ],
+  "agenda": [
+    "Agenda item 1",
+    "Agenda item 2",
+    "Agenda item 3",
+    "Agenda item 4",
+    "Agenda item 5",
+    "Agenda item 6",
+    "Agenda item 7",
+    "Agenda item 8"
+  ]
+}

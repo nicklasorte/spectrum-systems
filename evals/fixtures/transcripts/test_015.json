@@ -1,0 +1,91 @@
+{
+  "meeting_date": "2026-04-21T00:00:00Z",
+  "speakers": [
+    "Speaker_0",
+    "Speaker_1",
+    "Speaker_2"
+  ],
+  "duration_seconds": 900,
+  "segments": [
+    {
+      "timestamp": 0,
+      "speaker": "Speaker_0",
+      "text": "Contribution 1. Cross-talk."
+    },
+    {
+      "timestamp": 60,
+      "speaker": "Speaker_1",
+      "text": "Contribution 2. Cross-talk."
+    },
+    {
+      "timestamp": 120,
+      "speaker": "Speaker_2",
+      "text": "Contribution 3. Cross-talk."
+    },
+    {
+      "timestamp": 180,
+      "speaker": "Speaker_0",
+      "text": "Contribution 4. Cross-talk."
+    },
+    {
+      "timestamp": 240,
+      "speaker": "Speaker_1",
+      "text": "Contribution 5. Cross-talk."
+    },
+    {
+      "timestamp": 300,
+      "speaker": "Speaker_2",
+      "text": "Contribution 6. Cross-talk."
+    },
+    {
+      "timestamp": 360,
+      "speaker": "Speaker_0",
+      "text": "Contribution 7. Cross-talk."
+    },
+    {
+      "timestamp": 420,
+      "speaker": "Speaker_1",
+      "text": "Contribution 8. Cross-talk."
+    },
+    {
+      "timestamp": 480,
+      "speaker": "Speaker_2",
+      "text": "Contribution 9. Cross-talk."
+    },
+    {
+      "timestamp": 540,
+      "speaker": "Speaker_0",
+      "text": "Contribution 10. Cross-talk."
+    },
+    {
+      "timestamp": 600,
+      "speaker": "Speaker_1",
+      "text": "Contribution 11. Cross-talk."
+    },
+    {
+      "timestamp": 660,
+      "speaker": "Speaker_2",
+      "text": "Contribution 12. Cross-talk."
+    },
+    {
+      "timestamp": 720,
+      "speaker": "Speaker_0",
+      "text": "Contribution 13. Cross-talk."
+    },
+    {
+      "timestamp": 780,
+      "speaker": "Speaker_1",
+      "text": "Contribution 14. Cross-talk."
+    },
+    {
+      "timestamp": 840,
+      "speaker": "Speaker_2",
+      "text": "Contribution 15. Cross-talk."
+    }
+  ],
+  "agenda": [
+    "Item 1",
+    "Item 2",
+    "Item 3"
+  ]
+}

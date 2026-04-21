@@ -1,0 +1,55 @@
+{
+  "meeting_date": "2026-04-21T00:00:00Z",
+  "speakers": [
+    "Speaker_0",
+    "Speaker_1"
+  ],
+  "duration_seconds": 480,
+  "segments": [
+    {
+      "timestamp": 0,
+      "speaker": "Speaker_0",
+      "text": "Contribution 1. Missing assignees."
+    },
+    {
+      "timestamp": 60,
+      "speaker": "Speaker_1",
+      "text": "Contribution 2. Missing assignees."
+    },
+    {
+      "timestamp": 120,
+      "speaker": "Speaker_0",
+      "text": "Contribution 3. Missing assignees."
+    },
+    {
+      "timestamp": 180,
+      "speaker": "Speaker_1",
+      "text": "Contribution 4. Missing assignees."
+    },
+    {
+      "timestamp": 240,
+      "speaker": "Speaker_0",
+      "text": "Contribution 5. Missing assignees."
+    },
+    {
+      "timestamp": 300,
+      "speaker": "Speaker_1",
+      "text": "Contribution 6. Missing assignees."
+    },
+    {
+      "timestamp": 360,
+      "speaker": "Speaker_0",
+      "text": "Contribution 7. Missing assignees."
+    },
+    {
+      "timestamp": 420,
+      "speaker": "Speaker_1",
+      "text": "Contribution 8. Missing assignees."
+    }
+  ],
+  "agenda": [
+    "Item 1",
+    "Item 2",
+    "Item 3"
+  ]
+}

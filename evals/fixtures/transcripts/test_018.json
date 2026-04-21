@@ -1,0 +1,76 @@
+{
+  "meeting_date": "2026-04-21T00:00:00Z",
+  "speakers": [
+    "Speaker_0",
+    "Speaker_1",
+    "Speaker_2"
+  ],
+  "duration_seconds": 720,
+  "segments": [
+    {
+      "timestamp": 0,
+      "speaker": "Speaker_0",
+      "text": "Contribution 1. Heavy technical language."
+    },
+    {
+      "timestamp": 60,
+      "speaker": "Speaker_1",
+      "text": "Contribution 2. Heavy technical language."
+    },
+    {
+      "timestamp": 120,
+      "speaker": "Speaker_2",
+      "text": "Contribution 3. Heavy technical language."
+    },
+    {
+      "timestamp": 180,
+      "speaker": "Speaker_0",
+      "text": "Contribution 4. Heavy technical language."
+    },
+    {
+      "timestamp": 240,
+      "speaker": "Speaker_1",
+      "text": "Contribution 5. Heavy technical language."
+    },
+    {
+      "timestamp": 300,
+      "speaker": "Speaker_2",
+      "text": "Contribution 6. Heavy technical language."
+    },
+    {
+      "timestamp": 360,
+      "speaker": "Speaker_0",
+      "text": "Contribution 7. Heavy technical language."
+    },
+    {
+      "timestamp": 420,
+      "speaker": "Speaker_1",
+      "text": "Contribution 8. Heavy technical language."
+    },
+    {
+      "timestamp": 480,
+      "speaker": "Speaker_2",
+      "text": "Contribution 9. Heavy technical language."
+    },
+    {
+      "timestamp": 540,
+      "speaker": "Speaker_0",
+      "text": "Contribution 10. Heavy technical language."
+    },
+    {
+      "timestamp": 600,
+      "speaker": "Speaker_1",
+      "text": "Contribution 11. Heavy technical language."
+    },
+    {
+      "timestamp": 660,
+      "speaker": "Speaker_2",
+      "text": "Contribution 12. Heavy technical language."
+    }
+  ],
+  "agenda": [
+    "Item 1",
+    "Item 2",
+    "Item 3"
+  ]
+}

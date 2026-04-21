@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://spectrum-systems.org/contracts/paper_draft_artifact.json",
+  "title": "Paper Draft Artifact",
+  "description": "Initial structured draft of the working paper with required sections.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_id", "artifact_type", "sections", "metadata"],
+  "properties": {
+    "artifact_id": {"type": "string", "pattern": "^DRF-[0-9a-f]{8}$"},
+    "artifact_type": {"type": "string", "const": "paper_draft_artifact"},
+    "sections": {
+      "type": "object",
+      "required": ["introduction", "findings", "analysis", "implications", "conclusion"],
+      "additionalProperties": false,
+      "properties": {
+        "introduction": {
+          "type": "object",
+          "required": ["content"],
+          "properties": {"content": {"type": "string", "minLength": 1}, "word_count": {"type": "integer"}}
+        },
+        "findings": {
+          "type": "object",
+          "required": ["content"],
+          "properties": {"content": {"type": "string", "minLength": 1}, "word_count": {"type": "integer"}}
+        },
+        "analysis": {
+          "type": "object",
+          "required": ["content"],
+          "properties": {"content": {"type": "string", "minLength": 1}, "word_count": {"type": "integer"}}
+        },
+        "implications": {
+          "type": "object",
+          "required": ["content"],
+          "properties": {"content": {"type": "string", "minLength": 1}, "word_count": {"type": "integer"}}
+        },
+        "conclusion": {
+          "type": "object",
+          "required": ["content"],
+          "properties": {"content": {"type": "string", "minLength": 1}, "word_count": {"type": "integer"}}
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "title": {"type": "string"},
+        "authors": {"type": "array", "items": {"type": "string"}},
+        "version": {"type": "string"},
+        "created_at": {"type": "string"},
+        "source_issue_set_id": {"type": "string"},
+        "word_count_total": {"type": "integer"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "trace_id": {"type": "string"},
+        "upstream_artifact_id": {"type": "string"},
+        "created_at": {"type": "string"}
+      }
+    }
+  }
+}

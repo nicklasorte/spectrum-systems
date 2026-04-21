@@ -4,7 +4,9 @@ import { extractMeetingMinutes } from "@/src/mvp-4/minutes-extraction-agent";
 import { assembleContextBundle } from "@/src/mvp-2/context-bundle-assembler";
 import { ingestTranscript } from "@/src/mvp-1/transcript-ingestor";
 
-describe("MVP-6: Extraction Eval Gate", () => {
+const describeWithApiKey = process.env.ANTHROPIC_API_KEY ? describe : describe.skip;
+
+describeWithApiKey("MVP-6: Extraction Eval Gate", () => {
   let minutesArtifactId: string;
   let issueArtifactId: string;
 
@@ -21,7 +23,7 @@ Alice: Good point.`,
 
     if (ingestResult.success && ingestResult.transcript_artifact) {
       const assembleResult = await assembleContextBundle(
-        ingestResult.transcript_artifact.artifact_id
+        ingestResult.transcript_artifact
       );
       if (assembleResult.success && assembleResult.context_bundle) {
         const minutesResult = await extractMeetingMinutes(
