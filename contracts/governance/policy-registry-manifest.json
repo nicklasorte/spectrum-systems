@@ -1,0 +1,33 @@
+{
+  "version": "1.0",
+  "owner": "governance",
+  "description": "Central registry of all governance policies and decision rules",
+  "policies": [
+    {
+      "policy_id": "promotion_readiness_policy",
+      "policy_name": "Artifact Promotion Readiness Gate",
+      "policy_version": "1.0.0",
+      "rule_id": "rule_promotion_readiness_v1",
+      "rule_condition_type": "conjunction",
+      "rule_condition_text": "eval_pass_rate > 0.95 AND trace_coverage > 0.999 AND no_critical_findings",
+      "decision_class": "promotion",
+      "applies_to_artifact_types": ["spectrum_artifact", "control_decision"],
+      "status": "active",
+      "created_timestamp": "2026-04-20T00:00:00Z",
+      "notes": "All conditions must pass for promotion approval"
+    },
+    {
+      "policy_id": "eval_slice_blocking_policy",
+      "policy_name": "Eval Slice Critical Failure Block",
+      "policy_version": "1.0.0",
+      "rule_id": "rule_eval_slice_block_v1",
+      "rule_condition_type": "disjunction",
+      "rule_condition_text": "any_slice_pass_rate < 0.85 OR critical_slice_fail_count > 0",
+      "decision_class": "eval_slice_block",
+      "applies_to_artifact_types": ["eval_result"],
+      "status": "active",
+      "created_timestamp": "2026-04-20T00:00:00Z",
+      "notes": "Any critical slice failing blocks the entire eval result"
+    }
+  ]
+}

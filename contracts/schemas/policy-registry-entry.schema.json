@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "PolicyRegistryEntry",
+  "description": "Single entry in policy registry: immutable, versioned, explicitly rules decision logic",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policy_id",
+    "policy_name",
+    "policy_version",
+    "rule_id",
+    "rule_condition_type",
+    "rule_condition_text",
+    "decision_class",
+    "applies_to_artifact_types",
+    "status",
+    "created_timestamp",
+    "source_code_version"
+  ],
+  "properties": {
+    "policy_id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "description": "Immutable policy ID (e.g., 'promotion_readiness_policy')"
+    },
+    "policy_name": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 500,
+      "description": "Human-readable policy name"
+    },
+    "policy_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version (major.minor.patch)"
+    },
+    "rule_id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "description": "Versioned rule ID (e.g., 'rule_promotion_readiness_v2')"
+    },
+    "rule_condition_type": {
+      "type": "string",
+      "enum": ["threshold", "conjunction", "disjunction", "regex", "semantic"],
+      "description": "Type of rule logic"
+    },
+    "rule_condition_text": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 2000,
+      "description": "Explicit rule logic (no hidden heuristics): e.g., 'eval_pass_rate > 0.95 AND trace_coverage > 0.999'"
+    },
+    "decision_class": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "description": "What type of decision this policy affects (e.g., 'promotion', 'eval_slice_block')"
+    },
+    "applies_to_artifact_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 200
+      },
+      "description": "List of artifact types this policy applies to"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "canary", "active", "deprecated"],
+      "description": "Policy lifecycle status"
+    },
+    "created_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When policy was created"
+    },
+    "source_code_version": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "description": "Git commit hash at policy creation"
+    }
+  }
+}
