@@ -40,5 +40,5 @@ artifacts; a batch is summarised in an `eval_summary` artifact.
 | GATE-5 | MVP-12, MVP-13 + cert | ≥ 0.95 + CERT PASSED |
 
 ## Failure Handling
-On any GATE breach: CDE emits `action = freeze`.  TLC halts routing.
+On any GATE breach: the control decision action is set to `freeze`. TLC halts routing.
 Repair cycle required before re-gate.
