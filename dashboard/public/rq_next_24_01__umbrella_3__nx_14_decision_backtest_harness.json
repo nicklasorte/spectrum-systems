@@ -1,7 +1,7 @@
 {
   "artifact_type": "decision_backtest_harness",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-21T00:24:23Z",
+  "generated_at": "2026-04-21T01:23:54Z",
   "sample_size": 12,
   "correct": 7,
   "partially_correct": 3,
