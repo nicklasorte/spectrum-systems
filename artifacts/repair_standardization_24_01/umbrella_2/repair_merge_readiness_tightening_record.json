@@ -2,7 +2,7 @@
   "artifact_type": "repair_merge_readiness_tightening_record",
   "slice_id": "RS-11",
   "owner": "RQX",
-  "generated_at": "2026-04-21T00:15:48Z",
+  "generated_at": "2026-04-21T00:23:57Z",
   "review_loop_execution_only": true,
   "tightened_conditions": [
     "weak_confidence",

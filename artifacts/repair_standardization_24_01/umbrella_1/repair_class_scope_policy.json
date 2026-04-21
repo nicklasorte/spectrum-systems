@@ -2,7 +2,7 @@
   "artifact_type": "repair_class_scope_policy",
   "slice_id": "RS-03",
   "owner": "TPA",
-  "generated_at": "2026-04-21T00:15:48Z",
+  "generated_at": "2026-04-21T00:23:57Z",
   "eligible_fast_path_classes": [
     "schema_patch",
     "publication_patch"
