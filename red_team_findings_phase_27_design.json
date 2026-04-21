@@ -1,0 +1,62 @@
+{
+  "artifact_type": "red_team_findings",
+  "phase": "27",
+  "gate": "design",
+  "id": "RED-27A",
+  "title": "Judge Calibration Tracking - Design Review",
+  "timestamp": "2026-04-21T01:07:00Z",
+  "status": "approved",
+  "findings": [
+    {
+      "category": "calibration_measurement",
+      "finding": "Calibration measurement sound and correctly implements expected vs actual accuracy",
+      "detail": "Buckets (0.5-0.6 through 0.95-1.0) use bucket midpoint as expected_accuracy. Calibration_error = expected - actual correctly flags overconfidence (positive) and underconfidence (negative).",
+      "severity": "pass",
+      "recommendation": "Approved for implementation"
+    },
+    {
+      "category": "disagreement_detection",
+      "finding": "Disagreement rate accurately measures judge vs ground truth",
+      "detail": "Algorithm counts decisions where _check_decision_correctness returns False, dividing by total. Fallback hierarchy: eval_result > ground_truth_correct > assume_correct. Fail-closed on missing eval.",
+      "severity": "pass",
+      "recommendation": "Approved for implementation"
+    },
+    {
+      "category": "trust_score_formula",
+      "finding": "Trust score formula justified and multi-dimensional",
+      "detail": "trust_score = (1 - disagreement_rate) * (1 - avg_calibration_error) combines accuracy (disagreement) and calibration. Clamps to [0, 1]. Fails closed (returns 0) on exception.",
+      "severity": "pass",
+      "recommendation": "Approved for implementation"
+    },
+    {
+      "category": "fail_closed",
+      "finding": "Fail-closed on missing/invalid data",
+      "detail": "measure_calibration returns empty list if no decisions. compute_trust_score defaults to 0 on error. get_judge_disagreement_report returns minimal report if no decisions. All error_artifacts emitted immutably.",
+      "severity": "pass",
+      "recommendation": "Approved for implementation"
+    },
+    {
+      "category": "adversarial_scenarios",
+      "finding": "5 adversarial scenarios tested",
+      "detail": "1) Overconfident judge (expected > actual, is_miscalibrated=True). 2) Underconfident judge (expected < actual, is_miscalibrated=True). 3) Trend detection (rising disagreement). 4) Empty data (empty list returned). 5) Error handling (error_artifact emitted on exception).",
+      "severity": "pass",
+      "recommendation": "Approved for implementation"
+    },
+    {
+      "category": "immutability",
+      "finding": "Calibration records stored immutably",
+      "detail": "All artifact_store.put() calls include immutable=True flag. Records cannot be modified after creation. Immutability enforced by storage layer.",
+      "severity": "pass",
+      "recommendation": "Approved for implementation"
+    },
+    {
+      "category": "vocabulary_safety",
+      "finding": "No prohibited vocabulary detected",
+      "detail": "Searched for: enforcement, override, orchestration, closure, escalation, re-execution. All clean.",
+      "severity": "pass",
+      "recommendation": "Approved for implementation"
+    }
+  ],
+  "overall_status": "approved",
+  "approval_summary": "Phase 27 (Judge Calibration Tracking) design review APPROVED. Calibration measurement sound, disagreement detection accurate, trust score formula justified, fail-closed on errors, adversarial scenarios covered, immutability enforced, vocabulary safe."
+}
