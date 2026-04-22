@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0.0",
+  "standards_version": "3ls-v2",
+  "description": "Policy for the simplified 3-system architecture (Phase 2 consolidation)",
+  "systems": {
+    "GOVERN": {
+      "description": "Governance + Orchestration (merged TLC + GOV)",
+      "owns": [
+        "policy_check",
+        "lifecycle_check",
+        "route_artifact",
+        "detect_policy_drift"
+      ],
+      "gates": [
+        "policy_check",
+        "lifecycle_check"
+      ],
+      "paths": [
+        "spectrum_systems/govern/"
+      ],
+      "authority": "governance_and_orchestration"
+    },
+    "EXEC": {
+      "description": "Execution Admissibility + Planning (merged TPA + PRG)",
+      "owns": [
+        "exec_check",
+        "validate_lineage",
+        "trust_scope_check",
+        "roadmap_alignment_check",
+        "generate_priority_report"
+      ],
+      "gates": [
+        "exec_check",
+        "roadmap_alignment_check"
+      ],
+      "paths": [
+        "spectrum_systems/exec_system/"
+      ],
+      "authority": "execution_admission_and_planning"
+    },
+    "EVAL": {
+      "description": "Evaluation + Constraint Checking (merged WPG + CHK)",
+      "owns": [
+        "eval_gate",
+        "validate_provenance",
+        "generate_working_paper",
+        "batch_constraint_check",
+        "umbrella_constraint_check",
+        "checkpoint_resume_check"
+      ],
+      "gates": [
+        "eval_gate",
+        "batch_constraint_check"
+      ],
+      "paths": [
+        "spectrum_systems/eval_system/"
+      ],
+      "authority": "evaluation_and_constraint_enforcement"
+    }
+  },
+  "legacy_system_deprecations": {
+    "TPA": {
+      "replaced_by": "EXEC",
+      "migration_deadline": "Week 5 post-Phase-2",
+      "compat_class": "spectrum_systems.compat.DeprecationLayer"
+    },
+    "PRG": {
+      "replaced_by": "EXEC",
+      "migration_deadline": "Week 5 post-Phase-2",
+      "compat_class": "spectrum_systems.compat.DeprecationLayer"
+    },
+    "TLC": {
+      "replaced_by": "GOVERN",
+      "migration_deadline": "Week 5 post-Phase-2",
+      "compat_class": "spectrum_systems.compat.DeprecationLayer"
+    },
+    "GOV": {
+      "replaced_by": "GOVERN",
+      "migration_deadline": "Week 5 post-Phase-2",
+      "compat_class": "spectrum_systems.compat.DeprecationLayer"
+    },
+    "WPG": {
+      "replaced_by": "EVAL",
+      "migration_deadline": "Week 5 post-Phase-2",
+      "compat_class": "spectrum_systems.compat.DeprecationLayer"
+    },
+    "CHK": {
+      "replaced_by": "EVAL",
+      "migration_deadline": "Week 5 post-Phase-2",
+      "compat_class": "spectrum_systems.compat.DeprecationLayer"
+    }
+  },
+  "gate_count": {
+    "before": 30,
+    "after": 21,
+    "reduction_pct": 30.0,
+    "removed_categories": ["OPTIMIZATION", "MEASUREMENT"],
+    "safety_gates_preserved": true
+  }
+}

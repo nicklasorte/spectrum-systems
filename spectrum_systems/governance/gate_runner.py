@@ -155,7 +155,7 @@ def rerun_all_gates() -> Dict:
         "standards_version": "3ls-v1",
         "trace_id": f"TRC-{os.urandom(8).hex().upper()}",
         "created_at": now,
-        "owner_system": "PRG",
+        "owner_system": "GOVERN",
         "timestamp": now,
         "gates": gates,
         "overall_status": overall,
