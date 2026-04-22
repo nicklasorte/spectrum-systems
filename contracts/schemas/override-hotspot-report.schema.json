@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "OverrideHotspotReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["report_id", "report_timestamp", "period_days", "total_overrides", "hotspots", "high_risk_gates", "recommendation"],
+  "properties": {
+    "report_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "report_timestamp": {"type": "string", "format": "date-time"},
+    "period_days": {"type": "integer", "minimum": 1},
+    "total_overrides": {"type": "integer", "minimum": 0},
+    "hotspots": {"type": "array", "items": {"type": "object"}},
+    "high_risk_gates": {"type": "array", "items": {"type": "string"}},
+    "recommendation": {"type": "string", "minLength": 10, "maxLength": 500}
+  }
+}

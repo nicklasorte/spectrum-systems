@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "PolicyEvalCoverageReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["report_id", "timestamp", "total_policies", "policies_with_evals", "policies_without_evals", "coverage_percent", "recommendation"],
+  "properties": {
+    "report_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "total_policies": {"type": "integer", "minimum": 0},
+    "policies_with_evals": {"type": "integer", "minimum": 0},
+    "policies_without_evals": {"type": "array", "items": {"type": "string"}},
+    "coverage_percent": {"type": "number", "minimum": 0, "maximum": 100},
+    "recommendation": {"type": "string", "minLength": 10, "maxLength": 500}
+  }
+}
