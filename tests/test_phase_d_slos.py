@@ -120,7 +120,10 @@ class TestPhaseGLoadTesting:
 
     def test_load_tester_class_exists(self):
         """G1: LoadTester class exists."""
-        from tests.load_test import LoadTester
+        import sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+        from load_test import LoadTester
 
         tester = LoadTester('http://localhost:3000', num_users=10)
         assert tester is not None
@@ -129,7 +132,10 @@ class TestPhaseGLoadTesting:
 
     def test_load_tester_results_analysis(self):
         """G2: LoadTester analyzes results correctly."""
-        from tests.load_test import LoadTester
+        import sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+        from load_test import LoadTester
 
         tester = LoadTester('http://localhost:3000', num_users=5)
         # Mock some results
