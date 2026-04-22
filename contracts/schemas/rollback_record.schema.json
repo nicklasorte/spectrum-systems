@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rollback_record.schema.json",
+  "title": "rollback_record",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "artifact_type": { "type": "string", "const": "rollback_record" },
+    "artifact_id": { "type": "string", "minLength": 1 },
+    "artifact_version": { "type": "string", "const": "1.0.0" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "standards_version": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "owner_system": { "type": "string", "pattern": "^[A-Z0-9]{2,8}$" },
+    "rolled_back_artifact": { "type": "string", "minLength": 1 },
+    "revert_steps": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "timestamp": { "type": "string", "format": "date-time" }
+  },
+  "required": [
+    "artifact_type", "artifact_id", "artifact_version", "schema_version",
+    "standards_version", "trace_id", "created_at", "owner_system",
+    "rolled_back_artifact", "revert_steps", "timestamp"
+  ]
+}
