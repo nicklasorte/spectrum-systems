@@ -62,17 +62,35 @@ def main() -> int:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
 
-    print(
-        json.dumps(
+    summary = {
+        "status": result["status"],
+        "changed_files": result["changed_files"],
+        "reason_codes": result["normalized_reason_codes"],
+        "output": str(output_path),
+    }
+
+    # Surface actionable diagnostics directly in the terminal so failures are
+    # debuggable without fetching the artifact output file.
+    diagnostics = result.get("diagnostics") or []
+    if diagnostics:
+        summary["diagnostics"] = [
             {
-                "status": result["status"],
-                "changed_files": result["changed_files"],
-                "reason_codes": result["normalized_reason_codes"],
-                "output": str(output_path),
-            },
-            indent=2,
-        )
-    )
+                "reason_code": d.get("reason_code"),
+                "file": d.get("file"),
+                "line": d.get("line"),
+                "symbol": d.get("symbol"),
+                "cluster": d.get("cluster"),
+                "canonical_owner": d.get("canonical_owner"),
+                "resolution_category": d.get("resolution_category"),
+            }
+            for d in diagnostics
+        ]
+        if result["status"] == "fail":
+            required_actions = result.get("required_actions") or []
+            if required_actions:
+                summary["required_actions"] = required_actions
+
+    print(json.dumps(summary, indent=2))
     return 1 if result["status"] == "fail" else 0
 
 

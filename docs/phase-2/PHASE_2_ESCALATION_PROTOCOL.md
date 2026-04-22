@@ -32,5 +32,5 @@
 
 ## Escalation Contact
 
-All escalations route to CDE (Canonical Decision Engine). CDE is the sole decision authority.
+All escalations route to CDE (Canonical Decision Engine) for sign-off.
 No implementer may self-approve a disputed finding. No progression past a blocked gate without CDE sign-off.

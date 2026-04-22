@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# .githooks/pre-push
+# System Registry Guard pre-push hook.
+# Run SRG on all files changed relative to main before the push completes.
+#
+# Install once per clone:
+#   git config core.hooksPath .githooks
+#
+# To skip in exceptional circumstances (must be documented):
+#   SKIP_SRG=1 git push
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+if [[ "${SKIP_SRG:-}" == "1" ]]; then
+  echo "[SRG pre-push] SKIP_SRG=1 set — skipping ownership guard (document the reason in your PR)" >&2
+  exit 0
+fi
+
+# Resolve the default upstream main branch
+BASE_REF="${SRG_BASE_REF:-origin/main}"
+HEAD_REF="HEAD"
+
+echo "[SRG pre-push] Checking ownership boundaries against ${BASE_REF}…" >&2
+
+python3 "${REPO_ROOT}/scripts/run_system_registry_guard.py" \
+  --base-ref "${BASE_REF}" \
+  --head-ref "${HEAD_REF}" \
+  --output "${REPO_ROOT}/outputs/system_registry_guard/pre_push_result.json"
+
+STATUS=$?
+if [[ $STATUS -ne 0 ]]; then
+  echo "" >&2
+  echo "╔══════════════════════════════════════════════════════════════╗" >&2
+  echo "║  SRG FAILED — push blocked                                  ║" >&2
+  echo "║  Fix ownership overlaps above, then re-push.                ║" >&2
+  echo "║  Details: outputs/system_registry_guard/pre_push_result.json ║" >&2
+  echo "╚══════════════════════════════════════════════════════════════╝" >&2
+  exit 1
+fi
+
+echo "[SRG pre-push] All ownership checks passed." >&2
+exit 0
