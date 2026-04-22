@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "JudgmentRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "judgment_id",
+    "decision_context",
+    "decision",
+    "rationale",
+    "confidence",
+    "outcome_verified",
+    "status",
+    "timestamp"
+  ],
+  "properties": {
+    "judgment_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "decision_context": {"type": "string", "minLength": 10, "maxLength": 1000},
+    "decision": {"type": "string", "minLength": 3, "maxLength": 200},
+    "rationale": {"type": "string", "minLength": 10, "maxLength": 1000},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "outcome_verified": {"type": "boolean"},
+    "status": {"type": "string", "enum": ["candidate", "precedent", "superseded"]},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}

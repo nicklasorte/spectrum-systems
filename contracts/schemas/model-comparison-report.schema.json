@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "ModelComparisonReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "report_id",
+    "baseline_model",
+    "candidate_model",
+    "test_cases_run",
+    "divergence_detected",
+    "regression_detected",
+    "recommendation",
+    "timestamp"
+  ],
+  "properties": {
+    "report_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "baseline_model": {"type": "string"},
+    "candidate_model": {"type": "string"},
+    "test_cases_run": {"type": "integer", "minimum": 1},
+    "divergence_detected": {"type": "number", "minimum": 0, "maximum": 1},
+    "regression_detected": {"type": "boolean"},
+    "recommendation": {"type": "string", "enum": ["proceed", "investigate", "block"]},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}

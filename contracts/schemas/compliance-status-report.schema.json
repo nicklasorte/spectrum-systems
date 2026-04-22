@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "ComplianceStatusReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "report_id",
+    "timestamp",
+    "total_policies",
+    "policies_compliant",
+    "compliance_percent",
+    "sla_metrics",
+    "audit_status",
+    "recommendation"
+  ],
+  "properties": {
+    "report_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "total_policies": {"type": "integer", "minimum": 0},
+    "policies_compliant": {"type": "integer", "minimum": 0},
+    "compliance_percent": {"type": "number", "minimum": 0, "maximum": 100},
+    "sla_metrics": {"type": "object"},
+    "audit_status": {"type": "string", "enum": ["pass", "fail", "warning"]},
+    "recommendation": {"type": "string", "minLength": 10, "maxLength": 500}
+  }
+}

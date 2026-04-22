@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "ContextTrustScore",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "context_id",
+    "source",
+    "freshness_score",
+    "accuracy_score",
+    "completeness_score",
+    "overall_trust_score",
+    "admission_decision",
+    "timestamp"
+  ],
+  "properties": {
+    "context_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "source": {"type": "string"},
+    "freshness_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "accuracy_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "completeness_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "overall_trust_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "admission_decision": {"type": "string", "enum": ["admit", "quarantine", "reject"]},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}
