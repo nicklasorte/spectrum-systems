@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "ArtifactSupersessionRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "supersession_id",
+    "superseded_artifact_id",
+    "new_artifact_id",
+    "artifact_type",
+    "reason",
+    "timestamp"
+  ],
+  "properties": {
+    "supersession_id": {"type": "string"},
+    "superseded_artifact_id": {"type": "string"},
+    "new_artifact_id": {"type": "string"},
+    "artifact_type": {"type": "string"},
+    "reason": {"type": "string"},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}

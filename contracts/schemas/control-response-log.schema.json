@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "ControlResponseLog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "log_id",
+    "control_decision",
+    "trigger_signal",
+    "route_id",
+    "decision_rationale",
+    "signer_id",
+    "status",
+    "timestamp"
+  ],
+  "properties": {
+    "log_id": {"type": "string"},
+    "control_decision": {"type": "string", "enum": ["freeze", "escalate", "block", "allow", "warn"]},
+    "trigger_signal": {"type": "string"},
+    "route_id": {"type": "string"},
+    "decision_rationale": {"type": "string", "minLength": 10, "maxLength": 500},
+    "signer_id": {"type": "string"},
+    "status": {"type": "string", "enum": ["active", "reversed", "expired"]},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}

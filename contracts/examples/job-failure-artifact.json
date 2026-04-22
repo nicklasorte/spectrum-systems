@@ -1,0 +1,9 @@
+{
+  "failure_id": "jfa-2026-0422-daily-agg-001",
+  "job_id": "job-daily-reason-code-aggregation",
+  "job_name": "daily_reason_code_aggregation",
+  "failure_reason": "Artifact store query timed out after 5s; artifact_type=control_response_log recency_days=1",
+  "retry_count": 3,
+  "last_retry_timestamp": "2026-04-22T02:15:30Z",
+  "status": "dead_letter"
+}

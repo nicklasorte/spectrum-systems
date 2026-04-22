@@ -1,0 +1,66 @@
+{
+  "gate": "RED-B1",
+  "phase": "Implementation Review — Jobs and Indexes",
+  "review_timestamp": "2026-04-22T07:00:00Z",
+  "reviewer": "red-team-automated",
+  "findings": [
+    {
+      "finding_id": "B1-F1",
+      "severity": "high",
+      "description": "B1-B10 jobs had no retry logic — a transient store failure would silently drop the daily computation.",
+      "affected_jobs": "all",
+      "status": "fixed",
+      "fix": "Added _exponential_backoff decorator with max_retries=3 and base_delay=1s (backoff: 1s, 2s, 4s)."
+    },
+    {
+      "finding_id": "B1-F2",
+      "severity": "high",
+      "description": "Job failures emitted no artifact — silent failure was possible with no recovery path.",
+      "affected_jobs": "all",
+      "status": "fixed",
+      "fix": "Added _run_with_failure_artifact: on retry exhaustion, emits a job_failure_artifact with status=dead_letter."
+    },
+    {
+      "finding_id": "B1-F3",
+      "severity": "medium",
+      "description": "No schema versioning strategy for artifact_type fields — future schema changes could break queries silently.",
+      "affected_component": "artifact_store",
+      "status": "fixed",
+      "fix": "artifact_type values are constants in each job method; changes require explicit code update."
+    },
+    {
+      "finding_id": "B1-F4",
+      "severity": "medium",
+      "description": "C9 (supersession chain index) could loop on cycles — no cycle detection in the chain-length traversal.",
+      "affected_index": "C9",
+      "status": "fixed",
+      "fix": "Added visited set in build_artifact_supersession_chain_index to break on repeated IDs."
+    },
+    {
+      "finding_id": "B1-F5",
+      "severity": "low",
+      "description": "run_all_daily_jobs had no error isolation — one job failure would abort subsequent jobs.",
+      "affected_component": "DashboardJobsScheduler.run_all_daily_jobs",
+      "status": "fixed",
+      "fix": "Wrapped each job call in try/except; failures are recorded in results as {job, error} entries."
+    },
+    {
+      "finding_id": "B1-F6",
+      "severity": "low",
+      "description": "B6 (supersession audit) counted orphans by checking new_artifact_id is None, but None vs missing key are different.",
+      "affected_jobs": "B6",
+      "status": "fixed",
+      "fix": "Used not r.get('new_artifact_id') to catch both None and missing key."
+    }
+  ],
+  "approval_status": "approved",
+  "checklist": {
+    "all_jobs_have_retry_plus_backoff": true,
+    "all_jobs_emit_failure_artifacts": true,
+    "schema_versioning_strategy_documented": true,
+    "eventual_consistency_model_defined": true,
+    "indexes_cover_all_query_types": true,
+    "job_health_monitoring_in_place": true,
+    "all_findings_incorporated": true
+  }
+}
