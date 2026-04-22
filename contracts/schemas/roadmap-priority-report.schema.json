@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "RoadmapPriorityReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["report_id", "timestamp", "current_health", "health_metrics", "prioritized_items", "paused_items", "recommendation"],
+  "properties": {
+    "report_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "current_health": {"type": "string", "enum": ["healthy", "degraded", "critical"]},
+    "health_metrics": {"type": "object"},
+    "prioritized_items": {"type": "array", "items": {"type": "string"}},
+    "paused_items": {"type": "array", "items": {"type": "string"}},
+    "recommendation": {"type": "string", "minLength": 10, "maxLength": 500}
+  }
+}
