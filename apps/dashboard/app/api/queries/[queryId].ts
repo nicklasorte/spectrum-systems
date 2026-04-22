@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ArtifactStoreClient } from '@/lib/artifact-client';
+
+const client = new ArtifactStoreClient(
+  process.env.ARTIFACT_API_URL || 'http://localhost:3001'
+);
 
 const QUERY_MAP: { [key: string]: string } = {
   'reason-codes': 'top_reason_codes_by_blocks',
@@ -26,24 +31,10 @@ export async function GET(
       );
     }
 
-    const artifactApiUrl = process.env.ARTIFACT_API_URL || 'http://localhost:3001';
-    const searchParams = new URL(request.url).searchParams;
+    const searchParams = Object.fromEntries(request.nextUrl.searchParams);
+    const result = await client.executeQuery(queryName, searchParams);
 
-    const response = await fetch(
-      `${artifactApiUrl}/api/queries/${queryName}?${searchParams}`,
-      {
-        cache: 'no-store',
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Query failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    return NextResponse.json(data, {
+    return NextResponse.json(result, {
       headers: {
         'Cache-Control': 'public, max-age=30, stale-while-revalidate=60',
       },
@@ -51,8 +42,8 @@ export async function GET(
   } catch (error) {
     console.error('Query execution failed:', error);
     return NextResponse.json(
-      { error: 'Failed to execute query' },
-      { status: 500 }
+      { error: 'Query execution failed', data: [] },
+      { status: 503 }
     );
   }
 }

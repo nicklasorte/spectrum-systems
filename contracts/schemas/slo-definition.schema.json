@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "SLODefinition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "slo_id",
+    "sli_name",
+    "target",
+    "measurement_period",
+    "status"
+  ],
+  "properties": {
+    "slo_id": {"type": "string"},
+    "sli_name": {"type": "string", "enum": ["uptime", "latency_p99", "error_rate", "metric_freshness", "mttr"]},
+    "target": {"type": "number"},
+    "measurement_period": {"type": "string", "enum": ["hourly", "daily", "weekly", "monthly"]},
+    "actual": {"type": "number"},
+    "status": {"type": "string", "enum": ["met", "at_risk", "breached"]}
+  }
+}

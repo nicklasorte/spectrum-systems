@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "APIAuthPolicy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policy_id",
+    "auth_method",
+    "rate_limit_per_minute",
+    "allowed_origins",
+    "status"
+  ],
+  "properties": {
+    "policy_id": {"type": "string"},
+    "auth_method": {"type": "string", "enum": ["oauth2", "api_key", "jwt"]},
+    "rate_limit_per_minute": {"type": "integer", "minimum": 10},
+    "allowed_origins": {"type": "array", "items": {"type": "string"}},
+    "status": {"type": "string", "enum": ["active", "disabled"]}
+  }
+}
