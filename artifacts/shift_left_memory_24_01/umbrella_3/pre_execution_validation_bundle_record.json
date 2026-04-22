@@ -2,7 +2,7 @@
   "artifact_type": "pre_execution_validation_bundle_record",
   "slice_id": "SM-13",
   "owner": "PQX",
-  "generated_at": "2026-04-21T01:24:07Z",
+  "generated_at": "2026-04-22T10:51:37Z",
   "validation_surfaces": [
     "schema",
     "lineage",

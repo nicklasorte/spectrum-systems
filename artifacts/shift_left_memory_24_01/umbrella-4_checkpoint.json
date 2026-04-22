@@ -1,7 +1,7 @@
 {
   "artifact_type": "shift_left_memory_umbrella_checkpoint",
   "batch_id": "SHIFT-LEFT-MEMORY-24-01",
-  "generated_at": "2026-04-21T01:24:07Z",
+  "generated_at": "2026-04-22T10:51:37Z",
   "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
   "umbrella_id": "UMBRELLA-4",
   "umbrella_name": "REPAIR_PRESSURE_CLOSURE_AND_TRUST",

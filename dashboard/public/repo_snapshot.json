@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-04-22T10:47:01Z",
-  "freshness_timestamp_utc": "2026-04-22T10:47:01Z",
+  "generated_at": "2026-04-22T10:52:08Z",
+  "freshness_timestamp_utc": "2026-04-22T10:52:08Z",
   "repo_name": "spectrum-systems",
   "root_counts": {
-    "files_total": 7462,
+    "files_total": 7547,
     "runtime_modules": 262,
-    "tests": 571,
-    "contracts_total": 2710,
-    "schemas": 1439,
+    "tests": 578,
+    "contracts_total": 2716,
+    "schemas": 1445,
     "examples": 1271,
     "docs": 1466,
     "run_artifacts": 152
@@ -122,7 +122,7 @@
     "current_run_state_record": {
       "artifact_type": "current_run_state_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-21T01:22:23Z",
+      "generated_at": "2026-04-22T10:49:58Z",
       "last_run_id": "OPS-MASTER-01",
       "status": "completed",
       "outcomes": [
@@ -134,7 +134,7 @@
     "current_bottleneck_record": {
       "artifact_type": "current_bottleneck_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-21T01:22:23Z",
+      "generated_at": "2026-04-22T10:49:58Z",
       "bottleneck_name": "repair_loop_latency",
       "evidence": [
         "first_pass_quality_artifact.first_pass_rate=0.71",
@@ -148,7 +148,7 @@
     "hard_gate_status_record": {
       "artifact_type": "hard_gate_status_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-21T01:22:23Z",
+      "generated_at": "2026-04-22T10:49:58Z",
       "required_artifacts": [
         "current_run_state_record",
         "pre_pqx_contract_readiness_artifact",
