@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "buildCommand": "cd apps/dashboard && npm run build",
+  "devCommand": "cd apps/dashboard && npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "projectSettings": {
+    "sourceFilesOutsideRootDirectory": true
+  },
+  "env": {
+    "ARTIFACT_API_URL": {
+      "description": "Base URL for artifact store API",
+      "required": true
+    },
+    "WS_URL": {
+      "description": "WebSocket URL for real-time updates",
+      "required": false
+    }
+  },
+  "regions": ["iad1", "sfo1"],
+  "public": true
+}
