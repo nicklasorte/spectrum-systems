@@ -76,7 +76,7 @@ GATE_CATALOG: Dict[str, Dict[str, Any]] = {
     },
     "closure_decision_gate": {
         "category": GateCategory.SAFETY,
-        "description": "CDE closure decision authority",
+        "description": "CDE closure decision gate",
         "keep": True,
     },
     # Class-based gates — all SAFETY

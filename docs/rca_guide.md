@@ -166,7 +166,7 @@ WHY:  budget_used=1250 exceeds budget_limit=1000 — SLO violation
 **Fix:**
 1. Check resource usage in execution (event log: `execution_end` data)
 2. Optimize the most expensive operation, or request a budget increase through CAP
-3. Do not override the SLO limit inline
+3. Do not change the SLO limit inline — request a governed budget adjustment instead
 
 ---
 

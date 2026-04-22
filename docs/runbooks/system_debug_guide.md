@@ -32,7 +32,7 @@ PQX (execution — do not touch directly)
   ↓
 EVAL (working paper, constraint checks)
   ↓
-CDE (closure decision — sole authority)
+CDE (closure decision engine)
   ↓
 SEL (enforcement — fail-closed)
   ↓
@@ -157,7 +157,7 @@ WHY:  pass_rate=0.872 < threshold=0.950 — blocked
 
 ## CDE (Closure Decision) Failures
 
-CDE is the sole decision authority. If CDE blocks:
+CDE handles closure decisions. If CDE blocks:
 
 1. Find the `control_decision` artifact: `action` field
 2. Valid actions: `allow`, `warn`, `freeze`, `block`

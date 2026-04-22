@@ -61,7 +61,7 @@ SYSTEM_JUSTIFICATIONS: Dict[str, Dict[str, Any]] = {
     "GOVERN": {
         "prevents": ["policy_drift", "unauthorized_execution", "routing_to_wrong_owner", "artifact_loss"],
         "improves": ["governance_enforcement", "governance_integrity"],
-        "roi": "Consolidates GOV+TLC: single governance+orchestration authority",
+        "roi": "Consolidates GOV+TLC: single governance+orchestration system",
         "dependencies": ["PQX", "CDE", "SEL"],
         "removal_candidate": False,
         "removal_rationale": "Canonical consolidated governance+orchestration system",
@@ -69,7 +69,7 @@ SYSTEM_JUSTIFICATIONS: Dict[str, Dict[str, Any]] = {
     "EXEC": {
         "prevents": ["unsigned_execution", "lineage_breaks", "roadmap_misalignment"],
         "improves": ["traceability", "auditability", "program_level_visibility"],
-        "roi": "Consolidates TPA+PRG: single execution+planning authority",
+        "roi": "Consolidates TPA+PRG: single execution+planning system",
         "dependencies": ["GOVERN", "PQX"],
         "removal_candidate": False,
         "removal_rationale": "Canonical consolidated execution+planning system",

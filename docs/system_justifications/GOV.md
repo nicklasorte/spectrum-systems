@@ -25,12 +25,12 @@
 ## Dependencies
 
 - TLC (orchestration)
-- CDE (closure authority)
+- CDE (closure decisions)
 - SEL (enforcement)
 
 ## Removal Candidate?
 
-No. Merging into GOVERN (Phase 2a) with TLC. Policy authority preserved.
+No. Merging into GOVERN (Phase 2a) with TLC. Policy enforcement preserved.
 
 ## Removal Impact
 

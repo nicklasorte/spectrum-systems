@@ -27,11 +27,11 @@ Cost: Adds 1 orchestration hop per artifact.
 
 - GOV (policy decisions)
 - PQX (execution)
-- CDE (closure authority)
+- CDE (closure decisions)
 
 ## Removal Candidate?
 
-No. Merging into GOVERN (Phase 2a) with GOV. Orchestration authority preserved.
+No. Merging into GOVERN (Phase 2a) with GOV. Orchestration preserved.
 
 ## Removal Impact
 
