@@ -2,7 +2,7 @@
   "artifact_type": "early_repair_eligibility_result",
   "slice_id": "RL-03",
   "owner": "SEL",
-  "generated_at": "2026-04-22T22:20:47Z",
+  "generated_at": "2026-04-22T23:16:49Z",
   "eligible": [
     "F-101",
     "F-102",

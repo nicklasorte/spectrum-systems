@@ -1,7 +1,7 @@
 {
   "artifact_type": "controlled_expansion_canary_gate",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-22T22:21:20Z",
+  "generated_at": "2026-04-22T23:17:29Z",
   "gate_state": "allow_bounded_canary",
   "allowed_scope": "single bounded cohort",
   "automatic_rollback_on_regression": true,
