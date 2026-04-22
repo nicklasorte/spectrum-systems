@@ -443,10 +443,10 @@ def _make_integration_campaigns() -> List[ChaosCampaign]:
         from spectrum_systems.governance.merge_governance_authority import MergeGovernanceAuthority
         mgv = MergeGovernanceAuthority()
         try:
-            ok, decision = mgv.self_authorize("claude/test-branch", "main")
-            return {"self_authorized": ok, "decision": decision}
+            ok, auth_record = mgv.self_authorize("claude/test-branch", "main")
+            return {"self_authorized": ok, "auth_record": auth_record}
         except (AttributeError, NotImplementedError):
-            return {"self_authorized": False, "decision": "method not available"}
+            return {"self_authorized": False, "auth_record": "method not available"}
 
     def chx019_validate(result: Dict) -> Tuple[bool, str]:
         if result.get("self_authorized"):
