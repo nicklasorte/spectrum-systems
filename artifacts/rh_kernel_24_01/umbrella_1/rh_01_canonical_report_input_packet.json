@@ -3,7 +3,7 @@
   "batch_id": "RH-KERNEL-24-01",
   "slice_id": "RH-01",
   "owner": "RIL",
-  "generated_at": "2026-04-22T10:50:57Z",
+  "generated_at": "2026-04-22T22:20:55Z",
   "inputs": [
     "artifacts/governed_kernel_24_01/run_summary.json",
     "artifacts/mg_kernel_24_01/run_summary.json",

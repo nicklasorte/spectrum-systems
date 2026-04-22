@@ -2,7 +2,7 @@
   "artifact_type": "first_pass_quality_scoreboard",
   "slice_id": "SM-16",
   "owner": "PRG",
-  "generated_at": "2026-04-22T10:51:37Z",
+  "generated_at": "2026-04-22T22:21:31Z",
   "by_class": [
     {
       "class": "schema_patch",

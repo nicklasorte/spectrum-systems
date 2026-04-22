@@ -1,12 +1,12 @@
 {
   "artifact_type": "next_action_recommendation_record_collection",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-22T10:52:29Z",
+  "generated_at": "2026-04-22T22:22:14Z",
   "records": [
     {
       "artifact_type": "next_action_recommendation_record",
       "batch_id": "RQ-MASTER-36-01",
-      "generated_at": "2026-04-22T10:52:29Z",
+      "generated_at": "2026-04-22T22:22:14Z",
       "cycle_id": "cycle_03",
       "recommendation_id": "RQ36-REC-003",
       "recommended_next_action": "stabilize_input_lineage_before_promoting_changes",
@@ -25,7 +25,7 @@
     {
       "artifact_type": "next_action_recommendation_record",
       "batch_id": "RQ-MASTER-36-01",
-      "generated_at": "2026-04-22T10:52:29Z",
+      "generated_at": "2026-04-22T22:22:14Z",
       "cycle_id": "cycle_04",
       "recommendation_id": "RQ36-REC-004",
       "recommended_next_action": "prioritize targeted drift guard updates before expansion",
@@ -44,7 +44,7 @@
     {
       "artifact_type": "next_action_recommendation_record",
       "batch_id": "RQ-MASTER-36-01",
-      "generated_at": "2026-04-22T10:52:29Z",
+      "generated_at": "2026-04-22T22:22:14Z",
       "cycle_id": "cycle_05",
       "recommendation_id": "RQ36-REC-005",
       "recommended_next_action": "continue bounded governed cycles and re-check calibration after each outcome",
