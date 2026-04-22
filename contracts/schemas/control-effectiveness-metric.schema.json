@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "ControlEffectivenessMetric",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "metric_id",
+    "metric_type",
+    "metric_value",
+    "measurement_period",
+    "timestamp"
+  ],
+  "properties": {
+    "metric_id": {"type": "string"},
+    "metric_type": {"type": "string", "enum": ["frozen_route_recovery_time", "false_positive_rate", "incident_prevented", "escalation_resolution_time", "override_effectiveness"]},
+    "metric_value": {"type": "number"},
+    "measurement_period": {"type": "string", "enum": ["hourly", "daily", "weekly"]},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}

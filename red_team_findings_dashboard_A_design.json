@@ -1,0 +1,74 @@
+{
+  "gate": "RED-A1",
+  "phase": "Design Review — Query Surfaces",
+  "review_timestamp": "2026-04-22T06:00:00Z",
+  "reviewer": "red-team-automated",
+  "findings": [
+    {
+      "finding_id": "A1-F1",
+      "severity": "high",
+      "description": "A1 query had no result size limit — unbounded scan could exhaust memory on large stores.",
+      "affected_query": "query_top_reason_codes_by_blocks",
+      "status": "fixed",
+      "fix": "Added limit=query_result_limit (10000 rows max) to artifact_store.query call."
+    },
+    {
+      "finding_id": "A1-F2",
+      "severity": "medium",
+      "description": "Queries A1-A8 had no timeout SLO — a slow store could stall the dashboard indefinitely.",
+      "affected_query": "all",
+      "status": "fixed",
+      "fix": "Added query_timeout_seconds=5 attribute; queries are bounded by store-level timeout."
+    },
+    {
+      "finding_id": "A1-F3",
+      "severity": "medium",
+      "description": "A.1.3 reviewer bias matrix iterated all reviews but never matched reviews to the same artifact, producing an empty disagreement_pairs dict.",
+      "affected_query": "query_reviewer_bias_matrix",
+      "status": "fixed",
+      "fix": "Implemented artifact_id-based grouping to pair reviewers who reviewed the same artifact."
+    },
+    {
+      "finding_id": "A1-F4",
+      "severity": "low",
+      "description": "A.1.2 method was named query_incident_drill_replay, which conflicts with vocabulary rules.",
+      "affected_query": "query_incident_drill_replay",
+      "status": "fixed",
+      "fix": "Renamed to query_incident_drill; method renamed to drill_status in output."
+    },
+    {
+      "finding_id": "A1-F5",
+      "severity": "low",
+      "description": "A.1.5 supersession traversal had no cycle-detection guard — a cycle would produce an infinite loop.",
+      "affected_query": "query_artifact_supersession_lineage",
+      "status": "fixed",
+      "fix": "Added visited set to break on repeated artifact IDs."
+    },
+    {
+      "finding_id": "A1-F6",
+      "severity": "low",
+      "description": "A.1.4 (policy coverage delta) was missing entirely from the original design.",
+      "affected_query": "query_policy_coverage_delta",
+      "status": "fixed",
+      "fix": "Added query_policy_coverage_delta comparing current vs previous eval_coverage_summary artifacts."
+    },
+    {
+      "finding_id": "A1-F7",
+      "severity": "medium",
+      "description": "Queries A6, A7, A8 were not defined — only A1-A5 and A.1.x were present in the initial design.",
+      "affected_query": "A6 A7 A8",
+      "status": "fixed",
+      "fix": "Added query_routes_near_slo_threshold (A6), query_eval_coverage_gaps (A7), query_promotion_readiness_blockers (A8)."
+    }
+  ],
+  "approval_status": "approved",
+  "checklist": {
+    "all_10_queries_defined": true,
+    "pagination_added": true,
+    "result_size_limits_set": true,
+    "timeout_slo_defined": true,
+    "error_handling_per_query": true,
+    "immutability_requirements_met": true,
+    "all_findings_incorporated": true
+  }
+}

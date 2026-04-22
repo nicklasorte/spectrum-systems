@@ -1,0 +1,8 @@
+{
+  "supersession_id": "asr-2026-0422-policy-upgrade-001",
+  "superseded_artifact_id": "policy-bundle-v1-2026-03-01",
+  "new_artifact_id": "policy-bundle-v2-2026-04-22",
+  "artifact_type": "policy_bundle_artifact",
+  "reason": "Threshold recalibration following 30-day eval cycle; false positive rate reduced from 8.1% to 3.4%.",
+  "timestamp": "2026-04-22T08:00:00Z"
+}

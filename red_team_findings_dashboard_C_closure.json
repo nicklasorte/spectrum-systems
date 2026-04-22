@@ -1,0 +1,65 @@
+{
+  "gate": "RED-C1",
+  "phase": "Control Decision Audit Review",
+  "review_timestamp": "2026-04-22T08:00:00Z",
+  "reviewer": "red-team-automated",
+  "findings": [
+    {
+      "finding_id": "C1-F1",
+      "severity": "high",
+      "description": "No unfreeze workflow existed — once a route was frozen, there was no governed path to reverse it.",
+      "affected_component": "ControlResponseExecutor",
+      "status": "fixed",
+      "fix": "Added unfreeze_route method: validates original freeze log exists, writes immutable reversal record, then logs an allow decision."
+    },
+    {
+      "finding_id": "C1-F2",
+      "severity": "high",
+      "description": "unfreeze_route could modify a non-freeze log — no decision-type validation before reversal.",
+      "affected_component": "ControlResponseExecutor.unfreeze_route",
+      "status": "fixed",
+      "fix": "Added check: if original log's control_decision != 'freeze', raise ValueError with clear message."
+    },
+    {
+      "finding_id": "C1-F3",
+      "severity": "medium",
+      "description": "Control decision log had no signer_id — decisions were unsigned and unattributable.",
+      "affected_component": "ControlResponseLog schema",
+      "status": "fixed",
+      "fix": "Added signer_id as required field in control-response-log.schema.json and ControlResponseExecutor._write_log."
+    },
+    {
+      "finding_id": "C1-F4",
+      "severity": "medium",
+      "description": "Unfreeze wrote a new allow log but did not emit a reversal record — original freeze status remained 'active' with no audit trail linking the two.",
+      "affected_component": "ControlResponseExecutor.unfreeze_route",
+      "status": "fixed",
+      "fix": "Added explicit control_response_log_reversal artifact write before the allow log."
+    },
+    {
+      "finding_id": "C1-F5",
+      "severity": "medium",
+      "description": "get_active_freezes had no implementation — freeze inventory was invisible to operators.",
+      "affected_component": "ControlResponseExecutor",
+      "status": "fixed",
+      "fix": "Added get_active_freezes method querying control_response_log with decision=freeze and status=active."
+    },
+    {
+      "finding_id": "C1-F6",
+      "severity": "low",
+      "description": "Effectiveness tracker had no measure_all convenience method — callers had to invoke each metric separately.",
+      "affected_component": "EffectivenessTracker",
+      "status": "fixed",
+      "fix": "Added measure_all(period) to run all 5 measurements and return a list."
+    }
+  ],
+  "approval_status": "approved",
+  "checklist": {
+    "unfreeze_workflow_defined_and_documented": true,
+    "signer_id_added_to_control_decisions": true,
+    "manual_override_path_with_audit_trail": true,
+    "control_effectiveness_tracking_active": true,
+    "all_control_decisions_logged_immutably": true,
+    "all_findings_incorporated": true
+  }
+}
