@@ -2,8 +2,11 @@
 
 import time
 import concurrent.futures
-import requests
 from typing import List, Tuple
+try:
+    import requests
+except ImportError:
+    requests = None
 
 
 class LoadTester:
@@ -42,6 +45,9 @@ class LoadTester:
     def _simulate_user(self, user_id: int, end_time: float) -> Tuple[str, float, int]:
         """Simulate single user browsing dashboard."""
         try:
+            if requests is None:
+                return ('error', 0, 0)
+
             # Fetch entropy snapshot
             start = time.time()
             response = requests.get(
@@ -55,9 +61,9 @@ class LoadTester:
             else:
                 return ('error', latency, response.status_code)
 
-        except requests.Timeout:
-            return ('timeout', 5.0, 0)
         except Exception as e:
+            if requests and hasattr(requests, 'Timeout') and isinstance(e, requests.Timeout):
+                return ('timeout', 5.0, 0)
             return ('error', 0, 0)
 
     def _analyze_results(self) -> dict:
