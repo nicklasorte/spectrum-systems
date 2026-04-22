@@ -1,0 +1,48 @@
+{
+  "phase_2_metrics": {
+    "failure_artifact_coverage": {
+      "definition": "% of exceptions producing failure artifacts",
+      "target": "100%",
+      "measurement": "failed_executions_with_artifacts / total_failed_executions",
+      "baseline": "0% (Phase 1)",
+      "acceptable_improvement": ">=95%"
+    },
+    "status_lifecycle_coverage": {
+      "definition": "% of systems with explicit status (active/superseded/frozen/deprecated)",
+      "target": "100%",
+      "measurement": "systems_with_status / total_systems",
+      "baseline": "0% (Phase 1)",
+      "acceptable_improvement": "100%"
+    },
+    "gate_block_rate": {
+      "definition": "% of invalid inputs blocked by gates (admission/eval/promotion)",
+      "target": "100%",
+      "measurement": "invalid_inputs_blocked / total_invalid_inputs_tested",
+      "baseline": "N/A",
+      "acceptable_improvement": ">=99%"
+    },
+    "event_log_completeness": {
+      "definition": "% of executions with complete event log (no missing events)",
+      "target": "100%",
+      "measurement": "traces_with_complete_log / total_traces",
+      "baseline": "0% (Phase 1)",
+      "acceptable_improvement": ">=99%"
+    },
+    "phase_3_metrics": {
+      "loop_cycle_latency_improvement": {
+        "definition": "% reduction in execution->eval->promotion time",
+        "target": ">=20%",
+        "measurement": "(baseline_latency - optimized_latency) / baseline_latency",
+        "baseline": "MEASURE in Phase 3.0",
+        "acceptable_improvement": ">=15%"
+      },
+      "signal_latency": {
+        "definition": "ms from event to signal update (detection to control)",
+        "target": "<200ms",
+        "measurement": "p99(signal_update_latency)",
+        "baseline": "MEASURE in Phase 3.0",
+        "acceptable_improvement": "<500ms"
+      }
+    }
+  }
+}

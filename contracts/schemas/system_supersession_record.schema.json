@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/contracts/schemas/system_supersession_record.schema.json",
+  "title": "System Supersession Record",
+  "description": "Immutable record of a system being superseded by a replacement.",
+  "version": "1.0.0",
+  "type": "object",
+  "properties": {
+    "record_id": {
+      "type": "string",
+      "description": "Unique record identifier"
+    },
+    "system_id": {
+      "type": "string",
+      "description": "ID of the system being superseded"
+    },
+    "prior_state": {
+      "type": "string",
+      "enum": ["active"],
+      "description": "State prior to supersession (must be active)"
+    },
+    "current_state": {
+      "type": "string",
+      "enum": ["superseded"],
+      "description": "State after supersession"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Human-readable justification for supersession"
+    },
+    "superseded_by": {
+      "type": "string",
+      "description": "ID of the system that replaces this one"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp of the transition"
+    },
+    "record_type": {
+      "type": "string",
+      "const": "system_supersession_record"
+    }
+  },
+  "required": ["record_id", "system_id", "prior_state", "current_state", "reason", "superseded_by", "timestamp"],
+  "additionalProperties": true
+}
