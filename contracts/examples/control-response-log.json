@@ -1,0 +1,10 @@
+{
+  "log_id": "crl-2026-0422-escalate-route-7",
+  "control_decision": "escalate",
+  "trigger_signal": "calibration_error_exceeded_threshold",
+  "route_id": "route-promotion-tier-1",
+  "decision_rationale": "Calibration error rose to 12.3% against a 10% threshold, indicating systematic judge drift that requires human review before further promotions.",
+  "signer_id": "cde-v2-prod",
+  "status": "active",
+  "timestamp": "2026-04-22T09:45:00Z"
+}

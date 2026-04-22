@@ -1,0 +1,9 @@
+{
+  "reason_code_id": "rcr-2026-001-policy-drift",
+  "parent_code": "root",
+  "code_name": "policy_drift_detected",
+  "description": "Control gate triggered because active policy diverged from baseline by more than 10% over a 7-day window.",
+  "incident_count": 14,
+  "trend": "rising",
+  "timestamp": "2026-04-22T10:00:00Z"
+}

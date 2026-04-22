@@ -1,0 +1,7 @@
+{
+  "metric_id": "cem-2026-0422-fpr-daily-001",
+  "metric_type": "false_positive_rate",
+  "metric_value": 0.034,
+  "measurement_period": "daily",
+  "timestamp": "2026-04-22T00:00:00Z"
+}

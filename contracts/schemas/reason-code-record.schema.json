@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "ReasonCodeRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reason_code_id",
+    "parent_code",
+    "code_name",
+    "description",
+    "incident_count",
+    "trend",
+    "timestamp"
+  ],
+  "properties": {
+    "reason_code_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "parent_code": {"type": "string"},
+    "code_name": {"type": "string", "minLength": 3, "maxLength": 100},
+    "description": {"type": "string", "minLength": 10, "maxLength": 500},
+    "incident_count": {"type": "integer", "minimum": 0},
+    "trend": {"type": "string", "enum": ["rising", "stable", "falling"]},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}
