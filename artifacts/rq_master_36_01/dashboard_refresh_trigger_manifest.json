@@ -1,7 +1,7 @@
 {
   "artifact_type": "dashboard_refresh_trigger_manifest",
   "owner": "MAP",
-  "generated_at": "2026-04-22T10:52:12Z",
+  "generated_at": "2026-04-22T10:52:29Z",
   "refresh_required": true,
   "dashboard_surfaces": [
     "dashboard/public",
