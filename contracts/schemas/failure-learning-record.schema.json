@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "FailureLearningRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "learning_id",
+    "incident_id",
+    "failure_type",
+    "root_cause",
+    "learning_action",
+    "status",
+    "timestamp"
+  ],
+  "properties": {
+    "learning_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "incident_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "failure_type": {"type": "string"},
+    "root_cause": {"type": "string", "minLength": 10, "maxLength": 500},
+    "learning_action": {"type": "string", "enum": ["eval_expansion", "policy_update", "trace_hardening", "calibration_review"]},
+    "status": {"type": "string", "enum": ["proposed", "approved", "implemented", "verified"]},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}

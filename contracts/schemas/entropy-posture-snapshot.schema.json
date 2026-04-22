@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "EntropyPostureSnapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshot_id",
+    "timestamp",
+    "week_ending",
+    "metrics",
+    "control_decisions",
+    "recommendation"
+  ],
+  "properties": {
+    "snapshot_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "week_ending": {"type": "string", "format": "date"},
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "decision_divergence": {"type": "object"},
+        "exception_rate": {"type": "object"},
+        "trace_coverage": {"type": "object"},
+        "calibration_drift": {"type": "object"},
+        "override_hotspots": {"type": "object"},
+        "failure_to_eval_rate": {"type": "object"}
+      }
+    },
+    "control_decisions": {
+      "type": "array",
+      "items": {"type": "string", "enum": ["freeze", "escalate", "block", "proceed"]}
+    },
+    "recommendation": {"type": "string", "minLength": 10, "maxLength": 500}
+  }
+}
