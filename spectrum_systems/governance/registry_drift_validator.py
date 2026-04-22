@@ -53,7 +53,8 @@ class RegistryDriftValidator:
     def _parse_system_block(self, acronym: str, body: str) -> Dict:
         """Extract owns/produces/consumes from a system markdown block."""
         def _extract_list(section: str, text: str) -> List[str]:
-            pattern = rf'\*\*{section}:\*\*\s*\n((?:\s*-[^\n]*\n?)*)'
+            # Negative lookahead (?!\s*\*\*) stops capture at the next **section:** header line.
+            pattern = rf'\*\*{section}:\*\*\s*\n((?:\s*-(?!\s*\*\*)[^\n]*\n?)*)'
             m = re.search(pattern, text)
             if not m:
                 return []
@@ -62,7 +63,8 @@ class RegistryDriftValidator:
                 for ln in m.group(1).splitlines()
                 if ln.strip().startswith('-')
             ]
-            return [l for l in lines if l]
+            # Exclude any item containing ** — those are section markers, not artifact names.
+            return [l for l in lines if l and '**' not in l]
 
         return {
             "acronym": acronym,

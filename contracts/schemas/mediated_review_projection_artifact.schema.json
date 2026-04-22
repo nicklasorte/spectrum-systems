@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Mediated Review Projection Artifact Schema",
+  "required": [
+    "artifact_type"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "mediated_review_projection_artifact"
+    }
+  }
+}

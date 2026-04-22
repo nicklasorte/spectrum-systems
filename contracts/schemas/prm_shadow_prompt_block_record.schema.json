@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Prm Shadow Prompt Block Record Schema",
+  "required": [
+    "artifact_type"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "prm_shadow_prompt_block_record"
+    }
+  }
+}

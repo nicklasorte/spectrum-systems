@@ -1,4 +1,4 @@
-"""CDE: Trust-envelope lock authority.
+"""CDE: Trust-envelope sealing module.
 
 Bundles all governance artifacts into a signed, locked envelope.
 After locking, all promotions must be validated against the envelope.
@@ -24,13 +24,13 @@ def _compute_bundle_hash(contents: Dict) -> str:
 
 def _sign(bundle_hash: str) -> str:
     """Deterministic HMAC-style signature (self-contained; no external key required)."""
-    authority_seed = "CDE-3LS-TRUST-AUTHORITY-V1"
+    authority_seed = "CDE-3LS-TRUST-SEAL-V1"
     raw = hashlib.sha256(f"{authority_seed}:{bundle_hash}".encode()).hexdigest()
     return f"CDE-SIG-{raw[:32].upper()}"
 
 
 class CDETrustEnvelope:
-    """CDE: Final authority lock on governance artifacts."""
+    """CDE: Signed lock for the trust bundle."""
 
     def __init__(self) -> None:
         self._current_envelope: Optional[Dict] = None

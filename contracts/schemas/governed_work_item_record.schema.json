@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Governed Work Item Record Schema",
+  "required": [
+    "artifact_type"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "governed_work_item_record"
+    }
+  }
+}

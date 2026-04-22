@@ -182,3 +182,35 @@ class TestRedTeamFoundation:
         )
         assert not ok
         assert any("no schema" in e.lower() for e in errors)
+
+    def test_rt_f3_parser_does_not_cross_section_boundary(self):
+        """RT-F3: Registry parser must not capture must_not_do items as produces entries.
+
+        Regression guard for the cross-section-boundary parser bug where _extract_list()
+        greedily captured items past the next **section:** header.
+        """
+        from spectrum_systems.governance.registry_drift_validator import RegistryDriftValidator
+        v = RegistryDriftValidator()
+        # Every parsed system must have produces items that are plain artifact names,
+        # not section-header text like '**must_not_do:**'.
+        for system_id, system_def in v.registry.items():
+            for artifact in system_def.get("produces", []):
+                assert "**" not in artifact, (
+                    f"{system_id}: produces list contains section marker '{artifact}' — "
+                    "parser crossed a **section:** boundary. Fix _extract_list() regex."
+                )
+                assert artifact == artifact.strip(), (
+                    f"{system_id}: artifact name '{artifact}' has leading/trailing whitespace"
+                )
+
+    def test_rt_f4_drift_report_has_zero_schema_violations(self):
+        """RT-F4: Drift report must show 0 schema-missing violations after all schemas added."""
+        from spectrum_systems.governance.registry_drift_validator import RegistryDriftValidator
+        report = RegistryDriftValidator().emit_drift_report()
+        schema_violations = [
+            s for s in report["systems_non_compliant"]
+            if any("no schema" in e.lower() for e in report["details"].get(s, []))
+        ]
+        assert not schema_violations, (
+            f"Schema violations found — add schemas or fix produces list: {schema_violations}"
+        )

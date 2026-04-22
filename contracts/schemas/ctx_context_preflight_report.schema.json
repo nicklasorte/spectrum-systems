@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Ctx Context Preflight Report Schema",
+  "required": [
+    "artifact_type"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "ctx_context_preflight_report"
+    }
+  }
+}

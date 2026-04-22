@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Shared Authority Compliance Result Schema",
+  "required": [
+    "artifact_type"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "shared_authority_compliance_result"
+    }
+  }
+}

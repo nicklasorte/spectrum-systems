@@ -1,7 +1,7 @@
-"""MGV: Merge Governance Authority.
+"""MGV: Merge gating module.
 
-Governs merge decisions with explicit wiring to CDE.
-MGV may NOT self-authorize; all decisions flow through CDE.
+Routes merge requests through CDE; never self-authorizing.
+MGV may NOT bypass CDE; all merge requests must flow through CDE sign-off.
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from typing import Dict, List, Tuple
 
 
 class MergeGovernanceAuthority:
-    """MGV: Narrowly scoped merge authority — never self-authorizing."""
+    """MGV: Narrowly scoped merge controller — never self-authorizing."""
 
     def authorize_merge(
         self,
