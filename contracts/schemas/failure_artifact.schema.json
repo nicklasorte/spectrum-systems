@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/contracts/schemas/failure_artifact.schema.json",
+  "title": "Failure Artifact",
+  "description": "Mandatory failure record produced for every exception. Immutable after creation.",
+  "version": "2.0.0",
+  "type": "object",
+  "properties": {
+    "failure_id": {
+      "type": "string",
+      "pattern": "^FAIL-[A-Z0-9]+$",
+      "description": "Unique failure identifier"
+    },
+    "reason_code": {
+      "type": "string",
+      "enum": [
+        "VALIDATION_ERROR",
+        "TYPE_ERROR",
+        "MISSING_FIELD",
+        "ATTRIBUTE_ERROR",
+        "RESOURCE_NOT_FOUND",
+        "PERMISSION_DENIED",
+        "TIMEOUT",
+        "NOT_IMPLEMENTED",
+        "RUNTIME_ERROR",
+        "UNCLASSIFIED_ERROR",
+        "INPUT_VALIDATION_ERROR",
+        "OUTPUT_VALIDATION_ERROR",
+        "EXECUTION_ERROR",
+        "PROVENANCE_STORAGE_ERROR"
+      ],
+      "description": "Canonical failure classification"
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Trace ID linking failure back to originating execution"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp of failure creation"
+    },
+    "system_id": {
+      "type": "string",
+      "description": "Owning system that produced this failure"
+    },
+    "human_readable": {
+      "type": "string",
+      "description": "Human-readable failure summary"
+    },
+    "error_type": {
+      "type": "string",
+      "description": "Python exception class name"
+    },
+    "error_detail": {
+      "type": "string",
+      "description": "Full error string"
+    },
+    "context": {
+      "type": "object",
+      "description": "Optional execution context at time of failure"
+    }
+  },
+  "required": [
+    "failure_id",
+    "reason_code",
+    "trace_id",
+    "timestamp",
+    "system_id",
+    "human_readable"
+  ],
+  "additionalProperties": true
+}

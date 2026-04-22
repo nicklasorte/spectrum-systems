@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.local/contracts/schemas/execution_event.schema.json",
+  "title": "Execution Event",
+  "description": "Immutable event record in the append-only execution event log.",
+  "version": "1.0.0",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "pattern": "^EVT-[A-Z0-9]+$",
+      "description": "Unique event identifier"
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Monotonically increasing sequence number for ordering"
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Execution trace this event belongs to"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "admission_gate",
+        "execution_start",
+        "execution_end",
+        "eval_start",
+        "eval_end",
+        "eval_gate",
+        "failure",
+        "promotion_gate",
+        "lifecycle_transition",
+        "justification_check"
+      ],
+      "description": "Canonical event type"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp"
+    },
+    "data": {
+      "type": "object",
+      "description": "Event-specific payload"
+    }
+  },
+  "required": ["event_id", "seq", "trace_id", "event_type", "timestamp"],
+  "additionalProperties": false
+}
