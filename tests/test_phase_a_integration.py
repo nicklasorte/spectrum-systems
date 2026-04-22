@@ -11,6 +11,7 @@ class TestPhaseAIntegration:
 
     def test_artifact_api_client_verifies_slo(self):
         """A0: Artifact API client verifies SLO."""
+        pytest.importorskip('requests')
         from spectrum_systems.integration.artifact_api_client import ArtifactAPIClient
 
         client = ArtifactAPIClient('http://localhost:3001')
@@ -29,6 +30,7 @@ class TestPhaseAIntegration:
 
     def test_artifact_api_client_circuit_breaker(self):
         """A0: Circuit breaker prevents cascading failures."""
+        pytest.importorskip('requests')
         from spectrum_systems.integration.artifact_api_client import ArtifactAPIClient
 
         client = ArtifactAPIClient('http://localhost:3001')
@@ -80,6 +82,7 @@ class TestPhaseAIntegration:
 
     def test_query_result_error_handling(self):
         """A3: Query returns graceful error on API failure."""
+        pytest.importorskip('requests')
         from spectrum_systems.integration.artifact_api_client import ArtifactAPIClient
 
         client = ArtifactAPIClient('http://localhost:3001')
@@ -93,6 +96,7 @@ class TestPhaseAIntegration:
 
     def test_circuit_breaker_recovery(self):
         """A4: Circuit breaker recovers after timeout."""
+        pytest.importorskip('requests')
         from spectrum_systems.integration.artifact_api_client import ArtifactAPIClient
         import time
 
@@ -124,6 +128,7 @@ class TestPhaseAIntegration:
 
     def test_sanity_check_queries_run_5x(self):
         """A8: Sanity check queries execute 5x without flakiness."""
+        pytest.importorskip('requests')
         from spectrum_systems.integration.artifact_api_client import ArtifactAPIClient
 
         client = ArtifactAPIClient('http://localhost:3001')
