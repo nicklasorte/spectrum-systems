@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "CanonicalTruthManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["canonical_id", "canonical_version", "canonical_data", "hash", "created_timestamp", "last_verified_timestamp", "drift_detected"],
+  "properties": {
+    "canonical_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "canonical_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "canonical_data": {"type": "object"},
+    "hash": {"type": "string", "minLength": 64, "maxLength": 64},
+    "created_timestamp": {"type": "string", "format": "date-time"},
+    "last_verified_timestamp": {"type": "string", "format": "date-time"},
+    "drift_detected": {"type": "boolean"}
+  }
+}

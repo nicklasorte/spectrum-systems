@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "SignedProvenanceRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_id", "artifact_hash", "provenance_statement", "signature", "signer_id", "signature_algorithm", "timestamp", "slsa_level"],
+  "properties": {
+    "artifact_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "artifact_hash": {"type": "string", "minLength": 64, "maxLength": 64},
+    "provenance_statement": {"type": "object"},
+    "signature": {"type": "string", "minLength": 10, "maxLength": 10000},
+    "signer_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "signature_algorithm": {"type": "string", "enum": ["RSA-SHA256", "ECDSA-SHA256", "ED25519"]},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "slsa_level": {"type": "integer", "enum": [0, 1, 2, 3]}
+  }
+}

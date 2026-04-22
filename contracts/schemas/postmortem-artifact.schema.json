@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "PostmortemArtifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "postmortem_id",
+    "incident_id",
+    "incident_type",
+    "root_causes",
+    "failure_pattern",
+    "eval_expansion_required",
+    "proposed_eval_cases",
+    "timestamp",
+    "author"
+  ],
+  "properties": {
+    "postmortem_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "incident_id": {"type": "string", "minLength": 3, "maxLength": 200},
+    "incident_type": {"type": "string", "enum": ["eval_miss", "decision_error", "trace_gap", "calibration_failure", "silent_regression"]},
+    "root_causes": {"type": "array", "items": {"type": "string"}},
+    "failure_pattern": {"type": "string", "minLength": 10, "maxLength": 1000},
+    "eval_expansion_required": {"type": "boolean"},
+    "proposed_eval_cases": {"type": "array", "items": {"type": "object"}},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "author": {"type": "string", "minLength": 3, "maxLength": 200}
+  }
+}
