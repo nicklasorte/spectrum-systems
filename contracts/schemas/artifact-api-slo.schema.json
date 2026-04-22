@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "ArtifactAPISLO",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "slo_id",
+    "uptime_target",
+    "latency_p99_ms",
+    "error_rate_target",
+    "monthly_downtime_budget_minutes",
+    "timestamp"
+  ],
+  "properties": {
+    "slo_id": {"type": "string"},
+    "uptime_target": {"type": "number", "minimum": 0.9, "maximum": 0.9999},
+    "latency_p99_ms": {"type": "integer", "minimum": 100, "maximum": 5000},
+    "error_rate_target": {"type": "number", "minimum": 0, "maximum": 0.05},
+    "monthly_downtime_budget_minutes": {"type": "number"},
+    "actual_uptime": {"type": "number"},
+    "actual_error_rate": {"type": "number"},
+    "status": {"type": "string", "enum": ["compliant", "at_risk", "breached"]},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}
