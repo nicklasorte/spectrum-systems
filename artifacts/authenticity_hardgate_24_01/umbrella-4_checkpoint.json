@@ -1,7 +1,7 @@
 {
   "artifact_type": "authenticity_hardgate_umbrella_checkpoint",
   "batch_id": "AUTHENTICITY-HARDGATE-24-01",
-  "generated_at": "2026-04-21T01:10:38Z",
+  "generated_at": "2026-04-22T10:35:37Z",
   "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
   "umbrella_id": "UMBRELLA-4",
   "umbrella_name": "HARD_GATE_EVIDENCE_CLOSURE_AND_OPERATOR_PROOF",
