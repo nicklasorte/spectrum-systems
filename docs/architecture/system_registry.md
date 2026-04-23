@@ -374,3 +374,377 @@ These are important but non-top-level authority families:
 - **JDX vs JSX:** JDX owns judgment artifact semantics/application; JSX owns lifecycle, supersession, retirement, and active-set correctness.
 - **TPA vs CDE vs SEL:** TPA adjudicates trust/policy; CDE decides closure/readiness; SEL executes fail-closed enforcement actions.
 - **RAX resolution:** RAX is **active** because runtime implementation exists (`rax_model.py`, `rax_eval_runner.py`) and provides bounded candidate-signal artifacts without decision authority.
+
+## System Map
+- **AEX** — active admission and execution exchange authority
+- **PQX** — active bounded execution authority
+- **EVL** — active evaluation and eval-gate authority
+- **TPA** — active trust and policy adjudication authority
+- **CDE** — active control and closure decision authority
+- **SEL** — active enforcement authority
+- **REP** — active replay integrity authority
+- **LIN** — active lineage authority
+- **OBS** — active observability authority
+- **SLO** — active SLO and error-budget authority
+- **CTX** — active context governance authority
+- **PRM** — active prompt/task registry governance authority
+- **POL** — active policy lifecycle governance authority
+- **TLC** — active orchestration and routing authority
+- **RIL** — active interpretation authority
+- **FRE** — active failure diagnosis and repair planning authority
+- **RAX** — active bounded runtime candidate-signal authority
+- **RSM** — active reconciliation state management authority
+- **CAP** — active capacity and cost governance authority
+- **SEC** — active security boundary governance authority
+- **JDX** — active judgment artifact/application authority
+- **JSX** — active judgment lifecycle authority
+- **PRA** — active promotion readiness authority
+- **GOV** — active certification and governance gate authority
+- **MAP** — active metadata/topology authority
+- **SUP** — deprecated merged into JSX supersession lifecycle
+- **RET** — deprecated merged into JSX retirement lifecycle
+- **QRY** — deprecated merged into CTX retrieve admission flow
+- **NRM** — deprecated merged into CTX normalization flow
+- **TRN** — deprecated merged into CTX transformation flow
+- **CMP** — deprecated merged into EVL comparison artifact family
+- **RSK** — deprecated merged into EVL risk artifact family
+- **HNX** — deprecated support harness capability
+- **MNT** — deprecated recurring review label
+- **RWA** — deprecated supporting metadata capability
+- **MCL** — deprecated artifact family capability
+- **DCL** — deprecated artifact family capability
+- **DEM** — deprecated review label capability
+- **ABX** — placeholder future exchange seam
+- **DBB** — placeholder future data backbone seam
+- **LCE** — placeholder future lifecycle seam
+- **SAL** — placeholder future source authority seam
+- **SAS** — placeholder future source sync seam
+- **SHA** — placeholder future shared authority seam
+- **SIV** — not currently present in this repository scope (reserved acronym)
+
+## System Definitions
+
+### AEX
+- **acronym:** `AEX`
+- **full_name:** Admission and Execution Exchange
+- **role:** bounded admission boundary for execution.
+- **owns:**
+  - aex_admission_boundary
+- **consumes:**
+  - execution_request
+- **produces:**
+  - admission_record
+- **must_not_do:**
+  - execute_bounded_work
+
+### PQX
+- **acronym:** `PQX`
+- **full_name:** Prompt Queue Execution
+- **role:** bounded execution engine.
+- **owns:**
+  - pqx_execution_authority
+- **consumes:**
+  - admitted_execution_request
+- **produces:**
+  - execution_record
+- **must_not_do:**
+  - adjudicate_trust_policy
+
+### EVL
+- **acronym:** `EVL`
+- **full_name:** Evaluation Gate Authority
+- **role:** evaluation coverage and gate authority.
+- **owns:**
+  - evl_required_evaluation_gate
+- **consumes:**
+  - execution_record
+- **produces:**
+  - evaluation_gate_result
+- **must_not_do:**
+  - issue_closure_decision
+
+### TPA
+- **acronym:** `TPA`
+- **full_name:** Trust Policy Authority
+- **role:** trust and policy adjudication authority.
+- **owns:**
+  - tpa_policy_adjudication
+- **consumes:**
+  - evaluation_gate_result
+- **produces:**
+  - trust_policy_decision
+- **must_not_do:**
+  - enforce_actions_directly
+
+### CDE
+- **acronym:** `CDE`
+- **full_name:** Closure Decision Engine
+- **role:** closure/readiness control decision authority.
+- **owns:**
+  - cde_closure_decision
+- **consumes:**
+  - trust_policy_decision
+- **produces:**
+  - closure_decision_artifact
+- **must_not_do:**
+  - execute_enforcement_actions
+
+### SEL
+- **acronym:** `SEL`
+- **full_name:** System Enforcement Layer
+- **role:** fail-closed enforcement authority.
+- **owns:**
+  - sel_enforcement_execution
+- **consumes:**
+  - closure_decision_artifact
+- **produces:**
+  - enforcement_action_record
+- **must_not_do:**
+  - issue_policy_decisions
+
+### REP
+- **acronym:** `REP`
+- **full_name:** Replay Authority
+- **role:** deterministic replay integrity authority.
+- **owns:**
+  - rep_replay_integrity
+- **consumes:**
+  - execution_record
+- **produces:**
+  - replay_record
+- **must_not_do:**
+  - bypass_lineage_requirements
+
+### LIN
+- **acronym:** `LIN`
+- **full_name:** Lineage Authority
+- **role:** lineage issuance and completeness authority.
+- **owns:**
+  - lin_lineage_completeness
+- **consumes:**
+  - governed_artifacts
+- **produces:**
+  - lineage_record
+- **must_not_do:**
+  - waive_promotion_lineage_gate
+
+### OBS
+- **acronym:** `OBS`
+- **full_name:** Observability Authority
+- **role:** observability completeness authority.
+- **owns:**
+  - obs_observability_completeness
+- **consumes:**
+  - runtime_signals
+- **produces:**
+  - observability_record
+- **must_not_do:**
+  - substitute_for_control_decisions
+
+### SLO
+- **acronym:** `SLO`
+- **full_name:** Service Level Objectives Authority
+- **role:** error-budget governance authority.
+- **owns:**
+  - slo_error_budget_control
+- **consumes:**
+  - observability_record
+- **produces:**
+  - slo_control_record
+- **must_not_do:**
+  - bypass_fail_closed_policy
+
+### CTX
+- **acronym:** `CTX`
+- **full_name:** Context Governance
+- **role:** context admission/normalization/transformation authority.
+- **owns:**
+  - ctx_context_admission
+- **consumes:**
+  - retrieved_context_inputs
+- **produces:**
+  - context_bundle
+- **must_not_do:**
+  - issue_control_closure
+
+### PRM
+- **acronym:** `PRM`
+- **full_name:** Prompt Registry Management
+- **role:** prompt/task registry governance authority.
+- **owns:**
+  - prm_prompt_registry_admission
+- **consumes:**
+  - authored_prompts
+- **produces:**
+  - prompt_registry_record
+- **must_not_do:**
+  - execute_runtime_work
+
+### POL
+- **acronym:** `POL`
+- **full_name:** Policy Lifecycle Governance
+- **role:** policy lifecycle and rollout authority.
+- **owns:**
+  - pol_policy_rollout_governance
+- **consumes:**
+  - policy_change_requests
+- **produces:**
+  - rollout_gate_record
+- **must_not_do:**
+  - override_tpa_adjudication
+
+### TLC
+- **acronym:** `TLC`
+- **full_name:** Top Level Conductor
+- **role:** top-level orchestration and routing authority.
+- **owns:**
+  - tlc_orchestration_routing
+- **consumes:**
+  - admitted_requests
+- **produces:**
+  - route_decision_record
+- **must_not_do:**
+  - execute_slice_payloads
+
+### RIL
+- **acronym:** `RIL`
+- **full_name:** Runtime Interpretation Layer
+- **role:** interpretation and structured signal mapping authority.
+- **owns:**
+  - ril_signal_interpretation
+- **consumes:**
+  - review_runtime_signals
+- **produces:**
+  - interpretation_record
+- **must_not_do:**
+  - enforce_runtime_actions
+
+### FRE
+- **acronym:** `FRE`
+- **full_name:** Failure Repair Engine
+- **role:** failure diagnosis and repair planning authority.
+- **owns:**
+  - fre_failure_diagnosis_planning
+- **consumes:**
+  - replay_and_observability_records
+- **produces:**
+  - repair_plan_artifact
+- **must_not_do:**
+  - self_promote_artifacts
+
+### RAX
+- **acronym:** `RAX`
+- **full_name:** Runtime Analysis eXchange
+- **role:** bounded runtime candidate-signal authority.
+- **owns:**
+  - rax_candidate_signal_surface
+- **consumes:**
+  - runtime_candidate_inputs
+- **produces:**
+  - runtime_candidate_signal
+- **must_not_do:**
+  - issue_authoritative_control_decisions
+
+### RSM
+- **acronym:** `RSM`
+- **full_name:** Reconciliation State Manager
+- **role:** desired-vs-actual reconciliation authority.
+- **owns:**
+  - rsm_reconciliation_state
+- **consumes:**
+  - drift_signals
+- **produces:**
+  - reconciliation_record
+- **must_not_do:**
+  - bypass_governance_gates
+
+### CAP
+- **acronym:** `CAP`
+- **full_name:** Capacity Governance
+- **role:** cost/capacity governance authority.
+- **owns:**
+  - cap_capacity_budget_control
+- **consumes:**
+  - runtime_utilization_signals
+- **produces:**
+  - capacity_budget_record
+- **must_not_do:**
+  - override_policy_gates
+
+### SEC
+- **acronym:** `SEC`
+- **full_name:** Security Boundary Governance
+- **role:** security boundary and guardrail governance authority.
+- **owns:**
+  - sec_security_boundary_control
+- **consumes:**
+  - identity_permission_signals
+- **produces:**
+  - security_boundary_record
+- **must_not_do:**
+  - bypass_enforcement_layer
+
+### JDX
+- **acronym:** `JDX`
+- **full_name:** Judgment Artifact Authority
+- **role:** judgment artifact semantics/application authority.
+- **owns:**
+  - jdx_judgment_artifact_semantics
+- **consumes:**
+  - interpreted_eval_signals
+- **produces:**
+  - judgment_record
+- **must_not_do:**
+  - manage_lifecycle_supersession
+
+### JSX
+- **acronym:** `JSX`
+- **full_name:** Judgment Lifecycle Authority
+- **role:** judgment lifecycle/supersession/retirement authority.
+- **owns:**
+  - jsx_judgment_lifecycle_control
+- **consumes:**
+  - judgment_record
+- **produces:**
+  - judgment_lifecycle_record
+- **must_not_do:**
+  - redefine_judgment_artifact_semantics
+
+### PRA
+- **acronym:** `PRA`
+- **full_name:** Promotion Readiness Authority
+- **role:** promotion readiness checkpoint authority.
+- **owns:**
+  - pra_promotion_readiness_gate
+- **consumes:**
+  - closure_decision_artifact
+- **produces:**
+  - promotion_readiness_record
+- **must_not_do:**
+  - certify_governance_readiness
+
+### GOV
+- **acronym:** `GOV`
+- **full_name:** Governance Certification Authority
+- **role:** certification/governance gate authority.
+- **owns:**
+  - gov_certification_gate
+- **consumes:**
+  - promotion_readiness_record
+- **produces:**
+  - governance_gate_result
+- **must_not_do:**
+  - execute_work_slices
+
+### MAP
+- **acronym:** `MAP`
+- **full_name:** Metadata Authority Plane
+- **role:** metadata/topology/system-map authority.
+- **owns:**
+  - map_topology_projection_authority
+- **consumes:**
+  - registry_and_runtime_metadata
+- **produces:**
+  - metadata_topology_record
+- **must_not_do:**
+  - override_control_authorities
