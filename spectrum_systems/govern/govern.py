@@ -1,11 +1,11 @@
-"""GOVERNSystem: Consolidated governance + orchestration (Phase 2a).
+"""GOVERNSystem: Consolidated governance evidence packaging + orchestration (Phase 2a).
 
 Absorbs the responsibilities of:
-- GOV (Governance Control Authority): policy_check, policy drift detection
+- GOV (Governance Evidence Packaging): records policy-check outcomes and drift evidence
 - TLC (Top Level Conductor): lifecycle_check, artifact routing
 
-Single authority for: governance policy + orchestration routing.
-No execution (PQX-owned). No closure decisions (CDE-owned).
+Single runtime surface for: governance evidence packaging + orchestration routing.
+TPA remains canonical policy system. PQX executes work. CDE handles closure decisions.
 """
 
 from __future__ import annotations
@@ -16,19 +16,14 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 class GOVERNSystem:
-    """Governance + Policy + Orchestration (merged from GOV + TLC).
-
-    Authority boundaries:
-    - Owns: policy checks, lifecycle routing, governance enforcement
-    - Does NOT own: execution (PQX), closure decisions (CDE), enforcement actions (SEL)
-    """
+    """Governance evidence packaging + orchestration (merged from GOV + TLC)."""
 
     def __init__(self, event_log: Optional[Any] = None) -> None:
         self._event_log = event_log
         self._routing_manifest: Dict[str, str] = {}
 
     # ------------------------------------------------------------------
-    # From GOV: Policy authority
+    # From GOV: policy evidence recording (TPA remains policy system)
     # ------------------------------------------------------------------
 
     def policy_check(
@@ -36,7 +31,7 @@ class GOVERNSystem:
         artifact: Dict[str, Any],
         policy_ref: Optional[str] = None,
     ) -> Tuple[bool, str]:
-        """Check artifact against governance policy.
+        """Check artifact against referenced policy result for governance evidence packaging.
 
         Returns (passed, reason). Blocks on policy violation.
         """
@@ -63,7 +58,7 @@ class GOVERNSystem:
         declared_policy: Dict[str, Any],
         observed_behavior: Dict[str, Any],
     ) -> Dict[str, Any]:
-        """Compare declared policy vs observed behavior. Returns drift report."""
+        """Compare declared policy vs observed behavior and return a governance drift report."""
         drift_fields = []
         for key, declared_val in declared_policy.items():
             observed_val = observed_behavior.get(key)

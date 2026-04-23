@@ -411,6 +411,8 @@ These are important but non-top-level authority families:
 - **HNX** — deprecated support harness capability
 - **MNT** — deprecated recurring review label
 - **RWA** — deprecated supporting metadata capability
+- **HNX** — stage harness support capability
+- **XRL** — external reality loop support capability
 - **MCL** — deprecated artifact family capability
 - **DCL** — deprecated artifact family capability
 - **DEM** — deprecated review label capability
@@ -422,157 +424,584 @@ These are important but non-top-level authority families:
 - **SHA** — placeholder future shared authority seam
 - **SIV** — not currently present in this repository scope (reserved acronym)
 
+
+## Repo mutation entry invariants
+- All Codex execution requests that create or modify repository state MUST enter through **AEX**.
+- **PQX** MUST reject repo-writing execution that lacks AEX admission artifacts plus TLC-mediated lineage.
+- Any attempt to invoke **TLC** or **PQX** directly for repo-mutating work without valid AEX/TLC lineage MUST fail closed.
+
+## Recurring Cross-System Phase Labels (Non-Owner)
+
+### MNT — Maintain / Cross-System Trust Integration
+- **classification:** recurring phase label (not a canonical system owner)
+- **status:** non_owner_phase_label
+- **role:** maintain-stage cross-system trust integration label only.
+- **owns:**
+  - maintain_phase_label
+- **consumes:**
+  - trust_health_inputs
+- **produces:**
+  - mnt_maintain_cycle_report
+- **must_not_do:**
+  - own_policy_authority
+  - own_execution_authority
+  - own_control_authority
+  - own_enforcement_authority
+
 ## System Definitions
 
 ### AEX
-- **acronym:** `AEX`
-- **full_name:** Admission and Execution Exchange
-- **role:** bounded admission boundary for execution.
+- **role:** admission boundary.
+- **status:** active
 - **owns:**
-  - aex_admission_boundary
+  - execution_admission
+  - request_validation
+  - entrypoint_enforcement
 - **consumes:**
-  - execution_request
+  - codex_build_request
 - **produces:**
   - build_admission_record
 - **must_not_do:**
-  - execute_bounded_work
+  - execute_work
 
 ### PQX
-- **acronym:** `PQX`
-- **full_name:** Prompt Queue Execution
-- **role:** bounded execution engine.
+- **role:** execution engine.
+- **status:** active
 - **owns:**
-  - pqx_execution_authority
+  - execution
+  - execution_state_transitions
+  - execution_trace_emission
 - **consumes:**
-  - admitted_execution_request
+  - codex_pqx_task_wrapper
 - **produces:**
   - agent_execution_trace
 - **must_not_do:**
-  - adjudicate_trust_policy
+  - issue_closure_state_decisions
 
-### EVL
-- **acronym:** `EVL`
-- **full_name:** Evaluation Gate Authority
-- **role:** evaluation coverage and gate authority.
+### HNX
+- **role:** harness semantics.
+- **status:** demoted
 - **owns:**
-  - evl_required_evaluation_gate
+  - harness_stage_semantics
 - **consumes:**
-  - execution_record
+  - stage_contract
 - **produces:**
-  - continuous_eval_run_record
+  - checkpoint_record
 - **must_not_do:**
-  - issue_closure_decision
+  - execute_work
+
+### MAP
+- **role:** mediation projection.
+- **status:** active
+- **owns:**
+  - mediation_projection_formatting
+- **consumes:**
+  - review_integration_packet_artifact
+- **produces:**
+  - map_projection_record
+- **must_not_do:**
+  - reinterpret_review_semantics
+
+### RDX
+- **role:** roadmap exchange.
+- **status:** demoted
+- **owns:**
+  - roadmap_execution_governance
+- **consumes:**
+  - roadmap_inputs
+- **produces:**
+  - rdx_roadmap_governance_bundle
+- **must_not_do:**
+  - execute_runtime_work
 
 ### TPA
-- **acronym:** `TPA`
-- **full_name:** Trust Policy Authority
-- **role:** trust and policy adjudication authority.
+- **role:** trust policy gate.
+- **status:** active
 - **owns:**
-  - tpa_policy_adjudication
+  - trust_policy_application
+  - scope_gating
 - **consumes:**
-  - evaluation_gate_result
+  - evaluation_control_decision
 - **produces:**
   - control_arbitration_record
 - **must_not_do:**
-  - enforce_actions_directly
+  - execute_enforcement
+
+### FRE
+- **role:** repair planning.
+- **status:** active
+- **owns:**
+  - failure_diagnosis
+  - repair_plan_generation
+- **consumes:**
+  - failure_signals
+- **produces:**
+  - fre_multi_step_repair_plan_record
+- **must_not_do:**
+  - issue_promotion_decisions
+
+### RIL
+- **role:** interpretation layer.
+- **status:** active
+- **owns:**
+  - review_interpretation
+- **consumes:**
+  - review_signals
+- **produces:**
+  - interpretation_record
+- **must_not_do:**
+  - issue_control_decisions
+
+### RQX
+- **role:** review queue.
+- **status:** demoted
+- **owns:**
+  - review_queue_execution
+  - bounded_fix_request_emission
+  - unresolved_post_cycle_operator_handoff_emission
+- **consumes:**
+  - review_artifacts
+- **produces:**
+  - control_loop_review_queue_record_artifact
+- **must_not_do:**
+  - own_review_interpretation
+
+### SEL
+- **role:** enforcement layer.
+- **status:** active
+- **owns:**
+  - enforcement
+  - fail_closed_blocking
+  - promotion_guarding
+- **consumes:**
+  - closure_decision_artifact
+- **produces:**
+  - control_surface_enforcement_result
+- **must_not_do:**
+  - interpret_policy
 
 ### CDE
-- **acronym:** `CDE`
-- **full_name:** Closure Decision Engine
-- **role:** closure/readiness control decision authority.
+- **role:** closure decision engine.
+- **status:** active
 - **owns:**
-  - cde_closure_decision
+  - closure_decisions
+  - promotion_readiness_decisioning
+  - closure_lock_state
 - **consumes:**
   - trust_policy_decision
 - **produces:**
   - closure_decision_artifact
 - **must_not_do:**
-  - execute_enforcement_actions
+  - execute_enforcement
 
-### SEL
-- **acronym:** `SEL`
-- **full_name:** System Enforcement Layer
-- **role:** fail-closed enforcement authority.
+### TLC
+- **role:** orchestration layer.
+- **status:** active
 - **owns:**
-  - sel_enforcement_execution
+  - orchestration
+  - subsystem_routing
+  - bounded_cycle_coordination
+  - unresolved_handoff_disposition_classification
 - **consumes:**
-  - closure_decision_artifact
+  - build_admission_record
 - **produces:**
-  - enforcement_action_record
+  - aex_tlc_handoff_integrity_record
 - **must_not_do:**
-  - issue_policy_decisions
+  - own_closure_decisions
 
-### REP
-- **acronym:** `REP`
-- **full_name:** Replay Authority
-- **role:** deterministic replay integrity authority.
+### PRG
+- **role:** program governance.
+- **status:** demoted
 - **owns:**
-  - rep_replay_integrity
+  - program_governance
+  - roadmap_alignment
+  - program_drift_management
 - **consumes:**
-  - execution_record
+  - roadmap_inputs
 - **produces:**
-  - rep_replay_integrity_record
+  - prg_governance_bundle
 - **must_not_do:**
-  - bypass_lineage_requirements
+  - own_runtime_execution
 
-### LIN
-- **acronym:** `LIN`
-- **full_name:** Lineage Authority
-- **role:** lineage issuance and completeness authority.
+### RSM
+- **role:** reconciliation state.
+- **status:** active
 - **owns:**
-  - lin_lineage_completeness
+  - reconciliation_state_records
 - **consumes:**
-  - governed_artifacts
+  - state_deltas
 - **produces:**
-  - artifact_lineage
+  - rsm_divergence_record
 - **must_not_do:**
-  - waive_promotion_lineage_gate
+  - own_closure_authority
+
+### RAX
+- **role:** runtime candidate signals.
+- **status:** active
+- **owns:**
+  - runtime_candidate_signal_records
+- **consumes:**
+  - runtime_candidate_inputs
+- **produces:**
+  - rax_health_snapshot
+- **must_not_do:**
+  - issue_control_decisions
+
+### XRL
+- **role:** external reality loop support.
+- **status:** demoted
+- **owns:**
+  - external_reality_loop_records
+- **consumes:**
+  - outcome_feedback_inputs
+- **produces:**
+  - xrl_real_world_outcome_integration_record
+- **must_not_do:**
+  - own_policy_authority
+
+### CHX
+- **role:** chaos harness.
+- **status:** demoted
+- **owns:**
+  - chaos_injection_artifacts
+- **consumes:**
+  - failure_signals
+- **produces:**
+  - chx_injection_record
+- **must_not_do:**
+  - own_runtime_execution
+
+### DEX
+- **role:** decision explainability.
+- **status:** demoted
+- **owns:**
+  - decision_explainability_records
+- **consumes:**
+  - decision_artifacts
+- **produces:**
+  - artifact_diff_record
+- **must_not_do:**
+  - own_closure_decisions
+
+### SIM
+- **role:** simulation.
+- **status:** demoted
+- **owns:**
+  - simulation_candidate_records
+- **consumes:**
+  - policy_candidates
+- **produces:**
+  - simx_replayable_bundle
+- **must_not_do:**
+  - own_live_state_mutation
+
+### PRX
+- **role:** precedent retrieval.
+- **status:** demoted
+- **owns:**
+  - precedent_retrieval_records
+- **consumes:**
+  - historical_artifacts
+- **produces:**
+  - prompt_queue_replay_record
+- **must_not_do:**
+  - own_closure_authority
+
+### CVX
+- **role:** cross-run validation.
+- **status:** demoted
+- **owns:**
+  - cross_run_consistency_records
+- **consumes:**
+  - run_outputs
+- **produces:**
+  - comparison_run_record
+- **must_not_do:**
+  - own_execution_mutation
+
+### HIX
+- **role:** human interaction.
+- **status:** demoted
+- **owns:**
+  - human_interaction_exchange_records
+- **consumes:**
+  - override_requests
+- **produces:**
+  - override_governance_record
+- **must_not_do:**
+  - own_bypass_behaviors
+
+### CAL
+- **role:** calibration.
+- **status:** demoted
+- **owns:**
+  - calibration_records
+- **consumes:**
+  - confidence_signals
+- **produces:**
+  - cal_calibration_record
+- **must_not_do:**
+  - own_policy_authority
+
+### POL
+- **role:** policy lifecycle.
+- **status:** active
+- **owns:**
+  - policy_rollout_lifecycle
+- **consumes:**
+  - policy_change_requests
+- **produces:**
+  - pol_rollout_record
+- **must_not_do:**
+  - decide_live_policy_authority
+
+### AIL
+- **role:** artifact intelligence.
+- **status:** demoted
+- **owns:**
+  - artifact_intelligence_records
+- **consumes:**
+  - artifact_signals
+- **produces:**
+  - ail_index_record
+- **must_not_do:**
+  - own_control_decisions
+
+### SCH
+- **role:** schema compatibility.
+- **status:** demoted
+- **owns:**
+  - schema_compatibility_records
+- **consumes:**
+  - schema_change_inputs
+- **produces:**
+  - con_compatibility_gate_result
+- **must_not_do:**
+  - own_execution_authority
+
+### DEP
+- **role:** dependency reliability.
+- **status:** demoted
+- **owns:**
+  - dependency_chain_validation_records
+- **consumes:**
+  - dependency_graph_artifacts
+- **produces:**
+  - dep_chain_break_replay_probe_pack
+- **must_not_do:**
+  - own_control_decisions
+
+### RCA
+- **role:** root cause.
+- **status:** demoted
+- **owns:**
+  - root_cause_attribution_records
+- **consumes:**
+  - failure_evidence
+- **produces:**
+  - replay_decision_analysis
+- **must_not_do:**
+  - own_enforcement_authority
+
+### QOS
+- **role:** queue governance.
+- **status:** demoted
+- **owns:**
+  - queue_budget_governance_records
+- **consumes:**
+  - queue_signals
+- **produces:**
+  - qos_queue_governance_record
+- **must_not_do:**
+  - own_policy_authority
+
+### SIMX
+- **role:** simulation replay.
+- **status:** demoted
+- **owns:**
+  - simulation_replay_integrity_records
+- **consumes:**
+  - simulation_runs
+- **produces:**
+  - simx_replayable_bundle
+- **must_not_do:**
+  - own_runtime_mutation
+
+### JDX
+- **role:** judgment semantics.
+- **status:** active
+- **owns:**
+  - judgment_artifact_requirements
+  - judgment_record
+- **consumes:**
+  - interpreted_eval_signals
+- **produces:**
+  - jdx_judgment_record
+- **must_not_do:**
+  - own_closure_authority
+
+### JSX
+- **role:** judgment lifecycle.
+- **status:** active
+- **owns:**
+  - judgment_lifecycle_rules
+- **consumes:**
+  - judgment_record
+- **produces:**
+  - judgment_lifecycle_record
+- **must_not_do:**
+  - own_judgment_semantics
+
+### RUX
+- **role:** reuse governance.
+- **status:** demoted
+- **owns:**
+  - reuse_record_artifacts
+- **consumes:**
+  - artifact_reuse_inputs
+- **produces:**
+  - artifact_family_health_report
+- **must_not_do:**
+  - own_control_decisions
+
+### XPL
+- **role:** explainability governance.
+- **status:** demoted
+- **owns:**
+  - artifact_card_records
+- **consumes:**
+  - artifact_inputs
+- **produces:**
+  - artifact_intelligence_report
+- **must_not_do:**
+  - own_closure_authority
+
+### REL
+- **role:** release governance.
+- **status:** demoted
+- **owns:**
+  - canary_rollout_artifacts
+  - release_records
+- **consumes:**
+  - release_inputs
+- **produces:**
+  - canary_rollout_record
+- **must_not_do:**
+  - own_policy_authority
+
+### DAG
+- **role:** dependency graph governance.
+- **status:** demoted
+- **owns:**
+  - dependency_graph_artifacts
+- **consumes:**
+  - dependency_inputs
+- **produces:**
+  - con_hidden_coupling_report
+- **must_not_do:**
+  - own_execution_authority
+
+### EXT
+- **role:** external runtime governance.
+- **status:** demoted
+- **owns:**
+  - external_runtime_provenance_contracts
+- **consumes:**
+  - external_runtime_inputs
+- **produces:**
+  - ext_runtime_governance_bundle
+- **must_not_do:**
+  - own_policy_authority
+
+### CTX
+- **role:** context governance.
+- **status:** active
+- **owns:**
+  - context_bundle_contracts
+- **consumes:**
+  - source_context_inputs
+- **produces:**
+  - context_bundle
+- **must_not_do:**
+  - own_closure_decisions
+
+### EVL
+- **role:** evaluation governance.
+- **status:** active
+- **owns:**
+  - required_eval_registry
+- **consumes:**
+  - execution_traces
+- **produces:**
+  - continuous_eval_run_record
+- **must_not_do:**
+  - own_enforcement_actions
 
 ### OBS
-- **acronym:** `OBS`
-- **full_name:** Observability Authority
-- **role:** observability completeness authority.
+- **role:** observability governance.
+- **status:** active
 - **owns:**
-  - obs_observability_completeness
+  - observability_contracts
 - **consumes:**
   - runtime_signals
 - **produces:**
   - observability_record
 - **must_not_do:**
-  - substitute_for_control_decisions
+  - own_policy_decisions
+
+### LIN
+- **role:** lineage governance.
+- **status:** active
+- **owns:**
+  - lineage_completeness_rules
+- **consumes:**
+  - artifact_lineage_inputs
+- **produces:**
+  - artifact_lineage
+- **must_not_do:**
+  - own_execution_authority
+
+### DRT
+- **role:** drift signals.
+- **status:** demoted
+- **owns:**
+  - drift_signal_emission
+- **consumes:**
+  - runtime_deltas
+- **produces:**
+  - drift_detection_record
+- **must_not_do:**
+  - own_closure_decisions
 
 ### SLO
-- **acronym:** `SLO`
-- **full_name:** Service Level Objectives Authority
-- **role:** error-budget governance authority.
+- **role:** slo governance.
+- **status:** active
 - **owns:**
-  - slo_error_budget_control
+  - slo_error_budget_artifacts
 - **consumes:**
   - observability_record
 - **produces:**
   - slo_ai_reliability_budget_posture
 - **must_not_do:**
-  - bypass_fail_closed_policy
+  - own_policy_adjudication
 
-### CTX
-- **acronym:** `CTX`
-- **full_name:** Context Governance
-- **role:** context admission/normalization/transformation authority.
+### DAT
+- **role:** dataset governance.
+- **status:** demoted
 - **owns:**
-  - ctx_context_admission
+  - eval_dataset_registry
 - **consumes:**
-  - retrieved_context_inputs
+  - dataset_inputs
 - **produces:**
-  - context_bundle
+  - dat_dataset_lineage_record
 - **must_not_do:**
-  - issue_control_closure
+  - own_control_decisions
 
 ### PRM
-- **acronym:** `PRM`
-- **full_name:** Prompt Registry Management
-- **role:** prompt/task registry governance authority.
+- **role:** prompt registry.
+- **status:** active
 - **owns:**
-  - prm_prompt_registry_admission
+  - prompt_registry_authority
 - **consumes:**
   - authored_prompts
 - **produces:**
@@ -580,171 +1009,278 @@ These are important but non-top-level authority families:
 - **must_not_do:**
   - execute_runtime_work
 
-### POL
-- **acronym:** `POL`
-- **full_name:** Policy Lifecycle Governance
-- **role:** policy lifecycle and rollout authority.
+### ROU
+- **role:** route observability.
+- **status:** demoted
 - **owns:**
-  - pol_policy_rollout_governance
+  - route_candidate_records
 - **consumes:**
-  - policy_change_requests
+  - routing_inputs
 - **produces:**
-  - pol_rollout_record
+  - routing_decision_record
 - **must_not_do:**
-  - override_tpa_adjudication
+  - own_execution_authority
 
-### TLC
-- **acronym:** `TLC`
-- **full_name:** Top Level Conductor
-- **role:** top-level orchestration and routing authority.
+### HIT
+- **role:** human override.
+- **status:** demoted
 - **owns:**
-  - tlc_orchestration_routing
+  - human_override_artifacts
 - **consumes:**
-  - admitted_requests
+  - operator_inputs
 - **produces:**
-  - aex_tlc_handoff_integrity_record
+  - override_governance_record
 - **must_not_do:**
-  - execute_slice_payloads
-
-### RIL
-- **acronym:** `RIL`
-- **full_name:** Runtime Interpretation Layer
-- **role:** interpretation and structured signal mapping authority.
-- **owns:**
-  - ril_signal_interpretation
-- **consumes:**
-  - review_runtime_signals
-- **produces:**
-  - interpretation_record
-- **must_not_do:**
-  - enforce_runtime_actions
-
-### FRE
-- **acronym:** `FRE`
-- **full_name:** Failure Repair Engine
-- **role:** failure diagnosis and repair planning authority.
-- **owns:**
-  - fre_failure_diagnosis_planning
-- **consumes:**
-  - replay_and_observability_records
-- **produces:**
-  - fre_multi_step_repair_plan_record
-- **must_not_do:**
-  - self_promote_artifacts
-
-### RAX
-- **acronym:** `RAX`
-- **full_name:** Runtime Analysis eXchange
-- **role:** bounded runtime candidate-signal authority.
-- **owns:**
-  - rax_candidate_signal_surface
-- **consumes:**
-  - runtime_candidate_inputs
-- **produces:**
-  - rax_health_snapshot
-- **must_not_do:**
-  - issue_authoritative_control_decisions
-
-### RSM
-- **acronym:** `RSM`
-- **full_name:** Reconciliation State Manager
-- **role:** desired-vs-actual reconciliation authority.
-- **owns:**
-  - rsm_reconciliation_state
-- **consumes:**
-  - drift_signals
-- **produces:**
-  - rsm_divergence_record
-- **must_not_do:**
-  - bypass_governance_gates
+  - own_policy_authority
 
 ### CAP
-- **acronym:** `CAP`
-- **full_name:** Capacity Governance
-- **role:** cost/capacity governance authority.
+- **role:** capacity governance.
+- **status:** active
 - **owns:**
-  - cap_capacity_budget_control
+  - cost_budget_artifacts
 - **consumes:**
   - runtime_utilization_signals
 - **produces:**
   - cap_budget_status_record
 - **must_not_do:**
-  - override_policy_gates
+  - own_policy_authority
 
 ### SEC
-- **acronym:** `SEC`
-- **full_name:** Security Boundary Governance
-- **role:** security boundary and guardrail governance authority.
+- **role:** security governance.
+- **status:** active
 - **owns:**
-  - sec_security_boundary_control
+  - security_guardrail_event_contracts
 - **consumes:**
   - identity_permission_signals
 - **produces:**
   - approval_boundary_record
 - **must_not_do:**
-  - bypass_enforcement_layer
+  - own_policy_decisions
 
-### JDX
-- **acronym:** `JDX`
-- **full_name:** Judgment Artifact Authority
-- **role:** judgment artifact semantics/application authority.
+### REP
+- **role:** replay governance.
+- **status:** active
 - **owns:**
-  - jdx_judgment_artifact_semantics
+  - replay_integrity_validation
 - **consumes:**
-  - interpreted_eval_signals
+  - execution_records
 - **produces:**
-  - judgment_record
+  - rep_replay_integrity_record
 - **must_not_do:**
-  - manage_lifecycle_supersession
+  - own_policy_adjudication
 
-### JSX
-- **acronym:** `JSX`
-- **full_name:** Judgment Lifecycle Authority
-- **role:** judgment lifecycle/supersession/retirement authority.
+### ENT
+- **role:** entropy governance.
+- **status:** demoted
 - **owns:**
-  - jsx_judgment_lifecycle_control
+  - entropy_accumulation_detection
 - **consumes:**
-  - judgment_record
+  - artifact_histories
 - **produces:**
-  - judgment_lifecycle_record
+  - correction_mining_report
 - **must_not_do:**
-  - redefine_judgment_artifact_semantics
+  - own_enforcement_authority
+
+### CON
+- **role:** contract governance.
+- **status:** demoted
+- **owns:**
+  - interface_contract_registry
+- **consumes:**
+  - interface_changes
+- **produces:**
+  - con_interface_contract_record
+- **must_not_do:**
+  - own_policy_authority
+
+### TRN
+- **role:** translation support.
+- **status:** demoted
+- **owns:**
+  - source_translation_contracts
+- **consumes:**
+  - source_context_inputs
+- **produces:**
+  - context_assembly_record
+- **must_not_do:**
+  - own_context_admission
+
+### NRM
+- **role:** normalization support.
+- **status:** demoted
+- **owns:**
+  - deterministic_normalization_rules
+- **consumes:**
+  - translated_context_candidates
+- **produces:**
+  - normalized_execution_request
+- **must_not_do:**
+  - own_context_admission
+
+### CMP
+- **role:** comparison support.
+- **status:** demoted
+- **owns:**
+  - comparison_run_governance
+- **consumes:**
+  - eval_runs
+- **produces:**
+  - comparison_run_record
+- **must_not_do:**
+  - own_eval_gate_authority
+
+### RET
+- **role:** retirement support.
+- **status:** demoted
+- **owns:**
+  - retirement_lifecycle_rules
+- **consumes:**
+  - active_set_snapshot
+- **produces:**
+  - artifact_lifecycle_status_record
+- **must_not_do:**
+  - own_promotion_authority
+
+### ABS
+- **role:** abstention support.
+- **status:** demoted
+- **owns:**
+  - abstention_taxonomy
+- **consumes:**
+  - judgment_candidates
+- **produces:**
+  - abstention_record
+- **must_not_do:**
+  - own_control_authority
+
+### CRS
+- **role:** consistency support.
+- **status:** demoted
+- **owns:**
+  - cross_artifact_consistency_checks
+- **consumes:**
+  - artifact_bundles
+- **produces:**
+  - con_cross_owner_contract_compatibility_matrix
+- **must_not_do:**
+  - own_control_decisions
+
+### MIG
+- **role:** migration support.
+- **status:** demoted
+- **owns:**
+  - migration_plan_contracts
+- **consumes:**
+  - schema_change_inputs
+- **produces:**
+  - contract_impact_artifact
+- **must_not_do:**
+  - own_policy_authority
+
+### QRY
+- **role:** query support.
+- **status:** demoted
+- **owns:**
+  - query_index_manifest_authority
+- **consumes:**
+  - index_inputs
+- **produces:**
+  - context_assembly_record
+- **must_not_do:**
+  - own_context_admission
+
+### TST
+- **role:** test asset support.
+- **status:** demoted
+- **owns:**
+  - test_asset_registry
+- **consumes:**
+  - test_assets
+- **produces:**
+  - con_shift_left_workflow_coverage_audit_result
+- **must_not_do:**
+  - own_eval_gate_authority
+
+### RSK
+- **role:** risk support.
+- **status:** demoted
+- **owns:**
+  - risk_classification_taxonomy
+- **consumes:**
+  - eval_signals
+- **produces:**
+  - risk_classification_record
+- **must_not_do:**
+  - own_closure_authority
+
+### EVD
+- **role:** evidence support.
+- **status:** demoted
+- **owns:**
+  - evidence_sufficiency_scoring
+- **consumes:**
+  - evidence_inputs
+- **produces:**
+  - promotion_gate_evidence_record
+- **must_not_do:**
+  - own_policy_authority
+
+### SUP
+- **role:** supersession support.
+- **status:** demoted
+- **owns:**
+  - supersession_rules
+- **consumes:**
+  - judgment_lifecycle_inputs
+- **produces:**
+  - judgment_supersession_record
+- **must_not_do:**
+  - own_judgment_semantics
+
+### HND
+- **role:** handoff support.
+- **status:** demoted
+- **owns:**
+  - handoff_package_contracts
+- **consumes:**
+  - handoff_inputs
+- **produces:**
+  - batch_handoff_bundle
+- **must_not_do:**
+  - own_execution_authority
+
+### SYN
+- **role:** synthesis support.
+- **status:** demoted
+- **owns:**
+  - trust_signal_synthesis_rules
+- **consumes:**
+  - multi_signal_inputs
+- **produces:**
+  - calibration_summary
+- **must_not_do:**
+  - own_policy_authority
+
+### GOV
+- **role:** certification packaging.
+- **status:** active
+- **owns:**
+  - certification_evidence_packaging
+- **consumes:**
+  - tpa_policy_decisions
+- **produces:**
+  - governance_gate_results
+- **must_not_do:**
+  - decide_policy_authority
 
 ### PRA
-- **acronym:** `PRA`
-- **full_name:** Promotion Readiness Authority
-- **role:** promotion readiness checkpoint authority.
+- **role:** promotion readiness.
+- **status:** active
 - **owns:**
-  - pra_promotion_readiness_gate
+  - promotion_readiness_artifacts
 - **consumes:**
   - closure_decision_artifact
 - **produces:**
   - promotion_gate_decision_artifact
 - **must_not_do:**
-  - certify_governance_readiness
-
-### GOV
-- **acronym:** `GOV`
-- **full_name:** Governance Certification Authority
-- **role:** certification/governance gate authority.
-- **owns:**
-  - gov_certification_gate
-- **consumes:**
-  - promotion_readiness_record
-- **produces:**
-  - governance_gate_results
-- **must_not_do:**
-  - execute_work_slices
-
-### MAP
-- **acronym:** `MAP`
-- **full_name:** Metadata Authority Plane
-- **role:** metadata/topology/system-map authority.
-- **owns:**
-  - map_topology_projection_authority
-- **consumes:**
-  - registry_and_runtime_metadata
-- **produces:**
-  - map_projection_record
-- **must_not_do:**
-  - override_control_authorities
+  - decide_policy_authority

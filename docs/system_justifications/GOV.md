@@ -1,4 +1,4 @@
-# System Justification: GOV (Governance Control Authority)
+# System Justification: GOV (Governance Evidence Packaging)
 
 **Status:** Merging into GOVERN (Phase 2a)
 **Owner:** governance
@@ -6,32 +6,32 @@
 
 ## What failure does it prevent?
 
-- **policy_drift**: Detects when system behavior deviates from declared policy
-- **unauthorized_execution**: Blocks execution not authorized by governance policy
+- **certification_evidence_gap**: Detects missing certification evidence after policy decisions
+- **governance_trace_break**: Detects incomplete governance evidence chains
 
 **Measurement (past 30 days):** Policy drift incidents: 0 (down from 4 pre-GOV).
 
 ## What signal does it improve?
 
-- **governance_enforcement**: Hard gate on all policy violations — 100% enforcement rate
+- **governance_evidence_completeness**: Tracks whether certification evidence bundles are complete
 
 **Baseline:** 0 policy drift incidents in 30 days
 **Target:** Maintain 0 drift via GOVERN after consolidation
 
 ## ROI
 
-4 drift incidents/month prevented. Critical governance boundary.
+4 governance evidence gaps/month prevented. Critical certification boundary.
 
 ## Dependencies
 
 - TLC (orchestration)
 - CDE (closure decisions)
-- SEL (enforcement)
+- SEL (enforcement evidence inputs)
 
 ## Removal Candidate?
 
-No. Merging into GOVERN (Phase 2a) with TLC. Policy enforcement preserved.
+No. Merging into GOVERN (Phase 2a) with TLC. TPA remains the canonical policy system.
 
 ## Removal Impact
 
-Dependents: TPA, RQX. Absorption into GOVERN must validate all policy checks.
+Dependents: TPA, RQX. GOV records certification evidence after TPA policy decisions.
