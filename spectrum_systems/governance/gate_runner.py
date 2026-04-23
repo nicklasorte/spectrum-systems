@@ -123,6 +123,77 @@ def _gate_i_check() -> Tuple[bool, List[str]]:
         return False, [f"GATE-I failed: {exc}"]
 
 
+def _gate_s_check() -> Tuple[bool, List[str]]:
+    """GATE-S: System Registry — ownership claim violations in changed files.
+
+    Runs the system registry guard against files changed since origin/main.
+    Catches DIRECT_OWNERSHIP_OVERLAP, PROTECTED_AUTHORITY_VIOLATION, and
+    SHADOW_OWNERSHIP_OVERLAP before they reach CI.
+    """
+    evidence = []
+    try:
+        from spectrum_systems.modules.governance.system_registry_guard import (
+            evaluate_system_registry_guard,
+            load_guard_policy,
+            parse_system_registry,
+        )
+        from spectrum_systems.modules.governance.changed_files import (
+            ChangedFilesResolutionError,
+            resolve_changed_files,
+        )
+
+        policy_path = REPO_ROOT / "contracts" / "governance" / "system_registry_guard_policy.json"
+        registry_path = REPO_ROOT / "docs" / "architecture" / "system_registry.md"
+
+        if not policy_path.is_file():
+            evidence.append("GATE-S skipped: guard policy not found")
+            return True, evidence
+        if not registry_path.is_file():
+            evidence.append("GATE-S skipped: system registry not found")
+            return True, evidence
+
+        try:
+            changed_files = resolve_changed_files(
+                repo_root=REPO_ROOT,
+                base_ref="origin/main",
+                head_ref="HEAD",
+                explicit_changed_files=[],
+            )
+        except ChangedFilesResolutionError as exc:
+            evidence.append(f"GATE-S skipped: git context unavailable ({exc})")
+            return True, evidence
+
+        evidence.append(f"changed_files_checked={len(changed_files)}")
+
+        policy = load_guard_policy(policy_path)
+        registry = parse_system_registry(registry_path)
+        result = evaluate_system_registry_guard(
+            repo_root=REPO_ROOT,
+            changed_files=changed_files,
+            policy=policy,
+            registry_model=registry,
+        )
+
+        status = result.get("status", "fail")
+        diagnostics = result.get("diagnostics") or []
+        evidence.append(f"registry_guard_status={status}")
+        evidence.append(f"violations_found={len(diagnostics)}")
+
+        if status != "pass":
+            for d in diagnostics[:5]:  # surface first 5 in evidence
+                evidence.append(
+                    f"VIOLATION: {d.get('reason_code')} "
+                    f"file={d.get('file')}:{d.get('line')} "
+                    f"symbol={d.get('symbol')} "
+                    f"canonical_owner={d.get('canonical_owner')}"
+                )
+            return False, evidence
+
+        return True, evidence
+    except Exception as exc:  # noqa: BLE001
+        return False, [f"GATE-S failed: {exc}"]
+
+
 GATE_CHECKS = {
     "GATE-F": ("Foundation", _gate_f_check),
     "GATE-C": ("Context/Eval", _gate_c_check),
@@ -130,6 +201,7 @@ GATE_CHECKS = {
     "GATE-O": ("Observability", _gate_o_check),
     "GATE-R": ("Release/Budget", _gate_r_check),
     "GATE-I": ("Integration", _gate_i_check),
+    "GATE-S": ("System Registry", _gate_s_check),
 }
 
 
@@ -155,7 +227,7 @@ def rerun_all_gates() -> Dict:
         "standards_version": "3ls-v1",
         "trace_id": f"TRC-{os.urandom(8).hex().upper()}",
         "created_at": now,
-        "owner_system": "PRG",
+        "owner_system": "GOVERN",
         "timestamp": now,
         "gates": gates,
         "overall_status": overall,

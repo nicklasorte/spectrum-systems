@@ -2,7 +2,7 @@
   "artifact_type": "repair_bottleneck_confidence_record",
   "slice_id": "RL-15",
   "owner": "PRG",
-  "generated_at": "2026-04-22T22:20:47Z",
+  "generated_at": "2026-04-22T23:16:49Z",
   "trend": "persistent",
   "confidence": 0.82
 }

@@ -2,7 +2,7 @@
   "artifact_type": "repair_loop_program_closeout",
   "slice_id": "RL-24",
   "owner": "PRG",
-  "generated_at": "2026-04-22T22:20:47Z",
+  "generated_at": "2026-04-22T23:16:49Z",
   "authoritative": false,
   "latency_direction": "improving_guarded"
 }
