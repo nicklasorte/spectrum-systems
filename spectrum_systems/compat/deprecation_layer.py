@@ -170,3 +170,98 @@ class DeprecationLayer:
         """[DEPRECATED] Use EVALSystem.umbrella_constraint_check() instead."""
         _warn_deprecated("chk_umbrella")
         return self._get_eval().umbrella_constraint_check(artifact)
+
+
+class MigrationTimeline:
+    """3-week migration timeline for transitioning to consolidated system names.
+
+    Week 1-2: Deprecation warnings — old code works, warnings logged.
+    Week 3:   Deprecation errors — old code fails, forcing migration.
+    Week 4+:  Old code removed — deprecation layer removed entirely.
+    """
+
+    WEEK_1_2 = "warnings"
+    WEEK_3 = "errors"
+    WEEK_4_PLUS = "removed"
+
+    # Migration deadline for all old system calls
+    MIGRATION_DEADLINE = "2026-05-13"
+
+    MIGRATION_STEPS = {
+        "tpa_check": {
+            "old": "DeprecationLayer.tpa_check(artifact)",
+            "new": "EXECSystem.exec_check(artifact)",
+            "module": "spectrum_systems.exec_system.exec_system",
+            "class": "EXECSystem",
+        },
+        "prg_roadmap": {
+            "old": "DeprecationLayer.prg_roadmap(artifact, items)",
+            "new": "EXECSystem.roadmap_alignment_check(artifact, items)",
+            "module": "spectrum_systems.exec_system.exec_system",
+            "class": "EXECSystem",
+        },
+        "tlc_route": {
+            "old": "DeprecationLayer.tlc_route(artifact, registry)",
+            "new": "GOVERNSystem.route_artifact(artifact, registry)",
+            "module": "spectrum_systems.govern.govern",
+            "class": "GOVERNSystem",
+        },
+        "tlc_lifecycle": {
+            "old": "DeprecationLayer.tlc_lifecycle(artifact, target)",
+            "new": "GOVERNSystem.lifecycle_check(artifact, target)",
+            "module": "spectrum_systems.govern.govern",
+            "class": "GOVERNSystem",
+        },
+        "gov_policy": {
+            "old": "DeprecationLayer.gov_policy(artifact, ref)",
+            "new": "GOVERNSystem.policy_check(artifact, ref)",
+            "module": "spectrum_systems.govern.govern",
+            "class": "GOVERNSystem",
+        },
+        "wpg_gate": {
+            "old": "DeprecationLayer.wpg_gate(artifact, results)",
+            "new": "EVALSystem.eval_gate(artifact, results)",
+            "module": "spectrum_systems.eval_system.eval_system",
+            "class": "EVALSystem",
+        },
+        "chk_batch": {
+            "old": "DeprecationLayer.chk_batch(artifact)",
+            "new": "EVALSystem.batch_constraint_check(artifact)",
+            "module": "spectrum_systems.eval_system.eval_system",
+            "class": "EVALSystem",
+        },
+        "chk_umbrella": {
+            "old": "DeprecationLayer.chk_umbrella(artifact)",
+            "new": "EVALSystem.umbrella_constraint_check(artifact)",
+            "module": "spectrum_systems.eval_system.eval_system",
+            "class": "EVALSystem",
+        },
+    }
+
+    @classmethod
+    def current_phase(cls, week: int) -> str:
+        """Return the migration phase for the given week number (1-indexed)."""
+        if week <= 2:
+            return cls.WEEK_1_2
+        elif week == 3:
+            return cls.WEEK_3
+        else:
+            return cls.WEEK_4_PLUS
+
+    @classmethod
+    def migration_status(cls) -> Dict[str, Any]:
+        """Return full migration status report."""
+        return {
+            "deadline": cls.MIGRATION_DEADLINE,
+            "current_phase": cls.WEEK_1_2,
+            "old_to_new": {
+                old: info["new"]
+                for old, info in cls.MIGRATION_STEPS.items()
+            },
+            "steps": cls.MIGRATION_STEPS,
+            "rollback_plan": (
+                "If issues found during Week 3 (error mode): "
+                "revert callers to DeprecationLayer usage (Week 1-2 mode). "
+                "Fix underlying issue before re-enabling error mode."
+            ),
+        }

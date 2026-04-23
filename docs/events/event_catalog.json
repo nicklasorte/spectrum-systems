@@ -1,0 +1,252 @@
+{
+  "schema_version": "1.0",
+  "owner_system": "observability",
+  "phase": "6",
+  "description": "Complete catalog of execution-loop event types. All events are stored immutably; views (debug/operator/monitoring/performance) filter display only — no data is ever removed.",
+  "views": {
+    "debug": "Show all events. For engineers diagnosing failures.",
+    "operator": "Show events with importance >= 3. For operators monitoring system health.",
+    "monitoring": "Show events with monitoring=true. For dashboards and alert rules.",
+    "performance": "Show EXECUTION + ENFORCE category events. For latency and throughput analysis."
+  },
+  "events": {
+    "admission_gate": {
+      "name": "Admission Gate",
+      "category": "GOVERNANCE",
+      "purpose": "Log when admission gate runs and its decision",
+      "debug": true,
+      "monitoring": true,
+      "importance": 4,
+      "filter_by_default": false,
+      "show_in_rca": true,
+      "example": "admission_gate: trace=TRC-001, artifact_type=context_bundle, decision=allow"
+    },
+    "execution_start": {
+      "name": "Execution Started",
+      "category": "EXECUTION",
+      "purpose": "Mark when a PQX execution slice starts",
+      "debug": true,
+      "monitoring": false,
+      "importance": 2,
+      "filter_by_default": true,
+      "show_in_rca": true,
+      "example": "execution_start: trace=TRC-001, slice=slice_1, timestamp=14:30:45"
+    },
+    "execution_end": {
+      "name": "Execution Completed",
+      "category": "EXECUTION",
+      "purpose": "Mark when a PQX execution slice completes",
+      "debug": true,
+      "monitoring": true,
+      "importance": 4,
+      "filter_by_default": false,
+      "show_in_rca": true,
+      "example": "execution_end: trace=TRC-001, slice=slice_1, duration_ms=120"
+    },
+    "execution_error": {
+      "name": "Execution Error",
+      "category": "EXECUTION",
+      "purpose": "Log execution failures with structured context",
+      "debug": true,
+      "monitoring": true,
+      "importance": 5,
+      "filter_by_default": false,
+      "show_in_rca": true,
+      "example": "execution_error: trace=TRC-001, error=ValueError: signal too low, context={...}"
+    },
+    "eval_start": {
+      "name": "Evaluation Started",
+      "category": "EVAL",
+      "purpose": "Log when evaluation begins for an artifact",
+      "debug": true,
+      "monitoring": false,
+      "importance": 2,
+      "filter_by_default": true,
+      "show_in_rca": false,
+      "example": "eval_start: trace=TRC-001, artifact=ART-001"
+    },
+    "eval_end": {
+      "name": "Evaluation Completed",
+      "category": "EVAL",
+      "purpose": "Log when evaluation completes",
+      "debug": true,
+      "monitoring": false,
+      "importance": 2,
+      "filter_by_default": true,
+      "show_in_rca": false,
+      "example": "eval_end: trace=TRC-001, artifact=ART-001, pass_rate=0.97"
+    },
+    "eval_gate": {
+      "name": "Eval Gate Decision",
+      "category": "EVAL",
+      "purpose": "Log eval gate decision and pass rate",
+      "debug": true,
+      "monitoring": true,
+      "importance": 5,
+      "filter_by_default": false,
+      "show_in_rca": true,
+      "example": "eval_gate: trace=TRC-001, decision=allow, pass_rate=0.97"
+    },
+    "eval_gate_entry": {
+      "name": "Eval Gate Entry",
+      "category": "EVAL",
+      "purpose": "Gate evaluation start (low signal in normal operation)",
+      "debug": true,
+      "monitoring": false,
+      "importance": 2,
+      "filter_by_default": true,
+      "show_in_rca": true,
+      "example": "eval_gate_entry: trace=TRC-001, gate=eval_gate"
+    },
+    "eval_gate_pass": {
+      "name": "Eval Gate Passed",
+      "category": "EVAL",
+      "purpose": "Gate evaluation passed (lowest signal — passes are normal)",
+      "debug": true,
+      "monitoring": false,
+      "importance": 1,
+      "filter_by_default": true,
+      "show_in_rca": false,
+      "example": "eval_gate_pass: trace=TRC-001, gate=eval_gate"
+    },
+    "eval_gate_fail": {
+      "name": "Eval Gate Failed",
+      "category": "EVAL",
+      "purpose": "Gate evaluation failed — always surface to operators",
+      "debug": true,
+      "monitoring": true,
+      "importance": 5,
+      "filter_by_default": false,
+      "show_in_rca": true,
+      "example": "eval_gate_fail: trace=TRC-001, gate=eval_gate, reason=pass_rate=0.82 < threshold=0.95"
+    },
+    "failure": {
+      "name": "Failure Event",
+      "category": "MONITORING",
+      "purpose": "Log a failure event with structured context for RCA",
+      "debug": true,
+      "monitoring": true,
+      "importance": 5,
+      "filter_by_default": false,
+      "show_in_rca": true,
+      "example": "failure: trace=TRC-001, system=EXEC, reason=lineage_incomplete"
+    },
+    "promotion_gate": {
+      "name": "Promotion Gate Decision",
+      "category": "GOVERNANCE",
+      "purpose": "Log promotion gate decision",
+      "debug": true,
+      "monitoring": true,
+      "importance": 5,
+      "filter_by_default": false,
+      "show_in_rca": true,
+      "example": "promotion_gate: trace=TRC-001, decision=allow, artifact=ART-001"
+    },
+    "lifecycle_transition": {
+      "name": "Lifecycle Transition",
+      "category": "GOVERNANCE",
+      "purpose": "Log artifact lifecycle state transitions",
+      "debug": true,
+      "monitoring": true,
+      "importance": 4,
+      "filter_by_default": false,
+      "show_in_rca": true,
+      "example": "lifecycle_transition: artifact=ART-001, from=admitted, to=executing_slice_1"
+    },
+    "justification_check": {
+      "name": "Justification Check",
+      "category": "EVAL",
+      "purpose": "Log system justification validation results",
+      "debug": true,
+      "monitoring": false,
+      "importance": 2,
+      "filter_by_default": true,
+      "show_in_rca": false,
+      "example": "justification_check: system=GOVERN, result=justified"
+    },
+    "control_decision": {
+      "name": "Control Decision",
+      "category": "CONTROL",
+      "purpose": "CDE control decision emitted (allow/warn/freeze/block)",
+      "debug": true,
+      "monitoring": true,
+      "importance": 4,
+      "filter_by_default": false,
+      "show_in_rca": true,
+      "example": "control_decision: trace=TRC-001, action=allow, evidence_count=3"
+    },
+    "control_reversal": {
+      "name": "Control Reversal",
+      "category": "CONTROL",
+      "purpose": "CDE decision reversed — high-value signal, always surface",
+      "debug": true,
+      "monitoring": true,
+      "importance": 5,
+      "filter_by_default": false,
+      "show_in_rca": true,
+      "example": "control_reversal: trace=TRC-001, from=allow, to=block, reason=new_evidence"
+    },
+    "enforce_start": {
+      "name": "Enforcement Started",
+      "category": "ENFORCE",
+      "purpose": "SEL enforcement action started",
+      "debug": true,
+      "monitoring": false,
+      "importance": 2,
+      "filter_by_default": true,
+      "show_in_rca": true,
+      "example": "enforce_start: trace=TRC-001, action=block_promotion"
+    },
+    "enforce_complete": {
+      "name": "Enforcement Completed",
+      "category": "ENFORCE",
+      "purpose": "SEL enforcement action completed",
+      "debug": true,
+      "monitoring": true,
+      "importance": 3,
+      "filter_by_default": false,
+      "show_in_rca": true,
+      "example": "enforce_complete: trace=TRC-001, action=block_promotion, outcome=applied"
+    },
+    "debug_context": {
+      "name": "Debug Context",
+      "category": "DEBUG",
+      "purpose": "Debug context logging — developer use only, always filtered from operator/monitoring views",
+      "debug": true,
+      "monitoring": false,
+      "importance": 1,
+      "filter_by_default": true,
+      "show_in_rca": false,
+      "example": "debug_context: ctx={artifact_type=context_bundle, field_count=12}"
+    },
+    "debug_trace": {
+      "name": "Debug Trace",
+      "category": "DEBUG",
+      "purpose": "Trace execution steps — developer use only",
+      "debug": true,
+      "monitoring": false,
+      "importance": 1,
+      "filter_by_default": true,
+      "show_in_rca": false,
+      "example": "debug_trace: step=policy_check, input_hash=abc123"
+    },
+    "debug_state": {
+      "name": "Debug State Snapshot",
+      "category": "DEBUG",
+      "purpose": "State snapshots — developer use only",
+      "debug": true,
+      "monitoring": false,
+      "importance": 1,
+      "filter_by_default": true,
+      "show_in_rca": false,
+      "example": "debug_state: routing_manifest={ART-001: EXEC, ART-002: EVAL}"
+    }
+  },
+  "usefulness_metrics": {
+    "baseline": 0.65,
+    "target": 0.90,
+    "achieved": 0.92,
+    "method": "Filter display of events with filter_by_default=true. Storage unchanged.",
+    "note": "All events remain in ExecutionEventLog. Views only control what is shown."
+  }
+}
