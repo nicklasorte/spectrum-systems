@@ -609,6 +609,98 @@ class TestConsolidatedSystemsIntegration:
         assert decision["decision"] == "allow", f"Eval gate blocked: {decision}"
 
 
+class TestSystemRegistryGuardCompliance:
+    """Hardening: run the system registry guard locally against our changed docs.
+
+    This catches SHADOW_OWNERSHIP_OVERLAP, PROTECTED_AUTHORITY_VIOLATION, and
+    DIRECT_OWNERSHIP_OVERLAP violations before they reach CI.
+    """
+
+    DOCS = [
+        "docs/events/event_catalog.json",
+        "docs/migration/3ls_migration_guide.md",
+        "docs/operations/3ls_simplified_architecture_runbook.md",
+        "docs/training/3ls_training_guide.md",
+        "spectrum_systems/compat/deprecation_layer.py",
+        "spectrum_systems/observability/event_analysis.py",
+        "spectrum_systems/observability/event_filter.py",
+    ]
+
+    def _guard_result(self):
+        import sys
+        from pathlib import Path
+        repo_root = Path(__file__).resolve().parents[1]
+        sys.path.insert(0, str(repo_root))
+        from spectrum_systems.modules.governance.system_registry_guard import (
+            evaluate_system_registry_guard,
+            load_guard_policy,
+            parse_system_registry,
+        )
+        policy = load_guard_policy(
+            repo_root / "contracts" / "governance" / "system_registry_guard_policy.json"
+        )
+        registry = parse_system_registry(
+            repo_root / "docs" / "architecture" / "system_registry.md"
+        )
+        return evaluate_system_registry_guard(
+            repo_root=repo_root,
+            changed_files=self.DOCS,
+            policy=policy,
+            registry_model=registry,
+        )
+
+    def test_guard_passes_on_our_docs(self):
+        """The registry guard must pass on all Phase 6-9 docs and source files."""
+        result = self._guard_result()
+        diagnostics = result.get("diagnostics") or []
+        violations = [d for d in diagnostics if d.get("reason_code") in {
+            "SHADOW_OWNERSHIP_OVERLAP",
+            "PROTECTED_AUTHORITY_VIOLATION",
+            "DIRECT_OWNERSHIP_OVERLAP",
+        }]
+        assert result["status"] == "pass", (
+            f"Registry guard failed with {len(violations)} violation(s):\n"
+            + "\n".join(
+                f"  {v['reason_code']} file={v['file']} line={v['line']} "
+                f"symbol={v['symbol']} canonical_owner={v.get('canonical_owner')}"
+                for v in violations
+            )
+        )
+
+    def test_guard_no_shadow_ownership(self):
+        result = self._guard_result()
+        violations = [
+            d for d in (result.get("diagnostics") or [])
+            if d.get("reason_code") == "SHADOW_OWNERSHIP_OVERLAP"
+        ]
+        assert not violations, (
+            "SHADOW_OWNERSHIP_OVERLAP in docs:\n"
+            + "\n".join(f"  {v['file']}:{v['line']} symbol={v['symbol']}" for v in violations)
+        )
+
+    def test_guard_no_protected_authority_violations(self):
+        result = self._guard_result()
+        violations = [
+            d for d in (result.get("diagnostics") or [])
+            if d.get("reason_code") == "PROTECTED_AUTHORITY_VIOLATION"
+        ]
+        assert not violations, (
+            "PROTECTED_AUTHORITY_VIOLATION in docs:\n"
+            + "\n".join(f"  {v['file']}:{v['line']} symbol={v['symbol']}" for v in violations)
+        )
+
+    def test_guard_no_direct_ownership_overlap(self):
+        result = self._guard_result()
+        violations = [
+            d for d in (result.get("diagnostics") or [])
+            if d.get("reason_code") == "DIRECT_OWNERSHIP_OVERLAP"
+        ]
+        assert not violations, (
+            "DIRECT_OWNERSHIP_OVERLAP in docs:\n"
+            + "\n".join(f"  {v['file']}:{v['line']} symbol={v['symbol']}" for v in violations)
+        )
+
+
 class TestMetricsVerification:
     """Verify all Phase 1-9 metrics are met."""
 

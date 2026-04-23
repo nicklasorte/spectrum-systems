@@ -31,8 +31,8 @@ The original 10-system architecture had overlapping responsibilities, making fai
 ### What Did NOT Change
 
 - All safety gates are preserved (21 safety gates remain)
-- GOV remains the canonical closure gate authority (unchanged)
-- AEX remains the canonical enforcement and execution exchange boundary (unchanged)
+- Governance policy and fail-closed gate implementation remain unchanged (GOV)
+- Admission exchange boundary remains unchanged (AEX)
 - Fail-closed behavior is unchanged
 - All existing artifact contracts are backward compatible
 
@@ -102,24 +102,24 @@ The original 10-system architecture had overlapping responsibilities, making fai
 
 ---
 
-### GOV — Closure Gate Authority (Unchanged)
+### GOV — Governance Policy Gate (Unchanged)
 
-**Canonical owner of:** closure gate policy, fail-closed gate implementation, readiness and promotion gate policy
+**Scope:** governance policy execution, fail-closed gate implementation, readiness and promotion gate policy
 
-GOV is the canonical closure gate authority. Do not bypass. If the closure gate blocks, follow the remediation path:
+Do not bypass this gate. If the gate blocks, follow the remediation path:
 ```
-failure → evidence artifact → FRE diagnosis → GOV closure gate → bounded repair
+failure → evidence artifact → FRE diagnosis → GOV gate → bounded repair
 ```
 
 **File:** `spectrum_systems/modules/runtime/cde_decision_flow.py`
 
 ---
 
-### AEX — Enforcement and Execution Exchange Boundary (Unchanged)
+### AEX — Admission Exchange Boundary (Unchanged)
 
-**Canonical owner of:** enforcement actions, fail-closed enforcement boundary, execution exchange
+**Scope:** admission exchange boundary for repo-mutating requests
 
-AEX is the canonical enforcement and execution boundary authority. Do not bypass enforcement boundaries. If AEX enforcement fires unexpectedly, investigate the upstream closure gate decision, not AEX itself.
+Do not bypass this boundary. If the boundary fires unexpectedly, investigate the upstream gate decision rather than the boundary itself.
 
 **File:** `spectrum_systems/modules/runtime/sel_enforcement_foundation.py`
 

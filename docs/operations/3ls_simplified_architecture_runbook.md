@@ -20,8 +20,8 @@ The 3LS simplification consolidates 10 original systems into 3 new systems plus 
 | **EXEC** | Execution admissibility + program planning | TPA, PRG |
 | **GOVERN** | Governance policy + lifecycle orchestration | GOV, TLC |
 | **EVAL** | Evaluation provenance + constraint checking | WPG, CHK |
-| **GOV** | Closure gate policy + fail-closed gate implementation | Unchanged canonical owner |
-| **AEX** | Enforcement and bounded execution exchange boundary | Unchanged canonical owner |
+| **GOV** | Governance policy and fail-closed gate implementation | Unchanged |
+| **AEX** | Admission exchange boundary | Unchanged |
 
 ### Execution Loop
 
@@ -132,31 +132,31 @@ EXEC exec_check BLOCK: missing required fields ['trace_id']
 
 ---
 
-### Scenario 5: GOV Closure Gate Block
+### Scenario 5: Closure Gate Block (GOV)
 
-**Symptom:** System halted at closure gate; loop not advancing
+**Symptom:** System halted at gate; loop not advancing
 
 **Steps:**
-1. GOV is the canonical closure gate authority — never bypass
+1. Do not bypass this gate — it is fail-closed per the system registry
 2. Check that all required evidence artifacts are present
 3. Check that no `failure_classification` artifacts are unresolved
 4. Check event log for `control_reversal` events (high importance signal)
-5. Escalate if the closure gate repeatedly blocks on the same evidence set
+5. Escalate if the gate repeatedly blocks on the same evidence set
 
 **Code path:** `spectrum_systems/modules/runtime/cde_decision_flow.py`
 
 ---
 
-### Scenario 6: AEX Enforcement Action
+### Scenario 6: System Boundary Block (AEX)
 
-**Symptom:** Promotion blocked by AEX enforcement boundary; `enforce_complete` event logged
+**Symptom:** Promotion blocked at system boundary; `enforce_complete` event logged
 
 **Steps:**
-1. AEX is the canonical enforcement authority — never bypass enforcement boundaries
+1. Do not bypass the system boundary — it is fail-closed per the system registry
 2. Check `enforce_complete` event for action taken
 3. Check whether block is permanent or temporary
-4. Follow remediation path: failure → evidence → FRE → GOV closure gate → repair → retest
-5. Escalate if enforcement action is unexpected
+4. Follow remediation path: failure → evidence → FRE → GOV gate → repair → retest
+5. Escalate if the system boundary fires unexpectedly
 
 **Code path:** `spectrum_systems/modules/runtime/sel_enforcement_foundation.py`
 
