@@ -30,8 +30,8 @@ def test_route_classified_error_creates_eval_candidate(pipeline):
 
     result = pipeline.route_classified_error(classified_error, "trace-001")
 
-    assert result["artifact_type"] == "eval_adoption_decision"
-    assert result["decision"] == "approved"
+    assert result["artifact_type"] == "eval_adoption_record"
+    assert result["adoption_status"] == "approved"
     assert result["trace_id"] == "trace-001"
     pipeline.eval_registry.add_candidate.assert_called_once()
 

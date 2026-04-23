@@ -49,8 +49,8 @@ class FailureToEvalPipeline:
         if governance_result.get("approved"):
             self.eval_registry.add_candidate(eval_candidate)
             return {
-                "artifact_type": "eval_adoption_decision",
-                "decision": "approved",
+                "artifact_type": "eval_adoption_record",
+                "adoption_status": "approved",
                 "eval_candidate_id": eval_candidate.get("eval_candidate_id"),
                 "trace_id": trace_id,
             }
