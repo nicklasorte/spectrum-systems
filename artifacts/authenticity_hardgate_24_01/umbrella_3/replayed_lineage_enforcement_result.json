@@ -2,7 +2,7 @@
   "artifact_type": "replayed_lineage_enforcement_result",
   "slice_id": "AH-15",
   "owner": "SEL",
-  "generated_at": "2026-04-22T22:58:36Z",
+  "generated_at": "2026-04-23T00:55:15Z",
   "fail_closed": true,
   "replayed_lineage": "blocked"
 }
