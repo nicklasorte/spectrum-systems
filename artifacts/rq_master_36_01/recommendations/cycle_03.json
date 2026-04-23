@@ -1,7 +1,7 @@
 {
   "artifact_type": "next_action_recommendation_record",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-23T01:07:13Z",
+  "generated_at": "2026-04-23T01:11:49Z",
   "cycle_id": "cycle_03",
   "recommendation_id": "RQ36-REC-003",
   "recommended_next_action": "stabilize_input_lineage_before_promoting_changes",

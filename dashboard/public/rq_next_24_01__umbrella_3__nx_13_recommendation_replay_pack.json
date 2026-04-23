@@ -1,7 +1,7 @@
 {
   "artifact_type": "recommendation_replay_pack",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-23T01:06:14Z",
+  "generated_at": "2026-04-23T01:10:54Z",
   "scenario_ids": [
     "REPLAY-001",
     "REPLAY-002",

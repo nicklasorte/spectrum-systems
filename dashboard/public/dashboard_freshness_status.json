@@ -1,15 +1,15 @@
 {
   "artifact_type": "dashboard_freshness_status",
   "batch_id": "DASHBOARD-REFRESH-PUBLISH-LOOP-01",
-  "generated_at": "2026-04-23T01:07:16Z",
+  "generated_at": "2026-04-23T01:11:52Z",
   "freshness_window_hours": 6,
   "status": "fresh",
-  "snapshot_last_refreshed_time": "2026-04-23T01:07:13Z",
+  "snapshot_last_refreshed_time": "2026-04-23T01:11:49Z",
   "snapshot_age_hours": 0.001,
   "publication_state": "live",
   "contract_version": "1.0.0",
-  "trace_id": "trace-20260423T010716Z",
-  "refresh_run_id": "refresh-20260423T010716Z",
+  "trace_id": "trace-20260423T011152Z",
+  "refresh_run_id": "refresh-20260423T011152Z",
   "reason_codes": [
     "freshness_ok"
   ],
