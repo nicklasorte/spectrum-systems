@@ -61,18 +61,18 @@ The original 10-system architecture had overlapping responsibilities, making fai
 
 ---
 
-### GOVERN — Governance + Orchestration
+### GOVERN — Governance Evidence Packaging + Orchestration
 
-**Absorbed:** GOV (Governance Control Authority) + TLC (Top Level Conductor)
+**Absorbed:** GOV (governance evidence packaging) + TLC (Top Level Conductor)
 
 **What it does:**
-- Checks artifacts against governance policy
+- Records governance evidence after TPA policy decisions
 - Detects policy drift
 - Validates artifact lifecycle transitions
 - Routes artifacts to canonical owner systems
 
 **Key gates:**
-- `policy_check()` — policy compliance gate
+- `policy_check()` — policy evidence packaging gate (TPA remains canonical policy authority)
 - `detect_policy_drift()` — declared vs observed comparison
 - `lifecycle_check()` — lifecycle transition validation
 - `route_artifact()` — canonical system routing

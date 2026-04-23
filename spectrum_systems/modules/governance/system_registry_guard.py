@@ -400,36 +400,12 @@ def evaluate_system_registry_guard(
                         )
                         reason_codes.add("REMOVED_SYSTEM_REFERENCE")
 
-                    for seam, owner in protected_seams.items():
-                        if seam.lower() in line.lower() and subject != owner:
-                            protected_violations.append(
-                                {
-                                    "file": rel_path,
-                                    "line": idx,
-                                    "protected_seam": seam,
-                                    "claimed_owner": subject,
-                                    "canonical_owner": owner,
-                                    "reason": "protected authority seam claimed by non-owner",
-                                    "resolution_category": "fold_into_owner",
-                                }
-                            )
-                            diagnostics.append(
-                                {
-                                    "reason_code": "PROTECTED_AUTHORITY_VIOLATION",
-                                    "file": rel_path,
-                                    "line": idx,
-                                    "symbol": subject,
-                                    "responsibility": seam,
-                                    "canonical_owner": owner,
-                                    "resolution_category": "fold_into_owner",
-                                }
-                            )
-                            reason_codes.add("PROTECTED_AUTHORITY_VIOLATION")
-
                     cluster = claim["cluster"]
-                    if cluster and subject in registry_model.systems:
+                    shadow_detected = False
+                    if cluster:
                         canonical_owner = cluster_owner.get(cluster)
                         if canonical_owner and canonical_owner != subject:
+                            shadow_detected = True
                             shadow_owner_findings.append(
                                 {
                                     "file": rel_path,
@@ -453,6 +429,33 @@ def evaluate_system_registry_guard(
                                 }
                             )
                             reason_codes.add("SHADOW_OWNERSHIP_OVERLAP")
+
+                    suppress_protected_for_shadow = shadow_detected and subject not in registry_model.systems
+                    for seam, owner in protected_seams.items():
+                        if seam.lower() in line.lower() and subject != owner and not suppress_protected_for_shadow:
+                            protected_violations.append(
+                                {
+                                    "file": rel_path,
+                                    "line": idx,
+                                    "protected_seam": seam,
+                                    "claimed_owner": subject,
+                                    "canonical_owner": owner,
+                                    "reason": "protected authority seam claimed by non-owner",
+                                    "resolution_category": "fold_into_owner",
+                                }
+                            )
+                            diagnostics.append(
+                                {
+                                    "reason_code": "PROTECTED_AUTHORITY_VIOLATION",
+                                    "file": rel_path,
+                                    "line": idx,
+                                    "symbol": subject,
+                                    "responsibility": seam,
+                                    "canonical_owner": owner,
+                                    "resolution_category": "fold_into_owner",
+                                }
+                            )
+                            reason_codes.add("PROTECTED_AUTHORITY_VIOLATION")
 
                     for responsibility, owner in owners_by_responsibility.items():
                         if responsibility and responsibility in line.lower() and subject in registry_model.systems and owner != subject:

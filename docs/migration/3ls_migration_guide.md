@@ -87,12 +87,12 @@ aligned, reason = exec_sys.roadmap_alignment_check(artifact, active_items)
 
 ### GOV → GOVERN
 
-GOV (Governance Control Authority) is now `GOVERNSystem`.
+GOV (Governance evidence packaging) is now `GOVERNSystem`.
 
 | Old | New |
 |-----|-----|
-| `DeprecationLayer.gov_policy(artifact, ref)` | `GOVERNSystem.policy_check(artifact, ref)` |
-| `DeprecationLayer.gov_drift(declared, observed)` | `GOVERNSystem.detect_policy_drift(declared, observed)` |
+| `DeprecationLayer.gov_policy(artifact, ref)` | `GOVERNSystem.policy_check(artifact, ref)` *(records governance evidence after TPA policy decisions)* |
+| `DeprecationLayer.gov_drift(declared, observed)` | `GOVERNSystem.detect_policy_drift(declared, observed)` *(evidence packaging; no policy authority transfer)* |
 
 ```python
 # Before
