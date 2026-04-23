@@ -433,7 +433,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - execution_request
 - **produces:**
-  - admission_record
+  - build_admission_record
 - **must_not_do:**
   - execute_bounded_work
 
@@ -446,7 +446,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - admitted_execution_request
 - **produces:**
-  - execution_record
+  - agent_execution_trace
 - **must_not_do:**
   - adjudicate_trust_policy
 
@@ -459,7 +459,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - execution_record
 - **produces:**
-  - evaluation_gate_result
+  - continuous_eval_run_record
 - **must_not_do:**
   - issue_closure_decision
 
@@ -472,7 +472,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - evaluation_gate_result
 - **produces:**
-  - trust_policy_decision
+  - control_arbitration_record
 - **must_not_do:**
   - enforce_actions_directly
 
@@ -511,7 +511,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - execution_record
 - **produces:**
-  - replay_record
+  - rep_replay_integrity_record
 - **must_not_do:**
   - bypass_lineage_requirements
 
@@ -524,7 +524,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - governed_artifacts
 - **produces:**
-  - lineage_record
+  - artifact_lineage
 - **must_not_do:**
   - waive_promotion_lineage_gate
 
@@ -550,7 +550,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - observability_record
 - **produces:**
-  - slo_control_record
+  - slo_ai_reliability_budget_posture
 - **must_not_do:**
   - bypass_fail_closed_policy
 
@@ -576,7 +576,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - authored_prompts
 - **produces:**
-  - prompt_registry_record
+  - prm_prompt_registry_record
 - **must_not_do:**
   - execute_runtime_work
 
@@ -589,7 +589,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - policy_change_requests
 - **produces:**
-  - rollout_gate_record
+  - pol_rollout_record
 - **must_not_do:**
   - override_tpa_adjudication
 
@@ -602,7 +602,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - admitted_requests
 - **produces:**
-  - route_decision_record
+  - aex_tlc_handoff_integrity_record
 - **must_not_do:**
   - execute_slice_payloads
 
@@ -628,7 +628,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - replay_and_observability_records
 - **produces:**
-  - repair_plan_artifact
+  - fre_multi_step_repair_plan_record
 - **must_not_do:**
   - self_promote_artifacts
 
@@ -641,7 +641,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - runtime_candidate_inputs
 - **produces:**
-  - runtime_candidate_signal
+  - rax_health_snapshot
 - **must_not_do:**
   - issue_authoritative_control_decisions
 
@@ -654,7 +654,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - drift_signals
 - **produces:**
-  - reconciliation_record
+  - rsm_divergence_record
 - **must_not_do:**
   - bypass_governance_gates
 
@@ -667,7 +667,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - runtime_utilization_signals
 - **produces:**
-  - capacity_budget_record
+  - cap_budget_status_record
 - **must_not_do:**
   - override_policy_gates
 
@@ -680,7 +680,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - identity_permission_signals
 - **produces:**
-  - security_boundary_record
+  - approval_boundary_record
 - **must_not_do:**
   - bypass_enforcement_layer
 
@@ -719,7 +719,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - closure_decision_artifact
 - **produces:**
-  - promotion_readiness_record
+  - promotion_gate_decision_artifact
 - **must_not_do:**
   - certify_governance_readiness
 
@@ -732,7 +732,7 @@ These are important but non-top-level authority families:
 - **consumes:**
   - promotion_readiness_record
 - **produces:**
-  - governance_gate_result
+  - governance_gate_results
 - **must_not_do:**
   - execute_work_slices
 
@@ -745,6 +745,6 @@ These are important but non-top-level authority families:
 - **consumes:**
   - registry_and_runtime_metadata
 - **produces:**
-  - metadata_topology_record
+  - map_projection_record
 - **must_not_do:**
   - override_control_authorities
