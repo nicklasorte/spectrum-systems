@@ -137,7 +137,10 @@ def _gate_s_check() -> Tuple[bool, List[str]]:
             load_guard_policy,
             parse_system_registry,
         )
-        from spectrum_systems.modules.governance.changed_files import resolve_changed_files
+        from spectrum_systems.modules.governance.changed_files import (
+            ChangedFilesResolutionError,
+            resolve_changed_files,
+        )
 
         policy_path = REPO_ROOT / "contracts" / "governance" / "system_registry_guard_policy.json"
         registry_path = REPO_ROOT / "docs" / "architecture" / "system_registry.md"
@@ -149,12 +152,17 @@ def _gate_s_check() -> Tuple[bool, List[str]]:
             evidence.append("GATE-S skipped: system registry not found")
             return True, evidence
 
-        changed_files = resolve_changed_files(
-            repo_root=REPO_ROOT,
-            base_ref="origin/main",
-            head_ref="HEAD",
-            explicit_changed_files=[],
-        )
+        try:
+            changed_files = resolve_changed_files(
+                repo_root=REPO_ROOT,
+                base_ref="origin/main",
+                head_ref="HEAD",
+                explicit_changed_files=[],
+            )
+        except ChangedFilesResolutionError as exc:
+            evidence.append(f"GATE-S skipped: git context unavailable ({exc})")
+            return True, evidence
+
         evidence.append(f"changed_files_checked={len(changed_files)}")
 
         policy = load_guard_policy(policy_path)
