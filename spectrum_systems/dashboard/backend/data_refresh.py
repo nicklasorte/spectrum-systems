@@ -10,6 +10,7 @@ from .artifact_parser import ArtifactParser
 from .health_calculator import HealthCalculator
 from .lineage_validator import LineageValidator
 from .github_client import GitHubClient
+from .canonical_registry_loader import get_canonical_system_registry
 
 
 logger = logging.getLogger(__name__)
@@ -18,9 +19,15 @@ logger = logging.getLogger(__name__)
 class DataRefreshPipeline:
     """Refresh all dashboard data hourly."""
 
-    def __init__(self, artifacts_root: Path, github_token: Optional[str] = None):
+    def __init__(
+        self,
+        artifacts_root: Path,
+        github_token: Optional[str] = None,
+        repo_root: Optional[Path] = None,
+    ):
         self.artifacts_root = artifacts_root
         self.github_token = github_token
+        self.repo_root = repo_root
         self.last_refresh: Optional[datetime] = None
 
     def refresh_all(self) -> Dict[str, Any]:
@@ -30,6 +37,12 @@ class DataRefreshPipeline:
         try:
             logger.info('Starting data refresh pipeline')
 
+            # 0. Load canonical system registry
+            logger.info('Loading canonical system registry...')
+            system_registry = get_canonical_system_registry(self.repo_root)
+            if not system_registry:
+                logger.warning('No systems loaded from canonical registry, using empty set')
+
             # 1. Parse all artifacts
             logger.info('Parsing artifacts...')
             parser = ArtifactParser(self.artifacts_root)
@@ -37,7 +50,7 @@ class DataRefreshPipeline:
 
             # 2. Calculate health scores
             logger.info('Calculating health scores...')
-            calculator = HealthCalculator(artifacts)
+            calculator = HealthCalculator(artifacts, system_registry=system_registry)
             health_scores = calculator.calculate_all()
 
             # 3. Validate lineage

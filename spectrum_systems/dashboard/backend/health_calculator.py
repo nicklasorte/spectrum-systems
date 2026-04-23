@@ -1,6 +1,6 @@
-"""Calculate health scores for all 3-letter systems."""
+"""Calculate health scores for 3-letter systems."""
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, asdict
 
 
@@ -23,60 +23,39 @@ class SystemMetrics:
 
 
 class HealthCalculator:
-    """Calculate system health metrics."""
+    """Calculate system health metrics from observed data.
 
-    SYSTEMS = {
-        # Execution Systems
-        'PQX': {'name': 'Bounded Execution', 'type': 'execution'},
-        'RDX': {'name': 'Roadmap Execution Loop', 'type': 'execution'},
-        'RQX': {'name': 'Review Queue Execution', 'type': 'execution'},
-        'HNX': {'name': 'Stage Harness', 'type': 'execution'},
+    This calculator is parameterized—it doesn't own system definitions.
+    System metadata is passed in via system_registry parameter.
+    """
 
-        # Governance Systems
-        'TPA': {'name': 'Trust/Policy Gate', 'type': 'governance'},
-        'MAP': {'name': 'Review Artifact Mediation', 'type': 'governance'},
-        'CDE': {'name': 'Closure Decision Authority', 'type': 'governance'},
-        'GOV': {'name': 'Governance Authority', 'type': 'governance'},
-        'FRE': {'name': 'Failure Diagnosis & Repair', 'type': 'governance'},
-        'RIL': {'name': 'Review Interpretation', 'type': 'governance'},
-        'SEL': {'name': 'Enforcement Control', 'type': 'governance'},
-
-        # Orchestration Systems
-        'TLC': {'name': 'Top-Level Orchestration', 'type': 'orchestration'},
-        'AEX': {'name': 'Admission Exchange', 'type': 'orchestration'},
-
-        # Data/Support Systems
-        'DBB': {'name': 'Data Backbone', 'type': 'data'},
-        'DEM': {'name': 'Decision Economics', 'type': 'data'},
-        'MCL': {'name': 'Memory Compaction', 'type': 'data'},
-
-        # Non-Authoritative Systems
-        'NSX': {'name': 'Next-Step Extraction', 'type': 'planning'},
-        'PRG': {'name': 'Program Planning', 'type': 'planning'},
-        'RSM': {'name': 'Reconciliation State', 'type': 'planning'},
-
-        # Placeholder Systems
-        'LCE': {'name': 'Lifecycle Transition', 'type': 'placeholder'},
-        'ABX': {'name': 'Artifact Bus', 'type': 'placeholder'},
-        'PRA': {'name': 'PR Anchor Discovery', 'type': 'placeholder'},
-        'BRM': {'name': 'Blast Radius Manager', 'type': 'placeholder'},
-        'DCL': {'name': 'Doctrine Compilation', 'type': 'placeholder'},
-        'XRL': {'name': 'External Reality Loop', 'type': 'placeholder'},
-        'SAL': {'name': 'Source Authority', 'type': 'placeholder'},
-        'SAS': {'name': 'Source Authority Sync', 'type': 'placeholder'},
-        'SHA': {'name': 'Shared Authority', 'type': 'placeholder'},
-    }
-
-    def __init__(self, artifacts: Dict[str, Dict[str, Any]]):
+    def __init__(
+        self,
+        artifacts: Dict[str, Dict[str, Any]],
+        system_registry: Optional[Dict[str, Dict[str, Any]]] = None,
+    ):
         self.artifacts = artifacts
+        self.system_registry = system_registry or {}
 
     def calculate_all(self) -> Dict[str, SystemMetrics]:
-        """Calculate health for all systems."""
+        """Calculate health for all registered systems."""
         results = {}
 
-        for system_id, system_info in self.SYSTEMS.items():
+        for system_id, system_info in self.system_registry.items():
             metrics = self.calculate_system(system_id, system_info)
             results[system_id] = metrics
+
+        return results
+
+    def calculate_for_ids(self, system_ids: List[str]) -> Dict[str, SystemMetrics]:
+        """Calculate health for specific system IDs."""
+        results = {}
+
+        for system_id in system_ids:
+            if system_id in self.system_registry:
+                system_info = self.system_registry[system_id]
+                metrics = self.calculate_system(system_id, system_info)
+                results[system_id] = metrics
 
         return results
 
