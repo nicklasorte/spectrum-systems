@@ -1,22 +1,25 @@
 {
   "version": 2,
-  "buildCommand": "cd apps/dashboard && npm run build",
-  "devCommand": "cd apps/dashboard && npm run dev",
+  "buildCommand": "cd apps/dashboard-3ls && npm install && npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
   "projectSettings": {
     "sourceFilesOutsideRootDirectory": true
   },
   "env": {
-    "ARTIFACT_API_URL": {
-      "description": "Base URL for artifact store API",
-      "required": true
-    },
-    "WS_URL": {
-      "description": "WebSocket URL for real-time updates",
+    "GITHUB_TOKEN": {
+      "description": "GitHub personal access token",
       "required": false
+    },
+    "GITHUB_REPO": {
+      "description": "GitHub repo: owner/repo",
+      "default": "nicklasorte/spectrum-systems"
+    },
+    "NEXT_PUBLIC_DASHBOARD_TITLE": {
+      "description": "Dashboard title",
+      "default": "3-Letter Systems Dashboard"
     }
   },
-  "regions": ["iad1", "sfo1"],
+  "regions": ["iad1"],
   "public": true
 }
