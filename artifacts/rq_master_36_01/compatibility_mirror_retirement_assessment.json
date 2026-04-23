@@ -1,7 +1,7 @@
 {
   "artifact_type": "compatibility_mirror_retirement_assessment",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-22T23:18:50Z",
+  "generated_at": "2026-04-23T01:07:13Z",
   "assessment": "reduce",
   "evidence": {
     "duplicate_surface_detected": true,

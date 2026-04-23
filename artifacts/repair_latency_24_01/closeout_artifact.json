@@ -1,7 +1,7 @@
 {
   "artifact_type": "closeout_artifact",
   "batch_id": "REPAIR-LATENCY-24-01",
-  "generated_at": "2026-04-22T23:16:49Z",
+  "generated_at": "2026-04-23T01:05:42Z",
   "status": "pass",
   "required_reporting_artifacts_non_empty": true,
   "final_success_conditions": {

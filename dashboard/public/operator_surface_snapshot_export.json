@@ -1,7 +1,7 @@
 {
   "artifact_type": "operator_surface_snapshot_export",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-22T23:18:50Z",
+  "generated_at": "2026-04-23T01:07:13Z",
   "required_checks": [
     "build",
     "lint",

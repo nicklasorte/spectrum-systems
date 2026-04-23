@@ -2,7 +2,7 @@
   "artifact_type": "memory_backed_repair_plan",
   "slice_id": "SM-09",
   "owner": "FRE",
-  "generated_at": "2026-04-22T23:17:46Z",
+  "generated_at": "2026-04-23T01:06:26Z",
   "plan_scope": "bounded",
   "memory_assisted": true
 }
