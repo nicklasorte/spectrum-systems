@@ -1,8 +1,8 @@
 {
   "artifact_type": "publication_attempt_record",
-  "publish_attempt_id": "publish-20260422T231854Z",
-  "refresh_run_id": "refresh-20260422T231854Z",
-  "trace_id": "trace-20260422T231854Z",
+  "publish_attempt_id": "publish-20260423T011152Z",
+  "refresh_run_id": "refresh-20260423T011152Z",
+  "trace_id": "trace-20260423T011152Z",
   "decision": "allow",
   "reason_codes": [
     "freshness_ok"
@@ -15,7 +15,7 @@
   "freshness_summary": {
     "overall_verdict": "pass",
     "stale_artifact_count": 0,
-    "age_seconds": 4.0,
+    "age_seconds": 3.0,
     "threshold_seconds": 21600
   },
   "validation_summary": {
@@ -23,5 +23,5 @@
     "missing_required_artifacts": []
   },
   "trigger_mode": "manual",
-  "timestamp": "2026-04-22T23:18:54Z"
+  "timestamp": "2026-04-23T01:11:52Z"
 }

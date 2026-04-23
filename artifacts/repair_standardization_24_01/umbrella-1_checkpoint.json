@@ -1,7 +1,7 @@
 {
   "artifact_type": "repair_standardization_umbrella_checkpoint",
   "batch_id": "REPAIR-STANDARDIZATION-24-01",
-  "generated_at": "2026-04-22T23:16:49Z",
+  "generated_at": "2026-04-23T01:10:27Z",
   "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
   "umbrella_id": "UMBRELLA-1",
   "umbrella_name": "REPAIR_STANDARDIZATION",
