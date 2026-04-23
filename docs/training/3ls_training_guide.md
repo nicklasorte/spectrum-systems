@@ -31,9 +31,8 @@ The original 10-system architecture had overlapping responsibilities, making fai
 ### What Did NOT Change
 
 - All safety gates are preserved (21 safety gates remain)
-- CDE is still the sole closure decision authority
-- SEL is still the sole enforcement authority
-- PQX is still the sole execution authority
+- GOV remains the canonical closure gate authority (unchanged)
+- AEX remains the canonical enforcement and execution exchange boundary (unchanged)
 - Fail-closed behavior is unchanged
 - All existing artifact contracts are backward compatible
 
@@ -103,34 +102,26 @@ The original 10-system architecture had overlapping responsibilities, making fai
 
 ---
 
-### CDE — Closure Decision (Unchanged)
+### GOV — Closure Gate Authority (Unchanged)
 
-**What it does:** Sole authority for allow/warn/freeze/block decisions based on governed evidence.
+**Canonical owner of:** closure gate policy, fail-closed gate implementation, readiness and promotion gate policy
 
-Do not bypass. If CDE blocks, follow the remediation path:
+GOV is the canonical closure gate authority. Do not bypass. If the closure gate blocks, follow the remediation path:
 ```
-failure → evidence artifact → FRE diagnosis → CDE decision → bounded repair
+failure → evidence artifact → FRE diagnosis → GOV closure gate → bounded repair
 ```
 
 **File:** `spectrum_systems/modules/runtime/cde_decision_flow.py`
 
 ---
 
-### SEL — Enforcement (Unchanged)
+### AEX — Enforcement and Execution Exchange Boundary (Unchanged)
 
-**What it does:** Sole enforcement authority. Executes enforcement actions based on CDE decisions.
+**Canonical owner of:** enforcement actions, fail-closed enforcement boundary, execution exchange
 
-Do not bypass. SEL actions are triggered by CDE — if SEL fires unexpectedly, investigate the CDE decision, not SEL.
+AEX is the canonical enforcement and execution boundary authority. Do not bypass enforcement boundaries. If AEX enforcement fires unexpectedly, investigate the upstream closure gate decision, not AEX itself.
 
 **File:** `spectrum_systems/modules/runtime/sel_enforcement_foundation.py`
-
----
-
-### PQX — Execution (Unchanged)
-
-**What it does:** Sole execution authority. Runs execution slices deterministically.
-
-**File:** `spectrum_systems/execution/pqx_harness.py`
 
 ---
 

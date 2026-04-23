@@ -281,10 +281,11 @@ class TestOperatorTrainingArtifacts:
         path = self._path("docs", "training", "3ls_training_guide.md")
         assert os.path.exists(path), f"Missing: {path}"
 
-    def test_runbook_covers_all_six_systems(self):
+    def test_runbook_covers_canonical_systems(self):
         path = self._path("docs", "operations", "3ls_simplified_architecture_runbook.md")
         content = open(path).read()
-        for system in ("EXEC", "GOVERN", "EVAL", "CDE", "SEL", "PQX"):
+        # Consolidated 3LS systems + canonical unchanged owners (GOV, AEX)
+        for system in ("EXEC", "GOVERN", "EVAL", "GOV", "AEX"):
             assert system in content, f"Runbook missing system: {system}"
 
     def test_runbook_covers_failure_scenarios(self):
@@ -293,7 +294,7 @@ class TestOperatorTrainingArtifacts:
         assert "Scenario" in content
         assert "BLOCK" in content or "block" in content
 
-    def test_training_guide_has_five_modules(self):
+    def test_training_guide_has_all_modules(self):
         path = self._path("docs", "training", "3ls_training_guide.md")
         content = open(path).read()
         for i in range(1, 6):
@@ -626,12 +627,11 @@ class TestMetricsVerification:
         assert EventFilter.monitoring_view(events) is not None
         assert EventFilter.performance_view(events) is not None
 
-    def test_six_consolidated_systems_exist(self):
-        """Verify the 6 canonical system modules can be imported."""
+    def test_consolidated_systems_exist(self):
+        """Verify the 3 consolidated system modules can be imported."""
         from spectrum_systems.exec_system.exec_system import EXECSystem
         from spectrum_systems.govern.govern import GOVERNSystem
         from spectrum_systems.eval_system.eval_system import EVALSystem
-        # CDE, SEL, PQX are the remaining 3 (unchanged authorities)
         assert EXECSystem
         assert GOVERNSystem
         assert EVALSystem

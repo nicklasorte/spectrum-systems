@@ -13,21 +13,22 @@ The 3LS simplification consolidates 10 original systems into 6 canonical authori
 
 ### Consolidated Architecture
 
+The 3LS simplification consolidates 10 original systems into 3 new systems plus the two unchanged canonical authorities (GOV and AEX).
+
 | System | Role | Absorbed From |
 |--------|------|---------------|
 | **EXEC** | Execution admissibility + program planning | TPA, PRG |
 | **GOVERN** | Governance policy + lifecycle orchestration | GOV, TLC |
 | **EVAL** | Evaluation provenance + constraint checking | WPG, CHK |
-| **CDE** | Closure decision authority | CDE (unchanged) |
-| **SEL** | Enforcement authority | SEL (unchanged) |
-| **PQX** | Execution authority | PQX (unchanged) |
+| **GOV** | Closure gate policy + fail-closed gate implementation | Unchanged canonical owner |
+| **AEX** | Enforcement and bounded execution exchange boundary | Unchanged canonical owner |
 
 ### Execution Loop
 
 ```
 Input → EXEC (admit) → GOVERN (policy + lifecycle)
-      → PQX (execute) → EVAL (eval gates)
-      → CDE (closure decision) → SEL (enforce)
+      → AEX (execute) → EVAL (eval gates)
+      → GOV (closure gate) → AEX (enforce)
       → promotion
 ```
 
@@ -131,30 +132,30 @@ EXEC exec_check BLOCK: missing required fields ['trace_id']
 
 ---
 
-### Scenario 5: CDE Block (Closure Decision)
+### Scenario 5: GOV Closure Gate Block
 
-**Symptom:** System halted at CDE decision; loop not advancing
+**Symptom:** System halted at closure gate; loop not advancing
 
 **Steps:**
-1. CDE is the sole closure decision authority — never bypass
+1. GOV is the canonical closure gate authority — never bypass
 2. Check that all required evidence artifacts are present
 3. Check that no `failure_classification` artifacts are unresolved
-4. Check event log for control_reversal events (high importance signal)
-5. Escalate if CDE repeatedly blocks on same evidence set
+4. Check event log for `control_reversal` events (high importance signal)
+5. Escalate if the closure gate repeatedly blocks on the same evidence set
 
 **Code path:** `spectrum_systems/modules/runtime/cde_decision_flow.py`
 
 ---
 
-### Scenario 6: SEL Enforcement Action
+### Scenario 6: AEX Enforcement Action
 
-**Symptom:** Promotion blocked by SEL; `enforce_complete` event logged
+**Symptom:** Promotion blocked by AEX enforcement boundary; `enforce_complete` event logged
 
 **Steps:**
-1. SEL enforcement is triggered by CDE decision — never bypass SEL
+1. AEX is the canonical enforcement authority — never bypass enforcement boundaries
 2. Check `enforce_complete` event for action taken
 3. Check whether block is permanent or temporary
-4. Follow remediation path: failure → evidence → FRE → CDE → repair → retest
+4. Follow remediation path: failure → evidence → FRE → GOV closure gate → repair → retest
 5. Escalate if enforcement action is unexpected
 
 **Code path:** `spectrum_systems/modules/runtime/sel_enforcement_foundation.py`
