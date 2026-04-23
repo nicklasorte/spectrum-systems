@@ -37,15 +37,6 @@ export async function GET() {
       contract_violations: [],
     },
     {
-      system_id: 'CDE',
-      system_name: 'Closure Decision Authority',
-      system_type: 'governance',
-      health_score: 94,
-      status: 'healthy' as const,
-      incidents_week: 0,
-      contract_violations: [],
-    },
-    {
       system_id: 'TLC',
       system_name: 'Top-Level Orchestration',
       system_type: 'orchestration',
@@ -97,15 +88,6 @@ export async function GET() {
       health_score: 89,
       status: 'warning' as const,
       incidents_week: 1,
-      contract_violations: [],
-    },
-    {
-      system_id: 'SEL',
-      system_name: 'Enforcement Control',
-      system_type: 'governance',
-      health_score: 91,
-      status: 'healthy' as const,
-      incidents_week: 0,
       contract_violations: [],
     },
     {

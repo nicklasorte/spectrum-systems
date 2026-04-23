@@ -1,13 +1,13 @@
 # 3-Letter Systems Dashboard
 
-Real-time observability dashboard for monitoring 28+ 3-letter systems (PQX, RDX, MAP, TPA, etc.) in **Spectrum Systems**.
+Real-time observability dashboard for monitoring 26+ 3-letter systems (PQX, RDX, MAP, TPA, GOV, TLC, etc.) in **Spectrum Systems**.
 
 ## Overview
 
 This dashboard provides a unified view of all governance systems in the Spectrum Systems runtime, including:
 
 - **Execution Systems**: PQX, RDX, RQX, HNX
-- **Governance Systems**: TPA, MAP, CDE, GOV, FRE, RIL, SEL
+- **Governance Systems**: TPA, MAP, GOV, FRE, RIL
 - **Orchestration Systems**: TLC, AEX
 - **Data Systems**: DBB, DEM, MCL, BRM, XRL
 - **Planning Systems**: NSX, PRG, RSM, PRA
@@ -91,7 +91,7 @@ npm run start
 
 ### GET `/api/health`
 
-Returns health status for all 28+ systems.
+Returns health status for all 26+ systems.
 
 **Response:**
 ```json
@@ -144,11 +144,9 @@ Health score is a weighted average of:
 |-----|------|---------|
 | TPA | Trust/Policy Gate | Enforces trust and policy rules |
 | MAP | Review Artifact Mediation | Mediates review artifacts |
-| CDE | Closure Decision Authority | Makes closure decisions |
-| GOV | Governance Authority | Central governance |
+| GOV | Governance Authority | Central governance (includes CDE) |
 | FRE | Failure Diagnosis & Repair | Diagnoses and repairs failures |
 | RIL | Review Interpretation | Interprets review inputs |
-| SEL | Enforcement Control | Controls enforcement actions |
 
 ### Orchestration Systems
 

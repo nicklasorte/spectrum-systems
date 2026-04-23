@@ -33,11 +33,9 @@ class HealthCalculator:
         # Governance Systems
         'TPA': {'name': 'Trust/Policy Gate', 'type': 'governance'},
         'MAP': {'name': 'Review Artifact Mediation', 'type': 'governance'},
-        'CDE': {'name': 'Closure Decision Authority', 'type': 'governance'},
         'GOV': {'name': 'Governance Authority', 'type': 'governance'},
         'FRE': {'name': 'Failure Diagnosis & Repair', 'type': 'governance'},
         'RIL': {'name': 'Review Interpretation', 'type': 'governance'},
-        'SEL': {'name': 'Enforcement Control', 'type': 'governance'},
 
         # Orchestration Systems
         'TLC': {'name': 'Top-Level Orchestration', 'type': 'orchestration'},
