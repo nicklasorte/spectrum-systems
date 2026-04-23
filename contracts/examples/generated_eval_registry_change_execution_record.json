@@ -1,0 +1,12 @@
+{
+  "artifact_type": "generated_eval_registry_change_execution_record",
+  "artifact_id": "GEREX-95E4EFC3316643B3",
+  "registry_change_request_artifact_id": "GERCR-40B710AFAEAE269F",
+  "registry_change_review_artifact_id": "GERVW-FE5BEF17CF897D74",
+  "generated_eval_artifact_id": "GEC-4B9A9F9E26A54D4C",
+  "registry_updated": true,
+  "blocked_reasons": [],
+  "replay_validation_passed": true,
+  "required_eval_target": "required_eval_registry",
+  "created_at": "2026-04-23T00:15:00Z"
+}

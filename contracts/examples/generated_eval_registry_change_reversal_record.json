@@ -1,0 +1,9 @@
+{
+  "artifact_type": "generated_eval_registry_change_reversal_record",
+  "artifact_id": "GERREV-6A0A096C14C84A8A",
+  "generated_eval_artifact_id": "GEC-4B9A9F9E26A54D4C",
+  "registry_change_execution_artifact_id": "GEREX-95E4EFC3316643B3",
+  "reversal_reason": "manual_registry_revert",
+  "reversal_applied": true,
+  "created_at": "2026-04-23T00:20:00Z"
+}

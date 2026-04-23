@@ -490,6 +490,164 @@ def generate_eval_candidate_review_bundle(
     }
 
 
+def _replay_validation_block_reasons(
+    generated_eval_case: Dict[str, Any],
+    candidate_record: Dict[str, Any],
+    request_record: Dict[str, Any],
+) -> list[str]:
+    blocked_reasons: list[str] = []
+    generated_eval_artifact_id = _as_nonempty_string(generated_eval_case.get("artifact_id"))
+    candidate_generated_eval_artifact_id = _as_nonempty_string(candidate_record.get("generated_eval_artifact_id"))
+    if generated_eval_artifact_id != candidate_generated_eval_artifact_id:
+        blocked_reasons.append("replay_validation_generated_eval_mismatch")
+
+    case_reason_code = _as_nonempty_string(generated_eval_case.get("reason_code"))
+    request_reason_code = _as_nonempty_string(request_record.get("reason_code"))
+    if case_reason_code != request_reason_code:
+        blocked_reasons.append("replay_validation_reason_code_mismatch")
+
+    source_failure_artifact_id = _as_nonempty_string(generated_eval_case.get("source_failure_artifact_id"))
+    source_failure_artifact_ids = request_record.get("source_failure_artifact_ids")
+    if not isinstance(source_failure_artifact_ids, list) or source_failure_artifact_id not in source_failure_artifact_ids:
+        blocked_reasons.append("replay_validation_source_failure_link_missing")
+
+    return sorted(set(blocked_reasons))
+
+
+def execute_generated_eval_registry_change(
+    generated_eval_case: Dict[str, Any] | None,
+    generated_eval_admission_record: Dict[str, Any] | None,
+    candidate_record: Dict[str, Any] | None,
+    request_record: Dict[str, Any] | None,
+    review_record: Dict[str, Any] | None,
+    *,
+    occurrence_threshold: int = 2,
+    required_eval_target: str = "required_eval_registry",
+) -> Dict[str, Any]:
+    """Execute the single controlled generated eval registry-change path."""
+
+    blocked_reasons: list[str] = []
+    generated_eval_case = generated_eval_case if isinstance(generated_eval_case, dict) else {}
+    generated_eval_admission_record = (
+        generated_eval_admission_record if isinstance(generated_eval_admission_record, dict) else {}
+    )
+    candidate_record = candidate_record if isinstance(candidate_record, dict) else {}
+    request_record = request_record if isinstance(request_record, dict) else {}
+    review_record = review_record if isinstance(review_record, dict) else {}
+
+    generated_eval_artifact_id = _as_nonempty_string(generated_eval_case.get("artifact_id"), "missing:generated_eval_artifact_id")
+    request_generated_eval_artifact_id = _as_nonempty_string(request_record.get("generated_eval_artifact_id"))
+    candidate_generated_eval_artifact_id = _as_nonempty_string(candidate_record.get("generated_eval_artifact_id"))
+    review_generated_eval_artifact_id = _as_nonempty_string(review_record.get("generated_eval_artifact_id"))
+
+    if not generated_eval_case:
+        blocked_reasons.append("missing_generated_eval_case")
+    if not generated_eval_admission_record:
+        blocked_reasons.append("missing_generated_eval_admission_record")
+    if not candidate_record:
+        blocked_reasons.append("missing_candidate_record")
+    if not request_record:
+        blocked_reasons.append("missing_registry_change_request_record")
+    if not review_record:
+        blocked_reasons.append("missing_registry_change_review_record")
+
+    admission_generated_eval_artifact_id = _as_nonempty_string(generated_eval_admission_record.get("generated_eval_artifact_id"))
+    if not generated_eval_admission_record.get("admitted"):
+        blocked_reasons.append("generated_eval_not_admitted")
+    if admission_generated_eval_artifact_id != generated_eval_artifact_id:
+        blocked_reasons.append("admission_generated_eval_mismatch")
+
+    if candidate_generated_eval_artifact_id != generated_eval_artifact_id:
+        blocked_reasons.append("candidate_generated_eval_mismatch")
+    if request_generated_eval_artifact_id != generated_eval_artifact_id:
+        blocked_reasons.append("request_generated_eval_mismatch")
+    if review_generated_eval_artifact_id != generated_eval_artifact_id:
+        blocked_reasons.append("review_generated_eval_mismatch")
+
+    threshold = occurrence_threshold if occurrence_threshold >= 1 else 1
+    if _as_nonnegative_int(request_record.get("occurrence_count")) < threshold:
+        blocked_reasons.append("occurrence_count_below_threshold")
+
+    if _as_nonempty_string(review_record.get("review_outcome")) != "ready":
+        blocked_reasons.append("review_not_ready")
+
+    request_artifact_id = _as_nonempty_string(request_record.get("artifact_id"), "missing:registry_change_request_artifact_id")
+    if _as_nonempty_string(review_record.get("registry_change_request_artifact_id")) != request_artifact_id:
+        blocked_reasons.append("review_request_link_mismatch")
+
+    replay_validation_blocked_reasons = (
+        _replay_validation_block_reasons(generated_eval_case, candidate_record, request_record)
+        if generated_eval_case and candidate_record and request_record
+        else ["replay_validation_inputs_missing"]
+    )
+    replay_validation_passed = len(replay_validation_blocked_reasons) == 0
+    blocked_reasons.extend(replay_validation_blocked_reasons)
+
+    deduped_blocked_reasons = sorted(set(blocked_reasons))
+    registry_updated = len(deduped_blocked_reasons) == 0
+
+    execution_record = {
+        "artifact_type": "generated_eval_registry_change_execution_record",
+        "artifact_id": _hash_id(
+            "GEREX",
+            {
+                "generated_eval_artifact_id": generated_eval_artifact_id,
+                "registry_change_request_artifact_id": request_artifact_id,
+                "registry_change_review_artifact_id": _as_nonempty_string(
+                    review_record.get("artifact_id"),
+                    "missing:registry_change_review_artifact_id",
+                ),
+                "blocked_reasons": deduped_blocked_reasons,
+            },
+        ),
+        "registry_change_request_artifact_id": request_artifact_id,
+        "registry_change_review_artifact_id": _as_nonempty_string(
+            review_record.get("artifact_id"),
+            "missing:registry_change_review_artifact_id",
+        ),
+        "generated_eval_artifact_id": generated_eval_artifact_id,
+        "registry_updated": registry_updated,
+        "blocked_reasons": deduped_blocked_reasons,
+        "replay_validation_passed": replay_validation_passed,
+        "required_eval_target": _as_nonempty_string(required_eval_target, "required_eval_registry"),
+        "created_at": _normalized_timestamp(request_record.get("created_at")),
+    }
+    Draft202012Validator(load_schema("generated_eval_registry_change_execution_record")).validate(execution_record)
+    return execution_record
+
+
+def emit_generated_eval_registry_change_reversal_record(
+    execution_record: Dict[str, Any],
+    *,
+    reversal_reason: str = "manual_registry_revert",
+) -> Dict[str, Any]:
+    """Emit deterministic reversal output for a generated eval registry-change execution record."""
+
+    generated_eval_artifact_id = _as_nonempty_string(execution_record.get("generated_eval_artifact_id"), "missing:generated_eval_artifact_id")
+    execution_artifact_id = _as_nonempty_string(
+        execution_record.get("artifact_id"),
+        "missing:registry_change_execution_artifact_id",
+    )
+    reversal_record = {
+        "artifact_type": "generated_eval_registry_change_reversal_record",
+        "artifact_id": _hash_id(
+            "GERREV",
+            {
+                "generated_eval_artifact_id": generated_eval_artifact_id,
+                "registry_change_execution_artifact_id": execution_artifact_id,
+                "reversal_reason": reversal_reason,
+            },
+        ),
+        "generated_eval_artifact_id": generated_eval_artifact_id,
+        "registry_change_execution_artifact_id": execution_artifact_id,
+        "reversal_reason": reversal_reason,
+        "reversal_applied": True,
+        "created_at": _normalized_timestamp(execution_record.get("created_at")),
+    }
+    Draft202012Validator(load_schema("generated_eval_registry_change_reversal_record")).validate(reversal_record)
+    return reversal_record
+
+
 def generate_eval_staging_and_review_bundle(
     generated_eval_cases_with_admission: Sequence[Dict[str, Any]],
     *,
