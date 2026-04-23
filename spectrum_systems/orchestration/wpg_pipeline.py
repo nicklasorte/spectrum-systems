@@ -54,6 +54,7 @@ from spectrum_systems.modules.runtime.bottleneck_alerts import compute_bottlenec
 from spectrum_systems.modules.runtime.semantic_eval import evaluate_semantic_classes, summarize_semantic_evidence
 from spectrum_systems.modules.runtime.failure_to_eval import convert_failures_to_eval_cases
 from spectrum_systems.modules.runtime.evaluation_control import build_evaluation_control_decision
+from spectrum_systems.judgment.judgment_corpus import JudgmentCorpus
 
 
 REQUIRED_ENFORCEMENT = {"ALLOW": "proceed", "WARN": "annotate", "BLOCK": "trigger_repair", "FREEZE": "halt"}
@@ -534,6 +535,30 @@ def _build_comment_disposition_record(comment_resolution_matrix: Dict[str, Any],
     )
 
 
+def _persist_judgment_if_valid(
+    judgment_record: Dict[str, Any],
+    judgment_eval: Dict[str, Any],
+    artifact_store: Any,
+) -> None:
+    """Persist a valid WPG judgment to the JudgmentCorpus for precedent reuse."""
+    if artifact_store is None:
+        return
+    decision = (
+        judgment_eval
+        .get("evaluation_refs", {})
+        .get("control_decision", {})
+        .get("decision")
+    )
+    if decision == "ALLOW":
+        corpus = JudgmentCorpus(artifact_store)
+        corpus.record_judgment(
+            decision_context=judgment_record.get("cycle_id", ""),
+            decision=judgment_record.get("selected_outcome", ""),
+            rationale=judgment_record.get("rationale_summary", ""),
+            confidence=1.0,
+        )
+
+
 def run_wpg_pipeline(
     transcript_payload: Dict[str, Any],
     *,
@@ -546,6 +571,7 @@ def run_wpg_pipeline(
     comment_artifact: Dict[str, Any] | None = None,
     phase_checkpoint_record: Dict[str, Any] | None = None,
     phase_registry: Dict[str, Any] | None = None,
+    artifact_store: Any | None = None,
 ) -> Dict[str, Any]:
     ctx = StageContext(run_id=run_id, trace_id=trace_id)
     registry = ensure_contract(phase_registry, "phase_registry") if phase_registry else default_phase_registry(trace_id)
@@ -623,6 +649,7 @@ def run_wpg_pipeline(
     judgment_record = build_judgment_record(critique_artifact=stakeholder_critique_artifact, trace_id=trace_id)
     precedent_retrieval = retrieve_precedent(judgment_record=judgment_record, prior_records=[judgment_record], trace_id=trace_id)
     judgment_eval = evaluate_judgment(judgment_record=judgment_record, precedent_retrieval=precedent_retrieval, trace_id=trace_id)
+    _persist_judgment_if_valid(judgment_record, judgment_eval, artifact_store)
     wpg_cross_run_comparison_artifact = compare_cross_run(run_a={"replay": {"signature": stable_hash(question_set)}}, run_b={"replay": {"signature": stable_hash(sections)}}, trace_id=trace_id)
     wpg_study_policy_profile = build_study_policy_profile(study_id="wpg-default-study", required_rules=["require_eval_suite", "require_control_decision"], trace_id=trace_id)
     wpg_quality_slo = evaluate_quality_slo(quality_score=0.95, error_budget_remaining=0.2, trace_id=trace_id)

@@ -368,7 +368,9 @@ def _certification_handoff(manifest: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _write_manifest(manifest_path: str | Path, manifest: Dict[str, Any]) -> None:
-    normalized = normalize_cycle_manifest(manifest)
+    # Strip runtime-only sidecar keys (prefixed with _) before schema validation.
+    clean = {k: v for k, v in manifest.items() if not k.startswith("_")}
+    normalized = normalize_cycle_manifest(clean)
     _validate_manifest(normalized)
     Path(manifest_path).write_text(json.dumps(normalized, indent=2) + "\n", encoding="utf-8")
 
@@ -477,6 +479,14 @@ def _run_required_judgment_if_needed(manifest: Dict[str, Any], manifest_path: st
     manifest["judgment_record_path"] = str(jr)
     manifest["judgment_application_record_path"] = str(ja)
     manifest["judgment_eval_result_path"] = str(je)
+    # Carry judgment data in-memory via a sidecar key so the schema-validated
+    # manifest dict stays clean.  Callers that need the data use
+    # manifest["_judgment_inmem"] rather than re-reading from disk.
+    manifest["_judgment_inmem"] = {
+        "judgment_record": outputs["judgment_record"],
+        "judgment_application_record": outputs["judgment_application_record"],
+        "judgment_eval_result": outputs["judgment_eval_result"],
+    }
     return manifest
 
 
@@ -776,14 +786,20 @@ def run_cycle(manifest_path: str | Path) -> Dict[str, Any]:
         hard_gates = manifest.get("hard_gates", {})
         if not all(bool(hard_gates.get(k)) for k in ("roadmap_approved", "execution_contracts_pinned", "review_templates_present")):
             return blocked("hard gates not satisfied for execution readiness")
-        return {
+        result: Dict[str, Any] = {
             "cycle_id": manifest["cycle_id"],
             "status": "ok",
             "current_state": state,
             "next_state": "execution_ready",
             "next_action": "prepare_execution_request",
             "blocking_issues": manifest.get("blocking_issues", []),
+            "judgment_record_path": manifest.get("judgment_record_path"),
+            "judgment_application_record_path": manifest.get("judgment_application_record_path"),
+            "judgment_eval_result_path": manifest.get("judgment_eval_result_path"),
         }
+        # Include in-memory judgment artifacts so callers avoid a redundant file re-read.
+        result.update(manifest.get("_judgment_inmem", {}))
+        return result
 
     if state == "execution_ready":
         request_path = manifest.get("pqx_execution_request_path")

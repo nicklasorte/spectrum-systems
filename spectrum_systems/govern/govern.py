@@ -30,11 +30,21 @@ class GOVERNSystem:
         self,
         artifact: Dict[str, Any],
         policy_ref: Optional[str] = None,
+        drift_state: Optional[Dict[str, Any]] = None,
     ) -> Tuple[bool, str]:
         """Check artifact against referenced policy result for governance evidence packaging.
 
-        Returns (passed, reason). Blocks on policy violation.
+        Returns (passed, reason). Blocks on policy violation OR critical drift.
+
+        If drift_state is provided and contains critical signals, admission is
+        paused to prevent amplification during recovery.
         """
+        # Drift check first — most constraining condition
+        if drift_state is not None:
+            drift_check = self._check_drift_state(drift_state)
+            if not drift_check[0]:
+                return drift_check
+
         artifact_type = artifact.get("artifact_type", "")
         if not artifact_type:
             return False, "policy_check BLOCK: artifact_type missing — cannot determine policy scope"
@@ -52,6 +62,32 @@ class GOVERNSystem:
 
         self._emit_event("lifecycle_transition", artifact, {"phase": "policy_check", "passed": True})
         return True, reason
+
+    def _check_drift_state(self, drift_state: Dict[str, Any]) -> Tuple[bool, str]:
+        """Return (allowed, reason) based on current drift signal severities.
+
+        Critical signals block admission entirely; warning signals allow but log.
+        """
+        signals = drift_state.get("signals", [])
+
+        critical_signals = [s for s in signals if s.get("severity") == "critical"]
+        if critical_signals:
+            signal_names = ", ".join(s.get("signal_type", "unknown") for s in critical_signals)
+            return False, (
+                f"policy_check BLOCK: drift critical ({signal_names}) — "
+                f"admission paused during recovery"
+            )
+
+        warning_signals = [s for s in signals if s.get("severity") == "warning"]
+        if warning_signals:
+            signal_names = ", ".join(s.get("signal_type", "unknown") for s in warning_signals)
+            self._emit_event(
+                "drift_warning_admission_allowed",
+                {"signals": signal_names},
+                {},
+            )
+
+        return True, "drift_state PASS: no critical signals"
 
     def detect_policy_drift(
         self,
