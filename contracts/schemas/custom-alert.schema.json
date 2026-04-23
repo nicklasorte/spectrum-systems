@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "title": "CustomAlert",
+  "description": "Custom alert definition for Phase N Alert Management",
+  "type": "object",
+  "required": [
+    "alert_id",
+    "name",
+    "condition",
+    "threshold",
+    "channel",
+    "severity"
+  ],
+  "properties": {
+    "alert_id": {
+      "type": "string",
+      "description": "Unique identifier for the alert"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable alert name"
+    },
+    "condition": {
+      "type": "string",
+      "description": "Metric condition to monitor",
+      "enum": [
+        "decision_divergence",
+        "exception_rate",
+        "error_rate",
+        "policy_regression"
+      ]
+    },
+    "threshold": {
+      "type": "number",
+      "description": "Alert fires when metric exceeds this threshold",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "channel": {
+      "type": "string",
+      "description": "Where to send alert notifications",
+      "enum": [
+        "slack",
+        "pagerduty",
+        "email",
+        "sms"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "description": "Alert severity level",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ]
+    },
+    "created_by": {
+      "type": "string",
+      "description": "User who created this alert"
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Whether alert is currently active",
+      "default": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When alert was created"
+    }
+  },
+  "additionalProperties": false
+}
