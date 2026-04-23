@@ -1,0 +1,12 @@
+node_modules/
+.git/
+.env.local
+.env.*.local
+*.log
+.next/
+dist/
+build/
+spectrum_systems/__pycache__
+tests/
+docs/
+artifacts/
