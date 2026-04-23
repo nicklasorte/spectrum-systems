@@ -3,11 +3,16 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
+
+from spectrum_systems.contracts import load_schema
 from spectrum_systems.modules.runtime.failure_eval_generation import (
     admit_generated_eval_case,
     build_generated_eval_candidate_queue,
     build_generated_eval_candidate_records,
     build_generated_eval_candidate_assessment_records,
+    emit_generated_eval_registry_change_reversal_record,
+    execute_generated_eval_registry_change,
     generate_eval_candidate_review_bundle,
     generate_and_admit_failure_eval,
     generate_eval_case_from_failure_record,
@@ -316,3 +321,157 @@ def test_end_to_end_failure_to_candidate_staging_queue_and_assessment_bundle() -
     assert bundle["candidate_queue"]["artifact_type"] == "generated_eval_candidate_queue"
     assert len(bundle["candidate_assessments"]) == 2
     assert bundle["candidate_queue"]["high_priority_candidates"]
+
+
+def _registry_change_inputs(
+    *,
+    admitted: bool = True,
+    review_outcome: str = "ready",
+    request_occurrence_count: int = 2,
+    candidate_eval_id_matches: bool = True,
+    request_eval_id_matches: bool = True,
+    review_eval_id_matches: bool = True,
+    source_link_present: bool = True,
+    reason_code_matches: bool = True,
+) -> tuple[dict, dict, dict, dict, dict]:
+    pair = _admitted_pair("missing_required_eval_failure")
+    generated_eval_case = pair["generated_eval_case"]
+    admission = pair["generated_eval_admission_record"]
+    if not admitted:
+        admission["admitted"] = False
+
+    generated_eval_artifact_id = generated_eval_case["artifact_id"]
+    candidate_eval_id = generated_eval_artifact_id if candidate_eval_id_matches else "GEC-MISMATCH"
+    request_eval_id = generated_eval_artifact_id if request_eval_id_matches else "GEC-MISMATCH"
+    review_eval_id = generated_eval_artifact_id if review_eval_id_matches else "GEC-MISMATCH"
+    request_reason_code = generated_eval_case["reason_code"] if reason_code_matches else "other_reason_code"
+
+    candidate_record = {
+        "artifact_type": "generated_eval_candidate_record",
+        "artifact_id": "GES-E2F404E36AAE91FA",
+        "generated_eval_artifact_id": candidate_eval_id,
+        "source_failure_artifact_id": generated_eval_case["source_failure_artifact_id"],
+        "reason_code": generated_eval_case["reason_code"],
+        "staging_status": "pending_review",
+        "occurrence_count": request_occurrence_count,
+        "first_seen_at": "2026-04-19T00:02:00Z",
+        "last_seen_at": "2026-04-19T00:05:00Z",
+        "created_at": "2026-04-19T00:02:00Z",
+    }
+
+    source_failure_ids = (
+        [generated_eval_case["source_failure_artifact_id"], "FAIL-MISSING-EVAL-002"] if source_link_present else ["FAIL-OTHER-001"]
+    )
+    request_record = {
+        "artifact_type": "generated_eval_registry_change_request_record",
+        "artifact_id": "GERCR-40B710AFAEAE269F",
+        "generated_eval_artifact_id": request_eval_id,
+        "source_failure_artifact_ids": source_failure_ids,
+        "reason_code": request_reason_code,
+        "occurrence_count": request_occurrence_count,
+        "request_origin": "candidate_assessment",
+        "justification": "Recurring failure pattern requires required_eval_registry update request.",
+        "created_at": "2026-04-23T00:00:00Z",
+    }
+
+    review_record = {
+        "artifact_type": "generated_eval_registry_change_review_record",
+        "artifact_id": "GERVW-FE5BEF17CF897D74",
+        "registry_change_request_artifact_id": request_record["artifact_id"],
+        "generated_eval_artifact_id": review_eval_id,
+        "review_outcome": review_outcome,
+        "reviewed_by": "runtime-reviewer",
+        "rationale": "Replay consistency checks and recurrence threshold are satisfied.",
+        "created_at": "2026-04-23T00:10:00Z",
+    }
+    return generated_eval_case, admission, candidate_record, request_record, review_record
+
+
+def test_generated_eval_registry_change_request_record_validates() -> None:
+    Draft202012Validator(load_schema("generated_eval_registry_change_request_record")).validate(
+        json.loads((Path(__file__).resolve().parents[1] / "contracts" / "examples" / "generated_eval_registry_change_request_record.json").read_text(encoding="utf-8"))
+    )
+
+
+def test_generated_eval_registry_change_review_record_validates() -> None:
+    Draft202012Validator(load_schema("generated_eval_registry_change_review_record")).validate(
+        json.loads((Path(__file__).resolve().parents[1] / "contracts" / "examples" / "generated_eval_registry_change_review_record.json").read_text(encoding="utf-8"))
+    )
+
+
+def test_generated_eval_registry_change_execution_record_validates() -> None:
+    Draft202012Validator(load_schema("generated_eval_registry_change_execution_record")).validate(
+        json.loads((Path(__file__).resolve().parents[1] / "contracts" / "examples" / "generated_eval_registry_change_execution_record.json").read_text(encoding="utf-8"))
+    )
+
+
+def test_generated_eval_registry_change_reversal_record_validates() -> None:
+    Draft202012Validator(load_schema("generated_eval_registry_change_reversal_record")).validate(
+        json.loads((Path(__file__).resolve().parents[1] / "contracts" / "examples" / "generated_eval_registry_change_reversal_record.json").read_text(encoding="utf-8"))
+    )
+
+
+def test_registry_update_blocks_without_admission() -> None:
+    inputs = _registry_change_inputs(admitted=False)
+    execution = execute_generated_eval_registry_change(*inputs)
+    assert execution["registry_updated"] is False
+    assert "generated_eval_not_admitted" in execution["blocked_reasons"]
+
+
+def test_registry_update_blocks_without_candidate_staging_linkage() -> None:
+    inputs = _registry_change_inputs(candidate_eval_id_matches=False)
+    execution = execute_generated_eval_registry_change(*inputs)
+    assert execution["registry_updated"] is False
+    assert "candidate_generated_eval_mismatch" in execution["blocked_reasons"]
+
+
+def test_registry_update_blocks_below_threshold() -> None:
+    inputs = _registry_change_inputs(request_occurrence_count=1)
+    execution = execute_generated_eval_registry_change(*inputs, occurrence_threshold=2)
+    assert execution["registry_updated"] is False
+    assert "occurrence_count_below_threshold" in execution["blocked_reasons"]
+
+
+def test_registry_update_blocks_without_review_record() -> None:
+    generated_eval_case, admission, candidate_record, request_record, _review_record = _registry_change_inputs()
+    execution = execute_generated_eval_registry_change(
+        generated_eval_case,
+        admission,
+        candidate_record,
+        request_record,
+        None,
+    )
+    assert execution["registry_updated"] is False
+    assert "missing_registry_change_review_record" in execution["blocked_reasons"]
+
+
+def test_registry_update_blocks_when_review_not_ready() -> None:
+    inputs = _registry_change_inputs(review_outcome="not_ready")
+    execution = execute_generated_eval_registry_change(*inputs)
+    assert execution["registry_updated"] is False
+    assert "review_not_ready" in execution["blocked_reasons"]
+
+
+def test_registry_update_blocks_when_replay_validation_fails() -> None:
+    inputs = _registry_change_inputs(source_link_present=False)
+    execution = execute_generated_eval_registry_change(*inputs)
+    assert execution["registry_updated"] is False
+    assert execution["replay_validation_passed"] is False
+    assert "replay_validation_source_failure_link_missing" in execution["blocked_reasons"]
+
+
+def test_registry_update_succeeds_only_when_all_requirements_are_satisfied() -> None:
+    execution = execute_generated_eval_registry_change(*_registry_change_inputs())
+    assert execution["registry_updated"] is True
+    assert execution["blocked_reasons"] == []
+    assert execution["replay_validation_passed"] is True
+
+
+def test_reversal_record_emits_deterministically() -> None:
+    execution = execute_generated_eval_registry_change(*_registry_change_inputs())
+    first = emit_generated_eval_registry_change_reversal_record(execution)
+    second = emit_generated_eval_registry_change_reversal_record(execution)
+
+    assert first["artifact_id"] == second["artifact_id"]
+    assert first["reversal_reason"] == "manual_registry_revert"
+    assert first["reversal_applied"] is True
