@@ -113,7 +113,8 @@
     "allowed_path_prefixes": [],
     "allowed_fields": {},
     "allowed_values": {
-      "spectrum_systems/modules/runtime/ctrl_loop_gates.py": ["block", "freeze"]
+      "spectrum_systems/modules/runtime/ctrl_loop_gates.py": ["block", "freeze"],
+      "spectrum_systems/modules/runtime/roadmap_signal_steering.py": ["block", "freeze"]
     }
   },
   "preparatory_only": {
