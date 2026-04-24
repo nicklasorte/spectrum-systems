@@ -2,7 +2,7 @@
   "artifact_type": "repair_replay_confidence_packet",
   "slice_id": "RS-07",
   "owner": "RIL",
-  "generated_at": "2026-04-24T16:13:26Z",
+  "generated_at": "2026-04-24T16:44:24Z",
   "signal_mode": "confidence_inputs_not_pass_fail_only",
   "interpretation_only": true
 }
