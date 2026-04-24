@@ -10,17 +10,15 @@ export interface EvalCase {
 }
 
 export interface EvalResult {
-  artifact_kind: "eval_result";
-  artifact_id: string;
-  created_at: string;
-  schema_ref: string;
-  trace: { trace_id: string; created_at: string };
+  artifact_type: "eval_result";
+  schema_version: "1.0.0";
   eval_case_id: string;
-  target_artifact_id: string;
-  status: "pass" | "fail";
+  run_id: string;
+  trace_id: string;
+  result_status: "pass" | "fail" | "indeterminate";
   score: number;
-  details?: Record<string, unknown>;
-  error?: string;
+  failure_modes: string[];
+  provenance_refs: string[];
 }
 
 export interface EvalSummary {
@@ -37,14 +35,28 @@ export interface EvalSummary {
 }
 
 export interface ControlDecision {
-  artifact_kind: "evaluation_control_decision";
-  artifact_id: string;
+  artifact_type: "evaluation_control_decision";
+  schema_version: "1.2.0";
+  decision_id: string;
+  eval_run_id: string;
+  system_status: "healthy" | "warning" | "exhausted" | "blocked";
+  system_response: "allow" | "warn" | "freeze" | "block";
+  triggered_signals: string[];
+  threshold_snapshot: {
+    reliability_threshold: number;
+    drift_threshold: number;
+    trust_threshold: number;
+  };
+  threshold_context: "active_runtime" | "comparative_analysis";
+  trace_id: string;
   created_at: string;
-  schema_ref: string;
-  trace: { trace_id: string; created_at: string };
-  decision: "allow" | "block";
-  rationale: string;
-  eval_summary_id: string;
+  decision: "allow" | "deny" | "require_review";
+  rationale_code: string;
+  input_signal_reference: {
+    signal_type: "eval_summary" | "failure_eval_case";
+    source_artifact_id: string;
+  };
+  run_id: string;
 }
 
 export interface IngestionEvalGateResult {

@@ -27,9 +27,11 @@ Alice: Perfect, please go ahead.`,
 
     expect(result.success).toBe(true);
     expect(result.context_bundle).toBeDefined();
-    expect(result.context_bundle?.artifact_kind).toBe("context_bundle");
-    expect(result.context_bundle?.artifact_id).toBeDefined();
-    expect(result.context_bundle?.assembly_manifest).toBeDefined();
+    expect(result.context_bundle?.artifact_type).toBe("context_bundle");
+    expect(result.context_bundle?.schema_version).toBe("2.3.0");
+    expect(result.context_bundle?.context_bundle_id).toMatch(/^ctx-[a-f0-9]{16}$/);
+    expect(result.context_bundle?.context_items.length).toBeGreaterThanOrEqual(1);
+    expect(result.context_bundle?.metadata.assembly_manifest_hash).toMatch(/^sha256:/);
   });
 
   it("should fail on missing transcript artifact", async () => {
@@ -47,17 +49,17 @@ Alice: Perfect, please go ahead.`,
     expect(result1.success).toBe(true);
     expect(result2.success).toBe(true);
 
-    expect(result1.context_bundle?.assembly_manifest.manifest_hash).toBe(
-      result2.context_bundle?.assembly_manifest.manifest_hash
+    expect(result1.context_bundle?.metadata.assembly_manifest_hash).toBe(
+      result2.context_bundle?.metadata.assembly_manifest_hash
     );
   });
 
-  it("should produce reproducible content hash", async () => {
+  it("should produce reproducible assembly manifest hash (replay determinism)", async () => {
     const result1 = await assembleContextBundle(transcriptArtifact);
     const result2 = await assembleContextBundle(transcriptArtifact);
 
-    expect(result1.context_bundle?.content_hash).toBe(
-      result2.context_bundle?.content_hash
+    expect(result1.context_bundle?.metadata.assembly_manifest_hash).toBe(
+      result2.context_bundle?.metadata.assembly_manifest_hash
     );
   });
 
@@ -65,42 +67,39 @@ Alice: Perfect, please go ahead.`,
     const result = await assembleContextBundle(transcriptArtifact);
 
     expect(result.success).toBe(true);
-    expect(result.context_bundle?.context.speakers).toBeDefined();
-    expect(result.context_bundle?.context.speakers?.length).toBeGreaterThan(0);
-    expect(result.context_bundle?.context.speakers).toContain("Alice");
-    expect(result.context_bundle?.context.speakers).toContain("Bob");
+    const content = result.context_bundle?.context_items[0].content as any[];
+    expect(content).toBeDefined();
+    expect(content.length).toBeGreaterThan(0);
+    const speakers = Array.from(new Set(content.map((s: any) => s.speaker)));
+    expect(speakers).toContain("Alice");
+    expect(speakers).toContain("Bob");
   });
 
   it("should preserve transcript content", async () => {
     const result = await assembleContextBundle(transcriptArtifact);
 
     expect(result.success).toBe(true);
-    expect(result.context_bundle?.context.transcript_content).toBeDefined();
-    expect(
-      result.context_bundle?.context.transcript_content?.length
-    ).toBeGreaterThan(0);
+    expect(result.context_bundle?.context_items[0].content).toBeDefined();
+    expect(result.context_bundle?.context_items[0].content.length).toBeGreaterThan(0);
   });
 
-  it("should include default task description and instructions", async () => {
+  it("should include default task type", async () => {
     const result = await assembleContextBundle(transcriptArtifact);
 
     expect(result.success).toBe(true);
-    expect(result.context_bundle?.context.task_description).toBeDefined();
-    expect(result.context_bundle?.context.instructions).toBeDefined();
+    expect(result.context_bundle?.task_type).toBeDefined();
+    expect(result.context_bundle?.task_type.length).toBeGreaterThan(0);
   });
 
-  it("should accept custom task description and instructions", async () => {
+  it("should accept custom task description", async () => {
     const customTask = "Custom task for this meeting";
-    const customInstructions = "Follow these specific instructions";
 
     const result = await assembleContextBundle(transcriptArtifact, {
       task_description: customTask,
-      instructions: customInstructions,
     });
 
     expect(result.success).toBe(true);
-    expect(result.context_bundle?.context.task_description).toBe(customTask);
-    expect(result.context_bundle?.context.instructions).toBe(customInstructions);
+    expect(result.context_bundle?.task_type).toBe(customTask);
   });
 
   it("should emit pqx execution record on success", async () => {
@@ -124,7 +123,7 @@ Alice: Perfect, please go ahead.`,
 
     expect(result.success).toBe(true);
     expect(result.execution_record?.outputs.artifact_ids).toContain(
-      result.context_bundle?.artifact_id
+      result.context_bundle?.context_bundle_id
     );
   });
 
@@ -133,7 +132,7 @@ Alice: Perfect, please go ahead.`,
 
     expect(result.success).toBe(true);
     expect(result.context_bundle?.trace.trace_id).toBeDefined();
-    expect(result.context_bundle?.trace.created_at).toBeDefined();
+    expect(result.context_bundle?.trace.run_id).toBeDefined();
     expect(result.execution_record?.trace.trace_id).toBe(
       result.context_bundle?.trace.trace_id
     );
@@ -152,7 +151,7 @@ Alice: Perfect, please go ahead.`,
   });
 
   it("should reject artifact missing artifact_id", async () => {
-    const result = await assembleContextBundle({ artifact_kind: "transcript_artifact" });
+    const result = await assembleContextBundle({ artifact_type: "transcript_artifact" });
 
     expect(result.success).toBe(false);
     expect(result.error_codes).toContain("missing_artifact");
@@ -162,10 +161,10 @@ Alice: Perfect, please go ahead.`,
     const result = await assembleContextBundle(transcriptArtifact);
 
     expect(result.success).toBe(true);
-    expect(result.context_bundle?.input_artifacts).toContain(
+    expect(result.context_bundle?.metadata.input_artifact_ids).toContain(
       transcriptArtifact.outputs.artifact_id
     );
-    expect(result.context_bundle?.context.transcript_id).toBe(
+    expect(result.context_bundle?.context_items[0].provenance_ref).toBe(
       transcriptArtifact.outputs.artifact_id
     );
   });
