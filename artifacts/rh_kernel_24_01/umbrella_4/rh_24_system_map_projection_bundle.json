@@ -3,7 +3,7 @@
   "batch_id": "RH-KERNEL-24-01",
   "slice_id": "RH-24",
   "owner": "MAP",
-  "generated_at": "2026-04-24T12:03:59Z",
+  "generated_at": "2026-04-24T12:13:42Z",
   "projection_constraints": {
     "semantic_invention": false,
     "interpreted_inputs_only": true

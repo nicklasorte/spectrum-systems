@@ -2,7 +2,7 @@
   "artifact_type": "auto_remediation_guardrail_result",
   "slice_id": "RL-21",
   "owner": "SEL",
-  "generated_at": "2026-04-24T12:03:46Z",
+  "generated_at": "2026-04-24T12:13:31Z",
   "rollback_ready": true,
   "freeze_triggered": false
 }

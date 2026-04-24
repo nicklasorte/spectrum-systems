@@ -2,7 +2,7 @@
   "artifact_type": "repair_debt_register",
   "slice_id": "RL-14",
   "owner": "PRG",
-  "generated_at": "2026-04-24T12:03:46Z",
+  "generated_at": "2026-04-24T12:13:31Z",
   "open_debt": [
     {
       "class": "schema_patch",
