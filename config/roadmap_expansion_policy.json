@@ -1,7 +1,33 @@
 {
   "policy_id": "roadmap-expansion-policy",
-  "policy_version": "1.1.0",
+  "policy_name": "Roadmap Expansion Policy",
+  "policy_version": "1.2.0",
+  "version": "1.2.0",
+  "created_at": "2026-04-24T00:00:00Z",
+  "authority": "ROADMAP.md (locked)",
   "description": "Deterministic mapping surface for roadmap contract expansion. This file is configuration-only and carries no execution authority.",
+  "rules": [
+    {
+      "rule_id": "boundary-lock-01",
+      "description": "All new workflow modules must go into workflow_modules/, not spectrum_systems/",
+      "enforcement": "CI blocks spectrum_systems/ additions; routes to workflow_modules/",
+      "effective_date": "2026-04-24"
+    },
+    {
+      "rule_id": "boundary-lock-02",
+      "description": "spectrum_systems/ is evaluation scaffold; no new production logic",
+      "enforcement": "artifact-boundary.yml blocks commits to spectrum_systems/ (except tests)",
+      "effective_date": "2026-04-24"
+    }
+  ],
+  "artifact_boundary_enforcement": {
+    "status": "ACTIVE",
+    "locked_at": "2026-04-24T00:00:00Z",
+    "tools": [
+      ".codex/skills/contract-boundary-audit/run.sh",
+      ".github/workflows/artifact-boundary.yml"
+    ]
+  },
   "owner_defaults": {
     "RIL": {
       "allowed_module_prefixes": [

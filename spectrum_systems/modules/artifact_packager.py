@@ -23,9 +23,10 @@ Design rules:
 """
 from __future__ import annotations
 
+import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 import json
 
 from .study_state import build_study_state, validate_study_state
@@ -47,10 +48,72 @@ PACKAGE_FILES = [
 ]
 
 
+# ─── Governed fallback registry ───────────────────────────────────────────────
+
+_emitted_fallbacks: List[Dict[str, Any]] = []
+
+
+def _utc_now() -> str:
+    return datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _fallback_id(run_id: str, reason: str) -> str:
+    digest = hashlib.sha256(f"{run_id}:{reason}".encode()).hexdigest()[:16]
+    return f"fallback-{digest}"
+
+
+def _emit_fallback_artifact(
+    run_id: str,
+    reason: str,
+    message: str,
+    next_step: str,
+    stub_path: Optional[str] = None,
+    severity: str = "warning",
+) -> Dict[str, Any]:
+    """Record a governed fallback artifact so every stub gap is auditable."""
+    record = {
+        "artifact_type": "fallback_artifact",
+        "schema_version": "1.0.0",
+        "fallback_id": _fallback_id(run_id, reason),
+        "fallback_reason": reason,
+        "original_run_id": run_id,
+        "created_at": _utc_now(),
+        "message": message,
+        "next_step": next_step,
+        "severity": severity,
+    }
+    if stub_path is not None:
+        record["stub_path"] = stub_path
+    _emitted_fallbacks.append(record)
+    return record
+
+
+def get_emitted_fallbacks() -> List[Dict[str, Any]]:
+    """Return all fallback artifacts emitted in this process (for testing/audit)."""
+    return list(_emitted_fallbacks)
+
+
+def clear_emitted_fallbacks() -> None:
+    """Clear the in-process fallback registry (used in tests)."""
+    _emitted_fallbacks.clear()
+
+
 # ─── Stub builders ────────────────────────────────────────────────────────────
 
-def _stub_docx_marker(run_id: str) -> bytes:
-    """Return a minimal UTF-8 marker file used when no real DOCX is available."""
+def _stub_docx_marker(run_id: str, package_dir: Optional[Path] = None) -> bytes:
+    """Return a minimal UTF-8 marker file used when no real DOCX is available.
+
+    Also emits a governed fallback_artifact so the gap is recorded, not silent.
+    """
+    stub_path = str(package_dir / "meeting_minutes.docx") if package_dir else None
+    _emit_fallback_artifact(
+        run_id=run_id,
+        reason="docx_not_generated",
+        message="DOCX was not generated in this run; a meeting_minutes.docx stub placeholder is present.",
+        next_step="Provide real meeting minutes DOCX from external system or regenerate with rendering pipeline.",
+        stub_path=stub_path,
+        severity="warning",
+    )
     marker = {
         "stub": True,
         "run_id": run_id,
@@ -60,7 +123,16 @@ def _stub_docx_marker(run_id: str) -> bytes:
     return json.dumps(marker, indent=2, sort_keys=True).encode("utf-8")
 
 
-def _stub_recommendations(run_id: str) -> Dict[str, Any]:
+def _stub_recommendations(run_id: str, package_dir: Optional[Path] = None) -> Dict[str, Any]:
+    stub_path = str(package_dir / "recommendations.json") if package_dir else None
+    _emit_fallback_artifact(
+        run_id=run_id,
+        reason="recommendations_not_generated",
+        message="Recommendations were not generated for this run; an empty stub is present.",
+        next_step="Run the recommendations stage or supply recommendations from the calling pipeline.",
+        stub_path=stub_path,
+        severity="info",
+    )
     return {
         "stub": True,
         "run_id": run_id,
@@ -82,7 +154,16 @@ def _stub_validation_report(run_id: str) -> Dict[str, Any]:
     }
 
 
-def _stub_execution_metadata(run_id: str, timestamp: str) -> Dict[str, Any]:
+def _stub_execution_metadata(run_id: str, timestamp: str, package_dir: Optional[Path] = None) -> Dict[str, Any]:
+    stub_path = str(package_dir / "execution_metadata.json") if package_dir else None
+    _emit_fallback_artifact(
+        run_id=run_id,
+        reason="execution_metadata_not_provided",
+        message="Execution metadata was not provided by the caller; a stub is present.",
+        next_step="Supply execution_metadata from the pipeline orchestrator.",
+        stub_path=stub_path,
+        severity="info",
+    )
     return {
         "stub": True,
         "run_id": run_id,
@@ -222,9 +303,11 @@ def package_artifacts(
     # Build study state.
     study_state = build_study_state(structured_extraction, signals)
 
-    # Write DOCX (or stub).
+    # Write DOCX (or governed fallback stub).
     docx_path = package_dir / "meeting_minutes.docx"
-    docx_path.write_bytes(docx_bytes if docx_bytes is not None else _stub_docx_marker(run_id))
+    docx_path.write_bytes(
+        docx_bytes if docx_bytes is not None else _stub_docx_marker(run_id, package_dir)
+    )
 
     # Write JSON artifacts.
     _write_json(package_dir / "structured_extraction.json", structured_extraction)
@@ -232,11 +315,13 @@ def package_artifacts(
     _write_json(package_dir / "study_state.json", study_state)
     _write_json(
         package_dir / "recommendations.json",
-        recommendations if recommendations is not None else _stub_recommendations(run_id),
+        recommendations if recommendations is not None else _stub_recommendations(run_id, package_dir),
     )
     _write_json(
         package_dir / "execution_metadata.json",
-        execution_metadata if execution_metadata is not None else _stub_execution_metadata(run_id, timestamp),
+        execution_metadata
+        if execution_metadata is not None
+        else _stub_execution_metadata(run_id, timestamp, package_dir),
     )
 
     # Write a placeholder validation_report.json so all seven files exist before
@@ -257,9 +342,11 @@ def package_artifacts(
         })
 
     files = {name: str(package_dir / name) for name in PACKAGE_FILES}
+    run_fallbacks = [f for f in _emitted_fallbacks if f.get("original_run_id") == run_id]
     return {
         "run_id": run_id,
         "package_dir": str(package_dir),
         "files": files,
         "validation": written_validation,
+        "fallback_artifacts": run_fallbacks,
     }
