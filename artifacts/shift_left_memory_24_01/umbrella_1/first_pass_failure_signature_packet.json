@@ -2,7 +2,7 @@
   "artifact_type": "first_pass_failure_signature_packet",
   "slice_id": "SM-01",
   "owner": "RIL",
-  "generated_at": "2026-04-24T12:04:57Z",
+  "generated_at": "2026-04-24T16:14:07Z",
   "failure_signatures": [
     "lineage_gap",
     "schema_mismatch",

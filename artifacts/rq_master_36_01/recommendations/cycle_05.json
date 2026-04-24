@@ -1,7 +1,7 @@
 {
   "artifact_type": "next_action_recommendation_record",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-24T16:13:17Z",
+  "generated_at": "2026-04-24T16:13:53Z",
   "cycle_id": "cycle_05",
   "recommendation_id": "RQ36-REC-005",
   "recommended_next_action": "continue bounded governed cycles and re-check calibration after each outcome",

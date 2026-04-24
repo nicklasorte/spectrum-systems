@@ -1,11 +1,11 @@
 {
   "artifact_type": "dashboard_refresh_publish_metrics",
-  "timestamp": "2026-04-24T16:13:24Z",
-  "trace_id": "trace-20260424T161324Z",
+  "timestamp": "2026-04-24T16:13:56Z",
+  "trace_id": "trace-20260424T161356Z",
   "refresh_success_rate": 1.0,
-  "refresh_latency_seconds": 0.107127,
+  "refresh_latency_seconds": 0.104567,
   "publish_success_rate": 1.0,
-  "dashboard_freshness_age_seconds": 3.0,
+  "dashboard_freshness_age_seconds": 2.0,
   "stale_artifact_count": 0,
   "freshness_gate_block_count": 0
 }

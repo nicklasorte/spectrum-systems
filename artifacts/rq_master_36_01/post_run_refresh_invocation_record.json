@@ -1,0 +1,16 @@
+{
+  "artifact_type": "post_run_refresh_invocation_record",
+  "owner": "TLC",
+  "generated_at": "2026-04-24T16:13:53Z",
+  "trigger_manifest_ref": "artifacts/rq_master_36_01/dashboard_refresh_trigger_manifest.json",
+  "invocation_command": [
+    "bash",
+    "/home/user/spectrum-systems/scripts/refresh_dashboard.sh"
+  ],
+  "eligible_run": true,
+  "run_status": "success",
+  "refresh_invoked": true,
+  "refresh_returncode": 0,
+  "refresh_stdout_tail": "/home/user/spectrum-systems/artifacts/dashboard/repo_snapshot.json\ndashboard-public-artifacts: pass\ndashboard refresh/publish complete (mode=manual)\n",
+  "refresh_stderr_tail": ""
+}

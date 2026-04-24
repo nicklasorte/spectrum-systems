@@ -2,7 +2,7 @@
   "artifact_type": "preemptive_repair_recipe_bundle",
   "slice_id": "SM-04",
   "owner": "FRE",
-  "generated_at": "2026-04-24T12:04:57Z",
+  "generated_at": "2026-04-24T16:14:07Z",
   "recipe_classes": [
     "schema_patch",
     "fixture_alignment",
