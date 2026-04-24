@@ -1,4 +1,4 @@
-import { structureIssuesForPaper } from "@/src/mvp-7/issue-structuring";
+import { structureIssuesForPaper } from "../../src/mvp-7/issue-structuring";
 
 describe("MVP-7: Structured Issue Set", () => {
   it("should structure issues for paper", async () => {
@@ -18,6 +18,8 @@ describe("MVP-7: Structured Issue Set", () => {
 
     const result = await structureIssuesForPaper(mockRegistry);
     expect(result.success).toBe(true);
+    expect(result.structured_issue_set?.artifact_type).toBe("structured_issue_set");
+    expect(result.structured_issue_set?.schema_version).toBe("1.0.0");
     expect(result.structured_issue_set?.issues[0].paper_section_id).toBe("section-4");
   });
 

@@ -7,13 +7,10 @@ const client = new Anthropic();
 /**
  * MVP-5: Issue & Action Item Extraction
  *
- * Input: context_bundle, meeting_minutes_artifact
+ * Input: context_bundle (schema v2.3.0), meeting_minutes_artifact
  * Output: issue_registry_artifact with source traceability
  *
- * Uses Claude Haiku to extract spectrum-relevant issues.
  * CRITICAL: Each issue must have source_turn_ref (traceable to transcript).
- *
- * LLM: Claude Haiku
  */
 
 export async function extractIssues(
@@ -24,6 +21,38 @@ export async function extractIssues(
   const traceContext = {
     trace_id: traceId,
     created_at: new Date().toISOString(),
+  };
+
+  if (!contextBundle || typeof contextBundle !== "object") {
+    return failClosed(traceContext, "context_bundle is required");
+  }
+  if (!minutesArtifact || typeof minutesArtifact !== "object") {
+    return failClosed(traceContext, "meeting_minutes_artifact is required");
+  }
+
+  // Derive transcript text from context_items (new schema)
+  const primaryItem = contextBundle.context_items?.find(
+    (item: any) => item.item_type === "primary_input"
+  );
+  const segments: any[] = primaryItem?.content || [];
+  const transcriptContent = segments
+    .map((s: any) => `${s.speaker}: ${s.text}`)
+    .join("\n");
+
+  if (!transcriptContent || transcriptContent.length === 0) {
+    return failClosed(traceContext, "context_bundle has no primary_input segments");
+  }
+
+  // Read minutes payload from either new wrapped shape or flat shape
+  const minutesPayload = {
+    agenda_items:
+      minutesArtifact.outputs?.agenda_items || minutesArtifact.agenda_items,
+    decisions:
+      minutesArtifact.outputs?.decisions || minutesArtifact.decisions,
+    action_items:
+      minutesArtifact.outputs?.action_items || minutesArtifact.action_items,
+    attendees:
+      minutesArtifact.outputs?.attendees || minutesArtifact.attendees,
   };
 
   const prompt = `Extract spectrum-relevant issues from meeting minutes and transcript.
@@ -44,10 +73,10 @@ Return ONLY valid JSON:
 }
 
 Meeting Minutes:
-${JSON.stringify(minutesArtifact, null, 2)}
+${JSON.stringify(minutesPayload, null, 2)}
 
 Transcript (for context):
-${contextBundle.context.transcript_content}
+${transcriptContent}
 
 Rules:
 1. Extract ALL spectrum-relevant issues mentioned
@@ -65,7 +94,7 @@ JSON response:`;
 
   try {
     const response = await client.messages.create({
-      model: "claude-3-5-haiku-20241022",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 2000,
       messages: [{ role: "user", content: prompt }],
     });
@@ -75,7 +104,6 @@ JSON response:`;
       throw new Error("No text response from model");
     }
 
-    // Extract JSON
     const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error("Could not parse JSON from response");
@@ -88,38 +116,41 @@ JSON response:`;
       throw new Error(`Invalid JSON from model: ${parseError}`);
     }
 
-    // Validate structure
     if (!Array.isArray(issueData.issues)) {
       throw new Error("Invalid issue structure: missing issues array");
     }
 
-    // Validate all issues have source_turn_ref (critical requirement)
+    // Fail-closed if any issue is missing source_turn_ref (schema violation)
     for (const issue of issueData.issues) {
-      if (!issue.source_turn_ref) {
+      if (!issue.source_turn_ref || issue.source_turn_ref.length === 0) {
         throw new Error(
           `Issue ${issue.issue_id} missing source_turn_ref (critical requirement)`
         );
       }
     }
 
-    // Build issue_registry_artifact
+    const sourceTranscriptId =
+      contextBundle.metadata?.input_artifact_ids?.[0] ||
+      primaryItem?.provenance_ref ||
+      "unknown";
+
     const issueRegistry = {
-      artifact_kind: "issue_registry_artifact",
+      artifact_type: "issue_registry_artifact",
+      schema_version: "1.0.0",
       artifact_id: uuidv4(),
       created_at: new Date().toISOString(),
       schema_ref: "artifacts/issue_registry_artifact.schema.json",
       trace: traceContext,
-      source_transcript_id: contextBundle.input_artifacts[0],
-      source_context_bundle_id: contextBundle.artifact_id,
+      source_transcript_id: sourceTranscriptId,
+      source_context_bundle_id: contextBundle.context_bundle_id,
       source_minutes_id: minutesArtifact.artifact_id,
       issues: issueData.issues,
-      extraction_model: "claude-3-5-haiku-20241022",
+      extraction_model: "claude-haiku-4-5-20251001",
       content_hash: computeHash(JSON.stringify(issueData.issues)),
     };
 
-    // Emit execution record
     const executionRecord = {
-      artifact_kind: "pqx_execution_record",
+      artifact_type: "pqx_execution_record",
       artifact_id: uuidv4(),
       created_at: new Date().toISOString(),
       trace: traceContext,
@@ -128,7 +159,12 @@ JSON response:`;
         version: "1.0",
       },
       execution_status: "succeeded",
-      inputs: { artifact_ids: [contextBundle.artifact_id, minutesArtifact.artifact_id] },
+      inputs: {
+        artifact_ids: [
+          contextBundle.context_bundle_id,
+          minutesArtifact.artifact_id,
+        ],
+      },
       outputs: { artifact_ids: [issueRegistry.artifact_id] },
       timing: {
         started_at: traceContext.created_at,
@@ -142,22 +178,33 @@ JSON response:`;
       execution_record: executionRecord,
     };
   } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error),
-      error_codes: ["extraction_error"],
-      execution_record: {
-        artifact_kind: "pqx_execution_record",
-        artifact_id: uuidv4(),
-        created_at: new Date().toISOString(),
-        execution_status: "failed",
-        failure: {
-          reason_codes: ["extraction_error"],
-          error_message: error instanceof Error ? error.message : String(error),
-        },
-      },
-    };
+    return failClosed(
+      traceContext,
+      error instanceof Error ? error.message : String(error)
+    );
   }
+}
+
+function failClosed(
+  traceContext: { trace_id: string; created_at: string },
+  message: string
+): IssueExtractionResult {
+  return {
+    success: false,
+    error: message,
+    error_codes: ["extraction_error"],
+    execution_record: {
+      artifact_type: "pqx_execution_record",
+      artifact_id: uuidv4(),
+      created_at: new Date().toISOString(),
+      trace: traceContext,
+      execution_status: "failed",
+      failure: {
+        reason_codes: ["extraction_error"],
+        error_message: message,
+      },
+    },
+  };
 }
 
 function computeHash(content: string): string {

@@ -5,7 +5,8 @@ export interface PaperSection {
 }
 
 export interface PaperDraftArtifact {
-  artifact_kind: "paper_draft_artifact";
+  artifact_type: "paper_draft_artifact";
+  schema_version: "1.0.0";
   artifact_id: string;
   created_at: string;
   schema_ref: string;

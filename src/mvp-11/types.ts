@@ -7,12 +7,13 @@ export interface RevisionFinding {
 }
 
 export interface RevisedDraftArtifact {
-  artifact_kind: "revised_draft_artifact";
+  artifact_type: "revised_draft_artifact";
+  schema_version: "1.0.0";
   artifact_id: string;
   created_at: string;
   schema_ref: string;
   trace: { trace_id: string; created_at: string };
-  sections: Record<string, string>;
+  sections: Record<string, any>;
   revision_diff: RevisionFinding[];
   source_draft_id: string;
   content_hash: string;
@@ -23,4 +24,5 @@ export interface RevisionIntegrationResult {
   revised_draft_artifact?: RevisedDraftArtifact;
   execution_record?: any;
   error?: string;
+  error_codes?: string[];
 }

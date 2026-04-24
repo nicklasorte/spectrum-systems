@@ -3,16 +3,17 @@ import type { DoneCertificationRecord, ReleaseArtifact, GOV10CertificationResult
 
 /**
  * MVP-13: GOV-10 Certification & Release
- * Final governance gate. 6 certification checks.
+ * Final governance gate. 7 certification checks.
  * No human override — fail-closed.
  *
- * 6 Checks (Gate-6):
+ * 7 Checks (Gate-6):
  * 1. Full artifact lineage
  * 2. Replay integrity
  * 3. Eval gate coverage
  * 4. Contract integrity
  * 5. Fail-closed enforcement
  * 6. Cost governance
+ * 7. Human review present
  */
 
 export async function runGOV10Certification(
@@ -24,18 +25,26 @@ export async function runGOV10Certification(
   const traceContext = { trace_id: traceId, created_at: new Date().toISOString() };
 
   const checks: Record<string, boolean> = {
-    full_artifact_lineage: allExecutionRecords.length > 0,
+    full_artifact_lineage: allExecutionRecords.length >= 3,
     replay_integrity: allExecutionRecords.every((r) => r.artifact_id && r.created_at),
-    eval_gate_coverage: allEvalSummaries.length > 0,
-    contract_integrity: allExecutionRecords.every((r) => r.artifact_kind),
-    fail_closed_enforcement: allExecutionRecords.every((r) => r.execution_status === "succeeded" || r.failure),
+    eval_gate_coverage: allEvalSummaries.length >= 2,
+    contract_integrity: allExecutionRecords.every(
+      (r) => r.artifact_kind || r.artifact_type
+    ),
+    fail_closed_enforcement: allExecutionRecords.every(
+      (r) => r.execution_status === "succeeded" || r.failure
+    ),
     cost_governance: true,
+    human_review_present: allExecutionRecords.some(
+      (r: any) => r.action_type === "require_human_review"
+    ),
   };
 
   const allPassed = Object.values(checks).every((c) => c);
 
   const certificationRecord: DoneCertificationRecord = {
-    artifact_kind: "done_certification_record",
+    artifact_type: "done_certification_record",
+    schema_version: "1.0.0",
     artifact_id: randomUUID(),
     created_at: new Date().toISOString(),
     schema_ref: "artifacts/done_certification_record.schema.json",
@@ -50,7 +59,8 @@ export async function runGOV10Certification(
 
   if (allPassed) {
     releaseArtifact = {
-      artifact_kind: "release_artifact",
+      artifact_type: "release_artifact",
+      schema_version: "1.0.0",
       artifact_id: randomUUID(),
       created_at: new Date().toISOString(),
       schema_ref: "artifacts/release_artifact.schema.json",
@@ -63,13 +73,26 @@ export async function runGOV10Certification(
   }
 
   const executionRecord = {
-    artifact_kind: "pqx_execution_record",
+    artifact_type: "pqx_execution_record",
     artifact_id: randomUUID(),
     created_at: new Date().toISOString(),
     trace: traceContext,
     pqx_step: { name: "MVP-13: GOV-10 Certification & Release", version: "1.0" },
-    execution_status: "succeeded",
-    outputs: { artifact_ids: [certificationRecord.artifact_id, ...(releaseArtifact ? [releaseArtifact.artifact_id] : [])] },
+    execution_status: allPassed ? "succeeded" : "failed",
+    outputs: {
+      artifact_ids: [
+        certificationRecord.artifact_id,
+        ...(releaseArtifact ? [releaseArtifact.artifact_id] : []),
+      ],
+    },
+    ...(allPassed
+      ? {}
+      : {
+          failure: {
+            reason_codes: ["certification_failed"],
+            error_message: `Failed checks: ${(certificationRecord.failures || []).join(", ")}`,
+          },
+        }),
   };
 
   return {

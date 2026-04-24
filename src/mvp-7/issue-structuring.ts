@@ -27,13 +27,13 @@ export async function structureIssuesForPaper(
       };
     });
 
-    // Verify all issues assigned to exactly one section
     if (structuredIssues.some((i) => !i.paper_section_id)) {
       throw new Error("Some issues could not be assigned to paper section");
     }
 
     const structuredSet: StructuredIssueSet = {
-      artifact_kind: "structured_issue_set",
+      artifact_type: "structured_issue_set",
+      schema_version: "1.0.0",
       artifact_id: randomUUID(),
       created_at: new Date().toISOString(),
       schema_ref: "artifacts/structured_issue_set.schema.json",
@@ -43,7 +43,7 @@ export async function structureIssuesForPaper(
     };
 
     const executionRecord = {
-      artifact_kind: "pqx_execution_record",
+      artifact_type: "pqx_execution_record",
       artifact_id: randomUUID(),
       created_at: new Date().toISOString(),
       trace: traceContext,
@@ -60,9 +60,10 @@ export async function structureIssuesForPaper(
       success: false,
       error: error instanceof Error ? error.message : String(error),
       execution_record: {
-        artifact_kind: "pqx_execution_record",
+        artifact_type: "pqx_execution_record",
         artifact_id: randomUUID(),
         created_at: new Date().toISOString(),
+        trace: traceContext,
         execution_status: "failed",
         failure: { reason_codes: ["structuring_error"] },
       },
@@ -71,9 +72,9 @@ export async function structureIssuesForPaper(
 }
 
 function determineSpectrumBand(issue: any): string {
-  if (issue.priority === "high") return "C"; // Critical
-  if (issue.priority === "medium") return "L"; // Licensed
-  return "S"; // Secondary
+  if (issue.priority === "high") return "C";
+  if (issue.priority === "medium") return "L";
+  return "S";
 }
 
 function determinePolicySection(issue: any): string {
@@ -82,7 +83,7 @@ function determinePolicySection(issue: any): string {
   return "findings";
 }
 
-function mapToSection(issue: any, section: string): string {
+function mapToSection(_issue: any, section: string): string {
   const sectionMap: Record<string, string> = {
     risks: "section-5",
     actions: "section-6",

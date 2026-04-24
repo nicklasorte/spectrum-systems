@@ -1,5 +1,6 @@
 export interface FormattedPaperArtifact {
-  artifact_kind: "formatted_paper_artifact";
+  artifact_type: "formatted_paper_artifact";
+  schema_version: "1.0.0";
   artifact_id: string;
   created_at: string;
   schema_ref: string;
@@ -20,4 +21,5 @@ export interface PublicationFormattingResult {
   formatted_paper_artifact?: FormattedPaperArtifact;
   execution_record?: any;
   error?: string;
+  error_codes?: string[];
 }

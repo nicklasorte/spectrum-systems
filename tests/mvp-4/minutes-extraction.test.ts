@@ -1,6 +1,6 @@
-import { extractMeetingMinutes } from "@/src/mvp-4/minutes-extraction-agent";
-import { assembleContextBundle } from "@/src/mvp-2/context-bundle-assembler";
-import { ingestTranscript } from "@/src/mvp-1/transcript-ingestor";
+import { extractMeetingMinutes } from "../../src/mvp-4/minutes-extraction-agent";
+import { assembleContextBundle } from "../../src/mvp-2/context-bundle-assembler";
+import { ingestTranscript } from "../../src/mvp-1/transcript-ingestor";
 
 const describeWithApiKey = process.env.ANTHROPIC_API_KEY ? describe : describe.skip;
 
@@ -8,7 +8,6 @@ describeWithApiKey("MVP-4: Meeting Minutes Extraction", () => {
   let contextBundlePayload: any;
 
   beforeAll(async () => {
-    // Set up: Ingest and assemble context bundle
     const ingestResult = await ingestTranscript({
       raw_text: `Alice: Good morning everyone. Let's discuss the new product launch.
 Bob: I think we should focus on Q2 release.
@@ -38,9 +37,10 @@ Bob: No, I think that covers it.`,
 
     expect(result.success).toBe(true);
     expect(result.meeting_minutes_artifact).toBeDefined();
-    expect(result.meeting_minutes_artifact?.artifact_kind).toBe(
+    expect(result.meeting_minutes_artifact?.artifact_type).toBe(
       "meeting_minutes_artifact"
     );
+    expect(result.meeting_minutes_artifact?.schema_version).toBe("1.0.0");
   });
 
   it("should extract agenda items", async () => {
@@ -86,13 +86,13 @@ Bob: No, I think that covers it.`,
 
     expect(result.success).toBe(true);
     expect(result.execution_record).toBeDefined();
-    expect(result.execution_record?.artifact_kind).toBe("pqx_execution_record");
+    expect(result.execution_record?.artifact_type).toBe("pqx_execution_record");
     expect(result.execution_record?.execution_status).toBe("succeeded");
     expect(result.execution_record?.pqx_step.name).toBe(
       "MVP-4: Meeting Minutes Extraction"
     );
     expect(result.execution_record?.inputs.artifact_ids).toContain(
-      contextBundlePayload.artifact_id
+      contextBundlePayload.context_bundle_id
     );
     expect(result.execution_record?.outputs.artifact_ids).toContain(
       result.meeting_minutes_artifact?.artifact_id
@@ -110,9 +110,7 @@ Bob: No, I think that covers it.`,
   });
 
   it("should emit execution record on failure", async () => {
-    const result = await extractMeetingMinutes({
-      context: { transcript_content: "" },
-    });
+    const result = await extractMeetingMinutes(null);
 
     expect(result.success).toBe(false);
     expect(result.execution_record).toBeDefined();
@@ -121,13 +119,10 @@ Bob: No, I think that covers it.`,
   });
 
   it("should fail-closed on invalid JSON from model", async () => {
-    // This test verifies that if the model returns invalid JSON,
-    // the artifact is not emitted and error is returned
     const result = await extractMeetingMinutes(contextBundlePayload);
 
-    // Either success with valid artifact, or failure with error code
     if (result.success) {
-      expect(result.meeting_minutes_artifact?.artifact_kind).toBe(
+      expect(result.meeting_minutes_artifact?.artifact_type).toBe(
         "meeting_minutes_artifact"
       );
     } else {
