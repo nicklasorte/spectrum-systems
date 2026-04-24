@@ -1,7 +1,7 @@
 {
   "artifact_type": "closeout_artifact",
   "batch_id": "AUTHENTICITY-HARDGATE-24-01",
-  "generated_at": "2026-04-24T12:02:31Z",
+  "generated_at": "2026-04-24T15:58:08Z",
   "status": "pass",
   "required_reporting_artifacts_non_empty": true,
   "final_success_conditions": {

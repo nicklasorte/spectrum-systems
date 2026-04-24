@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-04-24T12:02:29Z",
+  "generated_at": "2026-04-24T16:12:35Z",
   "nodes": {
     "repositories": [
       {
@@ -1699,6 +1699,12 @@
       },
       {
         "id": "dataset_lineage_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "debuggability_assessment_record",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
@@ -3816,6 +3822,12 @@
         "stability": ""
       },
       {
+        "id": "loop_contribution_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
         "id": "maintain_cycle_record",
         "node_type": "contract",
         "schema_version": "1.0.0",
@@ -4399,6 +4411,12 @@
       },
       {
         "id": "phase_handoff_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "phase_justification_record",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""
@@ -6343,6 +6361,48 @@
       },
       {
         "id": "revision_plan_artifact",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "rge_amendment_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "rge_analysis_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "rge_recursion_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "rge_redteam_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "rge_roadmap_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "rge_run_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "rge_trust_record",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""

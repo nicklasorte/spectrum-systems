@@ -2066,6 +2066,13 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "debuggability_assessment_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `debuggability_assessment_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "debuggability_record",
       "artifact_class": "governance",
       "description": "Governed artifact for contract `debuggability_record`.",
@@ -4564,6 +4571,13 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "loop_contribution_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `loop_contribution_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "maintain_cycle_record",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `maintain_cycle_record`.",
@@ -5265,6 +5279,13 @@
       "artifact_type": "phase_handoff_record",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `phase_handoff_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "phase_justification_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `phase_justification_record`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -7568,6 +7589,55 @@
       "artifact_type": "revision_plan_artifact",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `revision_plan_artifact`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "rge_amendment_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `rge_amendment_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "rge_analysis_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `rge_analysis_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "rge_recursion_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `rge_recursion_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "rge_redteam_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `rge_redteam_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "rge_roadmap_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `rge_roadmap_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "rge_run_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `rge_run_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "rge_trust_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `rge_trust_record`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -11980,6 +12050,16 @@
       ]
     },
     {
+      "contract_name": "debuggability_assessment_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "debuggability_assessment_record"
+      ]
+    },
+    {
       "contract_name": "debuggability_record",
       "artifact_class": "governance",
       "intended_consumers": [
@@ -15493,6 +15573,16 @@
       ]
     },
     {
+      "contract_name": "loop_contribution_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "loop_contribution_record"
+      ]
+    },
+    {
       "contract_name": "maintain_cycle_record",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -16483,6 +16573,16 @@
       ],
       "related_artifact_types": [
         "phase_handoff_record"
+      ]
+    },
+    {
+      "contract_name": "phase_justification_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "phase_justification_record"
       ]
     },
     {
@@ -19732,6 +19832,76 @@
       ],
       "related_artifact_types": [
         "revision_plan_artifact"
+      ]
+    },
+    {
+      "contract_name": "rge_amendment_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "rge_amendment_record"
+      ]
+    },
+    {
+      "contract_name": "rge_analysis_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "rge_analysis_record"
+      ]
+    },
+    {
+      "contract_name": "rge_recursion_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "rge_recursion_record"
+      ]
+    },
+    {
+      "contract_name": "rge_redteam_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "rge_redteam_record"
+      ]
+    },
+    {
+      "contract_name": "rge_roadmap_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "rge_roadmap_record"
+      ]
+    },
+    {
+      "contract_name": "rge_run_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "rge_run_record"
+      ]
+    },
+    {
+      "contract_name": "rge_trust_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "rge_trust_record"
       ]
     },
     {
@@ -24037,6 +24207,13 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "debuggability_assessment_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "debuggability_assessment_record"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "debuggability_record",
       "relation": "governed_by",
       "to_type": "contract",
@@ -26501,6 +26678,13 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "loop_contribution_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "loop_contribution_record"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "maintain_cycle_record",
       "relation": "governed_by",
       "to_type": "contract",
@@ -27184,6 +27368,13 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "phase_handoff_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "phase_justification_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "phase_justification_record"
     },
     {
       "from_type": "artifact",
@@ -29452,6 +29643,55 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "revision_plan_artifact"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "rge_amendment_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "rge_amendment_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "rge_analysis_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "rge_analysis_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "rge_recursion_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "rge_recursion_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "rge_redteam_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "rge_redteam_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "rge_roadmap_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "rge_roadmap_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "rge_run_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "rge_run_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "rge_trust_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "rge_trust_record"
     },
     {
       "from_type": "artifact",
@@ -33018,6 +33258,13 @@
     },
     {
       "from_type": "contract",
+      "from_id": "debuggability_assessment_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "debuggability_assessment_record"
+    },
+    {
+      "from_type": "contract",
       "from_id": "debuggability_record",
       "relation": "validates_against",
       "to_type": "artifact",
@@ -35482,6 +35729,13 @@
     },
     {
       "from_type": "contract",
+      "from_id": "loop_contribution_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "loop_contribution_record"
+    },
+    {
+      "from_type": "contract",
       "from_id": "maintain_cycle_record",
       "relation": "validates_against",
       "to_type": "artifact",
@@ -36165,6 +36419,13 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "phase_handoff_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "phase_justification_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "phase_justification_record"
     },
     {
       "from_type": "contract",
@@ -38433,6 +38694,55 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "revision_plan_artifact"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "rge_amendment_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "rge_amendment_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "rge_analysis_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "rge_analysis_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "rge_recursion_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "rge_recursion_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "rge_redteam_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "rge_redteam_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "rge_roadmap_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "rge_roadmap_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "rge_run_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "rge_run_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "rge_trust_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "rge_trust_record"
     },
     {
       "from_type": "contract",

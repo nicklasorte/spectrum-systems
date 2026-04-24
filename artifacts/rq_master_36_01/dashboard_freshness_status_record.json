@@ -1,19 +1,19 @@
 {
   "artifact_type": "dashboard_freshness_status_record",
   "contract_version": "1.0.0",
-  "timestamp": "2026-04-24T12:06:16Z",
+  "timestamp": "2026-04-24T16:13:14Z",
   "overall_verdict": "pass",
   "artifacts": [
     {
       "artifact": "repo_snapshot.json",
       "verdict": "fresh",
-      "age_seconds": 5.0,
+      "age_seconds": 3.0,
       "threshold_seconds": 21600,
       "reason_codes": [
         "freshness_ok"
       ]
     }
   ],
-  "trace_id": "trace-20260424T120616Z",
-  "refresh_run_id": "refresh-20260424T120616Z"
+  "trace_id": "trace-20260424T161314Z",
+  "refresh_run_id": "refresh-20260424T161314Z"
 }
