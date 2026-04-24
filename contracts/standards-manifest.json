@@ -16821,13 +16821,13 @@
     {
       "artifact_type": "rge_redteam_record",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "proposed",
       "intended_consumers": ["spectrum-systems"],
       "introduced_in": "RGE-G",
       "last_updated_in": "RGE-G",
       "example_path": "contracts/examples/rge_redteam_record.json",
-      "notes": "RGE red-team six-check output."
+      "notes": "RGE red-team six-check output. 1.1.0 routes findings via rqx_redteam_orchestrator (rqx_routing per finding) and adds must_fix/warn split (must_fix_count, warn_count, roadmap_approved)."
     },
     {
       "artifact_type": "rge_amendment_record",

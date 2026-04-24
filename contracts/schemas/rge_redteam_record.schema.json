@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/rge_redteam_record.schema.json",
   "title": "rge_redteam_record",
-  "description": "Emitted by the RGE Red-Teamer. Summary of six-check red-team pass.",
+  "description": "Emitted by the RGE Red-Teamer. Summary of six-check red-team pass with RQX-routed findings and must_fix/warn split.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -15,12 +15,15 @@
     "roadmap_record_id",
     "decision",
     "finding_count",
+    "must_fix_count",
+    "warn_count",
+    "roadmap_approved",
     "findings",
     "checks_run"
   ],
   "properties": {
     "artifact_type": { "type": "string", "const": "rge_redteam_record" },
-    "schema_version": { "type": "string", "const": "1.0.0" },
+    "schema_version": { "type": "string", "const": "1.1.0" },
     "record_id": { "type": "string", "minLength": 1 },
     "run_id": { "type": "string", "minLength": 1 },
     "trace_id": { "type": "string", "minLength": 1 },
@@ -28,18 +31,41 @@
     "roadmap_record_id": { "type": "string" },
     "decision": { "type": "string", "enum": ["pass", "block"] },
     "finding_count": { "type": "integer", "minimum": 0 },
+    "must_fix_count": { "type": "integer", "minimum": 0 },
+    "warn_count": { "type": "integer", "minimum": 0 },
+    "roadmap_approved": { "type": "boolean" },
     "findings": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["finding_class", "statement", "affected_phases", "owner", "routing_reason"],
+        "required": [
+          "finding_class",
+          "statement",
+          "affected_phases",
+          "owner",
+          "routing_reason",
+          "rqx_routing",
+          "must_fix"
+        ],
         "properties": {
           "finding_class": { "type": "string" },
           "statement": { "type": "string" },
           "affected_phases": { "type": "array", "items": { "type": ["string", "null"] } },
           "owner": { "type": "string" },
-          "routing_reason": { "type": "string" }
+          "routing_reason": { "type": "string" },
+          "rqx_routing": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["rqx_class", "routing_ref", "finding_id", "rqx_routed"],
+            "properties": {
+              "rqx_class": { "type": "string" },
+              "routing_ref": { "type": "string" },
+              "finding_id": { "type": "string" },
+              "rqx_routed": { "type": "boolean" }
+            }
+          },
+          "must_fix": { "type": "boolean" }
         }
       }
     },
