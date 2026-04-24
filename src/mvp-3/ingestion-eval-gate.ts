@@ -133,10 +133,10 @@ export async function runIngestionEvalGate(
   const allPass = passRate === 100;
 
   const evalSummary: EvalSummary = {
-    artifact_kind: "eval_summary",
+    artifact_type: "eval_summary",
+    schema_version: "1.0.0",
     artifact_id: uuidv4(),
     created_at: new Date().toISOString(),
-    schema_ref: "artifacts/eval_summary.schema.json",
     trace: traceContext,
     target_artifact_id: transcriptArtifactId,
     eval_case_ids: evalCases.map((c) => c.case_id),
