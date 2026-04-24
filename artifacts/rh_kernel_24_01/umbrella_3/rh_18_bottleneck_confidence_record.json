@@ -3,7 +3,7 @@
   "batch_id": "RH-KERNEL-24-01",
   "slice_id": "RH-18",
   "owner": "PRG",
-  "generated_at": "2026-04-24T16:13:34Z",
+  "generated_at": "2026-04-24T16:44:35Z",
   "bottleneck": "artifact lineage incompleteness",
   "confidence": 0.83,
   "persistence_cycles": 3

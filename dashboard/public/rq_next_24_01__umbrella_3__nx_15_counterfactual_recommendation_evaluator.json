@@ -1,7 +1,7 @@
 {
   "artifact_type": "counterfactual_recommendation_evaluator",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-24T16:13:57Z",
+  "generated_at": "2026-04-24T16:45:12Z",
   "evaluations": [
     {
       "scenario_id": "REPLAY-002",
