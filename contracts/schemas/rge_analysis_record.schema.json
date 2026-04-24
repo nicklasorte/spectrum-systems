@@ -16,16 +16,21 @@
     "context_maturity_level",
     "context_maturity_max",
     "modules_present",
+    "wave_status",
     "active_drift_legs",
     "complexity_budget_by_module",
     "mg_slice_health",
     "fragile_points",
+    "fragile_point_signals",
     "bottlenecks",
-    "leg_saturation"
+    "leg_saturation",
+    "entropy_vectors",
+    "rge_can_operate",
+    "rge_max_autonomy"
   ],
   "properties": {
     "artifact_type": { "type": "string", "const": "rge_analysis_record" },
-    "schema_version": { "type": "string", "const": "1.0.0" },
+    "schema_version": { "type": "string", "const": "1.1.0" },
     "record_id": { "type": "string", "minLength": 1 },
     "run_id": { "type": "string", "minLength": 1 },
     "trace_id": { "type": "string", "minLength": 1 },
@@ -34,6 +39,7 @@
     "context_maturity_level": { "type": "integer", "minimum": 0 },
     "context_maturity_max": { "type": "integer", "minimum": 1 },
     "modules_present": { "type": "array", "items": { "type": "string" } },
+    "wave_status": { "type": "integer", "minimum": 0, "maximum": 4 },
     "active_drift_legs": { "type": "array", "items": { "type": "string" } },
     "complexity_budget_by_module": { "type": "object" },
     "mg_slice_health": {
@@ -46,7 +52,47 @@
       }
     },
     "fragile_points": { "type": "array", "items": { "type": "string" } },
+    "fragile_point_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "file", "count"],
+        "properties": {
+          "type": { "type": "string", "enum": ["stub_heavy", "silent_excepts"] },
+          "file": { "type": "string", "minLength": 1 },
+          "count": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
     "bottlenecks": { "type": "array", "items": { "type": "string" } },
-    "leg_saturation": { "type": "object" }
+    "leg_saturation": { "type": "object" },
+    "entropy_vectors": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_entropy",
+        "silent_drift",
+        "exception_accumulation",
+        "hidden_logic_creep",
+        "evaluation_blind_spots",
+        "overconfidence_risk",
+        "loss_of_causality"
+      ],
+      "properties": {
+        "decision_entropy":       { "type": "string", "enum": ["clean", "warn", "critical"] },
+        "silent_drift":           { "type": "string", "enum": ["clean", "warn", "critical"] },
+        "exception_accumulation": { "type": "string", "enum": ["clean", "warn", "critical"] },
+        "hidden_logic_creep":     { "type": "string", "enum": ["clean", "warn", "critical"] },
+        "evaluation_blind_spots": { "type": "string", "enum": ["clean", "warn", "critical"] },
+        "overconfidence_risk":    { "type": "string", "enum": ["clean", "warn", "critical"] },
+        "loss_of_causality":      { "type": "string", "enum": ["clean", "warn", "critical"] }
+      }
+    },
+    "rge_can_operate": { "type": "boolean" },
+    "rge_max_autonomy": {
+      "type": "string",
+      "enum": ["shadow", "warn_gated", "autonomous"]
+    }
   }
 }

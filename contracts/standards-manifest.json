@@ -16799,13 +16799,13 @@
     {
       "artifact_type": "rge_analysis_record",
       "artifact_class": "coordination",
-      "schema_version": "1.0.0",
+      "schema_version": "1.1.0",
       "status": "proposed",
       "intended_consumers": ["spectrum-systems"],
       "introduced_in": "RGE-E",
       "last_updated_in": "RGE-E",
       "example_path": "contracts/examples/rge_analysis_record.json",
-      "notes": "RGE Wave-0 repo audit snapshot."
+      "notes": "RGE Wave-0 repo audit snapshot. 1.1.0 adds wave_status, entropy_vectors, rge_can_operate, rge_max_autonomy, fragile_point_signals (AST-derived)."
     },
     {
       "artifact_type": "rge_roadmap_record",
