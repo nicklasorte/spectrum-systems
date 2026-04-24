@@ -2,7 +2,7 @@
   "artifact_type": "repair_template_parameter_bundle",
   "slice_id": "RS-04",
   "owner": "FRE",
-  "generated_at": "2026-04-24T12:03:47Z",
+  "generated_at": "2026-04-24T16:13:26Z",
   "template_family_count": 4,
   "parameterization_mode": "class_bound"
 }

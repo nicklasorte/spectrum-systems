@@ -1,7 +1,7 @@
 {
   "artifact_type": "expansion_evidence_bundle",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-24T12:04:41Z",
+  "generated_at": "2026-04-24T16:13:57Z",
   "required_evidence": [
     "recommendation_accuracy_hardening",
     "operator_runtime_discipline",

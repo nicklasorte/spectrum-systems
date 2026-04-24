@@ -2,7 +2,7 @@
   "artifact_type": "reentry_continuation_decision",
   "slice_id": "AH-18",
   "owner": "CDE",
-  "generated_at": "2026-04-24T12:02:31Z",
+  "generated_at": "2026-04-24T15:58:08Z",
   "authority": "continuation_decision_authoritative",
   "decision": "continue_only_when_authenticity_and_replay_constraints_hold"
 }

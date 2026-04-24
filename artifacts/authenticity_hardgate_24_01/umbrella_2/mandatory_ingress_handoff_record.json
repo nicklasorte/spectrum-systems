@@ -2,7 +2,7 @@
   "artifact_type": "mandatory_ingress_handoff_record",
   "slice_id": "AH-08",
   "owner": "TLC",
-  "generated_at": "2026-04-24T12:02:31Z",
+  "generated_at": "2026-04-24T15:58:08Z",
   "orchestration_only": true,
   "routed_via_mandatory_ingress": true
 }

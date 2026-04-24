@@ -2,7 +2,7 @@
   "artifact_type": "boundary_hardening_program_closeout",
   "slice_id": "AH-24",
   "owner": "PRG",
-  "generated_at": "2026-04-24T12:02:31Z",
+  "generated_at": "2026-04-24T15:58:08Z",
   "authoritative": false,
   "trust_gap_reduction_signal": "improving",
   "next_remaining_focus": "issuer-key-rotation-evidence and replay-window telemetry"

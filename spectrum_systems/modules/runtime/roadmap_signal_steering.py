@@ -20,6 +20,11 @@ _DRIFT_ORDER = (
 
 _SEVERITY_RANK = {"none": 0, "warning": 1, "freeze_candidate": 2, "block": 3}
 
+_CANONICAL_LOOP_LEGS = (
+    "AEX", "PQX", "EVL", "TPA", "CDE", "SEL",
+    "REP", "LIN", "OBS", "SLO",
+)
+
 
 def _stable_id(prefix: str, payload: dict[str, Any]) -> str:
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
@@ -184,6 +189,51 @@ def build_roadmap_signal_bundle(
     }
     validate_artifact(payload, "roadmap_signal_bundle")
     return payload
+
+
+def get_active_drift_legs(
+    signal_source: dict[str, Any] | None = None,
+) -> list[str]:
+    """Return canonical loop legs currently in active drift.
+
+    Consumed by the RGE Loop Contribution Checker (Principle 2) to gate
+    phases from being added to legs that are already struggling.
+
+    Args:
+        signal_source: either a ``drift_detection_record`` or a
+            ``roadmap_signal_bundle``. Both carry drift findings with
+            ``severity`` and ``affected_component`` fields. ``None`` or an
+            empty mapping returns ``[]`` (fail-open for unwired callers).
+
+    Returns:
+        Sorted list of canonical leg codes (AEX/PQX/EVL/TPA/CDE/SEL/REP/
+        LIN/OBS/SLO) with at least one finding of severity above ``none``.
+    """
+    if not signal_source:
+        return []
+
+    findings = signal_source.get("findings") or signal_source.get("drift_findings") or []
+    highest_risk = signal_source.get("highest_risk_subsystems") or []
+
+    legs: set[str] = set()
+    for finding in findings:
+        if not isinstance(finding, dict):
+            continue
+        severity = str(finding.get("severity", "")).lower()
+        if _SEVERITY_RANK.get(severity, 0) <= 0:
+            continue
+        component = str(finding.get("affected_component", "")).upper()
+        for leg in _CANONICAL_LOOP_LEGS:
+            if leg in component:
+                legs.add(leg)
+
+    for component in highest_risk:
+        upper = str(component).upper()
+        for leg in _CANONICAL_LOOP_LEGS:
+            if leg in upper:
+                legs.add(leg)
+
+    return sorted(legs)
 
 
 def steering_enforcement(bundle: dict[str, Any]) -> tuple[str | None, list[str]]:

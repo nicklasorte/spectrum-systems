@@ -279,6 +279,7 @@
 - dat_dataset_drift_visibility_record [coordination] producers: —; consumers: —; Governed artifact for contract `dat_dataset_drift_visibility_record`.
 - dat_roadmap_dataset_slice_registry_record [coordination] producers: —; consumers: —; Governed artifact for contract `dat_roadmap_dataset_slice_registry_record`.
 - dataset_lineage_record [governance] producers: —; consumers: —; Governed artifact for contract `dataset_lineage_record`.
+- debuggability_assessment_record [coordination] producers: —; consumers: —; Governed artifact for contract `debuggability_assessment_record`.
 - debuggability_record [governance] producers: —; consumers: —; Governed artifact for contract `debuggability_record`.
 - decision_bundle [governance] producers: —; consumers: —; Governed artifact for contract `decision_bundle`.
 - decision_conflict_record [governance] producers: —; consumers: —; Governed artifact for contract `decision_conflict_record`.
@@ -635,6 +636,7 @@
 - lin_required_lineage_producer_audit_result [coordination] producers: —; consumers: —; Governed artifact for contract `lin_required_lineage_producer_audit_result`.
 - lin_shift_left_lineage_integrity_verification_result [coordination] producers: —; consumers: —; Governed artifact for contract `lin_shift_left_lineage_integrity_verification_result`.
 - lineage_completeness_report [governance] producers: —; consumers: —; Governed artifact for contract `lineage_completeness_report`.
+- loop_contribution_record [coordination] producers: —; consumers: —; Governed artifact for contract `loop_contribution_record`.
 - maintain_cycle_record [coordination] producers: —; consumers: —; Governed artifact for contract `maintain_cycle_record`.
 - maintain_drift_report [coordination] producers: —; consumers: —; Governed artifact for contract `maintain_drift_report`.
 - map_projection_bundle [coordination] producers: —; consumers: —; Governed artifact for contract `map_projection_bundle`.
@@ -734,6 +736,7 @@
 - phase_certified_expansion_gate_result [coordination] producers: —; consumers: —; Governed artifact for contract `phase_certified_expansion_gate_result`.
 - phase_checkpoint_record [coordination] producers: —; consumers: —; Governed artifact for contract `phase_checkpoint_record`.
 - phase_handoff_record [coordination] producers: —; consumers: —; Governed artifact for contract `phase_handoff_record`.
+- phase_justification_record [coordination] producers: —; consumers: —; Governed artifact for contract `phase_justification_record`.
 - phase_registry [coordination] producers: —; consumers: —; Governed artifact for contract `phase_registry`.
 - phase_requirement_profile [coordination] producers: —; consumers: —; Governed artifact for contract `phase_requirement_profile`.
 - phase_resume_record [coordination] producers: —; consumers: —; Governed artifact for contract `phase_resume_record`.
@@ -1060,6 +1063,13 @@
 - reviewer_comment_set [review] producers: working-paper-review-engine; consumers: comment-resolution-engine, spectrum-data-lake; Governed artifact for contract `reviewer_comment_set`.
 - revision_application_record [coordination] producers: —; consumers: —; Governed artifact for contract `revision_application_record`.
 - revision_plan_artifact [coordination] producers: —; consumers: —; Governed artifact for contract `revision_plan_artifact`.
+- rge_amendment_record [coordination] producers: —; consumers: —; Governed artifact for contract `rge_amendment_record`.
+- rge_analysis_record [coordination] producers: —; consumers: —; Governed artifact for contract `rge_analysis_record`.
+- rge_recursion_record [coordination] producers: —; consumers: —; Governed artifact for contract `rge_recursion_record`.
+- rge_redteam_record [coordination] producers: —; consumers: —; Governed artifact for contract `rge_redteam_record`.
+- rge_roadmap_record [coordination] producers: —; consumers: —; Governed artifact for contract `rge_roadmap_record`.
+- rge_run_record [coordination] producers: —; consumers: —; Governed artifact for contract `rge_run_record`.
+- rge_trust_record [coordination] producers: —; consumers: —; Governed artifact for contract `rge_trust_record`.
 - ril_ai_cost_runaway_red_team_report [governance] producers: —; consumers: —; Governed artifact for contract `ril_ai_cost_runaway_red_team_report`.
 - ril_ai_eval_bypass_red_team_report [governance] producers: —; consumers: —; Governed artifact for contract `ril_ai_eval_bypass_red_team_report`.
 - ril_ai_hallucination_red_team_report [governance] producers: —; consumers: —; Governed artifact for contract `ril_ai_hallucination_red_team_report`.
@@ -1575,6 +1585,7 @@
 - dat_dataset_drift_visibility_record [coordination] intended consumers: spectrum-systems; artifacts: dat_dataset_drift_visibility_record
 - dat_roadmap_dataset_slice_registry_record [coordination] intended consumers: spectrum-systems; artifacts: dat_roadmap_dataset_slice_registry_record
 - dataset_lineage_record [governance] intended consumers: spectrum-systems; artifacts: dataset_lineage_record
+- debuggability_assessment_record [coordination] intended consumers: spectrum-systems; artifacts: debuggability_assessment_record
 - debuggability_record [governance] intended consumers: spectrum-systems; artifacts: debuggability_record
 - decision_bundle [governance] intended consumers: spectrum-systems; artifacts: decision_bundle
 - decision_conflict_record [governance] intended consumers: spectrum-systems; artifacts: decision_conflict_record
@@ -1927,6 +1938,7 @@
 - lin_required_lineage_producer_audit_result [coordination] intended consumers: spectrum-systems; artifacts: lin_required_lineage_producer_audit_result
 - lin_shift_left_lineage_integrity_verification_result [coordination] intended consumers: spectrum-systems; artifacts: lin_shift_left_lineage_integrity_verification_result
 - lineage_completeness_report [governance] intended consumers: spectrum-systems; artifacts: lineage_completeness_report
+- loop_contribution_record [coordination] intended consumers: spectrum-systems; artifacts: loop_contribution_record
 - maintain_cycle_record [coordination] intended consumers: spectrum-systems; artifacts: maintain_cycle_record
 - maintain_drift_report [coordination] intended consumers: spectrum-systems; artifacts: maintain_drift_report
 - map_projection_bundle [coordination] intended consumers: spectrum-systems; artifacts: map_projection_bundle
@@ -2025,6 +2037,7 @@
 - phase_certified_expansion_gate_result [coordination] intended consumers: spectrum-systems; artifacts: phase_certified_expansion_gate_result
 - phase_checkpoint_record [coordination] intended consumers: spectrum-systems; artifacts: phase_checkpoint_record
 - phase_handoff_record [coordination] intended consumers: spectrum-systems; artifacts: phase_handoff_record
+- phase_justification_record [coordination] intended consumers: spectrum-systems; artifacts: phase_justification_record
 - phase_registry [coordination] intended consumers: spectrum-systems; artifacts: phase_registry
 - phase_requirement_profile [coordination] intended consumers: spectrum-systems; artifacts: phase_requirement_profile
 - phase_resume_record [coordination] intended consumers: spectrum-systems; artifacts: phase_resume_record
@@ -2349,6 +2362,13 @@
 - reviewer_comment_set [review] intended consumers: comment-resolution-engine, system-factory, working-paper-review-engine; artifacts: reviewer_comment_set
 - revision_application_record [coordination] intended consumers: spectrum-systems; artifacts: revision_application_record
 - revision_plan_artifact [coordination] intended consumers: spectrum-systems; artifacts: revision_plan_artifact
+- rge_amendment_record [coordination] intended consumers: spectrum-systems; artifacts: rge_amendment_record
+- rge_analysis_record [coordination] intended consumers: spectrum-systems; artifacts: rge_analysis_record
+- rge_recursion_record [coordination] intended consumers: spectrum-systems; artifacts: rge_recursion_record
+- rge_redteam_record [coordination] intended consumers: spectrum-systems; artifacts: rge_redteam_record
+- rge_roadmap_record [coordination] intended consumers: spectrum-systems; artifacts: rge_roadmap_record
+- rge_run_record [coordination] intended consumers: spectrum-systems; artifacts: rge_run_record
+- rge_trust_record [coordination] intended consumers: spectrum-systems; artifacts: rge_trust_record
 - ril_ai_cost_runaway_red_team_report [governance] intended consumers: spectrum-systems; artifacts: ril_ai_cost_runaway_red_team_report
 - ril_ai_eval_bypass_red_team_report [governance] intended consumers: spectrum-systems; artifacts: ril_ai_eval_bypass_red_team_report
 - ril_ai_hallucination_red_team_report [governance] intended consumers: spectrum-systems; artifacts: ril_ai_hallucination_red_team_report

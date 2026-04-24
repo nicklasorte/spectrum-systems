@@ -275,6 +275,7 @@ flowchart TD
   art_dat_dataset_drift_visibility_record["dat_dataset_drift_visibility_record\ncoordination"]
   art_dat_roadmap_dataset_slice_registry_record["dat_roadmap_dataset_slice_registry_record\ncoordination"]
   art_dataset_lineage_record["dataset_lineage_record\ngovernance"]
+  art_debuggability_assessment_record["debuggability_assessment_record\ncoordination"]
   art_debuggability_record["debuggability_record\ngovernance"]
   art_decision_bundle["decision_bundle\ngovernance"]
   art_decision_conflict_record["decision_conflict_record\ngovernance"]
@@ -631,6 +632,7 @@ flowchart TD
   art_lin_required_lineage_producer_audit_result["lin_required_lineage_producer_audit_result\ncoordination"]
   art_lin_shift_left_lineage_integrity_verification_result["lin_shift_left_lineage_integrity_verification_result\ncoordination"]
   art_lineage_completeness_report["lineage_completeness_report\ngovernance"]
+  art_loop_contribution_record["loop_contribution_record\ncoordination"]
   art_maintain_cycle_record["maintain_cycle_record\ncoordination"]
   art_maintain_drift_report["maintain_drift_report\ncoordination"]
   art_map_projection_bundle["map_projection_bundle\ncoordination"]
@@ -730,6 +732,7 @@ flowchart TD
   art_phase_certified_expansion_gate_result["phase_certified_expansion_gate_result\ncoordination"]
   art_phase_checkpoint_record["phase_checkpoint_record\ncoordination"]
   art_phase_handoff_record["phase_handoff_record\ncoordination"]
+  art_phase_justification_record["phase_justification_record\ncoordination"]
   art_phase_registry["phase_registry\ncoordination"]
   art_phase_requirement_profile["phase_requirement_profile\ncoordination"]
   art_phase_resume_record["phase_resume_record\ncoordination"]
@@ -1056,6 +1059,13 @@ flowchart TD
   art_reviewer_comment_set["reviewer_comment_set\nreview"]
   art_revision_application_record["revision_application_record\ncoordination"]
   art_revision_plan_artifact["revision_plan_artifact\ncoordination"]
+  art_rge_amendment_record["rge_amendment_record\ncoordination"]
+  art_rge_analysis_record["rge_analysis_record\ncoordination"]
+  art_rge_recursion_record["rge_recursion_record\ncoordination"]
+  art_rge_redteam_record["rge_redteam_record\ncoordination"]
+  art_rge_roadmap_record["rge_roadmap_record\ncoordination"]
+  art_rge_run_record["rge_run_record\ncoordination"]
+  art_rge_trust_record["rge_trust_record\ncoordination"]
   art_ril_ai_cost_runaway_red_team_report["ril_ai_cost_runaway_red_team_report\ngovernance"]
   art_ril_ai_eval_bypass_red_team_report["ril_ai_eval_bypass_red_team_report\ngovernance"]
   art_ril_ai_hallucination_red_team_report["ril_ai_hallucination_red_team_report\ngovernance"]
@@ -1569,6 +1579,7 @@ flowchart TD
   con_dat_dataset_drift_visibility_record["dat_dataset_drift_visibility_record\ncontract"]
   con_dat_roadmap_dataset_slice_registry_record["dat_roadmap_dataset_slice_registry_record\ncontract"]
   con_dataset_lineage_record["dataset_lineage_record\ncontract"]
+  con_debuggability_assessment_record["debuggability_assessment_record\ncontract"]
   con_debuggability_record["debuggability_record\ncontract"]
   con_decision_bundle["decision_bundle\ncontract"]
   con_decision_conflict_record["decision_conflict_record\ncontract"]
@@ -1921,6 +1932,7 @@ flowchart TD
   con_lin_required_lineage_producer_audit_result["lin_required_lineage_producer_audit_result\ncontract"]
   con_lin_shift_left_lineage_integrity_verification_result["lin_shift_left_lineage_integrity_verification_result\ncontract"]
   con_lineage_completeness_report["lineage_completeness_report\ncontract"]
+  con_loop_contribution_record["loop_contribution_record\ncontract"]
   con_maintain_cycle_record["maintain_cycle_record\ncontract"]
   con_maintain_drift_report["maintain_drift_report\ncontract"]
   con_map_projection_bundle["map_projection_bundle\ncontract"]
@@ -2019,6 +2031,7 @@ flowchart TD
   con_phase_certified_expansion_gate_result["phase_certified_expansion_gate_result\ncontract"]
   con_phase_checkpoint_record["phase_checkpoint_record\ncontract"]
   con_phase_handoff_record["phase_handoff_record\ncontract"]
+  con_phase_justification_record["phase_justification_record\ncontract"]
   con_phase_registry["phase_registry\ncontract"]
   con_phase_requirement_profile["phase_requirement_profile\ncontract"]
   con_phase_resume_record["phase_resume_record\ncontract"]
@@ -2343,6 +2356,13 @@ flowchart TD
   con_reviewer_comment_set["reviewer_comment_set\ncontract"]
   con_revision_application_record["revision_application_record\ncontract"]
   con_revision_plan_artifact["revision_plan_artifact\ncontract"]
+  con_rge_amendment_record["rge_amendment_record\ncontract"]
+  con_rge_analysis_record["rge_analysis_record\ncontract"]
+  con_rge_recursion_record["rge_recursion_record\ncontract"]
+  con_rge_redteam_record["rge_redteam_record\ncontract"]
+  con_rge_roadmap_record["rge_roadmap_record\ncontract"]
+  con_rge_run_record["rge_run_record\ncontract"]
+  con_rge_trust_record["rge_trust_record\ncontract"]
   con_ril_ai_cost_runaway_red_team_report["ril_ai_cost_runaway_red_team_report\ncontract"]
   con_ril_ai_eval_bypass_red_team_report["ril_ai_eval_bypass_red_team_report\ncontract"]
   con_ril_ai_hallucination_red_team_report["ril_ai_hallucination_red_team_report\ncontract"]
@@ -2852,6 +2872,7 @@ flowchart TD
   art_dat_dataset_drift_visibility_record -. governed_by .-> con_dat_dataset_drift_visibility_record
   art_dat_roadmap_dataset_slice_registry_record -. governed_by .-> con_dat_roadmap_dataset_slice_registry_record
   art_dataset_lineage_record -. governed_by .-> con_dataset_lineage_record
+  art_debuggability_assessment_record -. governed_by .-> con_debuggability_assessment_record
   art_debuggability_record -. governed_by .-> con_debuggability_record
   art_decision_bundle -. governed_by .-> con_decision_bundle
   art_decision_conflict_record -. governed_by .-> con_decision_conflict_record
@@ -3204,6 +3225,7 @@ flowchart TD
   art_lin_required_lineage_producer_audit_result -. governed_by .-> con_lin_required_lineage_producer_audit_result
   art_lin_shift_left_lineage_integrity_verification_result -. governed_by .-> con_lin_shift_left_lineage_integrity_verification_result
   art_lineage_completeness_report -. governed_by .-> con_lineage_completeness_report
+  art_loop_contribution_record -. governed_by .-> con_loop_contribution_record
   art_maintain_cycle_record -. governed_by .-> con_maintain_cycle_record
   art_maintain_drift_report -. governed_by .-> con_maintain_drift_report
   art_map_projection_bundle -. governed_by .-> con_map_projection_bundle
@@ -3302,6 +3324,7 @@ flowchart TD
   art_phase_certified_expansion_gate_result -. governed_by .-> con_phase_certified_expansion_gate_result
   art_phase_checkpoint_record -. governed_by .-> con_phase_checkpoint_record
   art_phase_handoff_record -. governed_by .-> con_phase_handoff_record
+  art_phase_justification_record -. governed_by .-> con_phase_justification_record
   art_phase_registry -. governed_by .-> con_phase_registry
   art_phase_requirement_profile -. governed_by .-> con_phase_requirement_profile
   art_phase_resume_record -. governed_by .-> con_phase_resume_record
@@ -3626,6 +3649,13 @@ flowchart TD
   art_reviewer_comment_set -. governed_by .-> con_reviewer_comment_set
   art_revision_application_record -. governed_by .-> con_revision_application_record
   art_revision_plan_artifact -. governed_by .-> con_revision_plan_artifact
+  art_rge_amendment_record -. governed_by .-> con_rge_amendment_record
+  art_rge_analysis_record -. governed_by .-> con_rge_analysis_record
+  art_rge_recursion_record -. governed_by .-> con_rge_recursion_record
+  art_rge_redteam_record -. governed_by .-> con_rge_redteam_record
+  art_rge_roadmap_record -. governed_by .-> con_rge_roadmap_record
+  art_rge_run_record -. governed_by .-> con_rge_run_record
+  art_rge_trust_record -. governed_by .-> con_rge_trust_record
   art_ril_ai_cost_runaway_red_team_report -. governed_by .-> con_ril_ai_cost_runaway_red_team_report
   art_ril_ai_eval_bypass_red_team_report -. governed_by .-> con_ril_ai_eval_bypass_red_team_report
   art_ril_ai_hallucination_red_team_report -. governed_by .-> con_ril_ai_hallucination_red_team_report
@@ -4135,6 +4165,7 @@ flowchart TD
   con_dat_dataset_drift_visibility_record -->|validates| art_dat_dataset_drift_visibility_record
   con_dat_roadmap_dataset_slice_registry_record -->|validates| art_dat_roadmap_dataset_slice_registry_record
   con_dataset_lineage_record -->|validates| art_dataset_lineage_record
+  con_debuggability_assessment_record -->|validates| art_debuggability_assessment_record
   con_debuggability_record -->|validates| art_debuggability_record
   con_decision_bundle -->|validates| art_decision_bundle
   con_decision_conflict_record -->|validates| art_decision_conflict_record
@@ -4487,6 +4518,7 @@ flowchart TD
   con_lin_required_lineage_producer_audit_result -->|validates| art_lin_required_lineage_producer_audit_result
   con_lin_shift_left_lineage_integrity_verification_result -->|validates| art_lin_shift_left_lineage_integrity_verification_result
   con_lineage_completeness_report -->|validates| art_lineage_completeness_report
+  con_loop_contribution_record -->|validates| art_loop_contribution_record
   con_maintain_cycle_record -->|validates| art_maintain_cycle_record
   con_maintain_drift_report -->|validates| art_maintain_drift_report
   con_map_projection_bundle -->|validates| art_map_projection_bundle
@@ -4585,6 +4617,7 @@ flowchart TD
   con_phase_certified_expansion_gate_result -->|validates| art_phase_certified_expansion_gate_result
   con_phase_checkpoint_record -->|validates| art_phase_checkpoint_record
   con_phase_handoff_record -->|validates| art_phase_handoff_record
+  con_phase_justification_record -->|validates| art_phase_justification_record
   con_phase_registry -->|validates| art_phase_registry
   con_phase_requirement_profile -->|validates| art_phase_requirement_profile
   con_phase_resume_record -->|validates| art_phase_resume_record
@@ -4909,6 +4942,13 @@ flowchart TD
   con_reviewer_comment_set -->|validates| art_reviewer_comment_set
   con_revision_application_record -->|validates| art_revision_application_record
   con_revision_plan_artifact -->|validates| art_revision_plan_artifact
+  con_rge_amendment_record -->|validates| art_rge_amendment_record
+  con_rge_analysis_record -->|validates| art_rge_analysis_record
+  con_rge_recursion_record -->|validates| art_rge_recursion_record
+  con_rge_redteam_record -->|validates| art_rge_redteam_record
+  con_rge_roadmap_record -->|validates| art_rge_roadmap_record
+  con_rge_run_record -->|validates| art_rge_run_record
+  con_rge_trust_record -->|validates| art_rge_trust_record
   con_ril_ai_cost_runaway_red_team_report -->|validates| art_ril_ai_cost_runaway_red_team_report
   con_ril_ai_eval_bypass_red_team_report -->|validates| art_ril_ai_eval_bypass_red_team_report
   con_ril_ai_hallucination_red_team_report -->|validates| art_ril_ai_hallucination_red_team_report
