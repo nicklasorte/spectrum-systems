@@ -31,10 +31,12 @@ export async function assembleContextBundle(
   };
 
   // Step 1: Validate transcript artifact
+  const artifactId =
+    transcriptArtifact?.outputs?.artifact_id || transcriptArtifact?.artifact_id;
   if (
     !transcriptArtifact ||
     typeof transcriptArtifact !== "object" ||
-    !transcriptArtifact.artifact_id
+    !artifactId
   ) {
     const errorMessage =
       "Transcript artifact is required and must have an artifact_id";
@@ -56,21 +58,31 @@ export async function assembleContextBundle(
     };
   }
 
-  const transcriptArtifactId = transcriptArtifact.artifact_id as string;
+  const transcriptArtifactId = artifactId as string;
 
   // Step 2: Build deterministic assembly manifest
   // Hash inputs are stable — no timestamps or random values included.
   // Same transcript_artifact always produces the same hash.
+  const contentHash =
+    transcriptArtifact.outputs?.provenance?.content_hash ||
+    transcriptArtifact.content_hash ||
+    "";
   const stableManifestInput = JSON.stringify({
     input_artifact_ids: [transcriptArtifactId],
     assembly_version: "1.0",
-    transcript_content_hash: transcriptArtifact.content_hash || "",
+    transcript_content_hash: contentHash,
   });
   const manifestHash = computeHash(stableManifestInput);
 
   // Step 3: Extract transcript data
-  const speakers: string[] = transcriptArtifact.metadata?.speaker_labels || [];
-  const transcriptContent: string = transcriptArtifact.content || "";
+  const segments: Array<{ speaker: string; text: string }> =
+    transcriptArtifact.outputs?.segments || [];
+  const speakers: string[] = segments.length > 0
+    ? Array.from(new Set(segments.map((s: any) => s.speaker as string)))
+    : (transcriptArtifact.metadata?.speaker_labels || []);
+  const transcriptContent: string =
+    transcriptArtifact.content ||
+    segments.map((s: any) => `${s.speaker}: ${s.text}`).join("\n");
   const taskDescription =
     options?.task_description || DEFAULT_TASK_DESCRIPTION;
   const instructions = options?.instructions || DEFAULT_INSTRUCTIONS;
@@ -78,12 +90,12 @@ export async function assembleContextBundle(
   // content_hash covers all stable context — same inputs always produce same hash
   const stableContentInput = JSON.stringify({
     transcript_id: transcriptArtifactId,
-    transcript_content_hash: transcriptArtifact.content_hash || "",
+    transcript_content_hash: contentHash,
     task_description: taskDescription,
     instructions,
     assembly_version: "1.0",
   });
-  const contentHash = computeHash(stableContentInput);
+  const bundleContentHash = computeHash(stableContentInput);
 
   // Step 4: Build context bundle
   const contextBundle: ContextBundlePayload = {
@@ -106,7 +118,7 @@ export async function assembleContextBundle(
       assembly_timestamp: startedAt,
       manifest_hash: manifestHash,
     },
-    content_hash: contentHash,
+    content_hash: bundleContentHash,
   };
 
   // Step 5: Register context bundle in artifact store

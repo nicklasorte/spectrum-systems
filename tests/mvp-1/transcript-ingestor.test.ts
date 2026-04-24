@@ -16,8 +16,8 @@ describe("Transcript Ingestor (MVP-1)", () => {
 
     expect(result.success).toBe(true);
     expect(result.transcript_artifact).toBeDefined();
-    expect(result.transcript_artifact.artifact_kind).toBe("transcript_artifact");
-    expect(result.transcript_artifact.metadata.speaker_labels).toContain("Alice");
+    expect(result.transcript_artifact!.artifact_type).toBe("transcript_artifact");
+    expect(result.transcript_artifact!.schema_version).toBe("1.0.0");
     expect(result.execution_record.execution_status).toBe("succeeded");
   });
 
@@ -42,14 +42,32 @@ describe("Transcript Ingestor (MVP-1)", () => {
     expect(result.execution_record.execution_status).toBe("failed");
   });
 
-  it("should extract correct speaker count", async () => {
+  it("should produce schema-conformant metadata", async () => {
     const result = await ingestTranscript({
       raw_text: FIXTURE_VALID_TRANSCRIPT,
       source_file: "test.txt",
     });
 
     expect(result.success).toBe(true);
-    expect(result.transcript_artifact.metadata.speaker_labels).toHaveLength(3); // Alice, Bob, Carol
+    const metadata = result.transcript_artifact!.outputs.metadata;
+    expect(metadata.segment_count).toBeGreaterThanOrEqual(5);
+    expect(metadata.has_timestamps).toBe(true);
+    expect(metadata.meeting_id).toBe("test");
+  });
+
+  it("should produce schema-conformant segments", async () => {
+    const result = await ingestTranscript({
+      raw_text: FIXTURE_VALID_TRANSCRIPT,
+      source_file: "test.txt",
+    });
+
+    expect(result.success).toBe(true);
+    const segments = result.transcript_artifact!.outputs.segments;
+    expect(segments.length).toBeGreaterThanOrEqual(1);
+    expect(segments[0].speaker).toBeDefined();
+    expect(segments[0].speaker.length).toBeGreaterThan(0);
+    expect(segments[0].agency).toBeDefined();
+    expect(segments[0].segment_id).toBeDefined();
   });
 
   it("should compute content hash", async () => {
@@ -59,23 +77,9 @@ describe("Transcript Ingestor (MVP-1)", () => {
     });
 
     expect(result.success).toBe(true);
-    expect(result.transcript_artifact.content_hash).toMatch(/^sha256:[a-f0-9]{64}$/);
-  });
-
-  it("should set correct metadata", async () => {
-    const result = await ingestTranscript({
-      raw_text: FIXTURE_VALID_TRANSCRIPT,
-      source_file: "meeting.txt",
-      duration_minutes: 45,
-      language: "en",
-    });
-
-    expect(result.success).toBe(true);
-    const metadata = result.transcript_artifact.metadata;
-    expect(metadata.source_file).toBe("meeting.txt");
-    expect(metadata.duration_minutes).toBe(45);
-    expect(metadata.language).toBe("en");
-    expect(metadata.turn_count).toBeGreaterThan(0);
+    expect(result.transcript_artifact!.outputs.provenance.content_hash).toMatch(
+      /^sha256:[a-f0-9]{64}$/
+    );
   });
 
   it("should emit execution record with trace linkage", async () => {
@@ -85,8 +89,27 @@ describe("Transcript Ingestor (MVP-1)", () => {
     });
 
     const execRecord = result.execution_record;
-    expect(execRecord.trace.trace_id).toBeDefined();
+    expect(execRecord.trace_id).toBeDefined();
     expect(execRecord.pqx_step.name).toBe("MVP-1: Transcript Ingestion & Normalization");
-    expect(execRecord.outputs.artifact_ids).toContain(result.transcript_artifact.artifact_id);
+    expect(execRecord.outputs.artifact_ids).toContain(
+      result.transcript_artifact!.outputs.artifact_id
+    );
+  });
+
+  it("should produce deterministic content hash for same input", async () => {
+    const result1 = await ingestTranscript({
+      raw_text: FIXTURE_VALID_TRANSCRIPT,
+      source_file: "test.txt",
+    });
+    const result2 = await ingestTranscript({
+      raw_text: FIXTURE_VALID_TRANSCRIPT,
+      source_file: "test.txt",
+    });
+
+    expect(result1.success).toBe(true);
+    expect(result2.success).toBe(true);
+    expect(result1.transcript_artifact!.outputs.provenance.content_hash).toBe(
+      result2.transcript_artifact!.outputs.provenance.content_hash
+    );
   });
 });

@@ -1,18 +1,11 @@
-export const FIXTURE_VALID_TRANSCRIPT = `Alice: Good morning everyone, thanks for joining.
-Bob: Hi Alice, great to be here.
-Carol: Looking forward to discussing spectrum findings.
-Alice: Let's start with the agenda items.
-Bob: I have three major topics to cover.
-Alice: Perfect, please go ahead.
-Bob: First, we identified a critical process issue.
-Carol: Can you elaborate on that?
-Bob: Sure, it affects our deployment timeline.
-Alice: What's the impact?
-Bob: About two weeks delay if not addressed.
-Carol: Have we identified solutions?
-Alice: We should discuss mitigation strategies.
-Bob: I have three proposals prepared.
-Alice: Great, let's break them down.`;
+export const FIXTURE_VALID_TRANSCRIPT = `Alice: [00:00:00] Good morning everyone, thanks for joining today.
+Bob: Hi Alice, great to be here for this discussion.
+Carol: [00:01:15] Looking forward to reviewing the spectrum findings together.
+Alice: Let's start with the agenda items we prepared.
+Bob: [00:02:30] I have three major topics to cover in this session.
+Alice: Perfect, please go ahead with the first one.
+Carol: Should we also review last week's action items before diving in?
+Bob: [00:03:45] Good point Carol, I have prepared notes on those as well.`;
 
 export const FIXTURE_EMPTY_TRANSCRIPT = ``;
 

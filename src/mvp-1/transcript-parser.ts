@@ -1,5 +1,9 @@
 import * as crypto from "crypto";
-import type { TranscriptTurn, TranscriptMetadata } from "./types";
+import type {
+  TranscriptTurn,
+  TranscriptSegment,
+  TranscriptArtifactMetadata,
+} from "./types";
 
 export function parseTranscriptTurns(rawText: string): TranscriptTurn[] {
   if (!rawText || rawText.trim().length === 0) {
@@ -31,6 +35,22 @@ export function parseTranscriptTurns(rawText: string): TranscriptTurn[] {
   return turns;
 }
 
+export function parseTranscriptSegments(rawText: string): TranscriptSegment[] {
+  const turns = parseTranscriptTurns(rawText);
+  return turns.map((turn) => {
+    const segment: TranscriptSegment = {
+      segment_id: crypto.randomUUID(),
+      speaker: turn.speaker,
+      agency: "UNKNOWN",
+      text: turn.text,
+    };
+    if (turn.timestamp !== undefined) {
+      segment.timestamp = turn.timestamp;
+    }
+    return segment;
+  });
+}
+
 export function extractSpeakers(turns: TranscriptTurn[]): string[] {
   const speakers = new Set<string>();
   for (const turn of turns) {
@@ -44,20 +64,13 @@ export function estimateDuration(turns: TranscriptTurn[]): number {
 }
 
 export function buildMetadata(
-  rawText: string,
-  turns: TranscriptTurn[],
-  sourceFile: string,
-  durationMinutes?: number,
-  language?: string
-): TranscriptMetadata {
+  segments: TranscriptSegment[],
+  meetingId: string
+): TranscriptArtifactMetadata {
   return {
-    speaker_labels: extractSpeakers(turns),
-    turn_count: turns.length,
-    duration_minutes: durationMinutes || estimateDuration(turns),
-    language: language || "en",
-    source_file: sourceFile,
-    file_size_bytes: Buffer.byteLength(rawText, "utf-8"),
-    processed_at: new Date().toISOString(),
+    segment_count: segments.length,
+    has_timestamps: segments.some((s) => s.timestamp !== undefined),
+    meeting_id: meetingId,
   };
 }
 
