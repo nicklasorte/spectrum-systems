@@ -21,11 +21,15 @@
     "oscillation_count",
     "oscillation_ceiling",
     "dag_ok",
-    "escalated"
+    "escalated",
+    "derived_adjustments",
+    "derived_adjustment_count",
+    "derivation_status",
+    "derivation_error"
   ],
   "properties": {
     "artifact_type": { "type": "string", "const": "rge_amendment_record" },
-    "schema_version": { "type": "string", "const": "1.0.0" },
+    "schema_version": { "type": "string", "const": "1.1.0" },
     "record_id": { "type": "string", "minLength": 1 },
     "run_id": { "type": "string", "minLength": 1 },
     "trace_id": { "type": "string", "minLength": 1 },
@@ -52,6 +56,16 @@
     "oscillation_count": { "type": "integer", "minimum": 0 },
     "oscillation_ceiling": { "type": "integer", "minimum": 1 },
     "dag_ok": { "type": "boolean" },
-    "escalated": { "type": "boolean" }
+    "escalated": { "type": "boolean" },
+    "derived_adjustments": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "derived_adjustment_count": { "type": "integer", "minimum": 0 },
+    "derivation_status": {
+      "type": "string",
+      "enum": ["ok", "skipped", "error"]
+    },
+    "derivation_error": { "type": "string" }
   }
 }

@@ -10,19 +10,36 @@ Behaviour:
   - DAG validation: the amender never proposes edges that create cycles.
   - Oscillation guard: if the oscillation cycle count is >= 3, escalate.
   - A fresh phase is never added; only drops, reorder, or defer are suggested.
+
+Red-team findings are additionally translated into signals for
+`roadmap_adjustment_engine.derive_roadmap_adjustments`, yielding canonical
+`roadmap_adjustment_record`s that sit alongside the lightweight amendments.
+Derivation failures are captured (never raised) so the amender remains
+fail-soft for the engine wiring while still fail-closed for oscillation and
+DAG guards.
 """
 from __future__ import annotations
 
 import hashlib
 import json
+import re
 from datetime import datetime, timezone
 from typing import Any
 
 from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.modules.runtime.roadmap_adjustment_engine import (
+    RoadmapAdjustmentError,
+    derive_roadmap_adjustments,
+)
 
 MAX_OSCILLATION_CYCLES = 3
 CANARY_THRESHOLD = 3
 CANARY_PERCENT = 10
+
+_TRACE_ID_PATTERN = re.compile(r"^trace-[A-Za-z0-9._:-]+$")
+_DERIVATION_OK = "ok"
+_DERIVATION_SKIPPED = "skipped"
+_DERIVATION_ERROR = "error"
 
 
 def _utc_now() -> str:
@@ -139,6 +156,104 @@ def _derive_amendments(
     return amendments, sorted(touched)
 
 
+def _build_roadmap_shim(roadmap: dict[str, Any]) -> dict[str, Any]:
+    """Convert an rge_roadmap_record into the minimal shape `derive_roadmap_adjustments` expects."""
+    roadmap_id = str(roadmap.get("record_id") or "RGE-ROADMAP-UNKNOWN")
+    batches = []
+    for phase in roadmap.get("admitted_phases") or []:
+        pid = phase.get("phase_id") if isinstance(phase, dict) else None
+        if pid:
+            batches.append({"batch_id": str(pid), "status": "not_started"})
+    return {"roadmap_id": roadmap_id, "batches": batches}
+
+
+def _findings_to_engine_inputs(
+    *,
+    redteam: dict[str, Any],
+    trace_id: str,
+) -> dict[str, Any] | None:
+    """Translate rge_redteam findings into kwargs for `derive_roadmap_adjustments`.
+
+    Returns None if there are no findings (nothing to derive) or the trace_id
+    is not engine-conformant.
+    """
+    findings = redteam.get("findings") or []
+    if not findings:
+        return None
+    if not _TRACE_ID_PATTERN.match(trace_id):
+        return None
+
+    classes = {str(f.get("finding_class", "")) for f in findings}
+    redteam_id = str(redteam.get("record_id") or "RTR-UNKNOWN")
+
+    drift_detected = "same_leg_same_batch" in classes
+    repeated_failure = "circular_failure_chain" in classes
+    coverage_gap = "red_team_pairing_missing" in classes
+    review_required = bool(classes & {
+        "red_team_pairing_missing",
+        "deletion_guard_violation",
+        "mg_21_session_violation",
+    })
+    unresolved_risks: list[str] = []
+    if "complexity_on_freeze" in classes:
+        unresolved_risks.append("AUTH_critical_complexity_budget_exceeded")
+
+    exception_class = "unknown_blocker"
+    if coverage_gap:
+        exception_class = "missing_eval_coverage"
+    elif drift_detected:
+        exception_class = "drift_detected"
+
+    return {
+        "exception_resolution_record": {
+            "exception_classification_ref": f"rge_redteam_record:{redteam_id}",
+            "requires_human_review": review_required,
+            "trace_id": trace_id,
+        },
+        "batch_handoff_bundle": {
+            "source_batch_id": f"BATCH-RGE-{redteam_id}",
+            "latest_exception_class": exception_class,
+            "trace_id": trace_id,
+        },
+        "eval_coverage_signal": {"coverage_gap_detected": coverage_gap} if coverage_gap else None,
+        "drift_signals": {
+            "drift_detected": drift_detected,
+            "repeated_failure": repeated_failure,
+        } if (drift_detected or repeated_failure) else None,
+        "unresolved_risks": unresolved_risks or None,
+    }
+
+
+def _derive_adjustment_records(
+    *,
+    roadmap: dict[str, Any],
+    redteam: dict[str, Any],
+    trace_id: str,
+    created_at: str,
+) -> tuple[list[dict[str, Any]], str, str]:
+    """Call `derive_roadmap_adjustments` with translated signals.
+
+    Returns (records, status, error_message). Status is one of:
+      - "ok":      engine ran and returned (possibly empty) records
+      - "skipped": no findings to translate, or trace_id non-conformant
+      - "error":   engine raised RoadmapAdjustmentError; error_message captures it
+    """
+    inputs = _findings_to_engine_inputs(redteam=redteam, trace_id=trace_id)
+    if inputs is None:
+        return [], _DERIVATION_SKIPPED, ""
+
+    try:
+        records = derive_roadmap_adjustments(
+            roadmap_artifact=_build_roadmap_shim(roadmap),
+            created_at=created_at,
+            **inputs,
+        )
+    except RoadmapAdjustmentError as exc:
+        return [], _DERIVATION_ERROR, str(exc)
+
+    return records, _DERIVATION_OK, ""
+
+
 def amend_roadmap(
     *,
     roadmap: dict[str, Any],
@@ -180,13 +295,21 @@ def amend_roadmap(
     else:
         decision = "apply"
 
+    created_at = _utc_now()
+    derived_adjustments, derivation_status, derivation_error = _derive_adjustment_records(
+        roadmap=roadmap,
+        redteam=redteam,
+        trace_id=trace_id,
+        created_at=created_at,
+    )
+
     record = {
         "artifact_type": "rge_amendment_record",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "record_id": _stable_id({"run_id": run_id, "count": len(amendments)}),
         "run_id": run_id,
         "trace_id": trace_id,
-        "created_at": _utc_now(),
+        "created_at": created_at,
         "roadmap_record_id": str(roadmap.get("record_id", "")),
         "redteam_record_id": str(redteam.get("record_id", "")),
         "decision": decision,
@@ -197,6 +320,10 @@ def amend_roadmap(
         "oscillation_ceiling": MAX_OSCILLATION_CYCLES,
         "dag_ok": dag_ok,
         "escalated": escalate,
+        "derived_adjustments": derived_adjustments,
+        "derived_adjustment_count": len(derived_adjustments),
+        "derivation_status": derivation_status,
+        "derivation_error": derivation_error,
     }
 
     validate_artifact(record, "rge_amendment_record")
