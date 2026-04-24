@@ -108,6 +108,11 @@
       "type": "string",
       "const": "1.0.0",
       "description": "Schema version for this validator execution result contract."
+    },
+    "results": {
+      "type": "array",
+      "items": { "type": "object" },
+      "description": "Alias for validator_results; per-validator results in canonical execution order."
     }
   }
 }

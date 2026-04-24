@@ -9,7 +9,7 @@ Clarify ownership between this architecture repository (spectrum-systems) and ex
 
 This boundary is enforced in two ways:
 1. **Manually:** via this document, `CLAUDE.md`, and the governance conformance checklist (`docs/governance-conformance-checklist.md`).
-2. **Mechanically (planned):** via artifact boundary CI extension (action A-3 from the 2026-03-16 governance deep review). Until A-3 is implemented, the boundary is enforced through manual review.
+2. **Mechanically (ACTIVE as of 2026-04-24):** via `.github/workflows/artifact-boundary.yml` (action A-3 from the 2026-03-16 governance deep review). A-3 is now implemented and active. All PRs run the boundary check.
 
 ### Evaluation and example code
 
@@ -21,7 +21,7 @@ Evaluation code that grows into a deployable service must be relocated to a dedi
 
 The `spectrum_systems/` Python package (including `spectrum_systems/study_runner/` and `run_study.py`) is present in this repository as an **evaluation scaffold**. It was originally introduced to support contract loading and study-runner prototype work.
 
-**Status as of 2026-03-16:** Pending relocation to a dedicated implementation repository.
+**Status as of 2026-04-24 (LOCKED):** Evaluation scaffold — boundary locked per `config/roadmap_expansion_policy.json` rules boundary-lock-01 and boundary-lock-02. No new production logic may be added to `spectrum_systems/`. All new workflow modules route to `workflow_modules/`. Previously pending relocation (flagged 2026-03-16); relocation deferred; boundary now enforced mechanically via A-3 CI gate.
 
 This package has been flagged as a boundary violation in the following reviews:
 - RC-1 (`2026-03-15-ecosystem-constitution-audit`)

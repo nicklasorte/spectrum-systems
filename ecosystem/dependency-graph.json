@@ -3629,6 +3629,34 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "generated_eval_registry_change_execution_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `generated_eval_registry_change_execution_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "generated_eval_registry_change_request_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `generated_eval_registry_change_request_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "generated_eval_registry_change_reversal_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `generated_eval_registry_change_reversal_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "generated_eval_registry_change_review_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `generated_eval_registry_change_review_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "github_review_handoff_artifact",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `github_review_handoff_artifact`.",
@@ -14162,6 +14190,46 @@
       ],
       "related_artifact_types": [
         "generated_eval_case"
+      ]
+    },
+    {
+      "contract_name": "generated_eval_registry_change_execution_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "generated_eval_registry_change_execution_record"
+      ]
+    },
+    {
+      "contract_name": "generated_eval_registry_change_request_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "generated_eval_registry_change_request_record"
+      ]
+    },
+    {
+      "contract_name": "generated_eval_registry_change_reversal_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "generated_eval_registry_change_reversal_record"
+      ]
+    },
+    {
+      "contract_name": "generated_eval_registry_change_review_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "generated_eval_registry_change_review_record"
       ]
     },
     {
@@ -25523,6 +25591,34 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "generated_eval_registry_change_execution_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "generated_eval_registry_change_execution_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "generated_eval_registry_change_request_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "generated_eval_registry_change_request_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "generated_eval_registry_change_reversal_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "generated_eval_registry_change_reversal_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "generated_eval_registry_change_review_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "generated_eval_registry_change_review_record"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "github_review_handoff_artifact",
       "relation": "governed_by",
       "to_type": "contract",
@@ -34473,6 +34569,34 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "generated_eval_case"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "generated_eval_registry_change_execution_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "generated_eval_registry_change_execution_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "generated_eval_registry_change_request_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "generated_eval_registry_change_request_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "generated_eval_registry_change_reversal_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "generated_eval_registry_change_reversal_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "generated_eval_registry_change_review_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "generated_eval_registry_change_review_record"
     },
     {
       "from_type": "contract",

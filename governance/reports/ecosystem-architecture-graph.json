@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-04-23T01:09:39Z",
+  "generated_at": "2026-04-24T12:02:29Z",
   "nodes": {
     "repositories": [
       {
@@ -3031,6 +3031,30 @@
       },
       {
         "id": "generated_eval_case",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "generated_eval_registry_change_execution_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "generated_eval_registry_change_request_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "generated_eval_registry_change_reversal_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "generated_eval_registry_change_review_record",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""

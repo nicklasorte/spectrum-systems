@@ -39,7 +39,7 @@
   "realization_mode": "artifact_materialization",
   "realization_status": "planned_only",
   "expansion_version": "1.1.0",
-  "expansion_policy_hash": "25a3ad696f7ef1ebc5ce5da1843b01929a64131b13c3321d1f2d7b5e05b6573e",
+  "expansion_policy_hash": "f83736b08cfb932f767481c7c49851daae07d84ccbebd0af6f80d539382b6f0c",
   "expansion_trace_ref": "contracts/examples/roadmap_expansion_trace.example.json#RF-03",
   "roadmap_id": "SYSTEM-ROADMAP-2026",
   "roadmap_group": "RAX_INTERFACE",

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/fallback_artifact.schema.json",
+  "title": "Fallback Artifact",
+  "description": "Governed fallback artifact emitted when a required artifact cannot be produced. Records why the artifact is absent so the gap is auditable rather than silent.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "fallback_id",
+    "fallback_reason",
+    "original_run_id",
+    "created_at",
+    "message",
+    "next_step"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "fallback_artifact"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "fallback_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this fallback record."
+    },
+    "fallback_reason": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Machine-readable reason code for the fallback (e.g. docx_not_generated)."
+    },
+    "original_run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Run ID of the run that produced this fallback."
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1,
+      "description": "RFC3339 timestamp when this fallback was recorded."
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable explanation of why this fallback exists."
+    },
+    "next_step": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Recommended remediation action."
+    },
+    "stub_path": {
+      "type": "string",
+      "description": "Path to the stub artifact that was emitted in place of the real artifact."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["info", "warning", "error"],
+      "description": "Severity level of this fallback gap."
+    }
+  }
+}

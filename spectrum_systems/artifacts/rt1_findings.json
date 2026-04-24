@@ -1,0 +1,85 @@
+{
+  "artifact_type": "red_team_findings_artifact",
+  "schema_version": "1.0.0",
+  "red_team_id": "RT-001",
+  "phase": "Baseline",
+  "executed_at": "2026-04-24T00:00:00Z",
+  "authority": "ROADMAP.md (locked April 24, 2026) — Steps 2-3",
+  "scope": [
+    "spectrum_systems/modules/runtime/validator_engine.py",
+    "spectrum_systems/modules/artifact_packager.py",
+    "spectrum_systems/ (full package scan)"
+  ],
+  "audit_methods": [
+    "grep -r stub spectrum_systems/ --include=*.py",
+    "grep -r 'return True$' spectrum_systems/ --include=*.py",
+    "grep -r 'pass$' spectrum_systems/ --include=*.py",
+    "manual review of validator execution paths"
+  ],
+  "findings": [
+    {
+      "finding_id": "RT1-001",
+      "severity": "resolved",
+      "category": "stub_or_bypass",
+      "description": "artifact_packager.py stub builders (_stub_docx_marker, _stub_recommendations, _stub_execution_metadata) emitted stub files without any governed fallback record — gap was auditable only by humans.",
+      "file": "spectrum_systems/modules/artifact_packager.py",
+      "resolution": "Fixed in Step 1 (PR #1174): each stub builder now calls _emit_fallback_artifact() before returning the stub payload. package_artifacts() returns fallback_artifacts in its result dict.",
+      "resolution_commit": "ebadf9b"
+    },
+    {
+      "finding_id": "RT1-002",
+      "severity": "pass",
+      "category": "stub_or_bypass",
+      "description": "_stub_not_implemented in validator_engine.py returns status='blocked' and blocking=True — already fail-closed. No silent pass.",
+      "file": "spectrum_systems/modules/runtime/validator_engine.py",
+      "evidence": "_stub_not_implemented returns {status: blocked, blocking: True, reason_codes: [not_implemented]}",
+      "resolution": "No fix required. Tests added in tests/test_validator_engine_no_stubs.py to lock this behavior."
+    },
+    {
+      "finding_id": "RT1-003",
+      "severity": "should_fix",
+      "category": "exception_swallowing",
+      "description": "Multiple except Exception: pass patterns in non-validator modules (governance/, dashboard/, learning/, etc.). While not on validator paths, these suppress exceptions silently.",
+      "files": [
+        "spectrum_systems/governance/policy_eval_coverage.py:80",
+        "spectrum_systems/governance/override_hotspot_manager.py:80,100,114",
+        "spectrum_systems/governance/compliance_tracker.py:107",
+        "spectrum_systems/governance/contract_enforcer.py:106",
+        "spectrum_systems/governance/policy_registry.py:209",
+        "spectrum_systems/governance/judge_calibration.py:332",
+        "spectrum_systems/governance/canonical_truth.py:96",
+        "spectrum_systems/learning/incident_to_eval.py:134",
+        "spectrum_systems/learning/failure_to_learning.py:103"
+      ],
+      "count": 28,
+      "resolution": "Scope: governance/non-validator modules only. These are not on the critical validator execution path. Logged as should_fix for future hardening iteration."
+    },
+    {
+      "finding_id": "RT1-004",
+      "severity": "pass",
+      "category": "silent_path",
+      "description": "return True patterns in predicate/guard functions (not validators). Functions like is_valid(), can_proceed(), transition_allowed() — Boolean predicates, not artifact-emitting validators.",
+      "count": 20,
+      "resolution": "No fix required. These are correct Boolean predicate patterns, not governance validators."
+    }
+  ],
+  "summary": {
+    "total_findings": 4,
+    "resolved": 1,
+    "pass": 2,
+    "must_fix": 0,
+    "should_fix": 1,
+    "notes": "The critical validator path (validator_engine.py) is fail-closed. No must-fix issues remain after Step 1 fixes."
+  },
+  "test_results": {
+    "new_tests_added": 26,
+    "test_files": [
+      "tests/test_validator_engine_no_stubs.py",
+      "tests/test_artifact_packager_governed_fallbacks.py"
+    ]
+  },
+  "next_actions": [
+    "RT1-003 exception swallowing: schedule for future hardening sprint (non-blocking)",
+    "Continue to Step 4 (SLO/SLI) and Step 5 (enforcement closure)"
+  ]
+}

@@ -502,6 +502,10 @@
 - generated_eval_candidate_queue [coordination] producers: —; consumers: —; Governed artifact for contract `generated_eval_candidate_queue`.
 - generated_eval_candidate_record [coordination] producers: —; consumers: —; Governed artifact for contract `generated_eval_candidate_record`.
 - generated_eval_case [work] producers: —; consumers: —; Governed artifact for contract `generated_eval_case`.
+- generated_eval_registry_change_execution_record [coordination] producers: —; consumers: —; Governed artifact for contract `generated_eval_registry_change_execution_record`.
+- generated_eval_registry_change_request_record [coordination] producers: —; consumers: —; Governed artifact for contract `generated_eval_registry_change_request_record`.
+- generated_eval_registry_change_reversal_record [coordination] producers: —; consumers: —; Governed artifact for contract `generated_eval_registry_change_reversal_record`.
+- generated_eval_registry_change_review_record [coordination] producers: —; consumers: —; Governed artifact for contract `generated_eval_registry_change_review_record`.
 - github_review_handoff_artifact [coordination] producers: —; consumers: —; Governed artifact for contract `github_review_handoff_artifact`.
 - global_invariant_check_record [coordination] producers: —; consumers: —; Governed artifact for contract `global_invariant_check_record`.
 - glossary_entry [coordination] producers: —; consumers: —; Governed artifact for contract `glossary_entry`.
@@ -1793,6 +1797,10 @@
 - generated_eval_candidate_queue [coordination] intended consumers: spectrum-systems; artifacts: generated_eval_candidate_queue
 - generated_eval_candidate_record [coordination] intended consumers: spectrum-systems; artifacts: generated_eval_candidate_record
 - generated_eval_case [work] intended consumers: spectrum-systems; artifacts: generated_eval_case
+- generated_eval_registry_change_execution_record [coordination] intended consumers: spectrum-systems; artifacts: generated_eval_registry_change_execution_record
+- generated_eval_registry_change_request_record [coordination] intended consumers: spectrum-systems; artifacts: generated_eval_registry_change_request_record
+- generated_eval_registry_change_reversal_record [coordination] intended consumers: spectrum-systems; artifacts: generated_eval_registry_change_reversal_record
+- generated_eval_registry_change_review_record [coordination] intended consumers: spectrum-systems; artifacts: generated_eval_registry_change_review_record
 - github_review_handoff_artifact [coordination] intended consumers: spectrum-systems; artifacts: github_review_handoff_artifact
 - global_invariant_check_record [coordination] intended consumers: spectrum-systems; artifacts: global_invariant_check_record
 - glossary_entry [coordination] intended consumers: spectrum-systems; artifacts: glossary_entry
