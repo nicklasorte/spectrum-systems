@@ -1,7 +1,7 @@
 import * as crypto from "crypto";
-import { createArtifactStore, MemoryStorageBackend } from "../artifact-store";
 import {
   parseTranscriptTurns,
+  parseTranscriptSegments,
   buildMetadata,
   computeContentHash,
   validateTranscript,
@@ -17,118 +17,71 @@ export async function ingestTranscript(
 ): Promise<TranscriptIngestResult> {
   const traceId = generateId();
   const startedAt = new Date().toISOString();
-  const traceContext = {
-    trace_id: traceId,
-    created_at: startedAt,
-  };
-
-  const backend = new MemoryStorageBackend();
-  const store = createArtifactStore(backend);
 
   const turns = parseTranscriptTurns(input.raw_text);
-
   const validation = validateTranscript(turns, input.raw_text);
+
+  const makeExecRecord = (
+    status: "succeeded" | "failed",
+    artifactId?: string,
+    failure?: Record<string, unknown>
+  ) => ({
+    artifact_type: "pqx_execution_record",
+    artifact_id: generateId(),
+    created_at: new Date().toISOString(),
+    trace_id: traceId,
+    pqx_step: {
+      name: "MVP-1: Transcript Ingestion & Normalization",
+      version: "1.0",
+    },
+    execution_status: status,
+    inputs: { artifact_ids: [] },
+    outputs: { artifact_ids: artifactId ? [artifactId] : [] },
+    timing: {
+      started_at: startedAt,
+      ended_at: new Date().toISOString(),
+    },
+    ...(failure && { failure }),
+  });
+
   if (!validation.valid) {
     return {
       success: false,
       error: validation.errors.join("; "),
       error_codes: ["transcript_validation_failed"],
-      execution_record: {
-        artifact_kind: "pqx_execution_record",
-        artifact_id: generateId(),
-        created_at: new Date().toISOString(),
-        trace: traceContext,
-        pqx_step: {
-          name: "MVP-1: Transcript Ingestion & Normalization",
-          version: "1.0",
-        },
-        execution_status: "failed",
-        inputs: { artifact_ids: [] },
-        outputs: { artifact_ids: [] },
-        timing: {
-          started_at: startedAt,
-          ended_at: new Date().toISOString(),
-        },
-        failure: {
-          reason_codes: ["transcript_validation_failed"],
-          error_message: validation.errors.join("; "),
-        },
-      },
+      execution_record: makeExecRecord("failed", undefined, {
+        reason_codes: ["transcript_validation_failed"],
+        error_message: validation.errors.join("; "),
+      }),
     };
   }
 
-  const metadata = buildMetadata(
-    input.raw_text,
-    turns,
-    input.source_file,
-    input.duration_minutes,
-    input.language
-  );
-
+  const segments = parseTranscriptSegments(input.raw_text);
   const contentHash = computeContentHash(input.raw_text);
+  const artifactId = generateId();
+  const meetingId = input.source_file.replace(/\.[^/.]+$/, "");
+
   const transcriptArtifact = {
-    artifact_kind: "transcript_artifact",
-    artifact_id: generateId(),
-    created_at: new Date().toISOString(),
-    schema_ref: "artifacts/transcript_artifact.schema.json",
-    trace: traceContext,
-    content: input.raw_text,
-    metadata,
-    content_hash: contentHash,
-  };
-
-  const registrationResult = await store.register(transcriptArtifact);
-
-  if (registrationResult.status !== "accepted") {
-    return {
-      success: false,
-      error: "Failed to register artifact in store",
-      error_codes: registrationResult.errors?.map((e) => e.code) || ["registration_failed"],
-      execution_record: {
-        artifact_kind: "pqx_execution_record",
-        artifact_id: generateId(),
-        created_at: new Date().toISOString(),
-        trace: traceContext,
-        pqx_step: {
-          name: "MVP-1: Transcript Ingestion & Normalization",
-          version: "1.0",
-        },
-        execution_status: "failed",
-        inputs: { artifact_ids: [] },
-        outputs: { artifact_ids: [] },
-        timing: {
-          started_at: startedAt,
-          ended_at: new Date().toISOString(),
-        },
-        failure: {
-          reason_codes: ["registration_failed"],
-          error_message: `Artifact store rejected registration: ${registrationResult.errors?.[0]?.message || "unknown error"}`,
-        },
+    artifact_type: "transcript_artifact" as const,
+    schema_version: "1.0.0" as const,
+    trace_id: traceId,
+    outputs: {
+      artifact_id: artifactId,
+      metadata: buildMetadata(segments, meetingId),
+      source_refs: [input.source_file],
+      segments,
+      provenance: {
+        ingress: input.source_file,
+        normalization: "utf8-line-split-v1",
+        identity_hash: contentHash,
+        content_hash: contentHash,
       },
-    };
-  }
-
-  const executionRecord = {
-    artifact_kind: "pqx_execution_record",
-    artifact_id: generateId(),
-    created_at: new Date().toISOString(),
-    trace: traceContext,
-    pqx_step: {
-      name: "MVP-1: Transcript Ingestion & Normalization",
-      version: "1.0",
-    },
-    execution_status: "succeeded",
-    inputs: { artifact_ids: [] },
-    outputs: { artifact_ids: [transcriptArtifact.artifact_id] },
-    timing: {
-      started_at: startedAt,
-      ended_at: new Date().toISOString(),
     },
   };
 
   return {
     success: true,
     transcript_artifact: transcriptArtifact,
-    execution_record: executionRecord,
+    execution_record: makeExecRecord("succeeded", artifactId),
   };
 }

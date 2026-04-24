@@ -32,7 +32,7 @@ export async function runIngestionEvalGate(
   const transcriptArtifactId =
     typeof transcriptArtifact === "string"
       ? transcriptArtifact
-      : (transcriptArtifact?.artifact_id ?? "unknown");
+      : (transcriptArtifact?.outputs?.artifact_id ?? transcriptArtifact?.artifact_id ?? "unknown");
   const contextBundleArtifactId =
     typeof contextBundleArtifact === "string"
       ? contextBundleArtifact
@@ -57,7 +57,7 @@ export async function runIngestionEvalGate(
       name: "schema_conformance",
       description: "Validate both artifacts match schemas",
       check: (t, c) =>
-        t.payload.artifact_kind === "transcript_artifact" &&
+        (t.payload.artifact_type === "transcript_artifact" || t.payload.artifact_kind === "transcript_artifact") &&
         c.payload.artifact_kind === "context_bundle",
     },
     {
@@ -72,9 +72,14 @@ export async function runIngestionEvalGate(
       name: "minimum_content_coverage",
       description: "Verify non-empty speakers and turns",
       check: (t, c) => {
-        const speakers = t.payload.metadata?.speaker_labels || [];
-        const turnCount = t.payload.metadata?.turn_count || 0;
-        return speakers.length > 0 && turnCount > 0;
+        const segments: any[] = t.payload.outputs?.segments || [];
+        const speakers = segments.length > 0
+          ? Array.from(new Set(segments.map((s: any) => s.speaker)))
+          : (t.payload.metadata?.speaker_labels || []);
+        const segmentCount = t.payload.outputs?.metadata?.segment_count
+          || t.payload.metadata?.turn_count
+          || segments.length;
+        return speakers.length > 0 && segmentCount > 0;
       },
     },
   ];

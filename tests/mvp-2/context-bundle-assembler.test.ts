@@ -114,7 +114,7 @@ Alice: Perfect, please go ahead.`,
       "MVP-2: Context Bundle Assembly"
     );
     expect(result.execution_record?.inputs.artifact_ids).toContain(
-      transcriptArtifact.artifact_id
+      transcriptArtifact.outputs.artifact_id
     );
     expect(result.execution_record?.outputs.artifact_ids).toBeDefined();
   });
@@ -163,10 +163,10 @@ Alice: Perfect, please go ahead.`,
 
     expect(result.success).toBe(true);
     expect(result.context_bundle?.input_artifacts).toContain(
-      transcriptArtifact.artifact_id
+      transcriptArtifact.outputs.artifact_id
     );
     expect(result.context_bundle?.context.transcript_id).toBe(
-      transcriptArtifact.artifact_id
+      transcriptArtifact.outputs.artifact_id
     );
   });
 });
