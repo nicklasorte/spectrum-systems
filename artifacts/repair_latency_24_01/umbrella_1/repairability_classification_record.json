@@ -2,7 +2,7 @@
   "artifact_type": "repairability_classification_record",
   "slice_id": "RL-02",
   "owner": "FRE",
-  "generated_at": "2026-04-24T12:13:31Z",
+  "generated_at": "2026-04-24T12:20:36Z",
   "repair_classes": [
     "schema_patch",
     "bounded_retry",

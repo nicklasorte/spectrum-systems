@@ -1,7 +1,7 @@
 {
   "artifact_type": "shift_left_memory_umbrella_checkpoint",
   "batch_id": "SHIFT-LEFT-MEMORY-24-01",
-  "generated_at": "2026-04-24T12:14:44Z",
+  "generated_at": "2026-04-24T12:21:33Z",
   "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
   "umbrella_id": "UMBRELLA-1",
   "umbrella_name": "SHIFT_LEFT_HARDENING",

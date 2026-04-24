@@ -1,7 +1,7 @@
 {
   "artifact_type": "rq_next_umbrella_checkpoint",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-24T12:14:27Z",
+  "generated_at": "2026-04-24T12:21:20Z",
   "umbrella_id": "UMBRELLA-3",
   "umbrella_name": "REPLAY_BACKTEST_AND_SIMULATION",
   "slices": [

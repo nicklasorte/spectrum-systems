@@ -1,6 +1,6 @@
 {
   "artifact_type": "canonical_delivery_report_artifact",
   "batch_id": "SHIFT-LEFT-MEMORY-24-01",
-  "generated_at": "2026-04-24T12:14:44Z",
+  "generated_at": "2026-04-24T12:21:33Z",
   "summary": "Umbrella 1 completed with early-risk identification and fail-closed hardening enforcement."
 }

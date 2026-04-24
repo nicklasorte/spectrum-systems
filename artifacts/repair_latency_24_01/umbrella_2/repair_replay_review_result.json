@@ -2,6 +2,6 @@
   "artifact_type": "repair_replay_review_result",
   "slice_id": "RL-12",
   "owner": "RQX",
-  "generated_at": "2026-04-24T12:13:31Z",
+  "generated_at": "2026-04-24T12:20:36Z",
   "verdict": "merge_allowed"
 }
