@@ -498,6 +498,10 @@ flowchart TD
   art_generated_eval_candidate_queue["generated_eval_candidate_queue\ncoordination"]
   art_generated_eval_candidate_record["generated_eval_candidate_record\ncoordination"]
   art_generated_eval_case["generated_eval_case\nwork"]
+  art_generated_eval_registry_change_execution_record["generated_eval_registry_change_execution_record\ncoordination"]
+  art_generated_eval_registry_change_request_record["generated_eval_registry_change_request_record\ncoordination"]
+  art_generated_eval_registry_change_reversal_record["generated_eval_registry_change_reversal_record\ncoordination"]
+  art_generated_eval_registry_change_review_record["generated_eval_registry_change_review_record\ncoordination"]
   art_github_review_handoff_artifact["github_review_handoff_artifact\ncoordination"]
   art_global_invariant_check_record["global_invariant_check_record\ncoordination"]
   art_glossary_entry["glossary_entry\ncoordination"]
@@ -1787,6 +1791,10 @@ flowchart TD
   con_generated_eval_candidate_queue["generated_eval_candidate_queue\ncontract"]
   con_generated_eval_candidate_record["generated_eval_candidate_record\ncontract"]
   con_generated_eval_case["generated_eval_case\ncontract"]
+  con_generated_eval_registry_change_execution_record["generated_eval_registry_change_execution_record\ncontract"]
+  con_generated_eval_registry_change_request_record["generated_eval_registry_change_request_record\ncontract"]
+  con_generated_eval_registry_change_reversal_record["generated_eval_registry_change_reversal_record\ncontract"]
+  con_generated_eval_registry_change_review_record["generated_eval_registry_change_review_record\ncontract"]
   con_github_review_handoff_artifact["github_review_handoff_artifact\ncontract"]
   con_global_invariant_check_record["global_invariant_check_record\ncontract"]
   con_glossary_entry["glossary_entry\ncontract"]
@@ -3066,6 +3074,10 @@ flowchart TD
   art_generated_eval_candidate_queue -. governed_by .-> con_generated_eval_candidate_queue
   art_generated_eval_candidate_record -. governed_by .-> con_generated_eval_candidate_record
   art_generated_eval_case -. governed_by .-> con_generated_eval_case
+  art_generated_eval_registry_change_execution_record -. governed_by .-> con_generated_eval_registry_change_execution_record
+  art_generated_eval_registry_change_request_record -. governed_by .-> con_generated_eval_registry_change_request_record
+  art_generated_eval_registry_change_reversal_record -. governed_by .-> con_generated_eval_registry_change_reversal_record
+  art_generated_eval_registry_change_review_record -. governed_by .-> con_generated_eval_registry_change_review_record
   art_github_review_handoff_artifact -. governed_by .-> con_github_review_handoff_artifact
   art_global_invariant_check_record -. governed_by .-> con_global_invariant_check_record
   art_glossary_entry -. governed_by .-> con_glossary_entry
@@ -4345,6 +4357,10 @@ flowchart TD
   con_generated_eval_candidate_queue -->|validates| art_generated_eval_candidate_queue
   con_generated_eval_candidate_record -->|validates| art_generated_eval_candidate_record
   con_generated_eval_case -->|validates| art_generated_eval_case
+  con_generated_eval_registry_change_execution_record -->|validates| art_generated_eval_registry_change_execution_record
+  con_generated_eval_registry_change_request_record -->|validates| art_generated_eval_registry_change_request_record
+  con_generated_eval_registry_change_reversal_record -->|validates| art_generated_eval_registry_change_reversal_record
+  con_generated_eval_registry_change_review_record -->|validates| art_generated_eval_registry_change_review_record
   con_github_review_handoff_artifact -->|validates| art_github_review_handoff_artifact
   con_global_invariant_check_record -->|validates| art_global_invariant_check_record
   con_glossary_entry -->|validates| art_glossary_entry
