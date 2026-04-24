@@ -160,3 +160,22 @@ def propose_system(
 def get_all_justified_systems() -> List[str]:
     """Return list of all system IDs with valid justifications."""
     return [sid for sid in SYSTEM_JUSTIFICATIONS if validate_system_justification(sid)[0]]
+
+
+def validate_phase_justification(
+    phase: Dict[str, Any],
+    *,
+    run_id: str,
+    trace_id: str,
+) -> Dict[str, Any]:
+    """Delegate to the RGE phase justification gate (Principle 1).
+
+    Kept here so governance callers have a single well-known entry point for
+    phase-level justification. The RGE module owns the implementation and
+    artifact emission; this function simply forwards the call.
+    """
+    from spectrum_systems.rge.phase_justification_gate import (
+        validate_phase_justification as _rge_validate,
+    )
+
+    return _rge_validate(phase, run_id=run_id, trace_id=trace_id)

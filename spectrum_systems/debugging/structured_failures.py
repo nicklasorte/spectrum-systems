@@ -34,6 +34,9 @@ RUNBOOK_INDEX: Dict[str, str] = {
     "batch_constraint_check": "docs/runbooks/eval_constraint_failures.md",
     "umbrella_constraint_check": "docs/runbooks/eval_constraint_failures.md",
     "provenance_check": "docs/runbooks/eval_provenance_failures.md",
+    "rge_justification_gate": "docs/runbooks/rge_justification_gate_failures.md",
+    "rge_loop_contribution": "docs/runbooks/rge_loop_contribution_failures.md",
+    "rge_debuggability_gate": "docs/runbooks/rge_debuggability_gate_failures.md",
     "default": "docs/runbooks/system_debug_guide.md",
 }
 

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/debuggability_assessment_record.schema.json",
+  "title": "debuggability_assessment_record",
+  "description": "RGE Principle 3 assessment. Returns gaps for rewrite - never silently passes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "run_id",
+    "trace_id",
+    "created_at",
+    "phase_id",
+    "phase_name",
+    "explainability_score",
+    "threshold",
+    "decision",
+    "gaps",
+    "glossary",
+    "runbook",
+    "principle"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "debuggability_assessment_record" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "record_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "phase_id": { "type": "string" },
+    "phase_name": { "type": "string" },
+    "explainability_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "threshold": { "type": "number" },
+    "decision": { "type": "string", "enum": ["pass", "return_for_rewrite"] },
+    "gaps": { "type": "array", "items": { "type": "string" } },
+    "glossary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["system", "definition"],
+        "additionalProperties": false,
+        "properties": {
+          "system": { "type": "string" },
+          "definition": { "type": "string" }
+        }
+      }
+    },
+    "runbook": { "type": "string" },
+    "principle": { "type": "string", "const": "optimize_for_debuggability" }
+  }
+}

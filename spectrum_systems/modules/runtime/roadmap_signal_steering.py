@@ -212,3 +212,40 @@ def select_priority_batch(eligible_batch_ids: list[str], bundle: dict[str, Any])
             by_weight[target_batch_id] += int(row.get("weight", 0))
 
     return sorted(eligible_batch_ids, key=lambda bid: (-by_weight[bid], eligible_batch_ids.index(bid)))[0]
+
+
+_CANONICAL_LOOP_LEGS = frozenset({
+    "AEX", "PQX", "EVL", "TPA", "CDE", "SEL",
+    "REP", "LIN", "OBS", "SLO",
+})
+
+_NON_DRIFT_SEVERITY = frozenset({"none", ""})
+
+
+def get_active_drift_legs(bundle: dict[str, Any] | None) -> list[str]:
+    """Return the canonical loop legs currently carrying active drift.
+
+    Consumed by the RGE Loop Contribution Checker. A leg is considered 'in
+    drift' when at least one finding with severity above 'none' names the
+    leg in its affected_component string. Returns a sorted, de-duplicated
+    list of leg codes.
+    """
+    if not bundle:
+        return []
+    findings: list[Any] = []
+    for key in ("drift_findings", "findings", "drift_findings_input"):
+        value = bundle.get(key)
+        if isinstance(value, list):
+            findings.extend(value)
+    legs: set[str] = set()
+    for finding in findings:
+        if not isinstance(finding, dict):
+            continue
+        severity = str(finding.get("severity", "")).lower()
+        if severity in _NON_DRIFT_SEVERITY:
+            continue
+        component = str(finding.get("affected_component", "")).upper()
+        for leg in _CANONICAL_LOOP_LEGS:
+            if leg in component:
+                legs.add(leg)
+    return sorted(legs)

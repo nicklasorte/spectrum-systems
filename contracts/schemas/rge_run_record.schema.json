@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rge_run_record.schema.json",
+  "title": "rge_run_record",
+  "description": "Top-level RGE run record. References every child record.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "run_id",
+    "trace_id",
+    "created_at",
+    "analysis_record_id",
+    "roadmap_record_id",
+    "redteam_record_id",
+    "amendment_record_id",
+    "trust_record_id",
+    "recursion_record_ids",
+    "admitted_phase_count",
+    "blocked_proposal_count",
+    "finding_count",
+    "amendment_count",
+    "resolved_trust_mode",
+    "execute",
+    "queued_for_human",
+    "terminal_state",
+    "branch_update_allowed"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "rge_run_record" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "record_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "analysis_record_id": { "type": "string" },
+    "roadmap_record_id": { "type": "string" },
+    "redteam_record_id": { "type": "string" },
+    "amendment_record_id": { "type": "string" },
+    "trust_record_id": { "type": "string" },
+    "recursion_record_ids": { "type": "array", "items": { "type": "string" } },
+    "admitted_phase_count": { "type": "integer", "minimum": 0 },
+    "blocked_proposal_count": { "type": "integer", "minimum": 0 },
+    "finding_count": { "type": "integer", "minimum": 0 },
+    "amendment_count": { "type": "integer", "minimum": 0 },
+    "resolved_trust_mode": {
+      "type": "string",
+      "enum": ["shadow", "warn_gated", "autonomous"]
+    },
+    "execute": { "type": "boolean" },
+    "queued_for_human": { "type": "boolean" },
+    "terminal_state": {
+      "type": "string",
+      "enum": ["blocked", "queued_for_human", "ready_for_merge", "no_action"]
+    },
+    "branch_update_allowed": { "type": "boolean" }
+  }
+}

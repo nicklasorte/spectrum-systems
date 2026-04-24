@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rge_trust_record.schema.json",
+  "title": "rge_trust_record",
+  "description": "Emitted by the RGE Trust Bootstrapper for every recommendation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "run_id",
+    "trace_id",
+    "created_at",
+    "recommendation_id",
+    "confidence",
+    "evidence_coverage_score",
+    "calibration_gap",
+    "prior_mode",
+    "desired_mode",
+    "resolved_mode",
+    "execute",
+    "adjudication_has_cde",
+    "adjudication_has_tpa",
+    "transition_blocked",
+    "transition_reason",
+    "thresholds"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "rge_trust_record" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "record_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "recommendation_id": { "type": "string" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "evidence_coverage_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "calibration_gap": { "type": "number", "minimum": 0, "maximum": 1 },
+    "prior_mode": { "type": "string", "enum": ["shadow", "warn_gated", "autonomous"] },
+    "desired_mode": { "type": "string", "enum": ["shadow", "warn_gated", "autonomous"] },
+    "resolved_mode": { "type": "string", "enum": ["shadow", "warn_gated", "autonomous"] },
+    "execute": { "type": "boolean" },
+    "adjudication_has_cde": { "type": "boolean" },
+    "adjudication_has_tpa": { "type": "boolean" },
+    "transition_blocked": { "type": "boolean" },
+    "transition_reason": { "type": ["string", "null"] },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shadow_to_warn_gated", "warn_gated_to_autonomous"],
+      "properties": {
+        "shadow_to_warn_gated": { "type": "number" },
+        "warn_gated_to_autonomous": { "type": "number" }
+      }
+    }
+  }
+}

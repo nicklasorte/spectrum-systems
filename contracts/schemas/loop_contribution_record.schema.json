@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/loop_contribution_record.schema.json",
+  "title": "loop_contribution_record",
+  "description": "Emitted by the RGE Loop Contribution Checker for every proposed phase.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "run_id",
+    "trace_id",
+    "created_at",
+    "phase_id",
+    "phase_name",
+    "loop_leg",
+    "decision",
+    "errors",
+    "warnings",
+    "active_drift_legs",
+    "leg_saturation",
+    "principle"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "loop_contribution_record" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "record_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "phase_id": { "type": "string" },
+    "phase_name": { "type": "string" },
+    "loop_leg": { "type": "string" },
+    "decision": { "type": "string", "enum": ["allow", "block"] },
+    "errors": { "type": "array", "items": { "type": "string" } },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "active_drift_legs": { "type": "array", "items": { "type": "string" } },
+    "leg_saturation": { "type": "object" },
+    "principle": { "type": "string", "const": "build_fewer_stronger_loops" }
+  }
+}
