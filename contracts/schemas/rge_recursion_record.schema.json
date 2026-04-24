@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rge_recursion_record.schema.json",
+  "title": "rge_recursion_record",
+  "description": "Emitted by the RGE Recursion Governor for every recursive call.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "run_id",
+    "trace_id",
+    "created_at",
+    "proposed_phase_name",
+    "proposed_phase_signature",
+    "current_depth",
+    "max_depth",
+    "weekly_budget_used",
+    "weekly_budget_cap",
+    "ancestor_phase_names",
+    "decision",
+    "block_reasons",
+    "allowed"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "rge_recursion_record" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "record_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "proposed_phase_name": { "type": "string" },
+    "proposed_phase_signature": { "type": "string" },
+    "current_depth": { "type": "integer", "minimum": 0 },
+    "max_depth": { "type": "integer", "minimum": 0 },
+    "weekly_budget_used": { "type": "integer", "minimum": 0 },
+    "weekly_budget_cap": { "type": "integer", "minimum": 1 },
+    "ancestor_phase_names": { "type": "array", "items": { "type": "string" } },
+    "decision": {
+      "type": "string",
+      "enum": ["allow", "block_depth", "block_budget", "block_cycle"]
+    },
+    "block_reasons": { "type": "array", "items": { "type": "string" } },
+    "allowed": { "type": "boolean" }
+  }
+}
