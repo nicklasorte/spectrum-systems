@@ -12,8 +12,16 @@ The six checks:
   5. DELETION-GUARD        - deletion phases must cite the module they delete
   6. MG-21-SESSION-REALISM - orchestrator session budget sanity check
 
-Finding routing uses the canonical RQX class-to-owner mapping. Unrecognized
-classes fall back to a generic "RGE" owner to avoid silent drops.
+Each RGE finding class is mapped to a canonical RQX finding class, then routed
+through `rqx_redteam_orchestrator.route_finding_owner` to produce the
+governed routing record (owner + routing_ref). Findings whose class has no
+RQX mapping fall back to a generic "RGE" owner so nothing is silently dropped.
+
+Findings are bucketed `must_fix | warn`:
+  - must_fix: structural defects that block roadmap promotion
+  - warn:     advisory signals that do not block (saturation, realism)
+
+`decision` blocks iff at least one `must_fix` finding exists.
 """
 from __future__ import annotations
 
@@ -23,16 +31,45 @@ from datetime import datetime, timezone
 from typing import Any
 
 from spectrum_systems.contracts import validate_artifact
+from spectrum_systems.modules.runtime.rqx_redteam_orchestrator import (
+    RQXRedTeamError,
+    build_redteam_finding_record,
+    route_finding_owner as rqx_route_finding_owner,
+)
 
 
-_CLASS_TO_OWNER: dict[str, str] = {
-    "red_team_pairing_missing": "PQX",
-    "circular_failure_chain": "CDE",
-    "same_leg_same_batch": "TLC",
-    "complexity_on_freeze": "TPA",
-    "deletion_guard_violation": "GOV",
-    "mg_21_session_violation": "MG",
+# Map RGE finding classes -> canonical RQX finding classes.
+# RQX classes are: interpretation, repair_planning, decision_quality,
+# enforcement_mismatch, execution_trace, trust_policy.
+_RGE_TO_RQX_CLASS: dict[str, str] = {
+    "red_team_pairing_missing":  "execution_trace",
+    "circular_failure_chain":    "decision_quality",
+    "same_leg_same_batch":       "repair_planning",
+    "complexity_on_freeze":      "trust_policy",
+    "deletion_guard_violation":  "enforcement_mismatch",
+    "mg_21_session_violation":   "interpretation",
 }
+
+# Canonical RQX-class -> owner mapping (mirrors rqx_redteam_orchestrator._OWNER_BY_CLASS).
+_RQX_OWNER_BY_CLASS: dict[str, str] = {
+    "interpretation":       "RIL",
+    "repair_planning":      "FRE",
+    "decision_quality":     "CDE",
+    "enforcement_mismatch": "SEL",
+    "execution_trace":      "PQX",
+    "trust_policy":         "TPA",
+}
+
+# Findings that block roadmap promotion (must_fix).
+# Anything not listed here is advisory (warn).
+_MUST_FIX_CLASSES: frozenset[str] = frozenset({
+    "red_team_pairing_missing",
+    "circular_failure_chain",
+    "complexity_on_freeze",
+    "deletion_guard_violation",
+})
+
+_FALLBACK_OWNER = "RGE"
 
 
 def _utc_now() -> str:
@@ -50,12 +87,74 @@ def _stable_id(payload: dict[str, Any]) -> str:
 
 
 def route_finding_owner(finding_class: str) -> str:
-    """Return canonical 3LS owner for a finding class.
+    """Return canonical 3LS owner for an RGE finding class.
 
-    Falls back to 'RGE' for classes without a mapping, so no finding is silently
-    dropped.
+    Resolves the RGE class to its RQX canonical class, then to the canonical
+    3LS owner. Unmapped classes fall back to 'RGE' so nothing is silently
+    dropped. (See `_route_via_rqx` for the schema-validated routing record
+    used on each finding emitted by `red_team_roadmap`.)
     """
-    return _CLASS_TO_OWNER.get(finding_class, "RGE")
+    rqx_class = _RGE_TO_RQX_CLASS.get(finding_class)
+    if rqx_class is None:
+        return _FALLBACK_OWNER
+    return _RQX_OWNER_BY_CLASS.get(rqx_class, _FALLBACK_OWNER)
+
+
+def _route_via_rqx(
+    *,
+    rge_class: str,
+    statement: str,
+    affected_phases: list[Any],
+    trace_id: str,
+) -> dict[str, Any]:
+    """Build a redteam_finding_record and route it through RQX.
+
+    Returns a routing dict with `owner`, `routing_reason`, `routing_ref`,
+    `finding_id`, and `rqx_class`. Falls back to a local owner record when
+    the RGE class has no canonical RQX mapping or RQX rejects the input,
+    so no finding is silently dropped.
+    """
+    rqx_class = _RGE_TO_RQX_CLASS.get(rge_class)
+    if rqx_class is None:
+        return {
+            "owner": _FALLBACK_OWNER,
+            "routing_reason": f"class:{rge_class}",
+            "routing_ref": "redteam_finding_record:UNROUTED",
+            "finding_id": "",
+            "rqx_class": "",
+            "rqx_routed": False,
+        }
+
+    exploit_refs = [str(p) for p in affected_phases if p] or [f"rge_class:{rge_class}"]
+    bounded_scope = f"rge_red_teamer:{rge_class}"
+
+    try:
+        finding_record = build_redteam_finding_record(
+            trace_id=trace_id,
+            finding_class=rqx_class,
+            finding_statement=statement or f"RGE {rge_class}",
+            exploit_refs=exploit_refs,
+            bounded_scope=bounded_scope,
+        )
+        routing = rqx_route_finding_owner(finding_record=finding_record)
+    except RQXRedTeamError:
+        return {
+            "owner": _RQX_OWNER_BY_CLASS.get(rqx_class, _FALLBACK_OWNER),
+            "routing_reason": f"class:{rge_class}",
+            "routing_ref": "redteam_finding_record:RQX_REJECTED",
+            "finding_id": "",
+            "rqx_class": rqx_class,
+            "rqx_routed": False,
+        }
+
+    return {
+        "owner": routing["owner"],
+        "routing_reason": f"class:{rge_class}",
+        "routing_ref": routing["routing_ref"],
+        "finding_id": finding_record["finding_id"],
+        "rqx_class": rqx_class,
+        "rqx_routed": True,
+    }
 
 
 def _check_red_team_pairing(phases: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -209,21 +308,41 @@ def red_team_roadmap(
     raw_findings.extend(_check_mg_21_session_realism(phases, session_budget_hours))
 
     routed: list[dict[str, Any]] = []
+    must_fix_count = 0
+    warn_count = 0
     for f in raw_findings:
-        owner = route_finding_owner(f["finding_class"])
+        rge_class = f["finding_class"]
+        routing = _route_via_rqx(
+            rge_class=rge_class,
+            statement=f["statement"],
+            affected_phases=f["affected_phases"],
+            trace_id=trace_id,
+        )
+        is_must_fix = rge_class in _MUST_FIX_CLASSES
+        if is_must_fix:
+            must_fix_count += 1
+        else:
+            warn_count += 1
         routed.append({
-            "finding_class": f["finding_class"],
+            "finding_class": rge_class,
             "statement": f["statement"],
             "affected_phases": f["affected_phases"],
-            "owner": owner,
-            "routing_reason": f"class:{f['finding_class']}",
+            "owner": routing["owner"],
+            "routing_reason": routing["routing_reason"],
+            "rqx_routing": {
+                "rqx_class": routing["rqx_class"],
+                "routing_ref": routing["routing_ref"],
+                "finding_id": routing["finding_id"],
+                "rqx_routed": routing["rqx_routed"],
+            },
+            "must_fix": is_must_fix,
         })
 
-    decision = "block" if routed else "pass"
+    decision = "block" if must_fix_count > 0 else "pass"
 
     record = {
         "artifact_type": "rge_redteam_record",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "record_id": _stable_id({"run_id": run_id, "findings": len(routed)}),
         "run_id": run_id,
         "trace_id": trace_id,
@@ -231,6 +350,9 @@ def red_team_roadmap(
         "roadmap_record_id": str(roadmap.get("record_id", "")),
         "decision": decision,
         "finding_count": len(routed),
+        "must_fix_count": must_fix_count,
+        "warn_count": warn_count,
+        "roadmap_approved": must_fix_count == 0,
         "findings": routed,
         "checks_run": [
             "red_team_pairing",
