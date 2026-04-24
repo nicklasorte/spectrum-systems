@@ -138,3 +138,91 @@ def test_invalid_prior_mode_defaults_to_shadow():
         prior_mode="made_up",
     )
     assert r["prior_mode"] == "shadow"
+
+
+def test_schema_version_is_1_1_0():
+    r = assess_trust(
+        run_id=_RUN, trace_id=_TRACE, recommendation_id="rec-v", confidence=0.5
+    )
+    assert r["schema_version"] == "1.1.0"
+
+
+def test_phase_attribution_default_empty():
+    """Without phase_id/phase_name, the legacy shape works as before."""
+    r = assess_trust(
+        run_id=_RUN, trace_id=_TRACE, recommendation_id="rec-p1", confidence=0.5
+    )
+    assert r["phase_id"] == ""
+    assert r["phase_name"] == ""
+    validate_artifact(r, "rge_trust_record")
+
+
+def test_phase_attribution_propagated():
+    """When phase_id/phase_name are supplied, they appear on the record."""
+    r = assess_trust(
+        run_id=_RUN,
+        trace_id=_TRACE,
+        recommendation_id="rec-p2",
+        confidence=0.7,
+        phase_id="STR-EVL",
+        phase_name="Strengthen EVL drift leg",
+    )
+    assert r["phase_id"] == "STR-EVL"
+    assert r["phase_name"] == "Strengthen EVL drift leg"
+
+
+def test_phase_attribution_changes_record_id():
+    """Same recommendation, different phase -> different record_id."""
+    base = dict(
+        run_id=_RUN, trace_id=_TRACE, recommendation_id="rec-shared",
+        confidence=0.7, prior_mode="shadow",
+    )
+    r1 = assess_trust(**base, phase_id="P1", phase_name="A")
+    r2 = assess_trust(**base, phase_id="P2", phase_name="B")
+    r_legacy = assess_trust(**base)
+    assert r1["record_id"] != r2["record_id"]
+    assert r1["record_id"] != r_legacy["record_id"]
+
+
+def test_decision_counts_tally_outcomes():
+    history = (
+        [{"outcome": "accept"}] * 5
+        + [{"outcome": "reject"}] * 2
+        + [{"outcome": "override"}] * 1
+        + [{"outcome": "unknown_thing"}] * 1
+    )
+    r = assess_trust(
+        run_id=_RUN, trace_id=_TRACE, recommendation_id="rec-c1",
+        confidence=0.6, decision_history=history,
+    )
+    counts = r["decision_counts"]
+    assert counts["accepted"] == 5
+    assert counts["rejected"] == 2
+    assert counts["overridden"] == 1
+    assert counts["unknown"] == 1
+    assert counts["total"] == 9
+
+
+def test_decision_counts_zero_when_no_history():
+    r = assess_trust(
+        run_id=_RUN, trace_id=_TRACE, recommendation_id="rec-c2", confidence=0.5
+    )
+    counts = r["decision_counts"]
+    assert counts == {
+        "accepted": 0, "rejected": 0, "overridden": 0, "unknown": 0, "total": 0,
+    }
+
+
+def test_phase_attribution_does_not_change_trust_logic():
+    """Adding phase_id must not affect mode resolution or execute flag."""
+    history = [{"outcome": "accept"}] * 10
+    common = dict(
+        run_id=_RUN, trace_id=_TRACE, recommendation_id="rec-eq",
+        confidence=0.95, decision_history=history, prior_mode="shadow",
+        adjudication_bundle={"cde_decision": "allow", "tpa_record": "TPA-1"},
+    )
+    r_no_phase = assess_trust(**common)
+    r_with_phase = assess_trust(**common, phase_id="P1", phase_name="Alpha")
+    assert r_no_phase["resolved_mode"] == r_with_phase["resolved_mode"]
+    assert r_no_phase["execute"] == r_with_phase["execute"]
+    assert r_no_phase["evidence_coverage_score"] == r_with_phase["evidence_coverage_score"]

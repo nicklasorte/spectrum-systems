@@ -11,7 +11,9 @@ Modes:
 Mode transitions must be witnessed by an adjudication bundle containing both a
 CDE decision and a TPA record. Without both, the transition is blocked.
 
-Every recommendation emits an `rge_trust_record`.
+Every recommendation emits an `rge_trust_record`. Records may optionally carry
+a `phase_id`/`phase_name` and a per-outcome decision tally so trust can be
+audited per-phase rather than only per-recommendation.
 """
 from __future__ import annotations
 
@@ -72,6 +74,26 @@ def _evidence_coverage_score(decisions: list[dict[str, Any]]) -> float:
     return round(total / n, 3)
 
 
+def _decision_counts(decisions: list[dict[str, Any]]) -> dict[str, int]:
+    """Tally accept/reject/override outcomes from decision history.
+
+    Unknown outcomes are counted under `unknown` so nothing is silently
+    dropped.
+    """
+    counts = {"accepted": 0, "rejected": 0, "overridden": 0, "unknown": 0}
+    for d in decisions or []:
+        outcome = str(d.get("outcome", "")).lower()
+        if outcome == "accept":
+            counts["accepted"] += 1
+        elif outcome == "reject":
+            counts["rejected"] += 1
+        elif outcome == "override":
+            counts["overridden"] += 1
+        else:
+            counts["unknown"] += 1
+    return counts
+
+
 def assess_trust(
     *,
     run_id: str,
@@ -81,6 +103,8 @@ def assess_trust(
     decision_history: list[dict[str, Any]] | None = None,
     adjudication_bundle: dict[str, Any] | None = None,
     prior_mode: str = "shadow",
+    phase_id: str | None = None,
+    phase_name: str | None = None,
 ) -> dict[str, Any]:
     """Produce a trust record for a single RGE recommendation.
 
@@ -92,6 +116,9 @@ def assess_trust(
         adjudication_bundle: dict containing "cde_decision" and "tpa_record"
             required for any mode *transition*
         prior_mode: the prior resolved mode for this surface
+        phase_id, phase_name: optional phase-level attribution; when supplied,
+            the emitted record can be audited per-phase rather than only
+            per-recommendation. Pass None (default) for the legacy shape.
 
     Returns:
         schema-validated rge_trust_record
@@ -101,6 +128,7 @@ def assess_trust(
 
     score = _evidence_coverage_score(decision_history or [])
     desired = _mode_for(score)
+    counts = _decision_counts(decision_history or [])
 
     bundle = adjudication_bundle or {}
     has_cde = bool(bundle.get("cde_decision"))
@@ -126,21 +154,33 @@ def assess_trust(
 
     execute = resolved_mode != "shadow"
 
+    total = counts["accepted"] + counts["rejected"] + counts["overridden"] + counts["unknown"]
+
     record = {
         "artifact_type": "rge_trust_record",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "record_id": _stable_id({
             "run_id": run_id,
             "recommendation_id": recommendation_id,
+            "phase_id": phase_id or "",
             "mode": resolved_mode,
         }),
         "run_id": run_id,
         "trace_id": trace_id,
         "created_at": _utc_now(),
         "recommendation_id": recommendation_id,
+        "phase_id": phase_id or "",
+        "phase_name": phase_name or "",
         "confidence": round(float(confidence), 3),
         "evidence_coverage_score": score,
         "calibration_gap": calibration_gap,
+        "decision_counts": {
+            "accepted": counts["accepted"],
+            "rejected": counts["rejected"],
+            "overridden": counts["overridden"],
+            "unknown": counts["unknown"],
+            "total": total,
+        },
         "prior_mode": prior_mode,
         "desired_mode": desired,
         "resolved_mode": resolved_mode,
