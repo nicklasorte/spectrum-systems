@@ -207,7 +207,7 @@ class TestBuildSelEnforcementRecord:
 
 class TestEnforcementGateCycle:
     def test_full_cycle_block_decision(self) -> None:
-        """Simulate: CDE emits block → gate marks enforcement required → SEL records → verify."""
+        """Full cycle: block decision → gate marks enforcement required → record produced → verified."""
         cde = _cde_decision("block", "ECD-CYCLE001")
         gate = apply_enforcement_gate(cde)
 
@@ -225,7 +225,7 @@ class TestEnforcementGateCycle:
         assert verification["verified"] is True
 
     def test_full_cycle_allow_decision_no_record_needed(self) -> None:
-        """Simulate: CDE emits allow → gate marks no enforcement → no record needed."""
+        """Full cycle: allow decision → gate marks no enforcement → no record needed."""
         cde = _cde_decision("allow", "ECD-ALLOW001")
         gate = apply_enforcement_gate(cde)
 

@@ -1,20 +1,17 @@
-"""Enforcement gate — mandatory enforcement_action_record requirement for all non-allow decisions.
+"""Enforcement gate — mandatory enforcement recording check for non-allow control decisions.
 
-This module is the bridge between CDE (decision authority) and SEL (enforcement authority).
-It wraps every CDE decision with an explicit enforcement requirement record so:
-
-1. No non-allow decision can proceed to SEL without a documented enforcement requirement.
-2. SEL must record the enforcement_action_record BEFORE executing the action.
-3. Bypass is structurally impossible — the gate is not optional.
+Validates that enforcement preconditions are satisfied before any control decision
+with a non-allow response proceeds to enforcement execution. Wraps incoming decision
+artifacts with an explicit enforcement_required marker so the execution path can
+verify the record exists before acting.
 
 Design rules
 ------------
-- CDE produces decisions; this gate marks their enforcement obligations.
-- SEL consumes the enforcement_gate_decision; it must record before acting.
-- allow decisions pass through with enforcement_required=False.
-- warn/freeze/block decisions carry enforcement_required=True and
-  enforcement_action_record_required_before_execution=True.
-- Missing enforcement_action_record when required = hard fail (never silence).
+- Decision artifacts with system_response in {warn, freeze, block} require recording.
+- The enforcement_action_record must be produced BEFORE the enforcement action executes.
+- Bypass is structurally impossible — verify_enforcement_recorded() raises on missing record.
+- allow responses pass through with enforcement_required=False.
+- Missing record when required = hard fail (RuntimeError, never silence).
 """
 from __future__ import annotations
 
