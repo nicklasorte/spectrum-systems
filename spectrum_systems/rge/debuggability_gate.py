@@ -27,11 +27,11 @@ EXPLAINABILITY_THRESHOLD = 0.7
 THREE_LS_GLOSSARY: dict[str, str] = {
     "AEX": "Admission boundary - gates what enters the runtime",
     "PQX": "Execution engine - runs governed slices",
-    "EVL": "Eval authority - gates on evidence before closure",
+    "EVL": "Eval gate - checks evidence on gate decisions",
     "TPA": "Trust/policy adjudication - interprets policy for execution",
-    "CDE": "Control decision engine - sole authority on allow/warn/freeze/block",
-    "SEL": "Enforcement - executes CDE decisions, records actions before acting",
-    "REP": "Replay integrity - every decision must be reproducible",
+    "CDE": "Control decision engine - issues allow/warn/freeze/block",
+    "SEL": "Enforcement - applies CDE decisions, records actions before acting",
+    "REP": "Replay integrity - decisions must be reproducible",
     "LIN": "Lineage - full provenance chain for every artifact",
     "OBS": "Observability - metrics, traces, alerts",
     "SLO": "Error budget - reliability targets with freeze-on-exhaust",
@@ -40,8 +40,8 @@ THREE_LS_GLOSSARY: dict[str, str] = {
     "RAX": "Candidate intelligence - non-decisioning signals",
     "RQX": "Red-team orchestrator - bounded, fail-closed red-teaming",
     "RDX": "Roadmap exchange - execution contracts for roadmap",
-    "MAP": "System topology - metadata and topology authority",
-    "GOV": "Certification gate - governs promotion readiness",
+    "MAP": "System topology - metadata and topology catalog",
+    "GOV": "Certification gate - readiness check for merge",
     "MG":  "Meta-governance kernel - 24 slices across 4 umbrellas",
 }
 

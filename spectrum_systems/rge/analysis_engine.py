@@ -8,7 +8,7 @@ Emits: rge_analysis_record
 
 Measured signals:
   - context_maturity_level: 0-10 based on presence of key runtime modules
-  - active_drift_legs: from roadmap_signal_steering.get_active_drift_legs
+  - active_drift_legs: from loop_contribution_checker.get_active_drift_legs
   - complexity_budget_by_module: per-module burn rate
   - mg_slice_health: which meta-governance slices are present
   - fragile_points: modules currently flagged as fragile
@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from spectrum_systems.contracts import validate_artifact
-from spectrum_systems.modules.runtime.roadmap_signal_steering import (
+from spectrum_systems.rge.loop_contribution_checker import (
     get_active_drift_legs,
 )
 
