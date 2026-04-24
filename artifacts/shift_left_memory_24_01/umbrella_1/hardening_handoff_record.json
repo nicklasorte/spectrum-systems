@@ -2,6 +2,6 @@
   "artifact_type": "hardening_handoff_record",
   "slice_id": "SM-05",
   "owner": "TLC",
-  "generated_at": "2026-04-24T12:21:33Z",
+  "generated_at": "2026-04-24T12:26:11Z",
   "orchestration_only": true
 }

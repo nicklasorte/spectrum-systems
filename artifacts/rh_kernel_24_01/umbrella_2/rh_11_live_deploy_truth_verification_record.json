@@ -3,7 +3,7 @@
   "batch_id": "RH-KERNEL-24-01",
   "slice_id": "RH-11",
   "owner": "SEL",
-  "generated_at": "2026-04-24T12:20:45Z",
+  "generated_at": "2026-04-24T12:25:28Z",
   "publication_completeness": "pass",
   "freshness_expectations": "pass",
   "fallback_live_truth_boundaries": "pass"

@@ -1,7 +1,7 @@
 {
   "artifact_type": "deploy_ci_truth_gate",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-24T12:22:30Z",
+  "generated_at": "2026-04-24T12:27:02Z",
   "checks": {
     "build": "pass",
     "lint": "pass",

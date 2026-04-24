@@ -4,7 +4,7 @@
   "step": 22,
   "phase": 8,
   "owner": "CDE",
-  "generated_at": "2026-04-24T12:20:43Z",
+  "generated_at": "2026-04-24T12:25:26Z",
   "decision": "not_ready_until_merge_path_guards_satisfied",
   "authoritative": true
 }

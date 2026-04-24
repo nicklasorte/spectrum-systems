@@ -1,7 +1,7 @@
 {
   "artifact_type": "guidance_compliance_score",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-24T12:21:20Z",
+  "generated_at": "2026-04-24T12:25:59Z",
   "guided_actions": 6,
   "followed_actions": 4,
   "compliance_score": 0.6667,
