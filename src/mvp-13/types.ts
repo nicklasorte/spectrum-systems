@@ -1,5 +1,6 @@
 export interface DoneCertificationRecord {
-  artifact_kind: "done_certification_record";
+  artifact_type: "done_certification_record";
+  schema_version: "1.0.0";
   artifact_id: string;
   created_at: string;
   schema_ref: string;
@@ -11,7 +12,8 @@ export interface DoneCertificationRecord {
 }
 
 export interface ReleaseArtifact {
-  artifact_kind: "release_artifact";
+  artifact_type: "release_artifact";
+  schema_version: "1.0.0";
   artifact_id: string;
   created_at: string;
   schema_ref: string;

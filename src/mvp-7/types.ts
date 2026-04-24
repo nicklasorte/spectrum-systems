@@ -9,7 +9,8 @@ export interface StructuredIssue {
 }
 
 export interface StructuredIssueSet {
-  artifact_kind: "structured_issue_set";
+  artifact_type: "structured_issue_set";
+  schema_version: "1.0.0";
   artifact_id: string;
   created_at: string;
   schema_ref: string;

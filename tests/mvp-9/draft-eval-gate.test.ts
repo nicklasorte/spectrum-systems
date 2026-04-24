@@ -1,10 +1,12 @@
-import { runDraftEvalGate } from "@/src/mvp-9/draft-eval-gate";
+import { runDraftEvalGate } from "../../src/mvp-9/draft-eval-gate";
 
 describe("MVP-9: Draft Quality Eval Gate", () => {
   it("should validate draft quality", async () => {
-    const result = await runDraftEvalGate("draft-id", "issue-set-id", 
+    const result = await runDraftEvalGate(
+      "draft-id",
+      "issue-set-id",
       {
-        artifact_kind: "paper_draft_artifact",
+        artifact_type: "paper_draft_artifact",
         sections: {
           abstract: "test",
           introduction: "test",
@@ -12,11 +14,15 @@ describe("MVP-9: Draft Quality Eval Gate", () => {
           recommendations: "test",
           conclusion: "test",
         },
-        content_hash: "sha256:test"
+        content_hash: "sha256:test",
       },
       { artifact_id: "issue-set-id" }
     );
     expect(result.success).toBe(true);
     expect(result.eval_summary?.overall_status).toBe("pass");
+    expect(result.control_decision?.decision).toBe("allow");
+    expect(result.control_decision?.artifact_type).toBe(
+      "evaluation_control_decision"
+    );
   });
 });
