@@ -97,7 +97,7 @@ def _evaluate_status(metric: str, value: float, slo_def: Dict[str, Any]) -> SloS
     # lower-is-better (default)
     if value <= slo_def["alert_threshold"]:
         return "pass"
-    if value <= slo_def["target"]:
+    if value < slo_def["target"]:
         return "warning"
     return "critical"
 

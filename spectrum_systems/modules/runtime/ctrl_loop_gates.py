@@ -373,7 +373,7 @@ def check_longitudinal_calibration(
     if not calibration_status:
         issues.append("calibration_record missing calibration_status")
 
-    if isinstance(rate, (int, float)) and rate > max_disagreement_threshold:
+    if isinstance(rate, (int, float)) and rate >= max_disagreement_threshold:
         issues.append(
             f"Disagreement rate {rate:.1%} exceeds max threshold {max_disagreement_threshold:.1%}"
         )

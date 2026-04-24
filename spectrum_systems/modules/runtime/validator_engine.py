@@ -265,6 +265,16 @@ def _validate_cross_artifact_consistency(name: str, artifact: Any, context: Dict
     """Check cross-artifact consistency using parent_artifact_ids from context."""
     parent_ids = context.get("parent_artifact_ids") or []
     artifact_id = (artifact or {}).get("artifact_id") if isinstance(artifact, dict) else None
+    if artifact_id is None:
+        return {
+            "validator_name": name,
+            "status": "fail",
+            "blocking": True,
+            "reason_codes": ["missing_artifact_id"],
+            "warnings": [],
+            "errors": ["artifact_id is required for cross-artifact consistency check"],
+            "details": {"cross_artifact_consistency": "missing_artifact_id"},
+        }
     if artifact_id and parent_ids and artifact_id in parent_ids:
         return {
             "validator_name": name,
@@ -431,29 +441,40 @@ def _validate_execution_result_schema(result: ValidatorExecutionResult) -> None:
 
 
 def run_validators(
-    required_validators: List[str],
+    names: Optional[List[str]] = None,
     context: Optional[Dict[str, Any]] = None,
+    *,
+    artifact: Optional[Any] = None,
+    required_validators: Optional[List[str]] = None,
 ) -> ValidatorExecutionResult:
     """Canonical entry point for validator execution (BN.8).
 
-    Executes *required_validators* in deterministic canonical order.
+    Executes *names* (or *required_validators*) in deterministic canonical order.
     Caller-provided order is ignored; canonical order always applies.
 
     Parameters
     ----------
-    required_validators:
+    names:
         Validator names requested by the caller.
     context:
         Execution context dict.  Recognised keys: ``artifact``,
         ``stage``, ``runtime_environment``, ``parent_artifact_ids``,
         ``trace_id``, ``parent_span_id``.
+    artifact:
+        Artifact to validate; merged into context under key ``artifact``.
+    required_validators:
+        Backward-compatible alias for *names*.
 
     Returns
     -------
     ValidatorExecutionResult
         Schema-validated structured result dict.
     """
+    if names is None and required_validators is not None:
+        names = required_validators
     context = dict(context or {})
+    if artifact is not None:
+        context["artifact"] = artifact
     artifact = context.get("artifact")
 
     # BK–BM: resolve trace context; auto-start trace if absent (backward-compat)
@@ -473,12 +494,12 @@ def run_validators(
     if not _trace_errors:
         try:
             ve_span_id = start_span(trace_id, "validator_execution", parent_span_id)
-            record_event(ve_span_id, EVENT_VALIDATOR_EXECUTION_STARTED, {"validators_requested": list(required_validators or [])})
+            record_event(ve_span_id, EVENT_VALIDATOR_EXECUTION_STARTED, {"validators_requested": list(names or [])})
         except (TraceNotFoundError, SpanNotFoundError) as exc:
             observability_failures.append(str(exc))
             ve_span_id = None
 
-    validators_requested = list(required_validators or [])
+    validators_requested = list(names or [])
 
     # Normalise to canonical order: canonical-order first, then unknowns.
     canonical_requested = [n for n in CANONICAL_VALIDATOR_ORDER if n in validators_requested]
@@ -626,6 +647,7 @@ def run_validators(
         "validators_passed": validators_passed,
         "validators_failed": validators_failed,
         "validator_results": validator_results,
+        "results": validator_results,
         "overall_status": overall_status,
         "failure_reason_codes": list(dict.fromkeys(all_reason_codes)),
         "evaluated_at": _deterministic_timestamp({"execution_id": execution_id, "trace_id": trace_id}),
