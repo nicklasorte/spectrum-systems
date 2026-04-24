@@ -1,7 +1,7 @@
 {
   "artifact_type": "authenticity_hardgate_artifact_trace",
   "batch_id": "AUTHENTICITY-HARDGATE-24-01",
-  "generated_at": "2026-04-23T00:55:15Z",
+  "generated_at": "2026-04-24T02:01:38Z",
   "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
   "checkpoint_progression": "stopped_on_first_failure_else_continue",
   "umbrella_sequence": [
