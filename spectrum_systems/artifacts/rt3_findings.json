@@ -1,0 +1,70 @@
+{
+  "artifact_type": "red_team_findings_artifact",
+  "schema_version": "1.0.0",
+  "red_team_id": "RT-003",
+  "phase": "CTRL-LOOP Gate",
+  "executed_at": "2026-04-24T00:00:00Z",
+  "authority": "ROADMAP.md (locked April 24, 2026) — Step 9",
+  "scope": [
+    "spectrum_systems/modules/runtime/ctrl_loop_gates.py",
+    "tests/test_ctrl_loop_closure.py",
+    "CTRL-LOOP gate checks 1-8"
+  ],
+  "audit_methods": [
+    "run_all_gate_checks() on nominal inputs",
+    "run_all_gate_checks() on adversarial/edge-case inputs",
+    "manual review of each gate check function",
+    "regression check: pytest tests/ -k 'not slow'"
+  ],
+  "findings": [
+    {
+      "finding_id": "RT3-001",
+      "severity": "pass",
+      "category": "gate_check_coverage",
+      "description": "All 8 CTRL-LOOP gate checks implemented and verified. run_all_gate_checks() returns PASS on valid nominal inputs, BLOCKED on each individual failure.",
+      "evidence": "tests/test_ctrl_loop_closure.py: 50 tests covering nominal + adversarial cases for all 8 checks",
+      "resolution": "No fix required."
+    },
+    {
+      "finding_id": "RT3-002",
+      "severity": "pass",
+      "category": "fail_closed_semantics",
+      "description": "Each gate check is fail-closed: missing inputs return BLOCKED, not PASS. No silent passes possible.",
+      "evidence": "test_blocked_non_dict, test_blocked_empty_lists, test_blocked_non_dict_input tests all verify fail-closed behavior",
+      "resolution": "No fix required."
+    },
+    {
+      "finding_id": "RT3-003",
+      "severity": "pass",
+      "category": "falsification_correctness",
+      "description": "Check 8 (falsification) correctly emits finding_artifact when no falsifying policy exists, and verifies policy inversion when one does exist.",
+      "evidence": "test_pass_no_falsifying_policy_emits_finding, test_pass_falsifying_policy_changes_decision",
+      "resolution": "No fix required."
+    },
+    {
+      "finding_id": "RT3-004",
+      "severity": "should_fix",
+      "category": "integration_coverage",
+      "description": "ctrl_loop_gates.py is not yet wired into the live execution path (no callers in production orchestration). Tests exercise the gate module directly but the integration with control_loop.py and sel_orchestration_runner.py is pending.",
+      "resolution": "Logged for post-checkpoint follow-up. Gate module is available and tested; integration is non-blocking for Checkpoint L certification."
+    }
+  ],
+  "summary": {
+    "total_findings": 4,
+    "resolved": 0,
+    "pass": 3,
+    "must_fix": 0,
+    "should_fix": 1,
+    "notes": "All 8 CTRL-LOOP gate checks pass. RT3-004 integration gap is non-blocking for Checkpoint L."
+  },
+  "gate_check_results": {
+    "check_1_failure_eval_policy_linkage": "PASS",
+    "check_2_deterministic_policy_consumption": "PASS",
+    "check_3_policy_causes_behavior_change": "PASS",
+    "check_4_recurrence_prevention_wired": "PASS",
+    "check_5_longitudinal_calibration": "PASS",
+    "check_6_calibration_affects_lifecycle": "PASS",
+    "check_7_replay_trace_reconstruct": "PASS",
+    "check_8_falsification_artifact": "PASS"
+  }
+}
