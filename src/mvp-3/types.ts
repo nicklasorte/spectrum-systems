@@ -22,10 +22,10 @@ export interface EvalResult {
 }
 
 export interface EvalSummary {
-  artifact_kind: "eval_summary";
+  artifact_type: "eval_summary";
+  schema_version: "1.0.0";
   artifact_id: string;
   created_at: string;
-  schema_ref: string;
   trace: { trace_id: string; created_at: string };
   target_artifact_id: string;
   eval_case_ids: string[];

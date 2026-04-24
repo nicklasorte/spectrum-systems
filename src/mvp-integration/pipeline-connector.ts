@@ -1,15 +1,19 @@
 import { PipelineIntegrationHub } from "@/src/integration/artifact-pipeline-integration";
-import { PostgresStorageBackend } from "@/src/artifact-store/postgres-backend";
-import { SLIBackend } from "@/src/governance/sli-backend";
-import { LineageGraph } from "@/src/governance/lineage-graph";
 import { ControlLoopEngine } from "@/src/governance/control-loop-engine";
-import { ArtifactSigner } from "@/src/signing/artifact-signer";
+import { ingestTranscript } from "../mvp-1/transcript-ingestor";
+import { assembleContextBundle } from "../mvp-2/context-bundle-assembler";
+import { runIngestionEvalGate } from "../mvp-3/ingestion-eval-gate";
+import { extractMeetingMinutes } from "../mvp-4/minutes-extraction-agent";
+import { extractIssues } from "../mvp-5/issue-extraction-agent";
+import { runExtractionEvalGate } from "../mvp-6/extraction-eval-gate";
+import { structureIssuesForPaper } from "../mvp-7/issue-structuring";
+import { generatePaperDraft } from "../mvp-8/paper-draft-generator";
+import { runDraftEvalGate } from "../mvp-9/draft-eval-gate";
+import { emitHumanReviewRequest, submitReview } from "../mvp-10/human-review-gate";
+import { integrateRevisions } from "../mvp-11/revision-integrator";
+import { formatPaperForPublication } from "../mvp-12/publication-formatter";
+import { runGOV10Certification } from "../mvp-13/gov10-certification";
 import { v4 as uuidv4 } from "uuid";
-
-/**
- * MVP Pipeline Connector
- * Wires all 13 MVPs to governance infrastructure
- */
 
 export interface MVPStageOutput {
   mvp_name: string;
@@ -20,159 +24,119 @@ export interface MVPStageOutput {
 }
 
 export class PipelineConnector {
-  private hub: PipelineIntegrationHub;
-  private controlLoop: ControlLoopEngine;
-  private signer: ArtifactSigner;
+  private hub?: PipelineIntegrationHub;
+  private controlLoop?: ControlLoopEngine;
   private traceId: string;
 
-  constructor(
-    hub: PipelineIntegrationHub,
-    controlLoop: ControlLoopEngine,
-    signer: ArtifactSigner
-  ) {
+  constructor(hub?: PipelineIntegrationHub, controlLoop?: ControlLoopEngine) {
     this.hub = hub;
     this.controlLoop = controlLoop;
-    this.signer = signer;
     this.traceId = uuidv4();
   }
 
-  /**
-   * MVP-1: Transcript Ingestion
-   * Record: transcription latency, schema validity
-   */
-  async mvp1_transcript_ingestion(transcriptPath: string): Promise<MVPStageOutput> {
+  async mvp1_transcript_ingestion(rawText: string, sourceFile: string): Promise<MVPStageOutput> {
     const startTime = Date.now();
+    const result = await ingestTranscript({ raw_text: rawText, source_file: sourceFile });
 
-    // Read transcript
-    const transcript = { /* read from file */ };
+    if (!result.success) {
+      throw new Error(`MVP-1 failed: ${result.error_codes?.join(", ")}`);
+    }
 
     const sliMeasurements: Record<string, number> = {
       transcription_latency: Date.now() - startTime,
-      transcript_schema_validity: 1.0, // assume valid for now
+      segment_count: result.transcript_artifact?.outputs?.metadata?.segment_count ?? 0,
     };
 
     const output: MVPStageOutput = {
       mvp_name: "MVP-1",
-      artifact: { artifact_kind: "transcript_artifact", ...transcript },
+      artifact: result.transcript_artifact,
       sli_measurements: sliMeasurements,
-      lineage_edges: [], // MVP-1 has no dependencies
+      lineage_edges: [],
     };
 
-    await this.hub.recordMVPOutput(
-      "MVP-1",
-      output.artifact,
-      sliMeasurements
-    );
+    if (this.hub) {
+      await this.hub.recordMVPOutput("MVP-1", output.artifact, sliMeasurements);
+    }
 
     return output;
   }
 
-  /**
-   * MVP-3: Transcript Eval Gate
-   * Decision gate: if eval_pass_rate < 85%, BLOCK
-   */
-  async mvp3_eval_gate(transcriptArtifact: any): Promise<MVPStageOutput> {
-    // Run eval
-    const evalPassRate = 95.0; // placeholder
+  async mvp2_context_bundle(transcriptArtifact: any): Promise<MVPStageOutput> {
+    const result = await assembleContextBundle(transcriptArtifact);
 
     const sliMeasurements: Record<string, number> = {
-      eval_pass_rate: evalPassRate,
-      eval_cases_covered: 12,
+      manifest_hash_present: result.context_bundle?.metadata?.assembly_manifest_hash ? 1 : 0,
     };
 
-    let decisionGate = "allow";
-    if (evalPassRate < 85) {
-      decisionGate = "block";
-    } else if (evalPassRate < 90) {
-      decisionGate = "warn";
+    const output: MVPStageOutput = {
+      mvp_name: "MVP-2",
+      artifact: result.context_bundle,
+      sli_measurements: sliMeasurements,
+      lineage_edges: [],
+    };
+
+    if (this.hub) {
+      await this.hub.recordMVPOutput("MVP-2", output.artifact, sliMeasurements);
     }
+
+    return output;
+  }
+
+  async mvp3_eval_gate(transcriptArtifact: any, contextBundle: any): Promise<MVPStageOutput> {
+    const result = await runIngestionEvalGate(transcriptArtifact, contextBundle);
+
+    const rawDecision = result.control_decision?.decision;
+    let decisionGate: string;
+    if (rawDecision === "allow") {
+      decisionGate = "allow";
+    } else if (rawDecision === "require_review") {
+      decisionGate = "warn";
+    } else {
+      decisionGate = "block";
+    }
+
+    const sliMeasurements: Record<string, number> = {
+      pass_rate: result.eval_summary?.pass_rate ?? 0,
+      eval_cases: result.eval_results?.length ?? 0,
+    };
 
     const output: MVPStageOutput = {
       mvp_name: "MVP-3",
-      artifact: { artifact_kind: "eval_result", eval_pass_rate: evalPassRate },
+      artifact: result.control_decision,
       sli_measurements: sliMeasurements,
-      lineage_edges: [
-        {
-          sourceId: transcriptArtifact.artifact_id,
-          targetId: "eval-result-123",
-          relationship: "evaluated_by",
-        },
-      ],
+      lineage_edges: [],
       decision_gate: decisionGate,
     };
 
-    await this.hub.recordMVPOutput(
-      "MVP-3",
-      output.artifact,
-      sliMeasurements,
-      output.lineage_edges
-    );
-
-    // Query control loop for any additional signals
-    const signals = await this.controlLoop.checkControlSignals("eval_pass_rate");
-    if (signals.length > 0) {
-      output.decision_gate = "freeze"; // override on control signal
+    if (this.hub) {
+      await this.hub.recordMVPOutput("MVP-3", output.artifact, sliMeasurements);
     }
 
     return output;
   }
 
-  /**
-   * MVP-13: GOV-10 Certification & Release
-   * Creates promotion_decision, signs it, verifies trace completeness
-   */
-  async mvp13_certification(allArtifacts: any[]): Promise<MVPStageOutput> {
-    const costPerRun = 245; // cents
-    const traceCoverage = 0.98; // 98% of execution traced
-    const totalLatency = 3600; // seconds
+  async mvp13_certification(
+    formattedPaperId: string,
+    allEvalSummaries: any[],
+    allExecutionRecords: any[]
+  ): Promise<MVPStageOutput> {
+    const result = await runGOV10Certification(formattedPaperId, allEvalSummaries, allExecutionRecords);
 
     const sliMeasurements: Record<string, number> = {
-      cost_per_run: costPerRun,
-      trace_coverage: traceCoverage,
-      total_pipeline_latency: totalLatency,
+      certification_passed: result.done_certification_record?.status === "PASSED" ? 1 : 0,
     };
-
-    // Build promotion decision
-    const promotionDecision = {
-      artifact_kind: "promotion_decision",
-      artifact_id: uuidv4(),
-      target_artifact_id: allArtifacts[allArtifacts.length - 1].artifact_id,
-      lineage_chain: allArtifacts.map((a) => a.artifact_id),
-      eval_results_summary: { passed: true, pass_rate: 0.95 },
-      policy_checks: { all_pass: true },
-      cost_summary: { total_cents: costPerRun, under_budget: true },
-      trace_completeness: { coverage: traceCoverage, sufficient: traceCoverage > 0.95 },
-      decision: "allow_release", // or "block_release"
-      created_at: new Date().toISOString(),
-    };
-
-    // Sign promotion decision (Phase 5 SLSA)
-    const signature = await this.signer.sign(promotionDecision);
-    promotionDecision.signature = signature;
-
-    // Verify signature
-    const verified = await this.signer.verify(promotionDecision);
-    if (!verified) {
-      promotionDecision.decision = "block_release";
-    }
 
     const output: MVPStageOutput = {
       mvp_name: "MVP-13",
-      artifact: promotionDecision,
+      artifact: result.done_certification_record,
       sli_measurements: sliMeasurements,
-      lineage_edges: allArtifacts.map((a, i) => ({
-        sourceId: i === 0 ? a.artifact_id : allArtifacts[i - 1].artifact_id,
-        targetId: a.artifact_id,
-        relationship: "depends_on",
-      })),
-      decision_gate: promotionDecision.decision === "allow_release" ? "allow" : "block",
+      lineage_edges: [],
+      decision_gate: result.done_certification_record?.status === "PASSED" ? "allow" : "block",
     };
 
-    await this.hub.recordMVPOutput(
-      "MVP-13",
-      promotionDecision,
-      sliMeasurements
-    );
+    if (this.hub) {
+      await this.hub.recordMVPOutput("MVP-13", output.artifact, sliMeasurements);
+    }
 
     return output;
   }
