@@ -1,6 +1,6 @@
 """CDE bounded decision foundation (CDE-01..CDE-09).
 
-CDE consumes governed evidence and emits decision artifacts only.
+CDE consumes governed evidence and produces decision artifacts only.
 CDE never executes repairs, enforces decisions, or mutates downstream state.
 """
 

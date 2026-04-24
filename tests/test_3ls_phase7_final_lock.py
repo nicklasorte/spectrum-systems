@@ -383,3 +383,107 @@ class TestSystemRegistryGuardCompliance:
                 for d in result.get("diagnostics", [])
             )
         )
+
+
+# ── Authority Leak Guard Pre-Flight ──────────────────────────────────────────
+
+
+# Files in spectrum_systems/modules/ that are subject to ALG scanning and
+# must not introduce forbidden vocabulary or authority-shape artifacts.
+_ALG_BOUNDARY_FILES = [
+    "spectrum_systems/modules/runtime/enforcement_gate.py",
+    "spectrum_systems/modules/runtime/ctrl_loop_gates.py",
+    "spectrum_systems/modules/observability/slo_definitions.py",
+    "spectrum_systems/modules/artifact_packager.py",
+]
+
+_AUTHORITY_REGISTRY_PATH = _REPO_ROOT / "contracts" / "governance" / "authority_registry.json"
+
+
+class TestAuthorityLeakGuardCompliance:
+    """Pre-flight tests replicating ALG forbidden-vocabulary and authority-shape detection.
+
+    These mirror scripts/authority_leak_rules.py and scripts/authority_shape_detector.py
+    so that ALG violations are caught in local tests before CI runs the full guard.
+    """
+
+    @staticmethod
+    def _registry() -> dict:
+        from scripts.authority_leak_rules import load_authority_registry
+        return load_authority_registry(_AUTHORITY_REGISTRY_PATH)
+
+    def test_authority_registry_loads_with_required_keys(self) -> None:
+        """authority_registry.json must be valid JSON with categories and forbidden_contexts."""
+        registry = self._registry()
+        assert "categories" in registry
+        assert "forbidden_contexts" in registry
+        assert "vocabulary_overrides" in registry
+
+    def test_enforcement_gate_is_canonical_enforcement_owner(self) -> None:
+        """enforcement_gate.py must be registered as a canonical enforcement owner."""
+        from scripts.authority_leak_rules import is_owner_path
+        registry = self._registry()
+        assert is_owner_path(
+            "spectrum_systems/modules/runtime/enforcement_gate.py", registry
+        ), "enforcement_gate.py must be in authority_registry.json enforcement canonical_owners"
+
+    def test_ctrl_loop_gates_has_vocabulary_overrides_for_control_values(self) -> None:
+        """ctrl_loop_gates.py must have vocabulary overrides for 'block' and 'freeze'."""
+        from scripts.authority_leak_rules import _get_override_set
+        registry = self._registry()
+        overrides = _get_override_set(
+            registry, "allowed_values",
+            "spectrum_systems/modules/runtime/ctrl_loop_gates.py",
+        )
+        assert "block" in overrides, "authority_registry.json must allow 'block' for ctrl_loop_gates.py"
+        assert "freeze" in overrides, "authority_registry.json must allow 'freeze' for ctrl_loop_gates.py"
+
+    @pytest.mark.parametrize("rel_path", _ALG_BOUNDARY_FILES)
+    def test_no_forbidden_vocabulary_in_boundary_file(self, rel_path: str) -> None:
+        """No ALG boundary file may contain forbidden authority vocabulary outside canonical owners."""
+        from scripts.authority_leak_rules import find_forbidden_vocabulary
+        path = _REPO_ROOT / rel_path
+        if not path.exists():
+            pytest.skip(f"{rel_path} not yet created")
+        violations = find_forbidden_vocabulary(path, self._registry())
+        assert not violations, (
+            f"ALG forbidden-vocabulary violations in {rel_path}:\n"
+            + "\n".join(
+                f"  line {v['line']}: {v['token']!r} — {v['message']}"
+                for v in violations
+            )
+        )
+
+    @pytest.mark.parametrize("rel_path", _ALG_BOUNDARY_FILES)
+    def test_no_authority_shapes_in_boundary_file(self, rel_path: str) -> None:
+        """No ALG boundary file may define authority-shaped artifact_type outside canonical owners."""
+        from scripts.authority_shape_detector import detect_authority_shapes
+        path = _REPO_ROOT / rel_path
+        if not path.exists():
+            pytest.skip(f"{rel_path} not yet created")
+        violations = detect_authority_shapes(path, self._registry())
+        assert not violations, (
+            f"ALG authority-shape violations in {rel_path}:\n"
+            + "\n".join(
+                f"  [{v['rule']}] obj#{v.get('object_index', '?')}: {v['message']}"
+                for v in violations
+            )
+        )
+
+    def test_alg_enforcement_gate_vocabulary_clean(self) -> None:
+        """enforcement_gate.py must pass full ALG vocabulary scan (canonical owner exemption)."""
+        from scripts.authority_leak_rules import find_forbidden_vocabulary
+        path = _REPO_ROOT / "spectrum_systems/modules/runtime/enforcement_gate.py"
+        violations = find_forbidden_vocabulary(path, self._registry())
+        assert violations == [], (
+            "enforcement_gate.py has ALG vocabulary violations: " + str(violations)
+        )
+
+    def test_alg_enforcement_gate_shape_clean(self) -> None:
+        """enforcement_gate.py must pass full ALG authority-shape scan (canonical owner exemption)."""
+        from scripts.authority_shape_detector import detect_authority_shapes
+        path = _REPO_ROOT / "spectrum_systems/modules/runtime/enforcement_gate.py"
+        violations = detect_authority_shapes(path, self._registry())
+        assert violations == [], (
+            "enforcement_gate.py has ALG authority-shape violations: " + str(violations)
+        )
