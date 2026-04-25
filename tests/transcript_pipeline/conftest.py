@@ -1,8 +1,6 @@
 """Shared fixtures for transcript pipeline tests."""
 from __future__ import annotations
 
-import hashlib
-import json
 import uuid
 from typing import Any, Dict
 
@@ -55,7 +53,11 @@ def _make_meeting_minutes_artifact(**overrides) -> Dict[str, Any]:
         "source_artifact_id": "NTX-TEST001",
         "summary": "Team aligned on Q2 goals.",
         "decisions": [
-            {"decision_id": "D-001", "description": "Adopt new schema format"}
+            {
+                "decision_id": "D-001",
+                "description": "Adopt new schema format",
+                "rationale": "Improves machine readability and schema compliance.",
+            }
         ],
         "action_items": [
             {"action_id": "AI-001", "description": "Draft schema proposal"}

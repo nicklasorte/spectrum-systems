@@ -15,12 +15,13 @@ Architecture constraints:
 from __future__ import annotations
 
 import copy
-import hashlib
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from jsonschema import Draft202012Validator, FormatChecker, ValidationError
+
+from spectrum_systems.modules.runtime.hash_utils import compute_content_hash
 
 _SCHEMA_DIR = Path(__file__).parent.parent.parent.parent / "contracts" / "schemas" / "transcript_pipeline"
 
@@ -60,18 +61,6 @@ def _load_schema(schema_ref: str) -> Dict[str, Any]:
             reason_code="SCHEMA_NOT_FOUND",
         )
     return json.loads(schema_file.read_text(encoding="utf-8"))
-
-
-def compute_content_hash(artifact: Dict[str, Any]) -> str:
-    """Compute a deterministic SHA-256 hash of artifact content fields.
-
-    Excludes 'content_hash' itself to avoid circular dependency.
-    Returns the hash as 'sha256:<hex>' string.
-    """
-    hashable = {k: v for k, v in artifact.items() if k != "content_hash"}
-    canonical = json.dumps(hashable, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-    digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-    return f"sha256:{digest}"
 
 
 def _enforce_required_envelope(artifact: Dict[str, Any]) -> None:
