@@ -138,3 +138,10 @@ scope:
     - spectrum_systems/modules/runtime/authority_repair_engine.py
     - scripts/run_authority_drift_guard.py
     - tests/test_authority_drift_regression.py
+    - tests/test_srg_rfx_authority_neutral.py
+    - tests/test_authority_shape_preflight.py
+    - tests/test_authority_shape_preflight_narrow.py
+    - tests/test_run_authority_shape_preflight.py
+    - contracts/governance/authority_neutral_vocabulary.json
+    - contracts/governance/authority_shape_vocabulary.json
+    - docs/governance/authority_shape_preflight.md
