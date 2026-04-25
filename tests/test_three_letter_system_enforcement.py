@@ -190,3 +190,48 @@ def test_fail_closed_on_ambiguous_ownership(tmp_path: Path) -> None:
 
     assert result["final_decision"] == "BLOCK"
     assert "AMBIGUOUS_SYSTEM_OWNERSHIP" in result["violations"]
+
+
+def test_blocks_registry_change_when_produced_schema_missing(tmp_path: Path) -> None:
+    registry_path = tmp_path / "docs" / "architecture" / "system_registry.md"
+    _write(
+        registry_path,
+        """
+# System Registry (Canonical)
+
+## System Definitions
+
+### TPA
+- **acronym:** `TPA`
+- **full_name:** Trust Policy Application
+- **role:** trust policy owner
+- **owns:**
+  - trust policy
+- **consumes:**
+  - evidence
+- **produces:**
+  - missing_artifact_contract_xyz
+- **must_not_do:**
+  - closure decisions
+""".strip(),
+    )
+    policy = _policy()
+    policy["systems"] = {
+        "TPA": policy["systems"]["TPA"],
+    }
+
+    result = evaluate_three_letter_system_enforcement(
+        repo_root=tmp_path,
+        changed_files=["docs/architecture/system_registry.md"],
+        policy=policy,
+        registry_model=parse_system_registry(registry_path),
+        generated_at="2026-04-25T00:00:00Z",
+    )
+
+    assert result["final_decision"] == "BLOCK"
+    assert "MISSING_PRODUCED_ARTIFACT_SCHEMA" in result["violations"]
+    assert any(
+        "produced_artifact_schema:missing_artifact_contract_xyz" in req
+        for finding in result["missing_gate_expectations"]
+        for req in finding["missing_requirements"]
+    )

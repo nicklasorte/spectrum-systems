@@ -14,6 +14,10 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def _normalize_artifact_name(value: str) -> str:
+    return str(value).strip().lower().replace(" ", "_").replace("-", "_")
+
+
 def evaluate_three_letter_system_enforcement(
     *,
     repo_root: Path,
@@ -36,6 +40,8 @@ def evaluate_three_letter_system_enforcement(
     violations: set[str] = set()
 
     owners_by_path: dict[str, list[str]] = {}
+    changed_registry = "docs/architecture/system_registry.md" in changed_paths
+    changed_contracts = any(path.startswith("contracts/schemas/") for path in changed_paths)
 
     for acronym, row in systems.items():
         if not isinstance(row, dict):
@@ -100,6 +106,29 @@ def evaluate_three_letter_system_enforcement(
             if missing:
                 missing_gate_expectations.append({"system": system, "path": changed, "missing_requirements": sorted(set(missing))})
                 violations.add("MISSING_REQUIRED_GATES")
+
+    if changed_registry or changed_contracts:
+        schema_names = {
+            path.name.replace(".schema.json", "")
+            for path in (repo_root / "contracts" / "schemas").rglob("*.schema.json")
+        }
+        for acronym, system in sorted(registry_model.systems.items()):
+            if len(acronym) != 3 or system.status != "active":
+                continue
+            missing_produced = sorted(
+                _normalize_artifact_name(artifact)
+                for artifact in system.produces
+                if _normalize_artifact_name(artifact) not in schema_names
+            )
+            if missing_produced:
+                missing_gate_expectations.append(
+                    {
+                        "system": acronym,
+                        "path": "docs/architecture/system_registry.md",
+                        "missing_requirements": [f"produced_artifact_schema:{name}" for name in missing_produced],
+                    }
+                )
+                violations.add("MISSING_PRODUCED_ARTIFACT_SCHEMA")
 
     final_decision = "PASS" if not violations else "BLOCK"
 

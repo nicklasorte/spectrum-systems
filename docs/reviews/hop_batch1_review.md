@@ -50,3 +50,7 @@ REVIEW
 
 ## Residual risk
 - Heuristic leakage detection can produce false positives/false negatives; deeper static/code provenance checks are deferred to BATCH-2.
+
+## Follow-up hardening (post-CI finding)
+- **Finding:** Registry drift validator previously looked only in `contracts/schemas/` root and missed nested schemas (for example `contracts/schemas/hop/*`), causing false schema-missing failures.
+- **Fix:** Drift validator now resolves schemas recursively and 3-letter enforcement now fail-closes on produced-artifact schema gaps when registry/contracts change.

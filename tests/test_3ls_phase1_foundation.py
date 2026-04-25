@@ -82,6 +82,18 @@ class TestRegistryDriftValidator:
         )
         assert is_valid, f"Expected valid, got errors: {errors}"
 
+    def test_system_with_nested_schema_is_valid(self):
+        """Validator must discover schemas in nested contracts/schemas directories."""
+        is_valid, errors = self.validator.validate_system(
+            "TEST-WITH-NESTED-SCHEMA",
+            {"owns": ["harness"], "produces": ["harness_run"], "consumes": []},
+        )
+        assert is_valid, f"Expected nested schema discovery to pass, got errors: {errors}"
+
+    def test_registry_parser_uses_system_definitions_section(self):
+        """Parser must source canonical definitions section for owned responsibilities."""
+        assert self.validator.registry["AEX"]["owns"], "AEX owns list should come from System Definitions section"
+
 
 # ── CON Contract Enforcer ─────────────────────────────────────────────────────
 

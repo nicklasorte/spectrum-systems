@@ -27,6 +27,7 @@ class RegistryDriftValidator:
     def __init__(self, repo_root: Path | None = None):
         self.repo_root = Path(repo_root) if repo_root else REPO_ROOT
         self.schema_dir = self.repo_root / "contracts" / "schemas"
+        self.schema_names = self._discover_schema_names()
         self.registry = self._parse_registry()
         self.eval_lib = self._load_eval_lib()
 
@@ -36,6 +37,8 @@ class RegistryDriftValidator:
         """Parse docs/architecture/system_registry.md into system definitions."""
         registry_path = self.repo_root / "docs" / "architecture" / "system_registry.md"
         content = registry_path.read_text()
+        if "## System Definitions" in content:
+            content = content.split("## System Definitions", 1)[1]
 
         systems: Dict[str, Dict] = {}
         # Split on level-3 headings that look like acronyms (2-8 uppercase chars)
@@ -49,6 +52,22 @@ class RegistryDriftValidator:
             i += 2
 
         return systems
+
+    def _discover_schema_names(self) -> set[str]:
+        """
+        Discover canonical schema names across contracts/schemas recursively.
+
+        This includes nested authority directories (e.g. contracts/schemas/hop/)
+        and prevents false negatives from root-only lookup.
+        """
+        names: set[str] = set()
+        if not self.schema_dir.exists():
+            return names
+        for path in self.schema_dir.rglob("*.schema.json"):
+            name = path.name.replace(".schema.json", "")
+            if name:
+                names.add(name)
+        return names
 
     def _parse_system_block(self, acronym: str, body: str) -> Dict:
         """Extract owns/produces/consumes from a system markdown block."""
@@ -93,8 +112,7 @@ class RegistryDriftValidator:
         for artifact_type in system_def.get("produces", []):
             # Normalise: replace spaces with underscores, lower-case
             clean = artifact_type.lower().replace(" ", "_").replace("-", "_")
-            schema_file = self.schema_dir / f"{clean}.schema.json"
-            if not schema_file.exists():
+            if clean not in self.schema_names:
                 errors.append(
                     f"{system_id}: produces '{artifact_type}' but no schema "
                     f"'{clean}.schema.json' found in contracts/schemas/"
