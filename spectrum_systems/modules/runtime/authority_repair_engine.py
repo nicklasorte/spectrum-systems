@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from spectrum_systems.modules.runtime.authority_linter import (
+from spectrum_systems.guards.authority_linter import (
     AuthorityLinterError,
     apply_authority_repair,
     detect_authority_drift,

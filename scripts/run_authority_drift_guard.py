@@ -24,7 +24,7 @@ from spectrum_systems.modules.governance.changed_files import (  # noqa: E402
     ChangedFilesResolutionError,
     resolve_changed_files,
 )
-from spectrum_systems.modules.runtime.authority_linter import (  # noqa: E402
+from spectrum_systems.guards.authority_linter import (  # noqa: E402
     AuthorityLinterError,
     lint_file,
     load_authority_matrix,

@@ -13,21 +13,23 @@ coverage, with no manual remediation required.
 
 from __future__ import annotations
 
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
-from spectrum_systems.modules.runtime.authority_drift_preflight import (
-    AuthorityDriftBlocked,
-    run_preflight,
-)
-from spectrum_systems.modules.runtime.authority_linter import (
+from spectrum_systems.guards.authority_linter import (
     AuthorityLinterError,
     REASON_CODE,
     detect_authority_drift,
     apply_authority_repair,
     is_clean,
     load_authority_matrix,
+)
+from spectrum_systems.modules.runtime.authority_drift_preflight import (
+    AuthorityDriftBlocked,
+    run_preflight,
 )
 from spectrum_systems.modules.runtime.authority_repair_engine import (
     repair_authority_drift,
@@ -222,3 +224,79 @@ def test_preflight_skips_out_of_scope_paths() -> None:
         assert result["finding_count"] == 0
     finally:
         full.unlink(missing_ok=True)
+
+
+# ---- Import-boundary regression (AUTH-01F) ---------------------------------
+
+
+_BOUNDARY_PROBE = """
+import sys
+import spectrum_systems.guards.authority_linter as lin
+import scripts.run_authority_drift_guard  # noqa: F401
+
+forbidden = [
+    "spectrum_systems.modules.runtime",
+    "spectrum_systems.modules.runtime.run_bundle",
+    "jsonschema",
+]
+loaded = [name for name in forbidden if name in sys.modules]
+print("LOADED:" + ",".join(loaded))
+print("MATRIX_OK:" + str(bool(lin.load_authority_matrix())))
+"""
+
+
+def test_drift_guard_does_not_import_runtime_or_jsonschema() -> None:
+    """The lightweight guard path must not pull runtime/__init__ or jsonschema.
+
+    Spawns a fresh interpreter so cached modules from the test process do not
+    mask a regression. Asserts that ``run_bundle`` and ``jsonschema`` are
+    absent from ``sys.modules`` after importing the guard script and the
+    lightweight linter.
+    """
+    proc = subprocess.run(
+        [sys.executable, "-c", _BOUNDARY_PROBE],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0, f"probe failed: {proc.stderr}"
+    out = proc.stdout
+    assert "LOADED:\n" in out + "\n", f"forbidden modules loaded; stdout={out!r}"
+    assert "MATRIX_OK:True" in out
+
+
+def test_minimal_yaml_loader_handles_matrix_without_pyyaml() -> None:
+    """The bundled stdlib YAML loader can parse the canonical matrix.
+
+    Spawns a fresh interpreter with PyYAML hidden via an ``yaml`` import shim
+    that raises ``ImportError``, then asserts the matrix still loads with the
+    expected systems. This guards against the lightweight loader silently
+    requiring PyYAML in CI environments that lack it.
+    """
+    probe = """
+import sys
+class _Block:
+    def find_module(self, name, path=None): return self if name == 'yaml' else None
+    def load_module(self, name): raise ImportError('yaml hidden for test')
+sys.meta_path.insert(0, _Block())
+sys.modules.pop('yaml', None)
+from spectrum_systems.guards.authority_linter import load_authority_matrix
+m = load_authority_matrix()
+required = {'CDE','GOV','TPA','TLC','PRA','POL'}
+missing = sorted(required - set(m['systems'].keys()))
+print('MISSING:' + ','.join(missing))
+print('TLC_FORBIDDEN:' + ','.join(sorted(m['systems']['TLC'].get('forbidden_verbs', []))))
+print('OWNS_DECIDES:' + str(m['canonical_verb_owners'].get('decides')))
+"""
+    proc = subprocess.run(
+        [sys.executable, "-c", probe],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0, f"probe failed: {proc.stderr}"
+    assert "MISSING:\n" in proc.stdout + "\n", proc.stdout
+    assert "TLC_FORBIDDEN:adjudicates,decides,enforces" in proc.stdout
+    assert "OWNS_DECIDES:CDE" in proc.stdout

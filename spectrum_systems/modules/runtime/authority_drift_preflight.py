@@ -27,7 +27,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
-from spectrum_systems.modules.runtime.authority_linter import (
+from spectrum_systems.guards.authority_linter import (
     AuthorityLinterError,
     lint_file,
     load_authority_matrix,
