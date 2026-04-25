@@ -108,12 +108,20 @@
         "severity": {
           "type": "string",
           "enum": ["S0", "S1", "S2", "S3", "S4"],
-          "description": "SBGE severity: S0=critical blocker, S4=informational."
+          "description": "SBGE severity ladder: S4=halt (critical blocker, always blocking), S3=high, S2=medium, S1=low, S0=informational."
         },
         "description": {"type": "string", "minLength": 1},
         "section_ref": {"type": "string"},
         "recommendation": {"type": "string"},
         "blocking": {"type": "boolean"}
+      },
+      "if": {
+        "properties": {"severity": {"const": "S4"}},
+        "required": ["severity"]
+      },
+      "then": {
+        "properties": {"blocking": {"const": true}},
+        "required": ["blocking"]
       }
     }
   }

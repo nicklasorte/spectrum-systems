@@ -25,7 +25,7 @@ Rules:
 """
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 _PIPELINE_ROUTES: Dict[str, str] = {
     "transcript_artifact": "context_bundle",
@@ -183,9 +183,92 @@ def get_full_pipeline() -> List[str]:
     return list(_PIPELINE_ORDER)
 
 
+def route_with_control_check(
+    artifact: Dict[str, Any],
+    control_decision: Dict[str, Any],
+    warn_allowed: bool = False,
+) -> str:
+    """Route an artifact only after verifying the control decision permits it.
+
+    This is the control-enforced routing interface. Callers MUST use this
+    function (not route_artifact directly) when a control decision is available.
+    Routing without a valid 'allow' decision is a governance violation.
+
+    Args:
+        artifact: The artifact dict. Must contain 'artifact_type'.
+        control_decision: Must contain 'eval_summary' and
+            'evaluation_control_decision'. The decision field must be one of:
+            allow, block, freeze, warn.
+        warn_allowed: If True, a 'warn' decision is accepted (caller opts in
+            explicitly). Defaults to False (warn is rejected).
+
+    Returns:
+        The next artifact type string on success.
+
+    Raises:
+        ArtifactRoutingError with reason_codes:
+            MISSING_CONTROL_DECISION   — control_decision is not a dict
+            MISSING_EVAL_SUMMARY       — eval_summary absent
+            MISSING_EVALUATION_CONTROL_DECISION — field absent
+            CONTROL_DECISION_BLOCK     — decision == 'block'
+            CONTROL_DECISION_FREEZE    — decision == 'freeze'
+            CONTROL_DECISION_WARN_NOT_ALLOWED — decision == 'warn', not opt-in
+            UNKNOWN_CONTROL_DECISION   — unrecognised decision value
+    """
+    if not isinstance(control_decision, dict):
+        raise ArtifactRoutingError(
+            "control_decision must be a dict — routing without a control decision is prohibited",
+            reason_codes=["MISSING_CONTROL_DECISION"],
+        )
+
+    if "eval_summary" not in control_decision:
+        raise ArtifactRoutingError(
+            "control_decision missing required field: eval_summary",
+            reason_codes=["MISSING_EVAL_SUMMARY"],
+        )
+
+    if "evaluation_control_decision" not in control_decision:
+        raise ArtifactRoutingError(
+            "control_decision missing required field: evaluation_control_decision",
+            reason_codes=["MISSING_EVALUATION_CONTROL_DECISION"],
+        )
+
+    decision = control_decision["evaluation_control_decision"]
+
+    if decision == "block":
+        raise ArtifactRoutingError(
+            "Routing rejected: control decision is 'block'",
+            reason_codes=["CONTROL_DECISION_BLOCK"],
+        )
+
+    if decision == "freeze":
+        raise ArtifactRoutingError(
+            "Routing rejected: control decision is 'freeze'",
+            reason_codes=["CONTROL_DECISION_FREEZE"],
+        )
+
+    if decision == "warn":
+        if not warn_allowed:
+            raise ArtifactRoutingError(
+                "Routing rejected: control decision is 'warn' and warn_allowed=False. "
+                "Pass warn_allowed=True to accept warn decisions explicitly.",
+                reason_codes=["CONTROL_DECISION_WARN_NOT_ALLOWED"],
+            )
+
+    elif decision != "allow":
+        raise ArtifactRoutingError(
+            f"Unknown control decision: {decision!r}. Must be one of: allow, block, freeze, warn",
+            reason_codes=["UNKNOWN_CONTROL_DECISION"],
+        )
+
+    artifact_type = artifact.get("artifact_type") if isinstance(artifact, dict) else None
+    return route_artifact(artifact_type)
+
+
 __all__ = [
     "ArtifactRoutingError",
     "route_artifact",
+    "route_with_control_check",
     "is_terminal",
     "pipeline_position",
     "validate_transition",
