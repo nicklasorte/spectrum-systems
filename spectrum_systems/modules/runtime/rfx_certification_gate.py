@@ -1,10 +1,10 @@
 """RFX GOV certification hard gate — LOOP-06.
 
-GOV is the certification packaging authority. GOV does NOT decide readiness:
-CDE remains the closure decision authority and TPA remains the trust/policy
-authority. This guard verifies that the full evidence bundle required for a
-GOV certification record is present and individually valid before GOV may
-issue certification.
+Canonical roles for certification packaging, closure, and trust/policy are
+recorded in ``docs/architecture/system_registry.md``; this module does not
+restate or redefine them. The gate verifies that the full evidence bundle
+required for a certification record is present and individually valid before
+the canonical certification step may proceed.
 
 Required evidence (fail-closed when missing or invalid):
   - EVL (evaluation evidence)
@@ -87,11 +87,9 @@ def assert_rfx_certification_ready(
 ) -> None:
     """Assert the RFX GOV certification hard gate.
 
-    GOV may not issue certification unless every required artifact is present
-    and individually valid. Authority remains:
-      - CDE owns closure decisions
-      - TPA owns trust/policy adjudication
-      - GOV only certifies completeness of evidence
+    Certification may not be issued unless every required artifact is present
+    and individually valid. Canonical roles are recorded in
+    ``docs/architecture/system_registry.md`` and are not restated here.
 
     Fails closed by aggregating all reason codes and raising one combined
     :class:`RFXCertificationGateError` with semicolon-separated codes.

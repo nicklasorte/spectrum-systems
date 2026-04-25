@@ -128,7 +128,7 @@ Verified by tests:
 - `tests/test_rfx_loop_04_06_red_team.py` (RT-01 .. RT-06)
 - `tests/test_rfx_flow_integration.py` (full RFX flow ordering)
 
-Authority remains unchanged: CDE owns closure, TPA owns trust/policy, SEL owns enforcement, GOV only certifies completeness, and RFX itself remains a phase label across existing systems.
+Canonical roles remain unchanged and are recorded in `docs/architecture/system_registry.md`. RFX itself remains a non-owning phase label across existing systems.
 
 ## Recommended Next Build Prompt
 

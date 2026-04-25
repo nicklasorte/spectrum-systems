@@ -1,19 +1,18 @@
 """RFX decision-bridge guard — LOOP-04.
 
-RFX (Review → Fix → eXecute) is a cross-system phase label. CDE remains the
-sole closure authority and SEL remains the sole enforcement authority. This
-guard verifies the bridge between them: SEL may not act without an explicit,
-linked CDE closure decision.
+RFX (Review → Fix → eXecute) is a cross-system phase label. Canonical roles
+are recorded in ``docs/architecture/system_registry.md``; this module does not
+restate or redefine them. The guard verifies the fail-closed bridge between a
+recorded closure decision and a recorded enforcement context.
 
 Behavior is fail-closed:
-  - missing CDE decision           -> rfx_missing_cde_decision
-  - invalid CDE decision status    -> rfx_invalid_cde_decision
-  - missing SEL context            -> rfx_missing_sel_context
-  - SEL not linked to CDE decision -> rfx_sel_not_linked_to_cde
+  - missing closure decision           -> rfx_missing_cde_decision
+  - invalid closure decision status    -> rfx_invalid_cde_decision
+  - missing enforcement context        -> rfx_missing_sel_context
+  - enforcement not linked to decision -> rfx_sel_not_linked_to_cde
 
-No implicit closure is permitted; SEL never derives a closure decision on its
-own. This module does not move closure authority and does not introduce a new
-authority surface.
+No implicit closure derivation is permitted. This module is a non-owning
+phase-label support helper.
 """
 
 from __future__ import annotations

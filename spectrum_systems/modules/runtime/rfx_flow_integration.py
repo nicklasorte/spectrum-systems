@@ -6,16 +6,12 @@ RFX path (canonical):
         → assert_rfx_cde_sel_decision_bridge   (LOOP-04)
         → assert_rfx_integrity_bundle          (LOOP-05)
         → assert_rfx_certification_ready       (LOOP-06)
-        → SEL enforcement
+        → SEL enforcement step
         → GOV certification record
 
-This module composes the existing guards. It does not introduce a new
-authority surface. Authority remains:
-  - CDE: closure decision authority
-  - SEL: enforcement authority
-  - TPA: trust/policy authority
-  - GOV: certification packaging authority
-RFX itself remains a phase label.
+This module composes the existing guards as a non-owning phase-label support
+helper. It does not introduce or redefine roles; canonical roles are recorded
+in ``docs/architecture/system_registry.md``.
 """
 
 from __future__ import annotations

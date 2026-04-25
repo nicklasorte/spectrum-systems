@@ -10,9 +10,9 @@ Behavior is fail-closed:
   - missing replay record        -> rfx_missing_replay
   - replay match != True         -> rfx_replay_mismatch
 
-No replay = no certification candidate. LIN remains the lineage-issuing
-authority and REP remains the replay-integrity authority; this guard does not
-redefine ownership.
+No replay = no certification candidate. Canonical roles for lineage and
+replay are recorded in ``docs/architecture/system_registry.md``; this guard
+does not redefine them and is a non-owning phase-label support helper.
 """
 
 from __future__ import annotations
