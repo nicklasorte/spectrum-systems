@@ -96,15 +96,13 @@ def test_store_recomputes_content_hash_on_read(store: ExperienceStore) -> None:
 # ---- F-04: trace incomplete on any failure --------------------------------
 
 def test_trace_marked_incomplete_on_malformed_output(store, eval_set) -> None:
-    candidate = make_baseline_candidate()
+    candidate = make_baseline_candidate(
+        code_source="def run(_):\n    return {'not': 'a_valid_faq'}\n"
+    )
     store.write_artifact(candidate)
-
-    def bad_runner(_):
-        return {"not": "a_valid_faq"}
 
     result = evaluate_candidate(
         candidate_payload=candidate,
-        runner=bad_runner,
         eval_set=eval_set,
         store=store,
     )

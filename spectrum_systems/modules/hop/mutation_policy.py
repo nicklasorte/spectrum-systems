@@ -66,6 +66,10 @@ FORBIDDEN_PATH_PREFIXES: tuple[str, ...] = (
     "spectrum_systems/modules/hop/failure_analysis.py",
     "spectrum_systems/modules/hop/trace_diff.py",
     "spectrum_systems/modules/hop/artifacts.py",
+    "spectrum_systems/modules/hop/sandbox.py",
+    "spectrum_systems/modules/hop/bootstrap.py",
+    "spectrum_systems/modules/hop/trial_runner.py",
+    "spectrum_systems/modules/hop/patterns/",
 )
 
 FORBIDDEN_IMPORTS: frozenset[str] = frozenset(
@@ -90,6 +94,10 @@ FORBIDDEN_IMPORTS: frozenset[str] = frozenset(
         "spectrum_systems.modules.hop.optimization_loop",
         "spectrum_systems.modules.hop.failure_analysis",
         "spectrum_systems.modules.hop.trace_diff",
+        "spectrum_systems.modules.hop.sandbox",
+        "spectrum_systems.modules.hop.bootstrap",
+        "spectrum_systems.modules.hop.trial_runner",
+        "spectrum_systems.modules.hop.patterns",
     }
 )
 

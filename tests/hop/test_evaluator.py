@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import pytest
 
-from spectrum_systems.modules.hop import baseline_harness
 from spectrum_systems.modules.hop.evaluator import EvalSet, evaluate_candidate
 from spectrum_systems.modules.hop.schemas import (
     HopSchemaError,
@@ -17,7 +16,6 @@ def test_baseline_runs_against_full_eval_set(eval_set: EvalSet, store) -> None:
     candidate = make_baseline_candidate()
     result = evaluate_candidate(
         candidate_payload=candidate,
-        runner=baseline_harness.run,
         eval_set=eval_set,
         store=store,
     )
@@ -35,7 +33,6 @@ def test_each_case_produces_a_trace(eval_set: EvalSet, store) -> None:
     candidate = make_baseline_candidate()
     result = evaluate_candidate(
         candidate_payload=candidate,
-        runner=baseline_harness.run,
         eval_set=eval_set,
         store=store,
     )
@@ -45,14 +42,12 @@ def test_each_case_produces_a_trace(eval_set: EvalSet, store) -> None:
 
 
 def test_runtime_error_is_caught_and_emits_failure(eval_set: EvalSet, store) -> None:
-    candidate = make_baseline_candidate()
-
-    def bad_runner(_):
-        raise RuntimeError("boom")
+    candidate = make_baseline_candidate(
+        code_source="def run(_):\n    raise RuntimeError('boom')\n"
+    )
 
     result = evaluate_candidate(
         candidate_payload=candidate,
-        runner=bad_runner,
         eval_set=eval_set,
         store=store,
     )
@@ -63,14 +58,12 @@ def test_runtime_error_is_caught_and_emits_failure(eval_set: EvalSet, store) -> 
 
 
 def test_malformed_output_is_classified(eval_set: EvalSet, store) -> None:
-    candidate = make_baseline_candidate()
-
-    def bad_shape_runner(_):
-        return {"not": "valid"}
+    candidate = make_baseline_candidate(
+        code_source="def run(_):\n    return {'not': 'valid'}\n"
+    )
 
     result = evaluate_candidate(
         candidate_payload=candidate,
-        runner=bad_shape_runner,
         eval_set=eval_set,
         store=store,
     )
@@ -81,8 +74,7 @@ def test_evaluator_rejects_invalid_candidate(eval_set: EvalSet) -> None:
     with pytest.raises(HopSchemaError):
         evaluate_candidate(
             candidate_payload={"artifact_type": "hop_harness_candidate"},
-            runner=baseline_harness.run,
-            eval_set=eval_set,
+                eval_set=eval_set,
         )
 
 
@@ -92,8 +84,7 @@ def test_evaluator_rejects_empty_eval_set() -> None:
     with pytest.raises(ValueError, match="empty_eval_set"):
         evaluate_candidate(
             candidate_payload=candidate,
-            runner=baseline_harness.run,
-            eval_set=empty_set,
+                eval_set=empty_set,
         )
 
 
@@ -102,7 +93,6 @@ def test_evaluator_does_not_modify_candidate(eval_set: EvalSet, store) -> None:
     original = dict(candidate)
     evaluate_candidate(
         candidate_payload=candidate,
-        runner=baseline_harness.run,
         eval_set=eval_set,
         store=store,
     )

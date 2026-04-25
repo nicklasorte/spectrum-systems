@@ -17,7 +17,6 @@ def _seed(store, eval_set, capsys=None):
     store.write_artifact(candidate)
     evaluate_candidate(
         candidate_payload=candidate,
-        runner=baseline_harness.run,
         eval_set=eval_set,
         store=store,
     )
@@ -78,15 +77,13 @@ def test_show_frontier_rejects_zero_window(store, eval_set, capsys) -> None:
 
 
 def test_show_failures(store, eval_set, capsys) -> None:
-    candidate = make_baseline_candidate()
+    candidate = make_baseline_candidate(
+        code_source="def run(_):\n    raise RuntimeError('boom')\n"
+    )
     store.write_artifact(candidate)
-
-    def bad_runner(_):
-        raise RuntimeError("boom")
 
     evaluate_candidate(
         candidate_payload=candidate,
-        runner=bad_runner,
         eval_set=eval_set,
         store=store,
     )

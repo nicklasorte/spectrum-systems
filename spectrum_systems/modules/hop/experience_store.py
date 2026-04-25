@@ -74,6 +74,11 @@ _TYPE_TO_DIR: dict[str, str] = {
     "hop_harness_eval_case": "eval_cases",
     "hop_harness_faq_output": "faq_outputs",
     "hop_harness_trace_diff": "trace_diffs",
+    "hop_harness_pattern_draft_verify": "pattern_draft_verify",
+    "hop_harness_pattern_label_primer": "pattern_label_primer",
+    "hop_harness_routing_decision": "routing",
+    "hop_harness_bootstrap_snapshot": "bootstrap",
+    "hop_harness_trial_report": "trial_reports",
 }
 
 _INDEXED_FIELDS: dict[str, tuple[str, ...]] = {
@@ -100,6 +105,11 @@ _INDEXED_FIELDS: dict[str, tuple[str, ...]] = {
         "baseline_run_id",
         "candidate_run_id",
     ),
+    "hop_harness_pattern_draft_verify": ("pattern_id", "transcript_id"),
+    "hop_harness_pattern_label_primer": ("pattern_id", "workflow_id"),
+    "hop_harness_routing_decision": ("routing_id", "transcript_id", "strategy"),
+    "hop_harness_bootstrap_snapshot": ("snapshot_id", "workflow_id"),
+    "hop_harness_trial_report": ("trial_id", "workflow_id", "best_candidate_id", "best_score"),
 }
 
 

@@ -27,7 +27,6 @@ def test_pipeline_end_to_end(store: ExperienceStore, eval_set: EvalSet, eval_cas
 
     result = evaluate_candidate(
         candidate_payload=candidate,
-        runner=baseline_harness.run,
         eval_set=eval_set,
         store=store,
     )
@@ -88,13 +87,11 @@ def test_replay_compatibility_same_candidate_twice(store: ExperienceStore, eval_
 
     r1 = evaluate_candidate(
         candidate_payload=candidate,
-        runner=baseline_harness.run,
         eval_set=eval_set,
         store=store,
     )
     r2 = evaluate_candidate(
         candidate_payload=candidate,
-        runner=baseline_harness.run,
         eval_set=eval_set,
         store=store,
     )

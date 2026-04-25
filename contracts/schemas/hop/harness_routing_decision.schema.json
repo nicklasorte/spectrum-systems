@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hop/harness_routing_decision.schema.json",
+  "title": "HOP Harness Routing Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_id", "artifact_type", "schema_ref", "schema_version", "trace", "content_hash", "routing_id", "transcript_id", "strategy", "decisions"],
+  "properties": {
+    "artifact_id": {"type": "string", "pattern": "^hop_route_[a-z0-9_-]+$"},
+    "artifact_type": {"const": "hop_harness_routing_decision"},
+    "schema_ref": {"const": "hop/harness_routing_decision.schema.json"},
+    "schema_version": {"const": "1.0.0"},
+    "content_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": {"type": "string", "minLength": 1},
+        "related": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "routing_id": {"type": "string", "minLength": 1},
+    "transcript_id": {"type": "string", "minLength": 1},
+    "strategy": {"enum": ["single", "split"]},
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["utterance_index", "task_type", "strategy", "signals"],
+        "properties": {
+          "utterance_index": {"type": "integer", "minimum": 0},
+          "task_type": {"enum": ["faq_extract", "classify_statement", "ignore"]},
+          "strategy": {"type": "string", "minLength": 1},
+          "signals": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

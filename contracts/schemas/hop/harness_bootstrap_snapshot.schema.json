@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hop/harness_bootstrap_snapshot.schema.json",
+  "title": "HOP Bootstrap Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_id", "artifact_type", "schema_ref", "schema_version", "trace", "content_hash", "snapshot_id", "workflow_id", "repo_structure", "schema_files", "cli_commands", "test_commands", "context_budget_tokens"],
+  "properties": {
+    "artifact_id": {"type": "string", "pattern": "^hop_bootstrap_[a-z0-9_-]+$"},
+    "artifact_type": {"const": "hop_harness_bootstrap_snapshot"},
+    "schema_ref": {"const": "hop/harness_bootstrap_snapshot.schema.json"},
+    "schema_version": {"const": "1.0.0"},
+    "content_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": {"type": "string", "minLength": 1},
+        "related": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "snapshot_id": {"type": "string"},
+    "workflow_id": {"type": "string"},
+    "repo_structure": {"type": "array", "items": {"type": "string"}},
+    "schema_files": {"type": "array", "items": {"type": "string"}},
+    "cli_commands": {"type": "array", "items": {"type": "string"}},
+    "test_commands": {"type": "array", "items": {"type": "string"}},
+    "context_budget_tokens": {"type": "integer", "minimum": 1}
+  }
+}
