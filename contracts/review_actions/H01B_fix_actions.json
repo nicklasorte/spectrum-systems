@@ -16,7 +16,7 @@
       "fix_id": "FIX-002",
       "finding_ids": ["F-002"],
       "severity": "S4",
-      "description": "Add route_with_control_check() to tlc_router.py. Enforces eval_summary and evaluation_control_decision=allow before routing. block/freeze always reject.",
+      "description": "Add route_with_gate_evidence() to tlc_router.py. Verifies gate evidence contains eval_summary_id and gate_status. passed_gate is accepted_for_route; failed_gate and missing_gate are rejected_for_route. TLC does not own control authority.",
       "target_file": "spectrum_systems/modules/orchestration/tlc_router.py",
       "status": "applied"
     },

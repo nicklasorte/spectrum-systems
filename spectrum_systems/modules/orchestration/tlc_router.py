@@ -183,82 +183,107 @@ def get_full_pipeline() -> List[str]:
     return list(_PIPELINE_ORDER)
 
 
-def route_with_control_check(
-    artifact: Dict[str, Any],
-    control_decision: Dict[str, Any],
-    warn_allowed: bool = False,
-) -> str:
-    """Route an artifact only after verifying the control decision permits it.
+# Neutral gate status sets — TLC does not own control authority.
+# These values are produced by an upstream evaluator and consumed here
+# as evidence only. TLC verifies presence and consistency of the evidence;
+# it does not make the authority decision itself.
+_GATE_STATUS_ROUTABLE: frozenset = frozenset(["passed_gate"])
+_GATE_STATUS_NOT_ROUTABLE: frozenset = frozenset(["failed_gate", "missing_gate"])
+_GATE_STATUS_CONDITIONAL: frozenset = frozenset(["conditional_gate"])
+_KNOWN_GATE_STATUSES: frozenset = (
+    _GATE_STATUS_ROUTABLE | _GATE_STATUS_NOT_ROUTABLE | _GATE_STATUS_CONDITIONAL
+)
 
-    This is the control-enforced routing interface. Callers MUST use this
-    function (not route_artifact directly) when a control decision is available.
-    Routing without a valid 'allow' decision is a governance violation.
+
+def route_with_gate_evidence(
+    artifact: Dict[str, Any],
+    gate_evidence: Dict[str, Any],
+    conditional_route_allowed: bool = False,
+) -> str:
+    """Route an artifact only after gate evidence confirms passage.
+
+    TLC does not own control authority. This function verifies the presence
+    and consistency of a gate evidence artifact produced by an upstream
+    evaluator. Routing vocabulary is neutral: accepted_for_route /
+    rejected_for_route.
 
     Args:
         artifact: The artifact dict. Must contain 'artifact_type'.
-        control_decision: Must contain 'eval_summary' and
-            'evaluation_control_decision'. The decision field must be one of:
-            allow, block, freeze, warn.
-        warn_allowed: If True, a 'warn' decision is accepted (caller opts in
-            explicitly). Defaults to False (warn is rejected).
+        gate_evidence: Evidence object produced by the evaluator. Must contain
+            'eval_summary_id' and 'gate_status'. If 'target_artifact_id' is
+            present, it must match artifact['artifact_id'].
+
+            gate_status values:
+              passed_gate       — gate_evidence_valid, artifact is accepted_for_route
+              failed_gate       — gate_evidence_valid, artifact is rejected_for_route
+              missing_gate      — gate_evidence_missing, artifact is rejected_for_route
+              conditional_gate  — accepted_for_route only if conditional_route_allowed=True
+
+        conditional_route_allowed: If True, conditional_gate evidence is
+            accepted. Defaults to False (conditional gate rejects routing).
 
     Returns:
-        The next artifact type string on success.
+        The next artifact type string (accepted_for_route path).
 
     Raises:
         ArtifactRoutingError with reason_codes:
-            MISSING_CONTROL_DECISION   — control_decision is not a dict
-            MISSING_EVAL_SUMMARY       — eval_summary absent
-            MISSING_EVALUATION_CONTROL_DECISION — field absent
-            CONTROL_DECISION_BLOCK     — decision == 'block'
-            CONTROL_DECISION_FREEZE    — decision == 'freeze'
-            CONTROL_DECISION_WARN_NOT_ALLOWED — decision == 'warn', not opt-in
-            UNKNOWN_CONTROL_DECISION   — unrecognised decision value
+            MISSING_GATE_EVIDENCE                     — gate_evidence not a dict
+            MISSING_EVAL_SUMMARY_ID                   — eval_summary_id absent
+            MISSING_GATE_STATUS                       — gate_status absent
+            ARTIFACT_ID_MISMATCH                      — target_artifact_id mismatch
+            GATE_EVIDENCE_NOT_ROUTABLE                — gate status is not_routable
+            GATE_EVIDENCE_CONDITIONAL_ROUTING_NOT_ENABLED — conditional gate, not opted in
+            UNKNOWN_GATE_STATUS                       — unrecognised gate_status value
     """
-    if not isinstance(control_decision, dict):
+    if not isinstance(gate_evidence, dict):
         raise ArtifactRoutingError(
-            "control_decision must be a dict — routing without a control decision is prohibited",
-            reason_codes=["MISSING_CONTROL_DECISION"],
+            "gate_evidence must be a dict — routing without gate evidence is prohibited",
+            reason_codes=["MISSING_GATE_EVIDENCE"],
         )
 
-    if "eval_summary" not in control_decision:
+    if "eval_summary_id" not in gate_evidence:
         raise ArtifactRoutingError(
-            "control_decision missing required field: eval_summary",
-            reason_codes=["MISSING_EVAL_SUMMARY"],
+            "gate_evidence missing required field: eval_summary_id",
+            reason_codes=["MISSING_EVAL_SUMMARY_ID"],
         )
 
-    if "evaluation_control_decision" not in control_decision:
+    if "gate_status" not in gate_evidence:
         raise ArtifactRoutingError(
-            "control_decision missing required field: evaluation_control_decision",
-            reason_codes=["MISSING_EVALUATION_CONTROL_DECISION"],
+            "gate_evidence missing required field: gate_status",
+            reason_codes=["MISSING_GATE_STATUS"],
         )
 
-    decision = control_decision["evaluation_control_decision"]
-
-    if decision == "block":
-        raise ArtifactRoutingError(
-            "Routing rejected: control decision is 'block'",
-            reason_codes=["CONTROL_DECISION_BLOCK"],
-        )
-
-    if decision == "freeze":
-        raise ArtifactRoutingError(
-            "Routing rejected: control decision is 'freeze'",
-            reason_codes=["CONTROL_DECISION_FREEZE"],
-        )
-
-    if decision == "warn":
-        if not warn_allowed:
+    if "target_artifact_id" in gate_evidence:
+        target_id = gate_evidence["target_artifact_id"]
+        artifact_id = artifact.get("artifact_id") if isinstance(artifact, dict) else None
+        if target_id != artifact_id:
             raise ArtifactRoutingError(
-                "Routing rejected: control decision is 'warn' and warn_allowed=False. "
-                "Pass warn_allowed=True to accept warn decisions explicitly.",
-                reason_codes=["CONTROL_DECISION_WARN_NOT_ALLOWED"],
+                f"Gate evidence target_artifact_id={target_id!r} does not match "
+                f"artifact artifact_id={artifact_id!r}",
+                reason_codes=["ARTIFACT_ID_MISMATCH"],
             )
 
-    elif decision != "allow":
+    gate_status = gate_evidence["gate_status"]
+
+    if gate_status in _GATE_STATUS_NOT_ROUTABLE:
         raise ArtifactRoutingError(
-            f"Unknown control decision: {decision!r}. Must be one of: allow, block, freeze, warn",
-            reason_codes=["UNKNOWN_CONTROL_DECISION"],
+            f"Artifact is rejected_for_route: gate_evidence.gate_status={gate_status!r}",
+            reason_codes=["GATE_EVIDENCE_NOT_ROUTABLE"],
+        )
+
+    if gate_status in _GATE_STATUS_CONDITIONAL:
+        if not conditional_route_allowed:
+            raise ArtifactRoutingError(
+                "Artifact gate status is conditional_gate but conditional_route_allowed=False. "
+                "Pass conditional_route_allowed=True to accept conditional gate evidence.",
+                reason_codes=["GATE_EVIDENCE_CONDITIONAL_ROUTING_NOT_ENABLED"],
+            )
+
+    elif gate_status not in _GATE_STATUS_ROUTABLE:
+        raise ArtifactRoutingError(
+            f"Unknown gate_status: {gate_status!r}. "
+            "Expected: passed_gate, failed_gate, missing_gate, or conditional_gate",
+            reason_codes=["UNKNOWN_GATE_STATUS"],
         )
 
     artifact_type = artifact.get("artifact_type") if isinstance(artifact, dict) else None
@@ -268,7 +293,7 @@ def route_with_control_check(
 __all__ = [
     "ArtifactRoutingError",
     "route_artifact",
-    "route_with_control_check",
+    "route_with_gate_evidence",
     "is_terminal",
     "pipeline_position",
     "validate_transition",

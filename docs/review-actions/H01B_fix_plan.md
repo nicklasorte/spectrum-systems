@@ -18,11 +18,11 @@
 
 ---
 
-### FIX-002 — Control-Enforced Routing (F-002)
+### FIX-002 — Gate-Evidence-Enforced Routing (F-002)
 
-**Finding:** Routing possible without control decision.  
+**Finding:** Routing possible without gate evidence.  
 **Target:** `spectrum_systems/modules/orchestration/tlc_router.py`  
-**Action:** Add `route_with_control_check(artifact, control_decision, warn_allowed=False)`. Validates `eval_summary` and `evaluation_control_decision` before delegating to `route_artifact`. block/freeze always reject. warn rejects unless `warn_allowed=True`.  
+**Action:** Add `route_with_gate_evidence(artifact, gate_evidence, conditional_route_allowed=False)`. Verifies `eval_summary_id` and `gate_status` in the gate evidence object before delegating to `route_artifact`. `failed_gate` and `missing_gate` are rejected_for_route. `conditional_gate` is rejected unless `conditional_route_allowed=True`. TLC does not own control authority — it validates gate evidence produced by an upstream evaluator.  
 **Status:** APPLIED
 
 ---
@@ -57,7 +57,7 @@
 ## Verification
 
 All fixes verified via:
-- `tests/transcript_pipeline/test_control_routing_enforcement.py` — 12 routing scenarios
+- `tests/transcript_pipeline/test_control_routing_enforcement.py` — 15 gate evidence routing scenarios
 - `tests/transcript_pipeline/test_h01b_hardening.py` — 22 severity/hash/grounding scenarios
 - `tests/transcript_pipeline/test_artifact_store_h02.py` — existing store tests (no regressions)
 - `tests/transcript_pipeline/test_tlc_router_h05.py` — existing router tests (no regressions)
