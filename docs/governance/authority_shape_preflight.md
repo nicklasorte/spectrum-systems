@@ -1,24 +1,32 @@
 # Authority-Shape Preflight (AGS-001)
 
+## Ownership
+
+AGS-001 is a **static, non-owning preflight scanner**. The scanner reads
+changed files and writes advisory diagnostics. Canonical ownership is
+declared in `docs/architecture/system_registry.md` and is unchanged by this
+scanner. Canonical owners and the system-registry / authority-leak guards
+consume the diagnostic and remain the systems that fail-close.
+
 ## Purpose
 
-Catch authority-shaped terminology used by non-owner systems **before** full
+Detect authority-shaped terminology used by non-owner systems **before** full
 CI, without weakening the system-registry guard or the authority-leak guard.
 Recent HOP work repeatedly failed late CI because new files used names like
 `promotion_decision`, `rollback_record`, or `enforcement_action` that belong to
-canonical owners. The fail was correct — the loop was just slow. This preflight
-moves the same enforcement earlier in the loop and adds suggested replacements
+canonical owners. The diagnostic was correct — the loop was just slow. This
+preflight surfaces the same diagnostic earlier and adds suggested replacements
 plus an opt-in safe-rename mode.
 
 ## Components
 
-| Surface                                                              | Role                                            |
-| -------------------------------------------------------------------- | ----------------------------------------------- |
-| `contracts/governance/authority_shape_vocabulary.json`               | Reusable vocabulary map                         |
-| `spectrum_systems/governance/authority_shape_preflight.py`           | Pure scanner + safe-rename library              |
-| `scripts/run_authority_shape_preflight.py`                           | CLI gate with `suggest-only` and `apply` modes  |
-| `tests/test_authority_shape_preflight.py`                            | Library tests                                   |
-| `tests/test_run_authority_shape_preflight.py`                        | CLI tests                                       |
+| Surface                                                              | Role                                                            |
+| -------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `contracts/governance/authority_shape_vocabulary.json`               | Reusable vocabulary map                                         |
+| `spectrum_systems/governance/authority_shape_preflight.py`           | Static scanner + safe-rename library                            |
+| `scripts/run_authority_shape_preflight.py`                           | CLI scanner with `suggest-only` and `apply-safe-renames` modes  |
+| `tests/test_authority_shape_preflight.py`                            | Library tests                                                   |
+| `tests/test_run_authority_shape_preflight.py`                        | CLI tests                                                       |
 
 ## What it checks
 

@@ -1,15 +1,21 @@
-"""Authority-shape preflight (AGS-001).
+"""Authority-shape preflight scanner (AGS-001).
 
-Catches authority-shaped terminology used by non-owner systems before full CI.
-Driven by ``contracts/governance/authority_shape_vocabulary.json``. Designed to
-sit upstream of the system-registry guard and authority-leak guard so the same
-violations they would later catch are surfaced earlier with explicit
+Static, non-owning scanner that detects authority-shaped terminology used by
+non-owner systems and reports diagnostics to canonical owners. It does not
+own runtime behavior, gating, or enforcement. Canonical ownership is
+unchanged: admission/runtime stays with AEX, closure with CDE, enforcement
+with SEL.
+
+Driven by ``contracts/governance/authority_shape_vocabulary.json``. Designed
+to sit upstream of the system-registry guard and authority-leak guard so the
+same diagnostics they would later report are surfaced earlier with explicit
 suggestions and (optionally) safe renames.
 
-The preflight is fail-closed by design. ``suggest-only`` reports violations;
-``apply-safe-renames`` applies unambiguous, owner-safe renames and re-checks.
-Guard scripts, canonical owner files, and the vocabulary itself are protected
-from auto-remediation.
+The scanner returns a failing diagnostic status (non-zero exit) when leaks
+are detected. ``suggest-only`` reports diagnostics; ``apply-safe-renames``
+applies unambiguous, owner-safe renames and re-scans. Guard scripts,
+canonical owner files, and the vocabulary itself are protected from
+auto-remediation.
 """
 
 from __future__ import annotations

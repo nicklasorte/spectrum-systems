@@ -1,19 +1,28 @@
 #!/usr/bin/env python3
-"""Run the authority-shape preflight (AGS-001) over changed files.
+"""Static authority-shape preflight scanner for changed files (AGS-001).
 
-This is an early, fail-closed gate. It reuses the same changed-file resolution
-as the system-registry guard and authority-leak guard so the three checks share
-their notion of "what changed". Two modes are supported:
+This script is a static, non-owning scanner. It detects authority-shaped
+identifiers in changed files and writes a diagnostic artifact. Canonical
+ownership is declared in ``docs/architecture/system_registry.md`` and is
+unchanged by this scanner.
 
-* ``--suggest-only`` (default): report violations with file/line/symbol,
-  authority cluster, canonical owner, and suggested replacements.
+Two diagnostic modes are supported:
+
+* ``--suggest-only`` (default): report authority-shape diagnostics with
+  file/line/symbol, authority cluster, canonical owner, and suggested
+  replacements.
 * ``--apply-safe-renames``: apply unambiguous, owner-safe renames using the
   contracted ``safe_rename_pairs`` table and re-scan. Guard scripts and
-  canonical owner files are protected from auto-remediation.
+  canonical-owner files are protected from auto-remediation.
 
-Dependency-light by design: the preflight must run on the minimal CI surface
-that is exercised before contracts/jsonschema dependencies are installed.
-We therefore avoid the package-level ``spectrum_systems.governance`` ``__init__``
+The script returns a failing diagnostic status (non-zero exit) when
+authority-shaped leaks are detected. Downstream canonical owners and the
+existing fail-closed checks consume this diagnostic; this scanner does not
+own gating or perform any enforcement action.
+
+Dependency-light by design: the scanner must work on the minimal CI surface
+that is exercised before contracts/jsonschema dependencies are installed. We
+therefore avoid the package-level ``spectrum_systems.governance`` ``__init__``
 (which eagerly imports ``contract_impact`` and transitively requires
 ``jsonschema``) and load the preflight implementation by file path. The module
 itself uses only the Python standard library.

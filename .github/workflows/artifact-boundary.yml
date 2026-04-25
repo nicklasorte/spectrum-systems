@@ -90,7 +90,7 @@ jobs:
             echo "head_ref=HEAD" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Run authority-shape preflight (AGS-001)
+      - name: Scan authority-shape preflight diagnostics (AGS-001)
         run: |
           python scripts/run_authority_shape_preflight.py \
             --base-ref "${{ steps.srg-refs.outputs.base_ref }}" \

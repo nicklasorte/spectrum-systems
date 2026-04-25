@@ -1,7 +1,7 @@
 {
   "artifact_type": "authority_shape_vocabulary",
   "artifact_version": "1.0.0",
-  "purpose": "Map forbidden authority-shaped terminology to canonical owners and safe non-authoritative replacements. Drives the early authority-shape preflight (AGS-001) so violations are caught and fixable before full CI without weakening downstream guards.",
+  "purpose": "Map forbidden authority-shaped terminology to canonical owners and safe non-authoritative replacements. Backs the AGS-001 static authority-shape preflight scanner that emits advisory diagnostics for canonical owners; the scanner does not own runtime, gating, or enforcement. AEX retains canonical execution ownership.",
   "scope": {
     "default_scope_prefixes": [
       "spectrum_systems/",
