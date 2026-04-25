@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spectrum-systems.org/contracts/hop/harness_rollback_record.schema.json",
-  "title": "HOP Rollback Record",
-  "description": "Advisory rollback / quarantine record emitted by the HOP rollback module. HOP records intent and structured evidence; the external control plane and SEL execute the action.",
+  "$id": "https://spectrum-systems.org/contracts/hop/harness_rollback_signal.schema.json",
+  "title": "Harness Rollback Signal",
+  "description": "Advisory rollback signal produced by the harness feedback surface. The signal records evidence and a recommended_action for the canonical release owner (REL) to act on. It is informational only and confers no execution authority on the harness module.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -12,29 +12,30 @@
     "schema_version",
     "trace",
     "content_hash",
-    "rollback_id",
+    "signal_id",
     "subject_candidate_id",
     "previous_promoted_candidate_id",
-    "action",
+    "recommended_action",
     "reason",
     "evidence",
     "advisory_only",
+    "delegates_to",
     "recorded_at"
   ],
   "properties": {
-    "artifact_id": {"type": "string", "pattern": "^hop_rollback_[a-z0-9_-]+$"},
-    "artifact_type": {"const": "hop_harness_rollback_record"},
-    "schema_ref": {"const": "hop/harness_rollback_record.schema.json"},
+    "artifact_id": {"type": "string", "pattern": "^hop_rb_signal_[a-z0-9_-]+$"},
+    "artifact_type": {"const": "hop_harness_rollback_signal"},
+    "schema_ref": {"const": "hop/harness_rollback_signal.schema.json"},
     "schema_version": {"const": "1.0.0"},
     "content_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
     "trace": {"$ref": "#/$defs/trace"},
-    "rollback_id": {"type": "string", "pattern": "^[a-z0-9_-]+$"},
+    "signal_id": {"type": "string", "pattern": "^[a-z0-9_-]+$"},
     "subject_candidate_id": {"type": "string", "pattern": "^[a-z0-9_-]+$"},
     "previous_promoted_candidate_id": {
       "type": ["string", "null"],
       "pattern": "^[a-z0-9_-]+$"
     },
-    "action": {"type": "string", "enum": ["revert", "quarantine"]},
+    "recommended_action": {"type": "string", "enum": ["revert", "quarantine"]},
     "reason": {
       "type": "string",
       "enum": [
@@ -69,6 +70,7 @@
       }
     },
     "advisory_only": {"const": true},
+    "delegates_to": {"const": "REL"},
     "recorded_at": {"type": "string", "format": "date-time"}
   },
   "$defs": {

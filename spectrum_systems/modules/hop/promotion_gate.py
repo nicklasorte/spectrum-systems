@@ -143,15 +143,15 @@ def _check_search_disjoint_from_heldout(
 def _check_candidate_not_quarantined(
     inputs: PromotionGateInputs, _: PromotionGateConfig, *, store: ExperienceStore
 ) -> tuple[bool, str]:
-    """A quarantined candidate must never reach decision=allow."""
-    for rec in store.iter_index(artifact_type="hop_harness_rollback_record"):
+    """A candidate with a quarantine signal must never reach decision=allow."""
+    for rec in store.iter_index(artifact_type="hop_harness_rollback_signal"):
         fields = rec.get("fields", {}) or {}
         if (
             fields.get("subject_candidate_id") == inputs.candidate_id
-            and fields.get("action") == "quarantine"
+            and fields.get("recommended_action") == "quarantine"
         ):
-            return False, f"quarantined:{rec.get('artifact_id')}"
-    return True, "not_quarantined"
+            return False, f"quarantine_signal_present:{rec.get('artifact_id')}"
+    return True, "no_quarantine_signal"
 
 
 def _check_scores_admitted(

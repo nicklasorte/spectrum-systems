@@ -34,7 +34,7 @@ _SCHEMA_FILES: Mapping[str, str] = {
     "hop_harness_bootstrap_snapshot": "harness_bootstrap_snapshot.schema.json",
     "hop_harness_trial_summary": "harness_trial_summary.schema.json",
     "hop_harness_promotion_decision": "harness_promotion_decision.schema.json",
-    "hop_harness_rollback_record": "harness_rollback_record.schema.json",
+    "hop_harness_rollback_signal": "harness_rollback_signal.schema.json",
     "hop_harness_eval_factory_record": "harness_eval_factory_record.schema.json",
     "hop_harness_trend_report": "harness_trend_report.schema.json",
     "hop_harness_control_advisory": "harness_control_advisory.schema.json",

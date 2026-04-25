@@ -80,7 +80,7 @@ _TYPE_TO_DIR: dict[str, str] = {
     "hop_harness_bootstrap_snapshot": "bootstrap",
     "hop_harness_trial_summary": "trial_summaries",
     "hop_harness_promotion_decision": "promotion_decisions",
-    "hop_harness_rollback_record": "rollback_records",
+    "hop_harness_rollback_signal": "rollback_signals",
     "hop_harness_eval_factory_record": "eval_factory_records",
     "hop_harness_trend_report": "trend_reports",
     "hop_harness_control_advisory": "control_advisories",
@@ -122,11 +122,11 @@ _INDEXED_FIELDS: dict[str, tuple[str, ...]] = {
         "search_eval_set_id",
         "heldout_eval_set_id",
     ),
-    "hop_harness_rollback_record": (
-        "rollback_id",
+    "hop_harness_rollback_signal": (
+        "signal_id",
         "subject_candidate_id",
         "previous_promoted_candidate_id",
-        "action",
+        "recommended_action",
         "reason",
     ),
     "hop_harness_eval_factory_record": (

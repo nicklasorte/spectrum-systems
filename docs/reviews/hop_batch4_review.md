@@ -1,7 +1,7 @@
 # HOP-003C-004 — Phase 2 Red-Team Review
 
 **Scope:** the Phase 2 surface added by HOP-003C-004:
-held-out eval set, `promotion_gate.py`, `rollback.py`, `eval_factory.py`,
+held-out eval set, `promotion_gate.py`, `rollback_signals.py`, `eval_factory.py`,
 `trend_reports.py`, `control_integration.py`, the corresponding schemas,
 and the sandbox additions.
 
@@ -15,7 +15,7 @@ and tests below. The fix pass is included in this PR.
 | 1 | Promotion bypass — fabricated `allow`     | Caller hand-builds a `hop_harness_promotion_decision` with `decision=allow` and a failed rationale row. | CLOSED   | Schema `allOf` `if/then`: `decision=="allow"` ⇒ every rationale item `passed=true`. Test: `test_attack_fabricated_allow_artifact_rejected_by_schema`. |
 | 2 | Eval gaming — unadmitted score artifact   | Caller passes an in-memory score never written to the store, bypassing evaluator + sandbox.             | CLOSED   | New `scores_admitted` check: gate scans the index for both score artifact ids before allowing. Test: `test_attack_unadmitted_score_blocks_promotion`. |
 | 3 | Regression leakage — case-id collision    | Eval factory emits a candidate case whose id collides with a live search-set case (auto-pass).          | CLOSED   | Factory id template `hop_case_<category>_<source>` namespaces by category and source artifact id. Test: `test_attack_eval_factory_does_not_collide_with_search_set`. |
-| 4 | Rollback failure — re-promotion           | A candidate is quarantined, then the gate is run again and returns `allow`.                             | CLOSED   | New `candidate_not_quarantined` check: gate consults `hop_harness_rollback_record` artifacts before allowing. Test: `test_attack_quarantined_candidate_blocked_at_promotion`. |
+| 4 | Rollback failure — re-promotion           | A candidate is quarantined, then the gate is run again and returns `allow`.                             | CLOSED   | New `candidate_not_quarantined` check: gate consults `hop_harness_rollback_signal` artifacts before allowing. Test: `test_attack_quarantined_candidate_blocked_at_promotion`. |
 | 5 | Control bypass — `advisory_only=False`    | Caller smuggles a payload with `advisory_only=false` into the store.                                    | CLOSED   | All five new schemas pin `advisory_only` to `const: true`. Test: `test_attack_advisory_only_false_rejected_by_schema`. |
 | 6 | Eval-data read leakage — sandbox reads    | Malicious harness reads `contracts/evals/hop_heldout/cases/*.json` and memorises answers.               | CLOSED   | Sandbox now accepts `denied_read_path_prefixes`; the evaluator denies the entire `contracts/evals/` subtree on every case. Test: `test_attack_sandbox_blocks_eval_data_reads`. |
 
@@ -54,12 +54,14 @@ the live search set.
 
 ### 4. Quarantine is binding
 
-Before: `rollback.emit_rollback(action="quarantine", ...)` produced an
-audit record that the gate ignored.
+Before: `rollback_signals.emit_rollback_signal(recommended_action="quarantine", ...)`
+produced an audit record that the gate ignored.
 
 After: the gate's `candidate_not_quarantined` check streams the index
-for any rollback record whose `subject_candidate_id` matches and whose
-`action` is `quarantine`. A match forces `decision=block`.
+for any rollback signal whose `subject_candidate_id` matches and whose
+`recommended_action` is `quarantine`. A match forces `decision=block`.
+The gate consumes the advisory signal; REL remains the canonical
+release/rollback owner that decides whether to act on it.
 
 ### 5. `advisory_only=true` is structural, not optional
 
@@ -68,7 +70,7 @@ Each new schema declares `"advisory_only": {"const": true}`. JSON-Schema
 class-wide guarantee for the Phase 2 surface:
 
 - `harness_promotion_decision`
-- `harness_rollback_record`
+- `harness_rollback_signal`
 - `harness_eval_factory_record`
 - `harness_trend_report`
 - `harness_control_advisory`
@@ -113,7 +115,7 @@ existing write-protection, covering `builtins.open`, `os.open`, and
 ```bash
 python -m pytest tests/hop/test_phase2_red_team.py \
                  tests/hop/test_promotion_gate.py \
-                 tests/hop/test_rollback.py \
+                 tests/hop/test_rollback_signals.py \
                  tests/hop/test_eval_factory.py \
                  tests/hop/test_trend_reports.py \
                  tests/hop/test_control_integration.py \

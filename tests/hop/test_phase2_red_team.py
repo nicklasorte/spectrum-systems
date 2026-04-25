@@ -23,9 +23,9 @@ from spectrum_systems.modules.hop.promotion_gate import (
     evaluate_and_persist,
     evaluate_promotion,
 )
-from spectrum_systems.modules.hop.rollback import (
-    RollbackRequest,
-    emit_rollback,
+from spectrum_systems.modules.hop.rollback_signals import (
+    RollbackSignalRequest,
+    emit_rollback_signal,
 )
 from spectrum_systems.modules.hop.sandbox import SandboxConfig, execute_candidate
 from spectrum_systems.modules.hop.schemas import HopSchemaError, validate_hop_artifact
@@ -147,10 +147,10 @@ def test_attack_quarantined_candidate_blocked_at_promotion(
     saturated_pair_persisted, store
 ):
     candidate, search_score, heldout_score = saturated_pair_persisted
-    emit_rollback(
-        RollbackRequest(
+    emit_rollback_signal(
+        RollbackSignalRequest(
             subject_candidate_id=candidate["candidate_id"],
-            action="quarantine",
+            recommended_action="quarantine",
             reason="blocking_failure_detected",
             evidence=({"kind": "snippet", "detail": "synthetic"},),
         ),
