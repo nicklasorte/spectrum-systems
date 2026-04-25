@@ -24,18 +24,31 @@ class RFXIntegrityBundleError(ValueError):
     """Raised when LIN/REP integrity invariants fail closed for RFX work."""
 
 
-def _coerce_lineage_authenticity(lineage_record: dict[str, Any]) -> Any:
-    for key in ("authenticity", "authenticity_status", "authenticity_result"):
-        if key in lineage_record:
-            return lineage_record[key]
+def _first_present(record: dict[str, Any], *keys: str) -> Any:
+    """Return the first key's value that is meaningfully present.
+
+    Skips keys whose value is ``None`` or a whitespace-only string so a
+    blank legacy alias does not shadow a populated alias during schema
+    migration. Boolean ``False`` is preserved (meaningful for replay).
+    """
+    for key in keys:
+        if key not in record:
+            continue
+        value = record[key]
+        if value is None:
+            continue
+        if isinstance(value, str) and not value.strip():
+            continue
+        return value
     return None
+
+
+def _coerce_lineage_authenticity(lineage_record: dict[str, Any]) -> Any:
+    return _first_present(lineage_record, "authenticity", "authenticity_status", "authenticity_result")
 
 
 def _coerce_replay_match(replay_record: dict[str, Any]) -> Any:
-    for key in ("match", "replay_match", "matches"):
-        if key in replay_record:
-            return replay_record[key]
-    return None
+    return _first_present(replay_record, "match", "replay_match", "matches")
 
 
 def assert_rfx_integrity_bundle(

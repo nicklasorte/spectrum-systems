@@ -369,6 +369,19 @@ def test_loop03_failing_unified_status_for_evl_blocks() -> None:
         )
 
 
+def test_loop03_blank_legacy_alias_falls_through_to_unified_for_evl() -> None:
+    """A blank legacy ``evaluation_status`` must not shadow a populated ``status``."""
+    evl_mixed = {"eval_id": "evl-mixed", "evaluation_status": "", "status": "pass"}
+    # Must not raise.
+    assert_rfx_evl_tpa_evidence_present(evl_evidence=evl_mixed, tpa_evidence=_VALID_TPA)
+
+
+def test_loop03_blank_legacy_alias_falls_through_to_unified_for_tpa() -> None:
+    tpa_mixed = {"tpa_decision_id": "tpa-mixed", "discipline_status": "", "status": "accepted"}
+    # Must not raise.
+    assert_rfx_evl_tpa_evidence_present(evl_evidence=_VALID_EVL, tpa_evidence=tpa_mixed)
+
+
 # ---------------------------------------------------------------------------
 # Roadmap hard gate: PRA and POL presence
 # ---------------------------------------------------------------------------

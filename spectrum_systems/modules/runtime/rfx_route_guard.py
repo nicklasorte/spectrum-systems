@@ -148,9 +148,21 @@ def assert_rfx_pqx_lineage_present(
 # ---------------------------------------------------------------------------
 
 def _coerce_first_present(record: dict[str, Any], *keys: str) -> Any:
+    """Return the first key's value that is meaningfully present.
+
+    Skips keys whose value is ``None`` or a whitespace-only string so that
+    a blank legacy alias does not shadow a populated unified alias during
+    schema migration.
+    """
     for key in keys:
-        if key in record:
-            return record[key]
+        if key not in record:
+            continue
+        value = record[key]
+        if value is None:
+            continue
+        if isinstance(value, str) and not value.strip():
+            continue
+        return value
     return None
 
 

@@ -126,6 +126,21 @@ def test_obs_incomplete_blocks_certification() -> None:
         assert_rfx_certification_ready(**_kwargs(obs=bad))
 
 
+@pytest.mark.parametrize("numeric", [1, 1.0, 0, -1])
+def test_obs_numeric_completeness_blocks_certification(numeric) -> None:
+    """Python's ``1 == True`` must not let numeric values satisfy the boolean
+    completeness path."""
+    bad = {**_OBS, "completeness": numeric}
+    with pytest.raises(RFXCertificationGateError, match="rfx_missing_obs"):
+        assert_rfx_certification_ready(**_kwargs(obs=bad))
+
+
+def test_obs_completeness_true_passes() -> None:
+    boolean_complete = {**_OBS, "completeness": True}
+    # Must not raise — the explicit boolean True is still a valid signal.
+    assert_rfx_certification_ready(**_kwargs(obs=boolean_complete))
+
+
 def test_missing_slo_blocks_certification() -> None:
     with pytest.raises(RFXCertificationGateError, match="rfx_slo_block"):
         assert_rfx_certification_ready(**_kwargs(slo=None))
@@ -255,6 +270,40 @@ def test_cde_without_id_blocks_even_when_sel_link_present() -> None:
     sel_with_ref = {"sel_record_id": "sel-rfx-001", "cde_decision_ref": "anything"}
     with pytest.raises(RFXCertificationGateError, match="rfx_missing_cde_decision"):
         assert_rfx_certification_ready(**_kwargs(cde=cde_no_id, sel=sel_with_ref))
+
+
+# ---------------------------------------------------------------------------
+# Mixed-schema migration: empty alias values must fall through
+# ---------------------------------------------------------------------------
+
+def test_blank_legacy_alias_falls_through_to_unified_for_cde_id() -> None:
+    """A blank legacy ``decision_id`` must not shadow a populated alias."""
+    cde_mixed = {
+        "decision_id": "",  # blank legacy field
+        "cde_decision_id": "cde-rfx-001",  # populated alias matching SEL link
+        "status": "ready",
+    }
+    # Must not raise — the populated alias is the real id.
+    assert_rfx_certification_ready(**_kwargs(cde=cde_mixed))
+
+
+def test_blank_evl_legacy_status_falls_through_to_unified() -> None:
+    evl_mixed = {"eval_id": "evl-mixed", "evaluation_status": "", "status": "pass"}
+    # Must not raise — populated unified ``status`` is honored.
+    assert_rfx_certification_ready(**_kwargs(evl=evl_mixed))
+
+
+def test_blank_tpa_legacy_status_falls_through_to_unified() -> None:
+    tpa_mixed = {"tpa_decision_id": "tpa-mixed", "discipline_status": "", "status": "accepted"}
+    # Must not raise — populated unified ``status`` is honored.
+    assert_rfx_certification_ready(**_kwargs(tpa=tpa_mixed))
+
+
+def test_none_alias_falls_through() -> None:
+    """A ``None``-valued alias must also be skipped."""
+    cde_none = {"decision_id": None, "cde_decision_id": "cde-rfx-001", "status": "ready"}
+    # Must not raise.
+    assert_rfx_certification_ready(**_kwargs(cde=cde_none))
 
 
 # ---------------------------------------------------------------------------

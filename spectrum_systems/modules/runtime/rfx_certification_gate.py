@@ -48,9 +48,22 @@ def _is_present(value: Any) -> bool:
 
 
 def _coerce_status(record: dict[str, Any], *keys: str) -> Any:
+    """Return the first key's value that is meaningfully present.
+
+    Skips keys whose value is ``None`` or a whitespace-only string so that a
+    blank legacy alias does not shadow a populated unified alias during
+    schema migration. Boolean ``False`` and numeric ``0`` are preserved
+    because they are meaningful values for replay-match / boolean fields.
+    """
     for key in keys:
-        if key in record:
-            return record[key]
+        if key not in record:
+            continue
+        value = record[key]
+        if value is None:
+            continue
+        if isinstance(value, str) and not value.strip():
+            continue
+        return value
     return None
 
 
@@ -186,7 +199,9 @@ def assert_rfx_certification_ready(
         )
     else:
         obs_completeness = _coerce_status(obs, "completeness", "telemetry_completeness", "status")
-        if obs_completeness not in {"pass", "complete", True}:
+        # Use ``is True`` to avoid Python's ``1 == True`` collision: numeric
+        # 1 / 1.0 must not be silently accepted as a boolean ``True``.
+        if not (obs_completeness in {"pass", "complete"} or obs_completeness is True):
             reasons.append(
                 f"rfx_missing_obs: OBS completeness={obs_completeness!r} not 'pass'/'complete'"
             )
