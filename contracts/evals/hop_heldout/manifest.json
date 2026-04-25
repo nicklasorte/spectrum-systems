@@ -1,0 +1,91 @@
+{
+  "case_count": 12,
+  "cases": [
+    {
+      "artifact_id": "hop_eval_case_ff96032c460583be",
+      "category": "golden",
+      "content_hash": "sha256:ff96032c460583beb6e440fb82d759a95fef2a09364f9235ec4522dac1671fb9",
+      "eval_case_id": "hop_case_heldout_golden_pricing",
+      "path": "cases/hop_case_heldout_golden_pricing.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_68d5b0e64cf10189",
+      "category": "golden",
+      "content_hash": "sha256:68d5b0e64cf101899c17b3fbf5e44a97ee4e094f4166b731a9dcf55d8c47fcfe",
+      "eval_case_id": "hop_case_heldout_golden_meta_question",
+      "path": "cases/hop_case_heldout_golden_meta_question.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_641738bd8591f26d",
+      "category": "golden",
+      "content_hash": "sha256:641738bd8591f26d1664dde896c250ef166848da7f6d5e212f0a13afea072ef2",
+      "eval_case_id": "hop_case_heldout_golden_paired_topics",
+      "path": "cases/hop_case_heldout_golden_paired_topics.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_52fabeb65d5d5f1f",
+      "category": "golden",
+      "content_hash": "sha256:52fabeb65d5d5f1f460cebf6b320fdf4b50284cdb7f36f827b9586250bf6d87e",
+      "eval_case_id": "hop_case_heldout_golden_long_answer",
+      "path": "cases/hop_case_heldout_golden_long_answer.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_d5b29e87ef212f7d",
+      "category": "golden",
+      "content_hash": "sha256:d5b29e87ef212f7dcc4c9da3de79c3c9d4bd38501b6616b73d9d01b8606780b3",
+      "eval_case_id": "hop_case_heldout_golden_dedup_identical_qa",
+      "path": "cases/hop_case_heldout_golden_dedup_identical_qa.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_b002dab89198630e",
+      "category": "golden",
+      "content_hash": "sha256:b002dab89198630e89ce88b509ab8179e61fa24122d01b49bfb2e91e1ba3bd70",
+      "eval_case_id": "hop_case_heldout_golden_three_topic",
+      "path": "cases/hop_case_heldout_golden_three_topic.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_74f9458fe1a0de56",
+      "category": "adversarial",
+      "content_hash": "sha256:74f9458fe1a0de565cb2e6c78c010f416a8d0fcc624a87d7fdf62989a914734a",
+      "eval_case_id": "hop_case_heldout_adversarial_no_followup",
+      "path": "cases/hop_case_heldout_adversarial_no_followup.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_61169afd3c998513",
+      "category": "adversarial",
+      "content_hash": "sha256:61169afd3c99851341c495b2def6c75050e4e744a9f94d6ca5c7ac364fca9fa4",
+      "eval_case_id": "hop_case_heldout_adversarial_only_statements",
+      "path": "cases/hop_case_heldout_adversarial_only_statements.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_102a258660c6b33e",
+      "category": "adversarial",
+      "content_hash": "sha256:102a258660c6b33e10e895434c4b58613c645240809ee7166dc40a4a4b902d4c",
+      "eval_case_id": "hop_case_heldout_adversarial_two_questions_no_answer",
+      "path": "cases/hop_case_heldout_adversarial_two_questions_no_answer.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_29f62462d247ecbf",
+      "category": "adversarial",
+      "content_hash": "sha256:29f62462d247ecbf6ed90290f11be0fde5c896b312934e5e7957e009137e8b40",
+      "eval_case_id": "hop_case_heldout_adversarial_question_no_qmark",
+      "path": "cases/hop_case_heldout_adversarial_question_no_qmark.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_a4326ca2780849b3",
+      "category": "adversarial",
+      "content_hash": "sha256:a4326ca2780849b31ad8b63349beb7963f27218fa564b38bf623d7d0361a0f0f",
+      "eval_case_id": "hop_case_heldout_adversarial_forbidden_marker",
+      "path": "cases/hop_case_heldout_adversarial_forbidden_marker.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_cb20eb9ea1b53204",
+      "category": "adversarial",
+      "content_hash": "sha256:cb20eb9ea1b532042a4470624466bce863d078d4fddc7fae521e3c98957267ec",
+      "eval_case_id": "hop_case_heldout_adversarial_empty_transcript",
+      "path": "cases/hop_case_heldout_adversarial_empty_transcript.json"
+    }
+  ],
+  "eval_set_id": "hop_transcript_to_faq_heldout_v1",
+  "eval_set_version": "1.0.0"
+}

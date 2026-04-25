@@ -1,0 +1,40 @@
+{
+  "artifact_id": "hop_eval_case_a4326ca2780849b3",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "adversarial",
+  "content_hash": "sha256:a4326ca2780849b31ad8b63349beb7963f27218fa564b38bf623d7d0361a0f0f",
+  "eval_case_id": "hop_case_heldout_adversarial_forbidden_marker",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "leakage_attempt"
+  ],
+  "input": {
+    "transcript_id": "t_heldout_forbidden",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Does the held-out set check leakage?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Yes, the held-out set is disjoint by transcript_id."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "structural",
+    "rules": {
+      "forbidden_substrings_in_answers": [
+        "__hop_heldout_leak__"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:adversarial_forbidden_marker",
+    "related": []
+  }
+}

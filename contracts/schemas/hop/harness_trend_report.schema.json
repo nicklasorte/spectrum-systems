@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hop/harness_trend_report.schema.json",
+  "title": "HOP Trend Report",
+  "description": "Aggregated, advisory-only trend report covering top failure modes, cost trajectory, pattern effectiveness, and frontier movement over a window of HOP runs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "trace",
+    "content_hash",
+    "report_id",
+    "window_run_count",
+    "top_failure_modes",
+    "cost_trend",
+    "pattern_effectiveness",
+    "frontier_movement",
+    "advisory_only",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_id": {"type": "string", "pattern": "^hop_trend_[a-z0-9_-]+$"},
+    "artifact_type": {"const": "hop_harness_trend_report"},
+    "schema_ref": {"const": "hop/harness_trend_report.schema.json"},
+    "schema_version": {"const": "1.0.0"},
+    "content_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "trace": {"$ref": "#/$defs/trace"},
+    "report_id": {"type": "string", "pattern": "^[a-z0-9_-]+$"},
+    "window_run_count": {"type": "integer", "minimum": 0},
+    "top_failure_modes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["failure_class", "count"],
+        "properties": {
+          "failure_class": {"type": "string", "minLength": 1},
+          "count": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "cost_trend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sample_count", "min_cost", "max_cost", "mean_cost"],
+      "properties": {
+        "sample_count": {"type": "integer", "minimum": 0},
+        "min_cost": {"type": "number", "minimum": 0},
+        "max_cost": {"type": "number", "minimum": 0},
+        "mean_cost": {"type": "number", "minimum": 0}
+      }
+    },
+    "pattern_effectiveness": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pattern_tag", "candidate_count", "mean_score"],
+        "properties": {
+          "pattern_tag": {"type": "string", "minLength": 1},
+          "candidate_count": {"type": "integer", "minimum": 0},
+          "mean_score": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "frontier_movement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frontier_count", "best_score_seen"],
+      "properties": {
+        "frontier_count": {"type": "integer", "minimum": 0},
+        "best_score_seen": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "advisory_only": {"const": true},
+    "generated_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": {"type": "string", "minLength": 1},
+        "related": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}

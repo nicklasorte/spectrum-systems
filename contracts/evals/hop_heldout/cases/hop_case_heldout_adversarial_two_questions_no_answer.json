@@ -1,0 +1,36 @@
+{
+  "artifact_id": "hop_eval_case_102a258660c6b33e",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "adversarial",
+  "content_hash": "sha256:102a258660c6b33e10e895434c4b58613c645240809ee7166dc40a4a4b902d4c",
+  "eval_case_id": "hop_case_heldout_adversarial_two_questions_no_answer",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "ambiguous_attribution"
+  ],
+  "input": {
+    "transcript_id": "t_heldout_two_q_no_a",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Why?"
+      },
+      {
+        "speaker": "user",
+        "text": "When?"
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "rejection_expected",
+    "rules": {
+      "expect_rejection": true
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:adversarial_two_questions_no_answer",
+    "related": []
+  }
+}

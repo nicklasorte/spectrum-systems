@@ -15,6 +15,7 @@ from spectrum_systems.modules.hop.schemas import validate_hop_artifact
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EVAL_DIR = REPO_ROOT / "contracts" / "evals" / "hop"
+HELDOUT_EVAL_DIR = REPO_ROOT / "contracts" / "evals" / "hop_heldout"
 
 
 def _load_eval_cases() -> list[dict[str, Any]]:
@@ -50,6 +51,26 @@ def eval_set(eval_cases) -> EvalSet:
 @pytest.fixture()
 def store(tmp_path: Path) -> ExperienceStore:
     return ExperienceStore(tmp_path / "store")
+
+
+@pytest.fixture(scope="session")
+def heldout_eval_cases() -> list[dict[str, Any]]:
+    manifest = json.loads((HELDOUT_EVAL_DIR / "manifest.json").read_text(encoding="utf-8"))
+    cases: list[dict[str, Any]] = []
+    for entry in manifest["cases"]:
+        cases.append(json.loads((HELDOUT_EVAL_DIR / entry["path"]).read_text(encoding="utf-8")))
+    for c in cases:
+        validate_hop_artifact(c, "hop_harness_eval_case")
+    return cases
+
+
+@pytest.fixture()
+def heldout_eval_set(heldout_eval_cases) -> EvalSet:
+    return EvalSet(
+        eval_set_id="hop_transcript_to_faq_heldout_v1",
+        eval_set_version="1.0.0",
+        cases=tuple(heldout_eval_cases),
+    )
 
 
 def make_baseline_candidate(*, code_source: str | None = None) -> dict[str, Any]:

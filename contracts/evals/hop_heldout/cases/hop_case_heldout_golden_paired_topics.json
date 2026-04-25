@@ -1,0 +1,47 @@
+{
+  "artifact_id": "hop_eval_case_641738bd8591f26d",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:641738bd8591f26d1664dde896c250ef166848da7f6d5e212f0a13afea072ef2",
+  "eval_case_id": "hop_case_heldout_golden_paired_topics",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [],
+  "input": {
+    "transcript_id": "t_heldout_paired",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "What is the held-out set?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "It is a disjoint eval cohort used at certification."
+      },
+      {
+        "speaker": "user",
+        "text": "How is it disjoint?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Cases share zero transcript_ids with the search set."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_questions_substrings": [
+        "held-out set",
+        "disjoint"
+      ],
+      "max_qa_pairs": 2,
+      "min_qa_pairs": 2
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:golden_paired_topics",
+    "related": []
+  }
+}
