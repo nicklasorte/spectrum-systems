@@ -90,6 +90,13 @@ jobs:
             echo "head_ref=HEAD" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Run authority drift guard (shift-left)
+        run: |
+          python scripts/run_authority_drift_guard.py \
+            --base-ref "${{ steps.srg-refs.outputs.base_ref }}" \
+            --head-ref "${{ steps.srg-refs.outputs.head_ref }}" \
+            --output outputs/authority_drift_guard/authority_drift_guard_result.json
+
       - name: Run system registry guard
         run: |
           python scripts/run_system_registry_guard.py \
