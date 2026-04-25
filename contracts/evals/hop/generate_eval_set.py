@@ -266,8 +266,8 @@ def _golden_dedup_duplicate_questions() -> dict[str, Any]:
 def _golden_four_qa_long() -> dict[str, Any]:
     # Owner names (PQX/CDE/SEL/TLC) refer to canonical owners — these are
     # references, not authority claims. Verbs were rephrased in HOP-005 to
-    # use authority-neutral synonyms so the eval transcript content does
-    # not appear to assert release/advancement/SEL-owner authority by HOP.
+    # use authority-neutral synonyms so the eval transcript content stays
+    # advisory-only on the harness side.
     return _case(
         slug="golden_four_qa_long",
         category="golden",

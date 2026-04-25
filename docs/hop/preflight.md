@@ -1,9 +1,9 @@
 # HOP Authority-Shape Preflight
 
-HOP is **advisory-only**. Release/restoration/advancement authority lives
-with REL/GOV/CDE; enforcement lives with SEL. HOP files must not name
-artifacts, fields, or enum values in shapes that imply HOP owns those
-authorities. The AGS-001 preflight catches authority-shaped drift early.
+HOP is **advisory-only**. The harness module emits signals and
+observations; canonical owners interpret them. The static scanner
+surfaces authority-shaped identifiers early in the local development
+loop.
 
 ## When to run
 
