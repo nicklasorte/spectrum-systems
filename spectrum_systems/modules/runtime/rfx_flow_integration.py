@@ -60,7 +60,7 @@ def assert_rfx_promotion_ready(
     """
     # LOOP-01 / LOOP-02: AEX admission + TLC route lineage
     assert_rfx_aex_admission_present(
-        route_artifact=route_artifact or {},
+        route_artifact=route_artifact,
         build_admission_record=build_admission_record,
     )
     assert_rfx_pqx_lineage_present(

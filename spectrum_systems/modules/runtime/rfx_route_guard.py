@@ -81,7 +81,7 @@ def build_rfx_tlc_route_artifact(
 
 def assert_rfx_aex_admission_present(
     *,
-    route_artifact: dict[str, Any],
+    route_artifact: dict[str, Any] | None,
     build_admission_record: dict[str, Any] | None,
 ) -> None:
     """Assert AEX admission is present for repo-mutating RFX work.
@@ -90,6 +90,11 @@ def assert_rfx_aex_admission_present(
     lacks an admission_id, or does not match the route artifact's ref.
     Fails closed with rfx_admission_not_accepted if admission_status != 'accepted'.
     """
+    if not isinstance(route_artifact, dict):
+        raise RFXRouteGuardError(
+            "rfx_missing_aex_admission: route_artifact absent or not a mapping"
+        )
+
     if not isinstance(build_admission_record, dict) or not build_admission_record:
         raise RFXRouteGuardError("rfx_missing_aex_admission: build_admission_record absent")
 

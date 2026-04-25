@@ -189,6 +189,27 @@ def test_valid_aex_admission_passes(valid_route: dict) -> None:
     )
 
 
+def test_none_route_artifact_blocks_with_deterministic_error() -> None:
+    """LOOP-01 must fail closed (not crash with AttributeError) when the
+    route artifact is absent."""
+    with pytest.raises(RFXRouteGuardError, match="rfx_missing_aex_admission"):
+        assert_rfx_aex_admission_present(
+            route_artifact=None,
+            build_admission_record=_VALID_ADMISSION,
+        )
+
+
+@pytest.mark.parametrize("malformed", [[1], "route", 0, ("a", "b")])
+def test_non_dict_route_artifact_blocks_with_deterministic_error(malformed) -> None:
+    """A non-dict route artifact must fail closed with a guard error rather
+    than crashing on ``.get()``."""
+    with pytest.raises(RFXRouteGuardError, match="rfx_missing_aex_admission"):
+        assert_rfx_aex_admission_present(
+            route_artifact=malformed,
+            build_admission_record=_VALID_ADMISSION,
+        )
+
+
 # ---------------------------------------------------------------------------
 # LOOP-02: TLC route lineage / direct PQX guard
 # ---------------------------------------------------------------------------

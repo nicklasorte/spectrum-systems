@@ -123,6 +123,35 @@ def test_flow_blocks_when_aex_admission_absent(route_artifact: dict) -> None:
         assert_rfx_promotion_ready(**_full_kwargs(route_artifact, build_admission_record=None))
 
 
+def test_flow_blocks_when_route_artifact_is_none() -> None:
+    """Malformed entry — None route_artifact must produce a deterministic
+    guard error, not crash."""
+    with pytest.raises(RFXRouteGuardError, match="rfx_missing_aex_admission"):
+        assert_rfx_promotion_ready(
+            route_artifact=None,
+            build_admission_record=_ADMISSION,
+            tlc_handoff_record=_HANDOFF,
+            evl=_EVL, tpa=_TPA, cde=_CDE, sel=_SEL,
+            lin=_LIN, rep=_REP, obs=_OBS, slo=_SLO,
+            pra=_PRA, pol=_POL,
+        )
+
+
+@pytest.mark.parametrize("malformed", [[1], "route-string", 42, ("a",)])
+def test_flow_blocks_when_route_artifact_is_non_dict(malformed) -> None:
+    """A non-dict route_artifact must fail closed at the integration entry
+    point with a deterministic guard error, not an AttributeError."""
+    with pytest.raises(RFXRouteGuardError, match="rfx_missing_aex_admission"):
+        assert_rfx_promotion_ready(
+            route_artifact=malformed,
+            build_admission_record=_ADMISSION,
+            tlc_handoff_record=_HANDOFF,
+            evl=_EVL, tpa=_TPA, cde=_CDE, sel=_SEL,
+            lin=_LIN, rep=_REP, obs=_OBS, slo=_SLO,
+            pra=_PRA, pol=_POL,
+        )
+
+
 def test_flow_blocks_when_tlc_handoff_absent(route_artifact: dict) -> None:
     with pytest.raises(RFXRouteGuardError, match="rfx_pqx_direct_invocation_blocked"):
         assert_rfx_promotion_ready(**_full_kwargs(route_artifact, tlc_handoff_record=None))
