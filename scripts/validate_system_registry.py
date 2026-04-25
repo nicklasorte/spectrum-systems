@@ -20,7 +20,10 @@ REQUIRED_FIELDS = {
     "Primary Code Paths",
     "Status",
 }
-IGNORED_RUNTIME_PREFIXES = {"RUN", "TOP", "PRE", "TAX", "PMH", "MVP", "BNE", "BAX", "CAX"}
+IGNORED_RUNTIME_PREFIXES = {
+    "RUN", "TOP", "PRE", "TAX", "PMH", "MVP", "BNE", "BAX", "CAX",
+    "RFX",  # cross-system phase label declared in docs/roadmaps/rfx_cross_system_roadmap.md
+}
 
 
 @dataclass

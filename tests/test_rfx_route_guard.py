@@ -189,6 +189,27 @@ def test_valid_aex_admission_passes(valid_route: dict) -> None:
     )
 
 
+def test_none_route_artifact_blocks_with_deterministic_error() -> None:
+    """LOOP-01 must fail closed (not crash with AttributeError) when the
+    route artifact is absent."""
+    with pytest.raises(RFXRouteGuardError, match="rfx_missing_aex_admission"):
+        assert_rfx_aex_admission_present(
+            route_artifact=None,
+            build_admission_record=_VALID_ADMISSION,
+        )
+
+
+@pytest.mark.parametrize("malformed", [[1], "route", 0, ("a", "b")])
+def test_non_dict_route_artifact_blocks_with_deterministic_error(malformed) -> None:
+    """A non-dict route artifact must fail closed with a guard error rather
+    than crashing on ``.get()``."""
+    with pytest.raises(RFXRouteGuardError, match="rfx_missing_aex_admission"):
+        assert_rfx_aex_admission_present(
+            route_artifact=malformed,
+            build_admission_record=_VALID_ADMISSION,
+        )
+
+
 # ---------------------------------------------------------------------------
 # LOOP-02: TLC route lineage / direct PQX guard
 # ---------------------------------------------------------------------------
@@ -338,6 +359,97 @@ def test_valid_evl_and_tpa_passes() -> None:
         evl_evidence=_VALID_EVL,
         tpa_evidence=_VALID_TPA,
     )
+
+
+def test_loop03_accepts_unified_status_key_for_evl() -> None:
+    """LOOP-03 must also accept ``status`` (the LOOP-06-unified key) for EVL."""
+    evl_status = {"eval_id": "evl-unified", "status": "pass"}
+    # Must not raise
+    assert_rfx_evl_tpa_evidence_present(
+        evl_evidence=evl_status,
+        tpa_evidence=_VALID_TPA,
+    )
+
+
+def test_loop03_accepts_unified_status_key_for_tpa() -> None:
+    """LOOP-03 must also accept ``status`` (the LOOP-06-unified key) for TPA."""
+    tpa_status = {"tpa_decision_id": "tpa-unified", "status": "accepted"}
+    # Must not raise
+    assert_rfx_evl_tpa_evidence_present(
+        evl_evidence=_VALID_EVL,
+        tpa_evidence=tpa_status,
+    )
+
+
+def test_loop03_failing_unified_status_for_evl_blocks() -> None:
+    failing = {"eval_id": "evl-x", "status": "fail"}
+    with pytest.raises(RFXRouteGuardError, match="rfx_evl_evidence_not_passing"):
+        assert_rfx_evl_tpa_evidence_present(
+            evl_evidence=failing,
+            tpa_evidence=_VALID_TPA,
+        )
+
+
+def test_loop03_blank_legacy_alias_falls_through_to_unified_for_evl() -> None:
+    """A blank legacy ``evaluation_status`` must not shadow a populated ``status``."""
+    evl_mixed = {"eval_id": "evl-mixed", "evaluation_status": "", "status": "pass"}
+    # Must not raise.
+    assert_rfx_evl_tpa_evidence_present(evl_evidence=evl_mixed, tpa_evidence=_VALID_TPA)
+
+
+def test_loop03_blank_legacy_alias_falls_through_to_unified_for_tpa() -> None:
+    tpa_mixed = {"tpa_decision_id": "tpa-mixed", "discipline_status": "", "status": "accepted"}
+    # Must not raise.
+    assert_rfx_evl_tpa_evidence_present(evl_evidence=_VALID_EVL, tpa_evidence=tpa_mixed)
+
+
+def test_loop03_prefers_unified_status_over_legacy_alias_for_evl() -> None:
+    """LOOP-03 must agree with LOOP-06's ``status``-first precedence.
+
+    A producer with both fields populated and disagreeing values must reach
+    the same verdict in LOOP-03 and LOOP-06 to avoid migration whiplash.
+    """
+    evl_conflict = {"eval_id": "evl-x", "evaluation_status": "fail", "status": "pass"}
+    # Must not raise — unified ``status`` wins, matching LOOP-06.
+    assert_rfx_evl_tpa_evidence_present(evl_evidence=evl_conflict, tpa_evidence=_VALID_TPA)
+
+
+def test_loop03_prefers_unified_status_over_legacy_alias_for_tpa() -> None:
+    tpa_conflict = {"tpa_decision_id": "tpa-x", "discipline_status": "blocked", "status": "accepted"}
+    # Must not raise — unified ``status`` wins.
+    assert_rfx_evl_tpa_evidence_present(evl_evidence=_VALID_EVL, tpa_evidence=tpa_conflict)
+
+
+def test_loop03_loop06_consistency_on_mixed_schema_evl() -> None:
+    """The same EVL payload must reach the same verdict in LOOP-03 and LOOP-06."""
+    from spectrum_systems.modules.runtime.rfx_certification_gate import (
+        RFXCertificationGateError,
+        assert_rfx_certification_ready,
+    )
+
+    evl_conflict = {"eval_id": "evl-x", "evaluation_status": "fail", "status": "pass"}
+
+    # LOOP-03 (route guard): must not raise.
+    assert_rfx_evl_tpa_evidence_present(evl_evidence=evl_conflict, tpa_evidence=_VALID_TPA)
+
+    # LOOP-06 (certification gate): must also not raise on the same payload.
+    cde = {"decision_id": "cde-rfx-001", "status": "ready"}
+    sel = {"sel_record_id": "sel-rfx-001", "cde_decision_ref": "cde-rfx-001"}
+    lin = {"lineage_id": "lin-rfx-001", "authenticity": "pass"}
+    rep = {"replay_id": "rep-rfx-001", "match": True}
+    obs = {"obs_id": "obs-rfx-001", "completeness": "pass"}
+    slo = {"slo_id": "slo-rfx-001", "status": "within_budget"}
+    pra = {"pra_id": "pra-rfx-001", "status": "ready"}
+    pol = {"pol_id": "pol-rfx-001", "status": "active", "in_scope": True}
+    try:
+        assert_rfx_certification_ready(
+            evl=evl_conflict, tpa=_VALID_TPA, cde=cde, sel=sel,
+            lin=lin, rep=rep, obs=obs, slo=slo, pra=pra, pol=pol,
+        )
+    except RFXCertificationGateError as exc:
+        raise AssertionError(
+            f"LOOP-06 must agree with LOOP-03 on mixed-schema EVL payload; got {exc}"
+        ) from exc
 
 
 # ---------------------------------------------------------------------------

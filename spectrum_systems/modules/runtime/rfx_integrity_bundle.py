@@ -1,0 +1,95 @@
+"""RFX integrity-bundle guard — LOOP-05.
+
+Lineage (LIN) and replay (REP) are mandatory integrity overlays for RFX work.
+This guard enforces that both are present and valid before a candidate may be
+considered for GOV certification review.
+
+Behavior is fail-closed:
+  - missing lineage record       -> rfx_missing_lineage
+  - lineage authenticity != pass -> rfx_lineage_not_authentic
+  - missing replay record        -> rfx_missing_replay
+  - replay match != True         -> rfx_replay_mismatch
+
+No replay = no certification candidate. Canonical roles for lineage and
+replay are recorded in ``docs/architecture/system_registry.md``; this guard
+does not redefine them and is a non-owning phase-label support helper.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+
+class RFXIntegrityBundleError(ValueError):
+    """Raised when LIN/REP integrity invariants fail closed for RFX work."""
+
+
+def _first_present(record: dict[str, Any], *keys: str) -> Any:
+    """Return the first key's value that is meaningfully present.
+
+    Skips keys whose value is ``None`` or a whitespace-only string so a
+    blank legacy alias does not shadow a populated alias during schema
+    migration. Boolean ``False`` is preserved (meaningful for replay).
+    """
+    for key in keys:
+        if key not in record:
+            continue
+        value = record[key]
+        if value is None:
+            continue
+        if isinstance(value, str) and not value.strip():
+            continue
+        return value
+    return None
+
+
+def _coerce_lineage_authenticity(lineage_record: dict[str, Any]) -> Any:
+    return _first_present(lineage_record, "authenticity", "authenticity_status", "authenticity_result")
+
+
+def _coerce_replay_match(replay_record: dict[str, Any]) -> Any:
+    return _first_present(replay_record, "match", "replay_match", "matches")
+
+
+def assert_rfx_integrity_bundle(
+    *,
+    lineage_record: dict[str, Any] | None,
+    replay_record: dict[str, Any] | None,
+) -> None:
+    """Assert lineage + replay integrity bundle is present and valid.
+
+    Fails closed with deterministic, machine-readable reason codes when the
+    lineage record is absent, lineage authenticity is not ``pass``, the replay
+    record is absent, or the replay match flag is not exactly ``True``.
+    """
+    if not isinstance(lineage_record, dict) or not lineage_record:
+        raise RFXIntegrityBundleError(
+            "rfx_missing_lineage: LIN lineage record absent — "
+            "GOV certification candidate state blocked"
+        )
+
+    authenticity = _coerce_lineage_authenticity(lineage_record)
+    if authenticity != "pass":
+        raise RFXIntegrityBundleError(
+            f"rfx_lineage_not_authentic: lineage authenticity={authenticity!r} "
+            f"is not 'pass' — provenance integrity broken, certification blocked"
+        )
+
+    if not isinstance(replay_record, dict) or not replay_record:
+        raise RFXIntegrityBundleError(
+            "rfx_missing_replay: REP replay record absent — "
+            "no replay = no certification candidate"
+        )
+
+    replay_match = _coerce_replay_match(replay_record)
+    if replay_match is not True:
+        raise RFXIntegrityBundleError(
+            f"rfx_replay_mismatch: replay match={replay_match!r} is not True — "
+            f"reproducibility not proven; freeze/block certification path"
+        )
+
+
+__all__ = [
+    "RFXIntegrityBundleError",
+    "assert_rfx_integrity_bundle",
+]

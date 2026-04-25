@@ -81,7 +81,7 @@ def build_rfx_tlc_route_artifact(
 
 def assert_rfx_aex_admission_present(
     *,
-    route_artifact: dict[str, Any],
+    route_artifact: dict[str, Any] | None,
     build_admission_record: dict[str, Any] | None,
 ) -> None:
     """Assert AEX admission is present for repo-mutating RFX work.
@@ -90,6 +90,11 @@ def assert_rfx_aex_admission_present(
     lacks an admission_id, or does not match the route artifact's ref.
     Fails closed with rfx_admission_not_accepted if admission_status != 'accepted'.
     """
+    if not isinstance(route_artifact, dict):
+        raise RFXRouteGuardError(
+            "rfx_missing_aex_admission: route_artifact absent or not a mapping"
+        )
+
     if not isinstance(build_admission_record, dict) or not build_admission_record:
         raise RFXRouteGuardError("rfx_missing_aex_admission: build_admission_record absent")
 
@@ -147,6 +152,25 @@ def assert_rfx_pqx_lineage_present(
 # LOOP-03: EVL + TPA evidence gate before CDE/SEL progression
 # ---------------------------------------------------------------------------
 
+def _coerce_first_present(record: dict[str, Any], *keys: str) -> Any:
+    """Return the first key's value that is meaningfully present.
+
+    Skips keys whose value is ``None`` or a whitespace-only string so that
+    a blank legacy alias does not shadow a populated unified alias during
+    schema migration.
+    """
+    for key in keys:
+        if key not in record:
+            continue
+        value = record[key]
+        if value is None:
+            continue
+        if isinstance(value, str) and not value.strip():
+            continue
+        return value
+    return None
+
+
 def assert_rfx_evl_tpa_evidence_present(
     *,
     evl_evidence: dict[str, Any] | None,
@@ -156,6 +180,11 @@ def assert_rfx_evl_tpa_evidence_present(
 
     Missing EVL or TPA evidence produces deterministic stop reasons.
     Fails closed; all reason codes are collected before raising.
+
+    Status keys are coerced from either the LOOP-03-original names
+    (``evaluation_status`` / ``discipline_status``) or the unified
+    ``status`` key also accepted by LOOP-06, so producers using either
+    schema variant flow through to the certification gate consistently.
     """
     reasons: list[str] = []
 
@@ -163,21 +192,27 @@ def assert_rfx_evl_tpa_evidence_present(
         reasons.append(
             "rfx_missing_evl_evidence: EVL evaluation record absent — CDE/SEL progression blocked"
         )
-    elif evl_evidence.get("evaluation_status") not in {"pass", "conditional_pass"}:
-        reasons.append(
-            f"rfx_evl_evidence_not_passing: "
-            f"EVL evaluation_status={evl_evidence.get('evaluation_status')!r}"
-        )
+    else:
+        # Prefer the unified ``status`` key, falling back to the legacy
+        # ``evaluation_status``. Order must match the LOOP-06 certification
+        # gate so the two layers cannot disagree on a mixed-schema payload.
+        evl_status = _coerce_first_present(evl_evidence, "status", "evaluation_status")
+        if evl_status not in {"pass", "conditional_pass"}:
+            reasons.append(
+                f"rfx_evl_evidence_not_passing: EVL evaluation_status={evl_status!r}"
+            )
 
     if not isinstance(tpa_evidence, dict) or not tpa_evidence:
         reasons.append(
             "rfx_missing_tpa_evidence: TPA adjudication record absent — CDE/SEL progression blocked"
         )
-    elif tpa_evidence.get("discipline_status") not in {"accepted", "conditional"}:
-        reasons.append(
-            f"rfx_tpa_evidence_not_accepted: "
-            f"TPA discipline_status={tpa_evidence.get('discipline_status')!r}"
-        )
+    else:
+        # Same precedence as the LOOP-06 certification gate.
+        tpa_status = _coerce_first_present(tpa_evidence, "status", "discipline_status")
+        if tpa_status not in {"accepted", "conditional"}:
+            reasons.append(
+                f"rfx_tpa_evidence_not_accepted: TPA discipline_status={tpa_status!r}"
+            )
 
     if reasons:
         raise RFXRouteGuardError("; ".join(reasons))
