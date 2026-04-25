@@ -1,3 +1,7 @@
+// Incident data is statically defined stub data; no artifact source exists.
+// All responses are labeled stub_fallback so consumers know these are not
+// live incident signals.
+
 export async function GET() {
   const incidents = [
     {
@@ -48,6 +52,12 @@ export async function GET() {
 
   return Response.json({
     status: 'success',
+    data_source: 'stub_fallback',
+    generated_at: new Date().toISOString(),
+    source_artifacts_used: [],
+    warnings: [
+      'Incident data is statically defined; no artifact source exists. These are not live incident signals.',
+    ],
     incidents,
     total: incidents.length,
     refreshed_at: new Date().toISOString(),
