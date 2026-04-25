@@ -79,8 +79,8 @@ interface FailureMode {
 interface RiskSummaryBlock {
   fallback_signal_count?: number;
   unknown_signal_count?: number;
-  missing_eval_count?: number;
-  missing_trace_count?: number;
+  missing_eval_count?: number | 'unknown';
+  missing_trace_count?: number | 'unknown';
   override_count?: number | 'unknown';
   proof_chain_coverage?: {
     total?: number;
@@ -332,11 +332,39 @@ export default function Dashboard() {
       .filter((row) => LOOP_SEQUENCE.includes(row.system_id))
       .sort((a, b) => b.warning_count - a.warning_count)[0]?.system_id;
     const bottleneck = bottleneckFromMet ?? bottleneckFromGap ?? bottleneckFallback ?? 'unknown';
-    const bottleneckConfidence: DataSource = bottleneckFromMet
+    // Prefer the declared bottleneck_confidence over the artifact's storage
+    // provenance: the analysis itself can be derived_estimate even when its
+    // source artifact is artifact_store. Take the worse of the two so the UI
+    // never overstates confidence.
+    const declaredConfidence = intelligence?.bottleneck_confidence;
+    const declaredConfidenceDS: DataSource | null =
+      declaredConfidence === 'artifact_backed'
+        ? 'artifact_store'
+        : declaredConfidence === 'derived_estimate'
+        ? 'derived_estimate'
+        : declaredConfidence === 'unknown'
+        ? 'unknown'
+        : null;
+    const artifactSourceDS: DataSource | null = bottleneckFromMet
       ? (bottleneckArtifact?.data_source ?? 'artifact_store')
       : bottleneckFromGap
       ? (intelligence?.data_source ?? 'unknown')
-      : ('derived_estimate' as DataSource);
+      : null;
+    const candidateSources: DataSource[] = [];
+    if (declaredConfidenceDS) candidateSources.push(declaredConfidenceDS);
+    if (artifactSourceDS) candidateSources.push(artifactSourceDS);
+    const bottleneckConfidence: DataSource =
+      candidateSources.length === 0
+        ? 'derived_estimate'
+        : candidateSources.includes('unknown')
+        ? 'unknown'
+        : candidateSources.includes('stub_fallback')
+        ? 'stub_fallback'
+        : candidateSources.includes('derived_estimate')
+        ? 'derived_estimate'
+        : candidateSources.includes('derived')
+        ? 'derived'
+        : candidateSources[0];
     const bottleneckEvidence = bottleneckArtifact?.supporting_evidence ?? [];
     const bottleneckReason =
       bottleneckArtifact?.confidence_rationale ??
@@ -405,10 +433,12 @@ export default function Dashboard() {
     );
 
     const apiRisk = intelligence?.risk_summary;
-    const missingEvalCount =
-      apiRisk?.missing_eval_count ??
-      proofStages.filter((s) => s.name === 'Eval' && s.state === 'missing').length;
-    const missingTraceCount = apiRisk?.missing_trace_count ?? (lineageMissing ? 1 : 0);
+    const derivedMissingEval = proofStages.filter((s) => s.name === 'Eval' && s.state === 'missing').length;
+    const derivedMissingTrace = lineageMissing ? 1 : 0;
+    const missingEvalCount: number | 'unknown' =
+      apiRisk?.missing_eval_count ?? (apiRisk ? derivedMissingEval : 'unknown');
+    const missingTraceCount: number | 'unknown' =
+      apiRisk?.missing_trace_count ?? (apiRisk ? derivedMissingTrace : 'unknown');
     const fallbackCount = apiRisk?.fallback_signal_count ?? sourceMix.stub_fallback;
     const unknownCount = apiRisk?.unknown_signal_count ?? sourceMix.unknown;
     const overrideCount: number | 'unknown' = apiRisk?.override_count ?? 'unknown';
@@ -734,8 +764,8 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
           <div className="border rounded p-2">fallback count: {computed.fallbackCount}</div>
           <div className="border rounded p-2">unknown count: {computed.unknownCount}</div>
-          <div className="border rounded p-2">missing eval count: {computed.missingEvalCount}</div>
-          <div className="border rounded p-2">missing trace count: {computed.missingTraceCount}</div>
+          <div className="border rounded p-2">missing eval count: {String(computed.missingEvalCount)}</div>
+          <div className="border rounded p-2">missing trace count: {String(computed.missingTraceCount)}</div>
           <div className="border rounded p-2">override count: {String(computed.overrideCount)}</div>
           <div className="border rounded p-2">trend: unknown (no historical artifacts)</div>
         </div>

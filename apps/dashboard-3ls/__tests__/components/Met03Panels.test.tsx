@@ -234,6 +234,35 @@ describe('MET-03 dashboard panels', () => {
     });
   });
 
+  it('renders missing_eval_count and missing_trace_count as unknown when risk_summary is absent', async () => {
+    const intelligenceWithoutRisk = { ...baseIntelligence, risk_summary: undefined };
+    setupFetch(baseHealth, intelligenceWithoutRisk);
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/missing eval count: unknown/)).toBeInTheDocument();
+      expect(screen.getByText(/missing trace count: unknown/)).toBeInTheDocument();
+    });
+  });
+
+  it('uses bottleneck_confidence for provenance even when artifact data_source is artifact_store', async () => {
+    const provisionalBottleneck = {
+      ...baseIntelligence,
+      bottleneck_confidence: 'derived_estimate' as const,
+      bottleneck: {
+        ...baseIntelligence.bottleneck,
+        data_source: 'artifact_store' as const,
+      },
+    };
+    setupFetch(baseHealth, provisionalBottleneck);
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      const summary = screen.getByTestId('bottleneck-summary');
+      expect(within(summary).getByText('derived_estimate')).toBeInTheDocument();
+    });
+  });
+
   it('unknown stages keep proof chain from rendering green', async () => {
     setupFetch(
       {

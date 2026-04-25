@@ -36,12 +36,16 @@ remain `unknown` until historical artifacts exist — no fake precision.
 2. Per-system warning and block counts are read directly from the artifact-
    backed status fields on each seeded record.
 3. Governance legs (`EVL`, `CDE`, `TPA`) are prioritized when ranking the
-   dominant bottleneck because they gate promotion. Promotion-gating signals
-   (e.g. `CDE.payload.promotion_gate = blocked`) increase the rank further.
+   dominant bottleneck because their advancement signals gate the loop. The
+   `promotion_input_signal` value emitted by `CDE` (e.g. `blocked`) increases
+   the rank further.
 4. `bottleneck_confidence` is `artifact_backed` only when the dominant leg is
    read directly from artifact-backed status fields and supporting evidence
    names the source artifact paths. Otherwise the record degrades to
    `derived_estimate` and the API surfaces that.
+
+CDE is the sole advancement authority; MET only observes the recorded signal
+— it does not redefine the gate.
 
 ## How leverage is computed
 The formula is documented in the artifact and applied identically by the API:
@@ -49,15 +53,15 @@ The formula is documented in the artifact and applied identically by the API:
 ```
 leverage_score = (severity_weight * systems_impacted) / effort_weight
 boosts (multiplicative):
-  blocks_promotion or affects governance legs (EVL/CDE/TPA) -> 1.4
-  repeat_failure                                            -> 1.15
-  reduces fallback or unknown coverage                      -> 1.15
+  advancement_signal_blocked or affects governance legs (EVL/CDE/TPA) -> 1.4
+  repeat_failure                                                      -> 1.15
+  reduces fallback or unknown coverage                                -> 1.15
 weights:
   severity: high=3, medium=2, low=1
   effort:   high=3, medium=2, low=1, unknown=2
 ```
 
-Three contract rules are enforced both at artifact creation and at API render
+Three contract rules are applied at both artifact creation and API render
 time:
 - no recommendation without source (`source_artifacts_used` non-empty)
 - no recommendation without `failure_prevented`
@@ -88,11 +92,14 @@ returned to the dashboard.
   degrade trust posture (this is intentional — no fake green).
 
 ## What MET-03 does NOT do
-- It does not promote anything. `branch_update_allowed` still requires
-  `terminal_state == "ready_for_merge"` via PR review.
+- It does not advance any artifact toward release. `branch_update_allowed`
+  still requires `terminal_state == "ready_for_merge"` via PR review.
 - It does not mark any signal `PASS` unless it is fully proven; partial loop
   legs continue to render `warn`/`partial`.
 - It does not compute trend lines. Trends remain `unknown`.
+- It does not redefine ownership. CDE is the sole advancement authority, SEL
+  is the sole compliance authority, and GOV is the sole readiness-evidence
+  authority.
 
 ## Next gaps
 1. Seed additional cases so frequency, trend, and ranking can graduate from
@@ -101,8 +108,8 @@ returned to the dashboard.
    number rather than `unknown`.
 3. Replace remaining `stub_fallback` system rows with artifact-backed snapshots
    (already the highest-leverage non-governance fix).
-4. Add full SEL certification artifact to clear the `observe_only` enforcement
-   boundary.
+4. Add the SEL `compliance_signal` artifact so the `observe_only` action can
+   be cleared end-to-end.
 5. Expand REP replay dimensions (`distribution_shift`, `long_horizon`) so the
    EVL coverage gap can be closed end-to-end.
 

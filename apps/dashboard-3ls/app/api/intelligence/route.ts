@@ -83,9 +83,9 @@ interface RiskSummaryRecord {
     fallback_signal_count?: number;
     fallback_signal_systems?: string[];
     unknown_signal_count?: number;
-    missing_eval_count?: number;
+    missing_eval_count?: number | 'unknown';
     missing_eval_dimensions?: string[];
-    missing_trace_count?: number;
+    missing_trace_count?: number | 'unknown';
     override_count?: number | 'unknown';
     proof_chain_coverage?: {
       total?: number;
@@ -243,11 +243,19 @@ export async function GET() {
       : [`${ARTIFACT_PATHS.leverageQueue} unavailable; leverage queue reported as empty.`],
   };
 
+  // When the risk artifact is missing, fail-closed: counts that are not
+  // independently observable from another artifact-backed source remain
+  // 'unknown'. The dashboard must continue to render unknown rather than a
+  // hard zero so missing EVL/LIN coverage is not silently under-reported.
   const riskBlock = {
-    fallback_signal_count: riskSummary?.payload?.fallback_signal_count ?? fallbackSignalCount,
-    unknown_signal_count: riskSummary?.payload?.unknown_signal_count ?? unknownSignalCount,
-    missing_eval_count: riskSummary?.payload?.missing_eval_count ?? 0,
-    missing_trace_count: riskSummary?.payload?.missing_trace_count ?? 0,
+    fallback_signal_count:
+      riskSummary?.payload?.fallback_signal_count ??
+      (riskSummary ? 0 : fallbackSignalCount),
+    unknown_signal_count:
+      riskSummary?.payload?.unknown_signal_count ??
+      (riskSummary ? 0 : unknownSignalCount),
+    missing_eval_count: riskSummary?.payload?.missing_eval_count ?? 'unknown',
+    missing_trace_count: riskSummary?.payload?.missing_trace_count ?? 'unknown',
     override_count: riskSummary?.payload?.override_count ?? 'unknown',
     proof_chain_coverage:
       riskSummary?.payload?.proof_chain_coverage ?? {
@@ -263,7 +271,9 @@ export async function GET() {
     source_artifacts_used: riskSummary?.source_artifacts_used ?? [],
     warnings: riskSummary
       ? riskSummary.warnings ?? []
-      : [`${ARTIFACT_PATHS.riskSummary} unavailable; risk summary degraded to derived counts.`],
+      : [
+          `${ARTIFACT_PATHS.riskSummary} unavailable; missing_eval_count and missing_trace_count reported as unknown to preserve fail-closed posture.`,
+        ],
   };
 
   return NextResponse.json({
