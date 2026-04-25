@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/bad_input_campaign_record.schema.json",
+  "title": "bad_input_campaign_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "inputs"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "bad_input_campaign_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "inputs": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "class",
+          "payload_shape",
+          "expected_blocker"
+        ],
+        "properties": {
+          "class": {
+            "type": "string"
+          },
+          "payload_shape": {
+            "type": "string"
+          },
+          "expected_blocker": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

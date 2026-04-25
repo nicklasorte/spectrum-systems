@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/top_engineer_practice_mapping_record.schema.json",
+  "title": "top_engineer_practice_mapping_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "generated_at",
+    "systems"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "top_engineer_practice_mapping_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "systems": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "system_id",
+          "system_name",
+          "failure_prevented",
+          "signal_improved",
+          "loop_strengthened",
+          "debugability_surface",
+          "unknown_state_policy",
+          "test_data_sources",
+          "promotion_requirements",
+          "rollback_path",
+          "human_intervention_points",
+          "scale_failure_mode"
+        ],
+        "properties": {
+          "system_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{3}$"
+          },
+          "system_name": {
+            "type": "string",
+            "minLength": 3
+          },
+          "failure_prevented": {
+            "type": "string",
+            "minLength": 5
+          },
+          "signal_improved": {
+            "type": "string",
+            "minLength": 5
+          },
+          "loop_strengthened": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "core_loop_strengthened",
+              "justification"
+            ],
+            "properties": {
+              "core_loop_strengthened": {
+                "type": "boolean"
+              },
+              "justification": {
+                "type": "string"
+              }
+            }
+          },
+          "debugability_surface": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 3
+            }
+          },
+          "unknown_state_policy": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "mode",
+              "silent_allowed",
+              "escalation_artifact"
+            ],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "block",
+                  "escalate"
+                ]
+              },
+              "silent_allowed": {
+                "type": "boolean"
+              },
+              "escalation_artifact": {
+                "type": "string",
+                "minLength": 3
+              }
+            }
+          },
+          "test_data_sources": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 3
+            }
+          },
+          "promotion_requirements": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "eval_required",
+              "policy_required",
+              "replay_required"
+            ],
+            "properties": {
+              "eval_required": {
+                "type": "boolean"
+              },
+              "policy_required": {
+                "type": "boolean"
+              },
+              "replay_required": {
+                "type": "boolean"
+              }
+            }
+          },
+          "rollback_path": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "trigger",
+              "steps",
+              "owner"
+            ],
+            "properties": {
+              "trigger": {
+                "type": "string",
+                "minLength": 3
+              },
+              "steps": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 3
+                }
+              },
+              "owner": {
+                "type": "string",
+                "minLength": 3
+              }
+            }
+          },
+          "human_intervention_points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "point",
+                "required",
+                "artifact_record"
+              ],
+              "properties": {
+                "point": {
+                  "type": "string",
+                  "minLength": 3
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "artifact_record": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "scale_failure_mode": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "mode",
+              "detection",
+              "control_response"
+            ],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "minLength": 3
+              },
+              "detection": {
+                "type": "string",
+                "minLength": 3
+              },
+              "control_response": {
+                "type": "string",
+                "minLength": 3
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

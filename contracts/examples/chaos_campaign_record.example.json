@@ -1,0 +1,86 @@
+{
+  "artifact_type": "chaos_campaign_record",
+  "schema_version": "1.0.0",
+  "campaigns": [
+    {
+      "name": "broken schema",
+      "target_systems": [
+        "AEX",
+        "PQX"
+      ],
+      "failure_injection": "inject broken schema condition",
+      "expected_detection": "detect and block via fail-closed guard",
+      "control_response": "emit failure artifact and stop promotion"
+    },
+    {
+      "name": "missing eval",
+      "target_systems": [
+        "AEX",
+        "PQX"
+      ],
+      "failure_injection": "inject missing eval condition",
+      "expected_detection": "detect and block via fail-closed guard",
+      "control_response": "emit failure artifact and stop promotion"
+    },
+    {
+      "name": "missing trace",
+      "target_systems": [
+        "AEX",
+        "PQX"
+      ],
+      "failure_injection": "inject missing trace condition",
+      "expected_detection": "detect and block via fail-closed guard",
+      "control_response": "emit failure artifact and stop promotion"
+    },
+    {
+      "name": "conflicting context",
+      "target_systems": [
+        "AEX",
+        "PQX"
+      ],
+      "failure_injection": "inject conflicting context condition",
+      "expected_detection": "detect and block via fail-closed guard",
+      "control_response": "emit failure artifact and stop promotion"
+    },
+    {
+      "name": "stale artifact",
+      "target_systems": [
+        "AEX",
+        "PQX"
+      ],
+      "failure_injection": "inject stale artifact condition",
+      "expected_detection": "detect and block via fail-closed guard",
+      "control_response": "emit failure artifact and stop promotion"
+    },
+    {
+      "name": "bad input",
+      "target_systems": [
+        "AEX",
+        "PQX"
+      ],
+      "failure_injection": "inject bad input condition",
+      "expected_detection": "detect and block via fail-closed guard",
+      "control_response": "emit failure artifact and stop promotion"
+    },
+    {
+      "name": "fake healthy signal",
+      "target_systems": [
+        "AEX",
+        "PQX"
+      ],
+      "failure_injection": "inject fake healthy signal condition",
+      "expected_detection": "detect and block via fail-closed guard",
+      "control_response": "emit failure artifact and stop promotion"
+    },
+    {
+      "name": "authority boundary violation",
+      "target_systems": [
+        "AEX",
+        "PQX"
+      ],
+      "failure_injection": "inject authority boundary violation condition",
+      "expected_detection": "detect and block via fail-closed guard",
+      "control_response": "emit failure artifact and stop promotion"
+    }
+  ]
+}

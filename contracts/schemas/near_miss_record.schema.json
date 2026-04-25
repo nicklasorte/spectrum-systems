@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/near_miss_record.schema.json",
+  "title": "near_miss_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "near_miss_id",
+    "what_almost_failed",
+    "why_it_passed",
+    "signal_that_caught_it",
+    "required_followup_control",
+    "owner_system",
+    "follow_up_status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "near_miss_record"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "near_miss_id": {
+      "type": "string"
+    },
+    "what_almost_failed": {
+      "type": "string"
+    },
+    "why_it_passed": {
+      "type": "string"
+    },
+    "signal_that_caught_it": {
+      "type": "string"
+    },
+    "required_followup_control": {
+      "type": "string"
+    },
+    "owner_system": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{3}$"
+    },
+    "follow_up_status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "in_progress",
+        "closed"
+      ]
+    }
+  }
+}

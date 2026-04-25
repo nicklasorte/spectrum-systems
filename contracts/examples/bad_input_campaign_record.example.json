@@ -1,0 +1,41 @@
+{
+  "artifact_type": "bad_input_campaign_record",
+  "schema_version": "1.0.0",
+  "inputs": [
+    {
+      "class": "conflicting facts",
+      "payload_shape": "adversarial payload for conflicting facts",
+      "expected_blocker": "validation and policy gate"
+    },
+    {
+      "class": "missing evidence",
+      "payload_shape": "adversarial payload for missing evidence",
+      "expected_blocker": "validation and policy gate"
+    },
+    {
+      "class": "low-quality source",
+      "payload_shape": "adversarial payload for low-quality source",
+      "expected_blocker": "validation and policy gate"
+    },
+    {
+      "class": "untrusted repo content",
+      "payload_shape": "adversarial payload for untrusted repo content",
+      "expected_blocker": "validation and policy gate"
+    },
+    {
+      "class": "malformed artifact",
+      "payload_shape": "adversarial payload for malformed artifact",
+      "expected_blocker": "validation and policy gate"
+    },
+    {
+      "class": "partial lineage",
+      "payload_shape": "adversarial payload for partial lineage",
+      "expected_blocker": "validation and policy gate"
+    },
+    {
+      "class": "stale policy",
+      "payload_shape": "adversarial payload for stale policy",
+      "expected_blocker": "validation and policy gate"
+    }
+  ]
+}

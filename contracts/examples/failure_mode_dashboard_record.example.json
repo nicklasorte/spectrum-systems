@@ -1,0 +1,126 @@
+{
+  "artifact_type": "failure_mode_dashboard_record",
+  "schema_version": "1.0.0",
+  "failure_modes": [
+    {
+      "mode": "Promotion missing eval evidence",
+      "affected_systems": [
+        "EVL",
+        "CDE"
+      ],
+      "severity": "high",
+      "trend": "flat",
+      "detection_mechanism": "dashboard anomaly detector",
+      "control_response": "block promotion and require remediation artifact",
+      "fix_status": "in_progress"
+    },
+    {
+      "mode": "Silent unknown-state admission",
+      "affected_systems": [
+        "EVL",
+        "CDE"
+      ],
+      "severity": "high",
+      "trend": "flat",
+      "detection_mechanism": "dashboard anomaly detector",
+      "control_response": "block promotion and require remediation artifact",
+      "fix_status": "in_progress"
+    },
+    {
+      "mode": "Lineage gap at closure",
+      "affected_systems": [
+        "EVL",
+        "CDE"
+      ],
+      "severity": "high",
+      "trend": "flat",
+      "detection_mechanism": "dashboard anomaly detector",
+      "control_response": "block promotion and require remediation artifact",
+      "fix_status": "in_progress"
+    },
+    {
+      "mode": "Stale policy used",
+      "affected_systems": [
+        "EVL",
+        "CDE"
+      ],
+      "severity": "high",
+      "trend": "flat",
+      "detection_mechanism": "dashboard anomaly detector",
+      "control_response": "block promotion and require remediation artifact",
+      "fix_status": "in_progress"
+    },
+    {
+      "mode": "Fake healthy telemetry",
+      "affected_systems": [
+        "EVL",
+        "CDE"
+      ],
+      "severity": "high",
+      "trend": "flat",
+      "detection_mechanism": "dashboard anomaly detector",
+      "control_response": "block promotion and require remediation artifact",
+      "fix_status": "in_progress"
+    },
+    {
+      "mode": "Context conflict unresolved",
+      "affected_systems": [
+        "EVL",
+        "CDE"
+      ],
+      "severity": "high",
+      "trend": "flat",
+      "detection_mechanism": "dashboard anomaly detector",
+      "control_response": "block promotion and require remediation artifact",
+      "fix_status": "in_progress"
+    },
+    {
+      "mode": "Rollback artifact missing",
+      "affected_systems": [
+        "EVL",
+        "CDE"
+      ],
+      "severity": "high",
+      "trend": "flat",
+      "detection_mechanism": "dashboard anomaly detector",
+      "control_response": "block promotion and require remediation artifact",
+      "fix_status": "in_progress"
+    },
+    {
+      "mode": "Human override uncaptured",
+      "affected_systems": [
+        "EVL",
+        "CDE"
+      ],
+      "severity": "high",
+      "trend": "flat",
+      "detection_mechanism": "dashboard anomaly detector",
+      "control_response": "block promotion and require remediation artifact",
+      "fix_status": "in_progress"
+    },
+    {
+      "mode": "Replay package incomplete",
+      "affected_systems": [
+        "EVL",
+        "CDE"
+      ],
+      "severity": "high",
+      "trend": "flat",
+      "detection_mechanism": "dashboard anomaly detector",
+      "control_response": "block promotion and require remediation artifact",
+      "fix_status": "in_progress"
+    },
+    {
+      "mode": "Capacity saturation slows enforcement",
+      "affected_systems": [
+        "EVL",
+        "CDE"
+      ],
+      "severity": "high",
+      "trend": "flat",
+      "detection_mechanism": "dashboard anomaly detector",
+      "control_response": "block promotion and require remediation artifact",
+      "fix_status": "in_progress"
+    }
+  ]
+}

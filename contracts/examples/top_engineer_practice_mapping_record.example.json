@@ -1,0 +1,1307 @@
+{
+  "artifact_type": "top_engineer_practice_mapping_record",
+  "schema_version": "1.0.0",
+  "generated_at": "2026-04-25T00:00:00Z",
+  "systems": [
+    {
+      "system_id": "AEX",
+      "system_name": "AEX governance system",
+      "failure_prevented": "AEX prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "AEX improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "AEX strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "aex_trace",
+        "aex_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "AEX"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "PQX",
+      "system_name": "PQX governance system",
+      "failure_prevented": "PQX prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "PQX improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "PQX strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "pqx_trace",
+        "pqx_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "PQX"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "EVL",
+      "system_name": "EVL governance system",
+      "failure_prevented": "EVL prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "EVL improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "EVL strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "evl_trace",
+        "evl_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "EVL"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "TPA",
+      "system_name": "TPA governance system",
+      "failure_prevented": "TPA prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "TPA improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "TPA strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "tpa_trace",
+        "tpa_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "TPA"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "CDE",
+      "system_name": "CDE governance system",
+      "failure_prevented": "CDE prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "CDE improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "CDE strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "cde_trace",
+        "cde_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "CDE"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "SEL",
+      "system_name": "SEL governance system",
+      "failure_prevented": "SEL prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "SEL improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "SEL strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "sel_trace",
+        "sel_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "SEL"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "REP",
+      "system_name": "REP governance system",
+      "failure_prevented": "REP prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "REP improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "REP strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "rep_trace",
+        "rep_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "REP"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "LIN",
+      "system_name": "LIN governance system",
+      "failure_prevented": "LIN prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "LIN improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "LIN strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "lin_trace",
+        "lin_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "LIN"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "OBS",
+      "system_name": "OBS governance system",
+      "failure_prevented": "OBS prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "OBS improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "OBS strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "obs_trace",
+        "obs_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "OBS"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "SLO",
+      "system_name": "SLO governance system",
+      "failure_prevented": "SLO prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "SLO improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "SLO strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "slo_trace",
+        "slo_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "SLO"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "CTX",
+      "system_name": "CTX governance system",
+      "failure_prevented": "CTX prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "CTX improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "CTX strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "ctx_trace",
+        "ctx_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "CTX"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "PRM",
+      "system_name": "PRM governance system",
+      "failure_prevented": "PRM prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "PRM improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "PRM strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "prm_trace",
+        "prm_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "PRM"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "POL",
+      "system_name": "POL governance system",
+      "failure_prevented": "POL prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "POL improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "POL strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "pol_trace",
+        "pol_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "POL"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "TLC",
+      "system_name": "TLC governance system",
+      "failure_prevented": "TLC prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "TLC improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "TLC strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "tlc_trace",
+        "tlc_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "TLC"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "RIL",
+      "system_name": "RIL governance system",
+      "failure_prevented": "RIL prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "RIL improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "RIL strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "ril_trace",
+        "ril_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "RIL"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "FRE",
+      "system_name": "FRE governance system",
+      "failure_prevented": "FRE prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "FRE improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "FRE strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "fre_trace",
+        "fre_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "FRE"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "RAX",
+      "system_name": "RAX governance system",
+      "failure_prevented": "RAX prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "RAX improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "RAX strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "rax_trace",
+        "rax_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "RAX"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "RSM",
+      "system_name": "RSM governance system",
+      "failure_prevented": "RSM prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "RSM improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "RSM strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "rsm_trace",
+        "rsm_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "RSM"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "CAP",
+      "system_name": "CAP governance system",
+      "failure_prevented": "CAP prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "CAP improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "CAP strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "cap_trace",
+        "cap_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "CAP"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "SEC",
+      "system_name": "SEC governance system",
+      "failure_prevented": "SEC prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "SEC improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "SEC strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "sec_trace",
+        "sec_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "SEC"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "JDX",
+      "system_name": "JDX governance system",
+      "failure_prevented": "JDX prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "JDX improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "JDX strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "jdx_trace",
+        "jdx_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "JDX"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "JSX",
+      "system_name": "JSX governance system",
+      "failure_prevented": "JSX prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "JSX improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "JSX strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "jsx_trace",
+        "jsx_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "JSX"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "PRA",
+      "system_name": "PRA governance system",
+      "failure_prevented": "PRA prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "PRA improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "PRA strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "pra_trace",
+        "pra_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "PRA"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "GOV",
+      "system_name": "GOV governance system",
+      "failure_prevented": "GOV prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "GOV improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "GOV strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "gov_trace",
+        "gov_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "GOV"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "MAP",
+      "system_name": "MAP governance system",
+      "failure_prevented": "MAP prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "MAP improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "MAP strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "map_trace",
+        "map_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "MAP"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    },
+    {
+      "system_id": "HOP",
+      "system_name": "HOP governance system",
+      "failure_prevented": "HOP prevents a bounded high-impact governance failure before promotion or closure.",
+      "signal_improved": "HOP improves deterministic decision signal quality for the control loop.",
+      "loop_strengthened": {
+        "core_loop_strengthened": true,
+        "justification": "HOP strengthens the canonical 3LS loop through explicit governed artifacts."
+      },
+      "debugability_surface": [
+        "hop_trace",
+        "hop_decision_record"
+      ],
+      "unknown_state_policy": {
+        "mode": "escalate",
+        "silent_allowed": false,
+        "escalation_artifact": "unknown_state_signal"
+      },
+      "test_data_sources": [
+        "contracts/examples",
+        "tests/fixtures",
+        "adversarial_campaign_registry"
+      ],
+      "promotion_requirements": {
+        "eval_required": true,
+        "policy_required": true,
+        "replay_required": true
+      },
+      "rollback_path": {
+        "trigger": "promotion gate regression",
+        "steps": [
+          "freeze promotion",
+          "restore last certified artifact",
+          "replay validation before retry"
+        ],
+        "owner": "HOP"
+      },
+      "human_intervention_points": [
+        {
+          "point": "exception escalation review",
+          "required": true,
+          "artifact_record": "hix_human_action_record"
+        }
+      ],
+      "scale_failure_mode": {
+        "mode": "queue saturation and delayed control actions",
+        "detection": "observability latency and backlog alerts",
+        "control_response": "activate degraded mode and enforce backpressure"
+      }
+    }
+  ]
+}

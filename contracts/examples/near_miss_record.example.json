@@ -1,0 +1,11 @@
+{
+  "artifact_type": "near_miss_record",
+  "schema_version": "1.0.0",
+  "near_miss_id": "NM-TEP-001",
+  "what_almost_failed": "Promotion without replay evidence",
+  "why_it_passed": "CDE blocked promotion because replay artifact hash was missing",
+  "signal_that_caught_it": "promotion_readiness_decision.replay_missing=true",
+  "required_followup_control": "Add explicit replay-precheck test and policy gate assertion",
+  "owner_system": "CDE",
+  "follow_up_status": "in_progress"
+}

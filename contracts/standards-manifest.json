@@ -1,12 +1,12 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.151",
+  "artifact_version": "1.3.152",
   "schema_version": "1.3.99",
   "standards_version": "1.9.10",
-  "record_id": "REC-STD-2026-04-18-ENF-01",
-  "run_id": "run-20260418T000000Z-enf-01",
-  "created_at": "2026-04-18T00:00:00Z",
+  "record_id": "REC-STD-2026-04-25-TEP-01",
+  "run_id": "run-20260425T000000Z-tep-01",
+  "created_at": "2026-04-25T00:00:00Z",
   "created_by": {
     "name": "Spectrum Systems Architecture Team",
     "role": "standards-publication",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.151",
+  "source_repo_version": "1.3.152",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -846,6 +846,19 @@
       "last_updated_in": "1.3.142",
       "example_path": "contracts/examples/backpressure_signal.json",
       "notes": "RGP-02 bounded governed_prompt_queue contract expansion."
+    },
+    {
+      "artifact_type": "bad_input_campaign_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/examples/bad_input_campaign_record.example.json",
+      "notes": "TEP-01 bad-input adversarial campaign registry."
     },
     {
       "artifact_type": "baseline_gate_decision",
@@ -1722,6 +1735,19 @@
       "last_updated_in": "1.3.143",
       "example_path": "contracts/examples/certification_remediation_record.json",
       "notes": "BNE-00 bottleneck attack wave governed artifact."
+    },
+    {
+      "artifact_type": "chaos_campaign_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/examples/chaos_campaign_record.example.json",
+      "notes": "TEP-01 chaos campaign registry for governed failure injection."
     },
     {
       "artifact_type": "checkpoint_hibernate_record",
@@ -3460,6 +3486,19 @@
       "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
     },
     {
+      "artifact_type": "debuggability_assessment_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-C",
+      "last_updated_in": "RGE-C",
+      "example_path": "contracts/examples/debuggability_assessment_record.json",
+      "notes": "RGE Principle 3 assessment. Returns gaps for rewrite - never silently passes."
+    },
+    {
       "artifact_type": "debuggability_record",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -5194,6 +5233,19 @@
       "last_updated_in": "1.3.89",
       "example_path": "contracts/examples/failure_learning_record_artifact.json",
       "notes": "BATCH-GHA-08 recurring failure class learning artifact with eval and hardening recommendations."
+    },
+    {
+      "artifact_type": "failure_mode_dashboard_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/examples/failure_mode_dashboard_record.example.json",
+      "notes": "TEP-01 top failure mode dashboard artifact."
     },
     {
       "artifact_type": "failure_packet",
@@ -8036,6 +8088,19 @@
       "notes": "OSX-03 serial substrate contracts for prompt_task_bundle bounded rollout."
     },
     {
+      "artifact_type": "loop_contribution_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-B",
+      "last_updated_in": "RGE-B",
+      "example_path": "contracts/examples/loop_contribution_record.json",
+      "notes": "RGE Principle 2 gate output. Fail-closed on drift or saturation."
+    },
+    {
       "artifact_type": "maintain_cycle_record",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -8587,6 +8652,19 @@
       "last_updated_in": "1.3.139",
       "example_path": "contracts/examples/narrative_integrity_record.json",
       "notes": "WPG MASTER EXEC 03 core hardening artifact."
+    },
+    {
+      "artifact_type": "near_miss_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/examples/near_miss_record.example.json",
+      "notes": "TEP-01 near-miss capture artifact for prevented failures."
     },
     {
       "artifact_type": "next24_serial_execution_record",
@@ -9325,6 +9403,19 @@
       "last_updated_in": "1.3.141",
       "example_path": "contracts/examples/phase_handoff_record.json",
       "notes": "CHK multi-session handoff artifact with blockers and next slice."
+    },
+    {
+      "artifact_type": "phase_justification_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-A",
+      "last_updated_in": "RGE-A",
+      "example_path": "contracts/examples/phase_justification_record.json",
+      "notes": "RGE Principle 1 gate output. Fail-closed on missing justification."
     },
     {
       "artifact_type": "phase_registry",
@@ -13562,6 +13653,97 @@
       "notes": "WPG Phase B governed workflow loop contract."
     },
     {
+      "artifact_type": "rge_amendment_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-H",
+      "last_updated_in": "RGE-H",
+      "example_path": "contracts/examples/rge_amendment_record.json",
+      "notes": "RGE self-amender judgment record. 1.1.0 wires roadmap_adjustment_engine: adds derived_adjustments, derived_adjustment_count, derivation_status, derivation_error."
+    },
+    {
+      "artifact_type": "rge_analysis_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-E",
+      "last_updated_in": "RGE-E",
+      "example_path": "contracts/examples/rge_analysis_record.json",
+      "notes": "RGE Wave-0 repo audit snapshot. 1.1.0 adds wave_status, entropy_vectors, rge_can_operate, rge_max_autonomy, fragile_point_signals (AST-derived)."
+    },
+    {
+      "artifact_type": "rge_recursion_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-J",
+      "last_updated_in": "RGE-J",
+      "example_path": "contracts/examples/rge_recursion_record.json",
+      "notes": "RGE recursion governor audit record."
+    },
+    {
+      "artifact_type": "rge_redteam_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-G",
+      "last_updated_in": "RGE-G",
+      "example_path": "contracts/examples/rge_redteam_record.json",
+      "notes": "RGE red-team six-check output. 1.1.0 routes findings via rqx_redteam_orchestrator (rqx_routing per finding) and adds must_fix/warn split (must_fix_count, warn_count, roadmap_approved)."
+    },
+    {
+      "artifact_type": "rge_roadmap_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-F",
+      "last_updated_in": "RGE-F",
+      "example_path": "contracts/examples/rge_roadmap_record.json",
+      "notes": "RGE candidate roadmap, content-addressed."
+    },
+    {
+      "artifact_type": "rge_run_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-K",
+      "last_updated_in": "RGE-K",
+      "example_path": "contracts/examples/rge_run_record.json",
+      "notes": "RGE top-level end-to-end run record."
+    },
+    {
+      "artifact_type": "rge_trust_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.1.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "RGE-I",
+      "last_updated_in": "RGE-I",
+      "example_path": "contracts/examples/rge_trust_record.json",
+      "notes": "RGE trust bootstrapper per-recommendation record. 1.1.0 adds phase_id/phase_name attribution and decision_counts (accepted/rejected/overridden/unknown/total)."
+    },
+    {
       "artifact_type": "ril_ai_cost_runaway_red_team_report",
       "artifact_class": "governance",
       "schema_version": "1.0.0",
@@ -15801,6 +15983,19 @@
       "notes": "RAX serial operating substrate governance contract."
     },
     {
+      "artifact_type": "top_engineer_practice_mapping_record",
+      "artifact_class": "coordination",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/examples/top_engineer_practice_mapping_record.example.json",
+      "notes": "TEP-01 3LS top engineer practice mapping artifact."
+    },
+    {
       "artifact_type": "top_level_conductor_run_artifact",
       "artifact_class": "coordination",
       "schema_version": "1.0.0",
@@ -16762,116 +16957,6 @@
       "last_updated_in": "1.0.82",
       "example_path": "contracts/examples/xrun_signal_quality_result.json",
       "notes": "VAL-06 governed validation artifact proving deterministic XRUN-01 pattern/action/signal quality and fail-closed handling under insufficient/malformed inputs."
-    },
-    {
-      "artifact_type": "phase_justification_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
-      "introduced_in": "RGE-A",
-      "last_updated_in": "RGE-A",
-      "example_path": "contracts/examples/phase_justification_record.json",
-      "notes": "RGE Principle 1 gate output. Fail-closed on missing justification."
-    },
-    {
-      "artifact_type": "loop_contribution_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
-      "introduced_in": "RGE-B",
-      "last_updated_in": "RGE-B",
-      "example_path": "contracts/examples/loop_contribution_record.json",
-      "notes": "RGE Principle 2 gate output. Fail-closed on drift or saturation."
-    },
-    {
-      "artifact_type": "debuggability_assessment_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
-      "introduced_in": "RGE-C",
-      "last_updated_in": "RGE-C",
-      "example_path": "contracts/examples/debuggability_assessment_record.json",
-      "notes": "RGE Principle 3 assessment. Returns gaps for rewrite - never silently passes."
-    },
-    {
-      "artifact_type": "rge_analysis_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
-      "introduced_in": "RGE-E",
-      "last_updated_in": "RGE-E",
-      "example_path": "contracts/examples/rge_analysis_record.json",
-      "notes": "RGE Wave-0 repo audit snapshot. 1.1.0 adds wave_status, entropy_vectors, rge_can_operate, rge_max_autonomy, fragile_point_signals (AST-derived)."
-    },
-    {
-      "artifact_type": "rge_roadmap_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
-      "introduced_in": "RGE-F",
-      "last_updated_in": "RGE-F",
-      "example_path": "contracts/examples/rge_roadmap_record.json",
-      "notes": "RGE candidate roadmap, content-addressed."
-    },
-    {
-      "artifact_type": "rge_redteam_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
-      "introduced_in": "RGE-G",
-      "last_updated_in": "RGE-G",
-      "example_path": "contracts/examples/rge_redteam_record.json",
-      "notes": "RGE red-team six-check output. 1.1.0 routes findings via rqx_redteam_orchestrator (rqx_routing per finding) and adds must_fix/warn split (must_fix_count, warn_count, roadmap_approved)."
-    },
-    {
-      "artifact_type": "rge_amendment_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
-      "introduced_in": "RGE-H",
-      "last_updated_in": "RGE-H",
-      "example_path": "contracts/examples/rge_amendment_record.json",
-      "notes": "RGE self-amender judgment record. 1.1.0 wires roadmap_adjustment_engine: adds derived_adjustments, derived_adjustment_count, derivation_status, derivation_error."
-    },
-    {
-      "artifact_type": "rge_trust_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.1.0",
-      "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
-      "introduced_in": "RGE-I",
-      "last_updated_in": "RGE-I",
-      "example_path": "contracts/examples/rge_trust_record.json",
-      "notes": "RGE trust bootstrapper per-recommendation record. 1.1.0 adds phase_id/phase_name attribution and decision_counts (accepted/rejected/overridden/unknown/total)."
-    },
-    {
-      "artifact_type": "rge_recursion_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
-      "introduced_in": "RGE-J",
-      "last_updated_in": "RGE-J",
-      "example_path": "contracts/examples/rge_recursion_record.json",
-      "notes": "RGE recursion governor audit record."
-    },
-    {
-      "artifact_type": "rge_run_record",
-      "artifact_class": "coordination",
-      "schema_version": "1.0.0",
-      "status": "proposed",
-      "intended_consumers": ["spectrum-systems"],
-      "introduced_in": "RGE-K",
-      "last_updated_in": "RGE-K",
-      "example_path": "contracts/examples/rge_run_record.json",
-      "notes": "RGE top-level end-to-end run record."
     }
   ]
 }
