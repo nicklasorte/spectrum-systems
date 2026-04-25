@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
-"""3LS Authority Boundary Firewall preflight.
+"""3-Letter System Authority Boundary Firewall preflight.
 
-Runs before full CI to catch authority vocabulary leaks earlier than the
+Runs before full CI to catch protected vocabulary leaks earlier than the
 existing scripts/run_authority_leak_guard.py CI gate.
+
+This preflight does NOT define ownership. Canonical ownership is declared in
+docs/architecture/system_registry.md and is read indirectly via the existing
+authority registry. The preflight only reads non-owning support guidance from
+contracts/governance/authority_registry.json::three_letter_system_boundary_guidance
+to classify changed files and recommend neutral vocabulary.
 
 Behavior:
 - Resolves changed files via the shared changed_files helper.
 - Loads the authority registry and the neutral vocabulary map.
-- Reuses the existing authority leak detector for vocabulary detection.
-- Reuses the existing authority shape detector for structural detection.
-- Annotates every violation with the owning 3-letter system context derived
-  from contracts/governance/authority_registry.json::three_letter_system_authority.
+- Reuses the existing leak detector for vocabulary detection.
+- Reuses the existing shape detector for structural detection.
+- Annotates every violation with the support classification of the changed
+  path (boundary_role + canonical_authority_source).
 - Suggests a neutral replacement for each forbidden vocabulary token.
 
 Fail-closed:
@@ -18,7 +24,7 @@ Fail-closed:
 - Any violation fails.
 
 This preflight does NOT replace scripts/run_authority_leak_guard.py.
-The CI guard remains authoritative; the preflight is local fast feedback.
+The CI gate remains binding; the preflight is local fast feedback.
 """
 
 from __future__ import annotations
@@ -100,22 +106,38 @@ def _normalize_path(path: str) -> str:
 
 
 def classify_three_letter_system(path: str, registry: dict[str, Any]) -> dict[str, Any]:
-    """Classify a path against three_letter_system_authority registry entries.
+    """Classify a path against three_letter_system_boundary_guidance entries.
 
-    Returns dict with system, authority_domains, owner. If the path matches no
-    declared 3LS owner prefix, returns owner=False with system='unknown' so the
-    caller treats it as a non-owner surface.
+    Returns dict with system, boundary_role, support_match, and the
+    canonical_authority_source used by that registry entry. If the path
+    matches no declared support prefix, returns support_match=False with
+    system='unknown' so the caller treats it as a non-support surface.
+
+    This function does not assign ownership. Canonical ownership is declared
+    in docs/architecture/system_registry.md and is referenced via
+    canonical_authority_source.
     """
     normalized = _normalize_path(path)
-    tls = registry.get("three_letter_system_authority", {})
-    if not isinstance(tls, dict):
-        return {"system": "unknown", "authority_domains": [], "owner": False}
+    guidance = registry.get("three_letter_system_boundary_guidance", {})
+    if not isinstance(guidance, dict):
+        return {
+            "system": "unknown",
+            "boundary_role": None,
+            "support_match": False,
+            "canonical_authority_source": None,
+        }
     best_match: dict[str, Any] | None = None
     best_match_len = -1
-    for system, body in tls.items():
+    for system, body in guidance.items():
         if not isinstance(body, dict):
             continue
-        for prefix in body.get("owner_path_prefixes", []) or []:
+        canonical_source = body.get(
+            "canonical_authority_source",
+            registry.get("three_letter_system_boundary_guidance", {}).get(
+                "canonical_authority_source"
+            ),
+        )
+        for prefix in body.get("support_path_prefixes", []) or []:
             prefix_norm = str(prefix).strip().rstrip("/")
             if not prefix_norm:
                 continue
@@ -123,21 +145,30 @@ def classify_three_letter_system(path: str, registry: dict[str, Any]) -> dict[st
                 if normalized == prefix_norm and len(prefix_norm) > best_match_len:
                     best_match = {
                         "system": system,
-                        "authority_domains": list(body.get("authority_domains", [])),
-                        "owner": True,
+                        "boundary_role": body.get("boundary_role"),
+                        "support_match": True,
+                        "canonical_authority_source": canonical_source,
                     }
                     best_match_len = len(prefix_norm)
             else:
                 if normalized.startswith(prefix_norm + "/") and len(prefix_norm) > best_match_len:
                     best_match = {
                         "system": system,
-                        "authority_domains": list(body.get("authority_domains", [])),
-                        "owner": True,
+                        "boundary_role": body.get("boundary_role"),
+                        "support_match": True,
+                        "canonical_authority_source": canonical_source,
                     }
                     best_match_len = len(prefix_norm)
     if best_match is not None:
         return best_match
-    return {"system": "unknown", "authority_domains": [], "owner": False}
+    return {
+        "system": "unknown",
+        "boundary_role": None,
+        "support_match": False,
+        "canonical_authority_source": registry.get(
+            "three_letter_system_boundary_guidance", {}
+        ).get("canonical_authority_source"),
+    }
 
 
 def annotate_violation(
@@ -145,12 +176,17 @@ def annotate_violation(
     neutral_vocab: dict[str, Any],
     registry: dict[str, Any],
 ) -> dict[str, Any]:
-    """Add 3LS classification and suggested neutral terms to a violation."""
+    """Add boundary classification and suggested neutral terms to a violation.
+
+    Classification is non-owning support guidance. Canonical ownership is
+    referenced via canonical_authority_source on each registry entry.
+    """
     annotated = dict(violation)
     classification = classify_three_letter_system(str(violation.get("path", "")), registry)
     annotated["three_letter_system"] = classification["system"]
-    annotated["three_letter_system_owner"] = classification["owner"]
-    annotated["authority_domains_owned"] = classification["authority_domains"]
+    annotated["three_letter_system_support_match"] = classification["support_match"]
+    annotated["boundary_role"] = classification.get("boundary_role")
+    annotated["canonical_authority_source"] = classification.get("canonical_authority_source")
 
     token = str(violation.get("token", "")).strip().lower()
     replacements = neutral_vocab.get("neutral_replacements", {}) or {}
@@ -175,11 +211,12 @@ def build_repair_suggestion(
         "forbidden_token": token,
         "suggested_terms": list(suggested_terms),
         "rationale": (
-            "Non-owner 3-letter systems (TLC/PQX/RDX/MAP/DASHBOARD) may verify "
-            "and route gate evidence but may not express control, enforcement, "
-            "certification, or promotion authority. Replace the forbidden token "
-            "with one of the suggested neutral terms or move the surface to a "
-            "canonical owner declared in authority_registry.json."
+            "Non-owning support systems may verify and route gate evidence "
+            "but may not claim protected vocabulary. Canonical responsibility "
+            "is declared in docs/architecture/system_registry.md. Replace the "
+            "forbidden token with one of the suggested neutral terms or move "
+            "the surface to the canonical responsibility owner declared in "
+            "the registry."
         ),
         "safe_autofix_available": False,
     }

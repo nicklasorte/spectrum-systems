@@ -1,11 +1,13 @@
-"""3LS authority repair suggestions tests.
+"""3-letter system repair suggestion tests.
 
 Covers:
 - Suggested repairs include neutral terms.
-- Suggested repairs do not propose allowlist override for non-owner files.
-- Owner-path violations are flagged for manual owner review, not auto-allowlisted.
+- Suggested repairs never propose allowlist override for non-support files.
+- Support-path violations are flagged for manual review against the canonical
+  registry, not auto-allowlisted.
 - Missing input artifact fails closed.
 - Missing neutral vocabulary fails closed.
+- Suggestions reference canonical_authority_source rather than redefining ownership.
 """
 
 from __future__ import annotations
@@ -56,8 +58,9 @@ def test_suggested_repairs_include_neutral_terms(neutral_vocab: dict) -> None:
                 "line": 12,
                 "token": "allow",
                 "three_letter_system": "unknown",
-                "three_letter_system_owner": False,
-                "authority_domains_owned": [],
+                "three_letter_system_support_match": False,
+                "boundary_role": None,
+                "canonical_authority_source": "docs/architecture/system_registry.md",
             }
         ]
     )
@@ -67,9 +70,13 @@ def test_suggested_repairs_include_neutral_terms(neutral_vocab: dict) -> None:
     assert "passed_gate" in suggestion["suggested_terms"]
     assert "gate_evidence_valid" in suggestion["suggested_terms"]
     assert suggestion["propose_allowlist_override"] is False
+    assert (
+        suggestion["canonical_authority_source"]
+        == "docs/architecture/system_registry.md"
+    )
 
 
-def test_suggested_repairs_no_allowlist_override_for_non_owner(neutral_vocab: dict) -> None:
+def test_suggested_repairs_no_allowlist_override_for_non_support(neutral_vocab: dict) -> None:
     preflight_result = _preflight_payload(
         [
             {
@@ -78,8 +85,9 @@ def test_suggested_repairs_no_allowlist_override_for_non_owner(neutral_vocab: di
                 "line": 22,
                 "token": "block",
                 "three_letter_system": "unknown",
-                "three_letter_system_owner": False,
-                "authority_domains_owned": [],
+                "three_letter_system_support_match": False,
+                "boundary_role": None,
+                "canonical_authority_source": "docs/architecture/system_registry.md",
             },
             {
                 "rule": "forbidden_field",
@@ -87,8 +95,9 @@ def test_suggested_repairs_no_allowlist_override_for_non_owner(neutral_vocab: di
                 "line": 24,
                 "token": "decision",
                 "three_letter_system": "unknown",
-                "three_letter_system_owner": False,
-                "authority_domains_owned": [],
+                "three_letter_system_support_match": False,
+                "boundary_role": None,
+                "canonical_authority_source": "docs/architecture/system_registry.md",
             },
         ]
     )
@@ -97,7 +106,7 @@ def test_suggested_repairs_no_allowlist_override_for_non_owner(neutral_vocab: di
         assert suggestion["propose_allowlist_override"] is False
 
 
-def test_owner_path_violation_requires_manual_review(neutral_vocab: dict) -> None:
+def test_support_path_violation_requires_manual_review(neutral_vocab: dict) -> None:
     preflight_result = _preflight_payload(
         [
             {
@@ -106,8 +115,9 @@ def test_owner_path_violation_requires_manual_review(neutral_vocab: dict) -> Non
                 "line": 1,
                 "token": "allow",
                 "three_letter_system": "TPA",
-                "three_letter_system_owner": True,
-                "authority_domains_owned": ["control_decision"],
+                "three_letter_system_support_match": True,
+                "boundary_role": "trust_policy_support",
+                "canonical_authority_source": "docs/architecture/system_registry.md",
             }
         ]
     )
@@ -115,6 +125,10 @@ def test_owner_path_violation_requires_manual_review(neutral_vocab: dict) -> Non
     assert len(suggestions) == 1
     assert suggestions[0]["owner_authority_review_required"] is True
     assert suggestions[0]["propose_allowlist_override"] is False
+    assert (
+        suggestions[0]["canonical_authority_source"]
+        == "docs/architecture/system_registry.md"
+    )
 
 
 def test_missing_input_artifact_fails_closed(tmp_path: Path) -> None:
@@ -140,8 +154,9 @@ def test_no_neutral_replacement_emits_restructure_suggestion(neutral_vocab: dict
                 "line": 9,
                 "token": "unmapped_authority_token",
                 "three_letter_system": "unknown",
-                "three_letter_system_owner": False,
-                "authority_domains_owned": [],
+                "three_letter_system_support_match": False,
+                "boundary_role": None,
+                "canonical_authority_source": "docs/architecture/system_registry.md",
             }
         ]
     )
@@ -160,16 +175,18 @@ def test_artifact_summary_counts_correct(neutral_vocab: dict) -> None:
                 "path": "spectrum_systems/modules/runtime/cde_decision_flow.py",
                 "line": 1,
                 "token": "allow",
-                "three_letter_system_owner": True,
-                "authority_domains_owned": ["control_decision"],
+                "three_letter_system_support_match": True,
+                "boundary_role": "trust_policy_support",
+                "canonical_authority_source": "docs/architecture/system_registry.md",
             },
             {
                 "rule": "forbidden_value",
                 "path": "spectrum_systems/modules/orchestration/tmp.py",
                 "line": 4,
                 "token": "block",
-                "three_letter_system_owner": False,
-                "authority_domains_owned": [],
+                "three_letter_system_support_match": False,
+                "boundary_role": None,
+                "canonical_authority_source": "docs/architecture/system_registry.md",
             },
         ]
     )

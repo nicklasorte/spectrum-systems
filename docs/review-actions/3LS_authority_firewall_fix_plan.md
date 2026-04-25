@@ -18,13 +18,14 @@ authority leak guard or the new 3LS preflight.
 **Action taken in this batch:**
 
 1. Added a `DASHBOARD` entry under
-   `contracts/governance/authority_registry.json::three_letter_system_authority`
-   with `authority_domains: ["evidence_display"]`,
-   `non_authority_assertions: ["not_control_authority", "not_certification_authority", "not_enforcement_authority"]`,
-   empty `owner_path_prefixes`, and a `scope_note` documenting that dashboard
-   files live outside the existing leak guard scope and that runtime
-   enforcement of dashboard authority shape is delegated to UI review until a
-   future scope-extension PR.
+   `contracts/governance/authority_registry.json::three_letter_system_boundary_guidance`
+   with `boundary_role: "evidence_display_support"`,
+   `non_authority_assertions: ["not_control_authority", "not_judgment_authority", "not_certification_authority", "not_enforcement_authority"]`,
+   empty `support_path_prefixes`, an explicit `canonical_authority_source`
+   pointing back to `docs/architecture/system_registry.md`, and a
+   `scope_note` documenting that dashboard files live outside the existing
+   leak guard scope. Canonical responsibility remains with the registry; the
+   entry is purely non-owning support classification.
 2. Documented the same constraint in
    `docs/architecture/3ls_authority_boundary_firewall.md`, explaining that
    DASHBOARD is recorded for non-authority status declaration even though

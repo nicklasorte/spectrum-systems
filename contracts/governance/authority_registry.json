@@ -133,30 +133,42 @@
       "non_authority_assertions"
     ]
   },
-  "three_letter_system_authority": {
+  "three_letter_system_boundary_guidance": {
+    "guidance_note": "This map is non-owning support guidance. It does not assign ownership to any 3-letter system. Canonical ownership is declared in docs/architecture/system_registry.md. Each entry below records a boundary_role used by the firewall to classify changed files and recommend neutral vocabulary; the canonical_authority_source field points back to the registry that retains ownership.",
+    "canonical_authority_source": "docs/architecture/system_registry.md",
     "TPA": {
-      "authority_domains": ["control_decision", "policy_authority"],
-      "owner_path_prefixes": [
+      "boundary_role": "trust_policy_support",
+      "support_path_prefixes": [
         "spectrum_systems/modules/runtime/evaluation_control.py",
         "spectrum_systems/modules/runtime/tpa_policy_authority.py",
         "spectrum_systems/modules/runtime/control_executor.py"
       ],
-      "non_authority_assertions": []
+      "non_authority_assertions": [
+        "not_judgment_authority",
+        "not_certification_authority",
+        "not_enforcement_authority"
+      ],
+      "canonical_authority_source": "docs/architecture/system_registry.md"
     },
     "SEL": {
-      "authority_domains": ["enforcement"],
-      "owner_path_prefixes": [
+      "boundary_role": "fail_closed_action_support",
+      "support_path_prefixes": [
         "spectrum_systems/modules/runtime/enforcement_engine.py",
         "spectrum_systems/modules/runtime/sel_enforcement_foundation.py",
         "spectrum_systems/modules/runtime/system_enforcement_layer.py",
         "spectrum_systems/modules/runtime/required_eval_coverage.py",
         "spectrum_systems/modules/runtime/enforcement_gate.py"
       ],
-      "non_authority_assertions": []
+      "non_authority_assertions": [
+        "not_control_authority",
+        "not_certification_authority",
+        "not_judgment_authority"
+      ],
+      "canonical_authority_source": "docs/architecture/system_registry.md"
     },
     "CDE": {
-      "authority_domains": ["certification", "promotion"],
-      "owner_path_prefixes": [
+      "boundary_role": "closure_readiness_support",
+      "support_path_prefixes": [
         "spectrum_systems/modules/runtime/cde_decision_flow.py",
         "spectrum_systems/modules/runtime/closure_decision_engine.py",
         "spectrum_systems/modules/governance/done_certification.py",
@@ -164,69 +176,89 @@
         "spectrum_systems/modules/runtime/promotion_readiness_checkpoint.py",
         "spectrum_systems/modules/governance/promotion_requirements.py"
       ],
-      "non_authority_assertions": []
+      "non_authority_assertions": [
+        "not_execution_authority",
+        "not_enforcement_authority",
+        "not_judgment_authority"
+      ],
+      "canonical_authority_source": "docs/architecture/system_registry.md"
     },
     "GOV": {
-      "authority_domains": ["certification", "governance_gate"],
-      "owner_path_prefixes": [
+      "boundary_role": "gate_review_support",
+      "support_path_prefixes": [
         "spectrum_systems/modules/governance/done_certification.py",
         "spectrum_systems/modules/governance/promotion_requirements.py",
         "spectrum_systems/modules/governance/three_letter_system_enforcement.py"
       ],
-      "non_authority_assertions": []
+      "non_authority_assertions": [
+        "not_control_authority",
+        "not_execution_authority",
+        "not_enforcement_authority"
+      ],
+      "canonical_authority_source": "docs/architecture/system_registry.md"
     },
     "TLC": {
-      "authority_domains": ["routing"],
-      "owner_path_prefixes": [
+      "boundary_role": "routing_support",
+      "support_path_prefixes": [
         "spectrum_systems/modules/orchestration/tlc_router.py"
       ],
       "non_authority_assertions": [
         "not_control_authority",
+        "not_judgment_authority",
         "not_certification_authority",
         "not_enforcement_authority"
-      ]
+      ],
+      "canonical_authority_source": "docs/architecture/system_registry.md"
     },
     "PQX": {
-      "authority_domains": ["execution_coordination"],
-      "owner_path_prefixes": [
+      "boundary_role": "execution_coordination_support",
+      "support_path_prefixes": [
         "spectrum_systems/modules/orchestration/pqx_step_harness.py",
         "scripts/pqx_runner.py"
       ],
       "non_authority_assertions": [
         "not_control_authority",
+        "not_judgment_authority",
         "not_certification_authority",
         "not_enforcement_authority"
-      ]
+      ],
+      "canonical_authority_source": "docs/architecture/system_registry.md"
     },
     "RDX": {
-      "authority_domains": ["roadmap_planning"],
-      "owner_path_prefixes": [
+      "boundary_role": "roadmap_preparation_support",
+      "support_path_prefixes": [
         "spectrum_systems/modules/governance/cdx_02_roadmap_guard.py"
       ],
       "non_authority_assertions": [
         "not_control_authority",
-        "not_certification_authority",
-        "not_enforcement_authority"
-      ]
-    },
-    "MAP": {
-      "authority_domains": ["mapping_metadata"],
-      "owner_path_prefixes": [],
-      "non_authority_assertions": [
-        "not_control_authority",
-        "not_certification_authority",
-        "not_enforcement_authority"
-      ]
-    },
-    "DASHBOARD": {
-      "authority_domains": ["evidence_display"],
-      "owner_path_prefixes": [],
-      "non_authority_assertions": [
-        "not_control_authority",
+        "not_closure_authority",
         "not_certification_authority",
         "not_enforcement_authority"
       ],
-      "scope_note": "Dashboard/UI files live outside contracts/examples/ and spectrum_systems/modules/ and are therefore outside the existing authority leak scope. DASHBOARD is recorded here to declare its non-authority status; runtime enforcement of dashboard authority shape is delegated to UI review and any future scope extension."
+      "canonical_authority_source": "docs/architecture/system_registry.md"
+    },
+    "MAP": {
+      "boundary_role": "metadata_topology_support",
+      "support_path_prefixes": [],
+      "non_authority_assertions": [
+        "not_control_authority",
+        "not_closure_authority",
+        "not_certification_authority",
+        "not_enforcement_authority"
+      ],
+      "canonical_authority_source": "docs/architecture/system_registry.md"
+    },
+    "DASHBOARD": {
+      "boundary_role": "evidence_display_support",
+      "support_path_prefixes": [],
+      "non_authority_assertions": [
+        "not_control_authority",
+        "not_judgment_authority",
+        "not_certification_authority",
+        "not_enforcement_authority"
+      ],
+      "scope_note": "Dashboard/UI files live outside contracts/examples/ and spectrum_systems/modules/ and are therefore outside the existing leak guard scope. The entry is recorded here only to declare non-claim status; canonical responsibilities live in docs/architecture/system_registry.md.",
+      "canonical_authority_source": "docs/architecture/system_registry.md"
     }
   }
 }

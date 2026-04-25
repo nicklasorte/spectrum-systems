@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
-"""Generate suggested repair patches for 3LS authority preflight violations.
+"""Generate suggested repair patches for 3-letter system preflight violations.
 
 This script reads the structured preflight result produced by
 scripts/run_3ls_authority_preflight.py and emits a derived
 3ls_authority_repair_suggestions artifact.
 
+The suggestions are non-owning. Canonical responsibility is declared in
+docs/architecture/system_registry.md. The suggester only proposes neutral
+vocabulary replacements or a manual-review flag; it never widens allowlist
+entries and never claims new ownership.
+
 Hard constraints:
 - Suggestions only. No source files are modified by this script.
-- Suggestions never propose adding an allowlist override for non-owner files.
-- For non-owner files, only neutral vocabulary replacements are suggested.
-- For files that are declared canonical owners under
-  three_letter_system_authority but still triggered a violation, the suggestion
-  flags the violation as needing manual review by the system's owner team
-  (not silent allowlist expansion).
+- Suggestions never propose adding an allowlist override for non-support files.
+- For non-support files, only neutral vocabulary replacements are suggested.
+- For files that match a declared support prefix but still triggered a
+  violation, the suggestion flags the violation as needing manual review
+  against the canonical registry (not silent allowlist expansion).
 """
 
 from __future__ import annotations
@@ -71,15 +75,21 @@ def build_suggestions(
         token = str(violation.get("token", "")).strip().lower()
         path = violation.get("path")
         line = violation.get("line")
-        is_owner = bool(violation.get("three_letter_system_owner", False))
-        owned_domains = violation.get("authority_domains_owned", []) or []
+        is_support_match = bool(
+            violation.get("three_letter_system_support_match", False)
+        )
+        boundary_role = violation.get("boundary_role")
+        canonical_source = violation.get(
+            "canonical_authority_source",
+            "docs/architecture/system_registry.md",
+        )
 
         if not token:
             continue
 
         suggested_terms = list(replacements.get(token, []))
 
-        if is_owner:
+        if is_support_match:
             suggestions.append(
                 {
                     "path": path,
@@ -87,16 +97,18 @@ def build_suggestions(
                     "forbidden_token": token,
                     "suggested_terms": [],
                     "rationale": (
-                        f"This file is a declared owner of "
-                        f"{owned_domains or ['<unknown>']} under "
-                        "authority_registry.json::three_letter_system_authority, "
-                        "yet still triggered the leak guard. The forbidden "
-                        "token may be valid here but must be reviewed manually "
-                        "by the owning system's maintainers. Do NOT widen "
-                        "vocabulary_overrides to silence this — confirm the "
-                        "authority domain alignment first."
+                        f"This file matches the support classification "
+                        f"'{boundary_role or 'unknown'}' in the non-owning "
+                        "boundary guidance. Canonical responsibility is "
+                        f"declared in {canonical_source}. The forbidden "
+                        "token may be valid only when the canonical "
+                        "registry assigns the matching responsibility to "
+                        "the file's surface. Confirm against the canonical "
+                        "registry first; do NOT widen vocabulary_overrides "
+                        "to silence this finding."
                     ),
                     "owner_authority_review_required": True,
+                    "canonical_authority_source": canonical_source,
                     "propose_allowlist_override": False,
                 }
             )
@@ -110,14 +122,15 @@ def build_suggestions(
                     "forbidden_token": token,
                     "suggested_terms": [],
                     "rationale": (
-                        "Forbidden authority semantics detected outside any "
-                        "canonical owner. No direct neutral replacement is "
-                        "registered for this token; restructure the surface "
-                        "to remove the authority semantics or move the logic "
-                        "to a canonical owner declared in "
-                        "authority_registry.json."
+                        "Forbidden vocabulary detected on a path that does "
+                        "not match any non-owning support entry. No direct "
+                        "neutral replacement is registered for this token; "
+                        "restructure the surface to remove the protected "
+                        "semantics or move the logic to the canonical "
+                        f"responsibility owner declared in {canonical_source}."
                     ),
                     "owner_authority_review_required": False,
+                    "canonical_authority_source": canonical_source,
                     "propose_allowlist_override": False,
                 }
             )
@@ -130,11 +143,14 @@ def build_suggestions(
                 "forbidden_token": token,
                 "suggested_terms": suggested_terms,
                 "rationale": (
-                    "TLC/PQX/RDX/MAP/DASHBOARD may verify and route gate "
-                    "evidence but may not express control authority. Replace "
-                    f"'{token}' with one of the suggested neutral terms."
+                    "Non-owning support surfaces may verify and route gate "
+                    "evidence but must not claim protected vocabulary. "
+                    f"Canonical responsibility is declared in "
+                    f"{canonical_source}. Replace '{token}' with one of "
+                    "the suggested neutral terms."
                 ),
                 "owner_authority_review_required": False,
+                "canonical_authority_source": canonical_source,
                 "propose_allowlist_override": False,
             }
         )

@@ -41,7 +41,7 @@
       "severity": "S3",
       "description": "Dashboard/API surface (dashboard/, app/, components/) is outside default_scope_prefixes in authority_registry.json. Authority vocabulary leaks under those paths are not currently caught by the existing CI guard or by the new preflight.",
       "section_ref": "contracts/governance/authority_registry.json",
-      "recommendation": "DASHBOARD recorded in three_letter_system_authority with empty owner_path_prefixes and explicit scope_note. Future scope-extension PR can add dashboard scan paths without breaking existing usage. See FIX-001.",
+      "recommendation": "DASHBOARD recorded in three_letter_system_boundary_guidance with empty support_path_prefixes and explicit scope_note. Future scope-extension PR can add dashboard scan paths without breaking existing usage. See FIX-001.",
       "blocking": true
     },
     {

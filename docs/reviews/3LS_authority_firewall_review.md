@@ -53,8 +53,8 @@ inspection of the registry, scripts, and tests.
   `spectrum_systems/modules/` and `contracts/examples/`.
 - **Severity:** S3 (known gap).
 - **Resolution in this batch:** DASHBOARD is recorded in
-  `three_letter_system_authority` with empty `owner_path_prefixes` and an
-  explicit `scope_note` documenting the limitation. A future scope extension
+  `three_letter_system_boundary_guidance` with empty `support_path_prefixes`
+  and an explicit `scope_note` documenting the limitation. A future scope extension
   is now a tractable change with a named target. See fix actions
   (`contracts/review_actions/3LS_authority_firewall_fix_actions.json`,
   `FIX-001`).
