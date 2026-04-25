@@ -30,7 +30,7 @@ Invariants (each enforced by tests):
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Mapping
+from typing import Any, Mapping
 
 from spectrum_systems.modules.hop import (
     admission,
@@ -98,7 +98,6 @@ def run_proposer_cycle(
     baseline_candidate: Mapping[str, Any],
     eval_cases: list[Mapping[str, Any]],
     eval_set: EvalSet,
-    runner_factory: Callable[[Mapping[str, Any]], Callable[[Mapping[str, Any]], dict[str, Any]]],
     store: ExperienceStore,
     baseline_score: Mapping[str, Any] | None = None,
     baseline_traces: tuple[Mapping[str, Any], ...] | None = None,
@@ -116,11 +115,6 @@ def run_proposer_cycle(
         Already-validated eval-case payloads (passed to the safety scan).
     eval_set
         Immutable, manifest-verified ``EvalSet`` for the evaluator.
-    runner_factory
-        Callable that, given an admitted candidate payload, returns the
-        runtime entrypoint used by the evaluator. The factory is
-        responsible for sandboxing (in BATCH-2 the factory is just
-        ``baseline_harness.run`` for the baseline templates).
     store
         Live experience store. The loop is the only writer.
     baseline_score
@@ -170,10 +164,8 @@ def run_proposer_cycle(
         # have a referent in the store. Idempotent on duplicates.
         _maybe_persist_candidate(store, candidate)
 
-        runner = runner_factory(candidate)
         run_bundle = evaluate_candidate(
             candidate_payload=candidate,
-            runner=runner,
             eval_set=eval_set,
             store=store,
         )

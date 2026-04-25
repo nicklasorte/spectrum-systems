@@ -23,7 +23,6 @@ failed case for that run.
 from __future__ import annotations
 
 import hashlib
-import importlib
 import json
 import time
 from dataclasses import dataclass
@@ -36,6 +35,7 @@ from spectrum_systems.modules.hop.artifacts import (
     make_trace,
 )
 from spectrum_systems.modules.hop.experience_store import ExperienceStore, HopStoreError
+from spectrum_systems.modules.hop.sandbox import execute_candidate
 from spectrum_systems.modules.hop.schemas import (
     HopSchemaError,
     validate_hop_artifact,
@@ -180,7 +180,7 @@ def _build_failure(
 
 def _execute_one_case(
     *,
-    runner: Callable[[Mapping[str, Any]], dict[str, Any]],
+    candidate_payload: Mapping[str, Any],
     case: Mapping[str, Any],
     candidate_id: str,
     run_id: str,
@@ -213,8 +213,16 @@ def _execute_one_case(
 
         transform_started = _utcnow()
         try:
-            faq = runner(case["input"])
+            sandbox_result = execute_candidate(
+                candidate_payload=candidate_payload,
+                harness_input=case["input"],
+            )
+            if not sandbox_result.ok:
+                raise RuntimeError(f"{sandbox_result.violation_type}:{sandbox_result.detail}")
+            faq = sandbox_result.output
         except Exception as exc:  # candidate raised
+            detail = f"{type(exc).__name__}:{exc}"
+            failure_class = "sandbox_violation" if "sandbox_violation" in detail else "runtime_error"
             transform_completed = _utcnow()
             steps.append(
                 {
@@ -224,22 +232,22 @@ def _execute_one_case(
                     "completed_at": transform_completed,
                     "input_hash": _hash_obj(case["input"]),
                     "output_hash": None,
-                    "note": f"runtime_error:{type(exc).__name__}:{exc}",
+                    "note": f"{failure_class}:{detail}",
                 }
             )
             failure_payloads.append(
                 _build_failure(
                     candidate_id=candidate_id,
                     run_id=run_id,
-                    failure_class="runtime_error",
+                    failure_class=failure_class,
                     eval_case_id=eval_case_id,
-                    detail=f"{type(exc).__name__}:{exc}",
+                    detail=detail,
                     trace_id=trace_id,
                 )
             )
-            failure_reason = "runtime_error"
+            failure_reason = failure_class
             trace_complete = False
-            incomplete_reason = "runtime_error"
+            incomplete_reason = failure_class
         else:
             transform_completed = _utcnow()
             output_hash = _hash_obj(faq)
@@ -358,7 +366,6 @@ def _execute_one_case(
 def evaluate_candidate(
     *,
     candidate_payload: Mapping[str, Any],
-    runner: Callable[[Mapping[str, Any]], dict[str, Any]],
     eval_set: EvalSet,
     store: ExperienceStore | None = None,
     trace_id: str = "hop_evaluator",
@@ -389,7 +396,7 @@ def evaluate_candidate(
     for case in eval_set.cases:
         case_results.append(
             _execute_one_case(
-                runner=runner,
+                candidate_payload=candidate_payload,
                 case=case,
                 candidate_id=candidate_id,
                 run_id=run_id,

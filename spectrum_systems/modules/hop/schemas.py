@@ -28,6 +28,11 @@ _SCHEMA_FILES: Mapping[str, str] = {
     "hop_harness_eval_case": "harness_eval_case.schema.json",
     "hop_harness_faq_output": "harness_faq_output.schema.json",
     "hop_harness_trace_diff": "harness_trace_diff.schema.json",
+    "hop_harness_pattern_draft_verify": "harness_pattern_draft_verify.schema.json",
+    "hop_harness_pattern_label_primer": "harness_pattern_label_primer.schema.json",
+    "hop_harness_routing_observation": "harness_routing_observation.schema.json",
+    "hop_harness_bootstrap_snapshot": "harness_bootstrap_snapshot.schema.json",
+    "hop_harness_trial_summary": "harness_trial_summary.schema.json",
 }
 
 

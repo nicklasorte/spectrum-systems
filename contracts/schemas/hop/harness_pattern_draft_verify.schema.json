@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hop/harness_pattern_draft_verify.schema.json",
+  "title": "HOP Draft Verify Pattern",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_id", "artifact_type", "schema_ref", "schema_version", "trace", "content_hash", "pattern_id", "transcript_id", "draft_items", "supporting_evidence", "contradicting_evidence", "final_items"],
+  "properties": {
+    "artifact_id": {"type": "string", "pattern": "^hop_pattern_[a-z0-9_-]+$"},
+    "artifact_type": {"const": "hop_harness_pattern_draft_verify"},
+    "schema_ref": {"const": "hop/harness_pattern_draft_verify.schema.json"},
+    "schema_version": {"const": "1.0.0"},
+    "content_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": {"type": "string", "minLength": 1},
+        "related": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "pattern_id": {"type": "string", "minLength": 1},
+    "transcript_id": {"type": "string", "minLength": 1},
+    "draft_items": {"type": "array", "items": {"$ref": "#/$defs/qa"}},
+    "supporting_evidence": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+    "contradicting_evidence": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
+    "final_items": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["question", "answer", "verification_signal"], "properties": {"question": {"type": "string"}, "answer": {"type": "string"}, "verification_signal": {"enum": ["confirm", "revise"]}}}}
+  },
+  "$defs": {
+    "qa": {"type": "object", "additionalProperties": false, "required": ["question", "answer"], "properties": {"question": {"type": "string"}, "answer": {"type": "string"}}}
+  }
+}
