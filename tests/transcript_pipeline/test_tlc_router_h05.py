@@ -21,66 +21,71 @@ from spectrum_systems.modules.orchestration.tlc_router import (
     get_full_pipeline,
     is_terminal,
     pipeline_position,
-    route_artifact,
+    route_with_gate_evidence,
     validate_transition,
 )
+
+_VALID_GATE_EVIDENCE = {
+    "eval_summary_id": "test-gate-evidence-001",
+    "gate_status": "passed_gate",
+}
 
 
 class TestRouteArtifact:
     def test_transcript_artifact_routes_to_context_bundle(self) -> None:
-        assert route_artifact("transcript_artifact") == "context_bundle"
+        assert route_with_gate_evidence({"artifact_type": "transcript_artifact"}, _VALID_GATE_EVIDENCE) == "context_bundle"
 
     def test_context_bundle_routes_to_meeting_minutes(self) -> None:
-        assert route_artifact("context_bundle") == "meeting_minutes_artifact"
+        assert route_with_gate_evidence({"artifact_type": "context_bundle"}, _VALID_GATE_EVIDENCE) == "meeting_minutes_artifact"
 
     def test_meeting_minutes_routes_to_issue_registry(self) -> None:
-        assert route_artifact("meeting_minutes_artifact") == "issue_registry_artifact"
+        assert route_with_gate_evidence({"artifact_type": "meeting_minutes_artifact"}, _VALID_GATE_EVIDENCE) == "issue_registry_artifact"
 
     def test_issue_registry_routes_to_structured_issue_set(self) -> None:
-        assert route_artifact("issue_registry_artifact") == "structured_issue_set"
+        assert route_with_gate_evidence({"artifact_type": "issue_registry_artifact"}, _VALID_GATE_EVIDENCE) == "structured_issue_set"
 
     def test_structured_issue_set_routes_to_paper_draft(self) -> None:
-        assert route_artifact("structured_issue_set") == "paper_draft_artifact"
+        assert route_with_gate_evidence({"artifact_type": "structured_issue_set"}, _VALID_GATE_EVIDENCE) == "paper_draft_artifact"
 
     def test_paper_draft_routes_to_review(self) -> None:
-        assert route_artifact("paper_draft_artifact") == "review_artifact"
+        assert route_with_gate_evidence({"artifact_type": "paper_draft_artifact"}, _VALID_GATE_EVIDENCE) == "review_artifact"
 
     def test_review_routes_to_revised_draft(self) -> None:
-        assert route_artifact("review_artifact") == "revised_draft_artifact"
+        assert route_with_gate_evidence({"artifact_type": "review_artifact"}, _VALID_GATE_EVIDENCE) == "revised_draft_artifact"
 
     def test_revised_draft_routes_to_formatted_paper(self) -> None:
-        assert route_artifact("revised_draft_artifact") == "formatted_paper_artifact"
+        assert route_with_gate_evidence({"artifact_type": "revised_draft_artifact"}, _VALID_GATE_EVIDENCE) == "formatted_paper_artifact"
 
     def test_formatted_paper_routes_to_release(self) -> None:
-        assert route_artifact("formatted_paper_artifact") == "release_artifact"
+        assert route_with_gate_evidence({"artifact_type": "formatted_paper_artifact"}, _VALID_GATE_EVIDENCE) == "release_artifact"
 
     def test_all_non_terminal_types_have_routes(self) -> None:
         pipeline = get_full_pipeline()
         non_terminal = [t for t in pipeline if t not in _TERMINAL_TYPES]
         for artifact_type in non_terminal:
-            result = route_artifact(artifact_type)
+            result = route_with_gate_evidence({"artifact_type": artifact_type}, _VALID_GATE_EVIDENCE)
             assert result is not None, f"No route for {artifact_type}"
 
 
 class TestMissingRoute:
     def test_unknown_type_raises(self) -> None:
         with pytest.raises(ArtifactRoutingError) as exc_info:
-            route_artifact("nonexistent_artifact_type")
+            route_with_gate_evidence({"artifact_type": "nonexistent_artifact_type"}, _VALID_GATE_EVIDENCE)
         assert "NO_ROUTE_DEFINED" in exc_info.value.reason_codes
 
     def test_empty_string_raises(self) -> None:
         with pytest.raises(ArtifactRoutingError) as exc_info:
-            route_artifact("")
+            route_with_gate_evidence({"artifact_type": ""}, _VALID_GATE_EVIDENCE)
         assert "INVALID_ARTIFACT_TYPE" in exc_info.value.reason_codes
 
     def test_none_raises(self) -> None:
         with pytest.raises(ArtifactRoutingError) as exc_info:
-            route_artifact(None)  # type: ignore[arg-type]
+            route_with_gate_evidence({"artifact_type": None}, _VALID_GATE_EVIDENCE)
         assert "INVALID_ARTIFACT_TYPE" in exc_info.value.reason_codes
 
     def test_terminal_type_raises(self) -> None:
         with pytest.raises(ArtifactRoutingError) as exc_info:
-            route_artifact("release_artifact")
+            route_with_gate_evidence({"artifact_type": "release_artifact"}, _VALID_GATE_EVIDENCE)
         assert "TERMINAL_ARTIFACT_TYPE" in exc_info.value.reason_codes
 
 

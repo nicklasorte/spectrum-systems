@@ -21,7 +21,7 @@ Rules:
 - Missing route → FAIL (ArtifactRoutingError)
 - Circular routes are statically detected at module load
 - No implicit fallback routing
-- route_artifact() is the sole routing interface
+- route_with_gate_evidence() is the sole external routing entrypoint
 """
 from __future__ import annotations
 
@@ -106,18 +106,8 @@ if _STARTUP_CYCLES:
     )
 
 
-def route_artifact(artifact_type: str) -> str:
-    """Return the next artifact type for a given input artifact type.
-
-    Raises ArtifactRoutingError for unknown or terminal artifact types.
-    Raises ArtifactRoutingError if artifact_type is missing or invalid.
-
-    CALLER RESPONSIBILITY: This function performs type-based routing only.
-    It does NOT verify that eval gates have passed for the artifact before routing.
-    The TLC caller MUST enforce eval gates (via enforce_eval_gate) before calling
-    route_artifact. Routing an artifact that has not passed eval gates violates
-    the eval-before-trust invariant.
-    """
+def _route_artifact_unchecked(artifact_type: str) -> str:
+    """Internal-only. Does NOT enforce gate evidence. Use route_with_gate_evidence for all governed routing."""
     if not artifact_type or not isinstance(artifact_type, str):
         raise ArtifactRoutingError(
             "artifact_type must be a non-empty string",
@@ -169,7 +159,7 @@ def validate_transition(from_type: str, to_type: str) -> None:
 
     Raises ArtifactRoutingError if the transition violates routing rules.
     """
-    expected_next = route_artifact(from_type)
+    expected_next = _route_artifact_unchecked(from_type)
     if to_type != expected_next:
         raise ArtifactRoutingError(
             f"Invalid transition: '{from_type}' → '{to_type}'. Expected: '{from_type}' → '{expected_next}'",
@@ -287,12 +277,11 @@ def route_with_gate_evidence(
         )
 
     artifact_type = artifact.get("artifact_type") if isinstance(artifact, dict) else None
-    return route_artifact(artifact_type)
+    return _route_artifact_unchecked(artifact_type)
 
 
 __all__ = [
     "ArtifactRoutingError",
-    "route_artifact",
     "route_with_gate_evidence",
     "is_terminal",
     "pipeline_position",
