@@ -32,7 +32,8 @@
       "scripts/run_authority_shape_preflight.py",
       "contracts/governance/authority_registry.json",
       "contracts/governance/authority_shape_vocabulary.json",
-      "contracts/governance/system_registry_guard_policy.json"
+      "contracts/governance/system_registry_guard_policy.json",
+      "docs/governance/authority_shape_preflight.md"
     ]
   },
   "clusters": {

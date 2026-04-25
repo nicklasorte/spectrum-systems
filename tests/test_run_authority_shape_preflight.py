@@ -1,11 +1,22 @@
-"""CLI surface tests for ``scripts/run_authority_shape_preflight.py``."""
+"""CLI surface tests for ``scripts/run_authority_shape_preflight.py``.
+
+These tests prove the preflight CLI is dependency-light: it does not import the
+``spectrum_systems.governance`` package ``__init__`` (which transitively
+requires ``jsonschema``), and the script runs in a subprocess where
+``jsonschema`` is shadowed to ``ImportError``.
+"""
 
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
+import textwrap
 from pathlib import Path
 
 from scripts import run_authority_shape_preflight as preflight_cli
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _make_args(**overrides):
@@ -67,6 +78,111 @@ def test_cli_returns_nonzero_on_violation(monkeypatch, tmp_path: Path) -> None:
     assert payload["status"] == "fail"
     assert payload["summary"]["violation_count"] >= 1
     assert any(v["cluster"] in {"promotion", "decision"} for v in payload["violations"])
+
+
+def test_cli_does_not_import_governance_package_init() -> None:
+    """The script must not pull in ``spectrum_systems.governance`` ``__init__``.
+
+    That package eagerly imports ``contract_impact``, which requires
+    ``jsonschema``. The preflight is wired to bypass it by file path so it can
+    run on the minimal CI surface.
+    """
+    code = textwrap.dedent(
+        """
+        import sys
+        sys.path.insert(0, %r)
+        import scripts.run_authority_shape_preflight  # noqa: F401
+        assert "spectrum_systems.governance" not in sys.modules, (
+            "preflight CLI must not load spectrum_systems.governance __init__"
+        )
+        # The script must not have spectrum_systems.contracts in sys.modules
+        # because that subtree requires jsonschema.
+        assert "spectrum_systems.contracts" not in sys.modules
+        print("ok")
+        """
+    ) % (str(REPO_ROOT),)
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "ok" in result.stdout
+
+
+def test_cli_runs_without_jsonschema(tmp_path: Path) -> None:
+    """The script must complete end-to-end when ``jsonschema`` is unavailable.
+
+    A meta-path finder shadowed in the subprocess raises ``ImportError`` for
+    any ``jsonschema`` import. The preflight must still pass on a clean change
+    set and still fail-closed on an authority-shaped leak.
+    """
+    output = tmp_path / "result.json"
+    leak_rel = "scripts/_tmp_no_jsonschema_violation.py"
+    leak_path = REPO_ROOT / leak_rel
+    leak_path.parent.mkdir(parents=True, exist_ok=True)
+    leak_path.write_text("promotion_decision = 'pending'\n", encoding="utf-8")
+    safe_rel = "scripts/_tmp_no_jsonschema_safe.py"
+    safe_path = REPO_ROOT / safe_rel
+    safe_path.write_text("promotion_signal = 'observation_only'\n", encoding="utf-8")
+    try:
+        runner = textwrap.dedent(
+            """
+            import sys
+
+            class _JsonSchemaBlocker:
+                def find_spec(self, name, *args, **kwargs):
+                    if name == "jsonschema" or name.startswith("jsonschema."):
+                        raise ImportError("blocked by test: " + name)
+                    return None
+
+            sys.meta_path.insert(0, _JsonSchemaBlocker())
+            sys.path.insert(0, %r)
+            import runpy
+
+            sys.argv = [
+                "run_authority_shape_preflight.py",
+                "--changed-files",
+                %r,
+                %r,
+                "--suggest-only",
+                "--output",
+                %r,
+            ]
+            try:
+                runpy.run_path(%r, run_name="__main__")
+            except SystemExit as exc:
+                print("EXIT:" + str(exc.code))
+            """
+        ) % (
+            str(REPO_ROOT),
+            leak_rel,
+            safe_rel,
+            str(output),
+            str(REPO_ROOT / "scripts" / "run_authority_shape_preflight.py"),
+        )
+        result = subprocess.run(
+            [sys.executable, "-c", runner],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert "EXIT:1" in result.stdout, (
+            f"expected fail-closed exit when leak present; stdout={result.stdout!r} "
+            f"stderr={result.stderr!r}"
+        )
+        payload = json.loads(output.read_text(encoding="utf-8"))
+        assert payload["status"] == "fail"
+        assert any(v["file"] == leak_rel for v in payload["violations"])
+        assert all(v["file"] != safe_rel for v in payload["violations"]), (
+            "non-owner using promotion_signal must not be flagged"
+        )
+    finally:
+        leak_path.unlink(missing_ok=True)
+        safe_path.unlink(missing_ok=True)
 
 
 def test_cli_propagates_changed_file_resolution_error(monkeypatch, tmp_path: Path) -> None:

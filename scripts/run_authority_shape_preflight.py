@@ -10,28 +10,63 @@ their notion of "what changed". Two modes are supported:
 * ``--apply-safe-renames``: apply unambiguous, owner-safe renames using the
   contracted ``safe_rename_pairs`` table and re-scan. Guard scripts and
   canonical owner files are protected from auto-remediation.
+
+Dependency-light by design: the preflight must run on the minimal CI surface
+that is exercised before contracts/jsonschema dependencies are installed.
+We therefore avoid the package-level ``spectrum_systems.governance`` ``__init__``
+(which eagerly imports ``contract_impact`` and transitively requires
+``jsonschema``) and load the preflight implementation by file path. The module
+itself uses only the Python standard library.
 """
 
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import sys
 from pathlib import Path
+from types import ModuleType
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from spectrum_systems.governance.authority_shape_preflight import (  # noqa: E402
-    AuthorityShapePreflightError,
-    evaluate_preflight,
-    load_vocabulary,
+
+def _load_module_from_path(name: str, path: Path) -> ModuleType:
+    """Load a stdlib-only module without triggering its package ``__init__``.
+
+    The preflight intentionally bypasses ``spectrum_systems.governance`` package
+    initialization — that ``__init__`` eagerly imports ``contract_impact``,
+    which depends on ``jsonschema``. Loading by file path keeps the gate
+    runnable on minimal CI surfaces.
+    """
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"could not load module from {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_PREFLIGHT_PATH = REPO_ROOT / "spectrum_systems" / "governance" / "authority_shape_preflight.py"
+_CHANGED_FILES_PATH = (
+    REPO_ROOT / "spectrum_systems" / "modules" / "governance" / "changed_files.py"
 )
-from spectrum_systems.modules.governance.changed_files import (  # noqa: E402
-    ChangedFilesResolutionError,
-    resolve_changed_files,
+
+_preflight = _load_module_from_path(
+    "_authority_shape_preflight_core", _PREFLIGHT_PATH
 )
+_changed_files = _load_module_from_path(
+    "_authority_shape_changed_files", _CHANGED_FILES_PATH
+)
+
+AuthorityShapePreflightError = _preflight.AuthorityShapePreflightError
+evaluate_preflight = _preflight.evaluate_preflight
+load_vocabulary = _preflight.load_vocabulary
+ChangedFilesResolutionError = _changed_files.ChangedFilesResolutionError
+resolve_changed_files = _changed_files.resolve_changed_files
 
 
 def _parse_args() -> argparse.Namespace:
