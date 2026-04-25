@@ -1,9 +1,19 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
+
+import pytest
 
 from spectrum_systems.modules.governance.system_registry_guard import parse_system_registry
 from spectrum_systems.modules.governance.three_letter_system_enforcement import evaluate_three_letter_system_enforcement
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+_GOVERNANCE_FILES = [
+    "spectrum_systems/modules/governance/three_letter_system_enforcement.py",
+    "spectrum_systems/governance/registry_drift_validator.py",
+    "scripts/run_three_letter_system_enforcement_audit.py",
+]
 
 
 def _write(path: Path, content: str) -> None:
@@ -107,7 +117,7 @@ def test_flags_unowned_system_like_paths(tmp_path: Path) -> None:
         generated_at="2026-04-14T00:00:00Z",
     )
 
-    assert result["final_decision"] == "BLOCK"
+    assert result["final_decision"] == "FAIL"
     assert "UNOWNED_SYSTEM_LIKE_PATH" in result["violations"]
 
 
@@ -188,5 +198,60 @@ def test_fail_closed_on_ambiguous_ownership(tmp_path: Path) -> None:
         generated_at="2026-04-14T00:00:00Z",
     )
 
-    assert result["final_decision"] == "BLOCK"
+    assert result["final_decision"] == "FAIL"
     assert "AMBIGUOUS_SYSTEM_OWNERSHIP" in result["violations"]
+
+
+# ---------------------------------------------------------------------------
+# Early-detection: authority leak guard on 3LS governance files themselves
+# ---------------------------------------------------------------------------
+
+def test_three_letter_system_enforcement_module_has_no_authority_leaks() -> None:
+    """The 3LS enforcement module must not emit forbidden authority vocabulary.
+
+    This test runs the authority_leak_guard logic directly against the
+    governance files so violations are caught locally before CI. It is the
+    canonical early-detection gate for the authority_shape_artifact_type and
+    forbidden_value rule classes within the 3LS governance surface.
+    """
+    registry_path = REPO_ROOT / "contracts" / "governance" / "authority_registry.json"
+    if not registry_path.exists():
+        pytest.skip("authority_registry.json not found; skipping authority leak check")
+
+    from scripts.authority_leak_rules import load_authority_registry, find_forbidden_vocabulary
+    from scripts.authority_shape_detector import detect_authority_shapes
+
+    registry = load_authority_registry(registry_path)
+
+    all_violations: list[dict] = []
+    for rel in _GOVERNANCE_FILES:
+        p = REPO_ROOT / rel
+        if not p.exists():
+            continue
+        all_violations.extend(find_forbidden_vocabulary(p, registry))
+        all_violations.extend(detect_authority_shapes(p, registry))
+
+    assert all_violations == [], (
+        f"Authority leak violations found in 3LS governance files — "
+        f"fix before CI: {json.dumps(all_violations, indent=2)}"
+    )
+
+
+def test_final_decision_values_do_not_use_control_vocabulary() -> None:
+    """final_decision must use audit-outcome vocabulary (PASS/WARN/FAIL), not CDE control words.
+
+    BLOCK and FREEZE are CDE authority values. Audit results must not use them.
+    """
+    schema_path = REPO_ROOT / "contracts" / "schemas" / "three_letter_system_enforcement_audit_result.schema.json"
+    if not schema_path.exists():
+        pytest.skip("schema file not found")
+
+    schema = json.loads(schema_path.read_text())
+    allowed = schema["properties"]["final_decision"]["enum"]
+
+    forbidden_control_words = {"BLOCK", "FREEZE", "ALLOW", "PROMOTE"}
+    leaking = forbidden_control_words & set(allowed)
+    assert not leaking, (
+        f"final_decision enum contains CDE control vocabulary: {leaking}. "
+        f"Use audit-outcome words (PASS, WARN, FAIL) instead."
+    )

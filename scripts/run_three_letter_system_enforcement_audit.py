@@ -56,7 +56,7 @@ def main() -> int:
     output_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     print(json.dumps({"output": str(output_path), "final_decision": result["final_decision"], "violations": result["violations"]}, indent=2))
-    return 1 if result["final_decision"] == "BLOCK" else 0
+    return 1 if result["final_decision"] == "FAIL" else 0
 
 
 if __name__ == "__main__":

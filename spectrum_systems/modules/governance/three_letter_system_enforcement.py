@@ -101,7 +101,7 @@ def evaluate_three_letter_system_enforcement(
                 missing_gate_expectations.append({"system": system, "path": changed, "missing_requirements": sorted(set(missing))})
                 violations.add("MISSING_REQUIRED_GATES")
 
-    final_decision = "PASS" if not violations else "BLOCK"
+    final_decision = "PASS" if not violations else "FAIL"
 
     result = {
         "artifact_type": "three_letter_system_enforcement_audit_result",

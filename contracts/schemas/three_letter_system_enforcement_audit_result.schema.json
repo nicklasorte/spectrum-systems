@@ -53,7 +53,7 @@
       }
     },
     "violations": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
-    "final_decision": {"type": "string", "enum": ["PASS", "WARN", "BLOCK"]},
+    "final_decision": {"type": "string", "enum": ["PASS", "WARN", "FAIL"]},
     "generated_at": {"type": "string", "format": "date-time"}
   }
 }
