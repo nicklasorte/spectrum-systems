@@ -90,6 +90,14 @@ jobs:
             echo "head_ref=HEAD" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Run authority-shape preflight (AGS-001)
+        run: |
+          python scripts/run_authority_shape_preflight.py \
+            --base-ref "${{ steps.srg-refs.outputs.base_ref }}" \
+            --head-ref "${{ steps.srg-refs.outputs.head_ref }}" \
+            --suggest-only \
+            --output outputs/authority_shape_preflight/authority_shape_preflight_result.json
+
       - name: Run system registry guard
         run: |
           python scripts/run_system_registry_guard.py \
@@ -119,6 +127,14 @@ jobs:
           name: authority-leak-guard-outputs
           if-no-files-found: warn
           path: outputs/authority_leak_guard/authority_leak_guard_result.json
+
+      - name: Upload authority shape preflight outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authority-shape-preflight-outputs
+          if-no-files-found: warn
+          path: outputs/authority_shape_preflight/authority_shape_preflight_result.json
 
   governed-contract-preflight:
     if: github.event_name == 'push'
