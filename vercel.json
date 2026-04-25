@@ -3,9 +3,6 @@
   "buildCommand": "cd apps/dashboard-3ls && npm install && npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "projectSettings": {
-    "sourceFilesOutsideRootDirectory": true
-  },
   "env": {
     "GITHUB_TOKEN": {
       "description": "GitHub personal access token",
@@ -20,6 +17,8 @@
       "default": "3-Letter Systems Dashboard"
     }
   },
-  "regions": ["iad1"],
+  "regions": [
+    "iad1"
+  ],
   "public": true
 }
