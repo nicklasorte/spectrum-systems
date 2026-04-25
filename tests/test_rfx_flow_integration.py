@@ -110,6 +110,14 @@ def test_flow_accepts_loop05_replay_alias_through_loop06(route_artifact: dict) -
     assert_rfx_promotion_ready(**_full_kwargs(route_artifact, rep=rep_alias))
 
 
+def test_flow_accepts_loop05_lineage_alias_through_loop06(route_artifact: dict) -> None:
+    """A lineage record using the LOOP-05 ``authenticity_result`` alias must
+    pass both the integrity bundle and the certification gate."""
+    lin_alias = {"lineage_id": "lin-flow-001", "authenticity_result": "pass"}
+    # Must not raise.
+    assert_rfx_promotion_ready(**_full_kwargs(route_artifact, lin=lin_alias))
+
+
 def test_flow_blocks_when_aex_admission_absent(route_artifact: dict) -> None:
     with pytest.raises(RFXRouteGuardError, match="rfx_missing_aex_admission"):
         assert_rfx_promotion_ready(**_full_kwargs(route_artifact, build_admission_record=None))

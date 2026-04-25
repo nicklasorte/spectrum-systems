@@ -181,7 +181,9 @@ def assert_rfx_certification_ready(
             "rfx_missing_lineage: LIN lineage record absent — GOV cannot certify"
         )
     else:
-        authenticity = _coerce_status(lin, "authenticity", "authenticity_status")
+        # Accept the same set of lineage-authenticity aliases that LOOP-05
+        # (assert_rfx_integrity_bundle) accepts upstream.
+        authenticity = _coerce_status(lin, "authenticity", "authenticity_status", "authenticity_result")
         if authenticity != "pass":
             reasons.append(
                 f"rfx_missing_lineage: lineage authenticity={authenticity!r} not 'pass'"

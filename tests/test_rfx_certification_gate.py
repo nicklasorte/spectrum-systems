@@ -106,6 +106,25 @@ def test_lineage_not_authentic_blocks_certification() -> None:
         assert_rfx_certification_ready(**_kwargs(lin=bad))
 
 
+def test_lineage_loop05_alias_authenticity_status_accepted() -> None:
+    """LOOP-06 must accept the same lineage-authenticity aliases LOOP-05 accepts."""
+    lin_alt = {"lineage_id": "lin-rfx-001", "authenticity_status": "pass"}
+    # Must not raise.
+    assert_rfx_certification_ready(**_kwargs(lin=lin_alt))
+
+
+def test_lineage_loop05_alias_authenticity_result_accepted() -> None:
+    lin_alt = {"lineage_id": "lin-rfx-001", "authenticity_result": "pass"}
+    # Must not raise.
+    assert_rfx_certification_ready(**_kwargs(lin=lin_alt))
+
+
+def test_lineage_loop05_alias_authenticity_result_failing_blocks() -> None:
+    lin_bad = {"lineage_id": "lin-rfx-001", "authenticity_result": "fail"}
+    with pytest.raises(RFXCertificationGateError, match="rfx_missing_lineage"):
+        assert_rfx_certification_ready(**_kwargs(lin=lin_bad))
+
+
 def test_missing_replay_blocks_certification() -> None:
     with pytest.raises(RFXCertificationGateError, match="rfx_missing_replay"):
         assert_rfx_certification_ready(**_kwargs(rep=None))
