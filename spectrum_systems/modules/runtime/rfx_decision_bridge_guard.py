@@ -31,7 +31,7 @@ def _coerce_decision_id(cde_decision: dict[str, Any]) -> str | None:
     for key in ("decision_id", "cde_decision_id", "id"):
         value = cde_decision.get(key)
         if isinstance(value, str) and value.strip():
-            return value
+            return value.strip()
     return None
 
 
@@ -39,7 +39,7 @@ def _coerce_sel_link(sel_context: dict[str, Any]) -> str | None:
     for key in ("cde_decision_ref", "cde_decision_id", "decision_ref", "linked_cde_decision_id"):
         value = sel_context.get(key)
         if isinstance(value, str) and value.strip():
-            return value
+            return value.strip()
     return None
 
 

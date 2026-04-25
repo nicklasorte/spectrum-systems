@@ -95,3 +95,28 @@ def test_valid_not_ready_decision_with_linked_sel_passes() -> None:
     sel = {**_VALID_SEL, "enforcement_action": "block"}
     # Must not raise — "not_ready" is a valid CDE status; SEL still must link.
     assert_rfx_cde_sel_decision_bridge(cde_decision=cde, sel_context=sel)
+
+
+def test_whitespace_padded_link_matches_after_trim() -> None:
+    """LOOP-04 must trim both sides of the linkage comparison so that
+    whitespace-padded values from upstream producers don't cause an
+    avoidable fail-closed mismatch (LOOP-06 already strips both sides)."""
+    cde = {"decision_id": " cde-rfx-001 ", "status": "ready"}
+    sel = {"sel_record_id": "sel-rfx-001", "cde_decision_ref": "cde-rfx-001"}
+    # Must not raise — the strip on both sides yields equal ids.
+    assert_rfx_cde_sel_decision_bridge(cde_decision=cde, sel_context=sel)
+
+
+def test_whitespace_padded_sel_link_matches_after_trim() -> None:
+    cde = {"decision_id": "cde-rfx-001", "status": "ready"}
+    sel = {"sel_record_id": "sel-rfx-001", "cde_decision_ref": "  cde-rfx-001\t"}
+    # Must not raise.
+    assert_rfx_cde_sel_decision_bridge(cde_decision=cde, sel_context=sel)
+
+
+def test_whitespace_only_link_value_is_treated_as_absent() -> None:
+    """A purely whitespace value still fails closed."""
+    cde = {**_VALID_CDE}
+    sel = {"sel_record_id": "sel-rfx-001", "cde_decision_ref": "   "}
+    with pytest.raises(RFXDecisionBridgeGuardError, match="rfx_sel_not_linked_to_cde"):
+        assert_rfx_cde_sel_decision_bridge(cde_decision=cde, sel_context=sel)
