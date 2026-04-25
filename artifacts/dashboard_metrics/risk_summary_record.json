@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "data_source": "artifact_store",
+  "artifact_type": "risk_summary_record",
+  "record_id": "RSK-DASH-MET03-001",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/minimal_loop_snapshot.json",
+    "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
+    "artifacts/dashboard_seed/eval_summary_record.json",
+    "artifacts/dashboard_seed/replay_record.json",
+    "artifacts/dashboard_seed/lineage_record.json",
+    "artifacts/dashboard_seed/enforcement_action_record.json",
+    "artifacts/dashboard_metrics/bottleneck_record.json",
+    "artifacts/dashboard_metrics/leverage_queue_record.json"
+  ],
+  "reason_codes": [
+    "risk_summary_seeded_from_partial_loop",
+    "override_count_unknown_no_history"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Override count is unknown — no override history artifact exists yet.",
+    "Counts are computed across the seeded loop only; non-seeded systems remain stub_fallback.",
+    "Trend remains unknown until historical risk snapshots exist."
+  ],
+  "payload": {
+    "fallback_signal_count": 6,
+    "fallback_signal_systems": ["AEX_pre_seed", "PQX_pre_seed", "TPA", "REP", "OBS", "SLO"],
+    "unknown_signal_count": 0,
+    "missing_eval_count": 2,
+    "missing_eval_dimensions": ["long_horizon_replay", "full_certification_set"],
+    "missing_trace_count": 0,
+    "override_count": "unknown",
+    "proof_chain_coverage": {
+      "total": 10,
+      "present": 4,
+      "partial": 6,
+      "missing_or_unknown": 0,
+      "percent_present_or_partial": 100,
+      "percent_present_only": 40
+    },
+    "top_risks": [
+      {
+        "id": "FM-SEED-EVAL-GAP",
+        "title": "Eval coverage gap can mask regressions",
+        "severity": "high",
+        "systems_affected": ["EVL", "TPA", "CDE"],
+        "evidence_artifact": "artifacts/dashboard_seed/eval_summary_record.json"
+      },
+      {
+        "id": "FM-SEED-CERT-INCOMPLETE",
+        "title": "Certification incomplete forces SEL observe_only",
+        "severity": "high",
+        "systems_affected": ["SEL", "CDE"],
+        "evidence_artifact": "artifacts/dashboard_seed/enforcement_action_record.json"
+      },
+      {
+        "id": "FM-SEED-REPLAY-GAP",
+        "title": "Replay coverage incomplete for long horizon drift",
+        "severity": "medium",
+        "systems_affected": ["REP", "EVL"],
+        "evidence_artifact": "artifacts/dashboard_seed/replay_record.json"
+      },
+      {
+        "id": "FM-SEED-SLO-CONTEXT",
+        "title": "SLO budget context partial during promotion review",
+        "severity": "medium",
+        "systems_affected": ["SLO", "CDE"],
+        "evidence_artifact": "artifacts/dashboard_seed/slo_status_record.json"
+      }
+    ]
+  }
+}
