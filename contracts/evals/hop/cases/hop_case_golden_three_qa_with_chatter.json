@@ -1,0 +1,62 @@
+{
+  "artifact_id": "hop_eval_case_ffd1cdb5daf1f3dc",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:ffd1cdb5daf1f3dce5faaaa16d265cc15c9f65204a1772f3782dbe9ed1f72cd7",
+  "eval_case_id": "hop_case_golden_three_qa_with_chatter",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "interleaved_speakers"
+  ],
+  "input": {
+    "transcript_id": "t_chatter",
+    "turns": [
+      {
+        "speaker": "assistant",
+        "text": "Hello, ready when you are."
+      },
+      {
+        "speaker": "user",
+        "text": "How do I store a candidate?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Use ExperienceStore.write_artifact."
+      },
+      {
+        "speaker": "user",
+        "text": "What does the validator do?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "It rejects malformed candidates before eval."
+      },
+      {
+        "speaker": "user",
+        "text": "Where do failures go?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "They are emitted as failure hypotheses."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_questions_substrings": [
+        "store a candidate",
+        "validator",
+        "failures go"
+      ],
+      "max_qa_pairs": 3,
+      "min_qa_pairs": 3
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:golden_three_qa_with_chatter",
+    "related": []
+  }
+}

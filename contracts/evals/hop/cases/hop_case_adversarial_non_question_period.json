@@ -1,0 +1,36 @@
+{
+  "artifact_id": "hop_eval_case_1426a5b1783bfccd",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "adversarial",
+  "content_hash": "sha256:1426a5b1783bfccd597f07965772a8e6204e0df1de5075b76eaa453a9bc74445",
+  "eval_case_id": "hop_case_adversarial_non_question_period",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "non_question_marked_question"
+  ],
+  "input": {
+    "transcript_id": "t_period",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Tell me about HOP."
+      },
+      {
+        "speaker": "assistant",
+        "text": "HOP is a governed optimization pipeline."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "rejection_expected",
+    "rules": {
+      "expect_rejection": true
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:adversarial_non_question_period",
+    "related": []
+  }
+}

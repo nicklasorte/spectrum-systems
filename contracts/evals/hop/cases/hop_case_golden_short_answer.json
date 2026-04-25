@@ -1,0 +1,35 @@
+{
+  "artifact_id": "hop_eval_case_0d41b1daa5afcb0b",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:0d41b1daa5afcb0bfe0d3f5233ddcca5fa3ec46afcd109266a4fda065ca79fd1",
+  "eval_case_id": "hop_case_golden_short_answer",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [],
+  "input": {
+    "transcript_id": "t_short",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Is the store fail-closed?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Yes."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "structural",
+    "rules": {
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:golden_short_answer",
+    "related": []
+  }
+}

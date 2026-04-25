@@ -1,0 +1,41 @@
+{
+  "artifact_id": "hop_eval_case_7c2bf041bf9de156",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "adversarial",
+  "content_hash": "sha256:7c2bf041bf9de1569e5befd68f90fadfa28a1045a77a86241559b61cec9a892b",
+  "eval_case_id": "hop_case_adversarial_two_q_one_a",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "ambiguous_attribution"
+  ],
+  "input": {
+    "transcript_id": "t_two_q_one_a",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "What is HOP?"
+      },
+      {
+        "speaker": "user",
+        "text": "Why does it exist?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "HOP optimizes harnesses with full lineage."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "structural",
+    "rules": {
+      "max_qa_pairs": 2,
+      "min_qa_pairs": 2
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:adversarial_two_q_one_a",
+    "related": []
+  }
+}

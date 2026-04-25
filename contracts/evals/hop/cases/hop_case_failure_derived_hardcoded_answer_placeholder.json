@@ -1,0 +1,40 @@
+{
+  "artifact_id": "hop_eval_case_bf6264eeb7d23fad",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "failure_derived_placeholder",
+  "content_hash": "sha256:bf6264eeb7d23fad49a29f6159e1debebba99b7c7f4588ceb1825d03dc62b5c8",
+  "eval_case_id": "hop_case_failure_derived_hardcoded_answer_placeholder",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "hardcoded_answer_attempt"
+  ],
+  "input": {
+    "transcript_id": "t_hardcoded_placeholder",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Can a candidate hardcode answers?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "No. The safety scan rejects hardcoded answers."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "structural",
+    "rules": {
+      "forbidden_substrings_in_answers": [
+        "__hop_hardcoded_marker__"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:failure_derived_hardcoded_answer_placeholder",
+    "related": []
+  }
+}

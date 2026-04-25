@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hop/harness_eval_case.schema.json",
+  "title": "HOP Harness Eval Case",
+  "description": "A single deterministic, structured eval case for the transcript -> FAQ golden workflow. Cases are versioned, content-hashed, and either golden, adversarial, or failure-derived.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "trace",
+    "content_hash",
+    "eval_case_id",
+    "eval_case_version",
+    "category",
+    "input",
+    "pass_criteria",
+    "failure_modes_targeted"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^hop_eval_case_[a-z0-9_-]+$"
+    },
+    "artifact_type": {
+      "const": "hop_harness_eval_case"
+    },
+    "schema_ref": {
+      "const": "hop/harness_eval_case.schema.json"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace": {
+      "$ref": "#/$defs/trace"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "eval_case_id": {
+      "type": "string",
+      "pattern": "^hop_case_[a-z0-9_-]+$"
+    },
+    "eval_case_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["golden", "adversarial", "failure_derived_placeholder"]
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transcript_id", "turns"],
+      "properties": {
+        "transcript_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "turns": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["speaker", "text"],
+            "properties": {
+              "speaker": {
+                "type": "string",
+                "enum": ["user", "assistant"]
+              },
+              "text": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "pass_criteria": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["judge", "rules"],
+      "properties": {
+        "judge": {
+          "type": "string",
+          "enum": ["structural", "expected_qa_pairs", "rejection_expected"]
+        },
+        "rules": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min_qa_pairs": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max_qa_pairs": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "expected_questions_substrings": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "expected_answer_substrings_per_question": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["question_substring", "answer_substring"],
+                "properties": {
+                  "question_substring": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "answer_substring": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "forbidden_substrings_in_answers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "expect_rejection": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "failure_modes_targeted": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "no_questions",
+          "ambiguous_attribution",
+          "interleaved_speakers",
+          "long_answer_truncation",
+          "duplicate_questions",
+          "non_question_marked_question",
+          "empty_transcript",
+          "single_turn",
+          "leakage_attempt",
+          "schema_weakening_attempt",
+          "hardcoded_answer_attempt"
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "related": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

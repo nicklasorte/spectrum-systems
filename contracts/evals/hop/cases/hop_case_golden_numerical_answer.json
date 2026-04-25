@@ -1,0 +1,44 @@
+{
+  "artifact_id": "hop_eval_case_7b76809d22ba8e7a",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:7b76809d22ba8e7aef330bd6a2f4ac234dbf4385699072aef3c66b71669309b3",
+  "eval_case_id": "hop_case_golden_numerical_answer",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [],
+  "input": {
+    "transcript_id": "t_num",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "How many objectives does the frontier track?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "The frontier tracks 5 objectives."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_answer_substrings_per_question": [
+        {
+          "answer_substring": "5",
+          "question_substring": "objectives"
+        }
+      ],
+      "expected_questions_substrings": [
+        "objectives"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:golden_numerical_answer",
+    "related": []
+  }
+}

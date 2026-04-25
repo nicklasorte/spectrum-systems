@@ -1,0 +1,36 @@
+{
+  "artifact_id": "hop_eval_case_34c1d2fbe9ba0c8a",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "adversarial",
+  "content_hash": "sha256:34c1d2fbe9ba0c8a4fb7df72883c6ef58d8ed02e45d1d160cc932288dc5e68ca",
+  "eval_case_id": "hop_case_adversarial_only_assistant",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "no_questions"
+  ],
+  "input": {
+    "transcript_id": "t_only_assistant",
+    "turns": [
+      {
+        "speaker": "assistant",
+        "text": "I will narrate HOP."
+      },
+      {
+        "speaker": "assistant",
+        "text": "It optimizes harnesses."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "rejection_expected",
+    "rules": {
+      "expect_rejection": true
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:adversarial_only_assistant",
+    "related": []
+  }
+}

@@ -93,8 +93,16 @@ class RegistryDriftValidator:
         for artifact_type in system_def.get("produces", []):
             # Normalise: replace spaces with underscores, lower-case
             clean = artifact_type.lower().replace(" ", "_").replace("-", "_")
-            schema_file = self.schema_dir / f"{clean}.schema.json"
-            if not schema_file.exists():
+            candidate_paths = [self.schema_dir / f"{clean}.schema.json"]
+            # Also accept system-namespaced layouts:
+            # contracts/schemas/<system_lower>/<artifact_minus_prefix>.schema.json
+            system_prefix = f"{system_id.lower()}_"
+            if clean.startswith(system_prefix):
+                short = clean[len(system_prefix) :]
+                candidate_paths.append(
+                    self.schema_dir / system_id.lower() / f"{short}.schema.json"
+                )
+            if not any(p.exists() for p in candidate_paths):
                 errors.append(
                     f"{system_id}: produces '{artifact_type}' but no schema "
                     f"'{clean}.schema.json' found in contracts/schemas/"

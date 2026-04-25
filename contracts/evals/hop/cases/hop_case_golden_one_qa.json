@@ -1,0 +1,46 @@
+{
+  "artifact_id": "hop_eval_case_f4a49d266c311ad3",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:f4a49d266c311ad3995783806a726ec8443a0abbe2bb733defa7571ef7cf0432",
+  "eval_case_id": "hop_case_golden_one_qa",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "single_turn"
+  ],
+  "input": {
+    "transcript_id": "t_one_qa",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "What is HOP?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "HOP is the Harness Optimization Pipeline."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_answer_substrings_per_question": [
+        {
+          "answer_substring": "Harness Optimization Pipeline",
+          "question_substring": "What is HOP?"
+        }
+      ],
+      "expected_questions_substrings": [
+        "What is HOP?"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:golden_one_qa",
+    "related": []
+  }
+}

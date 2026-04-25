@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hop/harness_score.schema.json",
+  "title": "HOP Harness Score",
+  "description": "Aggregated scoring artifact emitted by the evaluator for a single harness run. Per-case breakdowns enable Pareto frontier construction and post-hoc analysis.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "trace",
+    "content_hash",
+    "run_id",
+    "candidate_id",
+    "eval_set_id",
+    "eval_set_version",
+    "score",
+    "pass_count",
+    "fail_count",
+    "case_count",
+    "aggregate_method",
+    "breakdown",
+    "cost",
+    "latency_ms",
+    "trace_completeness",
+    "eval_coverage",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^hop_score_[a-z0-9_-]+$"
+    },
+    "artifact_type": {
+      "const": "hop_harness_score"
+    },
+    "schema_ref": {
+      "const": "hop/harness_score.schema.json"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace": {
+      "$ref": "#/$defs/trace"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "eval_set_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eval_set_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "pass_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "fail_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "case_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "aggregate_method": {
+      "type": "string",
+      "enum": ["pass_rate"]
+    },
+    "breakdown": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "eval_case_id",
+          "passed",
+          "score",
+          "latency_ms"
+        ],
+        "properties": {
+          "eval_case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "latency_ms": {
+            "type": "number",
+            "minimum": 0
+          },
+          "failure_reason": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "cost": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Implementation-defined cost units; for the deterministic baseline this is bytes_processed."
+    },
+    "latency_ms": {
+      "type": "number",
+      "minimum": 0
+    },
+    "trace_completeness": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "eval_coverage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "related": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

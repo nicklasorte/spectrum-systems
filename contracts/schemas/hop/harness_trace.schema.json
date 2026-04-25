@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hop/harness_trace.schema.json",
+  "title": "HOP Harness Trace",
+  "description": "Per-case execution trace emitted while a candidate runs a single eval case. Trace completeness is enforced by the evaluator; missing required steps fail-close the run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "trace",
+    "content_hash",
+    "run_id",
+    "candidate_id",
+    "eval_case_id",
+    "started_at",
+    "completed_at",
+    "complete",
+    "steps"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^hop_trace_[a-z0-9_-]+$"
+    },
+    "artifact_type": {
+      "const": "hop_harness_trace"
+    },
+    "schema_ref": {
+      "const": "hop/harness_trace.schema.json"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace": {
+      "$ref": "#/$defs/trace"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "eval_case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "complete": {
+      "type": "boolean"
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "output_hash": {
+      "type": ["string", "null"],
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["step_id", "op", "started_at", "completed_at"],
+        "properties": {
+          "step_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "op": {
+            "type": "string",
+            "enum": [
+              "load_input",
+              "validate_input",
+              "transform",
+              "emit_output",
+              "validate_output"
+            ]
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "input_hash": {
+            "type": ["string", "null"],
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "output_hash": {
+            "type": ["string", "null"],
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "note": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "incomplete_reason": {
+      "type": ["string", "null"]
+    }
+  },
+  "$defs": {
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "related": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}
