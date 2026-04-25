@@ -102,6 +102,19 @@ def test_replay_mismatch_blocks_certification() -> None:
         assert_rfx_certification_ready(**_kwargs(rep=bad))
 
 
+def test_replay_loop05_alias_matches_accepted() -> None:
+    """LOOP-06 must accept the same replay-truth aliases LOOP-05 accepts."""
+    rep_loop05_alias = {"replay_id": "rep-rfx-001", "matches": True}
+    # Must not raise — alias accepted upstream by the integrity bundle.
+    assert_rfx_certification_ready(**_kwargs(rep=rep_loop05_alias))
+
+
+def test_replay_alias_replay_match_accepted() -> None:
+    rep_alt = {"replay_id": "rep-rfx-001", "replay_match": True}
+    # Must not raise.
+    assert_rfx_certification_ready(**_kwargs(rep=rep_alt))
+
+
 def test_missing_obs_blocks_certification() -> None:
     with pytest.raises(RFXCertificationGateError, match="rfx_missing_obs"):
         assert_rfx_certification_ready(**_kwargs(obs=None))
@@ -202,6 +215,22 @@ def test_sel_link_alternate_key_matches_cde_id() -> None:
     sel_alt_key = {"sel_record_id": "sel-rfx-001", "cde_decision_id": "cde-rfx-001"}
     # Must not raise — alternate key, value matches cde.decision_id.
     assert_rfx_certification_ready(**_kwargs(sel=sel_alt_key))
+
+
+def test_sel_link_loop04_alias_linked_cde_decision_id_accepted() -> None:
+    """LOOP-06 must accept the same SEL link aliases LOOP-04 accepts."""
+    sel_loop04_alias = {
+        "sel_record_id": "sel-rfx-001",
+        "linked_cde_decision_id": "cde-rfx-001",
+    }
+    # Must not raise — alias accepted upstream by the decision bridge.
+    assert_rfx_certification_ready(**_kwargs(sel=sel_loop04_alias))
+
+
+def test_sel_link_decision_ref_alias_accepted() -> None:
+    sel_decision_ref = {"sel_record_id": "sel-rfx-001", "decision_ref": "cde-rfx-001"}
+    # Must not raise.
+    assert_rfx_certification_ready(**_kwargs(sel=sel_decision_ref))
 
 
 # ---------------------------------------------------------------------------

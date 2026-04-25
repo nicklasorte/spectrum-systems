@@ -91,6 +91,25 @@ def test_flow_accepts_unified_status_key_for_evl_and_tpa(route_artifact: dict) -
     assert_rfx_promotion_ready(**_full_kwargs(route_artifact, evl=evl_unified, tpa=tpa_unified))
 
 
+def test_flow_accepts_loop04_sel_alias_through_loop06(route_artifact: dict) -> None:
+    """A SEL record using the LOOP-04 alias ``linked_cde_decision_id`` must
+    pass both the bridge guard and the certification gate."""
+    sel_alias = {
+        "sel_record_id": "sel-flow-001",
+        "linked_cde_decision_id": "cde-flow-001",
+    }
+    # Must not raise — alias is accepted by both LOOP-04 and LOOP-06.
+    assert_rfx_promotion_ready(**_full_kwargs(route_artifact, sel=sel_alias))
+
+
+def test_flow_accepts_loop05_replay_alias_through_loop06(route_artifact: dict) -> None:
+    """A replay record using the LOOP-05 ``matches`` key must pass both
+    the integrity bundle and the certification gate."""
+    rep_alias = {"replay_id": "rep-flow-001", "matches": True}
+    # Must not raise.
+    assert_rfx_promotion_ready(**_full_kwargs(route_artifact, rep=rep_alias))
+
+
 def test_flow_blocks_when_aex_admission_absent(route_artifact: dict) -> None:
     with pytest.raises(RFXRouteGuardError, match="rfx_missing_aex_admission"):
         assert_rfx_promotion_ready(**_full_kwargs(route_artifact, build_admission_record=None))

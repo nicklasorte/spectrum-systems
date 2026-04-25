@@ -132,7 +132,17 @@ def assert_rfx_certification_ready(
             "rfx_missing_sel_link: SEL enforcement linkage absent — GOV cannot certify"
         )
     else:
-        link = _coerce_status(sel, "cde_decision_ref", "cde_decision_id", "decision_ref")
+        # Accept the same set of SEL→CDE link aliases that LOOP-04
+        # (assert_rfx_cde_sel_decision_bridge) accepts upstream, so a payload
+        # that passes the bridge guard cannot be rejected here purely on
+        # field naming.
+        link = _coerce_status(
+            sel,
+            "cde_decision_ref",
+            "cde_decision_id",
+            "decision_ref",
+            "linked_cde_decision_id",
+        )
         if not isinstance(link, str) or not link.strip():
             reasons.append(
                 "rfx_missing_sel_link: SEL record does not reference a CDE decision"
@@ -161,7 +171,9 @@ def assert_rfx_certification_ready(
             "rfx_missing_replay: REP replay record absent — GOV cannot certify"
         )
     else:
-        match = _coerce_status(rep, "match", "replay_match")
+        # Accept the same set of replay-match aliases that LOOP-05
+        # (assert_rfx_integrity_bundle) accepts upstream.
+        match = _coerce_status(rep, "match", "replay_match", "matches")
         if match is not True:
             reasons.append(
                 f"rfx_missing_replay: replay match={match!r} is not True"
