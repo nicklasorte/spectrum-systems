@@ -2,7 +2,7 @@
 PQX Step Harness — spectrum_systems/modules/orchestration/pqx_step_harness.py
 
 Bounded, traced execution wrapper for transcript pipeline steps.
-PQX is the sole execution authority: every pipeline step must run through this harness.
+Every pipeline step must run through this harness; no step may bypass it.
 
 Invariants:
 - Every execution emits a pqx_execution_record regardless of success or failure.

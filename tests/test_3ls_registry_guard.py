@@ -169,6 +169,21 @@ class TestRegistryGuard3LSFiles:
         diags = result.get("diagnostics") or []
         assert diags == [], _format_diags(diags)
 
+    def test_no_violations_in_orchestration_modules(self):
+        """Orchestration module files must not claim ownership for non-owned systems.
+
+        This is the canonical early-detection gate for SHADOW_OWNERSHIP_OVERLAP in
+        the orchestration package — violations here are caught locally before CI.
+        """
+        files = [
+            "spectrum_systems/modules/orchestration/__init__.py",
+            "spectrum_systems/modules/orchestration/pqx_step_harness.py",
+            "spectrum_systems/modules/orchestration/tlc_router.py",
+        ]
+        result = _run_guard_on_files(files)
+        diags = result.get("diagnostics") or []
+        assert diags == [], _format_diags(diags)
+
     def test_gate_s_importable(self):
         """GATE-S must be registered in gate_runner.GATE_CHECKS."""
         from spectrum_systems.governance.gate_runner import GATE_CHECKS
