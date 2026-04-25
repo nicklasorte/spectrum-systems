@@ -57,7 +57,16 @@
     },
     "stage": {
       "type": "string",
-      "enum": ["validation", "safety_check", "evaluation", "store_admission"]
+      "enum": [
+        "validation",
+        "safety_check",
+        "evaluation",
+        "store_admission",
+        "proposer",
+        "mutation_policy",
+        "causal_analysis",
+        "frontier"
+      ]
     },
     "failure_class": {
       "type": "string",
@@ -74,7 +83,16 @@
         "schema_weakening",
         "eval_bypass_attempt",
         "duplicate_artifact",
-        "unknown_eval_case"
+        "unknown_eval_case",
+        "mutation_policy_violation",
+        "regression",
+        "improvement",
+        "neutral_change",
+        "trace_falsification",
+        "frontier_invalid_member",
+        "concurrent_write_conflict",
+        "store_lock_timeout",
+        "proposer_quota_exceeded"
       ]
     },
     "severity": {
@@ -114,6 +132,99 @@
     },
     "blocks_promotion": {
       "type": "boolean"
+    },
+    "baseline_candidate_id": {
+      "type": ["string", "null"],
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "observed_change": {
+      "type": ["string", "null"],
+      "enum": ["regression", "improvement", "neutral", null]
+    },
+    "diff_summary": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["changed_fields", "added_lines", "removed_lines"],
+      "properties": {
+        "changed_fields": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "added_lines": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "removed_lines": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "summary": {
+          "type": ["string", "null"],
+          "maxLength": 4096
+        }
+      }
+    },
+    "suspected_cause": {
+      "type": ["string", "null"],
+      "maxLength": 1024
+    },
+    "eval_deltas": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["eval_case_id", "baseline_passed", "candidate_passed"],
+        "properties": {
+          "eval_case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "baseline_passed": {
+            "type": "boolean"
+          },
+          "candidate_passed": {
+            "type": "boolean"
+          },
+          "baseline_failure_reason": {
+            "type": ["string", "null"]
+          },
+          "candidate_failure_reason": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "trace_excerpts": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["trace_artifact_id", "eval_case_id", "summary"],
+        "properties": {
+          "trace_artifact_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "eval_case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          }
+        }
+      }
+    },
+    "confidence": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1
     }
   },
   "$defs": {

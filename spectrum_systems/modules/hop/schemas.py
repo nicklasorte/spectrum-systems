@@ -27,6 +27,7 @@ _SCHEMA_FILES: Mapping[str, str] = {
     "hop_harness_failure_hypothesis": "harness_failure_hypothesis.schema.json",
     "hop_harness_eval_case": "harness_eval_case.schema.json",
     "hop_harness_faq_output": "harness_faq_output.schema.json",
+    "hop_harness_trace_diff": "harness_trace_diff.schema.json",
 }
 
 

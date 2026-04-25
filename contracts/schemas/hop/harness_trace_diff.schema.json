@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hop/harness_trace_diff.schema.json",
+  "title": "HOP Harness Trace Diff",
+  "description": "Structured comparison of two harness candidates: their scores, traces, and outputs. Emitted by the trace-diff miner. Strictly evidence-bound — no free-form output.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "trace",
+    "content_hash",
+    "diff_id",
+    "baseline_candidate_id",
+    "candidate_id",
+    "baseline_run_id",
+    "candidate_run_id",
+    "generated_at",
+    "score_delta",
+    "case_diffs",
+    "shared_changes",
+    "isolated_changes",
+    "conflicting_signals"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^hop_trace_diff_[a-z0-9_-]+$"
+    },
+    "artifact_type": {
+      "const": "hop_harness_trace_diff"
+    },
+    "schema_ref": {
+      "const": "hop/harness_trace_diff.schema.json"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace": {
+      "$ref": "#/$defs/trace"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "diff_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "baseline_candidate_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "baseline_run_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "candidate_run_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "score_delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "score",
+        "cost",
+        "latency_ms",
+        "trace_completeness",
+        "eval_coverage"
+      ],
+      "properties": {
+        "score": { "type": "number" },
+        "cost": { "type": "number" },
+        "latency_ms": { "type": "number" },
+        "trace_completeness": { "type": "number" },
+        "eval_coverage": { "type": "number" }
+      }
+    },
+    "case_diffs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "eval_case_id",
+          "baseline_passed",
+          "candidate_passed",
+          "kind"
+        ],
+        "properties": {
+          "eval_case_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "baseline_passed": { "type": "boolean" },
+          "candidate_passed": { "type": "boolean" },
+          "kind": {
+            "type": "string",
+            "enum": ["regression", "improvement", "stable_pass", "stable_fail"]
+          },
+          "baseline_failure_reason": { "type": ["string", "null"] },
+          "candidate_failure_reason": { "type": ["string", "null"] },
+          "baseline_trace_complete": { "type": ["boolean", "null"] },
+          "candidate_trace_complete": { "type": ["boolean", "null"] },
+          "baseline_output_hash": {
+            "type": ["string", "null"],
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "candidate_output_hash": {
+            "type": ["string", "null"],
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "shared_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["eval_case_ids", "kind"],
+        "properties": {
+          "eval_case_ids": {
+            "type": "array",
+            "minItems": 2,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["regression", "improvement"]
+          }
+        }
+      }
+    },
+    "isolated_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["eval_case_id", "kind"],
+        "properties": {
+          "eval_case_id": { "type": "string", "minLength": 1 },
+          "kind": {
+            "type": "string",
+            "enum": ["regression", "improvement"]
+          }
+        }
+      }
+    },
+    "conflicting_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["description", "regression_count", "improvement_count"],
+        "properties": {
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "regression_count": { "type": "integer", "minimum": 0 },
+          "improvement_count": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "related": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}
