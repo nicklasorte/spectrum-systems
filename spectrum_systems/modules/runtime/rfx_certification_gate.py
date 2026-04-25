@@ -40,7 +40,12 @@ class RFXCertificationGateError(ValueError):
 _EVL_PASSING = frozenset({"pass", "conditional_pass"})
 _TPA_PASSING = frozenset({"accepted", "conditional"})
 _POL_PASSING = frozenset({"active", "canary", "approved"})
-_CDE_VALID = frozenset({"ready", "not_ready"})
+# LOOP-04 (decision bridge) accepts ``ready`` and ``not_ready`` as canonical
+# closure decisions. LOOP-06 is the certification *readiness* gate, so only
+# ``ready`` lets GOV certify the bundle; ``not_ready`` is a recognized but
+# blocking decision and produces ``rfx_cde_decision_not_ready``.
+_CDE_READY = "ready"
+_CDE_NOT_READY = "not_ready"
 
 
 def _is_present(value: Any) -> bool:
@@ -125,10 +130,14 @@ def assert_rfx_certification_ready(
         )
     else:
         cde_status = _coerce_status(cde, "status")
-        if cde_status not in _CDE_VALID:
+        if cde_status == _CDE_NOT_READY:
             reasons.append(
-                f"rfx_missing_cde_decision: CDE status={cde_status!r} "
-                f"not in {sorted(_CDE_VALID)!r}"
+                "rfx_cde_decision_not_ready: CDE closure decision is 'not_ready' — "
+                "promotion blocked by closure authority"
+            )
+        elif cde_status != _CDE_READY:
+            reasons.append(
+                f"rfx_missing_cde_decision: CDE status={cde_status!r} not 'ready'"
             )
         raw_cde_id = _coerce_status(cde, "decision_id", "cde_decision_id", "id")
         if not isinstance(raw_cde_id, str) or not raw_cde_id.strip():

@@ -188,7 +188,10 @@ def assert_rfx_evl_tpa_evidence_present(
             "rfx_missing_evl_evidence: EVL evaluation record absent — CDE/SEL progression blocked"
         )
     else:
-        evl_status = _coerce_first_present(evl_evidence, "evaluation_status", "status")
+        # Prefer the unified ``status`` key, falling back to the legacy
+        # ``evaluation_status``. Order must match the LOOP-06 certification
+        # gate so the two layers cannot disagree on a mixed-schema payload.
+        evl_status = _coerce_first_present(evl_evidence, "status", "evaluation_status")
         if evl_status not in {"pass", "conditional_pass"}:
             reasons.append(
                 f"rfx_evl_evidence_not_passing: EVL evaluation_status={evl_status!r}"
@@ -199,7 +202,8 @@ def assert_rfx_evl_tpa_evidence_present(
             "rfx_missing_tpa_evidence: TPA adjudication record absent — CDE/SEL progression blocked"
         )
     else:
-        tpa_status = _coerce_first_present(tpa_evidence, "discipline_status", "status")
+        # Same precedence as the LOOP-06 certification gate.
+        tpa_status = _coerce_first_present(tpa_evidence, "status", "discipline_status")
         if tpa_status not in {"accepted", "conditional"}:
             reasons.append(
                 f"rfx_tpa_evidence_not_accepted: TPA discipline_status={tpa_status!r}"

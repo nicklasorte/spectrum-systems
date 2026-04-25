@@ -130,6 +130,13 @@ def test_flow_blocks_when_cde_decision_absent(route_artifact: dict) -> None:
         assert_rfx_promotion_ready(**_full_kwargs(route_artifact, cde=None))
 
 
+def test_flow_blocks_when_cde_decision_is_not_ready(route_artifact: dict) -> None:
+    """``not_ready`` passes the LOOP-04 bridge but must block the LOOP-06 gate."""
+    not_ready = {**_CDE, "status": "not_ready"}
+    with pytest.raises(RFXCertificationGateError, match="rfx_cde_decision_not_ready"):
+        assert_rfx_promotion_ready(**_full_kwargs(route_artifact, cde=not_ready))
+
+
 def test_flow_blocks_when_sel_unlinked(route_artifact: dict) -> None:
     fake_sel = {"sel_record_id": "sel-fake", "enforcement_action": "allow"}
     with pytest.raises(RFXDecisionBridgeGuardError, match="rfx_sel_not_linked_to_cde"):

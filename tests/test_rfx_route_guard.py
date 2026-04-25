@@ -382,6 +382,55 @@ def test_loop03_blank_legacy_alias_falls_through_to_unified_for_tpa() -> None:
     assert_rfx_evl_tpa_evidence_present(evl_evidence=_VALID_EVL, tpa_evidence=tpa_mixed)
 
 
+def test_loop03_prefers_unified_status_over_legacy_alias_for_evl() -> None:
+    """LOOP-03 must agree with LOOP-06's ``status``-first precedence.
+
+    A producer with both fields populated and disagreeing values must reach
+    the same verdict in LOOP-03 and LOOP-06 to avoid migration whiplash.
+    """
+    evl_conflict = {"eval_id": "evl-x", "evaluation_status": "fail", "status": "pass"}
+    # Must not raise — unified ``status`` wins, matching LOOP-06.
+    assert_rfx_evl_tpa_evidence_present(evl_evidence=evl_conflict, tpa_evidence=_VALID_TPA)
+
+
+def test_loop03_prefers_unified_status_over_legacy_alias_for_tpa() -> None:
+    tpa_conflict = {"tpa_decision_id": "tpa-x", "discipline_status": "blocked", "status": "accepted"}
+    # Must not raise — unified ``status`` wins.
+    assert_rfx_evl_tpa_evidence_present(evl_evidence=_VALID_EVL, tpa_evidence=tpa_conflict)
+
+
+def test_loop03_loop06_consistency_on_mixed_schema_evl() -> None:
+    """The same EVL payload must reach the same verdict in LOOP-03 and LOOP-06."""
+    from spectrum_systems.modules.runtime.rfx_certification_gate import (
+        RFXCertificationGateError,
+        assert_rfx_certification_ready,
+    )
+
+    evl_conflict = {"eval_id": "evl-x", "evaluation_status": "fail", "status": "pass"}
+
+    # LOOP-03 (route guard): must not raise.
+    assert_rfx_evl_tpa_evidence_present(evl_evidence=evl_conflict, tpa_evidence=_VALID_TPA)
+
+    # LOOP-06 (certification gate): must also not raise on the same payload.
+    cde = {"decision_id": "cde-rfx-001", "status": "ready"}
+    sel = {"sel_record_id": "sel-rfx-001", "cde_decision_ref": "cde-rfx-001"}
+    lin = {"lineage_id": "lin-rfx-001", "authenticity": "pass"}
+    rep = {"replay_id": "rep-rfx-001", "match": True}
+    obs = {"obs_id": "obs-rfx-001", "completeness": "pass"}
+    slo = {"slo_id": "slo-rfx-001", "status": "within_budget"}
+    pra = {"pra_id": "pra-rfx-001", "status": "ready"}
+    pol = {"pol_id": "pol-rfx-001", "status": "active", "in_scope": True}
+    try:
+        assert_rfx_certification_ready(
+            evl=evl_conflict, tpa=_VALID_TPA, cde=cde, sel=sel,
+            lin=lin, rep=rep, obs=obs, slo=slo, pra=pra, pol=pol,
+        )
+    except RFXCertificationGateError as exc:
+        raise AssertionError(
+            f"LOOP-06 must agree with LOOP-03 on mixed-schema EVL payload; got {exc}"
+        ) from exc
+
+
 # ---------------------------------------------------------------------------
 # Roadmap hard gate: PRA and POL presence
 # ---------------------------------------------------------------------------

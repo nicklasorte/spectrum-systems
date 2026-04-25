@@ -69,6 +69,21 @@ def test_cde_invalid_status_blocks_certification() -> None:
         assert_rfx_certification_ready(**_kwargs(cde=bad))
 
 
+def test_cde_not_ready_blocks_certification() -> None:
+    """LOOP-06 is the readiness gate: ``not_ready`` is a valid CDE decision
+    that must block GOV certification, distinct from a missing/invalid one."""
+    not_ready = {**_CDE, "status": "not_ready"}
+    with pytest.raises(RFXCertificationGateError, match="rfx_cde_decision_not_ready"):
+        assert_rfx_certification_ready(**_kwargs(cde=not_ready))
+
+
+def test_cde_not_ready_blocks_full_otherwise_valid_bundle() -> None:
+    """Even when every other guard passes, ``not_ready`` must block."""
+    not_ready = {**_CDE, "status": "not_ready"}
+    with pytest.raises(RFXCertificationGateError, match="rfx_cde_decision_not_ready"):
+        assert_rfx_certification_ready(**_kwargs(cde=not_ready))
+
+
 def test_missing_sel_link_blocks_certification() -> None:
     with pytest.raises(RFXCertificationGateError, match="rfx_missing_sel_link"):
         assert_rfx_certification_ready(**_kwargs(sel=None))
