@@ -168,6 +168,29 @@ def test_pol_explicitly_out_of_scope_passes() -> None:
     assert_rfx_certification_ready(**_kwargs(pol=out_of_scope))
 
 
+@pytest.mark.parametrize("malformed", [[], "active", 0, 1, ("status", "active")])
+def test_malformed_pol_type_blocks_certification(malformed) -> None:
+    with pytest.raises(RFXCertificationGateError, match="rfx_missing_pol_evidence"):
+        assert_rfx_certification_ready(**_kwargs(pol=malformed))
+
+
+# ---------------------------------------------------------------------------
+# SEL-to-CDE id consistency (LOOP-06 cross-check)
+# ---------------------------------------------------------------------------
+
+def test_sel_link_mismatched_with_cde_id_blocks_certification() -> None:
+    sel_wrong = {"sel_record_id": "sel-rfx-001", "cde_decision_ref": "cde-rfx-other"}
+    with pytest.raises(RFXCertificationGateError, match="rfx_missing_sel_link"):
+        assert_rfx_certification_ready(**_kwargs(sel=sel_wrong))
+
+
+def test_sel_link_alternate_key_matches_cde_id() -> None:
+    # ``cde_decision_id`` is also accepted as the linkage key.
+    sel_alt_key = {"sel_record_id": "sel-rfx-001", "cde_decision_id": "cde-rfx-001"}
+    # Must not raise — alternate key, value matches cde.decision_id.
+    assert_rfx_certification_ready(**_kwargs(sel=sel_alt_key))
+
+
 # ---------------------------------------------------------------------------
 # Aggregated failures
 # ---------------------------------------------------------------------------

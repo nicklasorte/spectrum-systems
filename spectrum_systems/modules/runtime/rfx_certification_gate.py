@@ -146,6 +146,13 @@ def assert_rfx_certification_ready(
             reasons.append(
                 "rfx_missing_sel_link: SEL record does not reference a CDE decision"
             )
+        elif _is_present(cde):
+            cde_id = _coerce_status(cde, "decision_id", "cde_decision_id", "id")
+            if isinstance(cde_id, str) and cde_id.strip() and link.strip() != cde_id.strip():
+                reasons.append(
+                    f"rfx_missing_sel_link: SEL cde_decision_ref={link!r} "
+                    f"does not match cde.decision_id={cde_id!r}"
+                )
 
     # --- LIN lineage ----------------------------------------------------
     if not _is_present(lin):
@@ -209,23 +216,24 @@ def assert_rfx_certification_ready(
             )
 
     # --- POL policy posture (when in scope) -----------------------------
-    if _policy_in_scope(pol):
-        assert pol is not None  # for type-checkers; _policy_in_scope guarantees dict
+    # Policy is in scope by default. A caller may opt out only by passing a
+    # dict with ``in_scope=False``. Any other shape (including ``None`` or a
+    # non-dict object) fails closed.
+    if pol is None:
+        reasons.append(
+            "rfx_missing_pol_evidence: POL policy posture absent — "
+            "policy in scope by default; supply POL or set in_scope=False explicitly"
+        )
+    elif not isinstance(pol, dict):
+        reasons.append(
+            f"rfx_missing_pol_evidence: POL evidence must be a mapping, got {type(pol).__name__}"
+        )
+    elif _policy_in_scope(pol):
         pol_status = _coerce_status(pol, "status", "policy_posture", "rollout_state")
         if pol_status not in _POL_PASSING:
             reasons.append(
                 f"rfx_missing_pol_evidence: POL status={pol_status!r} "
                 f"not in {sorted(_POL_PASSING)!r}"
-            )
-    else:
-        # Policy is in scope by default unless the caller explicitly indicates
-        # otherwise via ``pol={"in_scope": False, ...}``. A bare ``None`` means
-        # the caller has not supplied policy evidence, which is fail-closed
-        # whenever policy could affect the RFX path.
-        if pol is None:
-            reasons.append(
-                "rfx_missing_pol_evidence: POL policy posture absent — "
-                "policy in scope by default; supply POL or set in_scope=False explicitly"
             )
 
     if reasons:
