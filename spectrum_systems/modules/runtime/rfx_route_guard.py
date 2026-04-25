@@ -147,6 +147,13 @@ def assert_rfx_pqx_lineage_present(
 # LOOP-03: EVL + TPA evidence gate before CDE/SEL progression
 # ---------------------------------------------------------------------------
 
+def _coerce_first_present(record: dict[str, Any], *keys: str) -> Any:
+    for key in keys:
+        if key in record:
+            return record[key]
+    return None
+
+
 def assert_rfx_evl_tpa_evidence_present(
     *,
     evl_evidence: dict[str, Any] | None,
@@ -156,6 +163,11 @@ def assert_rfx_evl_tpa_evidence_present(
 
     Missing EVL or TPA evidence produces deterministic stop reasons.
     Fails closed; all reason codes are collected before raising.
+
+    Status keys are coerced from either the LOOP-03-original names
+    (``evaluation_status`` / ``discipline_status``) or the unified
+    ``status`` key also accepted by LOOP-06, so producers using either
+    schema variant flow through to the certification gate consistently.
     """
     reasons: list[str] = []
 
@@ -163,21 +175,23 @@ def assert_rfx_evl_tpa_evidence_present(
         reasons.append(
             "rfx_missing_evl_evidence: EVL evaluation record absent — CDE/SEL progression blocked"
         )
-    elif evl_evidence.get("evaluation_status") not in {"pass", "conditional_pass"}:
-        reasons.append(
-            f"rfx_evl_evidence_not_passing: "
-            f"EVL evaluation_status={evl_evidence.get('evaluation_status')!r}"
-        )
+    else:
+        evl_status = _coerce_first_present(evl_evidence, "evaluation_status", "status")
+        if evl_status not in {"pass", "conditional_pass"}:
+            reasons.append(
+                f"rfx_evl_evidence_not_passing: EVL evaluation_status={evl_status!r}"
+            )
 
     if not isinstance(tpa_evidence, dict) or not tpa_evidence:
         reasons.append(
             "rfx_missing_tpa_evidence: TPA adjudication record absent — CDE/SEL progression blocked"
         )
-    elif tpa_evidence.get("discipline_status") not in {"accepted", "conditional"}:
-        reasons.append(
-            f"rfx_tpa_evidence_not_accepted: "
-            f"TPA discipline_status={tpa_evidence.get('discipline_status')!r}"
-        )
+    else:
+        tpa_status = _coerce_first_present(tpa_evidence, "discipline_status", "status")
+        if tpa_status not in {"accepted", "conditional"}:
+            reasons.append(
+                f"rfx_tpa_evidence_not_accepted: TPA discipline_status={tpa_status!r}"
+            )
 
     if reasons:
         raise RFXRouteGuardError("; ".join(reasons))

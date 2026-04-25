@@ -174,6 +174,19 @@ def test_malformed_pol_type_blocks_certification(malformed) -> None:
         assert_rfx_certification_ready(**_kwargs(pol=malformed))
 
 
+def test_empty_dict_pol_blocks_certification() -> None:
+    # An empty dict is a dict, but it carries no status and no explicit
+    # ``in_scope=False`` opt-out — it must fail closed, not bypass policy.
+    with pytest.raises(RFXCertificationGateError, match="rfx_missing_pol_evidence"):
+        assert_rfx_certification_ready(**_kwargs(pol={}))
+
+
+def test_pol_dict_without_status_or_opt_out_blocks_certification() -> None:
+    no_status = {"pol_id": "pol-rfx-001"}  # no status, no in_scope
+    with pytest.raises(RFXCertificationGateError, match="rfx_missing_pol_evidence"):
+        assert_rfx_certification_ready(**_kwargs(pol=no_status))
+
+
 # ---------------------------------------------------------------------------
 # SEL-to-CDE id consistency (LOOP-06 cross-check)
 # ---------------------------------------------------------------------------
@@ -189,6 +202,30 @@ def test_sel_link_alternate_key_matches_cde_id() -> None:
     sel_alt_key = {"sel_record_id": "sel-rfx-001", "cde_decision_id": "cde-rfx-001"}
     # Must not raise — alternate key, value matches cde.decision_id.
     assert_rfx_certification_ready(**_kwargs(sel=sel_alt_key))
+
+
+# ---------------------------------------------------------------------------
+# CDE decision_id required (LOOP-06)
+# ---------------------------------------------------------------------------
+
+def test_cde_without_decision_id_blocks_certification() -> None:
+    cde_no_id = {"status": "ready"}  # valid status but no id
+    with pytest.raises(RFXCertificationGateError, match="rfx_missing_cde_decision"):
+        assert_rfx_certification_ready(**_kwargs(cde=cde_no_id))
+
+
+def test_cde_with_blank_decision_id_blocks_certification() -> None:
+    cde_blank = {"status": "ready", "decision_id": "   "}
+    with pytest.raises(RFXCertificationGateError, match="rfx_missing_cde_decision"):
+        assert_rfx_certification_ready(**_kwargs(cde=cde_blank))
+
+
+def test_cde_without_id_blocks_even_when_sel_link_present() -> None:
+    """Untraceable CDE evidence must fail even if SEL provides a non-empty ref."""
+    cde_no_id = {"status": "ready"}
+    sel_with_ref = {"sel_record_id": "sel-rfx-001", "cde_decision_ref": "anything"}
+    with pytest.raises(RFXCertificationGateError, match="rfx_missing_cde_decision"):
+        assert_rfx_certification_ready(**_kwargs(cde=cde_no_id, sel=sel_with_ref))
 
 
 # ---------------------------------------------------------------------------

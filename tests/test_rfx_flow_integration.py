@@ -83,6 +83,14 @@ def test_full_valid_rfx_flow_passes(route_artifact: dict) -> None:
     assert_rfx_promotion_ready(**_full_kwargs(route_artifact))
 
 
+def test_flow_accepts_unified_status_key_for_evl_and_tpa(route_artifact: dict) -> None:
+    """Producers using the LOOP-06-unified ``status`` key must flow through LOOP-03."""
+    evl_unified = {"eval_id": "evl-flow-unified", "status": "pass"}
+    tpa_unified = {"tpa_decision_id": "tpa-flow-unified", "status": "accepted"}
+    # Must not raise
+    assert_rfx_promotion_ready(**_full_kwargs(route_artifact, evl=evl_unified, tpa=tpa_unified))
+
+
 def test_flow_blocks_when_aex_admission_absent(route_artifact: dict) -> None:
     with pytest.raises(RFXRouteGuardError, match="rfx_missing_aex_admission"):
         assert_rfx_promotion_ready(**_full_kwargs(route_artifact, build_admission_record=None))

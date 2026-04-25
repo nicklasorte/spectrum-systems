@@ -54,24 +54,6 @@ def _coerce_status(record: dict[str, Any], *keys: str) -> Any:
     return None
 
 
-def _policy_in_scope(pol: dict[str, Any] | None) -> bool:
-    """Determine whether POL evidence is required for this RFX run.
-
-    POL is considered in scope when either:
-      - the POL record is provided (callers indicate scope by supplying POL), or
-      - the POL record carries an explicit ``in_scope`` boolean set to True.
-    Callers may also signal "policy not in scope" by passing ``pol=None`` and
-    ``slo`` indicating no policy-affecting state — but the safest default is to
-    require POL whenever any POL record is supplied.
-    """
-    if not isinstance(pol, dict):
-        return False
-    explicit = pol.get("in_scope")
-    if isinstance(explicit, bool):
-        return explicit
-    return bool(pol)
-
-
 def assert_rfx_certification_ready(
     *,
     evl: dict[str, Any] | None,
@@ -123,6 +105,7 @@ def assert_rfx_certification_ready(
             )
 
     # --- CDE closure decision -------------------------------------------
+    cde_id: str | None = None
     if not _is_present(cde):
         reasons.append(
             "rfx_missing_cde_decision: CDE closure decision absent — GOV cannot certify"
@@ -134,6 +117,14 @@ def assert_rfx_certification_ready(
                 f"rfx_missing_cde_decision: CDE status={cde_status!r} "
                 f"not in {sorted(_CDE_VALID)!r}"
             )
+        raw_cde_id = _coerce_status(cde, "decision_id", "cde_decision_id", "id")
+        if not isinstance(raw_cde_id, str) or not raw_cde_id.strip():
+            reasons.append(
+                "rfx_missing_cde_decision: CDE record missing decision_id — "
+                "decision-to-enforcement chain is untraceable"
+            )
+        else:
+            cde_id = raw_cde_id.strip()
 
     # --- SEL linkage ----------------------------------------------------
     if not _is_present(sel):
@@ -146,13 +137,11 @@ def assert_rfx_certification_ready(
             reasons.append(
                 "rfx_missing_sel_link: SEL record does not reference a CDE decision"
             )
-        elif _is_present(cde):
-            cde_id = _coerce_status(cde, "decision_id", "cde_decision_id", "id")
-            if isinstance(cde_id, str) and cde_id.strip() and link.strip() != cde_id.strip():
-                reasons.append(
-                    f"rfx_missing_sel_link: SEL cde_decision_ref={link!r} "
-                    f"does not match cde.decision_id={cde_id!r}"
-                )
+        elif cde_id is not None and link.strip() != cde_id:
+            reasons.append(
+                f"rfx_missing_sel_link: SEL cde_decision_ref={link!r} "
+                f"does not match cde.decision_id={cde_id!r}"
+            )
 
     # --- LIN lineage ----------------------------------------------------
     if not _is_present(lin):
@@ -216,9 +205,9 @@ def assert_rfx_certification_ready(
             )
 
     # --- POL policy posture (when in scope) -----------------------------
-    # Policy is in scope by default. A caller may opt out only by passing a
-    # dict with ``in_scope=False``. Any other shape (including ``None`` or a
-    # non-dict object) fails closed.
+    # Policy is in scope by default. The only opt-out is a dict carrying an
+    # explicit ``in_scope=False``. Any other shape (None, non-dict, empty
+    # dict, dict without ``in_scope=False``) fails closed.
     if pol is None:
         reasons.append(
             "rfx_missing_pol_evidence: POL policy posture absent — "
@@ -228,7 +217,10 @@ def assert_rfx_certification_ready(
         reasons.append(
             f"rfx_missing_pol_evidence: POL evidence must be a mapping, got {type(pol).__name__}"
         )
-    elif _policy_in_scope(pol):
+    elif pol.get("in_scope") is False:
+        # Caller has explicitly indicated policy is out of scope for this run.
+        pass
+    else:
         pol_status = _coerce_status(pol, "status", "policy_posture", "rollout_state")
         if pol_status not in _POL_PASSING:
             reasons.append(

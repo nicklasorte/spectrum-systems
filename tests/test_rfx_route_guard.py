@@ -340,6 +340,35 @@ def test_valid_evl_and_tpa_passes() -> None:
     )
 
 
+def test_loop03_accepts_unified_status_key_for_evl() -> None:
+    """LOOP-03 must also accept ``status`` (the LOOP-06-unified key) for EVL."""
+    evl_status = {"eval_id": "evl-unified", "status": "pass"}
+    # Must not raise
+    assert_rfx_evl_tpa_evidence_present(
+        evl_evidence=evl_status,
+        tpa_evidence=_VALID_TPA,
+    )
+
+
+def test_loop03_accepts_unified_status_key_for_tpa() -> None:
+    """LOOP-03 must also accept ``status`` (the LOOP-06-unified key) for TPA."""
+    tpa_status = {"tpa_decision_id": "tpa-unified", "status": "accepted"}
+    # Must not raise
+    assert_rfx_evl_tpa_evidence_present(
+        evl_evidence=_VALID_EVL,
+        tpa_evidence=tpa_status,
+    )
+
+
+def test_loop03_failing_unified_status_for_evl_blocks() -> None:
+    failing = {"eval_id": "evl-x", "status": "fail"}
+    with pytest.raises(RFXRouteGuardError, match="rfx_evl_evidence_not_passing"):
+        assert_rfx_evl_tpa_evidence_present(
+            evl_evidence=failing,
+            tpa_evidence=_VALID_TPA,
+        )
+
+
 # ---------------------------------------------------------------------------
 # Roadmap hard gate: PRA and POL presence
 # ---------------------------------------------------------------------------
