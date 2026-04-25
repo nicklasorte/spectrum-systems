@@ -25,7 +25,7 @@ Rules:
 """
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 _PIPELINE_ROUTES: Dict[str, str] = {
     "transcript_artifact": "context_bundle",
@@ -183,9 +183,117 @@ def get_full_pipeline() -> List[str]:
     return list(_PIPELINE_ORDER)
 
 
+# Neutral gate status sets — TLC does not own control authority.
+# These values are produced by an upstream evaluator and consumed here
+# as evidence only. TLC verifies presence and consistency of the evidence;
+# it does not make the authority decision itself.
+_GATE_STATUS_ROUTABLE: frozenset = frozenset(["passed_gate"])
+_GATE_STATUS_NOT_ROUTABLE: frozenset = frozenset(["failed_gate", "missing_gate"])
+_GATE_STATUS_CONDITIONAL: frozenset = frozenset(["conditional_gate"])
+_KNOWN_GATE_STATUSES: frozenset = (
+    _GATE_STATUS_ROUTABLE | _GATE_STATUS_NOT_ROUTABLE | _GATE_STATUS_CONDITIONAL
+)
+
+
+def route_with_gate_evidence(
+    artifact: Dict[str, Any],
+    gate_evidence: Dict[str, Any],
+    conditional_route_allowed: bool = False,
+) -> str:
+    """Route an artifact only after gate evidence confirms passage.
+
+    TLC does not own control authority. This function verifies the presence
+    and consistency of a gate evidence artifact produced by an upstream
+    evaluator. Routing vocabulary is neutral: accepted_for_route /
+    rejected_for_route.
+
+    Args:
+        artifact: The artifact dict. Must contain 'artifact_type'.
+        gate_evidence: Evidence object produced by the evaluator. Must contain
+            'eval_summary_id' and 'gate_status'. If 'target_artifact_id' is
+            present, it must match artifact['artifact_id'].
+
+            gate_status values:
+              passed_gate       — gate_evidence_valid, artifact is accepted_for_route
+              failed_gate       — gate_evidence_valid, artifact is rejected_for_route
+              missing_gate      — gate_evidence_missing, artifact is rejected_for_route
+              conditional_gate  — accepted_for_route only if conditional_route_allowed=True
+
+        conditional_route_allowed: If True, conditional_gate evidence is
+            accepted. Defaults to False (conditional gate rejects routing).
+
+    Returns:
+        The next artifact type string (accepted_for_route path).
+
+    Raises:
+        ArtifactRoutingError with reason_codes:
+            MISSING_GATE_EVIDENCE                     — gate_evidence not a dict
+            MISSING_EVAL_SUMMARY_ID                   — eval_summary_id absent
+            MISSING_GATE_STATUS                       — gate_status absent
+            ARTIFACT_ID_MISMATCH                      — target_artifact_id mismatch
+            GATE_EVIDENCE_NOT_ROUTABLE                — gate status is not_routable
+            GATE_EVIDENCE_CONDITIONAL_ROUTING_NOT_ENABLED — conditional gate, not opted in
+            UNKNOWN_GATE_STATUS                       — unrecognised gate_status value
+    """
+    if not isinstance(gate_evidence, dict):
+        raise ArtifactRoutingError(
+            "gate_evidence must be a dict — routing without gate evidence is prohibited",
+            reason_codes=["MISSING_GATE_EVIDENCE"],
+        )
+
+    if "eval_summary_id" not in gate_evidence:
+        raise ArtifactRoutingError(
+            "gate_evidence missing required field: eval_summary_id",
+            reason_codes=["MISSING_EVAL_SUMMARY_ID"],
+        )
+
+    if "gate_status" not in gate_evidence:
+        raise ArtifactRoutingError(
+            "gate_evidence missing required field: gate_status",
+            reason_codes=["MISSING_GATE_STATUS"],
+        )
+
+    if "target_artifact_id" in gate_evidence:
+        target_id = gate_evidence["target_artifact_id"]
+        artifact_id = artifact.get("artifact_id") if isinstance(artifact, dict) else None
+        if target_id != artifact_id:
+            raise ArtifactRoutingError(
+                f"Gate evidence target_artifact_id={target_id!r} does not match "
+                f"artifact artifact_id={artifact_id!r}",
+                reason_codes=["ARTIFACT_ID_MISMATCH"],
+            )
+
+    gate_status = gate_evidence["gate_status"]
+
+    if gate_status in _GATE_STATUS_NOT_ROUTABLE:
+        raise ArtifactRoutingError(
+            f"Artifact is rejected_for_route: gate_evidence.gate_status={gate_status!r}",
+            reason_codes=["GATE_EVIDENCE_NOT_ROUTABLE"],
+        )
+
+    if gate_status in _GATE_STATUS_CONDITIONAL:
+        if not conditional_route_allowed:
+            raise ArtifactRoutingError(
+                "Artifact gate status is conditional_gate but conditional_route_allowed=False. "
+                "Pass conditional_route_allowed=True to accept conditional gate evidence.",
+                reason_codes=["GATE_EVIDENCE_CONDITIONAL_ROUTING_NOT_ENABLED"],
+            )
+
+    elif gate_status not in _GATE_STATUS_ROUTABLE:
+        raise ArtifactRoutingError(
+            f"Unknown gate_status: {gate_status!r}. "
+            "Expected: passed_gate, failed_gate, missing_gate, or conditional_gate",
+            reason_codes=["UNKNOWN_GATE_STATUS"],
+        )
+
+    artifact_type = artifact.get("artifact_type") if isinstance(artifact, dict) else None
+    return route_artifact(artifact_type)
+
+
 __all__ = [
     "ArtifactRoutingError",
     "route_artifact",
+    "route_with_gate_evidence",
     "is_terminal",
     "pipeline_position",
     "validate_transition",

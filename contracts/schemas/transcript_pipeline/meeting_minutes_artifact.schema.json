@@ -109,8 +109,17 @@
         "decision_id": {"type": "string"},
         "description": {"type": "string", "minLength": 1},
         "made_by": {"type": "string"},
-        "rationale": {"type": "string"}
-      }
+        "rationale": {"type": "string", "minLength": 1},
+        "source_reference": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Traceable origin: transcript segment ID, agenda item ID, or external reference."
+        }
+      },
+      "anyOf": [
+        {"required": ["source_reference"]},
+        {"required": ["rationale"]}
+      ]
     },
     "action_item": {
       "type": "object",

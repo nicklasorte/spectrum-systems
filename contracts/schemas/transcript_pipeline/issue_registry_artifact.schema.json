@@ -83,7 +83,7 @@
     "issue_record": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["issue_id", "title", "description", "severity"],
+      "required": ["issue_id", "title", "description", "severity", "source_segment_ids"],
       "properties": {
         "issue_id": {"type": "string", "pattern": "^ISS-[A-Z0-9_-]+$"},
         "title": {"type": "string", "minLength": 1},
@@ -95,7 +95,9 @@
         "category": {"type": "string"},
         "source_segment_ids": {
           "type": "array",
-          "items": {"type": "string"}
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1},
+          "description": "Required. At least one source segment ID must link this issue to its transcript origin."
         },
         "status": {
           "type": "string",

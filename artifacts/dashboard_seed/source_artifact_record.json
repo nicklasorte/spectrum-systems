@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "data_source": "artifact_store",
+  "artifact_type": "source_artifact_record",
+  "record_id": "SRC-DASH-SEED-001",
+  "owner_system": "AEX",
+  "case_id": "dashboard-seed-001",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/source_artifact_record.json"
+  ],
+  "reason_codes": [
+    "seed_request_admitted",
+    "minimal_governed_loop_seed"
+  ],
+  "status": "pass",
+  "warnings": [
+    "Seed artifact for minimal governed loop; not production intake coverage."
+  ],
+  "payload": {
+    "request_id": "seed-request-001",
+    "admission_status": "admitted",
+    "purpose": "prove dashboard can display one artifact-backed governed loop"
+  }
+}

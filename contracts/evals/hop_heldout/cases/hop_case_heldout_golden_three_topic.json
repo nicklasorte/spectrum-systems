@@ -1,0 +1,56 @@
+{
+  "artifact_id": "hop_eval_case_b002dab89198630e",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:b002dab89198630e89ce88b509ab8179e61fa24122d01b49bfb2e91e1ba3bd70",
+  "eval_case_id": "hop_case_heldout_golden_three_topic",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [],
+  "input": {
+    "transcript_id": "t_heldout_three",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "What does eval_factory ingest?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "It ingests failures and near misses."
+      },
+      {
+        "speaker": "user",
+        "text": "What does it emit?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "It emits new eval cases."
+      },
+      {
+        "speaker": "user",
+        "text": "How is the eval set versioned?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Each generation bumps the eval_set_version."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_questions_substrings": [
+        "ingest",
+        "emit",
+        "versioned"
+      ],
+      "max_qa_pairs": 3,
+      "min_qa_pairs": 3
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:golden_three_topic",
+    "related": []
+  }
+}

@@ -1,0 +1,140 @@
+# Authority Ownership Matrix (MAP)
+#
+# Canonical mapping of three-letter systems to the authority artifacts they own
+# and the linguistic verbs each system is allowed (or forbidden) to perform.
+#
+# This matrix is consumed by spectrum_systems.modules.runtime.authority_linter
+# to detect SHADOW_OWNERSHIP_OVERLAP and authority drift in human-readable
+# surfaces (markdown, docstrings, comments, schema descriptions).
+#
+# It complements — and never replaces — contracts/governance/authority_registry.json,
+# which scopes data-shape and forbidden-vocabulary checks at the artifact level.
+#
+# Canonical sentence:
+#   "TLC routes and records lineage; TPA adjudicates policy; CDE decides closure;
+#    GOV certifies evidence."
+#
+# Rules:
+#   * `owns`           — canonical artifact-level concerns the system controls.
+#   * `allowed_verbs`  — third-person-singular verbs the system MAY perform.
+#   * `forbidden_verbs`— verbs that signal shadow ownership when attributed to
+#                        the system. A forbidden verb attribution is a
+#                        SHADOW_OWNERSHIP_OVERLAP finding.
+#
+# Hard rule: every detected drift produces a finding with reason_code
+# `SHADOW_OWNERSHIP_OVERLAP`. The repair engine deterministically rewrites the
+# offending phrase to the canonical owner pattern.
+
+artifact_type: authority_ownership_matrix
+artifact_version: 1.0.0
+
+systems:
+  CDE:
+    owns:
+      - closure_decision
+      - readiness_decision
+    allowed_verbs:
+      - decides
+      - determines
+      - emits
+    forbidden_verbs: []
+
+  GOV:
+    owns:
+      - certification_packaging
+      - governance_gate_result
+    allowed_verbs:
+      - packages
+      - certifies
+      - gates
+    forbidden_verbs:
+      - decides
+      - approves
+      - determines
+
+  TPA:
+    owns:
+      - policy_adjudication
+    allowed_verbs:
+      - adjudicates
+      - evaluates
+    forbidden_verbs:
+      - executes
+      - promotes
+
+  TLC:
+    owns:
+      - routing
+      - orchestration
+      - lineage_annotation
+    allowed_verbs:
+      - routes
+      - annotates
+      - records
+    forbidden_verbs:
+      - decides
+      - adjudicates
+      - enforces
+
+  PRA:
+    owns:
+      - promotion_readiness_artifact
+    allowed_verbs:
+      - provides
+      - supplies
+    forbidden_verbs:
+      - decides
+      - approves
+
+  POL:
+    owns:
+      - policy_state
+    allowed_verbs:
+      - governs
+      - defines
+    forbidden_verbs:
+      - decides
+      - executes
+
+# Canonical owner of each forbidden verb — used by the repair engine to compose
+# a deterministic suggested_fix when a system is attributed a verb it does not
+# own. This map is descriptive: it does not redefine system authority, it only
+# names the system that already owns the verb per the matrix above.
+canonical_verb_owners:
+  decides: CDE
+  determines: CDE
+  approves: CDE
+  adjudicates: TPA
+  evaluates: TPA
+  enforces: SEL
+  executes: PQX
+  promotes: CDE
+  certifies: GOV
+  gates: GOV
+  packages: GOV
+  routes: TLC
+  annotates: TLC
+  records: TLC
+  governs: POL
+  defines: POL
+  provides: PRA
+  supplies: PRA
+
+# Linter scoping. Files matching `excluded_path_prefixes` are skipped; this
+# permits canonical owners and contract examples to use their own verbs without
+# triggering SHADOW_OWNERSHIP_OVERLAP. The list is conservative on purpose: the
+# linter is intended to fail closed on every other surface.
+scope:
+  default_scope_suffixes:
+    - .md
+    - .py
+    - .yaml
+    - .yml
+    - .json
+    - .txt
+  excluded_path_prefixes:
+    - contracts/authority/authority_ownership_matrix.yaml
+    - spectrum_systems/modules/runtime/authority_linter.py
+    - spectrum_systems/modules/runtime/authority_repair_engine.py
+    - scripts/run_authority_drift_guard.py
+    - tests/test_authority_drift_regression.py

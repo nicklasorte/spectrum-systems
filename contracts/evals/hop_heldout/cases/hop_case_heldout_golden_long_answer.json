@@ -1,0 +1,44 @@
+{
+  "artifact_id": "hop_eval_case_52fabeb65d5d5f1f",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:52fabeb65d5d5f1f460cebf6b320fdf4b50284cdb7f36f827b9586250bf6d87e",
+  "eval_case_id": "hop_case_heldout_golden_long_answer",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [],
+  "input": {
+    "transcript_id": "t_heldout_long",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Why hold cases out at all?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Held-out cases catch overfitting. A candidate that gamed the search set will surface a regression on disjoint inputs."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_answer_substrings_per_question": [
+        {
+          "answer_substring": "overfitting",
+          "question_substring": "hold cases out"
+        }
+      ],
+      "expected_questions_substrings": [
+        "hold cases out"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:golden_long_answer",
+    "related": []
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "fix_plan_id": "3LS-FIREWALL-FIX-PLAN",
+  "source_review_id": "RVA-3LS-FIREWALL-001",
+  "created_at": "2026-04-25T00:00:00+00:00",
+  "fixes": [
+    {
+      "fix_id": "FIX-001",
+      "finding_ids": ["F-003"],
+      "severity": "S3",
+      "description": "Record DASHBOARD in three_letter_system_boundary_guidance with empty support_path_prefixes and explicit scope_note documenting that dashboard files live outside the existing leak guard scope. Document the same constraint in the firewall architecture doc. Defer scope extension to a future batch with its own red-team review.",
+      "target_files": [
+        "contracts/governance/authority_registry.json",
+        "docs/architecture/3ls_authority_boundary_firewall.md"
+      ],
+      "regression_test": "tests/governance/test_3ls_authority_preflight.py::test_classify_three_letter_system_owner_match",
+      "status": "applied"
+    }
+  ],
+  "unresolved_S2_plus_findings": [],
+  "summary": {
+    "total_fixes": 1,
+    "applied_fixes": 1,
+    "pending_fixes": 0,
+    "highest_severity_addressed": "S3",
+    "highest_severity_unresolved": null
+  }
+}

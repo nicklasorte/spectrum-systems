@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "data_source": "artifact_store",
+  "artifact_type": "slo_status_record",
+  "record_id": "SLO-DASH-SEED-001",
+  "owner_system": "SLO",
+  "case_id": "dashboard-seed-001",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/observability_metrics_record.json",
+    "artifacts/dashboard_seed/replay_record.json"
+  ],
+  "reason_codes": [
+    "slo_partial_budget_context"
+  ],
+  "status": "warn",
+  "warnings": [
+    "SLO budget context incomplete for full certification posture."
+  ],
+  "payload": {
+    "budget_window": "seed_case",
+    "budget_status": "warning",
+    "consumed_ratio": 0.41
+  }
+}

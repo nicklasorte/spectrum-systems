@@ -35,7 +35,7 @@ from spectrum_systems.modules.hop.artifacts import (
     make_trace,
 )
 from spectrum_systems.modules.hop.experience_store import ExperienceStore, HopStoreError
-from spectrum_systems.modules.hop.sandbox import execute_candidate
+from spectrum_systems.modules.hop.sandbox import SandboxConfig, execute_candidate
 from spectrum_systems.modules.hop.schemas import (
     HopSchemaError,
     validate_hop_artifact,
@@ -213,9 +213,16 @@ def _execute_one_case(
 
         transform_started = _utcnow()
         try:
+            from pathlib import Path as _P
+            _repo_root = _P(__file__).resolve().parents[3]
             sandbox_result = execute_candidate(
                 candidate_payload=candidate_payload,
                 harness_input=case["input"],
+                config=SandboxConfig(
+                    denied_read_path_prefixes=(
+                        str(_repo_root / "contracts" / "evals"),
+                    ),
+                ),
             )
             if not sandbox_result.ok:
                 raise RuntimeError(f"{sandbox_result.violation_type}:{sandbox_result.detail}")

@@ -1,0 +1,64 @@
+{
+  "artifact_id": "RVA-H01B-SPINE-001",
+  "artifact_type": "review_artifact",
+  "schema_ref": "transcript_pipeline/review_artifact",
+  "schema_version": "1.0.0",
+  "content_hash": "sha256:e3090268886dcd3a19a4eb051f4ffec570c786d9e978c2393d85a52ef354b904",
+  "trace": {
+    "trace_id": "c2b8d4e6f70123456789abcdef012345",
+    "span_id": "b2c3d4e5f6071234"
+  },
+  "provenance": {
+    "produced_by": "adversarial-review-agent-ARA-01",
+    "input_artifact_ids": [],
+    "run_id": "run-BATCH-H01B-review"
+  },
+  "created_at": "2026-04-25T00:00:00+00:00",
+  "reviewed_artifact_id": "BATCH-H01B",
+  "reviewed_artifact_type": "implementation_batch",
+  "reviewer_id": "ARA-01",
+  "review_decision": "revise",
+  "summary": "Red-team review of H01B hardening batch. Five structural weaknesses identified in PRE-MVP spine. All fixed in this batch. No S2+ issues remain post-fix. System is ready for MVP-1 gate.",
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "severity": "S4",
+      "description": "S4 severity accepted as non-blocking in review_artifact schema. Severity ladder violation: S4 must be halt/blocking.",
+      "section_ref": "contracts/schemas/transcript_pipeline/review_artifact.schema.json",
+      "recommendation": "Add if/then constraint: S4 severity requires blocking=true.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-002",
+      "severity": "S4",
+      "description": "TLC route_artifact() can be called without any gate evidence. Routing bypass path exists — artifact can be advanced to next stage without an eval gate.",
+      "section_ref": "spectrum_systems/modules/orchestration/tlc_router.py",
+      "recommendation": "Add route_with_gate_evidence() that verifies gate evidence (passed_gate status) before routing. TLC does not own control authority — it validates presence and consistency of evaluator-produced gate evidence.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-003",
+      "severity": "S3",
+      "description": "compute_content_hash excludes only content_hash but not trace or created_at. Same artifact content with different trace or timestamp produces different hash — replay detection is unreliable.",
+      "section_ref": "spectrum_systems/modules/runtime/artifact_store.py",
+      "recommendation": "Create hash_utils.py with canonical exclusion policy: exclude content_hash, trace, created_at.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-004",
+      "severity": "S3",
+      "description": "issue_registry_artifact schema makes source_segment_ids optional. Issues can be created without any traceable origin in the transcript.",
+      "section_ref": "contracts/schemas/transcript_pipeline/issue_registry_artifact.schema.json",
+      "recommendation": "Make source_segment_ids required with minItems: 1.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-005",
+      "severity": "S2",
+      "description": "meeting_minutes_artifact decision records have no traceability requirement. Decisions can be asserted without source reference or rationale, allowing hallucinated decisions to pass schema validation.",
+      "section_ref": "contracts/schemas/transcript_pipeline/meeting_minutes_artifact.schema.json",
+      "recommendation": "Add anyOf constraint: decisions must have source_reference or rationale.",
+      "blocking": true
+    }
+  ]
+}

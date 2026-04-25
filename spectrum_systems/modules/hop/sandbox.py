@@ -23,6 +23,13 @@ class SandboxError(Exception):
 class SandboxConfig:
     timeout_seconds: float = 2.0
     memory_limit_mb: int = 256
+    denied_read_path_prefixes: tuple[str, ...] = ()
+    """Paths whose subtrees the candidate may not read.
+
+    Used to keep eval-data (search and held-out cases) out of the
+    candidate's reach so memorising them is not possible. Empty tuple
+    keeps the previous behavior.
+    """
 
 
 @dataclass(frozen=True)
@@ -66,11 +73,22 @@ def _ensure_within(path, root):
         raise SandboxViolation(f"sandbox_violation:file_write_outside_temp:{p}")
 
 
-def _install_guards(tmp_root: pathlib.Path):
+def _ensure_not_under_denied(path, denied_roots):
+    if not denied_roots:
+        return
+    p = _resolve(path)
+    for d in denied_roots:
+        if p == d or d in p.parents:
+            raise SandboxViolation(f"sandbox_violation:read_denied_eval_data:{p}")
+
+
+def _install_guards(tmp_root: pathlib.Path, denied_roots: list):
     original_open = builtins.open
     def guarded_open(file, mode="r", *args, **kwargs):
         if _is_write_mode(mode):
             _ensure_within(file, tmp_root)
+        else:
+            _ensure_not_under_denied(file, denied_roots)
         return original_open(file, mode, *args, **kwargs)
 
     builtins.open = guarded_open
@@ -80,6 +98,8 @@ def _install_guards(tmp_root: pathlib.Path):
         write_flags = os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_CREAT | os.O_TRUNC
         if flags & write_flags:
             _ensure_within(path, tmp_root)
+        else:
+            _ensure_not_under_denied(path, denied_roots)
         return os_open(path, flags, *args, **kwargs)
 
     os.open = guarded_os_open
@@ -88,6 +108,8 @@ def _install_guards(tmp_root: pathlib.Path):
     def guarded_path_open(self, mode="r", *args, **kwargs):
         if _is_write_mode(mode):
             _ensure_within(self, tmp_root)
+        else:
+            _ensure_not_under_denied(self, denied_roots)
         return path_open(self, mode, *args, **kwargs)
 
     pathlib.Path.open = guarded_path_open
@@ -144,7 +166,11 @@ def main():
     tmp_root.mkdir(parents=True, exist_ok=True)
 
     _apply_resource_limits(int(payload.get("memory_limit_mb", 256)))
-    _install_guards(tmp_root)
+    denied_roots = [
+        pathlib.Path(p).resolve()
+        for p in payload.get("denied_read_path_prefixes", []) or []
+    ]
+    _install_guards(tmp_root, denied_roots)
 
     try:
         repo_root = payload.get("repo_root")
@@ -184,6 +210,7 @@ def execute_candidate(
             "tmp_root": temp_dir,
             "memory_limit_mb": cfg.memory_limit_mb,
             "repo_root": str((__import__("pathlib").Path(__file__).resolve().parents[3])),
+            "denied_read_path_prefixes": list(cfg.denied_read_path_prefixes),
         }
         proc = subprocess.run(
             [sys.executable, "-I", "-c", _CHILD_CODE],

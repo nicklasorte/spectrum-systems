@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hop/harness_eval_factory_record.schema.json",
+  "title": "HOP Eval Factory Record",
+  "description": "Audit record describing how a versioned eval set was extended from observed failures and near misses. The eval factory NEVER mutates an existing eval case; it only proposes new cases keyed under a new eval_set_version.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "trace",
+    "content_hash",
+    "factory_run_id",
+    "source_eval_set_id",
+    "source_eval_set_version",
+    "next_eval_set_version",
+    "input_failure_artifact_ids",
+    "candidate_cases",
+    "advisory_only",
+    "generated_at"
+  ],
+  "properties": {
+    "artifact_id": {"type": "string", "pattern": "^hop_evalfactory_[a-z0-9_-]+$"},
+    "artifact_type": {"const": "hop_harness_eval_factory_record"},
+    "schema_ref": {"const": "hop/harness_eval_factory_record.schema.json"},
+    "schema_version": {"const": "1.0.0"},
+    "content_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "trace": {"$ref": "#/$defs/trace"},
+    "factory_run_id": {"type": "string", "pattern": "^[a-z0-9_-]+$"},
+    "source_eval_set_id": {"type": "string", "minLength": 1},
+    "source_eval_set_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "next_eval_set_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "input_failure_artifact_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "candidate_cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["eval_case_id", "category", "failure_modes_targeted", "source_failure_artifact_id"],
+        "properties": {
+          "eval_case_id": {"type": "string", "pattern": "^hop_case_[a-z0-9_-]+$"},
+          "category": {"type": "string", "enum": ["regression", "near_miss", "adversarial", "failure_derived"]},
+          "failure_modes_targeted": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "source_failure_artifact_id": {"type": ["string", "null"]},
+          "rationale": {"type": ["string", "null"], "maxLength": 1024}
+        }
+      }
+    },
+    "advisory_only": {"const": true},
+    "generated_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": {"type": "string", "minLength": 1},
+        "related": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}

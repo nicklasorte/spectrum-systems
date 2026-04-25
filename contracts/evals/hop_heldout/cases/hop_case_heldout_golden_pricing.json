@@ -1,0 +1,44 @@
+{
+  "artifact_id": "hop_eval_case_ff96032c460583be",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:ff96032c460583beb6e440fb82d759a95fef2a09364f9235ec4522dac1671fb9",
+  "eval_case_id": "hop_case_heldout_golden_pricing",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [],
+  "input": {
+    "transcript_id": "t_heldout_pricing",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "How much does the certification gate cost?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Certification is bundled with the eval."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_answer_substrings_per_question": [
+        {
+          "answer_substring": "bundled",
+          "question_substring": "certification gate"
+        }
+      ],
+      "expected_questions_substrings": [
+        "certification gate"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:golden_pricing",
+    "related": []
+  }
+}

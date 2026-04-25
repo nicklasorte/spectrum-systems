@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "data_source": "artifact_store",
+  "artifact_type": "lineage_record",
+  "record_id": "LIN-DASH-SEED-001",
+  "owner_system": "LIN",
+  "case_id": "dashboard-seed-001",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/source_artifact_record.json",
+    "artifacts/dashboard_seed/output_artifact_record.json",
+    "artifacts/dashboard_seed/eval_summary_record.json",
+    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_seed/enforcement_action_record.json"
+  ],
+  "reason_codes": [
+    "lineage_linked_minimal_chain"
+  ],
+  "status": "pass",
+  "warnings": [
+    "Lineage covers seeded chain only."
+  ],
+  "payload": {
+    "links": [
+      {
+        "from": "SRC-DASH-SEED-001",
+        "to": "OUT-DASH-SEED-001"
+      },
+      {
+        "from": "OUT-DASH-SEED-001",
+        "to": "EVL-DASH-SEED-001"
+      },
+      {
+        "from": "EVL-DASH-SEED-001",
+        "to": "TPA-DASH-SEED-001"
+      },
+      {
+        "from": "TPA-DASH-SEED-001",
+        "to": "CDE-DASH-SEED-001"
+      },
+      {
+        "from": "CDE-DASH-SEED-001",
+        "to": "SEL-DASH-SEED-001"
+      }
+    ]
+  }
+}

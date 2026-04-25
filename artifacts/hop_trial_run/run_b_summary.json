@@ -1,0 +1,34 @@
+{
+  "case_count": 27,
+  "iterations": 5,
+  "manifest": "/home/user/spectrum-systems/contracts/evals/hop/manifest.json",
+  "store_root": "/home/user/spectrum-systems/artifacts/hop_trial_run/run_b",
+  "trial_summary": {
+    "advisory_only": true,
+    "artifact_id": "hop_trial_1b095535172b1bf4",
+    "artifact_type": "hop_harness_trial_summary",
+    "baseline_candidate_id": "baseline_v1",
+    "baseline_score": 1.0,
+    "best_candidate_id": "baseline_v1",
+    "best_score": 1.0,
+    "content_hash": "sha256:1b095535172b1bf43b2fb93e5231dde0372ea00275692d48ad457ba7b8a2cd08",
+    "failure_modes": [],
+    "frontier_evolution": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "iterations": 5,
+    "schema_ref": "hop/harness_trial_summary.schema.json",
+    "schema_version": "1.0.0",
+    "summary_id": "trial_baseline_v1_5",
+    "trace": {
+      "primary": "hop_trial_runner",
+      "related": []
+    },
+    "workflow_id": "transcript_to_faq"
+  }
+}
