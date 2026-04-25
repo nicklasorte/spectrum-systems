@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { loadArtifact } from '@/lib/artifactLoader';
 import { deriveSystemSignals } from '@/lib/systemSignals';
+import { buildSourceEnvelope } from '@/lib/sourceClassification';
 import type { RepoSnapshot, SystemState } from '@/lib/types';
 
 const ARTIFACT_PATHS = {
@@ -12,15 +13,20 @@ export async function GET() {
   const repoSnapshot = loadArtifact<RepoSnapshot>(ARTIFACT_PATHS.repoSnapshot);
   const systemState = loadArtifact<SystemState>(ARTIFACT_PATHS.systemState);
 
-  const source_artifacts_used: string[] = [];
-  if (repoSnapshot) source_artifacts_used.push(ARTIFACT_PATHS.repoSnapshot);
-  if (systemState) source_artifacts_used.push(ARTIFACT_PATHS.systemState);
-
   const signals = deriveSystemSignals({ repoSnapshot, systemState });
 
-  const loadedCount = source_artifacts_used.length;
-  const data_source =
-    loadedCount === 2 ? 'artifact_store' : loadedCount === 1 ? 'derived' : 'stub_fallback';
+  // The systems endpoint exposes both raw counts (artifact_store) and a
+  // derived breakdown (schema/test/docs splits). Treat the response envelope
+  // as artifact_store when complete and derived_estimate when partial — the
+  // breakdown is meaningless without the system_state file.
+  const envelope = buildSourceEnvelope({
+    slots: [
+      { path: ARTIFACT_PATHS.repoSnapshot, loaded: repoSnapshot !== null },
+      { path: ARTIFACT_PATHS.systemState, loaded: systemState !== null },
+    ],
+    isComputed: true,
+    warnings: signals.warnings,
+  });
 
   const systems = systemState
     ? systemState.repo_reality.schema_backed_components.map((sc) => {
@@ -42,10 +48,7 @@ export async function GET() {
     : [];
 
   return NextResponse.json({
-    data_source,
-    generated_at: new Date().toISOString(),
-    source_artifacts_used,
-    warnings: signals.warnings,
+    ...envelope,
     systems,
     repo_stats: {
       total_files: signals.total_files,

@@ -151,16 +151,41 @@ export default function RGEPage() {
 
   const proposals = proposalResponse?.proposals ?? [];
   const analysisDataSource = analysis?.data_source ?? 'unknown';
-  const isFallback = analysisDataSource === 'stub_fallback';
+  const proposalsDataSource = proposalResponse?.data_source ?? 'unknown';
+  const isFallback =
+    analysisDataSource === 'stub_fallback' || analysisDataSource === 'unknown';
+  const isProvisional =
+    analysisDataSource === 'derived_estimate' || proposalsDataSource === 'derived_estimate';
+  const sourceTone =
+    analysisDataSource === 'artifact_store'
+      ? 'text-blue-700'
+      : analysisDataSource === 'derived'
+      ? 'text-purple-700'
+      : analysisDataSource === 'derived_estimate'
+      ? 'text-amber-700'
+      : analysisDataSource === 'stub_fallback'
+      ? 'text-orange-700'
+      : 'text-gray-500';
 
   return (
     <div className="min-h-screen bg-white p-8">
       <h1 className="text-3xl font-bold mb-2">RGE: Roadmap Generation Engine</h1>
+      <p className="text-sm text-gray-700 mb-1">
+        RGE proposes only. CDE decides. SEL enforces.
+      </p>
       <p className="text-sm text-gray-500 mb-6">
         Data source:{' '}
-        <span className={`font-mono ${isFallback ? 'text-red-600' : 'text-green-700'}`}>
+        <span className={`font-mono ${sourceTone}`} data-testid="analysis-source">
           {analysisDataSource}
         </span>
+        {isProvisional && (
+          <span
+            className="ml-2 inline-block border border-amber-300 bg-amber-50 text-amber-800 px-2 py-0.5 text-xs rounded font-mono uppercase tracking-wide"
+            data-testid="provisional-badge"
+          >
+            derived estimate
+          </span>
+        )}
       </p>
 
       {allWarnings.length > 0 && (

@@ -1,10 +1,43 @@
-export type DataSource = 'artifact_store' | 'repo_registry' | 'derived' | 'stub_fallback';
+// DSH-03: Truth-first classifier surface.
+// Every dashboard signal must declare exactly one of these provenance modes.
+// - artifact_store: schema-validated artifact under artifacts/**
+// - repo_registry:  canonical repo registry / source-of-truth files
+// - derived:        computed from one or more present artifacts (no inference gaps)
+// - derived_estimate: computed from partial artifacts (provisional truth mode)
+// - stub_fallback:  placeholder used when no artifact is available
+// - unknown:        provenance cannot be determined or is missing entirely
+export type DataSource =
+  | 'artifact_store'
+  | 'repo_registry'
+  | 'derived'
+  | 'derived_estimate'
+  | 'stub_fallback'
+  | 'unknown';
+
+export type SignalStatus = 'healthy' | 'warning' | 'critical' | 'unknown';
 
 export interface ArtifactEnvelope {
   data_source: DataSource;
   generated_at: string;
   source_artifacts_used: string[];
   warnings: string[];
+}
+
+// DSH-03: Shared signal contract. Every displayable dashboard signal must conform.
+// `confidence` is bounded [0,1]; values < 1 imply provisional/derived semantics.
+// `reason_codes` carry machine-readable cause tags so the UI can render
+// non-decorative explanations without parsing free-text warnings.
+export interface DashboardSignal<TValue = unknown> {
+  signal_id: string;
+  label: string;
+  value: TValue | 'unknown';
+  status: SignalStatus;
+  data_source: DataSource;
+  confidence: number;
+  source_artifacts_used: string[];
+  warnings: string[];
+  reason_codes: string[];
+  last_updated: string;
 }
 
 // MG-Kernel artifact types

@@ -207,4 +207,34 @@ describe('RGE Dashboard', () => {
       expect(screen.getByText(/error:/i)).toBeInTheDocument();
     });
   });
+
+  it('declares authority boundary statement (RGE proposes, CDE decides, SEL enforces)', async () => {
+    setupFetchMock();
+    render(<RGEPage />);
+    await waitFor(() => {
+      expect(
+        screen.getByText(/RGE proposes only\. CDE decides\. SEL enforces\./i)
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('renders provisional badge when analysis data_source is derived_estimate (DSH-05)', async () => {
+    setupFetchMock(mockRoadmap, {
+      ...mockAnalysis,
+      data_source: 'derived_estimate',
+      warnings: ['partial inputs'],
+    });
+    render(<RGEPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('provisional-badge')).toBeInTheDocument();
+    });
+  });
+
+  it('does not render provisional badge when fully artifact-backed', async () => {
+    setupFetchMock();
+    render(<RGEPage />);
+    await waitFor(() => {
+      expect(screen.queryByTestId('provisional-badge')).not.toBeInTheDocument();
+    });
+  });
 });

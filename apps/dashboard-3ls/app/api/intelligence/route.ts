@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { loadArtifact } from '@/lib/artifactLoader';
+import { buildSourceEnvelope } from '@/lib/sourceClassification';
 import type {
   CheckpointSummary,
   RepoSnapshot,
   SystemState,
   GapAnalysis,
   Provenance,
-  DataSource,
 } from '@/lib/types';
 
 const ARTIFACT_PATHS = {
@@ -24,33 +24,21 @@ export async function GET() {
   const gapAnalysis = loadArtifact<GapAnalysis>(ARTIFACT_PATHS.gapAnalysis);
   const provenance = loadArtifact<Provenance>(ARTIFACT_PATHS.provenance);
 
-  const loaded = [checkpointSummary, repoSnapshot, systemState, gapAnalysis, provenance];
-  const source_artifacts_used = Object.values(ARTIFACT_PATHS).filter(
-    (_, i) => loaded[i] !== null
-  );
-  const loadedCount = source_artifacts_used.length;
-
-  const warnings: string[] = [];
-  if (!checkpointSummary) warnings.push('mg_kernel checkpoint unavailable');
-  if (!repoSnapshot) warnings.push('repo_snapshot unavailable');
-  if (!systemState) warnings.push('system_state unavailable');
-  if (!gapAnalysis) warnings.push('gap_analysis unavailable');
-  if (!provenance) warnings.push('roadmap provenance unavailable');
-
-  let data_source: DataSource;
-  if (loadedCount === 0) {
-    data_source = 'stub_fallback';
-  } else if (loadedCount === loaded.length) {
-    data_source = 'artifact_store';
-  } else {
-    data_source = 'derived';
-  }
+  const envelope = buildSourceEnvelope({
+    slots: [
+      { path: ARTIFACT_PATHS.checkpointSummary, loaded: checkpointSummary !== null },
+      { path: ARTIFACT_PATHS.repoSnapshot, loaded: repoSnapshot !== null },
+      { path: ARTIFACT_PATHS.systemState, loaded: systemState !== null },
+      { path: ARTIFACT_PATHS.gapAnalysis, loaded: gapAnalysis !== null },
+      { path: ARTIFACT_PATHS.provenance, loaded: provenance !== null },
+    ],
+    // Intelligence summary is a digest aggregated from multiple artifacts;
+    // partial coverage degrades to derived_estimate.
+    isComputed: true,
+  });
 
   return NextResponse.json({
-    data_source,
-    generated_at: new Date().toISOString(),
-    source_artifacts_used,
-    warnings,
+    ...envelope,
     intelligence_summary: {
       mg_kernel: checkpointSummary
         ? {
