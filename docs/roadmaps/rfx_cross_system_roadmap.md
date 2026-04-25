@@ -44,7 +44,7 @@ This plan is a control-loop integration roadmap across existing systems and over
 | LOOP-03 | planned | EVL + TPA | Re-run loop validation with missing eval evidence and conflicting trust signals. | Prevents continuation when evidence is incomplete or policy posture is ambiguous. | LOOP-02 | Certification-first evidence posture | Eval and policy confidence | RT-02 injects missing eval coverage/conflicting trust signals; LOOP-04 is required fix and re-check. | Missing EVL or TPA evidence yields deterministic stop reasons. |
 | LOOP-04 | planned | CDE + SEL | Add explicit CDE-to-SEL decision-bridge checks for absent/invalid closure decisions. | Prevents implicit closeout movement. | LOOP-03 | Decision trace completeness | Decision-to-action consistency | Required fix step for RT-02 with deterministic test coverage. | Absent/invalid CDE decision triggers SEL stop record. |
 | LOOP-05 | planned | LIN + REP | Require lineage and replay integrity bundle before GOV certification review. | Blocks non-reproducible or provenance-broken fixes. | LOOP-04 | Provenance + replay requirements | Reproducibility confidence | RT-03 attempts certification without lineage/replay completeness; LOOP-06 must close gaps and re-check. | Missing lineage or replay evidence blocks certification candidate state. |
-| LOOP-06 | planned | GOV | Add certification hard gate requiring EVL+TPA+CDE+SEL+LIN+REP completeness. | Makes promotion path evidence-complete by default. | LOOP-05 | Promotion requires certification | Certification reliability | Required fix step for RT-03 with denial tests for each missing artifact class. | GOV returns promotion-ready only when required artifacts are present and valid. |
+| LOOP-06 | planned | GOV | Add certification hard gate requiring EVL+TPA+CDE+SEL+LIN+REP+OBS+SLO+PRA+POL completeness. | Makes promotion path evidence-complete by default; PRA is the explicit promotion-readiness authority and POL governs policy posture on the RFX path. | LOOP-05 | Promotion requires certification | Certification reliability | Required fix step for RT-03 with denial tests for each missing artifact class including PRA and POL. | GOV returns promotion-ready only when EVL, TPA, CDE, SEL, LIN, REP, OBS, SLO, PRA, and POL evidence are present and valid. |
 | LOOP-07 | planned | OBS + SLO | Add burst-failure profile where repeated failures plus burn-rate pressure trigger freeze path. | Prevents silent reliability decay. | LOOP-06 | Reliability-preserving loop behavior | Burn-rate visibility | RT-04 chaos run injects burst failures and telemetry gaps; LOOP-08 is required fix and re-check. | Burn-rate breach or telemetry incompleteness yields deterministic stop state. |
 | LOOP-08 | planned | OBS + SLO + SEL | Add hard requirement that missing OBS metrics/traces makes SLO result ineligible for pass-through. | Keeps observability mandatory in this loop. | LOOP-07 | Fail-closed telemetry dependency | Hidden-failure reduction | Mandatory fix step for RT-04 with regression tests for missing/invalid telemetry. | Missing or malformed OBS input leads to SLO non-pass and SEL stop record. |
 | LOOP-09 | planned | FRE + EVL + PQX | Add Fix Integrity Proof checks showing no weakening of schema, test, eval, replay, lineage, or certification guarantees. | Prevents regression-inducing fixes from moving forward. | LOOP-08 | No hidden behavior during fix stage | Repair safety assurance | RT-05 attempts schema weakening/test removal/eval bypass; LOOP-10 must close all vectors and re-check. | Every fix yields a proof artifact covering protected guarantees. |
@@ -86,7 +86,9 @@ Loop completion does not imply promotion. Promotion path requires:
 7. OBS telemetry completeness pass,
 8. SLO posture acceptable for progression,
 9. GOV certification artifact approving promotion readiness,
-10. Completed red-team → fix → re-validation triplets.
+10. PRA promotion-readiness checkpoint present and valid — PRA is the explicit promotion-readiness authority; GOV certification without a passing PRA record is a governance bypass,
+11. POL policy registry/rollout/canary posture present and valid when policy state affects the RFX path — absent or ambiguous POL evidence blocks promotion,
+12. Completed red-team → fix → re-validation triplets.
 
 Any missing element blocks progression deterministically.
 
@@ -96,6 +98,20 @@ Any missing element blocks progression deterministically.
 - No single integrated pre-promotion completeness gate across all required systems.
 - No standardized Fix Integrity Proof artifact covering schema/test/eval/control/replay/lineage/certification safeguards.
 - No deterministic trend-to-roadmap artifact path for recurring failure signatures.
+- GOV hard gate previously omitted PRA and POL: the canonical registry defines GOV upstream dependencies as CDE, PRA, POL, and LIN; PRA is the explicit promotion-readiness authority. Without PRA and POL evidence, RFX could be treated as promotion-ready without required authority sign-off — a governance bypass. Patched in LOOP-06 update.
+
+## Red-Team Bypass Analysis
+
+The following bypass vectors were red-teamed against the RFX path. Each has an explicit expected fail-closed result. No bypass is permitted to pass silently.
+
+| Bypass Attempt | Description | Expected Fail-Closed Result |
+| --- | --- | --- |
+| GOV without PRA | GOV certification attempted without a passing PRA promotion-readiness record present | `rfx_missing_pra_evidence`: progression blocked; GOV certification withheld; reason code emitted |
+| GOV without POL | GOV certification attempted without POL policy-registry/rollout/canary posture when policy state affects the RFX path | `rfx_missing_pol_evidence`: progression blocked; GOV certification withheld; reason code emitted |
+| Direct PQX without AEX/TLC | PQX invoked for repo-mutating RFX work without a valid AEX admission record and TLC-mediated route lineage | `rfx_pqx_direct_invocation_blocked`: PQX execution rejected; deterministic stop reason emitted |
+| CDE/SEL without EVL/TPA | CDE or SEL progression attempted with missing EVL evaluation evidence or missing/blocked TPA adjudication output | `rfx_missing_evl_evidence` or `rfx_missing_tpa_evidence`: CDE/SEL gate blocked; machine-readable reason codes emitted |
+
+All four bypass vectors are covered by deterministic guard logic in `spectrum_systems/modules/runtime/rfx_route_guard.py` and verified by tests in `tests/test_rfx_route_guard.py`.
 
 ## Recommended Next Build Prompt
 

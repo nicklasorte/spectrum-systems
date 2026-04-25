@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/rfx_tlc_route_artifact.schema.json",
+  "title": "RFX TLC Route Artifact",
+  "description": "Phase-label annotation produced by TLC for RFX-routed work. RFX is a cross-system phase label (Review->Fix->eXecute), not a new system. This artifact records the explicit phase_label and AEX admission linkage required before any stage of the RFX path may progress.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "artifact_id",
+    "run_id",
+    "trace_id",
+    "phase_label",
+    "aex_admission_ref",
+    "intended_path",
+    "overlays",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "rfx_tlc_route_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "artifact_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "phase_label": {
+      "const": "RFX"
+    },
+    "aex_admission_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "intended_path": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string",
+        "enum": ["AEX", "RIL", "FRE", "PQX", "EVL", "TPA", "CDE", "SEL", "GOV", "REP", "LIN", "OBS", "SLO", "PRA", "POL"]
+      }
+    },
+    "overlays": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": ["REP", "LIN", "OBS", "SLO"]
+      },
+      "uniqueItems": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
