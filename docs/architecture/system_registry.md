@@ -478,6 +478,36 @@ These are important but non-top-level authority families:
   - own_control_authority
   - own_enforcement_authority
 
+### RFX
+- **full_label:** Review → Fix → eXecute (cross-system phase label)
+- **classification:** recurring phase label (not a canonical system owner)
+- **status:** non_owner_phase_label
+- **role:** routed phase label across `RIL → FRE → PQX → EVL → TPA → CDE → SEL → GOV` with overlays `REP + LIN + OBS + SLO`. RFX is not an executable authority and does not own decisions, orchestration, execution, enforcement, or certification.
+- **owns:**
+  - rfx_phase_label
+- **consumes:**
+  - rfx_route_inputs
+  - aex_admission_records
+  - tlc_route_artifacts
+- **produces:**
+  - rfx_route_guard_decisions
+  - rfx_decision_bridge_guard_decisions
+  - rfx_integrity_bundle_decisions
+  - rfx_certification_gate_decisions
+- **runtime_modules:**
+  - `spectrum_systems/modules/runtime/rfx_route_guard.py`
+  - `spectrum_systems/modules/runtime/rfx_decision_bridge_guard.py`
+  - `spectrum_systems/modules/runtime/rfx_integrity_bundle.py`
+  - `spectrum_systems/modules/runtime/rfx_certification_gate.py`
+  - `spectrum_systems/modules/runtime/rfx_flow_integration.py`
+- **must_not_do:**
+  - own_decision_authority (CDE remains sole closure authority)
+  - own_orchestration_authority (TLC remains sole orchestration authority)
+  - own_execution_authority (PQX remains sole execution authority)
+  - own_enforcement_authority (SEL remains sole enforcement authority)
+  - own_certification_authority (GOV remains sole certification packaging authority)
+  - own_policy_authority (TPA + POL remain trust/policy authorities)
+
 ## System Definitions
 
 ### AEX
