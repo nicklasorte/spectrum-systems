@@ -25,6 +25,23 @@ const ARTIFACT_PATHS = {
   slo: 'artifacts/dashboard_seed/slo_status_record.json',
   failureModes: 'artifacts/dashboard_seed/failure_mode_dashboard_record.json',
   nearMisses: 'artifacts/dashboard_seed/near_miss_record.json',
+  bottleneckRecord: 'artifacts/dashboard_metrics/bottleneck_record.json',
+  leverageQueueRecord: 'artifacts/dashboard_metrics/leverage_queue_record.json',
+  riskSummaryRecord: 'artifacts/dashboard_metrics/risk_summary_record.json',
+};
+
+type LeverageItem = {
+  id?: string;
+  title: string;
+  failure_prevented: string;
+  signal_improved: string;
+  systems_affected: string[];
+  severity: string;
+  frequency?: string;
+  estimated_effort: string;
+  leverage_score: number;
+  data_source: string;
+  confidence: string;
 };
 
 export async function GET() {
@@ -52,6 +69,39 @@ export async function GET() {
   const failureModes = loadArtifact<{ failure_modes?: unknown[] }>(ARTIFACT_PATHS.failureModes);
   const nearMisses = loadArtifact<{ near_misses?: unknown[] }>(ARTIFACT_PATHS.nearMisses);
 
+  const bottleneckRecord = loadArtifact<{
+    dominant_bottleneck_system?: string;
+    constrained_loop_leg?: string;
+    bottleneck_reason?: string;
+    bottleneck_confidence?: string;
+    evidence?: string[];
+    warning_count_by_system?: Record<string, number>;
+    warnings?: string[];
+  }>(ARTIFACT_PATHS.bottleneckRecord);
+
+  const leverageQueueRecord = loadArtifact<{
+    items?: LeverageItem[];
+    warnings?: string[];
+  }>(ARTIFACT_PATHS.leverageQueueRecord);
+
+  const riskSummaryRecord = loadArtifact<{
+    fallback_signal_count?: number;
+    unknown_signal_count?: number;
+    missing_eval_count?: number;
+    missing_trace_count?: number;
+    override_count?: number | string;
+    proof_chain_coverage?: {
+      total: number;
+      present: number;
+      partial: number;
+      missing: number;
+      percent_present_or_partial: number;
+      percent_fully_present: number;
+    };
+    top_risks?: string[];
+    warnings?: string[];
+  }>(ARTIFACT_PATHS.riskSummaryRecord);
+
   const allSlots = [
     { path: ARTIFACT_PATHS.checkpointSummary, loaded: checkpointSummary !== null },
     { path: ARTIFACT_PATHS.repoSnapshot, loaded: repoSnapshot !== null },
@@ -68,6 +118,9 @@ export async function GET() {
     { path: ARTIFACT_PATHS.slo, loaded: slo !== null },
     { path: ARTIFACT_PATHS.failureModes, loaded: failureModes !== null },
     { path: ARTIFACT_PATHS.nearMisses, loaded: nearMisses !== null },
+    { path: ARTIFACT_PATHS.bottleneckRecord, loaded: bottleneckRecord !== null },
+    { path: ARTIFACT_PATHS.leverageQueueRecord, loaded: leverageQueueRecord !== null },
+    { path: ARTIFACT_PATHS.riskSummaryRecord, loaded: riskSummaryRecord !== null },
   ];
 
   const envelope = buildSourceEnvelope({
@@ -76,6 +129,9 @@ export async function GET() {
     warnings: [
       ...(minimalLoop?.warnings ?? []),
       ...(evalSummary?.warnings ?? []),
+      ...(bottleneckRecord?.warnings ?? []),
+      ...(leverageQueueRecord?.warnings ?? []),
+      ...(riskSummaryRecord?.warnings ?? []),
       'Dashboard seed artifacts are minimal and partial; unknown coverage remains visible by design.',
     ],
   });
@@ -87,6 +143,66 @@ export async function GET() {
   const artifactBackedSignalCount = allSlots.filter((s) => s.loaded && s.path.includes('dashboard_seed')).length;
   const fallbackSignalCount = allSlots.filter((s) => !s.loaded).length;
   const unknownSignalCount = Math.max(0, proofTotal - proofPresent - proofPartial);
+
+  const bottleneck = bottleneckRecord
+    ? {
+        system: bottleneckRecord.dominant_bottleneck_system ?? 'unknown',
+        loop_leg: bottleneckRecord.constrained_loop_leg ?? 'unknown',
+        reason: bottleneckRecord.bottleneck_reason ?? 'unknown',
+        confidence: bottleneckRecord.bottleneck_confidence ?? 'derived_estimate',
+        evidence: bottleneckRecord.evidence ?? [],
+        warning_count_by_system: bottleneckRecord.warning_count_by_system ?? {},
+        data_source: 'artifact_store' as const,
+        source_artifacts_used: [ARTIFACT_PATHS.bottleneckRecord],
+        warnings: bottleneckRecord.warnings ?? [],
+      }
+    : {
+        system: 'unknown',
+        loop_leg: 'unknown',
+        reason: 'bottleneck_record artifact not loaded',
+        confidence: 'unknown',
+        evidence: [],
+        warning_count_by_system: {},
+        data_source: 'unknown' as const,
+        source_artifacts_used: [] as string[],
+        warnings: ['bottleneck_record not found; bottleneck state unknown'],
+      };
+
+  const leverageQueue = {
+    items: leverageQueueRecord?.items ?? [],
+    data_source: leverageQueueRecord ? ('artifact_store' as const) : ('unknown' as const),
+    source_artifacts_used: leverageQueueRecord ? [ARTIFACT_PATHS.leverageQueueRecord] : ([] as string[]),
+    warnings: [
+      ...(leverageQueueRecord?.warnings ?? []),
+      ...(leverageQueueRecord ? [] : ['leverage_queue_record not found; leverage queue empty']),
+    ],
+  };
+
+  const riskSummary = riskSummaryRecord
+    ? {
+        fallback_signal_count: riskSummaryRecord.fallback_signal_count ?? 'unknown',
+        unknown_signal_count: riskSummaryRecord.unknown_signal_count ?? 'unknown',
+        missing_eval_count: riskSummaryRecord.missing_eval_count ?? 'unknown',
+        missing_trace_count: riskSummaryRecord.missing_trace_count ?? 'unknown',
+        override_count: riskSummaryRecord.override_count ?? 'unknown',
+        proof_chain_coverage: riskSummaryRecord.proof_chain_coverage ?? null,
+        top_risks: riskSummaryRecord.top_risks ?? [],
+        data_source: 'artifact_store' as const,
+        source_artifacts_used: [ARTIFACT_PATHS.riskSummaryRecord],
+        warnings: riskSummaryRecord.warnings ?? [],
+      }
+    : {
+        fallback_signal_count: 'unknown',
+        unknown_signal_count: 'unknown',
+        missing_eval_count: 'unknown',
+        missing_trace_count: 'unknown',
+        override_count: 'unknown',
+        proof_chain_coverage: null,
+        top_risks: [] as string[],
+        data_source: 'unknown' as const,
+        source_artifacts_used: [] as string[],
+        warnings: ['risk_summary_record not found; risk summary unavailable'],
+      };
 
   return NextResponse.json({
     ...envelope,
@@ -105,6 +221,10 @@ export async function GET() {
     near_misses: nearMisses?.near_misses ?? [],
     minimal_loop_status: minimalLoop?.minimal_loop_status ?? 'unknown',
     source_artifacts_used: Array.from(new Set([...(envelope.source_artifacts_used ?? []), ...(minimalLoop?.source_artifacts_used ?? [])])),
+    bottleneck,
+    bottleneck_confidence: bottleneck.confidence,
+    leverage_queue: leverageQueue,
+    risk_summary: riskSummary,
     intelligence_summary: {
       mg_kernel: checkpointSummary
         ? {

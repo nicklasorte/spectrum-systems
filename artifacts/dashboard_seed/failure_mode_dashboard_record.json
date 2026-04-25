@@ -22,6 +22,9 @@
       "id": "FM-SEED-EVAL-GAP",
       "title": "Eval coverage gap can mask regressions",
       "severity": "high",
+      "frequency": "unknown",
+      "systems_affected": ["EVL", "TPA", "CDE"],
+      "trend": "unknown",
       "evidence": [
         "eval_partial_coverage"
       ]
@@ -30,6 +33,9 @@
       "id": "FM-SEED-REPLAY-GAP",
       "title": "Replay coverage incomplete for long horizon drift",
       "severity": "medium",
+      "frequency": "unknown",
+      "systems_affected": ["REP", "EVL"],
+      "trend": "unknown",
       "evidence": [
         "replay_partial_coverage"
       ]

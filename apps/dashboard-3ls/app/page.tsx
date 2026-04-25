@@ -52,6 +52,48 @@ interface IntelligencePayload {
       domain_state?: Record<string, string>;
     };
   };
+  bottleneck?: {
+    system?: string;
+    loop_leg?: string;
+    reason?: string;
+    confidence?: string;
+    data_source?: string;
+    warnings?: string[];
+  };
+  leverage_queue?: {
+    items?: Array<{
+      id?: string;
+      title: string;
+      failure_prevented: string;
+      signal_improved: string;
+      systems_affected: string[];
+      severity: string;
+      estimated_effort: string;
+      leverage_score: number;
+      data_source: string;
+      confidence: string;
+    }>;
+    data_source?: string;
+    warnings?: string[];
+  };
+  risk_summary?: {
+    fallback_signal_count?: number | string;
+    unknown_signal_count?: number | string;
+    missing_eval_count?: number | string;
+    missing_trace_count?: number | string;
+    override_count?: number | string;
+    proof_chain_coverage?: {
+      total?: number;
+      present?: number;
+      partial?: number;
+      missing?: number;
+      percent_present_or_partial?: number;
+      percent_fully_present?: number;
+    };
+    top_risks?: string[];
+    data_source?: string;
+    warnings?: string[];
+  };
 }
 
 interface SystemsPayload {
@@ -239,11 +281,16 @@ export default function Dashboard() {
 
     const missingLoopSystems = loopRows.filter((row) => row.status === 'unknown').map((row) => row.system_id);
 
-    const bottleneckFromArtifact = intelligence?.intelligence_summary?.roadmap?.dominant_bottleneck;
+    const bottleneckFromAPI = intelligence?.bottleneck?.system;
+    const bottleneckFromArtifact = bottleneckFromAPI ?? intelligence?.intelligence_summary?.roadmap?.dominant_bottleneck;
     const bottleneckFallback = loopRows
       .filter((row) => LOOP_SEQUENCE.includes(row.system_id))
       .sort((a, b) => b.warning_count - a.warning_count)[0]?.system_id;
     const bottleneck = bottleneckFromArtifact ?? bottleneckFallback ?? 'unknown';
+    const bottleneckReason =
+      intelligence?.bottleneck?.reason ??
+      intelligence?.intelligence_summary?.roadmap?.bottleneck_statement ??
+      null;
     const bottleneckConfidence = bottleneckFromArtifact
       ? (intelligence?.data_source ?? 'unknown')
       : ('derived_estimate' as DataSource);
@@ -321,6 +368,12 @@ export default function Dashboard() {
         .filter((s) => s.status !== 'ok')
         .map((s) => `${s.title}: ${s.detail}`)),
     ].slice(0, 5);
+
+    const apiRiskSummary = intelligence?.risk_summary ?? null;
+    const displayTopRisks = [
+      ...(apiRiskSummary?.top_risks ?? []),
+      ...topFailureModes,
+    ].filter((v, i, a) => a.indexOf(v) === i).slice(0, 5);
 
     const noHealthySource = systems.some(
       (s) => s.status === 'healthy' && !dataSourceAllowsHealthy((s.data_source ?? 'unknown') as DataSource)
@@ -407,7 +460,7 @@ export default function Dashboard() {
       });
     }
 
-    const leverageQueue = recs
+    const localLeverageQueue = recs
       .filter((r) => r.source !== 'fallback' || r.confidence !== 'fallback')
       .map((item) => {
         const base =
@@ -426,6 +479,24 @@ export default function Dashboard() {
       .sort((a, b) => b.leverage_score - a.leverage_score)
       .slice(0, 5);
 
+    const apiLeverageItems = (intelligence?.leverage_queue?.items ?? [])
+      .filter((item) => item.failure_prevented && item.signal_improved)
+      .map((item) => ({
+        title: item.title,
+        failure_prevented: item.failure_prevented,
+        signal_improved: item.signal_improved,
+        systems_affected: item.systems_affected,
+        severity: (item.severity as 'high' | 'medium' | 'low') ?? 'medium',
+        effort: (item.estimated_effort as 'high' | 'medium' | 'low' | 'unknown') ?? 'unknown',
+        source: (item.data_source === 'artifact_store' ? 'artifact' : 'derived') as 'artifact' | 'derived' | 'fallback',
+        confidence: (item.confidence as 'artifact-backed' | 'derived' | 'fallback') ?? 'derived',
+        leverage_score: item.leverage_score,
+      }));
+
+    const leverageQueue = apiLeverageItems.length > 0
+      ? apiLeverageItems.sort((a, b) => b.leverage_score - a.leverage_score).slice(0, 5)
+      : localLeverageQueue;
+
     return {
       systems,
       sourceMix,
@@ -434,6 +505,7 @@ export default function Dashboard() {
       trustReasons: trustReasons.slice(0, 3),
       loopRows,
       bottleneck,
+      bottleneckReason,
       bottleneckConfidence,
       proofStages,
       proofCoverage,
@@ -443,6 +515,8 @@ export default function Dashboard() {
       missingTraceCount,
       overrideCount,
       topFailureModes,
+      displayTopRisks,
+      apiRiskSummary,
       leverageQueue,
       warnings,
     };
@@ -507,27 +581,40 @@ export default function Dashboard() {
       <section className="bg-white border rounded p-4" data-testid="loop-bottleneck-panel">
         <h2 className="font-semibold mb-3">GOVERNED LOOP + BOTTLENECK</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {computed.loopRows.map((row) => (
-            <div key={row.system_id} className="border rounded p-3" data-testid={`loop-node-${row.system_id}`}>
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="font-mono font-semibold">{row.system_id}</div>
-                  <div className="text-xs text-gray-600" data-testid={`authority-${row.system_id}`}>
-                    {row.authority_role}
+          {computed.loopRows.map((row) => {
+            const isBottleneck = row.system_id === computed.bottleneck;
+            return (
+              <div
+                key={row.system_id}
+                className={`border rounded p-3 ${isBottleneck ? 'border-amber-400 bg-amber-50' : ''}`}
+                data-testid={`loop-node-${row.system_id}`}
+                data-bottleneck={isBottleneck ? 'true' : undefined}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-mono font-semibold">{row.system_id}</div>
+                    {isBottleneck && (
+                      <span className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
+                        bottleneck
+                      </span>
+                    )}
+                    <div className="text-xs text-gray-600" data-testid={`authority-${row.system_id}`}>
+                      {row.authority_role}
+                    </div>
                   </div>
+                  <span className={`text-sm font-semibold ${statusTone(row.status)}`}>{row.status}</span>
                 </div>
-                <span className={`text-sm font-semibold ${statusTone(row.status)}`}>{row.status}</span>
+                <div className="mt-2 flex items-center gap-2">
+                  <SourceBadge ds={row.data_source} />
+                  <ProvisionalBadge ds={row.data_source} />
+                  {row.data_source === 'unknown' && (
+                    <span className="text-xs border border-gray-300 rounded px-2 py-0.5">unknown</span>
+                  )}
+                </div>
+                <div className="mt-2 text-xs text-gray-600">warning_count: {row.warning_count}</div>
               </div>
-              <div className="mt-2 flex items-center gap-2">
-                <SourceBadge ds={row.data_source} />
-                <ProvisionalBadge ds={row.data_source} />
-                {row.data_source === 'unknown' && (
-                  <span className="text-xs border border-gray-300 rounded px-2 py-0.5">unknown</span>
-                )}
-              </div>
-              <div className="mt-2 text-xs text-gray-600">warning_count: {row.warning_count}</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <div className="mt-3 text-sm">
           Current bottleneck: <span className="font-mono">{computed.bottleneck}</span>
@@ -535,6 +622,11 @@ export default function Dashboard() {
             <SourceBadge ds={computed.bottleneckConfidence} />
           </span>
         </div>
+        {computed.bottleneckReason && (
+          <p className="mt-1 text-xs text-amber-800" data-testid="bottleneck-reason">
+            reason: {computed.bottleneckReason}
+          </p>
+        )}
       </section>
 
       <section className="bg-white border rounded p-4" data-testid="proof-chain-panel">
@@ -561,20 +653,41 @@ export default function Dashboard() {
       <section className="bg-white border rounded p-4" data-testid="fragility-risk-panel">
         <h2 className="font-semibold mb-3">FRAGILITY + RISK SNAPSHOT</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-          <div className="border rounded p-2">fallback count: {computed.fallbackCount}</div>
-          <div className="border rounded p-2">unknown count: {computed.unknownCount}</div>
-          <div className="border rounded p-2">missing eval count: {computed.missingEvalCount}</div>
-          <div className="border rounded p-2">missing trace count: {computed.missingTraceCount}</div>
-          <div className="border rounded p-2">override count: {String(computed.overrideCount)}</div>
+          <div className="border rounded p-2">
+            fallback count: {String(computed.apiRiskSummary?.fallback_signal_count ?? computed.fallbackCount)}
+          </div>
+          <div className="border rounded p-2">
+            unknown count: {String(computed.apiRiskSummary?.unknown_signal_count ?? computed.unknownCount)}
+          </div>
+          <div className="border rounded p-2">
+            missing eval count: {String(computed.apiRiskSummary?.missing_eval_count ?? computed.missingEvalCount)}
+          </div>
+          <div className="border rounded p-2">
+            missing trace count: {String(computed.apiRiskSummary?.missing_trace_count ?? computed.missingTraceCount)}
+          </div>
+          <div className="border rounded p-2">
+            override count: {String(computed.apiRiskSummary?.override_count ?? computed.overrideCount)}
+          </div>
+          <div className="border rounded p-2">
+            {computed.apiRiskSummary?.proof_chain_coverage
+              ? `proof coverage: ${computed.apiRiskSummary.proof_chain_coverage.percent_present_or_partial ?? '?'}% (${computed.apiRiskSummary.proof_chain_coverage.percent_fully_present ?? '?'}% fully present)`
+              : `proof coverage: ${computed.proofCoverage}%`}
+          </div>
           <div className="border rounded p-2">trend: unknown (no historical artifacts)</div>
         </div>
+        {computed.apiRiskSummary?.data_source && (
+          <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+            <span>risk_summary source:</span>
+            <SourceBadge ds={(computed.apiRiskSummary.data_source as DataSource) ?? 'unknown'} />
+          </div>
+        )}
         <div className="mt-3">
           <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Top failure modes</p>
-          {computed.topFailureModes.length === 0 ? (
+          {computed.displayTopRisks.length === 0 ? (
             <div className="text-sm text-gray-500">unknown</div>
           ) : (
             <ul className="list-disc list-inside text-sm text-red-700 space-y-1">
-              {computed.topFailureModes.map((risk, idx) => (
+              {computed.displayTopRisks.map((risk, idx) => (
                 <li key={`${risk}-${idx}`}>{risk}</li>
               ))}
             </ul>

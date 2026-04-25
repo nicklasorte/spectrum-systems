@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "artifact_type": "risk_summary_record",
+  "record_id": "RSK-DASH-MET-001",
+  "owner_system": "CDE",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/minimal_loop_snapshot.json",
+    "artifacts/dashboard_seed/eval_summary_record.json",
+    "artifacts/dashboard_seed/lineage_record.json",
+    "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
+    "artifacts/dashboard_seed/near_miss_record.json",
+    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_seed/slo_status_record.json",
+    "artifacts/dashboard_metrics/bottleneck_record.json"
+  ],
+  "reason_codes": [
+    "risk_summary_derived_from_seed_artifacts",
+    "proof_chain_coverage_computed"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Risk counts reflect minimal seed case only; no historical baseline available.",
+    "override_count cannot be determined from current artifact surface.",
+    "trend is unknown until multiple execution cycles are recorded."
+  ],
+  "fallback_signal_count": 0,
+  "unknown_signal_count": 0,
+  "missing_eval_count": 2,
+  "missing_trace_count": 0,
+  "override_count": "unknown",
+  "proof_chain_coverage": {
+    "total": 10,
+    "present": 4,
+    "partial": 6,
+    "missing": 0,
+    "percent_present_or_partial": 100,
+    "percent_fully_present": 40
+  },
+  "top_risks": [
+    "Eval coverage gap can mask regressions — EVL partial, missing: long_horizon_replay, full_certification_set",
+    "Replay coverage incomplete for long-horizon drift — REP partial",
+    "Promotion gate blocked by observe_only control decision — CDE+TPA partial",
+    "Full done_certification_record not yet wired — certification stage unknown",
+    "SLO budget warning: consumed_ratio 0.41 — budget_status warning"
+  ]
+}

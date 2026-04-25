@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "artifact_type": "leverage_queue_record",
+  "record_id": "LVQ-DASH-MET-001",
+  "owner_system": "CDE",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/bottleneck_record.json",
+    "artifacts/dashboard_seed/eval_summary_record.json",
+    "artifacts/dashboard_seed/trust_policy_decision_record.json",
+    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_seed/replay_record.json",
+    "artifacts/dashboard_seed/slo_status_record.json",
+    "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
+    "artifacts/dashboard_seed/near_miss_record.json"
+  ],
+  "reason_codes": [
+    "leverage_scored_from_artifact_evidence",
+    "bottleneck_record_present"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Leverage scores computed from minimal seed evidence; frequency data unavailable.",
+    "Effort estimates are approximations without historical execution data."
+  ],
+  "formula": "leverage_score = (severity_weight * systems_impacted) / effort_weight; boosted 1.4x if blocks promotion or affects EVL/CDE/TPA",
+  "items": [
+    {
+      "id": "LVG-001",
+      "title": "Expand eval coverage to full certification set",
+      "failure_prevented": "Promotion without full eval evidence — regressions masked by partial coverage",
+      "signal_improved": "EVL proof-chain stage from partial to present; unblocks TPA and CDE decisions",
+      "systems_affected": ["EVL", "TPA", "CDE"],
+      "severity": "high",
+      "frequency": "unknown",
+      "estimated_effort": "medium",
+      "leverage_score": 6.30,
+      "data_source": "artifact_store",
+      "confidence": "artifact-backed"
+    },
+    {
+      "id": "LVG-002",
+      "title": "Unblock promotion gate via TPA adjudication completion",
+      "failure_prevented": "Indefinite observe_only enforcement with no promotion path",
+      "signal_improved": "Control decision from observe_only to allow; enables SEL certification",
+      "systems_affected": ["TPA", "CDE", "SEL"],
+      "severity": "high",
+      "frequency": "unknown",
+      "estimated_effort": "high",
+      "leverage_score": 4.20,
+      "data_source": "artifact_store",
+      "confidence": "artifact-backed"
+    },
+    {
+      "id": "LVG-003",
+      "title": "Wire full done_certification_record for promotion sign-off",
+      "failure_prevented": "Promotion without done_certification_record — certification requirement bypassed",
+      "signal_improved": "Certification stage from unknown to present in proof chain",
+      "systems_affected": ["GOV", "SEL", "CDE"],
+      "severity": "high",
+      "frequency": "unknown",
+      "estimated_effort": "high",
+      "leverage_score": 4.20,
+      "data_source": "derived",
+      "confidence": "derived"
+    },
+    {
+      "id": "LVG-004",
+      "title": "Resolve SLO budget warning before next promotion window",
+      "failure_prevented": "Error budget exhaustion without alerting during the next execution cycle",
+      "signal_improved": "SLO stage from partial to present; reduces known risk surface in overlay loop",
+      "systems_affected": ["SLO", "OBS"],
+      "severity": "medium",
+      "frequency": "unknown",
+      "estimated_effort": "low",
+      "leverage_score": 4.00,
+      "data_source": "artifact_store",
+      "confidence": "artifact-backed"
+    },
+    {
+      "id": "LVG-005",
+      "title": "Complete replay long-horizon coverage for drift detection",
+      "failure_prevented": "Long-horizon drift undetected across replay cycles — FM-SEED-REPLAY-GAP",
+      "signal_improved": "REP stage from partial to present; reduces unknown replay surface",
+      "systems_affected": ["REP", "EVL"],
+      "severity": "medium",
+      "frequency": "unknown",
+      "estimated_effort": "medium",
+      "leverage_score": 2.80,
+      "data_source": "artifact_store",
+      "confidence": "artifact-backed"
+    }
+  ]
+}

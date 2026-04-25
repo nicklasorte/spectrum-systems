@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "artifact_type": "bottleneck_record",
+  "record_id": "BTL-DASH-MET-001",
+  "owner_system": "CDE",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/eval_summary_record.json",
+    "artifacts/dashboard_seed/trust_policy_decision_record.json",
+    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_seed/enforcement_action_record.json",
+    "artifacts/dashboard_seed/replay_record.json",
+    "artifacts/dashboard_seed/slo_status_record.json",
+    "artifacts/dashboard_seed/minimal_loop_snapshot.json"
+  ],
+  "reason_codes": [
+    "bottleneck_derived_from_partial_proof_chain",
+    "earliest_partial_stage_identified"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Bottleneck computed from partial seed artifact evidence only.",
+    "Single-case evidence; confidence degrades without additional execution history."
+  ],
+  "dominant_bottleneck_system": "EVL",
+  "constrained_loop_leg": "EVL",
+  "bottleneck_reason": "Partial eval coverage (score 0.72) is the earliest constraint in the proof chain. AEX and PQX are present; EVL is partial. Downstream stages TPA, CDE, and SEL are all partial because they cannot advance without a complete eval signal.",
+  "bottleneck_confidence": "artifact_store",
+  "evidence": [
+    "eval_summary_record: status=warn, coverage=partial, score=0.72, missing=[long_horizon_replay, full_certification_set]",
+    "trust_policy_decision_record: status=warn, allow_promotion=false",
+    "control_decision_record: status=warn, decision=observe_only, promotion_gate=blocked",
+    "minimal_loop_snapshot: AEX=present, PQX=present, EVL=partial (earliest partial in primary loop)"
+  ],
+  "warning_count_by_system": {
+    "AEX": 0,
+    "PQX": 0,
+    "EVL": 2,
+    "TPA": 1,
+    "CDE": 1,
+    "SEL": 1,
+    "REP": 1,
+    "LIN": 0,
+    "OBS": 0,
+    "SLO": 1
+  }
+}
