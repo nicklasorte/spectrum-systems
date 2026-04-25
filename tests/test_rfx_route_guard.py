@@ -370,8 +370,8 @@ def test_rfx_roadmap_loop06_includes_pol(rfx_roadmap_text: str) -> None:
 
 
 def test_rfx_roadmap_promotion_checklist_includes_pra(rfx_roadmap_text: str) -> None:
-    assert "PRA promotion-readiness checkpoint" in rfx_roadmap_text, (
-        "Promotion/Certification Hard Gates section must include PRA checkpoint"
+    assert "PRA promotion-readiness artifact" in rfx_roadmap_text, (
+        "Promotion/Certification Hard Gates section must include PRA promotion-readiness artifact"
     )
 
 

@@ -3,11 +3,11 @@
 RFX (Review → Fix → eXecute) is a cross-system phase label, not a new system.
 Path: RIL → FRE → PQX → EVL → TPA → CDE → SEL → GOV
 Required overlays: REP + LIN + OBS + SLO
-Mandatory promotion authorities: PRA + POL
+Required promotion evidence inputs: PRA promotion-readiness artifact, POL policy-posture record.
 
 These guards enforce:
   LOOP-01: explicit phase_label: RFX in TLC route artifacts + AEX admission linkage
-  LOOP-02: fail-closed TLC route completeness check before PQX invocation
+  LOOP-02: route lineage presence guard before PQX invocation
   LOOP-03: EVL + TPA evidence gate before CDE/SEL progression
 
 All guards fail closed. Missing artifact = halt. No implicit approvals.
@@ -46,8 +46,8 @@ def build_rfx_tlc_route_artifact(
     """Build a TLC route artifact annotated with phase_label: RFX.
 
     RFX is a phase label. This artifact records the label, AEX admission ref,
-    and required overlays. It does not grant authority — TLC is not a policy,
-    execution, or closure authority.
+    and required overlays. TLC is the routing and handoff layer — not an
+    execution, closure, or trust-policy decision layer.
     """
     allowed_steps = frozenset(["AEX", "RIL", "FRE", "PQX", "EVL", "TPA", "CDE", "SEL", "GOV", "REP", "LIN", "OBS", "SLO", "PRA", "POL"])
     invalid = [s for s in intended_path if s not in allowed_steps]
