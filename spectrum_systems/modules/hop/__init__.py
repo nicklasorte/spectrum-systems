@@ -3,22 +3,33 @@ Harness Optimization Pipeline (HOP).
 
 Governed substrate that stores full harness experience (code, traces, scores),
 evaluates harness candidates against a versioned eval set, exposes queryable
-history, and prevents eval gaming. HOP-BATCH-1 is the foundation layer; no
-autonomous optimization runs here.
+history, and prevents eval gaming.
 
-Module ownership boundaries:
-- experience_store: append-only artifact persistence and indexing.
-- validator: pre-eval interface validation; rejects malformed candidates.
-- safety_checks: leakage / tamper detection; rejects gaming candidates.
-- evaluator: runs candidates against eval set; produces score + trace artifacts.
-- baseline_harness: deterministic transcript -> FAQ baseline candidate.
-- frontier: Pareto frontier across (score, cost, latency, trace_completeness, eval_coverage).
+BATCH-1 ships the foundation: store + admission + safety + evaluator +
+frontier + baseline harness.
 
-HOP does NOT:
-- modify candidates (no proposer in BATCH-1).
-- execute closure or promotion decisions; those authorities live elsewhere.
-- emit free-form findings (every artifact is schema-bound).
-- bypass eval / schema validation under any failure mode.
+BATCH-2 adds *bounded* optimization:
+
+- ``proposer`` — generates candidate code from deterministic mutation
+  templates; never writes to the store; never calls the evaluator.
+- ``mutation_policy`` — admits/rejects proposals via path scope + AST
+  scan; emits ``hop_harness_failure_hypothesis`` on violations.
+- ``trace_diff`` — structured comparison artifact between two candidates'
+  scores + traces.
+- ``failure_analysis`` — causal hypothesis builder; consumes a trace diff
+  and emits a ``causal_analysis`` failure hypothesis.
+- ``optimization_loop`` — sole orchestrator of proposer ->
+  mutation_policy -> admission -> evaluator -> store -> trace_diff ->
+  failure_analysis -> frontier.
+
+Authority boundaries (unchanged):
+
+- The proposer is advisory only. It never decides, persists, or
+  promotes; those rights live with the optimization loop, the
+  evaluator, and (above HOP) the CDE.
+- HOP never self-certifies: a candidate's frontier membership is a
+  signal, not a promotion. Promotion still requires a passing
+  ``done_certification_record`` per the project CLAUDE.md.
 """
 
 from spectrum_systems.modules.hop import (  # noqa: F401
@@ -27,8 +38,13 @@ from spectrum_systems.modules.hop import (  # noqa: F401
     baseline_harness,
     evaluator,
     experience_store,
+    failure_analysis,
     frontier,
+    mutation_policy,
+    optimization_loop,
+    proposer,
     safety_checks,
     schemas,
+    trace_diff,
     validator,
 )

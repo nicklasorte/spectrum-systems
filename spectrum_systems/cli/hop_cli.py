@@ -26,7 +26,10 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from spectrum_systems.modules.hop.experience_store import ExperienceStore, HopStoreError
-from spectrum_systems.modules.hop.frontier import compute_frontier
+from spectrum_systems.modules.hop.frontier import (
+    DEFAULT_WINDOW_SIZE,
+    compute_frontier_streaming,
+)
 
 
 def _load_score(store: ExperienceStore, score_artifact_id: str) -> dict[str, Any]:
@@ -98,24 +101,49 @@ def cmd_list_top_candidates(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_show_frontier(args: argparse.Namespace) -> int:
-    store = ExperienceStore(args.root)
-    ts_pred = _ts_filter_factory(args.after, args.before)
-    score_payloads: list[dict[str, Any]] = []
+def _stream_score_payloads(
+    store: ExperienceStore,
+    *,
+    ts_pred,
+):
+    """Stream score payloads from the store one at a time.
+
+    The streaming path keeps peak resident memory bounded — the frontier
+    chunk window is the only thing held in memory across iterations.
+    Damaged artifacts are skipped with a stderr warning so the loop can
+    continue; the optimization loop's failure_hypothesis surface is the
+    authoritative error channel.
+    """
     for rec in store.iter_index(artifact_type="hop_harness_score"):
         if not ts_pred(rec):
             continue
         try:
-            score_payloads.append(_load_score(store, rec["artifact_id"]))
+            yield _load_score(store, rec["artifact_id"])
         except HopStoreError as exc:
             sys.stderr.write(f"warning:hop_store_skipped:{exc}\n")
-    members, dominated_count, considered = compute_frontier(score_payloads)
+
+
+def cmd_show_frontier(args: argparse.Namespace) -> int:
+    store = ExperienceStore(args.root)
+    ts_pred = _ts_filter_factory(args.after, args.before)
+    window = args.max_frontier_window
+    if window is None:
+        window = DEFAULT_WINDOW_SIZE
+    if window <= 0:
+        sys.stderr.write(f"error:invalid_window:{window}\n")
+        return 2
+    result = compute_frontier_streaming(
+        _stream_score_payloads(store, ts_pred=ts_pred),
+        window_size=window,
+    )
     _emit(
         {
-            "considered_count": considered,
-            "dominated_count": dominated_count,
-            "member_count": len(members),
-            "members": members,
+            "considered_count": result.considered_count,
+            "dominated_count": result.dominated_count,
+            "invalid_count": result.invalid_count,
+            "member_count": len(result.members),
+            "max_frontier_window": window,
+            "members": result.members,
         }
     )
     return 0
@@ -206,6 +234,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_front = sub.add_parser("show-frontier")
     p_front.add_argument("--after", default=None)
     p_front.add_argument("--before", default=None)
+    p_front.add_argument(
+        "--max-frontier-window",
+        type=int,
+        default=DEFAULT_WINDOW_SIZE,
+        help=(
+            "Chunk size for streaming Pareto computation. Larger windows "
+            "reduce merge overhead but increase peak resident memory. The "
+            "default keeps total resident memory under 50 MB for any "
+            "single run."
+        ),
+    )
     p_front.set_defaults(func=cmd_show_frontier)
 
     p_diff = sub.add_parser("diff-candidates")

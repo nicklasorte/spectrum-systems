@@ -42,6 +42,39 @@ def test_show_frontier(store, eval_set, capsys) -> None:
     payload = json.loads(capsys.readouterr().out)
     assert payload["considered_count"] == 1
     assert payload["member_count"] == 1
+    assert payload["invalid_count"] == 0
+    assert payload["max_frontier_window"] >= 1
+
+
+def test_show_frontier_respects_max_window(store, eval_set, capsys) -> None:
+    _seed(store, eval_set)
+    rc = hop_cli.main(
+        [
+            "--root",
+            str(store.root),
+            "show-frontier",
+            "--max-frontier-window",
+            "1",
+        ]
+    )
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["max_frontier_window"] == 1
+    assert payload["member_count"] == 1
+
+
+def test_show_frontier_rejects_zero_window(store, eval_set, capsys) -> None:
+    _seed(store, eval_set)
+    rc = hop_cli.main(
+        [
+            "--root",
+            str(store.root),
+            "show-frontier",
+            "--max-frontier-window",
+            "0",
+        ]
+    )
+    assert rc == 2
 
 
 def test_show_failures(store, eval_set, capsys) -> None:
