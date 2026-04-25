@@ -37,8 +37,13 @@ from spectrum_systems.modules.evaluation.pipeline_eval_runner import (
 )
 from spectrum_systems.modules.orchestration.tlc_router import (
     ArtifactRoutingError,
-    route_artifact,
+    route_with_gate_evidence,
 )
+
+_VALID_GATE_EVIDENCE = {
+    "eval_summary_id": "chaos-gate-evidence-001",
+    "gate_status": "passed_gate",
+}
 from tests.transcript_pipeline.conftest import _make_transcript_artifact
 
 
@@ -194,17 +199,17 @@ class TestReplayMismatchChaos:
 class TestRoutingFailureChaos:
     def test_unknown_artifact_type_blocks_routing(self) -> None:
         with pytest.raises(ArtifactRoutingError) as exc_info:
-            route_artifact("chaos_injected_type")
+            route_with_gate_evidence({"artifact_type": "chaos_injected_type"}, _VALID_GATE_EVIDENCE)
         assert "NO_ROUTE_DEFINED" in exc_info.value.reason_codes
 
     def test_terminal_artifact_blocks_further_routing(self) -> None:
         with pytest.raises(ArtifactRoutingError) as exc_info:
-            route_artifact("release_artifact")
+            route_with_gate_evidence({"artifact_type": "release_artifact"}, _VALID_GATE_EVIDENCE)
         assert "TERMINAL_ARTIFACT_TYPE" in exc_info.value.reason_codes
 
     def test_empty_type_blocks_routing(self) -> None:
         with pytest.raises(ArtifactRoutingError) as exc_info:
-            route_artifact("")
+            route_with_gate_evidence({"artifact_type": ""}, _VALID_GATE_EVIDENCE)
         assert "INVALID_ARTIFACT_TYPE" in exc_info.value.reason_codes
 
 
@@ -288,7 +293,7 @@ class TestNoSilentFailures:
 
     def test_all_routing_errors_carry_reason_codes(self) -> None:
         try:
-            route_artifact("CHAOS_TYPE")
+            route_with_gate_evidence({"artifact_type": "CHAOS_TYPE"}, _VALID_GATE_EVIDENCE)
         except ArtifactRoutingError as e:
             assert e.reason_codes
             return
