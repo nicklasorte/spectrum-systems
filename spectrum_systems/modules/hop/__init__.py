@@ -16,7 +16,7 @@ Module ownership boundaries:
 
 HOP does NOT:
 - modify candidates (no proposer in BATCH-1).
-- execute closure / promotion decisions (CDE / GOV authority).
+- execute closure or promotion decisions; those authorities live elsewhere.
 - emit free-form findings (every artifact is schema-bound).
 - bypass eval / schema validation under any failure mode.
 """

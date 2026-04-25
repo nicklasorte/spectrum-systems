@@ -58,7 +58,7 @@ def test_show_failures(store, eval_set, capsys) -> None:
         store=store,
     )
     rc = hop_cli.main(
-        ["--root", str(store.root), "show-failures", "--severity", "block", "--limit", "5"]
+        ["--root", str(store.root), "show-failures", "--severity", "reject", "--limit", "5"]
     )
     assert rc == 0
     rows = json.loads(capsys.readouterr().out)

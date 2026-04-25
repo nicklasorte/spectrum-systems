@@ -14,7 +14,7 @@ source* and the produced eval-case-keyed outputs and try to detect:
   internal write path or skips the evaluator API.
 
 Every detection emits a ``hop_harness_failure_hypothesis`` artifact at
-severity ``block``. The candidate is rejected before the evaluator runs.
+severity ``reject``. The candidate is rejected before the evaluator runs.
 
 The scan is intentionally a static, deterministic textual matcher — it does
 NOT execute candidate code. Static matching can yield false positives, but
@@ -77,7 +77,7 @@ def _build_failure(
         "run_id": None,
         "stage": "safety_check",
         "failure_class": failure_class,
-        "severity": "block",
+        "severity": "reject",
         "evidence": evidence,
         "detected_at": _utcnow(),
         "blocks_promotion": True,

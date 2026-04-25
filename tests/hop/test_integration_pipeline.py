@@ -53,7 +53,7 @@ def test_invalid_candidate_never_reaches_evaluator(store, eval_set, eval_cases) 
     assert not ok
     # Validator must produce a structured failure artifact; the store accepts it.
     store.write_artifact(failures[0])
-    failure_records = list(store.list_failures(severity="block"))
+    failure_records = list(store.list_failures(severity="reject"))
     assert any(
         rec["fields"]["failure_class"] == "schema_violation" for rec in failure_records
     )

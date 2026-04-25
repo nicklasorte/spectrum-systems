@@ -154,7 +154,7 @@ def _build_failure(
     eval_case_id: str | None,
     detail: str,
     trace_id: str,
-    severity: str = "block",
+    severity: str = "reject",
 ) -> dict[str, Any]:
     evidence = [{"kind": "snippet", "detail": detail}]
     if eval_case_id:
@@ -172,7 +172,7 @@ def _build_failure(
         "severity": severity,
         "evidence": evidence,
         "detected_at": _utcnow(),
-        "blocks_promotion": severity == "block",
+        "blocks_promotion": severity == "reject",
     }
     finalize_artifact(payload, id_prefix="hop_failure_")
     return payload

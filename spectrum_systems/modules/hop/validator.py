@@ -10,7 +10,7 @@ A candidate is *only* admitted to evaluation if it passes:
    attribute on the imported module.
 
 Any failure produces a structured ``hop_harness_failure_hypothesis`` artifact
-with ``stage = "validation"`` and ``severity = "block"``. Rejected candidates
+with ``stage = "validation"`` and ``severity = "reject"``. Rejected candidates
 never reach the evaluator.
 """
 
@@ -52,7 +52,7 @@ def _build_failure(
         "run_id": None,
         "stage": "validation",
         "failure_class": failure_class,
-        "severity": "block",
+        "severity": "reject",
         "evidence": evidence,
         "detected_at": _utcnow(),
         "blocks_promotion": True,

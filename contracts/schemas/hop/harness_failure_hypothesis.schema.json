@@ -79,7 +79,7 @@
     },
     "severity": {
       "type": "string",
-      "enum": ["info", "warn", "block"]
+      "enum": ["info", "warn", "reject"]
     },
     "evidence": {
       "type": "array",

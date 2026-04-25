@@ -216,7 +216,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_fail = sub.add_parser("show-failures")
     p_fail.add_argument("--candidate-id", default=None)
     p_fail.add_argument("--run-id", default=None)
-    p_fail.add_argument("--severity", default=None, choices=["info", "warn", "block"])
+    p_fail.add_argument("--severity", default=None, choices=["info", "warn", "reject"])
     p_fail.add_argument("--limit", type=int, default=None)
     p_fail.add_argument("--after", default=None)
     p_fail.add_argument("--before", default=None)

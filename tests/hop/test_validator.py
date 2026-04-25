@@ -19,7 +19,7 @@ def test_validator_rejects_schema_violation() -> None:
     assert ok is False
     assert len(failures) == 1
     assert failures[0]["failure_class"] == "schema_violation"
-    assert failures[0]["severity"] == "block"
+    assert failures[0]["severity"] == "reject"
 
 
 def test_validator_rejects_import_error() -> None:
