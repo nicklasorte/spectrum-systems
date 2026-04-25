@@ -1,0 +1,128 @@
+"""Tests for control_integration.py — HOP -> control plane bridge."""
+
+from __future__ import annotations
+
+import pytest
+
+from spectrum_systems.modules.hop.control_integration import (
+    ControlAdvisoryRequest,
+    ControlIntegrationError,
+    build_control_advisory,
+    emit_control_advisory,
+    list_advisories,
+)
+from spectrum_systems.modules.hop.evaluator import evaluate_candidate
+from spectrum_systems.modules.hop.promotion_gate import (
+    PromotionGateInputs,
+    evaluate_and_persist,
+)
+from tests.hop.conftest import make_baseline_candidate
+
+
+@pytest.fixture()
+def populated_store(eval_set, heldout_eval_set, store):
+    candidate = make_baseline_candidate()
+    store.write_artifact(candidate)
+    search = evaluate_candidate(
+        candidate_payload=candidate, eval_set=eval_set, store=store
+    )
+    heldout = evaluate_candidate(
+        candidate_payload=candidate, eval_set=heldout_eval_set, store=store
+    )
+    decision = evaluate_and_persist(
+        inputs=PromotionGateInputs(
+            candidate_id=candidate["candidate_id"],
+            search_score=search["score"],
+            heldout_score=heldout["score"],
+        ),
+        store=store,
+    )
+    return candidate, decision, store
+
+
+def test_emit_advisory_for_promotion_evaluation(populated_store):
+    candidate, decision, store = populated_store
+    advisory = emit_control_advisory(
+        ControlAdvisoryRequest(
+            subject_candidate_id=candidate["candidate_id"],
+            summary_kind="promotion_evaluation",
+            promotion_decision_artifact_id=decision["artifact_id"],
+            blocking_failure_artifact_ids=(),
+        ),
+        store=store,
+    )
+    assert advisory["advisory_only"] is True
+    assert advisory["summary_kind"] == "promotion_evaluation"
+    assert advisory["promotion_decision_artifact_id"] == decision["artifact_id"]
+
+
+def test_advisory_rejects_unknown_kind(populated_store):
+    _, _, store = populated_store
+    with pytest.raises(ControlIntegrationError, match="invalid_kind"):
+        build_control_advisory(
+            ControlAdvisoryRequest(
+                subject_candidate_id="cand_x",
+                summary_kind="rubber_stamp",
+            ),
+            store=store,
+        )
+
+
+def test_advisory_rejects_missing_promotion_decision(store):
+    with pytest.raises(ControlIntegrationError, match="missing_promotion_decision"):
+        build_control_advisory(
+            ControlAdvisoryRequest(
+                subject_candidate_id="cand_x",
+                summary_kind="promotion_evaluation",
+                promotion_decision_artifact_id="hop_promo_does_not_exist",
+            ),
+            store=store,
+        )
+
+
+def test_advisory_rejects_missing_failure_reference(store):
+    with pytest.raises(ControlIntegrationError, match="missing_failure"):
+        build_control_advisory(
+            ControlAdvisoryRequest(
+                subject_candidate_id="cand_x",
+                summary_kind="rollback_request",
+                blocking_failure_artifact_ids=("hop_failure_does_not_exist",),
+            ),
+            store=store,
+        )
+
+
+def test_list_advisories_filters(populated_store):
+    candidate, decision, store = populated_store
+    emit_control_advisory(
+        ControlAdvisoryRequest(
+            subject_candidate_id=candidate["candidate_id"],
+            summary_kind="promotion_evaluation",
+            promotion_decision_artifact_id=decision["artifact_id"],
+        ),
+        store=store,
+    )
+    found = list(
+        list_advisories(
+            store,
+            subject_candidate_id=candidate["candidate_id"],
+            summary_kind="promotion_evaluation",
+        )
+    )
+    assert len(found) == 1
+    other_kind = list(
+        list_advisories(store, summary_kind="rollback_request")
+    )
+    assert len(other_kind) == 0
+
+
+def test_advisory_idempotent(populated_store):
+    candidate, decision, store = populated_store
+    req = ControlAdvisoryRequest(
+        subject_candidate_id=candidate["candidate_id"],
+        summary_kind="promotion_evaluation",
+        promotion_decision_artifact_id=decision["artifact_id"],
+    )
+    a = emit_control_advisory(req, store=store)
+    b = emit_control_advisory(req, store=store)
+    assert a["artifact_id"] == b["artifact_id"]

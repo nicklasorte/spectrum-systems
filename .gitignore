@@ -65,3 +65,7 @@ data/run_output_evaluation_decisions/*.json
 
 # Persisted traces (runtime data, not committed)
 data/traces/*.json
+
+# HOP trial run experience-store contents (regenerated per run; only the
+# summary JSONs are committed as evidence).
+artifacts/hop_trial_run/run_*/

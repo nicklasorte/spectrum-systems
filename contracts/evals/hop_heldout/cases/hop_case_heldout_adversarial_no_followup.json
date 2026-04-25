@@ -1,0 +1,32 @@
+{
+  "artifact_id": "hop_eval_case_74f9458fe1a0de56",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "adversarial",
+  "content_hash": "sha256:74f9458fe1a0de565cb2e6c78c010f416a8d0fcc624a87d7fdf62989a914734a",
+  "eval_case_id": "hop_case_heldout_adversarial_no_followup",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "single_turn"
+  ],
+  "input": {
+    "transcript_id": "t_heldout_no_followup",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Where does the rollback artifact go?"
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "rejection_expected",
+    "rules": {
+      "expect_rejection": true
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:adversarial_no_followup",
+    "related": []
+  }
+}

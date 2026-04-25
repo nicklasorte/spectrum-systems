@@ -1,0 +1,46 @@
+{
+  "artifact_id": "hop_eval_case_d5b29e87ef212f7d",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:d5b29e87ef212f7dcc4c9da3de79c3c9d4bd38501b6616b73d9d01b8606780b3",
+  "eval_case_id": "hop_case_heldout_golden_dedup_identical_qa",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [],
+  "input": {
+    "transcript_id": "t_heldout_dedup",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Is rollback reversible?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Rollback restores the prior promoted harness."
+      },
+      {
+        "speaker": "user",
+        "text": "Is rollback reversible?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Rollback restores the prior promoted harness."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_questions_substrings": [
+        "rollback reversible"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:golden_dedup_identical_qa",
+    "related": []
+  }
+}

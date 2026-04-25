@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hop/harness_control_advisory.schema.json",
+  "title": "HOP Control Advisory",
+  "description": "The single artifact HOP emits to the external control plane. It is informational input — HOP does not encode or claim allow/warn/freeze/block authority. The control plane consumes it and emits its own control_decision.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "trace",
+    "content_hash",
+    "advisory_id",
+    "subject_candidate_id",
+    "summary_kind",
+    "promotion_decision_artifact_id",
+    "trial_summary_artifact_id",
+    "blocking_failure_artifact_ids",
+    "advisory_only",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_id": {"type": "string", "pattern": "^hop_advisory_[a-z0-9_-]+$"},
+    "artifact_type": {"const": "hop_harness_control_advisory"},
+    "schema_ref": {"const": "hop/harness_control_advisory.schema.json"},
+    "schema_version": {"const": "1.0.0"},
+    "content_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "trace": {"$ref": "#/$defs/trace"},
+    "advisory_id": {"type": "string", "pattern": "^[a-z0-9_-]+$"},
+    "subject_candidate_id": {"type": "string", "pattern": "^[a-z0-9_-]+$"},
+    "summary_kind": {
+      "type": "string",
+      "enum": ["promotion_evaluation", "rollback_request", "trend_signal"]
+    },
+    "promotion_decision_artifact_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "trial_summary_artifact_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "blocking_failure_artifact_ids": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "advisory_only": {"const": true},
+    "emitted_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": {"type": "string", "minLength": 1},
+        "related": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}
