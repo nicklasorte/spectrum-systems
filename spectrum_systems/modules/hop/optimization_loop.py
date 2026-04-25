@@ -8,11 +8,12 @@ Pipeline (strict order, fail-closed at every stage):
       -> proposer.propose_candidates           # bounded code generation
         -> mutation_policy.evaluate_proposal  # forbidden-mutation gate
           -> admission.admit_candidate        # validator + safety_checks
-            -> evaluator.evaluate_candidate   # produces run/score/traces
-              -> store.write_artifact         # persists everything
-                -> trace_diff.compute_trace_diff
-                  -> failure_analysis.build_failure_hypothesis
-                    -> frontier.compute_frontier_streaming
+            -> sandbox.make_sandboxed_runner  # isolated execution
+              -> evaluator.evaluate_candidate # produces run/score/traces
+                -> store.write_artifact       # persists everything
+                  -> trace_diff.compute_trace_diff
+                    -> failure_analysis.build_failure_hypothesis
+                      -> frontier.compute_frontier_streaming
 
 Invariants (each enforced by tests):
 
@@ -25,12 +26,36 @@ Invariants (each enforced by tests):
 - The loop's per-cycle quota (``max_proposals``) bounds wall-clock and
   store growth; exceeding the quota raises
   :class:`proposer.ProposerQuotaExceeded`.
+- When ``use_sandbox=True`` is passed, every runner returned by
+  ``runner_factory`` is wrapped through the HOP sandbox before
+  reaching the evaluator. The default remains in-process execution
+  so existing deterministic-baseline tests stay fast; HOP-BATCH-3
+  build phase only wires the integration — it does not run
+  optimization iterations.
+
+Pattern hooks
+-------------
+
+The optimization loop can be configured with an iterable of
+``pattern_hooks`` — callables of shape
+``hook(*, candidate, run_bundle, store) -> None``. Hooks are invoked
+*after* a candidate has been admitted, sandboxed, and evaluated.
+Hooks are advisory: they MUST NOT mutate the candidate, the eval
+set, the store's index, or any artifact already persisted. They
+exist so reusable harness patterns can observe and emit derived
+*candidate-side* signals (e.g. coverage telemetry) that the loop
+later considers when ranking proposals.
+
+Pattern hooks have no decision authority: the CDE remains the sole
+decision authority and the evaluator remains the sole scoring
+authority. A misbehaving hook that raises is caught and logged into
+the cycle result's ``hook_errors`` field; the cycle continues.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Iterable, Mapping
 
 from spectrum_systems.modules.hop import (
     admission,
@@ -38,6 +63,7 @@ from spectrum_systems.modules.hop import (
     frontier,
     mutation_policy,
     proposer,
+    sandbox,
     trace_diff,
 )
 from spectrum_systems.modules.hop.evaluator import EvalSet, evaluate_candidate
@@ -45,6 +71,10 @@ from spectrum_systems.modules.hop.experience_store import (
     ExperienceStore,
     HopStoreError,
 )
+
+
+PatternHook = Callable[..., None]
+"""Signature: ``hook(*, candidate, run_bundle, store) -> None``."""
 
 
 @dataclass
@@ -59,6 +89,49 @@ class CycleResult:
     trace_diffs: list[Mapping[str, Any]] = field(default_factory=list)
     causal_hypotheses: list[Mapping[str, Any]] = field(default_factory=list)
     frontier_payload: Mapping[str, Any] | None = None
+    hook_errors: list[dict[str, str]] = field(default_factory=list)
+
+
+def _wrap_runner_in_sandbox(
+    runner: Callable[[Mapping[str, Any]], dict[str, Any]],
+    *,
+    sandbox_config: sandbox.SandboxConfig | None,
+) -> Callable[[Mapping[str, Any]], dict[str, Any]]:
+    """Best-effort sandbox wrapping.
+
+    Returns ``runner`` unchanged if it cannot be addressed across the
+    process boundary (e.g. it is a closure or inner function). The
+    safety net is the per-case schema check the evaluator already
+    performs on the runner output, plus the candidate-side static
+    scans run by ``safety_checks``.
+    """
+    try:
+        return sandbox.make_sandboxed_runner(runner=runner, config=sandbox_config)
+    except sandbox.SandboxConfigError:
+        return runner
+
+
+def _invoke_pattern_hooks(
+    hooks: Iterable[PatternHook] | None,
+    *,
+    candidate: Mapping[str, Any],
+    run_bundle: Mapping[str, Any],
+    store: ExperienceStore,
+    result: "CycleResult",
+) -> None:
+    if not hooks:
+        return
+    for hook in hooks:
+        try:
+            hook(candidate=candidate, run_bundle=run_bundle, store=store)
+        except Exception as exc:  # noqa: BLE001 - hooks are advisory
+            result.hook_errors.append(
+                {
+                    "hook": getattr(hook, "__name__", repr(hook)),
+                    "candidate_id": candidate.get("candidate_id", "unknown"),
+                    "error": f"{type(exc).__name__}:{exc}",
+                }
+            )
 
 
 def _persist_failure(store: ExperienceStore, failure: Mapping[str, Any]) -> None:
@@ -104,6 +177,9 @@ def run_proposer_cycle(
     baseline_traces: tuple[Mapping[str, Any], ...] | None = None,
     max_proposals: int = proposer.DEFAULT_MAX_PROPOSALS,
     max_frontier_window: int = frontier.DEFAULT_WINDOW_SIZE,
+    sandbox_config: sandbox.SandboxConfig | None = None,
+    use_sandbox: bool = False,
+    pattern_hooks: Iterable[PatternHook] | None = None,
 ) -> CycleResult:
     """Run one proposer cycle end-to-end.
 
@@ -132,6 +208,23 @@ def run_proposer_cycle(
         Per-cycle proposer quota.
     max_frontier_window
         Memory budget for the post-cycle frontier recomputation.
+    sandbox_config
+        Optional :class:`sandbox.SandboxConfig`. Used only when
+        ``use_sandbox`` is True.
+    use_sandbox
+        When True, every runner returned by ``runner_factory`` is
+        wrapped via :func:`sandbox.make_sandboxed_runner` before
+        being handed to the evaluator. Defaults to False so existing
+        callers and the BATCH-2 test suite (which executes
+        deterministic in-tree code) keep their fast in-process
+        execution path. The integration is wired but **never runs an
+        optimization iteration on its own** — orchestration remains
+        the caller's responsibility.
+    pattern_hooks
+        Optional iterable of advisory pattern hooks invoked after
+        each candidate's evaluation completes. Hooks must not mutate
+        artifacts; exceptions surface in
+        :attr:`CycleResult.hook_errors`.
     """
     result = CycleResult()
 
@@ -171,6 +264,10 @@ def run_proposer_cycle(
         _maybe_persist_candidate(store, candidate)
 
         runner = runner_factory(candidate)
+        if use_sandbox:
+            runner = _wrap_runner_in_sandbox(
+                runner, sandbox_config=sandbox_config
+            )
         run_bundle = evaluate_candidate(
             candidate_payload=candidate,
             runner=runner,
@@ -181,6 +278,14 @@ def run_proposer_cycle(
         result.runs.append(run_bundle["run"])
         result.scores.append(run_bundle["score"])
         result.failures.extend(run_bundle["failures"])
+
+        _invoke_pattern_hooks(
+            pattern_hooks,
+            candidate=candidate,
+            run_bundle=run_bundle,
+            store=store,
+            result=result,
+        )
 
         if baseline_score is not None:
             try:
