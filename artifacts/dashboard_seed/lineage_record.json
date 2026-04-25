@@ -10,8 +10,8 @@
     "artifacts/dashboard_seed/source_artifact_record.json",
     "artifacts/dashboard_seed/output_artifact_record.json",
     "artifacts/dashboard_seed/eval_summary_record.json",
-    "artifacts/dashboard_seed/control_decision_record.json",
-    "artifacts/dashboard_seed/enforcement_action_record.json"
+    "artifacts/dashboard_seed/control_signal_record.json",
+    "artifacts/dashboard_seed/sel_signal_record.json"
   ],
   "reason_codes": [
     "lineage_linked_minimal_chain"

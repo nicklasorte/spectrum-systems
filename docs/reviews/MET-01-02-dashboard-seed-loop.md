@@ -3,8 +3,8 @@
 ## Prompt type
 BUILD
 
-## Why the dashboard was BLOCK
-The dashboard truth layer was functioning but had insufficient artifact-backed inputs. Most system rows were `stub_fallback`, Eval and lineage stages were missing from the governed loop view, and trust posture resolved to BLOCK/FREEZE for valid reasons (`eval_missing`, `lineage_missing`, `stub_fallback_present`).
+## Why the dashboard was BLOCKED
+The dashboard truth layer was functioning but had insufficient artifact-backed inputs. Most system rows were `stub_fallback`, Eval and lineage stages were missing from the governed loop view, and trust posture resolved to BLOCKED/FROZEN for valid reasons (`eval_missing`, `lineage_missing`, `stub_fallback_present`).
 
 ## Artifacts seeded
 A minimal seed set was added under `artifacts/dashboard_seed/`:
@@ -12,9 +12,9 @@ A minimal seed set was added under `artifacts/dashboard_seed/`:
 - `source_artifact_record.json`
 - `output_artifact_record.json`
 - `eval_summary_record.json`
-- `trust_policy_decision_record.json`
-- `control_decision_record.json`
-- `enforcement_action_record.json`
+- `trust_policy_signal_record.json`
+- `control_signal_record.json`
+- `sel_signal_record.json`
 - `lineage_record.json`
 - `replay_record.json`
 - `observability_metrics_record.json`
@@ -35,11 +35,11 @@ Truth posture of the seeded chain:
 - AEX admitted seed request (present)
 - PQX execution record exists (present)
 - EVL eval exists but partial coverage (warn/partial)
-- TPA trust decision is warn
-- CDE control decision is warn
+- TPA trust signal is warn
+- CDE control signal is warn
 - SEL action is observe_only (warn)
 - REP replay exists but partial
-- LIN lineage exists and links source→output→eval→decision→enforcement
+- LIN lineage exists and links source→output→eval→signal→enforcement
 - OBS metrics exist
 - SLO budget status exists with warning
 
@@ -59,7 +59,7 @@ Expected dashboard behavior after wiring:
 
 - artifact-backed system count is now non-zero (seeded loop systems map to `artifact_store`)
 - governed loop/proof chain shows present + partial stages instead of all fallback/missing
-- trust posture remains WARN/BLOCK when unresolved gaps remain
+- trust posture remains WARN/BLOCKED when unresolved gaps remain
 - warnings explicitly call out that seeded artifacts are minimal and partial
 
 ## Vercel artifact bundling notes

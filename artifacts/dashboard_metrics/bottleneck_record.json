@@ -8,9 +8,9 @@
   "data_source": "artifact_store",
   "source_artifacts_used": [
     "artifacts/dashboard_seed/eval_summary_record.json",
-    "artifacts/dashboard_seed/trust_policy_decision_record.json",
-    "artifacts/dashboard_seed/control_decision_record.json",
-    "artifacts/dashboard_seed/enforcement_action_record.json",
+    "artifacts/dashboard_seed/trust_policy_signal_record.json",
+    "artifacts/dashboard_seed/control_signal_record.json",
+    "artifacts/dashboard_seed/sel_signal_record.json",
     "artifacts/dashboard_seed/replay_record.json",
     "artifacts/dashboard_seed/slo_status_record.json",
     "artifacts/dashboard_seed/minimal_loop_snapshot.json"
@@ -30,8 +30,8 @@
   "bottleneck_confidence": "artifact_store",
   "evidence": [
     "eval_summary_record: status=warn, coverage=partial, score=0.72, missing=[long_horizon_replay, full_certification_set]",
-    "trust_policy_decision_record: status=warn, allow_promotion=false",
-    "control_decision_record: status=warn, decision=observe_only, promotion_gate=blocked",
+    "trust_policy_signal_record: status=warn, allow_promotion=false",
+    "control_signal_record: status=warn, signal=observe_only, promotion_gate_state=blocked",
     "minimal_loop_snapshot: AEX=present, PQX=present, EVL=partial (earliest partial in primary loop)"
   ],
   "warning_count_by_system": {

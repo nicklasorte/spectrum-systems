@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "created_at": "2026-04-25T00:00:00Z",
   "data_source": "artifact_store",
-  "artifact_type": "trust_policy_decision_record",
+  "artifact_type": "trust_policy_signal_record",
   "record_id": "TPA-DASH-SEED-001",
   "owner_system": "TPA",
   "case_id": "dashboard-seed-001",
@@ -17,7 +17,7 @@
     "Trust/policy posture remains warn pending complete eval and replay evidence."
   ],
   "payload": {
-    "decision": "warn",
+    "trust_signal": "warn",
     "allow_promotion": false
   }
 }

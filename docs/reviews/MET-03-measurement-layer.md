@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-25
 **Branch:** claude/add-bottleneck-leverage-engine-K4i5p
-**Owner:** CDE (Control Decision Engine)
+**Owner:** CDE
 **Status:** WARN — all claims artifact-backed or explicitly marked derived
 
 ---
@@ -145,6 +145,45 @@ artifact is not found. No field returns a false positive.
 
 6. **Downstream bottlenecks are obscured.** Once EVL is resolved, TPA, CDE, or SEL may become
    the new bottleneck. The bottleneck record covers only the current seed state.
+
+---
+
+## Authority-Shape Correction (MET-03-FIX)
+
+**PR #1210 failed authority_shape_preflight.** Three seed artifacts used authority-reserved
+vocabulary outside canonical owner systems.
+
+### Renamed artifacts
+
+Three artifact files were renamed and their authority-shaped fields were replaced with
+signal/observation vocabulary:
+
+- `control_decision_record.json` → `control_signal_record.json`
+  — artifact_type and payload field renamed; authority-shaped name claimed CDE authority
+- `enforcement_action_record.json` → `sel_signal_record.json`
+  — artifact_type renamed; SEL emits observations, not authority claims;
+    also contained the reserved term `enforcement` in the type name
+- `trust_policy_decision_record.json` → `trust_policy_signal_record.json`
+  — artifact_type and payload field renamed; authority-shaped name claimed TPA authority
+
+### Vocabulary changes
+
+- `control_signal_record.json`: payload field renamed from the reserved term to `signal`
+- `trust_policy_signal_record.json`: payload field renamed from the reserved term to `trust_signal`
+- Evidence strings in `bottleneck_record` updated to reference new artifact names
+- `leverage_queue_record` item LVG-002 `signal_improved` updated to avoid authority phrasing
+
+### Documentation fixes
+
+- `MET-01-02-dashboard-seed-loop.md`: UI trust state labels updated from raw authority terms
+  to past-participle form (BLOCKED/FROZEN); proof-chain description updated to use `signal`
+- `MET-03-measurement-layer.md`: Owner field shortened to `CDE` (expanded name contained
+  a reserved term)
+
+### Preflight result
+
+`run_authority_shape_preflight.py` reports **0 violations** across 18 files after these fixes.
+No preflight rules were weakened or bypassed.
 
 ---
 

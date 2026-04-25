@@ -7,7 +7,7 @@
   "owner_system": "OBS",
   "case_id": "dashboard-seed-001",
   "source_artifacts_used": [
-    "artifacts/dashboard_seed/enforcement_action_record.json"
+    "artifacts/dashboard_seed/sel_signal_record.json"
   ],
   "reason_codes": [
     "seed_metrics_collected"

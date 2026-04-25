@@ -12,7 +12,7 @@
     "artifacts/dashboard_seed/lineage_record.json",
     "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
     "artifacts/dashboard_seed/near_miss_record.json",
-    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_seed/control_signal_record.json",
     "artifacts/dashboard_seed/slo_status_record.json",
     "artifacts/dashboard_metrics/bottleneck_record.json"
   ],
@@ -42,7 +42,7 @@
   "top_risks": [
     "Eval coverage gap can mask regressions — EVL partial, missing: long_horizon_replay, full_certification_set",
     "Replay coverage incomplete for long-horizon drift — REP partial",
-    "Promotion gate blocked by observe_only control decision — CDE+TPA partial",
+    "Promotion gate blocked by observe_only control signal — CDE+TPA partial",
     "Full done_certification_record not yet wired — certification stage unknown",
     "SLO budget warning: consumed_ratio 0.41 — budget_status warning"
   ]

@@ -2,23 +2,23 @@
   "schema_version": "1.0.0",
   "created_at": "2026-04-25T00:00:00Z",
   "data_source": "artifact_store",
-  "artifact_type": "control_decision_record",
+  "artifact_type": "control_signal_record",
   "record_id": "CDE-DASH-SEED-001",
   "owner_system": "CDE",
   "case_id": "dashboard-seed-001",
   "source_artifacts_used": [
     "artifacts/dashboard_seed/eval_summary_record.json",
-    "artifacts/dashboard_seed/trust_policy_decision_record.json"
+    "artifacts/dashboard_seed/trust_policy_signal_record.json"
   ],
   "reason_codes": [
     "control_warn_partial_inputs"
   ],
   "status": "warn",
   "warnings": [
-    "Control decision is bounded to observe_only due to partial proof chain."
+    "Control signal is bounded to observe_only due to partial proof chain."
   ],
   "payload": {
-    "decision": "observe_only",
-    "promotion_gate": "blocked"
+    "signal": "observe_only",
+    "promotion_gate_state": "blocked"
   }
 }

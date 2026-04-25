@@ -8,7 +8,7 @@
   "case_id": "dashboard-seed-001",
   "source_artifacts_used": [
     "artifacts/dashboard_seed/output_artifact_record.json",
-    "artifacts/dashboard_seed/control_decision_record.json"
+    "artifacts/dashboard_seed/control_signal_record.json"
   ],
   "reason_codes": [
     "replay_partial_coverage"

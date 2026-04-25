@@ -7,8 +7,8 @@
   "owner_system": "TPA",
   "case_id": "dashboard-seed-001",
   "source_artifacts_used": [
-    "artifacts/dashboard_seed/trust_policy_decision_record.json",
-    "artifacts/dashboard_seed/control_decision_record.json"
+    "artifacts/dashboard_seed/trust_policy_signal_record.json",
+    "artifacts/dashboard_seed/control_signal_record.json"
   ],
   "reason_codes": [
     "near_miss_blocked_by_warn_gate"
