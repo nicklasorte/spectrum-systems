@@ -1,24 +1,34 @@
-"""HOP advisory promotion gate (Phase 2).
+"""Advisory release-readiness signal builder for the harness feedback surface.
 
-The promotion gate evaluates whether a candidate is *recommended* for
-promotion. It NEVER promotes — it emits a single
-``hop_harness_promotion_decision`` artifact whose ``decision`` field
-is one of ``allow / warn / block`` and whose ``advisory_only`` flag is
-permanently ``true``. Final authority is the external control plane.
+REL is the canonical release/rollback owner. This module merely packages
+evaluator evidence (search-eval score, held-out score, trace completeness,
+risk-failure hypotheses, quarantine signals) into a structured
+``hop_harness_release_readiness_signal`` artifact for REL/CDE/control
+owners to consult. The signal carries no execution authority.
+
+The ``readiness_signal`` field carries one of three advisory values:
+
+- ``ready_signal`` — every required check passed; no risks observed.
+- ``warn_signal`` — readiness check ran but produced a non-fatal caveat.
+- ``risk_signal`` — at least one required check failed; do not act on
+  this candidate without further review.
 
 Required checks (fail-closed):
 
 - ``search_score_threshold`` — search-eval score >= configured floor.
 - ``heldout_score_threshold`` — held-out-eval score >= configured floor.
 - ``trace_completeness`` — both runs' traces complete on every case.
-- ``no_blocking_failures`` — zero failure hypotheses with
+- ``no_risk_failures`` — zero failure hypotheses with
   ``blocks_promotion=true`` for the candidate.
 - ``candidate_admitted`` — candidate artifact is readable from the store.
 - ``search_set_disjoint_from_heldout`` — eval_set_ids must not match.
+- ``candidate_not_quarantined`` — no ``quarantine`` rollback signal.
+- ``scores_admitted`` — both score artifacts live in the store.
 
-Any check that cannot be evaluated produces ``passed=false`` and forces
-``decision=block``. There is no path that produces ``allow`` while a
-required check fails.
+Any check that cannot be evaluated forces ``readiness_signal=risk_signal``.
+There is no path that produces ``ready_signal`` while a required check
+fails. The signal is informational only; release/rollback authority
+remains with REL.
 """
 
 from __future__ import annotations
@@ -35,8 +45,17 @@ from spectrum_systems.modules.hop.experience_store import (
 from spectrum_systems.modules.hop.schemas import validate_hop_artifact
 
 
-class PromotionGateError(Exception):
-    """Raised on infrastructure errors inside the gate itself."""
+_READY = "ready_signal"
+_WARN = "warn_signal"
+_RISK = "risk_signal"
+
+
+class ReadinessSignalError(Exception):
+    """Raised on infrastructure errors inside the readiness builder."""
+
+
+# Backwards-compatible alias.
+PromotionGateError = ReadinessSignalError
 
 
 def _utcnow() -> str:
@@ -48,12 +67,13 @@ def _utcnow() -> str:
 
 
 @dataclass(frozen=True)
-class PromotionGateConfig:
-    """Configuration for the promotion gate.
+class ReadinessSignalConfig:
+    """Configuration for the readiness builder.
 
     The defaults are deliberately strict: a candidate that does not pass
-    every case in either eval set is, at best, ``warn``. ``block`` is
-    the default outcome for any check that cannot be evaluated.
+    every case in either eval set yields a non-ready signal. The
+    fail-closed default for any check that cannot be evaluated is
+    ``risk_signal``.
     """
 
     search_score_threshold: float = 1.0
@@ -61,16 +81,24 @@ class PromotionGateConfig:
     min_trace_completeness: float = 1.0
 
 
+# Backwards-compatible alias.
+PromotionGateConfig = ReadinessSignalConfig
+
+
 @dataclass(frozen=True)
-class PromotionGateInputs:
+class ReadinessSignalInputs:
     candidate_id: str
     search_score: Mapping[str, Any]
     heldout_score: Mapping[str, Any]
-    blocking_failures: tuple[Mapping[str, Any], ...] = ()
+    risk_failures: tuple[Mapping[str, Any], ...] = ()
+
+
+# Backwards-compatible alias.
+PromotionGateInputs = ReadinessSignalInputs
 
 
 def _check_search_score_threshold(
-    inputs: PromotionGateInputs, cfg: PromotionGateConfig
+    inputs: ReadinessSignalInputs, cfg: ReadinessSignalConfig
 ) -> tuple[bool, str]:
     score = float(inputs.search_score.get("score", -1))
     threshold = cfg.search_score_threshold
@@ -80,7 +108,7 @@ def _check_search_score_threshold(
 
 
 def _check_heldout_score_threshold(
-    inputs: PromotionGateInputs, cfg: PromotionGateConfig
+    inputs: ReadinessSignalInputs, cfg: ReadinessSignalConfig
 ) -> tuple[bool, str]:
     score = float(inputs.heldout_score.get("score", -1))
     threshold = cfg.heldout_score_threshold
@@ -90,7 +118,7 @@ def _check_heldout_score_threshold(
 
 
 def _check_trace_completeness(
-    inputs: PromotionGateInputs, cfg: PromotionGateConfig
+    inputs: ReadinessSignalInputs, cfg: ReadinessSignalConfig
 ) -> tuple[bool, str]:
     s = float(inputs.search_score.get("trace_completeness", 0.0))
     h = float(inputs.heldout_score.get("trace_completeness", 0.0))
@@ -100,21 +128,21 @@ def _check_trace_completeness(
     return False, f"search={s:.4f},heldout={h:.4f},minimum={minimum:.4f}"
 
 
-def _check_no_blocking_failures(
-    inputs: PromotionGateInputs, _: PromotionGateConfig
+def _check_no_risk_failures(
+    inputs: ReadinessSignalInputs, _: ReadinessSignalConfig
 ) -> tuple[bool, str]:
-    blocking = [
-        f for f in inputs.blocking_failures
+    risks = [
+        f for f in inputs.risk_failures
         if bool(f.get("blocks_promotion"))
     ]
-    if not blocking:
-        return True, "no_blocking_failures"
-    ids = ",".join(str(f.get("hypothesis_id", "?")) for f in blocking[:8])
-    return False, f"blocking_failures={len(blocking)}:{ids}"
+    if not risks:
+        return True, "no_risk_failures"
+    ids = ",".join(str(f.get("hypothesis_id", "?")) for f in risks[:8])
+    return False, f"risk_failures={len(risks)}:{ids}"
 
 
 def _check_candidate_admitted(
-    inputs: PromotionGateInputs, _: PromotionGateConfig, *, store: ExperienceStore
+    inputs: ReadinessSignalInputs, _: ReadinessSignalConfig, *, store: ExperienceStore
 ) -> tuple[bool, str]:
     """Must be able to read the candidate from the store."""
     found = False
@@ -129,7 +157,7 @@ def _check_candidate_admitted(
 
 
 def _check_search_disjoint_from_heldout(
-    inputs: PromotionGateInputs, _: PromotionGateConfig
+    inputs: ReadinessSignalInputs, _: ReadinessSignalConfig
 ) -> tuple[bool, str]:
     s_id = str(inputs.search_score.get("eval_set_id", ""))
     h_id = str(inputs.heldout_score.get("eval_set_id", ""))
@@ -141,9 +169,9 @@ def _check_search_disjoint_from_heldout(
 
 
 def _check_candidate_not_quarantined(
-    inputs: PromotionGateInputs, _: PromotionGateConfig, *, store: ExperienceStore
+    inputs: ReadinessSignalInputs, _: ReadinessSignalConfig, *, store: ExperienceStore
 ) -> tuple[bool, str]:
-    """A candidate with a quarantine signal must never reach decision=allow."""
+    """A candidate with a quarantine signal must never reach ready_signal."""
     for rec in store.iter_index(artifact_type="hop_harness_rollback_signal"):
         fields = rec.get("fields", {}) or {}
         if (
@@ -155,7 +183,7 @@ def _check_candidate_not_quarantined(
 
 
 def _check_scores_admitted(
-    inputs: PromotionGateInputs, _: PromotionGateConfig, *, store: ExperienceStore
+    inputs: ReadinessSignalInputs, _: ReadinessSignalConfig, *, store: ExperienceStore
 ) -> tuple[bool, str]:
     """Both score artifacts must be admitted to the store.
 
@@ -184,23 +212,23 @@ def _check_scores_admitted(
     )
 
 
-def evaluate_promotion(
+def evaluate_release_readiness(
     *,
-    inputs: PromotionGateInputs,
+    inputs: ReadinessSignalInputs,
     store: ExperienceStore,
-    config: PromotionGateConfig | None = None,
-    trace_id: str = "hop_promotion_gate",
+    config: ReadinessSignalConfig | None = None,
+    trace_id: str = "hop_release_readiness",
 ) -> dict[str, Any]:
-    """Evaluate a candidate and return a finalized promotion-decision payload.
+    """Evaluate a candidate and return a finalized readiness-signal payload.
 
     The return value is the *artifact*, not a Python object — callers may
     persist it via ``store.write_artifact``.
     """
-    cfg = config or PromotionGateConfig()
+    cfg = config or ReadinessSignalConfig()
     if not isinstance(inputs.search_score, Mapping):
-        raise PromotionGateError("hop_promotion_gate_invalid_search_score")
+        raise ReadinessSignalError("hop_release_readiness_invalid_search_score")
     if not isinstance(inputs.heldout_score, Mapping):
-        raise PromotionGateError("hop_promotion_gate_invalid_heldout_score")
+        raise ReadinessSignalError("hop_release_readiness_invalid_heldout_score")
     validate_hop_artifact(dict(inputs.search_score), "hop_harness_score")
     validate_hop_artifact(dict(inputs.heldout_score), "hop_harness_score")
 
@@ -223,21 +251,24 @@ def evaluate_promotion(
     _record("heldout_score_threshold", p, d)
     p, d = _check_trace_completeness(inputs, cfg)
     _record("trace_completeness", p, d)
-    p, d = _check_no_blocking_failures(inputs, cfg)
-    _record("no_blocking_failures", p, d)
+    p, d = _check_no_risk_failures(inputs, cfg)
+    _record("no_risk_failures", p, d)
 
     all_passed = all(item["passed"] for item in rationale)
-    decision = "allow" if all_passed else "block"
+    readiness_signal = _READY if all_passed else _RISK
 
     payload: dict[str, Any] = {
-        "artifact_type": "hop_harness_promotion_decision",
-        "schema_ref": "hop/harness_promotion_decision.schema.json",
+        "artifact_type": "hop_harness_release_readiness_signal",
+        "schema_ref": "hop/harness_release_readiness_signal.schema.json",
         "schema_version": "1.0.0",
         "trace": make_trace(
             primary=trace_id,
             related=[inputs.candidate_id],
         ),
-        "decision_id": f"promo_{inputs.candidate_id}_{int(datetime.now(tz=timezone.utc).timestamp() * 1_000_000)}",
+        "signal_id": (
+            f"signal_{inputs.candidate_id}_"
+            f"{int(datetime.now(tz=timezone.utc).timestamp() * 1_000_000)}"
+        ),
         "candidate_id": inputs.candidate_id,
         "search_score_artifact_id": inputs.search_score["artifact_id"],
         "heldout_score_artifact_id": inputs.heldout_score["artifact_id"],
@@ -249,26 +280,31 @@ def evaluate_promotion(
             float(inputs.search_score.get("trace_completeness", 0.0)),
             float(inputs.heldout_score.get("trace_completeness", 0.0)),
         ),
-        "blocking_failure_count": sum(
-            1 for f in inputs.blocking_failures if bool(f.get("blocks_promotion"))
+        "risk_failure_count": sum(
+            1 for f in inputs.risk_failures if bool(f.get("blocks_promotion"))
         ),
-        "decision": decision,
+        "readiness_signal": readiness_signal,
         "rationale": rationale,
         "advisory_only": True,
+        "delegates_to": "REL",
         "evaluated_at": _utcnow(),
     }
-    finalize_artifact(payload, id_prefix="hop_promo_")
-    validate_hop_artifact(payload, "hop_harness_promotion_decision")
+    finalize_artifact(payload, id_prefix="hop_rs_signal_")
+    validate_hop_artifact(payload, "hop_harness_release_readiness_signal")
     return payload
 
 
-def list_blocking_failures_for_candidate(
+# Backwards-compatible alias.
+evaluate_promotion = evaluate_release_readiness
+
+
+def list_risk_failures_for_candidate(
     store: ExperienceStore, candidate_id: str
 ) -> tuple[Mapping[str, Any], ...]:
-    """Read blocking failure hypotheses for a candidate from the store.
+    """Read failure hypotheses with blocks_promotion=true for a candidate.
 
-    Returns the tuple of failure payloads with ``blocks_promotion=true``.
-    Callers can pass this directly into ``PromotionGateInputs``.
+    Callers can pass the returned tuple directly into
+    ``ReadinessSignalInputs.risk_failures``.
     """
     out: list[Mapping[str, Any]] = []
     for rec in store.list_failures(candidate_id=candidate_id):
@@ -283,23 +319,29 @@ def list_blocking_failures_for_candidate(
     return tuple(out)
 
 
-def _logical_decision_id(inputs: PromotionGateInputs) -> str:
+# Backwards-compatible alias.
+list_blocking_failures_for_candidate = list_risk_failures_for_candidate
+
+
+def _logical_signal_id(inputs: ReadinessSignalInputs) -> str:
     return (
-        f"promo_{inputs.candidate_id}"
+        f"signal_{inputs.candidate_id}"
         f"_search_{inputs.search_score['artifact_id']}"
         f"_heldout_{inputs.heldout_score['artifact_id']}"
     )
 
 
-def _find_existing_decision(
-    store: ExperienceStore, decision_id: str
+def _find_existing_signal(
+    store: ExperienceStore, signal_id: str
 ) -> dict[str, Any] | None:
-    for rec in store.iter_index(artifact_type="hop_harness_promotion_decision"):
+    for rec in store.iter_index(
+        artifact_type="hop_harness_release_readiness_signal"
+    ):
         fields = rec.get("fields", {}) or {}
-        if fields.get("decision_id") == decision_id:
+        if fields.get("signal_id") == signal_id:
             try:
                 return store.read_artifact(
-                    "hop_harness_promotion_decision", rec["artifact_id"]
+                    "hop_harness_release_readiness_signal", rec["artifact_id"]
                 )
             except HopStoreError:
                 continue
@@ -308,49 +350,55 @@ def _find_existing_decision(
 
 def evaluate_and_persist(
     *,
-    inputs: PromotionGateInputs,
+    inputs: ReadinessSignalInputs,
     store: ExperienceStore,
-    config: PromotionGateConfig | None = None,
-    trace_id: str = "hop_promotion_gate",
+    config: ReadinessSignalConfig | None = None,
+    trace_id: str = "hop_release_readiness",
 ) -> dict[str, Any]:
-    """Convenience: evaluate, validate, and persist the decision artifact.
+    """Convenience: evaluate, validate, and persist the readiness signal.
 
-    Idempotent on identical inputs: a prior decision with the same logical
-    ``decision_id`` (derived from the candidate + search/held-out artifact
-    ids) is returned unchanged. The wall-clock-bearing artifact is created
+    Idempotent on identical inputs: a prior signal with the same logical
+    ``signal_id`` (derived from candidate + search/held-out artifact ids)
+    is returned unchanged. The wall-clock-bearing artifact is created
     only on first call.
     """
-    logical_id = _logical_decision_id(inputs)
-    existing = _find_existing_decision(store, logical_id)
+    logical_id = _logical_signal_id(inputs)
+    existing = _find_existing_signal(store, logical_id)
     if existing is not None:
         return existing
-    decision = evaluate_promotion(
+    signal = evaluate_release_readiness(
         inputs=inputs, store=store, config=config, trace_id=trace_id
     )
-    decision["decision_id"] = logical_id
-    finalize_artifact(decision, id_prefix="hop_promo_")
-    validate_hop_artifact(decision, "hop_harness_promotion_decision")
+    signal["signal_id"] = logical_id
+    finalize_artifact(signal, id_prefix="hop_rs_signal_")
+    validate_hop_artifact(signal, "hop_harness_release_readiness_signal")
     try:
-        store.write_artifact(decision)
+        store.write_artifact(signal)
     except HopStoreError as exc:
         if "duplicate_artifact" in str(exc):
-            return decision
+            return signal
         raise
-    return decision
+    return signal
 
 
-def iter_blocking_decisions(
+def iter_risk_signals(
     store: ExperienceStore, *, candidate_id: str | None = None
 ) -> Iterable[Mapping[str, Any]]:
-    for rec in store.iter_index(artifact_type="hop_harness_promotion_decision"):
+    for rec in store.iter_index(
+        artifact_type="hop_harness_release_readiness_signal"
+    ):
         fields = rec.get("fields", {}) or {}
-        if fields.get("decision") != "block":
+        if fields.get("readiness_signal") != _RISK:
             continue
         if candidate_id and fields.get("candidate_id") != candidate_id:
             continue
         try:
             yield store.read_artifact(
-                "hop_harness_promotion_decision", rec["artifact_id"]
+                "hop_harness_release_readiness_signal", rec["artifact_id"]
             )
         except HopStoreError:
             continue
+
+
+# Backwards-compatible alias.
+iter_blocking_decisions = iter_risk_signals

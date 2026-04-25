@@ -2,7 +2,7 @@
 
 Each test below is an attack against a specific advisory-only invariant:
 
-- promotion bypass via fabricated decision artifact;
+- readiness bypass via fabricated readiness-signal artifact;
 - eval gaming via in-memory score artifact never admitted to the store;
 - regression leakage via case-id collision with the search set;
 - rollback failure via re-promotion of a quarantined candidate;
@@ -12,16 +12,14 @@ Each test below is an attack against a specific advisory-only invariant:
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pytest
 
 from spectrum_systems.modules.hop.evaluator import evaluate_candidate
-from spectrum_systems.modules.hop.promotion_gate import (
-    PromotionGateInputs,
-    evaluate_and_persist,
-    evaluate_promotion,
+from spectrum_systems.modules.hop.promotion_readiness import (
+    ReadinessSignalInputs,
+    evaluate_release_readiness,
 )
 from spectrum_systems.modules.hop.rollback_signals import (
     RollbackSignalRequest,
@@ -45,16 +43,16 @@ def saturated_pair_persisted(eval_set, heldout_eval_set, store):
     return candidate, search["score"], heldout["score"]
 
 
-# ---------- Attack 1: promotion bypass via fabricated artifact -----------------
+# ---------- Attack 1: readiness bypass via fabricated artifact ----------------
 
-def test_attack_fabricated_allow_artifact_rejected_by_schema():
-    """A handcrafted decision with allow + a failed rationale must fail schema."""
+def test_attack_fabricated_ready_artifact_rejected_by_schema():
+    """A handcrafted ready_signal with a failed rationale must fail schema."""
     forged = {
-        "artifact_type": "hop_harness_promotion_decision",
-        "schema_ref": "hop/harness_promotion_decision.schema.json",
+        "artifact_type": "hop_harness_release_readiness_signal",
+        "schema_ref": "hop/harness_release_readiness_signal.schema.json",
         "schema_version": "1.0.0",
         "trace": {"primary": "attacker", "related": []},
-        "decision_id": "fake_decision",
+        "signal_id": "fake_signal",
         "candidate_id": "cand_x",
         "search_score_artifact_id": "any",
         "heldout_score_artifact_id": "any",
@@ -63,23 +61,24 @@ def test_attack_fabricated_allow_artifact_rejected_by_schema():
         "search_eval_set_id": "a",
         "heldout_eval_set_id": "b",
         "trace_completeness": 0.0,
-        "blocking_failure_count": 0,
-        "decision": "allow",
+        "risk_failure_count": 0,
+        "readiness_signal": "ready_signal",
         "rationale": [
             {"check": "search_score_threshold", "passed": False, "detail": "x"},
         ],
         "advisory_only": True,
+        "delegates_to": "REL",
         "evaluated_at": "2026-04-25T00:00:00.000000Z",
         "content_hash": "sha256:" + "0" * 64,
-        "artifact_id": "hop_promo_fake",
+        "artifact_id": "hop_rs_signal_fake",
     }
     with pytest.raises(HopSchemaError):
-        validate_hop_artifact(forged, "hop_harness_promotion_decision")
+        validate_hop_artifact(forged, "hop_harness_release_readiness_signal")
 
 
 # ---------- Attack 2: in-memory score never admitted to the store ------------
 
-def test_attack_unadmitted_score_blocks_promotion(eval_set, heldout_eval_set, store):
+def test_attack_unadmitted_score_yields_risk_signal(eval_set, heldout_eval_set, store):
     candidate = make_baseline_candidate()
     store.write_artifact(candidate)
     # Compute scores OUTSIDE the store; they are valid schema, but never written.
@@ -87,16 +86,16 @@ def test_attack_unadmitted_score_blocks_promotion(eval_set, heldout_eval_set, st
     heldout = evaluate_candidate(
         candidate_payload=candidate, eval_set=heldout_eval_set
     )
-    decision = evaluate_promotion(
-        inputs=PromotionGateInputs(
+    signal = evaluate_release_readiness(
+        inputs=ReadinessSignalInputs(
             candidate_id=candidate["candidate_id"],
             search_score=search["score"],
             heldout_score=heldout["score"],
         ),
         store=store,
     )
-    assert decision["decision"] == "block"
-    failed = {r["check"] for r in decision["rationale"] if not r["passed"]}
+    assert signal["readiness_signal"] == "risk_signal"
+    failed = {r["check"] for r in signal["rationale"] if not r["passed"]}
     assert "scores_admitted" in failed
 
 
@@ -143,7 +142,7 @@ def test_attack_eval_factory_does_not_collide_with_search_set(
 
 # ---------- Attack 4: re-promotion of a quarantined candidate -----------------
 
-def test_attack_quarantined_candidate_blocked_at_promotion(
+def test_attack_quarantined_candidate_yields_risk_signal(
     saturated_pair_persisted, store
 ):
     candidate, search_score, heldout_score = saturated_pair_persisted
@@ -156,16 +155,16 @@ def test_attack_quarantined_candidate_blocked_at_promotion(
         ),
         store=store,
     )
-    decision = evaluate_promotion(
-        inputs=PromotionGateInputs(
+    signal = evaluate_release_readiness(
+        inputs=ReadinessSignalInputs(
             candidate_id=candidate["candidate_id"],
             search_score=search_score,
             heldout_score=heldout_score,
         ),
         store=store,
     )
-    assert decision["decision"] == "block"
-    failed = {r["check"] for r in decision["rationale"] if not r["passed"]}
+    assert signal["readiness_signal"] == "risk_signal"
+    failed = {r["check"] for r in signal["rationale"] if not r["passed"]}
     assert "candidate_not_quarantined" in failed
 
 
@@ -173,11 +172,11 @@ def test_attack_quarantined_candidate_blocked_at_promotion(
 
 def test_attack_advisory_only_false_rejected_by_schema():
     payload = {
-        "artifact_type": "hop_harness_promotion_decision",
-        "schema_ref": "hop/harness_promotion_decision.schema.json",
+        "artifact_type": "hop_harness_release_readiness_signal",
+        "schema_ref": "hop/harness_release_readiness_signal.schema.json",
         "schema_version": "1.0.0",
         "trace": {"primary": "attacker", "related": []},
-        "decision_id": "fake",
+        "signal_id": "fake",
         "candidate_id": "cand_x",
         "search_score_artifact_id": "a",
         "heldout_score_artifact_id": "b",
@@ -186,18 +185,19 @@ def test_attack_advisory_only_false_rejected_by_schema():
         "search_eval_set_id": "x",
         "heldout_eval_set_id": "y",
         "trace_completeness": 1.0,
-        "blocking_failure_count": 0,
-        "decision": "allow",
+        "risk_failure_count": 0,
+        "readiness_signal": "ready_signal",
         "rationale": [
             {"check": "search_score_threshold", "passed": True, "detail": "ok"}
         ],
         "advisory_only": False,
+        "delegates_to": "REL",
         "evaluated_at": "2026-04-25T00:00:00.000000Z",
         "content_hash": "sha256:" + "0" * 64,
-        "artifact_id": "hop_promo_fake",
+        "artifact_id": "hop_rs_signal_fake",
     }
     with pytest.raises(HopSchemaError):
-        validate_hop_artifact(payload, "hop_harness_promotion_decision")
+        validate_hop_artifact(payload, "hop_harness_release_readiness_signal")
 
 
 # ---------- Attack 6: eval-data read leakage from sandbox ---------------------

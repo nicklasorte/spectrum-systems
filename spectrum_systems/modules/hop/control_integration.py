@@ -1,18 +1,20 @@
-"""HOP -> control plane bridge (Phase 2, advisory).
+"""Advisory bridge from the harness feedback surface to external owners.
 
-This is the *only* module HOP uses to talk to the external control plane.
-It packages a candidate's certification evidence into a single
-``hop_harness_control_advisory`` artifact and persists it. HOP does not
-contain any allow / warn / freeze / block authority — it merely emits the
-advisory, and the external CDE consumes it.
+This is the only module the harness uses to talk to external owners
+(REL for release/rollback, CDE for closure, SEL for enforcement). It
+packages a candidate's evidence into a single
+``hop_harness_control_advisory`` artifact and persists it. The harness
+does not encode any release/promotion/control authority — it merely
+emits the advisory, and the canonical owners consult it.
 
 Design rules:
 
-- The advisory is informational. ``advisory_only`` is permanently ``true``.
-- The advisory references existing artifact ids (promotion decision, trial
-  summary, blocking failures) — it never inlines decision logic.
-- The bridge fails closed: if the referenced artifacts cannot be read, the
-  bridge raises rather than silently producing a partial advisory.
+- The advisory is informational. ``advisory_only`` is permanently ``true``
+  and ``delegates_to`` is non-empty.
+- The advisory references existing artifact ids (release-readiness signal,
+  trial summary, risk failures) — it never inlines outcome logic.
+- The bridge fails closed: if the referenced artifacts cannot be read,
+  the bridge raises rather than silently producing a partial advisory.
 """
 
 from __future__ import annotations
@@ -33,7 +35,7 @@ class ControlIntegrationError(Exception):
     """Raised on infrastructure errors inside the bridge."""
 
 
-_VALID_KINDS = ("promotion_evaluation", "rollback_request", "trend_signal")
+_VALID_KINDS = ("readiness_evaluation", "rollback_signal_request", "trend_signal")
 
 
 def _utcnow() -> str:
@@ -48,9 +50,10 @@ def _utcnow() -> str:
 class ControlAdvisoryRequest:
     subject_candidate_id: str
     summary_kind: str
-    promotion_decision_artifact_id: str | None = None
+    release_readiness_signal_artifact_id: str | None = None
     trial_summary_artifact_id: str | None = None
-    blocking_failure_artifact_ids: tuple[str, ...] = ()
+    risk_failure_artifact_ids: tuple[str, ...] = ()
+    delegates_to: tuple[str, ...] = ("REL",)
 
 
 def build_control_advisory(
@@ -71,15 +74,18 @@ def build_control_advisory(
         )
     if not isinstance(request.subject_candidate_id, str) or not request.subject_candidate_id:
         raise ControlIntegrationError("hop_control_integration_invalid_subject")
+    if not request.delegates_to:
+        raise ControlIntegrationError("hop_control_integration_no_delegates")
 
-    if request.promotion_decision_artifact_id:
+    if request.release_readiness_signal_artifact_id:
         try:
             store.read_artifact(
-                "hop_harness_promotion_decision", request.promotion_decision_artifact_id
+                "hop_harness_release_readiness_signal",
+                request.release_readiness_signal_artifact_id,
             )
         except HopStoreError as exc:
             raise ControlIntegrationError(
-                f"hop_control_integration_missing_promotion_decision:{exc}"
+                f"hop_control_integration_missing_readiness_signal:{exc}"
             ) from exc
 
     if request.trial_summary_artifact_id:
@@ -92,7 +98,7 @@ def build_control_advisory(
                 f"hop_control_integration_missing_trial_summary:{exc}"
             ) from exc
 
-    for fid in request.blocking_failure_artifact_ids:
+    for fid in request.risk_failure_artifact_ids:
         try:
             store.read_artifact("hop_harness_failure_hypothesis", fid)
         except HopStoreError as exc:
@@ -113,10 +119,11 @@ def build_control_advisory(
         ),
         "subject_candidate_id": request.subject_candidate_id,
         "summary_kind": request.summary_kind,
-        "promotion_decision_artifact_id": request.promotion_decision_artifact_id,
+        "release_readiness_signal_artifact_id": request.release_readiness_signal_artifact_id,
         "trial_summary_artifact_id": request.trial_summary_artifact_id,
-        "blocking_failure_artifact_ids": list(request.blocking_failure_artifact_ids),
+        "risk_failure_artifact_ids": list(request.risk_failure_artifact_ids),
         "advisory_only": True,
+        "delegates_to": list(request.delegates_to),
         "emitted_at": _utcnow(),
     }
     finalize_artifact(payload, id_prefix="hop_advisory_")

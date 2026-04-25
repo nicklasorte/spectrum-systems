@@ -79,7 +79,7 @@ _TYPE_TO_DIR: dict[str, str] = {
     "hop_harness_routing_observation": "routing",
     "hop_harness_bootstrap_snapshot": "bootstrap",
     "hop_harness_trial_summary": "trial_summaries",
-    "hop_harness_promotion_decision": "promotion_decisions",
+    "hop_harness_release_readiness_signal": "release_readiness_signals",
     "hop_harness_rollback_signal": "rollback_signals",
     "hop_harness_eval_factory_record": "eval_factory_records",
     "hop_harness_trend_report": "trend_reports",
@@ -115,10 +115,10 @@ _INDEXED_FIELDS: dict[str, tuple[str, ...]] = {
     "hop_harness_routing_observation": ("observation_id", "transcript_id", "route_signal"),
     "hop_harness_bootstrap_snapshot": ("snapshot_id", "workflow_id"),
     "hop_harness_trial_summary": ("summary_id", "workflow_id", "best_candidate_id", "best_score"),
-    "hop_harness_promotion_decision": (
-        "decision_id",
+    "hop_harness_release_readiness_signal": (
+        "signal_id",
         "candidate_id",
-        "decision",
+        "readiness_signal",
         "search_eval_set_id",
         "heldout_eval_set_id",
     ),
@@ -140,7 +140,7 @@ _INDEXED_FIELDS: dict[str, tuple[str, ...]] = {
         "advisory_id",
         "subject_candidate_id",
         "summary_kind",
-        "promotion_decision_artifact_id",
+        "release_readiness_signal_artifact_id",
     ),
 }
 

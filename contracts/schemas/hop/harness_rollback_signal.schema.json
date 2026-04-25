@@ -60,7 +60,7 @@
             "enum": [
               "score_artifact_id",
               "failure_artifact_id",
-              "promotion_decision_artifact_id",
+              "release_readiness_signal_artifact_id",
               "trace_artifact_id",
               "snippet"
             ]
