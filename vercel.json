@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd apps/dashboard-3ls && npm install && npm run build",
+  "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
   "env": {
