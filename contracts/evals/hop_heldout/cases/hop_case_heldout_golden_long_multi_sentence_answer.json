@@ -1,0 +1,46 @@
+{
+  "artifact_id": "hop_eval_case_449486a77eb069de",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:449486a77eb069dec7ee55939d7c95abe912a975da65e8287e8a2f1cac0c1fea",
+  "eval_case_id": "hop_case_heldout_golden_long_multi_sentence_answer",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "long_answer_truncation"
+  ],
+  "input": {
+    "transcript_id": "t_heldout_long_multi",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "What invariants does the held-out set keep?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Three invariants. First, transcript_id disjointness from the search set. Second, content_hash integrity per case. Third, manifest tamper-evidence: any mismatch fails the loader closed."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_answer_substrings_per_question": [
+        {
+          "answer_substring": "tamper-evidence",
+          "question_substring": "invariants"
+        }
+      ],
+      "expected_questions_substrings": [
+        "invariants"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:golden_long_multi_sentence_answer",
+    "related": []
+  }
+}

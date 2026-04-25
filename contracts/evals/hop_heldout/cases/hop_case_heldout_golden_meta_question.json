@@ -1,8 +1,8 @@
 {
-  "artifact_id": "hop_eval_case_68d5b0e64cf10189",
+  "artifact_id": "hop_eval_case_c04594ab1762dc00",
   "artifact_type": "hop_harness_eval_case",
   "category": "golden",
-  "content_hash": "sha256:68d5b0e64cf101899c17b3fbf5e44a97ee4e094f4166b731a9dcf55d8c47fcfe",
+  "content_hash": "sha256:c04594ab1762dc00771e8d52f03a488ff4ae5c01bfc5b59ad2c9136e9b48da5b",
   "eval_case_id": "hop_case_heldout_golden_meta_question",
   "eval_case_version": "1.0.0",
   "failure_modes_targeted": [],
@@ -11,11 +11,11 @@
     "turns": [
       {
         "speaker": "user",
-        "text": "Who decides allow versus block?"
+        "text": "Who routes inputs through the harness?"
       },
       {
         "speaker": "assistant",
-        "text": "Control plane decides allow versus block."
+        "text": "An external router queues inputs."
       }
     ]
   },
@@ -24,12 +24,12 @@
     "rules": {
       "expected_answer_substrings_per_question": [
         {
-          "answer_substring": "Control plane",
-          "question_substring": "allow versus block"
+          "answer_substring": "router",
+          "question_substring": "routes inputs"
         }
       ],
       "expected_questions_substrings": [
-        "allow versus block"
+        "routes inputs"
       ],
       "max_qa_pairs": 1,
       "min_qa_pairs": 1

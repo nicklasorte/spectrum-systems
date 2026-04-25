@@ -1,0 +1,36 @@
+{
+  "artifact_id": "hop_eval_case_046718d1a7bf5507",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "adversarial",
+  "content_hash": "sha256:046718d1a7bf5507bb4a6eb5d8d7c86ab2080759429561e0bc704dc1ee93423e",
+  "eval_case_id": "hop_case_heldout_adversarial_qmark_inside_assistant_text",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "non_question_marked_question"
+  ],
+  "input": {
+    "transcript_id": "t_heldout_qmark_in_assistant",
+    "turns": [
+      {
+        "speaker": "assistant",
+        "text": "Were you asking?"
+      },
+      {
+        "speaker": "user",
+        "text": "I was not."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "rejection_expected",
+    "rules": {
+      "expect_rejection": true
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:adversarial_qmark_inside_assistant_text",
+    "related": []
+  }
+}

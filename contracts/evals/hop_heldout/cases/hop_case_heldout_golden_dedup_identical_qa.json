@@ -1,29 +1,31 @@
 {
-  "artifact_id": "hop_eval_case_d5b29e87ef212f7d",
+  "artifact_id": "hop_eval_case_8dfdbba066cc8d2a",
   "artifact_type": "hop_harness_eval_case",
   "category": "golden",
-  "content_hash": "sha256:d5b29e87ef212f7dcc4c9da3de79c3c9d4bd38501b6616b73d9d01b8606780b3",
+  "content_hash": "sha256:8dfdbba066cc8d2a8e98fcd16494742de1e6affd4f48feb7ad0e3153a2498325",
   "eval_case_id": "hop_case_heldout_golden_dedup_identical_qa",
   "eval_case_version": "1.0.0",
-  "failure_modes_targeted": [],
+  "failure_modes_targeted": [
+    "duplicate_questions"
+  ],
   "input": {
     "transcript_id": "t_heldout_dedup",
     "turns": [
       {
         "speaker": "user",
-        "text": "Is rollback reversible?"
+        "text": "Is the input cached?"
       },
       {
         "speaker": "assistant",
-        "text": "Rollback restores the prior promoted harness."
+        "text": "The input is cached for a single run."
       },
       {
         "speaker": "user",
-        "text": "Is rollback reversible?"
+        "text": "Is the input cached?"
       },
       {
         "speaker": "assistant",
-        "text": "Rollback restores the prior promoted harness."
+        "text": "The input is cached for a single run."
       }
     ]
   },
@@ -31,7 +33,7 @@
     "judge": "expected_qa_pairs",
     "rules": {
       "expected_questions_substrings": [
-        "rollback reversible"
+        "input cached"
       ],
       "max_qa_pairs": 1,
       "min_qa_pairs": 1

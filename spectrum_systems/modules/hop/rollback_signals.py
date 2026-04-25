@@ -28,10 +28,6 @@ class RollbackSignalError(Exception):
     """Raised on infrastructure errors inside the rollback-signal builder."""
 
 
-# Backwards-compatible alias retained for callers; not used in new code paths.
-RollbackError = RollbackSignalError
-
-
 _VALID_RECOMMENDATIONS = ("revert", "quarantine")
 _VALID_REASONS = (
     "regression_detected",
@@ -64,10 +60,6 @@ class RollbackSignalRequest:
     reason: str
     previous_promoted_candidate_id: str | None = None
     evidence: tuple[Mapping[str, Any], ...] = ()
-
-
-# Backwards-compatible alias for prior name.
-RollbackRequest = RollbackSignalRequest
 
 
 def build_rollback_signal(
@@ -138,10 +130,6 @@ def build_rollback_signal(
     return payload
 
 
-# Backwards-compatible alias.
-build_rollback_record = build_rollback_signal
-
-
 def _find_existing_signal(
     store: ExperienceStore, signal_id: str
 ) -> dict[str, Any] | None:
@@ -185,10 +173,6 @@ def emit_rollback_signal(
     return record
 
 
-# Backwards-compatible alias.
-emit_rollback = emit_rollback_signal
-
-
 def has_quarantine_signal(store: ExperienceStore, candidate_id: str) -> bool:
     """Has a ``quarantine``-recommendation signal been recorded?"""
     for rec in store.iter_index(artifact_type="hop_harness_rollback_signal"):
@@ -199,10 +183,6 @@ def has_quarantine_signal(store: ExperienceStore, candidate_id: str) -> bool:
         ):
             return True
     return False
-
-
-# Backwards-compatible alias.
-is_quarantined = has_quarantine_signal
 
 
 def list_rollback_signals(
@@ -223,7 +203,3 @@ def list_rollback_signals(
             )
         except HopStoreError:
             continue
-
-
-# Backwards-compatible alias.
-list_rollbacks = list_rollback_signals

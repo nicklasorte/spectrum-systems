@@ -24,11 +24,12 @@ BATCH-2 adds *bounded* optimization:
 
 Authority boundaries (unchanged):
 
-- The proposer is advisory only. It never decides, persists, or
-  promotes; those rights live with the optimization loop, the
-  evaluator, and (above HOP) the CDE.
-- HOP never self-certifies: a candidate's frontier membership is a
-  signal, not a promotion. Promotion still requires a passing
+- HOP is advisory only. The proposer never decides or persists; the
+  optimization loop and evaluator are HOP-internal orchestrators, and
+  release/promotion/rollback/certification authority remain external
+  (REL/CDE/SEL per ``contracts/governance/authority_registry.json``).
+- A candidate's frontier membership is a HOP-internal signal, never a
+  release-readiness verdict. The external owners — not HOP — emit any
   ``done_certification_record`` per the project CLAUDE.md.
 """
 

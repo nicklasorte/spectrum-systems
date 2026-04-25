@@ -1,8 +1,8 @@
 {
-  "artifact_id": "hop_eval_case_641738bd8591f26d",
+  "artifact_id": "hop_eval_case_346ff077637e4bc3",
   "artifact_type": "hop_harness_eval_case",
   "category": "golden",
-  "content_hash": "sha256:641738bd8591f26d1664dde896c250ef166848da7f6d5e212f0a13afea072ef2",
+  "content_hash": "sha256:346ff077637e4bc3e112022742d1c43a286ccd0a3ba2e4b0bbeb5bf012b24931",
   "eval_case_id": "hop_case_heldout_golden_paired_topics",
   "eval_case_version": "1.0.0",
   "failure_modes_targeted": [],
@@ -15,7 +15,7 @@
       },
       {
         "speaker": "assistant",
-        "text": "It is a disjoint eval cohort used at certification."
+        "text": "It is a disjoint eval cohort the harness scores against."
       },
       {
         "speaker": "user",

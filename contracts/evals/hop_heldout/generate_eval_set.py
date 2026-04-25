@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
-"""Deterministic generator for the HOP held-out certification eval set.
+"""Deterministic generator for the HOP held-out advisory eval set.
 
 The held-out set is *separate* from the search eval set
-(``contracts/evals/hop``). Promotion candidates must pass BOTH sets — the
-held-out set is the certification gate that catches search-eval overfitting.
+(``contracts/evals/hop``). Candidate harnesses must score well on BOTH
+sets — the held-out set surfaces overfitting on the search set as a
+regression on disjoint inputs. The harness merely packages an advisory
+readiness signal; release/promotion remains the canonical concern of
+REL/CDE per ``contracts/governance/authority_registry.json``.
 
-Cases here are intentionally distinct in transcript content, structure, and
-phrasing from the search set. They share the same JSON schema and judges.
+Cases here are intentionally distinct in transcript content, structure,
+and phrasing from the search set. They share the same JSON schema and
+judges. Transcript content stays free of authority-shaped vocabulary so
+the held-out cases cannot be confused with control-plane artifacts and
+do not mislead future prompts.
 
 Run::
 
@@ -63,23 +69,24 @@ def _case(
 
 # --- golden cases (held-out) --------------------------------------------------
 
+
 def _heldout_golden_pricing() -> dict[str, Any]:
     return _case(
         slug="golden_pricing",
         category="golden",
         transcript_id="t_heldout_pricing",
         turns=[
-            {"speaker": "user", "text": "How much does the certification gate cost?"},
-            {"speaker": "assistant", "text": "Certification is bundled with the eval."},
+            {"speaker": "user", "text": "How much does the eval bundle cost?"},
+            {"speaker": "assistant", "text": "The eval bundle is included with the harness."},
         ],
         pass_criteria={
             "judge": "expected_qa_pairs",
             "rules": {
                 "min_qa_pairs": 1,
                 "max_qa_pairs": 1,
-                "expected_questions_substrings": ["certification gate"],
+                "expected_questions_substrings": ["eval bundle"],
                 "expected_answer_substrings_per_question": [
-                    {"question_substring": "certification gate", "answer_substring": "bundled"},
+                    {"question_substring": "eval bundle", "answer_substring": "included"},
                 ],
             },
         },
@@ -93,17 +100,17 @@ def _heldout_golden_meta_question() -> dict[str, Any]:
         category="golden",
         transcript_id="t_heldout_meta",
         turns=[
-            {"speaker": "user", "text": "Who decides allow versus block?"},
-            {"speaker": "assistant", "text": "Control plane decides allow versus block."},
+            {"speaker": "user", "text": "Who routes inputs through the harness?"},
+            {"speaker": "assistant", "text": "An external router queues inputs."},
         ],
         pass_criteria={
             "judge": "expected_qa_pairs",
             "rules": {
                 "min_qa_pairs": 1,
                 "max_qa_pairs": 1,
-                "expected_questions_substrings": ["allow versus block"],
+                "expected_questions_substrings": ["routes inputs"],
                 "expected_answer_substrings_per_question": [
-                    {"question_substring": "allow versus block", "answer_substring": "Control plane"},
+                    {"question_substring": "routes inputs", "answer_substring": "router"},
                 ],
             },
         },
@@ -118,7 +125,7 @@ def _heldout_golden_paired_topics() -> dict[str, Any]:
         transcript_id="t_heldout_paired",
         turns=[
             {"speaker": "user", "text": "What is the held-out set?"},
-            {"speaker": "assistant", "text": "It is a disjoint eval cohort used at certification."},
+            {"speaker": "assistant", "text": "It is a disjoint eval cohort the harness scores against."},
             {"speaker": "user", "text": "How is it disjoint?"},
             {"speaker": "assistant", "text": "Cases share zero transcript_ids with the search set."},
         ],
@@ -160,7 +167,7 @@ def _heldout_golden_long_answer() -> dict[str, Any]:
                 ],
             },
         },
-        failure_modes_targeted=[],
+        failure_modes_targeted=["long_answer_truncation"],
     )
 
 
@@ -170,20 +177,20 @@ def _heldout_golden_dedup_paraphrase() -> dict[str, Any]:
         category="golden",
         transcript_id="t_heldout_dedup",
         turns=[
-            {"speaker": "user", "text": "Is rollback reversible?"},
-            {"speaker": "assistant", "text": "Rollback restores the prior promoted harness."},
-            {"speaker": "user", "text": "Is rollback reversible?"},
-            {"speaker": "assistant", "text": "Rollback restores the prior promoted harness."},
+            {"speaker": "user", "text": "Is the input cached?"},
+            {"speaker": "assistant", "text": "The input is cached for a single run."},
+            {"speaker": "user", "text": "Is the input cached?"},
+            {"speaker": "assistant", "text": "The input is cached for a single run."},
         ],
         pass_criteria={
             "judge": "expected_qa_pairs",
             "rules": {
                 "min_qa_pairs": 1,
                 "max_qa_pairs": 1,
-                "expected_questions_substrings": ["rollback reversible"],
+                "expected_questions_substrings": ["input cached"],
             },
         },
-        failure_modes_targeted=[],
+        failure_modes_targeted=["duplicate_questions"],
     )
 
 
@@ -212,7 +219,99 @@ def _heldout_golden_three_topic() -> dict[str, Any]:
     )
 
 
+# --- harder golden cases (held-out, HOP-005) ---------------------------------
+
+
+def _heldout_golden_long_multi_sentence_answer() -> dict[str, Any]:
+    """Long multi-sentence answer; baseline must preserve the full body."""
+    return _case(
+        slug="golden_long_multi_sentence_answer",
+        category="golden",
+        transcript_id="t_heldout_long_multi",
+        turns=[
+            {"speaker": "user", "text": "What invariants does the held-out set keep?"},
+            {
+                "speaker": "assistant",
+                "text": (
+                    "Three invariants. First, transcript_id disjointness from the "
+                    "search set. Second, content_hash integrity per case. Third, "
+                    "manifest tamper-evidence: any mismatch fails the loader closed."
+                ),
+            },
+        ],
+        pass_criteria={
+            "judge": "expected_qa_pairs",
+            "rules": {
+                "min_qa_pairs": 1,
+                "max_qa_pairs": 1,
+                "expected_questions_substrings": ["invariants"],
+                "expected_answer_substrings_per_question": [
+                    {"question_substring": "invariants", "answer_substring": "tamper-evidence"},
+                ],
+            },
+        },
+        failure_modes_targeted=["long_answer_truncation"],
+    )
+
+
+def _heldout_golden_topic_switch_three_qa() -> dict[str, Any]:
+    """Three Q/A pairs on three distinct topics; pairing must not bleed."""
+    return _case(
+        slug="golden_topic_switch_three_qa",
+        category="golden",
+        transcript_id="t_heldout_topic_switch",
+        turns=[
+            {"speaker": "user", "text": "Where do failure hypotheses live?"},
+            {"speaker": "assistant", "text": "They live in the experience store under their own kind."},
+            {"speaker": "user", "text": "What seeds the proposer?"},
+            {"speaker": "assistant", "text": "The proposer seeds from prior trace diffs and failures."},
+            {"speaker": "user", "text": "Why is the loop deterministic?"},
+            {"speaker": "assistant", "text": "Determinism keeps frontier recomputes reproducible."},
+        ],
+        pass_criteria={
+            "judge": "expected_qa_pairs",
+            "rules": {
+                "min_qa_pairs": 3,
+                "max_qa_pairs": 3,
+                "expected_questions_substrings": [
+                    "failure hypotheses",
+                    "seeds the proposer",
+                    "deterministic",
+                ],
+            },
+        },
+        failure_modes_targeted=["interleaved_speakers"],
+    )
+
+
+def _heldout_golden_orphan_assistant_then_qa() -> dict[str, Any]:
+    """Leading assistant turn must not become a phantom answer."""
+    return _case(
+        slug="golden_orphan_assistant_then_qa",
+        category="golden",
+        transcript_id="t_heldout_orphan_assistant",
+        turns=[
+            {"speaker": "assistant", "text": "Welcome to the harness."},
+            {"speaker": "user", "text": "What does the harness emit?"},
+            {"speaker": "assistant", "text": "The harness emits an FAQ output artifact."},
+        ],
+        pass_criteria={
+            "judge": "expected_qa_pairs",
+            "rules": {
+                "min_qa_pairs": 1,
+                "max_qa_pairs": 1,
+                "expected_questions_substrings": ["harness emit"],
+                "expected_answer_substrings_per_question": [
+                    {"question_substring": "harness emit", "answer_substring": "FAQ output"},
+                ],
+            },
+        },
+        failure_modes_targeted=["interleaved_speakers"],
+    )
+
+
 # --- adversarial cases (held-out) --------------------------------------------
+
 
 def _heldout_adv_no_assistant_followup() -> dict[str, Any]:
     return _case(
@@ -220,7 +319,7 @@ def _heldout_adv_no_assistant_followup() -> dict[str, Any]:
         category="adversarial",
         transcript_id="t_heldout_no_followup",
         turns=[
-            {"speaker": "user", "text": "Where does the rollback artifact go?"},
+            {"speaker": "user", "text": "Where does the trace artifact go?"},
         ],
         pass_criteria={
             "judge": "rejection_expected",
@@ -270,8 +369,8 @@ def _heldout_adv_question_no_qmark() -> dict[str, Any]:
         category="adversarial",
         transcript_id="t_heldout_no_qmark",
         turns=[
-            {"speaker": "user", "text": "Tell me about promotion gates."},
-            {"speaker": "assistant", "text": "They require search and held-out passes."},
+            {"speaker": "user", "text": "Tell me about input batches."},
+            {"speaker": "assistant", "text": "Batches are sized by the harness config."},
         ],
         pass_criteria={
             "judge": "rejection_expected",
@@ -316,6 +415,60 @@ def _heldout_adv_empty() -> dict[str, Any]:
     )
 
 
+# --- harder adversarial cases (held-out, HOP-005) ----------------------------
+
+
+def _heldout_adv_qmark_inside_assistant_text() -> dict[str, Any]:
+    """Assistant text contains a '?' but is not a question; user makes a
+    statement. The harness must not mistake the assistant's '?' for a user
+    question.
+    """
+    return _case(
+        slug="adversarial_qmark_inside_assistant_text",
+        category="adversarial",
+        transcript_id="t_heldout_qmark_in_assistant",
+        turns=[
+            {"speaker": "assistant", "text": "Were you asking?"},
+            {"speaker": "user", "text": "I was not."},
+        ],
+        pass_criteria={
+            "judge": "rejection_expected",
+            "rules": {"expect_rejection": True},
+        },
+        failure_modes_targeted=["non_question_marked_question"],
+    )
+
+
+def _heldout_adv_leakage_in_question_text() -> dict[str, Any]:
+    """User question contains the leakage marker. The harness must not
+    propagate the marker into the answer body.
+    """
+    return _case(
+        slug="adversarial_leakage_in_question_text",
+        category="adversarial",
+        transcript_id="t_heldout_leak_in_question",
+        turns=[
+            {
+                "speaker": "user",
+                "text": "Why is the marker __hop_heldout_leak__ banned?",
+            },
+            {
+                "speaker": "assistant",
+                "text": "It is reserved for leakage detection. The harness does not echo it.",
+            },
+        ],
+        pass_criteria={
+            "judge": "structural",
+            "rules": {
+                "min_qa_pairs": 1,
+                "max_qa_pairs": 1,
+                "forbidden_substrings_in_answers": ["__hop_heldout_leak__"],
+            },
+        },
+        failure_modes_targeted=["leakage_attempt"],
+    )
+
+
 CASE_BUILDERS = (
     _heldout_golden_pricing,
     _heldout_golden_meta_question,
@@ -323,12 +476,17 @@ CASE_BUILDERS = (
     _heldout_golden_long_answer,
     _heldout_golden_dedup_paraphrase,
     _heldout_golden_three_topic,
+    _heldout_golden_long_multi_sentence_answer,
+    _heldout_golden_topic_switch_three_qa,
+    _heldout_golden_orphan_assistant_then_qa,
     _heldout_adv_no_assistant_followup,
     _heldout_adv_only_statements,
     _heldout_adv_two_questions_no_answer,
     _heldout_adv_question_no_qmark,
     _heldout_adv_forbidden_marker,
     _heldout_adv_empty,
+    _heldout_adv_qmark_inside_assistant_text,
+    _heldout_adv_leakage_in_question_text,
 )
 
 
@@ -361,6 +519,13 @@ def main() -> int:
 
     if len(cases) < 5 or len(cases) > 50:
         raise SystemExit(f"heldout_set_size_out_of_bounds:{len(cases)}")
+
+    # Drop any stale on-disk cases that the current builder set no longer
+    # produces, so the manifest stays in sync byte-for-byte.
+    expected_paths = {CASES_DIR / f"{case['eval_case_id']}.json" for case in cases}
+    for stale in CASES_DIR.glob("hop_case_heldout_*.json"):
+        if stale not in expected_paths:
+            stale.unlink()
 
     for case in cases:
         path = CASES_DIR / f"{case['eval_case_id']}.json"

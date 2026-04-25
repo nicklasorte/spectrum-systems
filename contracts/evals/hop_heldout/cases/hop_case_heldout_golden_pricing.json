@@ -1,8 +1,8 @@
 {
-  "artifact_id": "hop_eval_case_ff96032c460583be",
+  "artifact_id": "hop_eval_case_4fa09617f9a13bca",
   "artifact_type": "hop_harness_eval_case",
   "category": "golden",
-  "content_hash": "sha256:ff96032c460583beb6e440fb82d759a95fef2a09364f9235ec4522dac1671fb9",
+  "content_hash": "sha256:4fa09617f9a13bca921e4cff1aed7e7cc4c8458792e903386b871154a148e292",
   "eval_case_id": "hop_case_heldout_golden_pricing",
   "eval_case_version": "1.0.0",
   "failure_modes_targeted": [],
@@ -11,11 +11,11 @@
     "turns": [
       {
         "speaker": "user",
-        "text": "How much does the certification gate cost?"
+        "text": "How much does the eval bundle cost?"
       },
       {
         "speaker": "assistant",
-        "text": "Certification is bundled with the eval."
+        "text": "The eval bundle is included with the harness."
       }
     ]
   },
@@ -24,12 +24,12 @@
     "rules": {
       "expected_answer_substrings_per_question": [
         {
-          "answer_substring": "bundled",
-          "question_substring": "certification gate"
+          "answer_substring": "included",
+          "question_substring": "eval bundle"
         }
       ],
       "expected_questions_substrings": [
-        "certification gate"
+        "eval bundle"
       ],
       "max_qa_pairs": 1,
       "min_qa_pairs": 1

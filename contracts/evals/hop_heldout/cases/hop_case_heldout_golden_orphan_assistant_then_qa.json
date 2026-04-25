@@ -1,0 +1,50 @@
+{
+  "artifact_id": "hop_eval_case_ee3aac0f6f54a2ea",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:ee3aac0f6f54a2ea282e16091a0cdcab96b3506ae607dec4c96b9bd3be57361a",
+  "eval_case_id": "hop_case_heldout_golden_orphan_assistant_then_qa",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "interleaved_speakers"
+  ],
+  "input": {
+    "transcript_id": "t_heldout_orphan_assistant",
+    "turns": [
+      {
+        "speaker": "assistant",
+        "text": "Welcome to the harness."
+      },
+      {
+        "speaker": "user",
+        "text": "What does the harness emit?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "The harness emits an FAQ output artifact."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_answer_substrings_per_question": [
+        {
+          "answer_substring": "FAQ output",
+          "question_substring": "harness emit"
+        }
+      ],
+      "expected_questions_substrings": [
+        "harness emit"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:golden_orphan_assistant_then_qa",
+    "related": []
+  }
+}

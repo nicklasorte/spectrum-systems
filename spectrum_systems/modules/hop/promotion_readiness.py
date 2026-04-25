@@ -54,10 +54,6 @@ class ReadinessSignalError(Exception):
     """Raised on infrastructure errors inside the readiness builder."""
 
 
-# Backwards-compatible alias.
-PromotionGateError = ReadinessSignalError
-
-
 def _utcnow() -> str:
     return (
         datetime.now(tz=timezone.utc)
@@ -81,20 +77,12 @@ class ReadinessSignalConfig:
     min_trace_completeness: float = 1.0
 
 
-# Backwards-compatible alias.
-PromotionGateConfig = ReadinessSignalConfig
-
-
 @dataclass(frozen=True)
 class ReadinessSignalInputs:
     candidate_id: str
     search_score: Mapping[str, Any]
     heldout_score: Mapping[str, Any]
     risk_failures: tuple[Mapping[str, Any], ...] = ()
-
-
-# Backwards-compatible alias.
-PromotionGateInputs = ReadinessSignalInputs
 
 
 def _check_search_score_threshold(
@@ -294,10 +282,6 @@ def evaluate_release_readiness(
     return payload
 
 
-# Backwards-compatible alias.
-evaluate_promotion = evaluate_release_readiness
-
-
 def list_risk_failures_for_candidate(
     store: ExperienceStore, candidate_id: str
 ) -> tuple[Mapping[str, Any], ...]:
@@ -317,10 +301,6 @@ def list_risk_failures_for_candidate(
         if bool(payload.get("blocks_promotion")):
             out.append(payload)
     return tuple(out)
-
-
-# Backwards-compatible alias.
-list_blocking_failures_for_candidate = list_risk_failures_for_candidate
 
 
 def _logical_signal_id(inputs: ReadinessSignalInputs) -> str:
@@ -398,7 +378,3 @@ def iter_risk_signals(
             )
         except HopStoreError:
             continue
-
-
-# Backwards-compatible alias.
-iter_blocking_decisions = iter_risk_signals

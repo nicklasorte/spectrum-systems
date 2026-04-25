@@ -1,0 +1,58 @@
+{
+  "artifact_id": "hop_eval_case_d099aecd9934b88e",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:d099aecd9934b88efe95121958fc2ae26370c2fdaa87d11373b2baea3212a9a3",
+  "eval_case_id": "hop_case_heldout_golden_topic_switch_three_qa",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "interleaved_speakers"
+  ],
+  "input": {
+    "transcript_id": "t_heldout_topic_switch",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Where do failure hypotheses live?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "They live in the experience store under their own kind."
+      },
+      {
+        "speaker": "user",
+        "text": "What seeds the proposer?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "The proposer seeds from prior trace diffs and failures."
+      },
+      {
+        "speaker": "user",
+        "text": "Why is the loop deterministic?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Determinism keeps frontier recomputes reproducible."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_questions_substrings": [
+        "failure hypotheses",
+        "seeds the proposer",
+        "deterministic"
+      ],
+      "max_qa_pairs": 3,
+      "min_qa_pairs": 3
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:golden_topic_switch_three_qa",
+    "related": []
+  }
+}

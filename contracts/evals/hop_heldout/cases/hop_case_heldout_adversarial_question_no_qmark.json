@@ -1,8 +1,8 @@
 {
-  "artifact_id": "hop_eval_case_29f62462d247ecbf",
+  "artifact_id": "hop_eval_case_f33c534342d875fe",
   "artifact_type": "hop_harness_eval_case",
   "category": "adversarial",
-  "content_hash": "sha256:29f62462d247ecbf6ed90290f11be0fde5c896b312934e5e7957e009137e8b40",
+  "content_hash": "sha256:f33c534342d875fe87f96333ea5934e42381a424542b988e302bfb24839b19c1",
   "eval_case_id": "hop_case_heldout_adversarial_question_no_qmark",
   "eval_case_version": "1.0.0",
   "failure_modes_targeted": [
@@ -13,11 +13,11 @@
     "turns": [
       {
         "speaker": "user",
-        "text": "Tell me about promotion gates."
+        "text": "Tell me about input batches."
       },
       {
         "speaker": "assistant",
-        "text": "They require search and held-out passes."
+        "text": "Batches are sized by the harness config."
       }
     ]
   },

@@ -1,38 +1,38 @@
 {
-  "case_count": 12,
+  "case_count": 17,
   "cases": [
     {
-      "artifact_id": "hop_eval_case_ff96032c460583be",
+      "artifact_id": "hop_eval_case_4fa09617f9a13bca",
       "category": "golden",
-      "content_hash": "sha256:ff96032c460583beb6e440fb82d759a95fef2a09364f9235ec4522dac1671fb9",
+      "content_hash": "sha256:4fa09617f9a13bca921e4cff1aed7e7cc4c8458792e903386b871154a148e292",
       "eval_case_id": "hop_case_heldout_golden_pricing",
       "path": "cases/hop_case_heldout_golden_pricing.json"
     },
     {
-      "artifact_id": "hop_eval_case_68d5b0e64cf10189",
+      "artifact_id": "hop_eval_case_c04594ab1762dc00",
       "category": "golden",
-      "content_hash": "sha256:68d5b0e64cf101899c17b3fbf5e44a97ee4e094f4166b731a9dcf55d8c47fcfe",
+      "content_hash": "sha256:c04594ab1762dc00771e8d52f03a488ff4ae5c01bfc5b59ad2c9136e9b48da5b",
       "eval_case_id": "hop_case_heldout_golden_meta_question",
       "path": "cases/hop_case_heldout_golden_meta_question.json"
     },
     {
-      "artifact_id": "hop_eval_case_641738bd8591f26d",
+      "artifact_id": "hop_eval_case_346ff077637e4bc3",
       "category": "golden",
-      "content_hash": "sha256:641738bd8591f26d1664dde896c250ef166848da7f6d5e212f0a13afea072ef2",
+      "content_hash": "sha256:346ff077637e4bc3e112022742d1c43a286ccd0a3ba2e4b0bbeb5bf012b24931",
       "eval_case_id": "hop_case_heldout_golden_paired_topics",
       "path": "cases/hop_case_heldout_golden_paired_topics.json"
     },
     {
-      "artifact_id": "hop_eval_case_52fabeb65d5d5f1f",
+      "artifact_id": "hop_eval_case_f2e5376e8b268851",
       "category": "golden",
-      "content_hash": "sha256:52fabeb65d5d5f1f460cebf6b320fdf4b50284cdb7f36f827b9586250bf6d87e",
+      "content_hash": "sha256:f2e5376e8b268851a2d73d3e06e5f1b42456bd88e4c95c107367b15f19eede20",
       "eval_case_id": "hop_case_heldout_golden_long_answer",
       "path": "cases/hop_case_heldout_golden_long_answer.json"
     },
     {
-      "artifact_id": "hop_eval_case_d5b29e87ef212f7d",
+      "artifact_id": "hop_eval_case_8dfdbba066cc8d2a",
       "category": "golden",
-      "content_hash": "sha256:d5b29e87ef212f7dcc4c9da3de79c3c9d4bd38501b6616b73d9d01b8606780b3",
+      "content_hash": "sha256:8dfdbba066cc8d2a8e98fcd16494742de1e6affd4f48feb7ad0e3153a2498325",
       "eval_case_id": "hop_case_heldout_golden_dedup_identical_qa",
       "path": "cases/hop_case_heldout_golden_dedup_identical_qa.json"
     },
@@ -44,9 +44,30 @@
       "path": "cases/hop_case_heldout_golden_three_topic.json"
     },
     {
-      "artifact_id": "hop_eval_case_74f9458fe1a0de56",
+      "artifact_id": "hop_eval_case_449486a77eb069de",
+      "category": "golden",
+      "content_hash": "sha256:449486a77eb069dec7ee55939d7c95abe912a975da65e8287e8a2f1cac0c1fea",
+      "eval_case_id": "hop_case_heldout_golden_long_multi_sentence_answer",
+      "path": "cases/hop_case_heldout_golden_long_multi_sentence_answer.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_d099aecd9934b88e",
+      "category": "golden",
+      "content_hash": "sha256:d099aecd9934b88efe95121958fc2ae26370c2fdaa87d11373b2baea3212a9a3",
+      "eval_case_id": "hop_case_heldout_golden_topic_switch_three_qa",
+      "path": "cases/hop_case_heldout_golden_topic_switch_three_qa.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_ee3aac0f6f54a2ea",
+      "category": "golden",
+      "content_hash": "sha256:ee3aac0f6f54a2ea282e16091a0cdcab96b3506ae607dec4c96b9bd3be57361a",
+      "eval_case_id": "hop_case_heldout_golden_orphan_assistant_then_qa",
+      "path": "cases/hop_case_heldout_golden_orphan_assistant_then_qa.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_55d9b7aa7794746a",
       "category": "adversarial",
-      "content_hash": "sha256:74f9458fe1a0de565cb2e6c78c010f416a8d0fcc624a87d7fdf62989a914734a",
+      "content_hash": "sha256:55d9b7aa7794746a81aa72bae07c80fafba6f2ea027800a8a85d792b5f803077",
       "eval_case_id": "hop_case_heldout_adversarial_no_followup",
       "path": "cases/hop_case_heldout_adversarial_no_followup.json"
     },
@@ -65,9 +86,9 @@
       "path": "cases/hop_case_heldout_adversarial_two_questions_no_answer.json"
     },
     {
-      "artifact_id": "hop_eval_case_29f62462d247ecbf",
+      "artifact_id": "hop_eval_case_f33c534342d875fe",
       "category": "adversarial",
-      "content_hash": "sha256:29f62462d247ecbf6ed90290f11be0fde5c896b312934e5e7957e009137e8b40",
+      "content_hash": "sha256:f33c534342d875fe87f96333ea5934e42381a424542b988e302bfb24839b19c1",
       "eval_case_id": "hop_case_heldout_adversarial_question_no_qmark",
       "path": "cases/hop_case_heldout_adversarial_question_no_qmark.json"
     },
@@ -84,6 +105,20 @@
       "content_hash": "sha256:cb20eb9ea1b532042a4470624466bce863d078d4fddc7fae521e3c98957267ec",
       "eval_case_id": "hop_case_heldout_adversarial_empty_transcript",
       "path": "cases/hop_case_heldout_adversarial_empty_transcript.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_046718d1a7bf5507",
+      "category": "adversarial",
+      "content_hash": "sha256:046718d1a7bf5507bb4a6eb5d8d7c86ab2080759429561e0bc704dc1ee93423e",
+      "eval_case_id": "hop_case_heldout_adversarial_qmark_inside_assistant_text",
+      "path": "cases/hop_case_heldout_adversarial_qmark_inside_assistant_text.json"
+    },
+    {
+      "artifact_id": "hop_eval_case_68aaabece3ea9807",
+      "category": "adversarial",
+      "content_hash": "sha256:68aaabece3ea98073e9ff0213750bae5ba9ad2697e5c6801018c06c882770cbe",
+      "eval_case_id": "hop_case_heldout_adversarial_leakage_in_question_text",
+      "path": "cases/hop_case_heldout_adversarial_leakage_in_question_text.json"
     }
   ],
   "eval_set_id": "hop_transcript_to_faq_heldout_v1",

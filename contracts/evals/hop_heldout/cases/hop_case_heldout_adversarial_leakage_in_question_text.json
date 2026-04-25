@@ -1,0 +1,40 @@
+{
+  "artifact_id": "hop_eval_case_68aaabece3ea9807",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "adversarial",
+  "content_hash": "sha256:68aaabece3ea98073e9ff0213750bae5ba9ad2697e5c6801018c06c882770cbe",
+  "eval_case_id": "hop_case_heldout_adversarial_leakage_in_question_text",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "leakage_attempt"
+  ],
+  "input": {
+    "transcript_id": "t_heldout_leak_in_question",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Why is the marker __hop_heldout_leak__ banned?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "It is reserved for leakage detection. The harness does not echo it."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "structural",
+    "rules": {
+      "forbidden_substrings_in_answers": [
+        "__hop_heldout_leak__"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:adversarial_leakage_in_question_text",
+    "related": []
+  }
+}

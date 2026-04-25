@@ -1,11 +1,13 @@
 {
-  "artifact_id": "hop_eval_case_52fabeb65d5d5f1f",
+  "artifact_id": "hop_eval_case_f2e5376e8b268851",
   "artifact_type": "hop_harness_eval_case",
   "category": "golden",
-  "content_hash": "sha256:52fabeb65d5d5f1f460cebf6b320fdf4b50284cdb7f36f827b9586250bf6d87e",
+  "content_hash": "sha256:f2e5376e8b268851a2d73d3e06e5f1b42456bd88e4c95c107367b15f19eede20",
   "eval_case_id": "hop_case_heldout_golden_long_answer",
   "eval_case_version": "1.0.0",
-  "failure_modes_targeted": [],
+  "failure_modes_targeted": [
+    "long_answer_truncation"
+  ],
   "input": {
     "transcript_id": "t_heldout_long",
     "turns": [
