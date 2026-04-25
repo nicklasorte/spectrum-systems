@@ -1,0 +1,42 @@
+{
+  "artifact_type": "authority_neutral_vocabulary",
+  "artifact_version": "1.0.0",
+  "description": "Neutral vocabulary for non-authority 3-letter systems. Non-owner systems must express gate evidence and routing without using reserved authority vocabulary. This map is consumed by scripts/run_3ls_authority_preflight.py and scripts/suggest_3ls_authority_repairs.py.",
+  "forbidden_terms": [
+    "allow",
+    "block",
+    "freeze",
+    "promote",
+    "decision",
+    "enforcement_action",
+    "certification_status",
+    "certified",
+    "promoted",
+    "promotion_ready"
+  ],
+  "neutral_replacements": {
+    "allow": ["passed_gate", "gate_evidence_valid"],
+    "block": ["failed_gate", "gate_evidence_invalid"],
+    "freeze": ["held_state", "requires_review"],
+    "promote": ["advance_to_next_stage"],
+    "decision": ["gate_evidence", "routing_result", "evaluation_result"],
+    "enforcement_action": ["action_request", "routed_action_ref"],
+    "certification_status": ["certification_evidence_status"],
+    "certified": ["certification_evidence_present"],
+    "promoted": ["advanced_to_stage"],
+    "promotion_ready": ["ready_for_gate_review"]
+  },
+  "permitted_contexts": {
+    "documentation_quoted_term": "A forbidden term may appear inside a back-tick fenced span within markdown only when it explicitly references the authority vocabulary registry, e.g. `allow` (TPA-only).",
+    "test_fixtures": "Test files under tests/ may construct forbidden tokens to assert that the guard rejects them.",
+    "registry_definitions": "contracts/governance/authority_registry.json and this file may enumerate forbidden terms for definition purposes."
+  },
+  "non_owner_guidance": {
+    "TLC": "Routing systems express results as routing_result with gate_evidence references. They never assert allow/block/freeze/promote.",
+    "PQX": "Execution coordination expresses outcomes as action_request and execution_result. PQX may report passed_gate / failed_gate referencing gate evidence produced by the appropriate authority.",
+    "RDX": "Roadmap planning surfaces use ready_for_gate_review and advance_to_next_stage. RDX never authors a control_decision or certification_status.",
+    "MAP": "Mapping/metadata surfaces describe artifacts as certification_evidence_present, never certified.",
+    "DASHBOARD": "Dashboard/UI displays only evidence states (passed_gate, failed_gate, held_state, ready_for_gate_review). Never displays a verdict it produces itself."
+  },
+  "rationale": "Authority vocabulary names a hard responsibility surface. When non-owner systems use these words, downstream readers and tools cannot tell whether the surface produced the verdict or merely echoed it. Neutral vocabulary preserves the same workflow expressiveness while keeping authority attribution unambiguous."
+}

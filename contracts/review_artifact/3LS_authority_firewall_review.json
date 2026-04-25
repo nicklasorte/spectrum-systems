@@ -1,0 +1,88 @@
+{
+  "artifact_id": "RVA-3LS-FIREWALL-001",
+  "artifact_type": "review_artifact",
+  "schema_ref": "transcript_pipeline/review_artifact",
+  "schema_version": "1.0.0",
+  "content_hash": "sha256:placeholder_updated_after_write",
+  "trace": {
+    "trace_id": "3ls01a7c3d4e5f60123456789abcdef0",
+    "span_id": "3ls01b2c3d4e5f60"
+  },
+  "provenance": {
+    "produced_by": "adversarial-review-agent-ARA-3LS-01",
+    "input_artifact_ids": [],
+    "run_id": "run-BATCH-3LS-01-review"
+  },
+  "created_at": "2026-04-25T00:00:00+00:00",
+  "reviewed_artifact_id": "BATCH-3LS-01",
+  "reviewed_artifact_type": "implementation_batch",
+  "reviewer_id": "ARA-3LS-01",
+  "summary": "Red-team review of the 3LS Authority Boundary Firewall + preflight repair suggestions. Seven adversarial scenarios exercised: TLC leak, PQX leak, dashboard/API coverage, fake allowlist attempt, missing neutral vocabulary, scan failure, and S4+blocking=false bypass attempt. One S3 finding (dashboard scope gap) recorded and resolved with a registry scope_note plus a tractable future scope-extension path. No S2+ findings. Existing CI authority leak guard remains strict and unweakened (11 existing tests pass).",
+  "review_decision": "revise",
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "severity": "S0",
+      "description": "TLC non-owner authority leak (decision/allow) is caught by the preflight and a neutral-vocabulary suggestion is emitted.",
+      "section_ref": "scripts/run_3ls_authority_preflight.py",
+      "recommendation": "No action. Covered by tests/governance/test_3ls_authority_preflight.py::test_non_owner_tlc_file_with_allow_fails.",
+      "blocking": false
+    },
+    {
+      "finding_id": "F-002",
+      "severity": "S0",
+      "description": "PQX non-owner authority leak (decision/block) is caught by the preflight and a neutral-vocabulary suggestion is emitted.",
+      "section_ref": "scripts/run_3ls_authority_preflight.py",
+      "recommendation": "No action. Covered by tests/governance/test_3ls_authority_preflight.py::test_non_owner_pqx_file_with_block_fails.",
+      "blocking": false
+    },
+    {
+      "finding_id": "F-003",
+      "severity": "S3",
+      "description": "Dashboard/API surface (dashboard/, app/, components/) is outside default_scope_prefixes in authority_registry.json. Authority vocabulary leaks under those paths are not currently caught by the existing CI guard or by the new preflight.",
+      "section_ref": "contracts/governance/authority_registry.json",
+      "recommendation": "DASHBOARD recorded in three_letter_system_boundary_guidance with empty support_path_prefixes and explicit scope_note. Future scope-extension PR can add dashboard scan paths without breaking existing usage. See FIX-001.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-004",
+      "severity": "S0",
+      "description": "Fake allowlist override attempt: the repair suggester never proposes adding a non-owner path to vocabulary_overrides. Owner-path violations are flagged for manual owner review instead of silent override widening.",
+      "section_ref": "scripts/suggest_3ls_authority_repairs.py",
+      "recommendation": "No action. Covered by tests/governance/test_3ls_authority_repair_suggestions.py::test_suggested_repairs_no_allowlist_override_for_non_owner and test_owner_path_violation_requires_manual_review.",
+      "blocking": false
+    },
+    {
+      "finding_id": "F-005",
+      "severity": "S0",
+      "description": "Missing neutral vocabulary map fails closed: ThreeLetterAuthorityPreflightError is raised and the preflight exits non-zero.",
+      "section_ref": "scripts/run_3ls_authority_preflight.py::load_neutral_vocabulary",
+      "recommendation": "No action. Covered by tests/governance/test_3ls_authority_preflight.py::test_missing_neutral_vocabulary_fails_closed and test_neutral_vocabulary_wrong_artifact_type_fails_closed.",
+      "blocking": false
+    },
+    {
+      "finding_id": "F-006",
+      "severity": "S0",
+      "description": "Scan failure (malformed JSON / broken Python) is wrapped in ThreeLetterAuthorityPreflightError with file context. Preflight exits non-zero.",
+      "section_ref": "scripts/run_3ls_authority_preflight.py::run_preflight",
+      "recommendation": "No action. Same fail-closed pattern as scripts/run_authority_leak_guard.py.",
+      "blocking": false
+    },
+    {
+      "finding_id": "F-007",
+      "severity": "S0",
+      "description": "S4 + blocking=false bypass attempt: review-artifact metadata cannot mask authority shape. Vocabulary and shape detectors operate on artifact content, not severity tags.",
+      "section_ref": "scripts/run_3ls_authority_preflight.py + scripts/authority_shape_detector.py",
+      "recommendation": "No action. Covered by tests/governance/test_3ls_authority_preflight.py::test_s4_non_blocking_review_artifact_still_fails.",
+      "blocking": false
+    },
+    {
+      "finding_id": "F-008",
+      "severity": "S0",
+      "description": "Existing CI authority leak guard is not weakened. All 11 existing authority-leak tests pass after the registry extension.",
+      "section_ref": "scripts/run_authority_leak_guard.py + scripts/authority_leak_rules.py",
+      "recommendation": "No action. Verified by existing test suite plus tests/governance/test_3ls_authority_preflight.py::test_existing_authority_leak_guard_still_catches_forbidden_value.",
+      "blocking": false
+    }
+  ]
+}
