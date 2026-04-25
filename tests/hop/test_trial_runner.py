@@ -15,6 +15,6 @@ def test_controlled_trial_generates_report(eval_cases, eval_set, store):
         store=store,
         iterations=5,
     )
-    validate_hop_artifact(report, "hop_harness_trial_report")
-    assert report["promotion_allowed"] is False
+    validate_hop_artifact(report, "hop_harness_trial_summary")
+    assert report["advisory_only"] is True
     assert report["best_score"] >= report["baseline_score"]

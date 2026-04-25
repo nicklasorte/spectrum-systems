@@ -17,8 +17,8 @@ def test_domain_router_deterministic():
     }
     a = route_input(transcript)
     b = route_input(transcript)
-    assert a["decisions"] == b["decisions"]
-    validate_hop_artifact(a, "hop_harness_routing_decision")
+    assert a["route_signals"] == b["route_signals"]
+    validate_hop_artifact(a, "hop_harness_routing_observation")
 
 
 def test_draft_verify_schema_bound():

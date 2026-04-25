@@ -23,13 +23,13 @@ def run_pattern(
     for item in draft_items:
         q = item["question"]
         answer = item["answer"]
-        decision = "confirm"
+        verification_signal = "confirm"
         if q in contradictions:
-            decision = "revise"
+            verification_signal = "revise"
             answer = contradictions[q].get("suggested_answer", answer)
         elif q not in supports:
-            decision = "revise"
-        revised.append({"question": q, "answer": answer, "decision": decision})
+            verification_signal = "revise"
+        revised.append({"question": q, "answer": answer, "verification_signal": verification_signal})
 
     payload: dict[str, Any] = {
         "artifact_type": "hop_harness_pattern_draft_verify",

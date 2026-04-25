@@ -26,7 +26,7 @@ def route_input(
     if not isinstance(utterances, list):
         utterances = []
 
-    decisions: list[dict[str, Any]] = []
+    route_signals: list[dict[str, Any]] = []
     topics: set[str] = set()
     for idx, utt in enumerate(utterances):
         text = "" if not isinstance(utt, Mapping) else str(utt.get("text", ""))
@@ -40,25 +40,25 @@ def route_input(
             topics.add("question")
         elif task_type == "classify_statement":
             topics.add("statement")
-        decisions.append(
+        route_signals.append(
             {
                 "utterance_index": idx,
                 "task_type": task_type,
-                "strategy": "faq_path" if task_type == "faq_extract" else "statement_path",
+                "suggested_route": "faq_path" if task_type == "faq_extract" else "statement_path",
                 "signals": signals,
             }
         )
 
     payload: dict[str, Any] = {
-        "artifact_type": "hop_harness_routing_decision",
-        "schema_ref": "hop/harness_routing_decision.schema.json",
+        "artifact_type": "hop_harness_routing_observation",
+        "schema_ref": "hop/harness_routing_observation.schema.json",
         "schema_version": "1.0.0",
         "trace": make_trace(primary=trace_id),
-        "routing_id": f"route_{transcript.get('transcript_id', 'unknown')}",
+        "observation_id": f"route_{transcript.get('transcript_id', 'unknown')}",
         "transcript_id": str(transcript.get("transcript_id", "unknown")),
-        "strategy": "split" if len(topics) > 1 else "single",
-        "decisions": decisions,
+        "route_signal": "split" if len(topics) > 1 else "single",
+        "route_signals": route_signals,
     }
     finalize_artifact(payload, id_prefix="hop_route_")
-    validate_hop_artifact(payload, "hop_harness_routing_decision")
+    validate_hop_artifact(payload, "hop_harness_routing_observation")
     return payload

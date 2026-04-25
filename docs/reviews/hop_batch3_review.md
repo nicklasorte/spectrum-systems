@@ -15,7 +15,7 @@ HOP-BATCH-3 (A20–A26) for transcript → FAQ golden workflow only.
 ## Finding 2 — Pattern misuse can degrade quality silently
 - **Severity:** High
 - **Reproduction:** Draft output accepted without contradictory evidence check.
-- **Required fix:** Draft-verify pattern must always include supporting and contradicting evidence surfaces and explicit confirm/revise decision.
+- **Required fix:** Draft-verify pattern must always include supporting and contradicting evidence surfaces and explicit confirm/revise verification signal.
 - **Fix status:** Implemented in `patterns/draft_verify.py`; schema-bound with deterministic structure.
 
 ## Finding 3 — Overfitting to search set only
@@ -44,4 +44,4 @@ HOP-BATCH-3 (A20–A26) for transcript → FAQ golden workflow only.
 
 ## A26 Fix Validation Summary
 - All identified findings have code-level mitigations and deterministic tests.
-- Trial rerun path is controlled and non-promoting (`promotion_allowed=false`).
+- Trial rerun path is advisory-only (`advisory_only=true`).

@@ -60,11 +60,11 @@ def run_controlled_trial(
             current_baseline = cycle.accepted_candidates[-1]
 
     report: dict[str, Any] = {
-        "artifact_type": "hop_harness_trial_report",
-        "schema_ref": "hop/harness_trial_report.schema.json",
+        "artifact_type": "hop_harness_trial_summary",
+        "schema_ref": "hop/harness_trial_summary.schema.json",
         "schema_version": "1.0.0",
         "trace": make_trace(primary=trace_id),
-        "trial_id": f"trial_{baseline_candidate['candidate_id']}_{iterations}",
+        "summary_id": f"trial_{baseline_candidate['candidate_id']}_{iterations}",
         "workflow_id": "transcript_to_faq",
         "iterations": iterations,
         "baseline_candidate_id": baseline_candidate["candidate_id"],
@@ -73,9 +73,9 @@ def run_controlled_trial(
         "best_score": best_score,
         "frontier_evolution": frontier_scores,
         "failure_modes": sorted(failure_modes),
-        "promotion_allowed": False,
+        "advisory_only": True,
     }
     finalize_artifact(report, id_prefix="hop_trial_")
-    validate_hop_artifact(report, "hop_harness_trial_report")
+    validate_hop_artifact(report, "hop_harness_trial_summary")
     store.write_artifact(report)
     return report

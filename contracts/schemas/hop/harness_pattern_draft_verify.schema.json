@@ -25,7 +25,7 @@
     "draft_items": {"type": "array", "items": {"$ref": "#/$defs/qa"}},
     "supporting_evidence": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
     "contradicting_evidence": {"type": "array", "items": {"type": "object", "additionalProperties": true}},
-    "final_items": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["question", "answer", "decision"], "properties": {"question": {"type": "string"}, "answer": {"type": "string"}, "decision": {"enum": ["confirm", "revise"]}}}}
+    "final_items": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["question", "answer", "verification_signal"], "properties": {"question": {"type": "string"}, "answer": {"type": "string"}, "verification_signal": {"enum": ["confirm", "revise"]}}}}
   },
   "$defs": {
     "qa": {"type": "object", "additionalProperties": false, "required": ["question", "answer"], "properties": {"question": {"type": "string"}, "answer": {"type": "string"}}}
