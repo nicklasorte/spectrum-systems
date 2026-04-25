@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "data_source": "artifact_store",
+  "artifact_type": "replay_record",
+  "record_id": "REP-DASH-SEED-001",
+  "owner_system": "REP",
+  "case_id": "dashboard-seed-001",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/output_artifact_record.json",
+    "artifacts/dashboard_seed/control_decision_record.json"
+  ],
+  "reason_codes": [
+    "replay_partial_coverage"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Replay coverage is partial and limited to deterministic control check."
+  ],
+  "payload": {
+    "replay_status": "partial",
+    "deterministic_match": true,
+    "missing_replay_dimensions": [
+      "distribution_shift",
+      "long_horizon"
+    ]
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "data_source": "artifact_store",
+  "artifact_type": "minimal_loop_snapshot",
+  "record_id": "MLS-DASH-SEED-001",
+  "owner_system": "GOV",
+  "case_id": "dashboard-seed-001",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/source_artifact_record.json",
+    "artifacts/dashboard_seed/output_artifact_record.json",
+    "artifacts/dashboard_seed/eval_summary_record.json",
+    "artifacts/dashboard_seed/trust_policy_decision_record.json",
+    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_seed/enforcement_action_record.json",
+    "artifacts/dashboard_seed/lineage_record.json",
+    "artifacts/dashboard_seed/replay_record.json",
+    "artifacts/dashboard_seed/observability_metrics_record.json",
+    "artifacts/dashboard_seed/slo_status_record.json",
+    "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
+    "artifacts/dashboard_seed/near_miss_record.json"
+  ],
+  "reason_codes": [
+    "minimal_governed_loop_seeded",
+    "partial_truth_visible"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Seed loop is minimal and partial; dashboard must continue showing unknown/missing coverage outside this chain."
+  ],
+  "proof_chain": [
+    {
+      "stage": "AEX",
+      "record_id": "SRC-DASH-SEED-001",
+      "status": "present",
+      "data_source": "artifact_store"
+    },
+    {
+      "stage": "PQX",
+      "record_id": "OUT-DASH-SEED-001",
+      "status": "present",
+      "data_source": "artifact_store"
+    },
+    {
+      "stage": "EVL",
+      "record_id": "EVL-DASH-SEED-001",
+      "status": "partial",
+      "data_source": "artifact_store"
+    },
+    {
+      "stage": "TPA",
+      "record_id": "TPA-DASH-SEED-001",
+      "status": "partial",
+      "data_source": "artifact_store"
+    },
+    {
+      "stage": "CDE",
+      "record_id": "CDE-DASH-SEED-001",
+      "status": "partial",
+      "data_source": "artifact_store"
+    },
+    {
+      "stage": "SEL",
+      "record_id": "SEL-DASH-SEED-001",
+      "status": "partial",
+      "data_source": "artifact_store"
+    },
+    {
+      "stage": "REP",
+      "record_id": "REP-DASH-SEED-001",
+      "status": "partial",
+      "data_source": "artifact_store"
+    },
+    {
+      "stage": "LIN",
+      "record_id": "LIN-DASH-SEED-001",
+      "status": "present",
+      "data_source": "artifact_store"
+    },
+    {
+      "stage": "OBS",
+      "record_id": "OBS-DASH-SEED-001",
+      "status": "present",
+      "data_source": "artifact_store"
+    },
+    {
+      "stage": "SLO",
+      "record_id": "SLO-DASH-SEED-001",
+      "status": "partial",
+      "data_source": "artifact_store"
+    }
+  ],
+  "minimal_loop_status": "partial_warn"
+}

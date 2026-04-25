@@ -21,7 +21,7 @@ const nextConfig = {
   experimental: {
     outputFileTracingRoot: path.join(__dirname, '../..'),
     outputFileTracingIncludes: {
-      '/api/**': ['../../artifacts/**/*'],
+      '/api/**': ['../../artifacts/**/*', '../../artifacts/dashboard_seed/**/*'],
     },
   },
 };

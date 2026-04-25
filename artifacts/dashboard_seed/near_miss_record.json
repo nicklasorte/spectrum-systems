@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "data_source": "artifact_store",
+  "artifact_type": "near_miss_record",
+  "record_id": "NM-DASH-SEED-001",
+  "owner_system": "TPA",
+  "case_id": "dashboard-seed-001",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/trust_policy_decision_record.json",
+    "artifacts/dashboard_seed/control_decision_record.json"
+  ],
+  "reason_codes": [
+    "near_miss_blocked_by_warn_gate"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Near miss indicates partial guardrail effectiveness, not full reliability."
+  ],
+  "near_misses": [
+    {
+      "id": "NM-SEED-001",
+      "summary": "Potential promotion bypass prevented by warn gate",
+      "impact": "high",
+      "prevented_by": "CDE observe_only"
+    }
+  ]
+}

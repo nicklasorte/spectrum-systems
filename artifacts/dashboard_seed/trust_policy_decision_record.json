@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "data_source": "artifact_store",
+  "artifact_type": "trust_policy_decision_record",
+  "record_id": "TPA-DASH-SEED-001",
+  "owner_system": "TPA",
+  "case_id": "dashboard-seed-001",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/eval_summary_record.json"
+  ],
+  "reason_codes": [
+    "policy_warn_due_to_partial_eval"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Trust/policy posture remains warn pending complete eval and replay evidence."
+  ],
+  "payload": {
+    "decision": "warn",
+    "allow_promotion": false
+  }
+}
