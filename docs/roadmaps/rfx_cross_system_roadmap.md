@@ -119,9 +119,9 @@ LOOP-04, LOOP-05, and LOOP-06 are enforced by the following guard modules and ve
 - `spectrum_systems/modules/runtime/rfx_integrity_bundle.py` — `assert_rfx_integrity_bundle` (LOOP-05: LIN + REP).
 - `spectrum_systems/modules/runtime/rfx_certification_gate.py` — `assert_rfx_certification_ready` (LOOP-06: GOV completeness incl. PRA + POL).
 
-RFX execution order (no path reaches GOV without passing all three guards):
+RFX execution order (no path reaches GOV without passing all three guards). The certification completeness check requires the SEL linkage artifact as input, so SEL enforcement runs before LOOP-06; the CDE→SEL bridge guard sits between them and verifies that the SEL artifact references the CDE decision before it is consumed by the certification check:
 
-`RIL → FRE → PQX → EVL → TPA → CDE → assert_rfx_cde_sel_decision_bridge → assert_rfx_integrity_bundle → assert_rfx_certification_ready → SEL enforcement → GOV certification record`.
+`RIL → FRE → PQX → EVL → TPA → CDE → SEL enforcement → assert_rfx_cde_sel_decision_bridge → assert_rfx_integrity_bundle → assert_rfx_certification_ready → GOV certification record`.
 
 Canonical contribution roles, sourced from the system registry and not redefined here: the closure-decision contributor supplies the readiness decision artifact, the trust-policy contributor supplies trust/policy evidence, the enforcement contributor supplies enforcement evidence linked to the readiness decision artifact, the certification packager packages and certifies evidence completeness, the promotion-readiness contributor supplies the PRA input, the policy-posture contributor supplies the POL input, the lineage contributor supplies lineage evidence, and the replay contributor supplies replay evidence. The RFX guards verify the package without reassigning canonical contributions. RFX remains a phase label.
 

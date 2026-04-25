@@ -340,6 +340,22 @@ class TestLoop06CertificationGate:
         with pytest.raises(RFXCertificationGateError, match="rfx_missing_pol_evidence"):
             assert_rfx_certification_ready(policy_in_scope=True, **kwargs)
 
+    def test_pol_missing_with_default_scope_fails_closed(self) -> None:
+        """Default scope = None must fail closed when POL is omitted (RT-04 hardening)."""
+        kwargs = _full_evidence_kwargs()
+        kwargs["pol"] = None
+        # No ``policy_in_scope`` keyword — default is ``None``, which the
+        # guard now treats as "policy is in scope" so missing POL raises.
+        with pytest.raises(RFXCertificationGateError, match="rfx_missing_pol_evidence"):
+            assert_rfx_certification_ready(**kwargs)
+
+    def test_pol_empty_dict_with_default_scope_fails_closed(self) -> None:
+        """An empty POL artifact with default scope must also fail closed."""
+        kwargs = _full_evidence_kwargs()
+        kwargs["pol"] = {}
+        with pytest.raises(RFXCertificationGateError, match="rfx_missing_pol_evidence"):
+            assert_rfx_certification_ready(**kwargs)
+
 
 # ---------------------------------------------------------------------------
 # Red-team campaign — RT-01 through RT-06
@@ -375,12 +391,21 @@ class TestRedTeamCampaign:
         with pytest.raises(RFXCertificationGateError, match="rfx_missing_pra_evidence"):
             assert_rfx_certification_ready(**kwargs)
 
-    # RT-04: POL missing while policy is in scope -> GOV blocked.
+    # RT-04: POL missing while policy is in scope -> GOV blocked. The default
+    # ``policy_in_scope=None`` must also fail closed so callers cannot bypass
+    # POL enforcement by omitting both keywords.
     def test_rt04_pol_missing_when_policy_in_scope_blocks_gov(self) -> None:
         kwargs = _full_evidence_kwargs()
         kwargs["pol"] = None
         with pytest.raises(RFXCertificationGateError, match="rfx_missing_pol_evidence"):
             assert_rfx_certification_ready(policy_in_scope=True, **kwargs)
+
+    def test_rt04_default_scope_pol_missing_fails_closed(self) -> None:
+        """RT-04 hardening: default scope must fail closed when POL is omitted."""
+        kwargs = _full_evidence_kwargs()
+        kwargs["pol"] = None
+        with pytest.raises(RFXCertificationGateError, match="rfx_missing_pol_evidence"):
+            assert_rfx_certification_ready(**kwargs)
 
     # RT-05: Fake/forged CDE decision without SEL linkage -> blocked at bridge.
     def test_rt05_fake_cde_without_linkage_blocks(self) -> None:

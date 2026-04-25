@@ -35,6 +35,7 @@
       "contracts/governance/authority_shape_vocabulary.json",
       "contracts/governance/authority_neutral_vocabulary.json",
       "contracts/governance/system_registry_guard_policy.json",
+      "contracts/authority/authority_ownership_matrix.yaml",
       "docs/governance/authority_shape_preflight.md"
     ]
   },

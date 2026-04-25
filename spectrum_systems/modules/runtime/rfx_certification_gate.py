@@ -40,20 +40,21 @@ def _is_nonempty_dict(obj: Any) -> bool:
 def _policy_in_scope(pol: dict[str, Any] | None) -> bool:
     """Determine whether the policy-posture input is required for this RFX path.
 
-    The policy-posture input is required when:
-      - the caller passes a non-empty input record (treated as in scope), OR
-      - the input record explicitly marks ``in_scope`` / ``required``.
+    The guard fails closed by default. Policy is treated as in scope unless
+    the caller explicitly opts out via the ``policy_in_scope=False`` keyword
+    on :func:`assert_rfx_certification_ready`. This means:
 
-    An absent input is treated as in scope only when the caller signals so via
-    the input record's own ``policy_in_scope`` field. Callers must pass the
-    input when policy is in scope; the guard fails closed if it is missing.
+      - an absent or empty input record yields ``True`` (in scope), so the
+        gate raises ``rfx_missing_pol_evidence`` instead of silently passing;
+      - a non-empty input record yields ``True`` (in scope);
+      - an input record with ``policy_in_scope=False`` still yields ``True``
+        because the explicit override is owned by the caller's keyword
+        argument, not the artifact contents.
+
+    Callers that genuinely need to skip POL evidence must pass
+    ``policy_in_scope=False`` to :func:`assert_rfx_certification_ready`.
     """
-    if not isinstance(pol, dict):
-        return False
-    scope_field = pol.get("policy_in_scope")
-    if scope_field in _POL_SCOPE_TRUE_VALUES:
-        return True
-    return bool(pol)
+    return True
 
 
 def assert_rfx_certification_ready(
@@ -91,9 +92,12 @@ def assert_rfx_certification_ready(
       slo: posture record; required by default.
       pra: promotion-readiness input; status must be ``ready``.
       pol: policy-posture input; required when policy is in scope.
-      policy_in_scope: explicit toggle for the policy-posture requirement. When
-        ``None``, scope is inferred from ``pol`` (any non-empty input, or one
-        carrying ``policy_in_scope`` truthy, is treated as in scope).
+      policy_in_scope: explicit toggle for the policy-posture requirement.
+        Defaults to ``None``, which fails closed: the guard treats policy as
+        in scope and requires a valid POL input. Callers that genuinely have
+        no policy in scope must pass ``policy_in_scope=False`` explicitly.
+        Passing ``True`` is equivalent to the default and is supported for
+        readability at call sites.
       slo_required: when True (default), the posture record must be present.
 
     Reason codes (one per missing/invalid contribution, all collected before
@@ -256,9 +260,12 @@ def assert_rfx_certification_ready(
             )
 
     # POL ------------------------------------------------------------------
-    pol_required = (
-        _policy_in_scope(pol) if policy_in_scope is None else bool(policy_in_scope)
-    )
+    # Fail closed by default: when the caller does not explicitly declare
+    # ``policy_in_scope=False`` the guard treats policy as in scope and
+    # requires the policy-posture input. This keeps RT-04 (POL missing while
+    # policy is in scope) deterministic regardless of whether the caller
+    # passes a POL artifact or omits it.
+    pol_required = True if policy_in_scope is None else bool(policy_in_scope)
     if pol_required:
         if not _is_nonempty_dict(pol):
             reasons.append(
