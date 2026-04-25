@@ -1,21 +1,11 @@
 {
   "version": 2,
-  "buildCommand": "cd apps/dashboard-3ls && npm install && npm run build",
+  "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
   "env": {
-    "GITHUB_TOKEN": {
-      "description": "GitHub personal access token",
-      "required": false
-    },
-    "GITHUB_REPO": {
-      "description": "GitHub repo: owner/repo",
-      "default": "nicklasorte/spectrum-systems"
-    },
-    "NEXT_PUBLIC_DASHBOARD_TITLE": {
-      "description": "Dashboard title",
-      "default": "3-Letter Systems Dashboard"
-    }
+    "GITHUB_REPO": "nicklasorte/spectrum-systems",
+    "NEXT_PUBLIC_DASHBOARD_TITLE": "3-Letter Systems Dashboard"
   },
   "regions": [
     "iad1"
