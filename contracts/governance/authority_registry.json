@@ -106,7 +106,8 @@
       "spectrum_systems/modules/runtime/promotion_readiness_checkpoint.py",
       "spectrum_systems/modules/governance/promotion_requirements.py",
       "spectrum_systems/modules/runtime/required_eval_coverage.py",
-      "spectrum_systems/modules/runtime/enforcement_gate.py"
+      "spectrum_systems/modules/runtime/enforcement_gate.py",
+      "spectrum_systems/modules/governance/three_letter_system_enforcement.py"
     ]
   },
   "vocabulary_overrides": {

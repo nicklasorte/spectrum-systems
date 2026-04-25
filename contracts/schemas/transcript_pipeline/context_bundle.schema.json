@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/schemas/transcript_pipeline/context_bundle.schema.json",
+  "title": "Context Bundle",
+  "description": "Assembled context bundle produced from a transcript_artifact at the admission boundary. Provides structured context for downstream pipeline steps including meeting minutes extraction.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "content_hash",
+    "trace",
+    "provenance",
+    "created_at",
+    "source_artifact_id",
+    "context_items"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^CTX-[A-Z0-9_-]+$"
+    },
+    "artifact_type": {
+      "type": "string",
+      "const": "context_bundle"
+    },
+    "schema_ref": {
+      "type": "string",
+      "const": "transcript_pipeline/context_bundle"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "trace": {
+      "$ref": "#/$defs/trace_context"
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_artifact_id": {
+      "type": "string",
+      "description": "ID of the transcript_artifact this bundle was assembled from."
+    },
+    "context_items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/context_item"
+      }
+    },
+    "assembly_strategy": {
+      "type": "string",
+      "enum": ["full", "windowed", "selective"],
+      "description": "Strategy used to assemble context from the transcript."
+    }
+  },
+  "$defs": {
+    "trace_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "span_id"],
+      "properties": {
+        "trace_id": {"type": "string", "pattern": "^[a-f0-9]{32}$"},
+        "span_id": {"type": "string", "pattern": "^[a-f0-9]{16}$"},
+        "parent_span_id": {"type": "string", "pattern": "^[a-f0-9]{16}$"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["produced_by", "input_artifact_ids"],
+      "properties": {
+        "produced_by": {"type": "string"},
+        "input_artifact_ids": {"type": "array", "items": {"type": "string"}},
+        "run_id": {"type": "string"}
+      }
+    },
+    "context_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["item_id", "content_type", "content"],
+      "properties": {
+        "item_id": {"type": "string"},
+        "content_type": {
+          "type": "string",
+          "enum": ["transcript_segment", "metadata", "speaker_map", "summary"]
+        },
+        "content": {"type": "string", "minLength": 1},
+        "relevance_score": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    }
+  }
+}
