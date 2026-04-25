@@ -200,7 +200,7 @@ export async function GET() {
         block_counts_by_system: bottleneck.payload.block_counts_by_system ?? {},
         priority_rule: bottleneck.payload.bottleneck_priority_rule ?? null,
         confidence_rationale: bottleneck.payload.confidence_rationale ?? null,
-        data_source: bottleneck.data_source ?? 'artifact_store',
+        data_source: bottleneck.data_source ?? 'unknown',
         source_artifacts_used: bottleneck.source_artifacts_used ?? [],
         warnings: bottleneck.warnings ?? [],
       }
@@ -224,19 +224,28 @@ export async function GET() {
       ? 'derived_estimate'
       : 'unknown';
 
-  // Leverage queue block — never recommend without source/failure_prevented/signal_improved.
+  // Leverage queue block — never recommend without source, failure_prevented,
+  // signal_improved, or a non-empty systems_affected array. The systems
+  // check both enforces the contract rule and protects the render path
+  // (which calls .join on the array) from partial-schema items.
   const filteredLeverage = (leverageQueue?.items ?? []).filter(
     (item) =>
       item.title &&
       item.failure_prevented &&
       item.signal_improved &&
       Array.isArray(item.source_artifacts_used) &&
-      item.source_artifacts_used.length > 0
+      item.source_artifacts_used.length > 0 &&
+      Array.isArray(item.systems_affected) &&
+      item.systems_affected.length > 0
   );
+  // Provenance is fail-closed: when the leverage artifact omits
+  // data_source (partial write or schema drift), default to 'unknown'
+  // rather than 'artifact_store' so the dashboard never overstates the
+  // queue's sourcing.
   const leverageBlock = {
     items: filteredLeverage.sort((a, b) => b.leverage_score - a.leverage_score),
     formula: leverageQueue?.leverage_formula ?? null,
-    data_source: leverageQueue?.data_source ?? (leverageQueue ? 'artifact_store' : 'unknown'),
+    data_source: leverageQueue?.data_source ?? 'unknown',
     source_artifacts_used: leverageQueue?.source_artifacts_used ?? [],
     warnings: leverageQueue
       ? leverageQueue.warnings ?? []
@@ -269,7 +278,7 @@ export async function GET() {
           proofTotal > 0 ? Math.round(((proofPresent + proofPartial) / proofTotal) * 100) : 0,
       },
     top_risks: riskSummary?.payload?.top_risks ?? [],
-    data_source: riskSummary?.data_source ?? (riskSummary ? 'artifact_store' : 'unknown'),
+    data_source: riskSummary?.data_source ?? 'unknown',
     source_artifacts_used: riskSummary?.source_artifacts_used ?? [],
     warnings: riskSummary
       ? riskSummary.warnings ?? []

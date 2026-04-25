@@ -577,7 +577,9 @@ export default function Dashboard() {
           item.failure_prevented &&
           item.signal_improved &&
           Array.isArray(item.source_artifacts_used) &&
-          item.source_artifacts_used.length > 0
+          item.source_artifacts_used.length > 0 &&
+          Array.isArray(item.systems_affected) &&
+          item.systems_affected.length > 0
       )
       .map((item) => {
         const itemDS = item.data_source ?? 'unknown';

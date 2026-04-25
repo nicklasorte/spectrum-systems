@@ -219,4 +219,24 @@ describe('MET-03 — intelligence API wiring', () => {
     expect(fallbackBlock).toMatch(/missing_eval_count[\s\S]*?'unknown'/);
     expect(fallbackBlock).toMatch(/missing_trace_count[\s\S]*?'unknown'/);
   });
+
+  it('defaults missing leverage data_source to unknown rather than artifact_store', () => {
+    // A partial leverage artifact must not be presented as fully artifact-
+    // backed: when data_source is absent the API must surface 'unknown'.
+    const leverageBlock = intelligenceSrc.slice(intelligenceSrc.indexOf('const leverageBlock'));
+    expect(leverageBlock).toMatch(/data_source: leverageQueue\?\.data_source \?\? 'unknown'/);
+  });
+
+  it('filters leverage items missing systems_affected so the render path cannot crash', () => {
+    const filterBlock = intelligenceSrc.slice(intelligenceSrc.indexOf('const filteredLeverage'));
+    expect(filterBlock).toMatch(/Array\.isArray\(item\.systems_affected\)/);
+    expect(filterBlock).toMatch(/item\.systems_affected\.length > 0/);
+  });
+
+  it('defaults missing bottleneck and risk data_source fields to unknown', () => {
+    const bottleneckBlock = intelligenceSrc.slice(intelligenceSrc.indexOf('const bottleneckBlock'));
+    expect(bottleneckBlock).toMatch(/data_source: bottleneck\.data_source \?\? 'unknown'/);
+    const riskBlock = intelligenceSrc.slice(intelligenceSrc.indexOf('const riskBlock'));
+    expect(riskBlock).toMatch(/data_source: riskSummary\?\.data_source \?\? 'unknown'/);
+  });
 });

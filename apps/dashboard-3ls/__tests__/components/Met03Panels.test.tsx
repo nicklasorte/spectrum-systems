@@ -252,6 +252,40 @@ describe('MET-03 dashboard panels', () => {
     });
   });
 
+  it('filters leverage items missing or with empty systems_affected', async () => {
+    const partialLeverage = {
+      ...baseIntelligence,
+      leverage_queue: {
+        ...baseIntelligence.leverage_queue,
+        items: [
+          baseIntelligence.leverage_queue.items[0],
+          {
+            ...baseIntelligence.leverage_queue.items[0],
+            id: 'LV-NO-SYSTEMS',
+            title: 'Missing systems_affected — should be filtered',
+            systems_affected: undefined as unknown as string[],
+          },
+          {
+            ...baseIntelligence.leverage_queue.items[0],
+            id: 'LV-EMPTY-SYSTEMS',
+            title: 'Empty systems_affected — should be filtered',
+            systems_affected: [],
+          },
+        ],
+      },
+    };
+    setupFetch(baseHealth, partialLeverage);
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      const items = screen.getAllByTestId('leverage-item');
+      const titles = items.map((item) => item.textContent ?? '');
+      expect(titles.some((t) => t.includes('Missing systems_affected'))).toBe(false);
+      expect(titles.some((t) => t.includes('Empty systems_affected'))).toBe(false);
+      expect(titles.some((t) => t.includes('Close EVL coverage gap'))).toBe(true);
+    });
+  });
+
   it('preserves leverage item confidence (does not hard-code artifact-backed)', async () => {
     const provisionalLeverage = {
       ...baseIntelligence,
