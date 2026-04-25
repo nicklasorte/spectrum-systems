@@ -231,6 +231,21 @@ Overlay authorities required in the same loop:
   - `spectrum_systems/modules/runtime/rax_model.py`
   - `spectrum_systems/modules/runtime/rax_eval_runner.py`
 
+### HOP
+- **Status:** active
+- **Purpose:** governed harness optimization substrate for candidate tracking, experience storage, and evaluation orchestration.
+- **Failure Prevented:** ungoverned harness mutation/evaluation and non-traceable candidate progression.
+- **Signal Improved:** harness quality evidence, replayable evaluation history, and bounded candidate comparison integrity.
+- **Canonical Artifacts Owned:** `harness_candidate`, `harness_run`, `harness_score`, `harness_trace`, `harness_frontier`, `harness_failure_hypothesis`.
+- **Upstream Dependencies:** transcript control inputs, declared eval cases.
+- **Downstream Dependencies:** EVL, RIL, FRE.
+- **Primary Code Paths:**
+  - `spectrum_systems/modules/hop/validator.py`
+  - `spectrum_systems/modules/hop/evaluator.py`
+  - `spectrum_systems/modules/hop/experience_store.py`
+  - `spectrum_systems/modules/hop/frontier.py`
+  - `spectrum_systems/modules/hop/safety_checks.py`
+
 ### RSM
 - **Status:** active
 - **Purpose:** reconciliation state manager for desired-vs-actual state artifacts.
@@ -393,6 +408,7 @@ These are important but non-top-level authority families:
 - **RIL** — active interpretation authority
 - **FRE** — active failure diagnosis and repair planning authority
 - **RAX** — active bounded runtime candidate-signal authority
+- **HOP** — active harness optimization substrate authority
 - **RSM** — active reconciliation state management authority
 - **CAP** — active capacity and cost governance authority
 - **SEC** — active security boundary governance authority
@@ -489,6 +505,26 @@ These are important but non-top-level authority families:
   - checkpoint_record
 - **must_not_do:**
   - execute_work
+
+### HOP
+- **role:** harness optimization substrate.
+- **status:** active
+- **owns:**
+  - harness_candidate_tracking
+  - harness_experience_storage
+  - harness_evaluation_orchestration
+- **consumes:**
+  - transcript_control_input_signal
+  - hop_eval_set
+- **produces:**
+  - harness_run
+  - harness_score
+  - harness_frontier
+  - harness_failure_hypothesis
+- **must_not_do:**
+  - issue_control_decisions
+  - bypass_eval_authority
+  - mutate_harness_candidates
 
 ### MAP
 - **role:** mediation projection.
