@@ -1,0 +1,47 @@
+{
+  "artifact_id": "hop_eval_case_99811e5ba02dbeff",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:99811e5ba02dbeff3e9ea77fdfbb8002aabcf11a4506efccf31e14f41a10b951",
+  "eval_case_id": "hop_case_golden_two_qa",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [],
+  "input": {
+    "transcript_id": "t_two_qa",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "What is the eval set?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "It is a versioned set of cases."
+      },
+      {
+        "speaker": "user",
+        "text": "Why versioned?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "To enable replay and detect drift."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_questions_substrings": [
+        "eval set",
+        "Why versioned"
+      ],
+      "max_qa_pairs": 2,
+      "min_qa_pairs": 2
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:golden_two_qa",
+    "related": []
+  }
+}

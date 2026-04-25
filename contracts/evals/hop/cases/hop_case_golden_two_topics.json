@@ -1,0 +1,47 @@
+{
+  "artifact_id": "hop_eval_case_f518e56c7dbb9f9b",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:f518e56c7dbb9f9b562f575066e3173575bf19155a6369544260dbac0ad9fe7f",
+  "eval_case_id": "hop_case_golden_two_topics",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [],
+  "input": {
+    "transcript_id": "t_two_topics",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "What is the schema_version field?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "It is the contract version semver."
+      },
+      {
+        "speaker": "user",
+        "text": "What is the schema_ref field?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "It is the relative schema path."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_questions_substrings": [
+        "schema_version",
+        "schema_ref"
+      ],
+      "max_qa_pairs": 2,
+      "min_qa_pairs": 2
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:golden_two_topics",
+    "related": []
+  }
+}

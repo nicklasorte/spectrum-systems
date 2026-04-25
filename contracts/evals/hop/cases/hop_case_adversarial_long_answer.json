@@ -1,0 +1,46 @@
+{
+  "artifact_id": "hop_eval_case_d2029322d719e7e5",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "adversarial",
+  "content_hash": "sha256:d2029322d719e7e57d81664c4e9eb292a05ef47c69065d2b85afcbc1250f73d8",
+  "eval_case_id": "hop_case_adversarial_long_answer",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "long_answer_truncation"
+  ],
+  "input": {
+    "transcript_id": "t_adversarial_long_answer",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "What does the experience store do?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "HOP stores candidate harness code, eval scores, and execution traces. It indexes by candidate_id, trace_id, score, and timestamp. It is append-only, replay-compatible, and rejects malformed artifacts."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_answer_substrings_per_question": [
+        {
+          "answer_substring": "append-only",
+          "question_substring": "experience store"
+        }
+      ],
+      "expected_questions_substrings": [
+        "experience store"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:adversarial_long_answer",
+    "related": []
+  }
+}

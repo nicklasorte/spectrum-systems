@@ -1,0 +1,44 @@
+{
+  "artifact_id": "hop_eval_case_a3ddec2952adbb67",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:a3ddec2952adbb674c5bfe928ba6eb3f5a37e5e96f98029a25a05ce2fd8d5238",
+  "eval_case_id": "hop_case_golden_capital_question_mark",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [],
+  "input": {
+    "transcript_id": "t_capital_q",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Where does the frontier live?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "The frontier is computed from harness scores."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_answer_substrings_per_question": [
+        {
+          "answer_substring": "scores",
+          "question_substring": "frontier"
+        }
+      ],
+      "expected_questions_substrings": [
+        "frontier"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:golden_capital_question_mark",
+    "related": []
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "artifact_id": "hop_eval_case_a33fecb5a3fc7796",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "adversarial",
+  "content_hash": "sha256:a33fecb5a3fc7796c0a7caffec52e1992ce79d053ccde8f5d52b2ebf8bbf128e",
+  "eval_case_id": "hop_case_adversarial_assistant_then_user_question",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "interleaved_speakers"
+  ],
+  "input": {
+    "transcript_id": "t_a_then_u",
+    "turns": [
+      {
+        "speaker": "assistant",
+        "text": "Welcome."
+      },
+      {
+        "speaker": "assistant",
+        "text": "Anything to discuss?"
+      },
+      {
+        "speaker": "user",
+        "text": "What is HOP?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "HOP is the Harness Optimization Pipeline."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_questions_substrings": [
+        "What is HOP"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:adversarial_assistant_then_user_question",
+    "related": []
+  }
+}

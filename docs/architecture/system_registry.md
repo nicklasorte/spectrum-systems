@@ -329,6 +329,35 @@ Overlay authorities required in the same loop:
   - `spectrum_systems/modules/runtime/meta_governance_kernel.py`
   - `spectrum_systems/modules/runtime/review_projection_adapter.py`
 
+### HOP
+- **Status:** active
+- **Purpose:** harness optimization substrate — stores candidate harness code,
+  scores, traces, and failure hypotheses; orchestrates candidate evaluation
+  against a versioned eval set; exposes a queryable, replay-compatible
+  history. HOP-BATCH-1 is foundation only — no autonomous proposer is
+  implemented yet.
+- **Failure Prevented:** ungoverned harness experimentation, eval gaming,
+  loss of failure provenance, and free-form harness output dependencies.
+- **Signal Improved:** harness candidate quality visibility, frontier
+  transparency, and eval-set integrity.
+- **Canonical Artifacts Owned:** `hop_harness_candidate`, `hop_harness_run`,
+  `hop_harness_score`, `hop_harness_trace`, `hop_harness_frontier`,
+  `hop_harness_failure_hypothesis`, `hop_harness_eval_case`,
+  `hop_harness_faq_output`.
+- **Upstream Dependencies:** EVL (eval-set policy alignment), CTX (transcript
+  context governance for input shape).
+- **Downstream Dependencies:** EVL (eval surface contributions), FRE
+  (failure-derived candidates feed FRE diagnosis only via governed adoption),
+  CDE (control authority external to HOP — HOP never decides promotion).
+- **Primary Code Paths:**
+  - `spectrum_systems/modules/hop/experience_store.py`
+  - `spectrum_systems/modules/hop/evaluator.py`
+  - `spectrum_systems/modules/hop/validator.py`
+  - `spectrum_systems/modules/hop/safety_checks.py`
+  - `spectrum_systems/modules/hop/frontier.py`
+  - `spectrum_systems/modules/hop/baseline_harness.py`
+  - `spectrum_systems/cli/hop_cli.py`
+
 ## Merged or demoted systems
 
 | System | Status | Merged/Demoted Into | Rationale |
@@ -401,6 +430,7 @@ These are important but non-top-level authority families:
 - **PRA** — active promotion readiness authority
 - **GOV** — active certification and governance gate authority
 - **MAP** — active metadata/topology authority
+- **HOP** — active harness optimization substrate authority
 - **SUP** — deprecated merged into JSX supersession lifecycle
 - **RET** — deprecated merged into JSX retirement lifecycle
 - **QRY** — deprecated merged into CTX retrieve admission flow
@@ -1284,3 +1314,31 @@ These are important but non-top-level authority families:
   - promotion_gate_decision_artifact
 - **must_not_do:**
   - decide_policy_authority
+
+### HOP
+- **role:** harness optimization substrate.
+- **status:** active
+- **owns:**
+  - harness_candidate_storage
+  - harness_run_records
+  - harness_eval_orchestration
+  - harness_frontier_tracking
+  - harness_eval_set_curation
+- **consumes:**
+  - hop_harness_eval_case
+  - transcript_input
+- **produces:**
+  - hop_harness_candidate
+  - hop_harness_run
+  - hop_harness_score
+  - hop_harness_trace
+  - hop_harness_frontier
+  - hop_harness_failure_hypothesis
+  - hop_harness_faq_output
+- **must_not_do:**
+  - own_promotion_decisions
+  - own_closure_authority
+  - own_enforcement_authority
+  - bypass_eval_system
+  - bypass_schema_validation
+  - emit_free_form_outputs

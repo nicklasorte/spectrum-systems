@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hop/harness_run.schema.json",
+  "title": "HOP Harness Run",
+  "description": "Record of a single evaluator run of a candidate harness against a versioned eval set.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "trace",
+    "content_hash",
+    "run_id",
+    "candidate_id",
+    "eval_set_id",
+    "eval_set_version",
+    "started_at",
+    "completed_at",
+    "status",
+    "case_count"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^hop_run_[a-z0-9_-]+$"
+    },
+    "artifact_type": {
+      "const": "hop_harness_run"
+    },
+    "schema_ref": {
+      "const": "hop/harness_run.schema.json"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "trace": {
+      "$ref": "#/$defs/trace"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$",
+      "minLength": 4,
+      "maxLength": 96
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "eval_set_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eval_set_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["completed", "failed", "rejected"]
+    },
+    "case_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "trace_artifact_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "score_artifact_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "failure_reason": {
+      "type": ["string", "null"]
+    },
+    "rejection_reason": {
+      "type": ["string", "null"]
+    }
+  },
+  "$defs": {
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "related": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

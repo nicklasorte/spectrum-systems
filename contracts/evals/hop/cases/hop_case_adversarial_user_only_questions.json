@@ -1,0 +1,36 @@
+{
+  "artifact_id": "hop_eval_case_584bdb5f17d8f66d",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "adversarial",
+  "content_hash": "sha256:584bdb5f17d8f66dbdda892b1b50fac635aab195c61dab3c3e66c7f9a15b2728",
+  "eval_case_id": "hop_case_adversarial_user_only_questions",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "ambiguous_attribution"
+  ],
+  "input": {
+    "transcript_id": "t_only_user",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Anybody home?"
+      },
+      {
+        "speaker": "user",
+        "text": "Hello?"
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "rejection_expected",
+    "rules": {
+      "expect_rejection": true
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:adversarial_user_only_questions",
+    "related": []
+  }
+}

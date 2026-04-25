@@ -1,0 +1,48 @@
+{
+  "artifact_id": "hop_eval_case_a4abadef87298f8a",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:a4abadef87298f8a56c12f2c515658f7699516dba79d38d99e012c8adcb310db",
+  "eval_case_id": "hop_case_golden_q_at_end",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [],
+  "input": {
+    "transcript_id": "t_q_at_end",
+    "turns": [
+      {
+        "speaker": "assistant",
+        "text": "Initial framing for the discussion."
+      },
+      {
+        "speaker": "user",
+        "text": "Anything else to know?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "All artifacts are content-hashed."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_answer_substrings_per_question": [
+        {
+          "answer_substring": "content-hashed",
+          "question_substring": "Anything else"
+        }
+      ],
+      "expected_questions_substrings": [
+        "Anything else"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:golden_q_at_end",
+    "related": []
+  }
+}

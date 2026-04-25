@@ -2,7 +2,7 @@
   "artifact_type": "system_registry_artifact",
   "artifact_class": "coordination",
   "schema_version": "1.0.0",
-  "registry_version": "v1.3.0",
+  "registry_version": "v1.4.0",
   "systems": [
     {
       "acronym": "AEX",
@@ -97,6 +97,47 @@
       "downstream_consumers": [
         "CDE",
         "SEL"
+      ]
+    },
+    {
+      "acronym": "HOP",
+      "full_name": "Harness Optimization Pipeline",
+      "role": "Bounded harness candidate substrate: stores candidate code, runs, scores, traces, and failure hypotheses; orchestrates per-candidate evaluation against a versioned eval set; recomputes the Pareto frontier on demand. HOP-BATCH-1 is foundation only; no autonomous proposer is implemented.",
+      "owns": [
+        "harness_candidate_storage",
+        "harness_run_records",
+        "harness_eval_orchestration",
+        "harness_frontier_tracking",
+        "harness_eval_set_curation"
+      ],
+      "consumes": [
+        "hop_harness_eval_case",
+        "transcript_input"
+      ],
+      "produces": [
+        "hop_harness_candidate",
+        "hop_harness_run",
+        "hop_harness_score",
+        "hop_harness_trace",
+        "hop_harness_frontier",
+        "hop_harness_failure_hypothesis",
+        "hop_harness_faq_output"
+      ],
+      "prohibited_behaviors": [
+        "promotion_decisioning",
+        "closure_decisioning",
+        "runtime_enforcement",
+        "eval_system_bypass",
+        "schema_validation_bypass",
+        "free_form_output_emission"
+      ],
+      "upstream_dependencies": [
+        "EVL",
+        "CTX"
+      ],
+      "downstream_consumers": [
+        "EVL",
+        "FRE"
       ]
     },
     {
@@ -2063,6 +2104,18 @@
     {
       "from": "DRX",
       "to": "CDE"
+    },
+    {
+      "from": "HOP",
+      "to": "EVL"
+    },
+    {
+      "from": "HOP",
+      "to": "FRE"
+    },
+    {
+      "from": "CTX",
+      "to": "HOP"
     }
   ]
 }

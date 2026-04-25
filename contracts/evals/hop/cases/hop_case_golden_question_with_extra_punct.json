@@ -1,0 +1,35 @@
+{
+  "artifact_id": "hop_eval_case_8b125766fc894857",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:8b125766fc894857393e9c29315dcd9dc00bf76fc32aa2c9b8b2222799d291d5",
+  "eval_case_id": "hop_case_golden_question_with_extra_punct",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [],
+  "input": {
+    "transcript_id": "t_extra_punct",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "What is replay-compatible?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "It means runs can be replayed deterministically."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "structural",
+    "rules": {
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:golden_question_with_extra_punct",
+    "related": []
+  }
+}

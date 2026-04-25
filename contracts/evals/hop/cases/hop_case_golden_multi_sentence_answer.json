@@ -1,0 +1,46 @@
+{
+  "artifact_id": "hop_eval_case_6dd08271439e034c",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:6dd08271439e034c32fa1b277d5a5aeb7efcfe3c4f6989cd33c2de205a50babd",
+  "eval_case_id": "hop_case_golden_multi_sentence_answer",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "long_answer_truncation"
+  ],
+  "input": {
+    "transcript_id": "t_multi_sentence",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Why is the store append-only?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Append-only writes preserve full lineage. They also make replay deterministic."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_answer_substrings_per_question": [
+        {
+          "answer_substring": "lineage",
+          "question_substring": "append-only"
+        }
+      ],
+      "expected_questions_substrings": [
+        "append-only"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:golden_multi_sentence_answer",
+    "related": []
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "artifact_id": "hop_eval_case_6374df3581cfa786",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:6374df3581cfa786e3bb80f4f1c92de754775deba2fd35bc0154b32af2b0de81",
+  "eval_case_id": "hop_case_golden_dedup_duplicate_questions",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "duplicate_questions"
+  ],
+  "input": {
+    "transcript_id": "t_dedup",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "What is HOP?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "HOP is the Harness Optimization Pipeline."
+      },
+      {
+        "speaker": "user",
+        "text": "What is HOP?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "HOP is the Harness Optimization Pipeline."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "structural",
+    "rules": {
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:golden_dedup_duplicate_questions",
+    "related": []
+  }
+}

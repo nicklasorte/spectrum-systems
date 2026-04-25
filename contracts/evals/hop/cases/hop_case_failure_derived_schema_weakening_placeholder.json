@@ -1,0 +1,40 @@
+{
+  "artifact_id": "hop_eval_case_5a12f9e8b258a006",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "failure_derived_placeholder",
+  "content_hash": "sha256:5a12f9e8b258a006ce2d2591a38c255fd7a6fc4465cbe4d630f0b530e5aa324f",
+  "eval_case_id": "hop_case_failure_derived_schema_weakening_placeholder",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "schema_weakening_attempt"
+  ],
+  "input": {
+    "transcript_id": "t_weakening_placeholder",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Can a candidate weaken HOP schemas?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "No. The safety scan rejects schema weakening."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "structural",
+    "rules": {
+      "forbidden_substrings_in_answers": [
+        "additionalProperties"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:failure_derived_schema_weakening_placeholder",
+    "related": []
+  }
+}

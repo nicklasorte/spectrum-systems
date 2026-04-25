@@ -1,0 +1,27 @@
+{
+  "artifact_id": "hop_eval_case_6f4dfd5b6d0bff08",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "adversarial",
+  "content_hash": "sha256:6f4dfd5b6d0bff0857fb22d22e1a61fbb2379d364945b9ed69248fe361f5dc8a",
+  "eval_case_id": "hop_case_adversarial_empty_transcript",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "empty_transcript"
+  ],
+  "input": {
+    "transcript_id": "t_empty",
+    "turns": []
+  },
+  "pass_criteria": {
+    "judge": "rejection_expected",
+    "rules": {
+      "expect_rejection": true
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_v1:adversarial_empty_transcript",
+    "related": []
+  }
+}
