@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/schemas/transcript_pipeline/structured_issue_set.schema.json",
+  "title": "Structured Issue Set",
+  "description": "Categorized, prioritized, and deduplicated set of issues ready for paper drafting. Produced from issue_registry_artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "content_hash",
+    "trace",
+    "provenance",
+    "created_at",
+    "source_artifact_id",
+    "issue_clusters"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^SIS-[A-Z0-9_-]+$"
+    },
+    "artifact_type": {
+      "type": "string",
+      "const": "structured_issue_set"
+    },
+    "schema_ref": {
+      "type": "string",
+      "const": "transcript_pipeline/structured_issue_set"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "trace": {
+      "$ref": "#/$defs/trace_context"
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_artifact_id": {
+      "type": "string",
+      "description": "ID of the issue_registry_artifact this was derived from."
+    },
+    "issue_clusters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/issue_cluster"
+      }
+    },
+    "total_issue_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "deduplication_applied": {
+      "type": "boolean"
+    }
+  },
+  "$defs": {
+    "trace_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "span_id"],
+      "properties": {
+        "trace_id": {"type": "string", "pattern": "^[a-f0-9]{32}$"},
+        "span_id": {"type": "string", "pattern": "^[a-f0-9]{16}$"},
+        "parent_span_id": {"type": "string", "pattern": "^[a-f0-9]{16}$"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["produced_by", "input_artifact_ids"],
+      "properties": {
+        "produced_by": {"type": "string"},
+        "input_artifact_ids": {"type": "array", "items": {"type": "string"}},
+        "run_id": {"type": "string"}
+      }
+    },
+    "issue_cluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cluster_id", "theme", "issue_ids", "priority"],
+      "properties": {
+        "cluster_id": {"type": "string"},
+        "theme": {"type": "string", "minLength": 1},
+        "issue_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string"}
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "synthesis": {"type": "string"}
+      }
+    }
+  }
+}

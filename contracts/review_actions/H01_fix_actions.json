@@ -1,0 +1,47 @@
+{
+  "fix_plan_id": "H01-FIX-PLAN",
+  "source_review_id": "RVA-H01-SPINE-001",
+  "created_at": "2026-04-25T00:00:00+00:00",
+  "fixes": [
+    {
+      "fix_id": "FIX-001",
+      "finding_ids": ["F-001", "F-006"],
+      "severity": "S2",
+      "description": "Add content_hash verification to schema_conformance eval and document replay_fn determinism requirement",
+      "target_file": "spectrum_systems/modules/evaluation/pipeline_eval_runner.py",
+      "status": "applied"
+    },
+    {
+      "fix_id": "FIX-002",
+      "finding_ids": ["F-002"],
+      "severity": "S2",
+      "description": "Add expected_output_type parameter to run_pqx_step with enforcement before artifact registration",
+      "target_file": "spectrum_systems/modules/orchestration/pqx_step_harness.py",
+      "status": "applied"
+    },
+    {
+      "fix_id": "FIX-003",
+      "finding_ids": ["F-003"],
+      "severity": "S2",
+      "description": "Create context_bundle.schema.json in transcript_pipeline schemas directory",
+      "target_file": "contracts/schemas/transcript_pipeline/context_bundle.schema.json",
+      "status": "applied"
+    },
+    {
+      "fix_id": "FIX-004",
+      "finding_ids": ["F-004"],
+      "severity": "S3",
+      "description": "Deep-copy artifacts at register_artifact and retrieve_artifact to prevent post-write mutation",
+      "target_file": "spectrum_systems/modules/runtime/artifact_store.py",
+      "status": "applied"
+    },
+    {
+      "fix_id": "FIX-005",
+      "finding_ids": ["F-005"],
+      "severity": "S2",
+      "description": "Add explicit docstring note to route_artifact about caller responsibility for eval gate enforcement",
+      "target_file": "spectrum_systems/modules/orchestration/tlc_router.py",
+      "status": "applied"
+    }
+  ]
+}

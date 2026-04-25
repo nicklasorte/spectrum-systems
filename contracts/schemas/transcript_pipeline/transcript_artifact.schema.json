@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/schemas/transcript_pipeline/transcript_artifact.schema.json",
+  "title": "Transcript Artifact",
+  "description": "Raw transcript ingested at the pipeline admission boundary. First artifact in the transcript-to-study pipeline.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "content_hash",
+    "trace",
+    "provenance",
+    "created_at",
+    "source_format",
+    "raw_text"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^TXA-[A-Z0-9_-]+$",
+      "description": "Unique identifier for this transcript artifact."
+    },
+    "artifact_type": {
+      "type": "string",
+      "const": "transcript_artifact"
+    },
+    "schema_ref": {
+      "type": "string",
+      "const": "transcript_pipeline/transcript_artifact"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "description": "SHA-256 hash of the artifact content for integrity verification."
+    },
+    "trace": {
+      "$ref": "#/$defs/trace_context"
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_format": {
+      "type": "string",
+      "enum": ["vtt", "srt", "txt", "json", "docx"],
+      "description": "Format of the original transcript source."
+    },
+    "raw_text": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Raw transcript content."
+    },
+    "duration_seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+    "speaker_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {"type": "string"},
+        "recorded_at": {"type": "string", "format": "date-time"},
+        "language": {"type": "string"}
+      }
+    }
+  },
+  "$defs": {
+    "trace_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "span_id"],
+      "properties": {
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$",
+          "description": "128-bit trace identifier (hex)."
+        },
+        "span_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{16}$",
+          "description": "64-bit span identifier (hex)."
+        },
+        "parent_span_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{16}$"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["produced_by", "input_artifact_ids"],
+      "properties": {
+        "produced_by": {
+          "type": "string",
+          "description": "System or agent that produced this artifact."
+        },
+        "input_artifact_ids": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "IDs of artifacts used to produce this artifact."
+        },
+        "run_id": {
+          "type": "string",
+          "description": "Run or workflow execution identifier."
+        }
+      }
+    }
+  }
+}

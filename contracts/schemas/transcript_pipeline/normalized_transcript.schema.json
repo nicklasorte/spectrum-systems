@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/schemas/transcript_pipeline/normalized_transcript.schema.json",
+  "title": "Normalized Transcript",
+  "description": "Structured, speaker-diarized transcript produced from a raw transcript_artifact. Canonical form for downstream pipeline steps.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "content_hash",
+    "trace",
+    "provenance",
+    "created_at",
+    "source_artifact_id",
+    "segments"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^NTX-[A-Z0-9_-]+$"
+    },
+    "artifact_type": {
+      "type": "string",
+      "const": "normalized_transcript"
+    },
+    "schema_ref": {
+      "type": "string",
+      "const": "transcript_pipeline/normalized_transcript"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "trace": {
+      "$ref": "#/$defs/trace_context"
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_artifact_id": {
+      "type": "string",
+      "description": "ID of the transcript_artifact this was derived from."
+    },
+    "segments": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/transcript_segment"
+      }
+    },
+    "speaker_map": {
+      "type": "object",
+      "additionalProperties": {"type": "string"},
+      "description": "Mapping of speaker IDs to display names."
+    }
+  },
+  "$defs": {
+    "trace_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "span_id"],
+      "properties": {
+        "trace_id": {"type": "string", "pattern": "^[a-f0-9]{32}$"},
+        "span_id": {"type": "string", "pattern": "^[a-f0-9]{16}$"},
+        "parent_span_id": {"type": "string", "pattern": "^[a-f0-9]{16}$"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["produced_by", "input_artifact_ids"],
+      "properties": {
+        "produced_by": {"type": "string"},
+        "input_artifact_ids": {"type": "array", "items": {"type": "string"}},
+        "run_id": {"type": "string"}
+      }
+    },
+    "transcript_segment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["segment_id", "speaker_id", "text", "start_ms"],
+      "properties": {
+        "segment_id": {"type": "string"},
+        "speaker_id": {"type": "string"},
+        "text": {"type": "string", "minLength": 1},
+        "start_ms": {"type": "integer", "minimum": 0},
+        "end_ms": {"type": "integer", "minimum": 0},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    }
+  }
+}
