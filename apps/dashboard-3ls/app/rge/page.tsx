@@ -156,6 +156,11 @@ export default function RGEPage() {
     analysisDataSource === 'stub_fallback' || analysisDataSource === 'unknown';
   const isProvisional =
     analysisDataSource === 'derived_estimate' || proposalsDataSource === 'derived_estimate';
+  // DSH-04: only artifact_store, repo_registry, or derived sources may render green.
+  const sourceAllowsGreen =
+    analysisDataSource === 'artifact_store' ||
+    analysisDataSource === 'repo_registry' ||
+    analysisDataSource === 'derived';
   const sourceTone =
     analysisDataSource === 'artifact_store'
       ? 'text-blue-700'
@@ -207,11 +212,15 @@ export default function RGEPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="border border-gray-300 p-4 rounded">
           <div className="text-xs text-gray-500 mb-1">Operational</div>
-          <div className="text-lg font-semibold">
+          <div className="text-lg font-semibold" data-testid="rge-operational-status">
             {rgeCanOperate === undefined ? (
               <span className="text-gray-400">unknown</span>
-            ) : rgeCanOperate ? (
+            ) : rgeCanOperate && sourceAllowsGreen ? (
               <span className="text-green-700">CAN OPERATE</span>
+            ) : rgeCanOperate ? (
+              <span className="text-amber-700" title={`Source: ${analysisDataSource} — unverified`}>
+                CAN OPERATE (unverified)
+              </span>
             ) : (
               <span className="text-red-600">BLOCKED</span>
             )}

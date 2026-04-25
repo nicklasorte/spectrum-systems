@@ -1,3 +1,7 @@
+// Compliance data is statically defined stub data; no artifact source exists.
+// All responses are labeled stub_fallback so consumers know these are not
+// verified compliance readings.
+
 export async function GET() {
   const systemsData = [
     { system_id: 'PQX', compliant: true, violations: [] },
@@ -33,6 +37,12 @@ export async function GET() {
 
   return Response.json({
     status: 'success',
+    data_source: 'stub_fallback',
+    generated_at: new Date().toISOString(),
+    source_artifacts_used: [],
+    warnings: [
+      'Compliance data is statically defined; no artifact source exists. Compliance status cannot be treated as verified.',
+    ],
     total_systems: systemsData.length,
     compliant: compliantCount,
     violations: violationCount,

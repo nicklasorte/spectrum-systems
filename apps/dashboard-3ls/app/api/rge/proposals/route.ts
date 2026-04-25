@@ -112,6 +112,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       result: 'decision_recorded',
+      data_source: 'stub_fallback',
+      generated_at: new Date().toISOString(),
+      source_artifacts_used: [],
+      warnings: ['Decision is recorded in memory only; no persistent artifact store exists.'],
       proposal_id,
       decision,
       recorded_at: new Date().toISOString(),

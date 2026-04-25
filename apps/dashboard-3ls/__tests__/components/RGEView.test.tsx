@@ -237,4 +237,43 @@ describe('RGE Dashboard', () => {
       expect(screen.queryByTestId('provisional-badge')).not.toBeInTheDocument();
     });
   });
+
+  // DSH-09 / F-07: no-green-without-source for rge_can_operate
+  it('renders green CAN OPERATE only when data_source allows it (artifact_store)', async () => {
+    setupFetchMock(mockRoadmap, { ...mockAnalysis, rge_can_operate: true, data_source: 'artifact_store' });
+    render(<RGEPage />);
+    await waitFor(() => {
+      const el = screen.getByTestId('rge-operational-status');
+      expect(el.textContent).toContain('CAN OPERATE');
+      expect(el.textContent).not.toContain('unverified');
+    });
+  });
+
+  it('renders amber CAN OPERATE (unverified) when data_source is derived_estimate (DSH-04)', async () => {
+    setupFetchMock(mockRoadmap, {
+      ...mockAnalysis,
+      rge_can_operate: true,
+      data_source: 'derived_estimate',
+      warnings: ['partial inputs'],
+    });
+    render(<RGEPage />);
+    await waitFor(() => {
+      const el = screen.getByTestId('rge-operational-status');
+      expect(el.textContent).toContain('CAN OPERATE (unverified)');
+    });
+  });
+
+  it('renders amber CAN OPERATE (unverified) when data_source is stub_fallback (DSH-04)', async () => {
+    setupFetchMock(mockRoadmap, {
+      ...mockAnalysis,
+      rge_can_operate: true,
+      data_source: 'stub_fallback',
+      warnings: ['no artifacts'],
+    });
+    render(<RGEPage />);
+    await waitFor(() => {
+      const el = screen.getByTestId('rge-operational-status');
+      expect(el.textContent).toContain('CAN OPERATE (unverified)');
+    });
+  });
 });
