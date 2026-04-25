@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { loadArtifact } from '@/lib/artifactLoader';
-import type { GapAnalysis, RoadmapTable, DataSource } from '@/lib/types';
+import { buildSourceEnvelope } from '@/lib/sourceClassification';
+import type { GapAnalysis, RoadmapTable } from '@/lib/types';
 
 const ARTIFACT_PATHS = {
   gapAnalysis: 'artifacts/roadmap/latest/gap_analysis.json',
@@ -12,18 +13,6 @@ export async function GET(_req: NextRequest) {
     const gapAnalysis = loadArtifact<GapAnalysis>(ARTIFACT_PATHS.gapAnalysis);
     const roadmapTable = loadArtifact<RoadmapTable>(ARTIFACT_PATHS.roadmapTable);
 
-    const warnings: string[] = [];
-    const source_artifacts_used: string[] = [];
-
-    if (gapAnalysis) source_artifacts_used.push(ARTIFACT_PATHS.gapAnalysis);
-    else warnings.push('gap_analysis unavailable: gap_analysis.json not found');
-
-    if (roadmapTable) source_artifacts_used.push(ARTIFACT_PATHS.roadmapTable);
-    else warnings.push('roadmap_table unavailable: roadmap_table.json not found');
-
-    const loadedCount = source_artifacts_used.length;
-
-    let data_source: DataSource;
     let proposals: Array<{
       proposal_id: string;
       phase_id: string;
@@ -34,19 +23,18 @@ export async function GET(_req: NextRequest) {
       status: string;
       created_at: string;
       cde_decision_deadline: string;
-    }>;
+    }> = [];
+
+    const extraWarnings: string[] = [];
 
     if (gapAnalysis && roadmapTable) {
-      // Derive proposals from the dominant bottleneck and first foundation steps
-      data_source = 'derived';
-      warnings.push(
+      extraWarnings.push(
         'Proposals derived from gap_analysis and roadmap_table; no dedicated proposals artifact found.'
       );
 
       const deadline = new Date(Date.now() + 48 * 3600 * 1000).toISOString();
       const now = new Date().toISOString();
 
-      // Foundation steps that address the dominant bottleneck
       const foundationSteps = roadmapTable.steps
         .filter((s) => s.system_layer_impacted === 'foundation')
         .slice(0, 2);
@@ -64,11 +52,10 @@ export async function GET(_req: NextRequest) {
       }));
 
       if (proposals.length === 0) {
-        warnings.push('No foundation-layer steps found in roadmap_table; returning empty proposals.');
+        extraWarnings.push('No foundation-layer steps found in roadmap_table; returning empty proposals.');
       }
-    } else if (loadedCount === 0) {
-      data_source = 'stub_fallback';
-      warnings.push('No artifact sources available; returning stub proposals.');
+    } else if (!gapAnalysis && !roadmapTable) {
+      extraWarnings.push('No artifact sources available; returning stub proposals.');
       proposals = [
         {
           proposal_id: 'PROP-STUB-001',
@@ -82,21 +69,32 @@ export async function GET(_req: NextRequest) {
           cde_decision_deadline: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
         },
       ];
-    } else {
-      data_source = 'derived';
-      proposals = [];
     }
 
+    // Proposals are always computed from the underlying artifacts, never
+    // surfaced raw — so partial coverage is a derived_estimate.
+    const envelope = buildSourceEnvelope({
+      slots: [
+        { path: ARTIFACT_PATHS.gapAnalysis, loaded: gapAnalysis !== null },
+        { path: ARTIFACT_PATHS.roadmapTable, loaded: roadmapTable !== null },
+      ],
+      isComputed: true,
+      warnings: extraWarnings,
+    });
+
     return NextResponse.json({
-      data_source,
-      generated_at: new Date().toISOString(),
-      source_artifacts_used,
-      warnings,
+      data_source: envelope.data_source,
+      generated_at: envelope.generated_at,
+      source_artifacts_used: envelope.source_artifacts_used,
+      warnings: envelope.warnings,
       proposals,
     });
   } catch (error) {
     console.error('Error fetching proposals:', error);
-    return NextResponse.json({ error: 'Failed to fetch proposals' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch proposals', data_source: 'stub_fallback' },
+      { status: 500 }
+    );
   }
 }
 

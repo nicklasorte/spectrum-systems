@@ -57,4 +57,38 @@ describe('SystemCard', () => {
 
     expect(screen.getByText('Violations:')).toBeInTheDocument();
   });
+
+  it('renders a source badge when data_source is provided', () => {
+    render(
+      <SystemCard
+        system={{ ...mockSystem, data_source: 'stub_fallback' }}
+        onClick={() => {}}
+        isSelected={false}
+      />
+    );
+    expect(screen.getByTestId('source-badge').textContent).toMatch(/stub/i);
+  });
+
+  it('renders the authority role inline when provided (DSH-07)', () => {
+    render(
+      <SystemCard
+        system={{ ...mockSystem, system_id: 'CDE', authority_role: 'decides' }}
+        onClick={() => {}}
+        isSelected={false}
+      />
+    );
+    expect(screen.getByText('decides')).toBeInTheDocument();
+  });
+
+  it('renders UNKNOWN status without painting it green (DSH-04)', () => {
+    render(
+      <SystemCard
+        system={{ ...mockSystem, status: 'unknown' as const }}
+        onClick={() => {}}
+        isSelected={false}
+      />
+    );
+    expect(screen.getByText('UNKNOWN')).toBeInTheDocument();
+    expect(screen.queryByText('HEALTHY')).not.toBeInTheDocument();
+  });
 });

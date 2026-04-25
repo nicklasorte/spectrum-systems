@@ -8,9 +8,10 @@ interface SystemMetrics {
   system_name: string;
   system_type: string;
   health_score: number;
-  status: 'healthy' | 'warning' | 'critical';
+  status: 'healthy' | 'warning' | 'critical' | 'unknown';
   incidents_week: number;
   contract_violations: Array<{ rule: string; detail: string }>;
+  data_source?: string;
 }
 
 interface TrendData {
@@ -75,10 +76,11 @@ export default function DetailPage() {
     }
   };
 
-  const statusColors = {
+  const statusColors: Record<SystemMetrics['status'], string> = {
     healthy: 'bg-green-100 text-green-800',
     warning: 'bg-yellow-100 text-yellow-800',
     critical: 'bg-red-100 text-red-800',
+    unknown: 'bg-gray-200 text-gray-700',
   };
 
   return (
