@@ -208,4 +208,15 @@ describe('MET-03 — intelligence API wiring', () => {
     expect(intelligenceSrc).toContain('source_artifacts_used');
     expect(intelligenceSrc).toContain('warnings');
   });
+
+  it('does not zero risk counts when partial-artifact fields are absent', () => {
+    // Counts must degrade to 'unknown' when the artifact is present but the
+    // specific field is missing (older schema or partial write); the API
+    // must never silently substitute 0.
+    const fallbackBlock = intelligenceSrc.slice(intelligenceSrc.indexOf('const riskBlock'));
+    expect(fallbackBlock).toMatch(/fallback_signal_count[\s\S]*?'unknown'/);
+    expect(fallbackBlock).toMatch(/unknown_signal_count[\s\S]*?'unknown'/);
+    expect(fallbackBlock).toMatch(/missing_eval_count[\s\S]*?'unknown'/);
+    expect(fallbackBlock).toMatch(/missing_trace_count[\s\S]*?'unknown'/);
+  });
 });

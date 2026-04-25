@@ -243,17 +243,19 @@ export async function GET() {
       : [`${ARTIFACT_PATHS.leverageQueue} unavailable; leverage queue reported as empty.`],
   };
 
-  // When the risk artifact is missing, fail-closed: counts that are not
-  // independently observable from another artifact-backed source remain
-  // 'unknown'. The dashboard must continue to render unknown rather than a
-  // hard zero so missing EVL/LIN coverage is not silently under-reported.
+  // Fail-closed counts: when a field is absent, never substitute 0 just
+  // because the artifact wrapper exists. A partial-write or older-schema
+  // artifact must surface 'unknown' so the dashboard cannot under-report
+  // risk. Only when the entire risk_summary artifact is missing do we
+  // fall back to the API-derived loader counts (which are themselves
+  // artifact-backed and computed against the same slot list).
   const riskBlock = {
     fallback_signal_count:
       riskSummary?.payload?.fallback_signal_count ??
-      (riskSummary ? 0 : fallbackSignalCount),
+      (riskSummary ? 'unknown' : fallbackSignalCount),
     unknown_signal_count:
       riskSummary?.payload?.unknown_signal_count ??
-      (riskSummary ? 0 : unknownSignalCount),
+      (riskSummary ? 'unknown' : unknownSignalCount),
     missing_eval_count: riskSummary?.payload?.missing_eval_count ?? 'unknown',
     missing_trace_count: riskSummary?.payload?.missing_trace_count ?? 'unknown',
     override_count: riskSummary?.payload?.override_count ?? 'unknown',

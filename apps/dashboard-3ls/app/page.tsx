@@ -77,8 +77,8 @@ interface FailureMode {
 }
 
 interface RiskSummaryBlock {
-  fallback_signal_count?: number;
-  unknown_signal_count?: number;
+  fallback_signal_count?: number | 'unknown';
+  unknown_signal_count?: number | 'unknown';
   missing_eval_count?: number | 'unknown';
   missing_trace_count?: number | 'unknown';
   override_count?: number | 'unknown';
@@ -165,7 +165,11 @@ interface LeverageItem {
   severity: 'high' | 'medium' | 'low';
   effort: 'high' | 'medium' | 'low' | 'unknown';
   source: 'artifact' | 'derived' | 'fallback';
-  confidence: 'artifact-backed' | 'derived' | 'fallback';
+  // Preserve the declared confidence label exactly as it appears in the
+  // source artifact (e.g. 'artifact_backed', 'derived_estimate',
+  // 'unknown') so a provisional item is never displayed as fully
+  // artifact-backed.
+  confidence: string;
   leverage_score: number;
   source_artifacts_used?: string[];
 }
@@ -439,8 +443,12 @@ export default function Dashboard() {
       apiRisk?.missing_eval_count ?? (apiRisk ? derivedMissingEval : 'unknown');
     const missingTraceCount: number | 'unknown' =
       apiRisk?.missing_trace_count ?? (apiRisk ? derivedMissingTrace : 'unknown');
-    const fallbackCount = apiRisk?.fallback_signal_count ?? sourceMix.stub_fallback;
-    const unknownCount = apiRisk?.unknown_signal_count ?? sourceMix.unknown;
+    const fallbackCount: number | 'unknown' =
+      apiRisk?.fallback_signal_count ?? sourceMix.stub_fallback;
+    const unknownCount: number | 'unknown' =
+      apiRisk?.unknown_signal_count ?? sourceMix.unknown;
+    const fallbackCountForBoost = typeof fallbackCount === 'number' ? fallbackCount : 0;
+    const unknownCountForBoost = typeof unknownCount === 'number' ? unknownCount : 0;
     const overrideCount: number | 'unknown' = apiRisk?.override_count ?? 'unknown';
 
     const topFailureModeArtifacts = (intelligence?.failure_modes ?? []).map((fm) => ({
@@ -504,7 +512,7 @@ export default function Dashboard() {
       });
     }
 
-    if (fallbackCount > 0) {
+    if (fallbackCountForBoost > 0) {
       recs.push({
         title: 'Replace stub_fallback health rows with artifact snapshots',
         failure_prevented: 'False confidence from placeholder statuses',
@@ -554,7 +562,7 @@ export default function Dashboard() {
           item.systems_affected.some((id) => ['EVL', 'CDE', 'TPA'].includes(id))
             ? 1.4
             : 1;
-        const repeatBoost = fallbackCount > 0 || unknownCount > 0 ? 1.15 : 1;
+        const repeatBoost = fallbackCountForBoost > 0 || unknownCountForBoost > 0 ? 1.15 : 1;
         const score = Number((base * blockingBoost * repeatBoost).toFixed(2));
         return { ...item, leverage_score: score };
       })
@@ -571,18 +579,29 @@ export default function Dashboard() {
           Array.isArray(item.source_artifacts_used) &&
           item.source_artifacts_used.length > 0
       )
-      .map((item) => ({
-        title: item.title,
-        failure_prevented: item.failure_prevented,
-        signal_improved: item.signal_improved,
-        systems_affected: item.systems_affected,
-        severity: item.severity,
-        effort: (item.estimated_effort ?? 'unknown') as 'high' | 'medium' | 'low' | 'unknown',
-        source: 'artifact' as const,
-        confidence: 'artifact-backed' as const,
-        leverage_score: item.leverage_score,
-        source_artifacts_used: item.source_artifacts_used,
-      }))
+      .map((item) => {
+        const itemDS = item.data_source ?? 'unknown';
+        // Map the item's declared data_source to the local source label,
+        // never assume 'artifact' just because the item exists.
+        const source: 'artifact' | 'derived' | 'fallback' =
+          itemDS === 'artifact_store' || itemDS === 'repo_registry'
+            ? 'artifact'
+            : itemDS === 'derived' || itemDS === 'derived_estimate'
+            ? 'derived'
+            : 'fallback';
+        return {
+          title: item.title,
+          failure_prevented: item.failure_prevented,
+          signal_improved: item.signal_improved,
+          systems_affected: item.systems_affected,
+          severity: item.severity,
+          effort: (item.estimated_effort ?? 'unknown') as 'high' | 'medium' | 'low' | 'unknown',
+          source,
+          confidence: item.confidence ?? 'unknown',
+          leverage_score: item.leverage_score,
+          source_artifacts_used: item.source_artifacts_used,
+        };
+      })
       .sort((a, b) => b.leverage_score - a.leverage_score)
       .slice(0, 5);
 
@@ -762,8 +781,8 @@ export default function Dashboard() {
       <section className="bg-white border rounded p-4" data-testid="fragility-risk-panel">
         <h2 className="font-semibold mb-3">FRAGILITY + RISK SNAPSHOT</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-          <div className="border rounded p-2">fallback count: {computed.fallbackCount}</div>
-          <div className="border rounded p-2">unknown count: {computed.unknownCount}</div>
+          <div className="border rounded p-2">fallback count: {String(computed.fallbackCount)}</div>
+          <div className="border rounded p-2">unknown count: {String(computed.unknownCount)}</div>
           <div className="border rounded p-2">missing eval count: {String(computed.missingEvalCount)}</div>
           <div className="border rounded p-2">missing trace count: {String(computed.missingTraceCount)}</div>
           <div className="border rounded p-2">override count: {String(computed.overrideCount)}</div>

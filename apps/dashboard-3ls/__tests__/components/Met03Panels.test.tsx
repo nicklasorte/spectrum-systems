@@ -234,6 +234,49 @@ describe('MET-03 dashboard panels', () => {
     });
   });
 
+  it('renders fallback_signal_count and unknown_signal_count as unknown when artifact reports unknown', async () => {
+    const partialRisk = {
+      ...baseIntelligence,
+      risk_summary: {
+        ...baseIntelligence.risk_summary,
+        fallback_signal_count: 'unknown' as const,
+        unknown_signal_count: 'unknown' as const,
+      },
+    };
+    setupFetch(baseHealth, partialRisk);
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/fallback count: unknown/)).toBeInTheDocument();
+      expect(screen.getByText(/unknown count: unknown/)).toBeInTheDocument();
+    });
+  });
+
+  it('preserves leverage item confidence (does not hard-code artifact-backed)', async () => {
+    const provisionalLeverage = {
+      ...baseIntelligence,
+      leverage_queue: {
+        ...baseIntelligence.leverage_queue,
+        items: [
+          {
+            ...baseIntelligence.leverage_queue.items[0],
+            confidence: 'derived_estimate',
+            data_source: 'derived_estimate',
+          },
+        ],
+      },
+    };
+    setupFetch(baseHealth, provisionalLeverage);
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      const items = screen.getAllByTestId('leverage-item');
+      expect(items.length).toBeGreaterThan(0);
+      expect(within(items[0]).getByText(/confidence: derived_estimate/)).toBeInTheDocument();
+      expect(within(items[0]).getByText(/source: derived/)).toBeInTheDocument();
+    });
+  });
+
   it('renders missing_eval_count and missing_trace_count as unknown when risk_summary is absent', async () => {
     const intelligenceWithoutRisk = { ...baseIntelligence, risk_summary: undefined };
     setupFetch(baseHealth, intelligenceWithoutRisk);
