@@ -1,217 +1,638 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { SystemCard, type SystemCardStatus } from '@/components/SystemCard';
-import { SystemDetail } from '@/components/SystemDetail';
-import {
-  DISPLAY_GROUPS,
-  partitionByDisplayGroup,
-  type DisplayGroup,
-} from '@/lib/displayGroups';
+import React, { useEffect, useMemo, useState } from 'react';
+import { AUTHORITY_ROLES } from '@/lib/displayGroups';
+import { dataSourceAllowsHealthy } from '@/lib/truthClassifier';
 import type { DataSource } from '@/lib/types';
 
-interface SystemMetrics {
+type TrustState = 'PASS' | 'WARN' | 'FREEZE' | 'BLOCK';
+type StageState = 'present' | 'partial' | 'missing' | 'unknown';
+
+interface HealthSystem {
   system_id: string;
   system_name: string;
-  system_type: string;
-  health_score: number;
-  status: SystemCardStatus;
+  status: 'healthy' | 'warning' | 'critical' | 'unknown';
   incidents_week: number;
   contract_violations: Array<{ rule: string; detail: string }>;
   data_source?: DataSource;
   authority_role?: string | null;
-  display_group?: string | null;
 }
 
-interface HealthEnvelope {
+interface HealthPayload {
   data_source?: DataSource;
   generated_at?: string;
   source_artifacts_used?: string[];
   warnings?: string[];
+  systems?: HealthSystem[];
 }
 
+interface IntelligencePayload {
+  data_source?: DataSource;
+  source_artifacts_used?: string[];
+  warnings?: string[];
+  intelligence_summary?: {
+    roadmap?: {
+      dominant_bottleneck?: string;
+      bottleneck_statement?: string;
+      top_risks?: string[];
+    };
+    mg_kernel?: {
+      status?: string;
+      all_pass?: boolean;
+    };
+    provenance?: {
+      authority_precheck_valid?: boolean;
+      step_count_exactly_24?: boolean;
+    };
+    repo?: {
+      operational_signals?: Array<{ title: string; status: string; detail: string }>;
+    };
+    system_state?: {
+      authority_precheck?: string;
+      domain_state?: Record<string, string>;
+    };
+  };
+}
+
+interface SystemsPayload {
+  data_source?: DataSource;
+  source_artifacts_used?: string[];
+  warnings?: string[];
+}
+
+interface RGEPayload {
+  data_source?: DataSource;
+  rge_can_operate?: boolean;
+  context_maturity_level?: number | 'unknown';
+  mg_kernel_status?: string;
+  active_drift_legs?: string[];
+  warnings?: string[];
+}
+
+interface ProofStage {
+  name: string;
+  state: StageState;
+  data_source: DataSource;
+  reason_codes: string[];
+}
+
+interface LeverageItem {
+  title: string;
+  failure_prevented: string;
+  signal_improved: string;
+  systems_affected: string[];
+  severity: 'high' | 'medium' | 'low';
+  effort: 'high' | 'medium' | 'low' | 'unknown';
+  source: 'artifact' | 'derived' | 'fallback';
+  confidence: 'artifact-backed' | 'derived' | 'fallback';
+  leverage_score: number;
+}
+
+const SOURCE_ORDER: DataSource[] = [
+  'artifact_store',
+  'repo_registry',
+  'derived',
+  'derived_estimate',
+  'stub_fallback',
+  'unknown',
+];
+
+const LOOP_SEQUENCE = ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL'];
+const LOOP_OVERLAYS = ['REP', 'LIN', 'OBS', 'SLO'];
+
 const SOURCE_TONE: Record<DataSource, string> = {
-  artifact_store: 'text-blue-700',
-  repo_registry: 'text-indigo-700',
-  derived: 'text-purple-700',
-  derived_estimate: 'text-amber-700',
-  stub_fallback: 'text-orange-700',
-  unknown: 'text-gray-500',
+  artifact_store: 'bg-blue-50 text-blue-700 border-blue-300',
+  repo_registry: 'bg-indigo-50 text-indigo-700 border-indigo-300',
+  derived: 'bg-purple-50 text-purple-700 border-purple-300',
+  derived_estimate: 'bg-amber-50 text-amber-700 border-amber-300',
+  stub_fallback: 'bg-orange-50 text-orange-700 border-orange-300',
+  unknown: 'bg-gray-100 text-gray-600 border-gray-300',
 };
 
+const STATUS_TONE: Record<TrustState, string> = {
+  PASS: 'bg-green-50 text-green-800 border-green-300',
+  WARN: 'bg-amber-50 text-amber-800 border-amber-300',
+  FREEZE: 'bg-orange-50 text-orange-800 border-orange-300',
+  BLOCK: 'bg-red-50 text-red-800 border-red-300',
+};
+
+function SourceBadge({ ds }: { ds: DataSource }) {
+  return (
+    <span className={`inline-flex items-center border rounded px-2 py-0.5 text-xs font-mono ${SOURCE_TONE[ds]}`}>
+      {ds}
+    </span>
+  );
+}
+
+function ProvisionalBadge({ ds }: { ds: DataSource }) {
+  if (ds !== 'derived_estimate') return null;
+  return (
+    <span
+      data-testid="provisional-badge"
+      className="inline-flex items-center border rounded px-2 py-0.5 text-xs font-mono uppercase tracking-wide bg-amber-50 border-amber-300 text-amber-800"
+    >
+      provisional
+    </span>
+  );
+}
+
+function statusTone(status: string) {
+  if (status === 'healthy' || status === 'present' || status === 'PASS') return 'text-green-700';
+  if (status === 'warning' || status === 'partial' || status === 'WARN') return 'text-amber-700';
+  if (status === 'critical' || status === 'missing' || status === 'BLOCK') return 'text-red-700';
+  if (status === 'FREEZE') return 'text-orange-700';
+  return 'text-gray-500';
+}
+
+function severityWeight(value: 'high' | 'medium' | 'low') {
+  return value === 'high' ? 3 : value === 'medium' ? 2 : 1;
+}
+
+function effortWeight(value: 'high' | 'medium' | 'low' | 'unknown') {
+  return value === 'high' ? 3 : value === 'medium' ? 2 : value === 'low' ? 1 : 2;
+}
+
 export default function Dashboard() {
-  const [systems, setSystems] = useState<SystemMetrics[]>([]);
-  const [envelope, setEnvelope] = useState<HealthEnvelope>({});
-  const [selectedSystem, setSelectedSystem] = useState<string | null>(null);
+  const [health, setHealth] = useState<HealthPayload | null>(null);
+  const [intelligence, setIntelligence] = useState<IntelligencePayload | null>(null);
+  const [systemsEnvelope, setSystemsEnvelope] = useState<SystemsPayload | null>(null);
+  const [rge, setRge] = useState<RGEPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchSystems();
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [healthRes, intelligenceRes, systemsRes, rgeRes] = await Promise.all([
+          fetch('/api/health'),
+          fetch('/api/intelligence'),
+          fetch('/api/systems'),
+          fetch('/api/rge/analysis'),
+        ]);
+
+        if (!healthRes.ok || !intelligenceRes.ok || !systemsRes.ok || !rgeRes.ok) {
+          throw new Error('Failed to fetch dashboard artifacts');
+        }
+
+        const [healthData, intelligenceData, systemsData, rgeData] = await Promise.all([
+          healthRes.json(),
+          intelligenceRes.json(),
+          systemsRes.json(),
+          rgeRes.json(),
+        ]);
+
+        setHealth(healthData);
+        setIntelligence(intelligenceData);
+        setSystemsEnvelope(systemsData);
+        setRge(rgeData);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const fetchSystems = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/health');
-      if (!response.ok) throw new Error('Failed to fetch health data');
-      const data = await response.json();
-      setSystems(data.systems || []);
-      setEnvelope({
-        data_source: data.data_source,
-        generated_at: data.generated_at,
-        source_artifacts_used: data.source_artifacts_used,
-        warnings: data.warnings,
-      });
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const computed = useMemo(() => {
+    const systems = health?.systems ?? [];
+    const warnings = [...(health?.warnings ?? []), ...(intelligence?.warnings ?? []), ...(rge?.warnings ?? [])];
+    const sourceMix = SOURCE_ORDER.reduce(
+      (acc, source) => {
+        acc[source] = systems.filter((s) => (s.data_source ?? 'unknown') === source).length;
+        return acc;
+      },
+      {
+        artifact_store: 0,
+        repo_registry: 0,
+        derived: 0,
+        derived_estimate: 0,
+        stub_fallback: 0,
+        unknown: 0,
+      } as Record<DataSource, number>
+    );
 
-  const selectedSystemData = systems.find((s) => s.system_id === selectedSystem);
-  const ds = envelope.data_source;
-  const partition = partitionByDisplayGroup(systems);
+    const artifactBackedCount = sourceMix.artifact_store + sourceMix.repo_registry;
+    const artifactBackedPct = systems.length === 0 ? 0 : Math.round((artifactBackedCount / systems.length) * 100);
+
+    const loopRows = [...LOOP_SEQUENCE, ...LOOP_OVERLAYS].map((id) => {
+      const node = systems.find((s) => s.system_id === id);
+      const data_source = (node?.data_source ?? 'unknown') as DataSource;
+      const incomingStatus = node?.status ?? 'unknown';
+      const normalizedStatus =
+        incomingStatus === 'healthy' && !dataSourceAllowsHealthy(data_source)
+          ? data_source === 'derived_estimate'
+            ? 'warning'
+            : 'unknown'
+          : incomingStatus;
+      return {
+        system_id: id,
+        authority_role: AUTHORITY_ROLES[id] ?? 'unknown',
+        status: normalizedStatus,
+        data_source,
+        warning_count: (node?.incidents_week ?? 0) + (node?.contract_violations?.length ?? 0),
+      };
+    });
+
+    const missingLoopSystems = loopRows.filter((row) => row.status === 'unknown').map((row) => row.system_id);
+
+    const bottleneckFromArtifact = intelligence?.intelligence_summary?.roadmap?.dominant_bottleneck;
+    const bottleneckFallback = loopRows
+      .filter((row) => LOOP_SEQUENCE.includes(row.system_id))
+      .sort((a, b) => b.warning_count - a.warning_count)[0]?.system_id;
+    const bottleneck = bottleneckFromArtifact ?? bottleneckFallback ?? 'unknown';
+    const bottleneckConfidence = bottleneckFromArtifact
+      ? (intelligence?.data_source ?? 'unknown')
+      : ('derived_estimate' as DataSource);
+
+    const evalMissing = !systems.find((s) => s.system_id === 'EVL') || systems.find((s) => s.system_id === 'EVL')?.status === 'unknown';
+    const lineageMissing = !systems.find((s) => s.system_id === 'LIN') || systems.find((s) => s.system_id === 'LIN')?.status === 'unknown';
+
+    const proofStages: ProofStage[] = [
+      {
+        name: 'Source',
+        state:
+          (systemsEnvelope?.source_artifacts_used?.length ?? 0) > 0
+            ? 'present'
+            : systemsEnvelope?.data_source === 'derived_estimate'
+            ? 'partial'
+            : systemsEnvelope?.data_source === 'unknown'
+            ? 'unknown'
+            : 'missing',
+        data_source: (systemsEnvelope?.data_source ?? 'unknown') as DataSource,
+        reason_codes: systemsEnvelope?.warnings?.length ? ['source_warnings_present'] : [],
+      },
+      {
+        name: 'Output',
+        state: systems.length > 0 ? 'present' : 'missing',
+        data_source: (health?.data_source ?? 'unknown') as DataSource,
+        reason_codes: systems.length > 0 ? [] : ['output_missing'],
+      },
+      {
+        name: 'Eval',
+        state: evalMissing ? 'missing' : 'present',
+        data_source: (health?.systems?.find((s) => s.system_id === 'EVL')?.data_source ?? 'unknown') as DataSource,
+        reason_codes: evalMissing ? ['eval_missing'] : [],
+      },
+      {
+        name: 'Control',
+        state: systems.find((s) => s.system_id === 'CDE') ? 'present' : 'missing',
+        data_source: (health?.systems?.find((s) => s.system_id === 'CDE')?.data_source ?? 'unknown') as DataSource,
+        reason_codes: systems.find((s) => s.system_id === 'CDE') ? [] : ['control_missing'],
+      },
+      {
+        name: 'Enforcement',
+        state: systems.find((s) => s.system_id === 'SEL') ? 'present' : 'missing',
+        data_source: (health?.systems?.find((s) => s.system_id === 'SEL')?.data_source ?? 'unknown') as DataSource,
+        reason_codes: systems.find((s) => s.system_id === 'SEL') ? [] : ['enforcement_missing'],
+      },
+      {
+        name: 'Certification',
+        state:
+          intelligence?.intelligence_summary?.mg_kernel?.all_pass === true
+            ? 'present'
+            : intelligence?.intelligence_summary?.mg_kernel?.status
+            ? 'partial'
+            : 'unknown',
+        data_source: (intelligence?.data_source ?? 'unknown') as DataSource,
+        reason_codes:
+          intelligence?.intelligence_summary?.mg_kernel?.all_pass === true
+            ? []
+            : ['certification_incomplete'],
+      },
+    ];
+
+    const proofCoverage = Math.round(
+      (proofStages.filter((s) => s.state === 'present').length / proofStages.length) * 100
+    );
+
+    const missingEvalCount = proofStages.filter((s) => s.name === 'Eval' && s.state === 'missing').length;
+    const missingTraceCount = lineageMissing ? 1 : 0;
+    const fallbackCount = sourceMix.stub_fallback;
+    const unknownCount = sourceMix.unknown;
+    const overrideCount: number | 'unknown' = 'unknown';
+
+    const topFailureModes = [
+      ...(intelligence?.intelligence_summary?.roadmap?.top_risks ?? []),
+      ...((intelligence?.intelligence_summary?.repo?.operational_signals ?? [])
+        .filter((s) => s.status !== 'ok')
+        .map((s) => `${s.title}: ${s.detail}`)),
+    ].slice(0, 5);
+
+    const noHealthySource = systems.some(
+      (s) => s.status === 'healthy' && !dataSourceAllowsHealthy((s.data_source ?? 'unknown') as DataSource)
+    );
+
+    const trustReasons: string[] = [];
+    if (evalMissing) trustReasons.push('eval_missing');
+    if (lineageMissing) trustReasons.push('lineage_missing');
+    if (sourceMix.stub_fallback > 0) trustReasons.push('stub_fallback_present');
+    if (sourceMix.unknown > 0) trustReasons.push('unknown_source_present');
+    if (noHealthySource) trustReasons.push('healthy_blocked_by_source');
+    if (missingLoopSystems.length > 0) trustReasons.push('loop_systems_unknown');
+
+    let trustState: TrustState = 'PASS';
+    if (evalMissing || lineageMissing) trustState = 'BLOCK';
+    else if (sourceMix.stub_fallback > 0 || sourceMix.unknown > 0 || missingLoopSystems.length > 0)
+      trustState = 'FREEZE';
+    else if (warnings.length > 0 || proofCoverage < 100) trustState = 'WARN';
+
+    const recs: Omit<LeverageItem, 'leverage_score'>[] = [];
+
+    if (evalMissing) {
+      recs.push({
+        title: 'Restore EVL artifact-backed evaluation feed',
+        failure_prevented: 'Promotion without evaluation evidence',
+        signal_improved: 'Proof-chain Eval stage coverage',
+        systems_affected: ['EVL', 'TPA', 'CDE'],
+        severity: 'high',
+        effort: 'medium',
+        source: 'derived',
+        confidence: 'derived',
+      });
+    }
+
+    if (lineageMissing) {
+      recs.push({
+        title: 'Wire LIN trace lineage artifact into dashboard loop',
+        failure_prevented: 'Untraceable enforcement decisions',
+        signal_improved: 'Proof-chain lineage completeness',
+        systems_affected: ['LIN', 'CDE', 'SEL'],
+        severity: 'high',
+        effort: 'medium',
+        source: 'derived',
+        confidence: 'derived',
+      });
+    }
+
+    if (fallbackCount > 0) {
+      recs.push({
+        title: 'Replace stub_fallback health rows with artifact snapshots',
+        failure_prevented: 'False confidence from placeholder statuses',
+        signal_improved: 'Trust posture and artifact-backed percentage',
+        systems_affected: LOOP_SEQUENCE,
+        severity: 'high',
+        effort: 'high',
+        source: 'artifact',
+        confidence: health?.data_source === 'stub_fallback' ? 'fallback' : 'artifact-backed',
+      });
+    }
+
+    if (bottleneck !== 'unknown') {
+      recs.push({
+        title: `Mitigate current bottleneck: ${bottleneck}`,
+        failure_prevented: 'Queue growth and promotion delay',
+        signal_improved: 'Loop throughput stability',
+        systems_affected: [bottleneck],
+        severity: 'medium',
+        effort: 'low',
+        source: bottleneckFromArtifact ? 'artifact' : 'derived',
+        confidence: bottleneckFromArtifact ? 'artifact-backed' : 'derived',
+      });
+    }
+
+    if (rge?.rge_can_operate === false) {
+      recs.push({
+        title: 'Clear RGE operate blockers before next promotion cycle',
+        failure_prevented: 'Stalled proposal generation for CDE',
+        signal_improved: 'Readiness continuity for governed loop',
+        systems_affected: ['RGE', 'CDE'],
+        severity: 'medium',
+        effort: 'unknown',
+        source: 'artifact',
+        confidence: (rge.data_source ?? 'unknown') === 'artifact_store' ? 'artifact-backed' : 'derived',
+      });
+    }
+
+    const leverageQueue = recs
+      .filter((r) => r.source !== 'fallback' || r.confidence !== 'fallback')
+      .map((item) => {
+        const base =
+          (severityWeight(item.severity) * Math.max(1, item.systems_affected.length)) /
+          effortWeight(item.effort);
+        const blockingBoost =
+          item.failure_prevented.toLowerCase().includes('promotion') ||
+          item.systems_affected.some((id) => ['EVL', 'CDE', 'TPA'].includes(id))
+            ? 1.4
+            : 1;
+        const repeatBoost = fallbackCount > 0 || unknownCount > 0 ? 1.15 : 1;
+        const score = Number((base * blockingBoost * repeatBoost).toFixed(2));
+        return { ...item, leverage_score: score };
+      })
+      .filter((item) => item.failure_prevented && item.signal_improved)
+      .sort((a, b) => b.leverage_score - a.leverage_score)
+      .slice(0, 5);
+
+    return {
+      systems,
+      sourceMix,
+      artifactBackedPct,
+      trustState,
+      trustReasons: trustReasons.slice(0, 3),
+      loopRows,
+      bottleneck,
+      bottleneckConfidence,
+      proofStages,
+      proofCoverage,
+      fallbackCount,
+      unknownCount,
+      missingEvalCount,
+      missingTraceCount,
+      overrideCount,
+      topFailureModes,
+      leverageQueue,
+      warnings,
+    };
+  }, [health, intelligence, systemsEnvelope, rge]);
+
+  if (loading) return <div className="p-8">Loading dashboard artifacts...</div>;
+  if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
+
+  const rgeSource = (rge?.data_source ?? 'unknown') as DataSource;
+  const rgeCanOperate = rge?.rge_can_operate;
+  const sourceAllowsGreen = dataSourceAllowsHealthy(rgeSource);
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-4xl font-bold mb-2">3-Letter Systems Dashboard</h1>
-          <p className="text-gray-600">
-            Artifact-backed cockpit for governance systems. Source per signal is shown — no green
-            without source.
-          </p>
-          {ds && (
-            <p className="text-xs mt-2">
-              Data source:{' '}
-              <span className={`font-mono ${SOURCE_TONE[ds]}`}>{ds}</span>
-              {envelope.generated_at && (
-                <span className="text-gray-400"> · generated_at {envelope.generated_at}</span>
-              )}
-            </p>
-          )}
-        </div>
-        <button
-          onClick={fetchSystems}
-          className="px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700"
-        >
-          Refresh
-        </button>
-      </div>
+    <div className="p-8 bg-gray-50 min-h-screen space-y-6">
+      <h1 className="text-3xl font-bold">3LS Trust + Leverage Dashboard</h1>
 
-      {envelope.warnings && envelope.warnings.length > 0 && (
-        <div
-          role="alert"
-          className="bg-amber-50 border border-amber-400 rounded p-4 mb-6 space-y-1"
-        >
-          <div className="text-sm font-semibold text-amber-800 mb-1">
-            Source warnings — values backed by stubs render as unknown:
+      {computed.warnings.length > 0 && (
+        <div role="alert" className="bg-amber-50 border border-amber-300 rounded p-3">
+          <p className="text-sm font-semibold text-amber-800">Source warnings</p>
+          <ul className="mt-1 text-xs text-amber-700 list-disc list-inside">
+            {computed.warnings.slice(0, 4).map((w, i) => (
+              <li key={i}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <section className="bg-white border rounded p-4" data-testid="trust-posture-panel">
+        <h2 className="font-semibold mb-3">TRUST POSTURE</h2>
+        <div className="flex items-center gap-3 mb-3">
+          <span className={`border rounded px-3 py-1 text-sm font-semibold ${STATUS_TONE[computed.trustState]}`}>
+            {computed.trustState}
+          </span>
+          <span className="text-sm text-gray-600">Artifact-backed {computed.artifactBackedPct}%</span>
+        </div>
+        <div className="mb-3">
+          <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Top reasons</p>
+          <div className="flex flex-wrap gap-2">
+            {computed.trustReasons.length > 0 ? (
+              computed.trustReasons.map((reason) => (
+                <span key={reason} className="text-xs border border-gray-300 rounded px-2 py-0.5 font-mono">
+                  {reason}
+                </span>
+              ))
+            ) : (
+              <span className="text-xs text-gray-500">none</span>
+            )}
           </div>
-          {envelope.warnings.map((w, i) => (
-            <div key={i} className="text-xs text-amber-700 font-mono">
-              {w}
+        </div>
+        <div>
+          <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Source mix</p>
+          <div className="flex flex-wrap gap-2">
+            {SOURCE_ORDER.map((source) => (
+              <span key={source} className="text-xs border rounded px-2 py-0.5">
+                {source}: {computed.sourceMix[source]}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white border rounded p-4" data-testid="loop-bottleneck-panel">
+        <h2 className="font-semibold mb-3">GOVERNED LOOP + BOTTLENECK</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {computed.loopRows.map((row) => (
+            <div key={row.system_id} className="border rounded p-3" data-testid={`loop-node-${row.system_id}`}>
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="font-mono font-semibold">{row.system_id}</div>
+                  <div className="text-xs text-gray-600" data-testid={`authority-${row.system_id}`}>
+                    {row.authority_role}
+                  </div>
+                </div>
+                <span className={`text-sm font-semibold ${statusTone(row.status)}`}>{row.status}</span>
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <SourceBadge ds={row.data_source} />
+                <ProvisionalBadge ds={row.data_source} />
+                {row.data_source === 'unknown' && (
+                  <span className="text-xs border border-gray-300 rounded px-2 py-0.5">unknown</span>
+                )}
+              </div>
+              <div className="mt-2 text-xs text-gray-600">warning_count: {row.warning_count}</div>
             </div>
           ))}
         </div>
-      )}
-
-      {error && (
-        <div className="bg-yellow-50 border border-yellow-300 p-4 rounded mb-8">
-          <p className="text-sm text-yellow-800">{error}</p>
+        <div className="mt-3 text-sm">
+          Current bottleneck: <span className="font-mono">{computed.bottleneck}</span>
+          <span className="ml-2">
+            <SourceBadge ds={computed.bottleneckConfidence} />
+          </span>
         </div>
-      )}
+      </section>
 
-      {loading ? (
-        <div className="text-center py-12">
-          <p className="text-gray-600">Loading systems...</p>
-        </div>
-      ) : (
-        <>
-          {partition.groups.length === 0 && partition.ungrouped.length === 0 ? (
-            <div className="text-gray-500 mb-8">No systems available.</div>
-          ) : (
-            <div className="space-y-8">
-              {partition.groups.map(({ group, systems: groupSystems }) => (
-                <DisplayGroupSection
-                  key={group.id}
-                  group={group}
-                  systems={groupSystems}
-                  selectedSystem={selectedSystem}
-                  onSelect={setSelectedSystem}
-                />
-              ))}
-              {partition.ungrouped.length > 0 && (
-                <DisplayGroupSection
-                  group={{
-                    id: 'execution',
-                    label: 'Other / Ungrouped',
-                    description: 'Systems with no declared display group.',
-                    system_ids: [],
-                  }}
-                  systems={partition.ungrouped}
-                  selectedSystem={selectedSystem}
-                  onSelect={setSelectedSystem}
-                />
+      <section className="bg-white border rounded p-4" data-testid="proof-chain-panel">
+        <h2 className="font-semibold mb-3">PROOF CHAIN</h2>
+        <div className="space-y-2">
+          {computed.proofStages.map((stage) => (
+            <div key={stage.name} className="border rounded p-2">
+              <div className="flex items-center justify-between">
+                <div className="font-medium">{stage.name}</div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm font-semibold ${statusTone(stage.state)}`}>{stage.state}</span>
+                  <SourceBadge ds={stage.data_source} />
+                </div>
+              </div>
+              {stage.reason_codes.length > 0 && (
+                <div className="text-xs text-gray-600 mt-1">reason_codes: {stage.reason_codes.join(', ')}</div>
               )}
             </div>
-          )}
+          ))}
+        </div>
+        <div className="mt-3 text-sm">Proof chain coverage: {computed.proofCoverage}%</div>
+      </section>
 
-          {selectedSystemData && (
-            <SystemDetail
-              system={selectedSystemData}
-              sourceArtifacts={envelope.source_artifacts_used}
-            />
-          )}
-
-          <details className="mt-8 text-xs text-gray-500">
-            <summary className="cursor-pointer">Display group reference</summary>
-            <ul className="mt-2 space-y-1">
-              {DISPLAY_GROUPS.map((g) => (
-                <li key={g.id}>
-                  <span className="font-mono">{g.label}</span> — {g.description}
-                </li>
+      <section className="bg-white border rounded p-4" data-testid="fragility-risk-panel">
+        <h2 className="font-semibold mb-3">FRAGILITY + RISK SNAPSHOT</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+          <div className="border rounded p-2">fallback count: {computed.fallbackCount}</div>
+          <div className="border rounded p-2">unknown count: {computed.unknownCount}</div>
+          <div className="border rounded p-2">missing eval count: {computed.missingEvalCount}</div>
+          <div className="border rounded p-2">missing trace count: {computed.missingTraceCount}</div>
+          <div className="border rounded p-2">override count: {String(computed.overrideCount)}</div>
+          <div className="border rounded p-2">trend: unknown (no historical artifacts)</div>
+        </div>
+        <div className="mt-3">
+          <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Top failure modes</p>
+          {computed.topFailureModes.length === 0 ? (
+            <div className="text-sm text-gray-500">unknown</div>
+          ) : (
+            <ul className="list-disc list-inside text-sm text-red-700 space-y-1">
+              {computed.topFailureModes.map((risk, idx) => (
+                <li key={`${risk}-${idx}`}>{risk}</li>
               ))}
             </ul>
-            <p className="mt-2 italic">
-              Grouping is visual only. Canonical system IDs are preserved across the API.
-            </p>
-          </details>
-        </>
-      )}
-    </div>
-  );
-}
+          )}
+        </div>
+      </section>
 
-function DisplayGroupSection({
-  group,
-  systems,
-  selectedSystem,
-  onSelect,
-}: {
-  group: DisplayGroup;
-  systems: SystemMetrics[];
-  selectedSystem: string | null;
-  onSelect: (id: string) => void;
-}) {
-  return (
-    <section>
-      <header className="mb-3">
-        <h2 className="text-xl font-semibold">{group.label}</h2>
-        <p className="text-xs text-gray-500">{group.description}</p>
-      </header>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {systems.map((system) => (
-          <SystemCard
-            key={system.system_id}
-            system={system}
-            onClick={() => onSelect(system.system_id)}
-            isSelected={selectedSystem === system.system_id}
-          />
-        ))}
-      </div>
-    </section>
+      <section className="bg-white border rounded p-4" data-testid="leverage-queue-panel">
+        <h2 className="font-semibold mb-3">LEVERAGE QUEUE</h2>
+        {computed.leverageQueue.length === 0 ? (
+          <div className="text-sm text-gray-500">No source-backed recommendations available.</div>
+        ) : (
+          <div className="space-y-3">
+            {computed.leverageQueue.map((item, idx) => (
+              <article key={idx} className="border rounded p-3" data-testid="leverage-item">
+                <div className="flex justify-between items-start gap-2">
+                  <h3 className="font-medium">{item.title}</h3>
+                  <span className="text-xs font-mono">score {item.leverage_score}</span>
+                </div>
+                <p className="text-sm mt-1">failure_prevented: {item.failure_prevented}</p>
+                <p className="text-sm">signal_improved: {item.signal_improved}</p>
+                <p className="text-xs text-gray-600 mt-1">systems affected: {item.systems_affected.join(', ')}</p>
+                <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                  <span className="border rounded px-2 py-0.5">severity: {item.severity}</span>
+                  <span className="border rounded px-2 py-0.5">effort: {item.effort}</span>
+                  <span className="border rounded px-2 py-0.5">source: {item.source}</span>
+                  <span className="border rounded px-2 py-0.5">confidence: {item.confidence}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="bg-white border rounded p-4" data-testid="rge-readiness-panel">
+        <h2 className="font-semibold mb-3">RGE READINESS</h2>
+        <div className="space-y-2 text-sm">
+          <div data-testid="rge-operational-status">
+            rge_can_operate:{' '}
+            {rgeCanOperate === undefined ? (
+              <span className="text-gray-500">unknown</span>
+            ) : rgeCanOperate && sourceAllowsGreen ? (
+              <span className="text-green-700">CAN OPERATE</span>
+            ) : rgeCanOperate ? (
+              <span className="text-amber-700">CAN OPERATE (unverified)</span>
+            ) : (
+              <span className="text-red-700">BLOCKED</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            data_source: <SourceBadge ds={rgeSource} /> <ProvisionalBadge ds={rgeSource} />
+          </div>
+          <div>context_maturity_level: {String(rge?.context_maturity_level ?? 'unknown')}</div>
+          <div>mg_kernel_status: {String(rge?.mg_kernel_status ?? 'unknown')}</div>
+          <div>active_drift_legs: {(rge?.active_drift_legs ?? []).join(', ') || 'none'}</div>
+          <div className="text-xs text-gray-700 font-semibold">RGE proposes only. CDE decides. SEL enforces.</div>
+        </div>
+      </section>
+    </div>
   );
 }
