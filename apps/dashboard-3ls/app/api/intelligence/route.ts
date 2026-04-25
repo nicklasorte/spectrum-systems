@@ -25,7 +25,85 @@ const ARTIFACT_PATHS = {
   slo: 'artifacts/dashboard_seed/slo_status_record.json',
   failureModes: 'artifacts/dashboard_seed/failure_mode_dashboard_record.json',
   nearMisses: 'artifacts/dashboard_seed/near_miss_record.json',
+  bottleneck: 'artifacts/dashboard_metrics/bottleneck_record.json',
+  leverageQueue: 'artifacts/dashboard_metrics/leverage_queue_record.json',
+  riskSummary: 'artifacts/dashboard_metrics/risk_summary_record.json',
 };
+
+interface BottleneckRecord {
+  data_source?: string;
+  source_artifacts_used?: string[];
+  warnings?: string[];
+  payload?: {
+    dominant_bottleneck_system?: string;
+    constrained_loop_leg?: string;
+    loop_legs_evaluated?: string[];
+    warning_counts_by_system?: Record<string, number>;
+    block_counts_by_system?: Record<string, number>;
+    supporting_evidence?: Array<{ kind: string; source: string; detail: string }>;
+    bottleneck_priority_rule?: string;
+    bottleneck_confidence?: string;
+    confidence_rationale?: string;
+  };
+}
+
+interface LeverageItem {
+  id: string;
+  title: string;
+  failure_prevented: string;
+  signal_improved: string;
+  systems_affected: string[];
+  severity: 'high' | 'medium' | 'low';
+  frequency: 'high' | 'medium' | 'low' | 'unknown';
+  estimated_effort: 'high' | 'medium' | 'low' | 'unknown';
+  blocks_promotion?: boolean;
+  affects_governance_legs?: boolean;
+  repeat_failure?: boolean;
+  reduces_fallback_or_unknown?: boolean;
+  leverage_score: number;
+  data_source: string;
+  source_artifacts_used: string[];
+  confidence: string;
+}
+
+interface LeverageQueueRecord {
+  data_source?: string;
+  source_artifacts_used?: string[];
+  warnings?: string[];
+  leverage_formula?: string;
+  weights?: unknown;
+  items?: LeverageItem[];
+}
+
+interface RiskSummaryRecord {
+  data_source?: string;
+  source_artifacts_used?: string[];
+  warnings?: string[];
+  payload?: {
+    fallback_signal_count?: number;
+    fallback_signal_systems?: string[];
+    unknown_signal_count?: number;
+    missing_eval_count?: number | 'unknown';
+    missing_eval_dimensions?: string[];
+    missing_trace_count?: number | 'unknown';
+    override_count?: number | 'unknown';
+    proof_chain_coverage?: {
+      total?: number;
+      present?: number;
+      partial?: number;
+      missing_or_unknown?: number;
+      percent_present_or_partial?: number;
+      percent_present_only?: number;
+    };
+    top_risks?: Array<{
+      id: string;
+      title: string;
+      severity: string;
+      systems_affected: string[];
+      evidence_artifact: string;
+    }>;
+  };
+}
 
 export async function GET() {
   const checkpointSummary = loadArtifact<CheckpointSummary>(ARTIFACT_PATHS.checkpointSummary);
@@ -49,8 +127,22 @@ export async function GET() {
   const replay = loadArtifact<{ status?: string }>(ARTIFACT_PATHS.replay);
   const observability = loadArtifact<{ status?: string }>(ARTIFACT_PATHS.observability);
   const slo = loadArtifact<{ status?: string }>(ARTIFACT_PATHS.slo);
-  const failureModes = loadArtifact<{ failure_modes?: unknown[] }>(ARTIFACT_PATHS.failureModes);
+  const failureModes = loadArtifact<{
+    failure_modes?: Array<{
+      id: string;
+      title: string;
+      severity: string;
+      frequency?: string;
+      systems_affected?: string[];
+      trend?: string;
+      evidence?: string[];
+    }>;
+  }>(ARTIFACT_PATHS.failureModes);
   const nearMisses = loadArtifact<{ near_misses?: unknown[] }>(ARTIFACT_PATHS.nearMisses);
+
+  const bottleneck = loadArtifact<BottleneckRecord>(ARTIFACT_PATHS.bottleneck);
+  const leverageQueue = loadArtifact<LeverageQueueRecord>(ARTIFACT_PATHS.leverageQueue);
+  const riskSummary = loadArtifact<RiskSummaryRecord>(ARTIFACT_PATHS.riskSummary);
 
   const allSlots = [
     { path: ARTIFACT_PATHS.checkpointSummary, loaded: checkpointSummary !== null },
@@ -68,6 +160,9 @@ export async function GET() {
     { path: ARTIFACT_PATHS.slo, loaded: slo !== null },
     { path: ARTIFACT_PATHS.failureModes, loaded: failureModes !== null },
     { path: ARTIFACT_PATHS.nearMisses, loaded: nearMisses !== null },
+    { path: ARTIFACT_PATHS.bottleneck, loaded: bottleneck !== null },
+    { path: ARTIFACT_PATHS.leverageQueue, loaded: leverageQueue !== null },
+    { path: ARTIFACT_PATHS.riskSummary, loaded: riskSummary !== null },
   ];
 
   const envelope = buildSourceEnvelope({
@@ -76,6 +171,9 @@ export async function GET() {
     warnings: [
       ...(minimalLoop?.warnings ?? []),
       ...(evalSummary?.warnings ?? []),
+      ...(bottleneck?.warnings ?? []),
+      ...(leverageQueue?.warnings ?? []),
+      ...(riskSummary?.warnings ?? []),
       'Dashboard seed artifacts are minimal and partial; unknown coverage remains visible by design.',
     ],
   });
@@ -84,9 +182,110 @@ export async function GET() {
   const proofPresent = proofChain.filter((s) => s.status === 'present').length;
   const proofPartial = proofChain.filter((s) => s.status === 'partial').length;
   const proofTotal = proofChain.length;
-  const artifactBackedSignalCount = allSlots.filter((s) => s.loaded && s.path.includes('dashboard_seed')).length;
+  const artifactBackedSignalCount = allSlots.filter(
+    (s) => s.loaded && (s.path.includes('dashboard_seed') || s.path.includes('dashboard_metrics'))
+  ).length;
   const fallbackSignalCount = allSlots.filter((s) => !s.loaded).length;
   const unknownSignalCount = Math.max(0, proofTotal - proofPresent - proofPartial);
+
+  // Bottleneck block — fail-closed: if the artifact is missing, expose unknown
+  // and a derived_estimate fallback that names the constrained leg the seed
+  // loop already shows is partial. No fake precision.
+  const bottleneckBlock = bottleneck?.payload
+    ? {
+        dominant_bottleneck_system: bottleneck.payload.dominant_bottleneck_system ?? 'unknown',
+        constrained_loop_leg: bottleneck.payload.constrained_loop_leg ?? 'unknown',
+        supporting_evidence: bottleneck.payload.supporting_evidence ?? [],
+        warning_counts_by_system: bottleneck.payload.warning_counts_by_system ?? {},
+        block_counts_by_system: bottleneck.payload.block_counts_by_system ?? {},
+        priority_rule: bottleneck.payload.bottleneck_priority_rule ?? null,
+        confidence_rationale: bottleneck.payload.confidence_rationale ?? null,
+        data_source: bottleneck.data_source ?? 'unknown',
+        source_artifacts_used: bottleneck.source_artifacts_used ?? [],
+        warnings: bottleneck.warnings ?? [],
+      }
+    : {
+        dominant_bottleneck_system: 'unknown',
+        constrained_loop_leg: 'unknown',
+        supporting_evidence: [],
+        warning_counts_by_system: {},
+        block_counts_by_system: {},
+        priority_rule: null,
+        confidence_rationale: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [`${ARTIFACT_PATHS.bottleneck} unavailable; bottleneck reported as unknown.`],
+      };
+
+  const bottleneckConfidence: 'artifact_backed' | 'derived_estimate' | 'unknown' =
+    bottleneck?.payload?.bottleneck_confidence === 'artifact_backed'
+      ? 'artifact_backed'
+      : bottleneck?.payload
+      ? 'derived_estimate'
+      : 'unknown';
+
+  // Leverage queue block — never recommend without source, failure_prevented,
+  // signal_improved, or a non-empty systems_affected array. The systems
+  // check both enforces the contract rule and protects the render path
+  // (which calls .join on the array) from partial-schema items.
+  const filteredLeverage = (leverageQueue?.items ?? []).filter(
+    (item) =>
+      item.title &&
+      item.failure_prevented &&
+      item.signal_improved &&
+      Array.isArray(item.source_artifacts_used) &&
+      item.source_artifacts_used.length > 0 &&
+      Array.isArray(item.systems_affected) &&
+      item.systems_affected.length > 0
+  );
+  // Provenance is fail-closed: when the leverage artifact omits
+  // data_source (partial write or schema drift), default to 'unknown'
+  // rather than 'artifact_store' so the dashboard never overstates the
+  // queue's sourcing.
+  const leverageBlock = {
+    items: filteredLeverage.sort((a, b) => b.leverage_score - a.leverage_score),
+    formula: leverageQueue?.leverage_formula ?? null,
+    data_source: leverageQueue?.data_source ?? 'unknown',
+    source_artifacts_used: leverageQueue?.source_artifacts_used ?? [],
+    warnings: leverageQueue
+      ? leverageQueue.warnings ?? []
+      : [`${ARTIFACT_PATHS.leverageQueue} unavailable; leverage queue reported as empty.`],
+  };
+
+  // Fail-closed counts: when a field is absent, never substitute 0 just
+  // because the artifact wrapper exists. A partial-write or older-schema
+  // artifact must surface 'unknown' so the dashboard cannot under-report
+  // risk. Only when the entire risk_summary artifact is missing do we
+  // fall back to the API-derived loader counts (which are themselves
+  // artifact-backed and computed against the same slot list).
+  const riskBlock = {
+    fallback_signal_count:
+      riskSummary?.payload?.fallback_signal_count ??
+      (riskSummary ? 'unknown' : fallbackSignalCount),
+    unknown_signal_count:
+      riskSummary?.payload?.unknown_signal_count ??
+      (riskSummary ? 'unknown' : unknownSignalCount),
+    missing_eval_count: riskSummary?.payload?.missing_eval_count ?? 'unknown',
+    missing_trace_count: riskSummary?.payload?.missing_trace_count ?? 'unknown',
+    override_count: riskSummary?.payload?.override_count ?? 'unknown',
+    proof_chain_coverage:
+      riskSummary?.payload?.proof_chain_coverage ?? {
+        total: proofTotal,
+        present: proofPresent,
+        partial: proofPartial,
+        missing_or_unknown: unknownSignalCount,
+        percent_present_or_partial:
+          proofTotal > 0 ? Math.round(((proofPresent + proofPartial) / proofTotal) * 100) : 0,
+      },
+    top_risks: riskSummary?.payload?.top_risks ?? [],
+    data_source: riskSummary?.data_source ?? 'unknown',
+    source_artifacts_used: riskSummary?.source_artifacts_used ?? [],
+    warnings: riskSummary
+      ? riskSummary.warnings ?? []
+      : [
+          `${ARTIFACT_PATHS.riskSummary} unavailable; missing_eval_count and missing_trace_count reported as unknown to preserve fail-closed posture.`,
+        ],
+  };
 
   return NextResponse.json({
     ...envelope,
@@ -96,7 +295,8 @@ export async function GET() {
       present: proofPresent,
       partial: proofPartial,
       missing_or_unknown: unknownSignalCount,
-      percent_present_or_partial: proofTotal > 0 ? Math.round(((proofPresent + proofPartial) / proofTotal) * 100) : 0,
+      percent_present_or_partial:
+        proofTotal > 0 ? Math.round(((proofPresent + proofPartial) / proofTotal) * 100) : 0,
     },
     artifact_backed_signal_count: artifactBackedSignalCount,
     fallback_signal_count: fallbackSignalCount,
@@ -104,7 +304,19 @@ export async function GET() {
     failure_modes: failureModes?.failure_modes ?? [],
     near_misses: nearMisses?.near_misses ?? [],
     minimal_loop_status: minimalLoop?.minimal_loop_status ?? 'unknown',
-    source_artifacts_used: Array.from(new Set([...(envelope.source_artifacts_used ?? []), ...(minimalLoop?.source_artifacts_used ?? [])])),
+    bottleneck: bottleneckBlock,
+    bottleneck_confidence: bottleneckConfidence,
+    leverage_queue: leverageBlock,
+    risk_summary: riskBlock,
+    source_artifacts_used: Array.from(
+      new Set([
+        ...(envelope.source_artifacts_used ?? []),
+        ...(minimalLoop?.source_artifacts_used ?? []),
+        ...(bottleneck?.source_artifacts_used ?? []),
+        ...(leverageQueue?.source_artifacts_used ?? []),
+        ...(riskSummary?.source_artifacts_used ?? []),
+      ])
+    ),
     intelligence_summary: {
       mg_kernel: checkpointSummary
         ? {

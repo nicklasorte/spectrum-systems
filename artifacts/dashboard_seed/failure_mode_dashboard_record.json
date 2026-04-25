@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "created_at": "2026-04-25T00:00:00Z",
   "data_source": "artifact_store",
   "artifact_type": "failure_mode_dashboard_record",
@@ -8,20 +8,28 @@
   "case_id": "dashboard-seed-001",
   "source_artifacts_used": [
     "artifacts/dashboard_seed/eval_summary_record.json",
-    "artifacts/dashboard_seed/replay_record.json"
+    "artifacts/dashboard_seed/replay_record.json",
+    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_seed/enforcement_action_record.json",
+    "artifacts/dashboard_seed/slo_status_record.json"
   ],
   "reason_codes": [
-    "failure_mode_detected_from_partial_eval"
+    "failure_mode_detected_from_partial_eval",
+    "failure_mode_severity_and_systems_added"
   ],
   "status": "warn",
   "warnings": [
-    "Failure modes derived from minimal seed evidence only."
+    "Failure modes derived from minimal seed evidence only.",
+    "Frequency and trend remain unknown until historical artifacts exist."
   ],
   "failure_modes": [
     {
       "id": "FM-SEED-EVAL-GAP",
       "title": "Eval coverage gap can mask regressions",
       "severity": "high",
+      "frequency": "unknown",
+      "systems_affected": ["EVL", "TPA", "CDE"],
+      "trend": "unknown",
       "evidence": [
         "eval_partial_coverage"
       ]
@@ -30,8 +38,34 @@
       "id": "FM-SEED-REPLAY-GAP",
       "title": "Replay coverage incomplete for long horizon drift",
       "severity": "medium",
+      "frequency": "unknown",
+      "systems_affected": ["REP", "EVL"],
+      "trend": "unknown",
       "evidence": [
         "replay_partial_coverage"
+      ]
+    },
+    {
+      "id": "FM-SEED-CERT-INCOMPLETE",
+      "title": "Certification incomplete forces SEL observe_only",
+      "severity": "high",
+      "frequency": "unknown",
+      "systems_affected": ["SEL", "CDE"],
+      "trend": "unknown",
+      "evidence": [
+        "certification_incomplete",
+        "observe_only_enforcement"
+      ]
+    },
+    {
+      "id": "FM-SEED-SLO-CONTEXT",
+      "title": "SLO budget context partial during promotion review",
+      "severity": "medium",
+      "frequency": "unknown",
+      "systems_affected": ["SLO", "CDE"],
+      "trend": "unknown",
+      "evidence": [
+        "slo_partial_budget_context"
       ]
     }
   ]

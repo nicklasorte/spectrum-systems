@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "data_source": "artifact_store",
+  "artifact_type": "bottleneck_record",
+  "record_id": "BNK-DASH-MET03-001",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/minimal_loop_snapshot.json",
+    "artifacts/dashboard_seed/eval_summary_record.json",
+    "artifacts/dashboard_seed/trust_policy_decision_record.json",
+    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_seed/enforcement_action_record.json",
+    "artifacts/dashboard_seed/replay_record.json",
+    "artifacts/dashboard_seed/slo_status_record.json",
+    "artifacts/dashboard_seed/failure_mode_dashboard_record.json"
+  ],
+  "reason_codes": [
+    "eval_partial_coverage_blocks_downstream",
+    "trust_and_control_warn_inherited_from_eval",
+    "promotion_gate_blocked"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Bottleneck derived from a single seeded case; trend confidence is bounded.",
+    "Counts are computed across the seeded loop only; non-seeded systems remain stub_fallback."
+  ],
+  "payload": {
+    "dominant_bottleneck_system": "EVL",
+    "constrained_loop_leg": "EVL",
+    "loop_legs_evaluated": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"],
+    "warning_counts_by_system": {
+      "AEX": 0,
+      "PQX": 0,
+      "EVL": 2,
+      "TPA": 1,
+      "CDE": 1,
+      "SEL": 1,
+      "REP": 1,
+      "LIN": 0,
+      "OBS": 0,
+      "SLO": 1
+    },
+    "block_counts_by_system": {
+      "AEX": 0,
+      "PQX": 0,
+      "EVL": 0,
+      "TPA": 0,
+      "CDE": 1,
+      "SEL": 0,
+      "REP": 0,
+      "LIN": 0,
+      "OBS": 0,
+      "SLO": 0
+    },
+    "supporting_evidence": [
+      {
+        "kind": "eval_partial_coverage",
+        "source": "artifacts/dashboard_seed/eval_summary_record.json",
+        "detail": "EVL coverage_status=partial with score=0.72 and missing_checks long_horizon_replay, full_certification_set."
+      },
+      {
+        "kind": "trust_warn_due_to_partial_eval",
+        "source": "artifacts/dashboard_seed/trust_policy_decision_record.json",
+        "detail": "TPA records reason_code policy_warn_due_to_partial_eval and allow_promotion=false."
+      },
+      {
+        "kind": "promotion_gate_blocked",
+        "source": "artifacts/dashboard_seed/control_decision_record.json",
+        "detail": "CDE decision=observe_only, promotion_gate=blocked because of partial proof chain inputs."
+      },
+      {
+        "kind": "enforcement_observe_only",
+        "source": "artifacts/dashboard_seed/enforcement_action_record.json",
+        "detail": "SEL action=observe_only because certification is incomplete."
+      },
+      {
+        "kind": "replay_partial_coverage",
+        "source": "artifacts/dashboard_seed/replay_record.json",
+        "detail": "REP missing distribution_shift and long_horizon dimensions."
+      }
+    ],
+    "bottleneck_priority_rule": "EVL/CDE/TPA failures rank above other legs because they gate promotion.",
+    "bottleneck_confidence": "artifact_backed",
+    "confidence_rationale": "Dominant bottleneck is read directly from artifact-backed status fields (warn) on EVL/TPA/CDE. Trend confidence remains bounded because only one case is seeded."
+  }
+}

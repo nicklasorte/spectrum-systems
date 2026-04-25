@@ -1,0 +1,149 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "data_source": "artifact_store",
+  "artifact_type": "leverage_queue_record",
+  "record_id": "LVQ-DASH-MET03-001",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/bottleneck_record.json",
+    "artifacts/dashboard_seed/eval_summary_record.json",
+    "artifacts/dashboard_seed/trust_policy_decision_record.json",
+    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_seed/enforcement_action_record.json",
+    "artifacts/dashboard_seed/replay_record.json",
+    "artifacts/dashboard_seed/slo_status_record.json",
+    "artifacts/dashboard_seed/failure_mode_dashboard_record.json"
+  ],
+  "reason_codes": [
+    "leverage_queue_seeded_from_partial_loop",
+    "no_recommendation_without_source",
+    "no_recommendation_without_failure_prevented",
+    "no_recommendation_without_signal_improved"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Frequency is unknown — only one seeded case is available.",
+    "Effort is estimated from artifact context, not historical actuals.",
+    "Leverage scores are derived from artifact-backed evidence; ranking will harden once history exists."
+  ],
+  "leverage_formula": "leverage_score = (severity_weight * systems_impacted) / effort_weight, with multiplicative boosts when an item blocks_promotion or affects_governance_legs (EVL/CDE/TPA), is a repeat_failure, or reduces fallback/unknown coverage.",
+  "weights": {
+    "severity": { "high": 3, "medium": 2, "low": 1 },
+    "effort": { "high": 3, "medium": 2, "low": 1, "unknown": 2 },
+    "boosts": {
+      "blocks_promotion_or_governance_leg": 1.4,
+      "repeat_failure": 1.15,
+      "reduces_fallback_or_unknown": 1.15
+    }
+  },
+  "items": [
+    {
+      "id": "LV-EVL-001",
+      "title": "Close EVL coverage gap (long_horizon_replay, full_certification_set)",
+      "failure_prevented": "Promotion gated on partial evaluation evidence",
+      "signal_improved": "Proof-chain Eval coverage and TPA/CDE downstream confidence",
+      "systems_affected": ["EVL", "TPA", "CDE"],
+      "severity": "high",
+      "frequency": "unknown",
+      "estimated_effort": "medium",
+      "blocks_promotion": true,
+      "affects_governance_legs": true,
+      "repeat_failure": false,
+      "reduces_fallback_or_unknown": true,
+      "leverage_score": 7.25,
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/eval_summary_record.json",
+        "artifacts/dashboard_seed/trust_policy_decision_record.json",
+        "artifacts/dashboard_seed/control_decision_record.json"
+      ],
+      "confidence": "artifact_backed"
+    },
+    {
+      "id": "LV-FALLBACK-001",
+      "title": "Replace stub_fallback system rows with artifact-backed snapshots",
+      "failure_prevented": "False confidence from placeholder per-system statuses",
+      "signal_improved": "Trust posture artifact-backed percentage and source mix",
+      "systems_affected": ["AEX", "PQX", "TPA", "REP", "OBS", "SLO"],
+      "severity": "high",
+      "frequency": "unknown",
+      "estimated_effort": "high",
+      "blocks_promotion": false,
+      "affects_governance_legs": false,
+      "repeat_failure": false,
+      "reduces_fallback_or_unknown": true,
+      "leverage_score": 6.9,
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/minimal_loop_snapshot.json",
+        "artifacts/dashboard_seed/failure_mode_dashboard_record.json"
+      ],
+      "confidence": "artifact_backed"
+    },
+    {
+      "id": "LV-SLO-001",
+      "title": "Complete SLO budget context for full promotion-gate visibility",
+      "failure_prevented": "Hidden reliability budget pressure during promotion",
+      "signal_improved": "SLO budget_status and consumed_ratio confidence",
+      "systems_affected": ["SLO", "CDE"],
+      "severity": "medium",
+      "frequency": "unknown",
+      "estimated_effort": "low",
+      "blocks_promotion": false,
+      "affects_governance_legs": true,
+      "repeat_failure": false,
+      "reduces_fallback_or_unknown": false,
+      "leverage_score": 5.6,
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/slo_status_record.json",
+        "artifacts/dashboard_seed/control_decision_record.json"
+      ],
+      "confidence": "artifact_backed"
+    },
+    {
+      "id": "LV-SEL-001",
+      "title": "Add full SEL certification artifact to lift observe_only enforcement",
+      "failure_prevented": "Promotion blocked by certification incompleteness",
+      "signal_improved": "SEL enforcement posture and CDE allow path",
+      "systems_affected": ["SEL", "CDE"],
+      "severity": "high",
+      "frequency": "unknown",
+      "estimated_effort": "medium",
+      "blocks_promotion": true,
+      "affects_governance_legs": true,
+      "repeat_failure": false,
+      "reduces_fallback_or_unknown": false,
+      "leverage_score": 4.2,
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/enforcement_action_record.json",
+        "artifacts/dashboard_seed/control_decision_record.json"
+      ],
+      "confidence": "artifact_backed"
+    },
+    {
+      "id": "LV-REP-001",
+      "title": "Expand REP replay dimensions (distribution_shift, long_horizon)",
+      "failure_prevented": "Drift slipping past partial replay coverage",
+      "signal_improved": "Replay coverage and EVL long-horizon confidence",
+      "systems_affected": ["REP", "EVL", "CDE"],
+      "severity": "medium",
+      "frequency": "unknown",
+      "estimated_effort": "high",
+      "blocks_promotion": false,
+      "affects_governance_legs": true,
+      "repeat_failure": false,
+      "reduces_fallback_or_unknown": false,
+      "leverage_score": 2.8,
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/replay_record.json",
+        "artifacts/dashboard_seed/eval_summary_record.json"
+      ],
+      "confidence": "artifact_backed"
+    }
+  ]
+}
