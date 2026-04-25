@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "data_source": "artifact_store",
+  "artifact_type": "enforcement_action_record",
+  "record_id": "SEL-DASH-SEED-001",
+  "owner_system": "SEL",
+  "case_id": "dashboard-seed-001",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/control_decision_record.json"
+  ],
+  "reason_codes": [
+    "observe_only_enforcement",
+    "no_silent_override"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Enforcement action is observe_only; no full certification present."
+  ],
+  "payload": {
+    "action": "observe_only",
+    "enforced": true
+  }
+}

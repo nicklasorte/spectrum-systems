@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "data_source": "artifact_store",
+  "artifact_type": "observability_metrics_record",
+  "record_id": "OBS-DASH-SEED-001",
+  "owner_system": "OBS",
+  "case_id": "dashboard-seed-001",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/enforcement_action_record.json"
+  ],
+  "reason_codes": [
+    "seed_metrics_collected"
+  ],
+  "status": "pass",
+  "warnings": [
+    "Metrics are from one seeded case; trend confidence limited."
+  ],
+  "payload": {
+    "latency_ms_p95": 184,
+    "error_rate": 0.0,
+    "events_captured": 7
+  }
+}

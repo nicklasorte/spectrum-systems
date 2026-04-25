@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-04-25T00:00:00Z",
+  "data_source": "artifact_store",
+  "artifact_type": "eval_summary_record",
+  "record_id": "EVL-DASH-SEED-001",
+  "owner_system": "EVL",
+  "case_id": "dashboard-seed-001",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/source_artifact_record.json",
+    "artifacts/dashboard_seed/output_artifact_record.json"
+  ],
+  "reason_codes": [
+    "eval_partial_coverage",
+    "seed_loop_minimum_viable_eval"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Evaluation coverage is partial; replay and certification coverage incomplete."
+  ],
+  "payload": {
+    "coverage_status": "partial",
+    "score": 0.72,
+    "missing_checks": [
+      "long_horizon_replay",
+      "full_certification_set"
+    ]
+  }
+}

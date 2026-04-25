@@ -15,6 +15,16 @@ const ARTIFACT_PATHS = {
   systemState: 'artifacts/roadmap/latest/system_state.json',
   gapAnalysis: 'artifacts/roadmap/latest/gap_analysis.json',
   provenance: 'artifacts/roadmap/latest/provenance.json',
+  minimalLoop: 'artifacts/dashboard_seed/minimal_loop_snapshot.json',
+  evalSummary: 'artifacts/dashboard_seed/eval_summary_record.json',
+  lineage: 'artifacts/dashboard_seed/lineage_record.json',
+  controlDecision: 'artifacts/dashboard_seed/control_decision_record.json',
+  enforcementAction: 'artifacts/dashboard_seed/enforcement_action_record.json',
+  replay: 'artifacts/dashboard_seed/replay_record.json',
+  observability: 'artifacts/dashboard_seed/observability_metrics_record.json',
+  slo: 'artifacts/dashboard_seed/slo_status_record.json',
+  failureModes: 'artifacts/dashboard_seed/failure_mode_dashboard_record.json',
+  nearMisses: 'artifacts/dashboard_seed/near_miss_record.json',
 };
 
 export async function GET() {
@@ -24,21 +34,77 @@ export async function GET() {
   const gapAnalysis = loadArtifact<GapAnalysis>(ARTIFACT_PATHS.gapAnalysis);
   const provenance = loadArtifact<Provenance>(ARTIFACT_PATHS.provenance);
 
+  const minimalLoop = loadArtifact<{
+    proof_chain?: Array<{ stage: string; status: string; data_source: string }>;
+    minimal_loop_status?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+  }>(ARTIFACT_PATHS.minimalLoop);
+  const evalSummary = loadArtifact<{ status?: string; data_source?: string; warnings?: string[] }>(
+    ARTIFACT_PATHS.evalSummary
+  );
+  const lineage = loadArtifact<{ status?: string }>(ARTIFACT_PATHS.lineage);
+  const controlDecision = loadArtifact<{ status?: string }>(ARTIFACT_PATHS.controlDecision);
+  const enforcementAction = loadArtifact<{ status?: string }>(ARTIFACT_PATHS.enforcementAction);
+  const replay = loadArtifact<{ status?: string }>(ARTIFACT_PATHS.replay);
+  const observability = loadArtifact<{ status?: string }>(ARTIFACT_PATHS.observability);
+  const slo = loadArtifact<{ status?: string }>(ARTIFACT_PATHS.slo);
+  const failureModes = loadArtifact<{ failure_modes?: unknown[] }>(ARTIFACT_PATHS.failureModes);
+  const nearMisses = loadArtifact<{ near_misses?: unknown[] }>(ARTIFACT_PATHS.nearMisses);
+
+  const allSlots = [
+    { path: ARTIFACT_PATHS.checkpointSummary, loaded: checkpointSummary !== null },
+    { path: ARTIFACT_PATHS.repoSnapshot, loaded: repoSnapshot !== null },
+    { path: ARTIFACT_PATHS.systemState, loaded: systemState !== null },
+    { path: ARTIFACT_PATHS.gapAnalysis, loaded: gapAnalysis !== null },
+    { path: ARTIFACT_PATHS.provenance, loaded: provenance !== null },
+    { path: ARTIFACT_PATHS.minimalLoop, loaded: minimalLoop !== null },
+    { path: ARTIFACT_PATHS.evalSummary, loaded: evalSummary !== null },
+    { path: ARTIFACT_PATHS.lineage, loaded: lineage !== null },
+    { path: ARTIFACT_PATHS.controlDecision, loaded: controlDecision !== null },
+    { path: ARTIFACT_PATHS.enforcementAction, loaded: enforcementAction !== null },
+    { path: ARTIFACT_PATHS.replay, loaded: replay !== null },
+    { path: ARTIFACT_PATHS.observability, loaded: observability !== null },
+    { path: ARTIFACT_PATHS.slo, loaded: slo !== null },
+    { path: ARTIFACT_PATHS.failureModes, loaded: failureModes !== null },
+    { path: ARTIFACT_PATHS.nearMisses, loaded: nearMisses !== null },
+  ];
+
   const envelope = buildSourceEnvelope({
-    slots: [
-      { path: ARTIFACT_PATHS.checkpointSummary, loaded: checkpointSummary !== null },
-      { path: ARTIFACT_PATHS.repoSnapshot, loaded: repoSnapshot !== null },
-      { path: ARTIFACT_PATHS.systemState, loaded: systemState !== null },
-      { path: ARTIFACT_PATHS.gapAnalysis, loaded: gapAnalysis !== null },
-      { path: ARTIFACT_PATHS.provenance, loaded: provenance !== null },
-    ],
-    // Intelligence summary is a digest aggregated from multiple artifacts;
-    // partial coverage degrades to derived_estimate.
+    slots: allSlots,
     isComputed: true,
+    warnings: [
+      ...(minimalLoop?.warnings ?? []),
+      ...(evalSummary?.warnings ?? []),
+      'Dashboard seed artifacts are minimal and partial; unknown coverage remains visible by design.',
+    ],
   });
+
+  const proofChain = minimalLoop?.proof_chain ?? [];
+  const proofPresent = proofChain.filter((s) => s.status === 'present').length;
+  const proofPartial = proofChain.filter((s) => s.status === 'partial').length;
+  const proofTotal = proofChain.length;
+  const artifactBackedSignalCount = allSlots.filter((s) => s.loaded && s.path.includes('dashboard_seed')).length;
+  const fallbackSignalCount = allSlots.filter((s) => !s.loaded).length;
+  const unknownSignalCount = Math.max(0, proofTotal - proofPresent - proofPartial);
 
   return NextResponse.json({
     ...envelope,
+    seed_artifacts_present: minimalLoop !== null,
+    proof_chain_coverage: {
+      total: proofTotal,
+      present: proofPresent,
+      partial: proofPartial,
+      missing_or_unknown: unknownSignalCount,
+      percent_present_or_partial: proofTotal > 0 ? Math.round(((proofPresent + proofPartial) / proofTotal) * 100) : 0,
+    },
+    artifact_backed_signal_count: artifactBackedSignalCount,
+    fallback_signal_count: fallbackSignalCount,
+    unknown_signal_count: unknownSignalCount,
+    failure_modes: failureModes?.failure_modes ?? [],
+    near_misses: nearMisses?.near_misses ?? [],
+    minimal_loop_status: minimalLoop?.minimal_loop_status ?? 'unknown',
+    source_artifacts_used: Array.from(new Set([...(envelope.source_artifacts_used ?? []), ...(minimalLoop?.source_artifacts_used ?? [])])),
     intelligence_summary: {
       mg_kernel: checkpointSummary
         ? {
