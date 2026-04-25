@@ -1,15 +1,19 @@
-"""RFX certification hard gate — LOOP-06 implementation.
+"""RFX certification evidence completeness guard — LOOP-06 implementation.
 
-GOV is the certification packaging authority. CDE remains the decision
-authority and TPA remains the trust/policy authority. GOV does NOT decide
-readiness — it only certifies that the full evidence bundle is present and
-valid.
+This module is a non-owning presence check used during the RFX phase.
+It does not assign or transfer canonical responsibilities; canonical
+mappings are declared in the system registry. The guard verifies that the
+certification evidence package supplied to it contains every required
+contribution before promotion can be considered.
 
-Required evidence for certification:
-  EVL, TPA, CDE, SEL, LIN, REP, OBS, SLO, PRA, POL (when policy in scope).
+Required contributions in the evidence package:
+  evaluation evidence, trust-policy evidence, closure-decision evidence,
+  enforcement-linkage evidence, lineage evidence, replay evidence,
+  telemetry-completeness evidence, posture evidence, promotion-readiness
+  input, and policy-posture input (when policy is in scope).
 
-All failures are deterministic and emit machine-readable reason codes.
-Missing artifact = halt. No implicit certification.
+All failure modes are deterministic and emit machine-readable reason codes.
+Missing artifact = halt. Implicit certification is not permitted.
 """
 
 from __future__ import annotations
@@ -18,7 +22,7 @@ from typing import Any
 
 
 class RFXCertificationGateError(ValueError):
-    """Raised when GOV certification hard-gate invariants fail closed."""
+    """Raised when the RFX certification evidence completeness guard fails closed."""
 
 
 _VALID_EVL_STATUSES = frozenset({"pass", "conditional_pass"})
@@ -34,15 +38,15 @@ def _is_nonempty_dict(obj: Any) -> bool:
 
 
 def _policy_in_scope(pol: dict[str, Any] | None) -> bool:
-    """Determine whether POL evidence is required for this RFX path.
+    """Determine whether the policy-posture input is required for this RFX path.
 
-    POL is required when:
-      - the caller passes a non-empty POL artifact (treated as in scope), OR
-      - the POL artifact explicitly marks ``in_scope`` / ``required``.
+    The policy-posture input is required when:
+      - the caller passes a non-empty input record (treated as in scope), OR
+      - the input record explicitly marks ``in_scope`` / ``required``.
 
-    Absent POL is treated as in-scope only when the caller signals so via the
-    artifact's own ``policy_in_scope`` field. Callers MUST pass the POL
-    artifact when policy is in scope; the gate fails closed if it is missing.
+    An absent input is treated as in scope only when the caller signals so via
+    the input record's own ``policy_in_scope`` field. Callers must pass the
+    input when policy is in scope; the guard fails closed if it is missing.
     """
     if not isinstance(pol, dict):
         return False
@@ -67,27 +71,30 @@ def assert_rfx_certification_ready(
     policy_in_scope: bool | None = None,
     slo_required: bool = True,
 ) -> None:
-    """Assert the full certification evidence bundle is present and valid.
+    """Verify the certification evidence package contains every required contribution.
 
-    GOV does NOT decide readiness. This guard checks completeness and
-    validity of the contributing evidence and fails closed with deterministic,
-    machine-readable reason codes.
+    This guard does not issue closure, trust, policy, lineage, replay, or
+    certification decisions. It only confirms that each required contribution
+    is present and in an acceptable state, then fails closed with
+    deterministic, machine-readable reason codes when something is missing or
+    invalid. Canonical responsibilities for the contributing signals stay with
+    the systems declared in the system registry.
 
     Args:
-      evl: EVL evaluation evidence; status must be ``pass`` or ``conditional_pass``.
-      tpa: TPA adjudication record; status must be ``accepted`` or ``conditional``.
-      cde: CDE closure decision (CDE is the decision authority).
-      sel: SEL enforcement record linked to the CDE decision.
-      lin: LIN lineage record; authenticity must be ``pass``.
-      rep: REP replay record; ``match`` must be ``True``.
-      obs: OBS telemetry completeness record.
-      slo: SLO posture record; required by default.
-      pra: PRA promotion-readiness artifact; status must be ``ready``.
-      pol: POL policy posture; required when policy is in scope.
-      policy_in_scope: explicit override controlling POL requirement. When
-        ``None``, scope is inferred from ``pol`` (any non-empty POL artifact,
-        or one carrying ``policy_in_scope`` truthy, is treated as in scope).
-      slo_required: when True (default), SLO posture must be present.
+      evl: evaluation evidence record; status must be ``pass`` or ``conditional_pass``.
+      tpa: trust-policy adjudication record; status must be ``accepted`` or ``conditional``.
+      cde: closure-decision record (status ``ready`` or ``not_ready``).
+      sel: enforcement-linkage record referencing the closure-decision artifact.
+      lin: lineage evidence record; authenticity must be ``pass``.
+      rep: replay evidence record; ``match`` must be ``True``.
+      obs: telemetry-completeness record.
+      slo: posture record; required by default.
+      pra: promotion-readiness input; status must be ``ready``.
+      pol: policy-posture input; required when policy is in scope.
+      policy_in_scope: explicit toggle for the policy-posture requirement. When
+        ``None``, scope is inferred from ``pol`` (any non-empty input, or one
+        carrying ``policy_in_scope`` truthy, is treated as in scope).
+      slo_required: when True (default), the posture record must be present.
 
     Reason codes (one per missing/invalid contribution, all collected before
     raising):
@@ -108,7 +115,7 @@ def assert_rfx_certification_ready(
     if not _is_nonempty_dict(evl):
         reasons.append(
             "rfx_missing_evl_evidence: EVL evaluation record absent — "
-            "GOV certification withheld"
+            "certification evidence package incomplete"
         )
     else:
         evl_status = evl.get("status", evl.get("evaluation_status"))
@@ -122,7 +129,7 @@ def assert_rfx_certification_ready(
     if not _is_nonempty_dict(tpa):
         reasons.append(
             "rfx_missing_tpa_evidence: TPA adjudication record absent — "
-            "GOV certification withheld"
+            "certification evidence package incomplete"
         )
     else:
         tpa_status = tpa.get("status", tpa.get("discipline_status"))
@@ -136,7 +143,7 @@ def assert_rfx_certification_ready(
     if not _is_nonempty_dict(cde):
         reasons.append(
             "rfx_missing_cde_decision: CDE closure decision absent — "
-            "GOV certification withheld"
+            "certification evidence package incomplete"
         )
     else:
         cde_status = cde.get("status")
@@ -150,7 +157,7 @@ def assert_rfx_certification_ready(
     if not _is_nonempty_dict(sel):
         reasons.append(
             "rfx_missing_sel_link: SEL enforcement record absent — "
-            "GOV certification withheld"
+            "certification evidence package incomplete"
         )
     else:
         cde_decision_id = cde.get("decision_id") if _is_nonempty_dict(cde) else None
@@ -183,7 +190,7 @@ def assert_rfx_certification_ready(
     if not _is_nonempty_dict(lin):
         reasons.append(
             "rfx_missing_lineage: LIN lineage record absent — "
-            "GOV certification withheld"
+            "certification evidence package incomplete"
         )
     else:
         authenticity = lin.get("authenticity")
@@ -197,7 +204,7 @@ def assert_rfx_certification_ready(
     if not _is_nonempty_dict(rep):
         reasons.append(
             "rfx_missing_replay: REP replay record absent — "
-            "GOV certification withheld"
+            "certification evidence package incomplete"
         )
     else:
         replay_match = rep.get("match")
@@ -210,7 +217,7 @@ def assert_rfx_certification_ready(
     if not _is_nonempty_dict(obs):
         reasons.append(
             "rfx_missing_obs: OBS telemetry completeness record absent — "
-            "GOV certification withheld"
+            "certification evidence package incomplete"
         )
     else:
         obs_complete = obs.get("telemetry_complete", obs.get("complete"))
@@ -224,20 +231,21 @@ def assert_rfx_certification_ready(
     if slo_required and not _is_nonempty_dict(slo):
         reasons.append(
             "rfx_slo_block: SLO posture record absent — "
-            "GOV certification withheld"
+            "certification evidence package incomplete"
         )
     elif _is_nonempty_dict(slo):
         slo_status = slo.get("status", slo.get("posture"))
         if slo_status in {"freeze", "block", "burn"}:
             reasons.append(
-                f"rfx_slo_block: SLO status={slo_status!r} blocks certification"
+                f"rfx_slo_block: SLO status={slo_status!r} blocks certification "
+                "evidence package"
             )
 
     # PRA ------------------------------------------------------------------
     if not _is_nonempty_dict(pra):
         reasons.append(
             "rfx_missing_pra_evidence: PRA promotion-readiness artifact absent — "
-            "GOV certification withheld"
+            "certification evidence package incomplete"
         )
     else:
         pra_status = pra.get("status")
@@ -255,7 +263,7 @@ def assert_rfx_certification_ready(
         if not _is_nonempty_dict(pol):
             reasons.append(
                 "rfx_missing_pol_evidence: POL policy posture absent while "
-                "policy is in scope — GOV certification withheld"
+                "policy is in scope — certification evidence package incomplete"
             )
         else:
             pol_status = pol.get("status")

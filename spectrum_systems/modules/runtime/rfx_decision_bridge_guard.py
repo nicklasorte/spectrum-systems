@@ -1,13 +1,14 @@
-"""RFX decision bridge guard — LOOP-04 implementation.
+"""RFX decision-to-enforcement linkage guard — LOOP-04 implementation.
 
-RFX is a cross-system phase label. CDE remains the sole closure-decision
-authority and SEL remains the sole enforcement authority. This guard does NOT
-move closure authority and does NOT introduce a new RFX authority. It only
-asserts that an SEL enforcement context is explicitly bridged from a present
-and well-formed CDE closure decision.
+This module is a non-owning linkage check used during the RFX phase. It
+does not issue closure or enforcement decisions; canonical responsibilities
+for those signals stay with the systems declared in the system registry.
+The guard verifies that an enforcement-context record explicitly references
+the closure-decision record supplied alongside it, so downstream actions
+cannot proceed without a present and well-formed decision artifact.
 
 Failure modes are deterministic and emit machine-readable reason codes.
-Missing artifact = halt. No implicit closure permitted.
+Missing artifact = halt. Implicit closure is not permitted.
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ from typing import Any
 
 
 class RFXDecisionBridgeGuardError(ValueError):
-    """Raised when RFX CDE -> SEL decision-bridge invariants fail closed."""
+    """Raised when the RFX decision-to-enforcement linkage guard fails closed."""
 
 
 _VALID_CDE_STATUSES = frozenset({"ready", "not_ready"})
@@ -31,33 +32,38 @@ def assert_rfx_cde_sel_decision_bridge(
     cde_decision: dict[str, Any] | None,
     sel_context: dict[str, Any] | None,
 ) -> None:
-    """Assert SEL enforcement is explicitly bridged from a valid CDE decision.
+    """Verify an enforcement-context record references the closure-decision artifact.
+
+    This guard does not issue closure or enforcement decisions. It checks
+    presence and link integrity, then fails closed with deterministic,
+    machine-readable reason codes when the link is missing or malformed.
 
     Fail-closed reason codes:
-      - ``rfx_missing_cde_decision``: CDE closure decision is absent or empty.
-      - ``rfx_invalid_cde_decision``: CDE decision status is not in
+      - ``rfx_missing_cde_decision``: closure-decision record is absent or empty.
+      - ``rfx_invalid_cde_decision``: closure-decision status is not in
         ``{ready, not_ready}``.
-      - ``rfx_missing_sel_context``: SEL enforcement context is absent or empty.
-      - ``rfx_sel_not_linked_to_cde``: SEL context does not reference the
-        provided CDE decision (no implicit closure allowed).
+      - ``rfx_missing_sel_context``: enforcement-context record is absent or empty.
+      - ``rfx_sel_not_linked_to_cde``: enforcement-context record does not
+        reference the supplied closure-decision artifact (implicit closure is
+        not permitted).
     """
     if not _is_nonempty_dict(cde_decision):
         raise RFXDecisionBridgeGuardError(
-            "rfx_missing_cde_decision: CDE closure decision artifact absent — "
-            "SEL enforcement cannot proceed without explicit CDE input"
+            "rfx_missing_cde_decision: closure-decision artifact absent — "
+            "enforcement linkage cannot be verified without an explicit input"
         )
 
     cde_status = cde_decision.get("status")
     if cde_status not in _VALID_CDE_STATUSES:
         raise RFXDecisionBridgeGuardError(
-            f"rfx_invalid_cde_decision: CDE decision status={cde_status!r} "
+            f"rfx_invalid_cde_decision: closure-decision status={cde_status!r} "
             f"not in {sorted(_VALID_CDE_STATUSES)}"
         )
 
     if not _is_nonempty_dict(sel_context):
         raise RFXDecisionBridgeGuardError(
-            "rfx_missing_sel_context: SEL enforcement context absent — "
-            "cannot bridge CDE decision to enforcement"
+            "rfx_missing_sel_context: enforcement-context record absent — "
+            "cannot verify linkage from the closure-decision artifact"
         )
 
     cde_decision_id = cde_decision.get("decision_id")
@@ -82,10 +88,11 @@ def assert_rfx_cde_sel_decision_bridge(
 
     if not (linked_by_ref or linked_by_id):
         raise RFXDecisionBridgeGuardError(
-            "rfx_sel_not_linked_to_cde: SEL context does not reference the "
-            "supplied CDE decision (expected cde_decision_ref="
-            f"{expected_ref!r} or cde_decision_id={cde_decision_id!r}); "
-            "no implicit closure permitted"
+            "rfx_sel_not_linked_to_cde: enforcement-context record does not "
+            "reference the supplied closure-decision artifact (expected "
+            f"cde_decision_ref={expected_ref!r} or "
+            f"cde_decision_id={cde_decision_id!r}); implicit closure is not "
+            "permitted"
         )
 
 

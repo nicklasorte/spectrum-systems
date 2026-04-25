@@ -1,11 +1,13 @@
-"""RFX integrity bundle guard — LOOP-05 implementation.
+"""RFX provenance/replay evidence presence guard — LOOP-05 implementation.
 
-LIN remains the lineage authority and REP remains the replay authority. This
-guard does NOT relocate either authority. It enforces the rule: certification
-candidacy requires a present, authentic lineage record AND a present,
-matching replay record.
+This module is a non-owning presence check used during the RFX phase. It
+does not issue lineage or replay decisions; canonical responsibilities for
+those signals stay with the systems declared in the system registry. The
+guard verifies that a lineage evidence record and a replay evidence record
+are both present and valid before certification candidacy can be considered.
 
-No replay = no certification candidate. Missing artifact = halt.
+Without a matching replay evidence record there is no certification
+candidate. Missing artifact = halt.
 """
 
 from __future__ import annotations
@@ -14,7 +16,7 @@ from typing import Any
 
 
 class RFXIntegrityBundleError(ValueError):
-    """Raised when RFX LIN+REP integrity invariants fail closed."""
+    """Raised when the RFX provenance/replay presence guard fails closed."""
 
 
 def _is_nonempty_dict(obj: Any) -> bool:
@@ -26,17 +28,22 @@ def assert_rfx_integrity_bundle(
     lineage_record: dict[str, Any] | None,
     replay_record: dict[str, Any] | None,
 ) -> None:
-    """Assert lineage authenticity and replay match before certification.
+    """Verify a lineage evidence record and replay evidence record are both present and valid.
+
+    This guard does not issue lineage or replay decisions. It only confirms
+    presence and validity of the supplied records, then fails closed with
+    deterministic, machine-readable reason codes when something is missing
+    or invalid.
 
     Fail-closed reason codes:
-      - ``rfx_missing_lineage``: LIN lineage record absent or empty.
+      - ``rfx_missing_lineage``: lineage evidence record absent or empty.
       - ``rfx_lineage_not_authentic``: lineage authenticity is not ``pass``.
-      - ``rfx_missing_replay``: REP replay record absent or empty.
+      - ``rfx_missing_replay``: replay evidence record absent or empty.
       - ``rfx_replay_mismatch``: replay match is not strictly ``True``.
     """
     if not _is_nonempty_dict(lineage_record):
         raise RFXIntegrityBundleError(
-            "rfx_missing_lineage: LIN lineage record absent — "
+            "rfx_missing_lineage: lineage evidence record absent — "
             "certification candidate state blocked"
         )
 
@@ -49,8 +56,8 @@ def assert_rfx_integrity_bundle(
 
     if not _is_nonempty_dict(replay_record):
         raise RFXIntegrityBundleError(
-            "rfx_missing_replay: REP replay record absent — "
-            "no replay = no certification candidate"
+            "rfx_missing_replay: replay evidence record absent — "
+            "without a matching replay record there is no certification candidate"
         )
 
     replay_match = replay_record.get("match")

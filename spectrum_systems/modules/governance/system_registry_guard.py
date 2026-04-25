@@ -318,6 +318,11 @@ def evaluate_system_registry_guard(
         for item in (policy.get("reserved_or_transitional_path_prefixes") or [])
         if isinstance(item, str) and item.strip()
     )
+    non_system_uppercase_tokens = frozenset(
+        str(item).upper()
+        for item in (policy.get("non_system_uppercase_tokens") or [])
+        if isinstance(item, str) and item.strip()
+    )
 
     owner_path_hints: dict[str, list[str]] = {}
     for acronym, system in registry_model.systems.items():
@@ -368,9 +373,14 @@ def evaluate_system_registry_guard(
                         )
 
             if any(p.search(line) for p in _OWNER_CLAIM_PATTERNS):
-                system_match = re.search(r"\b([A-Z0-9]{3})\b", line)
-                if system_match:
-                    subject = system_match.group(1).upper()
+                subject: str | None = None
+                for candidate_match in re.finditer(r"\b([A-Z0-9]{3})\b", line):
+                    candidate_subject = candidate_match.group(1).upper()
+                    if candidate_subject in non_system_uppercase_tokens:
+                        continue
+                    subject = candidate_subject
+                    break
+                if subject is not None:
                     claim = {
                         "system": subject,
                         "file": rel_path,

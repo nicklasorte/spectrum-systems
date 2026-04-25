@@ -123,7 +123,7 @@ RFX execution order (no path reaches GOV without passing all three guards):
 
 `RIL → FRE → PQX → EVL → TPA → CDE → assert_rfx_cde_sel_decision_bridge → assert_rfx_integrity_bundle → assert_rfx_certification_ready → SEL enforcement → GOV certification record`.
 
-CDE remains the sole closure-decision authority. TPA remains the sole trust/policy adjudication authority. GOV remains the certification packaging authority and does not decide readiness; it certifies that the contributing evidence bundle (EVL, TPA, CDE, SEL, LIN, REP, OBS, SLO, PRA, POL) is present and valid. RFX remains a phase label.
+Canonical contribution roles, sourced from the system registry and not redefined here: the closure-decision contributor supplies the readiness decision artifact, the trust-policy contributor supplies trust/policy evidence, the enforcement contributor supplies enforcement evidence linked to the readiness decision artifact, the certification packager packages and certifies evidence completeness, the promotion-readiness contributor supplies the PRA input, the policy-posture contributor supplies the POL input, the lineage contributor supplies lineage evidence, and the replay contributor supplies replay evidence. The RFX guards verify the package without reassigning canonical contributions. RFX remains a phase label.
 
 ## Recommended Next Build Prompt
 

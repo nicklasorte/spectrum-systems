@@ -20,7 +20,7 @@ REQUIRED_FIELDS = {
     "Primary Code Paths",
     "Status",
 }
-IGNORED_RUNTIME_PREFIXES = {"RUN", "TOP", "PRE", "TAX", "PMH", "MVP", "BNE", "BAX", "CAX"}
+IGNORED_RUNTIME_PREFIXES = {"RUN", "TOP", "PRE", "TAX", "PMH", "MVP", "BNE", "BAX", "CAX", "RFX"}
 
 
 @dataclass
