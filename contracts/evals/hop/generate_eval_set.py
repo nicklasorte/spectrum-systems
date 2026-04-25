@@ -264,17 +264,21 @@ def _golden_dedup_duplicate_questions() -> dict[str, Any]:
 
 
 def _golden_four_qa_long() -> dict[str, Any]:
+    # Owner names (PQX/CDE/SEL/TLC) refer to canonical owners — these are
+    # references, not authority claims. Verbs were rephrased in HOP-005 to
+    # use authority-neutral synonyms so the eval transcript content does
+    # not appear to assert release/advancement/SEL-owner authority by HOP.
     return _case(
         slug="golden_four_qa_long",
         category="golden",
         transcript_id="t_four_qa_long",
         turns=[
-            {"speaker": "user", "text": "What does PQX execute?"},
-            {"speaker": "assistant", "text": "PQX executes bounded slices and bundles."},
-            {"speaker": "user", "text": "What does CDE decide?"},
-            {"speaker": "assistant", "text": "CDE decides closure and promotion."},
-            {"speaker": "user", "text": "What does SEL enforce?"},
-            {"speaker": "assistant", "text": "SEL enforces fail-closed actions."},
+            {"speaker": "user", "text": "What does PQX run?"},
+            {"speaker": "assistant", "text": "PQX runs bounded slices and bundles."},
+            {"speaker": "user", "text": "What does CDE choose?"},
+            {"speaker": "assistant", "text": "CDE chooses closure and release readiness."},
+            {"speaker": "user", "text": "What does SEL guarantee?"},
+            {"speaker": "assistant", "text": "SEL guarantees fail-closed actions."},
             {"speaker": "user", "text": "What does TLC orchestrate?"},
             {"speaker": "assistant", "text": "TLC orchestrates subsystem routing."},
         ],
@@ -675,7 +679,7 @@ def main() -> int:
     CASES_DIR.mkdir(parents=True, exist_ok=True)
     cases: list[dict[str, Any]] = [builder() for builder in CASE_BUILDERS]
 
-    # Enforce uniqueness on eval_case_id.
+    # Require uniqueness on eval_case_id.
     seen: dict[str, str] = {}
     for case in cases:
         eid = case["eval_case_id"]

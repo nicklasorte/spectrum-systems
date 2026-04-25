@@ -124,7 +124,7 @@ def test_attack_eval_factory_does_not_collide_with_search_set(
         "severity": "reject",
         "evidence": [{"kind": "snippet", "detail": "x"}],
         "detected_at": "2026-04-25T00:00:00.000000Z",
-        "blocks_promotion": True,
+        "release_block_signal": True,
     }
     finalize_artifact(fake_failure, id_prefix="hop_failure_")
     record = build_eval_factory_record(
@@ -140,16 +140,16 @@ def test_attack_eval_factory_does_not_collide_with_search_set(
     assert not (new_ids & existing_ids)
 
 
-# ---------- Attack 4: re-promotion of a quarantined candidate -----------------
+# ---------- Attack 4: re-advancement of a withheld candidate ------------------
 
-def test_attack_quarantined_candidate_yields_risk_signal(
+def test_attack_withheld_candidate_yields_risk_signal(
     saturated_pair_persisted, store
 ):
     candidate, search_score, heldout_score = saturated_pair_persisted
     emit_rollback_signal(
         RollbackSignalRequest(
             subject_candidate_id=candidate["candidate_id"],
-            recommended_action="quarantine",
+            recommended_action="withhold_signal",
             reason="blocking_failure_detected",
             evidence=({"kind": "snippet", "detail": "synthetic"},),
         ),
@@ -165,7 +165,7 @@ def test_attack_quarantined_candidate_yields_risk_signal(
     )
     assert signal["readiness_signal"] == "risk_signal"
     failed = {r["check"] for r in signal["rationale"] if not r["passed"]}
-    assert "candidate_not_quarantined" in failed
+    assert "candidate_not_withheld" in failed
 
 
 # ---------- Attack 5: smuggled advisory_only=False ----------------------------

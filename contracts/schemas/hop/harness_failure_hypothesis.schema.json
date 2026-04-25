@@ -19,7 +19,7 @@
     "severity",
     "evidence",
     "detected_at",
-    "blocks_promotion"
+    "release_block_signal"
   ],
   "properties": {
     "artifact_id": {
@@ -130,7 +130,7 @@
       "type": "string",
       "format": "date-time"
     },
-    "blocks_promotion": {
+    "release_block_signal": {
       "type": "boolean"
     },
     "baseline_candidate_id": {

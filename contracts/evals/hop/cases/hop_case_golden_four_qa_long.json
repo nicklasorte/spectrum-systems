@@ -1,8 +1,8 @@
 {
-  "artifact_id": "hop_eval_case_7a1c29815c6f0c4f",
+  "artifact_id": "hop_eval_case_a347db1cb9e9beaf",
   "artifact_type": "hop_harness_eval_case",
   "category": "golden",
-  "content_hash": "sha256:7a1c29815c6f0c4f4d6bfc1b0a3d690c40e7da6fe4c855fce7e599d3474cf143",
+  "content_hash": "sha256:a347db1cb9e9beaf3e488cdb47ed93f4c59419eb88d2629c2ab52fa2a7ace1a7",
   "eval_case_id": "hop_case_golden_four_qa_long",
   "eval_case_version": "1.0.0",
   "failure_modes_targeted": [],
@@ -11,27 +11,27 @@
     "turns": [
       {
         "speaker": "user",
-        "text": "What does PQX execute?"
+        "text": "What does PQX run?"
       },
       {
         "speaker": "assistant",
-        "text": "PQX executes bounded slices and bundles."
+        "text": "PQX runs bounded slices and bundles."
       },
       {
         "speaker": "user",
-        "text": "What does CDE decide?"
+        "text": "What does CDE choose?"
       },
       {
         "speaker": "assistant",
-        "text": "CDE decides closure and promotion."
+        "text": "CDE chooses closure and release readiness."
       },
       {
         "speaker": "user",
-        "text": "What does SEL enforce?"
+        "text": "What does SEL guarantee?"
       },
       {
         "speaker": "assistant",
-        "text": "SEL enforces fail-closed actions."
+        "text": "SEL guarantees fail-closed actions."
       },
       {
         "speaker": "user",

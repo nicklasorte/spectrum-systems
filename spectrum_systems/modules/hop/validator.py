@@ -55,7 +55,7 @@ def _build_failure(
         "severity": "reject",
         "evidence": evidence,
         "detected_at": _utcnow(),
-        "blocks_promotion": True,
+        "release_block_signal": True,
     }
     finalize_artifact(payload, id_prefix="hop_failure_")
     return payload

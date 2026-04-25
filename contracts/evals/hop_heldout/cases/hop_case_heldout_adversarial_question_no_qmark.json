@@ -1,8 +1,8 @@
 {
-  "artifact_id": "hop_eval_case_29f62462d247ecbf",
+  "artifact_id": "hop_eval_case_35b1b1fb3abb62ff",
   "artifact_type": "hop_harness_eval_case",
   "category": "adversarial",
-  "content_hash": "sha256:29f62462d247ecbf6ed90290f11be0fde5c896b312934e5e7957e009137e8b40",
+  "content_hash": "sha256:35b1b1fb3abb62ffe7d49c3b83fce68816b6a4bd2391a875ed33a8b7ec42ddee",
   "eval_case_id": "hop_case_heldout_adversarial_question_no_qmark",
   "eval_case_version": "1.0.0",
   "failure_modes_targeted": [
@@ -13,7 +13,7 @@
     "turns": [
       {
         "speaker": "user",
-        "text": "Tell me about promotion gates."
+        "text": "Tell me about release readiness gates."
       },
       {
         "speaker": "assistant",

@@ -14,7 +14,7 @@ Pipeline (strict order, fail-closed at every stage):
                   -> failure_analysis.build_failure_hypothesis
                     -> frontier.compute_frontier_streaming
 
-Invariants (each enforced by tests):
+Invariants (each verified by tests):
 
 - The proposer NEVER calls the evaluator or writes to the store.
 - The optimization loop is the ONLY caller that orchestrates the chain.

@@ -80,7 +80,7 @@ _TYPE_TO_DIR: dict[str, str] = {
     "hop_harness_bootstrap_snapshot": "bootstrap",
     "hop_harness_trial_summary": "trial_summaries",
     "hop_harness_release_readiness_signal": "release_readiness_signals",
-    "hop_harness_rollback_signal": "rollback_signals",
+    "hop_harness_rollback_signal": "release_restoration_signals",
     "hop_harness_eval_factory_record": "eval_factory_records",
     "hop_harness_trend_report": "trend_reports",
     "hop_harness_control_advisory": "control_advisories",
@@ -98,7 +98,7 @@ _INDEXED_FIELDS: dict[str, tuple[str, ...]] = {
         "stage",
         "failure_class",
         "severity",
-        "blocks_promotion",
+        "release_block_signal",
     ),
     "hop_harness_frontier": ("frontier_id",),
     "hop_harness_eval_case": ("eval_case_id", "category"),
@@ -168,7 +168,7 @@ class ExperienceStore:
       whole admit/write/index sequence so two processes can never interleave
       bytes in ``index.jsonl`` or race the duplicate-artifact check;
     * artifact bytes are written to a same-directory tempfile and then
-      atomically promoted via ``os.replace`` so a partial / crashed write is
+      atomically swapped via ``os.replace`` so a partial / crashed write is
       never observable as a half-formed JSON file.
     """
 

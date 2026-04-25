@@ -39,7 +39,8 @@
       "contracts/governance/authority_registry.json",
       "contracts/governance/authority_shape_vocabulary.json",
       "contracts/governance/system_registry_guard_policy.json",
-      "docs/governance/authority_shape_preflight.md"
+      "docs/governance/authority_shape_preflight.md",
+      "docs/hop/preflight.md"
     ]
   },
   "clusters": {

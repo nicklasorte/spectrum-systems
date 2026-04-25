@@ -1,8 +1,8 @@
 """Sandboxed harness execution for HOP-BATCH-3.
 
 All candidate execution must pass through this module. It isolates runtime
-behavior in a subprocess, blocks unsafe operations, and returns structured
-failure details for policy enforcement.
+behavior in a subprocess, denies unsafe operations, and returns structured
+failure details for policy_observation downstream.
 """
 
 from __future__ import annotations

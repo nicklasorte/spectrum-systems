@@ -222,7 +222,7 @@ def build_failure_hypothesis(
         "neutral_change": "info",
     }
     severity = severity_map[failure_class]
-    blocks_promotion = severity == "reject"
+    release_block_signal = severity == "reject"
 
     diff_summary = _diff_summary(inputs.baseline_candidate, inputs.candidate)
     suspected_cause = _suspected_cause(diff, observed)
@@ -275,7 +275,7 @@ def build_failure_hypothesis(
         "severity": severity,
         "evidence": evidence,
         "detected_at": _utcnow(),
-        "blocks_promotion": blocks_promotion,
+        "release_block_signal": release_block_signal,
         "baseline_candidate_id": baseline_id,
         "observed_change": observed,
         "diff_summary": diff_summary,

@@ -18,10 +18,10 @@ BATCH-2 ships four deterministic mutation templates, each declaring a
 ``mutation_kind`` from
 :func:`mutation_policy.list_allowed_mutation_kinds`. The templates are
 text-level rewrites of the baseline harness body, all of which preserve
-the FAQ-output contract enforced by
+the FAQ-output contract validated by
 ``contracts/schemas/hop/harness_faq_output.schema.json``.
 
-The proposer also enforces:
+The proposer also requires:
 
 - **per-cycle quota** — the optimization loop caps ``max_proposals`` per
   invocation; exceeding the quota fails-closed via

@@ -101,7 +101,7 @@ HOP does NOT, in this workflow:
 
 - generate transcripts;
 - evaluate harness *output style* with a free-form judge;
-- promote any candidate (CDE / GOV authority);
+- advance any candidate (REL / GOV / CDE authority);
 - run harness candidates outside the validator + safety_checks gate.
 
 Any extension to the golden workflow requires a new schema version and an

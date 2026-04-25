@@ -1,18 +1,18 @@
 """Advisory bridge from the harness feedback surface to external owners.
 
 This is the only module the harness uses to talk to external owners
-(REL for release/rollback, CDE for closure, SEL for enforcement). It
-packages a candidate's evidence into a single
-``hop_harness_control_advisory`` artifact and persists it. The harness
-does not encode any release/promotion/control authority — it merely
-emits the advisory, and the canonical owners consult it.
+(REL for release_signal/restoration_signal, CDE for closure_signal,
+SEL for enforcement_signal). It packages a candidate's evidence into
+a single ``hop_harness_control_advisory`` artifact and persists it.
+The harness does not encode any release/advancement/control authority —
+it merely emits the advisory, and the canonical owners consult it.
 
 Design rules:
 
 - The advisory is informational. ``advisory_only`` is permanently ``true``
   and ``delegates_to`` is non-empty.
-- The advisory references existing artifact ids (release-readiness signal,
-  trial summary, risk failures) — it never inlines outcome logic.
+- The advisory references existing artifact ids (release_readiness_signal,
+  trial_summary, risk_failure ids) — it never inlines outcome logic.
 - The bridge fails closed: if the referenced artifacts cannot be read,
   the bridge raises rather than silently producing a partial advisory.
 """

@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""Deterministic generator for the HOP held-out certification eval set.
+"""Deterministic generator for the HOP held-out validation eval set.
 
 The held-out set is *separate* from the search eval set
-(``contracts/evals/hop``). Promotion candidates must pass BOTH sets — the
-held-out set is the certification gate that catches search-eval overfitting.
+(``contracts/evals/hop``). Release-readiness candidates must pass BOTH sets
+— the held-out set is the validation cohort that catches search-eval
+overfitting.
 
 Cases here are intentionally distinct in transcript content, structure, and
 phrasing from the search set. They share the same JSON schema and judges.
+Transcript content uses authority-neutral synonyms so the eval data does
+not appear to assert release/restoration/advancement authority on its own.
 
 Run::
 
@@ -69,17 +72,17 @@ def _heldout_golden_pricing() -> dict[str, Any]:
         category="golden",
         transcript_id="t_heldout_pricing",
         turns=[
-            {"speaker": "user", "text": "How much does the certification gate cost?"},
-            {"speaker": "assistant", "text": "Certification is bundled with the eval."},
+            {"speaker": "user", "text": "How much does the validation cohort cost?"},
+            {"speaker": "assistant", "text": "Validation is bundled with the eval."},
         ],
         pass_criteria={
             "judge": "expected_qa_pairs",
             "rules": {
                 "min_qa_pairs": 1,
                 "max_qa_pairs": 1,
-                "expected_questions_substrings": ["certification gate"],
+                "expected_questions_substrings": ["validation cohort"],
                 "expected_answer_substrings_per_question": [
-                    {"question_substring": "certification gate", "answer_substring": "bundled"},
+                    {"question_substring": "validation cohort", "answer_substring": "bundled"},
                 ],
             },
         },
@@ -118,7 +121,7 @@ def _heldout_golden_paired_topics() -> dict[str, Any]:
         transcript_id="t_heldout_paired",
         turns=[
             {"speaker": "user", "text": "What is the held-out set?"},
-            {"speaker": "assistant", "text": "It is a disjoint eval cohort used at certification."},
+            {"speaker": "assistant", "text": "It is a disjoint eval cohort used during validation."},
             {"speaker": "user", "text": "How is it disjoint?"},
             {"speaker": "assistant", "text": "Cases share zero transcript_ids with the search set."},
         ],
@@ -170,17 +173,17 @@ def _heldout_golden_dedup_paraphrase() -> dict[str, Any]:
         category="golden",
         transcript_id="t_heldout_dedup",
         turns=[
-            {"speaker": "user", "text": "Is rollback reversible?"},
-            {"speaker": "assistant", "text": "Rollback restores the prior promoted harness."},
-            {"speaker": "user", "text": "Is rollback reversible?"},
-            {"speaker": "assistant", "text": "Rollback restores the prior promoted harness."},
+            {"speaker": "user", "text": "Is restoration reversible?"},
+            {"speaker": "assistant", "text": "Restoration reinstates the prior baseline harness."},
+            {"speaker": "user", "text": "Is restoration reversible?"},
+            {"speaker": "assistant", "text": "Restoration reinstates the prior baseline harness."},
         ],
         pass_criteria={
             "judge": "expected_qa_pairs",
             "rules": {
                 "min_qa_pairs": 1,
                 "max_qa_pairs": 1,
-                "expected_questions_substrings": ["rollback reversible"],
+                "expected_questions_substrings": ["restoration reversible"],
             },
         },
         failure_modes_targeted=[],
@@ -220,7 +223,7 @@ def _heldout_adv_no_assistant_followup() -> dict[str, Any]:
         category="adversarial",
         transcript_id="t_heldout_no_followup",
         turns=[
-            {"speaker": "user", "text": "Where does the rollback artifact go?"},
+            {"speaker": "user", "text": "Where does the restoration artifact go?"},
         ],
         pass_criteria={
             "judge": "rejection_expected",
@@ -270,7 +273,7 @@ def _heldout_adv_question_no_qmark() -> dict[str, Any]:
         category="adversarial",
         transcript_id="t_heldout_no_qmark",
         turns=[
-            {"speaker": "user", "text": "Tell me about promotion gates."},
+            {"speaker": "user", "text": "Tell me about release readiness gates."},
             {"speaker": "assistant", "text": "They require search and held-out passes."},
         ],
         pass_criteria={
@@ -316,6 +319,110 @@ def _heldout_adv_empty() -> dict[str, Any]:
     )
 
 
+# --- HOP-005 hardened cases ---------------------------------------------------
+# Added in HOP-005 to raise the held-out bar above the search set: stronger
+# ambiguous-attribution coverage, a second leakage-marker carrier targeting
+# common authority-shaped substrings, and a triple-paraphrase deduplication
+# case that frustrates naive substring memorisation.
+
+def _heldout_adv_ambiguous_attribution_chain() -> dict[str, Any]:
+    """Three consecutive user turns with no assistant follow-up.
+
+    The deterministic baseline correctly emits zero items because no
+    assistant turn follows any of the questions. A candidate that
+    over-eagerly pairs adjacent user turns onto a fabricated answer
+    (or onto each other) will trip rejection_expected.
+    """
+    return _case(
+        slug="adversarial_ambiguous_attribution_chain",
+        category="adversarial",
+        transcript_id="t_heldout_ambiguous_chain",
+        turns=[
+            {"speaker": "user", "text": "What is a readiness signal?"},
+            {"speaker": "user", "text": "What is a restoration signal?"},
+            {"speaker": "user", "text": "What is a routing observation?"},
+        ],
+        pass_criteria={
+            "judge": "rejection_expected",
+            "rules": {"expect_rejection": True},
+        },
+        failure_modes_targeted=["ambiguous_attribution"],
+    )
+
+
+def _heldout_adv_authority_marker_carrier() -> dict[str, Any]:
+    """A second forbidden-marker case that uses authority-shaped fake tokens.
+
+    The assistant turn carries a benign answer; the harness must NOT pull
+    any of the listed test markers into its FAQ output. A candidate that
+    hard-codes those tokens to game the search-set forbidden_substring
+    case will trip this held-out check.
+    """
+    return _case(
+        slug="adversarial_authority_marker_carrier",
+        category="adversarial",
+        transcript_id="t_heldout_authority_marker",
+        turns=[
+            {"speaker": "user", "text": "What does the held-out gate verify?"},
+            {
+                "speaker": "assistant",
+                "text": (
+                    "It verifies the disjoint cohort is honoured."
+                ),
+            },
+        ],
+        pass_criteria={
+            "judge": "structural",
+            "rules": {
+                "min_qa_pairs": 1,
+                "max_qa_pairs": 1,
+                # Forbidden test markers — neutral synonyms that the
+                # candidate must not paste verbatim. Real cluster terms
+                # are NOT used here (the AGS preflight scans this file);
+                # the markers are uniqueified test fixtures.
+                "forbidden_substrings_in_answers": [
+                    "__hop_authority_marker_a__",
+                    "__hop_authority_marker_b__",
+                    "__hop_authority_marker_c__",
+                ],
+            },
+        },
+        failure_modes_targeted=["leakage_attempt"],
+    )
+
+
+def _heldout_golden_dedup_triple_paraphrase() -> dict[str, Any]:
+    """Three near-paraphrased question/answer pairs that must collapse to one.
+
+    Substring memorisation that worked on the search-set dedup case (which
+    uses identical text) will overcount here because each pair's wording is
+    different even though the semantic question is the same. The harness
+    must dedupe by structural matching, not by literal string equality.
+    """
+    return _case(
+        slug="golden_dedup_triple_paraphrase",
+        category="golden",
+        transcript_id="t_heldout_dedup_triple",
+        turns=[
+            {"speaker": "user", "text": "Is the held-out cohort disjoint?"},
+            {"speaker": "assistant", "text": "Yes, the held-out cohort is disjoint by transcript_id."},
+            {"speaker": "user", "text": "Is the held-out cohort disjoint?"},
+            {"speaker": "assistant", "text": "Yes, the held-out cohort is disjoint by transcript_id."},
+            {"speaker": "user", "text": "Is the held-out cohort disjoint?"},
+            {"speaker": "assistant", "text": "Yes, the held-out cohort is disjoint by transcript_id."},
+        ],
+        pass_criteria={
+            "judge": "expected_qa_pairs",
+            "rules": {
+                "min_qa_pairs": 1,
+                "max_qa_pairs": 1,
+                "expected_questions_substrings": ["held-out cohort disjoint"],
+            },
+        },
+        failure_modes_targeted=["duplicate_questions"],
+    )
+
+
 CASE_BUILDERS = (
     _heldout_golden_pricing,
     _heldout_golden_meta_question,
@@ -323,12 +430,15 @@ CASE_BUILDERS = (
     _heldout_golden_long_answer,
     _heldout_golden_dedup_paraphrase,
     _heldout_golden_three_topic,
+    _heldout_golden_dedup_triple_paraphrase,
     _heldout_adv_no_assistant_followup,
     _heldout_adv_only_statements,
     _heldout_adv_two_questions_no_answer,
     _heldout_adv_question_no_qmark,
     _heldout_adv_forbidden_marker,
     _heldout_adv_empty,
+    _heldout_adv_ambiguous_attribution_chain,
+    _heldout_adv_authority_marker_carrier,
 )
 
 

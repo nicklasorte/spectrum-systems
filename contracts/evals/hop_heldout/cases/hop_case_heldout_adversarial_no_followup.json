@@ -1,8 +1,8 @@
 {
-  "artifact_id": "hop_eval_case_74f9458fe1a0de56",
+  "artifact_id": "hop_eval_case_6db5719bf348bd24",
   "artifact_type": "hop_harness_eval_case",
   "category": "adversarial",
-  "content_hash": "sha256:74f9458fe1a0de565cb2e6c78c010f416a8d0fcc624a87d7fdf62989a914734a",
+  "content_hash": "sha256:6db5719bf348bd2421c7dd3c79f580cf84642e89f77197114da440f874e64013",
   "eval_case_id": "hop_case_heldout_adversarial_no_followup",
   "eval_case_version": "1.0.0",
   "failure_modes_targeted": [
@@ -13,7 +13,7 @@
     "turns": [
       {
         "speaker": "user",
-        "text": "Where does the rollback artifact go?"
+        "text": "Where does the restoration artifact go?"
       }
     ]
   },

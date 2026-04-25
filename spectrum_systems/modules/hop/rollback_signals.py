@@ -1,12 +1,12 @@
-"""Advisory rollback-signal builder for the harness feedback surface.
+"""Advisory release_restoration_signal builder for the harness feedback surface.
 
-REL is the canonical release/rollback owner. This module merely packages
-evidence (failure hypotheses, score artifact ids, prior promotion-decision
-ids) into a structured ``hop_harness_rollback_signal`` artifact for REL
-to act on.
+REL is the canonical release/restoration owner. This module merely
+packages evidence (failure hypotheses, score artifact ids, prior
+release-readiness signal ids) into a structured
+``hop_harness_rollback_signal`` artifact for REL to act on.
 
 The signal is informational only. Nothing here reverts, restores, or
-quarantines anything; those actions remain with the canonical release
+withholds anything; those actions remain with the canonical release
 owner.
 """
 
@@ -25,21 +25,17 @@ from spectrum_systems.modules.hop.schemas import validate_hop_artifact
 
 
 class RollbackSignalError(Exception):
-    """Raised on infrastructure errors inside the rollback-signal builder."""
+    """Raised on infrastructure errors inside the release_restoration_signal builder."""
 
 
-# Backwards-compatible alias retained for callers; not used in new code paths.
-RollbackError = RollbackSignalError
-
-
-_VALID_RECOMMENDATIONS = ("revert", "quarantine")
+_VALID_RECOMMENDATIONS = ("revert", "withhold_signal")
 _VALID_REASONS = (
     "regression_detected",
     "blocking_failure_detected",
     "trace_incomplete",
     "control_plane_directive",
     "operator_request",
-    "promotion_gate_block",
+    "release_block_signal",
 )
 
 
@@ -66,19 +62,14 @@ class RollbackSignalRequest:
     evidence: tuple[Mapping[str, Any], ...] = ()
 
 
-# Backwards-compatible alias for prior name.
-RollbackRequest = RollbackSignalRequest
-
-
 def build_rollback_signal(
-    request: RollbackSignalRequest, *, trace_id: str = "hop_rollback_signal"
+    request: RollbackSignalRequest, *, trace_id: str = "hop_release_restoration_signal"
 ) -> dict[str, Any]:
-    """Build a finalized rollback-signal artifact.
+    """Build a finalized release_restoration_signal artifact.
 
     Validates ``recommended_action`` and ``reason`` against the closed
     enum, requires at least one evidence item, and forbids self-referential
-    signals (a candidate cannot list itself as the previous promoted
-    candidate).
+    signals (a candidate cannot list itself as the previous candidate id).
     """
     if request.recommended_action not in _VALID_RECOMMENDATIONS:
         raise RollbackSignalError(
@@ -138,10 +129,6 @@ def build_rollback_signal(
     return payload
 
 
-# Backwards-compatible alias.
-build_rollback_record = build_rollback_signal
-
-
 def _find_existing_signal(
     store: ExperienceStore, signal_id: str
 ) -> dict[str, Any] | None:
@@ -161,9 +148,9 @@ def emit_rollback_signal(
     request: RollbackSignalRequest,
     *,
     store: ExperienceStore,
-    trace_id: str = "hop_rollback_signal",
+    trace_id: str = "hop_release_restoration_signal",
 ) -> dict[str, Any]:
-    """Build, validate, and persist a rollback signal.
+    """Build, validate, and persist a release_restoration_signal.
 
     Idempotent on identical ``RollbackSignalRequest``: a prior signal with
     the same logical ``signal_id`` is returned unchanged. The wall-clock
@@ -185,27 +172,19 @@ def emit_rollback_signal(
     return record
 
 
-# Backwards-compatible alias.
-emit_rollback = emit_rollback_signal
-
-
-def has_quarantine_signal(store: ExperienceStore, candidate_id: str) -> bool:
-    """Has a ``quarantine``-recommendation signal been recorded?"""
+def has_withhold_signal(store: ExperienceStore, candidate_id: str) -> bool:
+    """Has a ``withhold_signal``-recommendation signal been recorded?"""
     for rec in store.iter_index(artifact_type="hop_harness_rollback_signal"):
         fields = rec.get("fields", {}) or {}
         if (
             fields.get("subject_candidate_id") == candidate_id
-            and fields.get("recommended_action") == "quarantine"
+            and fields.get("recommended_action") == "withhold_signal"
         ):
             return True
     return False
 
 
-# Backwards-compatible alias.
-is_quarantined = has_quarantine_signal
-
-
-def list_rollback_signals(
+def iter_rollback_signal_records(
     store: ExperienceStore,
     *,
     subject_candidate_id: str | None = None,
@@ -223,7 +202,3 @@ def list_rollback_signals(
             )
         except HopStoreError:
             continue
-
-
-# Backwards-compatible alias.
-list_rollbacks = list_rollback_signals

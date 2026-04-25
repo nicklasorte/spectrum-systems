@@ -38,7 +38,7 @@ def _make_failure(
         "severity": severity,
         "evidence": [{"kind": "snippet", "detail": "test"}],
         "detected_at": "2026-04-25T00:00:00.000000Z",
-        "blocks_promotion": severity == "reject",
+        "release_block_signal": severity == "reject",
     }
     finalize_artifact(payload, id_prefix="hop_failure_")
     return payload

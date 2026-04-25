@@ -58,9 +58,9 @@
       "path": "cases/hop_case_golden_dedup_duplicate_questions.json"
     },
     {
-      "artifact_id": "hop_eval_case_7a1c29815c6f0c4f",
+      "artifact_id": "hop_eval_case_a347db1cb9e9beaf",
       "category": "golden",
-      "content_hash": "sha256:7a1c29815c6f0c4f4d6bfc1b0a3d690c40e7da6fe4c855fce7e599d3474cf143",
+      "content_hash": "sha256:a347db1cb9e9beaf3e488cdb47ed93f4c59419eb88d2629c2ab52fa2a7ace1a7",
       "eval_case_id": "hop_case_golden_four_qa_long",
       "path": "cases/hop_case_golden_four_qa_long.json"
     },
