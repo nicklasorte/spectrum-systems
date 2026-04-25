@@ -44,7 +44,7 @@ def check_mapping(mapping: dict[str, Any], required_system_ids: list[str]) -> li
 
     for sid in required_system_ids:
         if sid not in by_id:
-            errors.append(f"Missing mapping entry for active 3LS system {sid}.")
+            errors.append(f"Missing mapping entry for active registry system {sid}.")
 
     for sid, item in by_id.items():
         if _is_blank(item.get("failure_prevented")):
