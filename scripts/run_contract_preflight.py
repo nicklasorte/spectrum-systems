@@ -530,8 +530,12 @@ def _is_forced_evaluation_surface(path: str) -> tuple[bool, str, str]:
         return True, "orchestration", "orchestration path changed"
     if _is_registry_governed_prompt_surface(path):
         return True, "governed_prompt_surface", "registry-governed prompt surface changed"
-    if path.startswith("spectrum_systems/governance/") or path.startswith("scripts/"):
-        return True, "governance", "governance/control script changed"
+    if (
+        path.startswith("spectrum_systems/governance/")
+        or path.startswith("scripts/")
+        or path.startswith("contracts/governance/")
+    ):
+        return True, "governance", "governance/control surface changed"
     if path.startswith("tests/") and path.endswith(".py"):
         tied_markers = ("contract", "preflight", "schema", "roadmap_eligibility", "next_step_decision", "cycle_runner")
         if any(marker in path for marker in tied_markers):
