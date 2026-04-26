@@ -28,7 +28,7 @@ def _base_contract(step_id: str) -> dict:
     tests = ["pytest tests/test_roadmap_realization_runner.py -k rf_contract_schema -q"]
     entrypoints = ["spectrum_systems.modules.runtime.roadmap_realization_runtime:next_realization_status"]
     if step_id == "RF-03":
-        entrypoints.append("spectrum_systems.modules.runtime.roadmap_realization_runtime:enforce_realization_dependencies")
+        entrypoints.append("spectrum_systems.modules.runtime.roadmap_realization_runtime:validate_realization_dependencies")
 
     return {
         "artifact_type": "roadmap_step_contract",
@@ -179,7 +179,7 @@ def test_fake_test_success_attack_blocked(tmp_path: Path) -> None:
     contract_dir = _write_contracts(tmp_path, rf02=rf02)
     result = realize_steps(step_ids=["RF-02"], contract_dir=contract_dir, result_path=tmp_path / "result.json", repo_root=Path("."))
     assert result["overall_status"] == "fail"
-    assert result["behavioral_test_policy_checks"]["RF-02"]["commands"][0]["approved"] is False
+    assert result["behavioral_test_policy_checks"]["RF-02"]["commands"][0]["reviewed"] is False
 
 
 def test_status_forging_attack_blocked(tmp_path: Path) -> None:

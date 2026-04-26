@@ -99,7 +99,7 @@
         "runtime_entrypoint_checks": {
           "RF-03": [
             {
-              "entrypoint": "spectrum_systems.modules.runtime.roadmap_realization_runtime:enforce_realization_dependencies",
+              "entrypoint": "spectrum_systems.modules.runtime.roadmap_realization_runtime:validate_realization_dependencies",
               "exists": true,
               "error": ""
             },
