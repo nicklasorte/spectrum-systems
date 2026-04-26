@@ -143,6 +143,45 @@ def test_dict_form_coverage_keys_are_collected_as_trace_ids() -> None:
         assert_rfx_observability_replay_consistency(obs=obs, replay_results=replays)
 
 
+def test_metadata_form_coverage_dict_does_not_invent_synthetic_traces() -> None:
+    """Codex P2 regression (line 67): dict-form coverage that carries an
+    explicit ``trace_ids`` list is the metadata schema; sibling keys
+    (``segments``, etc.) are NOT trace identifiers and must not be added
+    to the OBS trace set."""
+    obs = {
+        "obs_id": "obs-meta",
+        "trace_id": "trace-1",
+        "execution_path_coverage": {
+            "trace_ids": ["trace-1"],
+            "segments": {"phase-a": ["AEX", "PQX"]},
+            "summary": "ok",
+        },
+        "artifact_linkage": ["lin:1"],
+        "failure_logs": [],
+    }
+    replays = [{"trace_id": "trace-1", "match": True}]
+    # Must not raise — ``segments``/``summary`` are metadata, not synthetic
+    # traces; trace-1 has matching replay.
+    assert_rfx_observability_replay_consistency(obs=obs, replay_results=replays)
+
+
+def test_dict_linkage_bucket_with_dict_value_is_accepted_as_present() -> None:
+    """Codex P2 regression (line 95): LOOP-08 accepts non-empty dict
+    buckets in artifact_linkage, so the OBS+REP consistency guard must
+    treat them as "linkage present" too — otherwise the two guards
+    disagree on accepted OBS shapes and create false blocks."""
+    obs = {
+        "obs_id": "obs-dict-bucket",
+        "trace_id": "trace-1",
+        "execution_path_coverage": ["AEX", "PQX"],
+        "artifact_linkage": {"trace-1": {"lin": "1", "rep": "1"}},
+        "failure_logs": [],
+    }
+    replays = [{"trace_id": "trace-1", "match": True}]
+    # Must not raise — non-empty dict bucket counts as present linkage.
+    assert_rfx_observability_replay_consistency(obs=obs, replay_results=replays)
+
+
 def test_dict_form_artifact_linkage_keys_are_collected_as_trace_ids() -> None:
     """Same defense via artifact_linkage dict keys: a trace declared only
     in linkage must still be cross-checked against the replay corpus."""

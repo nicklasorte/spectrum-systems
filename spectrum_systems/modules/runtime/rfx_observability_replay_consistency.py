@@ -55,16 +55,24 @@ def _trace_ids_from_obs(obs: dict[str, Any]) -> set[str]:
         ids.add(primary)
     coverage = obs.get("execution_path_coverage")
     if isinstance(coverage, dict):
-        for v in coverage.get("trace_ids", []) or []:
-            s = _coerce_str(v)
-            if s is not None:
-                ids.add(s)
-        for k in coverage.keys():
-            if k == "trace_ids":
-                continue
-            s = _coerce_str(k)
-            if s is not None:
-                ids.add(s)
+        # Two mutually-exclusive dict shapes are accepted:
+        #   1. metadata form: ``{"trace_ids": ["t1", ...], ...other metadata}``
+        #      — only ``trace_ids[*]`` are trace identifiers; sibling keys
+        #        (``segments``, etc.) are metadata buckets, not traces.
+        #   2. multi-trace form: ``{trace_id: [steps], ...}`` — dict keys
+        #      ARE the trace identifiers.
+        # Disambiguate by checking whether ``trace_ids`` is present: when
+        # it is, treat the dict as the metadata form and ignore other keys.
+        if "trace_ids" in coverage:
+            for v in coverage.get("trace_ids", []) or []:
+                s = _coerce_str(v)
+                if s is not None:
+                    ids.add(s)
+        else:
+            for k in coverage.keys():
+                s = _coerce_str(k)
+                if s is not None:
+                    ids.add(s)
     linkage = obs.get("artifact_linkage")
     if isinstance(linkage, dict):
         for k in linkage.keys():
@@ -85,13 +93,24 @@ def _artifact_links_for_trace(
 
     Accepts either:
       * a flat list (treated as belonging to the primary trace_id), or
-      * a dict keyed by trace_id mapping to a list of artifact refs.
+      * a dict keyed by trace_id whose value is a non-empty list OR a
+        non-empty dict of artifact refs (mirroring the LOOP-08 invariant
+        that accepts both shapes for per-trace buckets).
+
+    A non-empty bucket of either shape is treated as "linkage present";
+    only empty / missing buckets count as missing linkage. Returns the
+    bucket flattened to a list so callers can use ``len(...)`` as a
+    truthy presence check.
     """
     linkage = obs.get("artifact_linkage")
     if isinstance(linkage, dict):
         entries = linkage.get(trace_id)
         if isinstance(entries, list):
             return list(entries)
+        if isinstance(entries, dict) and len(entries) > 0:
+            # Non-empty dict bucket — flatten to its values so the linkage
+            # is treated as present without inventing artificial entries.
+            return list(entries.values())
         return []
     if isinstance(linkage, list):
         primary = _coerce_str(obs.get("trace_id"))
