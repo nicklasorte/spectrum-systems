@@ -28,8 +28,8 @@ def artifact_path() -> Path:
     return repo_root() / "artifacts" / "system_dependency_priority_report.json"
 
 
-def _run(cmd: list[str], cwd: Path) -> int:
-    completed = subprocess.run(cmd, cwd=str(cwd), env=dict(os.environ), check=False)
+def _run(cmd: list[str], cwd: Path, env: dict[str, str] | None = None) -> int:
+    completed = subprocess.run(cmd, cwd=str(cwd), env=env or dict(os.environ), check=False)
     return completed.returncode
 
 
@@ -45,20 +45,23 @@ def main(argv: list[str] | None = None) -> int:
     root = repo_root()
     dash = dashboard_dir()
     artifact = artifact_path()
+    tls_env = dict(os.environ)
+    tls_env["PYTHONPATH"] = str(root)
 
     print(f"[dashboard-3ls-build] repo_root={root}", flush=True)
     print(f"[dashboard-3ls-build] dashboard_dir={dash}", flush=True)
+    print(f"[dashboard-3ls-build] PYTHONPATH={tls_env['PYTHONPATH']}", flush=True)
     print(f"[dashboard-3ls-build] expected_artifact={artifact}", flush=True)
 
     tls_cmd = [
         sys.executable,
-        "scripts/build_tls_dependency_priority.py",
+        str(root / "scripts" / "build_tls_dependency_priority.py"),
         "--candidates",
         CANDIDATES,
         "--fail-if-missing",
     ]
     print(f"[dashboard-3ls-build] tls_command={' '.join(tls_cmd)}", flush=True)
-    tls_rc = _run(tls_cmd, cwd=root)
+    tls_rc = _run(tls_cmd, cwd=root, env=tls_env)
     if tls_rc != 0:
         return tls_rc
 
