@@ -1,0 +1,440 @@
+{
+  "ambiguous_systems": [
+    {
+      "classification": "unknown",
+      "evidence_count": 0,
+      "in_registry": false,
+      "reason": "spec_override:MET_unknown_unless_proven",
+      "registry_class": null,
+      "system_id": "MET"
+    },
+    {
+      "classification": "unknown",
+      "evidence_count": 0,
+      "in_registry": false,
+      "reason": "spec_override:MET_unknown_unless_proven",
+      "registry_class": null,
+      "system_id": "METS"
+    },
+    {
+      "classification": "unknown",
+      "evidence_count": 0,
+      "in_registry": false,
+      "reason": "repo_only_candidate_no_registry_record",
+      "registry_class": null,
+      "system_id": "RFX"
+    }
+  ],
+  "candidates": [
+    {
+      "classification": "future",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_future_placeholder",
+      "registry_class": "future",
+      "system_id": "ABX"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 111,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "AEX"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 56,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "CAP"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 113,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "CDE"
+    },
+    {
+      "classification": "support_capability",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_merged_or_demoted",
+      "registry_class": "support_capability",
+      "system_id": "CMP"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 89,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "CTX"
+    },
+    {
+      "classification": "future",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_future_placeholder",
+      "registry_class": "future",
+      "system_id": "DBB"
+    },
+    {
+      "classification": "deprecated",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_deprecated",
+      "registry_class": "deprecated",
+      "system_id": "DCL"
+    },
+    {
+      "classification": "deprecated",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_deprecated",
+      "registry_class": "deprecated",
+      "system_id": "DEM"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 105,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "EVL"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 108,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "FRE"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 94,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "GOV"
+    },
+    {
+      "classification": "h_slice",
+      "evidence_count": 0,
+      "in_registry": false,
+      "reason": "spec_override:H01_is_h_slice",
+      "registry_class": null,
+      "system_id": "H01"
+    },
+    {
+      "classification": "deprecated",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_deprecated",
+      "registry_class": "deprecated",
+      "system_id": "HNX"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 76,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "HOP"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 72,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "JDX"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 38,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "JSX"
+    },
+    {
+      "classification": "future",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_future_placeholder",
+      "registry_class": "future",
+      "system_id": "LCE"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 87,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "LIN"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 126,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "MAP"
+    },
+    {
+      "classification": "deprecated",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_deprecated",
+      "registry_class": "deprecated",
+      "system_id": "MCL"
+    },
+    {
+      "classification": "unknown",
+      "evidence_count": 0,
+      "in_registry": false,
+      "reason": "spec_override:MET_unknown_unless_proven",
+      "registry_class": null,
+      "system_id": "MET"
+    },
+    {
+      "classification": "unknown",
+      "evidence_count": 0,
+      "in_registry": false,
+      "reason": "spec_override:MET_unknown_unless_proven",
+      "registry_class": null,
+      "system_id": "METS"
+    },
+    {
+      "classification": "deprecated",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_deprecated",
+      "registry_class": "deprecated",
+      "system_id": "MNT"
+    },
+    {
+      "classification": "support_capability",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_merged_or_demoted",
+      "registry_class": "support_capability",
+      "system_id": "NRM"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 91,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "OBS"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 58,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "POL"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 127,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "PQX"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 40,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "PRA"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 33,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "PRM"
+    },
+    {
+      "classification": "support_capability",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_merged_or_demoted",
+      "registry_class": "support_capability",
+      "system_id": "QRY"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 46,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "RAX"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 83,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "REP"
+    },
+    {
+      "classification": "support_capability",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_merged_or_demoted",
+      "registry_class": "support_capability",
+      "system_id": "RET"
+    },
+    {
+      "classification": "unknown",
+      "evidence_count": 0,
+      "in_registry": false,
+      "reason": "repo_only_candidate_no_registry_record",
+      "registry_class": null,
+      "system_id": "RFX"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 109,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "RIL"
+    },
+    {
+      "classification": "support_capability",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_merged_or_demoted",
+      "registry_class": "support_capability",
+      "system_id": "RSK"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 24,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "RSM"
+    },
+    {
+      "classification": "deprecated",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_deprecated",
+      "registry_class": "deprecated",
+      "system_id": "RWA"
+    },
+    {
+      "classification": "future",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_future_placeholder",
+      "registry_class": "future",
+      "system_id": "SAL"
+    },
+    {
+      "classification": "future",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_future_placeholder",
+      "registry_class": "future",
+      "system_id": "SAS"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 43,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "SEC"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 120,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "SEL"
+    },
+    {
+      "classification": "future",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_future_placeholder",
+      "registry_class": "future",
+      "system_id": "SHA"
+    },
+    {
+      "classification": "future",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_future_placeholder",
+      "registry_class": "future",
+      "system_id": "SIV"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 97,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "SLO"
+    },
+    {
+      "classification": "support_capability",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_merged_or_demoted",
+      "registry_class": "support_capability",
+      "system_id": "SUP"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 111,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "TLC"
+    },
+    {
+      "classification": "active_system",
+      "evidence_count": 114,
+      "in_registry": true,
+      "reason": "active_in_registry_with_repo_evidence",
+      "registry_class": "active_registry",
+      "system_id": "TPA"
+    },
+    {
+      "classification": "support_capability",
+      "evidence_count": 0,
+      "in_registry": true,
+      "reason": "registry_merged_or_demoted",
+      "registry_class": "support_capability",
+      "system_id": "TRN"
+    }
+  ],
+  "phase": "TLS-02",
+  "schema_version": "tls-02.v1",
+  "summary": {
+    "active_system": 26,
+    "deprecated": 6,
+    "future": 7,
+    "h_slice": 1,
+    "support_capability": 7,
+    "unknown": 3
+  }
+}

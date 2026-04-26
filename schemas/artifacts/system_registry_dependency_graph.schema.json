@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://spectrum.systems/schemas/system_registry_dependency_graph.schema.json",
+  "title": "system_registry_dependency_graph",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "phase",
+    "canonical_loop",
+    "canonical_overlays",
+    "active_systems",
+    "merged_or_demoted",
+    "future_systems",
+    "parse_notes"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "tls-00.v1" },
+    "phase": { "type": "string", "const": "TLS-00" },
+    "canonical_loop": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9]{1,5}$" }
+    },
+    "canonical_overlays": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9]{1,5}$" }
+    },
+    "active_systems": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "system_id",
+          "status",
+          "purpose",
+          "upstream",
+          "downstream",
+          "artifacts_owned",
+          "primary_code_paths"
+        ],
+        "properties": {
+          "system_id": { "type": "string", "pattern": "^[A-Z][A-Z0-9]{1,5}$" },
+          "status": { "type": "string", "const": "active" },
+          "purpose": { "type": ["string", "null"] },
+          "upstream": { "type": "array", "items": { "type": "string" } },
+          "downstream": { "type": "array", "items": { "type": "string" } },
+          "artifacts_owned": { "type": "array", "items": { "type": "string" } },
+          "primary_code_paths": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "merged_or_demoted": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["system_id", "status"],
+        "properties": {
+          "system_id": { "type": "string" },
+          "status": { "type": "string" },
+          "merged_into": { "type": "string" },
+          "rationale": { "type": "string" }
+        }
+      }
+    },
+    "future_systems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["system_id", "rationale"],
+        "properties": {
+          "system_id": { "type": "string" },
+          "rationale": { "type": "string" }
+        }
+      }
+    },
+    "parse_notes": { "type": "array", "items": { "type": "string" } }
+  }
+}

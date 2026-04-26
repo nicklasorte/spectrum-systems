@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://spectrum.systems/schemas/system_dependency_priority_report.schema.json",
+  "title": "system_dependency_priority_report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "phase", "priority_order", "penalties", "ranked_systems", "top_5"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "tls-04.v1" },
+    "phase": { "type": "string", "const": "TLS-04" },
+    "priority_order": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 5,
+      "maxItems": 5
+    },
+    "penalties": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "ranked_systems": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/ranked_system" }
+    },
+    "top_5": {
+      "type": "array",
+      "maxItems": 5,
+      "items": { "$ref": "#/definitions/ranked_system" }
+    }
+  },
+  "definitions": {
+    "ranked_system": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "rank",
+        "system_id",
+        "classification",
+        "score",
+        "score_components",
+        "penalties",
+        "spine_position_index",
+        "action",
+        "why_now",
+        "trust_gap_signals",
+        "dependencies",
+        "unlocks",
+        "finish_definition",
+        "next_prompt",
+        "trust_state"
+      ],
+      "properties": {
+        "rank": { "type": "integer", "minimum": 1 },
+        "system_id": { "type": "string" },
+        "classification": { "type": "string" },
+        "score": { "type": "number" },
+        "score_components": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["spine_weight", "boundary_score", "gap_score", "unlock_score", "partial_score", "risk_score"],
+          "properties": {
+            "spine_weight": { "type": "integer" },
+            "boundary_score": { "type": "integer" },
+            "gap_score": { "type": "integer" },
+            "unlock_score": { "type": "integer" },
+            "partial_score": { "type": "integer" },
+            "risk_score": { "type": "integer" }
+          }
+        },
+        "penalties": { "type": "array", "items": { "type": "string" } },
+        "spine_position_index": { "type": "integer" },
+        "action": { "type": "string" },
+        "why_now": { "type": "string" },
+        "trust_gap_signals": { "type": "array", "items": { "type": "string" } },
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["upstream", "downstream"],
+          "properties": {
+            "upstream": { "type": "array", "items": { "type": "string" } },
+            "downstream": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "unlocks": { "type": "array", "items": { "type": "string" } },
+        "finish_definition": { "type": "string" },
+        "next_prompt": { "type": "string" },
+        "trust_state": { "type": "string" },
+        "unknown_justification": { "type": "string" }
+      }
+    }
+  }
+}

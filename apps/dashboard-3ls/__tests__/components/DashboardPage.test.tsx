@@ -58,12 +58,25 @@ const mockRGE = {
   warnings: ['partial inputs'],
 };
 
-function setupFetch(health = mockHealth, intelligence = mockIntelligence, systems = mockSystems, rge = mockRGE) {
+const mockPriorityMissing = {
+  state: 'missing' as const,
+  payload: null,
+  reason: 'not_found:artifacts/system_dependency_priority_report.json',
+};
+
+function setupFetch(
+  health = mockHealth,
+  intelligence = mockIntelligence,
+  systems = mockSystems,
+  rge = mockRGE,
+  priority: unknown = mockPriorityMissing,
+) {
   (global.fetch as jest.Mock)
     .mockResolvedValueOnce({ ok: true, json: async () => health })
     .mockResolvedValueOnce({ ok: true, json: async () => intelligence })
     .mockResolvedValueOnce({ ok: true, json: async () => systems })
-    .mockResolvedValueOnce({ ok: true, json: async () => rge });
+    .mockResolvedValueOnce({ ok: true, json: async () => rge })
+    .mockResolvedValueOnce({ ok: true, json: async () => priority });
 }
 
 describe('DashboardPage panels', () => {
@@ -137,6 +150,96 @@ describe('DashboardPage panels', () => {
     await waitFor(() => {
       expect(screen.queryByRole('button', { name: /^Execute$/i })).not.toBeInTheDocument();
       expect(screen.getByText(/RGE proposes only\. CDE decides\. SEL enforces\./i)).toBeInTheDocument();
+    });
+  });
+
+  it('next-systems-to-finish panel shows missing-artifact state when artifact is absent', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+    await waitFor(() => {
+      const panel = screen.getByTestId('next-systems-panel');
+      expect(panel).toHaveAttribute('data-state', 'missing');
+      expect(within(panel).getByTestId('next-systems-state-banner')).toHaveTextContent(/MISSING/i);
+    });
+  });
+
+  it('next-systems-to-finish panel renders top-5 ranked systems verbatim from artifact', async () => {
+    const priority = {
+      state: 'ok',
+      payload: {
+        schema_version: 'tls-04.v1',
+        phase: 'TLS-04',
+        priority_order: ['a','b','c','d','e'],
+        penalties: ['deprecated','unknown'],
+        ranked_systems: [],
+        top_5: [
+          {
+            rank: 1,
+            system_id: 'EVL',
+            classification: 'active_system',
+            score: 251,
+            action: 'finish_hardening',
+            why_now: 'on canonical loop; trust-boundary authority',
+            trust_gap_signals: ['missing_eval', 'schema_weakness'],
+            dependencies: { upstream: ['PQX'], downstream: ['TPA','CDE'] },
+            unlocks: ['CDE','TPA'],
+            finish_definition: 'all of: resolve signal(missing_eval), resolve signal(schema_weakness)',
+            next_prompt: 'Run TLS-FIX-EVL',
+            trust_state: 'blocked_signal',
+          },
+          {
+            rank: 2,
+            system_id: 'CDE',
+            classification: 'active_system',
+            score: 242,
+            action: 'finish_hardening',
+            why_now: 'on canonical loop',
+            trust_gap_signals: ['missing_replay'],
+            dependencies: { upstream: ['EVL'], downstream: ['SEL','GOV'] },
+            unlocks: ['GOV','SEL'],
+            finish_definition: 'resolve signal(missing_replay)',
+            next_prompt: 'Run TLS-FIX-CDE',
+            trust_state: 'freeze_signal',
+          },
+        ],
+      },
+      generated_at: new Date().toISOString(),
+    };
+    setupFetch(mockHealth, mockIntelligence, mockSystems, mockRGE, priority);
+    render(<DashboardPage />);
+    await waitFor(() => {
+      const panel = screen.getByTestId('next-systems-panel');
+      expect(panel).toHaveAttribute('data-state', 'ok');
+      const rows = within(panel).getAllByTestId('next-system-row');
+      expect(rows).toHaveLength(2);
+      // Render order is the artifact's rank order — the dashboard MUST NOT
+      // re-rank.
+      expect(rows[0]).toHaveAttribute('data-system-id', 'EVL');
+      expect(rows[1]).toHaveAttribute('data-system-id', 'CDE');
+      expect(within(rows[0]).getAllByText(/missing_eval/).length).toBeGreaterThan(0);
+      expect(rows[0].textContent).toContain('Run TLS-FIX-EVL');
+    });
+  });
+
+  it('next-systems-to-finish panel shows freeze_signal banner when control_signal asserts freeze_signal', async () => {
+    const priority = {
+      state: 'freeze_signal',
+      payload: {
+        schema_version: 'tls-04.v1',
+        phase: 'TLS-04',
+        priority_order: ['a','b','c','d','e'],
+        penalties: [],
+        ranked_systems: [],
+        top_5: [],
+      },
+      reason: 'control_signal=freeze_signal',
+    };
+    setupFetch(mockHealth, mockIntelligence, mockSystems, mockRGE, priority);
+    render(<DashboardPage />);
+    await waitFor(() => {
+      const panel = screen.getByTestId('next-systems-panel');
+      expect(panel).toHaveAttribute('data-state', 'freeze_signal');
+      expect(within(panel).getByTestId('next-systems-state-banner')).toHaveTextContent(/FREEZE_SIGNAL/i);
     });
   });
 });

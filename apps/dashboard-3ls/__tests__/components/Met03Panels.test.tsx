@@ -137,17 +137,25 @@ const baseRGE = {
   warnings: [],
 };
 
+const basePriorityMissing = {
+  state: 'missing' as const,
+  payload: null,
+  reason: 'not_found:artifacts/system_dependency_priority_report.json',
+};
+
 function setupFetch(
   health = baseHealth,
   intelligence = baseIntelligence,
   systems = baseSystems,
-  rge = baseRGE
+  rge = baseRGE,
+  priority: unknown = basePriorityMissing,
 ) {
   (global.fetch as jest.Mock)
     .mockResolvedValueOnce({ ok: true, json: async () => health })
     .mockResolvedValueOnce({ ok: true, json: async () => intelligence })
     .mockResolvedValueOnce({ ok: true, json: async () => systems })
-    .mockResolvedValueOnce({ ok: true, json: async () => rge });
+    .mockResolvedValueOnce({ ok: true, json: async () => rge })
+    .mockResolvedValueOnce({ ok: true, json: async () => priority });
 }
 
 describe('MET-03 dashboard panels', () => {

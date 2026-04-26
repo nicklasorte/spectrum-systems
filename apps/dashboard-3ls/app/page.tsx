@@ -157,6 +157,42 @@ interface ProofStage {
   reason_codes: string[];
 }
 
+interface RankedSystemView {
+  rank: number;
+  system_id: string;
+  classification: string;
+  score: number;
+  action: string;
+  why_now: string;
+  trust_gap_signals: string[];
+  dependencies: { upstream: string[]; downstream: string[] };
+  unlocks: string[];
+  finish_definition: string;
+  next_prompt: string;
+  trust_state: string;
+  unknown_justification?: string;
+}
+
+type PriorityArtifactState =
+  | 'ok'
+  | 'missing'
+  | 'stale'
+  | 'invalid_schema'
+  | 'blocked_signal'
+  | 'freeze_signal';
+
+interface PriorityArtifactResult {
+  state: PriorityArtifactState;
+  payload: {
+    schema_version?: string;
+    phase?: string;
+    top_5?: RankedSystemView[];
+    ranked_systems?: RankedSystemView[];
+  } | null;
+  generated_at?: string;
+  reason?: string;
+}
+
 interface LeverageItem {
   title: string;
   failure_prevented: string;
@@ -243,6 +279,7 @@ export default function Dashboard() {
   const [intelligence, setIntelligence] = useState<IntelligencePayload | null>(null);
   const [systemsEnvelope, setSystemsEnvelope] = useState<SystemsPayload | null>(null);
   const [rge, setRge] = useState<RGEPayload | null>(null);
+  const [priority, setPriority] = useState<PriorityArtifactResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -250,11 +287,12 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [healthRes, intelligenceRes, systemsRes, rgeRes] = await Promise.all([
+        const [healthRes, intelligenceRes, systemsRes, rgeRes, priorityRes] = await Promise.all([
           fetch('/api/health'),
           fetch('/api/intelligence'),
           fetch('/api/systems'),
           fetch('/api/rge/analysis'),
+          fetch('/api/priority'),
         ]);
 
         if (!healthRes.ok || !intelligenceRes.ok || !systemsRes.ok || !rgeRes.ok) {
@@ -268,10 +306,18 @@ export default function Dashboard() {
           rgeRes.json(),
         ]);
 
+        // The priority endpoint is allowed to be missing/stale/invalid — the
+        // panel itself handles those states. A non-200 response is treated as
+        // a soft missing artifact, not a hard dashboard failure.
+        const priorityData: PriorityArtifactResult = priorityRes.ok
+          ? await priorityRes.json()
+          : { state: 'missing', payload: null, reason: 'priority_endpoint_unavailable' };
+
         setHealth(healthData);
         setIntelligence(intelligenceData);
         setSystemsEnvelope(systemsData);
         setRge(rgeData);
+        setPriority(priorityData);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -851,6 +897,8 @@ export default function Dashboard() {
         )}
       </section>
 
+      <NextSystemsToFinishPanel result={priority} />
+
       <section className="bg-white border rounded p-4" data-testid="rge-readiness-panel">
         <h2 className="font-semibold mb-3">RGE READINESS</h2>
         <div className="space-y-2 text-sm">
@@ -876,5 +924,161 @@ export default function Dashboard() {
         </div>
       </section>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// D3L-01 — "Next Systems to Finish" panel.
+//
+// Strict visualization-only: renders whatever the TLS-04 priority artifact
+// declares. NEVER reorders, scores, or classifies. Renders explicit states
+// when the artifact is missing, stale, schema-invalid, or carries a
+// freeze_signal / blocked_signal control_signal asserted by an upstream
+// canonical owner.
+// ---------------------------------------------------------------------------
+function NextSystemsToFinishPanel({ result }: { result: PriorityArtifactResult | null }) {
+  if (!result) {
+    return (
+      <section
+        className="bg-white border rounded p-4"
+        data-testid="next-systems-panel"
+        data-state="loading"
+      >
+        <h2 className="font-semibold mb-3">NEXT SYSTEMS TO FINISH</h2>
+        <p className="text-sm text-gray-500">Loading priority artifact…</p>
+      </section>
+    );
+  }
+
+  const stateMessages: Record<PriorityArtifactState, { tone: string; label: string; help: string }> = {
+    ok: { tone: 'bg-green-50 border-green-300 text-green-800', label: 'ARTIFACT OK', help: '' },
+    missing: {
+      tone: 'bg-red-50 border-red-300 text-red-800',
+      label: 'ARTIFACT MISSING',
+      help: 'Run scripts/build_tls_dependency_priority.py to publish artifacts/system_dependency_priority_report.json.',
+    },
+    stale: {
+      tone: 'bg-amber-50 border-amber-300 text-amber-800',
+      label: 'ARTIFACT STALE',
+      help: 'Re-run the TLS pipeline to refresh.',
+    },
+    invalid_schema: {
+      tone: 'bg-red-50 border-red-300 text-red-800',
+      label: 'ARTIFACT SCHEMA INVALID',
+      help: 'Schema mismatch — pipeline must be re-validated before relying on this panel.',
+    },
+    blocked_signal: {
+      tone: 'bg-red-50 border-red-300 text-red-800',
+      label: 'CONTROL SIGNAL: BLOCKED_SIGNAL',
+      help: 'Upstream control authority asserted blocked_signal on the priority recommendation.',
+    },
+    freeze_signal: {
+      tone: 'bg-orange-50 border-orange-300 text-orange-800',
+      label: 'CONTROL SIGNAL: FREEZE_SIGNAL',
+      help: 'Upstream control authority asserted freeze_signal on the priority recommendation.',
+    },
+  };
+
+  const banner = stateMessages[result.state];
+  const top5 = result.payload?.top_5 ?? [];
+
+  return (
+    <section
+      className="bg-white border rounded p-4"
+      data-testid="next-systems-panel"
+      data-state={result.state}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="font-semibold">NEXT SYSTEMS TO FINISH</h2>
+        <span
+          className={`border rounded px-2 py-0.5 text-xs font-mono ${banner.tone}`}
+          data-testid="next-systems-state-badge"
+        >
+          {banner.label}
+        </span>
+      </div>
+
+      {result.state !== 'ok' && (
+        <div
+          className={`border rounded p-3 mb-3 text-sm ${banner.tone}`}
+          data-testid="next-systems-state-banner"
+        >
+          <p className="font-semibold">{banner.label}</p>
+          {banner.help && <p className="text-xs mt-1">{banner.help}</p>}
+          {result.reason && (
+            <p className="text-xs mt-1 font-mono break-all">reason: {result.reason}</p>
+          )}
+        </div>
+      )}
+
+      {top5.length === 0 ? (
+        <p className="text-sm text-gray-500" data-testid="next-systems-empty">
+          No ranked systems available.
+        </p>
+      ) : (
+        <ol className="space-y-3">
+          {top5.map((row) => (
+            <li
+              key={`${row.rank}-${row.system_id}`}
+              className="border rounded p-3"
+              data-testid="next-system-row"
+              data-system-id={row.system_id}
+            >
+              <div className="flex justify-between items-start gap-2">
+                <div>
+                  <h3 className="font-semibold">
+                    #{row.rank} <span className="font-mono">{row.system_id}</span>{' '}
+                    <span className="text-xs uppercase tracking-wide text-gray-500">
+                      ({row.classification})
+                    </span>
+                  </h3>
+                  <p className="text-xs text-gray-600">action: {row.action}</p>
+                </div>
+                <span className="text-xs font-mono">score {row.score}</span>
+              </div>
+              <p className="text-sm mt-2">why_now: {row.why_now}</p>
+              <div className="mt-2 text-xs text-gray-700">
+                trust_gap_signals:{' '}
+                {row.trust_gap_signals.length === 0 ? (
+                  <span className="text-gray-500">none</span>
+                ) : (
+                  row.trust_gap_signals.map((g) => (
+                    <span
+                      key={g}
+                      className="inline-block border border-red-300 text-red-700 bg-red-50 rounded px-1.5 py-0.5 mr-1 mb-1 font-mono"
+                    >
+                      {g}
+                    </span>
+                  ))
+                )}
+              </div>
+              <div className="mt-2 text-xs text-gray-700">
+                dependencies: upstream=[{row.dependencies.upstream.join(', ') || '—'}], downstream=[
+                {row.dependencies.downstream.join(', ') || '—'}]
+              </div>
+              <div className="mt-1 text-xs text-gray-700">
+                unlocks: {row.unlocks.length === 0 ? '—' : row.unlocks.join(', ')}
+              </div>
+              <div className="mt-2 text-xs text-gray-600">
+                <span className="font-semibold">finish: </span>
+                {row.finish_definition}
+              </div>
+              <div className="mt-1 text-xs text-gray-500 font-mono break-all">
+                next_prompt: {row.next_prompt}
+              </div>
+              {row.unknown_justification && (
+                <p className="mt-2 text-xs text-amber-800 bg-amber-50 border border-amber-300 rounded px-2 py-1">
+                  {row.unknown_justification}
+                </p>
+              )}
+            </li>
+          ))}
+        </ol>
+      )}
+
+      <p className="text-xs text-gray-500 mt-3">
+        Source: artifacts/system_dependency_priority_report.json (TLS-04). Dashboard does not compute ranking.
+      </p>
+    </section>
   );
 }

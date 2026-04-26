@@ -1,0 +1,2044 @@
+{
+  "penalties": [
+    "new_capability_without_trust_gain",
+    "deprecated",
+    "unknown"
+  ],
+  "phase": "TLS-04",
+  "priority_order": [
+    "mvp_spine_dependency",
+    "trust_boundary_importance",
+    "downstream_unlock_value",
+    "partial_completion",
+    "risk_if_deferred"
+  ],
+  "ranked_systems": [
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "TPA",
+          "CDE",
+          "GOV"
+        ],
+        "upstream": [
+          "PQX"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-EVL: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'schema_weakness'] on system EVL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 1,
+      "score": 251,
+      "score_components": {
+        "boundary_score": 80,
+        "gap_score": 32,
+        "partial_score": 5,
+        "risk_score": 6,
+        "spine_weight": 100,
+        "unlock_score": 28
+      },
+      "spine_position_index": 2,
+      "system_id": "EVL",
+      "trust_gap_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "schema_weakness"
+      ],
+      "trust_state": "freeze_signal",
+      "unlocks": [
+        "CDE",
+        "HOP",
+        "JDX",
+        "OBS",
+        "PRA",
+        "RIL",
+        "TPA"
+      ],
+      "why_now": "on canonical loop; trust-boundary authority; 4 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_observability; unlocks 7 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "SEL",
+          "GOV",
+          "PRA"
+        ],
+        "upstream": [
+          "EVL",
+          "TPA",
+          "LIN",
+          "REP"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-CDE: resolve observed trust-gap signals ['missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system CDE (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 2,
+      "score": 242,
+      "score_components": {
+        "boundary_score": 80,
+        "gap_score": 32,
+        "partial_score": 5,
+        "risk_score": 5,
+        "spine_weight": 100,
+        "unlock_score": 20
+      },
+      "spine_position_index": 4,
+      "system_id": "CDE",
+      "trust_gap_signals": [
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "freeze_signal",
+      "unlocks": [
+        "GOV",
+        "OBS",
+        "PRA",
+        "REP",
+        "SEL"
+      ],
+      "why_now": "on canonical loop; trust-boundary authority; 4 trust-gap signals: missing_lineage, missing_observability, missing_replay; unlocks 5 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "CDE",
+          "SEL"
+        ],
+        "upstream": [
+          "EVL",
+          "POL"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-TPA: resolve observed trust-gap signals ['missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system TPA (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 3,
+      "score": 233,
+      "score_components": {
+        "boundary_score": 80,
+        "gap_score": 32,
+        "partial_score": 5,
+        "risk_score": 4,
+        "spine_weight": 100,
+        "unlock_score": 12
+      },
+      "spine_position_index": 3,
+      "system_id": "TPA",
+      "trust_gap_signals": [
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "freeze_signal",
+      "unlocks": [
+        "CDE",
+        "PQX",
+        "SEL"
+      ],
+      "why_now": "on canonical loop; trust-boundary authority; 4 trust-gap signals: missing_observability, missing_readiness_evidence, missing_replay; unlocks 3 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "OBS"
+        ],
+        "upstream": [
+          "CDE",
+          "TPA"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_lineage), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-SEL: resolve observed trust-gap signals ['missing_lineage', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system SEL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 4,
+      "score": 226,
+      "score_components": {
+        "boundary_score": 80,
+        "gap_score": 32,
+        "partial_score": 5,
+        "risk_score": 5,
+        "spine_weight": 100,
+        "unlock_score": 4
+      },
+      "spine_position_index": 5,
+      "system_id": "SEL",
+      "trust_gap_signals": [
+        "missing_lineage",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "freeze_signal",
+      "unlocks": [
+        "OBS"
+      ],
+      "why_now": "on canonical loop; trust-boundary authority; 4 trust-gap signals: missing_lineage, missing_readiness_evidence, missing_replay; unlocks 1 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "SLO",
+          "FRE",
+          "GOV"
+        ],
+        "upstream": [
+          "PQX",
+          "EVL",
+          "CDE",
+          "SEL"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-OBS: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'schema_weakness'] on system OBS (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 5,
+      "score": 175,
+      "score_components": {
+        "boundary_score": 50,
+        "gap_score": 32,
+        "partial_score": 5,
+        "risk_score": 8,
+        "spine_weight": 60,
+        "unlock_score": 20
+      },
+      "spine_position_index": 8,
+      "system_id": "OBS",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "schema_weakness"
+      ],
+      "trust_state": "freeze_signal",
+      "unlocks": [
+        "CAP",
+        "FRE",
+        "RIL",
+        "RSM",
+        "SLO"
+      ],
+      "why_now": "canonical overlay; trust supporting authority; 4 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage; unlocks 5 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "EVL",
+          "GOV",
+          "FRE"
+        ],
+        "upstream": [
+          "PQX",
+          "CDE",
+          "LIN"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-REP: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'schema_weakness'] on system REP (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 6,
+      "score": 167,
+      "score_components": {
+        "boundary_score": 50,
+        "gap_score": 32,
+        "partial_score": 5,
+        "risk_score": 8,
+        "spine_weight": 60,
+        "unlock_score": 12
+      },
+      "spine_position_index": 6,
+      "system_id": "REP",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "schema_weakness"
+      ],
+      "trust_state": "freeze_signal",
+      "unlocks": [
+        "CDE",
+        "FRE",
+        "RSM"
+      ],
+      "why_now": "canonical overlay; trust supporting authority; 4 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage; unlocks 3 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "PQX",
+          "CTX",
+          "PRM"
+        ],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_enforcement_signal), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-AEX: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system AEX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 7,
+      "score": 151,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 32,
+        "partial_score": 5,
+        "risk_score": 6,
+        "spine_weight": 100,
+        "unlock_score": 8
+      },
+      "spine_position_index": 0,
+      "system_id": "AEX",
+      "trust_gap_signals": [
+        "missing_enforcement_signal",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "freeze_signal",
+      "unlocks": [
+        "PQX",
+        "TLC"
+      ],
+      "why_now": "on canonical loop; 4 trust-gap signals: missing_enforcement_signal, missing_readiness_evidence, missing_replay; unlocks 2 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "GOV"
+        ],
+        "upstream": [
+          "CDE",
+          "EVL",
+          "LIN"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-PRA: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system PRA (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 8,
+      "score": 148,
+      "score_components": {
+        "boundary_score": 80,
+        "gap_score": 48,
+        "partial_score": 5,
+        "risk_score": 11,
+        "spine_weight": 0,
+        "unlock_score": 4
+      },
+      "spine_position_index": 110,
+      "system_id": "PRA",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [
+        "GOV"
+      ],
+      "why_now": "trust-boundary authority; 6 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage; unlocks 1 downstream system(s)"
+    },
+    {
+      "action": "harden_authority",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "EVL",
+          "REP",
+          "OBS"
+        ],
+        "upstream": [
+          "AEX",
+          "TLC",
+          "TPA"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_readiness_evidence)",
+      "next_prompt": "Run TLS-FIX-PQX: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_readiness_evidence'] on system PQX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 9,
+      "score": 142,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 24,
+        "partial_score": 0,
+        "risk_score": 6,
+        "spine_weight": 100,
+        "unlock_score": 12
+      },
+      "spine_position_index": 1,
+      "system_id": "PQX",
+      "trust_gap_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_readiness_evidence"
+      ],
+      "trust_state": "freeze_signal",
+      "unlocks": [
+        "EVL",
+        "OBS",
+        "REP"
+      ],
+      "why_now": "on canonical loop; 3 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_readiness_evidence; unlocks 3 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "TPA",
+          "CDE",
+          "SEL"
+        ],
+        "upstream": [
+          "OBS"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_lineage), resolve signal(missing_readiness_evidence), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-SLO: resolve observed trust-gap signals ['missing_lineage', 'missing_readiness_evidence', 'schema_weakness'] on system SLO (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 10,
+      "score": 142,
+      "score_components": {
+        "boundary_score": 50,
+        "gap_score": 24,
+        "partial_score": 5,
+        "risk_score": 3,
+        "spine_weight": 60,
+        "unlock_score": 0
+      },
+      "spine_position_index": 9,
+      "system_id": "SLO",
+      "trust_gap_signals": [
+        "missing_lineage",
+        "missing_readiness_evidence",
+        "schema_weakness"
+      ],
+      "trust_state": "freeze_signal",
+      "unlocks": [],
+      "why_now": "canonical overlay; trust supporting authority; 3 trust-gap signals: missing_lineage, missing_readiness_evidence, schema_weakness"
+    },
+    {
+      "action": "harden_authority",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "CDE",
+          "GOV",
+          "REP"
+        ],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_enforcement_signal)",
+      "next_prompt": "Run TLS-FIX-LIN: resolve observed trust-gap signals ['missing_enforcement_signal'] on system LIN (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 11,
+      "score": 137,
+      "score_components": {
+        "boundary_score": 50,
+        "gap_score": 8,
+        "partial_score": 0,
+        "risk_score": 3,
+        "spine_weight": 60,
+        "unlock_score": 16
+      },
+      "spine_position_index": 7,
+      "system_id": "LIN",
+      "trust_gap_signals": [
+        "missing_enforcement_signal"
+      ],
+      "trust_state": "warn",
+      "unlocks": [
+        "CDE",
+        "GOV",
+        "PRA",
+        "REP"
+      ],
+      "why_now": "canonical overlay; trust supporting authority; 1 trust-gap signals: missing_enforcement_signal; unlocks 4 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "SEL"
+        ],
+        "upstream": [
+          "CDE",
+          "PRA",
+          "POL",
+          "LIN"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-GOV: resolve observed trust-gap signals ['missing_control', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system GOV (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 12,
+      "score": 133,
+      "score_components": {
+        "boundary_score": 80,
+        "gap_score": 40,
+        "partial_score": 5,
+        "risk_score": 8,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "GOV",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "trust-boundary authority; 5 trust-gap signals: missing_control, missing_lineage, missing_observability"
+    },
+    {
+      "action": "harden_authority",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "TPA",
+          "SEL"
+        ],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay)",
+      "next_prompt": "Run TLS-FIX-SEC: resolve observed trust-gap signals ['missing_control', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay'] on system SEC (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 13,
+      "score": 99,
+      "score_components": {
+        "boundary_score": 50,
+        "gap_score": 40,
+        "partial_score": 0,
+        "risk_score": 9,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "SEC",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "trust supporting authority; 5 trust-gap signals: missing_control, missing_lineage, missing_observability"
+    },
+    {
+      "action": "harden_authority",
+      "classification": "h_slice",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_eval), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-H01: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_eval', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'missing_tests', 'schema_weakness'] on system H01 (class=h_slice). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 14,
+      "score": 87,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 72,
+        "partial_score": 0,
+        "risk_score": 15,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "H01",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_eval",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "9 trust-gap signals: missing_control, missing_enforcement_signal, missing_eval"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "AEX",
+          "TLC"
+        ],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-PRM: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system PRM (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 15,
+      "score": 77,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 56,
+        "partial_score": 5,
+        "risk_score": 12,
+        "spine_weight": 0,
+        "unlock_score": 4
+      },
+      "spine_position_index": 110,
+      "system_id": "PRM",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [
+        "TLC"
+      ],
+      "why_now": "7 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage; unlocks 1 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "EVL",
+          "RIL",
+          "FRE"
+        ],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-RAX: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system RAX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 16,
+      "score": 73,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 56,
+        "partial_score": 5,
+        "risk_score": 12,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "RAX",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "7 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "TPA",
+          "GOV"
+        ],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-POL: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system POL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 17,
+      "score": 72,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 48,
+        "partial_score": 5,
+        "risk_score": 11,
+        "spine_weight": 0,
+        "unlock_score": 8
+      },
+      "spine_position_index": 110,
+      "system_id": "POL",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [
+        "GOV",
+        "TPA"
+      ],
+      "why_now": "6 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage; unlocks 2 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "FRE",
+          "CDE",
+          "JDX"
+        ],
+        "upstream": [
+          "OBS",
+          "EVL"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-RIL: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system RIL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 18,
+      "score": 70,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 48,
+        "partial_score": 5,
+        "risk_score": 9,
+        "spine_weight": 0,
+        "unlock_score": 8
+      },
+      "spine_position_index": 110,
+      "system_id": "RIL",
+      "trust_gap_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [
+        "FRE",
+        "JDX"
+      ],
+      "why_now": "6 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_observability; unlocks 2 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "PQX"
+        ],
+        "upstream": [
+          "AEX",
+          "PRM"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-TLC: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system TLC (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 19,
+      "score": 67,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 48,
+        "partial_score": 5,
+        "risk_score": 10,
+        "spine_weight": 0,
+        "unlock_score": 4
+      },
+      "spine_position_index": 110,
+      "system_id": "TLC",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [
+        "PQX"
+      ],
+      "why_now": "6 trust-gap signals: missing_control, missing_enforcement_signal, missing_observability; unlocks 1 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "TLC",
+          "TPA"
+        ],
+        "upstream": [
+          "OBS"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-CAP: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system CAP (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 20,
+      "score": 64,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 48,
+        "partial_score": 5,
+        "risk_score": 11,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "CAP",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "6 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage"
+    },
+    {
+      "action": "harden_authority",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "AEX",
+          "PQX",
+          "RIL"
+        ],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay)",
+      "next_prompt": "Run TLS-FIX-CTX: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay'] on system CTX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 21,
+      "score": 64,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 48,
+        "partial_score": 0,
+        "risk_score": 12,
+        "spine_weight": 0,
+        "unlock_score": 4
+      },
+      "spine_position_index": 110,
+      "system_id": "CTX",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [
+        "HOP"
+      ],
+      "why_now": "6 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage; unlocks 1 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "EVL",
+          "FRE",
+          "CDE"
+        ],
+        "upstream": [
+          "EVL",
+          "CTX"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-HOP: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system HOP (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 22,
+      "score": 62,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 48,
+        "partial_score": 5,
+        "risk_score": 9,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "HOP",
+      "trust_gap_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "6 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_observability"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "CDE",
+          "FRE"
+        ],
+        "upstream": [
+          "OBS",
+          "REP"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-RSM: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system RSM (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 23,
+      "score": 62,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 48,
+        "partial_score": 5,
+        "risk_score": 9,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "RSM",
+      "trust_gap_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "6 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_observability"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "CDE",
+          "GOV",
+          "JSX"
+        ],
+        "upstream": [
+          "RIL",
+          "EVL"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-JDX: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system JDX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 24,
+      "score": 57,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 40,
+        "partial_score": 5,
+        "risk_score": 8,
+        "spine_weight": 0,
+        "unlock_score": 4
+      },
+      "spine_position_index": 110,
+      "system_id": "JDX",
+      "trust_gap_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [
+        "JSX"
+      ],
+      "why_now": "5 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_observability; unlocks 1 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "PQX",
+          "CDE",
+          "GOV"
+        ],
+        "upstream": [
+          "REP",
+          "OBS",
+          "RIL"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-FRE: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system FRE (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 25,
+      "score": 53,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 40,
+        "partial_score": 5,
+        "risk_score": 8,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "FRE",
+      "trust_gap_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "5 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_observability"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "CDE",
+          "GOV"
+        ],
+        "upstream": [
+          "JDX"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-JSX: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system JSX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 26,
+      "score": 53,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 40,
+        "partial_score": 5,
+        "risk_score": 8,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "JSX",
+      "trust_gap_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "5 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_observability"
+    },
+    {
+      "action": "harden_authority",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "TLC",
+          "GOV"
+        ],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal)",
+      "next_prompt": "Run TLS-FIX-MAP: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal'] on system MAP (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 27,
+      "score": 22,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 16,
+        "partial_score": 0,
+        "risk_score": 6,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "MAP",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal"
+      ],
+      "trust_state": "warn",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_control, missing_enforcement_signal"
+    },
+    {
+      "action": "defer:future_placeholder",
+      "classification": "future",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-ABX: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system ABX (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 28,
+      "score": 0,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "ABX",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "stabilize_support",
+      "classification": "support_capability",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-CMP: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system CMP (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 29,
+      "score": 0,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "CMP",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "defer:future_placeholder",
+      "classification": "future",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-DBB: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system DBB (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 30,
+      "score": 0,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "DBB",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "defer:future_placeholder",
+      "classification": "future",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-LCE: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system LCE (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 31,
+      "score": 0,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "LCE",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "stabilize_support",
+      "classification": "support_capability",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-NRM: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system NRM (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 32,
+      "score": 0,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "NRM",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "stabilize_support",
+      "classification": "support_capability",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-QRY: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system QRY (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 33,
+      "score": 0,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "QRY",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "stabilize_support",
+      "classification": "support_capability",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-RET: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system RET (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 34,
+      "score": 0,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "RET",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "stabilize_support",
+      "classification": "support_capability",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-RSK: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system RSK (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 35,
+      "score": 0,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "RSK",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "defer:future_placeholder",
+      "classification": "future",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-SAL: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SAL (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 36,
+      "score": 0,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "SAL",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "defer:future_placeholder",
+      "classification": "future",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-SAS: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SAS (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 37,
+      "score": 0,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "SAS",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "defer:future_placeholder",
+      "classification": "future",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-SHA: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SHA (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 38,
+      "score": 0,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "SHA",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "defer:future_placeholder",
+      "classification": "future",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-SIV: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SIV (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 39,
+      "score": 0,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "SIV",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "stabilize_support",
+      "classification": "support_capability",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-SUP: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SUP (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 40,
+      "score": 0,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "SUP",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "stabilize_support",
+      "classification": "support_capability",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-TRN: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system TRN (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 41,
+      "score": 0,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "TRN",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "investigate:classify_or_reject",
+      "classification": "unknown",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-MET: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system MET (class=unknown). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [
+        "unknown"
+      ],
+      "rank": 42,
+      "score": -150,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "MET",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "investigate:classify_or_reject",
+      "classification": "unknown",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-METS: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system METS (class=unknown). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [
+        "unknown"
+      ],
+      "rank": 43,
+      "score": -150,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "METS",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "investigate:classify_or_reject",
+      "classification": "unknown",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "all of: resolve signal(missing_tests), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-RFX: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system RFX (class=unknown). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [
+        "unknown"
+      ],
+      "rank": 44,
+      "score": -150,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "RFX",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "skip:deprecated",
+      "classification": "deprecated",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "leave deprecated; no finish work",
+      "next_prompt": "NO-OP \u2014 DCL is deprecated.",
+      "penalties": [
+        "deprecated"
+      ],
+      "rank": 45,
+      "score": -200,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "DCL",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "skip:deprecated",
+      "classification": "deprecated",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "leave deprecated; no finish work",
+      "next_prompt": "NO-OP \u2014 DEM is deprecated.",
+      "penalties": [
+        "deprecated"
+      ],
+      "rank": 46,
+      "score": -200,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "DEM",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "skip:deprecated",
+      "classification": "deprecated",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "leave deprecated; no finish work",
+      "next_prompt": "NO-OP \u2014 HNX is deprecated.",
+      "penalties": [
+        "deprecated"
+      ],
+      "rank": 47,
+      "score": -200,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "HNX",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "skip:deprecated",
+      "classification": "deprecated",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "leave deprecated; no finish work",
+      "next_prompt": "NO-OP \u2014 MCL is deprecated.",
+      "penalties": [
+        "deprecated"
+      ],
+      "rank": 48,
+      "score": -200,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "MCL",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "skip:deprecated",
+      "classification": "deprecated",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "leave deprecated; no finish work",
+      "next_prompt": "NO-OP \u2014 MNT is deprecated.",
+      "penalties": [
+        "deprecated"
+      ],
+      "rank": 49,
+      "score": -200,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "MNT",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    },
+    {
+      "action": "skip:deprecated",
+      "classification": "deprecated",
+      "dependencies": {
+        "downstream": [],
+        "upstream": []
+      },
+      "finish_definition": "leave deprecated; no finish work",
+      "next_prompt": "NO-OP \u2014 RWA is deprecated.",
+      "penalties": [
+        "deprecated"
+      ],
+      "rank": 50,
+      "score": -200,
+      "score_components": {
+        "boundary_score": 0,
+        "gap_score": 0,
+        "partial_score": 0,
+        "risk_score": 0,
+        "spine_weight": 0,
+        "unlock_score": 0
+      },
+      "spine_position_index": 110,
+      "system_id": "RWA",
+      "trust_gap_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "trust_state": "blocked_signal",
+      "unlocks": [],
+      "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
+    }
+  ],
+  "schema_version": "tls-04.v1",
+  "top_5": [
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "TPA",
+          "CDE",
+          "GOV"
+        ],
+        "upstream": [
+          "PQX"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-EVL: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'schema_weakness'] on system EVL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 1,
+      "score": 251,
+      "score_components": {
+        "boundary_score": 80,
+        "gap_score": 32,
+        "partial_score": 5,
+        "risk_score": 6,
+        "spine_weight": 100,
+        "unlock_score": 28
+      },
+      "spine_position_index": 2,
+      "system_id": "EVL",
+      "trust_gap_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "schema_weakness"
+      ],
+      "trust_state": "freeze_signal",
+      "unlocks": [
+        "CDE",
+        "HOP",
+        "JDX",
+        "OBS",
+        "PRA",
+        "RIL",
+        "TPA"
+      ],
+      "why_now": "on canonical loop; trust-boundary authority; 4 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_observability; unlocks 7 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "SEL",
+          "GOV",
+          "PRA"
+        ],
+        "upstream": [
+          "EVL",
+          "TPA",
+          "LIN",
+          "REP"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_lineage), resolve signal(missing_observability), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-CDE: resolve observed trust-gap signals ['missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system CDE (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 2,
+      "score": 242,
+      "score_components": {
+        "boundary_score": 80,
+        "gap_score": 32,
+        "partial_score": 5,
+        "risk_score": 5,
+        "spine_weight": 100,
+        "unlock_score": 20
+      },
+      "spine_position_index": 4,
+      "system_id": "CDE",
+      "trust_gap_signals": [
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "freeze_signal",
+      "unlocks": [
+        "GOV",
+        "OBS",
+        "PRA",
+        "REP",
+        "SEL"
+      ],
+      "why_now": "on canonical loop; trust-boundary authority; 4 trust-gap signals: missing_lineage, missing_observability, missing_replay; unlocks 5 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "CDE",
+          "SEL"
+        ],
+        "upstream": [
+          "EVL",
+          "POL"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_observability), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-TPA: resolve observed trust-gap signals ['missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system TPA (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 3,
+      "score": 233,
+      "score_components": {
+        "boundary_score": 80,
+        "gap_score": 32,
+        "partial_score": 5,
+        "risk_score": 4,
+        "spine_weight": 100,
+        "unlock_score": 12
+      },
+      "spine_position_index": 3,
+      "system_id": "TPA",
+      "trust_gap_signals": [
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "freeze_signal",
+      "unlocks": [
+        "CDE",
+        "PQX",
+        "SEL"
+      ],
+      "why_now": "on canonical loop; trust-boundary authority; 4 trust-gap signals: missing_observability, missing_readiness_evidence, missing_replay; unlocks 3 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "OBS"
+        ],
+        "upstream": [
+          "CDE",
+          "TPA"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_lineage), resolve signal(missing_readiness_evidence), resolve signal(missing_replay), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-SEL: resolve observed trust-gap signals ['missing_lineage', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system SEL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 4,
+      "score": 226,
+      "score_components": {
+        "boundary_score": 80,
+        "gap_score": 32,
+        "partial_score": 5,
+        "risk_score": 5,
+        "spine_weight": 100,
+        "unlock_score": 4
+      },
+      "spine_position_index": 5,
+      "system_id": "SEL",
+      "trust_gap_signals": [
+        "missing_lineage",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "trust_state": "freeze_signal",
+      "unlocks": [
+        "OBS"
+      ],
+      "why_now": "on canonical loop; trust-boundary authority; 4 trust-gap signals: missing_lineage, missing_readiness_evidence, missing_replay; unlocks 1 downstream system(s)"
+    },
+    {
+      "action": "finish_hardening",
+      "classification": "active_system",
+      "dependencies": {
+        "downstream": [
+          "SLO",
+          "FRE",
+          "GOV"
+        ],
+        "upstream": [
+          "PQX",
+          "EVL",
+          "CDE",
+          "SEL"
+        ]
+      },
+      "finish_definition": "all of: resolve signal(missing_control), resolve signal(missing_enforcement_signal), resolve signal(missing_lineage), resolve signal(schema_weakness)",
+      "next_prompt": "Run TLS-FIX-OBS: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'schema_weakness'] on system OBS (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "penalties": [],
+      "rank": 5,
+      "score": 175,
+      "score_components": {
+        "boundary_score": 50,
+        "gap_score": 32,
+        "partial_score": 5,
+        "risk_score": 8,
+        "spine_weight": 60,
+        "unlock_score": 20
+      },
+      "spine_position_index": 8,
+      "system_id": "OBS",
+      "trust_gap_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "schema_weakness"
+      ],
+      "trust_state": "freeze_signal",
+      "unlocks": [
+        "CAP",
+        "FRE",
+        "RIL",
+        "RSM",
+        "SLO"
+      ],
+      "why_now": "canonical overlay; trust supporting authority; 4 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage; unlocks 5 downstream system(s)"
+    }
+  ]
+}

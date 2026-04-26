@@ -1,0 +1,712 @@
+{
+  "active_systems": [
+    {
+      "artifacts_owned": [
+        "build_admission_record",
+        "normalized_execution_request",
+        "admission_rejection_record"
+      ],
+      "downstream": [
+        "PQX",
+        "CTX",
+        "PRM"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/agent_golden_path.py",
+        "spectrum_systems/modules/runtime/execution_contracts.py"
+      ],
+      "purpose": "bounded admission boundary for repo-mutating execution requests.",
+      "status": "active",
+      "system_id": "AEX",
+      "upstream": []
+    },
+    {
+      "artifacts_owned": [
+        "capacity_budget_record",
+        "cost_control_signal"
+      ],
+      "downstream": [
+        "TLC",
+        "TPA"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/platform_reliability_ops.py",
+        "spectrum_systems/modules/runtime/qos_runtime.py"
+      ],
+      "purpose": "capacity/cost governance authority.",
+      "status": "active",
+      "system_id": "CAP",
+      "upstream": [
+        "OBS"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "closure_decision_artifact",
+        "promotion_readiness_decision",
+        "readiness_to_close"
+      ],
+      "downstream": [
+        "SEL",
+        "GOV",
+        "PRA"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/closure_decision_engine.py",
+        "spectrum_systems/modules/runtime/cde_decision_flow.py"
+      ],
+      "purpose": "control/closure decision authority.",
+      "status": "active",
+      "system_id": "CDE",
+      "upstream": [
+        "EVL",
+        "TPA",
+        "LIN",
+        "REP"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "context_bundle",
+        "context_admission_record",
+        "context_transform_record"
+      ],
+      "downstream": [
+        "AEX",
+        "PQX",
+        "RIL"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/ctx.py",
+        "spectrum_systems/modules/runtime/context_governed_flow.py",
+        "spectrum_systems/modules/runtime/preflight_failure_normalizer.py"
+      ],
+      "purpose": "context-bundle governance for retrieve, normalization, and transformation admission.",
+      "status": "active",
+      "system_id": "CTX",
+      "upstream": []
+    },
+    {
+      "artifacts_owned": [
+        "required_eval_coverage",
+        "evaluation_control_decision",
+        "eval_slice_summary",
+        "risk_classification_artifact",
+        "comparison_run_artifact"
+      ],
+      "downstream": [
+        "TPA",
+        "CDE",
+        "GOV"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/eval_registry.py",
+        "spectrum_systems/modules/runtime/required_eval_coverage.py",
+        "spectrum_systems/modules/runtime/evaluation_control.py",
+        "spectrum_systems/modules/runtime/repo_health_eval.py"
+      ],
+      "purpose": "required evaluation authority and eval-gate control.",
+      "status": "active",
+      "system_id": "EVL",
+      "upstream": [
+        "PQX"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "failure_diagnosis_record",
+        "repair_plan_artifact"
+      ],
+      "downstream": [
+        "PQX",
+        "CDE",
+        "GOV"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/failure_diagnosis_engine.py",
+        "spectrum_systems/modules/runtime/fre_repair_flow.py"
+      ],
+      "purpose": "failure diagnosis and repair planning authority.",
+      "status": "active",
+      "system_id": "FRE",
+      "upstream": [
+        "REP",
+        "OBS",
+        "RIL"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "governance_gate_result",
+        "certification_record",
+        "governance_remediation_record"
+      ],
+      "downstream": [
+        "SEL"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/continuous_governance.py",
+        "spectrum_systems/modules/runtime/governance_chain_guard.py"
+      ],
+      "purpose": "certification/governance gate authority.",
+      "status": "active",
+      "system_id": "GOV",
+      "upstream": [
+        "CDE",
+        "PRA",
+        "POL",
+        "LIN"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "hop_harness_candidate",
+        "hop_harness_run",
+        "hop_harness_score",
+        "hop_harness_trace",
+        "hop_harness_frontier",
+        "hop_harness_failure_hypothesis",
+        "hop_harness_eval_case",
+        "hop_harness_faq_output"
+      ],
+      "downstream": [
+        "EVL",
+        "FRE",
+        "CDE"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/hop/experience_store.py",
+        "spectrum_systems/modules/hop/evaluator.py",
+        "spectrum_systems/modules/hop/validator.py",
+        "spectrum_systems/modules/hop/safety_checks.py",
+        "spectrum_systems/modules/hop/frontier.py",
+        "spectrum_systems/modules/hop/baseline_harness.py",
+        "spectrum_systems/cli/hop_cli.py"
+      ],
+      "purpose": "harness optimization substrate \u2014 stores candidate harness code, scores, traces, and failure hypotheses; orchestrates candidate evaluation against a versioned eval set; exposes a queryable, replay-compatible history. HOP-BATCH-1 is foundation only \u2014 no autonomous proposer is implemented yet.",
+      "status": "active",
+      "system_id": "HOP",
+      "upstream": [
+        "EVL",
+        "CTX"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "judgment_record",
+        "judgment_policy_candidate",
+        "judgment_application_record"
+      ],
+      "downstream": [
+        "CDE",
+        "GOV",
+        "JSX"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/judgment_engine.py",
+        "spectrum_systems/modules/runtime/pqx_judgment.py",
+        "spectrum_systems/modules/runtime/judgment_policy_candidates.py"
+      ],
+      "purpose": "judgment artifact semantics and decision-application authority.",
+      "status": "active",
+      "system_id": "JDX",
+      "upstream": [
+        "RIL",
+        "EVL"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "judgment_lifecycle_record",
+        "judgment_supersession_record",
+        "judgment_retirement_record"
+      ],
+      "downstream": [
+        "CDE",
+        "GOV"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/jsx.py",
+        "spectrum_systems/modules/runtime/judgment_learning.py"
+      ],
+      "purpose": "judgment lifecycle/supersession/retirement active-set authority.",
+      "status": "active",
+      "system_id": "JSX",
+      "upstream": [
+        "JDX"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "artifact_lineage_record",
+        "lineage_issuance_registry_record",
+        "lineage_authenticity_result"
+      ],
+      "downstream": [
+        "CDE",
+        "GOV",
+        "REP"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/artifact_lineage.py",
+        "spectrum_systems/modules/runtime/lineage_issuance_registry.py",
+        "spectrum_systems/modules/runtime/lineage_authenticity.py"
+      ],
+      "purpose": "lineage issuance and completeness authority.",
+      "status": "active",
+      "system_id": "LIN",
+      "upstream": []
+    },
+    {
+      "artifacts_owned": [
+        "system_map_projection",
+        "metadata_topology_record"
+      ],
+      "downstream": [
+        "TLC",
+        "GOV"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/meta_governance_kernel.py",
+        "spectrum_systems/modules/runtime/review_projection_adapter.py"
+      ],
+      "purpose": "metadata/topology/system-map authority for runtime projections.",
+      "status": "active",
+      "system_id": "MAP",
+      "upstream": []
+    },
+    {
+      "artifacts_owned": [
+        "observability_metrics_record",
+        "trace_store_record",
+        "alert_trigger_record"
+      ],
+      "downstream": [
+        "SLO",
+        "FRE",
+        "GOV"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/observability_metrics.py",
+        "spectrum_systems/modules/runtime/trace_store.py",
+        "spectrum_systems/modules/runtime/alert_triggers.py"
+      ],
+      "purpose": "observability contract and completeness authority.",
+      "status": "active",
+      "system_id": "OBS",
+      "upstream": [
+        "PQX",
+        "EVL",
+        "CDE",
+        "SEL"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "policy_registry_record",
+        "rollout_gate_result",
+        "canary_release_record"
+      ],
+      "downstream": [
+        "TPA",
+        "GOV"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/policy_registry.py",
+        "spectrum_systems/modules/runtime/pol_runtime.py",
+        "spectrum_systems/modules/runtime/rollout_gate.py"
+      ],
+      "purpose": "policy lifecycle and rollout governance.",
+      "status": "active",
+      "system_id": "POL",
+      "upstream": []
+    },
+    {
+      "artifacts_owned": [
+        "pqx_slice_execution_record",
+        "pqx_bundle_execution_record",
+        "pqx_execution_closure_record"
+      ],
+      "downstream": [
+        "EVL",
+        "REP",
+        "OBS"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/pqx_execution_authority.py",
+        "spectrum_systems/modules/runtime/pqx_bundle_orchestrator.py",
+        "spectrum_systems/modules/runtime/pqx_slice_runner.py"
+      ],
+      "purpose": "bounded execution engine for authorized slices/bundles.",
+      "status": "active",
+      "system_id": "PQX",
+      "upstream": [
+        "AEX",
+        "TLC",
+        "TPA"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "promotion_readiness_checkpoint",
+        "pr_readiness_record"
+      ],
+      "downstream": [
+        "GOV"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/promotion_readiness_checkpoint.py",
+        "spectrum_systems/modules/runtime/pra_nsx_prg_loop.py"
+      ],
+      "purpose": "promotion-readiness authority.",
+      "status": "active",
+      "system_id": "PRA",
+      "upstream": [
+        "CDE",
+        "EVL",
+        "LIN"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "task_registry_record",
+        "prompt_admission_record"
+      ],
+      "downstream": [
+        "AEX",
+        "TLC"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/task_registry.py",
+        "spectrum_systems/modules/runtime/routing_policy.py"
+      ],
+      "purpose": "prompt/task registry governance for admissible execution intents.",
+      "status": "active",
+      "system_id": "PRM",
+      "upstream": []
+    },
+    {
+      "artifacts_owned": [
+        "runtime_candidate_signal",
+        "rax_eval_result"
+      ],
+      "downstream": [
+        "EVL",
+        "RIL",
+        "FRE"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/rax_model.py",
+        "spectrum_systems/modules/runtime/rax_eval_runner.py"
+      ],
+      "purpose": "bounded runtime candidate-signal intelligence surface (non-decisioning).",
+      "status": "active",
+      "system_id": "RAX",
+      "upstream": []
+    },
+    {
+      "artifacts_owned": [
+        "replay_run_record",
+        "replay_decision_record",
+        "replay_integrity_result"
+      ],
+      "downstream": [
+        "EVL",
+        "GOV",
+        "FRE"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/replay_engine.py",
+        "spectrum_systems/modules/runtime/replay_decision_engine.py",
+        "spectrum_systems/modules/runtime/replay_governance.py"
+      ],
+      "purpose": "replay integrity authority for deterministic decision/execution replay.",
+      "status": "active",
+      "system_id": "REP",
+      "upstream": [
+        "PQX",
+        "CDE",
+        "LIN"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "review_interpretation_record",
+        "signal_mapping_record"
+      ],
+      "downstream": [
+        "FRE",
+        "CDE",
+        "JDX"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/ril_interpretation.py",
+        "spectrum_systems/modules/runtime/review_parsing_engine.py"
+      ],
+      "purpose": "interpretation layer for review/runtime signals.",
+      "status": "active",
+      "system_id": "RIL",
+      "upstream": [
+        "OBS",
+        "EVL"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "reconciliation_state_record",
+        "drift_reconciliation_plan"
+      ],
+      "downstream": [
+        "CDE",
+        "FRE"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/drift_detection_engine.py",
+        "spectrum_systems/modules/runtime/maintain_drift.py"
+      ],
+      "purpose": "reconciliation state manager for desired-vs-actual state artifacts.",
+      "status": "active",
+      "system_id": "RSM",
+      "upstream": [
+        "OBS",
+        "REP"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "permission_governance_record",
+        "identity_enforcement_record",
+        "downstream_guard_record"
+      ],
+      "downstream": [
+        "TPA",
+        "SEL"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/permission_governance.py",
+        "spectrum_systems/modules/runtime/identity_enforcement.py",
+        "spectrum_systems/modules/runtime/downstream_a2a_guard.py"
+      ],
+      "purpose": "security boundary governance and guardrail-control integration.",
+      "status": "active",
+      "system_id": "SEC",
+      "upstream": []
+    },
+    {
+      "artifacts_owned": [
+        "enforcement_action_record",
+        "enforcement_block_record",
+        "control_surface_enforcement_result"
+      ],
+      "downstream": [
+        "OBS"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/sel_enforcement_foundation.py",
+        "spectrum_systems/modules/runtime/system_enforcement_layer.py",
+        "spectrum_systems/modules/runtime/enforcement_engine.py"
+      ],
+      "purpose": "enforcement authority for fail-closed runtime actions.",
+      "status": "active",
+      "system_id": "SEL",
+      "upstream": [
+        "CDE",
+        "TPA"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "slo_control_record",
+        "slo_enforcement_record",
+        "budget_burn_alert"
+      ],
+      "downstream": [
+        "TPA",
+        "CDE",
+        "SEL"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/slo_control.py",
+        "spectrum_systems/modules/runtime/slo_enforcement.py",
+        "spectrum_systems/modules/runtime/slo_enforcer.py"
+      ],
+      "purpose": "error-budget and burn-rate authority.",
+      "status": "active",
+      "system_id": "SLO",
+      "upstream": [
+        "OBS"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "top_level_conductor_run_artifact",
+        "route_decision_record"
+      ],
+      "downstream": [
+        "PQX"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/top_level_conductor.py",
+        "spectrum_systems/modules/runtime/tlc_hardening.py",
+        "spectrum_systems/modules/runtime/route_policy.py"
+      ],
+      "purpose": "top-level orchestration and routing authority across subsystems.",
+      "status": "active",
+      "system_id": "TLC",
+      "upstream": [
+        "AEX",
+        "PRM"
+      ]
+    },
+    {
+      "artifacts_owned": [
+        "trust_policy_decision",
+        "policy_violation_record",
+        "trust_spine_invariant_result"
+      ],
+      "downstream": [
+        "CDE",
+        "SEL"
+      ],
+      "primary_code_paths": [
+        "spectrum_systems/modules/runtime/tpa_complexity_governance.py",
+        "spectrum_systems/modules/runtime/trust_spine_invariants.py",
+        "spectrum_systems/modules/runtime/decision_gating.py"
+      ],
+      "purpose": "trust/policy adjudication authority for execution and promotion inputs.",
+      "status": "active",
+      "system_id": "TPA",
+      "upstream": [
+        "EVL",
+        "POL"
+      ]
+    }
+  ],
+  "canonical_loop": [
+    "AEX",
+    "PQX",
+    "EVL",
+    "TPA",
+    "CDE",
+    "SEL"
+  ],
+  "canonical_overlays": [
+    "REP",
+    "LIN",
+    "OBS",
+    "SLO"
+  ],
+  "future_systems": [
+    {
+      "rationale": "Placeholder exchange seam; no bounded executable authority in runtime modules.",
+      "system_id": "ABX"
+    },
+    {
+      "rationale": "Placeholder data-backbone seam; no canonical executable owner implementation.",
+      "system_id": "DBB"
+    },
+    {
+      "rationale": "Lifecycle concept appears in docs, but no dedicated authority module.",
+      "system_id": "LCE"
+    },
+    {
+      "rationale": "Source authority abstraction remains conceptual at current scope.",
+      "system_id": "SAL"
+    },
+    {
+      "rationale": "Source sync ingestion not yet a discrete bounded authority.",
+      "system_id": "SAS"
+    },
+    {
+      "rationale": "Shared authority placeholder; no runtime owner module boundary.",
+      "system_id": "SHA"
+    },
+    {
+      "rationale": "Reserved acronym only; intentionally non-active.",
+      "system_id": "SIV"
+    }
+  ],
+  "merged_or_demoted": [
+    {
+      "merged_into": "EVL",
+      "rationale": "Comparison runs are evaluation artifact families, not separate authorities.",
+      "status": "merged",
+      "system_id": "CMP"
+    },
+    {
+      "merged_into": "Artifact family",
+      "rationale": "Doctrine compilation retained as support documentation capability.",
+      "status": "deprecated",
+      "system_id": "DCL"
+    },
+    {
+      "merged_into": "Review label",
+      "rationale": "Decision economics remains advisory only; not an executable authority.",
+      "status": "deprecated",
+      "system_id": "DEM"
+    },
+    {
+      "merged_into": "Artifact family",
+      "rationale": "Stage harness semantics retained as support execution scaffolding.",
+      "status": "deprecated",
+      "system_id": "HNX"
+    },
+    {
+      "merged_into": "Artifact family",
+      "rationale": "Memory compaction is a supporting artifact method, not authority.",
+      "status": "deprecated",
+      "system_id": "MCL"
+    },
+    {
+      "merged_into": "Review label",
+      "rationale": "Maintain phase remains a cross-system label, not authority owner.",
+      "status": "deprecated",
+      "system_id": "MNT"
+    },
+    {
+      "merged_into": "CTX",
+      "rationale": "Normalization is a context-governance sub-capability, not top-level authority.",
+      "status": "merged",
+      "system_id": "NRM"
+    },
+    {
+      "merged_into": "CTX",
+      "rationale": "Retrieval/query admission now governed as part of context admission.",
+      "status": "merged",
+      "system_id": "QRY"
+    },
+    {
+      "merged_into": "JSX",
+      "rationale": "Retirement/deprecation lifecycle is a JSX lifecycle responsibility.",
+      "status": "merged",
+      "system_id": "RET"
+    },
+    {
+      "merged_into": "EVL",
+      "rationale": "Risk classification is part of eval outputs and gate criteria.",
+      "status": "merged",
+      "system_id": "RSK"
+    },
+    {
+      "merged_into": "Artifact family",
+      "rationale": "Owner-surface recording retained as supporting metadata capability.",
+      "status": "deprecated",
+      "system_id": "RWA"
+    },
+    {
+      "merged_into": "JSX",
+      "rationale": "Active-set governance belongs to judgment lifecycle authority.",
+      "status": "merged",
+      "system_id": "SUP"
+    },
+    {
+      "merged_into": "CTX",
+      "rationale": "Translation/transformation for admission is retained under CTX.",
+      "status": "merged",
+      "system_id": "TRN"
+    }
+  ],
+  "parse_notes": [],
+  "phase": "TLS-00",
+  "schema_version": "tls-00.v1"
+}
