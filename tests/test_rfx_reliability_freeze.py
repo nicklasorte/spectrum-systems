@@ -156,6 +156,29 @@ def test_malformed_replay_row_freezes_with_deterministic_reason() -> None:
         )
 
 
+def test_non_iterable_failures_container_freezes_with_deterministic_reason() -> None:
+    """Codex P1 regression: a non-list/non-None container at the
+    promotion path must surface ``rfx_malformed_telemetry_input`` rather
+    than raising raw TypeError from the list cast."""
+    with pytest.raises(RFXReliabilityFreezeError, match="rfx_malformed_telemetry_input"):
+        assert_rfx_reliability_posture(
+            recent_failures=1,  # type: ignore[arg-type]
+            replay_results=[],
+            window_seconds=60,
+            slo=_OK_SLO,
+        )
+
+
+def test_non_iterable_replays_container_freezes_with_deterministic_reason() -> None:
+    with pytest.raises(RFXReliabilityFreezeError, match="rfx_malformed_telemetry_input"):
+        assert_rfx_reliability_posture(
+            recent_failures=[],
+            replay_results="not-a-list",  # type: ignore[arg-type]
+            window_seconds=60,
+            slo=_OK_SLO,
+        )
+
+
 def test_aggregated_reasons_contain_multiple_codes() -> None:
     failures = [_failure(t, "schema_drift") for t in (80.0, 85.0, 90.0)]
     replays = [{"trace_id": f"t{i}", "match": False} for i in range(3)]

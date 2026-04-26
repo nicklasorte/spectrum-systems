@@ -228,22 +228,53 @@ def build_rfx_failure_profile(
     while preserving the raw counts so downstream guards still see the
     structural signal.
 
-    Malformed rows (anything that is not a ``dict``) are filtered out
-    before profiling so downstream helpers cannot raise raw
-    ``AttributeError``/``TypeError`` from the promotion path. The counts of
-    filtered rows are surfaced as ``malformed_failure_count`` /
-    ``malformed_replay_count`` so the LOOP-07 reliability-freeze guard can
-    convert them into a deterministic ``rfx_malformed_telemetry_input``
-    reason code rather than silently dropping the input.
+    Malformed inputs are sanitized at two levels so downstream helpers
+    cannot raise raw ``AttributeError``/``TypeError`` from the promotion
+    path:
+
+      * Container level — a non-list, non-None ``recent_failures`` /
+        ``replay_results`` (e.g. ``recent_failures=1`` or a string) is
+        treated as a single malformed input and counted in the
+        corresponding ``malformed_*_count`` so LOOP-07 surfaces a
+        deterministic ``rfx_malformed_telemetry_input`` reason code.
+      * Row level — non-dict elements inside an otherwise valid list are
+        filtered out, with their count added to the same field.
+
+    Either source of malformed input increments the count; the LOOP-07
+    reliability-freeze guard converts a non-zero count into a fail-closed
+    reason rather than silently dropping the input.
     """
     th = thresholds or _DEFAULT_THRESHOLDS
 
-    raw_failures = list(recent_failures or [])
-    raw_replays = list(replay_results or [])
+    # Container-level guard: only ``None`` and ``list`` are accepted. A
+    # non-list/non-None payload is itself the malformed signal — count it
+    # once and proceed with an empty corpus so per-row helpers don't crash.
+    container_malformed_failures = 0
+    if recent_failures is None:
+        raw_failures: list[Any] = []
+    elif isinstance(recent_failures, list):
+        raw_failures = recent_failures
+    else:
+        raw_failures = []
+        container_malformed_failures = 1
+
+    container_malformed_replays = 0
+    if replay_results is None:
+        raw_replays: list[Any] = []
+    elif isinstance(replay_results, list):
+        raw_replays = replay_results
+    else:
+        raw_replays = []
+        container_malformed_replays = 1
+
     failures = [f for f in raw_failures if isinstance(f, dict)]
     replays = [r for r in raw_replays if isinstance(r, dict)]
-    malformed_failure_count = len(raw_failures) - len(failures)
-    malformed_replay_count = len(raw_replays) - len(replays)
+    malformed_failure_count = (
+        container_malformed_failures + (len(raw_failures) - len(failures))
+    )
+    malformed_replay_count = (
+        container_malformed_replays + (len(raw_replays) - len(replays))
+    )
 
     failure_count = len(failures)
     failure_rate = _failure_rate(failure_count, window_seconds)

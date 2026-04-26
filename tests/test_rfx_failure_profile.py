@@ -175,6 +175,28 @@ def test_malformed_replay_rows_are_filtered_and_counted() -> None:
     assert p["malformed_failure_count"] == 0
 
 
+def test_non_iterable_failures_container_counts_as_one_malformed() -> None:
+    """Codex P1 regression (line 241): a non-list/non-None container
+    (e.g. ``recent_failures=1``) must not crash; treat as a single
+    malformed input so LOOP-07 can fail closed deterministically."""
+    p = build_rfx_failure_profile(
+        recent_failures=1,  # type: ignore[arg-type]
+        replay_results=[],
+        window_seconds=60,
+    )
+    assert p["malformed_failure_count"] == 1
+    assert p["failure_count"] == 0
+
+
+def test_non_iterable_replays_container_counts_as_one_malformed() -> None:
+    p = build_rfx_failure_profile(
+        recent_failures=[],
+        replay_results="not-a-list",  # type: ignore[arg-type]
+        window_seconds=60,
+    )
+    assert p["malformed_replay_count"] == 1
+
+
 def test_zero_window_collapses_rate_keeps_count() -> None:
     failures = [_failure(0.0)] * 3
     p = build_rfx_failure_profile(

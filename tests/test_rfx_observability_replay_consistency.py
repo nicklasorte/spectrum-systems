@@ -108,6 +108,18 @@ def test_replay_row_using_source_trace_id_alias_passes() -> None:
     )
 
 
+def test_non_list_replay_results_blocks_deterministically() -> None:
+    """Codex P1 regression (line 139): a non-list/non-None
+    ``replay_results`` (e.g. an int) must surface
+    ``rfx_trace_replay_inconsistency`` instead of raising raw TypeError
+    from the iteration."""
+    with pytest.raises(RFXObservabilityReplayConsistencyError, match="rfx_trace_replay_inconsistency"):
+        assert_rfx_observability_replay_consistency(
+            obs=_OBS_SINGLE,
+            replay_results=1,  # type: ignore[arg-type]
+        )
+
+
 def test_multi_trace_one_unlinked_blocks() -> None:
     obs = {
         "obs_id": "obs-2",

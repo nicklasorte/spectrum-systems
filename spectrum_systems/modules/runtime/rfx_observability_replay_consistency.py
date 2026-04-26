@@ -132,11 +132,24 @@ def assert_rfx_observability_replay_consistency(
                 f"artifact linkage entries"
             )
 
+    # Container-level guard: only ``None`` and ``list`` are accepted.
+    # A non-iterable / non-list payload (e.g. ``replay_results=1``) is a
+    # fail-closed condition — surface it deterministically rather than
+    # crashing the iteration with TypeError.
+    if replay_results is not None and not isinstance(replay_results, list):
+        reasons.append(
+            "rfx_trace_replay_inconsistency: replay_results must be a list "
+            f"or None, got {type(replay_results).__name__}"
+        )
+        replay_iter: list[Any] = []
+    else:
+        replay_iter = replay_results or []
+
     # Walk replays once: every row must carry a trace identifier so that
     # an untraceable replay row cannot silently pass the cross-check.
     rep_trace_ids: set[str] = set()
     untraceable_count = 0
-    for index, r in enumerate(replay_results or []):
+    for index, r in enumerate(replay_iter):
         if not isinstance(r, dict):
             untraceable_count += 1
             reasons.append(
