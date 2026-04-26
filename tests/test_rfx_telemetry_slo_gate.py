@@ -280,6 +280,42 @@ def test_artifact_linkage_dict_with_blank_only_dict_bucket_blocks() -> None:
         assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
 
 
+def test_metadata_form_coverage_with_scalar_summary_passes() -> None:
+    """Codex P2 regression (line 241): metadata-form coverage dicts
+    (``{"trace_ids": [...], "summary": "ok", ...}``) must pass LOOP-08;
+    sibling scalar metadata fields are NOT per-trace buckets and must
+    not trip the empty-bucket detection. The OBS+REP guard already
+    supports this shape via _trace_ids_from_obs."""
+    obs = {
+        **_OBS_FULL,
+        "execution_path_coverage": {
+            "trace_ids": ["trace-1"],
+            "summary": "ok",
+            "segments_count": 5,
+        },
+    }
+    # Must not raise — only trace_ids contents are validated for content.
+    assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
+def test_metadata_form_coverage_empty_trace_ids_blocks() -> None:
+    """Sanity counterpart: when metadata-form coverage carries an
+    empty trace_ids list, fail closed."""
+    obs = {**_OBS_FULL, "execution_path_coverage": {"trace_ids": [], "summary": "ok"}}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_empty_field"):
+        assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
+def test_metadata_form_coverage_missing_trace_ids_blocks() -> None:
+    """If a coverage dict lacks both trace_ids and per-trace buckets,
+    treat it as empty (no extractable trace identifiers)."""
+    obs = {**_OBS_FULL, "execution_path_coverage": {"summary": "ok"}}
+    # Without trace_ids it falls through to the per-trace bucket path
+    # where every non-list/non-dict value (the summary string) is empty.
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_empty_field"):
+        assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
 def test_artifact_linkage_dict_form_passes() -> None:
     """The dict-keyed-by-trace_id form for artifact_linkage is supported
     by the OBS+REP consistency check, so LOOP-08 must accept it too."""

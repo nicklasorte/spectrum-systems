@@ -215,6 +215,23 @@ def assert_rfx_telemetry_slo_eligible(
             elif isinstance(v, dict):
                 if len(v) == 0:
                     empty_fields.append(key)
+                elif key == "execution_path_coverage" and "trace_ids" in v:
+                    # Metadata-form coverage dict: ``{"trace_ids": [...],
+                    # "summary": "ok", ...}``. Sibling keys (summary,
+                    # segments, scalars, etc.) are metadata, not per-trace
+                    # buckets — only validate that ``trace_ids`` itself
+                    # carries at least one usable entry. The OBS+REP guard
+                    # already supports this shape via _trace_ids_from_obs.
+                    trace_ids_value = v.get("trace_ids")
+                    if isinstance(trace_ids_value, list):
+                        meaningful_ids = [
+                            item for item in trace_ids_value
+                            if not _is_empty_evidence(item)
+                        ]
+                        if len(meaningful_ids) == 0:
+                            empty_fields.append(key)
+                    else:
+                        empty_fields.append(key)
                 else:
                     # Per-trace dict form: every value must itself be a
                     # non-empty container with at least one usable entry.
