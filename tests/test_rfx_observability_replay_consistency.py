@@ -220,6 +220,37 @@ def test_replay_row_with_all_stale_aliases_blocks() -> None:
         assert_rfx_observability_replay_consistency(obs=obs, replay_results=replays)
 
 
+def test_dict_linkage_bucket_list_with_only_blank_entries_blocks() -> None:
+    """Codex P1 regression (line 109): a list bucket carrying only blank
+    or None entries must be filtered to empty, mirroring the dict-bucket
+    behavior added previously."""
+    obs = {
+        "obs_id": "obs-blank",
+        "trace_id": "trace-1",
+        "execution_path_coverage": ["AEX"],
+        "artifact_linkage": {"trace-1": ["", None]},
+        "failure_logs": [],
+    }
+    replays = [{"trace_id": "trace-1", "match": True}]
+    with pytest.raises(RFXObservabilityReplayConsistencyError, match="rfx_missing_trace_linkage"):
+        assert_rfx_observability_replay_consistency(obs=obs, replay_results=replays)
+
+
+def test_flat_list_linkage_with_only_blank_entries_blocks() -> None:
+    """Same blank-filter applies to the flat-list linkage form so the two
+    shapes agree on what counts as actual linkage evidence."""
+    obs = {
+        "obs_id": "obs-blank-flat",
+        "trace_id": "trace-1",
+        "execution_path_coverage": ["AEX"],
+        "artifact_linkage": ["", None],
+        "failure_logs": [],
+    }
+    replays = [{"trace_id": "trace-1", "match": True}]
+    with pytest.raises(RFXObservabilityReplayConsistencyError, match="rfx_missing_trace_linkage"):
+        assert_rfx_observability_replay_consistency(obs=obs, replay_results=replays)
+
+
 def test_dict_linkage_bucket_with_dict_value_is_accepted_as_present() -> None:
     """Codex P2 regression (line 95): LOOP-08 accepts non-empty dict
     buckets in artifact_linkage, so the OBS+REP consistency guard must

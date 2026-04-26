@@ -58,6 +58,22 @@ def _is_dict(value: Any) -> bool:
     return isinstance(value, dict) and bool(value)
 
 
+def _is_empty_evidence(value: Any) -> bool:
+    """Return True for values that carry no actual evidence content.
+
+    Mirrors the predicate in
+    :mod:`spectrum_systems.modules.runtime.rfx_observability_replay_consistency`
+    so the two guards agree on what counts as a real artifact reference.
+    """
+    if value is None:
+        return True
+    if isinstance(value, (list, dict, tuple, set)):
+        return len(value) == 0
+    if isinstance(value, str):
+        return not value.strip()
+    return False
+
+
 def _coerce_str(value: Any) -> str | None:
     if isinstance(value, str) and value.strip():
         return value.strip()
@@ -190,22 +206,39 @@ def assert_rfx_telemetry_slo_eligible(
             invalid_fields.append(f"{key} (empty string)")
             continue
         if key in _NON_EMPTY_FIELDS:
-            if isinstance(v, list) and len(v) == 0:
-                empty_fields.append(key)
+            if isinstance(v, list):
+                # Drop blank/None entries when judging emptiness — a list
+                # like ``["", null]`` carries no usable evidence.
+                meaningful = [item for item in v if not _is_empty_evidence(item)]
+                if len(meaningful) == 0:
+                    empty_fields.append(key)
             elif isinstance(v, dict):
                 if len(v) == 0:
                     empty_fields.append(key)
                 else:
                     # Per-trace dict form: every value must itself be a
-                    # non-empty container. ``{"trace-1": []}`` would pass
-                    # the outer non-empty check otherwise, and the
-                    # OBS+REP consistency layer is inactive when
-                    # ``replay_results`` is omitted — fail closed here.
-                    empty_buckets = [
-                        f"{key}[{trace_key!r}]"
-                        for trace_key, bucket in v.items()
-                        if not isinstance(bucket, (list, dict)) or len(bucket) == 0
-                    ]
+                    # non-empty container with at least one usable entry.
+                    # ``{"trace-1": []}`` and ``{"trace-1": [""]}`` both
+                    # carry no real evidence and must fail closed here
+                    # because OBS+REP consistency is inactive when
+                    # ``replay_results`` is omitted.
+                    empty_buckets: list[str] = []
+                    for trace_key, bucket in v.items():
+                        if isinstance(bucket, list):
+                            meaningful = [
+                                item for item in bucket if not _is_empty_evidence(item)
+                            ]
+                            if len(meaningful) == 0:
+                                empty_buckets.append(f"{key}[{trace_key!r}]")
+                        elif isinstance(bucket, dict):
+                            meaningful_vals = [
+                                inner for inner in bucket.values()
+                                if not _is_empty_evidence(inner)
+                            ]
+                            if len(meaningful_vals) == 0:
+                                empty_buckets.append(f"{key}[{trace_key!r}]")
+                        else:
+                            empty_buckets.append(f"{key}[{trace_key!r}]")
                     if empty_buckets:
                         empty_fields.extend(sorted(empty_buckets))
 

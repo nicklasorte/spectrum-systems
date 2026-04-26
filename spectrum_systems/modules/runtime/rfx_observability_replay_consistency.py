@@ -106,7 +106,9 @@ def _artifact_links_for_trace(
     if isinstance(linkage, dict):
         entries = linkage.get(trace_id)
         if isinstance(entries, list):
-            return list(entries)
+            # Drop blank/None entries — ``["", null]`` carries no usable
+            # artifact reference and must not satisfy the linkage check.
+            return [e for e in entries if not _is_empty_evidence(e)]
         if isinstance(entries, dict) and len(entries) > 0:
             # Non-empty dict bucket — keep only inner values that are
             # themselves non-empty evidence. ``{"lin": []}`` would otherwise
@@ -119,7 +121,9 @@ def _artifact_links_for_trace(
     if isinstance(linkage, list):
         primary = _coerce_str(obs.get("trace_id"))
         if primary == trace_id:
-            return list(linkage)
+            # Same blank/None filter applies to the flat-list form so the
+            # two shapes agree on what counts as actual linkage evidence.
+            return [e for e in linkage if not _is_empty_evidence(e)]
         return []
     return []
 

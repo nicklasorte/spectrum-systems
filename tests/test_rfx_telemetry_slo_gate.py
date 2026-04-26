@@ -259,6 +259,27 @@ def test_execution_path_coverage_dict_with_empty_bucket_blocks() -> None:
         assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
 
 
+def test_artifact_linkage_list_with_only_blank_entries_blocks() -> None:
+    """Codex P1 regression (line 208): list-form linkage carrying only
+    blank/None entries (e.g. ``["", null]``) carries no usable artifact
+    reference and must fail closed at LOOP-08."""
+    obs = {**_OBS_FULL, "artifact_linkage": ["", None]}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_empty_field"):
+        assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
+def test_artifact_linkage_dict_with_blank_only_list_bucket_blocks() -> None:
+    obs = {**_OBS_FULL, "artifact_linkage": {"trace-1": ["", None]}}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_empty_field"):
+        assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
+def test_artifact_linkage_dict_with_blank_only_dict_bucket_blocks() -> None:
+    obs = {**_OBS_FULL, "artifact_linkage": {"trace-1": {"lin": "", "rep": None}}}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_empty_field"):
+        assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
 def test_artifact_linkage_dict_form_passes() -> None:
     """The dict-keyed-by-trace_id form for artifact_linkage is supported
     by the OBS+REP consistency check, so LOOP-08 must accept it too."""
