@@ -1,0 +1,222 @@
+{
+  "architecture": {
+    "authority": "contracts/examples/system_roadmap.json",
+    "mirror": "docs/roadmaps/system_roadmap.md",
+    "module": "spectrum_systems/modules/runtime/rmp",
+    "rfx": "docs/roadmaps/rfx_cross_system_roadmap.md"
+  },
+  "attestation": {
+    "drift_report": "artifacts/rmp_drift_report.json",
+    "status": "pass"
+  },
+  "change_scope_note": "vocabulary_cleanup_only_no_behavior_change",
+  "drift_report": {
+    "checks": {
+      "loop1_detection": {
+        "ok": true
+      },
+      "loop1_revalidate": {
+        "ok": true
+      },
+      "loop2_detection": {
+        "ok": true,
+        "reason_codes": [
+          "status_without_artifacts",
+          "status_without_code",
+          "status_without_tests",
+          "circular_dependency:LOOP-X",
+          "missing_dependency:H01->BLF-01",
+          "missing_dependency:LOOP-09->LOOP-08",
+          "missing_depends_on:BROKEN",
+          "h01_requires_blf_01_complete",
+          "h01_requires_rfx_04_merged",
+          "h01_requires_roadmap_sync"
+        ]
+      },
+      "loop2_revalidate": {
+        "ok": true,
+        "reason_codes": []
+      },
+      "loop3_detection": {
+        "ok": true,
+        "reason_codes": [
+          "met_requires_fix_integrity_proof",
+          "hop_requires_met_gate_pass",
+          "hop_requires_met_measurement"
+        ]
+      },
+      "loop3_revalidate": {
+        "ok": true,
+        "reason_codes": []
+      },
+      "loop4_tests_present": {
+        "ok": true,
+        "reason_codes": []
+      }
+    },
+    "drift_detected": false,
+    "reason_codes": [],
+    "status": "pass"
+  },
+  "fixes_applied": {
+    "loop1": "mirror_sync_from_authority",
+    "loop2": "dependency_restore_and_evidence_binding",
+    "loop3": "proof_and_measurement_gate_validation",
+    "loop4": "attestation_checks_validated"
+  },
+  "guarantees_preserved": [
+    "fail_closed_everywhere",
+    "no_manual_override_paths",
+    "status_requires_evidence",
+    "progression_requires_passing_gates",
+    "red_team_fix_revalidate_triplets"
+  ],
+  "h01_readiness": {
+    "ready": true,
+    "reason_codes": []
+  },
+  "intent": "RMP-SUPER-01 roadmap governance control system",
+  "loops_built": [
+    "loop1_drift",
+    "loop2_status_dependency",
+    "loop3_execution_gates",
+    "loop4_attestation"
+  ],
+  "red_team_results": {
+    "loop1": {
+      "authority_sync": {
+        "authority_hash": "1d29a355a5cadda9ac720bf21bcfb7c43eed2dc2ca592c1806e806c5012a6c9e",
+        "ok": false,
+        "reason_codes": [
+          "missing_markdown_table"
+        ]
+      },
+      "mirror_validation": {
+        "ok": false,
+        "reason_codes": [
+          "mirror_missing_batch:TBH-002",
+          "mirror_missing_header:| batch_id | acronym | t",
+          "mirror_status_mismatch:JUD-013",
+          "mirror_status_mismatch:TBH-002"
+        ]
+      },
+      "rfx_reconcile": {
+        "loops": {
+          "LOOP-01": "planned",
+          "LOOP-02": "planned",
+          "LOOP-03": "planned",
+          "LOOP-04": "implemented",
+          "LOOP-05": "implemented",
+          "LOOP-06": "implemented",
+          "LOOP-07": "implemented",
+          "LOOP-08": "implemented",
+          "LOOP-09": "planned",
+          "LOOP-10": "planned",
+          "LOOP-11": "planned",
+          "LOOP-12": "planned"
+        },
+        "ok": false,
+        "reason_codes": [
+          "orphan_rfx_entry:LOOP-01",
+          "orphan_rfx_entry:LOOP-02",
+          "orphan_rfx_entry:LOOP-03",
+          "orphan_rfx_entry:LOOP-04",
+          "orphan_rfx_entry:LOOP-05",
+          "orphan_rfx_entry:LOOP-06",
+          "orphan_rfx_entry:LOOP-07",
+          "orphan_rfx_entry:LOOP-08",
+          "orphan_rfx_entry:LOOP-09",
+          "orphan_rfx_entry:LOOP-10",
+          "orphan_rfx_entry:LOOP-11",
+          "orphan_rfx_entry:LOOP-12"
+        ]
+      }
+    },
+    "loop2": {
+      "dependency_attack": {
+        "ok": false,
+        "reason_codes": [
+          "circular_dependency:LOOP-X",
+          "missing_dependency:H01->BLF-01",
+          "missing_dependency:LOOP-09->LOOP-08",
+          "missing_depends_on:BROKEN"
+        ]
+      },
+      "h01_attack": {
+        "ok": false,
+        "reason_codes": [
+          "h01_requires_blf_01_complete",
+          "h01_requires_rfx_04_merged",
+          "h01_requires_roadmap_sync"
+        ]
+      },
+      "status_attack": {
+        "ok": false,
+        "reason_codes": [
+          "status_without_artifacts",
+          "status_without_code",
+          "status_without_tests"
+        ]
+      }
+    },
+    "loop3": {
+      "hop_attack": {
+        "ok": false,
+        "reason_codes": [
+          "hop_requires_met_gate_pass",
+          "hop_requires_met_measurement"
+        ]
+      },
+      "met_attack": {
+        "ok": false,
+        "reason_codes": [
+          "met_requires_fix_integrity_proof"
+        ]
+      }
+    }
+  },
+  "remaining_gaps": [],
+  "validation_runs": {
+    "loop1_detection": {
+      "ok": true
+    },
+    "loop1_revalidate": {
+      "ok": true
+    },
+    "loop2_detection": {
+      "ok": true,
+      "reason_codes": [
+        "status_without_artifacts",
+        "status_without_code",
+        "status_without_tests",
+        "circular_dependency:LOOP-X",
+        "missing_dependency:H01->BLF-01",
+        "missing_dependency:LOOP-09->LOOP-08",
+        "missing_depends_on:BROKEN",
+        "h01_requires_blf_01_complete",
+        "h01_requires_rfx_04_merged",
+        "h01_requires_roadmap_sync"
+      ]
+    },
+    "loop2_revalidate": {
+      "ok": true,
+      "reason_codes": []
+    },
+    "loop3_detection": {
+      "ok": true,
+      "reason_codes": [
+        "met_requires_fix_integrity_proof",
+        "hop_requires_met_gate_pass",
+        "hop_requires_met_measurement"
+      ]
+    },
+    "loop3_revalidate": {
+      "ok": true,
+      "reason_codes": []
+    },
+    "loop4_tests_present": {
+      "ok": true,
+      "reason_codes": []
+    }
+  }
+}
