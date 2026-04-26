@@ -29,7 +29,7 @@
       "classification": "active_system",
       "failing_signals": [
         "missing_enforcement_signal",
-        "missing_observability",
+        "missing_replay",
         "schema_weakness"
       ],
       "gap_count": 3,
@@ -38,8 +38,8 @@
         "missing_control",
         "missing_eval",
         "missing_lineage",
+        "missing_observability",
         "missing_readiness_evidence",
-        "missing_replay",
         "missing_tests"
       ],
       "system_id": "AEX",
@@ -68,7 +68,7 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_lineage",
+        "missing_observability",
         "missing_replay",
         "schema_weakness"
       ],
@@ -78,7 +78,7 @@
         "missing_control",
         "missing_enforcement_signal",
         "missing_eval",
-        "missing_observability",
+        "missing_lineage",
         "missing_readiness_evidence",
         "missing_tests"
       ],
@@ -341,13 +341,13 @@
       "failing_signals": [
         "missing_control",
         "missing_enforcement_signal",
-        "missing_lineage",
-        "missing_observability"
+        "missing_lineage"
       ],
-      "gap_count": 4,
+      "gap_count": 3,
       "gaps_evaluated": 9,
       "passing_signals": [
         "missing_eval",
+        "missing_observability",
         "missing_readiness_evidence",
         "missing_replay",
         "missing_tests",
@@ -703,22 +703,22 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_lineage",
         "missing_replay",
         "schema_weakness"
       ],
-      "gap_count": 3,
+      "gap_count": 2,
       "gaps_evaluated": 9,
       "passing_signals": [
         "missing_control",
         "missing_enforcement_signal",
         "missing_eval",
+        "missing_lineage",
         "missing_observability",
         "missing_readiness_evidence",
         "missing_tests"
       ],
       "system_id": "SEL",
-      "trust_state": "freeze_signal"
+      "trust_state": "warn"
     },
     {
       "classification": "future",

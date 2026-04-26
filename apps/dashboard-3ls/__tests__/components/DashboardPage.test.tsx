@@ -217,6 +217,15 @@ describe('DashboardPage panels', () => {
             trust_gap_signals: ['missing_observability'],
             finish_definition: 'resolve signal(missing_observability)',
             risk_if_built_before_prerequisites: 'higher risk',
+            rank_explanation: 'prioritization: HOP has global_rank=7.',
+            prerequisite_explanation: 'prerequisite_signal: finish EVL first.',
+            safe_next_action: 'recommendation: harden EVL before build scope on HOP.',
+            build_now_assessment: 'prerequisite_signal',
+            why_not_higher: 'prerequisite_signal: ranked behind prerequisites EVL',
+            why_not_lower: 'prioritization: requested candidate remains in ranked set with explicit signals.',
+            minimum_safe_prompt_scope: 'prerequisite_signal: harden prerequisite systems only (EVL).',
+            dependency_warning_level: 'prerequisite_signal',
+            evidence_summary: 'observation: classification=active_system.',
           },
           {
             requested_rank: 2,
@@ -230,6 +239,15 @@ describe('DashboardPage panels', () => {
             trust_gap_signals: [],
             finish_definition: 'retrieve evidence',
             risk_if_built_before_prerequisites: 'no higher-priority upstream trust prerequisite detected in TLS ranking',
+            rank_explanation: 'observation: H01 is h_slice.',
+            prerequisite_explanation: 'ready_signal: no higher-ranked active upstream prerequisites detected.',
+            safe_next_action: 'recommendation: build H01 now with recommendation: minimal single-system scope for H01.',
+            build_now_assessment: 'ready_signal',
+            why_not_higher: 'observation: no stronger upstream score signal identified',
+            why_not_lower: 'prioritization: requested candidate remains in ranked set with explicit signals.',
+            minimum_safe_prompt_scope: 'recommendation: minimal single-system scope for H01.',
+            dependency_warning_level: 'ready_signal',
+            evidence_summary: 'observation: classification=h_slice.',
           },
           {
             requested_rank: 3,
@@ -243,6 +261,15 @@ describe('DashboardPage panels', () => {
             trust_gap_signals: [],
             finish_definition: 'retrieve registry and evidence before build prioritization',
             risk_if_built_before_prerequisites: 'unknown risk until candidate is classified',
+            rank_explanation: 'unknown_signal: registry/evidence is insufficient.',
+            prerequisite_explanation: 'Unknown prerequisites: retrieve registry/evidence rows first.',
+            safe_next_action: 'finding: retrieve registry + evidence and re-run TLS pipeline.',
+            build_now_assessment: 'blocked_signal',
+            why_not_higher: 'unknown_signal: candidate lacks proven registry/evidence activity',
+            why_not_lower: 'finding: unresolved candidate retained for operator visibility.',
+            minimum_safe_prompt_scope: 'finding: classify candidate only; avoid build changes.',
+            dependency_warning_level: 'unknown_signal',
+            evidence_summary: 'observation: no classification/evidence row found.',
             ambiguity_reason: 'repo_only_candidate_no_registry_record',
           },
         ],
@@ -268,6 +295,10 @@ describe('DashboardPage panels', () => {
       const requestedRows = within(panel).getAllByTestId('requested-candidate-row');
       expect(requestedRows.length).toBeGreaterThan(0);
       expect(within(panel).getByTestId('requested-candidate-ambiguity')).toHaveTextContent(/RFX/);
+      expect(within(panel).getAllByTestId('requested-candidate-details').length).toBeGreaterThan(0);
+      expect(panel).toHaveTextContent(/rank_explanation:/);
+      expect(panel).toHaveTextContent(/minimum_safe_prompt_scope:/);
+      expect(panel).toHaveTextContent(/evidence_summary:/);
     });
   });
 

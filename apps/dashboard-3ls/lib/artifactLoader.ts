@@ -76,6 +76,33 @@ export interface RequestedCandidateRow {
   trust_gap_signals: string[];
   finish_definition: string;
   risk_if_built_before_prerequisites: string;
+  rank_explanation: string;
+  prerequisite_explanation: string;
+  safe_next_action: string;
+  build_now_assessment:
+    | 'ready_signal'
+    | 'caution_signal'
+    | 'blocked_signal'
+    | 'unknown_signal'
+    | 'prerequisite_signal'
+    | 'recommendation'
+    | 'prioritization'
+    | 'finding'
+    | 'observation';
+  why_not_higher: string;
+  why_not_lower: string;
+  minimum_safe_prompt_scope: string;
+  dependency_warning_level:
+    | 'ready_signal'
+    | 'caution_signal'
+    | 'blocked_signal'
+    | 'unknown_signal'
+    | 'prerequisite_signal'
+    | 'recommendation'
+    | 'prioritization'
+    | 'finding'
+    | 'observation';
+  evidence_summary: string;
   ambiguity_reason?: string;
 }
 
