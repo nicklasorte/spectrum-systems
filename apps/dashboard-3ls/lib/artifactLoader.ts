@@ -51,7 +51,7 @@ export interface RankedSystem {
   score: number;
   action: string;
   why_now: string;
-  trust_gaps: string[];
+  trust_gap_signals: string[];
   dependencies: { upstream: string[]; downstream: string[] };
   unlocks: string[];
   finish_definition: string;
@@ -98,7 +98,7 @@ function isPriorityArtifact(value: unknown): value is PriorityArtifact {
     if (typeof e.system_id !== 'string') return false;
     if (typeof e.action !== 'string') return false;
     if (typeof e.why_now !== 'string') return false;
-    if (!Array.isArray(e.trust_gaps)) return false;
+    if (!Array.isArray(e.trust_gap_signals)) return false;
     if (!Array.isArray(e.unlocks)) return false;
     if (!e.dependencies || typeof e.dependencies !== 'object') return false;
   }

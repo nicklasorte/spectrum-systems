@@ -37,7 +37,7 @@ def test_top_5_contains_required_fields(registry_fixture_path: Path, repo_fixtur
         "system_id",
         "action",
         "why_now",
-        "trust_gaps",
+        "trust_gap_signals",
         "dependencies",
         "unlocks",
         "finish_definition",
@@ -63,7 +63,7 @@ def test_hardening_ranked_before_expansion(registry_fixture_path: Path, repo_fix
     # Identify active systems with gaps.
     active_with_gaps = [
         r for r in out["ranked_systems"]
-        if r["classification"] in ("active_system", "h_slice") and r["trust_gaps"]
+        if r["classification"] in ("active_system", "h_slice") and r["trust_gap_signals"]
     ]
     if not active_with_gaps:
         pytest.skip("no active system with gaps in fixture")

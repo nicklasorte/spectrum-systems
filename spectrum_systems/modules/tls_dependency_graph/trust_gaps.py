@@ -1,24 +1,33 @@
-"""TLS-03 — Trust gap detection.
+"""TLS-03 — Trust-gap signal detection (observer-only).
 
-For every classified candidate, evaluate trust signals derived deterministically
+This module emits ``trust_gap_signal`` observations only. It owns no closure,
+advancement, or compliance authority. Canonical owners (CDE for closure, GOV
+for readiness/compliance evidence packaging, SEL for compliance, PRA for
+advancement) read these observations as inputs.
+
+For every classified candidate, evaluate trust-gap signals deterministically
 from Phase 1 evidence and registry metadata:
 
-* missing_eval          — no evidence under tests/ AND no schema reference.
-* missing_control       — system not in canonical_loop AND no link to CDE.
-* missing_enforcement   — no SEL reference in registry downstream chain.
-* missing_replay        — no evidence under tests/replay or REP downstream tie.
-* missing_lineage       — no LIN downstream tie or no artifact lineage record.
-* missing_observability — no OBS downstream tie or empty observability evidence.
-* missing_certification — no GOV downstream tie or empty certification record.
-* missing_tests         — evidence.tests is empty.
-* schema_weakness       — evidence.schemas is empty (no contract surface).
+* missing_eval                 — no evidence under tests/ AND no schema reference.
+* missing_control              — system not in canonical_loop AND no link to CDE.
+* missing_enforcement_signal   — no SEL reference in registry downstream chain
+                                 (observation only; SEL retains compliance
+                                 authority).
+* missing_replay               — no evidence under tests/replay or REP downstream tie.
+* missing_lineage              — no LIN downstream tie or no artifact lineage record.
+* missing_observability        — no OBS downstream tie or empty OBS evidence.
+* missing_readiness_evidence   — no GOV downstream tie or empty readiness
+                                 evidence record (observation only; GOV retains
+                                 readiness/compliance authority).
+* missing_tests                — evidence.tests is empty.
+* schema_weakness              — evidence.schemas is empty (no contract surface).
 
 Rules:
 * Active systems are evaluated against ALL signals.
 * Support / deprecated / future systems are evaluated only against signals
   that are meaningful for them (typically just missing_tests / schema_weakness).
-* No system is allowed to be marked "safe" (zero gaps) without an explicit
-  source-of-truth: gaps_evaluated > 0 always.
+* No system is allowed to be marked "safe" (zero gap signals) without an
+  explicit source-of-truth: gaps_evaluated > 0 always.
 * A gap signal can only flip false (i.e. NOT a gap) when explicit evidence is
   found.
 """
@@ -35,11 +44,11 @@ SCHEMA_VERSION = "tls-03.v1"
 ALL_SIGNALS = [
     "missing_eval",
     "missing_control",
-    "missing_enforcement",
+    "missing_enforcement_signal",
     "missing_replay",
     "missing_lineage",
     "missing_observability",
-    "missing_certification",
+    "missing_readiness_evidence",
     "missing_tests",
     "schema_weakness",
 ]
@@ -100,10 +109,14 @@ def _detect_signals(
             and not _has_path_token(ev.get("schemas", []), "eval")
         )
         signals["missing_control"] = sid not in canonical_loop and "CDE" not in downstream and sid != "CDE"
-        signals["missing_enforcement"] = (
+        # missing_enforcement_signal: surface a non-owning observation when the
+        # registry-canonical compliance system is absent from this row's
+        # upstream/downstream and no compliance-owner module appears in
+        # evidence. Observation only — TLS does not own compliance.
+        signals["missing_enforcement_signal"] = (
             sid != "SEL"
             and "SEL" not in downstream
-            and not _has_path_token(ev.get("modules", []), "enforcement")
+            and not _has_path_token(ev.get("modules", []), "sel_")
         )
         signals["missing_replay"] = (
             sid != "REP"
@@ -121,10 +134,15 @@ def _detect_signals(
             and "OBS" not in downstream
             and not _has_path_token(ev.get("modules", []), "observability")
         )
-        signals["missing_certification"] = (
+        # missing_readiness_evidence: surface a non-owning observation when the
+        # registry-canonical readiness system is absent from this row's
+        # downstream chain and no readiness-owner artifact/module appears in
+        # evidence. Observation only — TLS does not own readiness.
+        signals["missing_readiness_evidence"] = (
             sid != "GOV"
             and "GOV" not in downstream
-            and not _has_path_token(ev.get("artifacts", []), "certification")
+            and not _has_path_token(ev.get("artifacts", []), "gov_")
+            and not _has_path_token(ev.get("modules", []), "/governance/")
         )
         signals["missing_tests"] = len(ev.get("tests", [])) == 0
         signals["schema_weakness"] = len(ev.get("schemas", [])) == 0

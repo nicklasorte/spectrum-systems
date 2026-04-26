@@ -117,11 +117,11 @@ def test_signal_taxonomy_is_canonical(registry_fixture_path: Path, repo_fixture:
     expected = {
         "missing_eval",
         "missing_control",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_replay",
         "missing_lineage",
         "missing_observability",
-        "missing_certification",
+        "missing_readiness_evidence",
         "missing_tests",
         "schema_weakness",
     }

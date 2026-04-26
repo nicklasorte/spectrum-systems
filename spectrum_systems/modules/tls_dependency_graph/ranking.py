@@ -1,15 +1,20 @@
-"""TLS-04 — Dependency-aware ranking.
+"""TLS-04 — Dependency-aware priority recommendation_signal builder.
+
+This module is **observer-only**: it emits a ranked recommendation_signal
+artifact. It owns no closure, advancement, or compliance authority. CDE,
+GOV, SEL, and PRA retain those responsibilities. The artifact produced here
+is an input to canonical owners, never a substitute for them.
 
 Inputs (all governed artifacts):
 
 * Phase 0 dependency graph
 * Phase 1 evidence attachment
 * Phase 2 classification
-* Phase 3 trust gap report
+* Phase 3 trust-gap signal report
 
 Output: ``system_dependency_priority_report`` artifact, including the top 5
-systems with rank, action, why_now, trust_gaps, dependencies, unlocks, finish
-definition, next prompt.
+systems with rank, action, why_now, trust_gap_signals, dependencies, unlocks,
+finish definition, and next prompt.
 
 Determinism contract:
 * Score is computed from explicit, weighted signals (no model, no random).
@@ -17,15 +22,15 @@ Determinism contract:
 * No ``unknown`` candidate appears in the top 5 unless every other candidate
   was already exhausted — in which case the row carries an explicit
   ``unknown_justification`` string.
-* Hardening (active systems with gaps) is ranked before expansion (h_slice or
-  unknown).
+* Hardening (active systems with gap signals) is ranked before expansion
+  (h_slice or unknown).
 
 Priority order (descending):
 1. MVP spine dependency
-2. trust boundary importance
-3. downstream unlock value
-4. partial completion
-5. risk if deferred
+2. Trust-boundary importance
+3. Downstream unlock value
+4. Partial completion
+5. Risk-if-deferred signal
 
 Penalties:
 * New capability without trust gain
@@ -48,8 +53,9 @@ SPINE_WEIGHT = 100
 OVERLAY_WEIGHT = 60
 NON_SPINE_WEIGHT = 0
 
-# Trust boundary importance — systems whose role is a control/enforcement
-# boundary get a high score because their gaps block promotion.
+# Trust-boundary importance — systems whose role is a control/compliance
+# boundary score higher because their gap signals stall advancement_signal
+# evaluation downstream.
 TRUST_BOUNDARY_HIGH = {"EVL", "TPA", "CDE", "SEL", "GOV", "PRA"}
 TRUST_BOUNDARY_MED = {"REP", "LIN", "OBS", "SLO", "SEC"}
 
@@ -119,7 +125,7 @@ def _risk_if_deferred_score(gap_row: Dict) -> int:
         weight += 3
     if "missing_control" in failing:
         weight += 3
-    if "missing_enforcement" in failing:
+    if "missing_enforcement_signal" in failing:
         weight += 3
     if "missing_lineage" in failing:
         weight += 2
@@ -127,7 +133,7 @@ def _risk_if_deferred_score(gap_row: Dict) -> int:
         weight += 2
     if "missing_observability" in failing:
         weight += 1
-    if "missing_certification" in failing:
+    if "missing_readiness_evidence" in failing:
         weight += 1
     return weight
 
@@ -167,7 +173,7 @@ def _why_now(
         parts.append("trust supporting authority")
     failing = gap_row.get("failing_signals") or []
     if failing:
-        parts.append(f"{len(failing)} trust gaps: {', '.join(failing[:3])}")
+        parts.append(f"{len(failing)} trust-gap signals: {', '.join(failing[:3])}")
     if unlocks:
         parts.append(f"unlocks {len(unlocks)} downstream system(s)")
     return "; ".join(parts) or "no immediate priority signal"
@@ -178,8 +184,8 @@ def _finish_definition(gap_row: Dict, classification: str) -> str:
         return "leave deprecated; no finish work"
     failing = gap_row.get("failing_signals") or []
     if not failing:
-        return "evidence-backed: no gaps; verify by re-running TLS pipeline"
-    return "all of: " + ", ".join(f"close({s})" for s in failing)
+        return "evidence-backed: no gap signals; verify by re-running TLS pipeline"
+    return "all of: " + ", ".join(f"resolve signal({s})" for s in failing)
 
 
 def _next_prompt(sid: str, classification: str, gap_row: Dict) -> str:
@@ -187,11 +193,11 @@ def _next_prompt(sid: str, classification: str, gap_row: Dict) -> str:
     if classification == "deprecated":
         return f"NO-OP — {sid} is deprecated."
     if not failing:
-        return f"NO-OP — {sid} has no detected trust gaps."
+        return f"NO-OP — {sid} has no detected trust-gap signals."
     return (
-        f"Run TLS-FIX-{sid}: close trust gaps {failing} on system {sid} "
-        f"(class={classification}). Produce a fail-closed schema-bound "
-        f"artifact for each closed gap. Update tests."
+        f"Run TLS-FIX-{sid}: resolve observed trust-gap signals {failing} on system "
+        f"{sid} (class={classification}). Produce a fail-closed schema-bound "
+        f"artifact for each resolved signal. Update tests."
     )
 
 
@@ -262,7 +268,7 @@ def rank_systems(
                 "spine_position_index": position_index,
                 "action": action,
                 "why_now": _why_now(sid, gap_row, spine_weight, boundary_score, unlocks),
-                "trust_gaps": list(gap_row.get("failing_signals") or []),
+                "trust_gap_signals": list(gap_row.get("failing_signals") or []),
                 "dependencies": {
                     "upstream": list((next((n for n in dependency_graph.get("active_systems") or [] if n["system_id"] == sid), {}) or {}).get("upstream", [])),
                     "downstream": list((next((n for n in dependency_graph.get("active_systems") or [] if n["system_id"] == sid), {}) or {}).get("downstream", [])),
@@ -279,7 +285,7 @@ def rank_systems(
     # outrank others.
     def sort_key(r: Dict) -> Tuple:
         is_active_with_gaps = (
-            r["classification"] in ACTIVE_CLASSES and len(r["trust_gaps"]) > 0
+            r["classification"] in ACTIVE_CLASSES and len(r["trust_gap_signals"]) > 0
         )
         return (
             -r["score"],

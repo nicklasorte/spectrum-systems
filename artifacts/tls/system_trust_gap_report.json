@@ -4,11 +4,11 @@
   "signal_taxonomy": [
     "missing_eval",
     "missing_control",
-    "missing_enforcement",
+    "missing_enforcement_signal",
     "missing_replay",
     "missing_lineage",
     "missing_observability",
-    "missing_certification",
+    "missing_readiness_evidence",
     "missing_tests",
     "schema_weakness"
   ],
@@ -28,30 +28,30 @@
     {
       "classification": "active_system",
       "failing_signals": [
+        "missing_enforcement_signal",
+        "missing_readiness_evidence",
         "missing_replay",
         "schema_weakness"
       ],
-      "gap_count": 2,
+      "gap_count": 4,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_control",
-        "missing_enforcement",
         "missing_eval",
         "missing_lineage",
         "missing_observability",
         "missing_tests"
       ],
       "system_id": "AEX",
-      "trust_state": "warn"
+      "trust_state": "freeze"
     },
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_certification",
         "missing_control",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_lineage",
+        "missing_readiness_evidence",
         "missing_replay",
         "schema_weakness"
       ],
@@ -76,10 +76,10 @@
       "gap_count": 4,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_control",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_eval",
+        "missing_readiness_evidence",
         "missing_tests"
       ],
       "system_id": "CDE",
@@ -100,11 +100,11 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_certification",
         "missing_control",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_lineage",
         "missing_observability",
+        "missing_readiness_evidence",
         "missing_replay"
       ],
       "gap_count": 6,
@@ -156,7 +156,7 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_lineage",
         "missing_observability",
         "schema_weakness"
@@ -164,9 +164,9 @@
       "gap_count": 4,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_control",
         "missing_eval",
+        "missing_readiness_evidence",
         "missing_replay",
         "missing_tests"
       ],
@@ -176,22 +176,22 @@
     {
       "classification": "active_system",
       "failing_signals": [
+        "missing_enforcement_signal",
         "missing_lineage",
         "missing_observability",
         "missing_replay",
         "schema_weakness"
       ],
-      "gap_count": 4,
+      "gap_count": 5,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_control",
-        "missing_enforcement",
         "missing_eval",
+        "missing_readiness_evidence",
         "missing_tests"
       ],
       "system_id": "FRE",
-      "trust_state": "freeze"
+      "trust_state": "block"
     },
     {
       "classification": "active_system",
@@ -205,9 +205,9 @@
       "gap_count": 5,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_eval",
+        "missing_readiness_evidence",
         "missing_tests"
       ],
       "system_id": "GOV",
@@ -216,12 +216,12 @@
     {
       "classification": "h_slice",
       "failing_signals": [
-        "missing_certification",
         "missing_control",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_eval",
         "missing_lineage",
         "missing_observability",
+        "missing_readiness_evidence",
         "missing_replay",
         "missing_tests",
         "schema_weakness"
@@ -247,10 +247,10 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_certification",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_lineage",
         "missing_observability",
+        "missing_readiness_evidence",
         "missing_replay",
         "schema_weakness"
       ],
@@ -267,7 +267,7 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_lineage",
         "missing_observability",
         "missing_replay",
@@ -276,9 +276,9 @@
       "gap_count": 5,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_control",
         "missing_eval",
+        "missing_readiness_evidence",
         "missing_tests"
       ],
       "system_id": "JDX",
@@ -287,7 +287,7 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_lineage",
         "missing_observability",
         "missing_replay",
@@ -296,9 +296,9 @@
       "gap_count": 5,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_control",
         "missing_eval",
+        "missing_readiness_evidence",
         "missing_tests"
       ],
       "system_id": "JSX",
@@ -319,16 +319,16 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_enforcement"
+        "missing_enforcement_signal"
       ],
       "gap_count": 1,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_control",
         "missing_eval",
         "missing_lineage",
         "missing_observability",
+        "missing_readiness_evidence",
         "missing_replay",
         "missing_tests",
         "schema_weakness"
@@ -340,15 +340,15 @@
       "classification": "active_system",
       "failing_signals": [
         "missing_control",
-        "missing_enforcement"
+        "missing_enforcement_signal"
       ],
       "gap_count": 2,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_eval",
         "missing_lineage",
         "missing_observability",
+        "missing_readiness_evidence",
         "missing_replay",
         "missing_tests",
         "schema_weakness"
@@ -420,16 +420,16 @@
       "classification": "active_system",
       "failing_signals": [
         "missing_control",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_lineage",
         "schema_weakness"
       ],
       "gap_count": 4,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_eval",
         "missing_observability",
+        "missing_readiness_evidence",
         "missing_replay",
         "missing_tests"
       ],
@@ -440,7 +440,7 @@
       "classification": "active_system",
       "failing_signals": [
         "missing_control",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_lineage",
         "missing_observability",
         "missing_replay",
@@ -449,8 +449,8 @@
       "gap_count": 6,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_eval",
+        "missing_readiness_evidence",
         "missing_tests"
       ],
       "system_id": "POL",
@@ -459,13 +459,13 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_enforcement",
-        "missing_lineage"
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_readiness_evidence"
       ],
-      "gap_count": 2,
+      "gap_count": 3,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_control",
         "missing_eval",
         "missing_observability",
@@ -474,13 +474,13 @@
         "schema_weakness"
       ],
       "system_id": "PQX",
-      "trust_state": "warn"
+      "trust_state": "freeze"
     },
     {
       "classification": "active_system",
       "failing_signals": [
         "missing_control",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_lineage",
         "missing_observability",
         "missing_replay",
@@ -489,8 +489,8 @@
       "gap_count": 6,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_eval",
+        "missing_readiness_evidence",
         "missing_tests"
       ],
       "system_id": "PRA",
@@ -499,11 +499,11 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_certification",
         "missing_control",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_lineage",
         "missing_observability",
+        "missing_readiness_evidence",
         "missing_replay",
         "schema_weakness"
       ],
@@ -531,11 +531,11 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_certification",
         "missing_control",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_lineage",
         "missing_observability",
+        "missing_readiness_evidence",
         "missing_replay",
         "schema_weakness"
       ],
@@ -552,16 +552,16 @@
       "classification": "active_system",
       "failing_signals": [
         "missing_control",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_lineage",
         "schema_weakness"
       ],
       "gap_count": 4,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_eval",
         "missing_observability",
+        "missing_readiness_evidence",
         "missing_replay",
         "missing_tests"
       ],
@@ -595,22 +595,22 @@
     {
       "classification": "active_system",
       "failing_signals": [
+        "missing_enforcement_signal",
         "missing_lineage",
         "missing_observability",
+        "missing_readiness_evidence",
         "missing_replay",
         "schema_weakness"
       ],
-      "gap_count": 4,
+      "gap_count": 6,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_control",
-        "missing_enforcement",
         "missing_eval",
         "missing_tests"
       ],
       "system_id": "RIL",
-      "trust_state": "freeze"
+      "trust_state": "block"
     },
     {
       "classification": "support_capability",
@@ -627,10 +627,10 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_certification",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_lineage",
         "missing_observability",
+        "missing_readiness_evidence",
         "missing_replay",
         "schema_weakness"
       ],
@@ -683,16 +683,16 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_certification",
         "missing_control",
         "missing_lineage",
         "missing_observability",
+        "missing_readiness_evidence",
         "missing_replay"
       ],
       "gap_count": 5,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_eval",
         "missing_tests",
         "schema_weakness"
@@ -704,15 +704,15 @@
       "classification": "active_system",
       "failing_signals": [
         "missing_lineage",
+        "missing_readiness_evidence",
         "missing_replay",
         "schema_weakness"
       ],
-      "gap_count": 3,
+      "gap_count": 4,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_control",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_eval",
         "missing_observability",
         "missing_tests"
@@ -747,15 +747,15 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_certification",
         "missing_lineage",
+        "missing_readiness_evidence",
         "schema_weakness"
       ],
       "gap_count": 3,
       "gaps_evaluated": 9,
       "passing_signals": [
         "missing_control",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_eval",
         "missing_observability",
         "missing_replay",
@@ -779,16 +779,16 @@
     {
       "classification": "active_system",
       "failing_signals": [
-        "missing_certification",
         "missing_control",
+        "missing_enforcement_signal",
         "missing_observability",
+        "missing_readiness_evidence",
         "missing_replay",
         "schema_weakness"
       ],
-      "gap_count": 5,
+      "gap_count": 6,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_enforcement",
         "missing_eval",
         "missing_lineage",
         "missing_tests"
@@ -800,15 +800,15 @@
       "classification": "active_system",
       "failing_signals": [
         "missing_observability",
+        "missing_readiness_evidence",
         "missing_replay",
         "schema_weakness"
       ],
-      "gap_count": 3,
+      "gap_count": 4,
       "gaps_evaluated": 9,
       "passing_signals": [
-        "missing_certification",
         "missing_control",
-        "missing_enforcement",
+        "missing_enforcement_signal",
         "missing_eval",
         "missing_lineage",
         "missing_tests"

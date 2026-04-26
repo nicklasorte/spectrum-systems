@@ -43,7 +43,7 @@
         "spine_position_index",
         "action",
         "why_now",
-        "trust_gaps",
+        "trust_gap_signals",
         "dependencies",
         "unlocks",
         "finish_definition",
@@ -72,7 +72,7 @@
         "spine_position_index": { "type": "integer" },
         "action": { "type": "string" },
         "why_now": { "type": "string" },
-        "trust_gaps": { "type": "array", "items": { "type": "string" } },
+        "trust_gap_signals": { "type": "array", "items": { "type": "string" } },
         "dependencies": {
           "type": "object",
           "additionalProperties": false,

@@ -29,7 +29,7 @@ const VALID_PAYLOAD = {
       score: 100,
       action: 'harden_authority',
       why_now: 'on canonical loop',
-      trust_gaps: ['missing_eval'],
+      trust_gap_signals: ['missing_eval'],
       dependencies: { upstream: ['PQX'], downstream: ['TPA'] },
       unlocks: ['CDE'],
       finish_definition: 'close(missing_eval)',

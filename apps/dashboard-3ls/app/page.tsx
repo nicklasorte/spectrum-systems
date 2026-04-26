@@ -164,7 +164,7 @@ interface RankedSystemView {
   score: number;
   action: string;
   why_now: string;
-  trust_gaps: string[];
+  trust_gap_signals: string[];
   dependencies: { upstream: string[]; downstream: string[] };
   unlocks: string[];
   finish_definition: string;
@@ -1037,11 +1037,11 @@ function NextSystemsToFinishPanel({ result }: { result: PriorityArtifactResult |
               </div>
               <p className="text-sm mt-2">why_now: {row.why_now}</p>
               <div className="mt-2 text-xs text-gray-700">
-                trust_gaps:{' '}
-                {row.trust_gaps.length === 0 ? (
+                trust_gap_signals:{' '}
+                {row.trust_gap_signals.length === 0 ? (
                   <span className="text-gray-500">none</span>
                 ) : (
-                  row.trust_gaps.map((g) => (
+                  row.trust_gap_signals.map((g) => (
                     <span
                       key={g}
                       className="inline-block border border-red-300 text-red-700 bg-red-50 rounded px-1.5 py-0.5 mr-1 mb-1 font-mono"

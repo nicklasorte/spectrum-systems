@@ -778,11 +778,11 @@
           "spectrum_systems/modules/runtime/rfx_integrity_bundle.py",
           "spectrum_systems/modules/runtime/rfx_reliability_freeze.py",
           "spectrum_systems/modules/runtime/rfx_route_guard.py",
+          "spectrum_systems/modules/tls_dependency_graph/__init__.py",
           "spectrum_systems/modules/tls_dependency_graph/ranking.py",
           "spectrum_systems/modules/tls_dependency_graph/trust_gaps.py",
           "spectrum_systems/rge/debuggability_gate.py",
-          "src/mvp-13/README.md",
-          "src/mvp-13/gov10-certification.ts"
+          "src/mvp-13/README.md"
         ],
         "review_actions": [],
         "reviews": [
@@ -1710,7 +1710,9 @@
           "spectrum_systems/modules/runtime/rfx_certification_gate.py",
           "spectrum_systems/modules/runtime/rfx_flow_integration.py",
           "spectrum_systems/modules/runtime/rfx_route_guard.py",
-          "spectrum_systems/modules/tls_dependency_graph/ranking.py"
+          "spectrum_systems/modules/tls_dependency_graph/__init__.py",
+          "spectrum_systems/modules/tls_dependency_graph/ranking.py",
+          "spectrum_systems/modules/tls_dependency_graph/trust_gaps.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1730,7 +1732,7 @@
           "tests/test_rfx_route_guard.py"
         ]
       },
-      "evidence_count": 38,
+      "evidence_count": 40,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRA"

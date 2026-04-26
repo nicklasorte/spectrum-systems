@@ -252,7 +252,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 38,
+      "evidence_count": 40,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",

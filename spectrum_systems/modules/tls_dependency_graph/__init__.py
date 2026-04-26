@@ -1,9 +1,12 @@
 """TLS dependency-graph and prioritization module.
 
-This module is artifact-first and deterministic: every public function reads or
-writes governed JSON artifacts whose schemas live in ``schemas/artifacts``.
-There is no model-based ranking and no decision authority. Outputs are
-visualization/analysis inputs only.
+This module is artifact-first, deterministic, and **observer-only**: every
+public function reads or writes governed JSON artifacts whose schemas live in
+``schemas/artifacts``. There is no model-based ranking. The module owns no
+closure, advancement, or compliance authority — outputs are
+visualization/analysis inputs (recommendation_signal artifacts) consumed by
+canonical owners (CDE / GOV / SEL / PRA) which retain all closure,
+advancement, and compliance authority.
 
 Pipeline (TLS-STACK-01):
 
