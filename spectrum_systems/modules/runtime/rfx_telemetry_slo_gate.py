@@ -153,8 +153,18 @@ def assert_rfx_telemetry_slo_eligible(
         raise RFXTelemetrySLOError("; ".join(reasons))
 
     # ---- OBS completeness invariants ----------------------------------
+    # Fields that must carry actual telemetry content — empty list/dict
+    # means no telemetry was recorded and is treated as fail-open. This
+    # is intentionally narrower than the full required set: ``failure_logs``
+    # may legitimately be empty (no failures observed), and ``trace_id``
+    # is a string already covered by the empty-string check below.
+    _NON_EMPTY_FIELDS: frozenset[str] = frozenset({
+        "execution_path_coverage",
+        "artifact_linkage",
+    })
     missing_fields: list[str] = []
     invalid_fields: list[str] = []
+    empty_fields: list[str] = []
     for key in _OBS_REQUIRED_FIELDS:
         if key not in obs:
             missing_fields.append(key)
@@ -178,6 +188,9 @@ def assert_rfx_telemetry_slo_eligible(
             continue
         if key == "trace_id" and _coerce_str(v) is None:
             invalid_fields.append(f"{key} (empty string)")
+            continue
+        if key in _NON_EMPTY_FIELDS and isinstance(v, (list, dict)) and len(v) == 0:
+            empty_fields.append(key)
 
     if missing_fields:
         reasons.append(
@@ -188,6 +201,11 @@ def assert_rfx_telemetry_slo_eligible(
         reasons.append(
             "rfx_obs_invalid_field_shape: OBS fields with invalid types: "
             + ", ".join(sorted(invalid_fields))
+        )
+    if empty_fields:
+        reasons.append(
+            "rfx_obs_empty_field: OBS fields recorded as empty (no telemetry "
+            "content): " + ", ".join(sorted(empty_fields))
         )
 
     completeness = _coerce_completeness(obs)
@@ -208,6 +226,7 @@ def assert_rfx_telemetry_slo_eligible(
         obs_complete = (
             not missing_fields
             and not invalid_fields
+            and not empty_fields
             and _is_complete_value(completeness)
         )
         if not obs_complete:

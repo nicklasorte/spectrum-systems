@@ -242,11 +242,13 @@ def test_chaos_obs_without_artifact_linkage_blocks_loop08(route_artifact: dict) 
         assert_rfx_promotion_ready(**_kwargs(route_artifact, obs=obs))
 
 
-def test_chaos_obs_with_empty_artifact_linkage_blocks_consistency(route_artifact: dict) -> None:
-    """Empty linkage list passes LOOP-08 field-presence (key exists) but the
-    OBS+REP consistency cross-check sees no artifact entries for the trace."""
+def test_chaos_obs_with_empty_artifact_linkage_blocks_at_loop08(route_artifact: dict) -> None:
+    """Empty ``artifact_linkage`` list now fails closed at LOOP-08 with
+    ``rfx_obs_empty_field`` — the field is present but carries no
+    telemetry content. The OBS+REP consistency layer would also catch
+    this if reached, but LOOP-08 is the earlier (stricter) gate."""
     obs = {**_OBS_FULL, "artifact_linkage": []}
-    with pytest.raises(RFXObservabilityReplayConsistencyError, match="rfx_missing_trace_linkage"):
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_empty_field"):
         assert_rfx_promotion_ready(**_kwargs(route_artifact, obs=obs))
 
 

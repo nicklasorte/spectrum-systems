@@ -190,6 +190,52 @@ def test_slo_with_two_stale_aliases_blocks() -> None:
         assert_rfx_telemetry_slo_eligible(obs=_OBS_FULL, slo=slo)
 
 
+# ---------------------------------------------------------------------------
+# Empty execution_path_coverage / artifact_linkage must fail closed.
+# ---------------------------------------------------------------------------
+
+
+def test_empty_execution_path_coverage_blocks() -> None:
+    """Codex P1 regression (line 167): empty list/dict for
+    ``execution_path_coverage`` means no telemetry was recorded — fail
+    closed instead of treating it as complete."""
+    obs = {**_OBS_FULL, "execution_path_coverage": []}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_empty_field"):
+        assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
+def test_empty_artifact_linkage_blocks() -> None:
+    obs = {**_OBS_FULL, "artifact_linkage": []}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_empty_field"):
+        assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
+def test_empty_artifact_linkage_dict_form_blocks() -> None:
+    obs = {**_OBS_FULL, "artifact_linkage": {}}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_empty_field"):
+        assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
+def test_empty_failure_logs_still_passes() -> None:
+    """``failure_logs=[]`` is a legitimate signal (no failures observed),
+    so the empty-field invariant must NOT apply to it."""
+    obs = {**_OBS_FULL, "failure_logs": []}
+    # Must not raise.
+    assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
+def test_empty_obs_field_feeds_slo_inconsistent_cross_check() -> None:
+    """When SLO posture is ok, an empty OBS coverage/linkage field must
+    surface BOTH ``rfx_obs_empty_field`` AND
+    ``rfx_slo_inconsistent_with_obs`` — the SLO claim is unsupported."""
+    obs = {**_OBS_FULL, "execution_path_coverage": []}
+    with pytest.raises(RFXTelemetrySLOError) as exc:
+        assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+    msg = str(exc.value)
+    assert "rfx_obs_empty_field" in msg
+    assert "rfx_slo_inconsistent_with_obs" in msg
+
+
 def test_artifact_linkage_dict_form_passes() -> None:
     """The dict-keyed-by-trace_id form for artifact_linkage is supported
     by the OBS+REP consistency check, so LOOP-08 must accept it too."""
