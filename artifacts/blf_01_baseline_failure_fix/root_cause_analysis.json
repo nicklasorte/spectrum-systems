@@ -1,0 +1,83 @@
+{
+  "artifact_type": "blf_root_cause_analysis",
+  "batch_id": "BLF-01",
+  "generated_at": "2026-04-26T00:00:00Z",
+  "commit_ref": "ff1b6bb1daf72aab1ccf78e0e37b2f3ae1513c18",
+  "trace_id": "trace-blf-01-baseline-fixes",
+  "analyses": [
+    {
+      "failure_name": "test_authority_leak_guard_local::test_authority_leak_guard_passes_on_local_changes",
+      "root_cause": "Not reproducible on this commit. The guard runs against the union of committed-diff, staged, unstaged, and untracked changes. With no working-tree authority-vocabulary leaks, the guard returns clean and the test passes.",
+      "evidence": [
+        "Two consecutive runs of `python3 -m pytest tests/test_authority_leak_guard_local.py -v` returned PASSED.",
+        "scripts/run_authority_leak_guard.py — current vocabulary registry has no override for the production module the test scrutinizes; if pre-existing forbidden tokens existed in changed files we'd observe deterministic failure (we did not)."
+      ],
+      "affected_files": [
+        "tests/test_authority_leak_guard_local.py",
+        "scripts/run_authority_leak_guard.py",
+        "scripts/authority_leak_rules.py",
+        "contracts/governance/authority_registry.json"
+      ],
+      "invariant_at_risk": "If H01 introduces real authority-vocabulary leaks, this guard must catch them before push.",
+      "proposed_fix": "no_change_failure_not_reproduced — keep the guard as-is. The original report likely captured a working-tree state on the candidate PR that has since been resolved, or an environment without origin/main where the test correctly skipped.",
+      "rejected_shortcuts": [
+        "Loosening the local guard so failures-by-association from edits to other files in the same change-set become invisible (would weaken governance).",
+        "Adding broad allowed_values overrides that mask real leaks (forbidden by the no-weaken rule)."
+      ],
+      "expected_regression_test": "Existing test_authority_leak_guard_local.py is sufficient. BLF gate test re-asserts that all four target failures are governed."
+    },
+    {
+      "failure_name": "test_contract_impact_analysis (5 cases)",
+      "root_cause": "tests/test_contract_impact_analysis.py::_init_repo creates a fresh git repository for each scenario and configures user.name + user.email locally, but does not pin commit.gpgsign locally. Git resolves commit.gpgsign by precedence (system → global → local), and when the host's global config sets commit.gpgsign=true plus a custom gpg.ssh.program, the temp repo inherits a signing requirement it cannot satisfy. The first `git commit` raises CalledProcessError(128) before the contract-impact analyzer runs, so all five test cases inside the file fail in lockstep.",
+      "evidence": [
+        "Stderr captured under failing run shows 'fatal: failed to write commit object' and references /home/claude/.ssh/commit_signing_key.pub from the host's global git config.",
+        "Setting GIT_CONFIG_GLOBAL=/dev/null on the same commit makes all five tests pass without any code change.",
+        "The production analyzer (`spectrum_systems.governance.contract_impact.analyze_contract_impact`) is never reached during the failing path."
+      ],
+      "affected_files": ["tests/test_contract_impact_analysis.py"],
+      "invariant_at_risk": "Contract-impact preflight must remain reproducible across every developer environment. Silent coupling to host signing config undermines deterministic governance evaluation and hides the analyzer behavior behind environment noise.",
+      "proposed_fix": "test_fixture_fix — extend _init_repo to set local commit.gpgsign=false (and tag.gpgsign=false) on every temp repo. This explicitly isolates the test from host signing configuration without weakening any production behavior.",
+      "rejected_shortcuts": [
+        "Skipping the test when host has commit.gpgsign=true (silent failure — would mask future regressions).",
+        "Patching production analyzer behavior (would not address the actual fixture issue).",
+        "Moving `git commit` invocations to the production module's bootstrap (out of scope and would change ownership)."
+      ],
+      "expected_regression_test": "tests/test_blf_01_baseline_gate.py::test_contract_impact_analysis_helper_pins_signing — asserts the helper sets commit.gpgsign=false locally."
+    },
+    {
+      "failure_name": "test_github_pr_autofix_review_artifact_validation (8 cases)",
+      "root_cause": "Same fixture-isolation gap as test_contract_impact_analysis. tests/test_github_pr_autofix_review_artifact_validation.py::_init_git_repo configures user.name/user.email but not commit.gpgsign, so the first `git commit` inherits the host's signing requirement.",
+      "evidence": [
+        "Identical stderr signature ('fatal: failed to write commit object', host gpg.ssh.program reference).",
+        "Setting GIT_CONFIG_GLOBAL=/dev/null makes all eight failing cases pass.",
+        "The production module spectrum_systems/modules/runtime/github_pr_autofix_review_artifact_validation.py uses `git -c user.name=... -c user.email=... commit` and operates on the same temp repo whose local commit.gpgsign override (set by the fixture) takes precedence over global signing."
+      ],
+      "affected_files": ["tests/test_github_pr_autofix_review_artifact_validation.py"],
+      "invariant_at_risk": "Governed-autofix coverage must remain deterministic. Without a sealed fixture the autofix bot's behavior is conflated with host configuration.",
+      "proposed_fix": "test_fixture_fix — extend _init_git_repo to set local commit.gpgsign=false + tag.gpgsign=false. The production module is left unchanged because its commits run inside the fixture-pinned temp repo where local config now wins.",
+      "rejected_shortcuts": [
+        "Adding `-c commit.gpgsign=false` to the production module's `_git_commit_changes` git invocation. This would have introduced unrelated edits to a runtime module that contains pre-existing forbidden-vocabulary tokens (allow/block/decision/promotion_ready in helper functions), causing the local authority-leak guard to flag pre-existing tokens once the file showed up in the changed-file set. The fix would have either weakened the leak guard via overrides or required widening BLF-01 scope into authority-vocabulary cleanup.",
+        "Skipping the production-module pre-existing tokens with allowed_values overrides (forbidden by the no-weaken rule)."
+      ],
+      "expected_regression_test": "tests/test_blf_01_baseline_gate.py::test_github_pr_autofix_helper_pins_signing — asserts the helper sets commit.gpgsign=false locally."
+    },
+    {
+      "failure_name": "test_roadmap_realization_runner::test_verified_requires_stricter_behavioral_coverage_than_runtime_realized",
+      "root_cause": "scripts/roadmap_realization_runner.py::_run_behavioral_tests resolves `pytest tests/...` commands via shlex.split + subprocess.run, which inherits PATH from the parent shell. When PATH-resolved pytest is provided by an isolated tool venv that lacks the project's runtime dependencies (e.g., jsonschema), the subprocess fails with ModuleNotFoundError before any behavioral assertion executes. The runner is PQX-equivalent execution authority — its responsibility is to deterministically reproduce the contract's behavioral proof — so silent dependence on PATH resolution is a runtime-logic defect.",
+      "evidence": [
+        "Inspection of behavioral_test_results showed `rc=4` with stderr 'ModuleNotFoundError: No module named jsonschema' from /root/.local/share/uv/tools/pytest/bin/python.",
+        "Parent test invocation used /usr/local/bin/python3 -m pytest, which has jsonschema. Subprocess pytest used a different interpreter via PATH.",
+        "Sealing the subprocess to sys.executable -m pytest (parent interpreter) makes the test pass."
+      ],
+      "affected_files": ["scripts/roadmap_realization_runner.py"],
+      "invariant_at_risk": "Promotion to runtime_realized / verified requires the behavioral proof to actually run with project dependencies. PATH-resolved pytest can silently underprove or overprove depending on which interpreter is first in PATH.",
+      "proposed_fix": "code_fix — add _normalize_pytest_invocation that rewrites bare `pytest ...` and `python -m pytest ...` arguments to `[sys.executable, -m, pytest, ...]`. This pins the behavioral subprocess to the same interpreter that is currently executing the runner, which by construction has the project's dependency closure.",
+      "rejected_shortcuts": [
+        "Adding the missing dependency to the host PATH-resolved pytest (env-specific, not deterministic, only fixes one machine).",
+        "Skipping the test if subprocess pytest can't import jsonschema (would mask a real determinism gap).",
+        "Removing the assertion that overall_status == 'pass' for runtime-realized cases (forbidden by the no-weaken rule)."
+      ],
+      "expected_regression_test": "tests/test_blf_01_baseline_gate.py::test_runner_pins_pytest_invocation — asserts _normalize_pytest_invocation rewrites both `pytest ...` and `python -m pytest ...` to use sys.executable."
+    }
+  ]
+}

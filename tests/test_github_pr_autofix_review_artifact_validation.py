@@ -78,6 +78,9 @@ def _init_git_repo(tmp_path: Path) -> Path:
     subprocess.run(['git', 'checkout', '-b', 'feature/test'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
     subprocess.run(['git', 'config', 'user.email', 'test@example.com'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
     subprocess.run(['git', 'config', 'user.name', 'Test User'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
+    # Pin temp-repo signing so the host's global commit.gpgsign cannot leak in.
+    subprocess.run(['git', 'config', 'commit.gpgsign', 'false'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
+    subprocess.run(['git', 'config', 'tag.gpgsign', 'false'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
     subprocess.run(['git', 'remote', 'add', 'origin', 'https://github.com/nicklasorte/spectrum-systems.git'], cwd=str(tmp_path), check=True, capture_output=True, text=True)
     (tmp_path / 'requirements-dev.txt').write_text('', encoding='utf-8')
     (tmp_path / 'scripts').mkdir(parents=True, exist_ok=True)

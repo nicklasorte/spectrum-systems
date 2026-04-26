@@ -11,6 +11,9 @@ def _init_repo(tmp_path: Path) -> None:
     subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
     subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=tmp_path, check=True)
     subprocess.run(["git", "config", "user.name", "Test"], cwd=tmp_path, check=True)
+    # Pin temp-repo signing so the host's global commit.gpgsign cannot leak in.
+    subprocess.run(["git", "config", "commit.gpgsign", "false"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "config", "tag.gpgsign", "false"], cwd=tmp_path, check=True)
 
 
 def _write(path: Path, payload: dict) -> None:

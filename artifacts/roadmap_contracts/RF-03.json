@@ -18,7 +18,7 @@
     "pytest tests/test_roadmap_realization_runner.py -k rf03 -q"
   ],
   "runtime_entrypoints": [
-    "spectrum_systems.modules.runtime.roadmap_realization_runtime:enforce_realization_dependencies",
+    "spectrum_systems.modules.runtime.roadmap_realization_runtime:validate_realization_dependencies",
     "spectrum_systems.modules.runtime.roadmap_realization_runtime:next_realization_status"
   ],
   "forbidden_patterns": [
