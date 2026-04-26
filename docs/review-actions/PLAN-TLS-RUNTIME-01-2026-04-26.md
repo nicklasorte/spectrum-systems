@@ -7,7 +7,7 @@ WIRE
 TLS-RUNTIME-01
 
 ## Objective
-Ensure TLS dependency-priority artifact generation is enforced during build and deployment so dashboard-3ls consumes a present artifact with fail-closed behavior.
+Ensure TLS dependency-priority artifact generation is verified during build and deployment so dashboard-3ls consumes a present artifact and fail-closed build behavior is verified.
 
 ## Declared files
 
@@ -25,7 +25,7 @@ None.
 
 ## Tests that must pass after execution
 1. Targeted tests validating TLS artifact failure mode and dashboard artifact load path.
-2. Any relevant build command that now enforces artifact existence.
+2. Any relevant build command that now requires artifact existence.
 
 ## Scope exclusions
 - Do not add ranking computation logic to dashboard runtime.
