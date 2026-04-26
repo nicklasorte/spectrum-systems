@@ -41,11 +41,25 @@ def main(argv: list[str] | None = None) -> int:
         default=str(REPO_ROOT / "artifacts"),
         help="The Phase 4 priority report is also published here so the dashboard can load it.",
     )
+    parser.add_argument(
+        "--candidates",
+        default=None,
+        help=(
+            "Comma-separated system_ids the operator is focused on (e.g. "
+            "H01,RFX,HOP,MET,METS). Used only to scope the printed summary; "
+            "the governed priority artifact still ranks the full registry."
+        ),
+    )
     args = parser.parse_args(argv)
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
     top_level_out = Path(args.top_level_out)
     top_level_out.mkdir(parents=True, exist_ok=True)
+    candidate_filter = (
+        {c.strip() for c in args.candidates.split(",") if c.strip()}
+        if args.candidates
+        else None
+    )
 
     print("[TLS-00] parsing system registry…", flush=True)
     graph = registry_parser.write_artifact(out_dir / "system_registry_dependency_graph.json")
@@ -83,7 +97,21 @@ def main(argv: list[str] | None = None) -> int:
     published.write_text(json.dumps(priority, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     print("OK")
-    print(json.dumps({"top_5": [{"rank": r["rank"], "system_id": r["system_id"], "score": r["score"]} for r in priority["top_5"]]}, indent=2))
+    summary = {
+        "top_5": [
+            {"rank": r["rank"], "system_id": r["system_id"], "score": r["score"]}
+            for r in priority["top_5"]
+        ],
+    }
+    if candidate_filter is not None:
+        candidate_rows = [
+            {"rank": r["rank"], "system_id": r["system_id"], "score": r["score"]}
+            for r in priority["ranked_systems"]
+            if r["system_id"] in candidate_filter
+        ]
+        summary["candidates"] = sorted(candidate_filter)
+        summary["candidate_ranking"] = candidate_rows
+    print(json.dumps(summary, indent=2))
     return 0
 
 
