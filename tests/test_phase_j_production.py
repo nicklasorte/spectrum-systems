@@ -71,3 +71,32 @@ class TestPhaseJProduction:
             controller = CanaryRolloutController(current_percentage=current)
             status = controller.get_rollout_status()
             assert status['next_increase_at_pct'] == expected_next
+
+    def test_canary_same_user_always_same_result(self):
+        """CANARY-FIX-01: Repeated calls for the same user_id are stable
+        across many iterations (regression for non-deterministic hash())."""
+        controller = CanaryRolloutController(current_percentage=10)
+        baseline = controller.should_use_production_data('user_42')
+        for _ in range(50):
+            assert controller.should_use_production_data('user_42') == baseline
+
+    def test_canary_zero_percent_selects_no_users(self):
+        """CANARY-FIX-01: 0% rollout must include zero users."""
+        controller = CanaryRolloutController(current_percentage=0)
+        for i in range(100):
+            assert controller.should_use_production_data(f'user_{i}') is False
+
+    def test_canary_full_percent_selects_all_users(self):
+        """CANARY-FIX-01: 100% rollout must include every user."""
+        controller = CanaryRolloutController(current_percentage=100)
+        for i in range(100):
+            assert controller.should_use_production_data(f'user_{i}') is True
+
+    def test_canary_distribution_stable_across_repeated_calls(self):
+        """CANARY-FIX-01: Two independently-constructed controllers at the
+        same percentage must agree on every user assignment."""
+        a = CanaryRolloutController(current_percentage=10)
+        b = CanaryRolloutController(current_percentage=10)
+        for i in range(100):
+            uid = f'user_{i}'
+            assert a.should_use_production_data(uid) == b.should_use_production_data(uid)

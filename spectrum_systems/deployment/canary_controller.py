@@ -1,5 +1,6 @@
 """Canary rollout controller for production data deployment."""
 
+import hashlib
 from datetime import datetime
 from typing import Dict, Any
 
@@ -13,9 +14,17 @@ class CanaryRolloutController:
         self.rollout_start_time = datetime.utcnow()
 
     def should_use_production_data(self, user_id: str) -> bool:
-        """Determine if this user should see production data."""
-        user_hash = hash(user_id) % 100
-        return user_hash < self.current_percentage
+        """Determine if this user should see production data.
+
+        Uses ``sha256(user_id)`` mapped to a stable bucket in ``[0, 100)``
+        rather than Python's built-in ``hash()``, which is randomized
+        between processes via PYTHONHASHSEED and produces inconsistent
+        canary distribution across runs. A user's bucket is fixed by their
+        id, so repeated calls always return the same result.
+        """
+        digest = hashlib.sha256(user_id.encode("utf-8")).digest()
+        bucket = int.from_bytes(digest[:8], "big") % 100
+        return bucket < self.current_percentage
 
     def record_metric(self, metric: str, value: float) -> None:
         """Track canary metrics."""
