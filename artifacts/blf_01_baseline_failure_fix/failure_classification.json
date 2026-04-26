@@ -31,7 +31,7 @@
       "primary_category": "runtime_logic_bug",
       "secondary_categories": ["guard_policy_gap"],
       "owner_surfaces": ["PQX", "test_harness"],
-      "rationale": "The runner's behavioral-proof subprocess (`_run_behavioral_tests`) shells out to a PATH-resolved `pytest`, which is a non-deterministic execution surface. PQX-equivalent execution authority requires reproducible invocation; the fix pins behavioral pytest invocations to the runner's interpreter (sys.executable -m pytest). The guard-policy gap is secondary: the policy already disapproved this kind of invocation but did not enforce determinism at execution time."
+      "rationale": "The runner's behavioral-proof subprocess (`_run_behavioral_tests`) shells out to a PATH-resolved `pytest`, which is a non-deterministic execution surface. PQX-equivalent execution authority requires reproducible invocation; the fix pins behavioral pytest invocations to the runner's interpreter (sys.executable -m pytest). The guard-policy gap is secondary: the policy already classified this kind of invocation as invalid but did not lock in determinism at execution time."
     }
   ],
   "category_legend": {

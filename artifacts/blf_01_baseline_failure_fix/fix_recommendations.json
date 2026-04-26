@@ -1,36 +1,36 @@
 {
-  "artifact_type": "blf_fix_decisions",
+  "artifact_type": "blf_fix_recommendations",
   "batch_id": "BLF-01",
   "generated_at": "2026-04-26T00:00:00Z",
   "commit_ref": "ff1b6bb1daf72aab1ccf78e0e37b2f3ae1513c18",
   "trace_id": "trace-blf-01-baseline-fixes",
-  "decisions": [
+  "recommendations": [
     {
       "failure_name": "test_authority_leak_guard_local::test_authority_leak_guard_passes_on_local_changes",
-      "fix_decision": "no_change_failure_not_reproduced",
+      "fix_recommendation": "no_change_failure_not_reproduced",
       "evidence_runs": [
         "python3 -m pytest tests/test_authority_leak_guard_local.py -v -> 1 passed",
         "python3 -m pytest tests/test_authority_leak_guard_local.py -v (re-run) -> 1 passed"
       ],
-      "rationale": "The failure was claimed pre-existing on the RFX-04 PR's working tree. On the current commit (ff1b6bb1) it is non-reproducible across two consecutive runs and across the broad pattern run. Marking 'no_change_failure_not_reproduced' is permitted because the failure is not flaky in our environment — it is consistently absent.",
+      "rationale": "The failure was reported pre-existing on the RFX-04 working tree. On the current commit (ff1b6bb1) it is non-reproducible across two consecutive runs and across the broader pattern run. Marking 'no_change_failure_not_reproduced' is permitted because the failure is consistently absent — not flaky.",
       "guard_against_dodge": "Listed in BLF gate so any future re-emergence becomes a blocking signal."
     },
     {
       "failure_name": "test_contract_impact_analysis",
-      "fix_decision": "test_fixture_fix",
+      "fix_recommendation": "test_fixture_fix",
       "rationale": "Test fixture _init_repo silently couples to host commit.gpgsign config. Fixture is at fault, not the production analyzer. Pinning local commit.gpgsign=false restores deterministic isolation without weakening any production guard or schema. Stricter than the previous fixture: it now denies the host the ability to influence subprocess git commit semantics.",
       "files_changed": ["tests/test_contract_impact_analysis.py"]
     },
     {
       "failure_name": "test_github_pr_autofix_review_artifact_validation",
-      "fix_decision": "test_fixture_fix",
+      "fix_recommendation": "test_fixture_fix",
       "rationale": "Same fixture-isolation gap as test_contract_impact_analysis. Pinning local commit.gpgsign=false in _init_git_repo restores determinism. The production governed-autofix module is intentionally NOT modified to avoid widening BLF-01 scope into an authority-vocabulary cleanup of pre-existing tokens; because the production code commits inside the fixture-sealed temp repo, the fixture pin is sufficient.",
       "files_changed": ["tests/test_github_pr_autofix_review_artifact_validation.py"]
     },
     {
       "failure_name": "test_roadmap_realization_runner::test_verified_requires_stricter_behavioral_coverage_than_runtime_realized",
-      "fix_decision": "code_fix",
-      "rationale": "The runner's PQX-equivalent execution authority requires deterministic reproduction of behavioral proofs. PATH-resolved pytest is non-deterministic. The fix pins behavioral subprocess pytest invocations to sys.executable. Strictly safer: it eliminates an implicit PATH dependency without changing the contract's classification or approval surface.",
+      "fix_recommendation": "code_fix",
+      "rationale": "The runner's PQX-equivalent execution authority requires deterministic reproduction of behavioral proofs. PATH-resolved pytest is non-deterministic. The fix pins behavioral subprocess pytest invocations to sys.executable. Strictly safer: it eliminates an implicit PATH dependency without changing the contract's classification or review-eligibility surface.",
       "files_changed": ["scripts/roadmap_realization_runner.py"]
     }
   ],

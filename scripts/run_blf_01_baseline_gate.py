@@ -2,9 +2,9 @@
 """BLF-01 baseline gate: verify the BLF-01 artifact surface is well-formed.
 
 Fail-closed verification that every target failure tracked by BLF-01 has
-inventory, classification, root-cause, fix-decision, and validation evidence
-present in the governed artifact set, and that the delivery report cannot
-declare H01 readiness while blocking gaps remain.
+inventory, classification, root-cause, fix-recommendation, and validation
+evidence present in the governed artifact set, and that the delivery report
+cannot signal H01 readiness while blocking gaps remain.
 
 Usage:
     python scripts/run_blf_01_baseline_gate.py [--artifact-dir DIR]
@@ -12,6 +12,9 @@ Usage:
 Exit codes:
     0 — all BLF-01 gate checks pass
     1 — one or more checks failed (printed as machine-readable reason codes)
+
+This script is a non-owning advisory gate. It produces a readiness signal
+for review by canonical owners; it does not itself act as a gate authority.
 """
 
 from __future__ import annotations
@@ -29,7 +32,7 @@ REQUIRED_RECORDS = (
     "failure_inventory.json",
     "failure_classification.json",
     "root_cause_analysis.json",
-    "fix_decisions.json",
+    "fix_recommendations.json",
     "control_validation.json",
     "replay_validation.json",
     "delivery_report.json",
@@ -42,7 +45,7 @@ TARGET_FAILURES = (
     "test_roadmap_realization_runner::test_verified_requires_stricter_behavioral_coverage_than_runtime_realized",
 )
 
-ALLOWED_FIX_DECISIONS = {
+RECOGNIZED_FIX_RECOMMENDATIONS = {
     "code_fix",
     "test_fixture_fix",
     "contract_schema_fix",
@@ -53,7 +56,7 @@ ALLOWED_FIX_DECISIONS = {
 }
 
 VALID_DELIVERY_STATUSES = {"pass", "blocked"}
-VALID_H01_VERDICTS = {"ready", "blocked"}
+VALID_H01_READINESS_SIGNALS = {"ready", "blocked"}
 
 
 class BlfGateError(ValueError):
@@ -109,7 +112,7 @@ def run_gate(artifact_dir: Path) -> dict[str, Any]:
     inventory = records["failure_inventory.json"]
     classification = records["failure_classification.json"]
     rca = records["root_cause_analysis.json"]
-    fixes = records["fix_decisions.json"]
+    fixes = records["fix_recommendations.json"]
     control = records["control_validation.json"]
     delivery = records["delivery_report.json"]
 
@@ -122,12 +125,12 @@ def run_gate(artifact_dir: Path) -> dict[str, Any]:
     rca_names = _failures_in(rca, "analyses", "failure_name")
     reasons.extend(_coverage_check(rca_names, TARGET_FAILURES, "root_cause_missing"))
 
-    fixes_names = _failures_in(fixes, "decisions", "failure_name")
-    reasons.extend(_coverage_check(fixes_names, TARGET_FAILURES, "fix_decision_missing"))
+    fixes_names = _failures_in(fixes, "recommendations", "failure_name")
+    reasons.extend(_coverage_check(fixes_names, TARGET_FAILURES, "fix_recommendation_missing"))
 
-    for decision in fixes.get("decisions", []):
-        if decision.get("fix_decision") not in ALLOWED_FIX_DECISIONS:
-            reasons.append(f"unknown_fix_decision:{decision.get('failure_name')}")
+    for entry in fixes.get("recommendations", []):
+        if entry.get("fix_recommendation") not in RECOGNIZED_FIX_RECOMMENDATIONS:
+            reasons.append(f"unknown_fix_recommendation:{entry.get('failure_name')}")
 
     commands = control.get("commands", [])
     if not isinstance(commands, list) or not commands:
@@ -146,9 +149,9 @@ def run_gate(artifact_dir: Path) -> dict[str, Any]:
     if delivery_status not in VALID_DELIVERY_STATUSES:
         reasons.append(f"invalid_delivery_status:{delivery_status}")
 
-    h01_verdict = delivery.get("h01_readiness")
-    if h01_verdict not in VALID_H01_VERDICTS:
-        reasons.append(f"invalid_h01_readiness:{h01_verdict}")
+    h01_signal = delivery.get("h01_readiness")
+    if h01_signal not in VALID_H01_READINESS_SIGNALS:
+        reasons.append(f"invalid_h01_readiness:{h01_signal}")
 
     remaining = delivery.get("remaining_blockers", [])
     if not isinstance(remaining, list):
@@ -158,7 +161,7 @@ def run_gate(artifact_dir: Path) -> dict[str, Any]:
     if delivery_status == "pass" and remaining:
         reasons.append("delivery_status_pass_with_remaining_blockers")
 
-    if h01_verdict == "ready" and (delivery_status != "pass" or remaining):
+    if h01_signal == "ready" and (delivery_status != "pass" or remaining):
         reasons.append("h01_ready_but_blockers_remain")
 
     status = "pass" if not reasons else "fail"

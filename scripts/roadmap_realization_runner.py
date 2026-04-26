@@ -22,8 +22,8 @@ from spectrum_systems.contracts import validate_artifact
 from spectrum_systems.modules.runtime.roadmap_realization_runtime import (
     RoadmapRealizationRuntimeError,
     authoritative_start_status,
-    enforce_realization_dependencies,
     next_realization_status,
+    validate_realization_dependencies,
 )
 
 SUPPORTED_STEPS = ["RF-02", "RF-03"]
@@ -48,8 +48,8 @@ NORMALIZED_FORBIDDEN_SIGNATURES = (
     "directstaticpayload",
 )
 
-APPROVED_TEST_PREFIXES = ("pytest tests/", "python -m pytest tests/")
-APPROVED_PYTEST_TARGET_PATTERNS = (
+REVIEWED_TEST_PREFIXES = ("pytest tests/", "python -m pytest tests/")
+REVIEWED_PYTEST_TARGET_PATTERNS = (
     re.compile(r"^tests/test_[\w/.-]+\.py$"),
     re.compile(r"^tests/[\w./-]+::[\w.\[\]-]+$"),
 )
@@ -263,7 +263,7 @@ def _command_has_weak_k_expression(command: str) -> bool:
 
 
 def _classify_behavioral_test_command(command: str) -> dict[str, Any]:
-    approved_prefix = any(command.startswith(prefix) for prefix in APPROVED_TEST_PREFIXES)
+    reviewed_prefix = any(command.startswith(prefix) for prefix in REVIEWED_TEST_PREFIXES)
     rejected_reason = ""
     for pattern in REJECTED_TEST_PATTERNS:
         if pattern.search(command):
@@ -272,7 +272,7 @@ def _classify_behavioral_test_command(command: str) -> dict[str, Any]:
 
     pytest_targets = _extract_pytest_targets(command)
     target_pattern_ok = bool(pytest_targets) and all(
-        any(pattern.match(target) for pattern in APPROVED_PYTEST_TARGET_PATTERNS) for target in pytest_targets
+        any(pattern.match(target) for pattern in REVIEWED_PYTEST_TARGET_PATTERNS) for target in pytest_targets
     )
     has_selector = "-k" in shlex.split(command) or any("::" in target for target in pytest_targets)
     weak_reasons: list[str] = []
@@ -283,19 +283,19 @@ def _classify_behavioral_test_command(command: str) -> dict[str, Any]:
         weak_reasons.append("weak pytest -k expression indicates non-behavioral string/smoke filtering")
 
     classification = "behavioral"
-    approved = False
-    if not approved_prefix or rejected_reason or not target_pattern_ok or not has_selector:
+    reviewed = False
+    if not reviewed_prefix or rejected_reason or not target_pattern_ok or not has_selector:
         classification = "invalid"
     elif weak_reasons:
         classification = "weak"
     else:
-        approved = True
+        reviewed = True
 
     return {
         "command": command,
         "classification": classification,
-        "approved": approved,
-        "approved_prefix": approved_prefix,
+        "reviewed": reviewed,
+        "reviewed_prefix": reviewed_prefix,
         "pytest_target_patterns_ok": target_pattern_ok,
         "has_selector": has_selector,
         "pytest_targets": pytest_targets,
@@ -541,7 +541,7 @@ def realize_steps(
 
         dependency_passed = True
         try:
-            enforce_realization_dependencies(
+            validate_realization_dependencies(
                 step_id=step_id,
                 depends_on=contract["depends_on"],
                 attempted_steps=attempted_steps,
@@ -577,8 +577,8 @@ def realize_steps(
         behavioral_test_policy_checks[step_id] = test_policy_checks
         behavioral_results: list[dict[str, Any]] = []
         if test_policy_passed:
-            approved_commands = [item["command"] for item in test_policy_checks["commands"] if item["classification"] == "behavioral"]
-            behavioral_results = _run_behavioral_tests(approved_commands, repo_root)
+            reviewed_commands = [item["command"] for item in test_policy_checks["commands"] if item["classification"] == "behavioral"]
+            behavioral_results = _run_behavioral_tests(reviewed_commands, repo_root)
         behavioral_test_results[step_id] = behavioral_results
         behavioral_passed = test_policy_passed and all(result["passed"] for result in behavioral_results)
         if not behavioral_passed:

@@ -28,7 +28,7 @@ def authoritative_start_status(status: str) -> str:
     return status
 
 
-def enforce_realization_dependencies(
+def validate_realization_dependencies(
     *,
     step_id: str,
     depends_on: Iterable[str],
