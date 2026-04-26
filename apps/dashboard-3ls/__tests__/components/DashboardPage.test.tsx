@@ -172,6 +172,7 @@ describe('DashboardPage panels', () => {
         priority_order: ['a','b','c','d','e'],
         penalties: ['deprecated','unknown'],
         ranked_systems: [],
+        global_ranked_systems: [],
         top_5: [
           {
             rank: 1,
@@ -202,6 +203,52 @@ describe('DashboardPage panels', () => {
             trust_state: 'freeze_signal',
           },
         ],
+        requested_candidate_set: ['H01', 'RFX', 'HOP', 'MET', 'METS'],
+        requested_candidate_ranking: [
+          {
+            requested_rank: 1,
+            global_rank: 7,
+            system_id: 'HOP',
+            classification: 'active_system',
+            score: 121,
+            recommended_action: 'finish_hardening',
+            why_now: 'unlocks downstream',
+            prerequisite_systems: ['EVL'],
+            trust_gap_signals: ['missing_observability'],
+            finish_definition: 'resolve signal(missing_observability)',
+            risk_if_built_before_prerequisites: 'higher risk',
+          },
+          {
+            requested_rank: 2,
+            global_rank: 10,
+            system_id: 'H01',
+            classification: 'h_slice',
+            score: 88,
+            recommended_action: 'investigate',
+            why_now: 'slice candidate',
+            prerequisite_systems: [],
+            trust_gap_signals: [],
+            finish_definition: 'retrieve evidence',
+            risk_if_built_before_prerequisites: 'no higher-priority upstream trust prerequisite detected in TLS ranking',
+          },
+          {
+            requested_rank: 3,
+            global_rank: null,
+            system_id: 'RFX',
+            classification: 'unknown',
+            score: null,
+            recommended_action: 'investigate:classify_or_reject',
+            why_now: 'unknown',
+            prerequisite_systems: [],
+            trust_gap_signals: [],
+            finish_definition: 'retrieve registry and evidence before build prioritization',
+            risk_if_built_before_prerequisites: 'unknown risk until candidate is classified',
+            ambiguity_reason: 'repo_only_candidate_no_registry_record',
+          },
+        ],
+        ambiguous_requested_candidates: [
+          { system_id: 'RFX', ambiguity_reason: 'repo_only_candidate_no_registry_record' },
+        ],
       },
       generated_at: new Date().toISOString(),
     };
@@ -218,6 +265,9 @@ describe('DashboardPage panels', () => {
       expect(rows[1]).toHaveAttribute('data-system-id', 'CDE');
       expect(within(rows[0]).getAllByText(/missing_eval/).length).toBeGreaterThan(0);
       expect(rows[0].textContent).toContain('Run TLS-FIX-EVL');
+      const requestedRows = within(panel).getAllByTestId('requested-candidate-row');
+      expect(requestedRows.length).toBeGreaterThan(0);
+      expect(within(panel).getByTestId('requested-candidate-ambiguity')).toHaveTextContent(/RFX/);
     });
   });
 
@@ -230,7 +280,11 @@ describe('DashboardPage panels', () => {
         priority_order: ['a','b','c','d','e'],
         penalties: [],
         ranked_systems: [],
+        global_ranked_systems: [],
         top_5: [],
+        requested_candidate_set: [],
+        requested_candidate_ranking: [],
+        ambiguous_requested_candidates: [],
       },
       reason: 'control_signal=freeze_signal',
     };
@@ -240,6 +294,32 @@ describe('DashboardPage panels', () => {
       const panel = screen.getByTestId('next-systems-panel');
       expect(panel).toHaveAttribute('data-state', 'freeze_signal');
       expect(within(panel).getByTestId('next-systems-state-banner')).toHaveTextContent(/FREEZE_SIGNAL/i);
+    });
+  });
+
+  it('requested candidate section shows empty-state guidance when no candidate set is provided', async () => {
+    const priority = {
+      state: 'ok',
+      payload: {
+        schema_version: 'tls-04.v1',
+        phase: 'TLS-04',
+        priority_order: ['a', 'b', 'c', 'd', 'e'],
+        penalties: [],
+        ranked_systems: [],
+        global_ranked_systems: [],
+        top_5: [],
+        requested_candidate_set: [],
+        requested_candidate_ranking: [],
+        ambiguous_requested_candidates: [],
+      },
+      generated_at: new Date().toISOString(),
+    };
+    setupFetch(mockHealth, mockIntelligence, mockSystems, mockRGE, priority);
+    render(<DashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('requested-candidate-empty')).toHaveTextContent(
+        /No requested candidate set provided/i,
+      );
     });
   });
 });

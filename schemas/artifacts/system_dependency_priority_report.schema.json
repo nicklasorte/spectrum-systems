@@ -4,7 +4,18 @@
   "title": "system_dependency_priority_report",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "phase", "priority_order", "penalties", "ranked_systems", "top_5"],
+  "required": [
+    "schema_version",
+    "phase",
+    "priority_order",
+    "penalties",
+    "ranked_systems",
+    "global_ranked_systems",
+    "top_5",
+    "requested_candidate_set",
+    "requested_candidate_ranking",
+    "ambiguous_requested_candidates"
+  ],
   "properties": {
     "schema_version": { "type": "string", "const": "tls-04.v1" },
     "phase": { "type": "string", "const": "TLS-04" },
@@ -23,10 +34,35 @@
       "minItems": 1,
       "items": { "$ref": "#/definitions/ranked_system" }
     },
+    "global_ranked_systems": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/ranked_system" }
+    },
     "top_5": {
       "type": "array",
       "maxItems": 5,
       "items": { "$ref": "#/definitions/ranked_system" }
+    },
+    "requested_candidate_set": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "requested_candidate_ranking": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/requested_candidate_row" }
+    },
+    "ambiguous_requested_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["system_id", "ambiguity_reason"],
+        "properties": {
+          "system_id": { "type": "string" },
+          "ambiguity_reason": { "type": "string" }
+        }
+      }
     }
   },
   "definitions": {
@@ -87,6 +123,35 @@
         "next_prompt": { "type": "string" },
         "trust_state": { "type": "string" },
         "unknown_justification": { "type": "string" }
+      }
+    },
+    "requested_candidate_row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requested_rank",
+        "system_id",
+        "classification",
+        "recommended_action",
+        "why_now",
+        "prerequisite_systems",
+        "trust_gap_signals",
+        "finish_definition",
+        "risk_if_built_before_prerequisites"
+      ],
+      "properties": {
+        "requested_rank": { "type": "integer", "minimum": 1 },
+        "global_rank": { "type": ["integer", "null"], "minimum": 1 },
+        "system_id": { "type": "string" },
+        "classification": { "type": "string" },
+        "score": { "type": ["number", "null"] },
+        "recommended_action": { "type": "string" },
+        "why_now": { "type": "string" },
+        "prerequisite_systems": { "type": "array", "items": { "type": "string" } },
+        "trust_gap_signals": { "type": "array", "items": { "type": "string" } },
+        "finish_definition": { "type": "string" },
+        "risk_if_built_before_prerequisites": { "type": "string" },
+        "ambiguity_reason": { "type": "string" }
       }
     }
   }

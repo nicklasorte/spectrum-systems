@@ -40,6 +40,7 @@ SCHEMA_VERSION = "tls-02.v1"
 REPO_DETECTION_CANDIDATES = ("RFX", "MET", "METS", "H01")
 H_SLICE_FORCED = {"H01"}
 UNKNOWN_UNLESS_PROVEN = {"MET", "METS"}
+REGISTRY_CONFIRMED_ACTIVE = {"HOP"}
 
 
 def _build_registry_index(graph: Dict) -> Dict[str, str]:
@@ -98,6 +99,9 @@ def classify_systems(
         if sid in H_SLICE_FORCED:
             classification = "h_slice"
             reason = "spec_override:H01_is_h_slice"
+        elif sid in REGISTRY_CONFIRMED_ACTIVE and registry_class == "active_registry":
+            classification = "active_system"
+            reason = "spec_override:registry_confirmed_active"
         elif sid in UNKNOWN_UNLESS_PROVEN:
             classification = "active_system" if registry_class == "active_registry" and ev_count > 0 else "unknown"
             reason = (

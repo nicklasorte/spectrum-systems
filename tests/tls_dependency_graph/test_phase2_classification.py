@@ -48,6 +48,16 @@ def test_rfx_is_unknown_when_only_repo_detected(registry_fixture_path: Path, rep
     out = classify_systems(graph, evidence, repo_detected_candidates=["RFX"])
     by_sid = {c["system_id"]: c for c in out["candidates"]}
     assert by_sid["RFX"]["classification"] == "unknown"
+    assert by_sid["RFX"]["reason"] == "repo_only_candidate_no_registry_record"
+
+
+def test_hop_classified_from_registry(registry_fixture_path: Path, repo_fixture: Path) -> None:
+    graph, evidence = _build(registry_fixture_path, repo_fixture)
+    out = classify_systems(graph, evidence)
+    by_sid = {c["system_id"]: c for c in out["candidates"]}
+    if "HOP" not in by_sid:
+        pytest.skip("fixture does not include HOP")
+    assert by_sid["HOP"]["classification"] == "active_system"
 
 
 def test_met_systems_are_unknown_unless_proven(registry_fixture_path: Path, repo_fixture: Path) -> None:
