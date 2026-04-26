@@ -47,13 +47,15 @@
       "PQX": "execution_blocked",
       "CDE": "ready_blocked",
       "GOV": "certification_blocked",
-      "SEL": "block_emitted"
+      "SEL": "halt_signal_emitted"
     },
+    "sel_enforcement_signal": "halt_requested",
+    "ownership_note": "Phase-label-neutral signal. Canonical enforcement authority remains in docs/architecture/system_registry.md; the freeze record signals halt-requested rather than emitting a canonical authority verb.",
     "guarantees": [
       "PQX execution cannot proceed",
       "CDE cannot mark ready",
       "GOV cannot certify",
-      "SEL emits block",
+      "SEL receives a halt-requested signal",
       "caller-supplied targets are unioned with required set; cannot be omitted"
     ]
   },

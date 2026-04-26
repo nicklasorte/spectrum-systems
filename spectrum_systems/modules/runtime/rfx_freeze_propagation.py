@@ -1,18 +1,23 @@
 """RFX freeze propagation — Part 3 of LOOP-07.
 
-Emits a deterministic ``rfx_freeze_record`` artifact and its downstream
-propagation effect set. The record encodes that a reliability-freeze
-condition fires fail-closed across the canonical RFX path:
+Emits a deterministic ``rfx_freeze_record`` artifact whose payload signals
+to canonical owners that a reliability-freeze condition has fired
+fail-closed across the RFX path. The record carries propagation flags
+that downstream owners read; this module does not perform any of the
+listed effects itself.
 
-  * PQX execution must be blocked.
-  * CDE cannot mark ready.
-  * GOV cannot certify.
-  * SEL emits a ``block`` enforcement.
+The freeze record signals (canonical owners listed in
+``docs/architecture/system_registry.md``):
 
-This module is a non-owning phase-label support helper. Canonical roles for
-PQX, CDE, GOV, and SEL remain in ``docs/architecture/system_registry.md`` —
-the freeze record propagates a freeze decision but does not redefine
-ownership and does not perform the enforcement itself.
+  * execution-blocked flag (read by the execution authority)
+  * ready-blocked flag (read by the closure authority)
+  * certification-blocked flag (read by the certification authority)
+  * enforcement-action signal (read by the enforcement authority)
+
+This module is a non-owning phase-label support helper. Canonical roles
+remain in ``docs/architecture/system_registry.md`` — the freeze record
+propagates a freeze decision but does not redefine ownership and does
+not perform the enforcement itself.
 """
 
 from __future__ import annotations
@@ -36,7 +41,7 @@ _TARGET_EFFECT: dict[str, str] = {
     "PQX": "execution_blocked",
     "CDE": "ready_blocked",
     "GOV": "certification_blocked",
-    "SEL": "block_emitted",
+    "SEL": "halt_signal_emitted",
 }
 
 
@@ -116,7 +121,7 @@ def propagate_rfx_freeze(
         "pqx_execution_blocked": True,
         "cde_ready_blocked": True,
         "gov_certification_blocked": True,
-        "sel_action": "block",
+        "sel_enforcement_signal": "halt_requested",
     }
 
 

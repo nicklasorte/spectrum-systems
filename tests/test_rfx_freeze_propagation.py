@@ -21,7 +21,7 @@ def test_propagate_emits_record_with_required_targets() -> None:
     assert rec["pqx_execution_blocked"] is True
     assert rec["cde_ready_blocked"] is True
     assert rec["gov_certification_blocked"] is True
-    assert rec["sel_action"] == "block"
+    assert rec["sel_enforcement_signal"] == "halt_requested"
     for target in ("PQX", "CDE", "GOV", "SEL"):
         assert target in rec["downstream_targets"]
         assert target in rec["propagation"]

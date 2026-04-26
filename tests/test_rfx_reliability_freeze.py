@@ -48,7 +48,7 @@ def test_burst_failure_freezes() -> None:
     rec = exc.value.freeze_record
     assert rec is not None
     assert rec["pqx_execution_blocked"] is True
-    assert rec["sel_action"] == "block"
+    assert rec["sel_enforcement_signal"] == "halt_requested"
 
 
 def test_recurring_pattern_freezes() -> None:
