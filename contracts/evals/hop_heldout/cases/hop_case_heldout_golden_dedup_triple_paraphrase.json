@@ -1,0 +1,56 @@
+{
+  "artifact_id": "hop_eval_case_5872d66a3c383b75",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "golden",
+  "content_hash": "sha256:5872d66a3c383b75d40fecdf2e452ea38b607ac40fc4c9ca1a1cc02b14d4219e",
+  "eval_case_id": "hop_case_heldout_golden_dedup_triple_paraphrase",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "duplicate_questions"
+  ],
+  "input": {
+    "transcript_id": "t_heldout_dedup_triple",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "Is the held-out cohort disjoint?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Yes, the held-out cohort is disjoint by transcript_id."
+      },
+      {
+        "speaker": "user",
+        "text": "Is the held-out cohort disjoint?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Yes, the held-out cohort is disjoint by transcript_id."
+      },
+      {
+        "speaker": "user",
+        "text": "Is the held-out cohort disjoint?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "Yes, the held-out cohort is disjoint by transcript_id."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "expected_qa_pairs",
+    "rules": {
+      "expected_questions_substrings": [
+        "held-out cohort disjoint"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:golden_dedup_triple_paraphrase",
+    "related": []
+  }
+}

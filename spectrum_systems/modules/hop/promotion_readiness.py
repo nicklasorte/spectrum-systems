@@ -1,8 +1,8 @@
-"""Advisory release-readiness signal builder for the harness feedback surface.
+"""Advisory release_readiness_signal builder for the harness feedback surface.
 
-REL is the canonical release/rollback owner. This module merely packages
+REL is the canonical release/restoration owner. This module merely packages
 evaluator evidence (search-eval score, held-out score, trace completeness,
-risk-failure hypotheses, quarantine signals) into a structured
+risk-failure hypotheses, withhold_signal entries) into a structured
 ``hop_harness_release_readiness_signal`` artifact for REL/CDE/control
 owners to consult. The signal carries no execution authority.
 
@@ -19,15 +19,15 @@ Required checks (fail-closed):
 - ``heldout_score_threshold`` — held-out-eval score >= configured floor.
 - ``trace_completeness`` — both runs' traces complete on every case.
 - ``no_risk_failures`` — zero failure hypotheses with
-  ``blocks_promotion=true`` for the candidate.
+  ``release_block_signal=true`` for the candidate.
 - ``candidate_admitted`` — candidate artifact is readable from the store.
 - ``search_set_disjoint_from_heldout`` — eval_set_ids must not match.
-- ``candidate_not_quarantined`` — no ``quarantine`` rollback signal.
+- ``candidate_not_withheld`` — no ``withhold_signal`` release_restoration_signal.
 - ``scores_admitted`` — both score artifacts live in the store.
 
 Any check that cannot be evaluated forces ``readiness_signal=risk_signal``.
 There is no path that produces ``ready_signal`` while a required check
-fails. The signal is informational only; release/rollback authority
+fails. The signal is informational only; release/restoration authority
 remains with REL.
 """
 
@@ -54,10 +54,6 @@ class ReadinessSignalError(Exception):
     """Raised on infrastructure errors inside the readiness builder."""
 
 
-# Backwards-compatible alias.
-PromotionGateError = ReadinessSignalError
-
-
 def _utcnow() -> str:
     return (
         datetime.now(tz=timezone.utc)
@@ -81,20 +77,12 @@ class ReadinessSignalConfig:
     min_trace_completeness: float = 1.0
 
 
-# Backwards-compatible alias.
-PromotionGateConfig = ReadinessSignalConfig
-
-
 @dataclass(frozen=True)
 class ReadinessSignalInputs:
     candidate_id: str
     search_score: Mapping[str, Any]
     heldout_score: Mapping[str, Any]
     risk_failures: tuple[Mapping[str, Any], ...] = ()
-
-
-# Backwards-compatible alias.
-PromotionGateInputs = ReadinessSignalInputs
 
 
 def _check_search_score_threshold(
@@ -133,7 +121,7 @@ def _check_no_risk_failures(
 ) -> tuple[bool, str]:
     risks = [
         f for f in inputs.risk_failures
-        if bool(f.get("blocks_promotion"))
+        if bool(f.get("release_block_signal"))
     ]
     if not risks:
         return True, "no_risk_failures"
@@ -168,18 +156,18 @@ def _check_search_disjoint_from_heldout(
     return True, f"search={s_id},heldout={h_id}"
 
 
-def _check_candidate_not_quarantined(
+def _check_candidate_not_withheld(
     inputs: ReadinessSignalInputs, _: ReadinessSignalConfig, *, store: ExperienceStore
 ) -> tuple[bool, str]:
-    """A candidate with a quarantine signal must never reach ready_signal."""
+    """A candidate with a withhold_signal must never reach ready_signal."""
     for rec in store.iter_index(artifact_type="hop_harness_rollback_signal"):
         fields = rec.get("fields", {}) or {}
         if (
             fields.get("subject_candidate_id") == inputs.candidate_id
-            and fields.get("recommended_action") == "quarantine"
+            and fields.get("recommended_action") == "withhold_signal"
         ):
-            return False, f"quarantine_signal_present:{rec.get('artifact_id')}"
-    return True, "no_quarantine_signal"
+            return False, f"withhold_signal_present:{rec.get('artifact_id')}"
+    return True, "no_withhold_signal"
 
 
 def _check_scores_admitted(
@@ -241,8 +229,8 @@ def evaluate_release_readiness(
     _record("candidate_admitted", p, d)
     p, d = _check_scores_admitted(inputs, cfg, store=store)
     _record("scores_admitted", p, d)
-    p, d = _check_candidate_not_quarantined(inputs, cfg, store=store)
-    _record("candidate_not_quarantined", p, d)
+    p, d = _check_candidate_not_withheld(inputs, cfg, store=store)
+    _record("candidate_not_withheld", p, d)
     p, d = _check_search_disjoint_from_heldout(inputs, cfg)
     _record("search_set_disjoint_from_heldout", p, d)
     p, d = _check_search_score_threshold(inputs, cfg)
@@ -281,7 +269,7 @@ def evaluate_release_readiness(
             float(inputs.heldout_score.get("trace_completeness", 0.0)),
         ),
         "risk_failure_count": sum(
-            1 for f in inputs.risk_failures if bool(f.get("blocks_promotion"))
+            1 for f in inputs.risk_failures if bool(f.get("release_block_signal"))
         ),
         "readiness_signal": readiness_signal,
         "rationale": rationale,
@@ -294,14 +282,10 @@ def evaluate_release_readiness(
     return payload
 
 
-# Backwards-compatible alias.
-evaluate_promotion = evaluate_release_readiness
-
-
 def list_risk_failures_for_candidate(
     store: ExperienceStore, candidate_id: str
 ) -> tuple[Mapping[str, Any], ...]:
-    """Read failure hypotheses with blocks_promotion=true for a candidate.
+    """Read failure hypotheses with release_block_signal=true for a candidate.
 
     Callers can pass the returned tuple directly into
     ``ReadinessSignalInputs.risk_failures``.
@@ -314,13 +298,9 @@ def list_risk_failures_for_candidate(
             )
         except HopStoreError:
             continue
-        if bool(payload.get("blocks_promotion")):
+        if bool(payload.get("release_block_signal")):
             out.append(payload)
     return tuple(out)
-
-
-# Backwards-compatible alias.
-list_blocking_failures_for_candidate = list_risk_failures_for_candidate
 
 
 def _logical_signal_id(inputs: ReadinessSignalInputs) -> str:
@@ -398,7 +378,3 @@ def iter_risk_signals(
             )
         except HopStoreError:
             continue
-
-
-# Backwards-compatible alias.
-iter_blocking_decisions = iter_risk_signals

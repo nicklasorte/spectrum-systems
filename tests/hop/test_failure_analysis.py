@@ -127,7 +127,7 @@ def test_improvement_hypothesis_validates() -> None:
     )
     assert hypothesis["failure_class"] == "improvement"
     assert hypothesis["severity"] == "info"
-    assert hypothesis["blocks_promotion"] is False
+    assert hypothesis["release_block_signal"] is False
 
 
 def test_neutral_hypothesis() -> None:

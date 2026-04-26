@@ -172,7 +172,7 @@ def _build_failure(
         "severity": severity,
         "evidence": evidence,
         "detected_at": _utcnow(),
-        "blocks_promotion": severity == "reject",
+        "release_block_signal": severity == "reject",
     }
     finalize_artifact(payload, id_prefix="hop_failure_")
     return payload

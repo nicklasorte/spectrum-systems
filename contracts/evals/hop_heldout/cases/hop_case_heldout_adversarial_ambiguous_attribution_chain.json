@@ -1,0 +1,40 @@
+{
+  "artifact_id": "hop_eval_case_b2c409a317120842",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "adversarial",
+  "content_hash": "sha256:b2c409a31712084241c4c058427e96fd32e5a76d065f48f80f7bb78f48fee8b1",
+  "eval_case_id": "hop_case_heldout_adversarial_ambiguous_attribution_chain",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "ambiguous_attribution"
+  ],
+  "input": {
+    "transcript_id": "t_heldout_ambiguous_chain",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "What is a readiness signal?"
+      },
+      {
+        "speaker": "user",
+        "text": "What is a restoration signal?"
+      },
+      {
+        "speaker": "user",
+        "text": "What is a routing observation?"
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "rejection_expected",
+    "rules": {
+      "expect_rejection": true
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:adversarial_ambiguous_attribution_chain",
+    "related": []
+  }
+}

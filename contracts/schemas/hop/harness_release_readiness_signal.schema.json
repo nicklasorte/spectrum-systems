@@ -63,7 +63,7 @@
               "no_risk_failures",
               "candidate_admitted",
               "search_set_disjoint_from_heldout",
-              "candidate_not_quarantined",
+              "candidate_not_withheld",
               "scores_admitted"
             ]
           },

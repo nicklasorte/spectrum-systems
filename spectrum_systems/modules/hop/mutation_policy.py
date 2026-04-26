@@ -102,7 +102,7 @@ FORBIDDEN_IMPORTS: frozenset[str] = frozenset(
 )
 
 # Modules whose surface is allowed because the harness needs them and they
-# do not expose decision/orchestration/persistence authority.
+# do not expose orchestration/persistence/owner-routing authority.
 ALLOWED_SAFE_IMPORTS: frozenset[str] = frozenset(
     {
         "spectrum_systems.modules.hop.artifacts",
@@ -189,7 +189,7 @@ def _build_failure(
         "severity": "reject",
         "evidence": evidence,
         "detected_at": _utcnow(),
-        "blocks_promotion": True,
+        "release_block_signal": True,
     }
     finalize_artifact(payload, id_prefix="hop_failure_")
     return payload

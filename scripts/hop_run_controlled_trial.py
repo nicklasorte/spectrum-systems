@@ -8,7 +8,7 @@ This script is the empirical validator for HOP Phase 1 (HOP-003C-004). It:
 4. Persists the trial summary and surfaces a structured JSON report on stdout.
 
 The script writes only to the supplied store root. It never mutates the eval
-set, never bypasses the sandbox, and never claims promotion authority.
+set, never bypasses the sandbox, and never claims release/advancement authority.
 """
 
 from __future__ import annotations

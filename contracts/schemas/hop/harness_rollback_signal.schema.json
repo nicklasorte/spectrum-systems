@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/hop/harness_rollback_signal.schema.json",
-  "title": "Harness Rollback Signal",
-  "description": "Advisory rollback signal produced by the harness feedback surface. The signal records evidence and a recommended_action for the canonical release owner (REL) to act on. It is informational only and confers no execution authority on the harness module.",
+  "title": "Harness Release Restoration Signal",
+  "description": "Advisory release_restoration_signal produced by the harness feedback surface. The signal records evidence and a recommended_action_signal for the canonical release owner (REL) to act on. It is informational only and confers no execution authority on the harness module.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -35,7 +35,7 @@
       "type": ["string", "null"],
       "pattern": "^[a-z0-9_-]+$"
     },
-    "recommended_action": {"type": "string", "enum": ["revert", "quarantine"]},
+    "recommended_action": {"type": "string", "enum": ["revert", "withhold_signal"]},
     "reason": {
       "type": "string",
       "enum": [
@@ -44,7 +44,7 @@
         "trace_incomplete",
         "control_plane_directive",
         "operator_request",
-        "promotion_gate_block"
+        "release_block_signal"
       ]
     },
     "evidence": {

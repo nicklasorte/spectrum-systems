@@ -25,11 +25,11 @@ BATCH-2 adds *bounded* optimization:
 Authority boundaries (unchanged):
 
 - The proposer is advisory only. It never decides, persists, or
-  promotes; those rights live with the optimization loop, the
-  evaluator, and (above HOP) the CDE.
-- HOP never self-certifies: a candidate's frontier membership is a
-  signal, not a promotion. Promotion still requires a passing
-  ``done_certification_record`` per the project CLAUDE.md.
+  advances candidates; those rights live with the optimization loop, the
+  evaluator, and (above HOP) the CDE/REL/GOV release path.
+- HOP never self-attests: a candidate's frontier membership is an
+  advisory readiness_signal, not a release_signal. Release advancement
+  remains with REL/GOV/CDE per the project CLAUDE.md.
 """
 
 from spectrum_systems.modules.hop import (  # noqa: F401

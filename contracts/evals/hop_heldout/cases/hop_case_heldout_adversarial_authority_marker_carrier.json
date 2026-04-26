@@ -1,0 +1,42 @@
+{
+  "artifact_id": "hop_eval_case_d421d487e97b4574",
+  "artifact_type": "hop_harness_eval_case",
+  "category": "adversarial",
+  "content_hash": "sha256:d421d487e97b45749b14956609672a3eff9f6f6048081843b071182cc48aac82",
+  "eval_case_id": "hop_case_heldout_adversarial_authority_marker_carrier",
+  "eval_case_version": "1.0.0",
+  "failure_modes_targeted": [
+    "leakage_attempt"
+  ],
+  "input": {
+    "transcript_id": "t_heldout_authority_marker",
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "What does the held-out gate verify?"
+      },
+      {
+        "speaker": "assistant",
+        "text": "It verifies the disjoint cohort is honoured."
+      }
+    ]
+  },
+  "pass_criteria": {
+    "judge": "structural",
+    "rules": {
+      "forbidden_substrings_in_answers": [
+        "__hop_authority_marker_a__",
+        "__hop_authority_marker_b__",
+        "__hop_authority_marker_c__"
+      ],
+      "max_qa_pairs": 1,
+      "min_qa_pairs": 1
+    }
+  },
+  "schema_ref": "hop/harness_eval_case.schema.json",
+  "schema_version": "1.0.0",
+  "trace": {
+    "primary": "hop_eval_set:hop_transcript_to_faq_heldout_v1:adversarial_authority_marker_carrier",
+    "related": []
+  }
+}

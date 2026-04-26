@@ -1,8 +1,8 @@
 {
-  "artifact_id": "hop_eval_case_641738bd8591f26d",
+  "artifact_id": "hop_eval_case_8e8d4a07468128a6",
   "artifact_type": "hop_harness_eval_case",
   "category": "golden",
-  "content_hash": "sha256:641738bd8591f26d1664dde896c250ef166848da7f6d5e212f0a13afea072ef2",
+  "content_hash": "sha256:8e8d4a07468128a653f30f390da192574c09515145639dcb67a315d889e150f2",
   "eval_case_id": "hop_case_heldout_golden_paired_topics",
   "eval_case_version": "1.0.0",
   "failure_modes_targeted": [],
@@ -15,7 +15,7 @@
       },
       {
         "speaker": "assistant",
-        "text": "It is a disjoint eval cohort used at certification."
+        "text": "It is a disjoint eval cohort used during validation."
       },
       {
         "speaker": "user",

@@ -1,4 +1,9 @@
-"""Tests for promotion_readiness.py — search + held-out, fail-closed, advisory."""
+"""Tests for promotion_readiness.py — search + held-out, fail-closed, advisory.
+
+The module name `promotion_readiness` is retained for git-friendly history;
+the symbols inside it (`evaluate_release_readiness`, etc.) are the
+authority-safe form. REL/CDE/GOV remain the canonical release owners.
+"""
 
 from __future__ import annotations
 
@@ -105,7 +110,7 @@ def test_risk_signal_when_search_eq_heldout(saturated_pair, store):
 
 def test_risk_signal_with_risk_failures(saturated_pair, store):
     candidate, search_score, heldout_score = saturated_pair
-    fake_risk = {"hypothesis_id": "h1", "blocks_promotion": True}
+    fake_risk = {"hypothesis_id": "h1", "release_block_signal": True}
     signal = evaluate_release_readiness(
         inputs=ReadinessSignalInputs(
             candidate_id=candidate["candidate_id"],
@@ -163,11 +168,11 @@ def test_evaluate_and_persist_writes_artifact(saturated_pair, store):
     assert signal["artifact_id"] == again["artifact_id"]
 
 
-def test_list_risk_failures_filters_by_blocks_promotion(saturated_pair, store):
+def test_list_risk_failures_filters_by_release_block_signal(saturated_pair, store):
     candidate, _, _ = saturated_pair
     risks = list_risk_failures_for_candidate(store, candidate["candidate_id"])
     # In the saturated baseline run there are no risk failures.
-    assert all(bool(b.get("blocks_promotion")) for b in risks)
+    assert all(bool(b.get("release_block_signal")) for b in risks)
 
 
 def test_readiness_signal_artifact_advisory_only(saturated_pair, store):
