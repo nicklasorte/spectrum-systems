@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -55,6 +56,55 @@ DEFAULT_NEUTRAL_VOCAB = "contracts/governance/authority_neutral_vocabulary.json"
 DEFAULT_OUTPUT = "outputs/3ls_authority_preflight/3ls_authority_preflight_result.json"
 
 SCAN_SUFFIXES = {".py", ".json", ".md", ".yaml", ".yml", ".txt"}
+
+# H01F-4: Routing bypass guard
+# Owner module that may legitimately use the unchecked symbol.
+ROUTING_AUTHORITY_OWNER = "spectrum_systems/modules/orchestration/tlc_router.py"
+
+# Test and tooling surfaces that probe the bypass guard. They reference the
+# unchecked symbol intentionally to verify the guard's behaviour and must not
+# self-trigger ROUTING_BYPASS_ATTEMPT findings. Adding to this list is a
+# governance event: it requires a passing review_artifact justifying the
+# probe path.
+ROUTING_BYPASS_GUARD_PROBES: frozenset[str] = frozenset(
+    {
+        "scripts/run_3ls_authority_preflight.py",
+        "tests/transcript_pipeline/test_no_unchecked_routing.py",
+        "tests/transcript_pipeline/test_replay_integrity_h01.py",
+    }
+)
+
+# Patterns that indicate a routing-bypass attempt:
+#   1. Direct call to the unchecked internal entrypoint
+#   2. Import of the unchecked symbol from any module
+#   3. Re-export wrappers that surface unchecked routing
+#   4. Public alias `route_artifact` that resurrects the legacy entrypoint
+ROUTING_BYPASS_PATTERNS: tuple[tuple[str, "re.Pattern[str]"], ...] = (
+    (
+        "calls _route_artifact_unchecked directly",
+        re.compile(r"\b_route_artifact_unchecked\s*\("),
+    ),
+    (
+        "imports _route_artifact_unchecked",
+        re.compile(r"\bimport\s+[^#\n]*\b_route_artifact_unchecked\b"),
+    ),
+    (
+        "from-imports _route_artifact_unchecked",
+        re.compile(r"\bfrom\s+\S+\s+import\s+[^#\n]*\b_route_artifact_unchecked\b"),
+    ),
+    (
+        "re-exports unchecked routing symbol",
+        re.compile(r"['\"]_route_artifact_unchecked['\"]"),
+    ),
+    (
+        "defines or restores public route_artifact alias",
+        re.compile(r"\broute_artifact\s*=\s*[A-Za-z_][\w\.]*"),
+    ),
+    (
+        "defines public route_artifact function",
+        re.compile(r"^\s*def\s+route_artifact\s*\(", re.MULTILINE),
+    ),
+)
 
 
 class ThreeLetterAuthorityPreflightError(ValueError):
@@ -222,6 +272,64 @@ def build_repair_suggestion(
     }
 
 
+def detect_routing_bypass(rel_path: str, repo_root: Path) -> list[dict[str, Any]]:
+    """Detect routing-bypass attempts outside the routing authority owner.
+
+    Reports a ROUTING_BYPASS_ATTEMPT violation when a non-owner file:
+    - calls _route_artifact_unchecked directly
+    - imports _route_artifact_unchecked
+    - re-exports the unchecked symbol via __all__
+    - defines a public route_artifact alias or function
+
+    The routing authority owner (tlc_router.py) is the only file allowed to
+    reference _route_artifact_unchecked. Helper / wrapper bypass patterns in
+    any other path fail closed.
+    """
+    normalized = _normalize_path(rel_path)
+    if normalized == ROUTING_AUTHORITY_OWNER:
+        return []
+    if normalized in ROUTING_BYPASS_GUARD_PROBES:
+        return []
+    full_path = repo_root / rel_path
+    if not full_path.is_file() or full_path.suffix.lower() != ".py":
+        return []
+
+    try:
+        text = full_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return []
+
+    findings: list[dict[str, Any]] = []
+    for line_idx, raw_line in enumerate(text.splitlines(), start=1):
+        # Strip comments to avoid false positives in commentary.
+        line = raw_line.split("#", 1)[0]
+        if not line.strip():
+            continue
+        for description, pattern in ROUTING_BYPASS_PATTERNS:
+            if pattern.search(line):
+                findings.append(
+                    {
+                        "path": normalized,
+                        "line": line_idx,
+                        "token": "_route_artifact_unchecked"
+                        if "_route_artifact_unchecked" in line
+                        else "route_artifact",
+                        "category": "routing_bypass",
+                        "reason_code": "ROUTING_BYPASS_ATTEMPT",
+                        "description": description,
+                        "evidence_snippet": raw_line.strip()[:200],
+                        "canonical_authority_source": ROUTING_AUTHORITY_OWNER,
+                        "remediation": (
+                            "External callers must use "
+                            "spectrum_systems.modules.orchestration.tlc_router."
+                            "route_with_gate_evidence. Routing without verified "
+                            "gate evidence is prohibited."
+                        ),
+                    }
+                )
+    return findings
+
+
 def run_preflight(
     *,
     repo_root: Path,
@@ -231,6 +339,7 @@ def run_preflight(
 ) -> dict[str, Any]:
     violations: list[dict[str, Any]] = []
     repairs: list[dict[str, Any]] = []
+    routing_bypass_violations: list[dict[str, Any]] = []
     scanned_files: list[str] = []
 
     for rel_path in changed_files:
@@ -256,6 +365,10 @@ def run_preflight(
             if repair is not None:
                 repairs.append(repair)
 
+        for bypass in detect_routing_bypass(rel_path, repo_root):
+            routing_bypass_violations.append(bypass)
+            violations.append(bypass)
+
     files_with_violations = sorted({str(v.get("path", "")) for v in violations})
     status = "fail" if violations else "pass"
     return {
@@ -266,12 +379,14 @@ def run_preflight(
         "scanned_files": sorted(set(scanned_files)),
         "violations": violations,
         "suggested_repairs": repairs,
+        "routing_bypass_findings": routing_bypass_violations,
         "summary": {
             "violation_count": len(violations),
             "files_with_violations": len(files_with_violations),
             "safe_autofix_available_count": sum(
                 1 for r in repairs if r.get("safe_autofix_available")
             ),
+            "routing_bypass_count": len(routing_bypass_violations),
         },
     }
 
@@ -315,6 +430,9 @@ def main() -> int:
                 "status": result["status"],
                 "changed_files": result["changed_files"],
                 "violation_count": result["summary"]["violation_count"],
+                "routing_bypass_count": result["summary"].get(
+                    "routing_bypass_count", 0
+                ),
                 "output": str(output_path),
             },
             indent=2,
