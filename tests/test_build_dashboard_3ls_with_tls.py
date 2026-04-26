@@ -23,6 +23,20 @@ def test_fails_closed_when_artifact_missing_after_successful_tls_step(monkeypatc
     assert rc == 1
 
 
+def test_fails_closed_when_registry_input_missing(monkeypatch, tmp_path):
+    run_called = {"value": False}
+
+    def fake_run(cmd: list[str], cwd: Path, env=None) -> int:
+        run_called["value"] = True
+        return 0
+
+    monkeypatch.setattr(wrapper, "_run", fake_run)
+    monkeypatch.setattr(wrapper, "registry_path", lambda: tmp_path / "missing_registry.md")
+    rc = wrapper.main(["--skip-next-build"])
+    assert rc == 1
+    assert run_called["value"] is False
+
+
 def test_invokes_next_build_after_tls_and_artifact_check(monkeypatch, tmp_path):
     calls: list[tuple[list[str], Path, dict | None]] = []
     artifact = tmp_path / "artifacts" / "system_dependency_priority_report.json"

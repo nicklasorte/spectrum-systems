@@ -28,6 +28,10 @@ def artifact_path() -> Path:
     return repo_root() / "artifacts" / "system_dependency_priority_report.json"
 
 
+def registry_path() -> Path:
+    return repo_root() / "docs" / "architecture" / "system_registry.md"
+
+
 def _run(cmd: list[str], cwd: Path, env: dict[str, str] | None = None) -> int:
     completed = subprocess.run(cmd, cwd=str(cwd), env=env or dict(os.environ), check=False)
     return completed.returncode
@@ -45,13 +49,23 @@ def main(argv: list[str] | None = None) -> int:
     root = repo_root()
     dash = dashboard_dir()
     artifact = artifact_path()
+    registry = registry_path()
     tls_env = dict(os.environ)
     tls_env["PYTHONPATH"] = str(root)
 
     print(f"[dashboard-3ls-build] repo_root={root}", flush=True)
     print(f"[dashboard-3ls-build] dashboard_dir={dash}", flush=True)
     print(f"[dashboard-3ls-build] PYTHONPATH={tls_env['PYTHONPATH']}", flush=True)
+    print(f"[dashboard-3ls-build] expected_registry={registry}", flush=True)
     print(f"[dashboard-3ls-build] expected_artifact={artifact}", flush=True)
+
+    if not registry.is_file():
+        print(f"FAIL: required TLS registry input missing at {registry}", file=sys.stderr)
+        print(
+            "FAIL: .vercelignore likely excluded required TLS registry input",
+            file=sys.stderr,
+        )
+        return 1
 
     tls_cmd = [
         sys.executable,

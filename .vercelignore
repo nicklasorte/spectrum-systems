@@ -8,4 +8,6 @@ dist/
 build/
 spectrum_systems/__pycache__
 tests/
-docs/
+docs/*
+!docs/architecture/
+!docs/architecture/system_registry.md
