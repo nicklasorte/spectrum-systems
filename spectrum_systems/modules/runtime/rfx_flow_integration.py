@@ -127,12 +127,17 @@ def assert_rfx_promotion_ready(
         pra=pra, pol=pol,
     )
 
-    # LOOP-07: reliability freeze guard. Activated when telemetry inputs
-    # are provided or explicitly forced via ``enforce_loop07=True``.
+    # LOOP-07: reliability freeze guard. Auto-activates only when the caller
+    # supplies inputs that actually require a time window — ``recent_failures``
+    # or ``window_seconds``. ``replay_results`` alone is part of the OBS+REP
+    # consistency surface and does NOT auto-enable LOOP-07, so callers who
+    # only want LOOP-08 + OBS/REP can supply replay rows without being
+    # hard-blocked on a missing window. Explicit ``enforce_loop07=True`` still
+    # forces activation (and still requires ``window_seconds``).
     activate_loop07 = (
         enforce_loop07
         if enforce_loop07 is not None
-        else (recent_failures is not None or replay_results is not None or window_seconds is not None)
+        else (recent_failures is not None or window_seconds is not None)
     )
     if activate_loop07:
         if window_seconds is None:

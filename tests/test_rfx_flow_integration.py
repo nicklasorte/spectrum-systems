@@ -260,3 +260,27 @@ def test_anti_gaming_fires_without_telemetry_inputs_when_obs_logs_inconsistent(
     obs_with_logs = {**_OBS, "failure_logs": [{"reason": "drift"}]}
     with pytest.raises(RFXAdversarialReliabilityError, match="rfx_suspicious_signal_suppression"):
         assert_rfx_promotion_ready(**_full_kwargs(route_artifact, obs=obs_with_logs))
+
+
+def test_replay_results_alone_does_not_auto_enable_loop07(route_artifact: dict) -> None:
+    """Codex P2 regression: supplying replay_results without window_seconds
+    must not auto-enable LOOP-07 (which would hard-block on the missing
+    window). The OBS+REP consistency path remains reachable for callers
+    who only want LOOP-08 + replay-coverage validation."""
+    replays = [{"trace_id": "trace-flow-001", "match": True}]
+    # Must not raise — replay_results alone keeps LOOP-07 inactive while
+    # LOOP-08 + OBS/REP consistency still run.
+    assert_rfx_promotion_ready(**_full_kwargs(route_artifact, replay_results=replays))
+
+
+def test_recent_failures_alone_still_auto_enables_loop07_and_requires_window(
+    route_artifact: dict,
+) -> None:
+    """Counterpart guarantee: ``recent_failures`` is a reliability-evidence
+    input, so it auto-enables LOOP-07 and the missing-window block fires."""
+    from spectrum_systems.modules.runtime.rfx_reliability_freeze import (
+        RFXReliabilityFreezeError,
+    )
+    failures = [{"timestamp_seconds": 5.0, "reason_code": "x"}]
+    with pytest.raises(RFXReliabilityFreezeError, match="rfx_reliability_state_unknown"):
+        assert_rfx_promotion_ready(**_full_kwargs(route_artifact, recent_failures=failures))

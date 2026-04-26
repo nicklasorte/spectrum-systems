@@ -145,10 +145,10 @@
     "result": "248 passed"
   },
   "activation_defaults": {
-    "loop07_reliability_freeze": "input-gated (recent_failures or replay_results or window_seconds, or explicit enforce_loop07=True)",
+    "loop07_reliability_freeze": "input-gated on inputs that actually require a window: recent_failures or window_seconds (or explicit enforce_loop07=True). replay_results alone does NOT auto-enable LOOP-07 — the OBS+REP consistency path remains reachable without supplying a window.",
     "loop08_telemetry_slo_gate": "default-on whenever both OBS and SLO are present (every LOOP-06 promotion path)",
     "obs_rep_consistency": "default-on whenever both OBS and replay_results are supplied",
     "anti_gaming_guard": "default-on whenever OBS or SLO is present",
-    "rationale": "PRD requires fail-closed enforcement on every promotion path. LOOP-07 needs telemetry data to compute (so it stays input-gated), but LOOP-08, OBS+REP consistency, and the anti-gaming guard are structural invariants and run by default whenever their inputs are present. Resolves Codex P1 findings on PR #1215 lines 165 and 175."
+    "rationale": "PRD requires fail-closed enforcement on every promotion path. LOOP-07 needs reliability evidence (failures or a window) to compute, so it stays input-gated; LOOP-08, OBS+REP consistency, and the anti-gaming guard are structural invariants and run by default whenever their inputs are present. Resolves Codex P1 findings on lines 165 and 175 plus the P2 finding on line 136 (LOOP-07 auto-enable surface) of PR #1215."
   }
 }
