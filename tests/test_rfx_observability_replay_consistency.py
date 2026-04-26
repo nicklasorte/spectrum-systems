@@ -165,6 +165,61 @@ def test_metadata_form_coverage_dict_does_not_invent_synthetic_traces() -> None:
     assert_rfx_observability_replay_consistency(obs=obs, replay_results=replays)
 
 
+def test_dict_linkage_bucket_with_empty_inner_values_blocks() -> None:
+    """Codex P1 regression (line 113): a dict bucket whose inner values
+    are themselves empty (e.g. ``{"t1": {"lin": []}}``) carries no actual
+    artifact references and must NOT be treated as linked."""
+    obs = {
+        "obs_id": "obs-empty-inner",
+        "trace_id": "trace-1",
+        "execution_path_coverage": ["AEX", "PQX"],
+        "artifact_linkage": {"trace-1": {"lin": [], "rep": None}},
+        "failure_logs": [],
+    }
+    replays = [{"trace_id": "trace-1", "match": True}]
+    with pytest.raises(RFXObservabilityReplayConsistencyError, match="rfx_missing_trace_linkage"):
+        assert_rfx_observability_replay_consistency(obs=obs, replay_results=replays)
+
+
+def test_replay_row_alias_matches_when_primary_trace_id_is_stale() -> None:
+    """Codex P2 regression (line 132): a migration-era replay row with a
+    stale ``trace_id`` plus a correct ``source_trace_id`` matching an OBS
+    trace must pass — every alias is considered, not just the first."""
+    obs = {
+        "obs_id": "obs-alias",
+        "trace_id": "trace-1",
+        "execution_path_coverage": ["AEX"],
+        "artifact_linkage": ["lin:1"],
+        "failure_logs": [],
+    }
+    replays = [{
+        "trace_id": "trace-stale",
+        "source_trace_id": "trace-1",
+        "match": True,
+    }]
+    # Must not raise — source_trace_id matches the OBS trace even though
+    # trace_id is stale.
+    assert_rfx_observability_replay_consistency(obs=obs, replay_results=replays)
+
+
+def test_replay_row_with_all_stale_aliases_blocks() -> None:
+    """Sanity counterpart: if ALL aliases miss, the row still fails."""
+    obs = {
+        "obs_id": "obs-alias",
+        "trace_id": "trace-1",
+        "execution_path_coverage": ["AEX"],
+        "artifact_linkage": ["lin:1"],
+        "failure_logs": [],
+    }
+    replays = [{
+        "trace_id": "trace-stale",
+        "source_trace_id": "trace-also-stale",
+        "match": True,
+    }]
+    with pytest.raises(RFXObservabilityReplayConsistencyError, match="rfx_trace_replay_inconsistency"):
+        assert_rfx_observability_replay_consistency(obs=obs, replay_results=replays)
+
+
 def test_dict_linkage_bucket_with_dict_value_is_accepted_as_present() -> None:
     """Codex P2 regression (line 95): LOOP-08 accepts non-empty dict
     buckets in artifact_linkage, so the OBS+REP consistency guard must

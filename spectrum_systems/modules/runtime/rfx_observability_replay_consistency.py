@@ -108,9 +108,13 @@ def _artifact_links_for_trace(
         if isinstance(entries, list):
             return list(entries)
         if isinstance(entries, dict) and len(entries) > 0:
-            # Non-empty dict bucket — flatten to its values so the linkage
-            # is treated as present without inventing artificial entries.
-            return list(entries.values())
+            # Non-empty dict bucket — keep only inner values that are
+            # themselves non-empty evidence. ``{"lin": []}`` would otherwise
+            # be treated as linked even though no actual artifact ref is
+            # present, creating a fail-open path under
+            # ``replay_results=[{"trace_id": "t1"}]``.
+            non_empty = [v for v in entries.values() if not _is_empty_evidence(v)]
+            return non_empty
         return []
     if isinstance(linkage, list):
         primary = _coerce_str(obs.get("trace_id"))
@@ -120,17 +124,32 @@ def _artifact_links_for_trace(
     return []
 
 
-def _replay_trace_id(record: dict[str, Any]) -> str | None:
-    """Return the canonical trace id for a replay row, or ``None`` if the
-    row carries no recognized trace identifier.
+def _is_empty_evidence(value: Any) -> bool:
+    """Return True for values that carry no actual evidence content."""
+    if value is None:
+        return True
+    if isinstance(value, (list, dict, tuple, set)):
+        return len(value) == 0
+    if isinstance(value, str):
+        return not value.strip()
+    return False
 
-    Recognized aliases: ``trace_id`` / ``source_trace_id`` / ``replay_trace_id``.
+
+def _replay_trace_id_aliases(record: dict[str, Any]) -> set[str]:
+    """Return the full set of trace-id aliases declared on a replay row.
+
+    Returns every non-empty value among ``trace_id`` / ``source_trace_id``
+    / ``replay_trace_id`` so the consistency check can accept the row when
+    any alias matches an OBS trace — preventing migration-era rows with a
+    stale ``trace_id`` plus correct ``source_trace_id`` from being falsely
+    flagged as inconsistent.
     """
+    ids: set[str] = set()
     for key in ("trace_id", "source_trace_id", "replay_trace_id"):
         s = _coerce_str(record.get(key))
         if s is not None:
-            return s
-    return None
+            ids.add(s)
+    return ids
 
 
 def assert_rfx_observability_replay_consistency(
@@ -184,8 +203,9 @@ def assert_rfx_observability_replay_consistency(
     else:
         replay_iter = replay_results or []
 
-    # Walk replays once: every row must carry a trace identifier so that
-    # an untraceable replay row cannot silently pass the cross-check.
+    # Walk replays once: every row must carry at least one trace-id alias.
+    # When multiple aliases are present (migration-era rows), any of them
+    # may match an OBS trace — only fail closed if NONE matches.
     rep_trace_ids: set[str] = set()
     untraceable_count = 0
     for index, r in enumerate(replay_iter):
@@ -196,8 +216,8 @@ def assert_rfx_observability_replay_consistency(
                 f"is not a dict — every replay record must reference a trace"
             )
             continue
-        tid = _replay_trace_id(r)
-        if tid is None:
+        row_aliases = _replay_trace_id_aliases(r)
+        if not row_aliases:
             untraceable_count += 1
             reasons.append(
                 f"rfx_trace_replay_inconsistency: replay row index={index} "
@@ -205,14 +225,13 @@ def assert_rfx_observability_replay_consistency(
                 f"every replay record must reference an OBS trace"
             )
             continue
-        rep_trace_ids.add(tid)
-
-    # Replays must have matching OBS trace coverage.
-    for tid in sorted(rep_trace_ids):
-        if tid not in obs_trace_ids:
+        matched = row_aliases & obs_trace_ids
+        if matched:
+            rep_trace_ids |= matched
+        else:
             reasons.append(
-                f"rfx_trace_replay_inconsistency: replay references trace_id="
-                f"{tid!r} not present in OBS coverage"
+                f"rfx_trace_replay_inconsistency: replay row index={index} "
+                f"aliases {sorted(row_aliases)!r} not present in OBS coverage"
             )
 
     # OBS traces must have at least one replay record (no orphan traces).
