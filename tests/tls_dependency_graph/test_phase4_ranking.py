@@ -114,3 +114,40 @@ def test_priority_order_is_canonical(registry_fixture_path: Path, repo_fixture: 
         "partial_completion",
         "risk_if_deferred",
     ]
+
+
+def test_requested_candidate_set_ranking_and_ambiguity(registry_fixture_path: Path, repo_fixture: Path) -> None:
+    graph, evidence, classification, trust_gaps = _build(registry_fixture_path, repo_fixture)
+    out = rank_systems(
+        graph,
+        evidence,
+        classification,
+        trust_gaps,
+        requested_candidates=["H01", "RFX", "HOP", "MET", "METS"],
+    )
+    requested_ids = [row["system_id"] for row in out["requested_candidate_ranking"]]
+    assert set(requested_ids) == {"H01", "RFX", "HOP", "MET", "METS"}
+    ambiguous_ids = {row["system_id"] for row in out["ambiguous_requested_candidates"]}
+    assert {"RFX", "MET", "METS"}.issubset(ambiguous_ids)
+
+
+def test_requested_candidate_ranking_is_deterministic(registry_fixture_path: Path, repo_fixture: Path) -> None:
+    graph, evidence, classification, trust_gaps = _build(registry_fixture_path, repo_fixture)
+    candidates = ["H01", "RFX", "HOP", "MET", "METS"]
+    a = rank_systems(graph, evidence, classification, trust_gaps, requested_candidates=candidates)
+    b = rank_systems(graph, evidence, classification, trust_gaps, requested_candidates=candidates)
+    assert a["requested_candidate_ranking"] == b["requested_candidate_ranking"]
+
+
+def test_global_ranking_unchanged_by_requested_candidates(registry_fixture_path: Path, repo_fixture: Path) -> None:
+    graph, evidence, classification, trust_gaps = _build(registry_fixture_path, repo_fixture)
+    baseline = rank_systems(graph, evidence, classification, trust_gaps)
+    with_requested = rank_systems(
+        graph,
+        evidence,
+        classification,
+        trust_gaps,
+        requested_candidates=["H01", "RFX", "HOP", "MET", "METS"],
+    )
+    assert [row["system_id"] for row in baseline["top_5"]] == [row["system_id"] for row in with_requested["top_5"]]
+    assert [row["score"] for row in baseline["ranked_systems"]] == [row["score"] for row in with_requested["ranked_systems"]]

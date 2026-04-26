@@ -41,7 +41,13 @@ def main(argv: list[str] | None = None) -> int:
         default=str(REPO_ROOT / "artifacts"),
         help="The Phase 4 priority report is also published here so the dashboard can load it.",
     )
+    parser.add_argument(
+        "--candidates",
+        default="",
+        help="Optional comma-separated candidate system IDs for requested candidate ranking.",
+    )
     args = parser.parse_args(argv)
+    requested_candidates = [token.strip().upper() for token in args.candidates.split(",") if token.strip()]
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
     top_level_out = Path(args.top_level_out)
@@ -75,6 +81,7 @@ def main(argv: list[str] | None = None) -> int:
         evidence,
         classification,
         trust_gaps,
+        requested_candidates=requested_candidates or None,
     )
 
     # Publish the priority report at the top of artifacts/ so the dashboard

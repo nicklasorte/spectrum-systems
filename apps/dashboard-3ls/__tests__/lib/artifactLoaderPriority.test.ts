@@ -21,6 +21,7 @@ const VALID_PAYLOAD = {
   priority_order: ['a', 'b', 'c', 'd', 'e'],
   penalties: ['deprecated', 'unknown'],
   ranked_systems: [],
+  global_ranked_systems: [],
   top_5: [
     {
       rank: 1,
@@ -37,6 +38,9 @@ const VALID_PAYLOAD = {
       trust_state: 'blocked_signal',
     },
   ],
+  requested_candidate_set: [],
+  requested_candidate_ranking: [],
+  ambiguous_requested_candidates: [],
 };
 
 describe('loadPriorityArtifact', () => {
