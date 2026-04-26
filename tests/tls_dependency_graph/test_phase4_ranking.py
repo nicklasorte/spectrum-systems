@@ -182,7 +182,7 @@ def test_hop_explanation_warns_on_evl_tpa_cde_sel_authority(registry_fixture_pat
     out = rank_systems(graph, evidence, classification, trust_gaps, requested_candidates=["HOP"])
     hop = out["requested_candidate_ranking"][0]
     if hop["global_rank"] is not None:
-        assert "cannot override EVL/TPA/CDE/SEL authority pathways" in hop["rank_explanation"]
+        assert "cannot bypass EVL/TPA/CDE/SEL trust pathways" in hop["rank_explanation"]
     else:
         assert "registry and evidence are insufficient" in hop["rank_explanation"]
 

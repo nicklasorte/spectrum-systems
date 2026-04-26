@@ -278,7 +278,7 @@ def _requested_explanations(
         )
     if sid == "HOP":
         rank_reason_parts.append(
-            "caution_signal: HOP cannot override EVL/TPA/CDE/SEL authority pathways."
+            "caution_signal: HOP cannot bypass EVL/TPA/CDE/SEL trust pathways."
         )
     if sid == "RFX":
         registry_state = "registry-active" if in_registry else "repo-detected-only"
