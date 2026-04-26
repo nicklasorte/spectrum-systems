@@ -108,7 +108,7 @@ def test_trust_state_block_when_majority_of_signals_fail(registry_fixture_path: 
     out = detect_trust_gaps(graph, evidence, classification)
     for row in out["systems"]:
         if row["classification"] in ("active_system", "h_slice"):
-            assert row["trust_state"] in ("warn", "freeze", "block"), row
+            assert row["trust_state"] in ("warn", "freeze_signal", "blocked_signal"), row
 
 
 def test_signal_taxonomy_is_canonical(registry_fixture_path: Path, repo_fixture: Path) -> None:

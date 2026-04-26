@@ -23,7 +23,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "ABX",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -43,7 +43,7 @@
         "missing_tests"
       ],
       "system_id": "AEX",
-      "trust_state": "freeze"
+      "trust_state": "freeze_signal"
     },
     {
       "classification": "active_system",
@@ -63,7 +63,7 @@
         "missing_tests"
       ],
       "system_id": "CAP",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -83,7 +83,7 @@
         "missing_tests"
       ],
       "system_id": "CDE",
-      "trust_state": "freeze"
+      "trust_state": "freeze_signal"
     },
     {
       "classification": "support_capability",
@@ -95,7 +95,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "CMP",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -115,7 +115,7 @@
         "schema_weakness"
       ],
       "system_id": "CTX",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "future",
@@ -127,7 +127,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "DBB",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "deprecated",
@@ -139,7 +139,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "DCL",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "deprecated",
@@ -151,7 +151,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "DEM",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -171,7 +171,7 @@
         "missing_tests"
       ],
       "system_id": "EVL",
-      "trust_state": "freeze"
+      "trust_state": "freeze_signal"
     },
     {
       "classification": "active_system",
@@ -191,7 +191,7 @@
         "missing_tests"
       ],
       "system_id": "FRE",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -211,7 +211,7 @@
         "missing_tests"
       ],
       "system_id": "GOV",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "h_slice",
@@ -230,7 +230,7 @@
       "gaps_evaluated": 9,
       "passing_signals": [],
       "system_id": "H01",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "deprecated",
@@ -242,7 +242,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "HNX",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -262,7 +262,7 @@
         "missing_tests"
       ],
       "system_id": "HOP",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -282,7 +282,7 @@
         "missing_tests"
       ],
       "system_id": "JDX",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -302,7 +302,7 @@
         "missing_tests"
       ],
       "system_id": "JSX",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "future",
@@ -314,7 +314,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "LCE",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -366,7 +366,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "MCL",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "unknown",
@@ -378,7 +378,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "MET",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "unknown",
@@ -390,7 +390,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "METS",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "deprecated",
@@ -402,7 +402,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "MNT",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "support_capability",
@@ -414,7 +414,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "NRM",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -434,7 +434,7 @@
         "missing_tests"
       ],
       "system_id": "OBS",
-      "trust_state": "freeze"
+      "trust_state": "freeze_signal"
     },
     {
       "classification": "active_system",
@@ -454,7 +454,7 @@
         "missing_tests"
       ],
       "system_id": "POL",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -474,7 +474,7 @@
         "schema_weakness"
       ],
       "system_id": "PQX",
-      "trust_state": "freeze"
+      "trust_state": "freeze_signal"
     },
     {
       "classification": "active_system",
@@ -494,7 +494,7 @@
         "missing_tests"
       ],
       "system_id": "PRA",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -514,7 +514,7 @@
         "missing_tests"
       ],
       "system_id": "PRM",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "support_capability",
@@ -526,7 +526,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "QRY",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -546,7 +546,7 @@
         "missing_tests"
       ],
       "system_id": "RAX",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -566,7 +566,7 @@
         "missing_tests"
       ],
       "system_id": "REP",
-      "trust_state": "freeze"
+      "trust_state": "freeze_signal"
     },
     {
       "classification": "support_capability",
@@ -578,7 +578,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "RET",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "unknown",
@@ -590,7 +590,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "RFX",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -610,7 +610,7 @@
         "missing_tests"
       ],
       "system_id": "RIL",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "support_capability",
@@ -622,7 +622,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "RSK",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -642,7 +642,7 @@
         "missing_tests"
       ],
       "system_id": "RSM",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "deprecated",
@@ -654,7 +654,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "RWA",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "future",
@@ -666,7 +666,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "SAL",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "future",
@@ -678,7 +678,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "SAS",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -698,7 +698,7 @@
         "schema_weakness"
       ],
       "system_id": "SEC",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -718,7 +718,7 @@
         "missing_tests"
       ],
       "system_id": "SEL",
-      "trust_state": "freeze"
+      "trust_state": "freeze_signal"
     },
     {
       "classification": "future",
@@ -730,7 +730,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "SHA",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "future",
@@ -742,7 +742,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "SIV",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -762,7 +762,7 @@
         "missing_tests"
       ],
       "system_id": "SLO",
-      "trust_state": "freeze"
+      "trust_state": "freeze_signal"
     },
     {
       "classification": "support_capability",
@@ -774,7 +774,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "SUP",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -794,7 +794,7 @@
         "missing_tests"
       ],
       "system_id": "TLC",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     },
     {
       "classification": "active_system",
@@ -814,7 +814,7 @@
         "missing_tests"
       ],
       "system_id": "TPA",
-      "trust_state": "freeze"
+      "trust_state": "freeze_signal"
     },
     {
       "classification": "support_capability",
@@ -826,7 +826,7 @@
       "gaps_evaluated": 2,
       "passing_signals": [],
       "system_id": "TRN",
-      "trust_state": "block"
+      "trust_state": "blocked_signal"
     }
   ]
 }

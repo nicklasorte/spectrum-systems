@@ -29,11 +29,15 @@ export function loadArtifact<T>(relativePath: string): T | null {
 // Strict load contract: dashboard MUST NOT compute ranking. All ranking is
 // produced by the governed TLS pipeline upstream and read here as-is. The
 // loader returns one of:
-//   { state: 'ok', payload }        — schema-shape passed
-//   { state: 'missing' }            — file not present
-//   { state: 'stale', generated_at} — file present but older than threshold
-//   { state: 'invalid_schema' }     — file present but did not match shape
-//   { state: 'blocked'/'freeze' }   — file present and declares a hard halt
+//   { state: 'ok', payload }              — schema-shape passed
+//   { state: 'missing' }                  — file not present
+//   { state: 'stale', generated_at}       — file present but older than threshold
+//   { state: 'invalid_schema' }           — file present but did not match shape
+//   { state: 'blocked_signal' }           — observer-safe halt signal from artifact
+//   { state: 'freeze_signal' }            — observer-safe freeze signal from artifact
+//
+// Note: TLS produces signals only. Canonical owners (CDE/SEL/GOV) decide,
+// enforce, and certify based on these signals; the dashboard never decides.
 // ---------------------------------------------------------------------------
 
 export type PriorityArtifactState =
@@ -41,8 +45,8 @@ export type PriorityArtifactState =
   | 'missing'
   | 'stale'
   | 'invalid_schema'
-  | 'blocked'
-  | 'freeze';
+  | 'blocked_signal'
+  | 'freeze_signal';
 
 export interface RankedSystem {
   rank: number;
@@ -68,7 +72,7 @@ export interface PriorityArtifact {
   ranked_systems: RankedSystem[];
   top_5: RankedSystem[];
   generated_at?: string;
-  control_state?: 'allow' | 'warn' | 'freeze' | 'block';
+  control_signal?: 'ready_signal' | 'warn' | 'freeze_signal' | 'blocked_signal';
 }
 
 export interface PriorityArtifactLoadResult {
@@ -147,11 +151,21 @@ export function loadPriorityArtifact(
   const payload = parsed;
   const generated_at = payload.generated_at ?? stat.mtime.toISOString();
 
-  if (payload.control_state === 'block') {
-    return { state: 'blocked', payload, generated_at, reason: 'control_state=block' };
+  if (payload.control_signal === 'blocked_signal') {
+    return {
+      state: 'blocked_signal',
+      payload,
+      generated_at,
+      reason: 'control_signal=blocked_signal',
+    };
   }
-  if (payload.control_state === 'freeze') {
-    return { state: 'freeze', payload, generated_at, reason: 'control_state=freeze' };
+  if (payload.control_signal === 'freeze_signal') {
+    return {
+      state: 'freeze_signal',
+      payload,
+      generated_at,
+      reason: 'control_signal=freeze_signal',
+    };
   }
 
   const generatedMs = Date.parse(generated_at);

@@ -183,9 +183,9 @@ describe('DashboardPage panels', () => {
             trust_gap_signals: ['missing_eval', 'schema_weakness'],
             dependencies: { upstream: ['PQX'], downstream: ['TPA','CDE'] },
             unlocks: ['CDE','TPA'],
-            finish_definition: 'all of: close(missing_eval), close(schema_weakness)',
+            finish_definition: 'all of: resolve signal(missing_eval), resolve signal(schema_weakness)',
             next_prompt: 'Run TLS-FIX-EVL',
-            trust_state: 'block',
+            trust_state: 'blocked_signal',
           },
           {
             rank: 2,
@@ -197,9 +197,9 @@ describe('DashboardPage panels', () => {
             trust_gap_signals: ['missing_replay'],
             dependencies: { upstream: ['EVL'], downstream: ['SEL','GOV'] },
             unlocks: ['GOV','SEL'],
-            finish_definition: 'close(missing_replay)',
+            finish_definition: 'resolve signal(missing_replay)',
             next_prompt: 'Run TLS-FIX-CDE',
-            trust_state: 'freeze',
+            trust_state: 'freeze_signal',
           },
         ],
       },
@@ -221,9 +221,9 @@ describe('DashboardPage panels', () => {
     });
   });
 
-  it('next-systems-to-finish panel shows freeze banner when control_state freezes', async () => {
+  it('next-systems-to-finish panel shows freeze_signal banner when control_signal asserts freeze_signal', async () => {
     const priority = {
-      state: 'freeze',
+      state: 'freeze_signal',
       payload: {
         schema_version: 'tls-04.v1',
         phase: 'TLS-04',
@@ -232,14 +232,14 @@ describe('DashboardPage panels', () => {
         ranked_systems: [],
         top_5: [],
       },
-      reason: 'control_state=freeze',
+      reason: 'control_signal=freeze_signal',
     };
     setupFetch(mockHealth, mockIntelligence, mockSystems, mockRGE, priority);
     render(<DashboardPage />);
     await waitFor(() => {
       const panel = screen.getByTestId('next-systems-panel');
-      expect(panel).toHaveAttribute('data-state', 'freeze');
-      expect(within(panel).getByTestId('next-systems-state-banner')).toHaveTextContent(/FREEZE/i);
+      expect(panel).toHaveAttribute('data-state', 'freeze_signal');
+      expect(within(panel).getByTestId('next-systems-state-banner')).toHaveTextContent(/FREEZE_SIGNAL/i);
     });
   });
 });

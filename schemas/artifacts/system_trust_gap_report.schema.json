@@ -34,7 +34,7 @@
           "gap_count": { "type": "integer", "minimum": 0 },
           "failing_signals": { "type": "array", "items": { "type": "string" } },
           "passing_signals": { "type": "array", "items": { "type": "string" } },
-          "trust_state": { "type": "string", "enum": ["ok", "warn", "freeze", "block", "unknown"] }
+          "trust_state": { "type": "string", "enum": ["ok", "warn", "freeze_signal", "blocked_signal", "unknown"] }
         }
       }
     }

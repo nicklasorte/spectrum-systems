@@ -34,7 +34,7 @@ const VALID_PAYLOAD = {
       unlocks: ['CDE'],
       finish_definition: 'close(missing_eval)',
       next_prompt: 'Run TLS-FIX-EVL',
-      trust_state: 'block',
+      trust_state: 'blocked_signal',
     },
   ],
 };
@@ -104,29 +104,37 @@ describe('loadPriorityArtifact', () => {
     expect(result.payload?.top_5?.length).toBe(1);
   });
 
-  it('returns blocked when control_state declares block', () => {
+  it('returns blocked_signal when control_signal declares blocked_signal', () => {
     const repo = tmpRepo();
     process.env.REPO_ROOT = repo;
     const target = path.join(repo, 'artifacts/system_dependency_priority_report.json');
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(
       target,
-      JSON.stringify({ ...VALID_PAYLOAD, generated_at: new Date().toISOString(), control_state: 'block' }),
+      JSON.stringify({
+        ...VALID_PAYLOAD,
+        generated_at: new Date().toISOString(),
+        control_signal: 'blocked_signal',
+      }),
     );
     const result = loadPriorityArtifact();
-    expect(result.state).toBe('blocked');
+    expect(result.state).toBe('blocked_signal');
   });
 
-  it('returns freeze when control_state declares freeze', () => {
+  it('returns freeze_signal when control_signal declares freeze_signal', () => {
     const repo = tmpRepo();
     process.env.REPO_ROOT = repo;
     const target = path.join(repo, 'artifacts/system_dependency_priority_report.json');
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(
       target,
-      JSON.stringify({ ...VALID_PAYLOAD, generated_at: new Date().toISOString(), control_state: 'freeze' }),
+      JSON.stringify({
+        ...VALID_PAYLOAD,
+        generated_at: new Date().toISOString(),
+        control_signal: 'freeze_signal',
+      }),
     );
     const result = loadPriorityArtifact();
-    expect(result.state).toBe('freeze');
+    expect(result.state).toBe('freeze_signal');
   });
 });

@@ -205,9 +205,9 @@ def _trust_state(gap_count: int, gaps_evaluated: int) -> str:
         return "ok"
     ratio = gap_count / gaps_evaluated
     if ratio >= 0.5:
-        return "block"
+        return "blocked_signal"
     if ratio >= 0.25:
-        return "freeze"
+        return "freeze_signal"
     return "warn"
 
 

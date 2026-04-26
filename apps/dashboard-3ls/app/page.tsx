@@ -178,8 +178,8 @@ type PriorityArtifactState =
   | 'missing'
   | 'stale'
   | 'invalid_schema'
-  | 'blocked'
-  | 'freeze';
+  | 'blocked_signal'
+  | 'freeze_signal';
 
 interface PriorityArtifactResult {
   state: PriorityArtifactState;
@@ -932,8 +932,9 @@ export default function Dashboard() {
 //
 // Strict visualization-only: renders whatever the TLS-04 priority artifact
 // declares. NEVER reorders, scores, or classifies. Renders explicit states
-// when the artifact is missing, stale, schema-invalid, or carries a freeze /
-// block control state.
+// when the artifact is missing, stale, schema-invalid, or carries a
+// freeze_signal / blocked_signal control_signal asserted by an upstream
+// canonical owner.
 // ---------------------------------------------------------------------------
 function NextSystemsToFinishPanel({ result }: { result: PriorityArtifactResult | null }) {
   if (!result) {
@@ -966,15 +967,15 @@ function NextSystemsToFinishPanel({ result }: { result: PriorityArtifactResult |
       label: 'ARTIFACT SCHEMA INVALID',
       help: 'Schema mismatch — pipeline must be re-validated before relying on this panel.',
     },
-    blocked: {
+    blocked_signal: {
       tone: 'bg-red-50 border-red-300 text-red-800',
-      label: 'CONTROL STATE: BLOCK',
-      help: 'Upstream control authority blocked promotion of priority signal.',
+      label: 'CONTROL SIGNAL: BLOCKED_SIGNAL',
+      help: 'Upstream control authority asserted blocked_signal on the priority recommendation.',
     },
-    freeze: {
+    freeze_signal: {
       tone: 'bg-orange-50 border-orange-300 text-orange-800',
-      label: 'CONTROL STATE: FREEZE',
-      help: 'Upstream control authority froze priority signal.',
+      label: 'CONTROL SIGNAL: FREEZE_SIGNAL',
+      help: 'Upstream control authority asserted freeze_signal on the priority recommendation.',
     },
   };
 

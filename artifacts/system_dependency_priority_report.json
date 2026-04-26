@@ -47,7 +47,7 @@
         "missing_observability",
         "schema_weakness"
       ],
-      "trust_state": "freeze",
+      "trust_state": "freeze_signal",
       "unlocks": [
         "CDE",
         "HOP",
@@ -96,7 +96,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "freeze",
+      "trust_state": "freeze_signal",
       "unlocks": [
         "GOV",
         "OBS",
@@ -140,7 +140,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "freeze",
+      "trust_state": "freeze_signal",
       "unlocks": [
         "CDE",
         "PQX",
@@ -181,7 +181,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "freeze",
+      "trust_state": "freeze_signal",
       "unlocks": [
         "OBS"
       ],
@@ -224,7 +224,7 @@
         "missing_lineage",
         "schema_weakness"
       ],
-      "trust_state": "freeze",
+      "trust_state": "freeze_signal",
       "unlocks": [
         "CAP",
         "FRE",
@@ -270,7 +270,7 @@
         "missing_lineage",
         "schema_weakness"
       ],
-      "trust_state": "freeze",
+      "trust_state": "freeze_signal",
       "unlocks": [
         "CDE",
         "FRE",
@@ -310,7 +310,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "freeze",
+      "trust_state": "freeze_signal",
       "unlocks": [
         "PQX",
         "TLC"
@@ -353,7 +353,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [
         "GOV"
       ],
@@ -394,7 +394,7 @@
         "missing_lineage",
         "missing_readiness_evidence"
       ],
-      "trust_state": "freeze",
+      "trust_state": "freeze_signal",
       "unlocks": [
         "EVL",
         "OBS",
@@ -435,7 +435,7 @@
         "missing_readiness_evidence",
         "schema_weakness"
       ],
-      "trust_state": "freeze",
+      "trust_state": "freeze_signal",
       "unlocks": [],
       "why_now": "canonical overlay; trust supporting authority; 3 trust-gap signals: missing_lineage, missing_readiness_evidence, schema_weakness"
     },
@@ -513,7 +513,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "trust-boundary authority; 5 trust-gap signals: missing_control, missing_lineage, missing_observability"
     },
@@ -549,7 +549,7 @@
         "missing_readiness_evidence",
         "missing_replay"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "trust supporting authority; 5 trust-gap signals: missing_control, missing_lineage, missing_observability"
     },
@@ -586,7 +586,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "9 trust-gap signals: missing_control, missing_enforcement_signal, missing_eval"
     },
@@ -624,7 +624,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [
         "TLC"
       ],
@@ -665,7 +665,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "7 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage"
     },
@@ -702,7 +702,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [
         "GOV",
         "TPA"
@@ -746,7 +746,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [
         "FRE",
         "JDX"
@@ -788,7 +788,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [
         "PQX"
       ],
@@ -829,7 +829,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "6 trust-gap signals: missing_control, missing_enforcement_signal, missing_lineage"
     },
@@ -867,7 +867,7 @@
         "missing_readiness_evidence",
         "missing_replay"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [
         "HOP"
       ],
@@ -910,7 +910,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "6 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_observability"
     },
@@ -950,7 +950,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "6 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_observability"
     },
@@ -990,7 +990,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [
         "JSX"
       ],
@@ -1033,7 +1033,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "5 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_observability"
     },
@@ -1071,7 +1071,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "5 trust-gap signals: missing_enforcement_signal, missing_lineage, missing_observability"
     },
@@ -1134,7 +1134,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1164,7 +1164,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1194,7 +1194,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1224,7 +1224,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1254,7 +1254,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1284,7 +1284,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1314,7 +1314,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1344,7 +1344,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1374,7 +1374,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1404,7 +1404,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1434,7 +1434,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1464,7 +1464,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1494,7 +1494,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1524,7 +1524,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1556,7 +1556,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1588,7 +1588,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1620,7 +1620,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1652,7 +1652,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1684,7 +1684,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1716,7 +1716,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1748,7 +1748,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1780,7 +1780,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     },
@@ -1812,7 +1812,7 @@
         "missing_tests",
         "schema_weakness"
       ],
-      "trust_state": "block",
+      "trust_state": "blocked_signal",
       "unlocks": [],
       "why_now": "2 trust-gap signals: missing_tests, schema_weakness"
     }
@@ -1853,7 +1853,7 @@
         "missing_observability",
         "schema_weakness"
       ],
-      "trust_state": "freeze",
+      "trust_state": "freeze_signal",
       "unlocks": [
         "CDE",
         "HOP",
@@ -1902,7 +1902,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "freeze",
+      "trust_state": "freeze_signal",
       "unlocks": [
         "GOV",
         "OBS",
@@ -1946,7 +1946,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "freeze",
+      "trust_state": "freeze_signal",
       "unlocks": [
         "CDE",
         "PQX",
@@ -1987,7 +1987,7 @@
         "missing_replay",
         "schema_weakness"
       ],
-      "trust_state": "freeze",
+      "trust_state": "freeze_signal",
       "unlocks": [
         "OBS"
       ],
@@ -2030,7 +2030,7 @@
         "missing_lineage",
         "schema_weakness"
       ],
-      "trust_state": "freeze",
+      "trust_state": "freeze_signal",
       "unlocks": [
         "CAP",
         "FRE",
