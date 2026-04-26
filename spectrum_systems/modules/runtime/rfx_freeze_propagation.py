@@ -73,6 +73,15 @@ def _normalize_reason_codes(reason_codes: list[str] | None) -> list[str]:
 
 
 def _normalize_targets(downstream_targets: list[str] | None) -> list[str]:
+    # Container-level guard: only ``None`` and ``list`` are accepted.
+    # A bare string like ``"AEX"`` would otherwise iterate as
+    # individual characters (``"A"``, ``"E"``, ``"X"``) and silently
+    # produce a corrupted freeze propagation artifact.
+    if downstream_targets is not None and not isinstance(downstream_targets, list):
+        raise RFXFreezePropagationError(
+            "rfx_freeze_propagation_invalid: downstream_targets must be a "
+            f"list or None, got {type(downstream_targets).__name__}"
+        )
     union: set[str] = set(_REQUIRED_TARGETS)
     for t in downstream_targets or []:
         if not isinstance(t, str) or not t.strip():

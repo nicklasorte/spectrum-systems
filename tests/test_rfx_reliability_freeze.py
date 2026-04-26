@@ -133,6 +133,29 @@ def test_invalid_window_signals_unknown_state() -> None:
         )
 
 
+def test_boolean_window_seconds_rejected_as_unknown_state() -> None:
+    """Codex P2 regression (line 98): bool ⊂ int in Python, so
+    ``window_seconds=True`` must be rejected explicitly rather than
+    silently accepted as a 1-second window."""
+    with pytest.raises(RFXReliabilityFreezeError, match="rfx_reliability_state_unknown"):
+        assert_rfx_reliability_posture(
+            recent_failures=[],
+            replay_results=[],
+            window_seconds=True,  # type: ignore[arg-type]
+            slo=_OK_SLO,
+        )
+
+
+def test_boolean_false_window_seconds_rejected_as_unknown_state() -> None:
+    with pytest.raises(RFXReliabilityFreezeError, match="rfx_reliability_state_unknown"):
+        assert_rfx_reliability_posture(
+            recent_failures=[],
+            replay_results=[],
+            window_seconds=False,  # type: ignore[arg-type]
+            slo=_OK_SLO,
+        )
+
+
 def test_malformed_failure_row_freezes_with_deterministic_reason() -> None:
     """Codex P1 regression: a non-dict failure row must produce a
     deterministic ``rfx_malformed_telemetry_input`` reason instead of

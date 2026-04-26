@@ -35,10 +35,18 @@ def _coerce_str(value: Any) -> str | None:
 def _trace_ids_from_obs(obs: dict[str, Any]) -> set[str]:
     """Collect declared trace ids from an OBS record.
 
-    Accepts the primary ``trace_id``, an explicit ``trace_ids`` list, and a
-    nested ``execution_path_coverage.trace_ids`` list (when coverage is a
-    dict). The coverage list itself is *not* treated as a trace-id source;
-    it conventionally enumerates execution-path step labels (AEX, PQX, …),
+    Accepts the primary ``trace_id``, an explicit ``trace_ids`` list, and:
+
+      * ``execution_path_coverage.trace_ids`` list when coverage is a dict
+        carrying that explicit field, OR
+      * the dict keys of ``execution_path_coverage`` (multi-trace form
+        ``{trace_id: [steps]}`` mirroring the dict form already accepted
+        by LOOP-08 and ``_artifact_links_for_trace``), AND
+      * the dict keys of ``artifact_linkage`` when it is a dict
+        (multi-trace form ``{trace_id: [artifact_refs]}``).
+
+    The coverage list itself is *not* treated as a trace-id source; it
+    conventionally enumerates execution-path step labels (AEX, PQX, …),
     not trace identifiers.
     """
     ids: set[str] = set()
@@ -49,6 +57,18 @@ def _trace_ids_from_obs(obs: dict[str, Any]) -> set[str]:
     if isinstance(coverage, dict):
         for v in coverage.get("trace_ids", []) or []:
             s = _coerce_str(v)
+            if s is not None:
+                ids.add(s)
+        for k in coverage.keys():
+            if k == "trace_ids":
+                continue
+            s = _coerce_str(k)
+            if s is not None:
+                ids.add(s)
+    linkage = obs.get("artifact_linkage")
+    if isinstance(linkage, dict):
+        for k in linkage.keys():
+            s = _coerce_str(k)
             if s is not None:
                 ids.add(s)
     for v in obs.get("trace_ids", []) or []:

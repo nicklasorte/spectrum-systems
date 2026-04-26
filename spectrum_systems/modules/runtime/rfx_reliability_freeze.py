@@ -95,7 +95,14 @@ def assert_rfx_reliability_posture(
     """
     th = thresholds or RFXFailureProfileThresholds()
 
-    if not isinstance(window_seconds, int) or window_seconds <= 0:
+    # ``bool`` is a subclass of ``int`` in Python, so an explicit
+    # ``isinstance(..., bool)`` check is required to keep
+    # ``window_seconds=True`` from being silently accepted as a 1s window.
+    if (
+        not isinstance(window_seconds, int)
+        or isinstance(window_seconds, bool)
+        or window_seconds <= 0
+    ):
         raise RFXReliabilityFreezeError(
             "rfx_reliability_state_unknown: window_seconds must be a positive integer",
             freeze_record=propagate_rfx_freeze(

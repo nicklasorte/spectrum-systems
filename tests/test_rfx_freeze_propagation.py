@@ -61,6 +61,25 @@ def test_propagate_rejects_invalid_downstream_target() -> None:
         )
 
 
+def test_propagate_rejects_string_downstream_targets_container() -> None:
+    """Codex P2 regression (line 77): a bare string must not be iterated
+    character-by-character into ``"A"``, ``"E"``, ``"X"`` targets — it
+    must fail closed at the container-type check."""
+    with pytest.raises(RFXFreezePropagationError, match="rfx_freeze_propagation_invalid"):
+        propagate_rfx_freeze(
+            reason_codes=["rfx_instability_detected"],
+            downstream_targets="AEX",  # type: ignore[arg-type]
+        )
+
+
+def test_propagate_rejects_int_downstream_targets_container() -> None:
+    with pytest.raises(RFXFreezePropagationError, match="rfx_freeze_propagation_invalid"):
+        propagate_rfx_freeze(
+            reason_codes=["rfx_instability_detected"],
+            downstream_targets=42,  # type: ignore[arg-type]
+        )
+
+
 def test_propagate_freeze_id_is_deterministic() -> None:
     a = propagate_rfx_freeze(
         reason_codes=["rfx_a"], downstream_targets=[], trace_id="t", created_at="c",

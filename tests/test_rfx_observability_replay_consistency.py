@@ -120,6 +120,47 @@ def test_non_list_replay_results_blocks_deterministically() -> None:
         )
 
 
+def test_dict_form_coverage_keys_are_collected_as_trace_ids() -> None:
+    """Codex P1 regression (line 50): when execution_path_coverage is a
+    dict keyed by trace_id, every key must contribute to the OBS trace
+    set so the OBS↔REP cross-check sees secondary traces."""
+    obs = {
+        "obs_id": "obs-multi",
+        "trace_id": "trace-a",
+        "execution_path_coverage": {
+            "trace-a": ["AEX", "PQX"],
+            "trace-b": ["AEX", "PQX"],
+        },
+        "artifact_linkage": {
+            "trace-a": ["lin:a"],
+            "trace-b": ["lin:b"],
+        },
+        "failure_logs": [],
+    }
+    # Replay corpus is missing trace-b — must trigger inconsistency.
+    replays = [{"trace_id": "trace-a", "match": True}]
+    with pytest.raises(RFXObservabilityReplayConsistencyError, match="rfx_trace_replay_inconsistency"):
+        assert_rfx_observability_replay_consistency(obs=obs, replay_results=replays)
+
+
+def test_dict_form_artifact_linkage_keys_are_collected_as_trace_ids() -> None:
+    """Same defense via artifact_linkage dict keys: a trace declared only
+    in linkage must still be cross-checked against the replay corpus."""
+    obs = {
+        "obs_id": "obs-multi-2",
+        "trace_id": "trace-a",
+        "execution_path_coverage": ["AEX", "PQX"],
+        "artifact_linkage": {
+            "trace-a": ["lin:a"],
+            "trace-c": ["lin:c"],
+        },
+        "failure_logs": [],
+    }
+    replays = [{"trace_id": "trace-a", "match": True}]
+    with pytest.raises(RFXObservabilityReplayConsistencyError, match="rfx_trace_replay_inconsistency"):
+        assert_rfx_observability_replay_consistency(obs=obs, replay_results=replays)
+
+
 def test_multi_trace_one_unlinked_blocks() -> None:
     obs = {
         "obs_id": "obs-2",
