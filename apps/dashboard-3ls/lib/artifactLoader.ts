@@ -36,8 +36,8 @@ export function loadArtifact<T>(relativePath: string): T | null {
 //   { state: 'blocked_signal' }           — observer-safe halt signal from artifact
 //   { state: 'freeze_signal' }            — observer-safe freeze signal from artifact
 //
-// Note: TLS produces signals only. Canonical owners (CDE/SEL/GOV) decide,
-// enforce, and certify based on these signals; the dashboard never decides.
+// Note: TLS produces signals only. Canonical owners (CDE/SEL/GOV) evaluate,
+// enforce, and certify based on these signals; the dashboard never applies authority.
 // ---------------------------------------------------------------------------
 
 export type PriorityArtifactState =

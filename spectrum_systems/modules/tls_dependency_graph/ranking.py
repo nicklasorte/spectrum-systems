@@ -384,7 +384,7 @@ def rank_systems(
                 "why_now": "requested candidate is not present in current TLS candidate index",
                 "prerequisite_systems": [],
                 "trust_gap_signals": [],
-                "finish_definition": "retrieve registry and evidence before build decision",
+                "finish_definition": "retrieve registry and evidence before build prioritization",
                 "risk_if_built_before_prerequisites": "unknown risk until candidate is classified",
                 "ambiguity_reason": ambiguity_reason,
             }

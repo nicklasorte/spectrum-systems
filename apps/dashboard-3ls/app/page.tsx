@@ -564,7 +564,7 @@ export default function Dashboard() {
     if (lineageMissing) {
       recs.push({
         title: 'Wire LIN trace lineage artifact into dashboard loop',
-        failure_prevented: 'Untraceable enforcement decisions',
+        failure_prevented: 'Untraceable enforcement signals',
         signal_improved: 'Proof-chain lineage completeness',
         systems_affected: ['LIN', 'CDE', 'SEL'],
         severity: 'high',

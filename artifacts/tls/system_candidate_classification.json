@@ -140,7 +140,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 80,
+      "evidence_count": 81,
       "in_registry": true,
       "reason": "spec_override:registry_confirmed_active",
       "registry_class": "active_registry",
