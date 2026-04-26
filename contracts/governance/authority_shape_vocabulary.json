@@ -48,7 +48,9 @@
       "contracts/governance/system_registry_guard_policy.json",
       "docs/governance/authority_shape_preflight.md",
       "docs/hop/preflight.md",
-      "docs/reviews/hop005_authority_eval_hardening_review.md"
+      "docs/operations/tls_priority_preflight.md",
+      "docs/reviews/hop005_authority_eval_hardening_review.md",
+      "docs/reviews/TLS-GUARD-01-DELIVERY-REPORT.md"
     ]
   },
   "clusters": {
