@@ -139,9 +139,16 @@
     "no bypass of freeze conditions"
   ],
   "validation": {
-    "rfx_test_count": 245,
-    "loop_07_08_test_count": 73,
+    "rfx_test_count": 248,
+    "loop_07_08_test_count": 76,
     "command": "python -m pytest tests/ -q -k rfx",
-    "result": "245 passed"
+    "result": "248 passed"
+  },
+  "activation_defaults": {
+    "loop07_reliability_freeze": "input-gated (recent_failures or replay_results or window_seconds, or explicit enforce_loop07=True)",
+    "loop08_telemetry_slo_gate": "default-on whenever both OBS and SLO are present (every LOOP-06 promotion path)",
+    "obs_rep_consistency": "default-on whenever both OBS and replay_results are supplied",
+    "anti_gaming_guard": "default-on whenever OBS or SLO is present",
+    "rationale": "PRD requires fail-closed enforcement on every promotion path. LOOP-07 needs telemetry data to compute (so it stays input-gated), but LOOP-08, OBS+REP consistency, and the anti-gaming guard are structural invariants and run by default whenever their inputs are present. Resolves Codex P1 findings on PR #1215 lines 165 and 175."
   }
 }

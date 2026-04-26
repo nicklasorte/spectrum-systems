@@ -153,37 +153,42 @@ def assert_rfx_promotion_ready(
             thresholds=reliability_thresholds,
         )
 
-    # LOOP-08: telemetry-enforced SLO eligibility. The strict OBS-field
-    # invariants (trace_id / execution_path_coverage / artifact_linkage /
-    # failure_logs) and the SLO-derived-from-OBS cross-check are stricter
-    # than LOOP-06's OBS completeness check, so LOOP-08 activates when
-    # LOOP-07 telemetry evidence is supplied or when the caller explicitly
-    # opts in via ``enforce_loop08=True``.
+    # LOOP-08: telemetry-enforced SLO eligibility. Default-on whenever both
+    # OBS and SLO are present (LOOP-06 already requires both, so this fires
+    # on every promotion path). The strict OBS-field invariants
+    # (trace_id / execution_path_coverage / artifact_linkage / failure_logs)
+    # and the SLO-derived-from-OBS cross-check are stricter than LOOP-06's
+    # OBS completeness check, and per PRD must enforce on every promotion —
+    # not only when LOOP-07 telemetry evidence is supplied.
     activate_loop08 = (
         enforce_loop08
         if enforce_loop08 is not None
-        else activate_loop07
+        else bool(obs) and bool(slo)
     )
     if activate_loop08:
         assert_rfx_telemetry_slo_eligible(obs=obs, slo=slo)
 
-    # OBS + REP cross-consistency. Default-on whenever LOOP-07 is active
-    # (the same telemetry inputs feed both checks).
+    # OBS + REP cross-consistency. Default-on whenever both OBS and a replay
+    # corpus are supplied; the cross-check requires both halves and runs
+    # independently of LOOP-07 activation so a caller that explicitly opts
+    # into LOOP-08 (without LOOP-07 telemetry) still gets replay coverage.
     activate_obs_rep = (
         enforce_obs_rep_consistency
         if enforce_obs_rep_consistency is not None
-        else activate_loop07
+        else (replay_results is not None and obs is not None)
     )
     if activate_obs_rep:
         assert_rfx_observability_replay_consistency(
             obs=obs, replay_results=replay_results
         )
 
-    # Anti-gaming guard. Default-on whenever LOOP-07 is active.
+    # Anti-gaming guard. Default-on whenever OBS or SLO is present so SLO
+    # ok-band claims with no OBS evidence (or with suppressed failure
+    # signals) are caught regardless of LOOP-07 activation.
     activate_anti_gaming = (
         enforce_anti_gaming
         if enforce_anti_gaming is not None
-        else activate_loop07
+        else (obs is not None or slo is not None)
     )
     if activate_anti_gaming:
         assert_rfx_adversarial_reliability_guard(
