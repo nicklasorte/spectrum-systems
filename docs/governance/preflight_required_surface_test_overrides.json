@@ -7,5 +7,8 @@
   ],
   "spectrum_systems/modules/runtime/eval_slice_runner.py": [
     "tests/test_task_registry_ai_adapter_eval_slice_runner.py"
+  ],
+  "contracts/governance/authority_shape_vocabulary.json": [
+    "tests/test_contracts.py"
   ]
 }

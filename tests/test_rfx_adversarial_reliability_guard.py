@@ -1,0 +1,143 @@
+"""Tests for the RFX adversarial reliability anti-gaming guard (Part 6)."""
+
+from __future__ import annotations
+
+import pytest
+
+from spectrum_systems.modules.runtime.rfx_adversarial_reliability_guard import (
+    RFXAdversarialReliabilityError,
+    assert_rfx_adversarial_reliability_guard,
+)
+
+
+_OBS_OK = {
+    "obs_id": "obs-1",
+    "trace_id": "trace-1",
+    "execution_path_coverage": ["AEX", "PQX"],
+    "artifact_linkage": ["lin:1"],
+    "failure_logs": [],
+    "completeness": "pass",
+}
+
+_SLO_OK = {"slo_id": "slo-1", "status": "within_budget"}
+
+
+def test_clean_inputs_pass() -> None:
+    assert_rfx_adversarial_reliability_guard(
+        recent_failures=[],
+        replay_results=[{"trace_id": "trace-1", "match": True}],
+        obs=_OBS_OK,
+        slo=_SLO_OK,
+    )
+
+
+def test_zero_failures_with_obs_failure_logs_blocks() -> None:
+    obs = {**_OBS_OK, "failure_logs": [{"reason": "drift"}]}
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_suspicious_signal_suppression"):
+        assert_rfx_adversarial_reliability_guard(
+            recent_failures=[], replay_results=[], obs=obs, slo=_SLO_OK,
+        )
+
+
+def test_zero_failures_with_replay_mismatches_blocks() -> None:
+    replays = [{"trace_id": "t", "match": False}]
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_metrics_inconsistency"):
+        assert_rfx_adversarial_reliability_guard(
+            recent_failures=[], replay_results=replays, obs=_OBS_OK, slo=_SLO_OK,
+        )
+
+
+def test_slo_ok_with_replay_mismatches_blocks() -> None:
+    replays = [{"trace_id": "t", "match": False}]
+    failures = [{"timestamp_seconds": 5, "reason_code": "x"}]  # avoid suppression code
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_metrics_inconsistency"):
+        assert_rfx_adversarial_reliability_guard(
+            recent_failures=failures, replay_results=replays, obs=_OBS_OK, slo=_SLO_OK,
+        )
+
+
+def test_slo_ok_with_burn_flag_no_failures_blocks() -> None:
+    sneaky = {**_SLO_OK, "burn_rate_breach": True}
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_suspicious_signal_suppression"):
+        assert_rfx_adversarial_reliability_guard(
+            recent_failures=[], replay_results=[], obs=_OBS_OK, slo=sneaky,
+        )
+
+
+def test_slo_ok_with_obs_missing_slices_blocks() -> None:
+    obs_missing = {k: v for k, v in _OBS_OK.items() if k != "failure_logs"}
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_missing_data_slice"):
+        assert_rfx_adversarial_reliability_guard(
+            recent_failures=[], replay_results=[], obs=obs_missing, slo=_SLO_OK,
+        )
+
+
+def test_slo_ok_with_no_obs_blocks() -> None:
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_missing_data_slice"):
+        assert_rfx_adversarial_reliability_guard(
+            recent_failures=[], replay_results=[], obs=None, slo=_SLO_OK,
+        )
+
+
+def test_replay_rows_without_match_flag_count_as_mismatches() -> None:
+    """Codex P2 regression (line 67): replay rows missing match/replay_match/
+    matches must be counted as mismatches so a corpus stripped of match
+    signals cannot silently pass anti-gaming."""
+    # Failures supplied so we trip rfx_metrics_inconsistency, not the
+    # zero-failures suppression branch.
+    failures = [{"timestamp_seconds": 5.0, "reason_code": "x"}]
+    replays = [
+        {"trace_id": "t1"},  # no match flag
+        {"trace_id": "t2", "match": True},
+    ]
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_metrics_inconsistency"):
+        assert_rfx_adversarial_reliability_guard(
+            recent_failures=failures, replay_results=replays, obs=_OBS_OK, slo=_SLO_OK,
+        )
+
+
+def test_zero_failures_with_match_flag_missing_replay_blocks() -> None:
+    """Replay row with no match flag but no recent failures still trips
+    suppression-vs-mismatch detection."""
+    replays = [{"trace_id": "t1"}]  # no match signal at all
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_metrics_inconsistency"):
+        assert_rfx_adversarial_reliability_guard(
+            recent_failures=[], replay_results=replays, obs=_OBS_OK, slo=_SLO_OK,
+        )
+
+
+def test_non_iterable_failures_container_blocks_deterministically() -> None:
+    """Codex P2 regression (line 112): a non-list/non-None
+    ``recent_failures`` payload (e.g. an int) must surface
+    ``rfx_metrics_inconsistency`` instead of crashing with raw TypeError
+    from the ``list(...)`` cast."""
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_metrics_inconsistency"):
+        assert_rfx_adversarial_reliability_guard(
+            recent_failures=1,  # type: ignore[arg-type]
+            replay_results=[],
+            obs=_OBS_OK,
+            slo=_SLO_OK,
+        )
+
+
+def test_non_iterable_replays_container_blocks_deterministically() -> None:
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_metrics_inconsistency"):
+        assert_rfx_adversarial_reliability_guard(
+            recent_failures=[],
+            replay_results="not-a-list",  # type: ignore[arg-type]
+            obs=_OBS_OK,
+            slo=_SLO_OK,
+        )
+
+
+def test_failures_present_no_obs_failure_logs_passes() -> None:
+    """Real failures with empty OBS failure_logs is *not* itself adversarial
+    — it could simply mean those failures are recorded elsewhere. The guard
+    only triggers on the inverse pattern (zero failures + non-empty logs)."""
+    failures = [{"timestamp_seconds": 5, "reason_code": "x"}]
+    assert_rfx_adversarial_reliability_guard(
+        recent_failures=failures,
+        replay_results=[{"trace_id": "t", "match": True}],
+        obs=_OBS_OK,
+        slo=_SLO_OK,
+    )

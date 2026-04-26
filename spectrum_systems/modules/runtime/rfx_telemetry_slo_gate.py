@@ -1,0 +1,323 @@
+"""RFX telemetry-enforced SLO gate — LOOP-08.
+
+Part 4 of the RFX reliability/SLO enforcement layer. Observability is not
+optional: an SLO posture marked ``ok`` while OBS evidence is incomplete or
+absent must fail closed. SLO is required to be computed *from* OBS — never
+independently — and the cross-check below catches the inconsistency.
+
+Strict OBS invariants enforced:
+
+  * trace_id present
+  * execution path coverage present
+  * artifact linkage present
+  * failure logs present (an empty list is acceptable; a missing key is not)
+
+Cross-check failure code:
+
+  * ``rfx_slo_inconsistent_with_obs`` — SLO claims ``ok`` while OBS is
+    incomplete (missing trace segments, artifact linkage, or failure logs)
+
+This guard is a non-owning phase-label support helper. Canonical authority
+for OBS and SLO is recorded in ``docs/architecture/system_registry.md``.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+
+class RFXTelemetrySLOError(ValueError):
+    """Raised when LOOP-08 telemetry/SLO invariants fail closed."""
+
+
+_OBS_REQUIRED_FIELDS: tuple[str, ...] = (
+    "trace_id",
+    "execution_path_coverage",
+    "artifact_linkage",
+    "failure_logs",
+)
+
+# Required type for each OBS field. A value of the wrong shape (e.g.
+# ``failure_logs={...}`` instead of a list, ``artifact_linkage="x"``
+# instead of a list/dict) must fail closed: the anti-gaming guard later
+# uses ``isinstance(logs, list)`` and would silently ignore a malformed
+# shape, so the LOOP-08 gate has to reject it deterministically here.
+_OBS_FIELD_VALID_TYPES: dict[str, tuple[type, ...]] = {
+    "trace_id": (str,),
+    "execution_path_coverage": (list, dict),
+    "artifact_linkage": (list, dict),
+    "failure_logs": (list,),
+}
+
+_OBS_COMPLETENESS_PASS = frozenset({"pass", "complete"})
+
+_SLO_OK = frozenset({"pass", "ok", "within_budget", "acceptable"})
+
+
+def _is_dict(value: Any) -> bool:
+    return isinstance(value, dict) and bool(value)
+
+
+def _is_empty_evidence(value: Any) -> bool:
+    """Return True for values that carry no actual evidence content.
+
+    Mirrors the predicate in
+    :mod:`spectrum_systems.modules.runtime.rfx_observability_replay_consistency`
+    so the two guards agree on what counts as a real artifact reference.
+    """
+    if value is None:
+        return True
+    if isinstance(value, (list, dict, tuple, set)):
+        return len(value) == 0
+    if isinstance(value, str):
+        return not value.strip()
+    return False
+
+
+def _coerce_str(value: Any) -> str | None:
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    return None
+
+
+def _coerce_completeness(obs: dict[str, Any]) -> Any:
+    for key in ("completeness", "telemetry_completeness", "status"):
+        v = obs.get(key)
+        if v is None:
+            continue
+        if isinstance(v, str) and not v.strip():
+            continue
+        return v
+    return None
+
+
+def _is_complete_value(value: Any) -> bool:
+    if value is True:
+        return True
+    if isinstance(value, str) and value.strip().lower() in _OBS_COMPLETENESS_PASS:
+        return True
+    return False
+
+
+def _coerce_slo_status(slo: dict[str, Any]) -> str | None:
+    for key in ("status", "posture", "rollout_state"):
+        s = _coerce_str(slo.get(key))
+        if s is not None:
+            return s
+    return None
+
+
+def _slo_derived_from_obs(slo: dict[str, Any], obs: dict[str, Any]) -> bool:
+    """Return True iff the SLO record explicitly references its OBS source.
+
+    Accepts the following OBS-source ID aliases (string value matching
+    the OBS record's id):
+
+      * ``obs_ref``
+      * ``source_obs_id``
+      * ``derived_from_obs_id``
+      * ``derived_from_obs`` (string form)
+
+    Every alias is evaluated — not just the first non-empty one — so a
+    migration-era payload carrying both legacy and unified fields (e.g.
+    ``obs_ref="stale"`` plus ``source_obs_id="<current obs id>"``) is
+    accepted as long as *any* alias matches the current OBS id.
+
+    A boolean ``derived_from_obs=True`` flag alone is not sufficient —
+    it must be paired with a string alias that matches; otherwise the
+    payload is treated as not-derived so an independent SLO calculation
+    cannot pass-through.
+    """
+    obs_id = _coerce_str(obs.get("obs_id")) or _coerce_str(obs.get("id"))
+    if obs_id is None:
+        return False
+    for key in ("obs_ref", "source_obs_id", "derived_from_obs_id", "derived_from_obs"):
+        s = _coerce_str(slo.get(key))
+        if s is not None and s == obs_id:
+            return True
+    return False
+
+
+def assert_rfx_telemetry_slo_eligible(
+    *,
+    obs: dict[str, Any] | None,
+    slo: dict[str, Any] | None,
+) -> None:
+    """LOOP-08 telemetry-enforced SLO eligibility gate.
+
+    Fails closed when any required OBS field is missing, when OBS
+    completeness is not ``pass``/``complete``/``True``, or when the SLO
+    posture is reported as ``ok`` but OBS is incomplete.
+    """
+    reasons: list[str] = []
+
+    obs_present = _is_dict(obs)
+    slo_present = _is_dict(slo)
+
+    if not obs_present:
+        reasons.append(
+            "rfx_missing_obs_telemetry: OBS telemetry record absent — "
+            "SLO eligibility cannot be established"
+        )
+    if not slo_present:
+        reasons.append(
+            "rfx_missing_slo: SLO posture record absent — "
+            "telemetry-enforced SLO gate blocked"
+        )
+
+    if not obs_present or not slo_present:
+        raise RFXTelemetrySLOError("; ".join(reasons))
+
+    # ---- OBS completeness invariants ----------------------------------
+    # Fields that must carry actual telemetry content — empty list/dict
+    # means no telemetry was recorded and is treated as fail-open. This
+    # is intentionally narrower than the full required set: ``failure_logs``
+    # may legitimately be empty (no failures observed), and ``trace_id``
+    # is a string already covered by the empty-string check below.
+    _NON_EMPTY_FIELDS: frozenset[str] = frozenset({
+        "execution_path_coverage",
+        "artifact_linkage",
+    })
+    missing_fields: list[str] = []
+    invalid_fields: list[str] = []
+    empty_fields: list[str] = []
+    for key in _OBS_REQUIRED_FIELDS:
+        if key not in obs:
+            missing_fields.append(key)
+            continue
+        v = obs[key]
+        # Only ``None`` is invalid for presence — empty list/string is
+        # structurally acceptable for ``failure_logs`` (no failures
+        # observed) but the field MUST be present.
+        if v is None:
+            missing_fields.append(key)
+            continue
+        valid_types = _OBS_FIELD_VALID_TYPES[key]
+        # ``bool`` is a subclass of ``int`` but not of any expected OBS
+        # type, so it falls through naturally. Reject anything that is
+        # not one of the listed valid types.
+        if not isinstance(v, valid_types) or isinstance(v, bool):
+            type_names = "/".join(t.__name__ for t in valid_types)
+            invalid_fields.append(
+                f"{key} (expected {type_names}, got {type(v).__name__})"
+            )
+            continue
+        if key == "trace_id" and _coerce_str(v) is None:
+            invalid_fields.append(f"{key} (empty string)")
+            continue
+        if key in _NON_EMPTY_FIELDS:
+            if isinstance(v, list):
+                # Drop blank/None entries when judging emptiness — a list
+                # like ``["", null]`` carries no usable evidence.
+                meaningful = [item for item in v if not _is_empty_evidence(item)]
+                if len(meaningful) == 0:
+                    empty_fields.append(key)
+            elif isinstance(v, dict):
+                if len(v) == 0:
+                    empty_fields.append(key)
+                elif key == "execution_path_coverage" and "trace_ids" in v:
+                    # Metadata-form coverage dict: ``{"trace_ids": [...],
+                    # "summary": "ok", ...}``. Sibling keys (summary,
+                    # segments, scalars, etc.) are metadata, not per-trace
+                    # buckets — only validate that ``trace_ids`` itself
+                    # carries at least one usable entry. The OBS+REP guard
+                    # already supports this shape via _trace_ids_from_obs.
+                    trace_ids_value = v.get("trace_ids")
+                    if isinstance(trace_ids_value, list):
+                        meaningful_ids = [
+                            item for item in trace_ids_value
+                            if not _is_empty_evidence(item)
+                        ]
+                        if len(meaningful_ids) == 0:
+                            empty_fields.append(key)
+                    else:
+                        empty_fields.append(key)
+                else:
+                    # Per-trace dict form: every value must itself be a
+                    # non-empty container with at least one usable entry.
+                    # ``{"trace-1": []}`` and ``{"trace-1": [""]}`` both
+                    # carry no real evidence and must fail closed here
+                    # because OBS+REP consistency is inactive when
+                    # ``replay_results`` is omitted.
+                    empty_buckets: list[str] = []
+                    for trace_key, bucket in v.items():
+                        if isinstance(bucket, list):
+                            meaningful = [
+                                item for item in bucket if not _is_empty_evidence(item)
+                            ]
+                            if len(meaningful) == 0:
+                                empty_buckets.append(f"{key}[{trace_key!r}]")
+                        elif isinstance(bucket, dict):
+                            meaningful_vals = [
+                                inner for inner in bucket.values()
+                                if not _is_empty_evidence(inner)
+                            ]
+                            if len(meaningful_vals) == 0:
+                                empty_buckets.append(f"{key}[{trace_key!r}]")
+                        else:
+                            empty_buckets.append(f"{key}[{trace_key!r}]")
+                    if empty_buckets:
+                        empty_fields.extend(sorted(empty_buckets))
+
+    if missing_fields:
+        reasons.append(
+            "rfx_obs_incomplete: OBS missing required fields: "
+            + ", ".join(sorted(missing_fields))
+        )
+    if invalid_fields:
+        reasons.append(
+            "rfx_obs_invalid_field_shape: OBS fields with invalid types: "
+            + ", ".join(sorted(invalid_fields))
+        )
+    if empty_fields:
+        reasons.append(
+            "rfx_obs_empty_field: OBS fields recorded as empty (no telemetry "
+            "content): " + ", ".join(sorted(empty_fields))
+        )
+
+    completeness = _coerce_completeness(obs)
+    if not _is_complete_value(completeness):
+        reasons.append(
+            f"rfx_obs_incomplete: OBS completeness={completeness!r} "
+            f"not 'pass'/'complete'/True"
+        )
+
+    # ---- SLO posture & derivation invariants --------------------------
+    slo_status = _coerce_slo_status(slo)
+    if slo_status is None:
+        reasons.append("rfx_slo_block: SLO record missing status/posture")
+
+    # If SLO claims ok, OBS must be complete and the SLO must be derived
+    # from OBS — else the cross-check fires deterministically.
+    if slo_status in _SLO_OK:
+        obs_complete = (
+            not missing_fields
+            and not invalid_fields
+            and not empty_fields
+            and _is_complete_value(completeness)
+        )
+        if not obs_complete:
+            reasons.append(
+                "rfx_slo_inconsistent_with_obs: SLO reports "
+                f"status={slo_status!r} but OBS is incomplete — "
+                "missing trace segments, artifact linkage, or failure logs"
+            )
+        if not _slo_derived_from_obs(slo, obs):
+            reasons.append(
+                "rfx_slo_inconsistent_with_obs: SLO does not declare an "
+                "OBS source (obs_ref/source_obs_id) — SLO must be computed "
+                "FROM OBS, not independently"
+            )
+    elif slo_status is not None:
+        reasons.append(
+            f"rfx_slo_block: SLO status={slo_status!r} not in {sorted(_SLO_OK)!r}"
+        )
+
+    if reasons:
+        raise RFXTelemetrySLOError("; ".join(reasons))
+
+
+__all__ = [
+    "RFXTelemetrySLOError",
+    "assert_rfx_telemetry_slo_eligible",
+]

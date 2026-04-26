@@ -1,0 +1,154 @@
+{
+  "artifact_type": "delivery_report",
+  "batch_id": "RFX-04-LOOP-07-08",
+  "generated_at": "2026-04-26T00:00:00Z",
+  "scope": "RFX LOOP-07 reliability-freeze guard + LOOP-08 telemetry-enforced SLO gate, OBS+REP coupling, anti-gaming defense, light-version trend memory.",
+  "status": "implemented",
+  "branch": "claude/rfx-reliability-freeze-slo-BSTE7",
+  "modules_added": [
+    "spectrum_systems/modules/runtime/rfx_failure_profile.py",
+    "spectrum_systems/modules/runtime/rfx_freeze_propagation.py",
+    "spectrum_systems/modules/runtime/rfx_reliability_freeze.py",
+    "spectrum_systems/modules/runtime/rfx_telemetry_slo_gate.py",
+    "spectrum_systems/modules/runtime/rfx_observability_replay_consistency.py",
+    "spectrum_systems/modules/runtime/rfx_adversarial_reliability_guard.py"
+  ],
+  "modules_updated": [
+    "spectrum_systems/modules/runtime/rfx_flow_integration.py",
+    "docs/roadmaps/rfx_cross_system_roadmap.md"
+  ],
+  "tests_added": [
+    "tests/test_rfx_failure_profile.py",
+    "tests/test_rfx_freeze_propagation.py",
+    "tests/test_rfx_reliability_freeze.py",
+    "tests/test_rfx_telemetry_slo_gate.py",
+    "tests/test_rfx_observability_replay_consistency.py",
+    "tests/test_rfx_adversarial_reliability_guard.py",
+    "tests/test_rfx_loop_07_08_chaos.py"
+  ],
+  "instability_thresholds": {
+    "burst_failure_density": 0.5,
+    "burst_window_frac": 0.25,
+    "burst_min_failures": 3,
+    "recurring_min_repeats": 2,
+    "trend_slope_increase_ratio": 1.25,
+    "trend_min_failures": 3,
+    "replay_mismatch_rate_block": 0.10,
+    "weight_failure_rate": 0.4,
+    "weight_replay_mismatch": 0.4,
+    "weight_trend_slope": 0.2,
+    "instability_score_block": 0.5,
+    "rationale": "Conservative defaults: any concentration of failures into the most recent quarter of the window beyond half the window's failures fires burst; same reason_code seen twice marks a recurring pattern; replay mismatch above 10% triggers drift; composite instability >=0.5 forces freeze. All thresholds are overrideable via RFXFailureProfileThresholds for governed-policy tuning."
+  },
+  "freeze_propagation_behavior": {
+    "artifact": "rfx_freeze_record",
+    "downstream_targets_required": ["PQX", "CDE", "GOV", "SEL"],
+    "effects": {
+      "PQX": "execution_blocked",
+      "CDE": "ready_blocked",
+      "GOV": "certification_blocked",
+      "SEL": "halt_signal_emitted"
+    },
+    "sel_enforcement_signal": "halt_requested",
+    "ownership_note": "Phase-label-neutral signal. Canonical enforcement authority remains in docs/architecture/system_registry.md; the freeze record signals halt-requested rather than emitting a canonical authority verb.",
+    "guarantees": [
+      "PQX execution cannot proceed",
+      "CDE cannot mark ready",
+      "GOV cannot certify",
+      "SEL receives a halt-requested signal",
+      "caller-supplied targets are unioned with required set; cannot be omitted"
+    ]
+  },
+  "loop08_obs_invariants": [
+    "trace_id present and non-empty",
+    "execution_path_coverage present",
+    "artifact_linkage present",
+    "failure_logs present (empty list ok)",
+    "completeness in {pass, complete, True}"
+  ],
+  "loop08_cross_check": {
+    "code": "rfx_slo_inconsistent_with_obs",
+    "description": "Fires when SLO posture is in {pass, ok, within_budget, acceptable} while OBS is incomplete (missing trace segments, artifact linkage, or failure logs) or when the SLO record does not declare an OBS source (obs_ref / source_obs_id / derived_from_obs_id matching obs_id)."
+  },
+  "obs_rep_coupling": {
+    "module": "rfx_observability_replay_consistency.py",
+    "rules": [
+      "Every OBS-recorded trace must have at least one artifact linkage entry",
+      "Every replay record must reference a trace present in OBS coverage",
+      "Every OBS trace must have at least one matching replay record"
+    ],
+    "reason_codes": [
+      "rfx_trace_replay_inconsistency",
+      "rfx_missing_trace_linkage"
+    ]
+  },
+  "adversarial_detection_coverage": {
+    "module": "rfx_adversarial_reliability_guard.py",
+    "vectors": [
+      "Suppressed failure signals: recent_failures empty while OBS failure_logs non-empty",
+      "Suppressed failure signals: recent_failures empty while SLO carries explicit burn flags",
+      "Inconsistent metrics: zero failures recorded while replay results show mismatches",
+      "Inconsistent metrics: SLO ok-band while replay/OBS show failures",
+      "Missing slices: SLO ok-band while OBS missing required slices",
+      "Missing slices: SLO ok-band with no OBS record at all"
+    ],
+    "reason_codes": [
+      "rfx_metrics_inconsistency",
+      "rfx_suspicious_signal_suppression",
+      "rfx_missing_data_slice"
+    ]
+  },
+  "trend_memory": {
+    "artifact": "rfx_reliability_trend_record",
+    "fields": [
+      "sample_count",
+      "failure_patterns.burst_count",
+      "failure_patterns.recurring_count",
+      "failure_patterns.trend_increasing_count",
+      "instability_score_history",
+      "replay_drift_trend",
+      "failure_count_history"
+    ],
+    "consumers": ["RFX-05 (planned)"]
+  },
+  "flow_integration_order": [
+    "AEX admission (LOOP-01)",
+    "TLC route lineage (LOOP-02)",
+    "EVL + TPA evidence (LOOP-03)",
+    "CDE -> SEL decision bridge (LOOP-04)",
+    "LIN + REP integrity bundle (LOOP-05)",
+    "GOV certification evidence (LOOP-06)",
+    "Reliability freeze guard (LOOP-07)",
+    "Telemetry-enforced SLO eligibility (LOOP-08)",
+    "OBS + REP consistency cross-check",
+    "Adversarial reliability anti-gaming guard"
+  ],
+  "known_blind_spots": [
+    "Failure profile relies on numeric `timestamp_seconds` (or aliases) to detect burst/trend structure. Records without numeric timestamps are conservatively excluded from burst/trend computation; an attacker who scrubs all timestamps cannot trigger detection here, but the recurring-pattern and replay-drift signals remain active and the anti-gaming guard catches structural inconsistencies.",
+    "SLO derivation check accepts `obs_ref` / `source_obs_id` / `derived_from_obs_id` literal id matches; an attacker who fabricates a matching id without genuine derivation is not caught at this layer. Cross-system enforcement remains with OBS / SLO authorities (canonical roles in docs/architecture/system_registry.md).",
+    "OBS+REP consistency assumes a flat `artifact_linkage` list belongs to the primary trace_id; multi-trace OBS records must use the dict-keyed form `{trace_id: [artifact_refs]}` to be correctly cross-checked.",
+    "LOOP-07 is gated by explicit caller activation (telemetry inputs supplied or `enforce_loop07=True`) so existing LOOP-01..LOOP-06-only callers are not retroactively broken; promotion gating policy is responsible for requiring those telemetry inputs at the canonical entry point.",
+    "Trend memory currently stores a flat history of profiles; aggregation (slope of slopes, regime shifts) is left to RFX-05."
+  ],
+  "guarantees": [
+    "no silent degradation",
+    "no `looks good` pass with missing telemetry",
+    "no promotion under instability",
+    "no replay drift allowed into certification",
+    "no fake SLO pass-through",
+    "no bypass of freeze conditions"
+  ],
+  "validation": {
+    "rfx_test_count": 248,
+    "loop_07_08_test_count": 76,
+    "command": "python -m pytest tests/ -q -k rfx",
+    "result": "248 passed"
+  },
+  "activation_defaults": {
+    "loop07_reliability_freeze": "input-gated on inputs that actually require a window: recent_failures or window_seconds (or explicit enforce_loop07=True). replay_results alone does NOT auto-enable LOOP-07 — the OBS+REP consistency path remains reachable without supplying a window.",
+    "loop08_telemetry_slo_gate": "default-on whenever both OBS and SLO are present (every LOOP-06 promotion path)",
+    "obs_rep_consistency": "default-on whenever both OBS and replay_results are supplied",
+    "anti_gaming_guard": "default-on whenever OBS or SLO is present",
+    "rationale": "PRD requires fail-closed enforcement on every promotion path. LOOP-07 needs reliability evidence (failures or a window) to compute, so it stays input-gated; LOOP-08, OBS+REP consistency, and the anti-gaming guard are structural invariants and run by default whenever their inputs are present. Resolves Codex P1 findings on lines 165 and 175 plus the P2 finding on line 136 (LOOP-07 auto-enable surface) of PR #1215."
+  }
+}

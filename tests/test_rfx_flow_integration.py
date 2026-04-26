@@ -46,8 +46,19 @@ _CDE = {"decision_id": "cde-flow-001", "status": "ready"}
 _SEL = {"sel_record_id": "sel-flow-001", "cde_decision_ref": "cde-flow-001"}
 _LIN = {"lineage_id": "lin-flow-001", "authenticity": "pass"}
 _REP = {"replay_id": "rep-flow-001", "match": True}
-_OBS = {"obs_id": "obs-flow-001", "completeness": "pass"}
-_SLO = {"slo_id": "slo-flow-001", "status": "within_budget"}
+# OBS must satisfy LOOP-08 invariants (trace_id, execution_path_coverage,
+# artifact_linkage, failure_logs) since LOOP-08 fires on every promotion
+# whenever both OBS and SLO are present. SLO must declare its OBS source
+# so the rfx_slo_inconsistent_with_obs cross-check passes.
+_OBS = {
+    "obs_id": "obs-flow-001",
+    "trace_id": "trace-flow-001",
+    "execution_path_coverage": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"],
+    "artifact_linkage": ["lin:flow-001", "rep:flow-001"],
+    "failure_logs": [],
+    "completeness": "pass",
+}
+_SLO = {"slo_id": "slo-flow-001", "status": "within_budget", "obs_ref": "obs-flow-001"}
 _PRA = {"pra_id": "pra-flow-001", "status": "ready"}
 _POL = {"pol_id": "pol-flow-001", "status": "active", "in_scope": True}
 
@@ -210,3 +221,86 @@ def test_flow_blocks_when_obs_absent(route_artifact: dict) -> None:
 def test_flow_blocks_when_slo_absent(route_artifact: dict) -> None:
     with pytest.raises(RFXCertificationGateError, match="rfx_slo_block"):
         assert_rfx_promotion_ready(**_full_kwargs(route_artifact, slo=None))
+
+
+# ---------------------------------------------------------------------------
+# LOOP-08 default-on: a no-telemetry promotion call must still fire the
+# strict OBS-field invariants (regression coverage for Codex P1 finding —
+# previously LOOP-08 was gated behind LOOP-07 activation, so a normal
+# LOOP-06 promotion path could pass with incomplete OBS fields).
+# ---------------------------------------------------------------------------
+
+
+def test_loop08_fires_without_telemetry_inputs_when_obs_missing_trace_id(route_artifact: dict) -> None:
+    from spectrum_systems.modules.runtime.rfx_telemetry_slo_gate import (
+        RFXTelemetrySLOError,
+    )
+    obs_partial = {k: v for k, v in _OBS.items() if k != "trace_id"}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_incomplete"):
+        assert_rfx_promotion_ready(**_full_kwargs(route_artifact, obs=obs_partial))
+
+
+def test_loop08_fires_when_slo_does_not_declare_obs_source(route_artifact: dict) -> None:
+    from spectrum_systems.modules.runtime.rfx_telemetry_slo_gate import (
+        RFXTelemetrySLOError,
+    )
+    independent_slo = {"slo_id": "slo-flow-001", "status": "within_budget"}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_slo_inconsistent_with_obs"):
+        assert_rfx_promotion_ready(**_full_kwargs(route_artifact, slo=independent_slo))
+
+
+def test_anti_gaming_fires_without_telemetry_inputs_when_obs_logs_inconsistent(
+    route_artifact: dict,
+) -> None:
+    """Anti-gaming guard must catch suppressed signals on the legacy promotion
+    path (no recent_failures supplied, but OBS shows failure logs)."""
+    from spectrum_systems.modules.runtime.rfx_adversarial_reliability_guard import (
+        RFXAdversarialReliabilityError,
+    )
+    obs_with_logs = {**_OBS, "failure_logs": [{"reason": "drift"}]}
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_suspicious_signal_suppression"):
+        assert_rfx_promotion_ready(**_full_kwargs(route_artifact, obs=obs_with_logs))
+
+
+def test_replay_results_alone_does_not_auto_enable_loop07(route_artifact: dict) -> None:
+    """Codex P2 regression: supplying replay_results without window_seconds
+    must not auto-enable LOOP-07 (which would hard-block on the missing
+    window). The OBS+REP consistency path remains reachable for callers
+    who only want LOOP-08 + replay-coverage validation."""
+    replays = [{"trace_id": "trace-flow-001", "match": True}]
+    # Must not raise — replay_results alone keeps LOOP-07 inactive while
+    # LOOP-08 + OBS/REP consistency still run.
+    assert_rfx_promotion_ready(**_full_kwargs(route_artifact, replay_results=replays))
+
+
+def test_recent_failures_alone_still_auto_enables_loop07_and_requires_window(
+    route_artifact: dict,
+) -> None:
+    """Counterpart guarantee: ``recent_failures`` is a reliability-evidence
+    input, so it auto-enables LOOP-07 and the missing-window block fires."""
+    from spectrum_systems.modules.runtime.rfx_reliability_freeze import (
+        RFXReliabilityFreezeError,
+    )
+    failures = [{"timestamp_seconds": 5.0, "reason_code": "x"}]
+    with pytest.raises(RFXReliabilityFreezeError, match="rfx_reliability_state_unknown"):
+        assert_rfx_promotion_ready(**_full_kwargs(route_artifact, recent_failures=failures))
+
+
+def test_loop07_missing_window_carries_freeze_record(route_artifact: dict) -> None:
+    """Codex P2 regression (line 150): the inline LOOP-07 missing-window
+    raise must carry a freeze_record so callers inspecting
+    ``exc.freeze_record`` still receive PQX/CDE/GOV/SEL propagation
+    metadata, matching ``assert_rfx_reliability_posture``'s contract."""
+    from spectrum_systems.modules.runtime.rfx_reliability_freeze import (
+        RFXReliabilityFreezeError,
+    )
+    failures = [{"timestamp_seconds": 5.0, "reason_code": "x"}]
+    with pytest.raises(RFXReliabilityFreezeError) as exc:
+        assert_rfx_promotion_ready(**_full_kwargs(route_artifact, recent_failures=failures))
+    assert exc.value.freeze_record is not None
+    rec = exc.value.freeze_record
+    assert rec["pqx_execution_blocked"] is True
+    assert rec["cde_ready_blocked"] is True
+    assert rec["gov_certification_blocked"] is True
+    assert rec["sel_enforcement_signal"] == "halt_requested"
+    assert "rfx_reliability_state_unknown" in rec["reason_codes"]
