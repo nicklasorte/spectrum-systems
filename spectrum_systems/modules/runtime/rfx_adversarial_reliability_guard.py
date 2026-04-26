@@ -53,19 +53,33 @@ def _is_dict(value: Any) -> bool:
 
 
 def _replay_mismatch_count(replay_results: list[dict[str, Any]] | None) -> int:
+    """Count replay rows that fail to demonstrate a positive match.
+
+    A row is a mismatch if either:
+      * its match flag is explicitly ``False``, OR
+      * it carries no ``match`` / ``replay_match`` / ``matches`` boolean at
+        all (the failure-profile builder treats missing match flags as
+        drift; the anti-gaming guard mirrors that so a corpus stripped of
+        match signals cannot slip past).
+
+    Non-dict rows are caught upstream (OBS+REP consistency, failure
+    profile sanitization) and skipped here.
+    """
     if not replay_results:
         return 0
     mismatches = 0
     for r in replay_results:
         if not isinstance(r, dict):
             continue
-        flag = None
+        flag: bool | None = None
         for key in ("match", "replay_match", "matches"):
             if key in r and isinstance(r[key], bool):
                 flag = r[key]
                 break
-        if flag is False:
-            mismatches += 1
+        if flag is True:
+            continue
+        # flag is False *or* flag is None (no boolean match signal).
+        mismatches += 1
     return mismatches
 
 

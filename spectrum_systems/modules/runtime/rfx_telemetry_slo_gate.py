@@ -37,6 +37,18 @@ _OBS_REQUIRED_FIELDS: tuple[str, ...] = (
     "failure_logs",
 )
 
+# Required type for each OBS field. A value of the wrong shape (e.g.
+# ``failure_logs={...}`` instead of a list, ``artifact_linkage="x"``
+# instead of a list/dict) must fail closed: the anti-gaming guard later
+# uses ``isinstance(logs, list)`` and would silently ignore a malformed
+# shape, so the LOOP-08 gate has to reject it deterministically here.
+_OBS_FIELD_VALID_TYPES: dict[str, tuple[type, ...]] = {
+    "trace_id": (str,),
+    "execution_path_coverage": (list, dict),
+    "artifact_linkage": (list, dict),
+    "failure_logs": (list,),
+}
+
 _OBS_COMPLETENESS_PASS = frozenset({"pass", "complete"})
 
 _SLO_OK = frozenset({"pass", "ok", "within_budget", "acceptable"})
@@ -145,23 +157,40 @@ def assert_rfx_telemetry_slo_eligible(
 
     # ---- OBS completeness invariants ----------------------------------
     missing_fields: list[str] = []
+    invalid_fields: list[str] = []
     for key in _OBS_REQUIRED_FIELDS:
         if key not in obs:
             missing_fields.append(key)
             continue
         v = obs[key]
-        # Only ``None`` is invalid — empty list/string is structurally
-        # acceptable for ``failure_logs`` (no failures observed) but the
-        # field MUST be present.
+        # Only ``None`` is invalid for presence — empty list/string is
+        # structurally acceptable for ``failure_logs`` (no failures
+        # observed) but the field MUST be present.
         if v is None:
             missing_fields.append(key)
-        elif key == "trace_id" and _coerce_str(v) is None:
-            missing_fields.append(key)
+            continue
+        valid_types = _OBS_FIELD_VALID_TYPES[key]
+        # ``bool`` is a subclass of ``int`` but not of any expected OBS
+        # type, so it falls through naturally. Reject anything that is
+        # not one of the listed valid types.
+        if not isinstance(v, valid_types) or isinstance(v, bool):
+            type_names = "/".join(t.__name__ for t in valid_types)
+            invalid_fields.append(
+                f"{key} (expected {type_names}, got {type(v).__name__})"
+            )
+            continue
+        if key == "trace_id" and _coerce_str(v) is None:
+            invalid_fields.append(f"{key} (empty string)")
 
     if missing_fields:
         reasons.append(
             "rfx_obs_incomplete: OBS missing required fields: "
             + ", ".join(sorted(missing_fields))
+        )
+    if invalid_fields:
+        reasons.append(
+            "rfx_obs_invalid_field_shape: OBS fields with invalid types: "
+            + ", ".join(sorted(invalid_fields))
         )
 
     completeness = _coerce_completeness(obs)
@@ -179,7 +208,11 @@ def assert_rfx_telemetry_slo_eligible(
     # If SLO claims ok, OBS must be complete and the SLO must be derived
     # from OBS — else the cross-check fires deterministically.
     if slo_status in _SLO_OK:
-        obs_complete = (not missing_fields) and _is_complete_value(completeness)
+        obs_complete = (
+            not missing_fields
+            and not invalid_fields
+            and _is_complete_value(completeness)
+        )
         if not obs_complete:
             reasons.append(
                 "rfx_slo_inconsistent_with_obs: SLO reports "

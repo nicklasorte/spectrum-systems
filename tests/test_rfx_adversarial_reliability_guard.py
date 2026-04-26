@@ -79,6 +79,33 @@ def test_slo_ok_with_no_obs_blocks() -> None:
         )
 
 
+def test_replay_rows_without_match_flag_count_as_mismatches() -> None:
+    """Codex P2 regression (line 67): replay rows missing match/replay_match/
+    matches must be counted as mismatches so a corpus stripped of match
+    signals cannot silently pass anti-gaming."""
+    # Failures supplied so we trip rfx_metrics_inconsistency, not the
+    # zero-failures suppression branch.
+    failures = [{"timestamp_seconds": 5.0, "reason_code": "x"}]
+    replays = [
+        {"trace_id": "t1"},  # no match flag
+        {"trace_id": "t2", "match": True},
+    ]
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_metrics_inconsistency"):
+        assert_rfx_adversarial_reliability_guard(
+            recent_failures=failures, replay_results=replays, obs=_OBS_OK, slo=_SLO_OK,
+        )
+
+
+def test_zero_failures_with_match_flag_missing_replay_blocks() -> None:
+    """Replay row with no match flag but no recent failures still trips
+    suppression-vs-mismatch detection."""
+    replays = [{"trace_id": "t1"}]  # no match signal at all
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_metrics_inconsistency"):
+        assert_rfx_adversarial_reliability_guard(
+            recent_failures=[], replay_results=replays, obs=_OBS_OK, slo=_SLO_OK,
+        )
+
+
 def test_failures_present_no_obs_failure_logs_passes() -> None:
     """Real failures with empty OBS failure_logs is *not* itself adversarial
     — it could simply mean those failures are recorded elsewhere. The guard

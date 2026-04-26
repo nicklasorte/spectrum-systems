@@ -120,3 +120,51 @@ def test_slo_with_derived_from_obs_string_mismatch_blocks() -> None:
     slo = {"slo_id": "slo-1", "status": "within_budget", "derived_from_obs": "obs-other"}
     with pytest.raises(RFXTelemetrySLOError, match="rfx_slo_inconsistent_with_obs"):
         assert_rfx_telemetry_slo_eligible(obs=_OBS_FULL, slo=slo)
+
+
+# ---------------------------------------------------------------------------
+# OBS field-shape validation (Codex P2 regression — line 157).
+# Required fields must have telemetry-usable types, not just be present.
+# ---------------------------------------------------------------------------
+
+
+def test_failure_logs_dict_instead_of_list_blocks() -> None:
+    """failure_logs={...} (dict) is not a usable telemetry shape — the
+    anti-gaming guard's isinstance(logs, list) check would silently
+    ignore it. Reject deterministically at LOOP-08."""
+    obs = {**_OBS_FULL, "failure_logs": {"reason": "drift"}}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_invalid_field_shape"):
+        assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
+def test_artifact_linkage_string_instead_of_list_blocks() -> None:
+    obs = {**_OBS_FULL, "artifact_linkage": "x"}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_invalid_field_shape"):
+        assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
+def test_execution_path_coverage_int_instead_of_list_blocks() -> None:
+    obs = {**_OBS_FULL, "execution_path_coverage": 42}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_invalid_field_shape"):
+        assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
+def test_trace_id_int_instead_of_string_blocks() -> None:
+    obs = {**_OBS_FULL, "trace_id": 123}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_invalid_field_shape"):
+        assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
+def test_failure_logs_bool_blocks() -> None:
+    """bool is subclass of int but neither is a valid list shape."""
+    obs = {**_OBS_FULL, "failure_logs": True}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_obs_invalid_field_shape"):
+        assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
+def test_artifact_linkage_dict_form_passes() -> None:
+    """The dict-keyed-by-trace_id form for artifact_linkage is supported
+    by the OBS+REP consistency check, so LOOP-08 must accept it too."""
+    obs = {**_OBS_FULL, "artifact_linkage": {"trace-1": ["lin:1"]}}
+    # Must not raise — dict form is structurally valid.
+    assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
