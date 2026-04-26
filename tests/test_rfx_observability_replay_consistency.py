@@ -75,6 +75,39 @@ def test_multi_trace_dict_linkage_passes() -> None:
     assert_rfx_observability_replay_consistency(obs=obs, replay_results=replays)
 
 
+def test_replay_row_without_any_trace_id_blocks() -> None:
+    """A replay row carrying no trace_id alias must fail closed — the
+    guard's invariant is that *every* replay record references an OBS
+    trace, so silent drops are not acceptable."""
+    replays = [
+        {"trace_id": "trace-1", "match": True},
+        {"match": False},  # untraceable row — no trace_id alias
+    ]
+    with pytest.raises(RFXObservabilityReplayConsistencyError, match="rfx_trace_replay_inconsistency"):
+        assert_rfx_observability_replay_consistency(
+            obs=_OBS_SINGLE, replay_results=replays,
+        )
+
+
+def test_replay_row_that_is_not_a_dict_blocks() -> None:
+    replays = [
+        {"trace_id": "trace-1", "match": True},
+        "not-a-dict",  # malformed row
+    ]
+    with pytest.raises(RFXObservabilityReplayConsistencyError, match="rfx_trace_replay_inconsistency"):
+        assert_rfx_observability_replay_consistency(
+            obs=_OBS_SINGLE, replay_results=replays,
+        )
+
+
+def test_replay_row_using_source_trace_id_alias_passes() -> None:
+    """The documented ``source_trace_id`` alias must continue to work."""
+    replays = [{"source_trace_id": "trace-1", "match": True}]
+    assert_rfx_observability_replay_consistency(
+        obs=_OBS_SINGLE, replay_results=replays,
+    )
+
+
 def test_multi_trace_one_unlinked_blocks() -> None:
     obs = {
         "obs_id": "obs-2",

@@ -83,3 +83,40 @@ def test_obs_with_completeness_true_passes() -> None:
     obs = {**_OBS_FULL, "completeness": True}
     # Must not raise
     assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
+
+
+# ---------------------------------------------------------------------------
+# Documented OBS-source aliases must all be honored by _slo_derived_from_obs.
+# ---------------------------------------------------------------------------
+
+
+def test_slo_with_derived_from_obs_string_alias_passes() -> None:
+    """The documented bare ``derived_from_obs: "<obs_id>"`` alias must be
+    accepted as an OBS source reference (regression for Codex P2 finding)."""
+    slo = {"slo_id": "slo-1", "status": "within_budget", "derived_from_obs": "obs-1"}
+    # Must not raise.
+    assert_rfx_telemetry_slo_eligible(obs=_OBS_FULL, slo=slo)
+
+
+def test_slo_with_source_obs_id_alias_passes() -> None:
+    slo = {"slo_id": "slo-1", "status": "within_budget", "source_obs_id": "obs-1"}
+    assert_rfx_telemetry_slo_eligible(obs=_OBS_FULL, slo=slo)
+
+
+def test_slo_with_derived_from_obs_id_alias_passes() -> None:
+    slo = {"slo_id": "slo-1", "status": "within_budget", "derived_from_obs_id": "obs-1"}
+    assert_rfx_telemetry_slo_eligible(obs=_OBS_FULL, slo=slo)
+
+
+def test_slo_with_derived_from_obs_bool_alone_is_not_enough() -> None:
+    """Boolean ``derived_from_obs=True`` without a matching id alias must
+    NOT count as derived — fail-closed against an unverifiable claim."""
+    slo = {"slo_id": "slo-1", "status": "within_budget", "derived_from_obs": True}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_slo_inconsistent_with_obs"):
+        assert_rfx_telemetry_slo_eligible(obs=_OBS_FULL, slo=slo)
+
+
+def test_slo_with_derived_from_obs_string_mismatch_blocks() -> None:
+    slo = {"slo_id": "slo-1", "status": "within_budget", "derived_from_obs": "obs-other"}
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_slo_inconsistent_with_obs"):
+        assert_rfx_telemetry_slo_eligible(obs=_OBS_FULL, slo=slo)

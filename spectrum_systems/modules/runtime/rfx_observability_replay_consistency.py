@@ -81,17 +81,17 @@ def _artifact_links_for_trace(
     return []
 
 
-def _trace_ids_from_replays(replay_results: list[dict[str, Any]]) -> set[str]:
-    ids: set[str] = set()
-    for r in replay_results or []:
-        if not isinstance(r, dict):
-            continue
-        for key in ("trace_id", "source_trace_id", "replay_trace_id"):
-            s = _coerce_str(r.get(key))
-            if s is not None:
-                ids.add(s)
-                break
-    return ids
+def _replay_trace_id(record: dict[str, Any]) -> str | None:
+    """Return the canonical trace id for a replay row, or ``None`` if the
+    row carries no recognized trace identifier.
+
+    Recognized aliases: ``trace_id`` / ``source_trace_id`` / ``replay_trace_id``.
+    """
+    for key in ("trace_id", "source_trace_id", "replay_trace_id"):
+        s = _coerce_str(record.get(key))
+        if s is not None:
+            return s
+    return None
 
 
 def assert_rfx_observability_replay_consistency(
@@ -104,6 +104,7 @@ def assert_rfx_observability_replay_consistency(
     Fails closed with a deterministic reason code when:
       * OBS is missing,
       * any trace recorded in OBS lacks artifact linkage,
+      * any replay row carries no recognized trace identifier,
       * any replay refers to a trace not present in OBS,
       * any OBS trace has no corresponding replay (drift indicator).
     """
@@ -131,7 +132,28 @@ def assert_rfx_observability_replay_consistency(
                 f"artifact linkage entries"
             )
 
-    rep_trace_ids = _trace_ids_from_replays(replay_results or [])
+    # Walk replays once: every row must carry a trace identifier so that
+    # an untraceable replay row cannot silently pass the cross-check.
+    rep_trace_ids: set[str] = set()
+    untraceable_count = 0
+    for index, r in enumerate(replay_results or []):
+        if not isinstance(r, dict):
+            untraceable_count += 1
+            reasons.append(
+                f"rfx_trace_replay_inconsistency: replay row index={index} "
+                f"is not a dict — every replay record must reference a trace"
+            )
+            continue
+        tid = _replay_trace_id(r)
+        if tid is None:
+            untraceable_count += 1
+            reasons.append(
+                f"rfx_trace_replay_inconsistency: replay row index={index} "
+                f"carries no trace_id/source_trace_id/replay_trace_id — "
+                f"every replay record must reference an OBS trace"
+            )
+            continue
+        rep_trace_ids.add(tid)
 
     # Replays must have matching OBS trace coverage.
     for tid in sorted(rep_trace_ids):

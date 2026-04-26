@@ -82,20 +82,33 @@ def _coerce_slo_status(slo: dict[str, Any]) -> str | None:
 def _slo_derived_from_obs(slo: dict[str, Any], obs: dict[str, Any]) -> bool:
     """Return True iff the SLO record explicitly references its OBS source.
 
-    Accepts ``obs_ref`` / ``derived_from_obs`` / ``source_obs_id`` matching
-    the OBS record's id, or a boolean ``derived_from_obs=True`` flag with a
-    matching id field. Anything else is treated as not-derived so an
-    independent SLO calculation cannot pass-through.
+    Accepts the following OBS-source ID aliases (string value matching
+    the OBS record's id):
+
+      * ``obs_ref``
+      * ``source_obs_id``
+      * ``derived_from_obs_id``
+      * ``derived_from_obs`` (string form)
+
+    Also accepts a boolean ``derived_from_obs=True`` flag combined with a
+    matching string id in any of the *_id aliases above. Anything else is
+    treated as not-derived so an independent SLO calculation cannot
+    pass-through.
     """
     obs_id = _coerce_str(obs.get("obs_id")) or _coerce_str(obs.get("id"))
+    if obs_id is None:
+        return False
     explicit_ref = (
         _coerce_str(slo.get("obs_ref"))
         or _coerce_str(slo.get("source_obs_id"))
         or _coerce_str(slo.get("derived_from_obs_id"))
+        or _coerce_str(slo.get("derived_from_obs"))
     )
-    if explicit_ref is not None and obs_id is not None and explicit_ref == obs_id:
+    if explicit_ref is not None and explicit_ref == obs_id:
         return True
-    if slo.get("derived_from_obs") is True and obs_id is not None and explicit_ref == obs_id:
+    # Boolean ``derived_from_obs=True`` is a confirmation flag — it must be
+    # paired with a matching id alias to count as derived.
+    if slo.get("derived_from_obs") is True and explicit_ref is not None and explicit_ref == obs_id:
         return True
     return False
 
