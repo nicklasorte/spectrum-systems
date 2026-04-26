@@ -162,6 +162,34 @@ def test_failure_logs_bool_blocks() -> None:
         assert_rfx_telemetry_slo_eligible(obs=obs, slo=_SLO_OK_DERIVED)
 
 
+def test_slo_with_stale_obs_ref_and_matching_source_obs_id_passes() -> None:
+    """Codex P2 regression (line 117): every alias must be evaluated. A
+    migration-era payload with a stale ``obs_ref`` AND a matching
+    ``source_obs_id`` must pass — the prior or-chain shortcircuited on
+    the first non-empty alias and incorrectly rejected this case."""
+    slo = {
+        "slo_id": "slo-1",
+        "status": "within_budget",
+        "obs_ref": "obs-stale",
+        "source_obs_id": "obs-1",
+    }
+    # Must not raise — at least one alias matches the OBS id.
+    assert_rfx_telemetry_slo_eligible(obs=_OBS_FULL, slo=slo)
+
+
+def test_slo_with_two_stale_aliases_blocks() -> None:
+    """Sanity counterpart: if no alias matches, the cross-check still
+    fires. Locks in that the loop hasn't accidentally become permissive."""
+    slo = {
+        "slo_id": "slo-1",
+        "status": "within_budget",
+        "obs_ref": "obs-stale",
+        "source_obs_id": "obs-also-stale",
+    }
+    with pytest.raises(RFXTelemetrySLOError, match="rfx_slo_inconsistent_with_obs"):
+        assert_rfx_telemetry_slo_eligible(obs=_OBS_FULL, slo=slo)
+
+
 def test_artifact_linkage_dict_form_passes() -> None:
     """The dict-keyed-by-trace_id form for artifact_linkage is supported
     by the OBS+REP consistency check, so LOOP-08 must accept it too."""

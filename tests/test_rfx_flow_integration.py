@@ -284,3 +284,23 @@ def test_recent_failures_alone_still_auto_enables_loop07_and_requires_window(
     failures = [{"timestamp_seconds": 5.0, "reason_code": "x"}]
     with pytest.raises(RFXReliabilityFreezeError, match="rfx_reliability_state_unknown"):
         assert_rfx_promotion_ready(**_full_kwargs(route_artifact, recent_failures=failures))
+
+
+def test_loop07_missing_window_carries_freeze_record(route_artifact: dict) -> None:
+    """Codex P2 regression (line 150): the inline LOOP-07 missing-window
+    raise must carry a freeze_record so callers inspecting
+    ``exc.freeze_record`` still receive PQX/CDE/GOV/SEL propagation
+    metadata, matching ``assert_rfx_reliability_posture``'s contract."""
+    from spectrum_systems.modules.runtime.rfx_reliability_freeze import (
+        RFXReliabilityFreezeError,
+    )
+    failures = [{"timestamp_seconds": 5.0, "reason_code": "x"}]
+    with pytest.raises(RFXReliabilityFreezeError) as exc:
+        assert_rfx_promotion_ready(**_full_kwargs(route_artifact, recent_failures=failures))
+    assert exc.value.freeze_record is not None
+    rec = exc.value.freeze_record
+    assert rec["pqx_execution_blocked"] is True
+    assert rec["cde_ready_blocked"] is True
+    assert rec["gov_certification_blocked"] is True
+    assert rec["sel_enforcement_signal"] == "halt_requested"
+    assert "rfx_reliability_state_unknown" in rec["reason_codes"]

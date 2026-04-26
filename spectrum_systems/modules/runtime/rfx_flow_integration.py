@@ -142,13 +142,27 @@ def assert_rfx_promotion_ready(
     if activate_loop07:
         if window_seconds is None:
             # Without a window we cannot evaluate density, slope, or rate —
-            # fail closed rather than guess.
+            # fail closed rather than guess. Match
+            # ``assert_rfx_reliability_posture``'s contract by attaching a
+            # freeze propagation record so callers that inspect
+            # ``exc.freeze_record`` still receive deterministic
+            # PQX/CDE/GOV/SEL freeze signals.
+            from spectrum_systems.modules.runtime.rfx_freeze_propagation import (
+                propagate_rfx_freeze,
+            )
             from spectrum_systems.modules.runtime.rfx_reliability_freeze import (
                 RFXReliabilityFreezeError,
             )
-            raise RFXReliabilityFreezeError(
+            reason = (
                 "rfx_reliability_state_unknown: window_seconds is required "
                 "when LOOP-07 reliability evidence is supplied"
+            )
+            raise RFXReliabilityFreezeError(
+                reason,
+                freeze_record=propagate_rfx_freeze(
+                    reason_codes=["rfx_reliability_state_unknown"],
+                    downstream_targets=[],
+                ),
             )
         assert_rfx_reliability_posture(
             recent_failures=recent_failures,

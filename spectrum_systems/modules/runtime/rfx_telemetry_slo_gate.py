@@ -102,26 +102,23 @@ def _slo_derived_from_obs(slo: dict[str, Any], obs: dict[str, Any]) -> bool:
       * ``derived_from_obs_id``
       * ``derived_from_obs`` (string form)
 
-    Also accepts a boolean ``derived_from_obs=True`` flag combined with a
-    matching string id in any of the *_id aliases above. Anything else is
-    treated as not-derived so an independent SLO calculation cannot
-    pass-through.
+    Every alias is evaluated — not just the first non-empty one — so a
+    migration-era payload carrying both legacy and unified fields (e.g.
+    ``obs_ref="stale"`` plus ``source_obs_id="<current obs id>"``) is
+    accepted as long as *any* alias matches the current OBS id.
+
+    A boolean ``derived_from_obs=True`` flag alone is not sufficient —
+    it must be paired with a string alias that matches; otherwise the
+    payload is treated as not-derived so an independent SLO calculation
+    cannot pass-through.
     """
     obs_id = _coerce_str(obs.get("obs_id")) or _coerce_str(obs.get("id"))
     if obs_id is None:
         return False
-    explicit_ref = (
-        _coerce_str(slo.get("obs_ref"))
-        or _coerce_str(slo.get("source_obs_id"))
-        or _coerce_str(slo.get("derived_from_obs_id"))
-        or _coerce_str(slo.get("derived_from_obs"))
-    )
-    if explicit_ref is not None and explicit_ref == obs_id:
-        return True
-    # Boolean ``derived_from_obs=True`` is a confirmation flag — it must be
-    # paired with a matching id alias to count as derived.
-    if slo.get("derived_from_obs") is True and explicit_ref is not None and explicit_ref == obs_id:
-        return True
+    for key in ("obs_ref", "source_obs_id", "derived_from_obs_id", "derived_from_obs"):
+        s = _coerce_str(slo.get(key))
+        if s is not None and s == obs_id:
+            return True
     return False
 
 
