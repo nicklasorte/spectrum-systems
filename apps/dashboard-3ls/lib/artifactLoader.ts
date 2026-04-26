@@ -64,13 +64,32 @@ export interface RankedSystem {
   unknown_justification?: string;
 }
 
+export interface RequestedCandidateRow {
+  requested_rank: number;
+  global_rank?: number | null;
+  system_id: string;
+  classification: string;
+  score?: number | null;
+  recommended_action: string;
+  why_now: string;
+  prerequisite_systems: string[];
+  trust_gap_signals: string[];
+  finish_definition: string;
+  risk_if_built_before_prerequisites: string;
+  ambiguity_reason?: string;
+}
+
 export interface PriorityArtifact {
   schema_version: string;
   phase: string;
   priority_order: string[];
   penalties: string[];
   ranked_systems: RankedSystem[];
+  global_ranked_systems: RankedSystem[];
   top_5: RankedSystem[];
+  requested_candidate_set: string[];
+  requested_candidate_ranking: RequestedCandidateRow[];
+  ambiguous_requested_candidates: Array<{ system_id: string; ambiguity_reason: string }>;
   generated_at?: string;
   control_signal?: 'ready_signal' | 'warn' | 'freeze_signal' | 'blocked_signal';
 }
@@ -94,7 +113,11 @@ function isPriorityArtifact(value: unknown): value is PriorityArtifact {
   if (obj.schema_version !== 'tls-04.v1') return false;
   if (obj.phase !== 'TLS-04') return false;
   if (!Array.isArray(obj.ranked_systems)) return false;
+  if (!Array.isArray(obj.global_ranked_systems)) return false;
   if (!Array.isArray(obj.top_5)) return false;
+  if (!Array.isArray(obj.requested_candidate_set)) return false;
+  if (!Array.isArray(obj.requested_candidate_ranking)) return false;
+  if (!Array.isArray(obj.ambiguous_requested_candidates)) return false;
   for (const entry of obj.top_5 as unknown[]) {
     if (!entry || typeof entry !== 'object') return false;
     const e = entry as Record<string, unknown>;

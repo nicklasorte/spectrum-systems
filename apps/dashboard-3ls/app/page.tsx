@@ -188,6 +188,22 @@ interface PriorityArtifactResult {
     phase?: string;
     top_5?: RankedSystemView[];
     ranked_systems?: RankedSystemView[];
+    requested_candidate_set?: string[];
+    requested_candidate_ranking?: Array<{
+      requested_rank: number;
+      global_rank?: number | null;
+      system_id: string;
+      classification: string;
+      score?: number | null;
+      recommended_action: string;
+      why_now: string;
+      prerequisite_systems: string[];
+      trust_gap_signals: string[];
+      finish_definition: string;
+      risk_if_built_before_prerequisites: string;
+      ambiguity_reason?: string;
+    }>;
+    ambiguous_requested_candidates?: Array<{ system_id: string; ambiguity_reason: string }>;
   } | null;
   generated_at?: string;
   reason?: string;
@@ -981,6 +997,9 @@ function NextSystemsToFinishPanel({ result }: { result: PriorityArtifactResult |
 
   const banner = stateMessages[result.state];
   const top5 = result.payload?.top_5 ?? [];
+  const requestedSet = result.payload?.requested_candidate_set ?? [];
+  const requestedRanking = result.payload?.requested_candidate_ranking ?? [];
+  const ambiguousRequested = result.payload?.ambiguous_requested_candidates ?? [];
 
   return (
     <section
@@ -1079,6 +1098,46 @@ function NextSystemsToFinishPanel({ result }: { result: PriorityArtifactResult |
       <p className="text-xs text-gray-500 mt-3">
         Source: artifacts/system_dependency_priority_report.json (TLS-04). Dashboard does not compute ranking.
       </p>
+
+      <div className="mt-5 border-t pt-4" data-testid="requested-candidate-ranking">
+        <h3 className="font-semibold">Requested Candidate Ranking</h3>
+        {requestedSet.length === 0 ? (
+          <p className="text-sm text-gray-500 mt-2" data-testid="requested-candidate-empty">
+            No requested candidate set provided. Run with --candidates H01,RFX,HOP,MET,METS.
+          </p>
+        ) : (
+          <div className="mt-3 space-y-2">
+            {ambiguousRequested.length > 0 && (
+              <div className="border border-amber-300 bg-amber-50 rounded p-2 text-xs text-amber-900" data-testid="requested-candidate-ambiguity">
+                Ambiguity warnings: {ambiguousRequested.map((row) => `${row.system_id} (${row.ambiguity_reason})`).join(', ')}
+              </div>
+            )}
+            <ol className="space-y-2">
+              {requestedRanking.map((row) => (
+                <li key={`${row.requested_rank}-${row.system_id}`} className="border rounded p-2 text-sm" data-testid="requested-candidate-row">
+                  <div className="flex justify-between">
+                    <span className="font-semibold">
+                      #{row.requested_rank} <span className="font-mono">{row.system_id}</span> ({row.classification})
+                    </span>
+                    <span className="text-xs font-mono">
+                      global_rank: {row.global_rank ?? '—'} | score: {row.score ?? '—'}
+                    </span>
+                  </div>
+                  <p className="text-xs mt-1">recommended_action: {row.recommended_action}</p>
+                  <p className="text-xs">why_now: {row.why_now}</p>
+                  <p className="text-xs">prerequisite_systems: {row.prerequisite_systems.join(', ') || '—'}</p>
+                  <p className="text-xs">trust_gap_signals: {row.trust_gap_signals.join(', ') || 'none'}</p>
+                  <p className="text-xs">finish_definition: {row.finish_definition}</p>
+                  <p className="text-xs">build_now_signal: {row.risk_if_built_before_prerequisites}</p>
+                  {row.ambiguity_reason && (
+                    <p className="text-xs mt-1 text-amber-800">ambiguity_reason: {row.ambiguity_reason}</p>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+      </div>
     </section>
   );
 }

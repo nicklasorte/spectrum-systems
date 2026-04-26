@@ -42,7 +42,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 
 SCHEMA_VERSION = "tls-04.v1"
@@ -207,6 +207,7 @@ def rank_systems(
     classification: Dict,
     trust_gaps: Dict,
     top_n: int = 5,
+    requested_candidates: Optional[Sequence[str]] = None,
 ) -> Dict:
     canonical_loop = list(dependency_graph.get("canonical_loop") or [])
     canonical_overlays = list(dependency_graph.get("canonical_overlays") or [])
@@ -313,6 +314,94 @@ def rank_systems(
             }
         top.append(r)
 
+    global_ranked_systems = rows
+    requested_candidate_set = [c for c in (requested_candidates or []) if c]
+    requested_rows: List[Dict] = []
+    ambiguous_requested_candidates: List[Dict] = []
+
+    global_rank_by_id = {r["system_id"]: r["rank"] for r in global_ranked_systems}
+    global_row_by_id = {r["system_id"]: r for r in global_ranked_systems}
+    candidate_reason_by_id = {
+        c["system_id"]: c.get("reason", "unknown_reason")
+        for c in (classification.get("candidates") or [])
+    }
+
+    def _prerequisites_for(sid: str) -> List[str]:
+        row = global_row_by_id.get(sid)
+        if not row:
+            return []
+        upstream = row.get("dependencies", {}).get("upstream", [])
+        sid_rank = global_rank_by_id.get(sid, 10**9)
+        prereqs: List[str] = []
+        for upstream_sid in upstream:
+            upstream_row = global_row_by_id.get(upstream_sid)
+            if not upstream_row:
+                continue
+            if global_rank_by_id.get(upstream_sid, 10**9) < sid_rank and upstream_row.get("classification") in ACTIVE_CLASSES:
+                prereqs.append(upstream_sid)
+        return prereqs
+
+    for requested in requested_candidate_set:
+        global_row = global_row_by_id.get(requested)
+        if global_row:
+            prereqs = _prerequisites_for(requested)
+            risk_text = (
+                "higher risk: upstream trust systems are ranked ahead and should be finished first"
+                if prereqs
+                else "no higher-priority upstream trust prerequisite detected in TLS ranking"
+            )
+            requested_rows.append(
+                {
+                    "system_id": requested,
+                    "global_rank": global_rank_by_id.get(requested),
+                    "classification": global_row["classification"],
+                    "score": global_row["score"],
+                    "recommended_action": global_row["action"],
+                    "why_now": global_row["why_now"],
+                    "prerequisite_systems": prereqs,
+                    "trust_gap_signals": global_row["trust_gap_signals"],
+                    "finish_definition": global_row["finish_definition"],
+                    "risk_if_built_before_prerequisites": risk_text,
+                }
+            )
+            if global_row["classification"] == "unknown":
+                ambiguous_requested_candidates.append(
+                    {
+                        "system_id": requested,
+                        "ambiguity_reason": candidate_reason_by_id.get(requested, "classification_unknown"),
+                    }
+                )
+            continue
+
+        ambiguity_reason = "not_found_in_classification_or_registry_evidence"
+        requested_rows.append(
+            {
+                "system_id": requested,
+                "global_rank": None,
+                "classification": "unknown",
+                "score": None,
+                "recommended_action": "investigate:classify_or_reject",
+                "why_now": "requested candidate is not present in current TLS candidate index",
+                "prerequisite_systems": [],
+                "trust_gap_signals": [],
+                "finish_definition": "retrieve registry and evidence before build decision",
+                "risk_if_built_before_prerequisites": "unknown risk until candidate is classified",
+                "ambiguity_reason": ambiguity_reason,
+            }
+        )
+        ambiguous_requested_candidates.append(
+            {
+                "system_id": requested,
+                "ambiguity_reason": ambiguity_reason,
+            }
+        )
+
+    requested_rows.sort(key=lambda r: (r["global_rank"] is None, r["global_rank"] or 10**9, r["system_id"]))
+    for idx, row in enumerate(requested_rows, start=1):
+        row["requested_rank"] = idx
+        if row["classification"] == "unknown" and "ambiguity_reason" not in row:
+            row["ambiguity_reason"] = candidate_reason_by_id.get(row["system_id"], "classification_unknown")
+
     return {
         "schema_version": SCHEMA_VERSION,
         "phase": "TLS-04",
@@ -328,8 +417,12 @@ def rank_systems(
             "deprecated",
             "unknown",
         ],
-        "ranked_systems": rows,
+        "ranked_systems": global_ranked_systems,
+        "global_ranked_systems": global_ranked_systems,
         "top_5": top,
+        "requested_candidate_set": requested_candidate_set,
+        "requested_candidate_ranking": requested_rows,
+        "ambiguous_requested_candidates": ambiguous_requested_candidates,
     }
 
 
@@ -340,8 +433,16 @@ def write_artifact(
     classification: Dict,
     trust_gaps: Dict,
     top_n: int = 5,
+    requested_candidates: Optional[Sequence[str]] = None,
 ) -> Dict:
-    payload = rank_systems(dependency_graph, evidence_attachment, classification, trust_gaps, top_n=top_n)
+    payload = rank_systems(
+        dependency_graph,
+        evidence_attachment,
+        classification,
+        trust_gaps,
+        top_n=top_n,
+        requested_candidates=requested_candidates,
+    )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return payload

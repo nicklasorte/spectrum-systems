@@ -116,7 +116,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 94,
+      "evidence_count": 96,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -140,9 +140,9 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 76,
+      "evidence_count": 80,
       "in_registry": true,
-      "reason": "active_in_registry_with_repo_evidence",
+      "reason": "spec_override:registry_confirmed_active",
       "registry_class": "active_registry",
       "system_id": "HOP"
     },
@@ -172,7 +172,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 87,
+      "evidence_count": 88,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
