@@ -7,14 +7,14 @@ BUILD
 TLS-STACK-02A
 
 ## Objective
-Remove authority-shaped "decision" vocabulary from TLS/requested-candidate ranking and related dashboard surfaces, while preserving observer-only behavior.
+Remove CDE/JDX-owned terminology from TLS/requested-candidate ranking and related dashboard surfaces, while preserving observer-only behavior.
 
 ## Declared files
 | File | Change type | Reason |
 | --- | --- | --- |
 | spectrum_systems/modules/tls_dependency_graph/ranking.py | MODIFY | Replace unknown-candidate finish text with observer-safe prioritization wording. |
 | apps/dashboard-3ls/lib/artifactLoader.ts | MODIFY | Remove "decides" wording in TLS loader comment surface. |
-| apps/dashboard-3ls/app/page.tsx | MODIFY | Replace non-owner "decisions" wording in dashboard fallback text. |
+| apps/dashboard-3ls/app/page.tsx | MODIFY | Replace non-owner authority-shaped wording in dashboard fallback text. |
 | apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx | MODIFY | Align expected fixture wording with prioritization replacement. |
 | artifacts/system_dependency_priority_report.json | MODIFY | Regenerated artifact with safe vocabulary. |
 | artifacts/tls/system_dependency_priority_report.json | MODIFY | Regenerated phase artifact with safe vocabulary. |
