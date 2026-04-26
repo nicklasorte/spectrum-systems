@@ -64,13 +64,13 @@ _DEFAULT_THRESHOLDS = RFXFailureProfileThresholds()
 def _coerce_timestamp(record: dict[str, Any]) -> float | None:
     """Return a numeric timestamp (seconds) for a record, or ``None``.
 
-    Accepts ``timestamp_seconds`` / ``ts`` (numeric) or ``occurred_at``
-    interpreted as monotonic seconds since the window start when the value
-    is numeric. Non-numeric values are ignored deliberately — failure
-    profiling must not infer timing from string parsing of free-form
-    timestamp strings.
+    Accepts ``timestamp_seconds`` / ``ts`` / ``elapsed_seconds`` /
+    ``occurred_at_seconds`` / ``occurred_at`` when the value is numeric,
+    interpreted as monotonic seconds since the window start. Non-numeric
+    values (including ISO date-time strings) are ignored deliberately —
+    failure profiling must not infer timing from free-form string parsing.
     """
-    for key in ("timestamp_seconds", "ts", "elapsed_seconds", "occurred_at_seconds"):
+    for key in ("timestamp_seconds", "ts", "elapsed_seconds", "occurred_at_seconds", "occurred_at"):
         if key in record and isinstance(record[key], (int, float)) and not isinstance(record[key], bool):
             return float(record[key])
     return None

@@ -36,6 +36,34 @@ def test_burst_detected_when_density_concentrated_in_tail() -> None:
     assert p["burst_failure_detected"] is True
 
 
+def test_burst_detected_when_occurred_at_numeric_alias_used() -> None:
+    """Producers using the documented ``occurred_at`` numeric alias must
+    drive burst/trend detection identically to ``timestamp_seconds``."""
+    failures = (
+        [{"occurred_at": 5.0, "reason_code": "x"}]
+        + [{"occurred_at": 80.0 + i, "reason_code": f"x{i}"} for i in range(5)]
+    )
+    p = build_rfx_failure_profile(
+        recent_failures=failures, replay_results=[], window_seconds=100,
+    )
+    assert p["burst_failure_detected"] is True
+
+
+def test_iso_string_occurred_at_treated_as_no_timing_signal() -> None:
+    """Non-numeric ``occurred_at`` (ISO datetime string) must be ignored —
+    failure profiling never parses free-form timestamp strings."""
+    failures = [
+        {"occurred_at": "2026-04-25T00:00:05Z", "reason_code": "x"},
+        {"occurred_at": "2026-04-25T00:01:25Z", "reason_code": "x"},
+    ]
+    p = build_rfx_failure_profile(
+        recent_failures=failures, replay_results=[], window_seconds=100,
+    )
+    # Without numeric timing, burst/trend cannot be detected.
+    assert p["burst_failure_detected"] is False
+    assert p["failure_trend_increasing"] is False
+
+
 def test_burst_not_detected_when_evenly_distributed() -> None:
     failures = [_failure(t) for t in (5.0, 25.0, 50.0, 75.0, 95.0)]
     p = build_rfx_failure_profile(
