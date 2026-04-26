@@ -227,10 +227,23 @@ def build_rfx_failure_profile(
     empty list, and a non-positive window collapses derived rates to zero
     while preserving the raw counts so downstream guards still see the
     structural signal.
+
+    Malformed rows (anything that is not a ``dict``) are filtered out
+    before profiling so downstream helpers cannot raise raw
+    ``AttributeError``/``TypeError`` from the promotion path. The counts of
+    filtered rows are surfaced as ``malformed_failure_count`` /
+    ``malformed_replay_count`` so the LOOP-07 reliability-freeze guard can
+    convert them into a deterministic ``rfx_malformed_telemetry_input``
+    reason code rather than silently dropping the input.
     """
     th = thresholds or _DEFAULT_THRESHOLDS
-    failures = list(recent_failures or [])
-    replays = list(replay_results or [])
+
+    raw_failures = list(recent_failures or [])
+    raw_replays = list(replay_results or [])
+    failures = [f for f in raw_failures if isinstance(f, dict)]
+    replays = [r for r in raw_replays if isinstance(r, dict)]
+    malformed_failure_count = len(raw_failures) - len(failures)
+    malformed_replay_count = len(raw_replays) - len(replays)
 
     failure_count = len(failures)
     failure_rate = _failure_rate(failure_count, window_seconds)
@@ -251,6 +264,8 @@ def build_rfx_failure_profile(
         "replay_mismatch_rate": replay_mismatch_rate,
         "failure_trend_increasing": trend_increasing,
         "instability_score": score,
+        "malformed_failure_count": malformed_failure_count,
+        "malformed_replay_count": malformed_replay_count,
         "thresholds": {
             "burst_failure_density": th.burst_failure_density,
             "burst_window_frac": th.burst_window_frac,

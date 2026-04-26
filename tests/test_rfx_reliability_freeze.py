@@ -133,6 +133,29 @@ def test_invalid_window_signals_unknown_state() -> None:
         )
 
 
+def test_malformed_failure_row_freezes_with_deterministic_reason() -> None:
+    """Codex P1 regression: a non-dict failure row must produce a
+    deterministic ``rfx_malformed_telemetry_input`` reason instead of
+    raising raw AttributeError/TypeError from downstream helpers."""
+    with pytest.raises(RFXReliabilityFreezeError, match="rfx_malformed_telemetry_input"):
+        assert_rfx_reliability_posture(
+            recent_failures=["bad-row"],
+            replay_results=[],
+            window_seconds=60,
+            slo=_OK_SLO,
+        )
+
+
+def test_malformed_replay_row_freezes_with_deterministic_reason() -> None:
+    with pytest.raises(RFXReliabilityFreezeError, match="rfx_malformed_telemetry_input"):
+        assert_rfx_reliability_posture(
+            recent_failures=[],
+            replay_results=[123, {"trace_id": "t", "match": True}],
+            window_seconds=60,
+            slo=_OK_SLO,
+        )
+
+
 def test_aggregated_reasons_contain_multiple_codes() -> None:
     failures = [_failure(t, "schema_drift") for t in (80.0, 85.0, 90.0)]
     replays = [{"trace_id": f"t{i}", "match": False} for i in range(3)]

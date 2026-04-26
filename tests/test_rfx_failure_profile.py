@@ -143,6 +143,38 @@ def test_thresholds_override() -> None:
     assert p["recurring_failure_pattern"] is False
 
 
+def test_malformed_failure_rows_are_filtered_and_counted() -> None:
+    """Codex P1 regression: non-dict rows must not crash the helpers; they
+    are filtered defensively and surfaced as malformed_failure_count so
+    LOOP-07 can fail closed deterministically."""
+    failures = [
+        {"timestamp_seconds": 5.0, "reason_code": "x"},
+        "bad-row",
+        42,
+        None,
+    ]
+    p = build_rfx_failure_profile(
+        recent_failures=failures, replay_results=[], window_seconds=60,
+    )
+    assert p["failure_count"] == 1  # only the dict survived
+    assert p["malformed_failure_count"] == 3
+    assert p["malformed_replay_count"] == 0
+
+
+def test_malformed_replay_rows_are_filtered_and_counted() -> None:
+    replays = [
+        {"trace_id": "t", "match": True},
+        123,
+        ["not", "a", "dict"],
+        None,
+    ]
+    p = build_rfx_failure_profile(
+        recent_failures=[], replay_results=replays, window_seconds=60,
+    )
+    assert p["malformed_replay_count"] == 3
+    assert p["malformed_failure_count"] == 0
+
+
 def test_zero_window_collapses_rate_keeps_count() -> None:
     failures = [_failure(0.0)] * 3
     p = build_rfx_failure_profile(

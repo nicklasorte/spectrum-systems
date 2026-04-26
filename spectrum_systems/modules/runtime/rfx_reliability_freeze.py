@@ -113,6 +113,15 @@ def assert_rfx_reliability_posture(
 
     reasons: list[str] = []
 
+    malformed_failures = profile.get("malformed_failure_count", 0)
+    malformed_replays = profile.get("malformed_replay_count", 0)
+    if malformed_failures or malformed_replays:
+        reasons.append(
+            f"rfx_malformed_telemetry_input: malformed_failure_count="
+            f"{malformed_failures}, malformed_replay_count={malformed_replays} — "
+            f"telemetry rows must be mappings; non-dict rows fail closed"
+        )
+
     if profile["burst_failure_detected"]:
         reasons.append(
             "rfx_burst_failure_detected: failure density spike inside window — "
