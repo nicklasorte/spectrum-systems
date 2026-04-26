@@ -39,4 +39,4 @@ def test_invokes_next_build_after_tls_and_artifact_check(monkeypatch, tmp_path):
 
     assert rc == 0
     assert calls[0][0][1] == "scripts/build_tls_dependency_priority.py"
-    assert calls[1][0] == ["next", "build"]
+    assert calls[1][0] == ["npm", "exec", "--", "next", "build"]

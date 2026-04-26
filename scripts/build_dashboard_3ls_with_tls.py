@@ -43,6 +43,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     root = repo_root()
+    dash = dashboard_dir()
+    artifact = artifact_path()
+
+    print(f"[dashboard-3ls-build] repo_root={root}", flush=True)
+    print(f"[dashboard-3ls-build] dashboard_dir={dash}", flush=True)
+    print(f"[dashboard-3ls-build] expected_artifact={artifact}", flush=True)
+
     tls_cmd = [
         sys.executable,
         "scripts/build_tls_dependency_priority.py",
@@ -50,11 +57,11 @@ def main(argv: list[str] | None = None) -> int:
         CANDIDATES,
         "--fail-if-missing",
     ]
+    print(f"[dashboard-3ls-build] tls_command={' '.join(tls_cmd)}", flush=True)
     tls_rc = _run(tls_cmd, cwd=root)
     if tls_rc != 0:
         return tls_rc
 
-    artifact = artifact_path()
     if not artifact.is_file():
         print(
             f"FAIL: required artifact missing after TLS build: {artifact}",
@@ -65,7 +72,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.skip_next_build:
         return 0
 
-    next_rc = _run(["next", "build"], cwd=dashboard_dir())
+    next_cmd = ["npm", "exec", "--", "next", "build"]
+    print(f"[dashboard-3ls-build] next_command={' '.join(next_cmd)}", flush=True)
+    next_rc = _run(next_cmd, cwd=dash)
     if next_rc != 0:
         return next_rc
     return 0
