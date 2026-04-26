@@ -201,6 +201,15 @@ interface PriorityArtifactResult {
       trust_gap_signals: string[];
       finish_definition: string;
       risk_if_built_before_prerequisites: string;
+      rank_explanation: string;
+      prerequisite_explanation: string;
+      safe_next_action: string;
+      build_now_assessment: string;
+      why_not_higher: string;
+      why_not_lower: string;
+      minimum_safe_prompt_scope: string;
+      dependency_warning_level: string;
+      evidence_summary: string;
       ambiguity_reason?: string;
     }>;
     ambiguous_requested_candidates?: Array<{ system_id: string; ambiguity_reason: string }>;
@@ -1129,6 +1138,17 @@ function NextSystemsToFinishPanel({ result }: { result: PriorityArtifactResult |
                   <p className="text-xs">trust_gap_signals: {row.trust_gap_signals.join(', ') || 'none'}</p>
                   <p className="text-xs">finish_definition: {row.finish_definition}</p>
                   <p className="text-xs">build_now_signal: {row.risk_if_built_before_prerequisites}</p>
+                  <details className="mt-2 border rounded p-2 bg-gray-50" data-testid="requested-candidate-details">
+                    <summary className="text-xs font-semibold cursor-pointer">Explanation details</summary>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs">rank_explanation: {row.rank_explanation}</p>
+                      <p className="text-xs">prerequisites: {row.prerequisite_explanation}</p>
+                      <p className="text-xs">safe_next_action: {row.safe_next_action}</p>
+                      <p className="text-xs">build_now_assessment: {row.build_now_assessment}</p>
+                      <p className="text-xs">minimum_safe_prompt_scope: {row.minimum_safe_prompt_scope}</p>
+                      <p className="text-xs">evidence_summary: {row.evidence_summary}</p>
+                    </div>
+                  </details>
                   {row.ambiguity_reason && (
                     <p className="text-xs mt-1 text-amber-800">ambiguity_reason: {row.ambiguity_reason}</p>
                   )}

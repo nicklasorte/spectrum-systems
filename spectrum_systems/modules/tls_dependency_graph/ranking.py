@@ -68,6 +68,17 @@ WEIGHT_PARTIAL_COMPLETION = 5
 WEIGHT_DOWNSTREAM_UNLOCK = 4
 
 ACTIVE_CLASSES = {"active_system", "h_slice"}
+SAFE_SIGNAL_VALUES = {
+    "ready_signal",
+    "caution_signal",
+    "blocked_signal",
+    "unknown_signal",
+    "prerequisite_signal",
+    "recommendation",
+    "prioritization",
+    "finding",
+    "observation",
+}
 
 
 def _index(rows: List[Dict], key: str) -> Dict[str, Dict]:
@@ -201,6 +212,133 @@ def _next_prompt(sid: str, classification: str, gap_row: Dict) -> str:
     )
 
 
+def _format_system_list(system_ids: List[str]) -> str:
+    return ", ".join(system_ids) if system_ids else "none"
+
+
+def _requested_explanations(
+    sid: str,
+    classification: str,
+    global_rank: Optional[int],
+    global_row: Optional[Dict],
+    prereqs: List[str],
+    canonical_loop: List[str],
+    in_registry: bool,
+    reason: str,
+) -> Dict[str, str]:
+    trust_signals = list((global_row or {}).get("trust_gap_signals") or [])
+    if global_row is None:
+        return {
+            "rank_explanation": (
+                f"{sid} is unknown_signal because registry and evidence are insufficient; "
+                "the candidate is not present in TLS candidate rows."
+            ),
+            "prerequisite_explanation": "Unknown prerequisites: retrieve registry/evidence rows first.",
+            "safe_next_action": "finding: retrieve registry + evidence and re-run TLS pipeline.",
+            "build_now_assessment": "blocked_signal",
+            "why_not_higher": "unknown_signal: unresolved candidate evidence prevents higher confidence ranking.",
+            "why_not_lower": "prioritization: included because it was explicitly requested.",
+            "minimum_safe_prompt_scope": "finding: classify candidate only; avoid build changes.",
+            "dependency_warning_level": "unknown_signal",
+            "evidence_summary": "observation: no classification/evidence row found for this candidate.",
+        }
+
+    evidence_count = global_row.get("score_components", {}).get("gap_score", 0)
+    is_build_now_safe = len(prereqs) == 0 and classification != "unknown"
+    if classification == "unknown":
+        build_now_assessment = "blocked_signal"
+        warning_level = "unknown_signal"
+        safe_scope = "finding: retrieve registry/evidence only."
+    elif prereqs:
+        build_now_assessment = "prerequisite_signal"
+        warning_level = "prerequisite_signal"
+        safe_scope = f"prerequisite_signal: harden prerequisite systems only ({_format_system_list(prereqs)})."
+    elif trust_signals:
+        build_now_assessment = "caution_signal"
+        warning_level = "caution_signal"
+        safe_scope = f"recommendation: single-system hardening for {sid} trust-gap signals."
+    else:
+        build_now_assessment = "ready_signal"
+        warning_level = "ready_signal"
+        safe_scope = f"recommendation: minimal single-system scope for {sid}."
+
+    rank_reason_parts: List[str] = [
+        f"prioritization: {sid} has global_rank={global_rank} in deterministic TLS ranking."
+    ]
+    if classification == "unknown":
+        rank_reason_parts.append("unknown_signal: registry/evidence is insufficient for active classification.")
+    if prereqs:
+        rank_reason_parts.append(
+            f"prerequisite_signal: higher-ranked prerequisites detected ({_format_system_list(prereqs)})."
+        )
+    if sid == "H01":
+        h_slice_state = "h_slice" if classification == "h_slice" else "non_h_slice"
+        rank_reason_parts.append(
+            f"observation: H01 is {h_slice_state}; canonical dependencies include {_format_system_list(prereqs)}."
+        )
+    if sid == "HOP":
+        rank_reason_parts.append(
+            "caution_signal: HOP cannot bypass EVL/TPA/CDE/SEL trust pathways."
+        )
+    if sid == "RFX":
+        registry_state = "registry-active" if in_registry else "repo-detected-only"
+        rank_reason_parts.append(f"observation: RFX is {registry_state}.")
+    if sid in {"MET", "METS"} and classification != "active_system":
+        rank_reason_parts.append("unknown_signal: MET/METS remains ambiguous unless proven active.")
+
+    prereq_explanation = (
+        f"prerequisite_signal: finish {_format_system_list(prereqs)} first."
+        if prereqs
+        else "ready_signal: no higher-ranked active upstream prerequisites detected."
+    )
+    if sid in {"MET", "METS"} and classification != "active_system":
+        prereq_explanation += " unknown_signal: ambiguous candidate state must be hardened first."
+
+    if is_build_now_safe:
+        safe_next_action = f"recommendation: build {sid} now with {safe_scope}"
+    else:
+        harden_targets = _format_system_list(prereqs) if prereqs else "registry/evidence classification"
+        safe_next_action = f"recommendation: harden {harden_targets} before build scope on {sid}."
+
+    why_not_higher_parts: List[str] = []
+    if prereqs:
+        why_not_higher_parts.append(f"prerequisite_signal: ranked behind prerequisites {_format_system_list(prereqs)}")
+    if classification == "unknown":
+        why_not_higher_parts.append("unknown_signal: candidate lacks proven registry/evidence activity")
+    if sid in {"MET", "METS"} and classification != "active_system":
+        why_not_higher_parts.append("observation: MET/METS ambiguity penalty applies")
+    if sid == "RFX" and not in_registry:
+        why_not_higher_parts.append("observation: repo-detected-only candidate carries uncertainty")
+    if not why_not_higher_parts:
+        why_not_higher_parts.append("observation: no stronger upstream score signal identified")
+
+    why_not_lower = (
+        "prioritization: requested candidate remains in ranked set with explicit signals."
+        if global_rank is not None
+        else "finding: unresolved candidate retained for operator visibility."
+    )
+    evidence_summary = (
+        f"observation: classification={classification}; reason={reason}; trust_signals={_format_system_list(trust_signals)}; "
+        f"canonical_loop_member={'yes' if sid in canonical_loop else 'no'}; gap_score={evidence_count}."
+    )
+
+    payload = {
+        "rank_explanation": " ".join(rank_reason_parts),
+        "prerequisite_explanation": prereq_explanation,
+        "safe_next_action": safe_next_action,
+        "build_now_assessment": build_now_assessment,
+        "why_not_higher": "; ".join(why_not_higher_parts),
+        "why_not_lower": why_not_lower,
+        "minimum_safe_prompt_scope": safe_scope,
+        "dependency_warning_level": warning_level,
+        "evidence_summary": evidence_summary,
+    }
+    for field in ("build_now_assessment", "dependency_warning_level"):
+        if payload[field] not in SAFE_SIGNAL_VALUES:
+            raise ValueError(f"{field} must use observer-safe values only")
+    return payload
+
+
 def rank_systems(
     dependency_graph: Dict,
     evidence_attachment: Dict,
@@ -325,6 +463,10 @@ def rank_systems(
         c["system_id"]: c.get("reason", "unknown_reason")
         for c in (classification.get("candidates") or [])
     }
+    candidate_registry_by_id = {
+        c["system_id"]: bool(c.get("in_registry"))
+        for c in (classification.get("candidates") or [])
+    }
 
     def _prerequisites_for(sid: str) -> List[str]:
         row = global_row_by_id.get(sid)
@@ -350,6 +492,16 @@ def rank_systems(
                 if prereqs
                 else "no higher-priority upstream trust prerequisite detected in TLS ranking"
             )
+            explanations = _requested_explanations(
+                requested,
+                global_row["classification"],
+                global_rank_by_id.get(requested),
+                global_row,
+                prereqs,
+                canonical_loop,
+                candidate_registry_by_id.get(requested, False),
+                candidate_reason_by_id.get(requested, "unknown_reason"),
+            )
             requested_rows.append(
                 {
                     "system_id": requested,
@@ -362,6 +514,7 @@ def rank_systems(
                     "trust_gap_signals": global_row["trust_gap_signals"],
                     "finish_definition": global_row["finish_definition"],
                     "risk_if_built_before_prerequisites": risk_text,
+                    **explanations,
                 }
             )
             if global_row["classification"] == "unknown":
@@ -387,6 +540,16 @@ def rank_systems(
                 "finish_definition": "retrieve registry and evidence before build prioritization",
                 "risk_if_built_before_prerequisites": "unknown risk until candidate is classified",
                 "ambiguity_reason": ambiguity_reason,
+                **_requested_explanations(
+                    requested,
+                    "unknown",
+                    None,
+                    None,
+                    [],
+                    canonical_loop,
+                    False,
+                    ambiguity_reason,
+                ),
             }
         )
         ambiguous_requested_candidates.append(

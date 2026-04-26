@@ -137,7 +137,16 @@
         "prerequisite_systems",
         "trust_gap_signals",
         "finish_definition",
-        "risk_if_built_before_prerequisites"
+        "risk_if_built_before_prerequisites",
+        "rank_explanation",
+        "prerequisite_explanation",
+        "safe_next_action",
+        "build_now_assessment",
+        "why_not_higher",
+        "why_not_lower",
+        "minimum_safe_prompt_scope",
+        "dependency_warning_level",
+        "evidence_summary"
       ],
       "properties": {
         "requested_rank": { "type": "integer", "minimum": 1 },
@@ -151,6 +160,41 @@
         "trust_gap_signals": { "type": "array", "items": { "type": "string" } },
         "finish_definition": { "type": "string" },
         "risk_if_built_before_prerequisites": { "type": "string" },
+        "rank_explanation": { "type": "string" },
+        "prerequisite_explanation": { "type": "string" },
+        "safe_next_action": { "type": "string" },
+        "build_now_assessment": {
+          "type": "string",
+          "enum": [
+            "ready_signal",
+            "caution_signal",
+            "blocked_signal",
+            "unknown_signal",
+            "prerequisite_signal",
+            "recommendation",
+            "prioritization",
+            "finding",
+            "observation"
+          ]
+        },
+        "why_not_higher": { "type": "string" },
+        "why_not_lower": { "type": "string" },
+        "minimum_safe_prompt_scope": { "type": "string" },
+        "dependency_warning_level": {
+          "type": "string",
+          "enum": [
+            "ready_signal",
+            "caution_signal",
+            "blocked_signal",
+            "unknown_signal",
+            "prerequisite_signal",
+            "recommendation",
+            "prioritization",
+            "finding",
+            "observation"
+          ]
+        },
+        "evidence_summary": { "type": "string" },
         "ambiguity_reason": { "type": "string" }
       }
     }

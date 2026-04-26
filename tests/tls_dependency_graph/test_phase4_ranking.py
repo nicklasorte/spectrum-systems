@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,20 @@ from spectrum_systems.modules.tls_dependency_graph.evidence_scanner import attac
 from spectrum_systems.modules.tls_dependency_graph.ranking import rank_systems
 from spectrum_systems.modules.tls_dependency_graph.registry_parser import build_dependency_graph
 from spectrum_systems.modules.tls_dependency_graph.trust_gaps import detect_trust_gaps
+
+
+REQUIRED_REQUESTED_FIELDS = {
+    "rank_explanation",
+    "prerequisite_explanation",
+    "safe_next_action",
+    "build_now_assessment",
+    "why_not_higher",
+    "why_not_lower",
+    "minimum_safe_prompt_scope",
+    "dependency_warning_level",
+    "evidence_summary",
+}
+FORBIDDEN_AUTHORITY_TERMS = {"allow", "block", "freeze", "promote", "decision", "certification", "enforcement", "promotion"}
 
 
 def _build(registry_fixture_path: Path, repo_fixture: Path):
@@ -137,6 +152,73 @@ def test_requested_candidate_ranking_is_deterministic(registry_fixture_path: Pat
     a = rank_systems(graph, evidence, classification, trust_gaps, requested_candidates=candidates)
     b = rank_systems(graph, evidence, classification, trust_gaps, requested_candidates=candidates)
     assert a["requested_candidate_ranking"] == b["requested_candidate_ranking"]
+
+
+def test_requested_candidates_include_rank_explanation(registry_fixture_path: Path, repo_fixture: Path) -> None:
+    graph, evidence, classification, trust_gaps = _build(registry_fixture_path, repo_fixture)
+    out = rank_systems(
+        graph,
+        evidence,
+        classification,
+        trust_gaps,
+        requested_candidates=["H01", "RFX", "HOP", "MET", "METS"],
+    )
+    for row in out["requested_candidate_ranking"]:
+        assert REQUIRED_REQUESTED_FIELDS.issubset(set(row.keys()))
+
+
+def test_h01_explanation_mentions_h_slice_and_prerequisites(registry_fixture_path: Path, repo_fixture: Path) -> None:
+    graph, evidence, classification, trust_gaps = _build(registry_fixture_path, repo_fixture)
+    out = rank_systems(graph, evidence, classification, trust_gaps, requested_candidates=["H01"])
+    h01 = out["requested_candidate_ranking"][0]
+    assert "H01 is h_slice" in h01["rank_explanation"]
+    if h01["prerequisite_systems"]:
+        for prereq in h01["prerequisite_systems"]:
+            assert prereq in h01["prerequisite_explanation"]
+
+
+def test_hop_explanation_warns_on_evl_tpa_cde_sel_authority(registry_fixture_path: Path, repo_fixture: Path) -> None:
+    graph, evidence, classification, trust_gaps = _build(registry_fixture_path, repo_fixture)
+    out = rank_systems(graph, evidence, classification, trust_gaps, requested_candidates=["HOP"])
+    hop = out["requested_candidate_ranking"][0]
+    if hop["global_rank"] is not None:
+        assert "cannot bypass EVL/TPA/CDE/SEL trust pathways" in hop["rank_explanation"]
+    else:
+        assert "registry and evidence are insufficient" in hop["rank_explanation"]
+
+
+def test_rfx_explanation_reflects_unknown_repo_detected(registry_fixture_path: Path, repo_fixture: Path) -> None:
+    graph, evidence, classification, trust_gaps = _build(registry_fixture_path, repo_fixture)
+    out = rank_systems(graph, evidence, classification, trust_gaps, requested_candidates=["RFX"])
+    rfx = out["requested_candidate_ranking"][0]
+    assert "unknown_signal" in rfx["rank_explanation"]
+    assert "repo-detected-only" in rfx["rank_explanation"]
+
+
+def test_met_mets_explanation_reflects_ambiguity(registry_fixture_path: Path, repo_fixture: Path) -> None:
+    graph, evidence, classification, trust_gaps = _build(registry_fixture_path, repo_fixture)
+    out = rank_systems(graph, evidence, classification, trust_gaps, requested_candidates=["MET", "METS"])
+    by_sid = {row["system_id"]: row for row in out["requested_candidate_ranking"]}
+    assert "ambiguous" in by_sid["MET"]["rank_explanation"]
+    assert "ambiguous" in by_sid["METS"]["rank_explanation"]
+
+
+def test_requested_explanations_do_not_leak_forbidden_authority_terms(
+    registry_fixture_path: Path, repo_fixture: Path
+) -> None:
+    graph, evidence, classification, trust_gaps = _build(registry_fixture_path, repo_fixture)
+    out = rank_systems(
+        graph,
+        evidence,
+        classification,
+        trust_gaps,
+        requested_candidates=["H01", "RFX", "HOP", "MET", "METS"],
+    )
+    for row in out["requested_candidate_ranking"]:
+        text = " ".join(str(row.get(field, "")).lower() for field in REQUIRED_REQUESTED_FIELDS)
+        tokens = set(re.findall(r"[a-z_]+", text))
+        for term in FORBIDDEN_AUTHORITY_TERMS:
+            assert term not in tokens
 
 
 def test_global_ranking_unchanged_by_requested_candidates(registry_fixture_path: Path, repo_fixture: Path) -> None:
