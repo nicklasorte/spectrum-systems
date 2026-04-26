@@ -1,0 +1,832 @@
+{
+  "phase": "TLS-03",
+  "schema_version": "tls-03.v1",
+  "signal_taxonomy": [
+    "missing_eval",
+    "missing_control",
+    "missing_enforcement",
+    "missing_replay",
+    "missing_lineage",
+    "missing_observability",
+    "missing_certification",
+    "missing_tests",
+    "schema_weakness"
+  ],
+  "systems": [
+    {
+      "classification": "future",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "ABX",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_enforcement",
+        "missing_eval",
+        "missing_lineage",
+        "missing_observability",
+        "missing_tests"
+      ],
+      "system_id": "AEX",
+      "trust_state": "warn"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_enforcement",
+        "missing_lineage",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 6,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_eval",
+        "missing_observability",
+        "missing_tests"
+      ],
+      "system_id": "CAP",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 4,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_enforcement",
+        "missing_eval",
+        "missing_tests"
+      ],
+      "system_id": "CDE",
+      "trust_state": "freeze"
+    },
+    {
+      "classification": "support_capability",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "CMP",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_enforcement",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay"
+      ],
+      "gap_count": 6,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_eval",
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "system_id": "CTX",
+      "trust_state": "block"
+    },
+    {
+      "classification": "future",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "DBB",
+      "trust_state": "block"
+    },
+    {
+      "classification": "deprecated",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "DCL",
+      "trust_state": "block"
+    },
+    {
+      "classification": "deprecated",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "DEM",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_enforcement",
+        "missing_lineage",
+        "missing_observability",
+        "schema_weakness"
+      ],
+      "gap_count": 4,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_eval",
+        "missing_replay",
+        "missing_tests"
+      ],
+      "system_id": "EVL",
+      "trust_state": "freeze"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 4,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_enforcement",
+        "missing_eval",
+        "missing_tests"
+      ],
+      "system_id": "FRE",
+      "trust_state": "freeze"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_control",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 5,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_enforcement",
+        "missing_eval",
+        "missing_tests"
+      ],
+      "system_id": "GOV",
+      "trust_state": "block"
+    },
+    {
+      "classification": "h_slice",
+      "failing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_enforcement",
+        "missing_eval",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 9,
+      "gaps_evaluated": 9,
+      "passing_signals": [],
+      "system_id": "H01",
+      "trust_state": "block"
+    },
+    {
+      "classification": "deprecated",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "HNX",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_certification",
+        "missing_enforcement",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 6,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_control",
+        "missing_eval",
+        "missing_tests"
+      ],
+      "system_id": "HOP",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_enforcement",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 5,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_eval",
+        "missing_tests"
+      ],
+      "system_id": "JDX",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_enforcement",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 5,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_eval",
+        "missing_tests"
+      ],
+      "system_id": "JSX",
+      "trust_state": "block"
+    },
+    {
+      "classification": "future",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "LCE",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_enforcement"
+      ],
+      "gap_count": 1,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_eval",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "system_id": "LIN",
+      "trust_state": "warn"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_eval",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "system_id": "MAP",
+      "trust_state": "warn"
+    },
+    {
+      "classification": "deprecated",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "MCL",
+      "trust_state": "block"
+    },
+    {
+      "classification": "unknown",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "MET",
+      "trust_state": "block"
+    },
+    {
+      "classification": "unknown",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "METS",
+      "trust_state": "block"
+    },
+    {
+      "classification": "deprecated",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "MNT",
+      "trust_state": "block"
+    },
+    {
+      "classification": "support_capability",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "NRM",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement",
+        "missing_lineage",
+        "schema_weakness"
+      ],
+      "gap_count": 4,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_eval",
+        "missing_observability",
+        "missing_replay",
+        "missing_tests"
+      ],
+      "system_id": "OBS",
+      "trust_state": "freeze"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 6,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_eval",
+        "missing_tests"
+      ],
+      "system_id": "POL",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_enforcement",
+        "missing_lineage"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_eval",
+        "missing_observability",
+        "missing_replay",
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "system_id": "PQX",
+      "trust_state": "warn"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 6,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_eval",
+        "missing_tests"
+      ],
+      "system_id": "PRA",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_enforcement",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 7,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_eval",
+        "missing_tests"
+      ],
+      "system_id": "PRM",
+      "trust_state": "block"
+    },
+    {
+      "classification": "support_capability",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "QRY",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_enforcement",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 7,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_eval",
+        "missing_tests"
+      ],
+      "system_id": "RAX",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement",
+        "missing_lineage",
+        "schema_weakness"
+      ],
+      "gap_count": 4,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_eval",
+        "missing_observability",
+        "missing_replay",
+        "missing_tests"
+      ],
+      "system_id": "REP",
+      "trust_state": "freeze"
+    },
+    {
+      "classification": "support_capability",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "RET",
+      "trust_state": "block"
+    },
+    {
+      "classification": "unknown",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "RFX",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 4,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_enforcement",
+        "missing_eval",
+        "missing_tests"
+      ],
+      "system_id": "RIL",
+      "trust_state": "freeze"
+    },
+    {
+      "classification": "support_capability",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "RSK",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_certification",
+        "missing_enforcement",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 6,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_control",
+        "missing_eval",
+        "missing_tests"
+      ],
+      "system_id": "RSM",
+      "trust_state": "block"
+    },
+    {
+      "classification": "deprecated",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "RWA",
+      "trust_state": "block"
+    },
+    {
+      "classification": "future",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "SAL",
+      "trust_state": "block"
+    },
+    {
+      "classification": "future",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "SAS",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay"
+      ],
+      "gap_count": 5,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_enforcement",
+        "missing_eval",
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "system_id": "SEC",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_lineage",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 3,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_enforcement",
+        "missing_eval",
+        "missing_observability",
+        "missing_tests"
+      ],
+      "system_id": "SEL",
+      "trust_state": "freeze"
+    },
+    {
+      "classification": "future",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "SHA",
+      "trust_state": "block"
+    },
+    {
+      "classification": "future",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "SIV",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_certification",
+        "missing_lineage",
+        "schema_weakness"
+      ],
+      "gap_count": 3,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_control",
+        "missing_enforcement",
+        "missing_eval",
+        "missing_observability",
+        "missing_replay",
+        "missing_tests"
+      ],
+      "system_id": "SLO",
+      "trust_state": "freeze"
+    },
+    {
+      "classification": "support_capability",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "SUP",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 5,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_enforcement",
+        "missing_eval",
+        "missing_lineage",
+        "missing_tests"
+      ],
+      "system_id": "TLC",
+      "trust_state": "block"
+    },
+    {
+      "classification": "active_system",
+      "failing_signals": [
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "gap_count": 3,
+      "gaps_evaluated": 9,
+      "passing_signals": [
+        "missing_certification",
+        "missing_control",
+        "missing_enforcement",
+        "missing_eval",
+        "missing_lineage",
+        "missing_tests"
+      ],
+      "system_id": "TPA",
+      "trust_state": "freeze"
+    },
+    {
+      "classification": "support_capability",
+      "failing_signals": [
+        "missing_tests",
+        "schema_weakness"
+      ],
+      "gap_count": 2,
+      "gaps_evaluated": 2,
+      "passing_signals": [],
+      "system_id": "TRN",
+      "trust_state": "block"
+    }
+  ]
+}

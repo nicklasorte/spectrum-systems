@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://spectrum.systems/schemas/system_candidate_classification.schema.json",
+  "title": "system_candidate_classification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "phase", "summary", "candidates", "ambiguous_systems"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "tls-02.v1" },
+    "phase": { "type": "string", "const": "TLS-02" },
+    "summary": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/candidate" }
+    },
+    "ambiguous_systems": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/candidate" }
+    }
+  },
+  "definitions": {
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["system_id", "classification", "reason", "in_registry", "registry_class", "evidence_count"],
+      "properties": {
+        "system_id": { "type": "string" },
+        "classification": {
+          "type": "string",
+          "enum": ["active_system", "h_slice", "support_capability", "deprecated", "future", "unknown"]
+        },
+        "reason": { "type": "string" },
+        "in_registry": { "type": "boolean" },
+        "registry_class": { "type": ["string", "null"] },
+        "evidence_count": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}
