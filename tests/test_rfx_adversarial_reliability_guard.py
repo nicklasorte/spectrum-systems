@@ -106,6 +106,30 @@ def test_zero_failures_with_match_flag_missing_replay_blocks() -> None:
         )
 
 
+def test_non_iterable_failures_container_blocks_deterministically() -> None:
+    """Codex P2 regression (line 112): a non-list/non-None
+    ``recent_failures`` payload (e.g. an int) must surface
+    ``rfx_metrics_inconsistency`` instead of crashing with raw TypeError
+    from the ``list(...)`` cast."""
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_metrics_inconsistency"):
+        assert_rfx_adversarial_reliability_guard(
+            recent_failures=1,  # type: ignore[arg-type]
+            replay_results=[],
+            obs=_OBS_OK,
+            slo=_SLO_OK,
+        )
+
+
+def test_non_iterable_replays_container_blocks_deterministically() -> None:
+    with pytest.raises(RFXAdversarialReliabilityError, match="rfx_metrics_inconsistency"):
+        assert_rfx_adversarial_reliability_guard(
+            recent_failures=[],
+            replay_results="not-a-list",  # type: ignore[arg-type]
+            obs=_OBS_OK,
+            slo=_SLO_OK,
+        )
+
+
 def test_failures_present_no_obs_failure_logs_passes() -> None:
     """Real failures with empty OBS failure_logs is *not* itself adversarial
     — it could simply mean those failures are recorded elsewhere. The guard

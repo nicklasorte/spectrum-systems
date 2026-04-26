@@ -108,8 +108,29 @@ def assert_rfx_adversarial_reliability_guard(
     """Detect anti-gaming inconsistencies; fail closed deterministically."""
     reasons: list[str] = []
 
-    failures = list(recent_failures or [])
-    replays = list(replay_results or [])
+    # Container-level guard: only ``None`` and ``list`` are accepted. A
+    # non-list/non-None payload is itself a malformed-input signal and
+    # surfaced via ``rfx_metrics_inconsistency`` so the guard cannot crash
+    # with raw TypeError when reached through assert_rfx_promotion_ready
+    # (LOOP-07 disabled but anti-gaming still active).
+    if recent_failures is not None and not isinstance(recent_failures, list):
+        reasons.append(
+            "rfx_metrics_inconsistency: recent_failures must be a list or "
+            f"None, got {type(recent_failures).__name__}"
+        )
+        failures: list[dict[str, Any]] = []
+    else:
+        failures = list(recent_failures or [])
+
+    if replay_results is not None and not isinstance(replay_results, list):
+        reasons.append(
+            "rfx_metrics_inconsistency: replay_results must be a list or "
+            f"None, got {type(replay_results).__name__}"
+        )
+        replays: list[dict[str, Any]] = []
+    else:
+        replays = list(replay_results or [])
+
     obs_present = _is_dict(obs) and bool(obs)
     slo_present = _is_dict(slo) and bool(slo)
 

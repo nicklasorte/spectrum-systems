@@ -189,8 +189,25 @@ def assert_rfx_telemetry_slo_eligible(
         if key == "trace_id" and _coerce_str(v) is None:
             invalid_fields.append(f"{key} (empty string)")
             continue
-        if key in _NON_EMPTY_FIELDS and isinstance(v, (list, dict)) and len(v) == 0:
-            empty_fields.append(key)
+        if key in _NON_EMPTY_FIELDS:
+            if isinstance(v, list) and len(v) == 0:
+                empty_fields.append(key)
+            elif isinstance(v, dict):
+                if len(v) == 0:
+                    empty_fields.append(key)
+                else:
+                    # Per-trace dict form: every value must itself be a
+                    # non-empty container. ``{"trace-1": []}`` would pass
+                    # the outer non-empty check otherwise, and the
+                    # OBS+REP consistency layer is inactive when
+                    # ``replay_results`` is omitted — fail closed here.
+                    empty_buckets = [
+                        f"{key}[{trace_key!r}]"
+                        for trace_key, bucket in v.items()
+                        if not isinstance(bucket, (list, dict)) or len(bucket) == 0
+                    ]
+                    if empty_buckets:
+                        empty_fields.extend(sorted(empty_buckets))
 
     if missing_fields:
         reasons.append(
