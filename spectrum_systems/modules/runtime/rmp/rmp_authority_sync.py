@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -71,4 +72,5 @@ def sync_authority(
         reasons = []
         ok = True
 
-    return SyncResult(ok=ok, reason_codes=sorted(set(reasons)), authority_hash=str(hash(_normalize(authority))))
+    digest = hashlib.sha256(_normalize(authority).encode("utf-8")).hexdigest()
+    return SyncResult(ok=ok, reason_codes=sorted(set(reasons)), authority_hash=digest)

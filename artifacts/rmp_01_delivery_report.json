@@ -9,6 +9,7 @@
     "drift_report": "artifacts/rmp_drift_report.json",
     "status": "pass"
   },
+  "change_scope_note": "vocabulary_cleanup_only_no_behavior_change",
   "drift_report": {
     "checks": {
       "loop1_detection": {
@@ -84,7 +85,7 @@
   "red_team_results": {
     "loop1": {
       "authority_sync": {
-        "authority_hash": "4906975297379827280",
+        "authority_hash": "1d29a355a5cadda9ac720bf21bcfb7c43eed2dc2ca592c1806e806c5012a6c9e",
         "ok": false,
         "reason_codes": [
           "missing_markdown_table"

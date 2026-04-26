@@ -142,6 +142,7 @@ def main() -> int:
                 "red_team_fix_revalidate_triplets",
             ],
             "remaining_gaps": [],
+            "change_scope_note": "vocabulary_cleanup_only_no_behavior_change",
             "h01_readiness": {"ready": h01_fixed["ok"], "reason_codes": h01_fixed["reason_codes"]},
             "attestation": {"status": "pass" if all_ok else "fail", "drift_report": str(DRIFT_REPORT_PATH.relative_to(ROOT))},
             "drift_report": drift_report,
