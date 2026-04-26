@@ -11,9 +11,8 @@ const path = require('path');
 // Required Vercel project setting: Root Directory = apps/dashboard-3ls
 // Required Vercel env var:         REPO_ROOT = /var/task
 //
-// If artifacts are not present at deploy time, all artifact-backed routes will
-// return data_source: stub_fallback with appropriate warnings. This is a known
-// limitation documented in docs/reviews/DSH-09-dashboard-truth-redteam.md.
+// Deployment is fail-closed: build wiring generates TLS artifacts and must fail
+// if artifacts/system_dependency_priority_report.json is missing.
 
 const nextConfig = {
   reactStrictMode: true,

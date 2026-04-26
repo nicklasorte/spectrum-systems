@@ -1,7 +1,7 @@
 """TLS-STACK-01 driver: run all five phases in order, fail-closed.
 
 Usage:
-    python scripts/build_tls_dependency_priority.py [--out DIR]
+    python scripts/build_tls_dependency_priority.py [--out DIR] [--fail-if-missing]
 
 Each phase emits a schema-valid artifact under ``artifacts/tls/`` (or the
 override directory). Failure at any phase halts the pipeline.
@@ -33,6 +33,21 @@ PHASES = [
 ]
 
 
+def _verify_required_artifacts(
+    phase_dir: Path,
+    top_level_out: Path,
+) -> list[str]:
+    missing: list[str] = []
+    for _phase_name, artifact_name in PHASES:
+        candidate = phase_dir / artifact_name
+        if not candidate.is_file():
+            missing.append(str(candidate))
+    published = top_level_out / "system_dependency_priority_report.json"
+    if not published.is_file():
+        missing.append(str(published))
+    return missing
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", default=str(REPO_ROOT / "artifacts" / "tls"))
@@ -48,6 +63,14 @@ def main(argv: list[str] | None = None) -> int:
             "Comma-separated system_ids the operator is focused on (e.g. "
             "H01,RFX,HOP,MET,METS). Used only to scope the printed summary; "
             "the governed priority artifact still ranks the full registry."
+        ),
+    )
+    parser.add_argument(
+        "--fail-if-missing",
+        action="store_true",
+        help=(
+            "Fail closed if expected TLS artifacts are missing after build. "
+            "Use in CI/deployment to prevent silent deploys without priority data."
         ),
     )
     args = parser.parse_args(argv)
@@ -97,6 +120,14 @@ def main(argv: list[str] | None = None) -> int:
     # can load it from a stable, well-known path.
     published = top_level_out / "system_dependency_priority_report.json"
     published.write_text(json.dumps(priority, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    if args.fail_if_missing:
+        missing = _verify_required_artifacts(out_dir, top_level_out)
+        if missing:
+            print("FAIL: missing required TLS artifacts:", file=sys.stderr)
+            for path in missing:
+                print(f" - {path}", file=sys.stderr)
+            return 1
 
     print("OK")
     summary = {

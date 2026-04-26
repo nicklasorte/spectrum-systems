@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "next build",
+    "build": "python3 ../../scripts/build_dashboard_3ls_with_tls.py",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",

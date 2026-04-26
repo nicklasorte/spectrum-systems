@@ -74,6 +74,33 @@ describe('loadPriorityArtifact', () => {
     expect(result.payload?.top_5?.[0].system_id).toBe('EVL');
   });
 
+  it('loads ranked systems from the canonical artifacts path without computing ranking in-dashboard', () => {
+    const repo = tmpRepo();
+    process.env.REPO_ROOT = repo;
+    const target = path.join(repo, 'artifacts/system_dependency_priority_report.json');
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(
+      target,
+      JSON.stringify({
+        ...VALID_PAYLOAD,
+        generated_at: new Date().toISOString(),
+        top_5: [
+          ...VALID_PAYLOAD.top_5,
+          {
+            ...VALID_PAYLOAD.top_5[0],
+            rank: 2,
+            system_id: 'RFX',
+            score: 92,
+          },
+        ],
+      }),
+    );
+
+    const result = loadPriorityArtifact();
+    expect(result.state).toBe('ok');
+    expect(result.payload?.top_5.map((row) => row.system_id)).toEqual(['EVL', 'RFX']);
+  });
+
   it('returns invalid_schema when shape is wrong', () => {
     const repo = tmpRepo();
     process.env.REPO_ROOT = repo;

@@ -8,7 +8,8 @@
 #
 # Pipeline (fail-closed):
 #   1. python scripts/build_tls_dependency_priority.py \
-#        --candidates H01,RFX,HOP,MET,METS
+#        --candidates H01,RFX,HOP,MET,METS \
+#        --fail-if-missing
 #   2. python scripts/run_authority_shape_preflight.py --suggest-only
 #   3. python scripts/run_authority_leak_guard.py
 #   4. pytest tests/tls_dependency_graph
@@ -39,6 +40,7 @@ PYTEST_RC=0
 echo "[tls-preflight] TLS-STACK build_tls_dependency_priority (candidates=${CANDIDATES})"
 python scripts/build_tls_dependency_priority.py \
     --candidates "${CANDIDATES}" \
+    --fail-if-missing \
     || PRIORITY_RC=$?
 
 echo "[tls-preflight] AGS-001 authority-shape preflight (suggest-only)"
