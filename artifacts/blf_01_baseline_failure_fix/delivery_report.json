@@ -1,0 +1,109 @@
+{
+  "artifact_type": "blf_01_delivery_report",
+  "batch_id": "BLF-01",
+  "generated_at": "2026-04-26T00:00:00Z",
+  "commit_ref": "ff1b6bb1daf72aab1ccf78e0e37b2f3ae1513c18",
+  "branch_ref": "claude/blf-01-baseline-fixes-qTz5W",
+  "trace_id": "trace-blf-01-baseline-fixes",
+  "status": "pass",
+  "target_failures": [
+    {
+      "name": "test_authority_leak_guard_local::test_authority_leak_guard_passes_on_local_changes",
+      "fix_decision": "no_change_failure_not_reproduced",
+      "outcome": "pass"
+    },
+    {
+      "name": "test_contract_impact_analysis",
+      "fix_decision": "test_fixture_fix",
+      "outcome": "pass"
+    },
+    {
+      "name": "test_github_pr_autofix_review_artifact_validation",
+      "fix_decision": "test_fixture_fix",
+      "outcome": "pass"
+    },
+    {
+      "name": "test_roadmap_realization_runner::test_verified_requires_stricter_behavioral_coverage_than_runtime_realized",
+      "fix_decision": "code_fix",
+      "outcome": "pass"
+    }
+  ],
+  "fixed_failures": [
+    "test_contract_impact_analysis",
+    "test_github_pr_autofix_review_artifact_validation",
+    "test_roadmap_realization_runner::test_verified_requires_stricter_behavioral_coverage_than_runtime_realized"
+  ],
+  "governed_failures": [
+    "test_authority_leak_guard_local::test_authority_leak_guard_passes_on_local_changes"
+  ],
+  "remaining_blockers": [],
+  "root_causes": [
+    "Test fixtures for contract-impact and PR-autofix tests did not pin commit.gpgsign locally; host signing config leaked into temp git repos.",
+    "scripts/roadmap_realization_runner.py::_run_behavioral_tests resolved `pytest` via PATH, allowing a non-deterministic interpreter (lacking project deps) to evaluate behavioral proofs.",
+    "The authority-leak-local test failure was not reproducible on this commit; classified governed-but-no-change."
+  ],
+  "fix_decisions": [
+    {"failure_name": "test_authority_leak_guard_local", "decision": "no_change_failure_not_reproduced"},
+    {"failure_name": "test_contract_impact_analysis", "decision": "test_fixture_fix"},
+    {"failure_name": "test_github_pr_autofix_review_artifact_validation", "decision": "test_fixture_fix"},
+    {"failure_name": "test_roadmap_realization_runner", "decision": "code_fix"}
+  ],
+  "files_changed": [
+    "tests/test_contract_impact_analysis.py",
+    "tests/test_github_pr_autofix_review_artifact_validation.py",
+    "scripts/roadmap_realization_runner.py",
+    "scripts/run_blf_01_baseline_gate.py",
+    "tests/test_blf_01_baseline_gate.py",
+    "artifacts/blf_01_baseline_failure_fix/failure_inventory.json",
+    "artifacts/blf_01_baseline_failure_fix/failure_classification.json",
+    "artifacts/blf_01_baseline_failure_fix/root_cause_analysis.json",
+    "artifacts/blf_01_baseline_failure_fix/fix_decisions.json",
+    "artifacts/blf_01_baseline_failure_fix/control_validation.json",
+    "artifacts/blf_01_baseline_failure_fix/replay_validation.json",
+    "artifacts/blf_01_baseline_failure_fix/delivery_report.json",
+    "docs/reviews/blf_01_baseline_failure_fix.md"
+  ],
+  "tests_added_or_updated": [
+    "tests/test_blf_01_baseline_gate.py (new — 11 cases covering helper-pinning, runner-pinning, and BLF-gate artifact-shape regressions)",
+    "tests/test_contract_impact_analysis.py (helper updated)",
+    "tests/test_github_pr_autofix_review_artifact_validation.py (helper updated)"
+  ],
+  "tests_run": [
+    "tests/test_authority_leak_guard_local.py",
+    "tests/test_contract_impact_analysis.py",
+    "tests/test_github_pr_autofix_review_artifact_validation.py",
+    "tests/test_roadmap_realization_runner.py",
+    "tests/test_blf_01_baseline_gate.py"
+  ],
+  "commands_run": [
+    "python3 -m pytest tests/test_authority_leak_guard_local.py tests/test_contract_impact_analysis.py tests/test_github_pr_autofix_review_artifact_validation.py tests/test_roadmap_realization_runner.py -q",
+    "python3 -m pytest tests/ -q -k 'authority_leak or contract_impact or github_pr_autofix or roadmap_realization'",
+    "python3 -m pytest tests/ -q -k blf_01",
+    "python3 -m pytest tests/ -q --ignore=tests/hop --ignore=tests/replay --ignore=tests/integration --ignore=tests/e2e -x",
+    "python3 scripts/run_blf_01_baseline_gate.py --artifact-dir artifacts/blf_01_baseline_failure_fix"
+  ],
+  "validation_results": {
+    "targeted_four_target_run": "39 passed",
+    "broader_pattern_run": "90 passed, 8956 deselected",
+    "broad_unit_tier_run": "8808 passed, 1 skipped, 36 warnings (267.50s)",
+    "blf_gate_script": "status=pass, no reason codes"
+  },
+  "guarantees_preserved": [
+    "no_test_weakening — every previous assertion continues to fire; new regression assertions added.",
+    "no_authority_leak — local authority-leak guard remains green on the post-fix changed-file set.",
+    "no_schema_bypass — no schemas or examples relaxed; no standards-manifest changes required.",
+    "no_roadmap_authority_drift — roadmap mirrors and machine-readable roadmap unchanged.",
+    "no_promotion_certification_bypass — runner authority is now stricter (deterministic interpreter) and acceptance/verification semantics are unchanged.",
+    "no_hidden_exceptions — every fix is recorded in fix_decisions.json with rationale; no bypass overrides added."
+  ],
+  "invariants_checked": [
+    "Test isolation from host signing config (asserted by test_blf_01_baseline_gate.py).",
+    "Deterministic pytest interpreter selection in PQX-equivalent execution (asserted by test_blf_01_baseline_gate.py).",
+    "BLF-01 artifact completeness and consistency (asserted by scripts/run_blf_01_baseline_gate.py and the gate-shape tests).",
+    "broad pytest tier shows no BLF-introduced regression."
+  ],
+  "known_gaps": [
+    "Pre-existing forbidden-vocabulary tokens (allow / block / decision / promotion_ready) in spectrum_systems/modules/runtime/github_pr_autofix_review_artifact_validation.py helper functions are out of BLF-01 scope. They do not currently fail any guard in main because they are not in changed-file sets. They should be addressed in a dedicated authority-vocabulary cleanup batch and not folded into BLF-01."
+  ],
+  "h01_readiness": "ready"
+}

@@ -1,0 +1,56 @@
+{
+  "artifact_type": "blf_replay_validation",
+  "batch_id": "BLF-01",
+  "generated_at": "2026-04-26T00:00:00Z",
+  "commit_ref": "ff1b6bb1daf72aab1ccf78e0e37b2f3ae1513c18",
+  "trace_id": "trace-blf-01-baseline-fixes",
+  "intent": "Verify each target failure produces a deterministic outcome on repeated runs after the BLF-01 fixes, so promotion authority can rely on the baseline as a stable starting point for H01 red-team work.",
+  "replay_sets": [
+    {
+      "failure_name": "test_authority_leak_guard_local::test_authority_leak_guard_passes_on_local_changes",
+      "command": "python3 -m pytest tests/test_authority_leak_guard_local.py -v",
+      "run_1_status": "pass",
+      "run_2_status": "pass",
+      "deterministic": true,
+      "notes": "Both runs exit 0 with the single test PASSED. No state mutation between runs."
+    },
+    {
+      "failure_name": "test_contract_impact_analysis (5 cases)",
+      "command": "python3 -m pytest tests/test_contract_impact_analysis.py -q",
+      "run_1_status": "pass",
+      "run_2_status": "pass",
+      "deterministic": true,
+      "notes": "After the fixture pin, both runs PASS regardless of host commit.gpgsign global config."
+    },
+    {
+      "failure_name": "test_github_pr_autofix_review_artifact_validation (suite)",
+      "command": "python3 -m pytest tests/test_github_pr_autofix_review_artifact_validation.py -q",
+      "run_1_status": "pass",
+      "run_2_status": "pass",
+      "deterministic": true,
+      "notes": "After the fixture pin, both runs PASS without GIT_CONFIG_GLOBAL overrides."
+    },
+    {
+      "failure_name": "test_roadmap_realization_runner::test_verified_requires_stricter_behavioral_coverage_than_runtime_realized",
+      "command": "python3 -m pytest tests/test_roadmap_realization_runner.py -q",
+      "run_1_status": "pass",
+      "run_2_status": "pass",
+      "deterministic": true,
+      "notes": "After pinning behavioral pytest invocations to sys.executable, the runner produces overall_status=pass deterministically. _normalize_pytest_invocation rewrites both bare `pytest` and `python -m pytest` argv heads."
+    }
+  ],
+  "negative_replay_checks": [
+    {
+      "scenario": "If a future regression unpins commit.gpgsign in _init_repo, test_blf_01_baseline_gate.py::test_contract_impact_analysis_helper_pins_signing fails because the helper text no longer contains `\"commit.gpgsign\", \"false\"`.",
+      "guarantee": "Fixture-isolation lock-in"
+    },
+    {
+      "scenario": "If a future regression reverts _normalize_pytest_invocation, test_blf_01_baseline_gate.py::test_runner_pins_pytest_invocation fails because pytest argv heads are no longer rewritten to sys.executable.",
+      "guarantee": "Runner-determinism lock-in"
+    },
+    {
+      "scenario": "If the BLF-01 artifact set is mutated to drop a target failure or weaken status, scripts/run_blf_01_baseline_gate.py exits 1 with a machine-readable reason code; corresponding unit tests in test_blf_01_baseline_gate.py also fail.",
+      "guarantee": "Governance-artifact lock-in"
+    }
+  ]
+}

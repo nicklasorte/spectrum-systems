@@ -1,0 +1,62 @@
+{
+  "artifact_type": "blf_failure_inventory",
+  "batch_id": "BLF-01",
+  "generated_at": "2026-04-26T00:00:00Z",
+  "commit_ref": "ff1b6bb1daf72aab1ccf78e0e37b2f3ae1513c18",
+  "branch_ref": "claude/blf-01-baseline-fixes-qTz5W",
+  "trace_id": "trace-blf-01-baseline-fixes",
+  "target_failures": [
+    {
+      "name": "test_authority_leak_guard_local::test_authority_leak_guard_passes_on_local_changes",
+      "file": "tests/test_authority_leak_guard_local.py",
+      "command": "python3 -m pytest tests/test_authority_leak_guard_local.py -v",
+      "first_run_status": "pass",
+      "second_run_status": "pass",
+      "deterministic": true,
+      "exception_or_assertion": "",
+      "owning_surface": "scripts/run_authority_leak_guard.py + scripts/authority_leak_rules.py + contracts/governance/authority_registry.json",
+      "suspected_root_cause": "Not reproduced on this commit. Original RFX-04 PR likely reported the failure on a working tree where the candidate change introduced the violations or where origin/main was unavailable for diff resolution; on the current main, no violations are detected against the current changed-file set."
+    },
+    {
+      "name": "test_contract_impact_analysis (5 tests)",
+      "file": "tests/test_contract_impact_analysis.py",
+      "command": "python3 -m pytest tests/test_contract_impact_analysis.py -v",
+      "first_run_status": "fail",
+      "second_run_status": "fail",
+      "deterministic": true,
+      "exception_or_assertion": "subprocess.CalledProcessError: Command ['git', 'commit', '-m', 'baseline'] returned non-zero exit status 128 (host's global commit.gpgsign=true invokes a missing signing program inside the temp repo)",
+      "owning_surface": "tests/test_contract_impact_analysis.py::_init_repo (test_harness/contracts)",
+      "suspected_root_cause": "_init_repo creates a temp git repo and sets local user.name / user.email, but does not pin local commit.gpgsign=false. When the host's global git config has commit.gpgsign=true, the global is inherited and the subsequent git commit invokes the host's signing helper, which is unavailable inside the throwaway repo. The test silently couples to host configuration."
+    },
+    {
+      "name": "test_github_pr_autofix_review_artifact_validation (8 tests using _init_git_repo)",
+      "file": "tests/test_github_pr_autofix_review_artifact_validation.py",
+      "command": "python3 -m pytest tests/test_github_pr_autofix_review_artifact_validation.py -v",
+      "first_run_status": "fail",
+      "second_run_status": "fail",
+      "deterministic": true,
+      "exception_or_assertion": "subprocess.CalledProcessError: Command ['git', 'commit', '-m', 'initial'] returned non-zero exit status 128 (same host commit.gpgsign=true coupling)",
+      "owning_surface": "tests/test_github_pr_autofix_review_artifact_validation.py::_init_git_repo (test_harness/RDX)",
+      "suspected_root_cause": "_init_git_repo has the same fixture-isolation gap as _init_repo above: no local commit.gpgsign override, so the temp repo inherits host signing requirements that the temp repo cannot satisfy."
+    },
+    {
+      "name": "test_roadmap_realization_runner::test_verified_requires_stricter_behavioral_coverage_than_runtime_realized",
+      "file": "tests/test_roadmap_realization_runner.py",
+      "command": "python3 -m pytest tests/test_roadmap_realization_runner.py::test_verified_requires_stricter_behavioral_coverage_than_runtime_realized -v",
+      "first_run_status": "fail",
+      "second_run_status": "fail",
+      "deterministic": true,
+      "exception_or_assertion": "AssertionError: assert 'fail' == 'pass' — runner reported overall_status='fail' because the behavioral subprocess pytest invocation could not import jsonschema (subprocess pytest came from a separate tool venv via PATH, not the parent interpreter)",
+      "owning_surface": "scripts/roadmap_realization_runner.py::_run_behavioral_tests (PQX-equivalent execution)",
+      "suspected_root_cause": "_run_behavioral_tests passes the contract's `pytest tests/...` command directly to subprocess.run, which resolves `pytest` via PATH. The PATH-resolved pytest may be installed in a tool-isolated virtualenv that does not have the project's runtime dependencies, so the subprocess fails before evaluating the behavioral assertion. The runner's authority is to deterministically reproduce the contract's behavioral proof; resolving pytest via PATH is a non-deterministic execution surface."
+    }
+  ],
+  "additional_test_suites_inspected": [
+    "tests/test_run_authority_leak_guard.py",
+    "tests/test_authority_leak_detection.py",
+    "tests/test_authority_leak_ecv_fix.py",
+    "tests/test_run_github_pr_autofix_contract_preflight.py",
+    "tests/test_github_pr_autofix_contract_preflight.py"
+  ],
+  "result": "All 39 cases across the four target test files pass after the BLF-01 fixes. Broad pattern run (`-k authority_leak or contract_impact or github_pr_autofix or roadmap_realization`) shows 90 passed, 0 failed."
+}

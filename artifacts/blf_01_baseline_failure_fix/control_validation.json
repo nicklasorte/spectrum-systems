@@ -1,0 +1,51 @@
+{
+  "artifact_type": "blf_control_validation",
+  "batch_id": "BLF-01",
+  "generated_at": "2026-04-26T00:00:00Z",
+  "commit_ref": "ff1b6bb1daf72aab1ccf78e0e37b2f3ae1513c18",
+  "trace_id": "trace-blf-01-baseline-fixes",
+  "guarantees_preserved": [
+    "no_test_weakening",
+    "no_authority_leak",
+    "no_schema_bypass",
+    "no_roadmap_authority_drift",
+    "no_promotion_certification_bypass",
+    "no_hidden_exceptions"
+  ],
+  "commands": [
+    {
+      "command": "python3 -m pytest tests/test_authority_leak_guard_local.py tests/test_contract_impact_analysis.py tests/test_github_pr_autofix_review_artifact_validation.py tests/test_roadmap_realization_runner.py -q",
+      "purpose": "Targeted four-target run",
+      "status": "pass",
+      "summary": "39 passed in 3.64s"
+    },
+    {
+      "command": "python3 -m pytest tests/ -q -k 'authority_leak or contract_impact or github_pr_autofix or roadmap_realization'",
+      "purpose": "Broader pattern run over all related suites",
+      "status": "pass",
+      "summary": "90 passed, 8956 deselected in 12.82s"
+    },
+    {
+      "command": "python3 -m pytest tests/ -q -k blf_01",
+      "purpose": "BLF-01 regression coverage including BLF gate script",
+      "status": "pass",
+      "summary": "Regression and gate coverage in tests/test_blf_01_baseline_gate.py"
+    },
+    {
+      "command": "python3 -m pytest tests/ -q --ignore=tests/hop --ignore=tests/replay --ignore=tests/integration --ignore=tests/e2e -x",
+      "purpose": "Broad unit-tier full run to confirm no BLF-introduced regressions",
+      "status": "pass",
+      "summary": "8808 passed, 1 skipped, 36 warnings in 267.50s"
+    },
+    {
+      "command": "python3 scripts/run_blf_01_baseline_gate.py --artifact-dir artifacts/blf_01_baseline_failure_fix",
+      "purpose": "BLF-01 governance gate script",
+      "status": "pass",
+      "summary": "blf_01_baseline_gate_result status=pass"
+    }
+  ],
+  "remaining_blocking_gaps": [],
+  "introduced_by_blf_01": [],
+  "pre_existing_outside_blf_scope": [],
+  "unknown_needs_followup": []
+}

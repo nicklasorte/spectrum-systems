@@ -1,0 +1,48 @@
+{
+  "artifact_type": "blf_failure_classification",
+  "batch_id": "BLF-01",
+  "generated_at": "2026-04-26T00:00:00Z",
+  "commit_ref": "ff1b6bb1daf72aab1ccf78e0e37b2f3ae1513c18",
+  "trace_id": "trace-blf-01-baseline-fixes",
+  "classifications": [
+    {
+      "failure_name": "test_authority_leak_guard_local::test_authority_leak_guard_passes_on_local_changes",
+      "primary_category": "unknown_blocking",
+      "secondary_categories": [],
+      "owner_surfaces": ["test_harness", "GOV", "LIN"],
+      "rationale": "Failure is not reproduced against the current commit on either of two consecutive runs. Without a reproduction we cannot classify it into a substantive category. Marking as `unknown_blocking` so it is governed and not silently dismissed; downstream H01 review may revisit if it re-emerges."
+    },
+    {
+      "failure_name": "test_contract_impact_analysis",
+      "primary_category": "fixture_drift",
+      "secondary_categories": [],
+      "owner_surfaces": ["test_harness", "contracts"],
+      "rationale": "The test fixture (_init_repo) constructs a temp git repo without pinning commit.gpgsign locally. Host global git configuration leaks into the test environment. The production contract-impact analyzer is unaffected; only the test scaffolding is at fault."
+    },
+    {
+      "failure_name": "test_github_pr_autofix_review_artifact_validation",
+      "primary_category": "fixture_drift",
+      "secondary_categories": [],
+      "owner_surfaces": ["test_harness", "RDX"],
+      "rationale": "Same root pattern as test_contract_impact_analysis — _init_git_repo helper lacks commit.gpgsign isolation. The production governed-autofix module under test is unaffected."
+    },
+    {
+      "failure_name": "test_roadmap_realization_runner::test_verified_requires_stricter_behavioral_coverage_than_runtime_realized",
+      "primary_category": "runtime_logic_bug",
+      "secondary_categories": ["guard_policy_gap"],
+      "owner_surfaces": ["PQX", "test_harness"],
+      "rationale": "The runner's behavioral-proof subprocess (`_run_behavioral_tests`) shells out to a PATH-resolved `pytest`, which is a non-deterministic execution surface. PQX-equivalent execution authority requires reproducible invocation; the fix pins behavioral pytest invocations to the runner's interpreter (sys.executable -m pytest). The guard-policy gap is secondary: the policy already disapproved this kind of invocation but did not enforce determinism at execution time."
+    }
+  ],
+  "category_legend": {
+    "primary_categories_used": ["fixture_drift", "runtime_logic_bug", "unknown_blocking"],
+    "primary_categories_unused": [
+      "authority_leak",
+      "contract_schema_drift",
+      "artifact_validation_gap",
+      "roadmap_authority_drift",
+      "stale_test_expectation",
+      "guard_policy_gap"
+    ]
+  }
+}

@@ -388,11 +388,35 @@ def _validate_behavioral_test_integrity(contract: dict[str, Any]) -> tuple[bool,
     }
 
 
+def _normalize_pytest_invocation(tokens: list[str]) -> list[str]:
+    """Pin pytest invocations to the runner's interpreter.
+
+    Resolving `pytest` via PATH lets the host environment decide which
+    interpreter (and which dependency set) executes the behavioral proof.
+    The runner's authority requires deterministic reproduction, so any
+    `pytest`-prefixed command is rewritten to `<sys.executable> -m pytest`.
+    """
+    if not tokens:
+        return tokens
+    if tokens[0] == "pytest":
+        return [sys.executable, "-m", "pytest", *tokens[1:]]
+    head = Path(tokens[0]).name
+    if (
+        len(tokens) >= 3
+        and head in {"python", "python3"}
+        and tokens[1] == "-m"
+        and tokens[2] == "pytest"
+    ):
+        return [sys.executable, *tokens[1:]]
+    return tokens
+
+
 def _run_behavioral_tests(test_commands: list[str], repo_root: Path) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
     for command in test_commands:
+        argv = _normalize_pytest_invocation(shlex.split(command))
         proc = subprocess.run(
-            shlex.split(command),
+            argv,
             cwd=str(repo_root),
             capture_output=True,
             text=True,
@@ -401,6 +425,7 @@ def _run_behavioral_tests(test_commands: list[str], repo_root: Path) -> list[dic
         results.append(
             {
                 "command": command,
+                "executed_argv": argv,
                 "returncode": proc.returncode,
                 "passed": proc.returncode == 0,
                 "stdout": proc.stdout,
