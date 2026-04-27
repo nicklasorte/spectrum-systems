@@ -4,13 +4,30 @@
   "schema_version": "1.0.0",
   "diagnosis_id": "diag-1",
   "strategy_gate_decision": "BLOCK",
-  "failure_class": "invalid_wrapper",
+  "failure_class": "pytest_selection_missing",
   "reason_codes": [
-    "PQX_REQUIRED_CONTEXT_WRAPPER_BLOCK"
+    "PR_PYTEST_SELECTION_INTEGRITY_REQUIRED"
   ],
-  "root_cause_summary": "preflight wrapper context invalid",
+  "root_cause_summary": "preflight pytest selection missing for changed files",
   "normalized_failure": {
-    "failure_class": "invalid_wrapper",
+    "failure_class": "pytest_selection_missing",
     "repairable": true
+  },
+  "pytest_selection_diagnostic": {
+    "unmatched_changed_paths": [
+      ".github/workflows/example-workflow.yml"
+    ],
+    "attempted_surface_rules": [
+      {
+        "path_prefix": "scripts/run_contract_preflight.py",
+        "required_test_targets": [
+          "tests/test_contract_preflight.py"
+        ]
+      }
+    ],
+    "recommended_mapping_locations": [
+      "docs/governance/pytest_pr_selection_integrity_policy.json#surface_rules",
+      "docs/governance/preflight_required_surface_test_overrides.json"
+    ]
   }
 }

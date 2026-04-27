@@ -92,6 +92,52 @@
           "type": "boolean"
         }
       }
+    },
+    "pytest_selection_diagnostic": {
+      "type": "object",
+      "description": "Optional diagnostic populated for pytest_selection_* failure classes. Names the changed files that did not map to a pytest selection, the surface rules that were attempted, and the registry locations to update.",
+      "additionalProperties": false,
+      "required": [
+        "unmatched_changed_paths",
+        "attempted_surface_rules",
+        "recommended_mapping_locations"
+      ],
+      "properties": {
+        "unmatched_changed_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attempted_surface_rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path_prefix",
+              "required_test_targets"
+            ],
+            "properties": {
+              "path_prefix": {
+                "type": "string"
+              },
+              "required_test_targets": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "recommended_mapping_locations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     }
   }
 }

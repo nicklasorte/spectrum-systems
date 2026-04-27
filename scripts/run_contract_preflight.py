@@ -159,6 +159,10 @@ _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "spectrum_systems/modules/runtime/control_surface_gap_to_pqx.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
     "spectrum_systems/modules/runtime/pqx_slice_runner.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
     "scripts/pqx_runner.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
+    ".github/workflows/artifact-boundary.yml": [
+        "tests/test_artifact_boundary_workflow_pytest_enforcement.py",
+        "tests/test_artifact_boundary_workflow_policy_observation.py",
+    ],
 }
 def _load_required_surface_override_map(repo_root: Path) -> dict[str, list[str]]:
     merged: dict[str, list[str]] = {path: list(targets) for path, targets in _REQUIRED_SURFACE_TEST_OVERRIDES.items()}
@@ -536,8 +540,18 @@ def _is_forced_evaluation_surface(path: str) -> tuple[bool, str, str]:
         or path.startswith("contracts/governance/")
     ):
         return True, "governance", "governance/control surface changed"
+    if path.startswith(".github/workflows/") and path.endswith(".yml"):
+        return True, "ci_workflow_surface", "CI workflow surface changed"
     if path.startswith("tests/") and path.endswith(".py"):
-        tied_markers = ("contract", "preflight", "schema", "roadmap_eligibility", "next_step_decision", "cycle_runner")
+        tied_markers = (
+            "contract",
+            "preflight",
+            "schema",
+            "roadmap_eligibility",
+            "next_step_decision",
+            "cycle_runner",
+            "workflow",
+        )
         if any(marker in path for marker in tied_markers):
             return True, "contract_tied_tests", "contract-tied test changed"
     return False, "other", "path does not map to governed contract surface"

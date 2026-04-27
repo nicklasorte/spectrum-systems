@@ -10285,9 +10285,9 @@
         "spectrum-systems"
       ],
       "introduced_in": "1.3.125",
-      "last_updated_in": "1.3.125",
+      "last_updated_in": "1.3.151",
       "example_path": "contracts/examples/preflight_block_diagnosis_record.json",
-      "notes": "PFX-01 governed preflight BLOCK auto-repair artifact."
+      "notes": "PFX-01 governed preflight BLOCK auto-repair artifact. WFL-01 adds optional pytest_selection_diagnostic surface for unmatched changed files, attempted selectors, and recommended mapping locations."
     },
     {
       "artifact_type": "preflight_recovery_outcome_record",
