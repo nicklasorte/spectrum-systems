@@ -1,0 +1,981 @@
+{
+  "deterministic": true,
+  "phase": "TLS-07",
+  "schema_version": "tls-07.v1",
+  "systems": [
+    {
+      "expected_artifacts": [
+        "artifacts/evl_execution_record.json",
+        "artifacts/evl_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/evl/",
+        "contracts/examples/evl_*.json",
+        "tests/test_evl*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-EVL: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_observability', 'missing_replay', 'schema_weakness'] on system EVL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 1,
+      "required_tests": [
+        "pytest tests/test_evl*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "EVL"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/tpa_execution_record.json",
+        "artifacts/tpa_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/tpa/",
+        "contracts/examples/tpa_*.json",
+        "tests/test_tpa*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-TPA: resolve observed trust-gap signals ['missing_observability', 'missing_replay', 'schema_weakness'] on system TPA (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 2,
+      "required_tests": [
+        "pytest tests/test_tpa*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "TPA"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/cde_execution_record.json",
+        "artifacts/cde_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/cde/",
+        "contracts/examples/cde_*.json",
+        "tests/test_cde*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-CDE: resolve observed trust-gap signals ['missing_replay', 'schema_weakness'] on system CDE (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 3,
+      "required_tests": [
+        "pytest tests/test_cde*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "CDE"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/sel_execution_record.json",
+        "artifacts/sel_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/sel/",
+        "contracts/examples/sel_*.json",
+        "tests/test_sel*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-SEL: resolve observed trust-gap signals ['missing_replay', 'schema_weakness'] on system SEL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 4,
+      "required_tests": [
+        "pytest tests/test_sel*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "SEL"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/lin_execution_record.json",
+        "artifacts/lin_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/lin/",
+        "contracts/examples/lin_*.json",
+        "tests/test_lin*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-LIN: resolve observed trust-gap signals ['missing_enforcement_signal'] on system LIN (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 5,
+      "required_tests": [
+        "pytest tests/test_lin*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "LIN"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/pra_execution_record.json",
+        "artifacts/pra_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/pra/",
+        "contracts/examples/pra_*.json",
+        "tests/test_pra*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-PRA: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system PRA (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 6,
+      "required_tests": [
+        "pytest tests/test_pra*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "PRA"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/obs_execution_record.json",
+        "artifacts/obs_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/obs/",
+        "contracts/examples/obs_*.json",
+        "tests/test_obs*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-OBS: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'schema_weakness'] on system OBS (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 7,
+      "required_tests": [
+        "pytest tests/test_obs*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "OBS"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/aex_execution_record.json",
+        "artifacts/aex_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/aex/",
+        "contracts/examples/aex_*.json",
+        "tests/test_aex*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-AEX: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_replay', 'schema_weakness'] on system AEX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 8,
+      "required_tests": [
+        "pytest tests/test_aex*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "AEX"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/rep_execution_record.json",
+        "artifacts/rep_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/rep/",
+        "contracts/examples/rep_*.json",
+        "tests/test_rep*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-REP: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'schema_weakness'] on system REP (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 9,
+      "required_tests": [
+        "pytest tests/test_rep*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "REP"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/slo_execution_record.json",
+        "artifacts/slo_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/slo/",
+        "contracts/examples/slo_*.json",
+        "tests/test_slo*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-SLO: resolve observed trust-gap signals ['missing_lineage', 'schema_weakness'] on system SLO (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 10,
+      "required_tests": [
+        "pytest tests/test_slo*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "SLO"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/gov_execution_record.json",
+        "artifacts/gov_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/gov/",
+        "contracts/examples/gov_*.json",
+        "tests/test_gov*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-GOV: resolve observed trust-gap signals ['missing_control', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system GOV (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 11,
+      "required_tests": [
+        "pytest tests/test_gov*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "GOV"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/pqx_execution_record.json",
+        "artifacts/pqx_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/pqx/",
+        "contracts/examples/pqx_*.json",
+        "tests/test_pqx*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-PQX: resolve observed trust-gap signals ['missing_enforcement_signal'] on system PQX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 12,
+      "required_tests": [
+        "pytest tests/test_pqx*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "PQX"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/h01_execution_record.json",
+        "artifacts/h01_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/h01/",
+        "contracts/examples/h01_*.json",
+        "tests/test_h01*.py",
+        "tests/fixtures/h01/"
+      ],
+      "next_prompt": "Run TLS-FIX-H01: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_eval', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'missing_tests', 'schema_weakness'] on system H01 (class=h_slice). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 13,
+      "required_tests": [
+        "pytest tests/test_h01*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "H01"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/sec_execution_record.json",
+        "artifacts/sec_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/sec/",
+        "contracts/examples/sec_*.json",
+        "tests/test_sec*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-SEC: resolve observed trust-gap signals ['missing_control', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay'] on system SEC (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 14,
+      "required_tests": [
+        "pytest tests/test_sec*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "SEC"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/pol_execution_record.json",
+        "artifacts/pol_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/pol/",
+        "contracts/examples/pol_*.json",
+        "tests/test_pol*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-POL: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system POL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 15,
+      "required_tests": [
+        "pytest tests/test_pol*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "POL"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/prm_execution_record.json",
+        "artifacts/prm_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/prm/",
+        "contracts/examples/prm_*.json",
+        "tests/test_prm*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-PRM: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system PRM (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 16,
+      "required_tests": [
+        "pytest tests/test_prm*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "PRM"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/tlc_execution_record.json",
+        "artifacts/tlc_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/tlc/",
+        "contracts/examples/tlc_*.json",
+        "tests/test_tlc*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-TLC: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_observability', 'missing_replay', 'schema_weakness'] on system TLC (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 17,
+      "required_tests": [
+        "pytest tests/test_tlc*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "TLC"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/rax_execution_record.json",
+        "artifacts/rax_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/rax/",
+        "contracts/examples/rax_*.json",
+        "tests/test_rax*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-RAX: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system RAX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 18,
+      "required_tests": [
+        "pytest tests/test_rax*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "RAX"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/cap_execution_record.json",
+        "artifacts/cap_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/cap/",
+        "contracts/examples/cap_*.json",
+        "tests/test_cap*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-CAP: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system CAP (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 19,
+      "required_tests": [
+        "pytest tests/test_cap*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "CAP"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/ril_execution_record.json",
+        "artifacts/ril_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/ril/",
+        "contracts/examples/ril_*.json",
+        "tests/test_ril*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-RIL: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system RIL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 20,
+      "required_tests": [
+        "pytest tests/test_ril*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "RIL"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/jdx_execution_record.json",
+        "artifacts/jdx_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/jdx/",
+        "contracts/examples/jdx_*.json",
+        "tests/test_jdx*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-JDX: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system JDX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 21,
+      "required_tests": [
+        "pytest tests/test_jdx*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "JDX"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/fre_execution_record.json",
+        "artifacts/fre_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/fre/",
+        "contracts/examples/fre_*.json",
+        "tests/test_fre*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-FRE: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system FRE (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 22,
+      "required_tests": [
+        "pytest tests/test_fre*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "FRE"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/rsm_execution_record.json",
+        "artifacts/rsm_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/rsm/",
+        "contracts/examples/rsm_*.json",
+        "tests/test_rsm*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-RSM: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system RSM (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 23,
+      "required_tests": [
+        "pytest tests/test_rsm*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "RSM"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/ctx_execution_record.json",
+        "artifacts/ctx_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/ctx/",
+        "contracts/examples/ctx_*.json",
+        "tests/test_ctx*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-CTX: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_replay'] on system CTX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 24,
+      "required_tests": [
+        "pytest tests/test_ctx*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "CTX"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/jsx_execution_record.json",
+        "artifacts/jsx_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/jsx/",
+        "contracts/examples/jsx_*.json",
+        "tests/test_jsx*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-JSX: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system JSX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 25,
+      "required_tests": [
+        "pytest tests/test_jsx*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "JSX"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/hop_execution_record.json",
+        "artifacts/hop_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/hop/",
+        "contracts/examples/hop_*.json",
+        "tests/test_hop*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-HOP: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system HOP (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 26,
+      "required_tests": [
+        "pytest tests/test_hop*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "HOP"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/map_execution_record.json",
+        "artifacts/map_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/map/",
+        "contracts/examples/map_*.json",
+        "tests/test_map*.py"
+      ],
+      "next_prompt": "Run TLS-FIX-MAP: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage'] on system MAP (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 27,
+      "required_tests": [
+        "pytest tests/test_map*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "MAP"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/abx_execution_record.json",
+        "artifacts/abx_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/abx/",
+        "contracts/examples/abx_*.json",
+        "tests/test_abx*.py",
+        "tests/fixtures/abx/"
+      ],
+      "next_prompt": "Run TLS-FIX-ABX: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system ABX (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 28,
+      "required_tests": [
+        "pytest tests/test_abx*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "ABX"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/cmp_execution_record.json",
+        "artifacts/cmp_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/cmp/",
+        "contracts/examples/cmp_*.json",
+        "tests/test_cmp*.py",
+        "tests/fixtures/cmp/"
+      ],
+      "next_prompt": "Run TLS-FIX-CMP: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system CMP (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 29,
+      "required_tests": [
+        "pytest tests/test_cmp*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "CMP"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/dbb_execution_record.json",
+        "artifacts/dbb_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/dbb/",
+        "contracts/examples/dbb_*.json",
+        "tests/test_dbb*.py",
+        "tests/fixtures/dbb/"
+      ],
+      "next_prompt": "Run TLS-FIX-DBB: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system DBB (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 30,
+      "required_tests": [
+        "pytest tests/test_dbb*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "DBB"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/lce_execution_record.json",
+        "artifacts/lce_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/lce/",
+        "contracts/examples/lce_*.json",
+        "tests/test_lce*.py",
+        "tests/fixtures/lce/"
+      ],
+      "next_prompt": "Run TLS-FIX-LCE: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system LCE (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 31,
+      "required_tests": [
+        "pytest tests/test_lce*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "LCE"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/nrm_execution_record.json",
+        "artifacts/nrm_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/nrm/",
+        "contracts/examples/nrm_*.json",
+        "tests/test_nrm*.py",
+        "tests/fixtures/nrm/"
+      ],
+      "next_prompt": "Run TLS-FIX-NRM: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system NRM (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 32,
+      "required_tests": [
+        "pytest tests/test_nrm*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "NRM"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/qry_execution_record.json",
+        "artifacts/qry_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/qry/",
+        "contracts/examples/qry_*.json",
+        "tests/test_qry*.py",
+        "tests/fixtures/qry/"
+      ],
+      "next_prompt": "Run TLS-FIX-QRY: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system QRY (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 33,
+      "required_tests": [
+        "pytest tests/test_qry*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "QRY"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/ret_execution_record.json",
+        "artifacts/ret_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/ret/",
+        "contracts/examples/ret_*.json",
+        "tests/test_ret*.py",
+        "tests/fixtures/ret/"
+      ],
+      "next_prompt": "Run TLS-FIX-RET: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system RET (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 34,
+      "required_tests": [
+        "pytest tests/test_ret*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "RET"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/rsk_execution_record.json",
+        "artifacts/rsk_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/rsk/",
+        "contracts/examples/rsk_*.json",
+        "tests/test_rsk*.py",
+        "tests/fixtures/rsk/"
+      ],
+      "next_prompt": "Run TLS-FIX-RSK: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system RSK (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 35,
+      "required_tests": [
+        "pytest tests/test_rsk*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "RSK"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/sal_execution_record.json",
+        "artifacts/sal_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/sal/",
+        "contracts/examples/sal_*.json",
+        "tests/test_sal*.py",
+        "tests/fixtures/sal/"
+      ],
+      "next_prompt": "Run TLS-FIX-SAL: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SAL (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 36,
+      "required_tests": [
+        "pytest tests/test_sal*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "SAL"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/sas_execution_record.json",
+        "artifacts/sas_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/sas/",
+        "contracts/examples/sas_*.json",
+        "tests/test_sas*.py",
+        "tests/fixtures/sas/"
+      ],
+      "next_prompt": "Run TLS-FIX-SAS: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SAS (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 37,
+      "required_tests": [
+        "pytest tests/test_sas*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "SAS"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/sha_execution_record.json",
+        "artifacts/sha_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/sha/",
+        "contracts/examples/sha_*.json",
+        "tests/test_sha*.py",
+        "tests/fixtures/sha/"
+      ],
+      "next_prompt": "Run TLS-FIX-SHA: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SHA (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 38,
+      "required_tests": [
+        "pytest tests/test_sha*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "SHA"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/siv_execution_record.json",
+        "artifacts/siv_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/siv/",
+        "contracts/examples/siv_*.json",
+        "tests/test_siv*.py",
+        "tests/fixtures/siv/"
+      ],
+      "next_prompt": "Run TLS-FIX-SIV: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SIV (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 39,
+      "required_tests": [
+        "pytest tests/test_siv*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "SIV"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/sup_execution_record.json",
+        "artifacts/sup_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/sup/",
+        "contracts/examples/sup_*.json",
+        "tests/test_sup*.py",
+        "tests/fixtures/sup/"
+      ],
+      "next_prompt": "Run TLS-FIX-SUP: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SUP (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 40,
+      "required_tests": [
+        "pytest tests/test_sup*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "SUP"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/trn_execution_record.json",
+        "artifacts/trn_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/trn/",
+        "contracts/examples/trn_*.json",
+        "tests/test_trn*.py",
+        "tests/fixtures/trn/"
+      ],
+      "next_prompt": "Run TLS-FIX-TRN: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system TRN (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 41,
+      "required_tests": [
+        "pytest tests/test_trn*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "TRN"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/met_execution_record.json",
+        "artifacts/met_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/met/",
+        "contracts/examples/met_*.json",
+        "tests/test_met*.py",
+        "tests/fixtures/met/"
+      ],
+      "next_prompt": "Run TLS-FIX-MET: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system MET (class=unknown). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 42,
+      "required_tests": [
+        "pytest tests/test_met*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "MET"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/mets_execution_record.json",
+        "artifacts/mets_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/mets/",
+        "contracts/examples/mets_*.json",
+        "tests/test_mets*.py",
+        "tests/fixtures/mets/"
+      ],
+      "next_prompt": "Run TLS-FIX-METS: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system METS (class=unknown). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 43,
+      "required_tests": [
+        "pytest tests/test_mets*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "METS"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/rfx_execution_record.json",
+        "artifacts/rfx_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/rfx/",
+        "contracts/examples/rfx_*.json",
+        "tests/test_rfx*.py",
+        "tests/fixtures/rfx/"
+      ],
+      "next_prompt": "Run TLS-FIX-RFX: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system RFX (class=unknown). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 44,
+      "required_tests": [
+        "pytest tests/test_rfx*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "RFX"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/dcl_execution_record.json",
+        "artifacts/dcl_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/dcl/",
+        "contracts/examples/dcl_*.json",
+        "tests/test_dcl*.py",
+        "tests/fixtures/dcl/"
+      ],
+      "next_prompt": "NO-OP \u2014 DCL is deprecated.",
+      "rank": 45,
+      "required_tests": [
+        "pytest tests/test_dcl*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "DCL"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/dem_execution_record.json",
+        "artifacts/dem_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/dem/",
+        "contracts/examples/dem_*.json",
+        "tests/test_dem*.py",
+        "tests/fixtures/dem/"
+      ],
+      "next_prompt": "NO-OP \u2014 DEM is deprecated.",
+      "rank": 46,
+      "required_tests": [
+        "pytest tests/test_dem*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "DEM"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/hnx_execution_record.json",
+        "artifacts/hnx_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/hnx/",
+        "contracts/examples/hnx_*.json",
+        "tests/test_hnx*.py",
+        "tests/fixtures/hnx/"
+      ],
+      "next_prompt": "NO-OP \u2014 HNX is deprecated.",
+      "rank": 47,
+      "required_tests": [
+        "pytest tests/test_hnx*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "HNX"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/mcl_execution_record.json",
+        "artifacts/mcl_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/mcl/",
+        "contracts/examples/mcl_*.json",
+        "tests/test_mcl*.py",
+        "tests/fixtures/mcl/"
+      ],
+      "next_prompt": "NO-OP \u2014 MCL is deprecated.",
+      "rank": 48,
+      "required_tests": [
+        "pytest tests/test_mcl*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "MCL"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/mnt_execution_record.json",
+        "artifacts/mnt_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/mnt/",
+        "contracts/examples/mnt_*.json",
+        "tests/test_mnt*.py",
+        "tests/fixtures/mnt/"
+      ],
+      "next_prompt": "NO-OP \u2014 MNT is deprecated.",
+      "rank": 49,
+      "required_tests": [
+        "pytest tests/test_mnt*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "MNT"
+    },
+    {
+      "expected_artifacts": [
+        "artifacts/rwa_execution_record.json",
+        "artifacts/rwa_trust_gap_resolution.json"
+      ],
+      "files_to_modify": [
+        "spectrum_systems/modules/rwa/",
+        "contracts/examples/rwa_*.json",
+        "tests/test_rwa*.py",
+        "tests/fixtures/rwa/"
+      ],
+      "next_prompt": "NO-OP \u2014 RWA is deprecated.",
+      "rank": 50,
+      "required_tests": [
+        "pytest tests/test_rwa*.py",
+        "pytest tests/test_contracts.py"
+      ],
+      "stop_condition": "all trust_gap_signals cleared and owner review signals are present",
+      "system_id": "RWA"
+    }
+  ]
+}

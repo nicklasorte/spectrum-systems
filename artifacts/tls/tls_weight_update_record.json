@@ -1,0 +1,11 @@
+{
+  "observed_error_ratio": 0.48,
+  "phase": "TLS-09",
+  "recommended_weight_updates": {
+    "dependency_order_penalty": 22,
+    "missing_dependency_penalty": 12,
+    "weak_explanation_penalty": 6
+  },
+  "schema_version": "tls-09-weight-update.v1",
+  "update_rule": "deterministic_penalty_reweight"
+}
