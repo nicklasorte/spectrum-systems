@@ -1,18 +1,43 @@
 {
   "artifact_type": "d3l_simple_dashboard_fix_log",
-  "work_item": "D3L-SIMPLE-TLS-01",
+  "work_item": "D3L-SIMPLE-02",
+  "supersedes_work_item": "D3L-SIMPLE-TLS-01",
   "generated_at": "2026-04-27T00:00:00Z",
   "fixes_applied": [
     {
-      "finding_id": "RT-01",
+      "finding_id": "RT-D3L-SIMPLE-02-01",
       "status": "fixed",
-      "change": "Roadmap tab now includes explicit FX -> RT -> FIX pairing status text."
+      "change": "Added four explicit jest tests in apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx covering: (a) Top-3 ordering preserved from artifact (no dashboard-side rerank), (b) zero flow edges when artifact has none (no hardcoded graph edges), (c) Trust Pulse visible with all five fields, (d) critical warnings surfaced via Trust Pulse warning count.",
+      "evidence": [
+        "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx::top 3 ordering is preserved from artifact (no dashboard-side rerank)",
+        "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx::renders no flow edges when artifact has none (no hardcoded graph edges)",
+        "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx::trust pulse is visible on the overview with all five fields",
+        "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx::critical warnings are surfaced via trust pulse warning count"
+      ]
+    },
+    {
+      "finding_id": "RT-D3L-SIMPLE-02-02",
+      "status": "fixed",
+      "change": "Regenerated artifacts/tls/d3l_simple_dashboard_redteam_report.json and artifacts/tls/d3l_simple_dashboard_fix_log.json under work item D3L-SIMPLE-02. New red-team report records operator 10-second question coverage, per-invariant test evidence traces, and stop-condition evaluation."
+    }
+  ],
+  "carried_fixes_from_prior_work_item": [
+    {
+      "finding_id": "RT-01",
+      "origin_work_item": "D3L-SIMPLE-TLS-01",
+      "status": "still_in_effect",
+      "change": "Roadmap tab includes explicit FX -> RT -> FIX pairing status text."
     },
     {
       "finding_id": "RT-02",
-      "status": "fixed",
+      "origin_work_item": "D3L-SIMPLE-TLS-01",
+      "status": "still_in_effect",
       "change": "Top 3 cards render do_not_touch / boundary warning from priority artifact row mapping."
     }
   ],
+  "test_run": {
+    "command": "npm --prefix apps/dashboard-3ls test -- --runInBand --testPathPattern=DashboardPage",
+    "result": "10/10 passed"
+  },
   "residual_risk": "none_detected"
 }

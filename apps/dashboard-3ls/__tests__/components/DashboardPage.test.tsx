@@ -175,4 +175,95 @@ describe('DashboardPage simplified cockpit', () => {
     expect(screen.getByText('AEX → PQX')).toBeInTheDocument();
     expect(screen.getByText('PQX → EVL')).toBeInTheDocument();
   });
+
+  it('top 3 ordering is preserved from artifact (no dashboard-side rerank)', async () => {
+    const reorderedPriority = {
+      ...mockPriority,
+      payload: {
+        ...mockPriority.payload,
+        requested_candidate_ranking: [
+          {
+            requested_rank: 1,
+            system_id: 'HOP',
+            classification: 'h_slice',
+            recommended_action: 'close handoff gaps',
+            why_now: 'lineage instability',
+            prerequisite_systems: ['RFX'],
+            minimum_safe_prompt_scope: 'handoff schema hardening',
+            risk_if_built_before_prerequisites: 'do_not_touch downstream enforcers',
+          },
+          {
+            requested_rank: 2,
+            system_id: 'H01',
+            classification: 'h_slice',
+            recommended_action: 'harden authority',
+            why_now: 'high trust gaps',
+            prerequisite_systems: ['AEX'],
+            minimum_safe_prompt_scope: 'single-system hardening',
+            risk_if_built_before_prerequisites: 'do_not_touch upstream ownership',
+          },
+          {
+            requested_rank: 3,
+            system_id: 'RFX',
+            classification: 'fix_bundle',
+            recommended_action: 'stabilize retries',
+            why_now: 'repeat failures',
+            prerequisite_systems: [],
+            minimum_safe_prompt_scope: 'retry boundary fix only',
+            risk_if_built_before_prerequisites: 'avoid control transfer',
+          },
+        ],
+      },
+    };
+    setupFetch({ priority: reorderedPriority });
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getAllByTestId('top3-card')).toHaveLength(3));
+    const cards = screen.getAllByTestId('top3-card');
+    expect(cards[0].textContent).toContain('HOP');
+    expect(cards[1].textContent).toContain('H01');
+    expect(cards[2].textContent).toContain('RFX');
+  });
+
+  it('renders no flow edges when artifact has none (no hardcoded graph edges)', async () => {
+    const emptyFlow = {
+      state: 'ok',
+      payload: {
+        canonical_loop: ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL'],
+        canonical_overlays: ['REP', 'LIN', 'OBS', 'SLO'],
+        active_systems: [
+          { system_id: 'AEX', upstream: [], downstream: [] },
+          { system_id: 'PQX', upstream: [], downstream: [] },
+          { system_id: 'EVL', upstream: [], downstream: [] },
+          { system_id: 'TPA', upstream: [], downstream: [] },
+          { system_id: 'CDE', upstream: [], downstream: [] },
+          { system_id: 'SEL', upstream: [], downstream: [] },
+        ],
+      },
+    };
+    setupFetch({ flow: emptyFlow });
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('flow-edges')).toBeInTheDocument());
+    expect(screen.getByTestId('flow-edges').children.length).toBe(0);
+    expect(screen.getByTestId('flow-warning')).toBeInTheDocument();
+  });
+
+  it('trust pulse is visible on the overview with all five fields', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
+    expect(screen.getByText(/A\. Trust Pulse/i)).toBeInTheDocument();
+    expect(screen.getByText(/trust state:/i)).toBeInTheDocument();
+    expect(screen.getByText(/artifact-backed %:/i)).toBeInTheDocument();
+    expect(screen.getByText(/stub fallback %:/i)).toBeInTheDocument();
+    expect(screen.getByText(/last recompute:/i)).toBeInTheDocument();
+    expect(screen.getByText(/warning count:/i)).toBeInTheDocument();
+  });
+
+  it('critical warnings are surfaced via trust pulse warning count', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
+    const warningLine = screen.getByText(/warning count:/i).closest('li');
+    expect(warningLine?.textContent ?? '').toMatch(/2/);
+  });
 });

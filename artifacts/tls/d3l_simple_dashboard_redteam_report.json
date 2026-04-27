@@ -1,7 +1,27 @@
 {
   "artifact_type": "d3l_simple_dashboard_redteam_report",
-  "work_item": "D3L-SIMPLE-TLS-01",
+  "work_item": "D3L-SIMPLE-02",
+  "supersedes_work_item": "D3L-SIMPLE-TLS-01",
   "generated_at": "2026-04-27T00:00:00Z",
+  "scope": "Simplified 3LS operator cockpit; verify Overview is artifact-backed and free of dashboard-side computation.",
+  "operator_10s_questions": {
+    "q1_how_do_systems_connect_and_flow": {
+      "answerable": true,
+      "evidence": "Panel B renders canonical_loop and canonical_overlays from artifacts/tls/system_registry_dependency_graph.json with edge list derived from active_systems[].downstream."
+    },
+    "q2_top_3_systems_to_fix": {
+      "answerable": true,
+      "evidence": "Panel C reads requested_candidate_ranking[0..2] from artifacts/system_dependency_priority_report.json. Order is preserved; dashboard does not re-rank."
+    },
+    "q3_what_is_next_leverage_queue": {
+      "answerable": true,
+      "evidence": "Panel D groups safe_bundles from artifacts/tls/tls_roadmap_final.json into queues 1..4 by deterministic bundle_id classifier; no dashboard-side reordering."
+    },
+    "q4_can_i_trust_this_dashboard": {
+      "answerable": true,
+      "evidence": "Panel A surfaces trust_state, artifact-backed %, stub-fallback %, last recompute timestamp, and warning count. Missing artifacts produce visible warnings (top3-warning, queue-warning, flow-warning)."
+    }
+  },
   "checks": {
     "can_answer_in_10_seconds": {
       "flow": "pass",
@@ -11,20 +31,45 @@
     },
     "critical_hidden": "no",
     "overview_overloaded": "no",
-    "dashboard_side_computation": "none_detected"
+    "dashboard_side_computation": "none_detected",
+    "graph_hardcoded": "no",
+    "fallback_dominating": "no",
+    "overview_section_count": 4,
+    "tab_count": 7
+  },
+  "evidence_traces": {
+    "overview_section_invariant_test": "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx::overview shows only 4 sections",
+    "no_rerank_test": "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx::top 3 ordering is preserved from artifact (no dashboard-side rerank)",
+    "no_hardcoded_edges_test": "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx::renders no flow edges when artifact has none (no hardcoded graph edges)",
+    "trust_pulse_visible_test": "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx::trust pulse is visible on the overview with all five fields",
+    "critical_warnings_surfaced_test": "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx::critical warnings are surfaced via trust pulse warning count",
+    "fail_closed_warnings_test": "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx::missing artifacts show fail-closed warnings",
+    "tab_isolation_test": "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx::tabs exist and isolate complexity panels",
+    "leverage_queue_artifact_test": "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx::leverage queue is derived from roadmap safe bundles",
+    "top3_artifact_test": "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx::top 3 cards are extracted from artifact rows without re-ranking",
+    "flow_edges_from_artifact_test": "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx::flow edges are rendered from artifact-provided dependencies"
   },
   "findings": [
     {
-      "id": "RT-01",
+      "id": "RT-D3L-SIMPLE-02-01",
       "severity": "low",
-      "finding": "Roadmap tab needed explicit pairing status statement for FX/RT/FIX sequencing.",
-      "recommended_fix": "Add explicit red-team/fix pairing status line in Roadmap tab."
+      "finding": "Test coverage in D3L-SIMPLE-TLS-01 covered six of the ten Phase-7 invariants explicitly; the remaining four invariants (no dashboard-side rerank, no hardcoded graph edges, trust pulse visible, critical warnings surfaced) were only implicit.",
+      "recommended_fix": "Add four explicit tests in apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx covering each invariant directly."
     },
     {
-      "id": "RT-02",
+      "id": "RT-D3L-SIMPLE-02-02",
       "severity": "low",
-      "finding": "Top-3 cards needed stronger boundary warning label to avoid accidental execution inference.",
-      "recommended_fix": "Display do_not_touch / boundary warning field directly from artifact mapping."
+      "finding": "Red-team report and fix log carried the prior work-item stamp (D3L-SIMPLE-TLS-01) and did not record the explicit Phase-7 invariant evidence trace required by D3L-SIMPLE-02.",
+      "recommended_fix": "Regenerate the red-team report under D3L-SIMPLE-02 with operator 10-second question coverage and per-invariant test evidence traces."
     }
-  ]
+  ],
+  "residual_risk": "low",
+  "stop_conditions_evaluated": {
+    "overview_more_than_4_sections": false,
+    "top_3_not_artifact_backed": false,
+    "leverage_queue_not_roadmap_backed": false,
+    "graph_is_hardcoded": false,
+    "dashboard_computes_ranking": false,
+    "authority_boundary_violated": false
+  }
 }
