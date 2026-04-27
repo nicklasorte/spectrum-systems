@@ -43,6 +43,12 @@ def test_artifact_boundary_push_preflight_is_not_replaced_by_lightweight_pytest_
     assert text.index('governed-contract-preflight:') < text.index('run-pytest:')
 
 
+def test_artifact_boundary_push_preflight_checkout_depth_supports_head_parent_resolution() -> None:
+    text = ARTIFACT_BOUNDARY_WORKFLOW.read_text(encoding='utf-8')
+    governed_job = text.split('governed-contract-preflight:')[1]
+    assert 'fetch-depth: 2' in governed_job
+
+
 def test_pr_pytest_workflow_does_not_bypass_artifact_validation_on_preflight_exit_zero() -> None:
     text = PR_PYTEST_WORKFLOW.read_text(encoding='utf-8')
     assert 'if [[ "$preflight_exit" -ne 0 ]]; then' in text

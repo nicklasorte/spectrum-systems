@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import os
+import subprocess
 import sys
 from copy import deepcopy
 from datetime import datetime, timezone
@@ -21,6 +22,67 @@ from spectrum_systems.modules.runtime.changed_path_resolution import resolve_cha
 from spectrum_systems.modules.runtime.preflight_ref_normalization import (  # noqa: E402
     normalize_preflight_ref_context,
 )
+
+_NULL_SHA = "0000000000000000000000000000000000000000"
+
+
+def _run_git(command: list[str]) -> tuple[int, str, str]:
+    proc = subprocess.run(command, cwd=_REPO_ROOT, check=False, capture_output=True, text=True)
+    return proc.returncode, proc.stdout.strip(), proc.stderr.strip()
+
+
+def _is_null_sha(value: str) -> bool:
+    return value.strip() == _NULL_SHA
+
+
+def _is_valid_commit(ref: str) -> bool:
+    rc, _, _ = _run_git(["git", "cat-file", "-e", f"{ref}^{{commit}}"])
+    return rc == 0
+
+
+def _resolve_effective_base_ref(*, base_ref: str, head_ref: str) -> tuple[str, dict[str, object]]:
+    details: dict[str, object] = {
+        "original_base_ref": base_ref,
+        "effective_base_ref": base_ref,
+        "effective_head_ref": head_ref,
+        "base_ref_resolution_strategy": "as_provided",
+        "fallback_used": False,
+        "warnings": [],
+        "failure_reason_code": None,
+    }
+    if not _is_null_sha(base_ref):
+        return base_ref, details
+
+    details["base_ref_resolution_strategy"] = "null_base_detected"
+    details["fallback_used"] = True
+    if not _is_valid_commit(head_ref):
+        details["failure_reason_code"] = "invalid_head_ref_for_null_base_resolution"
+        details["warnings"] = [f"head ref is not a valid commit: {head_ref}"]
+        return "", details
+
+    rc, stdout, stderr = _run_git(["git", "rev-parse", f"{head_ref}^"])
+    if rc == 0 and stdout:
+        effective = stdout
+        details["effective_base_ref"] = effective
+        details["base_ref_resolution_strategy"] = "head_parent"
+        details["warnings"] = [f"null base ref resolved via parent of {head_ref}"]
+        return effective, details
+    if stderr:
+        details["warnings"] = [f"head_parent resolution unavailable: {stderr}"]
+
+    for main_ref in ("origin/main", "remote/main"):
+        if not _is_valid_commit(main_ref):
+            continue
+        rc, merge_base, _ = _run_git(["git", "merge-base", head_ref, main_ref])
+        merge_base = merge_base.strip()
+        if rc == 0 and merge_base and merge_base != head_ref:
+            details["effective_base_ref"] = merge_base
+            details["base_ref_resolution_strategy"] = "merge_base"
+            details["warnings"] = details["warnings"] + [f"null base ref resolved via merge-base({head_ref}, {main_ref})"]
+            return merge_base, details
+
+    details["failure_reason_code"] = "null_base_unresolved"
+    return "", details
 
 
 def _stable_hash(payload: object) -> str:
@@ -122,9 +184,37 @@ def main(argv: Optional[list[str]] = None) -> int:
         )
         return 2
 
+    effective_base_ref, base_resolution = _resolve_effective_base_ref(
+        base_ref=ref_context.base_ref,
+        head_ref=ref_context.head_ref,
+    )
+    if not effective_base_ref:
+        output_path = _REPO_ROOT / args.output
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        resolution_path = output_path.with_name("preflight_changed_path_resolution.json")
+        resolution_payload = {
+            "changed_path_detection_mode": "detection_failed_no_governed_paths",
+            "resolution_mode": "insufficient",
+            "trust_level": "insufficient",
+            "bounded_runtime": False,
+            "refs_attempted": [],
+            "warnings": base_resolution.get("warnings", []),
+            "hardening_artifact_refs": {},
+            "ref_context": ref_context.as_dict(),
+            "ref_resolution": base_resolution,
+            "failure_reason": "changed-path resolution remains insufficient because null base could not be resolved",
+            "failure_reason_code": base_resolution.get("failure_reason_code"),
+        }
+        resolution_path.write_text(json.dumps(resolution_payload, indent=2) + "\n", encoding="utf-8")
+        print(
+            "ERROR: changed-path resolution remains insufficient because null base could not be resolved.",
+            file=sys.stderr,
+        )
+        return 2
+
     resolution = resolve_changed_paths(
         repo_root=_REPO_ROOT,
-        base_ref=ref_context.base_ref,
+        base_ref=effective_base_ref,
         head_ref=ref_context.head_ref,
         explicit=args.changed_path,
     )
@@ -167,6 +257,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         "warnings": resolution.warnings,
         "hardening_artifact_refs": hardening_refs,
         "ref_context": ref_context.as_dict(),
+        "ref_resolution": base_resolution,
     }
 
     output_path = _REPO_ROOT / args.output
