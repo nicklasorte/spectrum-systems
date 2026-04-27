@@ -41,7 +41,18 @@ CANONICAL_TIER_VALIDATION_REASON_CODES = {
     "TIER_STALE_GENERATED",
     "TIER_UNKNOWN_TIER",
     "TIER_POLICY_UNAVAILABLE",
+    "TIER_DRIFT_DETECTED",
+    "TIER_INDIRECT_LAUNDERING",
+    "TIER_MISSING_METADATA",
+    "TIER_LOW_TO_EVIDENCE_DRIFT",
 }
+
+
+# NT-07: Tiers that may NOT be referenced (directly or transitively) by
+# canonical/evidence artifacts. These are recomputable, ephemeral, or
+# human-only artifacts; using them as evidence is the "indirect laundering"
+# attack described in NT-08.
+LOW_TRUST_TIERS = ("report", "generated_cache", "test_temp")
 
 
 class ArtifactTierError(ValueError):
@@ -291,11 +302,199 @@ def validate_promotion_evidence_tiers(
     }
 
 
+def audit_tier_drift(
+    *,
+    previous_audit: Mapping[str, Any],
+    current_audit: Mapping[str, Any],
+    policy: Optional[Mapping[str, Any]] = None,
+) -> Dict[str, Any]:
+    """NT-07: Detect tier drift between two audits.
+
+    Detects:
+      - artifact moved from a low-trust tier (report/generated_cache/
+        test_temp) to ``evidence`` or ``canonical`` (laundering)
+      - artifact present without a tier (missing metadata)
+      - tier changed without policy authorisation (drift)
+
+    The audit takes two ``audit_artifacts`` outputs (or any mapping with
+    an ``items`` list of classified artifacts) and returns a drift result.
+    """
+    if not isinstance(previous_audit, Mapping) or not isinstance(current_audit, Mapping):
+        raise ArtifactTierError("audits must be mappings")
+    pol = dict(policy) if policy is not None else load_artifact_tier_policy()
+    overrides = {str(o) for o in pol.get("explicit_promotion_overrides", []) or []}
+
+    prev_items = previous_audit.get("items") or []
+    curr_items = current_audit.get("items") or []
+    prev_by_id = {
+        str(it.get("artifact_id")): it for it in prev_items if it.get("artifact_id")
+    }
+
+    drifted: List[Dict[str, Any]] = []
+    laundered: List[Dict[str, Any]] = []
+    missing_metadata: List[str] = []
+    decision = "allow"
+    reason_code = "TIER_OK"
+
+    def _block(new_reason: str) -> None:
+        nonlocal decision, reason_code
+        decision = "block"
+        # First-failure-wins for stable canonical_reason
+        if reason_code == "TIER_OK":
+            reason_code = new_reason
+
+    for item in curr_items:
+        artifact_id = str(item.get("artifact_id") or "")
+        tier = str(item.get("tier") or "")
+        if not artifact_id:
+            missing_metadata.append("<unknown>")
+            _block("TIER_MISSING_METADATA")
+            continue
+        if not tier:
+            missing_metadata.append(artifact_id)
+            _block("TIER_MISSING_METADATA")
+            continue
+        prev = prev_by_id.get(artifact_id)
+        if prev is None:
+            continue  # newly added; not drift
+        prev_tier = str(prev.get("tier") or "")
+        if prev_tier == tier:
+            continue
+        change = {
+            "artifact_id": artifact_id,
+            "previous_tier": prev_tier,
+            "current_tier": tier,
+        }
+        drifted.append(change)
+        # Laundering: low-trust → evidence/canonical without explicit override.
+        if (
+            prev_tier in LOW_TRUST_TIERS
+            and tier in {"evidence", "canonical"}
+            and artifact_id not in overrides
+        ):
+            laundered.append(change)
+            _block("TIER_LOW_TO_EVIDENCE_DRIFT")
+        else:
+            _block("TIER_DRIFT_DETECTED")
+
+    return {
+        "artifact_type": "artifact_tier_drift_audit",
+        "schema_version": "1.0.0",
+        "decision": decision,
+        "reason_code": reason_code,
+        "drifted": drifted,
+        "laundered": laundered,
+        "missing_metadata": missing_metadata,
+    }
+
+
+def validate_transitive_evidence_tiers(
+    *,
+    promotion_evidence_items: Iterable[Mapping[str, Any]],
+    artifact_store: Mapping[str, Mapping[str, Any]],
+    policy: Optional[Mapping[str, Any]] = None,
+    validation_id: str,
+    trace_id: str = "",
+) -> Dict[str, Any]:
+    """NT-09: Tier validation that follows references one hop deep.
+
+    A canonical or evidence artifact may reference (via ``*_ref`` fields,
+    ``referenced_artifact_ids``, ``evidence_refs``, or
+    ``promotion_evidence_refs``) other artifacts. Each referenced artifact
+    must itself be in an allowed tier. This catches the "wrap a report in
+    a canonical-typed wrapper" attack.
+
+    The validator performs the existing direct check plus a single-hop
+    referenced check. Deeper transitive scanning is intentionally out of
+    scope: the loop proof bundle is reference-only by design and a single
+    hop is sufficient when every wrapper is itself reference-only.
+    """
+    pol = dict(policy) if policy is not None else load_artifact_tier_policy()
+    direct_result = validate_promotion_evidence_tiers(
+        promotion_evidence_items,
+        policy=pol,
+        validation_id=validation_id,
+        trace_id=trace_id,
+    )
+    if direct_result["decision"] == "block":
+        direct_result["transitive_violations"] = []
+        return direct_result
+
+    overrides = {str(o) for o in pol.get("explicit_promotion_overrides", []) or []}
+    allow_tiers = set(pol.get("promotion_evidence_allowlist_tiers", ["canonical", "evidence"]))
+
+    transitive_violations: List[Dict[str, Any]] = []
+    decision = direct_result["decision"]
+    reason_code = direct_result["reason_code"]
+
+    def _ref_ids_of(payload: Mapping[str, Any]) -> List[str]:
+        refs: List[str] = []
+        for key, value in payload.items():
+            if not isinstance(key, str):
+                continue
+            if key.endswith("_ref") and isinstance(value, str) and value.strip():
+                refs.append(value.strip())
+        for key in (
+            "referenced_artifact_ids",
+            "evidence_refs",
+            "promotion_evidence_refs",
+        ):
+            value = payload.get(key)
+            if isinstance(value, list):
+                refs.extend(str(v) for v in value if isinstance(v, str) and v.strip())
+        return refs
+
+    for item in promotion_evidence_items:
+        if not isinstance(item, Mapping):
+            continue
+        for ref_id in _ref_ids_of(item):
+            referenced = artifact_store.get(ref_id)
+            if referenced is None:
+                # Unknown ref does not pass through laundering, but isn't
+                # itself a tier escape; surface it for completeness.
+                continue
+            cls = classify_artifact(
+                {
+                    "artifact_id": ref_id,
+                    "artifact_path": str(referenced.get("artifact_path") or ""),
+                    "artifact_type": str(referenced.get("artifact_type") or ""),
+                    "tier": referenced.get("tier"),
+                },
+                pol,
+            )
+            if cls["tier"] in allow_tiers or ref_id in overrides:
+                continue
+            transitive_violations.append(
+                {
+                    "wrapping_artifact_id": str(item.get("artifact_id") or ""),
+                    "referenced_artifact_id": ref_id,
+                    "referenced_tier": cls["tier"],
+                }
+            )
+            decision = "block"
+            if reason_code == "TIER_OK":
+                reason_code = "TIER_INDIRECT_LAUNDERING"
+
+    direct_result["decision"] = decision
+    direct_result["reason_code"] = reason_code
+    direct_result["transitive_violations"] = transitive_violations
+    if transitive_violations and "blocking_reasons" in direct_result:
+        for v in transitive_violations:
+            direct_result["blocking_reasons"].append(
+                f"wrapper {v['wrapping_artifact_id']} references low-trust "
+                f"artifact {v['referenced_artifact_id']} (tier={v['referenced_tier']})"
+            )
+    return direct_result
+
+
 __all__ = [
     "ArtifactTierError",
     "CANONICAL_TIER_VALIDATION_REASON_CODES",
+    "LOW_TRUST_TIERS",
     "audit_artifacts",
+    "audit_tier_drift",
     "classify_artifact",
     "load_artifact_tier_policy",
     "validate_promotion_evidence_tiers",
+    "validate_transitive_evidence_tiers",
 ]

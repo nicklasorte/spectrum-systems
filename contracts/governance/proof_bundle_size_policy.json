@@ -1,0 +1,47 @@
+{
+  "artifact_type": "proof_bundle_size_policy",
+  "schema_version": "1.0.0",
+  "policy_id": "NT-04-proof-bundle-size-policy",
+  "purpose": "Bound the size and complexity of trust proof artifacts so they remain operator-readable and so producers cannot inline evidence to mask fragility. Bundles that exceed the budget block (or are deterministically compressed) and emit a canonical reason.",
+  "loop_proof_bundle": {
+    "max_top_level_evidence_refs": 16,
+    "max_nested_depth": 3,
+    "max_human_readable_chars": 6000,
+    "max_one_page_summary_lines": 60,
+    "forbid_inline_evidence_keys": [
+      "execution_record",
+      "output_artifact",
+      "eval_summary",
+      "control_decision",
+      "enforcement_action",
+      "replay_record",
+      "lineage_summary",
+      "certification_evidence_index",
+      "failure_trace"
+    ],
+    "overflow_behavior": "block"
+  },
+  "certification_evidence_index": {
+    "max_top_level_evidence_refs": 12,
+    "max_nested_depth": 2,
+    "max_human_readable_chars": 4000,
+    "max_blocking_detail_codes": 24,
+    "forbid_inline_evidence_keys": [
+      "eval_summary",
+      "lineage_summary",
+      "replay_summary",
+      "control_decision",
+      "enforcement_action",
+      "authority_shape_preflight",
+      "registry_validation",
+      "artifact_tier_validation",
+      "failure_trace"
+    ],
+    "overflow_behavior": "block"
+  },
+  "one_page_trace": {
+    "max_lines": 50,
+    "max_chars": 4000,
+    "overflow_behavior": "compress"
+  }
+}

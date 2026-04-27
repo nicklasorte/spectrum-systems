@@ -121,7 +121,11 @@
       "spectrum_systems/modules/governance/certification_prerequisites.py",
       "spectrum_systems/modules/governance/certification_evidence_index.py",
       "spectrum_systems/modules/governance/loop_proof_bundle.py",
-      "spectrum_systems/modules/governance/system_justification_v2.py"
+      "spectrum_systems/modules/governance/system_justification_v2.py",
+      "spectrum_systems/modules/observability/trust_artifact_freshness.py",
+      "spectrum_systems/modules/governance/proof_bundle_size_budget.py",
+      "spectrum_systems/modules/governance/certification_delta.py",
+      "spectrum_systems/modules/runtime/control_signal_minimality.py"
     ]
   },
   "vocabulary_overrides": {
@@ -359,6 +363,34 @@
       "may_authorize": false,
       "canonical_owner": null,
       "rationale": "Generated ecosystem health observation report mentions historical CI Enforcement category labels but cannot issue control or enforcement_signal decisions."
+    },
+    {
+      "path": "spectrum_systems/modules/observability/trust_artifact_freshness.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "OBS support seam audits the freshness of trust artifacts (NT-01..03); emits stale/current/unknown status against canonical inputs without issuing control or enforcement_signal decisions."
+    },
+    {
+      "path": "spectrum_systems/modules/governance/proof_bundle_size_budget.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "Non-owning seam evaluates proof artifacts against the size policy (NT-04..06); does not redefine certification authority. Decisions surfaced are pass/block-with-reason inputs consumed by the canonical owners."
+    },
+    {
+      "path": "spectrum_systems/modules/governance/certification_delta.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "Non-owning seam computes the diff between two certification evidence indexes (NT-19..21); surfaces added/removed/changed evidence as inputs consumed by canonical owners without issuing control or certification."
+    },
+    {
+      "path": "spectrum_systems/modules/runtime/control_signal_minimality.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "Non-owning seam audits proposed control inputs for hard-trust vs observation classification (NT-16..18); does not itself decide policy."
     }
   ]
 }
