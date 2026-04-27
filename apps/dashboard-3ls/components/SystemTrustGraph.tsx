@@ -3,22 +3,87 @@ import { SystemNode } from './SystemNode';
 import { SystemEdge } from './SystemEdge';
 import type { SystemGraphPayload } from '@/lib/systemGraph';
 
-const SLOT_POSITIONS: Record<string, { x: number; y: number }> = {
-  REP: { x: 30, y: 20 }, LIN: { x: 180, y: 20 }, OBS: { x: 330, y: 20 }, SLO: { x: 480, y: 20 },
-  AEX: { x: 30, y: 140 }, PQX: { x: 180, y: 140 }, EVL: { x: 330, y: 140 }, TPA: { x: 480, y: 140 }, CDE: { x: 630, y: 140 }, SEL: { x: 780, y: 140 },
-  CTX: { x: 30, y: 260 }, PRM: { x: 140, y: 260 }, TLC: { x: 250, y: 260 }, RIL: { x: 360, y: 260 }, FRE: { x: 470, y: 260 }, JDX: { x: 580, y: 260 }, PRA: { x: 690, y: 260 }, GOV: { x: 800, y: 260 }, MAP: { x: 910, y: 260 },
-  H01: { x: 30, y: 380 }, RFX: { x: 180, y: 380 }, HOP: { x: 330, y: 380 }, MET: { x: 480, y: 380 }, METS: { x: 630, y: 380 },
+export type GraphLayoutKey = 'layered' | 'compact';
+
+const NODE_WIDTH = 120;
+const NODE_HEIGHT = 70;
+const CANVAS_WIDTH = 1100;
+
+interface RowDef {
+  key: string;
+  label: string;
+  dashed: boolean;
+  y: number;
+  slots: string[];
+  groupColor: string;
+}
+
+const LAYOUTS: Record<GraphLayoutKey, RowDef[]> = {
+  layered: [
+    { key: 'overlay', label: 'Overlay candidates', dashed: true, y: 20, slots: ['REP', 'LIN', 'OBS', 'SLO'], groupColor: '#ede9fe' },
+    { key: 'core', label: 'Core trust loop', dashed: false, y: 150, slots: ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL'], groupColor: '#eff6ff' },
+    { key: 'support', label: 'Support systems', dashed: true, y: 280, slots: ['CTX', 'PRM', 'TLC', 'RIL', 'FRE', 'JDX', 'PRX'], groupColor: '#ecfdf5' },
+    { key: 'extension', label: 'Extensions', dashed: true, y: 410, slots: ['HOP', 'H01', 'RFX', 'MET'], groupColor: '#faf5ff' },
+  ],
+  compact: [
+    { key: 'overlay', label: 'Overlay candidates', dashed: true, y: 20, slots: ['REP', 'LIN', 'OBS', 'SLO'], groupColor: '#ede9fe' },
+    { key: 'core', label: 'Core trust loop', dashed: false, y: 130, slots: ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL'], groupColor: '#eff6ff' },
+    { key: 'support', label: 'Support + extension', dashed: true, y: 240, slots: ['CTX', 'PRM', 'TLC', 'RIL', 'FRE', 'JDX', 'PRX', 'HOP', 'H01', 'RFX', 'MET'], groupColor: '#ecfdf5' },
+  ],
 };
+
+const SUPPORT_LIKE_LAYERS: ReadonlySet<string> = new Set(['support']);
+const CORE_LIKE_LAYERS: ReadonlySet<string> = new Set(['core']);
+
+function buildSlotPositions(layout: GraphLayoutKey): Map<string, { x: number; y: number }> {
+  const map = new Map<string, { x: number; y: number }>();
+  const padX = 30;
+  for (const row of LAYOUTS[layout]) {
+    const usable = CANVAS_WIDTH - 2 * padX;
+    const n = row.slots.length;
+    const totalWidth = n * NODE_WIDTH;
+    const gap = n > 1 ? (usable - totalWidth) / (n - 1) : 0;
+    const startX = padX;
+    row.slots.forEach((slot, idx) => {
+      map.set(slot, { x: startX + idx * (NODE_WIDTH + gap), y: row.y });
+    });
+  }
+  return map;
+}
+
+function buildOverflowPositions(layout: GraphLayoutKey, ids: string[]): Map<string, { x: number; y: number }> {
+  const map = new Map<string, { x: number; y: number }>();
+  const baseY = (LAYOUTS[layout].at(-1)?.y ?? 380) + NODE_HEIGHT + 30;
+  ids.forEach((id, idx) => {
+    map.set(id, { x: 30 + idx * (NODE_WIDTH + 20), y: baseY });
+  });
+  return map;
+}
+
+function rowHeight(): number {
+  return NODE_HEIGHT + 30;
+}
 
 interface Props {
   graph: SystemGraphPayload;
   selectedSystem: string | null;
   showAll: boolean;
+  layout?: GraphLayoutKey;
   onSelect: (systemId: string) => void;
 }
 
-export function SystemTrustGraph({ graph, selectedSystem, showAll, onSelect }: Props) {
-  const nodeById = useMemo(() => new Map(graph.nodes.map((node) => [node.system_id, node])), [graph.nodes]);
+export function SystemTrustGraph({ graph, selectedSystem, showAll, layout = 'layered', onSelect }: Props) {
+  const slotPositions = useMemo(() => buildSlotPositions(layout), [layout]);
+
+  const overflowIds = useMemo(() => graph.nodes.map((n) => n.system_id).filter((id) => !slotPositions.has(id)), [graph.nodes, slotPositions]);
+  const overflowPositions = useMemo(() => buildOverflowPositions(layout, overflowIds), [layout, overflowIds]);
+
+  const allPositions = useMemo(() => {
+    const m = new Map<string, { x: number; y: number }>();
+    slotPositions.forEach((v, k) => m.set(k, v));
+    overflowPositions.forEach((v, k) => m.set(k, v));
+    return m;
+  }, [slotPositions, overflowPositions]);
 
   const connectedToFocus = useMemo(() => {
     const set = new Set<string>();
@@ -31,25 +96,150 @@ export function SystemTrustGraph({ graph, selectedSystem, showAll, onSelect }: P
     return set;
   }, [graph.edges, graph.focus_systems]);
 
+  const canvasHeight = useMemo(() => {
+    const lastRow = LAYOUTS[layout].at(-1);
+    const baseHeight = (lastRow?.y ?? 380) + NODE_HEIGHT + 30;
+    return overflowIds.length > 0 ? baseHeight + rowHeight() : baseHeight;
+  }, [layout, overflowIds.length]);
+
+  const isPrimaryEdge = (from: string, to: string, isFailurePath: boolean, edgeType: string) => {
+    if (edgeType === 'dependency') return true;
+    if (isFailurePath) return true;
+    if (graph.focus_systems.includes(from) || graph.focus_systems.includes(to)) return true;
+    return false;
+  };
+
+  const labelByRow: Array<{ y: number; label: string }> = LAYOUTS[layout].map((row) => ({ y: row.y, label: row.label }));
+
   return (
-    <div className="border rounded p-3" data-testid="system-trust-graph">
-      <svg width="1040" height="470" role="img" aria-label="System trust graph">
+    <div className="border rounded-lg p-4 bg-white" data-testid="system-trust-graph" data-layout={layout}>
+      <svg
+        viewBox={`0 0 ${CANVAS_WIDTH} ${canvasHeight}`}
+        className="w-full h-auto"
+        role="img"
+        aria-label="System trust graph"
+        data-testid="system-trust-graph-svg"
+      >
+        <defs>
+          <marker id="arrow-core" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="#1d4ed8" />
+          </marker>
+          <marker id="arrow-failure" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="#ea580c" />
+          </marker>
+          <marker id="arrow-broken" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="#dc2626" />
+          </marker>
+          <marker id="arrow-secondary" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 Z" fill="#9ca3af" />
+          </marker>
+        </defs>
+
+        {LAYOUTS[layout].map((row) => {
+          const padX = 18;
+          const startX = 30 - padX;
+          const width = CANVAS_WIDTH - 2 * (30 - padX);
+          const y = row.y - 18;
+          const height = NODE_HEIGHT + 36;
+          return (
+            <g key={`row-${row.key}`} data-testid={`graph-row-${row.key}`}>
+              <rect
+                x={startX}
+                y={y}
+                width={width}
+                height={height}
+                fill={row.groupColor}
+                fillOpacity={0.45}
+                stroke={row.dashed ? '#cbd5e1' : '#cbd5e1'}
+                strokeDasharray={row.dashed ? '6 4' : undefined}
+                strokeWidth={1}
+                rx={10}
+              />
+              <text x={startX + 12} y={y + 14} fontSize={10} fill="#475569" fontWeight={600} textAnchor="start">
+                {row.label.toUpperCase()}
+              </text>
+            </g>
+          );
+        })}
+
         {graph.edges.map((edge) => {
-          const from = SLOT_POSITIONS[edge.from] ?? { x: 920, y: 380 };
-          const to = SLOT_POSITIONS[edge.to] ?? { x: 920, y: 420 };
-          const opacity = showAll ? 1 : graph.focus_systems.includes(edge.from) || graph.focus_systems.includes(edge.to) ? 1 : connectedToFocus.has(edge.from) || connectedToFocus.has(edge.to) ? 0.6 : 0.2;
-          return <SystemEdge key={`${edge.from}-${edge.to}`} edge={edge} from={from} to={to} opacity={opacity} />;
+          const from = allPositions.get(edge.from);
+          const to = allPositions.get(edge.to);
+          if (!from || !to) return null;
+          const primary = isPrimaryEdge(edge.from, edge.to, edge.is_failure_path, edge.edge_type);
+          if (!showAll && !primary) {
+            return (
+              <SystemEdge
+                key={`${edge.from}-${edge.to}`}
+                edge={edge}
+                from={from}
+                to={to}
+                opacity={0}
+                hidden
+                nodeWidth={NODE_WIDTH}
+                nodeHeight={NODE_HEIGHT}
+              />
+            );
+          }
+          const opacity = showAll
+            ? primary
+              ? 1
+              : 0.45
+            : graph.focus_systems.includes(edge.from) || graph.focus_systems.includes(edge.to)
+              ? 1
+              : connectedToFocus.has(edge.from) || connectedToFocus.has(edge.to)
+                ? 0.6
+                : 0.2;
+          return (
+            <SystemEdge
+              key={`${edge.from}-${edge.to}`}
+              edge={edge}
+              from={from}
+              to={to}
+              opacity={opacity}
+              nodeWidth={NODE_WIDTH}
+              nodeHeight={NODE_HEIGHT}
+            />
+          );
         })}
+
         {graph.nodes.map((node) => {
-          const pos = SLOT_POSITIONS[node.system_id] ?? { x: 920, y: 420 };
-          const opacity = showAll ? 1 : graph.focus_systems.includes(node.system_id) ? 1 : connectedToFocus.has(node.system_id) ? 0.65 : 0.25;
-          return <SystemNode key={node.system_id} node={node} x={pos.x} y={pos.y} opacity={opacity} onSelect={onSelect} selected={selectedSystem === node.system_id} />;
+          const pos = allPositions.get(node.system_id);
+          if (!pos) return null;
+          const opacity = showAll
+            ? 1
+            : graph.focus_systems.includes(node.system_id)
+              ? 1
+              : connectedToFocus.has(node.system_id)
+                ? 0.65
+                : 0.25;
+          return (
+            <SystemNode
+              key={node.system_id}
+              node={node}
+              x={pos.x}
+              y={pos.y}
+              width={NODE_WIDTH}
+              height={NODE_HEIGHT}
+              opacity={opacity}
+              onSelect={onSelect}
+              selected={selectedSystem === node.system_id}
+            />
+          );
         })}
+
+        {labelByRow && null}
       </svg>
-      <p className="text-xs text-gray-500">Edges come from API payload artifacts; visual slots are static for readability only.</p>
+
       <div className="hidden" data-testid="core-flow-systems">AEX PQX EVL TPA CDE SEL</div>
       <div className="hidden" data-testid="overlay-systems">REP LIN OBS SLO</div>
       <div className="hidden" data-testid="candidate-systems">H01 RFX HOP MET METS</div>
+
+      <p className="text-xs text-gray-500 mt-2">
+        Slots are static for readability; nodes, edges, and trust state come from the artifact payload.
+      </p>
     </div>
   );
 }
+
+export { LAYOUTS as GRAPH_LAYOUTS, CORE_LIKE_LAYERS, SUPPORT_LIKE_LAYERS };
