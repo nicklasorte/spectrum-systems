@@ -1,0 +1,9 @@
+Alice: Welcome everyone to the spectrum systems sync.
+Bob: Thanks Alice, glad to be here.
+Alice: Today we are reviewing the transcript ingestion pipeline.
+Carol: I have a few concerns about fail-closed behavior.
+Bob: Let's walk through the schema fields together.
+Alice: Carol, can you start with your concerns?
+Carol: Sure. The trace and provenance must be present on every artifact.
+Bob: Agreed. Missing trace should halt the pipeline.
+Alice: Good. Let's record that as the operating rule.

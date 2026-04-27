@@ -1,0 +1,88 @@
+{
+  "artifact_id": "RVA-H08-INGEST-001",
+  "artifact_type": "red_team_review_record",
+  "schema_version": "1.0.0",
+  "trace": {
+    "trace_id": "0808080808080808080808080808080a",
+    "span_id": "0808080808080808"
+  },
+  "provenance": {
+    "produced_by": "adversarial-review-agent-ARA-H08",
+    "input_artifact_ids": [
+      "BATCH-H08"
+    ],
+    "run_id": "run-BATCH-H08-review"
+  },
+  "created_at": "2026-04-27T00:00:00+00:00",
+  "reviewed_artifact_id": "BATCH-H08",
+  "reviewed_artifact_type": "implementation_batch",
+  "reviewer_id": "ARA-H08",
+  "review_signal": "revision_recommended",
+  "summary": "Red-team review signal for H08 transcript ingestion pipeline. Eight findings (no S4): six S2/S3 attack vectors and two S0/S1 hygiene items. All S2+ findings closed in-batch via fix actions H08-FIX-001..006 with regression tests (TestRedTeamRegressions). This is a non-authority review signal; control authority remains with CDE/SEL.",
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "severity": "S3",
+      "description": "Empty / whitespace-only transcript could silently produce a zero-turn payload that downstream consumers treat as valid.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py::parse_transcript_text",
+      "recommendation": "Reject empty / whitespace-only input with reason_code EMPTY_TRANSCRIPT and require speaker_turns minItems: 1 in the schema.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-002",
+      "severity": "S3",
+      "description": "Pure prose without 'Speaker: text' delimiters could be admitted as a raw transcript with no structured turns, defeating downstream context bundle assembly.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py::parse_transcript_text",
+      "recommendation": "Raise NO_SPEAKER_TURNS when no speaker line matches; schema rejects empty speaker_turns array.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-003",
+      "severity": "S2",
+      "description": "Oversize input could be opened and read into memory before any structural validation, exposing the runtime to denial-of-service via large transcripts.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py::_read_text",
+      "recommendation": "Stat the file before reading and raise INPUT_FILE_TOO_LARGE above a 5 MiB cap.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-004",
+      "severity": "S2",
+      "description": "Non-UTF-8 bytes could leak UnicodeDecodeError into the PQX harness as EXECUTION_EXCEPTION with low diagnostic value.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py::_read_text",
+      "recommendation": "Catch UnicodeDecodeError and re-raise as TranscriptIngestionError(reason_code=INPUT_NOT_UTF8).",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-005",
+      "severity": "S3",
+      "description": "Re-ingestion of the same file could mint a new artifact_id each run, breaking replay and creating duplicate downstream lineage.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py::_derive_session_id",
+      "recommendation": "Derive session_id and artifact_id deterministically from (filename, raw_text); rely on ArtifactStore.DUPLICATE_ARTIFACT_ID to fail-closed on replay.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-006",
+      "severity": "S2",
+      "description": "A hand-crafted artifact could be passed directly to ArtifactStore.register_artifact, bypassing PQX trace propagation.",
+      "section_ref": "spectrum_systems/modules/runtime/artifact_store.py::ArtifactStore.register_artifact",
+      "recommendation": "Envelope check is already validated by the store; add a regression test (test_F006_direct_artifact_writes_blocked_by_envelope_check) to lock the behavior.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-007",
+      "severity": "S1",
+      "description": "trace_id / span_id format is validated by the schema only — the ingestor would happily build a payload with malformed trace if called outside the harness in tests.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py::ingest_transcript",
+      "recommendation": "Validate trace_id (32-hex) and span_id (16-hex) at the ingestor boundary with INVALID_TRACE_ID / INVALID_SPAN_ID reason codes.",
+      "blocking": false
+    },
+    {
+      "finding_id": "F-008",
+      "severity": "S0",
+      "description": "Module docstring does not explicitly state that content_hash is computed by the artifact store, not the ingestor.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py",
+      "recommendation": "Document the contract in the module docstring and at the ingest_transcript return-value comment.",
+      "blocking": false
+    }
+  ]
+}
