@@ -1,0 +1,16 @@
+{
+  "delays_caused": {
+    "dependency_delay_count": 9,
+    "premature_build_delays": 5
+  },
+  "execution_outcomes": {
+    "allowed_execution": false,
+    "control_decision": "pending_cde_review"
+  },
+  "phase": "TLS-09",
+  "ranking_quality": {
+    "correct_rankings": 27,
+    "incorrect_rankings": 23
+  },
+  "schema_version": "tls-09-learning.v1"
+}

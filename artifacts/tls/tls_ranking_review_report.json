@@ -1,0 +1,346 @@
+{
+  "deterministic": true,
+  "phase": "TLS-05",
+  "review_findings": {
+    "misranked_systems": [
+      {
+        "explanation": "active upstream dependency ranked after dependent system",
+        "rank": 1,
+        "system_id": "EVL",
+        "upstream_rank_violations": [
+          "PQX"
+        ]
+      },
+      {
+        "explanation": "active upstream dependency ranked after dependent system",
+        "rank": 2,
+        "system_id": "CDE",
+        "upstream_rank_violations": [
+          "LIN",
+          "REP",
+          "TPA"
+        ]
+      },
+      {
+        "explanation": "active upstream dependency ranked after dependent system",
+        "rank": 3,
+        "system_id": "TPA",
+        "upstream_rank_violations": [
+          "POL"
+        ]
+      },
+      {
+        "explanation": "active upstream dependency ranked after dependent system",
+        "rank": 5,
+        "system_id": "OBS",
+        "upstream_rank_violations": [
+          "PQX"
+        ]
+      },
+      {
+        "explanation": "active upstream dependency ranked after dependent system",
+        "rank": 6,
+        "system_id": "REP",
+        "upstream_rank_violations": [
+          "LIN",
+          "PQX"
+        ]
+      },
+      {
+        "explanation": "active upstream dependency ranked after dependent system",
+        "rank": 7,
+        "system_id": "PRA",
+        "upstream_rank_violations": [
+          "LIN"
+        ]
+      },
+      {
+        "explanation": "active upstream dependency ranked after dependent system",
+        "rank": 11,
+        "system_id": "GOV",
+        "upstream_rank_violations": [
+          "POL"
+        ]
+      },
+      {
+        "explanation": "active upstream dependency ranked after dependent system",
+        "rank": 12,
+        "system_id": "PQX",
+        "upstream_rank_violations": [
+          "TLC"
+        ]
+      },
+      {
+        "explanation": "active upstream dependency ranked after dependent system",
+        "rank": 19,
+        "system_id": "HOP",
+        "upstream_rank_violations": [
+          "CTX"
+        ]
+      }
+    ],
+    "missing_dependencies": [
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "CTX",
+          "PRM"
+        ],
+        "missing_upstream_backrefs": [],
+        "system_id": "AEX"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "TLC",
+          "TPA"
+        ],
+        "missing_upstream_backrefs": [
+          "OBS"
+        ],
+        "system_id": "CAP"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [],
+        "missing_upstream_backrefs": [
+          "REP"
+        ],
+        "system_id": "CDE"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "AEX",
+          "PQX",
+          "RIL"
+        ],
+        "missing_upstream_backrefs": [],
+        "system_id": "CTX"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "GOV"
+        ],
+        "missing_upstream_backrefs": [],
+        "system_id": "EVL"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "CDE",
+          "GOV",
+          "PQX"
+        ],
+        "missing_upstream_backrefs": [],
+        "system_id": "FRE"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "SEL"
+        ],
+        "missing_upstream_backrefs": [],
+        "system_id": "GOV"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "CDE",
+          "EVL",
+          "FRE"
+        ],
+        "missing_upstream_backrefs": [
+          "CTX",
+          "EVL"
+        ],
+        "system_id": "HOP"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "CDE",
+          "GOV"
+        ],
+        "missing_upstream_backrefs": [
+          "EVL"
+        ],
+        "system_id": "JDX"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "CDE",
+          "GOV"
+        ],
+        "missing_upstream_backrefs": [],
+        "system_id": "JSX"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "GOV",
+          "TLC"
+        ],
+        "missing_upstream_backrefs": [],
+        "system_id": "MAP"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "GOV"
+        ],
+        "missing_upstream_backrefs": [
+          "CDE",
+          "EVL"
+        ],
+        "system_id": "OBS"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [],
+        "missing_upstream_backrefs": [
+          "TPA"
+        ],
+        "system_id": "PQX"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [],
+        "missing_upstream_backrefs": [
+          "EVL",
+          "LIN"
+        ],
+        "system_id": "PRA"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "AEX"
+        ],
+        "missing_upstream_backrefs": [],
+        "system_id": "PRM"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "EVL",
+          "FRE",
+          "RIL"
+        ],
+        "missing_upstream_backrefs": [],
+        "system_id": "RAX"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "EVL",
+          "GOV"
+        ],
+        "missing_upstream_backrefs": [
+          "CDE"
+        ],
+        "system_id": "REP"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "CDE"
+        ],
+        "missing_upstream_backrefs": [
+          "EVL",
+          "OBS"
+        ],
+        "system_id": "RIL"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "CDE",
+          "FRE"
+        ],
+        "missing_upstream_backrefs": [
+          "OBS",
+          "REP"
+        ],
+        "system_id": "RSM"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "SEL",
+          "TPA"
+        ],
+        "missing_upstream_backrefs": [],
+        "system_id": "SEC"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [
+          "CDE",
+          "SEL",
+          "TPA"
+        ],
+        "missing_upstream_backrefs": [],
+        "system_id": "SLO"
+      },
+      {
+        "explanation": "dependency link not mirrored in peer dependency set",
+        "missing_downstream_backrefs": [],
+        "missing_upstream_backrefs": [
+          "AEX"
+        ],
+        "system_id": "TLC"
+      }
+    ],
+    "premature_build_candidates": [
+      {
+        "build_now_assessment": "caution_signal",
+        "explanation": "candidate should not proceed to execution until trust conditions are cleared",
+        "prerequisite_systems": [],
+        "safe_next_action": "recommendation: build H01 now with recommendation: single-system hardening for H01 trust-gap signals.",
+        "system_id": "H01"
+      },
+      {
+        "build_now_assessment": "prerequisite_signal",
+        "explanation": "candidate should not proceed to execution until trust conditions are cleared",
+        "prerequisite_systems": [
+          "EVL"
+        ],
+        "safe_next_action": "recommendation: harden EVL before build scope on HOP.",
+        "system_id": "HOP"
+      },
+      {
+        "build_now_assessment": "blocked_signal",
+        "explanation": "candidate should not proceed to execution until trust conditions are cleared",
+        "prerequisite_systems": [],
+        "safe_next_action": "recommendation: harden registry/evidence classification before build scope on MET.",
+        "system_id": "MET"
+      },
+      {
+        "build_now_assessment": "blocked_signal",
+        "explanation": "candidate should not proceed to execution until trust conditions are cleared",
+        "prerequisite_systems": [],
+        "safe_next_action": "recommendation: harden registry/evidence classification before build scope on METS.",
+        "system_id": "METS"
+      },
+      {
+        "build_now_assessment": "blocked_signal",
+        "explanation": "candidate should not proceed to execution until trust conditions are cleared",
+        "prerequisite_systems": [],
+        "safe_next_action": "recommendation: harden registry/evidence classification before build scope on RFX.",
+        "system_id": "RFX"
+      }
+    ],
+    "weak_explanations": []
+  },
+  "schema_version": "tls-05.v1",
+  "summary": {
+    "misranked_count": 9,
+    "missing_dependency_count": 22,
+    "premature_build_count": 5,
+    "status": "needs_fix",
+    "weak_explanation_count": 0
+  }
+}
