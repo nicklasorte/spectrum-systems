@@ -27,27 +27,28 @@ def test_artifact_boundary_redundant_pytest_job_no_longer_depends_on_preflight_j
     assert '- governed-contract-preflight' not in text
 
 
-def test_artifact_boundary_restores_push_authoritative_governed_preflight() -> None:
+def test_artifact_boundary_restores_authoritative_governed_preflight() -> None:
     text = ARTIFACT_BOUNDARY_WORKFLOW.read_text(encoding='utf-8')
     assert 'governed-contract-preflight:' in text
-    assert "if: github.event_name == 'push'" in text
-    assert 'Run authoritative governed preflight gate (push)' in text
+    assert "github.event_name == 'push'" in text
+    assert "github.event_name == 'pull_request'" in text
+    assert 'Run authoritative governed preflight gate' in text
     assert 'python scripts/run_contract_preflight.py' in text
     assert '--execution-context pqx_governed' in text
     assert '--authority-evidence-ref artifacts/pqx_runs/preflight.pqx_slice_execution_record.json' in text
 
 
-def test_artifact_boundary_push_preflight_is_not_replaced_by_lightweight_pytest_only() -> None:
+def test_artifact_boundary_governed_preflight_is_not_replaced_by_lightweight_pytest_only() -> None:
     text = ARTIFACT_BOUNDARY_WORKFLOW.read_text(encoding='utf-8')
     assert 'governed-contract-preflight:' in text
     assert 'run: pytest' in text
     assert text.index('governed-contract-preflight:') < text.index('run-pytest:')
 
 
-def test_artifact_boundary_push_preflight_checkout_depth_supports_head_parent_resolution() -> None:
+def test_artifact_boundary_governed_preflight_checkout_depth_supports_pr_and_push_resolution() -> None:
     text = ARTIFACT_BOUNDARY_WORKFLOW.read_text(encoding='utf-8')
-    governed_job = text.split('governed-contract-preflight:')[1]
-    assert 'fetch-depth: 2' in governed_job
+    governed_job = text.split('governed-contract-preflight:')[1].split('\n  run-pytest:')[0]
+    assert 'fetch-depth: 0' in governed_job
 
 
 def test_pr_pytest_workflow_does_not_bypass_artifact_validation_on_preflight_exit_zero() -> None:

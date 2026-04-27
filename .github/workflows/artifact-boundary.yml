@@ -143,7 +143,7 @@ jobs:
           path: outputs/authority_shape_preflight/authority_shape_preflight_result.json
 
   governed-contract-preflight:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     needs:
       - enforce-artifact-boundary
       - validate-module-architecture
@@ -154,7 +154,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -170,17 +170,23 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
-            echo "base_ref=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
-            echo "head_ref=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+            base_ref="${{ github.event.pull_request.base.sha }}"
+            head_ref="${{ github.event.pull_request.head.sha }}"
           elif [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
-            echo "base_ref=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
-            echo "head_ref=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            base_ref="${{ github.event.before }}"
+            head_ref="${{ github.sha }}"
           else
-            echo "base_ref=origin/main" >> "$GITHUB_OUTPUT"
-            echo "head_ref=HEAD" >> "$GITHUB_OUTPUT"
+            echo "ERROR: unsupported event ${GITHUB_EVENT_NAME} for governed contract preflight" >&2
+            exit 2
           fi
+          if [[ -z "${base_ref}" || -z "${head_ref}" ]]; then
+            echo "ERROR: empty base_ref/head_ref derived for ${GITHUB_EVENT_NAME} (base='${base_ref}' head='${head_ref}')" >&2
+            exit 2
+          fi
+          echo "base_ref=${base_ref}" >> "$GITHUB_OUTPUT"
+          echo "head_ref=${head_ref}" >> "$GITHUB_OUTPUT"
 
-      - name: Run authoritative governed preflight gate (push)
+      - name: Run authoritative governed preflight gate
         env:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
@@ -206,7 +212,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: contract-preflight-outputs-push
+          name: contract-preflight-outputs-${{ github.event_name }}
           if-no-files-found: warn
           path: |
             outputs/contract_preflight/contract_preflight_report.md
