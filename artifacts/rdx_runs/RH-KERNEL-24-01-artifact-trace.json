@@ -1,7 +1,7 @@
 {
   "artifact_type": "rh_kernel_artifact_trace",
   "batch_id": "RH-KERNEL-24-01",
-  "generated_at": "2026-04-27T12:49:35Z",
+  "generated_at": "2026-04-27T20:12:04Z",
   "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
   "checkpoint_progression": "stopped_on_first_failure_else_continue",
   "umbrella_sequence": [
