@@ -40,7 +40,7 @@ def test_fails_closed_when_registry_input_missing(monkeypatch, tmp_path):
 def test_invokes_next_step_builder_after_tls(monkeypatch, tmp_path):
     calls: list[tuple[list[str], Path, dict | None]] = []
     tls_artifact = tmp_path / "artifacts" / "system_dependency_priority_report.json"
-    next_artifact = tmp_path / "artifacts" / "next_step_decision_report.json"
+    next_artifact = tmp_path / "artifacts" / "next_step_recommendation_report.json"
     tls_artifact.parent.mkdir(parents=True, exist_ok=True)
     tls_artifact.write_text("{}", encoding="utf-8")
     next_artifact.write_text("{}", encoding="utf-8")
@@ -56,7 +56,7 @@ def test_invokes_next_step_builder_after_tls(monkeypatch, tmp_path):
 
     assert rc == 0
     assert calls[0][0][1].endswith("/scripts/build_tls_dependency_priority.py")
-    assert calls[1][0][1].endswith("/scripts/build_next_step_decision.py")
+    assert calls[1][0][1].endswith("/scripts/build_next_step_recommendation.py")
 
 
 def test_fails_when_next_step_artifact_missing_after_success(monkeypatch, tmp_path):
@@ -87,4 +87,4 @@ def test_skip_next_step_bypasses_only_when_explicit(monkeypatch, tmp_path):
     assert rc == 0
     joined = "\n".join(" ".join(cmd) for cmd in calls)
     assert "build_tls_dependency_priority.py" in joined
-    assert "build_next_step_decision.py" not in joined
+    assert "build_next_step_recommendation.py" not in joined

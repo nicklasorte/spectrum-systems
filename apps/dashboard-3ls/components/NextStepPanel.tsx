@@ -6,7 +6,7 @@ import type { NextStepLoadResult } from '@/lib/nextStepArtifactLoader';
 const loadingPayload: NextStepLoadResult = {
   state: 'missing',
   payload: {
-    artifact_type: 'next_step_decision_report',
+    artifact_type: 'next_step_recommendation_report',
     schema_version: '1.0.0',
     generated_at: '',
     status: 'blocked',
@@ -16,9 +16,9 @@ const loadingPayload: NextStepLoadResult = {
     partial_work: [],
     remaining_work_table: [],
     ranked_priorities: [],
-    selected_next_step: null,
+    selected_recommendation: null,
     rejected_next_steps: [],
-    dependency_reasoning: [],
+    dependency_observations: [],
     red_team_findings: [],
     warnings: ['loading_next_step_artifact'],
     reason_codes: [],
@@ -43,13 +43,13 @@ export function NextStepPanel() {
           payload: {
             ...loadingPayload.payload,
             warnings: ['next_step_fetch_failed'],
-            reason_codes: ['missing_required_artifact:artifacts/next_step_decision_report.json'],
+            reason_codes: ['missing_required_artifact:artifacts/next_step_recommendation_report.json'],
           },
         });
       });
   }, []);
 
-  const selected = result.payload.selected_next_step as Record<string, unknown> | null;
+  const selected = result.payload.selected_recommendation as Record<string, unknown> | null;
   const topFive = result.payload.ranked_priorities.slice(0, 5);
   const missing = result.payload.source_refs.filter((ref) => ref.required && !ref.present);
 

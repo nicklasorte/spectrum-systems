@@ -10,7 +10,7 @@ export interface NextStepSourceRef {
 }
 
 export interface NextStepReport {
-  artifact_type: 'next_step_decision_report';
+  artifact_type: 'next_step_recommendation_report';
   schema_version: '1.0.0';
   generated_at: string;
   status: 'pass' | 'blocked';
@@ -20,9 +20,9 @@ export interface NextStepReport {
   partial_work: string[];
   remaining_work_table: Array<Record<string, unknown>>;
   ranked_priorities: Array<Record<string, unknown>>;
-  selected_next_step: Record<string, unknown> | null;
+  selected_recommendation: Record<string, unknown> | null;
   rejected_next_steps: Array<Record<string, unknown>>;
-  dependency_reasoning: string[];
+  dependency_observations: string[];
   red_team_findings: Array<Record<string, unknown>>;
   warnings: string[];
   reason_codes: string[];
@@ -33,13 +33,13 @@ export interface NextStepLoadResult {
   payload: NextStepReport;
 }
 
-const NEXT_STEP_PATH = 'artifacts/next_step_decision_report.json';
+const NEXT_STEP_PATH = 'artifacts/next_step_recommendation_report.json';
 
 function fallbackMissing(pathRef: string): NextStepLoadResult {
   return {
     state: 'missing',
     payload: {
-      artifact_type: 'next_step_decision_report',
+      artifact_type: 'next_step_recommendation_report',
       schema_version: '1.0.0',
       generated_at: new Date().toISOString(),
       status: 'blocked',
@@ -49,9 +49,9 @@ function fallbackMissing(pathRef: string): NextStepLoadResult {
       partial_work: [],
       remaining_work_table: [],
       ranked_priorities: [],
-      selected_next_step: null,
+      selected_recommendation: null,
       rejected_next_steps: [],
-      dependency_reasoning: [],
+      dependency_observations: [],
       red_team_findings: [],
       warnings: ['next_step_artifact_missing'],
       reason_codes: [`missing_required_artifact:${pathRef}`],
@@ -62,7 +62,7 @@ function fallbackMissing(pathRef: string): NextStepLoadResult {
 function isNextStepReport(value: unknown): value is NextStepReport {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
-  return obj.artifact_type === 'next_step_decision_report'
+  return obj.artifact_type === 'next_step_recommendation_report'
     && obj.schema_version === '1.0.0'
     && Array.isArray(obj.source_refs)
     && Array.isArray(obj.reason_codes);

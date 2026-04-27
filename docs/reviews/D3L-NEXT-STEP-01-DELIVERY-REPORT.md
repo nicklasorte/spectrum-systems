@@ -8,13 +8,13 @@ The 3LS dashboard build wrapper now runs deterministic recommendation generation
 
 1. `scripts/build_dashboard_3ls_with_tls.py`
 2. `scripts/build_tls_dependency_priority.py`
-3. `scripts/build_next_step_decision.py`
+3. `scripts/build_next_step_recommendation.py`
 4. Next.js build
 
 No model calls, no browser-side ranking, and no runtime daemons are introduced.
 
 ## Artifact path
-- `artifacts/next_step_decision_report.json`
+- `artifacts/next_step_recommendation_report.json`
 
 ## Dashboard path
 - API: `apps/dashboard-3ls/app/api/next-step/route.ts`
@@ -41,7 +41,7 @@ The recommendation builder loads and hashes these evidence artifacts:
 - Build wrapper enforces artifact existence after next-step builder unless `--skip-next-step` is explicitly provided.
 
 ## Tests run
-- `python scripts/build_next_step_decision.py`
+- `python scripts/build_next_step_recommendation.py`
 - `python -m pytest tests/ -q -k "next_step or dashboard_3ls or build_dashboard"`
 - `npm --prefix apps/dashboard-3ls test -- --runInBand`
 - `npm --prefix apps/dashboard-3ls run build`

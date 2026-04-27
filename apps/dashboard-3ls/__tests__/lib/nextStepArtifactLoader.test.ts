@@ -4,7 +4,7 @@ import { loadNextStepArtifact } from '@/lib/nextStepArtifactLoader';
 
 describe('nextStepArtifactLoader', () => {
   const root = path.resolve(process.cwd(), '../..');
-  const artifactPath = path.join(root, 'artifacts/next_step_decision_report.json');
+  const artifactPath = path.join(root, 'artifacts/next_step_recommendation_report.json');
 
   afterEach(() => {
     if (fs.existsSync(artifactPath)) {
@@ -17,7 +17,7 @@ describe('nextStepArtifactLoader', () => {
     fs.writeFileSync(
       artifactPath,
       JSON.stringify({
-        artifact_type: 'next_step_decision_report',
+        artifact_type: 'next_step_recommendation_report',
         schema_version: '1.0.0',
         generated_at: '2026-04-27T00:00:00Z',
         status: 'pass',
@@ -27,9 +27,9 @@ describe('nextStepArtifactLoader', () => {
         partial_work: [],
         remaining_work_table: [],
         ranked_priorities: [],
-        selected_next_step: { id: 'RFX-PROOF-01' },
+        selected_recommendation: { id: 'RFX-PROOF-01' },
         rejected_next_steps: [],
-        dependency_reasoning: [],
+        dependency_observations: [],
         red_team_findings: [],
         warnings: [],
         reason_codes: [],
@@ -37,7 +37,7 @@ describe('nextStepArtifactLoader', () => {
     );
     const result = loadNextStepArtifact();
     expect(result.state).toBe('ok');
-    expect(result.payload.selected_next_step).toEqual({ id: 'RFX-PROOF-01' });
+    expect(result.payload.selected_recommendation).toEqual({ id: 'RFX-PROOF-01' });
   });
 
   it('returns blocked missing payload when artifact is absent', () => {

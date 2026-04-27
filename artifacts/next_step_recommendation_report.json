@@ -1,16 +1,16 @@
 {
-  "artifact_type": "next_step_decision_report",
+  "artifact_type": "next_step_recommendation_report",
   "completed_work": [
     "BLF-01 \u2014 Baseline failure fix",
     "RFX-04 \u2014 Loop-07/08",
     "RMP-SUPER-01",
     "H01 \u2014 Pre-MVP trust spine review/fix closure"
   ],
-  "dependency_reasoning": [
+  "dependency_observations": [
     "Locked sequence enforces BLF -> RFX-04 -> RMP-SUPER-01 -> H01 -> RFX-PROOF-01 -> EVL -> TPA -> CDE -> SEL -> MET -> HOP.",
     "Advisory TLS ranking is non-owning and cannot bypass locked dependencies."
   ],
-  "generated_at": "2026-04-27T14:49:20Z",
+  "generated_at": "2026-04-27T15:18:37Z",
   "partial_work": [],
   "ranked_priorities": [
     {
@@ -236,9 +236,9 @@
       "required_missing_artifacts_or_tests": [
         "TPA"
       ],
-      "risk_if_done_out_of_order": "Decision logic can bypass policy trust chain.",
+      "risk_if_done_out_of_order": "Control recommendations can bypass policy trust chain.",
       "status": "not_started",
-      "why_it_matters": "Decision governance depends on trusted policy adjudication.",
+      "why_it_matters": "Control recommendations depend on trusted policy adjudication.",
       "work_item": "CDE hardening"
     },
     {
@@ -249,9 +249,9 @@
       "required_missing_artifacts_or_tests": [
         "CDE"
       ],
-      "risk_if_done_out_of_order": "Execution may enforce untrusted decision paths.",
+      "risk_if_done_out_of_order": "Execution may enforce untrusted recommendation paths.",
       "status": "not_started",
-      "why_it_matters": "Enforcement must follow controlled decision provenance.",
+      "why_it_matters": "Enforcement must follow controlled recommendation provenance.",
       "work_item": "SEL hardening"
     },
     {
@@ -284,7 +284,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "selected_next_step": {
+  "selected_recommendation": {
     "depends_on": [
       "BLF-01",
       "RFX-04",
@@ -326,7 +326,7 @@
       "required": true
     },
     {
-      "content_hash": "sha256:096a1864e54a4ba6f4553c04c8dc1a4e725c632266e29e7b7f4c14b57410d050",
+      "content_hash": "sha256:8fbd5602af2bc82b2acb768d04ca6f155437b301a8122efe740d921bf6439844",
       "path": "artifacts/system_dependency_priority_report.json",
       "present": true,
       "required": true

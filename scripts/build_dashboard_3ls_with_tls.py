@@ -29,7 +29,7 @@ def artifact_path() -> Path:
 
 
 def next_step_artifact_path() -> Path:
-    return repo_root() / "artifacts" / "next_step_decision_report.json"
+    return repo_root() / "artifacts" / "next_step_recommendation_report.json"
 
 
 def registry_path() -> Path:
@@ -97,8 +97,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     if not args.skip_next_step:
-        next_step_cmd = [sys.executable, str(root / "scripts" / "build_next_step_decision.py")]
-        print(f"[dashboard-3ls-build] next_step_command={' '.join(next_step_cmd)}", flush=True)
+        next_step_cmd = [sys.executable, str(root / "scripts" / "build_next_step_recommendation.py")]
+        print(f"[dashboard-3ls-build] next_step_recommendation_command={' '.join(next_step_cmd)}", flush=True)
         next_step_rc = _run(next_step_cmd, cwd=root, env=tls_env)
         if next_step_rc != 0:
             return next_step_rc

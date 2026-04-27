@@ -13,16 +13,11 @@ Implement deterministic background next-step recommendation artifact generation,
 | File | Change type | Reason |
 | --- | --- | --- |
 | docs/review-actions/PLAN-D3L-NEXT-STEP-01-2026-04-27.md | CREATE | Required written plan for >2 file BUILD scope |
-| scripts/build_next_step_decision.py | CREATE | Thin CLI for deterministic next-step artifact build |
+| scripts/build_next_step_recommendation.py | CREATE | Thin CLI for deterministic next-step artifact build |
 | scripts/build_dashboard_3ls_with_tls.py | MODIFY | Integrate next-step build + fail-closed checks + skip flag |
-| spectrum_systems/modules/runtime/next_step/__init__.py | CREATE | Module package surface |
-| spectrum_systems/modules/runtime/next_step/next_step_inputs.py | CREATE | Source loading + hashing + status extraction |
-| spectrum_systems/modules/runtime/next_step/next_step_dependency_rules.py | CREATE | Locked dependency/gating logic |
-| spectrum_systems/modules/runtime/next_step/next_step_redteam.py | CREATE | Deterministic red-team sequencing checks |
-| spectrum_systems/modules/runtime/next_step/next_step_artifact.py | CREATE | Artifact shape construction + validation |
-| spectrum_systems/modules/runtime/next_step/next_step_engine.py | CREATE | Orchestration and next-step selection |
-| tests/test_next_step_decision.py | MODIFY | Add coverage for new runtime next-step decision builder |
-| tests/test_build_dashboard_3ls_with_tls.py | MODIFY | Verify wrapper next-step integration and skip behavior |
+| spectrum_systems/modules/dashboard_3ls/next_step_recommendation/* | CREATE | Recommendation module package |
+| tests/test_next_step_recommendation.py | CREATE | Coverage for recommendation builder |
+| tests/test_build_dashboard_3ls_with_tls.py | MODIFY | Verify wrapper recommendation integration |
 | apps/dashboard-3ls/lib/nextStepArtifactLoader.ts | CREATE | Artifact loader for dashboard/API |
 | apps/dashboard-3ls/app/api/next-step/route.ts | CREATE | Read-only API route exposing artifact payload |
 | apps/dashboard-3ls/components/NextStepPanel.tsx | CREATE | Read-only UI panel for next-step recommendation |
@@ -36,7 +31,7 @@ Implement deterministic background next-step recommendation artifact generation,
 None.
 
 ## Tests that must pass after execution
-1. `python scripts/build_next_step_decision.py`
+1. `python scripts/build_next_step_recommendation.py`
 2. `python -m pytest tests/ -q -k "next_step or dashboard_3ls or build_dashboard"`
 3. `npm --prefix apps/dashboard-3ls test -- --runInBand`
 4. `npm --prefix apps/dashboard-3ls run build`
@@ -49,7 +44,3 @@ None.
 - Do not add browser-side ranking or dashboard-side recommendation computation.
 - Do not start or implement RFX LOOP-09/10 execution work.
 - Do not mutate unrelated governance or contract surfaces.
-
-## Dependencies
-- Existing TLS build wrapper remains canonical and is extended, not bypassed.
-- Source-of-truth precedence remains aligned with docs/roadmaps/system_roadmap.md and contracts/examples/system_roadmap.json.

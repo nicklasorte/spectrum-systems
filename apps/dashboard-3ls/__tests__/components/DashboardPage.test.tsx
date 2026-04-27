@@ -68,7 +68,7 @@ const mockPriorityMissing = {
 const mockNextStep = {
   state: 'ok' as const,
   payload: {
-    artifact_type: 'next_step_decision_report',
+    artifact_type: 'next_step_recommendation_report',
     schema_version: '1.0.0',
     generated_at: '2026-04-27T00:00:00.000Z',
     status: 'pass' as const,
@@ -78,9 +78,9 @@ const mockNextStep = {
     partial_work: [],
     remaining_work_table: [],
     ranked_priorities: [{ id: 'RFX-PROOF-01', work_item: 'RFX LOOP-09/10' }],
-    selected_next_step: { id: 'RFX-PROOF-01', work_item: 'RFX LOOP-09/10', why: 'proof first', depends_on: ['H01'], unlocks: ['EVL'] },
+    selected_recommendation: { id: 'RFX-PROOF-01', work_item: 'RFX LOOP-09/10', why: 'proof first', depends_on: ['H01'], unlocks: ['EVL'] },
     rejected_next_steps: [{ work_item: 'MET', reason: 'wait for proof' }],
-    dependency_reasoning: [],
+    dependency_observations: [],
     red_team_findings: [{ id: 'RT-1', finding: 'example finding' }],
     warnings: [],
     reason_codes: [],

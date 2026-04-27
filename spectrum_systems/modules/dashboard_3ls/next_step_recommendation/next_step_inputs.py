@@ -48,8 +48,7 @@ OPTIONAL_GLOBS = [
 
 
 def _sha256(path: Path) -> str:
-    digest = hashlib.sha256(path.read_bytes()).hexdigest()
-    return f"sha256:{digest}"
+    return f"sha256:{hashlib.sha256(path.read_bytes()).hexdigest()}"
 
 
 
@@ -71,8 +70,7 @@ def load_inputs(repo_root: Path) -> NextStepInputs:
     for rel in REQUIRED_SOURCES:
         candidate = repo_root / rel
         present = candidate.is_file()
-        content_hash = _sha256(candidate) if present else None
-        refs.append(SourceRef(path=rel, required=True, present=present, content_hash=content_hash))
+        refs.append(SourceRef(path=rel, required=True, present=present, content_hash=_sha256(candidate) if present else None))
         if present:
             payloads[rel] = _load_json_if_possible(candidate)
         else:
@@ -81,14 +79,7 @@ def load_inputs(repo_root: Path) -> NextStepInputs:
     for rel in OPTIONAL_SOURCES:
         candidate = repo_root / rel
         present = candidate.is_file()
-        refs.append(
-            SourceRef(
-                path=rel,
-                required=False,
-                present=present,
-                content_hash=_sha256(candidate) if present else None,
-            )
-        )
+        refs.append(SourceRef(path=rel, required=False, present=present, content_hash=_sha256(candidate) if present else None))
         if present:
             payloads[rel] = _load_json_if_possible(candidate)
 
@@ -97,20 +88,10 @@ def load_inputs(repo_root: Path) -> NextStepInputs:
             if not candidate.is_file():
                 continue
             rel = str(candidate.relative_to(repo_root))
-            refs.append(
-                SourceRef(
-                    path=rel,
-                    required=False,
-                    present=True,
-                    content_hash=_sha256(candidate),
-                )
-            )
+            refs.append(SourceRef(path=rel, required=False, present=True, content_hash=_sha256(candidate)))
             payloads[rel] = _load_json_if_possible(candidate)
 
-    deduped: dict[str, SourceRef] = {}
-    for ref in refs:
-        deduped[ref.path] = ref
-
+    deduped: dict[str, SourceRef] = {ref.path: ref for ref in refs}
     return NextStepInputs(
         source_refs=sorted(deduped.values(), key=lambda row: row.path),
         payloads=payloads,
