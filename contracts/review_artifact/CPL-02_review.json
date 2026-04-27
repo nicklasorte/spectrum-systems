@@ -18,12 +18,12 @@
   "reviewed_artifact_type": "implementation_batch",
   "reviewer_id": "ARA-CPL02",
   "review_signal": "revision_recommended",
-  "summary": "Red-team review signal for CPL-02 transcript -> context_bundle assembly. Twelve findings (no S4): nine S2/S3 attack vectors and three S0/S1 hygiene items. All S2+ findings closed in-batch via fix actions CPL02-FIX-001..009 with regression tests (TestRedTeamRegressions, TestReferentialIntegrity, TestReplayDeterminism). This is a non-authority review signal; control authority remains with CDE/SEL.",
+  "summary": "Red-team review signal for CPL-02 transcript -> context_bundle assembly. Twelve findings (no S4): nine S2/S3 attack vectors and three S0/S1 hygiene items. All S2+ findings closed in-batch via fix actions CPL02-FIX-001..009 with regression tests (TestRedTeamRegressions, TestReferentialIntegrity, TestReplayDeterminism). This is a non-authority review signal; canonical control ownership remains with CDE/SEL.",
   "findings": [
     {
       "finding_id": "F-001",
       "severity": "S3",
-      "description": "Missing speaker_turns on the input transcript could silently produce an empty bundle if the assembler did not enforce a fail-closed check ahead of segment construction.",
+      "description": "Missing speaker_turns on the input transcript could silently produce an empty bundle if the assembler did not validate fail-closed ahead of segment construction.",
       "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_validate_transcript_envelope",
       "recommendation": "Raise MISSING_SPEAKER_TURNS; schema requires segments with minItems: 1.",
       "blocking": true
@@ -32,15 +32,15 @@
       "finding_id": "F-002",
       "severity": "S3",
       "description": "A forged segment with a source_turn_id that does not exist in the transcript could pass schema validation but break lineage.",
-      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_enforce_referential_integrity",
-      "recommendation": "Enforce ORPHAN_SEGMENT rejection in _enforce_referential_integrity.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_validate_referential_integrity",
+      "recommendation": "Reject ORPHAN_SEGMENT inside _validate_referential_integrity.",
       "blocking": true
     },
     {
       "finding_id": "F-003",
       "severity": "S3",
       "description": "Segment text could be tampered while keeping the matching source_turn_id, breaking trace fidelity.",
-      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_enforce_referential_integrity",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_validate_referential_integrity",
       "recommendation": "Compare (speaker, text, line_index) against the source turn at the same index; reject SEGMENT_TURN_DRIFT.",
       "blocking": true
     },
@@ -56,7 +56,7 @@
       "finding_id": "F-005",
       "severity": "S2",
       "description": "Partial transcript coverage (segments < turns) would lose information silently.",
-      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_enforce_referential_integrity",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_validate_referential_integrity",
       "recommendation": "Reject SEGMENT_TURN_COUNT_MISMATCH when len(segments) != len(turns).",
       "blocking": true
     },

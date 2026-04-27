@@ -36,7 +36,7 @@ Adversarial review of the CPL-02 transcript → context_bundle assembly path:
 | ID | Severity | Description | Recommendation | Blocking |
 |---|---|---|---|---|
 | F-001 | S3 | Missing `speaker_turns` on the input transcript could silently produce an empty bundle. | Raise `MISSING_SPEAKER_TURNS`; schema requires `segments` with `minItems: 1`. | yes |
-| F-002 | S3 | A forged segment with a `source_turn_id` that does not exist in the transcript could pass schema validation but break lineage. | Enforce `_enforce_referential_integrity`: reject `ORPHAN_SEGMENT`. | yes |
+| F-002 | S3 | A forged segment with a `source_turn_id` that does not exist in the transcript could pass schema validation but break lineage. | Validate inside `_validate_referential_integrity`: reject `ORPHAN_SEGMENT`. | yes |
 | F-003 | S3 | Segment text could be tampered while keeping the matching `source_turn_id`, breaking trace fidelity. | Compare `(speaker, text, line_index)` against the source turn at the same index; reject `SEGMENT_TURN_DRIFT`. | yes |
 | F-004 | S3 | Reordering segments would change the manifest but still pass schema; replay equivalence would silently break. | Compute `manifest_hash` over the ordered manifest; pin `artifact_id` derivation to that hash. | yes |
 | F-005 | S2 | Partial transcript coverage (e.g., assembler emits N-1 segments) would lose information silently. | Reject `SEGMENT_TURN_COUNT_MISMATCH` when `len(segments) != len(turns)`. | yes |
@@ -65,5 +65,5 @@ Post-fix run: `pytest tests/transcript_pipeline -q` → all green (334 tests).
 ## Remaining risk
 
 - Source formats other than `txt` flow through the H08 ingestor unchanged — non-txt parsers are out of scope and must come with their own CPL-02 regression suite once H08 supports them.
-- The assembler enforces strict 1:1 alignment with `speaker_turns`. A future "windowed" or "selective" `assembly_strategy` would need an extension to the integrity rules and is intentionally rejected by the schema enum (`enum: ["full"]`).
-- Eval gate (CPL-03) is the next step. The assembler is **not** an eval substitute. CDE remains the sole decision authority over whether a context_bundle is admissible to downstream steps.
+- The assembler requires strict 1:1 alignment with `speaker_turns`. A future "windowed" or "selective" `assembly_strategy` would need an extension to the integrity rules and is intentionally rejected by the schema enum (`enum: ["full"]`).
+- Eval gate (CPL-03) is the next step. The assembler is **not** an eval substitute. CDE remains the sole canonical owner over whether a context_bundle is admissible to downstream steps.

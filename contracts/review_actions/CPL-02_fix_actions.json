@@ -24,7 +24,7 @@
       "fix_id": "CPL02-FIX-002",
       "finding_ids": ["F-002"],
       "severity": "S3",
-      "description": "Enforce ORPHAN_SEGMENT rejection: every segment.source_turn_id must exist in transcript.speaker_turns.",
+      "description": "Reject ORPHAN_SEGMENT: every segment.source_turn_id must exist in transcript.speaker_turns; checked inside _validate_referential_integrity.",
       "target_files": [
         "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py"
       ],

@@ -4,7 +4,7 @@
 - **Source review:** `RVA-CPL02-CONTEXT-001`
 - **Batch:** `BATCH-CPL02`
 - **Date:** 2026-04-27
-- **Authority boundary:** Non-authority record. CDE retains decision authority; SEL retains compliance authority. This document records what was fixed and how it is locked, not a routing or release ruling.
+- **Authority boundary:** Non-authority record. CDE remains the canonical owner of routing signals; SEL remains the canonical owner of compliance signals. This document records what was fixed and how it is locked; it is not a routing or release-readiness signal.
 
 ## Goal
 
@@ -30,7 +30,7 @@ Close every S2+ finding from the CPL-02 red-team review in-batch with code patch
 - No LLM. No summarization. No routing.
 - Assembler does not write artifacts; PQX does.
 - `manifest_hash` is segment-only. `content_hash` is envelope-wide minus volatile fields. Both are deterministic.
-- Schema enforces `additionalProperties: false` on the bundle and on every segment.
+- Schema requires `additionalProperties: false` on the bundle and on every segment.
 
 ## Validation
 
@@ -43,9 +43,9 @@ python scripts/run_authority_leak_guard.py --base-ref origin/main --head-ref HEA
 python scripts/run_system_registry_guard.py --base-ref origin/main --head-ref HEAD
 ```
 
-All must pass before promotion.
+All must pass before advancement to the next-stage readiness signal.
 
 ## Remaining risk (carried, not closed)
 
-- Eval gate (CPL-03) is not yet wired. Until CPL-03 lands, downstream consumers must treat the bundle as input-only and rely on CDE for any decision over admission.
+- Eval gate (CPL-03) is not yet wired. Until CPL-03 lands, downstream consumers must treat the bundle as input-only and rely on CDE for any admission signal.
 - Non-`txt` source formats are accepted by the H08 schema but parsed only as `txt` today. CPL-02 inherits this constraint and assumes 1:1 alignment with `speaker_turns`. New parsers must come with their own CPL-02 regression suite.

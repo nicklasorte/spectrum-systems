@@ -205,7 +205,7 @@ def _build_segments(turns: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return segments
 
 
-def _enforce_referential_integrity(
+def _validate_referential_integrity(
     segments: List[Dict[str, Any]],
     turns: List[Dict[str, Any]],
     *,
@@ -323,7 +323,7 @@ def assemble_context_bundle(
         source_artifact_id=source_artifact_id,
     )
     segments = _build_segments(turns)
-    _enforce_referential_integrity(segments, turns, source_artifact_id=source_artifact_id)
+    _validate_referential_integrity(segments, turns, source_artifact_id=source_artifact_id)
 
     manifest_hash = _compute_manifest_hash(segments)
     artifact_id = _derive_artifact_id(source_artifact_id, manifest_hash)

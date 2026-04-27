@@ -414,7 +414,7 @@ class TestRedTeamRegressions:
     def test_orphan_segment_blocked_by_referential_integrity_helper(self) -> None:
         """If a downstream caller forges a segment with a missing turn, integrity rejects it."""
         from spectrum_systems.modules.transcript_pipeline.context_bundle_assembler import (
-            _enforce_referential_integrity,
+            _validate_referential_integrity,
         )
         forged = [
             {
@@ -429,13 +429,13 @@ class TestRedTeamRegressions:
             {"turn_id": "T-0001", "speaker": "Alice", "text": "Hi", "line_index": 0}
         ]
         with pytest.raises(ContextBundleAssemblyError) as exc:
-            _enforce_referential_integrity(forged, turns, source_artifact_id="TXA-X")
+            _validate_referential_integrity(forged, turns, source_artifact_id="TXA-X")
         assert exc.value.reason_code in {"ORPHAN_SEGMENT", "SEGMENT_TURN_DRIFT"}
 
     def test_segment_drift_detected(self) -> None:
         """If segment[i] points at the right turn but text is changed, drift is caught."""
         from spectrum_systems.modules.transcript_pipeline.context_bundle_assembler import (
-            _enforce_referential_integrity,
+            _validate_referential_integrity,
         )
         turns = [
             {"turn_id": "T-0001", "speaker": "Alice", "text": "Hi", "line_index": 0}
@@ -450,13 +450,13 @@ class TestRedTeamRegressions:
             }
         ]
         with pytest.raises(ContextBundleAssemblyError) as exc:
-            _enforce_referential_integrity(drifted, turns, source_artifact_id="TXA-X")
+            _validate_referential_integrity(drifted, turns, source_artifact_id="TXA-X")
         assert exc.value.reason_code == "SEGMENT_TURN_DRIFT"
 
     def test_count_mismatch_detected(self) -> None:
         """Partial transcript coverage (segments < turns) is rejected."""
         from spectrum_systems.modules.transcript_pipeline.context_bundle_assembler import (
-            _enforce_referential_integrity,
+            _validate_referential_integrity,
         )
         turns = [
             {"turn_id": "T-0001", "speaker": "Alice", "text": "Hi", "line_index": 0},
@@ -472,12 +472,12 @@ class TestRedTeamRegressions:
             }
         ]
         with pytest.raises(ContextBundleAssemblyError) as exc:
-            _enforce_referential_integrity(partial, turns, source_artifact_id="TXA-X")
+            _validate_referential_integrity(partial, turns, source_artifact_id="TXA-X")
         assert exc.value.reason_code == "SEGMENT_TURN_COUNT_MISMATCH"
 
     def test_duplicate_segment_id_detected(self) -> None:
         from spectrum_systems.modules.transcript_pipeline.context_bundle_assembler import (
-            _enforce_referential_integrity,
+            _validate_referential_integrity,
         )
         turns = [
             {"turn_id": "T-0001", "speaker": "Alice", "text": "Hi", "line_index": 0},
@@ -500,7 +500,7 @@ class TestRedTeamRegressions:
             },
         ]
         with pytest.raises(ContextBundleAssemblyError) as exc:
-            _enforce_referential_integrity(forged, turns, source_artifact_id="TXA-X")
+            _validate_referential_integrity(forged, turns, source_artifact_id="TXA-X")
         assert exc.value.reason_code == "DUPLICATE_SEGMENT_ID"
 
     def test_artifact_id_changes_when_content_changes(self) -> None:
@@ -517,3 +517,80 @@ class TestRedTeamRegressions:
         )
         assert bundle_a["manifest_hash"] != bundle_b["manifest_hash"]
         assert bundle_a["artifact_id"] != bundle_b["artifact_id"]
+
+
+# ---------------------------------------------------------------------------
+# CPL-02 — Authority-shape vocabulary regression
+# ---------------------------------------------------------------------------
+
+
+_FORBIDDEN_AUTHORITY_TERMS = (
+    "enforce",
+    "enforced",
+    "enforcement",
+    "decision",
+    "decisions",
+    "decided",
+    "verdict",
+    "adjudication",
+    "promotion",
+    "promoted",
+    "promote",
+    "certification",
+    "certified",
+    "certify",
+    "approval",
+    "approved",
+    "approve",
+)
+
+
+def _scan_for_authority_terms(text: str) -> list[str]:
+    lowered = text.lower()
+    return [term for term in _FORBIDDEN_AUTHORITY_TERMS if term in lowered]
+
+
+class TestAuthorityShapeVocabulary:
+    """CPL-02 artifacts and module symbols must avoid authority-cluster vocabulary."""
+
+    REPO_ROOT = Path(__file__).parent.parent.parent
+
+    def _load(self, rel_path: str) -> str:
+        return (self.REPO_ROOT / rel_path).read_text(encoding="utf-8")
+
+    def test_assembler_module_has_no_enforce_vocabulary(self) -> None:
+        text = self._load(
+            "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py"
+        )
+        hits = _scan_for_authority_terms(text)
+        assert not hits, f"assembler must avoid authority vocabulary, found: {hits}"
+
+    def test_assembler_helper_uses_validate_prefix(self) -> None:
+        from spectrum_systems.modules.transcript_pipeline import context_bundle_assembler as mod
+
+        symbol_names = [name for name in dir(mod) if not name.startswith("__")]
+        for name in symbol_names:
+            assert not name.lower().startswith("enforce"), (
+                f"helper {name!r} must use validate/check/guard vocabulary, not enforce"
+            )
+        assert hasattr(mod, "_validate_referential_integrity")
+
+    def test_review_artifact_has_no_authority_vocabulary(self) -> None:
+        text = self._load("contracts/review_artifact/CPL-02_review.json")
+        hits = _scan_for_authority_terms(text)
+        assert not hits, f"CPL-02_review.json must avoid authority vocabulary, found: {hits}"
+
+    def test_fix_actions_artifact_has_no_authority_vocabulary(self) -> None:
+        text = self._load("contracts/review_actions/CPL-02_fix_actions.json")
+        hits = _scan_for_authority_terms(text)
+        assert not hits, f"CPL-02_fix_actions.json must avoid authority vocabulary, found: {hits}"
+
+    def test_review_doc_has_no_authority_vocabulary(self) -> None:
+        text = self._load("docs/reviews/CPL-02_context_bundle_review.md")
+        hits = _scan_for_authority_terms(text)
+        assert not hits, f"CPL-02 review doc must avoid authority vocabulary, found: {hits}"
+
+    def test_fix_plan_doc_has_no_authority_vocabulary(self) -> None:
+        text = self._load("docs/review-actions/CPL-02_fix_plan.md")
+        hits = _scan_for_authority_terms(text)
+        assert not hits, f"CPL-02 fix plan must avoid authority vocabulary, found: {hits}"
