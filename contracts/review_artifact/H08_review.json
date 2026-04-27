@@ -1,24 +1,24 @@
 {
   "artifact_id": "RVA-H08-INGEST-001",
-  "artifact_type": "review_artifact",
-  "schema_ref": "transcript_pipeline/review_artifact",
+  "artifact_type": "red_team_review_record",
   "schema_version": "1.0.0",
-  "content_hash": "sha256:703a0a9e08655c753c37c6ae0b11541f00b613dbc1ba00866904134be5e4cd5d",
   "trace": {
     "trace_id": "0808080808080808080808080808080a",
     "span_id": "0808080808080808"
   },
   "provenance": {
     "produced_by": "adversarial-review-agent-ARA-H08",
-    "input_artifact_ids": [],
+    "input_artifact_ids": [
+      "BATCH-H08"
+    ],
     "run_id": "run-BATCH-H08-review"
   },
   "created_at": "2026-04-27T00:00:00+00:00",
   "reviewed_artifact_id": "BATCH-H08",
   "reviewed_artifact_type": "implementation_batch",
   "reviewer_id": "ARA-H08",
-  "review_decision": "revise",
-  "summary": "Red-team review of H08 transcript ingestion pipeline. Eight findings (no S4): six S2/S3 attack vectors and two S0/S1 hygiene items. All S2+ findings closed in-batch via fix actions H08-FIX-001..006 with regression tests (TestRedTeamRegressions).",
+  "review_signal": "revision_recommended",
+  "summary": "Red-team review signal for H08 transcript ingestion pipeline. Eight findings (no S4): six S2/S3 attack vectors and two S0/S1 hygiene items. All S2+ findings closed in-batch via fix actions H08-FIX-001..006 with regression tests (TestRedTeamRegressions). This is a non-authority review signal; control authority remains with CDE/SEL.",
   "findings": [
     {
       "finding_id": "F-001",
@@ -65,13 +65,13 @@
       "severity": "S2",
       "description": "A hand-crafted artifact could be passed directly to ArtifactStore.register_artifact, bypassing PQX trace propagation.",
       "section_ref": "spectrum_systems/modules/runtime/artifact_store.py::ArtifactStore.register_artifact",
-      "recommendation": "Envelope check is already enforced by the store; add a regression test (test_F006_direct_artifact_writes_blocked_by_envelope_check) to lock the behavior.",
+      "recommendation": "Envelope check is already validated by the store; add a regression test (test_F006_direct_artifact_writes_blocked_by_envelope_check) to lock the behavior.",
       "blocking": true
     },
     {
       "finding_id": "F-007",
       "severity": "S1",
-      "description": "trace_id / span_id format is validated by the schema only \u2014 the ingestor would happily build a payload with malformed trace if called outside the harness in tests.",
+      "description": "trace_id / span_id format is validated by the schema only — the ingestor would happily build a payload with malformed trace if called outside the harness in tests.",
       "section_ref": "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py::ingest_transcript",
       "recommendation": "Validate trace_id (32-hex) and span_id (16-hex) at the ingestor boundary with INVALID_TRACE_ID / INVALID_SPAN_ID reason codes.",
       "blocking": false
