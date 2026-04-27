@@ -2,7 +2,7 @@
   "artifact_type": "memory_priority_batch_artifact",
   "slice_id": "SM-12",
   "owner": "RDX",
-  "generated_at": "2026-04-27T12:49:48Z",
+  "generated_at": "2026-04-27T15:33:57Z",
   "next_batches": [
     "SM-B4",
     "SM-B5",

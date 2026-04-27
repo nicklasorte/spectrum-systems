@@ -2,7 +2,7 @@
   "artifact_type": "repo_write_ingress_manifest",
   "slice_id": "AH-07",
   "owner": "AEX",
-  "generated_at": "2026-04-27T12:45:14Z",
+  "generated_at": "2026-04-27T15:29:08Z",
   "approved_ingress_seams": [
     "aex_repo_write_ingress_wrapper"
   ],

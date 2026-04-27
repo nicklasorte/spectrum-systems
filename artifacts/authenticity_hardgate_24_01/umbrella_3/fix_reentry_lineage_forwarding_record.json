@@ -2,7 +2,7 @@
   "artifact_type": "fix_reentry_lineage_forwarding_record",
   "slice_id": "AH-13",
   "owner": "TLC",
-  "generated_at": "2026-04-27T12:45:14Z",
+  "generated_at": "2026-04-27T15:29:08Z",
   "orchestration_only": true,
   "lineage_forwarded": [
     "AEX",

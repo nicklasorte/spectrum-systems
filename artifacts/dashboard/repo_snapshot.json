@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-04-27T12:50:08Z",
-  "freshness_timestamp_utc": "2026-04-27T12:50:08Z",
+  "generated_at": "2026-04-27T15:34:15Z",
+  "freshness_timestamp_utc": "2026-04-27T15:34:15Z",
   "repo_name": "spectrum-systems",
   "root_counts": {
-    "files_total": 8396,
-    "runtime_modules": 294,
-    "tests": 739,
-    "contracts_total": 2790,
-    "schemas": 1510,
+    "files_total": 8419,
+    "runtime_modules": 295,
+    "tests": 760,
+    "contracts_total": 2795,
+    "schemas": 1515,
     "examples": 1280,
-    "docs": 1559,
+    "docs": 1564,
     "run_artifacts": 152
   },
   "core_areas": [
@@ -52,7 +52,7 @@
     },
     {
       "area": "Control",
-      "count": 24,
+      "count": 25,
       "note": "Control-layer and runtime gating logic."
     },
     {
@@ -100,7 +100,7 @@
     {
       "title": "Evidence and review density",
       "status": "Strong",
-      "detail": "Review artifacts detected: 1215 markdown files."
+      "detail": "Review artifacts detected: 1220 markdown files."
     },
     {
       "title": "Roadmap sprawl risk",
@@ -122,7 +122,7 @@
     "current_run_state_record": {
       "artifact_type": "current_run_state_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-27T12:49:02Z",
+      "generated_at": "2026-04-27T15:33:09Z",
       "last_run_id": "OPS-MASTER-01",
       "status": "completed",
       "outcomes": [
@@ -134,7 +134,7 @@
     "current_bottleneck_record": {
       "artifact_type": "current_bottleneck_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-27T12:49:02Z",
+      "generated_at": "2026-04-27T15:33:09Z",
       "bottleneck_name": "repair_loop_latency",
       "evidence": [
         "first_pass_quality_artifact.first_pass_rate=0.71",
@@ -148,7 +148,7 @@
     "hard_gate_status_record": {
       "artifact_type": "hard_gate_status_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-27T12:49:02Z",
+      "generated_at": "2026-04-27T15:33:09Z",
       "required_artifacts": [
         "current_run_state_record",
         "pre_pqx_contract_readiness_artifact",

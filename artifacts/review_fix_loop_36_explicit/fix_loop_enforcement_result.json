@@ -4,7 +4,7 @@
   "step": 9,
   "phase": 3,
   "owner": "SEL",
-  "generated_at": "2026-04-27T12:49:23Z",
+  "generated_at": "2026-04-27T15:33:30Z",
   "fail_closed": true,
   "blocked_conditions": [
     "scope_exceeded",

@@ -4,8 +4,8 @@
   "step": 7,
   "phase": 3,
   "owner": "TLC",
-  "generated_at": "2026-04-27T12:49:23Z",
-  "loop_start": "2026-04-27T12:49:23Z",
+  "generated_at": "2026-04-27T15:33:30Z",
+  "loop_start": "2026-04-27T15:33:30Z",
   "loop_iteration": 1,
   "handoff_state": "rqx_to_pqx_via_tlc",
   "bounded_retry_path": [
