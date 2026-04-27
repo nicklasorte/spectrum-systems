@@ -20,10 +20,11 @@ Each item is checked against three repo-native signals (in priority order):
                                    compared to the value the audited
                                    artifact references.
   3. ``generated_at`` /
-     ``checked_at``              — ISO-8601 timestamps; only consulted if no
-                                   digest signal is available, so the audit
-                                   does not silently rely on time alone when
-                                   a stronger signal exists.
+     ``checked_at``              — zero-offset timestamp strings; only
+                                   consulted if no digest signal is
+                                   available, so the audit does not
+                                   silently rely on time alone when a
+                                   stronger signal exists.
 
 Outcome status per item:
 
@@ -348,7 +349,7 @@ def audit_trust_artifact_freshness(
     artifacts: Mapping[str, Optional[Mapping[str, Any]]],
     source_artifacts: Optional[Mapping[str, Mapping[str, Any]]] = None,
     policy: Optional[Mapping[str, Any]] = None,
-    now_iso: Optional[str] = None,
+    audit_timestamp: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Audit the freshness of a bundle of trust artifacts.
 
@@ -367,8 +368,10 @@ def audit_trust_artifact_freshness(
     policy:
         Optional policy override; defaults to
         ``contracts/governance/trust_artifact_freshness_policy.json``.
-    now_iso:
-        Optional override for the audit clock (ISO-8601). Defaults to now UTC.
+    audit_timestamp:
+        Optional override for the audit clock; a zero-offset timestamp
+        string (e.g. ``"2026-04-27T12:00:00Z"``). Defaults to the current
+        zero-offset time.
 
     Returns a ``trust_artifact_freshness_audit`` artifact:
         {
@@ -388,9 +391,15 @@ def audit_trust_artifact_freshness(
         raise TrustFreshnessError("artifacts must be a mapping")
 
     pol = dict(policy) if policy is not None else load_trust_artifact_freshness_policy()
-    now = _parse_iso(now_iso) if now_iso else datetime.now(timezone.utc)
+    now = (
+        _parse_iso(audit_timestamp)
+        if audit_timestamp
+        else datetime.now(timezone.utc)
+    )
     if now is None:
-        raise TrustFreshnessError(f"now_iso could not be parsed: {now_iso!r}")
+        raise TrustFreshnessError(
+            f"audit_timestamp could not be parsed: {audit_timestamp!r}"
+        )
 
     items: List[Dict[str, Any]] = []
     for kind in REQUIRED_TRUST_ARTIFACT_KINDS:

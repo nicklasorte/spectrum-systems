@@ -74,7 +74,7 @@ def test_policy_loadable_and_well_formed() -> None:
 def test_audit_id_required() -> None:
     with pytest.raises(TrustFreshnessError):
         audit_trust_artifact_freshness(
-            audit_id="", artifacts=_fresh_artifacts(), now_iso="2026-04-27T12:00:00Z"
+            audit_id="", artifacts=_fresh_artifacts(), audit_timestamp="2026-04-27T12:00:00Z"
         )
 
 
@@ -82,7 +82,7 @@ def test_full_fresh_bundle_is_current() -> None:
     res = audit_trust_artifact_freshness(
         audit_id="aud-1",
         artifacts=_fresh_artifacts(),
-        now_iso="2026-04-27T12:00:00Z",
+        audit_timestamp="2026-04-27T12:00:00Z",
     )
     assert res["status"] == "current"
     assert res["canonical_reason"] == "TRUST_FRESHNESS_OK"
@@ -100,7 +100,7 @@ def test_red_team_stale_certification_evidence_index_blocks() -> None:
     res = audit_trust_artifact_freshness(
         audit_id="aud-2",
         artifacts=arts,
-        now_iso="2026-04-27T12:00:00Z",
+        audit_timestamp="2026-04-27T12:00:00Z",
     )
     assert res["status"] == "stale"
     assert res["canonical_reason"] == "TRUST_FRESHNESS_STALE_DIGEST_MISMATCH"
@@ -113,7 +113,7 @@ def test_red_team_stale_alias_map_blocks() -> None:
     res = audit_trust_artifact_freshness(
         audit_id="aud-3",
         artifacts=arts,
-        now_iso="2026-04-27T12:00:00Z",
+        audit_timestamp="2026-04-27T12:00:00Z",
     )
     assert res["status"] == "stale"
     assert "reason_code_alias_map" in res["stale_kinds"]
@@ -124,7 +124,7 @@ def test_red_team_stale_loop_proof_bundle_blocks() -> None:
     # Old declared digest, new producer_inputs
     arts["loop_proof_bundle"]["producer_input_digest"] = "deadbeef" * 8
     res = audit_trust_artifact_freshness(
-        audit_id="aud-4", artifacts=arts, now_iso="2026-04-27T12:00:00Z"
+        audit_id="aud-4", artifacts=arts, audit_timestamp="2026-04-27T12:00:00Z"
     )
     assert res["status"] == "stale"
     assert "loop_proof_bundle" in res["stale_kinds"]
@@ -140,7 +140,7 @@ def test_red_team_stale_replay_lineage_summary_blocks() -> None:
         audit_id="aud-5",
         artifacts=arts,
         source_artifacts={"src-1": {"different": "payload"}},
-        now_iso="2026-04-27T12:00:00Z",
+        audit_timestamp="2026-04-27T12:00:00Z",
     )
     assert res["status"] == "stale"
     assert (
@@ -157,7 +157,7 @@ def test_red_team_stale_artifact_tier_policy_blocks_via_timestamp() -> None:
         "generated_at": "2019-01-01T00:00:00Z",
     }
     res = audit_trust_artifact_freshness(
-        audit_id="aud-6", artifacts=arts, now_iso="2026-04-27T12:00:00Z"
+        audit_id="aud-6", artifacts=arts, audit_timestamp="2026-04-27T12:00:00Z"
     )
     assert res["status"] == "stale"
     assert res["canonical_reason"] == "TRUST_FRESHNESS_STALE_TIMESTAMP"
@@ -167,7 +167,7 @@ def test_red_team_stale_slo_signal_policy_blocks() -> None:
     arts = _fresh_artifacts()
     arts["slo_signal_policy"]["producer_inputs"] = {"shifted": True}
     res = audit_trust_artifact_freshness(
-        audit_id="aud-7", artifacts=arts, now_iso="2026-04-27T12:00:00Z"
+        audit_id="aud-7", artifacts=arts, audit_timestamp="2026-04-27T12:00:00Z"
     )
     assert res["status"] == "stale"
     assert "slo_signal_policy" in res["stale_kinds"]
@@ -178,7 +178,7 @@ def test_red_team_no_proof_at_all_is_unknown_and_blocks() -> None:
     # Strip every freshness signal from one item.
     arts["failure_trace"] = {"artifact_id": "ft-no-proof"}
     res = audit_trust_artifact_freshness(
-        audit_id="aud-8", artifacts=arts, now_iso="2026-04-27T12:00:00Z"
+        audit_id="aud-8", artifacts=arts, audit_timestamp="2026-04-27T12:00:00Z"
     )
     assert res["status"] == "stale"
     assert res["canonical_reason"] == "TRUST_FRESHNESS_UNKNOWN_NO_PROOF"
@@ -189,7 +189,7 @@ def test_red_team_missing_artifact_blocks_with_canonical_reason() -> None:
     arts = _fresh_artifacts()
     arts["loop_proof_bundle"] = None
     res = audit_trust_artifact_freshness(
-        audit_id="aud-9", artifacts=arts, now_iso="2026-04-27T12:00:00Z"
+        audit_id="aud-9", artifacts=arts, audit_timestamp="2026-04-27T12:00:00Z"
     )
     assert res["status"] == "stale"
     assert res["canonical_reason"] == "TRUST_FRESHNESS_MISSING_ARTIFACT"
@@ -205,7 +205,7 @@ def test_audit_does_not_silently_fall_back_to_old_proof() -> None:
     res_clean = audit_trust_artifact_freshness(
         audit_id="aud-10a",
         artifacts=arts,
-        now_iso="2026-04-27T12:00:00Z",
+        audit_timestamp="2026-04-27T12:00:00Z",
     )
     assert res_clean["status"] == "current"
 
@@ -214,7 +214,7 @@ def test_audit_does_not_silently_fall_back_to_old_proof() -> None:
     res_dirty = audit_trust_artifact_freshness(
         audit_id="aud-10b",
         artifacts=arts,
-        now_iso="2026-04-27T12:00:00Z",
+        audit_timestamp="2026-04-27T12:00:00Z",
     )
     assert res_dirty["status"] == "stale"
     assert (
@@ -227,7 +227,7 @@ def test_human_readable_lists_first_blocking_kind() -> None:
     arts = _fresh_artifacts()
     arts["reason_code_alias_map"]["producer_inputs"] = {"tampered": True}
     res = audit_trust_artifact_freshness(
-        audit_id="aud-11", artifacts=arts, now_iso="2026-04-27T12:00:00Z"
+        audit_id="aud-11", artifacts=arts, audit_timestamp="2026-04-27T12:00:00Z"
     )
     assert "first_blocking_kind: reason_code_alias_map" in res["human_readable"]
     assert "TRUST_FRESHNESS_STALE_DIGEST_MISMATCH" in res["human_readable"]

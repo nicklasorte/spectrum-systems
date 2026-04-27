@@ -152,7 +152,7 @@ def test_stale_proof_path_freshness_blocks() -> None:
     res = audit_trust_artifact_freshness(
         audit_id="reg-stale",
         artifacts=arts,
-        now_iso="2026-04-27T12:00:00Z",
+        audit_timestamp="2026-04-27T12:00:00Z",
     )
     assert res["status"] == "stale"
     assert "certification_evidence_index" in res["stale_kinds"]
