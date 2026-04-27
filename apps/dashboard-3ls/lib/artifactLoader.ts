@@ -129,6 +129,7 @@ export interface PriorityArtifactLoadResult {
 }
 
 const PRIORITY_REPORT_PATH = 'artifacts/system_dependency_priority_report.json';
+const TLS_INTEGRATION_PATH = 'artifacts/tls/system_graph_integration_report.json';
 
 // 14 days. The artifact is build-time; older than this and the dashboard must
 // surface a stale state instead of misleading the operator.
@@ -224,4 +225,55 @@ export function loadPriorityArtifact(
   }
 
   return { state: 'ok', payload, generated_at };
+}
+
+export interface TLSIntegratedSystem {
+  system_id: string;
+  classification: string;
+  in_repo_registry: boolean;
+  data_source: 'artifact_store' | 'repo_registry' | 'stub_fallback';
+  status: 'healthy' | 'warning' | 'critical' | 'unknown';
+  trust_gap_signals: string[];
+  eval_coverage_status: 'present' | 'missing';
+  missing_eval_signals: string[];
+  dependency_edges: {
+    upstream: string[];
+    downstream: string[];
+  };
+}
+
+export interface TLSIntegrationReport {
+  artifact_type: 'tls_system_graph_integration_report';
+  phase: 'TLS-INT-01';
+  generated_at: string;
+  trust_posture: 'FREEZE' | 'WARN';
+  freeze_reasons: string[];
+  source_mix: {
+    counts: Record<string, number>;
+    percentages: Record<string, number>;
+  };
+  repo_registry_count: number;
+  graph: {
+    system_count: number;
+    systems: TLSIntegratedSystem[];
+  };
+}
+
+function isTLSIntegrationReport(value: unknown): value is TLSIntegrationReport {
+  if (!value || typeof value !== 'object') return false;
+  const obj = value as Record<string, unknown>;
+  if (obj.artifact_type !== 'tls_system_graph_integration_report') return false;
+  if (obj.phase !== 'TLS-INT-01') return false;
+  if (!obj.graph || typeof obj.graph !== 'object') return false;
+  const graph = obj.graph as Record<string, unknown>;
+  if (!Array.isArray(graph.systems)) return false;
+  return true;
+}
+
+export function loadTLSIntegrationArtifact(
+  relativePath: string = TLS_INTEGRATION_PATH,
+): TLSIntegrationReport | null {
+  const payload = loadArtifact<unknown>(relativePath);
+  if (!isTLSIntegrationReport(payload)) return null;
+  return payload;
 }

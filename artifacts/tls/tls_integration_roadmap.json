@@ -1,0 +1,21 @@
+{
+  "artifact_type": "tls_integration_roadmap",
+  "completed_steps": [
+    "TLS-INT-01 integration graph emitted",
+    "system graph validation emitted",
+    "eval coverage integration attached per system",
+    "trust posture recomputation emitted",
+    "red-team report emitted"
+  ],
+  "generated_at": "2026-04-27T02:07:03Z",
+  "next_recommended_phases": [
+    "TLS-05",
+    "TLS-06",
+    "TLS-07"
+  ],
+  "phase": "TLS-INT-01-ROADMAP",
+  "remaining_gaps": [
+    "system_graph_incomplete",
+    "eval_coverage_missing"
+  ]
+}

@@ -1,4 +1,4 @@
-import { loadArtifact } from '@/lib/artifactLoader';
+import { loadArtifact, loadTLSIntegrationArtifact } from '@/lib/artifactLoader';
 import { buildSourceEnvelope } from '@/lib/sourceClassification';
 import { safeCardStatus } from '@/lib/signalStatus';
 import { authorityRoleFor, groupForSystem } from '@/lib/displayGroups';
@@ -52,59 +52,73 @@ const SYSTEMS_RAW = [
   { system_id: 'SHA', system_name: 'Shared Authority', system_type: 'placeholder', health_score: 89, status: 'warning' as const, incidents_week: 1, contract_violations: [], data_source: 'stub_fallback' as DataSource },
 ];
 
+const TLS_INTEGRATION_PATH = 'artifacts/tls/system_graph_integration_report.json';
+
 export async function GET() {
   const snapshot = loadArtifact<RepoSnapshot>(SNAPSHOT_PATH);
   const minimalLoop = loadArtifact<{ proof_chain?: Array<{ stage: string; status: string }>; warnings?: string[] }>(SEED_PATHS.minimalLoop);
-  const evalSummary = loadArtifact<{ status?: string }>(SEED_PATHS.evalSummary);
-  const lineage = loadArtifact<{ status?: string }>(SEED_PATHS.lineage);
-  const controlDecision = loadArtifact<{ status?: string }>(SEED_PATHS.controlDecision);
-  const enforcementAction = loadArtifact<{ status?: string }>(SEED_PATHS.enforcementAction);
-  const replay = loadArtifact<{ status?: string }>(SEED_PATHS.replay);
-  const observability = loadArtifact<{ status?: string }>(SEED_PATHS.observability);
-  const slo = loadArtifact<{ status?: string }>(SEED_PATHS.slo);
-
-  const seededStatusBySystem: Record<string, 'healthy' | 'warning' | 'critical'> = {
-    AEX: 'warning',
-    PQX: 'warning',
-    EVL: evalSummary?.status === 'pass' ? 'healthy' : 'warning',
-    TPA: 'warning',
-    CDE: controlDecision?.status === 'pass' ? 'healthy' : 'warning',
-    SEL: enforcementAction?.status === 'pass' ? 'healthy' : 'warning',
-    REP: replay?.status === 'pass' ? 'healthy' : 'warning',
-    LIN: lineage?.status === 'pass' ? 'healthy' : 'warning',
-    OBS: observability?.status === 'pass' ? 'healthy' : 'warning',
-    SLO: slo?.status === 'pass' ? 'healthy' : 'warning',
-  };
+  const tlsIntegration = loadTLSIntegrationArtifact(TLS_INTEGRATION_PATH);
 
   const envelope = buildSourceEnvelope({
     slots: [
       { path: SNAPSHOT_PATH, loaded: snapshot !== null },
+      { path: TLS_INTEGRATION_PATH, loaded: tlsIntegration !== null },
       { path: SEED_PATHS.minimalLoop, loaded: minimalLoop !== null },
-      { path: SEED_PATHS.evalSummary, loaded: evalSummary !== null },
-      { path: SEED_PATHS.lineage, loaded: lineage !== null },
-      { path: SEED_PATHS.controlDecision, loaded: controlDecision !== null },
-      { path: SEED_PATHS.enforcementAction, loaded: enforcementAction !== null },
-      { path: SEED_PATHS.replay, loaded: replay !== null },
-      { path: SEED_PATHS.observability, loaded: observability !== null },
-      { path: SEED_PATHS.slo, loaded: slo !== null },
     ],
     isComputed: true,
     warnings: [
-      'System health remains partially seeded; non-seeded systems still use static fallback estimates.',
+      ...(tlsIntegration?.freeze_reasons ?? []).map((reason) => `fail_closed:${reason}`),
       ...(minimalLoop?.warnings ?? []),
+      ...(tlsIntegration
+        ? []
+        : [
+            'TLS integration artifact missing; route using per-system stub_fallback for uncovered systems only.',
+          ]),
     ],
   });
 
-  const systems = SYSTEMS_RAW.map((s) => {
-    const seedStatus = seededStatusBySystem[s.system_id];
-    const data_source = seedStatus ? ('artifact_store' as DataSource) : s.data_source;
-    const status = seedStatus ?? s.status;
+  const integrated = new Map((tlsIntegration?.graph.systems ?? []).map((row) => [row.system_id, row]));
+
+  const systems = SYSTEMS_RAW.map((fallback) => {
+    const integratedRow = integrated.get(fallback.system_id);
+    const data_source = integratedRow?.data_source ?? ('stub_fallback' as DataSource);
+    const raw_status = integratedRow?.status ?? fallback.status;
+    const status_reason_codes: string[] = [];
+    if (raw_status === 'unknown') {
+      if (data_source === 'stub_fallback' || data_source === 'unknown') {
+        status_reason_codes.push('raw_unknown_missing_source');
+      } else {
+        status_reason_codes.push('raw_unknown_ambiguous_state');
+      }
+    }
+    if (raw_status === 'healthy' && (data_source === 'stub_fallback' || data_source === 'unknown')) {
+      status_reason_codes.push('healthy_blocked_missing_source');
+    }
+    const system_type = fallback.system_type;
+    const contract_violations = [
+      ...(fallback.contract_violations ?? []),
+      ...(integratedRow?.missing_eval_signals?.length
+        ? [
+            {
+              rule: 'missing_eval_signals',
+              detail: integratedRow.missing_eval_signals.join(', '),
+            },
+          ]
+        : []),
+    ];
+
     return {
-      ...s,
+      ...fallback,
+      system_type,
       data_source,
-      status: safeCardStatus(status, data_source),
-      authority_role: authorityRoleFor(s.system_id),
-      display_group: groupForSystem(s.system_id)?.id ?? null,
+      raw_status,
+      status: safeCardStatus(raw_status, data_source),
+      status_reason_codes,
+      contract_violations,
+      trust_gap_signals: integratedRow?.trust_gap_signals ?? [],
+      eval_coverage_status: integratedRow?.eval_coverage_status ?? 'missing',
+      authority_role: authorityRoleFor(fallback.system_id),
+      display_group: groupForSystem(fallback.system_id)?.id ?? null,
     };
   });
 
@@ -116,6 +130,9 @@ export async function GET() {
     warnings: envelope.warnings,
     systems: systems,
     seed_artifacts_present: minimalLoop !== null,
+    tls_integration_present: tlsIntegration !== null,
+    tls_trust_posture: tlsIntegration?.trust_posture ?? 'FREEZE',
+    tls_source_mix: tlsIntegration?.source_mix ?? null,
     minimal_loop_stage_count: minimalLoop?.proof_chain?.length ?? 0,
     repo_snapshot_at: snapshot?.freshness_timestamp_utc ?? null,
     refreshed_at: new Date().toISOString(),

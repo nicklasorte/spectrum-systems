@@ -104,6 +104,23 @@ def test_non_owner_using_rollback_signal_passes(tmp_path: Path, vocab) -> None:
     assert result.status == "pass"
 
 
+def test_non_owner_plan_doc_using_enforce_term_fails(tmp_path: Path, vocab) -> None:
+    repo = _seed_repo(tmp_path)
+    rel = "docs/review-actions/PLAN-EXAMPLE.md"
+    _write(
+        repo,
+        rel,
+        "# PLAN\n\n1. Enforce fail-closed runtime behavior for all modules.\n",
+    )
+    result = evaluate_preflight(
+        repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only"
+    )
+    assert result.status == "fail"
+    enforcement_violations = [v for v in result.violations if v.cluster == "enforcement"]
+    assert enforcement_violations, "expected an enforcement-cluster violation"
+    assert "enforcement_signal" in enforcement_violations[0].suggested_replacements
+
+
 def test_canonical_owner_may_use_canonical_term(tmp_path: Path, vocab) -> None:
     repo = _seed_repo(tmp_path)
     rel = "spectrum_systems/modules/governance/done_certification.py"
