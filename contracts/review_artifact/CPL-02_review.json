@@ -1,0 +1,120 @@
+{
+  "artifact_id": "RVA-CPL02-CONTEXT-001",
+  "artifact_type": "red_team_review_record",
+  "schema_version": "1.0.0",
+  "trace": {
+    "trace_id": "0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c02",
+    "span_id": "0c0c0c0c0c0c0c02"
+  },
+  "provenance": {
+    "produced_by": "adversarial-review-agent-ARA-CPL02",
+    "input_artifact_ids": [
+      "BATCH-CPL02"
+    ],
+    "run_id": "run-BATCH-CPL02-review"
+  },
+  "created_at": "2026-04-27T00:00:00+00:00",
+  "reviewed_artifact_id": "BATCH-CPL02",
+  "reviewed_artifact_type": "implementation_batch",
+  "reviewer_id": "ARA-CPL02",
+  "review_signal": "revision_recommended",
+  "summary": "Red-team review signal for CPL-02 transcript -> context_bundle assembly. Twelve findings (no S4): nine S2/S3 attack vectors and three S0/S1 hygiene items. All S2+ findings closed in-batch via fix actions CPL02-FIX-001..009 with regression tests (TestRedTeamRegressions, TestReferentialIntegrity, TestReplayDeterminism). This is a non-authority review signal; control authority remains with CDE/SEL.",
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "severity": "S3",
+      "description": "Missing speaker_turns on the input transcript could silently produce an empty bundle if the assembler did not enforce a fail-closed check ahead of segment construction.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_validate_transcript_envelope",
+      "recommendation": "Raise MISSING_SPEAKER_TURNS; schema requires segments with minItems: 1.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-002",
+      "severity": "S3",
+      "description": "A forged segment with a source_turn_id that does not exist in the transcript could pass schema validation but break lineage.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_enforce_referential_integrity",
+      "recommendation": "Enforce ORPHAN_SEGMENT rejection in _enforce_referential_integrity.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-003",
+      "severity": "S3",
+      "description": "Segment text could be tampered while keeping the matching source_turn_id, breaking trace fidelity.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_enforce_referential_integrity",
+      "recommendation": "Compare (speaker, text, line_index) against the source turn at the same index; reject SEGMENT_TURN_DRIFT.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-004",
+      "severity": "S3",
+      "description": "Reordering segments would still pass schema validation and silently break replay equivalence.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_compute_manifest_hash",
+      "recommendation": "Compute manifest_hash over the ordered manifest; pin artifact_id derivation to that hash so reordering produces a different artifact_id.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-005",
+      "severity": "S2",
+      "description": "Partial transcript coverage (segments < turns) would lose information silently.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_enforce_referential_integrity",
+      "recommendation": "Reject SEGMENT_TURN_COUNT_MISMATCH when len(segments) != len(turns).",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-006",
+      "severity": "S2",
+      "description": "Duplicate segment_id could collide downstream lookup tables.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_build_segments",
+      "recommendation": "Reject DUPLICATE_SEGMENT_ID; derive ids deterministically as SEG-NNNN.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-007",
+      "severity": "S2",
+      "description": "Duplicate turn_id in the source transcript could produce an ambiguous bundle.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_validate_speaker_turns",
+      "recommendation": "Reject DUPLICATE_TURN_ID at validation time.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-008",
+      "severity": "S2",
+      "description": "Direct call to ArtifactStore.register_artifact could bypass PQX trace propagation and mint a bundle without an execution_record.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py",
+      "recommendation": "The pure assembler returns a payload without content_hash so the store rejects it; only PQX mints the hash. Lock with regression test test_assembler_cannot_write_artifact_directly.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-009",
+      "severity": "S2",
+      "description": "Replay non-determinism: different trace_id, run_id, or created_at could perturb manifest_hash / content_hash if canonicalization were sloppy.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_compute_manifest_hash",
+      "recommendation": "manifest_hash is computed over segments only; content_hash excludes trace/created_at per hash_utils. Locked by TestReplayDeterminism::test_manifest_hash_independent_of_envelope.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-010",
+      "severity": "S1",
+      "description": "trace_id / span_id are validated only by schema; calling the assembler outside PQX could produce a malformed trace silently.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::assemble_context_bundle",
+      "recommendation": "Validate trace at the assembler boundary with INVALID_TRACE_ID / INVALID_SPAN_ID reason codes.",
+      "blocking": false
+    },
+    {
+      "finding_id": "F-011",
+      "severity": "S1",
+      "description": "A non-transcript_artifact input could be admitted and silently produce a bundle.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py::_validate_transcript_envelope",
+      "recommendation": "Reject INVALID_SOURCE_ARTIFACT_TYPE and INVALID_SOURCE_ARTIFACT_ID at the envelope check.",
+      "blocking": false
+    },
+    {
+      "finding_id": "F-012",
+      "severity": "S0",
+      "description": "Module docstring did not state that content_hash is owned by the artifact store and manifest_hash is owned by the assembler.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py",
+      "recommendation": "Document the split in the module docstring and the return-value contract.",
+      "blocking": false
+    }
+  ]
+}
