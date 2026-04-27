@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { AUTHORITY_ROLES } from '@/lib/displayGroups';
 import { dataSourceAllowsHealthy } from '@/lib/truthClassifier';
 import type { DataSource } from '@/lib/types';
+import { TrustGraphSection } from '@/components/TrustGraphSection';
 
 type TrustState = 'PASS' | 'WARN' | 'FREEZE' | 'BLOCK';
 type StageState = 'present' | 'partial' | 'missing' | 'unknown';
@@ -387,7 +388,13 @@ export default function Dashboard() {
 
     fetchData();
 
-    fetch('/api/system-flow')
+    const systemFlowRequest = fetch('/api/system-flow');
+    if (!systemFlowRequest || typeof (systemFlowRequest as Promise<unknown>).then !== 'function') {
+      setSystemFlow({ state: 'missing', payload: null, reason: 'fetch_unavailable' });
+      return;
+    }
+
+    systemFlowRequest
       .then(async (res) => {
         if (!res.ok) {
           setSystemFlow({ state: 'missing', payload: null, reason: `http_${res.status}` });
@@ -907,6 +914,8 @@ export default function Dashboard() {
           </div>
         </div>
       </section>
+
+      <TrustGraphSection />
 
       <section className="bg-white border rounded p-4" data-testid="system-flow-graph-panel">
         <div className="flex items-center justify-between mb-3">

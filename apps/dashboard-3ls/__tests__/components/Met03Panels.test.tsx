@@ -137,6 +137,14 @@ const baseRGE = {
   warnings: [],
 };
 
+const baseSystemFlow = { state: 'missing', payload: null, reason: 'not_configured' };
+
+const baseTrustGraph = {
+  graph_state: 'caution_signal', generated_at: '2026-04-27T00:00:00.000Z',
+  source_mix: { artifact_store: 1, repo_registry: 0, derived: 0, stub_fallback: 0, missing: 0 },
+  trust_posture: 'caution_signal', nodes: [], edges: [], focus_systems: [], failure_path: [], missing_artifacts: [], warnings: [], replay_commands: []
+};
+
 const basePriorityMissing = {
   state: 'missing' as const,
   payload: null,
@@ -149,13 +157,20 @@ function setupFetch(
   systems = baseSystems,
   rge = baseRGE,
   priority: unknown = basePriorityMissing,
+  systemFlow: unknown = baseSystemFlow,
+  trustGraph: unknown = baseTrustGraph,
 ) {
-  (global.fetch as jest.Mock)
-    .mockResolvedValueOnce({ ok: true, json: async () => health })
-    .mockResolvedValueOnce({ ok: true, json: async () => intelligence })
-    .mockResolvedValueOnce({ ok: true, json: async () => systems })
-    .mockResolvedValueOnce({ ok: true, json: async () => rge })
-    .mockResolvedValueOnce({ ok: true, json: async () => priority });
+  (global.fetch as jest.Mock).mockImplementation((input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes('/api/health')) return Promise.resolve({ ok: true, json: async () => health });
+    if (url.includes('/api/intelligence')) return Promise.resolve({ ok: true, json: async () => intelligence });
+    if (url.includes('/api/systems')) return Promise.resolve({ ok: true, json: async () => systems });
+    if (url.includes('/api/rge/analysis')) return Promise.resolve({ ok: true, json: async () => rge });
+    if (url.includes('/api/priority')) return Promise.resolve({ ok: true, json: async () => priority });
+    if (url.includes('/api/system-flow')) return Promise.resolve({ ok: true, json: async () => systemFlow });
+    if (url.includes('/api/system-graph')) return Promise.resolve({ ok: true, json: async () => trustGraph });
+    return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
+  });
 }
 
 describe('MET-03 dashboard panels', () => {
