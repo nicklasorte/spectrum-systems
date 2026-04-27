@@ -1,0 +1,112 @@
+{
+  "artifact_id": "RVA-CPL04-MINUTES-001",
+  "artifact_type": "red_team_review_record",
+  "schema_version": "1.0.0",
+  "trace": {
+    "trace_id": "0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c04",
+    "span_id": "0c0c0c0c0c0c0c04"
+  },
+  "provenance": {
+    "produced_by": "adversarial-review-agent-ARA-CPL04",
+    "input_artifact_ids": [
+      "BATCH-CPL-04"
+    ],
+    "run_id": "run-BATCH-CPL04-review"
+  },
+  "created_at": "2026-04-27T00:00:00+00:00",
+  "reviewed_artifact_id": "BATCH-CPL-04",
+  "reviewed_artifact_type": "implementation_batch",
+  "reviewer_id": "ARA-CPL04",
+  "review_signal": "revision_recommended",
+  "summary": "Red-team review signal for CPL-04 meeting_minutes_artifact extraction over context_bundle + transcript_artifact + gate_evidence. Eleven findings (no S4): seven S3 attack vectors covering hallucinated decisions, missing assignee/due-date status, fake source_turn_id, fake source_segment_id, mismatched source pair, line_index drift, gate evidence bypass, and direct artifact write; two S2 hygiene items on bundle linkage and provider-adapter egress; one S1 on source_coverage forgery; one S0 on docstring evidence-only posture. All S2+ findings closed in-batch via fix actions CPL04-FIX-001..009 with regression tests in tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py. This is a non-authority review signal; canonical control ownership remains with the appropriate canonical owner.",
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "severity": "S3",
+      "description": "A decision row with no source_refs and no rationale could surface a hallucinated finding while satisfying a permissive schema (legacy required only decision_id and description).",
+      "section_ref": "contracts/schemas/transcript_pipeline/meeting_minutes_artifact.schema.json::$defs.decision_record",
+      "recommendation": "Schema decision_record sets anyOf [source_refs, rationale] with additionalProperties: false. eval_decision_grounding re-checks the same invariant. Deterministic extractor only emits decisions on explicit markers and always pins source_refs.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-002",
+      "severity": "S3",
+      "description": "An action item could omit assignee and due_date entirely, masking unknown ownership as a normalized output.",
+      "section_ref": "contracts/schemas/transcript_pipeline/meeting_minutes_artifact.schema.json::$defs.action_item",
+      "recommendation": "Schema requires assignee OR assignee_status='unknown' AND due_date OR due_date_status='unknown'. eval_action_item_completeness re-checks. Deterministic extractor sets the explicit status when no marker resolves.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-003",
+      "severity": "S3",
+      "description": "Forged source_refs with a fake source_turn_id or source_segment_id could pass schema validation by satisfying patterns alone.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/minutes_source_validation.py",
+      "recommendation": "validate_minutes_source_refs indexes both real corpora and rejects FAKE_SOURCE_TURN_ID / FAKE_SOURCE_SEGMENT_ID. The extractor invokes the validator before returning so no path emits fake refs.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-004",
+      "severity": "S3",
+      "description": "A source_ref could pair a real source_turn_id with a real but unrelated source_segment_id, splitting the evidence trail.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/minutes_source_validation.py::_validate_single_ref",
+      "recommendation": "Validator cross-checks segment.source_turn_id == ref.source_turn_id; raises SOURCE_PAIR_MISMATCH. Schema descriptions call out the invariant.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-005",
+      "severity": "S3",
+      "description": "line_index drift could keep both ids real but bind to a wrong line, breaking replay.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/minutes_source_validation.py::_validate_single_ref",
+      "recommendation": "Validator raises LINE_INDEX_DRIFT when ref.line_index != turn.line_index. Extractor pre-checks segment-vs-turn alignment and raises SEGMENT_LINE_INDEX_DRIFT when the bundle itself drifted.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-006",
+      "severity": "S3",
+      "description": "Gate evidence bypass: a caller with failed_gate, missing_gate, conditional_gate, malformed target_artifact_ids, or missing eval_summary_id could trigger extraction.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/meeting_minutes_extractor.py::_validate_gate_evidence",
+      "recommendation": "Extractor requires gate_status == passed_gate, both transcript and bundle ids in target_artifact_ids, and a non-empty eval_summary_id. Raises GATE_NOT_PASSED, MISSING_GATE_TARGET_IDS, GATE_TARGET_MISMATCH, MISSING_EVAL_SUMMARY_ID.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-007",
+      "severity": "S3",
+      "description": "Direct artifact write: a caller could hand the extractor's payload to ArtifactStore.register_artifact and skip PQX, losing pqx_execution_record emission and trace propagation.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/meeting_minutes_extractor.py",
+      "recommendation": "Pure function returns payloads WITHOUT content_hash; the store rejects direct registration. run_meeting_minutes_extraction_via_pqx is the only sanctioned write path. test_direct_artifact_store_write_rejected locks the contract.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-008",
+      "severity": "S2",
+      "description": "A bundle whose source_artifact_id does not match the supplied transcript could be paired by mistake, breaking lineage.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/meeting_minutes_extractor.py::_validate_envelopes",
+      "recommendation": "Extractor raises BUNDLE_SOURCE_LINK_MISMATCH before any extraction work runs.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-009",
+      "severity": "S2",
+      "description": "A caller could request extraction_mode='provider_adapter' expecting a transparent live network call.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/meeting_minutes_extractor.py::extract_meeting_minutes",
+      "recommendation": "Extractor raises PROVIDER_ADAPTER_UNAVAILABLE when no adapter is wired in. Tests never wire a live adapter; no network egress occurs in tests.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-010",
+      "severity": "S1",
+      "description": "source_coverage could be silently fabricated to overstate evidence breadth.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/minutes_source_validation.py::validate_minutes_source_refs",
+      "recommendation": "Validator recomputes total_turns / referenced_turns / referenced_segments and raises SOURCE_COVERAGE_MISMATCH on drift.",
+      "blocking": false
+    },
+    {
+      "finding_id": "F-011",
+      "severity": "S0",
+      "description": "Module docstrings could omit the evidence-only boundary statement, risking misreading the artifact as a routing signal.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/meeting_minutes_extractor.py",
+      "recommendation": "Module docstring and schema description fields state the evidence-only role; review artifacts use authority-safe vocabulary; test_authority_safe_vocabulary_in_module scans the surface.",
+      "blocking": false
+    }
+  ]
+}

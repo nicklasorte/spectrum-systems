@@ -155,15 +155,24 @@ class TestMeetingMinutesArtifactSchema:
             "artifact_id": "MMA-TEST001",
             "artifact_type": "meeting_minutes_artifact",
             "schema_ref": "transcript_pipeline/meeting_minutes_artifact",
-            "schema_version": "1.0.0",
+            "schema_version": "2.0.0",
             "content_hash": "sha256:" + "a" * 64,
             "trace": _trace(),
             "provenance": _provenance(),
             "created_at": "2026-04-25T00:00:00+00:00",
-            "source_artifact_id": "NTX-001",
+            "source_artifact_ids": ["TXA-001", "CTX-001"],
+            "source_context_bundle_id": "CTX-001",
             "summary": "Team sync",
+            "attendees": [],
+            "agenda_items": [],
             "decisions": [],
             "action_items": [],
+            "source_coverage": {
+                "total_turns": 0,
+                "referenced_turns": 0,
+                "referenced_segments": 0,
+                "coverage_ratio": 0.0,
+            },
         }
 
     def test_valid_passes(self) -> None:

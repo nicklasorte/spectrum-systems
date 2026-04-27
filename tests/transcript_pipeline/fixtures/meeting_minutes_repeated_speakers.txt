@@ -1,0 +1,6 @@
+Alice: Let's start with the schema review.
+Alice: First item on the agenda is gate evidence checks.
+Bob: I think we should prioritize the action item parser next.
+Bob: We decided to keep the deterministic mode locked in.
+Alice: Action: Alice will follow up on the docs.
+Carol: Sounds good. Assigned to Alice.

@@ -1,0 +1,6 @@
+Alice: Welcome to the weekly catch-up.
+Bob: Thanks, glad to be here.
+Carol: Anything urgent on the agenda today?
+Alice: Mostly status updates and dependency check-ins.
+Bob: I'll share the runtime test matrix in the channel later.
+Carol: Sounds good.

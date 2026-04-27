@@ -42,26 +42,53 @@ def _make_transcript_artifact(**overrides) -> Dict[str, Any]:
 
 
 def _make_meeting_minutes_artifact(**overrides) -> Dict[str, Any]:
+    source_ref = {
+        "source_turn_id": "T-0001",
+        "source_segment_id": "SEG-0001",
+        "line_index": 0,
+    }
     base: Dict[str, Any] = {
         "artifact_id": f"MMA-{uuid.uuid4().hex[:8].upper()}",
         "artifact_type": "meeting_minutes_artifact",
         "schema_ref": "transcript_pipeline/meeting_minutes_artifact",
-        "schema_version": "1.0.0",
+        "schema_version": "2.0.0",
         "trace": _trace(),
         "provenance": _provenance(),
         "created_at": "2026-04-25T00:00:00+00:00",
-        "source_artifact_id": "NTX-TEST001",
+        "source_artifact_ids": ["TXA-TEST001", "CTX-TEST001"],
+        "source_context_bundle_id": "CTX-TEST001",
         "summary": "Team aligned on Q2 goals.",
+        "attendees": ["Alice", "Bob"],
+        "agenda_items": [
+            {
+                "agenda_item_id": "AGI-0001",
+                "title": "Q2 goals",
+                "source_refs": [source_ref],
+            }
+        ],
         "decisions": [
             {
-                "decision_id": "D-001",
+                "decision_id": "DEC-0001",
                 "description": "Adopt new schema format",
                 "rationale": "Improves machine readability and schema compliance.",
+                "source_refs": [source_ref],
             }
         ],
         "action_items": [
-            {"action_id": "AI-001", "description": "Draft schema proposal"}
+            {
+                "action_id": "ACT-0001",
+                "description": "Draft schema proposal",
+                "assignee": "Alice",
+                "due_date": "2026-05-31",
+                "source_refs": [source_ref],
+            }
         ],
+        "source_coverage": {
+            "total_turns": 1,
+            "referenced_turns": 1,
+            "referenced_segments": 1,
+            "coverage_ratio": 1.0,
+        },
     }
     base.update(overrides)
     base["content_hash"] = compute_content_hash(base)

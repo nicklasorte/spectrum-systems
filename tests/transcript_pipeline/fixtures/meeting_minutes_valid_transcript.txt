@@ -1,0 +1,8 @@
+Alice: Today we are reviewing the CPL-04 meeting minutes pipeline.
+Bob: Agenda: source grounding, deterministic extraction, and red-team coverage.
+Carol: Can you walk me through the source ref validation rules?
+Alice: Sure. Decision: every action item must carry a source ref or be marked unknown.
+Bob: We decided to keep the deterministic extractor as the default mode.
+Carol: Action: Bob will follow up on the assignee parser, assigned to Bob.
+Alice: Todo: Carol to draft the red-team test matrix by next week.
+Bob: Agreed to ship CPL-04 only after the leak guard run is clean.
