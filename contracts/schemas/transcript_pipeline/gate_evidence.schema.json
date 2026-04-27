@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/schemas/transcript_pipeline/gate_evidence.schema.json",
+  "title": "Gate Evidence",
+  "description": "CPL-03 Gate Evidence: structured evidence record summarising whether a transcript_artifact + context_bundle pair satisfies the eval gate. Carries gate_status (passed_gate|failed_gate|conditional_gate|missing_gate), eval_summary_id back-reference, and the target_artifact_ids whose admissibility this evidence covers. This artifact records evidence only; it is not a routing or release-readiness signal and contains no authority vocabulary. Canonical routing remains with the appropriate canonical owner.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "content_hash",
+    "trace",
+    "provenance",
+    "created_at",
+    "target_artifact_ids",
+    "gate_status",
+    "eval_summary_id"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^GTE-[A-Z0-9_-]+$",
+      "description": "Unique identifier for this gate_evidence artifact."
+    },
+    "artifact_type": {
+      "type": "string",
+      "const": "gate_evidence"
+    },
+    "schema_ref": {
+      "type": "string",
+      "const": "transcript_pipeline/gate_evidence"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "trace": {
+      "$ref": "#/$defs/trace_context"
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "target_artifact_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "IDs of artifacts whose admissibility this evidence describes (transcript_artifact + context_bundle)."
+    },
+    "gate_status": {
+      "type": "string",
+      "enum": [
+        "passed_gate",
+        "failed_gate",
+        "conditional_gate",
+        "missing_gate"
+      ],
+      "description": "Structured gate status. passed_gate: every required eval passed. failed_gate: at least one eval reported fail. missing_gate: at least one required eval was absent. conditional_gate: indeterminate state; defaults to NOT routable."
+    },
+    "eval_summary_id": {
+      "type": "string",
+      "pattern": "^EVS-[A-Z0-9_-]+$",
+      "description": "Back-reference to the eval_summary artifact whose outcome this evidence wraps."
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Structured reason codes derived from the eval_summary (e.g., REPLAY_HASH_MISMATCH, SEGMENT_TURN_DRIFT)."
+    },
+    "routable": {
+      "type": "boolean",
+      "description": "Convenience flag derived from gate_status. true only when gate_status == passed_gate. Any other status (including conditional_gate) defaults to NOT routable."
+    }
+  },
+  "$defs": {
+    "trace_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "span_id"],
+      "properties": {
+        "trace_id": {"type": "string", "pattern": "^[a-f0-9]{32}$"},
+        "span_id": {"type": "string", "pattern": "^[a-f0-9]{16}$"},
+        "parent_span_id": {"type": "string", "pattern": "^[a-f0-9]{16}$"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["produced_by", "input_artifact_ids"],
+      "properties": {
+        "produced_by": {"type": "string"},
+        "input_artifact_ids": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1
+        },
+        "run_id": {"type": "string"}
+      }
+    }
+  }
+}

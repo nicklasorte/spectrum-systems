@@ -1,0 +1,88 @@
+{
+  "artifact_id": "RVA-CPL03-EVALGATE-001",
+  "artifact_type": "red_team_review_record",
+  "schema_version": "1.0.0",
+  "trace": {
+    "trace_id": "0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c03",
+    "span_id": "0c0c0c0c0c0c0c03"
+  },
+  "provenance": {
+    "produced_by": "adversarial-review-agent-ARA-CPL03",
+    "input_artifact_ids": [
+      "BATCH-CPL-03"
+    ],
+    "run_id": "run-BATCH-CPL03-review"
+  },
+  "created_at": "2026-04-27T00:00:00+00:00",
+  "reviewed_artifact_id": "BATCH-CPL-03",
+  "reviewed_artifact_type": "implementation_batch",
+  "reviewer_id": "ARA-CPL03",
+  "review_signal": "revision_recommended",
+  "summary": "Red-team review signal for CPL-03 transcript_artifact + context_bundle eval gate. Eight findings (no S4): six S2/S3 attack vectors and two S0/S1 hygiene items. All S2+ findings closed in-batch via fix actions CPL03-FIX-001..006 with regression tests (TestEvalSummarySchemaAudit, TestGateEvidenceSchemaAudit, TestFailClosedGate, TestPQXIntegration, TestRedTeamRegressions). This is a non-authority review signal; canonical control ownership remains with the appropriate canonical owner.",
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "severity": "S3",
+      "description": "Forged gate_evidence with a hand-crafted eval_summary_id could pass schema validation and surface a passed_gate state without a corresponding eval_summary artifact.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/eval_gate.py::run_eval_gate_via_pqx",
+      "recommendation": "Run the eval_summary and gate_evidence registrations as two PQX steps; the second step re-derives the eval_summary_id from the same deterministic inputs and halts if the value drifts from the registered eval_summary id (EVAL_SUMMARY_ID_DRIFT).",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-002",
+      "severity": "S3",
+      "description": "Replay mismatch: a tampered context_bundle with a forged manifest_hash could pass referential checks but break replay equivalence.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/eval_gate.py::_eval_replay_consistency",
+      "recommendation": "Re-derive manifest_hash from segments using the same canonicalisation as context_bundle_assembler._compute_manifest_hash; raise REPLAY_MANIFEST_HASH_MISMATCH on drift; surface in failed_gate.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-003",
+      "severity": "S3",
+      "description": "Partial transcript coverage (segments < turns or segments > turns) could produce a gate_evidence that hides silent truncation or duplication.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/eval_gate.py::_eval_coverage",
+      "recommendation": "Reject COVERAGE_COUNT_MISMATCH in the coverage eval whenever len(segments) != len(speaker_turns); surface failed_gate.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-004",
+      "severity": "S3",
+      "description": "PQX bypass: a caller could construct an eval_summary or gate_evidence by hand and pass it to ArtifactStore.register_artifact, skipping run_pqx_step and bypassing trace propagation and the pqx_execution_record.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/eval_gate.py",
+      "recommendation": "Pure evaluator returns payloads WITHOUT content_hash so the artifact store rejects direct registration. Test test_evaluator_cannot_register_directly_without_pqx locks this contract; the run_eval_gate_via_pqx wrapper is the only sanctioned write path.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-005",
+      "severity": "S2",
+      "description": "Missing eval_summary_id in gate_evidence could be admitted if the schema did not require it; downstream consumers would lose the back-reference to the eval evidence.",
+      "section_ref": "contracts/schemas/transcript_pipeline/gate_evidence.schema.json",
+      "recommendation": "Mark eval_summary_id as required in the gate_evidence schema and constrain its pattern to ^EVS-[A-Z0-9_-]+$. Reject admission via additionalProperties: false.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-006",
+      "severity": "S2",
+      "description": "Forged segments with source_turn_id values that do not exist in transcript.speaker_turns could pass schema validation but break lineage.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/eval_gate.py::_eval_referential_integrity",
+      "recommendation": "Reject ORPHAN_SEGMENT and SEGMENT_TURN_DRIFT in the referential_integrity eval; surface failed_gate.",
+      "blocking": true
+    },
+    {
+      "finding_id": "F-007",
+      "severity": "S1",
+      "description": "Indeterminate per-eval status (e.g., a status string outside {pass, fail}) could produce a gate_evidence without a clear status.",
+      "section_ref": "contracts/schemas/transcript_pipeline/eval_summary.schema.json",
+      "recommendation": "Constrain eval_result.status to enum [pass, fail]; reject all other values at schema validation; gate_status maps indeterminate aggregations to conditional_gate (NOT routable).",
+      "blocking": false
+    },
+    {
+      "finding_id": "F-008",
+      "severity": "S0",
+      "description": "Module docstring did not state that the gate produces evidence only and that canonical routing remains with the appropriate canonical owner; risk of misreading the artifact as a routing signal.",
+      "section_ref": "spectrum_systems/modules/transcript_pipeline/eval_gate.py",
+      "recommendation": "Module docstring states evidence-only role and references the non-authority guidance from contracts/governance/authority_neutral_vocabulary.json; gate_evidence schema description repeats the boundary statement.",
+      "blocking": false
+    }
+  ]
+}
