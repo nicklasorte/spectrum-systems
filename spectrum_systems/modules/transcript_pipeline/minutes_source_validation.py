@@ -209,9 +209,9 @@ def validate_minutes_source_refs(
     3. The (source_turn_id, source_segment_id) pair refers to the SAME turn —
        i.e., the segment's own ``source_turn_id`` matches the ref's turn id.
     4. ``line_index`` matches the source turn's line_index.
-    5. Decisions and action items have NON-EMPTY source_refs (decisions either
-       have refs or rely on rationale-only — ``allow_rationale_only_decisions``
-       controls this; default is True so the schema-level anyOf still binds).
+    5. Decisions and action items have NON-EMPTY source_refs. A decision
+       record may instead carry rationale-only — the schema-level anyOf
+       binds that surface; this validator does not relax it.
     6. ``source_coverage`` (when present) reports the realized counts.
 
     Returns
@@ -333,7 +333,7 @@ def validate_minutes_source_refs(
     )
 
     # Action items must surface explicit unknown statuses when fields are
-    # omitted. The schema already enforces this; we re-check for safety.
+    # omitted. The schema already binds this invariant; we re-check it here.
     for item in action_items:
         action_id = str(item.get("action_id", "<unknown>"))
         if "assignee" not in item and item.get("assignee_status") != "unknown":

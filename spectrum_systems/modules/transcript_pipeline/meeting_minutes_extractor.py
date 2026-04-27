@@ -44,7 +44,7 @@ ARTIFACT_TYPE = "meeting_minutes_artifact"
 
 EXTRACTION_MODE_DETERMINISTIC = "deterministic"
 EXTRACTION_MODE_PROVIDER_ADAPTER = "provider_adapter"
-ALLOWED_EXTRACTION_MODES = (
+SUPPORTED_EXTRACTION_MODES = (
     EXTRACTION_MODE_DETERMINISTIC,
     EXTRACTION_MODE_PROVIDER_ADAPTER,
 )
@@ -542,7 +542,7 @@ def extract_meeting_minutes(
         mismatch, missing eval_summary_id, malformed turns/segments,
         line_index drift, segment-orphan turn, or unsupported extraction_mode.
     """
-    if extraction_mode not in ALLOWED_EXTRACTION_MODES:
+    if extraction_mode not in SUPPORTED_EXTRACTION_MODES:
         raise MeetingMinutesExtractionError(
             f"Unsupported extraction_mode={extraction_mode!r}",
             reason_code="UNSUPPORTED_EXTRACTION_MODE",
@@ -732,5 +732,5 @@ __all__ = [
     "ARTIFACT_TYPE",
     "EXTRACTION_MODE_DETERMINISTIC",
     "EXTRACTION_MODE_PROVIDER_ADAPTER",
-    "ALLOWED_EXTRACTION_MODES",
+    "SUPPORTED_EXTRACTION_MODES",
 ]

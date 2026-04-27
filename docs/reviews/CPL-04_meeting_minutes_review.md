@@ -69,4 +69,4 @@ All S2+ findings closed in-batch with code + regression tests. See:
 
 ## Authority-shape posture
 
-This review uses authority-safe vocabulary throughout. No reserved verbs (`allow`, `block`, `freeze`, `promote`, `enforce`, `promotion`) appear in either the module text under review or this document. The eval helpers and review artifacts validate, require, and check; canonical routing or advancement remains with the appropriate canonical owner.
+This review uses authority-safe vocabulary throughout. The reserved authority verbs listed in `contracts/governance/authority_shape_vocabulary.json` do not appear in either the module text under review or this document. The eval helpers and review artifacts validate, require, and check; canonical routing or advancement remains with the appropriate canonical owner.
