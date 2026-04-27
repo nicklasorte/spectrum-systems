@@ -1,0 +1,63 @@
+{
+  "artifact_type": "tls_roadmap_redteam_report",
+  "work_item": "TLS-ROADMAP-01",
+  "generated_at": "2026-04-27T00:20:00Z",
+  "top_10_risks": [
+    "Control Integration owner-safe bridge combines mapping and guard logic in one step and may be over-scoped.",
+    "Dataset + Eval Governance alignment mixes dataset mapping and gate behavior and may exceed one prompt.",
+    "Final Outcome OS integration may couple runtime and graph checks too tightly.",
+    "TPA input context signals could leak owner authority semantics without strict key blocklist.",
+    "Ranking Trust calibration can regress to stub fallback when sparse evidence path is untested.",
+    "Simulation harness may bypass runtime constraints if fixture boundaries are unclear.",
+    "Boundary + Integration hardening lacks explicit red-team attack cases in initial version.",
+    "Operator Intelligence summarization could assume dashboard rendering and hide artifact-first behavior.",
+    "Learning Loop feedback assimilation may permit unbounded weight updates without schema constraints.",
+    "Dependency chain from drift to dataset governance to operator intelligence can stall without stop checks."
+  ],
+  "over_scoped_items": [
+    "TLS-RM-13",
+    "TLS-RM-16",
+    "TLS-RM-20"
+  ],
+  "unsafe_sequences": [
+    {
+      "sequence": [
+        "TLS-RM-18",
+        "TLS-RM-16"
+      ],
+      "risk": "TPA input context step added before eval governance gate can admit unverified policy annotations."
+    },
+    {
+      "sequence": [
+        "TLS-RM-20",
+        "TLS-RM-19"
+      ],
+      "risk": "final integration before simulation can bypass edge-case stability checks."
+    },
+    {
+      "sequence": [
+        "TLS-RM-17",
+        "TLS-RM-15"
+      ],
+      "risk": "operator summaries before drift checks can propagate stale ranking signals."
+    }
+  ],
+  "missing_controls": [
+    "No explicit schema constraint requiring recommendation_only mode in each step.",
+    "No explicit readiness check artifact before final integration.",
+    "No per-step red-team then fix loop mandate in initial roadmap.",
+    "No explicit control check preventing runtime side effects in action layer."
+  ],
+  "boundary_violations": [
+    "TLS-RM-13 title implies control integration without explicit owner boundary clause.",
+    "TLS-RM-18 TPA input context could be misread as runtime authority path."
+  ],
+  "recommended_fixes": [
+    "Split TLS-RM-13 into mapping step and guard-validation step with explicit stop conditions.",
+    "Split TLS-RM-16 into dataset mapping then eval gate step.",
+    "Insert mandatory red-team and fix pair after each major capability step.",
+    "Add schema constraints to block forbidden owner vocabulary and runtime side effects.",
+    "Require deterministic ordering index and explicit stop_condition field in fixed roadmap.",
+    "Add explicit check that no roadmap dependency points to non-existent artifact path."
+  ]
+}

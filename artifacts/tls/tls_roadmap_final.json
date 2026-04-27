@@ -1,0 +1,1200 @@
+{
+  "artifact_type": "tls_roadmap_final",
+  "work_item": "TLS-ROADMAP-01",
+  "generated_at": "2026-04-27T01:00:00Z",
+  "recommended_execution_order": [
+    "TLS-FX-01",
+    "TLS-RT-01",
+    "TLS-FIX-01",
+    "TLS-FX-02",
+    "TLS-RT-02",
+    "TLS-FIX-02",
+    "TLS-FX-03",
+    "TLS-RT-03",
+    "TLS-FIX-03",
+    "TLS-FX-04",
+    "TLS-RT-04",
+    "TLS-FIX-04",
+    "TLS-FX-05",
+    "TLS-RT-05",
+    "TLS-FIX-05",
+    "TLS-FX-06",
+    "TLS-RT-06",
+    "TLS-FIX-06",
+    "TLS-FX-07",
+    "TLS-RT-07",
+    "TLS-FIX-07",
+    "TLS-FX-08",
+    "TLS-FX-09",
+    "TLS-RT-08",
+    "TLS-FIX-08",
+    "TLS-FX-10",
+    "TLS-RT-09",
+    "TLS-FIX-09",
+    "TLS-FX-11",
+    "TLS-RT-10",
+    "TLS-FIX-10",
+    "TLS-FX-12",
+    "TLS-RT-11",
+    "TLS-FIX-11",
+    "TLS-FX-13",
+    "TLS-RT-12",
+    "TLS-FIX-12"
+  ],
+  "safe_bundles": [
+    {
+      "bundle_id": "TLS-BND-01",
+      "steps": [
+        "TLS-FX-01",
+        "TLS-RT-01",
+        "TLS-FIX-01"
+      ],
+      "rationale": "Boundary hardening before integration."
+    },
+    {
+      "bundle_id": "TLS-BND-02",
+      "steps": [
+        "TLS-FX-02",
+        "TLS-RT-02",
+        "TLS-FIX-02"
+      ],
+      "rationale": "Integration seam safety and fallback guard closure."
+    },
+    {
+      "bundle_id": "TLS-BND-03",
+      "steps": [
+        "TLS-FX-03",
+        "TLS-RT-03",
+        "TLS-FIX-03"
+      ],
+      "rationale": "Ranking trust calibration and hardening."
+    },
+    {
+      "bundle_id": "TLS-BND-04",
+      "steps": [
+        "TLS-FX-04",
+        "TLS-RT-04",
+        "TLS-FIX-04"
+      ],
+      "rationale": "Action-layer schema hardening."
+    },
+    {
+      "bundle_id": "TLS-BND-05",
+      "steps": [
+        "TLS-FX-05",
+        "TLS-RT-05",
+        "TLS-FIX-05"
+      ],
+      "rationale": "Owner-safe control bridge hardening."
+    },
+    {
+      "bundle_id": "TLS-BND-06",
+      "steps": [
+        "TLS-FX-06",
+        "TLS-RT-06",
+        "TLS-FIX-06"
+      ],
+      "rationale": "Learning loop bounded updates."
+    },
+    {
+      "bundle_id": "TLS-BND-07",
+      "steps": [
+        "TLS-FX-07",
+        "TLS-RT-07",
+        "TLS-FIX-07"
+      ],
+      "rationale": "Drift detection guard hardening."
+    },
+    {
+      "bundle_id": "TLS-BND-08",
+      "steps": [
+        "TLS-FX-08",
+        "TLS-FX-09",
+        "TLS-RT-08"
+      ],
+      "rationale": "Dataset map + eval gate + red-team pass."
+    },
+    {
+      "bundle_id": "TLS-BND-09",
+      "steps": [
+        "TLS-FIX-08",
+        "TLS-FX-10",
+        "TLS-RT-09"
+      ],
+      "rationale": "Close eval findings then operator intelligence pass."
+    },
+    {
+      "bundle_id": "TLS-BND-10",
+      "steps": [
+        "TLS-FIX-09",
+        "TLS-FX-11",
+        "TLS-RT-10"
+      ],
+      "rationale": "Operator intelligence closure and TPA input boundary hardening."
+    },
+    {
+      "bundle_id": "TLS-BND-11",
+      "steps": [
+        "TLS-FIX-10",
+        "TLS-FX-12",
+        "TLS-RT-11"
+      ],
+      "rationale": "TPA input closure and simulation red-team."
+    },
+    {
+      "bundle_id": "TLS-BND-12",
+      "steps": [
+        "TLS-FIX-11",
+        "TLS-FX-13",
+        "TLS-RT-12"
+      ],
+      "rationale": "Simulation closure and final integration red-team."
+    },
+    {
+      "bundle_id": "TLS-BND-13",
+      "steps": [
+        "TLS-FIX-12"
+      ],
+      "rationale": "Final readiness gate and closeout artifact."
+    }
+  ],
+  "next_3_prompts_to_run": [
+    "Run bundle TLS-BND-01: build boundary map, run boundary red-team, apply fixes.",
+    "Run bundle TLS-BND-02: build integration seam contract, red-team fallback risk, apply seam fixes.",
+    "Run bundle TLS-BND-03: calibrate ranking trust, red-team sparse/adversarial ordering, apply ranking fixes."
+  ],
+  "entries": [
+    {
+      "id": "TLS-FX-01",
+      "title": "Boundary map bundle",
+      "purpose": "Create explicit TLS boundary map for runtime and graph seams.",
+      "what_it_builds": "Boundary map artifact with allowed and blocked interfaces.",
+      "why_it_matters": "Defines clear boundary before any integration execution.",
+      "dependencies": [
+        "artifacts/tls/tls_roadmap_initial.json"
+      ],
+      "failure_modes_prevented": [
+        "authority_leakage",
+        "hidden_coupling"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_boundary_map.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_no_authority_boundary_violations_in_artifacts"
+      ],
+      "acceptance_criteria": [
+        "Boundary map lists allowed retrieve-only outputs."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single prompt writes boundary map only.",
+      "stop_condition": "Stop when all interfaces are classified allow/block.",
+      "step_kind": "build"
+    },
+    {
+      "id": "TLS-RT-01",
+      "title": "Boundary red-team round",
+      "purpose": "Run adversarial checks against boundary map.",
+      "what_it_builds": "Red-team findings on boundary abuse paths.",
+      "why_it_matters": "Finds fail-open seams before integration.",
+      "dependencies": [
+        "TLS-FX-01"
+      ],
+      "failure_modes_prevented": [
+        "fail_open_boundary",
+        "cross_owner_field_leak"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_boundary_redteam_report.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_redteam_fix_pairing_exists"
+      ],
+      "acceptance_criteria": [
+        "At least 5 abuse paths executed with deterministic outcomes."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single prompt for red-team report only.",
+      "stop_condition": "Stop when all abuse paths have pass/fail results.",
+      "step_kind": "redteam"
+    },
+    {
+      "id": "TLS-FIX-01",
+      "title": "Boundary fix bundle",
+      "purpose": "Patch boundary map gaps found in red-team round.",
+      "what_it_builds": "Updated boundary map and blocked-key list.",
+      "why_it_matters": "Ensures boundary hardening closes observed failure modes.",
+      "dependencies": [
+        "TLS-RT-01"
+      ],
+      "failure_modes_prevented": [
+        "repeat_boundary_failures"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_boundary_map_fixed.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_redteam_fix_pairing_exists"
+      ],
+      "acceptance_criteria": [
+        "All high-severity findings from prior step are resolved."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single prompt applies map fixes only.",
+      "stop_condition": "Stop when unresolved finding count is zero.",
+      "step_kind": "fix"
+    },
+    {
+      "id": "TLS-FX-02",
+      "title": "Integration seam bundle",
+      "purpose": "Build runtime+graph integration seam contract.",
+      "what_it_builds": "Integration seam contract with fail_closed behavior.",
+      "why_it_matters": "Prevents regressions while wiring TLS outputs.",
+      "dependencies": [
+        "TLS-FIX-01",
+        "artifacts/tls/system_graph_integration_report.json"
+      ],
+      "failure_modes_prevented": [
+        "runtime_breakage",
+        "silent_signal_drop"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_integration_seam_contract.json"
+      ],
+      "tests_required": [
+        "tests/test_ctx_tlx_runtime.py"
+      ],
+      "acceptance_criteria": [
+        "Contract validates all mandatory seam fields."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "2-step prompt for seam contract and schema check.",
+      "stop_condition": "Stop when contract validates against fixtures.",
+      "step_kind": "build"
+    },
+    {
+      "id": "TLS-RT-02",
+      "title": "Integration red-team round",
+      "purpose": "Probe integration seams for fallback and coupling risk.",
+      "what_it_builds": "Seam red-team findings and risk labels.",
+      "why_it_matters": "Catches fallback regressions pre-runtime rollout.",
+      "dependencies": [
+        "TLS-FX-02"
+      ],
+      "failure_modes_prevented": [
+        "stub_fallback_reentry",
+        "vercel_runtime_breakage"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_integration_redteam_report_v2.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_no_silent_fallback_language"
+      ],
+      "acceptance_criteria": [
+        "Report includes fallback abuse scenario outcomes."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "Single prompt for seam red-team outputs.",
+      "stop_condition": "Stop when all listed seam risks are tested.",
+      "step_kind": "redteam"
+    },
+    {
+      "id": "TLS-FIX-02",
+      "title": "Integration fix bundle",
+      "purpose": "Fix integration seam weaknesses found in red-team.",
+      "what_it_builds": "Patched seam contract and fallback guards.",
+      "why_it_matters": "Restores fail_closed integration behavior.",
+      "dependencies": [
+        "TLS-RT-02"
+      ],
+      "failure_modes_prevented": [
+        "runtime_regression",
+        "hidden_fallback"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_integration_seam_contract_fixed.json"
+      ],
+      "tests_required": [
+        "tests/test_ctx_tlx_runtime.py"
+      ],
+      "acceptance_criteria": [
+        "No open high-severity seam findings remain."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "Single prompt for seam fixes only.",
+      "stop_condition": "Stop when red-team high findings are closed.",
+      "step_kind": "fix"
+    },
+    {
+      "id": "TLS-FX-03",
+      "title": "Ranking trust calibration bundle",
+      "purpose": "Calibrate ranking trust and deterministic tie breaks.",
+      "what_it_builds": "Calibration profile and tie-break table.",
+      "why_it_matters": "Improves recommendation stability under sparse evidence.",
+      "dependencies": [
+        "TLS-FIX-02",
+        "artifacts/tls/tls_ranking_review_report.json"
+      ],
+      "failure_modes_prevented": [
+        "ranking_instability",
+        "stub_fallback_regression"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_ranking_trust_calibration.json"
+      ],
+      "tests_required": [
+        "tests/tls_dependency_graph/test_phase4_ranking.py"
+      ],
+      "acceptance_criteria": [
+        "Replay variance stays inside defined threshold."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single calibration prompt.",
+      "stop_condition": "Stop when variance threshold passes.",
+      "step_kind": "build"
+    },
+    {
+      "id": "TLS-RT-03",
+      "title": "Ranking red-team round",
+      "purpose": "Stress ranking with adversarial sparse-input fixtures.",
+      "what_it_builds": "Ranking red-team findings.",
+      "why_it_matters": "Finds unstable ordering paths early.",
+      "dependencies": [
+        "TLS-FX-03"
+      ],
+      "failure_modes_prevented": [
+        "ordering_flip_flop",
+        "stub_bias_reentry"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_ranking_redteam_report.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_redteam_fix_pairing_exists"
+      ],
+      "acceptance_criteria": [
+        "Adversarial suite outcomes are deterministic."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single red-team prompt.",
+      "stop_condition": "Stop when required scenarios all executed.",
+      "step_kind": "redteam"
+    },
+    {
+      "id": "TLS-FIX-03",
+      "title": "Ranking fix bundle",
+      "purpose": "Patch ranking calibration from red-team findings.",
+      "what_it_builds": "Updated calibration profile and guard thresholds.",
+      "why_it_matters": "Locks deterministic recommendation ordering.",
+      "dependencies": [
+        "TLS-RT-03"
+      ],
+      "failure_modes_prevented": [
+        "ranking_regression_repeat"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_ranking_trust_calibration_fixed.json"
+      ],
+      "tests_required": [
+        "tests/tls_dependency_graph/test_phase4_ranking.py"
+      ],
+      "acceptance_criteria": [
+        "No unresolved high findings remain."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single fix prompt.",
+      "stop_condition": "Stop when high findings count equals zero.",
+      "step_kind": "fix"
+    },
+    {
+      "id": "TLS-FX-04",
+      "title": "Action layer schema bundle",
+      "purpose": "Create recommendation-only action layer schema.",
+      "what_it_builds": "Action layer schema and rationale packet template.",
+      "why_it_matters": "Keeps TLS outputs operator-usable and read-only.",
+      "dependencies": [
+        "TLS-FIX-03"
+      ],
+      "failure_modes_prevented": [
+        "authority_escalation",
+        "runtime_side_effects"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_action_layer_schema.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_no_authority_boundary_violations_in_artifacts"
+      ],
+      "acceptance_criteria": [
+        "Schema forbids runtime mutation fields."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single schema prompt.",
+      "stop_condition": "Stop when schema validation passes local fixture.",
+      "step_kind": "build"
+    },
+    {
+      "id": "TLS-RT-04",
+      "title": "Action layer red-team round",
+      "purpose": "Test schema for hidden authority wording and side-effect fields.",
+      "what_it_builds": "Action layer red-team report.",
+      "why_it_matters": "Prevents recommendation packet ambiguity.",
+      "dependencies": [
+        "TLS-FX-04"
+      ],
+      "failure_modes_prevented": [
+        "owner_vocabulary_leak",
+        "hidden_behavior"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_action_layer_redteam_report.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_no_authority_boundary_violations_in_artifacts"
+      ],
+      "acceptance_criteria": [
+        "Report shows zero critical schema bypasses."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single red-team prompt.",
+      "stop_condition": "Stop when bypass attempts are exhausted.",
+      "step_kind": "redteam"
+    },
+    {
+      "id": "TLS-FIX-04",
+      "title": "Action layer fix bundle",
+      "purpose": "Apply schema tightenings from red-team outcomes.",
+      "what_it_builds": "Fixed action layer schema.",
+      "why_it_matters": "Ensures recommendation-only output format remains strict.",
+      "dependencies": [
+        "TLS-RT-04"
+      ],
+      "failure_modes_prevented": [
+        "schema_bypass_repeat"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_action_layer_schema_fixed.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_roadmap_entries_complete"
+      ],
+      "acceptance_criteria": [
+        "All mandatory schema constraints are active."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single fix prompt.",
+      "stop_condition": "Stop when all mandatory constraints validated.",
+      "step_kind": "fix"
+    },
+    {
+      "id": "TLS-FX-05",
+      "title": "Control bridge mapping bundle",
+      "purpose": "Create owner-safe field mapping for control-plane input bridge.",
+      "what_it_builds": "Field mapping contract with blocked owner keys.",
+      "why_it_matters": "Allows retrieve of TLS context without ownership crossing.",
+      "dependencies": [
+        "TLS-FIX-04",
+        "artifacts/tls/tls_control_input_artifact.json"
+      ],
+      "failure_modes_prevented": [
+        "authority_boundary_crossing",
+        "schema_mismatch"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_control_bridge_mapping.json"
+      ],
+      "tests_required": [
+        "tests/test_control_surface_obedience.py"
+      ],
+      "acceptance_criteria": [
+        "Mapping contains only allowed recommendation fields."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "2-step prompt for mapping and fixture check.",
+      "stop_condition": "Stop when blocked-key list is complete.",
+      "step_kind": "build"
+    },
+    {
+      "id": "TLS-RT-05",
+      "title": "Control bridge red-team round",
+      "purpose": "Probe bridge mapping with owner-key injection attempts.",
+      "what_it_builds": "Control bridge red-team findings.",
+      "why_it_matters": "Detects boundary bypass attempts before use.",
+      "dependencies": [
+        "TLS-FX-05"
+      ],
+      "failure_modes_prevented": [
+        "owner_key_injection",
+        "unsafe_runtime_path"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_control_bridge_redteam_report.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_no_authority_boundary_violations_in_artifacts"
+      ],
+      "acceptance_criteria": [
+        "All injection attempts are blocked."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "Single red-team prompt.",
+      "stop_condition": "Stop when injection matrix complete.",
+      "step_kind": "redteam"
+    },
+    {
+      "id": "TLS-FIX-05",
+      "title": "Control bridge fix bundle",
+      "purpose": "Patch mapping and guards based on red-team results.",
+      "what_it_builds": "Fixed owner-safe control bridge mapping.",
+      "why_it_matters": "Maintains safe cross-system retrieve path.",
+      "dependencies": [
+        "TLS-RT-05"
+      ],
+      "failure_modes_prevented": [
+        "repeat_injection_failure"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_control_bridge_mapping_fixed.json"
+      ],
+      "tests_required": [
+        "tests/test_control_surface_obedience.py"
+      ],
+      "acceptance_criteria": [
+        "No high-risk bridge findings remain open."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "Single fix prompt.",
+      "stop_condition": "Stop when high-risk findings resolved.",
+      "step_kind": "fix"
+    },
+    {
+      "id": "TLS-FX-06",
+      "title": "Learning loop ledger bundle",
+      "purpose": "Build deterministic learning update ledger and schema constraints.",
+      "what_it_builds": "Learning ledger schema and bounded update profile.",
+      "why_it_matters": "Prevents uncontrolled recommendation drift.",
+      "dependencies": [
+        "TLS-FIX-05",
+        "artifacts/tls/tls_learning_record.json"
+      ],
+      "failure_modes_prevented": [
+        "non_deterministic_updates",
+        "overfit"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_learning_loop_ledger.json"
+      ],
+      "tests_required": [
+        "tests/test_failure_learning_artifacts.py"
+      ],
+      "acceptance_criteria": [
+        "Ledger enforces bounded update deltas."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single prompt for ledger creation.",
+      "stop_condition": "Stop when schema and sample entries validate.",
+      "step_kind": "build"
+    },
+    {
+      "id": "TLS-RT-06",
+      "title": "Learning loop red-team round",
+      "purpose": "Stress learning loop with noisy feedback fixtures.",
+      "what_it_builds": "Learning loop red-team findings.",
+      "why_it_matters": "Surfaces drift and instability risks early.",
+      "dependencies": [
+        "TLS-FX-06"
+      ],
+      "failure_modes_prevented": [
+        "drift_spike",
+        "feedback_poisoning"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_learning_loop_redteam_report.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_redteam_fix_pairing_exists"
+      ],
+      "acceptance_criteria": [
+        "Red-team includes poisoning and replay divergence cases."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single red-team prompt.",
+      "stop_condition": "Stop when all required noisy cases run.",
+      "step_kind": "redteam"
+    },
+    {
+      "id": "TLS-FIX-06",
+      "title": "Learning loop fix bundle",
+      "purpose": "Apply safeguards for red-team findings in learning loop.",
+      "what_it_builds": "Fixed learning loop ledger and update caps.",
+      "why_it_matters": "Stabilizes recommendation updates across runs.",
+      "dependencies": [
+        "TLS-RT-06"
+      ],
+      "failure_modes_prevented": [
+        "repeated_drift_spike"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_learning_loop_ledger_fixed.json"
+      ],
+      "tests_required": [
+        "tests/test_failure_learning_artifacts.py"
+      ],
+      "acceptance_criteria": [
+        "Update caps and replay linkage pass fixtures."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single fix prompt.",
+      "stop_condition": "Stop when no open high findings remain.",
+      "step_kind": "fix"
+    },
+    {
+      "id": "TLS-FX-07",
+      "title": "Drift detection bundle",
+      "purpose": "Build drift signal extractor and threshold profile.",
+      "what_it_builds": "Drift signal artifact and baseline rules.",
+      "why_it_matters": "Detects regressions before operator-facing surfaces refresh.",
+      "dependencies": [
+        "TLS-FIX-06"
+      ],
+      "failure_modes_prevented": [
+        "silent_drift"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_drift_detection_profile.json"
+      ],
+      "tests_required": [
+        "tests/test_drift_signal_detection.py"
+      ],
+      "acceptance_criteria": [
+        "Extractor emits deterministic severity outputs."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single prompt for drift profile.",
+      "stop_condition": "Stop when baseline and thresholds validate.",
+      "step_kind": "build"
+    },
+    {
+      "id": "TLS-RT-07",
+      "title": "Drift detection red-team round",
+      "purpose": "Adversarially test drift thresholds and stale baseline handling.",
+      "what_it_builds": "Drift red-team report.",
+      "why_it_matters": "Ensures drift checks fail closed on invalid baselines.",
+      "dependencies": [
+        "TLS-FX-07"
+      ],
+      "failure_modes_prevented": [
+        "stale_baseline_acceptance",
+        "threshold_bypass"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_drift_redteam_report.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_no_step_depends_on_missing_artifacts"
+      ],
+      "acceptance_criteria": [
+        "Stale baseline case fails closed in report."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single red-team prompt.",
+      "stop_condition": "Stop when stale and bypass cases executed.",
+      "step_kind": "redteam"
+    },
+    {
+      "id": "TLS-FIX-07",
+      "title": "Drift detection fix bundle",
+      "purpose": "Patch drift thresholds and baseline guards from findings.",
+      "what_it_builds": "Fixed drift detection profile.",
+      "why_it_matters": "Prevents repeated stale-baseline drift misses.",
+      "dependencies": [
+        "TLS-RT-07"
+      ],
+      "failure_modes_prevented": [
+        "drift_guard_regression"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_drift_detection_profile_fixed.json"
+      ],
+      "tests_required": [
+        "tests/test_drift_signal_detection.py"
+      ],
+      "acceptance_criteria": [
+        "All high-risk drift findings closed."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single fix prompt.",
+      "stop_condition": "Stop when high-risk findings closed.",
+      "step_kind": "fix"
+    },
+    {
+      "id": "TLS-FX-08",
+      "title": "Dataset map bundle",
+      "purpose": "Create deterministic dataset-to-eval mapping artifact.",
+      "what_it_builds": "Dataset map with coverage metadata and version pins.",
+      "why_it_matters": "Anchors eval governance to traceable inputs.",
+      "dependencies": [
+        "TLS-FIX-07",
+        "artifacts/tls/system_evidence_attachment.json"
+      ],
+      "failure_modes_prevented": [
+        "dataset_drift",
+        "coverage_blind_spot"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_dataset_map.json"
+      ],
+      "tests_required": [
+        "tests/test_eval_coverage_regressions.py"
+      ],
+      "acceptance_criteria": [
+        "Each dataset row includes eval mapping id."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "2-step prompt for map and validation.",
+      "stop_condition": "Stop when all dataset rows map to eval ids.",
+      "step_kind": "build"
+    },
+    {
+      "id": "TLS-FX-09",
+      "title": "Eval governance gate bundle",
+      "purpose": "Build fail_closed eval governance gate for TLS updates.",
+      "what_it_builds": "Eval governance gate artifact and schema checks.",
+      "why_it_matters": "Blocks unverified updates from entering later phases.",
+      "dependencies": [
+        "TLS-FX-08"
+      ],
+      "failure_modes_prevented": [
+        "missing_eval_coverage",
+        "unguarded_updates"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_eval_governance_gate.json"
+      ],
+      "tests_required": [
+        "tests/test_required_eval_coverage.py"
+      ],
+      "acceptance_criteria": [
+        "Gate blocks when required eval map is incomplete."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single prompt for gate artifact.",
+      "stop_condition": "Stop when fail_closed checks pass fixtures.",
+      "step_kind": "build"
+    },
+    {
+      "id": "TLS-RT-08",
+      "title": "Dataset+eval red-team round",
+      "purpose": "Red-team dataset map and eval gate for bypass attempts.",
+      "what_it_builds": "Dataset/eval red-team findings.",
+      "why_it_matters": "Validates governance gate under adversarial inputs.",
+      "dependencies": [
+        "TLS-FX-09"
+      ],
+      "failure_modes_prevented": [
+        "eval_bypass",
+        "dataset_version_spoof"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_dataset_eval_redteam_report.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_redteam_fix_pairing_exists"
+      ],
+      "acceptance_criteria": [
+        "Bypass attempts are blocked and logged."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "Single red-team prompt.",
+      "stop_condition": "Stop when spoofing scenarios complete.",
+      "step_kind": "redteam"
+    },
+    {
+      "id": "TLS-FIX-08",
+      "title": "Dataset+eval fix bundle",
+      "purpose": "Patch dataset/eval controls from red-team results.",
+      "what_it_builds": "Fixed dataset map and eval gate artifacts.",
+      "why_it_matters": "Maintains trusted update eligibility path.",
+      "dependencies": [
+        "TLS-RT-08"
+      ],
+      "failure_modes_prevented": [
+        "repeat_eval_bypass"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_eval_governance_gate_fixed.json"
+      ],
+      "tests_required": [
+        "tests/test_required_eval_coverage.py"
+      ],
+      "acceptance_criteria": [
+        "No open high-risk findings remain."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "Single fix prompt.",
+      "stop_condition": "Stop when high-risk findings resolved.",
+      "step_kind": "fix"
+    },
+    {
+      "id": "TLS-FX-10",
+      "title": "Operator intelligence bundle",
+      "purpose": "Generate operator intelligence summaries from governed TLS artifacts.",
+      "what_it_builds": "Operator intelligence summary artifact and retrieve index.",
+      "why_it_matters": "Improves clarity without dashboard coupling.",
+      "dependencies": [
+        "TLS-FIX-08"
+      ],
+      "failure_modes_prevented": [
+        "dashboard_assumption",
+        "missing_context"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_operator_intelligence_summary.json"
+      ],
+      "tests_required": [
+        "tests/test_operator_shakeout.py"
+      ],
+      "acceptance_criteria": [
+        "Summary references artifacts only, no ui assumptions."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single prompt for summary artifact.",
+      "stop_condition": "Stop when summary links all source artifacts.",
+      "step_kind": "build"
+    },
+    {
+      "id": "TLS-RT-09",
+      "title": "Operator intelligence red-team round",
+      "purpose": "Test summary for ambiguity, stale links, and hidden behavior.",
+      "what_it_builds": "Operator intelligence red-team report.",
+      "why_it_matters": "Protects operator retrieve quality and trust.",
+      "dependencies": [
+        "TLS-FX-10"
+      ],
+      "failure_modes_prevented": [
+        "stale_artifact_links",
+        "ambiguous_guidance"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_operator_intelligence_redteam_report.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_no_dashboard_assumption"
+      ],
+      "acceptance_criteria": [
+        "All summary links resolve to existing artifacts."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single red-team prompt.",
+      "stop_condition": "Stop when link and ambiguity tests complete.",
+      "step_kind": "redteam"
+    },
+    {
+      "id": "TLS-FIX-09",
+      "title": "Operator intelligence fix bundle",
+      "purpose": "Fix summary issues found during red-team pass.",
+      "what_it_builds": "Fixed operator intelligence summary artifact.",
+      "why_it_matters": "Keeps operator-facing outputs clear and bounded.",
+      "dependencies": [
+        "TLS-RT-09"
+      ],
+      "failure_modes_prevented": [
+        "summary_regression"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_operator_intelligence_summary_fixed.json"
+      ],
+      "tests_required": [
+        "tests/test_operator_shakeout.py"
+      ],
+      "acceptance_criteria": [
+        "No unresolved high findings remain."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single fix prompt.",
+      "stop_condition": "Stop when unresolved high findings are zero.",
+      "step_kind": "fix"
+    },
+    {
+      "id": "TLS-FX-11",
+      "title": "TPA input context bundle",
+      "purpose": "Create read-only TPA context packet schema with blocked owner keys.",
+      "what_it_builds": "Read-only TPA context packet and observation input shape.",
+      "why_it_matters": "Allows TPA-owned policy evaluation to retrieve TLS context without ownership transfer.",
+      "dependencies": [
+        "TLS-FIX-09"
+      ],
+      "failure_modes_prevented": [
+        "policy_shape_drift",
+        "authority_blur"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_tpa_input_context_schema.json"
+      ],
+      "tests_required": [
+        "tests/test_policy_engine.py",
+        "tests/test_policy_backtesting.py"
+      ],
+      "acceptance_criteria": [
+        "Schema allows metadata-only policy annotations."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "2-step prompt for schema and guard check.",
+      "stop_condition": "Stop when schema blocks disallowed owner keys.",
+      "step_kind": "build"
+    },
+    {
+      "id": "TLS-RT-10",
+      "title": "TPA input red-team round",
+      "purpose": "Attempt owner-key and side-effect injection on TPA input context packets.",
+      "what_it_builds": "TPA input red-team findings.",
+      "why_it_matters": "Ensures TPA input context packets remain recommendation-only and read-only.",
+      "dependencies": [
+        "TLS-FX-11"
+      ],
+      "failure_modes_prevented": [
+        "owner_key_bypass",
+        "side_effect_injection"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_tpa_input_redteam_report.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_no_authority_boundary_violations_in_artifacts"
+      ],
+      "acceptance_criteria": [
+        "All injection attempts are blocked by schema."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "Single red-team prompt.",
+      "stop_condition": "Stop when full injection matrix executed.",
+      "step_kind": "redteam"
+    },
+    {
+      "id": "TLS-FIX-10",
+      "title": "TPA input fix bundle",
+      "purpose": "Apply TPA input context schema fixes from red-team findings.",
+      "what_it_builds": "Fixed read-only TPA context packet schema artifact.",
+      "why_it_matters": "Closes bypass paths before simulation phase.",
+      "dependencies": [
+        "TLS-RT-10"
+      ],
+      "failure_modes_prevented": [
+        "tpa_input_context_regression"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_tpa_input_context_schema_fixed.json"
+      ],
+      "tests_required": [
+        "tests/test_policy_engine.py"
+      ],
+      "acceptance_criteria": [
+        "No open high-risk TPA input findings remain."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "Single fix prompt.",
+      "stop_condition": "Stop when high-risk findings resolved.",
+      "step_kind": "fix"
+    },
+    {
+      "id": "TLS-FX-12",
+      "title": "Simulation harness bundle",
+      "purpose": "Run deterministic simulation scenarios for TLS recommendation behavior.",
+      "what_it_builds": "Simulation outcomes artifact with scenario matrix.",
+      "why_it_matters": "Validates behavior under edge and adversarial inputs.",
+      "dependencies": [
+        "TLS-FIX-10"
+      ],
+      "failure_modes_prevented": [
+        "edge_case_failure",
+        "runtime_regression"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_simulation_outcomes.json"
+      ],
+      "tests_required": [
+        "tests/test_run_ops03_adversarial_stress_testing.py"
+      ],
+      "acceptance_criteria": [
+        "Simulation matrix includes adversarial and sparse-input cases."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single prompt for simulation run.",
+      "stop_condition": "Stop when all required scenarios pass determinism check.",
+      "step_kind": "build"
+    },
+    {
+      "id": "TLS-RT-11",
+      "title": "Simulation red-team round",
+      "purpose": "Red-team simulation harness for hidden fallback and coupling.",
+      "what_it_builds": "Simulation red-team report.",
+      "why_it_matters": "Prevents latent fallback paths from reaching final integration.",
+      "dependencies": [
+        "TLS-FX-12"
+      ],
+      "failure_modes_prevented": [
+        "silent_fallback_reentry",
+        "hidden_runtime_coupling"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_simulation_redteam_report.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_no_silent_fallback_language"
+      ],
+      "acceptance_criteria": [
+        "Fallback probes include explicit visible marker checks."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single red-team prompt.",
+      "stop_condition": "Stop when fallback probes are complete.",
+      "step_kind": "redteam"
+    },
+    {
+      "id": "TLS-FIX-11",
+      "title": "Simulation fix bundle",
+      "purpose": "Patch simulation harness and scenarios from red-team report.",
+      "what_it_builds": "Fixed simulation outcomes artifact and guard notes.",
+      "why_it_matters": "Ensures stable basis for final integration.",
+      "dependencies": [
+        "TLS-RT-11"
+      ],
+      "failure_modes_prevented": [
+        "simulation_regression_repeat"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_simulation_outcomes_fixed.json"
+      ],
+      "tests_required": [
+        "tests/test_run_ops03_adversarial_stress_testing.py"
+      ],
+      "acceptance_criteria": [
+        "No unresolved high findings remain in simulation report."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single fix prompt.",
+      "stop_condition": "Stop when high-risk findings equal zero.",
+      "step_kind": "fix"
+    },
+    {
+      "id": "TLS-FX-13",
+      "title": "Final OS integration map bundle",
+      "purpose": "Build final OS integration map for TLS recommendation input channel.",
+      "what_it_builds": "Final OS integration map and compatibility checklist.",
+      "why_it_matters": "Completes operator-ready integration without ownership crossing.",
+      "dependencies": [
+        "TLS-FIX-11"
+      ],
+      "failure_modes_prevented": [
+        "final_flow_breakage",
+        "owner_boundary_crossing"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_final_os_integration_map.json"
+      ],
+      "tests_required": [
+        "tests/test_system_end_to_end_governed_loop.py"
+      ],
+      "acceptance_criteria": [
+        "Compatibility checklist passes all required integration fixtures."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "2-step prompt for map and compatibility run.",
+      "stop_condition": "Stop when compatibility checklist passes.",
+      "step_kind": "build"
+    },
+    {
+      "id": "TLS-RT-12",
+      "title": "Final OS integration red-team round",
+      "purpose": "Probe final integration map for authority and runtime regression risks.",
+      "what_it_builds": "Final integration red-team findings.",
+      "why_it_matters": "Catches last-mile integration failures before closeout artifact creation.",
+      "dependencies": [
+        "TLS-FX-13"
+      ],
+      "failure_modes_prevented": [
+        "runtime_regression",
+        "authority_leakage"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_final_os_redteam_report.json"
+      ],
+      "tests_required": [
+        "tests/test_tls_roadmap_artifacts.py::test_redteam_fix_pairing_exists"
+      ],
+      "acceptance_criteria": [
+        "All listed final integration abuse cases are executed."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "Single red-team prompt.",
+      "stop_condition": "Stop when abuse-case matrix complete.",
+      "step_kind": "redteam"
+    },
+    {
+      "id": "TLS-FIX-12",
+      "title": "Final OS integration fix bundle",
+      "purpose": "Apply fixes from final integration red-team outcomes.",
+      "what_it_builds": "Fixed final OS integration map and readiness check artifact.",
+      "why_it_matters": "Produces operator-ready integration artifact with fail_closed behavior.",
+      "dependencies": [
+        "TLS-RT-12"
+      ],
+      "failure_modes_prevented": [
+        "last_mile_regression"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_final_os_integration_map_fixed.json",
+        "artifacts/tls/tls_readiness_gate_record.json"
+      ],
+      "tests_required": [
+        "tests/test_system_end_to_end_governed_loop.py",
+        "tests/test_tls_roadmap_artifacts.py::test_roadmap_entries_complete"
+      ],
+      "acceptance_criteria": [
+        "All high-risk final integration findings are resolved and readiness checks pass."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "Single fix prompt and readiness check emission.",
+      "stop_condition": "Stop when readiness check passes and no high findings remain.",
+      "step_kind": "fix"
+    }
+  ]
+}
