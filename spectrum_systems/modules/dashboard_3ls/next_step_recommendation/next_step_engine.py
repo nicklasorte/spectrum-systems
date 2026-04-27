@@ -23,8 +23,8 @@ def _is_complete(payload: Any) -> bool:
     readiness = payload.get("h01_readiness")
     if isinstance(readiness, dict) and readiness.get("ready") is True:
         return True
-    review_outcome = str(payload.get("review_decision", "")).lower()
-    return review_outcome in {"pass", "approve", "approved"}
+    review_outcome = str(payload.get("review_observation", "")).lower()
+    return review_outcome in {"pass", "validate", "validated", "accept", "accepted", "recommend", "recommended"}
 
 
 def _derive_done(inputs: NextStepInputs) -> set[str]:
@@ -113,7 +113,7 @@ def build_next_step_report(repo_root: Path) -> tuple[dict[str, Any], bool]:
         "selected_recommendation": selected_recommendation,
         "rejected_next_steps": rejected,
         "dependency_observations": [
-            "Locked sequence enforces BLF -> RFX-04 -> RMP-SUPER-01 -> H01 -> RFX-PROOF-01 -> EVL -> TPA -> CDE -> SEL -> MET -> HOP.",
+            "Locked sequence requires BLF -> RFX-04 -> RMP-SUPER-01 -> H01 -> RFX-PROOF-01 -> EVL -> TPA -> CDE -> SEL -> MET -> HOP.",
             "Advisory TLS ranking is non-owning and cannot bypass locked dependencies.",
         ],
         "red_team_findings": red_team_findings,

@@ -19,9 +19,9 @@ LOCKED_SEQUENCE = [
     WorkItem("H01", "H01 — Pre-MVP trust spine review/fix closure", ["BLF-01", "RFX-04", "RMP-SUPER-01"], "Confirms trust spine is ready before proof hardening and expansion.", "Proof and hardening run on unstable trust-spine assumptions."),
     WorkItem("RFX-PROOF-01", "RFX LOOP-09/10 — Fix Integrity Proof + closure gate", ["BLF-01", "RFX-04", "RMP-SUPER-01", "H01"], "Creates proof-bound trust baseline required by EVL/TPA/CDE/SEL hardening.", "Trust-chain hardening occurs without proof-bound closure."),
     WorkItem("EVL", "EVL hardening", ["RFX-PROOF-01"], "Evaluation integrity depends on proof-complete trust spine.", "Evaluation signals can be spoofed or incomplete."),
-    WorkItem("TPA", "TPA hardening", ["EVL"], "Policy adjudication must consume trusted evaluation outcomes.", "Policy outcomes can be based on non-certified evaluation state."),
-    WorkItem("CDE", "CDE hardening", ["TPA"], "Control recommendations depend on trusted policy adjudication.", "Control recommendations can bypass policy trust chain."),
-    WorkItem("SEL", "SEL hardening", ["CDE"], "Enforcement must follow controlled recommendation provenance.", "Execution may enforce untrusted recommendation paths."),
+    WorkItem("TPA", "TPA hardening", ["EVL"], "Policy recommendation_signal must consume trusted evaluation outcomes.", "Policy outcomes can be based on non-readiness_evidence_present evaluation state."),
+    WorkItem("CDE", "CDE hardening", ["TPA"], "Control recommendations depend on trusted policy recommendation_signal.", "Control recommendations can bypass policy trust chain."),
+    WorkItem("SEL", "SEL hardening", ["CDE"], "Gate validation must follow controlled recommendation provenance.", "Execution may validate untrusted recommendation paths out of order."),
     WorkItem("MET", "MET", ["RFX-PROOF-01", "SEL"], "Metrics trust must be grounded in completed core trust spine.", "Metrics can falsely signal maturity before trust closure."),
     WorkItem("HOP", "HOP", ["MET"], "Higher-order optimization depends on trustworthy metrics.", "Optimization can reinforce incorrect or unsafe behavior."),
 ]

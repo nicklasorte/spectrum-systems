@@ -7,10 +7,10 @@
     "H01 \u2014 Pre-MVP trust spine review/fix closure"
   ],
   "dependency_observations": [
-    "Locked sequence enforces BLF -> RFX-04 -> RMP-SUPER-01 -> H01 -> RFX-PROOF-01 -> EVL -> TPA -> CDE -> SEL -> MET -> HOP.",
+    "Locked sequence requires BLF -> RFX-04 -> RMP-SUPER-01 -> H01 -> RFX-PROOF-01 -> EVL -> TPA -> CDE -> SEL -> MET -> HOP.",
     "Advisory TLS ranking is non-owning and cannot bypass locked dependencies."
   ],
-  "generated_at": "2026-04-27T15:18:37Z",
+  "generated_at": "2026-04-27T15:42:44Z",
   "partial_work": [],
   "ranked_priorities": [
     {
@@ -223,9 +223,9 @@
       "required_missing_artifacts_or_tests": [
         "EVL"
       ],
-      "risk_if_done_out_of_order": "Policy outcomes can be based on non-certified evaluation state.",
+      "risk_if_done_out_of_order": "Policy outcomes can be based on non-readiness_evidence_present evaluation state.",
       "status": "not_started",
-      "why_it_matters": "Policy adjudication must consume trusted evaluation outcomes.",
+      "why_it_matters": "Policy recommendation_signal must consume trusted evaluation outcomes.",
       "work_item": "TPA hardening"
     },
     {
@@ -238,7 +238,7 @@
       ],
       "risk_if_done_out_of_order": "Control recommendations can bypass policy trust chain.",
       "status": "not_started",
-      "why_it_matters": "Control recommendations depend on trusted policy adjudication.",
+      "why_it_matters": "Control recommendations depend on trusted policy recommendation_signal.",
       "work_item": "CDE hardening"
     },
     {
@@ -249,9 +249,9 @@
       "required_missing_artifacts_or_tests": [
         "CDE"
       ],
-      "risk_if_done_out_of_order": "Execution may enforce untrusted recommendation paths.",
+      "risk_if_done_out_of_order": "Execution may validate untrusted recommendation paths out of order.",
       "status": "not_started",
-      "why_it_matters": "Enforcement must follow controlled recommendation provenance.",
+      "why_it_matters": "Gate validation must follow controlled recommendation provenance.",
       "work_item": "SEL hardening"
     },
     {
@@ -326,7 +326,7 @@
       "required": true
     },
     {
-      "content_hash": "sha256:8fbd5602af2bc82b2acb768d04ca6f155437b301a8122efe740d921bf6439844",
+      "content_hash": "sha256:791d7d21c5c2a8228c09de5c244330f3343d63f28e1fa26dfff96c4d0054d1ef",
       "path": "artifacts/system_dependency_priority_report.json",
       "present": true,
       "required": true
