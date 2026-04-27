@@ -2,7 +2,7 @@
   "artifact_type": "auto_remediation_candidate_bundle",
   "slice_id": "RL-19",
   "owner": "FRE",
-  "generated_at": "2026-04-24T16:44:24Z",
+  "generated_at": "2026-04-27T12:49:20Z",
   "bounded_classes": [
     "schema_patch",
     "lint_fix"

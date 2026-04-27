@@ -3,7 +3,7 @@
   "batch_id": "RH-KERNEL-24-01",
   "slice_id": "RH-02",
   "owner": "PRG",
-  "generated_at": "2026-04-24T16:44:35Z",
+  "generated_at": "2026-04-27T12:49:35Z",
   "canonical_json_authority": true,
   "report_strength": {
     "artifact_backing": "strong",

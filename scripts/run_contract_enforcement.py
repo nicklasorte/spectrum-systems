@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
-Cross-repo contract enforcement for the spectrum-systems governance architecture.
+Cross-repo contract compliance gate for the spectrum-systems governance architecture.
 
-Reads governance manifests, the ecosystem registry, and the canonical standards
-manifest to validate contract usage across all governed repositories.
+This script is a non-owner reporting/compliance surface. It reads governance
+manifests, the ecosystem registry, and the canonical standards manifest to
+validate contract usage across all governed repositories. It emits compliance
+findings only; canonical fail-closed authority remains with the owners
+declared in docs/architecture/system_registry.md.
 
 Validation rules applied
 ------------------------
@@ -23,16 +26,18 @@ cause CI failure — they are surfaced clearly so they can be remediated.
 Outputs
 -------
 - governance/reports/contract-dependency-graph.json  (machine-readable)
-- docs/governance-reports/contract-enforcement-report.md  (human-readable)
+- docs/governance-reports/<contract-compliance-report>.md  (human-readable;
+  legacy filename retained for backwards compatibility, headings use
+  compliance vocabulary)
 
 Exit codes
 ----------
-0 — no enforcement failures  (warnings and not-yet-enforceable do not count)
-1 — one or more real enforcement failures
+0 — no compliance findings (warnings and not-yet-enforceable do not count)
+1 — one or more compliance findings detected
 
 CI output format
 ----------------
-[contract-enforcement] repo=<name> system_id=<id> contract=<type>[@<ver>] rule=<rule> error=<msg>
+[contract-compliance] repo=<name> system_id=<id> contract=<type>[@<ver>] rule=<rule> error=<msg>
 """
 
 from __future__ import annotations
@@ -48,7 +53,7 @@ ECOSYSTEM_REGISTRY_PATH = REPO_ROOT / "ecosystem" / "ecosystem-registry.json"
 STANDARDS_MANIFEST_PATH = REPO_ROOT / "contracts" / "standards-manifest.json"
 MANIFESTS_DIR = REPO_ROOT / "governance" / "examples" / "manifests"
 CONTRACT_GRAPH_PATH = REPO_ROOT / "governance" / "reports" / "contract-dependency-graph.json"
-ENFORCEMENT_REPORT_PATH = REPO_ROOT / "docs" / "governance-reports" / "contract-enforcement-report.md"
+COMPLIANCE_REPORT_PATH = REPO_ROOT / "docs" / "governance-reports" / "contract-compliance-report.md"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -94,7 +99,7 @@ def load_governance_manifests() -> Dict[str, dict]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Enforcement logic helpers
+# Compliance gate logic helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _failure(repo: str, system_id: Optional[str], contract: str, rule: str, error: str) -> dict:
@@ -280,15 +285,15 @@ def build_contract_dependency_graph(
 # Output formatters
 # ─────────────────────────────────────────────────────────────────────────────
 
-def format_enforcement_line(item: dict) -> str:
-    """Return a structured enforcement log line for CI output."""
+def format_compliance_log_line(item: dict) -> str:
+    """Return a structured compliance log line for CI output."""
     repo = item.get("repo", "")
     system_id = item.get("system_id", "")
     contract = item.get("contract", "")
     rule = item.get("rule", "")
     error = item.get("error", item.get("message", ""))
     return (
-        f"[contract-enforcement] repo={repo} system_id={system_id} "
+        f"[contract-compliance] repo={repo} system_id={system_id} "
         f"contract={contract} rule={rule} error={error}"
     )
 
@@ -298,7 +303,7 @@ def write_dependency_graph(graph: dict) -> None:
     CONTRACT_GRAPH_PATH.write_text(json.dumps(graph, indent=2), encoding="utf-8")
 
 
-def write_enforcement_report(
+def write_compliance_report(
     graph: dict,
     all_failures: List[dict],
     all_warnings: List[dict],
@@ -312,7 +317,7 @@ def write_enforcement_report(
     nyes = [r for r in repos if r["validation_status"] == "not_yet_enforceable"]
 
     lines = [
-        "# Cross-Repo Contract Enforcement Report",
+        "# Cross-Repo Contract Compliance Report",
         "",
         f"Generated: {generated_at}",
         f"Source: `contracts/standards-manifest.json`",
@@ -343,10 +348,10 @@ def write_enforcement_report(
         sid = f" `{repo['system_id']}`" if repo["system_id"] else ""
         lines.append(f"- **{repo['repo_name']}**{sid} — {badge}")
 
-    lines += ["", "## Enforcement Failures", ""]
+    lines += ["", "## Compliance Findings", ""]
     if all_failures:
         for f in all_failures:
-            lines.append(f"`{format_enforcement_line(f)}`")
+            lines.append(f"`{format_compliance_log_line(f)}`")
             lines.append("")
     else:
         lines.append("None.")
@@ -354,7 +359,7 @@ def write_enforcement_report(
     lines += ["", "## Warnings", ""]
     if all_warnings:
         for w in all_warnings:
-            lines.append(f"- `{format_enforcement_line(w)}`")
+            lines.append(f"- `{format_compliance_log_line(w)}`")
     else:
         lines.append("None.")
 
@@ -365,14 +370,14 @@ def write_enforcement_report(
         lines += [
             "",
             "> These repos are not failed by CI. Add a governance manifest under "
-            "`governance/examples/manifests/` to enable enforcement.",
+            "`governance/examples/manifests/` to enable compliance checking.",
         ]
     else:
         lines.append("All governed repos have governance manifests.")
 
     lines += ["", "## Remediation Actions", ""]
     if all_failures:
-        lines.append("### Enforcement Failures (must fix)")
+        lines.append("### Compliance Findings (must fix)")
         for f in all_failures:
             rule = f.get("rule", "")
             repo = f.get("repo", "")
@@ -406,21 +411,21 @@ def write_enforcement_report(
     if not all_failures and not all_warnings:
         lines.append("No actions required.")
 
-    ENFORCEMENT_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    ENFORCEMENT_REPORT_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    COMPLIANCE_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    COMPLIANCE_REPORT_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Orchestration
 # ─────────────────────────────────────────────────────────────────────────────
 
-def run_enforcement(
+def run_compliance_gate(
     registry: Dict[str, dict],
     standards: Dict[str, dict],
     manifests: Dict[str, dict],
 ) -> Tuple[List[dict], List[dict], List[str], Dict[str, dict]]:
     """
-    Run all enforcement checks and return (failures, warnings, not_yet_enforceable,
+    Run all compliance checks and return (failures, warnings, not_yet_enforceable,
     per_repo_results).
 
     This function is separated from main() so it can be unit-tested without
@@ -466,17 +471,17 @@ def main() -> int:
     standards = load_standards_contracts()
     manifests = load_governance_manifests()
 
-    all_failures, all_warnings, not_yet_enforceable, per_repo_results = run_enforcement(
+    all_failures, all_warnings, not_yet_enforceable, per_repo_results = run_compliance_gate(
         registry, standards, manifests
     )
 
     for f in all_failures:
-        print(format_enforcement_line(f))
+        print(format_compliance_log_line(f))
     for w in all_warnings:
-        print(format_enforcement_line(w))
+        print(format_compliance_log_line(w))
     for repo in not_yet_enforceable:
         print(
-            f"[contract-enforcement] repo={repo} status=not_yet_enforceable "
+            f"[contract-compliance] repo={repo} status=not_yet_enforceable "
             f"reason=no governance manifest found"
         )
 
@@ -485,18 +490,18 @@ def main() -> int:
         registry, manifests, standards, per_repo_results, generated_at
     )
     write_dependency_graph(graph)
-    write_enforcement_report(graph, all_failures, all_warnings, not_yet_enforceable, generated_at)
+    write_compliance_report(graph, all_failures, all_warnings, not_yet_enforceable, generated_at)
 
     print(
-        f"\n[contract-enforcement] graph written to "
+        f"\n[contract-compliance] graph written to "
         f"{CONTRACT_GRAPH_PATH.relative_to(REPO_ROOT)}"
     )
     print(
-        f"[contract-enforcement] report written to "
-        f"{ENFORCEMENT_REPORT_PATH.relative_to(REPO_ROOT)}"
+        f"[contract-compliance] report written to "
+        f"{COMPLIANCE_REPORT_PATH.relative_to(REPO_ROOT)}"
     )
     print(
-        f"\n[contract-enforcement] summary: failures={len(all_failures)} "
+        f"\n[contract-compliance] summary: failures={len(all_failures)} "
         f"warnings={len(all_warnings)} not_yet_enforceable={len(not_yet_enforceable)}"
     )
 
