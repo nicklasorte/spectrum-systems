@@ -111,6 +111,7 @@ describe('MET-01-02 — dashboard API wiring', () => {
   });
 
   it('health route seeds artifact-backed loop systems so artifact-backed percentage can exceed zero', () => {
+    expect(healthSrc).toContain("'artifact_store' as DataSource");
     expect(healthSrc).toContain('seed_artifacts_present');
     expect(healthSrc).toContain('AEX');
     expect(healthSrc).toContain('EVL');
@@ -119,7 +120,7 @@ describe('MET-01-02 — dashboard API wiring', () => {
 
   it('health route keeps fallback behavior for non-seeded systems', () => {
     expect(healthSrc).toContain('stub_fallback');
-    expect(healthSrc).toContain('stub_fallback');
+    expect(healthSrc).toContain('non-seeded systems still use static fallback estimates');
   });
 
   it('debug artifacts route reports dashboard_seed discovery and missing expected files', () => {
