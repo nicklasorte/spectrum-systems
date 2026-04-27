@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-04-24T16:43:20Z",
+  "generated_at": "2026-04-27T12:49:01Z",
   "nodes": {
     "repositories": [
       {
@@ -6368,13 +6368,13 @@
       {
         "id": "rge_amendment_record",
         "node_type": "contract",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "stability": ""
       },
       {
         "id": "rge_analysis_record",
         "node_type": "contract",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "stability": ""
       },
       {
@@ -6386,7 +6386,7 @@
       {
         "id": "rge_redteam_record",
         "node_type": "contract",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "stability": ""
       },
       {
@@ -6404,7 +6404,7 @@
       {
         "id": "rge_trust_record",
         "node_type": "contract",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "stability": ""
       },
       {

@@ -194,28 +194,30 @@ class TestScoreSchemaAlignment:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Maturity scoring — ci_enforcement category
+# Maturity scoring — ci_compliance_signal category (renamed under
+# AUTH-SHAPE-FIX-1232B from ci_enforcement; the function is a non-owner
+# observational scorer and must not use SEL/ENF authority vocabulary)
 # ─────────────────────────────────────────────────────────────────────────────
 
-class TestScoreCiEnforcement:
+class TestScoreCiComplianceSignal:
     def test_compliant_for_governance_repo(self):
         entry = _make_repo_entry("gov-repo", repo_type="governance")
-        result = health_mod.score_ci_enforcement("gov-repo", entry)
+        result = health_mod.score_ci_compliance_signal("gov-repo", entry)
         assert result == "compliant"
 
     def test_compliant_for_active_engine(self):
         entry = _make_repo_entry("engine-a", status="active")
-        result = health_mod.score_ci_enforcement("engine-a", entry)
+        result = health_mod.score_ci_compliance_signal("engine-a", entry)
         assert result == "compliant"
 
     def test_partial_for_experimental(self):
         entry = _make_repo_entry("engine-a", status="experimental")
-        result = health_mod.score_ci_enforcement("engine-a", entry)
+        result = health_mod.score_ci_compliance_signal("engine-a", entry)
         assert result == "partial"
 
     def test_missing_for_planned(self):
         entry = _make_repo_entry("engine-a", status="planned")
-        result = health_mod.score_ci_enforcement("engine-a", entry)
+        result = health_mod.score_ci_compliance_signal("engine-a", entry)
         assert result == "missing"
 
 

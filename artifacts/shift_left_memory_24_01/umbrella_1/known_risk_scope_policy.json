@@ -2,7 +2,7 @@
   "artifact_type": "known_risk_scope_policy",
   "slice_id": "SM-03",
   "owner": "TPA",
-  "generated_at": "2026-04-24T16:45:26Z",
+  "generated_at": "2026-04-27T12:49:48Z",
   "scope_constraints": [
     "evidence_required_for_high_risk",
     "bounded_change_surface"

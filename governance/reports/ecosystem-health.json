@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-04-24T16:43:20Z",
+  "generated_at": "2026-04-27T12:49:01Z",
   "summary": {
-    "overall_health": "healthy",
+    "overall_health": "warning",
     "total_repos": 15,
     "governance_compliance": {
-      "compliant": 15,
-      "warning": 0,
+      "compliant": 12,
+      "warning": 3,
       "fail": 0,
       "partial": 0
     },
@@ -17,7 +17,7 @@
     "schema_integrity": {
       "compliant": 15
     },
-    "ci_enforcement": {
+    "ci_compliance_signal": {
       "missing": 6,
       "compliant": 8,
       "partial": 1
@@ -43,13 +43,13 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "compliant",
           "schema_alignment": "compliant",
-          "ci_enforcement": "missing",
+          "ci_compliance_signal": "missing",
           "evaluation_evidence": "missing",
           "documentation": "compliant"
         }
       },
       "maturity_level": 6,
-      "notes": "repo is planned; ci_enforcement missing; evaluation_evidence missing"
+      "notes": "repo is planned; ci_compliance_signal missing; evaluation_evidence missing"
     },
     {
       "repo_name": "comment-resolution-engine",
@@ -68,7 +68,7 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "compliant",
           "schema_alignment": "compliant",
-          "ci_enforcement": "compliant",
+          "ci_compliance_signal": "compliant",
           "evaluation_evidence": "compliant",
           "documentation": "compliant"
         }
@@ -93,7 +93,7 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "compliant",
           "schema_alignment": "compliant",
-          "ci_enforcement": "compliant",
+          "ci_compliance_signal": "compliant",
           "evaluation_evidence": "compliant",
           "documentation": "compliant"
         }
@@ -118,13 +118,13 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "compliant",
           "schema_alignment": "compliant",
-          "ci_enforcement": "missing",
+          "ci_compliance_signal": "missing",
           "evaluation_evidence": "missing",
           "documentation": "compliant"
         }
       },
       "maturity_level": 6,
-      "notes": "repo is planned; ci_enforcement missing; evaluation_evidence missing"
+      "notes": "repo is planned; ci_compliance_signal missing; evaluation_evidence missing"
     },
     {
       "repo_name": "knowledge-graph-engine",
@@ -143,13 +143,13 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "compliant",
           "schema_alignment": "compliant",
-          "ci_enforcement": "missing",
+          "ci_compliance_signal": "missing",
           "evaluation_evidence": "missing",
           "documentation": "compliant"
         }
       },
       "maturity_level": 6,
-      "notes": "repo is planned; ci_enforcement missing; evaluation_evidence missing"
+      "notes": "repo is planned; ci_compliance_signal missing; evaluation_evidence missing"
     },
     {
       "repo_name": "meeting-minutes-engine",
@@ -157,7 +157,7 @@
       "repo_type": "operational_engine",
       "architecture_layer": "Layer 3",
       "status": "active",
-      "governance_status": "compliant",
+      "governance_status": "warning",
       "contract_status": "pass",
       "schema_status": "compliant",
       "ci_status": "compliant",
@@ -168,7 +168,7 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "compliant",
           "schema_alignment": "compliant",
-          "ci_enforcement": "compliant",
+          "ci_compliance_signal": "compliant",
           "evaluation_evidence": "partial",
           "documentation": "compliant"
         }
@@ -193,13 +193,13 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "compliant",
           "schema_alignment": "compliant",
-          "ci_enforcement": "missing",
+          "ci_compliance_signal": "missing",
           "evaluation_evidence": "missing",
           "documentation": "compliant"
         }
       },
       "maturity_level": 6,
-      "notes": "repo is planned; ci_enforcement missing; evaluation_evidence missing"
+      "notes": "repo is planned; ci_compliance_signal missing; evaluation_evidence missing"
     },
     {
       "repo_name": "spectrum-pipeline-engine",
@@ -218,13 +218,13 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "compliant",
           "schema_alignment": "compliant",
-          "ci_enforcement": "missing",
+          "ci_compliance_signal": "missing",
           "evaluation_evidence": "compliant",
           "documentation": "compliant"
         }
       },
       "maturity_level": 8,
-      "notes": "repo is planned; ci_enforcement missing"
+      "notes": "repo is planned; ci_compliance_signal missing"
     },
     {
       "repo_name": "spectrum-program-advisor",
@@ -232,7 +232,7 @@
       "repo_type": "advisory",
       "architecture_layer": "Layer 5",
       "status": "experimental",
-      "governance_status": "compliant",
+      "governance_status": "warning",
       "contract_status": "pass",
       "schema_status": "compliant",
       "ci_status": "partial",
@@ -243,7 +243,7 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "compliant",
           "schema_alignment": "compliant",
-          "ci_enforcement": "partial",
+          "ci_compliance_signal": "partial",
           "evaluation_evidence": "compliant",
           "documentation": "compliant"
         }
@@ -268,13 +268,13 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "compliant",
           "schema_alignment": "compliant",
-          "ci_enforcement": "missing",
+          "ci_compliance_signal": "missing",
           "evaluation_evidence": "partial",
           "documentation": "compliant"
         }
       },
       "maturity_level": 7,
-      "notes": "repo is planned; ci_enforcement missing"
+      "notes": "repo is planned; ci_compliance_signal missing"
     },
     {
       "repo_name": "spectrum-systems",
@@ -282,7 +282,7 @@
       "repo_type": "governance",
       "architecture_layer": "Layer 2",
       "status": "active",
-      "governance_status": "compliant",
+      "governance_status": "warning",
       "contract_status": "governance-repo",
       "schema_status": "compliant",
       "ci_status": "compliant",
@@ -293,7 +293,7 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "partial",
           "schema_alignment": "compliant",
-          "ci_enforcement": "compliant",
+          "ci_compliance_signal": "compliant",
           "evaluation_evidence": "partial",
           "documentation": "compliant"
         }
@@ -318,7 +318,7 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "compliant",
           "schema_alignment": "compliant",
-          "ci_enforcement": "compliant",
+          "ci_compliance_signal": "compliant",
           "evaluation_evidence": "partial",
           "documentation": "compliant"
         }
@@ -343,7 +343,7 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "compliant",
           "schema_alignment": "compliant",
-          "ci_enforcement": "compliant",
+          "ci_compliance_signal": "compliant",
           "evaluation_evidence": "partial",
           "documentation": "compliant"
         }
@@ -368,7 +368,7 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "partial",
           "schema_alignment": "compliant",
-          "ci_enforcement": "compliant",
+          "ci_compliance_signal": "compliant",
           "evaluation_evidence": "missing",
           "documentation": "compliant"
         }
@@ -393,7 +393,7 @@
           "governance_artifacts": "compliant",
           "contract_compliance": "compliant",
           "schema_alignment": "compliant",
-          "ci_enforcement": "compliant",
+          "ci_compliance_signal": "compliant",
           "evaluation_evidence": "compliant",
           "documentation": "compliant"
         }

@@ -28,7 +28,7 @@ from run_contract_enforcement import (  # noqa: E402
     build_contract_dependency_graph,
     check_consumer_consistency,
     check_repo_contracts,
-    run_enforcement,
+    run_compliance_gate,
     load_ecosystem_registry,
     load_governance_manifests,
     load_standards_contracts,
@@ -225,7 +225,7 @@ def test_not_yet_enforceable_repo_is_not_a_failure() -> None:
     standards = _standards()
     manifests: dict = {}  # no manifests present
 
-    failures, warnings, nyes, per_repo = run_enforcement(registry, standards, manifests)
+    failures, warnings, nyes, per_repo = run_compliance_gate(registry, standards, manifests)
     assert failures == []
     assert "repo-a" in nyes
     assert "repo-b" in nyes
@@ -236,7 +236,7 @@ def test_not_yet_enforceable_repos_appear_in_dependency_graph() -> None:
     registry = _registry()
     standards = _standards()
     manifests: dict = {}
-    _, _, nyes, per_repo = run_enforcement(registry, standards, manifests)
+    _, _, nyes, per_repo = run_compliance_gate(registry, standards, manifests)
 
     graph = build_contract_dependency_graph(registry, manifests, standards, per_repo, "2026-03-17T00:00:00Z")
     statuses = {r["repo_name"]: r["validation_status"] for r in graph["repos"]}
@@ -255,7 +255,7 @@ def test_dependency_graph_required_fields() -> None:
     manifests = {
         "repo-a": _manifest("repo-a", {"alpha_contract": "1.0.0"}),
     }
-    _, _, _, per_repo = run_enforcement(registry, standards, manifests)
+    _, _, _, per_repo = run_compliance_gate(registry, standards, manifests)
     graph = build_contract_dependency_graph(registry, manifests, standards, per_repo, "2026-03-17T00:00:00Z")
 
     assert "schema_version" in graph
@@ -273,7 +273,7 @@ def test_dependency_graph_repo_entry_fields() -> None:
         "repo-a": _manifest("repo-a", {"alpha_contract": "1.0.0"}, system_id="SYS-A"),
         "repo-b": _manifest("repo-b", {"beta_contract": "2.0.0"}, system_id="SYS-B"),
     }
-    _, _, _, per_repo = run_enforcement(registry, standards, manifests)
+    _, _, _, per_repo = run_compliance_gate(registry, standards, manifests)
     graph = build_contract_dependency_graph(registry, manifests, standards, per_repo, "2026-03-17T00:00:00Z")
 
     for repo in graph["repos"]:
@@ -293,7 +293,7 @@ def test_dependency_graph_contract_index_reverse_lookup() -> None:
         "repo-a": _manifest("repo-a", {"alpha_contract": "1.0.0"}),
         "repo-b": _manifest("repo-b", {"alpha_contract": "1.0.0", "beta_contract": "2.0.0"}),
     }
-    _, _, _, per_repo = run_enforcement(registry, standards, manifests)
+    _, _, _, per_repo = run_compliance_gate(registry, standards, manifests)
     graph = build_contract_dependency_graph(registry, manifests, standards, per_repo, "2026-03-17T00:00:00Z")
 
     idx = graph["contract_index"]
@@ -311,7 +311,7 @@ def test_dependency_graph_drift_flag() -> None:
         "repo-a": _manifest("repo-a", {"alpha_contract": "0.9.0"}),  # drift
         "repo-b": _manifest("repo-b", {"beta_contract": "2.0.0"}),   # no drift
     }
-    _, _, _, per_repo = run_enforcement(registry, standards, manifests)
+    _, _, _, per_repo = run_compliance_gate(registry, standards, manifests)
     graph = build_contract_dependency_graph(registry, manifests, standards, per_repo, "2026-03-17T00:00:00Z")
 
     repo_a = next(r for r in graph["repos"] if r["repo_name"] == "repo-a")
@@ -333,7 +333,7 @@ def test_dependency_graph_validation_status_fail() -> None:
         "repo-a": _manifest("repo-a", {"nonexistent_contract": "1.0.0"}),
         "repo-b": _manifest("repo-b", {"beta_contract": "2.0.0"}),
     }
-    failures, warnings, nyes, per_repo = run_enforcement(registry, standards, manifests)
+    failures, warnings, nyes, per_repo = run_compliance_gate(registry, standards, manifests)
     graph = build_contract_dependency_graph(registry, manifests, standards, per_repo, "2026-03-17T00:00:00Z")
 
     repo_a = next(r for r in graph["repos"] if r["repo_name"] == "repo-a")
@@ -380,8 +380,14 @@ def test_enforcement_script_generates_contract_graph(tmp_path: Path) -> None:
     assert "generated_at" in graph
 
 
-def test_enforcement_script_generates_enforcement_report() -> None:
-    """Running the script should produce the contract-enforcement-report.md."""
+def test_compliance_script_generates_compliance_report() -> None:
+    """Running the script should produce the contract-compliance-report.md.
+
+    AUTH-SHAPE-FIX-1232B renamed the output file from
+    contract-enforcement-report.md to contract-compliance-report.md so the
+    non-owner reporting surface no longer carries SEL/ENF authority
+    vocabulary.
+    """
     result = subprocess.run(
         [sys.executable, str(SCRIPT_PATH)],
         capture_output=True,
@@ -390,37 +396,40 @@ def test_enforcement_script_generates_enforcement_report() -> None:
     )
     assert result.returncode == 0
 
-    report_path = REPO_ROOT / "docs" / "governance-reports" / "contract-enforcement-report.md"
-    assert report_path.exists(), "contract-enforcement-report.md was not created"
+    report_path = REPO_ROOT / "docs" / "governance-reports" / "contract-compliance-report.md"
+    assert report_path.exists(), "contract-compliance-report.md was not created"
 
     content = report_path.read_text(encoding="utf-8")
-    assert "# Cross-Repo Contract Enforcement Report" in content
+    # Report headings use safe-vocabulary form ("Compliance" replaces
+    # "Enforcement") so the regenerated report passes the authority-shape
+    # preflight on docs/ surfaces.
+    assert "# Cross-Repo Contract Compliance Report" in content
     assert "## Summary" in content
     assert "## Repos Inspected" in content
-    assert "## Enforcement Failures" in content
+    assert "## Compliance Findings" in content
     assert "## Warnings" in content
     assert "## Not Yet Enforceable" in content
 
 
-def test_enforcement_output_format_for_failures() -> None:
-    """Failure lines must match the canonical [contract-enforcement] format."""
+def test_compliance_output_format_for_failures() -> None:
+    """Failure lines must match the canonical [contract-compliance] format."""
     standards = _standards()
     registry = _registry()
     manifests = {
         "repo-a": _manifest("repo-a", {"alpha_contract": "0.5.0"}, system_id="SYS-A"),
     }
-    failures, _, _, _ = run_enforcement(registry, standards, manifests)
+    failures, _, _, _ = run_compliance_gate(registry, standards, manifests)
     assert failures, "Expected at least one failure"
-    from run_contract_enforcement import format_enforcement_line
-    line = format_enforcement_line(failures[0])
-    assert line.startswith("[contract-enforcement]")
+    from run_contract_enforcement import format_compliance_log_line
+    line = format_compliance_log_line(failures[0])
+    assert line.startswith("[contract-compliance]")
     assert "repo=repo-a" in line
     assert "system_id=SYS-A" in line
     assert "rule=version-pin" in line
 
 
-def test_enforcement_no_error_failures_on_example_manifests() -> None:
-    """The seeded example governance manifests must not trigger enforcement failures."""
+def test_compliance_no_error_failures_on_example_manifests() -> None:
+    """The seeded example governance manifests must not trigger compliance findings."""
     from run_contract_enforcement import (
         load_ecosystem_registry,
         load_governance_manifests,
@@ -430,9 +439,9 @@ def test_enforcement_no_error_failures_on_example_manifests() -> None:
     standards = load_standards_contracts()
     manifests = load_governance_manifests()
 
-    failures, warnings, nyes, _ = run_enforcement(registry, standards, manifests)
+    failures, warnings, nyes, _ = run_compliance_gate(registry, standards, manifests)
     assert failures == [], (
-        "Enforcement failures detected on example manifests:\n"
+        "Compliance findings detected on example manifests:\n"
         + "\n".join(
             f"  repo={f['repo']} contract={f['contract']} rule={f['rule']} error={f['error']}"
             for f in failures

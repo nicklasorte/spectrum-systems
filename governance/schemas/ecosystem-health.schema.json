@@ -23,7 +23,7 @@
         "governance_compliance",
         "contract_alignment",
         "schema_integrity",
-        "ci_enforcement",
+        "ci_compliance_signal",
         "repos_missing_required_artifacts",
         "repos_not_yet_enforceable"
       ],
@@ -37,7 +37,7 @@
         "governance_compliance": {"type": "object", "additionalProperties": {"type": "integer"}},
         "contract_alignment": {"type": "object", "additionalProperties": {"type": "integer"}},
         "schema_integrity": {"type": "object", "additionalProperties": {"type": "integer"}},
-        "ci_enforcement": {"type": "object", "additionalProperties": {"type": "integer"}},
+        "ci_compliance_signal": {"type": "object", "additionalProperties": {"type": "integer"}},
         "repos_missing_required_artifacts": {
           "type": "array",
           "items": {"type": "string"}
