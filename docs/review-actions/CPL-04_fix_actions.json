@@ -22,6 +22,11 @@
       "action_id": "A-003",
       "finding": "Standards publication is deferred for this feature scope.",
       "recommendation": "Handle standards-manifest publication in a separate SCH/GOV work item."
+    },
+    {
+      "action_id": "A-004",
+      "finding": "Legacy WPG and transcript-pipeline examples must remain separated by namespace.",
+      "recommendation": "Keep root meeting_minutes example on legacy shape and maintain CPL example under contracts/examples/transcript_pipeline/."
     }
   ],
   "created_at": "2026-04-27T00:00:00Z"

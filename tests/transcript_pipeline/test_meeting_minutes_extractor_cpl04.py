@@ -29,6 +29,10 @@ def _load_contract_schema(name: str) -> dict:
     return json.loads(schema_path.read_text(encoding="utf-8"))
 
 
+def _load_json_path(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def test_schema_rejects_legacy_outcomes_key_and_accepts_meeting_outcomes() -> None:
     schema = _load_contract_schema("meeting_minutes_artifact")
     valid_payload = {
@@ -168,3 +172,22 @@ def test_pqx_integration_returns_execution_record_and_no_direct_write_in_pure_ex
     assert result["execution_record"]["record_type"] == "pqx_execution_record"
     assert result["execution_record"]["status"] == "success"
     assert result["output_artifact"]["artifact_type"] == "meeting_minutes_artifact"
+
+
+def test_namespace_examples_validate_independently_and_runtime_stays_transcript_pipeline() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    transcript_schema = _load_contract_schema("meeting_minutes_artifact")
+
+    namespaced_example = _load_json_path(
+        repo_root / "contracts" / "examples" / "transcript_pipeline" / "meeting_minutes_artifact.example.json"
+    )
+    validate(namespaced_example, transcript_schema)
+
+    legacy_wpg_example = _load_json_path(repo_root / "contracts" / "examples" / "meeting_minutes_artifact.json")
+    assert legacy_wpg_example.get("schema_version") == "1.0.0"
+    assert namespaced_example.get("schema_ref") == "transcript_pipeline/meeting_minutes_artifact"
+
+    fixture = _load_fixture("cpl04_valid_transcript.json")
+    payload = extract_meeting_minutes(fixture["transcript_artifact"], fixture["context_bundle"], fixture["gate_evidence"])
+    assert payload["schema_ref"] == "transcript_pipeline/meeting_minutes_artifact"
+    assert payload["artifact_type"] == "meeting_minutes_artifact"

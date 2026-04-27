@@ -200,6 +200,13 @@ class TestMeetingMinutesArtifactSchema:
             validate(schema, artifact)
 
 
+    def test_namespaced_transcript_pipeline_example_validates(self) -> None:
+        schema = load_schema("meeting_minutes_artifact")
+        example_path = Path(__file__).parent.parent.parent / "contracts" / "examples" / "transcript_pipeline" / "meeting_minutes_artifact.example.json"
+        example = json.loads(example_path.read_text())
+        validate(schema, example)
+
+
 
 # ---------------------------------------------------------------------------
 # review_artifact — severity ladder
