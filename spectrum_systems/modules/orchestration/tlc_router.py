@@ -1,7 +1,7 @@
 """
 TLC Router — spectrum_systems/modules/orchestration/tlc_router.py
 
-TLC is the sole orchestration authority. This module enforces routing rules for
+TLC is the sole orchestration authority. This module gate-checks routing rules for
 the transcript-to-study pipeline. All artifact-type transitions are explicit,
 enumerated, and fail-closed.
 
@@ -107,7 +107,14 @@ if _STARTUP_CYCLES:
 
 
 def _route_artifact_unchecked(artifact_type: str) -> str:
-    """Internal-only. Does NOT enforce gate evidence. Use route_with_gate_evidence for all governed routing."""
+    """Internal-only. Does not validate gate evidence.
+
+    External callers MUST use route_with_gate_evidence. This symbol is
+    underscore-prefixed, excluded from __all__, and detected by the routing
+    bypass guard in scripts/run_3ls_authority_preflight.py when used outside
+    spectrum_systems/modules/orchestration/tlc_router.py. Direct external
+    calls are a routing bypass and produce a ROUTING_BYPASS_ATTEMPT finding.
+    """
     if not artifact_type or not isinstance(artifact_type, str):
         raise ArtifactRoutingError(
             "artifact_type must be a non-empty string",
@@ -176,7 +183,7 @@ def get_full_pipeline() -> List[str]:
 # Neutral gate status sets — TLC does not own control authority.
 # These values are produced by an upstream evaluator and consumed here
 # as evidence only. TLC verifies presence and consistency of the evidence;
-# it does not make the authority decision itself.
+# it does not produce the upstream authority signal itself.
 _GATE_STATUS_ROUTABLE: frozenset = frozenset(["passed_gate"])
 _GATE_STATUS_NOT_ROUTABLE: frozenset = frozenset(["failed_gate", "missing_gate"])
 _GATE_STATUS_CONDITIONAL: frozenset = frozenset(["conditional_gate"])
@@ -217,14 +224,23 @@ def route_with_gate_evidence(
 
     Raises:
         ArtifactRoutingError with reason_codes:
+            INVALID_ARTIFACT_ENVELOPE                 — artifact is not a dict
             MISSING_GATE_EVIDENCE                     — gate_evidence not a dict
             MISSING_EVAL_SUMMARY_ID                   — eval_summary_id absent
+            INVALID_EVAL_SUMMARY_ID                   — eval_summary_id empty/non-string
             MISSING_GATE_STATUS                       — gate_status absent
+            INVALID_GATE_STATUS_TYPE                  — gate_status not a string
             ARTIFACT_ID_MISMATCH                      — target_artifact_id mismatch
             GATE_EVIDENCE_NOT_ROUTABLE                — gate status is not_routable
             GATE_EVIDENCE_CONDITIONAL_ROUTING_NOT_ENABLED — conditional gate, not opted in
             UNKNOWN_GATE_STATUS                       — unrecognised gate_status value
     """
+    if not isinstance(artifact, dict):
+        raise ArtifactRoutingError(
+            "artifact must be a dict — routing requires a structured artifact envelope",
+            reason_codes=["INVALID_ARTIFACT_ENVELOPE"],
+        )
+
     if not isinstance(gate_evidence, dict):
         raise ArtifactRoutingError(
             "gate_evidence must be a dict — routing without gate evidence is prohibited",
@@ -237,15 +253,28 @@ def route_with_gate_evidence(
             reason_codes=["MISSING_EVAL_SUMMARY_ID"],
         )
 
+    eval_summary_id = gate_evidence["eval_summary_id"]
+    if not isinstance(eval_summary_id, str) or not eval_summary_id.strip():
+        raise ArtifactRoutingError(
+            "gate_evidence.eval_summary_id must be a non-empty string",
+            reason_codes=["INVALID_EVAL_SUMMARY_ID"],
+        )
+
     if "gate_status" not in gate_evidence:
         raise ArtifactRoutingError(
             "gate_evidence missing required field: gate_status",
             reason_codes=["MISSING_GATE_STATUS"],
         )
 
+    if not isinstance(gate_evidence["gate_status"], str):
+        raise ArtifactRoutingError(
+            "gate_evidence.gate_status must be a string",
+            reason_codes=["INVALID_GATE_STATUS_TYPE"],
+        )
+
     if "target_artifact_id" in gate_evidence:
         target_id = gate_evidence["target_artifact_id"]
-        artifact_id = artifact.get("artifact_id") if isinstance(artifact, dict) else None
+        artifact_id = artifact.get("artifact_id")
         if target_id != artifact_id:
             raise ArtifactRoutingError(
                 f"Gate evidence target_artifact_id={target_id!r} does not match "
@@ -276,7 +305,7 @@ def route_with_gate_evidence(
             reason_codes=["UNKNOWN_GATE_STATUS"],
         )
 
-    artifact_type = artifact.get("artifact_type") if isinstance(artifact, dict) else None
+    artifact_type = artifact.get("artifact_type")
     return _route_artifact_unchecked(artifact_type)
 
 

@@ -1,0 +1,61 @@
+{
+  "fix_plan_id": "H01-FINAL-FIX-PLAN",
+  "source_review_id": "RVA-H01-FINAL-001",
+  "batch": "BATCH-H01-FINAL",
+  "created_at": "2026-04-26T00:00:00+00:00",
+  "fixes": [
+    {
+      "fix_id": "FIX-001",
+      "finding_ids": ["F-001"],
+      "severity": "S4",
+      "description": "Eliminate any public unchecked routing entrypoint. _route_artifact_unchecked is underscore-prefixed, excluded from __all__, and documented as bypass-only. route_with_gate_evidence is the sole external entrypoint.",
+      "target_file": "spectrum_systems/modules/orchestration/tlc_router.py",
+      "status": "applied"
+    },
+    {
+      "fix_id": "FIX-002",
+      "finding_ids": ["F-002"],
+      "severity": "S3",
+      "description": "Detect indirect routing bypass at preflight. Adds detect_routing_bypass() with patterns for direct calls, imports, re-exports, public route_artifact aliases, and public route_artifact function definitions outside tlc_router.py. All findings carry reason_code=ROUTING_BYPASS_ATTEMPT.",
+      "target_file": "scripts/run_3ls_authority_preflight.py",
+      "status": "applied"
+    },
+    {
+      "fix_id": "FIX-003",
+      "finding_ids": ["F-003"],
+      "severity": "S3",
+      "description": "Strengthen gate-evidence structural validation. Rejects empty/non-string eval_summary_id (INVALID_EVAL_SUMMARY_ID) and non-string gate_status (INVALID_GATE_STATUS_TYPE) before status-set membership checks.",
+      "target_file": "spectrum_systems/modules/orchestration/tlc_router.py",
+      "status": "applied"
+    },
+    {
+      "fix_id": "FIX-004",
+      "finding_ids": ["F-004"],
+      "severity": "S3",
+      "description": "Add tests/transcript_pipeline/test_replay_integrity_h01.py covering payload mutation, gate-evidence reuse, conditional gate upgrade, and unchecked-symbol bypass attempts.",
+      "target_file": "tests/transcript_pipeline/test_replay_integrity_h01.py",
+      "status": "applied"
+    },
+    {
+      "fix_id": "FIX-005",
+      "finding_ids": ["F-005"],
+      "severity": "S2",
+      "description": "Reject non-dict artifacts with INVALID_ARTIFACT_ENVELOPE before further validation; remove the silent None-coercion of artifact_type.",
+      "target_file": "spectrum_systems/modules/orchestration/tlc_router.py",
+      "status": "applied"
+    }
+  ],
+  "regression_tests_added": [
+    "tests/transcript_pipeline/test_no_unchecked_routing.py",
+    "tests/transcript_pipeline/test_replay_integrity_h01.py"
+  ],
+  "verification_commands": [
+    "python scripts/run_3ls_authority_preflight.py --base-ref origin/main --head-ref HEAD",
+    "python scripts/run_authority_shape_preflight.py --base-ref origin/main --head-ref HEAD --suggest-only --output outputs/authority_shape_preflight/authority_shape_preflight_result.json",
+    "python scripts/run_authority_leak_guard.py --base-ref origin/main --head-ref HEAD --output outputs/authority_leak_guard/authority_leak_guard_result.json",
+    "python scripts/run_system_registry_guard.py --base-ref origin/main --head-ref HEAD --output outputs/system_registry_guard/system_registry_guard_result.json",
+    "pytest tests/transcript_pipeline/test_h01b_hardening.py",
+    "pytest tests/transcript_pipeline/test_no_unchecked_routing.py",
+    "pytest tests/transcript_pipeline/test_replay_integrity_h01.py"
+  ]
+}
