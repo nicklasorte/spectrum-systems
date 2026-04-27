@@ -1,16 +1,17 @@
-"""GOV: certification evidence index — reference-only packaging seam.
+"""Certification evidence index — reference-only packaging seam.
 
 NS-10..12: Build a compact certification evidence index that points to the
 evidence streams required for promotion. The index does NOT duplicate the
 underlying artifacts — it only carries identifiers/refs and a status.
 
-GOV/PRA may package this index. They do NOT decide policy or override
-TPA/CDE/SEL. Status is computed from the supplied evidence only:
+This module is a non-owning seam. It packages references into an index
+artifact; canonical authority owners are unchanged. Status is computed
+from the supplied evidence only:
 
   - ``ready``   when every required reference exists and all status fields
-                report healthy/allow/match/pass.
+                report healthy/match/pass.
   - ``blocked`` when any required reference is missing or its status fails.
-  - ``frozen``  when status ``freeze`` is propagated from upstream control.
+  - ``frozen``  when status indicates an upstream freeze.
 
 Canonical blocking categories come from the canonical reason-code mapping.
 """

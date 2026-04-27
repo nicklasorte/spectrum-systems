@@ -1,4 +1,4 @@
-"""GOV: System justification enforcement v2 (NS-13..15).
+"""System justification enforcement v2 (NS-13..15).
 
 Strengthens the existing canonical registry validator by asserting that
 every active system declares:

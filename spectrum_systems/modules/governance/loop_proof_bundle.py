@@ -1,4 +1,4 @@
-"""GOV: Loop proof bundle — compact, reference-only end-to-end proof.
+"""Loop proof bundle — compact, reference-only end-to-end proof.
 
 NS-25: Build a compact bundle that proves the canonical loop ran for either
 a passing path or a blocked path. The bundle holds references (artifact_ids)
