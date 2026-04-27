@@ -1,7 +1,7 @@
 {
   "artifact_type": "operator_action_admissibility_check",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-27T03:47:41Z",
+  "generated_at": "2026-04-27T11:53:29Z",
   "intake_id": "INTAKE-001",
   "trust_state": "guarded",
   "hard_gates": {

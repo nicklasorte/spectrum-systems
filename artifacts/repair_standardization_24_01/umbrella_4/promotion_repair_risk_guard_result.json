@@ -2,7 +2,7 @@
   "artifact_type": "promotion_repair_risk_guard_result",
   "slice_id": "RS-23",
   "owner": "SEL",
-  "generated_at": "2026-04-27T03:47:22Z",
+  "generated_at": "2026-04-27T11:53:04Z",
   "enforcement_only": true,
   "block_promotion": true,
   "block_reasons": [

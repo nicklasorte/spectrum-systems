@@ -1,7 +1,7 @@
 {
   "artifact_type": "rh_kernel_umbrella_checkpoint",
   "batch_id": "RH-KERNEL-24-01",
-  "generated_at": "2026-04-27T03:47:34Z",
+  "generated_at": "2026-04-27T11:53:21Z",
   "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
   "umbrella_id": "UMBRELLA-3",
   "umbrella_name": "LEARNING_QUALITY_AND_ATTRIBUTION",

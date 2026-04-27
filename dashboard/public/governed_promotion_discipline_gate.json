@@ -1,7 +1,7 @@
 {
   "artifact_type": "governed_promotion_discipline_gate",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-27T03:48:01Z",
+  "generated_at": "2026-04-27T11:53:54Z",
   "constitutional_authority": {
     "cde_tpa_override_allowed": false,
     "promotion_signal_can_override": false

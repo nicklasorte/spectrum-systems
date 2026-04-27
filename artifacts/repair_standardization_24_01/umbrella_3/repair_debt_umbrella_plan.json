@@ -2,7 +2,7 @@
   "artifact_type": "repair_debt_umbrella_plan",
   "slice_id": "RS-17",
   "owner": "RDX",
-  "generated_at": "2026-04-27T03:47:22Z",
+  "generated_at": "2026-04-27T11:53:04Z",
   "sequencing_only": true,
   "umbrella_sequence": [
     "UMBRELLA-3",

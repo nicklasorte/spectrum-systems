@@ -1,7 +1,7 @@
 {
   "artifact_type": "rdx_execution_artifact_trace",
   "batch_id": "SHIFT-LEFT-MEMORY-24-01",
-  "generated_at": "2026-04-27T03:47:46Z",
+  "generated_at": "2026-04-27T11:53:35Z",
   "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
   "umbrella_sequence": [
     "UMBRELLA-1",

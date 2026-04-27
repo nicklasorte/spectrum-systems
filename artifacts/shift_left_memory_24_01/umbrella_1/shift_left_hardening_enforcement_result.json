@@ -2,6 +2,6 @@
   "artifact_type": "shift_left_hardening_enforcement_result",
   "slice_id": "SM-06",
   "owner": "SEL",
-  "generated_at": "2026-04-27T03:47:46Z",
+  "generated_at": "2026-04-27T11:53:35Z",
   "decision": "fail_closed_without_required_coverage"
 }
