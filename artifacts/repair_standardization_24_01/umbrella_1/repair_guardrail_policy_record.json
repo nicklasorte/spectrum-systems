@@ -2,7 +2,7 @@
   "artifact_type": "repair_guardrail_policy_record",
   "slice_id": "RS-06",
   "owner": "SEL",
-  "generated_at": "2026-04-27T11:53:04Z",
+  "generated_at": "2026-04-27T12:49:21Z",
   "rollback_thresholds": {
     "schema_patch": 1,
     "publication_patch": 1,

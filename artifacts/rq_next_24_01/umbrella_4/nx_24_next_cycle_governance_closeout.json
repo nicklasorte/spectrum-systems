@@ -1,7 +1,7 @@
 {
   "artifact_type": "next_cycle_governance_closeout",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-27T11:53:29Z",
+  "generated_at": "2026-04-27T12:49:43Z",
   "allowed_recommendations": [
     "tune",
     "validate",

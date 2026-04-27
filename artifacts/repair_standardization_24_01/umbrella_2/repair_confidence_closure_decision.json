@@ -2,7 +2,7 @@
   "artifact_type": "repair_confidence_closure_decision",
   "slice_id": "RS-12",
   "owner": "CDE",
-  "generated_at": "2026-04-27T11:53:04Z",
+  "generated_at": "2026-04-27T12:49:21Z",
   "authority": "closure_readiness_authoritative",
   "decision": "block_when_confidence_or_debt_evidence_weak"
 }

@@ -2,7 +2,7 @@
   "artifact_type": "fast_path_fix_slice_request",
   "slice_id": "RL-04",
   "owner": "RQX",
-  "generated_at": "2026-04-27T11:53:04Z",
+  "generated_at": "2026-04-27T12:49:20Z",
   "request_count": 2,
   "bounded": true,
   "authority": "fix_slice_request_only"

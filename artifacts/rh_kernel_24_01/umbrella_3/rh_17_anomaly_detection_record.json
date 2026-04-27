@@ -3,7 +3,7 @@
   "batch_id": "RH-KERNEL-24-01",
   "slice_id": "RH-17",
   "owner": "RIL",
-  "generated_at": "2026-04-27T11:53:21Z",
+  "generated_at": "2026-04-27T12:49:35Z",
   "anomalies": [
     {
       "signal_combo": "high_truth_with_low_completeness",
