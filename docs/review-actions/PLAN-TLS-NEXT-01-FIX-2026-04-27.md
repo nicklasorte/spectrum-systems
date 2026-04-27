@@ -9,12 +9,12 @@ Fix authority-shape preflight wording in TLS-NEXT-01 plan artifact and fix dashb
 ## Files in scope
 | Path | Action | Notes |
 | --- | --- | --- |
-| `docs/review-actions/PLAN-TLS-NEXT-01-2026-04-27.md` | MODIFY | Replace authority-shaped wording that violates enforcement cluster ownership. |
+| `docs/review-actions/PLAN-TLS-NEXT-01-2026-04-27.md` | MODIFY | Replace authority-shaped wording that violates reserved authority-cluster ownership. |
 | `apps/dashboard-3ls/lib/signalStatus.ts` | MODIFY | Make card-status mapping explicitly handle raw `unknown` status and return card-safe statuses. |
 | `apps/dashboard-3ls/app/api/health/route.ts` | MODIFY | Preserve raw status + reason codes while returning card-safe status values. |
 | `apps/dashboard-3ls/__tests__/lib/signalStatus.test.ts` | MODIFY | Add unknown-status card mapping assertions and update status expectations. |
 | `apps/dashboard-3ls/__tests__/api/health.test.ts` | MODIFY | Assert route preserves raw unknown diagnostic and never surfaces healthy for unknown. |
-| `tests/test_authority_shape_preflight.py` | MODIFY | Add regression for non-owner plan doc usage of enforcement-shaped `Enforce` token. |
+| `tests/test_authority_shape_preflight.py` | MODIFY | Add regression for non-owner plan doc usage of reserved authority-shaped tokens. |
 
 ## Deterministic steps
 1. Replace plan wording with lower-authority term (`policy_observation`) that passes authority-shape preflight.
