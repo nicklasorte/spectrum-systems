@@ -534,10 +534,11 @@ def _is_forced_evaluation_surface(path: str) -> tuple[bool, str, str]:
         path.startswith("spectrum_systems/governance/")
         or path.startswith("scripts/")
         or path.startswith("contracts/governance/")
+        or path == ".github/workflows/artifact-boundary.yml"
     ):
         return True, "governance", "governance/control surface changed"
     if path.startswith("tests/") and path.endswith(".py"):
-        tied_markers = ("contract", "preflight", "schema", "roadmap_eligibility", "next_step_decision", "cycle_runner")
+        tied_markers = ("contract", "preflight", "schema", "roadmap_eligibility", "next_step_decision", "cycle_runner", "artifact_boundary_workflow")
         if any(marker in path for marker in tied_markers):
             return True, "contract_tied_tests", "contract-tied test changed"
     return False, "other", "path does not map to governed contract surface"

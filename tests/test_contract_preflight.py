@@ -415,6 +415,19 @@ def test_resolve_required_surface_tests_uses_ops03_override() -> None:
     ]
 
 
+def test_artifact_boundary_workflow_is_forced_evaluation_surface() -> None:
+    requires_eval, surface, _reason = preflight._is_forced_evaluation_surface(".github/workflows/artifact-boundary.yml")
+    assert requires_eval is True
+    assert surface == "governance"
+
+
+def test_resolve_required_surface_tests_uses_artifact_boundary_override_targets() -> None:
+    targets = preflight.resolve_required_surface_tests(Path("."), [".github/workflows/artifact-boundary.yml"])
+    resolved = targets[".github/workflows/artifact-boundary.yml"]
+    assert "tests/test_artifact_boundary_workflow_policy_observation.py" in resolved
+    assert "tests/test_artifact_boundary_workflow_pytest_enforcement.py" in resolved
+
+
 def test_main_report_includes_changed_path_fallback_metadata(tmp_path: Path, monkeypatch) -> None:
     output_dir = tmp_path / "out"
     wrapper_path = tmp_path / "wrapper.json"
