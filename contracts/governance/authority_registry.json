@@ -107,7 +107,15 @@
       "spectrum_systems/modules/governance/promotion_requirements.py",
       "spectrum_systems/modules/runtime/required_eval_coverage.py",
       "spectrum_systems/modules/runtime/enforcement_gate.py",
-      "spectrum_systems/modules/governance/three_letter_system_enforcement.py"
+      "spectrum_systems/modules/governance/three_letter_system_enforcement.py",
+      "spectrum_systems/modules/runtime/eval_spine.py",
+      "spectrum_systems/modules/runtime/control_chain_invariants.py",
+      "spectrum_systems/modules/runtime/context_admission_gate.py",
+      "spectrum_systems/modules/runtime/slo_budget_gate.py",
+      "spectrum_systems/modules/observability/failure_trace.py",
+      "spectrum_systems/modules/replay/replay_support.py",
+      "spectrum_systems/modules/lineage/lineage_enforcement.py",
+      "spectrum_systems/modules/governance/certification_prerequisites.py"
     ]
   },
   "vocabulary_overrides": {
