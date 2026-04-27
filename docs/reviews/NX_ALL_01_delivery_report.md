@@ -238,21 +238,94 @@ file-scoped.
   failing preflight signal blocks promotion with reason code
   `CERT_MISSING_AUTHORITY_SHAPE_PREFLIGHT`.
 
+## 8b. AUTH-SHAPE-FIX-1232B — source-script vocabulary cleanup
+
+The first AUTH-SHAPE-FIX-1232 pass left 31 source-script violations in
+`scripts/generate_ecosystem_health_report.py` and
+`scripts/run_contract_enforcement.py`. These scripts are observational
+reporting/compliance surfaces; they were emitting protected
+authority-shaped tokens (`enforcement`, `ci_enforcement`,
+`score_ci_enforcement`, `format_enforcement_line`, `run_enforcement`,
+`Cross-Repo Contract Enforcement Report`) in non-owner contexts.
+
+### What changed (vocabulary-only; no guardrail changes)
+- `scripts/generate_ecosystem_health_report.py`
+  - `ci_enforcement` → `ci_compliance_signal` (category, key, summary
+    field)
+  - `score_ci_enforcement` → `score_ci_compliance_signal` (helper)
+  - "enforcement graph" → "compliance graph" (docstring/comment)
+- `scripts/run_contract_enforcement.py`
+  - module docstring rewritten as a non-owner contract compliance gate
+    description; SEL/ENF retained as canonical enforcement owners by
+    pointer to `docs/architecture/system_registry.md`
+  - `format_enforcement_line` → `format_compliance_log_line`
+  - `run_enforcement` → `run_compliance_gate`
+  - `write_enforcement_report` → `write_compliance_report`
+  - `ENFORCEMENT_REPORT_PATH` → `COMPLIANCE_REPORT_PATH`
+  - `[contract-enforcement]` CLI prefix → `[contract-compliance]`
+  - section heading "Cross-Repo Contract Enforcement Report" → already
+    "Cross-Repo Contract Compliance Report" from prior pass
+  - output file renamed from
+    `docs/governance-reports/contract-enforcement-report.md` to
+    `docs/governance-reports/contract-compliance-report.md`
+- `governance/schemas/ecosystem-health.schema.json` — schema field
+  renamed from `ci_enforcement` to `ci_compliance_signal`.
+- `governance/reports/ecosystem-health.json` — regenerated; uses the
+  renamed key.
+- `tests/test_contract_enforcement.py` — updated to import the
+  renamed public symbols and to assert the new CLI prefix and report
+  filename. No tests were skipped, xfailed, or removed.
+- `tests/test_observability.py` — `TestScoreCiEnforcement` renamed to
+  `TestScoreCiComplianceSignal`; calls forwarded to
+  `score_ci_compliance_signal`.
+- `tests/test_nx_authority_shape_preflight_regression.py` — extended
+  to scan both report scripts plus the renamed report file, and
+  added three new fixtures:
+    `test_report_scripts_do_not_emit_protected_authority_vocabulary`
+    `test_contract_compliance_report_uses_safe_headings`
+    `test_ecosystem_health_report_uses_safe_keys`
+- `contracts/governance/authority_shape_vocabulary.json` — the
+  guard-path entry for the contract report file was updated to point
+  at the renamed `contract-compliance-report.md`. No new
+  `guard_path_prefixes` entries beyond the renamed path.
+- `contracts/governance/authority_registry.json` — the matching
+  `observational_path_entries` entry was retargeted to the renamed
+  filename.
+
+### What did NOT change
+- No edits to `scripts/run_authority_shape_preflight.py` or
+  `spectrum_systems/governance/authority_shape_preflight.py`.
+- No edits to cluster term sets, owner_path_prefixes, safety_suffixes,
+  or excluded_path_prefixes.
+- No directory-scoped exclusions added.
+- No tests skipped, xfailed, or deleted.
+- SEL and ENF remain the canonical owners of enforcement authority;
+  the renamed scripts are explicitly framed as non-owner reporting
+  surfaces.
+
+### Result
+`python scripts/run_authority_shape_preflight.py --base-ref 3bcbca8
+--head-ref HEAD --suggest-only` reports STATUS pass, 0 violations.
+Targeted tests (`tests/test_nx_*.py`,
+`tests/test_contract_enforcement.py`,
+`tests/test_observability.py`) all pass. Full pytest reports
+9402 passed, 2 skipped (the 2 skips are pre-existing).
+
 ## 9. Validation commands run
 
 ```
 python scripts/run_authority_shape_preflight.py \
   --base-ref 3bcbca8 --head-ref HEAD --suggest-only \
   --output outputs/authority_shape_preflight/authority_shape_preflight_result.json
-# status: pass
+# status: pass, violations: 0 (after AUTH-SHAPE-FIX-1232 + 1232B)
 
 python scripts/validate_system_registry.py        # passes
-python -m pytest tests/test_nx_*.py                # 132 pass
+python -m pytest tests/test_nx_*.py                # 169 pass
 python -m pytest tests/test_authority_leak_detection.py \
                   tests/test_forbidden_authority_vocabulary_guard.py \
                   tests/test_system_registry_guard.py \
                   tests/test_system_registry_validation.py
-python -m pytest tests/                            # full suite
+python -m pytest tests/                            # 9402 pass, 2 skipped
 ```
 
 ## 10. Remaining risks

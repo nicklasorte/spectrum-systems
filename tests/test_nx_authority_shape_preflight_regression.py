@@ -54,8 +54,11 @@ NX_SURFACES = [
     # Delivery report
     "docs/reviews/NX_ALL_01_delivery_report.md",
     # Generated governance reports (timestamps churn frequently)
-    "docs/governance-reports/contract-enforcement-report.md",
+    "docs/governance-reports/contract-compliance-report.md",
     "docs/governance-reports/ecosystem-health-report.md",
+    # Generator scripts must also remain free of protected vocabulary
+    "scripts/generate_ecosystem_health_report.py",
+    "scripts/run_contract_enforcement.py",
 ]
 
 
@@ -108,6 +111,87 @@ def test_observational_path_entries_carry_required_metadata() -> None:
         assert entry.get("canonical_owner") is None, entry
         rationale = entry.get("rationale")
         assert isinstance(rationale, str) and rationale.strip(), entry
+
+
+def test_report_scripts_do_not_emit_protected_authority_vocabulary() -> None:
+    """AUTH-SHAPE-FIX-1232B: the two non-owner reporting scripts must not
+    contain protected authority-shaped tokens (decision, enforcement,
+    promotion, certification, etc.) anywhere in their source — including
+    function names, dictionary keys, JSON output keys, CI prefixes, and
+    docstring/comment text.
+
+    They are observational reporting surfaces and are not SEL/ENF/CDE/JDX
+    authority owners.
+    """
+    import re
+
+    forbidden_tokens = {
+        "enforcement",
+        "ci_enforcement",
+        "score_ci_enforcement",
+        "format_enforcement_line",
+        "run_enforcement",
+    }
+    pattern = re.compile(r"[A-Za-z][A-Za-z0-9_]*")
+    for rel in (
+        "scripts/generate_ecosystem_health_report.py",
+        "scripts/run_contract_enforcement.py",
+    ):
+        text = (REPO_ROOT / rel).read_text(encoding="utf-8")
+        offenders = []
+        for match in pattern.finditer(text):
+            ident = match.group(0)
+            if ident in forbidden_tokens:
+                offenders.append(ident)
+            elif ident.lower() == "enforcement":
+                offenders.append(ident)
+        assert not offenders, (
+            f"{rel} reintroduced protected authority-shaped vocabulary: "
+            f"{sorted(set(offenders))}"
+        )
+
+
+def test_contract_compliance_report_uses_safe_headings() -> None:
+    """The generated contract compliance report must use 'Compliance' or
+    'Validation' headings, not 'Enforcement', so the report itself stays
+    consistent with the AUTH-SHAPE-FIX-1232B vocabulary cleanup."""
+    report_path = REPO_ROOT / "docs" / "governance-reports" / "contract-compliance-report.md"
+    if not report_path.is_file():
+        # Generated artifact may not be present in a clean checkout; the
+        # generator script test (test_contract_enforcement) covers the
+        # generation path. Nothing to assert here when the artifact is absent.
+        return
+    text = report_path.read_text(encoding="utf-8")
+    assert "Contract Compliance" in text or "Contract Validation" in text, (
+        "contract report does not use Compliance/Validation heading"
+    )
+    # The phrase 'Contract Enforcement' must not appear except as a legacy
+    # filename reference (which would not include a space).
+    assert "Contract Enforcement" not in text, (
+        "contract report still contains 'Contract Enforcement' heading"
+    )
+
+
+def test_ecosystem_health_report_uses_safe_keys() -> None:
+    """The machine-readable ecosystem health report must use the renamed
+    ci_compliance_signal key, not ci_enforcement."""
+    import json
+
+    report_path = REPO_ROOT / "governance" / "reports" / "ecosystem-health.json"
+    if not report_path.is_file():
+        return
+    payload = json.loads(report_path.read_text(encoding="utf-8"))
+    summary = payload.get("summary") or {}
+    assert "ci_compliance_signal" in summary, (
+        "ecosystem-health.json summary missing renamed ci_compliance_signal key"
+    )
+    assert "ci_enforcement" not in summary, (
+        "ecosystem-health.json summary still emits legacy ci_enforcement key"
+    )
+    for repo in payload.get("repos", []):
+        cats = (repo.get("maturity_score") or {}).get("categories") or {}
+        assert "ci_compliance_signal" in cats, repo.get("repo_name")
+        assert "ci_enforcement" not in cats, repo.get("repo_name")
 
 
 def test_observational_entries_match_guard_path_prefixes() -> None:

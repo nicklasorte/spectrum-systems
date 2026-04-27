@@ -341,11 +341,11 @@
       "rationale": "Delivery report for NX-ALL-01 hardening; necessarily references canonical authority artifact names but does not issue control or enforcement_signal decisions."
     },
     {
-      "path": "docs/governance-reports/contract-enforcement-report.md",
+      "path": "docs/governance-reports/contract-compliance-report.md",
       "authority_scope": "observational",
       "may_authorize": false,
       "canonical_owner": null,
-      "rationale": "Generated cross-repo contract compliance report contains historical 'Enforcement' filename and section labels but cannot issue control or enforcement_signal decisions; generator updated to emit safer headings going forward."
+      "rationale": "Generated cross-repo contract compliance report (renamed under AUTH-SHAPE-FIX-1232B from contract-enforcement-report.md). Generator now emits safe vocabulary; entry retained as a non-owner observational seam."
     },
     {
       "path": "docs/governance-reports/ecosystem-health-report.md",

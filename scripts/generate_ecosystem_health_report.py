@@ -49,7 +49,7 @@ MATURITY_CATEGORIES = [
     "governance_artifacts",
     "contract_compliance",
     "schema_alignment",
-    "ci_enforcement",
+    "ci_compliance_signal",
     "evaluation_evidence",
     "documentation",
 ]
@@ -58,7 +58,7 @@ CATEGORY_WEIGHTS = {
     "governance_artifacts": 2,
     "contract_compliance": 2,
     "schema_alignment": 1,
-    "ci_enforcement": 2,
+    "ci_compliance_signal": 2,
     "evaluation_evidence": 2,
     "documentation": 1,
 }
@@ -163,7 +163,7 @@ def score_contract_compliance(
     repo_name: str,
     contract_graph_repos: Dict[str, dict],
 ) -> str:
-    """Is the repo contract-compliant per the enforcement graph?"""
+    """Is the repo contract-compliant per the compliance graph?"""
     repo_data = contract_graph_repos.get(repo_name)
     if repo_data is None:
         return "missing"
@@ -204,7 +204,7 @@ def score_schema_alignment(
     return "missing"
 
 
-def score_ci_enforcement(repo_name: str, repo_entry: dict) -> str:
+def score_ci_compliance_signal(repo_name: str, repo_entry: dict) -> str:
     """
     Does the repo have CI enabled?
     For the governance repo we always return compliant.
@@ -302,7 +302,7 @@ def build_repo_record(
     cat_gov = score_governance_artifacts(repo_name, repo_entry, manifests)
     cat_contract = score_contract_compliance(repo_name, contract_graph_repos)
     cat_schema = score_schema_alignment(repo_name, repo_entry, standards, manifests)
-    cat_ci = score_ci_enforcement(repo_name, repo_entry)
+    cat_ci = score_ci_compliance_signal(repo_name, repo_entry)
     cat_eval = score_evaluation_evidence(repo_name, system_entry, maturity_entry)
     cat_doc = score_documentation(repo_entry)
 
@@ -310,7 +310,7 @@ def build_repo_record(
         "governance_artifacts": cat_gov,
         "contract_compliance": cat_contract,
         "schema_alignment": cat_schema,
-        "ci_enforcement": cat_ci,
+        "ci_compliance_signal": cat_ci,
         "evaluation_evidence": cat_eval,
         "documentation": cat_doc,
     }
@@ -337,7 +337,7 @@ def build_repo_record(
     else:
         governance_status = "compliant" if cat_gov == "compliant" else "partial"
 
-    # Contract status from enforcement graph
+    # Contract status from compliance graph
     cg_repo = contract_graph_repos.get(repo_name)
     if cg_repo:
         contract_status = cg_repo.get("validation_status", "not_yet_enforceable")
@@ -431,7 +431,7 @@ def compute_health_summary(repo_records: List[dict]) -> dict:
         "governance_compliance": governance_counts,
         "contract_alignment": contract_counts,
         "schema_integrity": schema_counts,
-        "ci_enforcement": ci_counts,
+        "ci_compliance_signal": ci_counts,
         "repos_missing_required_artifacts": missing_artifacts,
         "repos_not_yet_enforceable": not_yet_enforceable,
     }
@@ -488,7 +488,7 @@ def write_health_report(
     gc = summary["governance_compliance"]
     ca = summary["contract_alignment"]
     si = summary["schema_integrity"]
-    ci = summary["ci_enforcement"]
+    ci = summary["ci_compliance_signal"]
 
     lines: List[str] = []
     lines.append("# Ecosystem Health Report\n")

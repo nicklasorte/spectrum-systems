@@ -61,7 +61,7 @@
       "spectrum_systems/modules/lineage/lineage_enforcement.py",
       "spectrum_systems/modules/observability/failure_trace.py",
       "spectrum_systems/modules/governance/certification_prerequisites.py",
-      "docs/governance-reports/contract-enforcement-report.md",
+      "docs/governance-reports/contract-compliance-report.md",
       "docs/governance-reports/ecosystem-health-report.md"
     ]
   },
