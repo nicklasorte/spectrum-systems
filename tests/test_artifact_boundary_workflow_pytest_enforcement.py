@@ -30,8 +30,7 @@ def test_artifact_boundary_redundant_pytest_job_no_longer_depends_on_preflight_j
 def test_artifact_boundary_restores_push_authoritative_governed_preflight() -> None:
     text = ARTIFACT_BOUNDARY_WORKFLOW.read_text(encoding='utf-8')
     assert 'governed-contract-preflight:' in text
-    assert "if: github.event_name == 'push'" in text
-    assert 'Run authoritative governed preflight gate (push)' in text
+    assert 'Run authoritative governed preflight gate (pr/push)' in text
     assert 'python scripts/run_contract_preflight.py' in text
     assert '--execution-context pqx_governed' in text
     assert '--authority-evidence-ref artifacts/pqx_runs/preflight.pqx_slice_execution_record.json' in text
