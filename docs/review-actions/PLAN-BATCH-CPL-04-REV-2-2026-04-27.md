@@ -37,8 +37,8 @@ Implement a deterministic meeting minutes extraction path that requires gate evi
 ## Tests that must pass after execution
 1. `pytest tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py`
 2. `pytest tests/transcript_pipeline/test_schemas_h01.py tests/transcript_pipeline/test_h01b_hardening.py`
-3. `pytest tests/test_contracts.py tests/test_contract_enforcement.py`
-4. `python scripts/run_contract_enforcement.py`
+3. `pytest tests/test_contracts.py tests/test_contract_compliance.py`
+4. `python scripts/run_contract_compliance.py`
 5. `python scripts/run_authority_shape_preflight.py`
 6. `python scripts/run_authority_leak_guard.py`
 7. `python scripts/run_system_registry_guard.py`

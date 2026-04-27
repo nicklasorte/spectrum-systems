@@ -9,6 +9,11 @@
       "action_id": "A-001",
       "finding": "Source mapping checks must remain fail-closed.",
       "recommendation": "Retain source_turn_id/source_segment_id/line_index validation in extraction tests."
+    },
+    {
+      "action_id": "A-002",
+      "finding": "Scope boundaries must remain inside transcript-pipeline and CPL review artifact paths.",
+      "recommendation": "Use test_cpl04_scope_guard.py for deterministic allowlist-style path validation without changing authority scripts."
     }
   ],
   "created_at": "2026-04-27T00:00:00Z"
