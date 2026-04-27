@@ -1,6 +1,6 @@
 # Ecosystem Health Report
 
-Generated: 2026-04-27T03:47:04Z  
+Generated: 2026-04-27T11:52:43Z  
 Sources: `ecosystem/ecosystem-registry.json`, `governance/reports/contract-dependency-graph.json`, `artifacts/policy-engine-report.json`
 
 **Overall Health**: ⚠️ `WARNING`
@@ -34,7 +34,7 @@ Sources: `ecosystem/ecosystem-registry.json`, `governance/reports/contract-depen
 |--------|-------|
 | ✅ compliant | 15 |
 
-## CI Enforcement
+## CI Compliance Observations
 
 | Status | Count |
 |--------|-------|

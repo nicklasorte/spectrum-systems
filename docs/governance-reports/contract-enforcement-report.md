@@ -1,6 +1,6 @@
-# Cross-Repo Contract Enforcement Report
+# Cross-Repo Contract Compliance Report
 
-Generated: 2026-04-27T03:44:50Z
+Generated: 2026-04-27T11:49:49Z
 Source: `contracts/standards-manifest.json`
 
 ## Summary
@@ -31,7 +31,7 @@ Source: `contracts/standards-manifest.json`
 - **tlc** — 🏛 GOVERNANCE REPO
 - **working-paper-review-engine** `working-paper-review-engine` — ✅ PASS
 
-## Enforcement Failures
+## Compliance Findings
 
 None.
 

@@ -394,10 +394,13 @@ def test_enforcement_script_generates_enforcement_report() -> None:
     assert report_path.exists(), "contract-enforcement-report.md was not created"
 
     content = report_path.read_text(encoding="utf-8")
-    assert "# Cross-Repo Contract Enforcement Report" in content
+    # AUTH-SHAPE-FIX-1232: report headings use safe-vocabulary form
+    # ("Compliance" replaces "Enforcement") so the regenerated report
+    # passes the authority-shape preflight on docs/ surfaces.
+    assert "# Cross-Repo Contract Compliance Report" in content
     assert "## Summary" in content
     assert "## Repos Inspected" in content
-    assert "## Enforcement Failures" in content
+    assert "## Compliance Findings" in content
     assert "## Warnings" in content
     assert "## Not Yet Enforceable" in content
 

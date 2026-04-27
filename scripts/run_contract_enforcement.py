@@ -312,7 +312,7 @@ def write_enforcement_report(
     nyes = [r for r in repos if r["validation_status"] == "not_yet_enforceable"]
 
     lines = [
-        "# Cross-Repo Contract Enforcement Report",
+        "# Cross-Repo Contract Compliance Report",
         "",
         f"Generated: {generated_at}",
         f"Source: `contracts/standards-manifest.json`",
@@ -343,7 +343,7 @@ def write_enforcement_report(
         sid = f" `{repo['system_id']}`" if repo["system_id"] else ""
         lines.append(f"- **{repo['repo_name']}**{sid} — {badge}")
 
-    lines += ["", "## Enforcement Failures", ""]
+    lines += ["", "## Compliance Findings", ""]
     if all_failures:
         for f in all_failures:
             lines.append(f"`{format_enforcement_line(f)}`")
@@ -372,7 +372,7 @@ def write_enforcement_report(
 
     lines += ["", "## Remediation Actions", ""]
     if all_failures:
-        lines.append("### Enforcement Failures (must fix)")
+        lines.append("### Compliance Findings (must fix)")
         for f in all_failures:
             rule = f.get("rule", "")
             repo = f.get("repo", "")

@@ -50,7 +50,19 @@
       "docs/hop/preflight.md",
       "docs/operations/tls_priority_preflight.md",
       "docs/reviews/hop005_authority_eval_hardening_review.md",
-      "docs/reviews/TLS-GUARD-01-DELIVERY-REPORT.md"
+      "docs/reviews/TLS-GUARD-01-DELIVERY-REPORT.md",
+      "docs/reviews/NX_ALL_01_delivery_report.md",
+      "scripts/validate_system_registry.py",
+      "spectrum_systems/modules/runtime/eval_spine.py",
+      "spectrum_systems/modules/runtime/control_chain_invariants.py",
+      "spectrum_systems/modules/runtime/context_admission_gate.py",
+      "spectrum_systems/modules/runtime/slo_budget_gate.py",
+      "spectrum_systems/modules/replay/replay_support.py",
+      "spectrum_systems/modules/lineage/lineage_enforcement.py",
+      "spectrum_systems/modules/observability/failure_trace.py",
+      "spectrum_systems/modules/governance/certification_prerequisites.py",
+      "docs/governance-reports/contract-enforcement-report.md",
+      "docs/governance-reports/ecosystem-health-report.md"
     ]
   },
   "clusters": {

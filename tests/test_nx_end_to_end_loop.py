@@ -226,6 +226,7 @@ def test_e2e_passing_path_allows_promotion() -> None:
         control_decision=cde_decision,
         enforcement_record=sel_action,
         registry_violations=[],
+        authority_shape_preflight_signal={"status": "pass"},
     )
     assert cert["decision"] == "allow"
     assert cert["reason_code"] == "CERT_OK"
@@ -317,6 +318,7 @@ def test_e2e_failing_path_blocks_at_first_failure_and_propagates() -> None:
         control_decision=cde_decision,
         enforcement_record=sel_action,
         registry_violations=[],
+        authority_shape_preflight_signal={"status": "pass"},
     )
     assert cert["decision"] == "block"
     assert cert["reason_code"] in {
@@ -385,6 +387,7 @@ def test_e2e_failing_path_with_replay_mismatch_blocks_certification() -> None:
         control_decision=cde_decision,
         enforcement_record=sel_action,
         registry_violations=[],
+        authority_shape_preflight_signal={"status": "pass"},
     )
     assert cert["decision"] == "block"
     assert cert["reason_code"] == "CERT_MISSING_REPLAY_READINESS"

@@ -527,8 +527,8 @@ def write_health_report(
         lines.append(f"| {_e(status)} {status} | {count} |")
     lines.append("")
 
-    # CI Enforcement
-    lines.append("## CI Enforcement\n")
+    # CI Compliance Observations
+    lines.append("## CI Compliance Observations\n")
     lines.append("| Status | Count |")
     lines.append("|--------|-------|")
     for status, count in sorted(ci.items()):

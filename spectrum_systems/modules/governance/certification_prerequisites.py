@@ -1,17 +1,23 @@
-"""GOV/PRA certification prerequisite checks (NX-25).
+"""Certification prerequisite checks (NX-25) — non-owner support seam.
 
-GOV is certification *evidence packaging*, not policy authority. PRA owns
-promotion readiness. This module provides a deterministic, fail-closed
-prerequisite check that certification artifacts must satisfy:
+This module is a deterministic, fail-closed prerequisite check that
+certification evidence packages must satisfy before the canonical
+governance authority (recorded in docs/architecture/system_registry.md)
+issues certification. It does not issue certification itself.
+
+Required evidence streams:
 
   - all required evals passed
   - lineage completeness asserted
   - replay readiness signal present
-  - control decision present
-  - enforcement record present (when state-changing)
+  - control_signal record present
+  - enforcement_signal record present (when state-changing)
   - no active registry violations
+  - authority-shape preflight signal status pass
 
-It does not issue certification — it only asserts evidence is present.
+Canonical certification ownership remains with the governance authority
+declared in the canonical registry; this seam only asserts evidence is
+present and well-formed.
 """
 
 from __future__ import annotations
@@ -27,6 +33,7 @@ CANONICAL_CERTIFICATION_REASON_CODES = {
     "CERT_MISSING_CONTROL_DECISION",
     "CERT_MISSING_ENFORCEMENT_RECORD",
     "CERT_REGISTRY_VIOLATION_PRESENT",
+    "CERT_MISSING_AUTHORITY_SHAPE_PREFLIGHT",
 }
 
 
@@ -43,6 +50,7 @@ def assert_certification_prerequisites(
     enforcement_record: Optional[Mapping[str, Any]],
     registry_violations: Optional[List[Any]] = None,
     state_changing: bool = True,
+    authority_shape_preflight_signal: Optional[Mapping[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Assert that all certification evidence is present and passing.
 
@@ -110,6 +118,25 @@ def assert_certification_prerequisites(
             f"registry has {len(violations)} active violation(s); promotion blocked"
         )
         reason_code = "CERT_REGISTRY_VIOLATION_PRESENT"
+
+    # Authority-shape preflight pass signal is required for promotion.
+    # GOV does not decide policy here — it only refuses to package
+    # certification evidence when the upstream preflight signal is
+    # missing or failing.
+    if not isinstance(authority_shape_preflight_signal, Mapping):
+        blocking.append("authority-shape preflight signal missing")
+        _maybe("CERT_MISSING_AUTHORITY_SHAPE_PREFLIGHT", None)
+    else:
+        signal_status = str(
+            authority_shape_preflight_signal.get("status")
+            or authority_shape_preflight_signal.get("preflight_status")
+            or ""
+        ).lower()
+        if signal_status != "pass":
+            blocking.append(
+                f"authority-shape preflight signal status not pass: {signal_status!r}"
+            )
+            _maybe("CERT_MISSING_AUTHORITY_SHAPE_PREFLIGHT", None)
 
     return {
         "decision": "allow" if not blocking else "block",

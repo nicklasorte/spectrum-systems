@@ -18,6 +18,7 @@ def _evidence() -> dict:
         control_decision={"decision": "allow"},
         enforcement_record={"enforcement_action": "allow_execution"},
         registry_violations=[],
+        authority_shape_preflight_signal={"status": "pass"},
     )
 
 
@@ -85,3 +86,20 @@ def test_red_team_active_registry_violation_blocks() -> None:
 def test_canonical_reason_codes_finite() -> None:
     assert "CERT_OK" in CANONICAL_CERTIFICATION_REASON_CODES
     assert "CERT_MISSING_EVAL_PASS" in CANONICAL_CERTIFICATION_REASON_CODES
+    assert "CERT_MISSING_AUTHORITY_SHAPE_PREFLIGHT" in CANONICAL_CERTIFICATION_REASON_CODES
+
+
+def test_red_team_missing_authority_shape_preflight_blocks() -> None:
+    ev = _evidence()
+    ev["authority_shape_preflight_signal"] = None
+    res = assert_certification_prerequisites(**ev)
+    assert res["decision"] == "block"
+    assert res["reason_code"] == "CERT_MISSING_AUTHORITY_SHAPE_PREFLIGHT"
+
+
+def test_red_team_failing_authority_shape_preflight_blocks() -> None:
+    ev = _evidence()
+    ev["authority_shape_preflight_signal"] = {"status": "fail"}
+    res = assert_certification_prerequisites(**ev)
+    assert res["decision"] == "block"
+    assert res["reason_code"] == "CERT_MISSING_AUTHORITY_SHAPE_PREFLIGHT"

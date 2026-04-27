@@ -268,5 +268,91 @@
       "scope_note": "Dashboard/UI files live outside contracts/examples/ and spectrum_systems/modules/ and are therefore outside the existing leak guard scope. The entry is recorded here only to declare non-claim status; canonical responsibilities live in docs/architecture/system_registry.md.",
       "canonical_authority_source": "docs/architecture/system_registry.md"
     }
-  }
+  },
+  "observational_path_entries": [
+    {
+      "path": "spectrum_systems/modules/runtime/eval_spine.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "EVL support seam consumes canonical SEL required-eval-coverage primitives and exposes a normalization seam; cannot issue control or enforcement_signal decisions."
+    },
+    {
+      "path": "spectrum_systems/modules/runtime/control_chain_invariants.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "Asserts invariants over canonical CDE/SEL artifact field names (decision_id, input_decision_reference, enforcement_action); does not issue control or enforcement_signal decisions."
+    },
+    {
+      "path": "spectrum_systems/modules/runtime/context_admission_gate.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "CTX support seam emits admission diagnostics consumed by canonical CTX governance; cannot authorize execution."
+    },
+    {
+      "path": "spectrum_systems/modules/runtime/slo_budget_gate.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "SLO support seam projects budget posture into a warn/freeze/block control_signal consumed by canonical CDE; cannot decide policy."
+    },
+    {
+      "path": "spectrum_systems/modules/replay/replay_support.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "REP support seam classifies replay hash mismatches into reason codes; consumed by canonical REP/CDE without itself issuing decisions."
+    },
+    {
+      "path": "spectrum_systems/modules/lineage/lineage_enforcement.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "LIN support seam asserts lineage prerequisites for promotion; consumed by canonical PRA/GOV without itself issuing promotion or enforcement_signal decisions."
+    },
+    {
+      "path": "spectrum_systems/modules/observability/failure_trace.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "OBS support seam compresses canonical execution/eval/control/enforcement_signal artifacts into a 5-step trace; cannot authorize."
+    },
+    {
+      "path": "spectrum_systems/modules/governance/certification_prerequisites.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "GOV evidence-packaging support seam asserts prerequisite presence (eval pass + lineage + replay + control_signal + enforcement record); does not decide certification — GOV/PRA remain authoritative."
+    },
+    {
+      "path": "scripts/validate_system_registry.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "Static registry validator references canonical authority tokens (own_closure_decisions, own_control_decisions, etc.) used by System Definitions to detect shadow ownership; observational diagnostic only."
+    },
+    {
+      "path": "docs/reviews/NX_ALL_01_delivery_report.md",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "Delivery report for NX-ALL-01 hardening; necessarily references canonical authority artifact names but does not issue control or enforcement_signal decisions."
+    },
+    {
+      "path": "docs/governance-reports/contract-enforcement-report.md",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "Generated cross-repo contract compliance report contains historical 'Enforcement' filename and section labels but cannot issue control or enforcement_signal decisions; generator updated to emit safer headings going forward."
+    },
+    {
+      "path": "docs/governance-reports/ecosystem-health-report.md",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "Generated ecosystem health observation report mentions historical CI Enforcement category labels but cannot issue control or enforcement_signal decisions."
+    }
+  ]
 }
