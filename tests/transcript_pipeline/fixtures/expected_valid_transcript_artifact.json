@@ -1,0 +1,77 @@
+{
+  "artifact_id": "TXA-1B823059A04EE78E",
+  "artifact_type": "transcript_artifact",
+  "schema_ref": "transcript_pipeline/transcript_artifact",
+  "schema_version": "1.0.0",
+  "trace": {
+    "trace_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "span_id": "bbbbbbbbbbbbbbbb"
+  },
+  "provenance": {
+    "produced_by": "transcript_ingestor",
+    "input_artifact_ids": [],
+    "run_id": "run-h08-fixture"
+  },
+  "created_at": "2026-04-27T00:00:00Z",
+  "source_format": "txt",
+  "raw_text": "Alice: Welcome everyone to the spectrum systems sync.\nBob: Thanks Alice, glad to be here.\nAlice: Today we are reviewing the transcript ingestion pipeline.\nCarol: I have a few concerns about fail-closed behavior.\nBob: Let's walk through the schema fields together.\nAlice: Carol, can you start with your concerns?\nCarol: Sure. The trace and provenance must be present on every artifact.\nBob: Agreed. Missing trace should halt the pipeline.\nAlice: Good. Let's record that as the operating rule.\n",
+  "session_id": "SES-1B823059A04EE78E",
+  "speaker_turns": [
+    {
+      "turn_id": "T-0001",
+      "speaker": "Alice",
+      "text": "Welcome everyone to the spectrum systems sync.",
+      "line_index": 0
+    },
+    {
+      "turn_id": "T-0002",
+      "speaker": "Bob",
+      "text": "Thanks Alice, glad to be here.",
+      "line_index": 1
+    },
+    {
+      "turn_id": "T-0003",
+      "speaker": "Alice",
+      "text": "Today we are reviewing the transcript ingestion pipeline.",
+      "line_index": 2
+    },
+    {
+      "turn_id": "T-0004",
+      "speaker": "Carol",
+      "text": "I have a few concerns about fail-closed behavior.",
+      "line_index": 3
+    },
+    {
+      "turn_id": "T-0005",
+      "speaker": "Bob",
+      "text": "Let's walk through the schema fields together.",
+      "line_index": 4
+    },
+    {
+      "turn_id": "T-0006",
+      "speaker": "Alice",
+      "text": "Carol, can you start with your concerns?",
+      "line_index": 5
+    },
+    {
+      "turn_id": "T-0007",
+      "speaker": "Carol",
+      "text": "Sure. The trace and provenance must be present on every artifact.",
+      "line_index": 6
+    },
+    {
+      "turn_id": "T-0008",
+      "speaker": "Bob",
+      "text": "Agreed. Missing trace should halt the pipeline.",
+      "line_index": 7
+    },
+    {
+      "turn_id": "T-0009",
+      "speaker": "Alice",
+      "text": "Good. Let's record that as the operating rule.",
+      "line_index": 8
+    }
+  ],
+  "speaker_count": 3,
+  "content_hash": "sha256:8320fd1b896cc06857bf9dc0da7b0337457791f15d58a2666e5be893d5318e12"
+}
