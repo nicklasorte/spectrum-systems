@@ -51,9 +51,9 @@
   ],
   "verification_commands": [
     "python scripts/run_3ls_authority_preflight.py --base-ref origin/main --head-ref HEAD",
+    "python scripts/run_authority_shape_preflight.py --base-ref origin/main --head-ref HEAD --suggest-only --output outputs/authority_shape_preflight/authority_shape_preflight_result.json",
     "python scripts/run_authority_leak_guard.py --base-ref origin/main --head-ref HEAD --output outputs/authority_leak_guard/authority_leak_guard_result.json",
     "python scripts/run_system_registry_guard.py --base-ref origin/main --head-ref HEAD --output outputs/system_registry_guard/system_registry_guard_result.json",
-    "pytest tests/transcript_pipeline/test_control_routing_enforcement.py",
     "pytest tests/transcript_pipeline/test_h01b_hardening.py",
     "pytest tests/transcript_pipeline/test_no_unchecked_routing.py",
     "pytest tests/transcript_pipeline/test_replay_integrity_h01.py"

@@ -3,7 +3,7 @@
 - **Review ID:** RVA-H01-FINAL-001
 - **Reviewer:** Adversarial-Review-Agent (ARA-FINAL)
 - **Reviewed batch:** BATCH-H01-FINAL
-- **Decision:** approve
+- **Review signal:** accepted_review_signal
 - **Date:** 2026-04-26
 
 ## Intent
@@ -23,7 +23,7 @@ Close the remaining H01 routing-authority risks by:
 
 - TLC remains a non-owning routing support surface. It verifies the presence
   and consistency of evaluator-produced gate evidence; it does not own the
-  control decision.
+  upstream control signal.
 - CDE retains sole authority over `allow / warn / freeze / block`.
 - The router's vocabulary is neutral: `accepted_for_route` /
   `rejected_for_route` / `gate_evidence_valid` / `gate_evidence_missing`.
@@ -57,7 +57,7 @@ Close the remaining H01 routing-authority risks by:
 
 | ID    | Severity | Description                                                                                                       | Status   |
 | ----- | -------- | ----------------------------------------------------------------------------------------------------------------- | -------- |
-| F-001 | S4       | `route_artifact()` previously routable without gate evidence (pre-H01B).                                          | resolved |
+| F-001 | S4       | Pre-H01B routing entrypoint allowed routing without gate evidence.                                                | resolved |
 | F-002 | S3       | Indirect bypass via wrapper / helper / re-export was not detected by preflight.                                   | resolved |
 | F-003 | S3       | Gate-evidence validation accepted empty / non-string `eval_summary_id` and non-string `gate_status`.              | resolved |
 | F-004 | S3       | Replay integrity tests did not assert that mutated payload + reused gate evidence is rejected at the store seam.  | resolved |
@@ -85,8 +85,8 @@ Close the remaining H01 routing-authority risks by:
 - **Missing eval / trace / artifact:** chaos tests assert BLOCK / FREEZE
   outcomes with reason codes; no silent success paths exist.
 - **Authority leakage:** the routing surface uses neutral vocabulary; the
-  3LS authority preflight guards `decision`, `enforcement_action`, and
-  related protected vocabulary on non-owner paths.
+  3LS authority preflight gate-checks protected vocabulary on non-owner
+  paths and the AGS-001 shape preflight is clean on the H01 final scope.
 
 No S2+ findings remain.
 

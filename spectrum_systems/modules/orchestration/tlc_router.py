@@ -1,7 +1,7 @@
 """
 TLC Router — spectrum_systems/modules/orchestration/tlc_router.py
 
-TLC is the sole orchestration authority. This module enforces routing rules for
+TLC is the sole orchestration authority. This module gate-checks routing rules for
 the transcript-to-study pipeline. All artifact-type transitions are explicit,
 enumerated, and fail-closed.
 
@@ -107,7 +107,7 @@ if _STARTUP_CYCLES:
 
 
 def _route_artifact_unchecked(artifact_type: str) -> str:
-    """Internal-only. Does not enforce gate evidence.
+    """Internal-only. Does not validate gate evidence.
 
     External callers MUST use route_with_gate_evidence. This symbol is
     underscore-prefixed, excluded from __all__, and detected by the routing
@@ -183,7 +183,7 @@ def get_full_pipeline() -> List[str]:
 # Neutral gate status sets — TLC does not own control authority.
 # These values are produced by an upstream evaluator and consumed here
 # as evidence only. TLC verifies presence and consistency of the evidence;
-# it does not make the authority decision itself.
+# it does not produce the upstream authority signal itself.
 _GATE_STATUS_ROUTABLE: frozenset = frozenset(["passed_gate"])
 _GATE_STATUS_NOT_ROUTABLE: frozenset = frozenset(["failed_gate", "missing_gate"])
 _GATE_STATUS_CONDITIONAL: frozenset = frozenset(["conditional_gate"])

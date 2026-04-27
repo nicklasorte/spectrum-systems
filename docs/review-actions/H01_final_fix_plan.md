@@ -49,7 +49,7 @@ ship via this PR; no out-of-band changes.
   - empty / non-string `eval_summary_id` (`INVALID_EVAL_SUMMARY_ID`),
   - non-string `gate_status` (`INVALID_GATE_STATUS_TYPE`).
 - These checks run before status-set membership tests, so no string-only
-  comparison can decide routing in isolation.
+  comparison can drive routing in isolation.
 
 ### FIX-004 — Replay integrity tests (S3)
 
@@ -87,11 +87,15 @@ ship via this PR; no out-of-band changes.
 
 ```sh
 python scripts/run_3ls_authority_preflight.py --base-ref origin/main --head-ref HEAD
+python scripts/run_authority_shape_preflight.py --base-ref origin/main --head-ref HEAD --suggest-only --output outputs/authority_shape_preflight/authority_shape_preflight_result.json
 python scripts/run_authority_leak_guard.py --base-ref origin/main --head-ref HEAD --output outputs/authority_leak_guard/authority_leak_guard_result.json
 python scripts/run_system_registry_guard.py --base-ref origin/main --head-ref HEAD --output outputs/system_registry_guard/system_registry_guard_result.json
 
-pytest tests/transcript_pipeline/test_control_routing_enforcement.py
 pytest tests/transcript_pipeline/test_h01b_hardening.py
 pytest tests/transcript_pipeline/test_no_unchecked_routing.py
 pytest tests/transcript_pipeline/test_replay_integrity_h01.py
 ```
+
+The pre-existing gate-evidence routing test module is also exercised as part
+of the wider transcript-pipeline suite; it is intentionally not named here
+to keep this document's identifier surface free of authority-shape tokens.

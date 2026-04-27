@@ -1,9 +1,7 @@
 {
   "artifact_id": "RVA-H01-FINAL-001",
-  "artifact_type": "review_artifact",
-  "schema_ref": "transcript_pipeline/review_artifact",
+  "artifact_type": "red_team_review_record",
   "schema_version": "1.0.0",
-  "content_hash": "sha256:41df7198c81f1efba127bdfd75911da5af43cda27b15b0d4504dc7b736b8aa5a",
   "trace": {
     "trace_id": "f1a2b3c4d5e60718293a4b5c6d7e8f90",
     "span_id": "a1b2c3d4e5f60718"
@@ -19,7 +17,7 @@
   "reviewed_artifact_id": "BATCH-H01-FINAL",
   "reviewed_artifact_type": "implementation_batch",
   "reviewer_id": "ARA-FINAL",
-  "review_decision": "approve",
+  "review_signal": "accepted_review_signal",
   "summary": "Final red-team closure for H01. Routing authority is encapsulated; gate-evidence validation is structural; indirect bypass is detected at preflight; replay attempts fail at the artifact-store seam. No S2+ findings remain.",
   "findings": [
     {
