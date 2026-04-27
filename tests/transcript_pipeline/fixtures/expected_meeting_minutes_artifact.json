@@ -1,0 +1,139 @@
+{
+  "artifact_id": "MMA-5929D155BF4B",
+  "artifact_type": "meeting_minutes_artifact",
+  "schema_ref": "transcript_pipeline/meeting_minutes_artifact",
+  "schema_version": "2.0.0",
+  "trace": {
+    "trace_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "span_id": "bbbbbbbbbbbbbbbb"
+  },
+  "provenance": {
+    "produced_by": "meeting_minutes_extractor",
+    "input_artifact_ids": [
+      "TXA-8014E6CD774DAA50",
+      "CTX-8014E6CD774DAA50-6DE22A53E12F",
+      "GTE-611B6364BE2F",
+      "EVS-245156DBFD8C"
+    ],
+    "run_id": "run-cpl04"
+  },
+  "created_at": "2026-04-27T00:00:00Z",
+  "source_artifact_ids": [
+    "TXA-8014E6CD774DAA50",
+    "CTX-8014E6CD774DAA50-6DE22A53E12F"
+  ],
+  "source_context_bundle_id": "CTX-8014E6CD774DAA50-6DE22A53E12F",
+  "gate_evidence_id": "GTE-611B6364BE2F",
+  "eval_summary_id": "EVS-245156DBFD8C",
+  "extraction_mode": "deterministic",
+  "summary": "Alice: Today we are reviewing the CPL-04 meeting minutes pipeline. | Bob: Agenda: source grounding, deterministic extraction, and red-team coverage. | Carol: Can you walk me through the source ref validation rules?",
+  "attendees": [
+    "Alice",
+    "Bob",
+    "Carol"
+  ],
+  "agenda_items": [
+    {
+      "agenda_item_id": "AGI-0001",
+      "title": "Today we are reviewing the CPL-04 meeting minutes pipeline.",
+      "source_refs": [
+        {
+          "source_turn_id": "T-0001",
+          "source_segment_id": "SEG-0001",
+          "line_index": 0
+        }
+      ]
+    },
+    {
+      "agenda_item_id": "AGI-0002",
+      "title": "Agenda: source grounding, deterministic extraction, and red-team coverage.",
+      "source_refs": [
+        {
+          "source_turn_id": "T-0002",
+          "source_segment_id": "SEG-0002",
+          "line_index": 1
+        }
+      ]
+    },
+    {
+      "agenda_item_id": "AGI-0003",
+      "title": "Can you walk me through the source ref validation rules?",
+      "source_refs": [
+        {
+          "source_turn_id": "T-0003",
+          "source_segment_id": "SEG-0003",
+          "line_index": 2
+        }
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "decision_id": "DEC-0001",
+      "description": "Sure. Decision: every action item must carry a source ref or be marked unknown.",
+      "source_refs": [
+        {
+          "source_turn_id": "T-0004",
+          "source_segment_id": "SEG-0004",
+          "line_index": 3
+        }
+      ]
+    },
+    {
+      "decision_id": "DEC-0002",
+      "description": "We decided to keep the deterministic extractor as the default mode.",
+      "source_refs": [
+        {
+          "source_turn_id": "T-0005",
+          "source_segment_id": "SEG-0005",
+          "line_index": 4
+        }
+      ]
+    },
+    {
+      "decision_id": "DEC-0003",
+      "description": "Agreed to ship CPL-04 only after the leak guard run is clean.",
+      "source_refs": [
+        {
+          "source_turn_id": "T-0008",
+          "source_segment_id": "SEG-0008",
+          "line_index": 7
+        }
+      ]
+    }
+  ],
+  "action_items": [
+    {
+      "action_id": "ACT-0001",
+      "description": "Action: Bob will follow up on the assignee parser, assigned to Bob.",
+      "source_refs": [
+        {
+          "source_turn_id": "T-0006",
+          "source_segment_id": "SEG-0006",
+          "line_index": 5
+        }
+      ],
+      "assignee": "Bob",
+      "due_date_status": "unknown"
+    },
+    {
+      "action_id": "ACT-0002",
+      "description": "Todo: Carol to draft the red-team test matrix by next week.",
+      "source_refs": [
+        {
+          "source_turn_id": "T-0007",
+          "source_segment_id": "SEG-0007",
+          "line_index": 6
+        }
+      ],
+      "assignee_status": "unknown",
+      "due_date_status": "unknown"
+    }
+  ],
+  "source_coverage": {
+    "total_turns": 8,
+    "referenced_turns": 8,
+    "referenced_segments": 8,
+    "coverage_ratio": 1.0
+  }
+}

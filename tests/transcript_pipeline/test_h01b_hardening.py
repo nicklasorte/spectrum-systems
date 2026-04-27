@@ -282,22 +282,38 @@ class TestIssueSourceGrounding:
 
 
 class TestDecisionSourceGrounding:
-    """Decisions must include source_reference OR rationale for traceability."""
+    """Decisions must include source_refs OR rationale for traceability (CPL-04 v2.0.0)."""
 
     def _valid_minutes(self) -> Dict[str, Any]:
         return {
             "artifact_id": "MMA-SRCTEST001",
             "artifact_type": "meeting_minutes_artifact",
             "schema_ref": "transcript_pipeline/meeting_minutes_artifact",
-            "schema_version": "1.0.0",
+            "schema_version": "2.0.0",
             "content_hash": "sha256:" + "a" * 64,
             "trace": _trace(),
             "provenance": _provenance(),
             "created_at": "2026-04-25T00:00:00+00:00",
-            "source_artifact_id": "NTX-001",
+            "source_artifact_ids": ["TXA-001", "CTX-001"],
+            "source_context_bundle_id": "CTX-001",
             "summary": "Architecture review meeting.",
+            "attendees": [],
+            "agenda_items": [],
             "decisions": [],
             "action_items": [],
+            "source_coverage": {
+                "total_turns": 0,
+                "referenced_turns": 0,
+                "referenced_segments": 0,
+                "coverage_ratio": 0.0,
+            },
+        }
+
+    def _src_ref(self) -> Dict[str, Any]:
+        return {
+            "source_turn_id": "T-0012",
+            "source_segment_id": "SEG-0012",
+            "line_index": 11,
         }
 
     def test_decision_with_rationale_passes(self) -> None:
@@ -305,44 +321,44 @@ class TestDecisionSourceGrounding:
         artifact = self._valid_minutes()
         artifact["decisions"] = [
             {
-                "decision_id": "D-001",
+                "decision_id": "DEC-0001",
                 "description": "Adopt hash_utils canonical policy.",
                 "rationale": "Ensures deterministic hashing across all pipeline stages.",
             }
         ]
         _validate(schema, artifact)
 
-    def test_decision_with_source_reference_passes(self) -> None:
+    def test_decision_with_source_refs_passes(self) -> None:
         schema = _load_schema("meeting_minutes_artifact")
         artifact = self._valid_minutes()
         artifact["decisions"] = [
             {
-                "decision_id": "D-001",
+                "decision_id": "DEC-0001",
                 "description": "Adopt hash_utils canonical policy.",
-                "source_reference": "TXA-001::segment::0012",
+                "source_refs": [self._src_ref()],
             }
         ]
         _validate(schema, artifact)
 
-    def test_decision_with_both_rationale_and_source_passes(self) -> None:
+    def test_decision_with_both_rationale_and_source_refs_passes(self) -> None:
         schema = _load_schema("meeting_minutes_artifact")
         artifact = self._valid_minutes()
         artifact["decisions"] = [
             {
-                "decision_id": "D-001",
+                "decision_id": "DEC-0001",
                 "description": "Adopt canonical hashing.",
                 "rationale": "Prevents replay attacks.",
-                "source_reference": "TXA-001::segment::0012",
+                "source_refs": [self._src_ref()],
             }
         ]
         _validate(schema, artifact)
 
-    def test_decision_missing_both_rationale_and_source_fails(self) -> None:
+    def test_decision_missing_both_rationale_and_source_refs_fails(self) -> None:
         schema = _load_schema("meeting_minutes_artifact")
         artifact = self._valid_minutes()
         artifact["decisions"] = [
             {
-                "decision_id": "D-001",
+                "decision_id": "DEC-0001",
                 "description": "A decision without traceability origin.",
             }
         ]

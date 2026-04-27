@@ -1,0 +1,179 @@
+{
+  "fix_plan_id": "CPL04-FIX-PLAN",
+  "source_review_id": "RVA-CPL04-MINUTES-001",
+  "batch": "BATCH-CPL-04",
+  "created_at": "2026-04-27T00:00:00+00:00",
+  "fixes": [
+    {
+      "fix_id": "CPL04-FIX-001",
+      "finding_ids": ["F-001"],
+      "severity": "S3",
+      "description": "Schema decision_record uses anyOf [source_refs, rationale] with additionalProperties: false. eval_decision_grounding re-checks. Deterministic extractor only emits decisions on explicit markers ('decision:', 'we decided', 'agreed to', 'agreed that') and always pins source_refs.",
+      "target_files": [
+        "contracts/schemas/transcript_pipeline/meeting_minutes_artifact.schema.json",
+        "spectrum_systems/modules/transcript_pipeline/meeting_minutes_extractor.py",
+        "spectrum_systems/modules/transcript_pipeline/meeting_minutes_evals.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestSchemaAudit::test_decision_without_refs_or_rationale_fails",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestRedTeamRegressions::test_hallucinated_decision_blocked_by_schema",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestEvalHelpers::test_decision_grounding_flags_unbacked_decision"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL04-FIX-002",
+      "finding_ids": ["F-002"],
+      "severity": "S3",
+      "description": "Schema action_item uses allOf [anyOf assignee | assignee_status, anyOf due_date | due_date_status] with const 'unknown' for the explicit-unknown statuses. Deterministic extractor sets the status when no marker resolves. eval_action_item_completeness re-checks the same invariant.",
+      "target_files": [
+        "contracts/schemas/transcript_pipeline/meeting_minutes_artifact.schema.json",
+        "spectrum_systems/modules/transcript_pipeline/meeting_minutes_extractor.py",
+        "spectrum_systems/modules/transcript_pipeline/meeting_minutes_evals.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestSchemaAudit::test_action_item_requires_explicit_unknown_when_assignee_missing",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestSchemaAudit::test_action_item_requires_explicit_unknown_when_due_date_missing",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestSchemaAudit::test_action_item_with_explicit_unknowns_passes",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestEvalHelpers::test_action_item_completeness_flags_missing_status",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestDeterministicExtraction::test_action_items_have_explicit_unknown_when_assignee_missing"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL04-FIX-003",
+      "finding_ids": ["F-003"],
+      "severity": "S3",
+      "description": "validate_minutes_source_refs indexes transcript.speaker_turns and context_bundle.segments and rejects FAKE_SOURCE_TURN_ID and FAKE_SOURCE_SEGMENT_ID. extract_meeting_minutes invokes the validator before returning, so no extractor path can emit fake refs.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/minutes_source_validation.py",
+        "spectrum_systems/modules/transcript_pipeline/meeting_minutes_extractor.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestSourceGrounding::test_fake_source_turn_id_rejected",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestSourceGrounding::test_fake_source_segment_id_rejected",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestEvalHelpers::test_source_grounding_flags_fake_turn"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL04-FIX-004",
+      "finding_ids": ["F-004"],
+      "severity": "S3",
+      "description": "Validator cross-checks segment.source_turn_id == ref.source_turn_id; mismatch raises SOURCE_PAIR_MISMATCH. Schema description fields restate the invariant.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/minutes_source_validation.py",
+        "contracts/schemas/transcript_pipeline/meeting_minutes_artifact.schema.json"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestSourceGrounding::test_mismatched_source_pair_rejected"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL04-FIX-005",
+      "finding_ids": ["F-005"],
+      "severity": "S3",
+      "description": "Validator raises LINE_INDEX_DRIFT when ref.line_index does not match the source turn line_index. Extractor pre-checks segment-vs-turn alignment in _validate_segments_align_with_turns and raises SEGMENT_LINE_INDEX_DRIFT when the bundle itself drifted.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/minutes_source_validation.py",
+        "spectrum_systems/modules/transcript_pipeline/meeting_minutes_extractor.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestSourceGrounding::test_line_index_drift_rejected",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestSourceGrounding::test_segment_line_index_drift_rejected_at_extract_time"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL04-FIX-006",
+      "finding_ids": ["F-006"],
+      "severity": "S3",
+      "description": "Extractor _validate_gate_evidence requires gate_status == passed_gate, both transcript and bundle ids in target_artifact_ids, and a non-empty eval_summary_id matching ^EVS-[A-Z0-9_-]+$. Raises GATE_NOT_PASSED, MISSING_GATE_TARGET_IDS, GATE_TARGET_MISMATCH, MISSING_EVAL_SUMMARY_ID.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/meeting_minutes_extractor.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestGateEvidenceChecks::test_failed_gate_rejected",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestGateEvidenceChecks::test_missing_gate_rejected",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestGateEvidenceChecks::test_conditional_gate_rejected",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestGateEvidenceChecks::test_missing_eval_summary_id_rejected",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestGateEvidenceChecks::test_target_artifact_ids_mismatch_rejected",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestGateEvidenceChecks::test_empty_target_artifact_ids_rejected"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL04-FIX-007",
+      "finding_ids": ["F-007"],
+      "severity": "S3",
+      "description": "extract_meeting_minutes returns payloads WITHOUT content_hash. Direct calls to ArtifactStore.register_artifact raise ArtifactStoreError. run_meeting_minutes_extraction_via_pqx is the only sanctioned write path.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/meeting_minutes_extractor.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestPQXIntegration::test_payload_has_no_content_hash_before_pqx",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestPQXIntegration::test_pqx_registers_artifact_and_emits_record",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestPQXIntegration::test_direct_artifact_store_write_rejected"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL04-FIX-008",
+      "finding_ids": ["F-008"],
+      "severity": "S2",
+      "description": "Extractor raises BUNDLE_SOURCE_LINK_MISMATCH when context_bundle.source_artifact_id does not match transcript_artifact.artifact_id; check happens before any extraction work runs.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/meeting_minutes_extractor.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestGateEvidenceChecks::test_bundle_source_link_mismatch_rejected"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL04-FIX-009",
+      "finding_ids": ["F-009"],
+      "severity": "S2",
+      "description": "extract_meeting_minutes raises PROVIDER_ADAPTER_UNAVAILABLE when extraction_mode='provider_adapter' is requested without an explicit adapter callable. Tests never wire a live adapter; provider mode never escapes to the network.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/meeting_minutes_extractor.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestDeterministicExtraction::test_provider_adapter_mode_requires_adapter",
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestRedTeamRegressions::test_no_provider_adapter_in_default_path"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL04-FIX-010",
+      "finding_ids": ["F-010"],
+      "severity": "S1",
+      "description": "validate_minutes_source_refs recomputes total_turns / referenced_turns / referenced_segments and raises SOURCE_COVERAGE_MISMATCH when the declared values drift.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/minutes_source_validation.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestSourceGrounding::test_source_coverage_mismatch_rejected"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL04-FIX-011",
+      "finding_ids": ["F-011"],
+      "severity": "S0",
+      "description": "Module docstring and schema description fields state the evidence-only role. Review docs use authority-safe vocabulary (review_signal, finding, recommendation, validate / require / check, advancement). Module text scanned by test_authority_safe_vocabulary_in_module.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/meeting_minutes_extractor.py",
+        "spectrum_systems/modules/transcript_pipeline/minutes_source_validation.py",
+        "contracts/schemas/transcript_pipeline/meeting_minutes_artifact.schema.json",
+        "docs/reviews/CPL-04_meeting_minutes_review.md",
+        "contracts/review_artifact/CPL-04_review.json"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_meeting_minutes_extractor_cpl04.py::TestRedTeamRegressions::test_authority_safe_vocabulary_in_module"
+      ],
+      "status": "applied"
+    }
+  ]
+}

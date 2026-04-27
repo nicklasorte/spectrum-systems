@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/schemas/transcript_pipeline/meeting_minutes_artifact.schema.json",
   "title": "Meeting Minutes Artifact",
-  "description": "Structured meeting minutes extracted from a normalized transcript. Includes agenda items, decisions, and action items.",
+  "description": "CPL-04 Meeting Minutes Artifact: schema-bound, source-grounded extraction over a (transcript_artifact, context_bundle) pair admitted by a passed gate_evidence. Every agenda item, decision, and action item is tied back to concrete (source_turn_id, source_segment_id, line_index) source references. The artifact records evidence only; it carries no routing or release authority.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -14,10 +14,14 @@
     "trace",
     "provenance",
     "created_at",
-    "source_artifact_id",
+    "source_artifact_ids",
+    "source_context_bundle_id",
     "summary",
+    "agenda_items",
     "decisions",
-    "action_items"
+    "action_items",
+    "attendees",
+    "source_coverage"
   ],
   "properties": {
     "artifact_id": {
@@ -34,7 +38,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "1.0.0"
+      "const": "2.0.0"
     },
     "content_hash": {
       "type": "string",
@@ -50,34 +54,59 @@
       "type": "string",
       "format": "date-time"
     },
-    "source_artifact_id": {
+    "source_artifact_ids": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Ordered IDs of every artifact this minutes record was extracted from. Must include the transcript_artifact id and the context_bundle id."
+    },
+    "source_context_bundle_id": {
       "type": "string",
-      "description": "ID of the normalized_transcript this was derived from."
+      "pattern": "^CTX-[A-Z0-9_-]+$",
+      "description": "ID of the context_bundle that anchored extraction. Must also appear in source_artifact_ids."
+    },
+    "gate_evidence_id": {
+      "type": "string",
+      "pattern": "^GTE-[A-Z0-9_-]+$",
+      "description": "ID of the gate_evidence artifact whose passed_gate status admitted this extraction."
+    },
+    "eval_summary_id": {
+      "type": "string",
+      "pattern": "^EVS-[A-Z0-9_-]+$",
+      "description": "Back-reference to the eval_summary that the gate_evidence wrapped."
+    },
+    "extraction_mode": {
+      "type": "string",
+      "enum": ["deterministic", "provider_adapter"],
+      "description": "Which extraction path produced this artifact. CPL-04 ships only deterministic; provider_adapter is a stub for future work."
     },
     "summary": {
       "type": "string",
       "minLength": 1,
-      "description": "High-level summary of the meeting."
-    },
-    "agenda_items": {
-      "type": "array",
-      "items": {"type": "string"}
-    },
-    "decisions": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/decision_record"
-      }
-    },
-    "action_items": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/action_item"
-      }
+      "description": "Bounded deterministic summary derived from the leading speaker turns. Not a free-form generated summary."
     },
     "attendees": {
       "type": "array",
-      "items": {"type": "string"}
+      "items": {"type": "string", "minLength": 1},
+      "description": "Unique speakers as observed in transcript_artifact.speaker_turns."
+    },
+    "agenda_items": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/agenda_item"}
+    },
+    "decisions": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/decision_record"}
+    },
+    "action_items": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/action_item"}
+    },
+    "source_coverage": {
+      "$ref": "#/$defs/source_coverage"
     }
   },
   "$defs": {
@@ -96,9 +125,51 @@
       "additionalProperties": false,
       "required": ["produced_by", "input_artifact_ids"],
       "properties": {
-        "produced_by": {"type": "string"},
-        "input_artifact_ids": {"type": "array", "items": {"type": "string"}},
+        "produced_by": {"type": "string", "minLength": 1},
+        "input_artifact_ids": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
         "run_id": {"type": "string"}
+      }
+    },
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_turn_id", "source_segment_id", "line_index"],
+      "properties": {
+        "source_turn_id": {
+          "type": "string",
+          "pattern": "^T-[0-9]{4,}$",
+          "description": "Turn id from the transcript_artifact.speaker_turns this reference points at."
+        },
+        "source_segment_id": {
+          "type": "string",
+          "pattern": "^SEG-[0-9]{4,}$",
+          "description": "Segment id from the context_bundle.segments aligned to source_turn_id."
+        },
+        "line_index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero-based source line index inherited from the source turn."
+        }
+      }
+    },
+    "agenda_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agenda_item_id", "title", "source_refs"],
+      "properties": {
+        "agenda_item_id": {
+          "type": "string",
+          "pattern": "^AGI-[0-9]{4,}$"
+        },
+        "title": {"type": "string", "minLength": 1},
+        "source_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/source_ref"}
+        }
       }
     },
     "decision_record": {
@@ -106,30 +177,86 @@
       "additionalProperties": false,
       "required": ["decision_id", "description"],
       "properties": {
-        "decision_id": {"type": "string"},
-        "description": {"type": "string", "minLength": 1},
-        "made_by": {"type": "string"},
-        "rationale": {"type": "string", "minLength": 1},
-        "source_reference": {
+        "decision_id": {
           "type": "string",
-          "minLength": 1,
-          "description": "Traceable origin: transcript segment ID, agenda item ID, or external reference."
+          "pattern": "^DEC-[0-9]{4,}$"
+        },
+        "description": {"type": "string", "minLength": 1},
+        "rationale": {"type": "string", "minLength": 1},
+        "source_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/source_ref"}
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Advisory confidence score. NEVER authorizes anything. Routing and release authority remain with their canonical owners."
         }
       },
       "anyOf": [
-        {"required": ["source_reference"]},
+        {"required": ["source_refs"]},
         {"required": ["rationale"]}
       ]
     },
     "action_item": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action_id", "description"],
+      "required": ["action_id", "description", "source_refs"],
       "properties": {
-        "action_id": {"type": "string"},
+        "action_id": {
+          "type": "string",
+          "pattern": "^ACT-[0-9]{4,}$"
+        },
         "description": {"type": "string", "minLength": 1},
-        "assignee": {"type": "string"},
-        "due_date": {"type": "string", "format": "date"}
+        "assignee": {"type": "string", "minLength": 1},
+        "assignee_status": {
+          "type": "string",
+          "const": "unknown",
+          "description": "Explicit unknown assignee. If assignee is omitted this MUST be present."
+        },
+        "due_date": {"type": "string", "format": "date"},
+        "due_date_status": {
+          "type": "string",
+          "const": "unknown",
+          "description": "Explicit unknown due date. If due_date is omitted this MUST be present."
+        },
+        "source_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/source_ref"}
+        }
+      },
+      "allOf": [
+        {
+          "anyOf": [
+            {"required": ["assignee"]},
+            {"required": ["assignee_status"]}
+          ]
+        },
+        {
+          "anyOf": [
+            {"required": ["due_date"]},
+            {"required": ["due_date_status"]}
+          ]
+        }
+      ]
+    },
+    "source_coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_turns",
+        "referenced_turns",
+        "referenced_segments",
+        "coverage_ratio"
+      ],
+      "properties": {
+        "total_turns": {"type": "integer", "minimum": 0},
+        "referenced_turns": {"type": "integer", "minimum": 0},
+        "referenced_segments": {"type": "integer", "minimum": 0},
+        "coverage_ratio": {"type": "number", "minimum": 0.0, "maximum": 1.0}
       }
     }
   }

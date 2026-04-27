@@ -1,0 +1,4 @@
+Alice: Welcome everyone.
+Bob: Action: someone will follow up on the open red-team finding.
+Carol: That's a good todo item but we have not picked an owner yet.
+Alice: Let's continue and revisit ownership next session.
