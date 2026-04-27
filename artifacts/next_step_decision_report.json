@@ -1,0 +1,373 @@
+{
+  "artifact_type": "next_step_decision_report",
+  "completed_work": [
+    "BLF-01 \u2014 Baseline failure fix",
+    "RFX-04 \u2014 Loop-07/08",
+    "RMP-SUPER-01",
+    "H01 \u2014 Pre-MVP trust spine review/fix closure"
+  ],
+  "dependency_reasoning": [
+    "Locked sequence enforces BLF -> RFX-04 -> RMP-SUPER-01 -> H01 -> RFX-PROOF-01 -> EVL -> TPA -> CDE -> SEL -> MET -> HOP.",
+    "Advisory TLS ranking is non-owning and cannot bypass locked dependencies."
+  ],
+  "generated_at": "2026-04-27T14:49:20Z",
+  "partial_work": [],
+  "ranked_priorities": [
+    {
+      "blocked_by": [],
+      "eligible_now": false,
+      "id": "BLF-01",
+      "priority": 1,
+      "work_item": "BLF-01 \u2014 Baseline failure fix"
+    },
+    {
+      "blocked_by": [],
+      "eligible_now": false,
+      "id": "RFX-04",
+      "priority": 2,
+      "work_item": "RFX-04 \u2014 Loop-07/08"
+    },
+    {
+      "blocked_by": [],
+      "eligible_now": false,
+      "id": "RMP-SUPER-01",
+      "priority": 3,
+      "work_item": "RMP-SUPER-01"
+    },
+    {
+      "blocked_by": [],
+      "eligible_now": false,
+      "id": "H01",
+      "priority": 4,
+      "work_item": "H01 \u2014 Pre-MVP trust spine review/fix closure"
+    },
+    {
+      "blocked_by": [],
+      "eligible_now": true,
+      "id": "RFX-PROOF-01",
+      "priority": 5,
+      "work_item": "RFX LOOP-09/10 \u2014 Fix Integrity Proof + closure gate"
+    },
+    {
+      "blocked_by": [
+        "RFX-PROOF-01"
+      ],
+      "eligible_now": false,
+      "id": "EVL",
+      "priority": 6,
+      "work_item": "EVL hardening"
+    },
+    {
+      "blocked_by": [
+        "EVL"
+      ],
+      "eligible_now": false,
+      "id": "TPA",
+      "priority": 7,
+      "work_item": "TPA hardening"
+    },
+    {
+      "blocked_by": [
+        "TPA"
+      ],
+      "eligible_now": false,
+      "id": "CDE",
+      "priority": 8,
+      "work_item": "CDE hardening"
+    },
+    {
+      "blocked_by": [
+        "CDE"
+      ],
+      "eligible_now": false,
+      "id": "SEL",
+      "priority": 9,
+      "work_item": "SEL hardening"
+    },
+    {
+      "blocked_by": [
+        "RFX-PROOF-01",
+        "SEL"
+      ],
+      "eligible_now": false,
+      "id": "MET",
+      "priority": 10,
+      "work_item": "MET"
+    },
+    {
+      "blocked_by": [
+        "MET"
+      ],
+      "eligible_now": false,
+      "id": "HOP",
+      "priority": 11,
+      "work_item": "HOP"
+    }
+  ],
+  "readiness_state": "ready",
+  "reason_codes": [],
+  "red_team_findings": [
+    {
+      "blocked_step": "RFX-PROOF-01",
+      "finding": "Top advisory ranking conflicts with locked dependency recommendation.",
+      "id": "RT-STALE-ADVISORY",
+      "reason_code": "stale_advisory_ranking_conflict",
+      "recommended_fix": "Treat advisory ranking as non-owning and follow locked dependencies.",
+      "severity": "medium"
+    }
+  ],
+  "rejected_next_steps": [
+    {
+      "reason": "EVL must wait for dependencies: RFX-PROOF-01.",
+      "work_item": "EVL"
+    },
+    {
+      "reason": "TPA must wait for dependencies: EVL.",
+      "work_item": "TPA"
+    },
+    {
+      "reason": "CDE must wait for dependencies: TPA.",
+      "work_item": "CDE"
+    },
+    {
+      "reason": "SEL must wait for dependencies: CDE.",
+      "work_item": "SEL"
+    },
+    {
+      "reason": "MET must wait for dependencies: RFX-PROOF-01, SEL.",
+      "work_item": "MET"
+    },
+    {
+      "reason": "HOP must wait for dependencies: MET.",
+      "work_item": "HOP"
+    }
+  ],
+  "remaining_work_table": [
+    {
+      "depends_on": [],
+      "priority": 1,
+      "required_missing_artifacts_or_tests": [],
+      "risk_if_done_out_of_order": "Readiness claims become untrustworthy.",
+      "status": "complete",
+      "why_it_matters": "Stabilizes baseline failure posture before downstream readiness claims.",
+      "work_item": "BLF-01 \u2014 Baseline failure fix"
+    },
+    {
+      "depends_on": [
+        "BLF-01"
+      ],
+      "priority": 2,
+      "required_missing_artifacts_or_tests": [],
+      "risk_if_done_out_of_order": "Downstream checkpoints lack verifiable replay and freeze behavior.",
+      "status": "complete",
+      "why_it_matters": "Establishes replay/observability foundations used by H01 and RMP evidence.",
+      "work_item": "RFX-04 \u2014 Loop-07/08"
+    },
+    {
+      "depends_on": [
+        "BLF-01",
+        "RFX-04"
+      ],
+      "priority": 3,
+      "required_missing_artifacts_or_tests": [],
+      "risk_if_done_out_of_order": "Roadmap claims can drift from executable truth.",
+      "status": "complete",
+      "why_it_matters": "Provides roadmap mediation and drift-checked readiness evidence.",
+      "work_item": "RMP-SUPER-01"
+    },
+    {
+      "depends_on": [
+        "BLF-01",
+        "RFX-04",
+        "RMP-SUPER-01"
+      ],
+      "priority": 4,
+      "required_missing_artifacts_or_tests": [],
+      "risk_if_done_out_of_order": "Proof and hardening run on unstable trust-spine assumptions.",
+      "status": "complete",
+      "why_it_matters": "Confirms trust spine is ready before proof hardening and expansion.",
+      "work_item": "H01 \u2014 Pre-MVP trust spine review/fix closure"
+    },
+    {
+      "depends_on": [
+        "BLF-01",
+        "RFX-04",
+        "RMP-SUPER-01",
+        "H01"
+      ],
+      "priority": 5,
+      "required_missing_artifacts_or_tests": [],
+      "risk_if_done_out_of_order": "Trust-chain hardening occurs without proof-bound closure.",
+      "status": "not_started",
+      "why_it_matters": "Creates proof-bound trust baseline required by EVL/TPA/CDE/SEL hardening.",
+      "work_item": "RFX LOOP-09/10 \u2014 Fix Integrity Proof + closure gate"
+    },
+    {
+      "depends_on": [
+        "RFX-PROOF-01"
+      ],
+      "priority": 6,
+      "required_missing_artifacts_or_tests": [
+        "RFX-PROOF-01"
+      ],
+      "risk_if_done_out_of_order": "Evaluation signals can be spoofed or incomplete.",
+      "status": "not_started",
+      "why_it_matters": "Evaluation integrity depends on proof-complete trust spine.",
+      "work_item": "EVL hardening"
+    },
+    {
+      "depends_on": [
+        "EVL"
+      ],
+      "priority": 7,
+      "required_missing_artifacts_or_tests": [
+        "EVL"
+      ],
+      "risk_if_done_out_of_order": "Policy outcomes can be based on non-certified evaluation state.",
+      "status": "not_started",
+      "why_it_matters": "Policy adjudication must consume trusted evaluation outcomes.",
+      "work_item": "TPA hardening"
+    },
+    {
+      "depends_on": [
+        "TPA"
+      ],
+      "priority": 8,
+      "required_missing_artifacts_or_tests": [
+        "TPA"
+      ],
+      "risk_if_done_out_of_order": "Decision logic can bypass policy trust chain.",
+      "status": "not_started",
+      "why_it_matters": "Decision governance depends on trusted policy adjudication.",
+      "work_item": "CDE hardening"
+    },
+    {
+      "depends_on": [
+        "CDE"
+      ],
+      "priority": 9,
+      "required_missing_artifacts_or_tests": [
+        "CDE"
+      ],
+      "risk_if_done_out_of_order": "Execution may enforce untrusted decision paths.",
+      "status": "not_started",
+      "why_it_matters": "Enforcement must follow controlled decision provenance.",
+      "work_item": "SEL hardening"
+    },
+    {
+      "depends_on": [
+        "RFX-PROOF-01",
+        "SEL"
+      ],
+      "priority": 10,
+      "required_missing_artifacts_or_tests": [
+        "RFX-PROOF-01",
+        "SEL"
+      ],
+      "risk_if_done_out_of_order": "Metrics can falsely signal maturity before trust closure.",
+      "status": "not_started",
+      "why_it_matters": "Metrics trust must be grounded in completed core trust spine.",
+      "work_item": "MET"
+    },
+    {
+      "depends_on": [
+        "MET"
+      ],
+      "priority": 11,
+      "required_missing_artifacts_or_tests": [
+        "MET"
+      ],
+      "risk_if_done_out_of_order": "Optimization can reinforce incorrect or unsafe behavior.",
+      "status": "not_started",
+      "why_it_matters": "Higher-order optimization depends on trustworthy metrics.",
+      "work_item": "HOP"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "selected_next_step": {
+    "depends_on": [
+      "BLF-01",
+      "RFX-04",
+      "RMP-SUPER-01",
+      "H01"
+    ],
+    "execution_prompt_hint": "Build Fix Integrity Proof and proof-bound closure gate.",
+    "id": "RFX-PROOF-01",
+    "unlocks": [
+      "EVL",
+      "MET"
+    ],
+    "why": "Creates proof-bound trust baseline required by EVL/TPA/CDE/SEL hardening.",
+    "work_item": "RFX LOOP-09/10 \u2014 Fix Integrity Proof + closure gate"
+  },
+  "source_refs": [
+    {
+      "content_hash": "sha256:8797f3e8f5ad55d48940094f5c8fc5de20edb95fed78f3c6a7fa8b702096d1a6",
+      "path": "artifacts/blf_01_baseline_failure_fix/delivery_report.json",
+      "present": true,
+      "required": true
+    },
+    {
+      "content_hash": "sha256:51c1e1ef5b6de8846ba2659d8d874fd414fa436877b36e8fe8e78381dc5ad96c",
+      "path": "artifacts/rfx_04_loop_07_08/delivery_report.json",
+      "present": true,
+      "required": false
+    },
+    {
+      "content_hash": "sha256:3b0f083f949dd626bef3c82b5dd8dcda9125f011a743bf4a26566a626bc1acae",
+      "path": "artifacts/rmp_01_delivery_report.json",
+      "present": true,
+      "required": true
+    },
+    {
+      "content_hash": "sha256:07aa4ede69c6b5d43dbca0fc8efce3d6521ee507852a2d3ba9570a4a4dae19fc",
+      "path": "artifacts/rmp_drift_report.json",
+      "present": true,
+      "required": true
+    },
+    {
+      "content_hash": "sha256:096a1864e54a4ba6f4553c04c8dc1a4e725c632266e29e7b7f4c14b57410d050",
+      "path": "artifacts/system_dependency_priority_report.json",
+      "present": true,
+      "required": true
+    },
+    {
+      "content_hash": "sha256:be062ff992aeba8914d4a63d0c9e4dbd47db29a885a93593fcdd869fd50c7a12",
+      "path": "contracts/examples/system_roadmap.json",
+      "present": true,
+      "required": true
+    },
+    {
+      "content_hash": "sha256:630369836abef6c21036ad81ced9aa78694c3ebe56829455dce0bb224ddcd21b",
+      "path": "contracts/review_artifact/H01_review.json",
+      "present": true,
+      "required": false
+    },
+    {
+      "content_hash": "sha256:e6165c0100cf13c0ecda5071e0562bdcbce10901cda3f517ae498375dd90f3f6",
+      "path": "docs/reviews/H01_final_review.md",
+      "present": true,
+      "required": false
+    },
+    {
+      "content_hash": "sha256:d22d913b1350efb97d08dfaacb5ddd4d5f75d6edd08859aff26fe55b52e495d5",
+      "path": "docs/reviews/H01_pre_mvp_spine_review.md",
+      "present": true,
+      "required": false
+    },
+    {
+      "content_hash": "sha256:9c5dbf1024267d83772396e7d0f2479fcad53dcbf1c423721eb15523fa9d81b9",
+      "path": "docs/roadmaps/rfx_cross_system_roadmap.md",
+      "present": true,
+      "required": true
+    },
+    {
+      "content_hash": "sha256:612df47c80c319d44a4c0d364a20c71a14e0532c7ee5c82ae7e723f0656a53cf",
+      "path": "docs/roadmaps/system_roadmap.md",
+      "present": true,
+      "required": true
+    }
+  ],
+  "status": "pass",
+  "warnings": []
+}

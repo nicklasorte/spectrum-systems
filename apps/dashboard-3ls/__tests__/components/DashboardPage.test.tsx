@@ -65,6 +65,29 @@ const mockPriorityMissing = {
 };
 
 
+const mockNextStep = {
+  state: 'ok' as const,
+  payload: {
+    artifact_type: 'next_step_decision_report',
+    schema_version: '1.0.0',
+    generated_at: '2026-04-27T00:00:00.000Z',
+    status: 'pass' as const,
+    readiness_state: 'ready' as const,
+    source_refs: [],
+    completed_work: ['BLF-01', 'RFX-04', 'RMP-SUPER-01', 'H01'],
+    partial_work: [],
+    remaining_work_table: [],
+    ranked_priorities: [{ id: 'RFX-PROOF-01', work_item: 'RFX LOOP-09/10' }],
+    selected_next_step: { id: 'RFX-PROOF-01', work_item: 'RFX LOOP-09/10', why: 'proof first', depends_on: ['H01'], unlocks: ['EVL'] },
+    rejected_next_steps: [{ work_item: 'MET', reason: 'wait for proof' }],
+    dependency_reasoning: [],
+    red_team_findings: [{ id: 'RT-1', finding: 'example finding' }],
+    warnings: [],
+    reason_codes: [],
+  },
+};
+
+
 const mockTrustGraph = {
   graph_state: 'freeze_signal',
   generated_at: '2026-04-27T00:00:00.000Z',
@@ -124,6 +147,7 @@ function setupFetch(
   priority: unknown = mockPriorityMissing,
   systemFlow: unknown = mockSystemFlow,
   trustGraph: unknown = mockTrustGraph,
+  nextStep: unknown = mockNextStep,
 ) {
   (global.fetch as jest.Mock).mockImplementation((input: RequestInfo | URL) => {
     const url = String(input);
@@ -134,6 +158,7 @@ function setupFetch(
     if (url.includes('/api/priority')) return Promise.resolve({ ok: true, json: async () => priority });
     if (url.includes('/api/system-flow')) return Promise.resolve({ ok: true, json: async () => systemFlow });
     if (url.includes('/api/system-graph')) return Promise.resolve({ ok: true, json: async () => trustGraph });
+    if (url.includes('/api/next-step')) return Promise.resolve({ ok: true, json: async () => nextStep });
     return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
   });
 }
@@ -202,6 +227,18 @@ describe('DashboardPage panels', () => {
 
     expect(screen.getByTestId('flow-node-AEX').textContent).toContain('source: fallback');
     expect(screen.getByTestId('flow-node-EVL').textContent).toContain('trust: unknown');
+  });
+
+  it('renders next best step panel from artifact payload', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('next-step-panel')).toBeInTheDocument();
+      expect(screen.getByText('Next Best Step')).toBeInTheDocument();
+      expect(screen.getAllByText(/RFX LOOP-09\/10/).length).toBeGreaterThan(0);
+      expect(screen.getByText(/Rejected next steps/i)).toBeInTheDocument();
+    });
   });
 
   it('leverage queue items always include failure_prevented and signal_improved', async () => {

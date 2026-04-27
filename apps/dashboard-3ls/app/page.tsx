@@ -5,6 +5,7 @@ import { AUTHORITY_ROLES } from '@/lib/displayGroups';
 import { dataSourceAllowsHealthy } from '@/lib/truthClassifier';
 import type { DataSource } from '@/lib/types';
 import { TrustGraphSection } from '@/components/TrustGraphSection';
+import { NextStepPanel } from '@/components/NextStepPanel';
 
 type TrustState = 'PASS' | 'WARN' | 'FREEZE' | 'BLOCK';
 type StageState = 'present' | 'partial' | 'missing' | 'unknown';
@@ -1188,6 +1189,8 @@ export default function Dashboard() {
           </div>
         )}
       </section>
+
+      <NextStepPanel />
 
       <NextSystemsToFinishPanel result={priority} />
 

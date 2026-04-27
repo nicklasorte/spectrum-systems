@@ -246,3 +246,144 @@ def test_contract_example_cases_validate() -> None:
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
     payload = json.loads((_REPO_ROOT / "contracts" / "examples" / "next_step_decision_artifact.json").read_text())
     validator.validate(payload)
+
+
+from spectrum_systems.modules.runtime.next_step.next_step_engine import build_next_step_report
+from spectrum_systems.modules.runtime.next_step.next_step_inputs import NextStepInputs, SourceRef
+
+
+def _runtime_inputs(
+    *,
+    missing_required: list[str] | None = None,
+    blf_status: str = "pass",
+    rfx_status: str = "implemented",
+    drift_detected: bool = False,
+    include_h01: bool = True,
+) -> NextStepInputs:
+    missing_required = missing_required or []
+    required_paths = [
+        "contracts/examples/system_roadmap.json",
+        "docs/roadmaps/system_roadmap.md",
+        "docs/roadmaps/rfx_cross_system_roadmap.md",
+        "artifacts/system_dependency_priority_report.json",
+        "artifacts/rmp_01_delivery_report.json",
+        "artifacts/rmp_drift_report.json",
+        "artifacts/blf_01_baseline_failure_fix/delivery_report.json",
+    ]
+    source_refs = []
+    for path in required_paths:
+        present = path not in missing_required
+        source_refs.append(SourceRef(path=path, required=True, present=present, content_hash="sha256:test" if present else None))
+    source_refs.append(SourceRef(path="artifacts/rfx_04_loop_07_08/delivery_report.json", required=False, present=True, content_hash="sha256:test"))
+    source_refs.append(SourceRef(path="contracts/review_artifact/H01_review.json", required=False, present=include_h01, content_hash="sha256:test" if include_h01 else None))
+    source_refs.append(SourceRef(path="docs/reviews/H01_pre_mvp_spine_review.md", required=False, present=include_h01, content_hash="sha256:test" if include_h01 else None))
+
+    payloads = {
+        "artifacts/system_dependency_priority_report.json": {"top_5": [{"system_id": "MET"}]},
+        "artifacts/rmp_01_delivery_report.json": {"status": "pass", "h01_readiness": {"ready": True}},
+        "artifacts/rmp_drift_report.json": {"status": "pass", "drift_detected": drift_detected},
+        "artifacts/blf_01_baseline_failure_fix/delivery_report.json": {"status": blf_status},
+        "artifacts/rfx_04_loop_07_08/delivery_report.json": {"status": rfx_status},
+    }
+    return NextStepInputs(source_refs=source_refs, payloads=payloads, reason_codes=[f"missing_required_artifact:{p}" for p in missing_required])
+
+
+def test_runtime_happy_path_selects_rfx_proof(monkeypatch):
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.next_step.next_step_engine.load_inputs",
+        lambda _repo_root: _runtime_inputs(),
+    )
+    report, hard_failure = build_next_step_report(Path('.'))
+    assert hard_failure is False
+    assert report["selected_next_step"]["id"] == "RFX-PROOF-01"
+
+
+def test_runtime_met_rejected_before_rfx_proof(monkeypatch):
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.next_step.next_step_engine.load_inputs",
+        lambda _repo_root: _runtime_inputs(include_h01=False),
+    )
+    report, _ = build_next_step_report(Path('.'))
+    rejected = {row["work_item"]: row["reason"] for row in report["rejected_next_steps"]}
+    assert "MET" in rejected
+
+
+def test_runtime_hop_rejected_before_met(monkeypatch):
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.next_step.next_step_engine.load_inputs",
+        lambda _repo_root: _runtime_inputs(include_h01=False),
+    )
+    report, _ = build_next_step_report(Path('.'))
+    rejected = {row["work_item"]: row["reason"] for row in report["rejected_next_steps"]}
+    assert "HOP" in rejected
+
+
+def test_runtime_evl_tpa_cde_rejected_before_rfx_proof(monkeypatch):
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.next_step.next_step_engine.load_inputs",
+        lambda _repo_root: _runtime_inputs(include_h01=False),
+    )
+    report, _ = build_next_step_report(Path('.'))
+    rejected = {row["work_item"] for row in report["rejected_next_steps"]}
+    assert {"EVL", "TPA", "CDE"}.issubset(rejected)
+
+
+def test_runtime_fake_implemented_status_detected(monkeypatch):
+    inputs = _runtime_inputs(blf_status="implemented", include_h01=True)
+    # Inject impossible state: H01 present while BLF not complete.
+    inputs = NextStepInputs(source_refs=inputs.source_refs, payloads=inputs.payloads, reason_codes=[])
+    inputs.payloads["artifacts/blf_01_baseline_failure_fix/delivery_report.json"] = {"status": "failed"}
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.next_step.next_step_engine.load_inputs",
+        lambda _repo_root: inputs,
+    )
+    report, _ = build_next_step_report(Path('.'))
+    assert any(item["reason_code"] == "h01_readiness_without_prereqs" for item in report["red_team_findings"])
+
+
+def test_runtime_missing_required_artifact_blocks(monkeypatch):
+    missing_path = "artifacts/rmp_01_delivery_report.json"
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.next_step.next_step_engine.load_inputs",
+        lambda _repo_root: _runtime_inputs(missing_required=[missing_path]),
+    )
+    report, hard_failure = build_next_step_report(Path('.'))
+    assert hard_failure is True
+    assert report["status"] == "blocked"
+    assert f"missing_required_artifact:{missing_path}" in report["reason_codes"]
+
+
+def test_runtime_source_refs_include_sha256_hashes(monkeypatch):
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.next_step.next_step_engine.load_inputs",
+        lambda _repo_root: _runtime_inputs(),
+    )
+    report, _ = build_next_step_report(Path('.'))
+    assert all(ref["content_hash"] is None or str(ref["content_hash"]).startswith("sha256:") for ref in report["source_refs"])
+
+
+def test_runtime_red_team_finding_emitted_for_advisory_conflict(monkeypatch):
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.next_step.next_step_engine.load_inputs",
+        lambda _repo_root: _runtime_inputs(),
+    )
+    report, _ = build_next_step_report(Path('.'))
+    reason_codes = {item["reason_code"] for item in report["red_team_findings"]}
+    assert "stale_advisory_ranking_conflict" in reason_codes
+
+
+def test_runtime_output_shape_contains_required_fields(monkeypatch):
+    monkeypatch.setattr(
+        "spectrum_systems.modules.runtime.next_step.next_step_engine.load_inputs",
+        lambda _repo_root: _runtime_inputs(),
+    )
+    report, _ = build_next_step_report(Path('.'))
+    for key in [
+        "artifact_type",
+        "schema_version",
+        "selected_next_step",
+        "rejected_next_steps",
+        "red_team_findings",
+        "source_refs",
+    ]:
+        assert key in report

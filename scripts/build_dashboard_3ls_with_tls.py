@@ -1,7 +1,7 @@
 """Build dashboard-3ls with fail-closed TLS artifact generation.
 
 Usage:
-    python scripts/build_dashboard_3ls_with_tls.py [--skip-next-build]
+    python scripts/build_dashboard_3ls_with_tls.py [--skip-next-build] [--skip-next-step]
 """
 
 from __future__ import annotations
@@ -28,6 +28,10 @@ def artifact_path() -> Path:
     return repo_root() / "artifacts" / "system_dependency_priority_report.json"
 
 
+def next_step_artifact_path() -> Path:
+    return repo_root() / "artifacts" / "next_step_decision_report.json"
+
+
 def registry_path() -> Path:
     return repo_root() / "docs" / "architecture" / "system_registry.md"
 
@@ -42,13 +46,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--skip-next-build",
         action="store_true",
-        help="Generate/verify TLS artifacts only; do not invoke next build.",
+        help="Generate/verify governance artifacts only; do not invoke next build.",
+    )
+    parser.add_argument(
+        "--skip-next-step",
+        action="store_true",
+        help="Skip next-step artifact generation (local debug only).",
     )
     args = parser.parse_args(argv)
 
     root = repo_root()
     dash = dashboard_dir()
     artifact = artifact_path()
+    next_step_artifact = next_step_artifact_path()
     registry = registry_path()
     tls_env = dict(os.environ)
     tls_env["PYTHONPATH"] = str(root)
@@ -85,6 +95,20 @@ def main(argv: list[str] | None = None) -> int:
             file=sys.stderr,
         )
         return 1
+
+    if not args.skip_next_step:
+        next_step_cmd = [sys.executable, str(root / "scripts" / "build_next_step_decision.py")]
+        print(f"[dashboard-3ls-build] next_step_command={' '.join(next_step_cmd)}", flush=True)
+        next_step_rc = _run(next_step_cmd, cwd=root, env=tls_env)
+        if next_step_rc != 0:
+            return next_step_rc
+
+        if not next_step_artifact.is_file():
+            print(
+                f"FAIL: required artifact missing after next-step build: {next_step_artifact}",
+                file=sys.stderr,
+            )
+            return 1
 
     if args.skip_next_build:
         return 0
