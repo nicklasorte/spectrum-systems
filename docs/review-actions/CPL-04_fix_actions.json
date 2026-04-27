@@ -4,6 +4,9 @@
   "prompt_type": "REVIEW",
   "work_item": "BATCH-CPL-04 (REV-2)",
   "review_signal": "tracked",
+  "schema_delivery_status": "schema implementation complete",
+  "publication_status": "publication_pending",
+  "publication_owner": "SCH/GOV",
   "actions": [
     {
       "action_id": "A-001",
@@ -13,7 +16,12 @@
     {
       "action_id": "A-002",
       "finding": "Scope boundaries must remain inside transcript-pipeline and CPL review artifact paths.",
-      "recommendation": "Use test_cpl04_scope_guard.py for deterministic allowlist-style path validation without changing authority scripts."
+      "recommendation": "Use test_cpl04_scope_guard.py for deterministic path validation without changing authority scripts."
+    },
+    {
+      "action_id": "A-003",
+      "finding": "Standards publication is deferred for this feature scope.",
+      "recommendation": "Handle standards-manifest publication in a separate SCH/GOV work item."
     }
   ],
   "created_at": "2026-04-27T00:00:00Z"

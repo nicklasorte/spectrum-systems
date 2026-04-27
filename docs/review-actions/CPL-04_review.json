@@ -4,6 +4,12 @@
   "prompt_type": "REVIEW",
   "work_item": "BATCH-CPL-04 (REV-2)",
   "review_signal": "pass_with_followups",
+  "schema_delivery_status": "schema implementation complete",
+  "publication_status": "publication_pending",
+  "publication_owner": "SCH/GOV",
+  "notes": [
+    "standards publication deferred to SCH/GOV"
+  ],
   "findings": [
     {
       "finding_id": "F-001",
