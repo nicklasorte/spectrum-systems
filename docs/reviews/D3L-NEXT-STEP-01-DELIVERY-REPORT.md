@@ -38,7 +38,7 @@ The recommendation builder loads and hashes these evidence artifacts:
 ## Fail-closed behavior
 - Missing required inputs return blocked output with `reason_codes` and fail the builder script non-zero.
 - Dashboard API never fabricates recommendations; missing artifact returns blocked payload.
-- Build wrapper enforces artifact existence after next-step builder unless `--skip-next-step` is explicitly provided.
+- Build wrapper requires artifact existence after next-step builder unless `--skip-next-step` is explicitly provided.
 
 ## Tests run
 - `python scripts/build_next_step_recommendation.py`

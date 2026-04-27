@@ -10,7 +10,7 @@
     "Locked sequence requires BLF -> RFX-04 -> RMP-SUPER-01 -> H01 -> RFX-PROOF-01 -> EVL -> TPA -> CDE -> SEL -> MET -> HOP.",
     "Advisory TLS ranking is non-owning and cannot bypass locked dependencies."
   ],
-  "generated_at": "2026-04-27T15:42:44Z",
+  "generated_at": "2026-04-27T17:24:35Z",
   "partial_work": [],
   "ranked_priorities": [
     {
@@ -326,7 +326,7 @@
       "required": true
     },
     {
-      "content_hash": "sha256:791d7d21c5c2a8228c09de5c244330f3343d63f28e1fa26dfff96c4d0054d1ef",
+      "content_hash": "sha256:17b82a61fccbd6fa608e93964f00cfc67f5e28e030eb1e28121705f4aeb7b88f",
       "path": "artifacts/system_dependency_priority_report.json",
       "present": true,
       "required": true

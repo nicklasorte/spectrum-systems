@@ -15,7 +15,7 @@ Resolve remaining authority-shape vocabulary violations in D3L next-step recomme
 | docs/review-actions/PLAN-D3L-NEXT-STEP-01B-2026-04-27.md | CREATE | Required written plan for >2 file BUILD scope |
 | docs/review-actions/PLAN-D3L-NEXT-STEP-01A-2026-04-27.md | MODIFY | Replace legacy vocabulary tokens |
 | spectrum_systems/modules/dashboard_3ls/next_step_recommendation/next_step_dependency_rules.py | MODIFY | Replace reserved wording with safe recommendation wording |
-| spectrum_systems/modules/dashboard_3ls/next_step_recommendation/next_step_engine.py | MODIFY | Replace reserved review/approval wording |
+| spectrum_systems/modules/dashboard_3ls/next_step_recommendation/next_step_engine.py | MODIFY | Replace reserved review_observation/advisory_result wording |
 | tests/test_next-step-legacy.py equivalent surface | DELETE | Remove stale legacy next-step test file from D3L surface |
 
 ## Contracts touched
