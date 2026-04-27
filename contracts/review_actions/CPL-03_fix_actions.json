@@ -1,0 +1,134 @@
+{
+  "fix_plan_id": "CPL03-FIX-PLAN",
+  "source_review_id": "RVA-CPL03-EVALGATE-001",
+  "batch": "BATCH-CPL-03",
+  "created_at": "2026-04-27T00:00:00+00:00",
+  "fixes": [
+    {
+      "fix_id": "CPL03-FIX-001",
+      "finding_ids": ["F-001"],
+      "severity": "S3",
+      "description": "Two-step PQX wrapper: run_eval_gate_via_pqx executes eval_gate_summary first and registers the eval_summary, then runs eval_gate_evidence which re-derives the eval_summary_id from the same inputs and raises EVAL_SUMMARY_ID_DRIFT if the value does not match the registered eval_summary id.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/eval_gate.py",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestPQXIntegration::test_runs_two_steps_and_registers_both_artifacts",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestPQXIntegration::test_pqx_summary_and_evidence_share_trace",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestRedTeamRegressions::test_F001_fake_gate_evidence_rejected_by_back_reference_drift"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL03-FIX-002",
+      "finding_ids": ["F-002"],
+      "severity": "S3",
+      "description": "replay_consistency eval re-derives manifest_hash from the bundle segments using the same canonicalisation as context_bundle_assembler._compute_manifest_hash; mismatch raises REPLAY_MANIFEST_HASH_MISMATCH and lands in failed_gate.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/eval_gate.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestFailClosedGate::test_manifest_hash_mismatch",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestRedTeamRegressions::test_F002_replay_mismatch_lands_in_failed_gate",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestNegativeMatrix::test_mutation_lands_in_failed_gate"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL03-FIX-003",
+      "finding_ids": ["F-003"],
+      "severity": "S3",
+      "description": "coverage eval rejects COVERAGE_COUNT_MISMATCH whenever len(segments) != len(speaker_turns); applies symmetrically to truncated and extended bundles.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/eval_gate.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestFailClosedGate::test_partial_coverage_fails",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestFailClosedGate::test_extra_segment_fails_coverage",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestRedTeamRegressions::test_F003_partial_coverage_lands_in_failed_gate"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL03-FIX-004",
+      "finding_ids": ["F-004"],
+      "severity": "S3",
+      "description": "Pure evaluate_transcript_context returns payloads WITHOUT content_hash. Direct calls to ArtifactStore.register_artifact raise ArtifactStoreError; only run_eval_gate_via_pqx (and its run_pqx_step calls) is permitted to mint hashes and register artifacts. Module text contains no register_artifact references.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/eval_gate.py",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestEvaluator::test_evaluator_returns_no_content_hash",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestPQXIntegration::test_evaluator_cannot_register_directly_without_pqx",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestRedTeamRegressions::test_F004_pqx_bypass_attempt_blocked",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestAuthorityShapeVocabulary::test_eval_gate_module_has_no_register_artifact_call"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL03-FIX-005",
+      "finding_ids": ["F-005"],
+      "severity": "S2",
+      "description": "gate_evidence schema requires eval_summary_id and constrains its pattern to ^EVS-[A-Z0-9_-]+$. additionalProperties: false on the gate_evidence envelope rejects unknown fields at admission.",
+      "target_files": [
+        "contracts/schemas/transcript_pipeline/gate_evidence.schema.json"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestGateEvidenceSchemaAudit::test_schema_required_fields",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestGateEvidenceSchemaAudit::test_eval_summary_id_pattern",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestRedTeamRegressions::test_F005_missing_eval_summary_id_in_gate_rejected_by_schema"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL03-FIX-006",
+      "finding_ids": ["F-006"],
+      "severity": "S2",
+      "description": "referential_integrity eval rejects ORPHAN_SEGMENT (segment.source_turn_id missing from transcript.speaker_turns) and SEGMENT_TURN_DRIFT (segment[i] does not match speaker_turns[i] on (source_turn_id, speaker, text, line_index)); both surface failed_gate.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/eval_gate.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestFailClosedGate::test_fake_source_turn_id",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestFailClosedGate::test_segment_drift_detected"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL03-FIX-007",
+      "finding_ids": ["F-007"],
+      "severity": "S1",
+      "description": "eval_result.status enum is constrained to [pass, fail] in the eval_summary schema; eval_results.minItems is 1 and additionalProperties: false on each eval_result object. Indeterminate aggregations map to conditional_gate via _gate_status_from_summary (NOT routable).",
+      "target_files": [
+        "contracts/schemas/transcript_pipeline/eval_summary.schema.json",
+        "spectrum_systems/modules/transcript_pipeline/eval_gate.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestEvalSummarySchemaAudit::test_schema_overall_status_enum",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestEvalSummarySchemaAudit::test_schema_eval_result_required",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestRedTeamRegressions::test_F007_eval_with_undefined_status_rejected_by_schema",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestRedTeamRegressions::test_F008_unknown_gate_status_rejected_by_schema"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL03-FIX-008",
+      "finding_ids": ["F-008"],
+      "severity": "S0",
+      "description": "Module docstring states evidence-only role and forbids authority vocabulary. Schema description fields repeat the boundary statement. Authority-shape regression tests scan eval_gate.py and the schema files for forbidden terms.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/eval_gate.py",
+        "contracts/schemas/transcript_pipeline/eval_summary.schema.json",
+        "contracts/schemas/transcript_pipeline/gate_evidence.schema.json"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestAuthorityShapeVocabulary::test_eval_gate_module_has_no_authority_vocabulary",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestAuthorityShapeVocabulary::test_eval_summary_schema_has_no_authority_vocabulary",
+        "tests/transcript_pipeline/test_eval_gate_cpl03.py::TestAuthorityShapeVocabulary::test_gate_evidence_schema_has_no_authority_vocabulary"
+      ],
+      "status": "applied"
+    }
+  ]
+}

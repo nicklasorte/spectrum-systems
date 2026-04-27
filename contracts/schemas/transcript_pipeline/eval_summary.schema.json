@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/schemas/transcript_pipeline/eval_summary.schema.json",
+  "title": "Eval Summary",
+  "description": "CPL-03 Eval Summary: deterministic, fail-closed evaluation record over a transcript_artifact + context_bundle pair. Carries one structured eval_results entry per required eval_name and an overall_status (pass|fail). This artifact does not assert routing; it is consumed by the gate_evidence artifact and by downstream review surfaces. No authority vocabulary is permitted in this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "content_hash",
+    "trace",
+    "provenance",
+    "created_at",
+    "evaluated_artifact_ids",
+    "eval_results",
+    "overall_status"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string",
+      "pattern": "^EVS-[A-Z0-9_-]+$",
+      "description": "Unique identifier for this eval_summary artifact."
+    },
+    "artifact_type": {
+      "type": "string",
+      "const": "eval_summary"
+    },
+    "schema_ref": {
+      "type": "string",
+      "const": "transcript_pipeline/eval_summary"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "trace": {
+      "$ref": "#/$defs/trace_context"
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evaluated_artifact_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "IDs of the artifacts evaluated by this summary (transcript_artifact + context_bundle, in that order)."
+    },
+    "eval_results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/eval_result"
+      },
+      "description": "One entry per executed eval. Required eval_names must all appear; missing entries are surfaced as overall_status=fail."
+    },
+    "overall_status": {
+      "type": "string",
+      "enum": ["pass", "fail"],
+      "description": "Aggregated status over eval_results. Fail-closed: any individual fail or any missing required eval_name yields fail."
+    },
+    "missing_eval_names": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Required eval names that did not appear in eval_results. Non-empty implies overall_status=fail."
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Aggregated structured reason codes (e.g., MISSING_REQUIRED_EVALS, EVAL_CASE_FAILED)."
+    }
+  },
+  "$defs": {
+    "trace_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "span_id"],
+      "properties": {
+        "trace_id": {"type": "string", "pattern": "^[a-f0-9]{32}$"},
+        "span_id": {"type": "string", "pattern": "^[a-f0-9]{16}$"},
+        "parent_span_id": {"type": "string", "pattern": "^[a-f0-9]{16}$"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["produced_by", "input_artifact_ids"],
+      "properties": {
+        "produced_by": {"type": "string"},
+        "input_artifact_ids": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1
+        },
+        "run_id": {"type": "string"}
+      }
+    },
+    "eval_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eval_name", "status", "reason_codes"],
+      "properties": {
+        "eval_name": {
+          "type": "string",
+          "enum": [
+            "schema_conformance",
+            "trace_completeness",
+            "referential_integrity",
+            "replay_consistency",
+            "coverage"
+          ],
+          "description": "Canonical eval name executed against the input artifacts."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pass", "fail"],
+          "description": "Per-eval status. Indeterminate is recorded as fail (fail-closed)."
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Structured reason codes for the eval result. Empty list when status=pass."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Optional human-readable detail; not consumed by downstream logic."
+        },
+        "evaluated_artifact_id": {
+          "type": "string",
+          "description": "Artifact this individual eval was executed against (e.g., the context_bundle id)."
+        }
+      }
+    }
+  }
+}
