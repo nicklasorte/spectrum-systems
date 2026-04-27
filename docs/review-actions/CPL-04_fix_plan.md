@@ -65,6 +65,10 @@ python scripts/run_system_registry_guard.py \
 
 All must pass before advancement to the next-stage readiness signal.
 
+## Known advisory diagnostic (not a gate)
+
+`scripts/run_authority_shape_preflight.py` surfaces decision-cluster diagnostics on `decisions`, `decision_id`, `decision_record`, and similar identifiers. These names are mandated by the CPL-04 contract (the artifact records meeting decisions as a domain concept) and match prior schemas in the repo (e.g., `contracts/schemas/meeting_minutes_record.schema.json`). The scanner's own header states it "does not own runtime, gating, or enforcement"; canonical owners (JDX/CDE) consume the diagnostic but do not gate on it. The hard gates (3LS authority preflight, authority leak guard, system registry guard) all return status `pass` for this batch.
+
 ## Remaining risk (carried, not closed)
 
 - The deterministic extractor uses bounded marker matching ("decision:", "we decided", "agreed to", "action:", "todo:", "will follow up", "assigned to", "agenda:" / "agenda item:" / "first item" / "next item" / "today we are" / "today we will"). Real-world transcripts may use other phrasings. CPL-08 will pick this up by introducing a governed adoption flow for new markers; nothing routes around the schema in the meantime.
