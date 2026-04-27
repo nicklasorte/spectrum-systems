@@ -1,7 +1,7 @@
 {
   "artifact_type": "authenticity_hardgate_umbrella_checkpoint",
   "batch_id": "AUTHENTICITY-HARDGATE-24-01",
-  "generated_at": "2026-04-24T21:03:50Z",
+  "generated_at": "2026-04-27T03:43:46Z",
   "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
   "umbrella_id": "UMBRELLA-2",
   "umbrella_name": "REPO_WRITE_INGRESS_UNIFICATION",

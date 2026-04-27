@@ -3,7 +3,7 @@
   "batch_id": "RH-KERNEL-24-01",
   "slice_id": "RH-10",
   "owner": "SEL",
-  "generated_at": "2026-04-24T16:44:35Z",
+  "generated_at": "2026-04-27T03:47:34Z",
   "probe_target": "dashboard/public/*.json",
   "artifact_truth_match": "pass",
   "divergence_count": 0
