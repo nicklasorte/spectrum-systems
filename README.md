@@ -159,3 +159,4 @@ The system, not the model, controls execution.
 Models can be replaced. Governance cannot be implicit.
 
 Durable reliability comes from explicit artifacts, bounded execution, fail-closed enforcement, and evidence-based promotion.
+
