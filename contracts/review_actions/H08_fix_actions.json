@@ -1,0 +1,118 @@
+{
+  "fix_plan_id": "H08-FIX-PLAN",
+  "source_review_id": "RVA-H08-INGEST-001",
+  "batch": "BATCH-H08",
+  "created_at": "2026-04-27T00:00:00+00:00",
+  "fixes": [
+    {
+      "fix_id": "H08-FIX-001",
+      "finding_ids": ["F-001"],
+      "severity": "S3",
+      "description": "Reject empty / whitespace-only transcripts. Add EMPTY_TRANSCRIPT reason code and schema-level speaker_turns minItems: 1.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py",
+        "contracts/schemas/transcript_pipeline/transcript_artifact.schema.json"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py::TestParserDeterminism::test_empty_text_fails_closed",
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py::TestParserDeterminism::test_whitespace_only_text_fails_closed",
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py::TestSchemaAudit::test_empty_speaker_turns_rejected",
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py::TestRedTeamRegressions::test_F001_empty_input_cannot_produce_artifact"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "H08-FIX-002",
+      "finding_ids": ["F-002"],
+      "severity": "S3",
+      "description": "Reject prose without speaker delimiters. Raise NO_SPEAKER_TURNS in parse_transcript_text.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py::TestParserDeterminism::test_no_speaker_turns_fails_closed",
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py::TestRedTeamRegressions::test_F002_malformed_input_cannot_produce_artifact"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "H08-FIX-003",
+      "finding_ids": ["F-003"],
+      "severity": "S2",
+      "description": "Bound input file size at 5 MiB. Stat before read; raise INPUT_FILE_TOO_LARGE.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py::TestRedTeamRegressions::test_F003_oversize_input_blocked_before_parse"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "H08-FIX-004",
+      "finding_ids": ["F-004"],
+      "severity": "S2",
+      "description": "Catch UnicodeDecodeError and re-raise as TranscriptIngestionError(reason_code=INPUT_NOT_UTF8).",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py::TestIngestPayload::test_non_utf8_file_fails_closed",
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py::TestRedTeamRegressions::test_F004_non_utf8_input_blocked"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "H08-FIX-005",
+      "finding_ids": ["F-005"],
+      "severity": "S3",
+      "description": "Derive session_id and artifact_id deterministically from sha256(filename || raw_text). Replay collisions are caught by ArtifactStore DUPLICATE_ARTIFACT_ID.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py::TestRedTeamRegressions::test_F005_session_id_is_deterministic",
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py::TestArtifactStoreInvariants::test_duplicate_artifact_id_rejected"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "H08-FIX-006",
+      "finding_ids": ["F-006"],
+      "severity": "S2",
+      "description": "Lock down direct artifact writes by adding an explicit regression test that hand-crafted payloads are rejected by the artifact store envelope check.",
+      "target_files": [
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py::TestRedTeamRegressions::test_F006_direct_artifact_writes_blocked_by_envelope_check"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "H08-FIX-007",
+      "finding_ids": ["F-007"],
+      "severity": "S1",
+      "description": "Validate trace_id / span_id at the ingestor boundary in addition to schema-level checks.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py::TestIngestPayload::test_invalid_trace_id_fails_closed",
+        "tests/transcript_pipeline/test_transcript_ingestor_h08.py::TestIngestPayload::test_invalid_span_id_fails_closed"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "H08-FIX-008",
+      "finding_ids": ["F-008"],
+      "severity": "S0",
+      "description": "Document content_hash ownership boundary in module docstring and ingest_transcript return-value comment.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/transcript_ingestor.py"
+      ],
+      "regression_tests": [],
+      "status": "applied"
+    }
+  ]
+}

@@ -60,6 +60,17 @@
       "minLength": 1,
       "description": "Raw transcript content."
     },
+    "session_id": {
+      "type": "string",
+      "pattern": "^SES-[A-Z0-9_-]+$",
+      "description": "Deterministic session identifier derived from input source."
+    },
+    "speaker_turns": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/speaker_turn"},
+      "description": "Structured, ordered speaker turns parsed from the raw transcript."
+    },
     "duration_seconds": {
       "type": "number",
       "minimum": 0
@@ -79,6 +90,33 @@
     }
   },
   "$defs": {
+    "speaker_turn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["turn_id", "speaker", "text"],
+      "properties": {
+        "turn_id": {
+          "type": "string",
+          "pattern": "^T-[0-9]{4,}$",
+          "description": "Deterministic per-transcript turn id (T-0001 ...)."
+        },
+        "speaker": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Speaker label as parsed from the raw transcript."
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Speaker utterance text."
+        },
+        "line_index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero-based source line index for traceability."
+        }
+      }
+    },
     "trace_context": {
       "type": "object",
       "additionalProperties": false,

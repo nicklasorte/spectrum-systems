@@ -1,0 +1,3 @@
+this transcript has no speaker labels at all
+just a stream of text without any colon delimiters
+no structure no turns just prose
