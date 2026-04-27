@@ -1,4 +1,4 @@
-"""OBS: 5-step failure trace surface (NX-13).
+"""OBS: 5-step failure trace surface (NX-13) + one-page contract (NS-07).
 
 Builds a deterministic 5-step view across the canonical loop:
 
@@ -11,12 +11,25 @@ Builds a deterministic 5-step view across the canonical loop:
 The output is both machine-readable (a structured dict) and human-readable
 (a multi-line text rendering). Missing inputs produce a clear, fail-closed
 ``stage_status`` of ``"missing"`` for that step rather than silent gaps.
+
+NS-07 extends this seam (does NOT replace it) with a compact one-page
+trace contract that adds:
+
+  - canonical reason category (from the canonical reason-code mapping layer)
+  - upstream artifact reference per stage
+  - downstream blocked action
+  - explicit next recommended action
+  - both ``human_readable`` (existing) and ``one_page_summary`` renderings
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Optional
+
+from spectrum_systems.modules.observability.reason_code_canonicalizer import (
+    canonicalize_reason_code,
+)
 
 
 CANONICAL_STAGES = (
@@ -284,6 +297,27 @@ def build_failure_trace(
     overall_status = "ok" if failed_step is None else "failed"
     failed_stage = failed_step.stage if failed_step else None
 
+    # Build upstream/downstream chain references per stage (NS-07).
+    upstream_by_stage = {
+        "execution": None,
+        "output": "execution",
+        "eval": "output",
+        "control": "eval",
+        "enforcement": "control",
+    }
+    downstream_blocked_by_stage = {
+        "execution": "no output produced; subsequent stages cannot run",
+        "output": "eval cannot be performed without output artifact",
+        "eval": "control decision cannot be issued without eval evidence",
+        "control": "enforcement cannot proceed without a control decision",
+        "enforcement": "promotion / state-changing action blocked",
+    }
+
+    canonical_category = None
+    if failed_step and failed_step.reason_code:
+        canon = canonicalize_reason_code(str(failed_step.reason_code))
+        canonical_category = canon["canonical_category"]
+
     summary_lines = [
         f"trace_id={trace_id or 'unknown'} overall_status={overall_status}"
     ]
@@ -295,9 +329,53 @@ def build_failure_trace(
         if step.next_recommended_action:
             summary_lines.append(f"      → next: {step.next_recommended_action}")
 
+    # NS-07: one-page summary that a new engineer can read in under a minute.
+    upstream_artifact_for_failure: Optional[Dict[str, Any]] = None
+    if failed_stage:
+        up_stage_name = upstream_by_stage.get(failed_stage)
+        if up_stage_name:
+            up_step = next((s for s in steps if s.stage == up_stage_name), None)
+            if up_step is not None:
+                upstream_artifact_for_failure = {
+                    "stage": up_step.stage,
+                    "artifact_id": up_step.artifact_id,
+                    "artifact_type": up_step.artifact_type,
+                }
+
+    one_page_lines = [
+        f"FAILURE TRACE — trace_id={trace_id or 'unknown'}",
+        f"overall_status: {overall_status}",
+    ]
+    if failed_step:
+        one_page_lines += [
+            f"failed_stage: {failed_stage}",
+            f"owning_system: {OWNING_SYSTEM_BY_STAGE.get(failed_stage)}",
+            f"canonical_category: {canonical_category or 'UNKNOWN'}",
+            f"detail_reason_code: {failed_step.reason_code or '-'}",
+            f"failing_artifact_id: {failed_step.artifact_id or '-'}",
+            f"failing_artifact_type: {failed_step.artifact_type or '-'}",
+        ]
+        if upstream_artifact_for_failure:
+            one_page_lines.append(
+                f"upstream_artifact: stage={upstream_artifact_for_failure['stage']}, "
+                f"id={upstream_artifact_for_failure['artifact_id'] or '-'}"
+            )
+        one_page_lines += [
+            f"downstream_blocked_action: {downstream_blocked_by_stage.get(failed_stage, '-')}",
+            f"next_recommended_action: {failed_step.next_recommended_action or '-'}",
+        ]
+    else:
+        one_page_lines += [
+            "failed_stage: -",
+            "canonical_category: -",
+            "detail_reason_code: -",
+            "next_recommended_action: -",
+        ]
+    one_page_summary = "\n".join(one_page_lines)
+
     return {
         "artifact_type": "failure_trace",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "trace_id": trace_id,
         "overall_status": overall_status,
         "failed_stage": failed_stage,
@@ -305,6 +383,13 @@ def build_failure_trace(
             OWNING_SYSTEM_BY_STAGE[failed_stage] if failed_stage else None
         ),
         "primary_reason_code": failed_step.reason_code if failed_step else None,
+        "canonical_reason_category": canonical_category,
+        "failing_artifact_id": failed_step.artifact_id if failed_step else None,
+        "failing_artifact_type": failed_step.artifact_type if failed_step else None,
+        "upstream_artifact": upstream_artifact_for_failure,
+        "downstream_blocked_action": (
+            downstream_blocked_by_stage.get(failed_stage) if failed_stage else None
+        ),
         "next_recommended_action": (
             failed_step.next_recommended_action if failed_step else None
         ),
@@ -318,10 +403,12 @@ def build_failure_trace(
                 "reason_code": s.reason_code,
                 "summary": s.summary,
                 "next_recommended_action": s.next_recommended_action,
+                "upstream_stage": upstream_by_stage.get(s.stage),
             }
             for s in steps
         ],
         "human_readable": "\n".join(summary_lines),
+        "one_page_summary": one_page_summary,
     }
 
 

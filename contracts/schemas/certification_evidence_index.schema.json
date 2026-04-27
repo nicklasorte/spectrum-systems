@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/certification_evidence_index.schema.json",
+  "title": "Certification Evidence Index",
+  "description": "Compact, reference-only index that points to the evidence streams required for promotion certification. Owners are unchanged; this artifact only packages references and a status. GOV/PRA may build it; they do NOT decide policy or override TPA/CDE/SEL.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "index_id",
+    "trace_id",
+    "status",
+    "references"
+  ],
+  "properties": {
+    "artifact_type": { "const": "certification_evidence_index" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "index_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["ready", "blocked", "frozen"]
+    },
+    "blocking_reason_canonical": {
+      "type": "string",
+      "enum": [
+        "CERT_OK",
+        "EVAL_FAILURE",
+        "REPLAY_MISMATCH",
+        "LINEAGE_GAP",
+        "CONTEXT_ADMISSION_FAILURE",
+        "AUTHORITY_SHAPE_VIOLATION",
+        "MISSING_ARTIFACT",
+        "SLO_BUDGET_FAILURE",
+        "POLICY_MISMATCH",
+        "CONTROL_CHAIN_VIOLATION",
+        "CERTIFICATION_GAP",
+        "TRACE_GAP",
+        "SCHEMA_VIOLATION"
+      ]
+    },
+    "blocking_detail_codes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "references": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eval_summary_ref",
+        "lineage_summary_ref",
+        "replay_summary_ref",
+        "control_decision_ref",
+        "authority_shape_preflight_ref",
+        "registry_validation_ref",
+        "artifact_tier_validation_ref"
+      ],
+      "properties": {
+        "eval_summary_ref": { "type": ["string", "null"] },
+        "lineage_summary_ref": { "type": ["string", "null"] },
+        "replay_summary_ref": { "type": ["string", "null"] },
+        "control_decision_ref": { "type": ["string", "null"] },
+        "enforcement_action_ref": { "type": ["string", "null"] },
+        "authority_shape_preflight_ref": { "type": ["string", "null"] },
+        "registry_validation_ref": { "type": ["string", "null"] },
+        "artifact_tier_validation_ref": { "type": ["string", "null"] },
+        "failure_trace_ref": { "type": ["string", "null"] }
+      }
+    },
+    "missing_references": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "human_readable": { "type": "string" }
+  }
+}

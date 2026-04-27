@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/loop_proof_bundle.schema.json",
+  "title": "Loop Proof Bundle",
+  "description": "Compact, reference-only bundle that proves the execution → eval → control → enforcement loop ran end-to-end for either a passing or a blocked path. References point to existing artifacts; the bundle itself does NOT embed full payloads.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "bundle_id",
+    "trace_id",
+    "final_status",
+    "execution_record_ref",
+    "output_artifact_ref",
+    "eval_summary_ref",
+    "control_decision_ref",
+    "enforcement_action_ref",
+    "replay_record_ref",
+    "lineage_chain_ref",
+    "certification_evidence_index_ref",
+    "trace_summary"
+  ],
+  "properties": {
+    "artifact_type": { "const": "loop_proof_bundle" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "bundle_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string" },
+    "final_status": { "type": "string", "enum": ["pass", "block", "freeze"] },
+    "canonical_blocking_category": {
+      "type": ["string", "null"]
+    },
+    "execution_record_ref": { "type": ["string", "null"] },
+    "output_artifact_ref": { "type": ["string", "null"] },
+    "eval_summary_ref": { "type": ["string", "null"] },
+    "control_decision_ref": { "type": ["string", "null"] },
+    "enforcement_action_ref": { "type": ["string", "null"] },
+    "replay_record_ref": { "type": ["string", "null"] },
+    "lineage_chain_ref": { "type": ["string", "null"] },
+    "certification_evidence_index_ref": { "type": ["string", "null"] },
+    "failure_trace_ref": { "type": ["string", "null"] },
+    "trace_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["overall_status", "one_page_summary"],
+      "properties": {
+        "overall_status": { "type": "string", "enum": ["ok", "failed"] },
+        "failed_stage": { "type": ["string", "null"] },
+        "owning_system": { "type": ["string", "null"] },
+        "one_page_summary": { "type": "string" }
+      }
+    },
+    "human_readable": { "type": "string" }
+  }
+}

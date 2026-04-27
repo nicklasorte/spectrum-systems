@@ -1,0 +1,102 @@
+{
+  "artifact_type": "reason_code_alias_map",
+  "schema_version": "1.0.0",
+  "policy_id": "NS-04-reason-code-aliases",
+  "purpose": "Canonical mapping layer for failure reason codes. Maps detail-level codes from eval, replay, lineage, context, control, certification, observability, and SLO into a stable set of canonical categories. Detail codes are preserved alongside the canonical category so the root cause is not erased.",
+  "canonical_categories": [
+    "SCHEMA_VIOLATION",
+    "MISSING_ARTIFACT",
+    "EVAL_FAILURE",
+    "TRACE_GAP",
+    "POLICY_MISMATCH",
+    "AUTHORITY_SHAPE_VIOLATION",
+    "REPLAY_MISMATCH",
+    "LINEAGE_GAP",
+    "CONTEXT_ADMISSION_FAILURE",
+    "SLO_BUDGET_FAILURE",
+    "CERTIFICATION_GAP",
+    "CONTROL_CHAIN_VIOLATION"
+  ],
+  "aliases": {
+    "schema_validation_failed": "SCHEMA_VIOLATION",
+    "schema_invalid": "SCHEMA_VIOLATION",
+    "schema_incompatible": "SCHEMA_VIOLATION",
+    "ctx_schema_incompatible": "SCHEMA_VIOLATION",
+
+    "missing_required_eval_definition": "MISSING_ARTIFACT",
+    "missing_required_eval_result": "EVAL_FAILURE",
+    "missing_required_eval_mapping": "MISSING_ARTIFACT",
+    "indeterminate_required_eval": "EVAL_FAILURE",
+    "required_eval_failed": "EVAL_FAILURE",
+    "weak_evidence_coverage": "EVAL_FAILURE",
+    "contradiction_signal": "EVAL_FAILURE",
+
+    "obs_missing_execution_record": "MISSING_ARTIFACT",
+    "obs_missing_output_artifact": "MISSING_ARTIFACT",
+    "obs_missing_output_artifact_id": "MISSING_ARTIFACT",
+    "obs_missing_eval_result": "MISSING_ARTIFACT",
+    "obs_missing_control_decision": "MISSING_ARTIFACT",
+    "obs_missing_enforcement_action": "MISSING_ARTIFACT",
+
+    "policy_mismatch": "POLICY_MISMATCH",
+    "policy_violation": "POLICY_MISMATCH",
+    "policy_drift": "POLICY_MISMATCH",
+    "trust_policy_block": "POLICY_MISMATCH",
+
+    "authority_shape_violation": "AUTHORITY_SHAPE_VIOLATION",
+    "authority_leak": "AUTHORITY_SHAPE_VIOLATION",
+    "cert_missing_authority_shape_preflight": "AUTHORITY_SHAPE_VIOLATION",
+
+    "replay_hash_mismatch_input": "REPLAY_MISMATCH",
+    "replay_hash_mismatch_output": "REPLAY_MISMATCH",
+    "replay_hash_mismatch_both": "REPLAY_MISMATCH",
+    "replay_missing_original_record": "MISSING_ARTIFACT",
+    "replay_missing_input_hash": "MISSING_ARTIFACT",
+    "replay_missing_output_hash": "MISSING_ARTIFACT",
+    "replay_non_replayable_artifact": "REPLAY_MISMATCH",
+    "replay_input_hash_not_deterministic": "REPLAY_MISMATCH",
+
+    "lineage_missing_parent_artifact": "LINEAGE_GAP",
+    "lineage_missing_produced_artifact": "LINEAGE_GAP",
+    "lineage_missing_trace_id": "TRACE_GAP",
+    "lineage_missing_run_id": "TRACE_GAP",
+    "lineage_missing_input_chain": "LINEAGE_GAP",
+    "lineage_orphaned_non_root": "LINEAGE_GAP",
+    "lineage_store_unavailable": "LINEAGE_GAP",
+
+    "ctx_missing_provenance": "CONTEXT_ADMISSION_FAILURE",
+    "ctx_stale_ttl": "CONTEXT_ADMISSION_FAILURE",
+    "ctx_untrusted_instruction": "CONTEXT_ADMISSION_FAILURE",
+    "ctx_contradictory_context": "CONTEXT_ADMISSION_FAILURE",
+    "ctx_malformed_bundle": "CONTEXT_ADMISSION_FAILURE",
+    "ctx_missing_preflight": "CONTEXT_ADMISSION_FAILURE",
+
+    "slo_budget_exhausted": "SLO_BUDGET_FAILURE",
+    "slo_drift_rising": "SLO_BUDGET_FAILURE",
+    "slo_override_rate_exceeded": "SLO_BUDGET_FAILURE",
+    "slo_eval_pass_rate_degraded": "SLO_BUDGET_FAILURE",
+    "slo_replay_mismatch_rate_high": "SLO_BUDGET_FAILURE",
+    "slo_invalid_posture": "SLO_BUDGET_FAILURE",
+
+    "cert_missing_eval_pass": "CERTIFICATION_GAP",
+    "cert_missing_lineage": "CERTIFICATION_GAP",
+    "cert_missing_replay_readiness": "CERTIFICATION_GAP",
+    "cert_missing_control_decision": "CERTIFICATION_GAP",
+    "cert_missing_enforcement_record": "CERTIFICATION_GAP",
+    "cert_registry_violation_present": "CERTIFICATION_GAP",
+    "cert_evidence_index_missing": "CERTIFICATION_GAP",
+    "cert_evidence_index_incomplete": "CERTIFICATION_GAP",
+
+    "control_chain_eval_decision_mismatch": "CONTROL_CHAIN_VIOLATION",
+    "control_chain_decision_enforcement_mismatch": "CONTROL_CHAIN_VIOLATION",
+    "control_chain_missing_eval_reference": "CONTROL_CHAIN_VIOLATION",
+    "control_chain_missing_decision_reference": "CONTROL_CHAIN_VIOLATION"
+  },
+  "high_level_blocking_codes_requiring_canonical_mapping": [
+    "blocked",
+    "rejected",
+    "freeze",
+    "fail",
+    "error"
+  ]
+}

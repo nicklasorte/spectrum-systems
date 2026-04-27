@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/artifact_tier_validation_result.schema.json",
+  "title": "Artifact Tier Validation Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "validation_id",
+    "decision",
+    "reason_code",
+    "tier_counts",
+    "items"
+  ],
+  "properties": {
+    "artifact_type": { "const": "artifact_tier_validation_result" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "validation_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string" },
+    "decision": { "type": "string", "enum": ["allow", "block"] },
+    "reason_code": {
+      "type": "string",
+      "enum": [
+        "TIER_OK",
+        "TIER_TEST_TEMP_AS_EVIDENCE",
+        "TIER_REPORT_AS_AUTHORITY",
+        "TIER_GENERATED_CACHE_AS_CANONICAL",
+        "TIER_DUPLICATE_LOW_SIGNAL",
+        "TIER_STALE_GENERATED",
+        "TIER_UNKNOWN_TIER",
+        "TIER_POLICY_UNAVAILABLE"
+      ]
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "tier_counts": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact_id", "tier", "promotion_relevant"],
+        "properties": {
+          "artifact_id": { "type": "string", "minLength": 1 },
+          "artifact_path": { "type": "string" },
+          "artifact_family": { "type": "string" },
+          "artifact_type": { "type": "string" },
+          "owner_system": { "type": "string" },
+          "producer_path": { "type": "string" },
+          "tier": {
+            "type": "string",
+            "enum": ["canonical", "evidence", "report", "generated_cache", "test_temp"]
+          },
+          "promotion_relevant": { "type": "boolean" },
+          "replay_relevant": { "type": "boolean" },
+          "lineage_relevant": { "type": "boolean" },
+          "retention": {
+            "type": "string",
+            "enum": ["permanent", "long", "short", "ephemeral"]
+          },
+          "scan_scope": { "type": "string" },
+          "stale": { "type": "boolean" },
+          "duplicate_of": { "type": "string" }
+        }
+      }
+    }
+  }
+}

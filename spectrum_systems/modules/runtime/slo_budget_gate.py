@@ -8,7 +8,7 @@ artifact plus a small set of drift signals into a single
 
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, Mapping
+from typing import Any, Dict, Iterable, Mapping, Optional
 
 
 CANONICAL_SLO_REASON_CODES = {
@@ -175,8 +175,149 @@ def evaluate_slo_budget_gate(
     }
 
 
+# NS-22: SLO Signal Diet — only a small set of hard trust signals can drive
+# freeze/block. Other metrics may be reported as observations but never gate
+# promotion unless explicitly promoted by policy.
+
+HARD_TRUST_SIGNALS = (
+    "required_eval_pass_status",          # pass | fail
+    "replay_match_status",                # match | mismatch | indeterminate
+    "lineage_completeness_status",        # healthy | blocked
+    "context_admissibility_status",       # allow | block
+    "authority_shape_preflight_status",   # pass | fail
+    "registry_validation_status",         # pass | fail
+    "certification_evidence_index_status",  # ready | blocked | frozen
+)
+
+
+SIGNAL_DIET_REASON_CODES = {
+    "SLO_DIET_OK",
+    "SLO_DIET_EVAL_FAILURE",
+    "SLO_DIET_REPLAY_MISMATCH",
+    "SLO_DIET_LINEAGE_GAP",
+    "SLO_DIET_CONTEXT_ADMISSION_FAILURE",
+    "SLO_DIET_AUTHORITY_SHAPE_VIOLATION",
+    "SLO_DIET_REGISTRY_VIOLATION",
+    "SLO_DIET_CERTIFICATION_GAP",
+    "SLO_DIET_OBSERVATION_ONLY",
+    "SLO_DIET_INVALID_SIGNAL",
+}
+
+
+def evaluate_slo_signal_diet(
+    *,
+    signals: Mapping[str, Any],
+    observation_only: Optional[Mapping[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Convert a small set of hard trust signals into an allow/warn/freeze/block.
+
+    ``signals`` is a flat mapping with the keys in ``HARD_TRUST_SIGNALS``.
+    Any other key in ``signals`` is rejected — other metrics belong in
+    ``observation_only`` and never freeze/block.
+
+    Returns:
+      {"decision": allow|warn|freeze|block,
+       "reason_code": canonical (SLO_DIET_*),
+       "canonical_category": canonical reason category from the canon mapping,
+       "blocking_reasons": [str,...],
+       "observed": {key: value, ...},
+       "ignored_observations": [str, ...]}
+    """
+    if not isinstance(signals, Mapping):
+        raise SLOGateError("signals must be a mapping")
+
+    unknown = [k for k in signals if k not in HARD_TRUST_SIGNALS]
+    if unknown:
+        raise SLOGateError(
+            f"hard-signal slot received non-hard signals: {sorted(unknown)}; "
+            "move them to observation_only or promote them via policy."
+        )
+
+    blocking: list[str] = []
+    decision = "allow"
+    reason_code = "SLO_DIET_OK"
+    canonical_category = None
+
+    def _block(reason: str, why: str, category: str) -> None:
+        nonlocal decision, reason_code, canonical_category
+        decision = "block"
+        if reason_code == "SLO_DIET_OK":
+            reason_code = reason
+            canonical_category = category
+        blocking.append(why)
+
+    def _str(name: str) -> str:
+        v = signals.get(name)
+        if v is None:
+            return ""
+        if not isinstance(v, str):
+            raise SLOGateError(
+                f"hard signal {name!r} must be a string (got {type(v).__name__})"
+            )
+        return v.strip().lower()
+
+    eval_status = _str("required_eval_pass_status")
+    replay_status = _str("replay_match_status")
+    lineage_status = _str("lineage_completeness_status")
+    ctx_status = _str("context_admissibility_status")
+    auth_status = _str("authority_shape_preflight_status")
+    reg_status = _str("registry_validation_status")
+    cert_status = _str("certification_evidence_index_status")
+
+    if eval_status == "fail":
+        _block("SLO_DIET_EVAL_FAILURE", "required eval pass status: fail", "EVAL_FAILURE")
+    if replay_status == "mismatch":
+        _block("SLO_DIET_REPLAY_MISMATCH", "replay match status: mismatch", "REPLAY_MISMATCH")
+    if replay_status == "indeterminate":
+        _block(
+            "SLO_DIET_REPLAY_MISMATCH",
+            "replay match status: indeterminate",
+            "REPLAY_MISMATCH",
+        )
+    if lineage_status == "blocked":
+        _block("SLO_DIET_LINEAGE_GAP", "lineage completeness: blocked", "LINEAGE_GAP")
+    if ctx_status == "block":
+        _block(
+            "SLO_DIET_CONTEXT_ADMISSION_FAILURE",
+            "context admissibility: block",
+            "CONTEXT_ADMISSION_FAILURE",
+        )
+    if auth_status == "fail":
+        _block(
+            "SLO_DIET_AUTHORITY_SHAPE_VIOLATION",
+            "authority-shape preflight: fail",
+            "AUTHORITY_SHAPE_VIOLATION",
+        )
+    if reg_status == "fail":
+        _block("SLO_DIET_REGISTRY_VIOLATION", "registry validation: fail", "POLICY_MISMATCH")
+    if cert_status == "blocked":
+        _block(
+            "SLO_DIET_CERTIFICATION_GAP",
+            "certification evidence index: blocked",
+            "CERTIFICATION_GAP",
+        )
+    elif cert_status == "frozen":
+        decision = "freeze"
+        if reason_code == "SLO_DIET_OK":
+            reason_code = "SLO_DIET_CERTIFICATION_GAP"
+            canonical_category = "CERTIFICATION_GAP"
+        blocking.append("certification evidence index: frozen")
+
+    return {
+        "decision": decision,
+        "reason_code": reason_code,
+        "canonical_category": canonical_category,
+        "blocking_reasons": blocking,
+        "observed": dict(signals),
+        "ignored_observations": sorted(list((observation_only or {}).keys())),
+    }
+
+
 __all__ = [
     "CANONICAL_SLO_REASON_CODES",
+    "HARD_TRUST_SIGNALS",
+    "SIGNAL_DIET_REASON_CODES",
     "SLOGateError",
     "evaluate_slo_budget_gate",
+    "evaluate_slo_signal_diet",
 ]
