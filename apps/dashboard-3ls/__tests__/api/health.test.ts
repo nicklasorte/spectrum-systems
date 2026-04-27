@@ -8,6 +8,7 @@ import path from 'path';
 import fs from 'fs';
 import { deriveSystemSignals } from '@/lib/systemSignals';
 import { loadArtifact } from '@/lib/artifactLoader';
+import { safeCardStatus } from '@/lib/signalStatus';
 
 const mockSnapshot = {
   generated_at: '2026-04-24T16:46:23Z',
@@ -136,5 +137,22 @@ describe('Health route source — backward compatibility', () => {
     expect(source).toContain('data_source');
     expect(source).toContain('warnings');
     expect(source).toContain('source_artifacts_used');
+  });
+
+  it('route source consumes TLS integration artifact and fail-closed warnings', () => {
+    const source = realFs.readFileSync(routePath, 'utf-8');
+    expect(source).toContain('loadTLSIntegrationArtifact');
+    expect(source).toContain('TLS_INTEGRATION_PATH');
+    expect(source).toContain('fail_closed:');
+    expect(source).toContain('stub_fallback for uncovered systems only');
+  });
+
+  it('unknown upstream status maps to non-healthy card status with diagnostics', () => {
+    const source = realFs.readFileSync(routePath, 'utf-8');
+    expect(safeCardStatus('unknown', 'stub_fallback')).toBe('critical');
+    expect(['warning', 'critical']).toContain(safeCardStatus('unknown', 'artifact_store'));
+    expect(source).toContain('raw_status');
+    expect(source).toContain('status_reason_codes');
+    expect(source).toContain('raw_unknown_missing_source');
   });
 });

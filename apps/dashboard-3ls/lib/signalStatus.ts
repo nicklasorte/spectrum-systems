@@ -98,11 +98,18 @@ export function normalizeSignalStatus<TValue>(
 // declared data_source. Used by the systems API to keep the existing card
 // payload shape while honouring no-green-without-source.
 export function safeCardStatus(
-  status: 'healthy' | 'warning' | 'critical',
+  status: SignalStatus,
   data_source: DataSource
-): 'healthy' | 'warning' | 'critical' | 'unknown' {
+): 'healthy' | 'warning' | 'critical' {
+  // Dashboard card surface is intentionally strict: no "unknown" card status.
+  // Unknown raw inputs must be degraded to warning/critical with fail-closed bias.
+  if (status === 'unknown') {
+    if (data_source === 'stub_fallback' || data_source === 'unknown') return 'critical';
+    return 'warning';
+  }
+
   if (status === 'healthy' && !dataSourceAllowsHealthy(data_source)) {
-    return data_source === 'derived_estimate' ? 'warning' : 'unknown';
+    return data_source === 'derived_estimate' ? 'warning' : 'critical';
   }
   return status;
 }

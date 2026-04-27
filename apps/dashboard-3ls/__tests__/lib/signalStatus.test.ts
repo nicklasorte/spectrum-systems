@@ -105,7 +105,7 @@ describe('safeCardStatus', () => {
   });
 
   it('downgrades healthy to unknown for stub_fallback', () => {
-    expect(safeCardStatus('healthy', 'stub_fallback')).toBe('unknown');
+    expect(safeCardStatus('healthy', 'stub_fallback')).toBe('critical');
   });
 
   it('downgrades healthy to warning for derived_estimate', () => {
@@ -119,5 +119,15 @@ describe('safeCardStatus', () => {
 
   it('preserves critical regardless of source', () => {
     expect(safeCardStatus('critical', 'stub_fallback')).toBe('critical');
+  });
+
+  it('maps unknown + missing source to critical', () => {
+    expect(safeCardStatus('unknown', 'stub_fallback')).toBe('critical');
+    expect(safeCardStatus('unknown', 'unknown')).toBe('critical');
+  });
+
+  it('maps unknown + present source to warning', () => {
+    expect(safeCardStatus('unknown', 'artifact_store')).toBe('warning');
+    expect(safeCardStatus('unknown', 'repo_registry')).toBe('warning');
   });
 });
