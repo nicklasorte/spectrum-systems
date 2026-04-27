@@ -1,0 +1,122 @@
+{
+  "artifact_type": "tls_boundary_redteam_report",
+  "schema_version": "tls-bnd-01-redteam.v1",
+  "work_item": "TLS-BND-01",
+  "step_id": "TLS-RT-01",
+  "generated_at": "2026-04-27T02:30:00Z",
+  "target_artifact": "artifacts/tls/tls_boundary_map.json",
+  "scope": "Adversarial probes of TLS boundary map for owner-outcome leakage, runtime mutation drift, and authority-shaped naming.",
+  "method": "Static review of the boundary map's forbidden patterns, safe vocabulary, and owner-handoff rules against eight abuse cases that try to push TLS over the boundary.",
+  "abuse_cases": [
+    {
+      "abuse_case_id": "RT-BND-01",
+      "title": "TLS artifact named like a CDE outcome",
+      "attempted_violation": "Emit a TLS artifact named 'tls_closure_decision_outcome.json' that mimics a CDE closure outcome.",
+      "expected_result": "Boundary map rejects the artifact name via forbidden_artifact_name_patterns and routes the request to CDE.",
+      "observed_result": "Pattern '*control_decision*' is listed but generic '*closure_decision*' is not. The wildcard '*decision*' would catch it but is not in the list. Marginal coverage.",
+      "finding_severity": "high",
+      "finding": "Forbidden artifact-name pattern list is too narrow. Closure, judgment, readiness, and final-decision artifact names can slip through.",
+      "recommended_fix": "Add forbidden patterns: '*closure_decision*', '*readiness_decision*', '*final_decision*', '*judgment*', '*outcome*', and broaden authority-shape coverage."
+    },
+    {
+      "abuse_case_id": "RT-BND-02",
+      "title": "TLS artifact named like SEL enforcement",
+      "attempted_violation": "Emit a TLS artifact named 'tls_enforcement_record.json' or 'tls_enforced_action.json' that mimics SEL enforcement.",
+      "expected_result": "Boundary map rejects the name via '*enforcement*' pattern and routes the responsibility to SEL.",
+      "observed_result": "'*enforcement*' is listed and matches. The verb form 'enforce' / 'enforced' is partially covered by the wildcard but not separately enumerated.",
+      "finding_severity": "low",
+      "finding": "Wildcard catches the obvious case but explicit verb-form patterns improve clarity.",
+      "recommended_fix": "Add '*enforce*' (verb-stem) explicitly to forbidden patterns; add SEL canonical-owner reference in the rejection message guidance."
+    },
+    {
+      "abuse_case_id": "RT-BND-03",
+      "title": "TLS artifact containing approval language",
+      "attempted_violation": "Embed approval-shaped fields ('approver', 'approved_at', 'approval_status') inside a TLS owner-input packet.",
+      "expected_result": "Boundary map flags approval-shaped fields and replaces with safe vocabulary (review_request, advisory_result).",
+      "observed_result": "Forbidden artifact-name pattern '*approval*' exists, but the boundary map does not enumerate forbidden FIELD names. Field-level leakage is uncovered.",
+      "finding_severity": "high",
+      "finding": "Boundary map lacks a forbidden_field_patterns section. Approval-shaped, certification-shaped, promotion-shaped, and decision-shaped fields can leak inside artifacts whose names are safe.",
+      "recommended_fix": "Add 'forbidden_field_patterns' that mirror the artifact-name patterns; add safe replacements (review_request, advisory_result, review_observation) per cluster."
+    },
+    {
+      "abuse_case_id": "RT-BND-04",
+      "title": "TLS artifact containing certification language",
+      "attempted_violation": "Set a TLS field 'certification_status' = 'certified' inside an evidence attachment.",
+      "expected_result": "Boundary map blocks the field and replaces with 'readiness_evidence' or 'certification_input' under the certification cluster.",
+      "observed_result": "'*certification*' covers names but not field values. The field-level absence (see RT-BND-03) is the same root.",
+      "finding_severity": "high",
+      "finding": "No field-level guard. Certification-shaped values pass.",
+      "recommended_fix": "Add 'forbidden_field_patterns' and 'forbidden_value_patterns' (certified, promoted, approved, blocked) with safe replacements (readiness_evidence, evidence_observation)."
+    },
+    {
+      "abuse_case_id": "RT-BND-05",
+      "title": "TLS artifact containing promotion language",
+      "attempted_violation": "Mark a TLS observation as 'promotion_ready' = true.",
+      "expected_result": "Boundary map blocks 'promotion_ready' and replaces with 'readiness_signal'.",
+      "observed_result": "Pattern '*promotion*' exists; '*promoted*' exists. 'promotion_ready' as a name pattern is captured. As a field value, see RT-BND-04 root cause.",
+      "finding_severity": "medium",
+      "finding": "Name pattern works; field/value pattern does not.",
+      "recommended_fix": "Same as RT-BND-04 (forbidden_field_patterns and forbidden_value_patterns). Add 'readiness_signal' as the explicit safe replacement."
+    },
+    {
+      "abuse_case_id": "RT-BND-06",
+      "title": "TLS dashboard text implying TLS decides",
+      "attempted_violation": "Insert a dashboard string 'TLS has decided to fix X first' into a TLS-emitted summary.",
+      "expected_result": "Boundary map blocks decide/decision verbiage in TLS-owned text and substitutes 'TLS recommends X first'.",
+      "observed_result": "Boundary map does not list a dashboard-text vocabulary rule; the 'safe_vocabulary' list is general but is not bound to text-rendering surfaces.",
+      "finding_severity": "high",
+      "finding": "Dashboard rendering text is uncovered. TLS-owned text could imply TLS decides.",
+      "recommended_fix": "Add 'forbidden_text_phrases' for TLS-owned text: 'TLS decides', 'TLS approves', 'TLS enforces', 'TLS promotes', 'TLS certifies'. Add safe replacements: 'TLS recommends', 'TLS observes', 'TLS signals', 'TLS prioritizes'."
+    },
+    {
+      "abuse_case_id": "RT-BND-07",
+      "title": "TLS action plan implying runtime mutation",
+      "attempted_violation": "Emit a TLS action plan that says 'will execute migration X' or 'will mutate runtime state Y'.",
+      "expected_result": "Boundary map blocks runtime-mutation verbs in TLS action plans; only recommendation phrasing is allowed.",
+      "observed_result": "Boundary map declares 'runtime_execution_mutation' as forbidden responsibility but does not define forbidden action-verb phrases (execute, mutate, deploy, rollback, freeze, block).",
+      "finding_severity": "high",
+      "finding": "Action-plan verbs are not constrained; 'recommendation packet' could carry runtime-mutation verbs and look legitimate.",
+      "recommended_fix": "Add 'forbidden_action_verbs' for TLS-emitted action-plan content: 'execute', 'mutate', 'deploy', 'promote', 'rollback', 'freeze', 'block', 'enforce', 'approve', 'certify'. Require imperative TLS verbs to be 'recommend', 'observe', 'rank', 'classify', 'flag', 'attach_evidence'."
+    },
+    {
+      "abuse_case_id": "RT-BND-08",
+      "title": "TLS owner-input packet using owner-outcome fields",
+      "attempted_violation": "Place owner-outcome fields ('control_decision', 'enforcement_action', 'certification_outcome', 'promotion_outcome', 'approval_outcome') inside a TLS owner-input packet body.",
+      "expected_result": "Boundary map distinguishes owner_input vs owner_outcome at the field level and rejects owner-outcome fields inside TLS owner-input packets.",
+      "observed_result": "Boundary map's owner-handoff rules state owner-input vs owner-outcome at the role level but do not enumerate owner-input vs owner-outcome FIELD sets.",
+      "finding_severity": "high",
+      "finding": "Owner-input vs owner-outcome distinction is asserted at the rule level but not at the field level. A TLS packet can claim recommendation_only=true while embedding owner-outcome fields.",
+      "recommended_fix": "Add an 'owner_input_packet_field_policy' section: an allowed_owner_input_fields list (observation, signal, recommendation, ranking, classification, evidence_ref, replay_ref, owner_input_observation, recommendation_only, owner_outcome_present, schema_version), and a forbidden_owner_outcome_fields list (control_decision, enforcement_action, certification_outcome, promotion_outcome, approval_outcome, authority_decision). Require packets to assert owner_outcome_present=false."
+    }
+  ],
+  "summary": {
+    "total_abuse_cases": 8,
+    "high_severity_findings": 5,
+    "medium_severity_findings": 1,
+    "low_severity_findings": 2,
+    "blockers_for_fix_step": [
+      "RT-BND-01",
+      "RT-BND-03",
+      "RT-BND-04",
+      "RT-BND-06",
+      "RT-BND-07",
+      "RT-BND-08"
+    ]
+  },
+  "stop_conditions_evaluated": {
+    "all_abuse_paths_executed": true,
+    "deterministic_outcomes": true,
+    "high_findings_present": true,
+    "boundary_map_unmodified_during_redteam": true
+  },
+  "non_authority_assertions": [
+    "preparatory_only",
+    "not_control_authority",
+    "not_enforcement_authority",
+    "not_certification_authority",
+    "not_promotion_authority",
+    "not_approval_authority"
+  ],
+  "recommendation_only": true,
+  "owner_outcome_present": false
+}
