@@ -1,0 +1,22 @@
+{
+  "artifact_type": "trust_artifact_freshness_policy",
+  "schema_version": "1.0.0",
+  "policy_id": "NT-01-trust-artifact-freshness",
+  "default_status_when_missing_signals": "unknown",
+  "artifacts": {
+    "artifact_tier_policy": {"max_age_hours": 168, "require_source_digest": true, "require_generated_at": true},
+    "reason_code_aliases": {"max_age_hours": 168, "require_source_digest": true, "require_generated_at": true},
+    "certification_evidence_index": {"max_age_hours": 24, "require_source_digest": true, "require_generated_at": true},
+    "loop_proof_bundle": {"max_age_hours": 24, "require_source_digest": true, "require_generated_at": true},
+    "failure_trace": {"max_age_hours": 24, "require_source_digest": false, "require_generated_at": false},
+    "replay_lineage_join_summary": {"max_age_hours": 24, "require_source_digest": true, "require_generated_at": false},
+    "slo_signal_policy": {"max_age_hours": 24, "require_source_digest": true, "require_generated_at": false}
+  },
+  "canonical_reasons": {
+    "digest_mismatch": "TRUST_ARTIFACT_DIGEST_MISMATCH",
+    "missing_digest": "TRUST_ARTIFACT_MISSING_DIGEST",
+    "stale_timestamp": "TRUST_ARTIFACT_STALE",
+    "missing_timestamp": "TRUST_ARTIFACT_TIMESTAMP_MISSING",
+    "inconclusive": "TRUST_ARTIFACT_FRESHNESS_UNKNOWN"
+  }
+}

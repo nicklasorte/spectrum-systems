@@ -1,0 +1,27 @@
+{
+  "artifact_type": "proof_bundle_size_policy",
+  "schema_version": "1.0.0",
+  "policy_id": "NT-04-proof-size-budget",
+  "limits": {
+    "loop_proof_bundle": {
+      "max_top_level_evidence_refs": 30,
+      "max_nested_depth": 8,
+      "max_summary_lines": 120,
+      "max_items": 40
+    },
+    "certification_evidence_index": {
+      "max_top_level_evidence_refs": 30,
+      "max_nested_depth": 8,
+      "max_summary_lines": 120,
+      "max_items": 40
+    },
+    "one_page_trace": {
+      "max_summary_lines": 80,
+      "max_items": 30
+    }
+  },
+  "overflow_behavior": {
+    "mode": "reference_external_evidence",
+    "external_reference_field": "external_evidence_refs"
+  }
+}

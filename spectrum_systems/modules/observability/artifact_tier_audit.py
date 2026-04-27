@@ -226,6 +226,7 @@ def validate_promotion_evidence_tiers(
     policy: Optional[Mapping[str, Any]] = None,
     validation_id: str,
     trace_id: str = "",
+    evidence_graph: Optional[Mapping[str, Mapping[str, Any]]] = None,
 ) -> Dict[str, Any]:
     """Fail-closed validation: every promotion evidence item must be tier
     ``canonical`` or ``evidence`` (or be in the explicit override list).
@@ -242,12 +243,30 @@ def validate_promotion_evidence_tiers(
     reason_code = "TIER_OK"
     counts: Dict[str, int] = {}
 
-    for raw in promotion_evidence_items:
+    pending = list(promotion_evidence_items)
+    visited: set[str] = set()
+    while pending:
+        raw = pending.pop(0)
         cls = classify_artifact(raw, pol)
+        artifact_id = cls["artifact_id"]
+        if artifact_id in visited:
+            continue
+        visited.add(artifact_id)
         classified.append(cls)
         counts[cls["tier"]] = counts.get(cls["tier"], 0) + 1
         tier = cls["tier"]
-        artifact_id = cls["artifact_id"]
+
+        # transitive evidence refs validation to prevent wrapper laundering
+        refs = raw.get("evidence_refs") if isinstance(raw, Mapping) else None
+        if isinstance(refs, list) and isinstance(evidence_graph, Mapping):
+            for ref in refs:
+                if ref in evidence_graph:
+                    pending.append(evidence_graph[ref])
+                else:
+                    decision = "block"
+                    if reason_code == "TIER_OK":
+                        reason_code = "TIER_UNKNOWN_TIER"
+                    blocking.append(f"artifact {artifact_id} references missing evidence {ref}")
 
         if tier in allow_tiers or artifact_id in overrides:
             continue
