@@ -32,7 +32,7 @@ fi
 
 # 3. Build frontend
 echo -e "\n${YELLOW}[3/6]${NC} Building frontend..."
-cd apps/dashboard
+cd apps/dashboard-3ls
 if npm install 2>/dev/null; then
   echo -e "${GREEN}✓ Dependencies installed${NC}"
 else

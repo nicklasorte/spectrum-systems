@@ -89,6 +89,7 @@ List any prior roadmap items that must be complete before this plan can execute.
 
 ## Active plans
 
+| docs/review-actions/PLAN-D3L-03-2026-04-27.md | D3L-03 — Restore and certify 3LS dashboard flow diagram visibility | Active |
 | docs/review-actions/PLAN-D3L-FLOW-02-2026-04-27.md | D3L-FLOW-02 — Upgrade system flow visualization to trust-aware graph | Active |
 | docs/review-actions/PLAN-MAP-001-PRG10-2026-04-13.md | MAP-001 — PRG-10 closeout + MAP bounded mediation/projection hardening with RT/FX loops | Active |
 | docs/review-actions/PLAN-BATCH-RIL-001-2026-04-12.md | BATCH-RIL-001 — FRE closeout + RIL bounded interpretation foundation/hardening | Active |

@@ -165,6 +165,25 @@ describe('DashboardPage panels', () => {
     });
   });
 
+
+  it('system flow panel shows explicit degraded state when artifact is missing', async () => {
+    const missingFlow = {
+      state: 'missing' as const,
+      payload: null,
+      reason: 'not_found:artifacts/tls/system_registry_dependency_graph.json',
+      source_artifact: 'artifacts/tls/system_registry_dependency_graph.json',
+    };
+
+    setupFetch(mockHealth, mockIntelligence, mockSystems, mockRGE, mockPriorityMissing, missingFlow);
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('system-flow-graph-panel')).toBeInTheDocument();
+      expect(screen.getByTestId('system-flow-fail-closed')).toHaveTextContent(/3LS System Flow unavailable \(missing\)/i);
+      expect(screen.getByTestId('system-flow-fail-closed')).toHaveTextContent(/reason=not_found:artifacts\/tls\/system_registry_dependency_graph\.json/i);
+    });
+  });
+
   it('system flow graph renders from artifact, highlights trust colors, fallback nodes, and broken edges', async () => {
     setupFetch();
     render(<DashboardPage />);

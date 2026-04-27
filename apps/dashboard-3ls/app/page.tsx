@@ -910,7 +910,7 @@ export default function Dashboard() {
 
       <section className="bg-white border rounded p-4" data-testid="system-flow-graph-panel">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold">SYSTEM FLOW GRAPH (TRUST-AWARE)</h2>
+          <h2 className="font-semibold">3LS SYSTEM FLOW (TRUST-AWARE)</h2>
           <div className="text-xs text-gray-500 font-mono">
             source: {computed.graphSourceArtifact ?? 'missing_artifact'}
           </div>
@@ -918,7 +918,7 @@ export default function Dashboard() {
 
         {computed.graphState !== 'ok' ? (
           <div className="border border-red-300 bg-red-50 rounded p-3 text-sm text-red-800" data-testid="system-flow-fail-closed">
-            Graph unavailable ({computed.graphState}). Fail-closed: flow graph hidden until artifact is present.
+            3LS System Flow unavailable ({computed.graphState}). Fail-closed: flow panel remains in degraded mode until a valid artifact is available.
             {computed.graphReason ? <span className="ml-1 font-mono">reason={computed.graphReason}</span> : null}
           </div>
         ) : (
@@ -943,6 +943,13 @@ export default function Dashboard() {
                 Show only canonical loop
               </button>
             </div>
+
+            {computed.graphNodes.length === 0 ? (
+              <div className="mt-3 border border-amber-300 bg-amber-50 rounded p-3 text-sm text-amber-800" data-testid="system-flow-empty">
+                Flow artifact loaded but contains zero active systems. Treat as degraded until upstream artifact generation restores node rows.
+              </div>
+            ) : null}
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {computed.graphNodes.map((node) => {

@@ -20,38 +20,63 @@ type GraphArtifact = {
   canonical_overlays?: string[];
 };
 
-function isGraphArtifact(value: unknown): value is GraphArtifact {
+export interface SystemFlowEnvelope {
+  state: 'ok' | 'missing' | 'invalid_schema';
+  payload: GraphArtifact | null;
+  reason: string;
+  source_artifact: string;
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((entry) => typeof entry === 'string');
+}
+
+export function isGraphArtifact(value: unknown): value is GraphArtifact {
   if (!value || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
   if (!Array.isArray(v.active_systems)) return false;
-  if (!Array.isArray(v.canonical_loop)) return false;
-  if (!Array.isArray(v.canonical_overlays)) return false;
+  if (!isStringArray(v.canonical_loop)) return false;
+  if (!isStringArray(v.canonical_overlays)) return false;
 
   for (const row of v.active_systems as unknown[]) {
     if (!row || typeof row !== 'object') return false;
     const r = row as Record<string, unknown>;
     if (typeof r.system_id !== 'string') return false;
-    if (!Array.isArray(r.upstream)) return false;
-    if (!Array.isArray(r.downstream)) return false;
+    if (!isStringArray(r.upstream)) return false;
+    if (!isStringArray(r.downstream)) return false;
   }
 
   return true;
 }
 
-export async function GET() {
-  const graph = loadArtifact<unknown>(GRAPH_PATH);
-
+export function resolveSystemFlowEnvelope(graph: unknown): SystemFlowEnvelope {
   if (graph === null) {
-    return NextResponse.json({ state: 'missing', reason: `not_found:${GRAPH_PATH}`, payload: null }, { status: 200 });
+    return {
+      state: 'missing',
+      payload: null,
+      reason: `not_found:${GRAPH_PATH}`,
+      source_artifact: GRAPH_PATH,
+    };
   }
 
   if (!isGraphArtifact(graph)) {
-    return NextResponse.json({ state: 'invalid_schema', reason: 'shape_mismatch', payload: null }, { status: 200 });
+    return {
+      state: 'invalid_schema',
+      payload: null,
+      reason: 'shape_mismatch',
+      source_artifact: GRAPH_PATH,
+    };
   }
 
-  return NextResponse.json({
+  return {
     state: 'ok',
     payload: graph,
+    reason: 'artifact_loaded',
     source_artifact: GRAPH_PATH,
-  });
+  };
+}
+
+export async function GET() {
+  const graph = loadArtifact<unknown>(GRAPH_PATH);
+  return NextResponse.json(resolveSystemFlowEnvelope(graph));
 }
