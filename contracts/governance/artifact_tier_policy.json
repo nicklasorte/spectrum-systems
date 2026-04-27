@@ -1,0 +1,124 @@
+{
+  "artifact_type": "artifact_tier_policy",
+  "schema_version": "1.0.0",
+  "policy_id": "NS-03-artifact-tier-policy",
+  "purpose": "Classify artifacts by tier so that certification, replay, and lineage seams reject low-signal or non-authority-bearing artifacts as promotion evidence. Owners of canonical authorities are unchanged.",
+  "tiers": {
+    "canonical": {
+      "description": "Authority-owned artifacts that may satisfy required promotion evidence.",
+      "promotion_relevant": true,
+      "replay_relevant": true,
+      "lineage_relevant": true,
+      "retention": "permanent",
+      "scan_scope": "promotion_evidence"
+    },
+    "evidence": {
+      "description": "Supporting evidence directly produced by canonical owners (eval/replay/lineage/control summaries). May satisfy required evidence references.",
+      "promotion_relevant": true,
+      "replay_relevant": true,
+      "lineage_relevant": true,
+      "retention": "long",
+      "scan_scope": "promotion_evidence"
+    },
+    "report": {
+      "description": "Read-only reports/dashboards/digests produced for human review. Not authority-bearing.",
+      "promotion_relevant": false,
+      "replay_relevant": false,
+      "lineage_relevant": false,
+      "retention": "short",
+      "scan_scope": "human_review"
+    },
+    "generated_cache": {
+      "description": "Recomputable derived artifacts produced from canonical inputs (graphs, snapshots, indexes). Never canonical.",
+      "promotion_relevant": false,
+      "replay_relevant": false,
+      "lineage_relevant": false,
+      "retention": "ephemeral",
+      "scan_scope": "tooling_only"
+    },
+    "test_temp": {
+      "description": "Test fixtures, scratch outputs, scratch runs. Must never be referenced by certification or promotion evidence.",
+      "promotion_relevant": false,
+      "replay_relevant": false,
+      "lineage_relevant": false,
+      "retention": "ephemeral",
+      "scan_scope": "test_only"
+    }
+  },
+  "tier_assignment_rules": [
+    {
+      "rule_id": "test_temp_paths",
+      "match_path_prefixes": [
+        "tests/",
+        "outputs/test_",
+        "runs/test_",
+        "state/tests/"
+      ],
+      "tier": "test_temp"
+    },
+    {
+      "rule_id": "generated_cache_paths",
+      "match_path_prefixes": [
+        "outputs/cache/",
+        "outputs/generated/",
+        "outputs/dashboards/",
+        "outputs/snapshots/",
+        "data/generated/"
+      ],
+      "tier": "generated_cache"
+    },
+    {
+      "rule_id": "report_paths",
+      "match_path_prefixes": [
+        "outputs/reports/",
+        "docs/reports/",
+        "docs/reviews/",
+        "red_team_findings_"
+      ],
+      "tier": "report"
+    },
+    {
+      "rule_id": "evidence_artifact_types",
+      "match_artifact_types": [
+        "eval_slice_summary",
+        "replay_integrity_record",
+        "replay_result",
+        "lineage_completeness_report",
+        "failure_trace",
+        "failure_classification",
+        "control_arbitration_record",
+        "trust_policy_decision",
+        "evidence_binding_record",
+        "authority_shape_preflight_result",
+        "registry_validation_result",
+        "artifact_tier_validation_result"
+      ],
+      "tier": "evidence"
+    },
+    {
+      "rule_id": "canonical_artifact_types",
+      "match_artifact_types": [
+        "pqx_slice_execution_record",
+        "pqx_bundle_execution_record",
+        "pqx_execution_closure_record",
+        "closure_decision_artifact",
+        "promotion_readiness_decision",
+        "readiness_to_close",
+        "enforcement_action_record",
+        "enforcement_block_record",
+        "control_surface_enforcement_result",
+        "replay_run_record",
+        "replay_decision_record",
+        "judgment_record",
+        "policy_violation_record",
+        "build_admission_record",
+        "certification_evidence_index",
+        "loop_proof_bundle"
+      ],
+      "tier": "canonical"
+    }
+  ],
+  "promotion_evidence_allowlist_tiers": ["canonical", "evidence"],
+  "explicit_promotion_overrides": [],
+  "default_tier_when_unmatched": "report"
+}

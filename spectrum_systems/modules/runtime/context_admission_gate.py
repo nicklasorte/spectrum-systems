@@ -35,6 +35,43 @@ CANONICAL_CTX_REASON_CODES = {
 }
 
 
+# NS-16: compressed context-failure category vocabulary. Detail reason codes
+# above remain stable; the compressed category groups them for control,
+# certification, and failure-trace consumers.
+CTX_COMPRESSED_CATEGORIES = (
+    "missing",
+    "stale",
+    "conflicting",
+    "untrusted",
+    "incompatible",
+    "injection_risk",
+)
+
+CTX_REASON_TO_CATEGORY = {
+    "CTX_OK": None,
+    "CTX_MISSING_PROVENANCE": "missing",
+    "CTX_MISSING_PREFLIGHT": "missing",
+    "CTX_MALFORMED_BUNDLE": "incompatible",
+    "CTX_STALE_TTL": "stale",
+    "CTX_CONTRADICTORY_CONTEXT": "conflicting",
+    "CTX_UNTRUSTED_INSTRUCTION": "injection_risk",
+    "CTX_SCHEMA_INCOMPATIBLE": "incompatible",
+}
+
+
+def compress_ctx_reason_to_category(reason_code: str) -> str:
+    """Map a CTX detail reason code to its compressed category.
+
+    Returns ``"unknown"`` when the code is not a known CTX detail. The
+    compressed category never overrides the underlying reason — it is a
+    handle for downstream summaries.
+    """
+    if not isinstance(reason_code, str):
+        return "unknown"
+    cat = CTX_REASON_TO_CATEGORY.get(reason_code.strip().upper())
+    return cat or "unknown"
+
+
 _INSTRUCTION_ROLES = {"system", "instruction", "policy", "directive"}
 
 
@@ -75,6 +112,7 @@ def admit_context_bundle(
         return {
             "decision": "block",
             "reason_code": "CTX_MALFORMED_BUNDLE",
+            "compressed_category": compress_ctx_reason_to_category("CTX_MALFORMED_BUNDLE"),
             "blocking_reasons": ["candidates must be a list"],
             "rejected_candidate_ids": [],
         }
@@ -160,9 +198,11 @@ def admit_context_bundle(
                 reason_code = "CTX_CONTRADICTORY_CONTEXT"
 
     decision = "allow" if not blocking else "block"
+    compressed_category = compress_ctx_reason_to_category(reason_code) if decision == "block" else None
     return {
         "decision": decision,
         "reason_code": reason_code,
+        "compressed_category": compressed_category,
         "blocking_reasons": blocking,
         "rejected_candidate_ids": rejected,
     }
@@ -170,6 +210,9 @@ def admit_context_bundle(
 
 __all__ = [
     "CANONICAL_CTX_REASON_CODES",
+    "CTX_COMPRESSED_CATEGORIES",
+    "CTX_REASON_TO_CATEGORY",
     "ContextAdmissionError",
     "admit_context_bundle",
+    "compress_ctx_reason_to_category",
 ]

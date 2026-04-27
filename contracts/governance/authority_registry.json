@@ -113,9 +113,15 @@
       "spectrum_systems/modules/runtime/context_admission_gate.py",
       "spectrum_systems/modules/runtime/slo_budget_gate.py",
       "spectrum_systems/modules/observability/failure_trace.py",
+      "spectrum_systems/modules/observability/artifact_tier_audit.py",
+      "spectrum_systems/modules/observability/reason_code_canonicalizer.py",
       "spectrum_systems/modules/replay/replay_support.py",
       "spectrum_systems/modules/lineage/lineage_enforcement.py",
-      "spectrum_systems/modules/governance/certification_prerequisites.py"
+      "spectrum_systems/modules/lineage/replay_lineage_join.py",
+      "spectrum_systems/modules/governance/certification_prerequisites.py",
+      "spectrum_systems/modules/governance/certification_evidence_index.py",
+      "spectrum_systems/modules/governance/loop_proof_bundle.py",
+      "spectrum_systems/modules/governance/system_justification_v2.py"
     ]
   },
   "vocabulary_overrides": {
