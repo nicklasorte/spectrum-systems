@@ -1,30 +1,67 @@
 {
+  "artifact_id": "MMA-EXAMPLE001",
   "artifact_type": "meeting_minutes_artifact",
-  "schema_version": "1.0.0",
-  "trace_id": "trace-wpg-b-001",
-  "inputs_ref": [
-    "meeting_artifact",
-    "transcript_artifact"
-  ],
-  "outputs": {
-    "meeting_id": "mtg-001",
-    "summary": "Team reviewed transcript-grounded decisions and agreed to controlled revisions only.",
-    "decisions": [
-      "Decision: run controlled workflow loop with strict control decisions."
-    ],
-    "open_questions": [
-      "What unresolved critical comments remain before promotion?"
-    ]
+  "schema_ref": "transcript_pipeline/meeting_minutes_artifact",
+  "schema_version": "1.1.0",
+  "content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "trace": {
+    "trace_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "span_id": "bbbbbbbbbbbbbbbb"
   },
   "provenance": {
-    "stage": "meeting_minutes_generation"
+    "produced_by": "meeting_minutes_extractor",
+    "input_artifact_ids": [
+      "TXA-EXAMPLE001",
+      "CTX-EXAMPLE001",
+      "GTE-EXAMPLE001"
+    ]
   },
-  "evaluation_refs": {
-    "control_decision": {
-      "decision": "ALLOW",
-      "enforcement": {
-        "action": "proceed"
-      }
+  "created_at": "2026-04-27T00:00:00Z",
+  "source_context_bundle_id": "CTX-EXAMPLE001",
+  "summary": "Extracted outcomes and action items from explicit transcript markers.",
+  "agenda_items": [],
+  "meeting_outcomes": [
+    {
+      "outcome_id": "OUT-001",
+      "description": "We agreed to move release checkpoint to Monday.",
+      "source_refs": [
+        {
+          "source_turn_id": "T-0001",
+          "source_segment_id": "SEG-0001",
+          "line_index": 0
+        }
+      ]
     }
+  ],
+  "action_items": [
+    {
+      "action_id": "ACT-001",
+      "description": "Action: @alex prepares readiness note by 2026-05-02.",
+      "assignee": "alex",
+      "due_date": "2026-05-02",
+      "source_refs": [
+        {
+          "source_turn_id": "T-0002",
+          "source_segment_id": "SEG-0002",
+          "line_index": 1
+        }
+      ]
+    }
+  ],
+  "attendees": [
+    "Alex",
+    "Sam"
+  ],
+  "source_coverage": {
+    "covered_turn_ids": [
+      "T-0001",
+      "T-0002"
+    ],
+    "covered_segment_ids": [
+      "SEG-0001",
+      "SEG-0002"
+    ],
+    "total_transcript_turns": 3,
+    "covered_transcript_turns": 2
   }
 }

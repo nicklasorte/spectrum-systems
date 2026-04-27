@@ -1,4 +1,4 @@
-"""Transcript pipeline modules (H08+, CPL-02+, CPL-03+)."""
+"""Transcript pipeline modules (H08+, CPL-02+, CPL-03+, CPL-04+)."""
 from .context_bundle_assembler import (
     ContextBundleAssemblyError,
     assemble_context_bundle,
@@ -8,6 +8,21 @@ from .eval_gate import (
     EvalGateError,
     evaluate_transcript_context,
     run_eval_gate_via_pqx,
+)
+from .meeting_minutes_extractor import (
+    MeetingMinutesExtractionError,
+    extract_meeting_minutes,
+    extract_meeting_minutes_via_pqx,
+)
+from .minutes_eval_helpers import (
+    action_item_completeness,
+    outcome_grounding,
+    source_coverage,
+)
+from .minutes_source_validation import (
+    MinutesSourceValidationError,
+    validate_minutes_sources,
+    validate_source_refs,
 )
 from .transcript_ingestor import (
     TranscriptIngestionError,
@@ -27,4 +42,13 @@ __all__ = [
     "EvalGateError",
     "evaluate_transcript_context",
     "run_eval_gate_via_pqx",
+    "MeetingMinutesExtractionError",
+    "extract_meeting_minutes",
+    "extract_meeting_minutes_via_pqx",
+    "MinutesSourceValidationError",
+    "validate_minutes_sources",
+    "validate_source_refs",
+    "outcome_grounding",
+    "action_item_completeness",
+    "source_coverage",
 ]

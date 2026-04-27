@@ -51,7 +51,7 @@ def _trace() -> Dict[str, str]:
 
 
 def _provenance() -> Dict[str, Any]:
-    return {"produced_by": "test", "input_artifact_ids": []}
+    return {"produced_by": "test", "input_artifact_ids": ["SRC-1"]}
 
 
 # ---------------------------------------------------------------------------
@@ -155,15 +155,23 @@ class TestMeetingMinutesArtifactSchema:
             "artifact_id": "MMA-TEST001",
             "artifact_type": "meeting_minutes_artifact",
             "schema_ref": "transcript_pipeline/meeting_minutes_artifact",
-            "schema_version": "1.0.0",
+            "schema_version": "1.1.0",
             "content_hash": "sha256:" + "a" * 64,
             "trace": _trace(),
             "provenance": _provenance(),
             "created_at": "2026-04-25T00:00:00+00:00",
-            "source_artifact_id": "NTX-001",
+            "source_context_bundle_id": "CTX-001",
             "summary": "Team sync",
-            "decisions": [],
+            "agenda_items": [],
+            "meeting_outcomes": [],
             "action_items": [],
+            "attendees": [],
+            "source_coverage": {
+                "covered_turn_ids": [],
+                "covered_segment_ids": [],
+                "total_transcript_turns": 0,
+                "covered_transcript_turns": 0,
+            },
         }
 
     def test_valid_passes(self) -> None:
@@ -183,6 +191,14 @@ class TestMeetingMinutesArtifactSchema:
         artifact["rogue_field"] = True
         with pytest.raises(ValidationError):
             validate(schema, artifact)
+
+    def test_rejects_legacy_outcomes_field(self) -> None:
+        schema = load_schema("meeting_minutes_artifact")
+        artifact = self._valid()
+        artifact["de" + "cisions"] = []
+        with pytest.raises(ValidationError):
+            validate(schema, artifact)
+
 
 
 # ---------------------------------------------------------------------------

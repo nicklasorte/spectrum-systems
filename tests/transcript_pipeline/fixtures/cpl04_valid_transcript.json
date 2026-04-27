@@ -1,0 +1,49 @@
+{
+  "transcript_artifact": {
+    "artifact_id": "TXA-CPL04-VALID",
+    "artifact_type": "transcript_artifact",
+    "schema_ref": "transcript_pipeline/transcript_artifact",
+    "schema_version": "1.0.0",
+    "content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "trace": {"trace_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "span_id": "bbbbbbbbbbbbbbbb"},
+    "provenance": {"produced_by": "fixture", "input_artifact_ids": ["SRC-1"]},
+    "created_at": "2026-04-27T00:00:00Z",
+    "source_format": "txt",
+    "raw_text": "placeholder transcript",
+    "speaker_turns": [
+      {"turn_id": "T-0001", "speaker": "Alex", "text": "We agreed to move kickoff to Monday.", "line_index": 0},
+      {"turn_id": "T-0002", "speaker": "Sam", "text": "Action: @alex will follow up by 2026-05-10.", "line_index": 1},
+      {"turn_id": "T-0003", "speaker": "Pat", "text": "We agreed to close the open backlog item.", "line_index": 2}
+    ]
+  },
+  "context_bundle": {
+    "artifact_id": "CTX-CPL04-VALID",
+    "artifact_type": "context_bundle",
+    "schema_ref": "transcript_pipeline/context_bundle",
+    "schema_version": "1.0.0",
+    "content_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "trace": {"trace_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "span_id": "cccccccccccccccc"},
+    "provenance": {"produced_by": "fixture", "input_artifact_ids": ["TXA-CPL04-VALID"]},
+    "created_at": "2026-04-27T00:00:00Z",
+    "source_artifact_id": "TXA-CPL04-VALID",
+    "segments": [
+      {"segment_id": "SEG-0001", "speaker": "Alex", "text": "We agreed to move kickoff to Monday.", "source_turn_id": "T-0001", "line_index": 0},
+      {"segment_id": "SEG-0002", "speaker": "Sam", "text": "Action: @alex will follow up by 2026-05-10.", "source_turn_id": "T-0002", "line_index": 1},
+      {"segment_id": "SEG-0003", "speaker": "Pat", "text": "We agreed to close the open backlog item.", "source_turn_id": "T-0003", "line_index": 2}
+    ],
+    "manifest_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "gate_evidence": {
+    "artifact_id": "GTE-CPL04-VALID",
+    "artifact_type": "gate_evidence",
+    "schema_ref": "transcript_pipeline/gate_evidence",
+    "schema_version": "1.0.0",
+    "content_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "trace": {"trace_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "span_id": "dddddddddddddddd"},
+    "provenance": {"produced_by": "fixture", "input_artifact_ids": ["EVS-CPL04-VALID"]},
+    "created_at": "2026-04-27T00:00:00Z",
+    "target_artifact_ids": ["TXA-CPL04-VALID", "CTX-CPL04-VALID"],
+    "gate_status": "passed_gate",
+    "eval_summary_id": "EVS-CPL04-VALID"
+  }
+}

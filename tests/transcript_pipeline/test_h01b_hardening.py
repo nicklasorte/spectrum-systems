@@ -3,7 +3,7 @@ H01B Hardening Tests — Severity Integrity, Hash Canonicalization, Source Groun
 
 H01B-1: S4 severity must always be blocking
 H01B-3: content_hash is deterministic and excludes trace/timestamp
-H01B-5: issue source_segment_ids required; decisions require source_reference or rationale
+H01B-5: issue source_segment_ids required; meeting_outcomes require source_refs or rationale
 """
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ def _trace() -> Dict[str, str]:
 
 
 def _provenance() -> Dict[str, Any]:
-    return {"produced_by": "test", "input_artifact_ids": []}
+    return {"produced_by": "test", "input_artifact_ids": ["SRC-1"]}
 
 
 # ---------------------------------------------------------------------------
@@ -281,76 +281,101 @@ class TestIssueSourceGrounding:
         _validate(schema, artifact)
 
 
-class TestDecisionSourceGrounding:
-    """Decisions must include source_reference OR rationale for traceability."""
+class TestOutcomeSourceGrounding:
+    """meeting_outcomes must include source_refs OR rationale."""
 
     def _valid_minutes(self) -> Dict[str, Any]:
         return {
             "artifact_id": "MMA-SRCTEST001",
             "artifact_type": "meeting_minutes_artifact",
             "schema_ref": "transcript_pipeline/meeting_minutes_artifact",
-            "schema_version": "1.0.0",
+            "schema_version": "1.1.0",
             "content_hash": "sha256:" + "a" * 64,
             "trace": _trace(),
             "provenance": _provenance(),
             "created_at": "2026-04-25T00:00:00+00:00",
-            "source_artifact_id": "NTX-001",
+            "source_context_bundle_id": "CTX-001",
             "summary": "Architecture review meeting.",
-            "decisions": [],
+            "agenda_items": [],
+            "meeting_outcomes": [],
             "action_items": [],
+            "attendees": [],
+            "source_coverage": {
+                "covered_turn_ids": [],
+                "covered_segment_ids": [],
+                "total_transcript_turns": 0,
+                "covered_transcript_turns": 0,
+            },
         }
 
-    def test_decision_with_rationale_passes(self) -> None:
+    def test_outcome_with_rationale_passes(self) -> None:
         schema = _load_schema("meeting_minutes_artifact")
         artifact = self._valid_minutes()
-        artifact["decisions"] = [
+        artifact["meeting_outcomes"] = [
             {
-                "decision_id": "D-001",
-                "description": "Adopt hash_utils canonical policy.",
+                "outcome_id": "OUT-001",
+                "description": "We agreed to adopt hash_utils canonical policy.",
                 "rationale": "Ensures deterministic hashing across all pipeline stages.",
             }
         ]
         _validate(schema, artifact)
 
-    def test_decision_with_source_reference_passes(self) -> None:
+    def test_outcome_with_source_refs_passes(self) -> None:
         schema = _load_schema("meeting_minutes_artifact")
         artifact = self._valid_minutes()
-        artifact["decisions"] = [
+        artifact["meeting_outcomes"] = [
             {
-                "decision_id": "D-001",
-                "description": "Adopt hash_utils canonical policy.",
-                "source_reference": "TXA-001::segment::0012",
+                "outcome_id": "OUT-001",
+                "description": "We agreed to adopt hash_utils canonical policy.",
+                "source_refs": [
+                    {
+                        "source_turn_id": "T-0001",
+                        "source_segment_id": "SEG-0001",
+                        "line_index": 0,
+                    }
+                ],
             }
         ]
+        artifact["source_coverage"]["covered_turn_ids"] = ["T-0001"]
+        artifact["source_coverage"]["covered_segment_ids"] = ["SEG-0001"]
+        artifact["source_coverage"]["total_transcript_turns"] = 1
+        artifact["source_coverage"]["covered_transcript_turns"] = 1
         _validate(schema, artifact)
 
-    def test_decision_with_both_rationale_and_source_passes(self) -> None:
+    def test_outcome_missing_rationale_and_source_refs_fails(self) -> None:
         schema = _load_schema("meeting_minutes_artifact")
         artifact = self._valid_minutes()
-        artifact["decisions"] = [
+        artifact["meeting_outcomes"] = [
             {
-                "decision_id": "D-001",
-                "description": "Adopt canonical hashing.",
-                "rationale": "Prevents replay attacks.",
-                "source_reference": "TXA-001::segment::0012",
-            }
-        ]
-        _validate(schema, artifact)
-
-    def test_decision_missing_both_rationale_and_source_fails(self) -> None:
-        schema = _load_schema("meeting_minutes_artifact")
-        artifact = self._valid_minutes()
-        artifact["decisions"] = [
-            {
-                "decision_id": "D-001",
-                "description": "A decision without traceability origin.",
+                "outcome_id": "OUT-001",
+                "description": "An outcome without traceability origin.",
             }
         ]
         with pytest.raises(ValidationError):
             _validate(schema, artifact)
 
-    def test_empty_decisions_array_is_valid(self) -> None:
+    def test_action_item_requires_assignee_or_unknown_status(self) -> None:
         schema = _load_schema("meeting_minutes_artifact")
         artifact = self._valid_minutes()
-        artifact["decisions"] = []
+        artifact["action_items"] = [
+            {
+                "action_id": "ACT-001",
+                "description": "Action: complete checklist.",
+                "due_date": "2026-05-01",
+            }
+        ]
+        with pytest.raises(ValidationError):
+            _validate(schema, artifact)
+
+    def test_action_item_with_unknown_fields_is_valid(self) -> None:
+        schema = _load_schema("meeting_minutes_artifact")
+        artifact = self._valid_minutes()
+        artifact["action_items"] = [
+            {
+                "action_id": "ACT-001",
+                "description": "Action: complete checklist.",
+                "assignee_status": "unknown",
+                "due_date_status": "unknown",
+            }
+        ]
         _validate(schema, artifact)

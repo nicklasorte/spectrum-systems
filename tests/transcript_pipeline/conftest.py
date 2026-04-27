@@ -46,22 +46,48 @@ def _make_meeting_minutes_artifact(**overrides) -> Dict[str, Any]:
         "artifact_id": f"MMA-{uuid.uuid4().hex[:8].upper()}",
         "artifact_type": "meeting_minutes_artifact",
         "schema_ref": "transcript_pipeline/meeting_minutes_artifact",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "trace": _trace(),
-        "provenance": _provenance(),
+        "provenance": _provenance(["TXA-TEST001", "CTX-TEST001", "GTE-TEST001"]),
         "created_at": "2026-04-25T00:00:00+00:00",
-        "source_artifact_id": "NTX-TEST001",
+        "source_context_bundle_id": "CTX-TEST001",
         "summary": "Team aligned on Q2 goals.",
-        "decisions": [
+        "agenda_items": [],
+        "meeting_outcomes": [
             {
-                "decision_id": "D-001",
-                "description": "Adopt new schema format",
-                "rationale": "Improves machine readability and schema compliance.",
+                "outcome_id": "OUT-001",
+                "description": "We agreed to adopt new schema format.",
+                "source_refs": [
+                    {
+                        "source_turn_id": "T-0001",
+                        "source_segment_id": "SEG-0001",
+                        "line_index": 0,
+                    }
+                ],
             }
         ],
         "action_items": [
-            {"action_id": "AI-001", "description": "Draft schema proposal"}
+            {
+                "action_id": "ACT-001",
+                "description": "Action: @alex drafts schema by 2026-05-01.",
+                "assignee": "alex",
+                "due_date": "2026-05-01",
+                "source_refs": [
+                    {
+                        "source_turn_id": "T-0002",
+                        "source_segment_id": "SEG-0002",
+                        "line_index": 1,
+                    }
+                ],
+            }
         ],
+        "attendees": ["Alex", "Sam"],
+        "source_coverage": {
+            "covered_turn_ids": ["T-0001", "T-0002"],
+            "covered_segment_ids": ["SEG-0001", "SEG-0002"],
+            "total_transcript_turns": 2,
+            "covered_transcript_turns": 2,
+        },
     }
     base.update(overrides)
     base["content_hash"] = compute_content_hash(base)

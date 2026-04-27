@@ -1,0 +1,16 @@
+{
+  "artifact_id": "REV-CPL-04-2026-04-27",
+  "artifact_type": "cpl04_review",
+  "prompt_type": "REVIEW",
+  "work_item": "BATCH-CPL-04 (REV-2)",
+  "review_signal": "pass_with_followups",
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "severity": "S1",
+      "finding": "Extractor remains deterministic and source-grounded for explicit markers only.",
+      "recommendation": "Keep marker list stable and expand only through governed contract updates."
+    }
+  ],
+  "created_at": "2026-04-27T00:00:00Z"
+}
