@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/schemas/transcript_pipeline/context_bundle.schema.json",
   "title": "Context Bundle",
-  "description": "Assembled context bundle produced from a transcript_artifact at the admission boundary. Provides structured context for downstream pipeline steps including meeting minutes extraction.",
+  "description": "CPL-02 Context Bundle: deterministic, replayable artifact assembled from a transcript_artifact. Every segment is traceable to a transcript turn (source_turn_id, line_index). manifest_hash is a deterministic hash of the ordered segments and pins replay equivalence.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -15,7 +15,8 @@
     "provenance",
     "created_at",
     "source_artifact_id",
-    "context_items"
+    "segments",
+    "manifest_hash"
   ],
   "properties": {
     "artifact_id": {
@@ -50,19 +51,26 @@
     },
     "source_artifact_id": {
       "type": "string",
+      "pattern": "^TXA-[A-Z0-9_-]+$",
       "description": "ID of the transcript_artifact this bundle was assembled from."
     },
-    "context_items": {
+    "segments": {
       "type": "array",
       "minItems": 1,
       "items": {
-        "$ref": "#/$defs/context_item"
-      }
+        "$ref": "#/$defs/segment"
+      },
+      "description": "Ordered, traceable segments derived 1:1 from transcript speaker_turns."
+    },
+    "manifest_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "description": "Deterministic SHA-256 over the ordered segment manifest. Independent from content_hash; pins replay equivalence."
     },
     "assembly_strategy": {
       "type": "string",
-      "enum": ["full", "windowed", "selective"],
-      "description": "Strategy used to assemble context from the transcript."
+      "enum": ["full"],
+      "description": "Strategy used to assemble context from the transcript. CPL-02 only supports 'full' (no summarization, no LLM)."
     }
   },
   "$defs": {
@@ -82,22 +90,38 @@
       "required": ["produced_by", "input_artifact_ids"],
       "properties": {
         "produced_by": {"type": "string"},
-        "input_artifact_ids": {"type": "array", "items": {"type": "string"}},
+        "input_artifact_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1},
         "run_id": {"type": "string"}
       }
     },
-    "context_item": {
+    "segment": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["item_id", "content_type", "content"],
+      "required": ["segment_id", "speaker", "text", "source_turn_id", "line_index"],
       "properties": {
-        "item_id": {"type": "string"},
-        "content_type": {
+        "segment_id": {
           "type": "string",
-          "enum": ["transcript_segment", "metadata", "speaker_map", "summary"]
+          "pattern": "^SEG-[0-9]{4,}$",
+          "description": "Deterministic per-bundle segment id (SEG-0001 ...)."
         },
-        "content": {"type": "string", "minLength": 1},
-        "relevance_score": {"type": "number", "minimum": 0, "maximum": 1}
+        "speaker": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_turn_id": {
+          "type": "string",
+          "pattern": "^T-[0-9]{4,}$",
+          "description": "ID of the transcript_artifact speaker_turn this segment derives from."
+        },
+        "line_index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero-based source line index inherited from the transcript turn."
+        }
       }
     }
   }

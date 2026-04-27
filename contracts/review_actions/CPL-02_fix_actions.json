@@ -1,0 +1,150 @@
+{
+  "fix_plan_id": "CPL02-FIX-PLAN",
+  "source_review_id": "RVA-CPL02-CONTEXT-001",
+  "batch": "BATCH-CPL02",
+  "created_at": "2026-04-27T00:00:00+00:00",
+  "fixes": [
+    {
+      "fix_id": "CPL02-FIX-001",
+      "finding_ids": ["F-001"],
+      "severity": "S3",
+      "description": "Reject missing / empty speaker_turns at the assembler envelope check; schema-level segments minItems: 1.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py",
+        "contracts/schemas/transcript_pipeline/context_bundle.schema.json"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestReferentialIntegrity::test_missing_speaker_turns_fails",
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestReferentialIntegrity::test_empty_speaker_turns_fails",
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestSchemaAudit::test_schema_declares_segments_and_manifest_hash"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL02-FIX-002",
+      "finding_ids": ["F-002"],
+      "severity": "S3",
+      "description": "Reject ORPHAN_SEGMENT: every segment.source_turn_id must exist in transcript.speaker_turns; checked inside _validate_referential_integrity.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestRedTeamRegressions::test_orphan_segment_blocked_by_referential_integrity_helper"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL02-FIX-003",
+      "finding_ids": ["F-003"],
+      "severity": "S3",
+      "description": "Reject SEGMENT_TURN_DRIFT: segment[i] must match speaker_turns[i] on (source_turn_id, speaker, text, line_index).",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestRedTeamRegressions::test_segment_drift_detected"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL02-FIX-004",
+      "finding_ids": ["F-004"],
+      "severity": "S3",
+      "description": "Compute manifest_hash over the ordered segment manifest; pin artifact_id derivation to that hash so reordering produces a different artifact_id.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestReplayDeterminism::test_reordering_segments_changes_manifest_hash",
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestRedTeamRegressions::test_artifact_id_changes_when_content_changes"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL02-FIX-005",
+      "finding_ids": ["F-005"],
+      "severity": "S2",
+      "description": "Reject SEGMENT_TURN_COUNT_MISMATCH when len(segments) != len(turns).",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestRedTeamRegressions::test_count_mismatch_detected"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL02-FIX-006",
+      "finding_ids": ["F-006", "F-007"],
+      "severity": "S2",
+      "description": "Reject DUPLICATE_SEGMENT_ID and DUPLICATE_TURN_ID with explicit reason codes; segment_id is generated deterministically as SEG-NNNN.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestReferentialIntegrity::test_duplicate_turn_id_fails",
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestRedTeamRegressions::test_duplicate_segment_id_detected"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL02-FIX-007",
+      "finding_ids": ["F-008"],
+      "severity": "S2",
+      "description": "Lock down direct artifact writes by ensuring the assembler returns a payload without content_hash. Only the PQX harness mints the hash and registers the artifact.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py",
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestPQXIntegration::test_assembler_cannot_write_artifact_directly",
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestPQXIntegration::test_assembly_via_pqx_registers_artifact",
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestPQXIntegration::test_assembly_via_pqx_inherits_parent_trace",
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestPQXIntegration::test_assembly_via_pqx_fails_closed_on_bad_input"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL02-FIX-008",
+      "finding_ids": ["F-009"],
+      "severity": "S2",
+      "description": "Manifest_hash is computed over segments only; content_hash excludes trace/created_at via hash_utils. Replay determinism is locked across trace, run_id, and clock changes.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestReplayDeterminism::test_manifest_hash_independent_of_envelope",
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestReplayDeterminism::test_same_input_yields_identical_segments_and_manifest",
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestReplayDeterminism::test_content_hash_is_replay_stable"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL02-FIX-009",
+      "finding_ids": ["F-010", "F-011"],
+      "severity": "S1",
+      "description": "Validate trace_id / span_id and source artifact identity at the assembler boundary in addition to schema-level checks.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py"
+      ],
+      "regression_tests": [
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestReferentialIntegrity::test_invalid_trace_id_fails",
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestReferentialIntegrity::test_invalid_span_id_fails",
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestReferentialIntegrity::test_invalid_artifact_type_fails",
+        "tests/transcript_pipeline/test_context_bundle_assembler_cpl02.py::TestReferentialIntegrity::test_invalid_source_artifact_id_fails"
+      ],
+      "status": "applied"
+    },
+    {
+      "fix_id": "CPL02-FIX-010",
+      "finding_ids": ["F-012"],
+      "severity": "S0",
+      "description": "Document the manifest_hash / content_hash ownership boundary in the module docstring and the assemble_context_bundle return-value contract.",
+      "target_files": [
+        "spectrum_systems/modules/transcript_pipeline/context_bundle_assembler.py"
+      ],
+      "regression_tests": [],
+      "status": "applied"
+    }
+  ]
+}

@@ -288,11 +288,11 @@ class TestReleaseArtifactSchema:
 
 
 # ---------------------------------------------------------------------------
-# context_bundle — FIX-003 regression
+# context_bundle — CPL-02 contract (segments + manifest_hash, fail-closed)
 # ---------------------------------------------------------------------------
 
 class TestContextBundleSchema:
-    """FIX-003 regression: context_bundle schema must exist and enforce structure."""
+    """CPL-02 schema audit: every segment must trace to a transcript turn."""
 
     def _valid(self) -> Dict[str, Any]:
         return {
@@ -302,33 +302,50 @@ class TestContextBundleSchema:
             "schema_version": "1.0.0",
             "content_hash": "sha256:" + "a" * 64,
             "trace": _trace(),
-            "provenance": _provenance(),
+            "provenance": {"produced_by": "test", "input_artifact_ids": ["TXA-001"]},
             "created_at": "2026-04-25T00:00:00+00:00",
             "source_artifact_id": "TXA-001",
-            "context_items": [
+            "segments": [
                 {
-                    "item_id": "CI-001",
-                    "content_type": "transcript_segment",
-                    "content": "Alice: Hello.",
+                    "segment_id": "SEG-0001",
+                    "speaker": "Alice",
+                    "text": "Hello.",
+                    "source_turn_id": "T-0001",
+                    "line_index": 0,
                 }
             ],
+            "manifest_hash": "sha256:" + "c" * 64,
         }
 
     def test_valid_passes(self) -> None:
         schema = load_schema("context_bundle")
         validate(schema, self._valid())
 
-    def test_missing_context_items_fails(self) -> None:
+    def test_missing_segments_fails(self) -> None:
         schema = load_schema("context_bundle")
         artifact = self._valid()
-        del artifact["context_items"]
+        del artifact["segments"]
         with pytest.raises(ValidationError):
             validate(schema, artifact)
 
-    def test_invalid_content_type_fails(self) -> None:
+    def test_empty_segments_fails(self) -> None:
         schema = load_schema("context_bundle")
         artifact = self._valid()
-        artifact["context_items"][0]["content_type"] = "unknown_type"
+        artifact["segments"] = []
+        with pytest.raises(ValidationError):
+            validate(schema, artifact)
+
+    def test_segment_missing_source_turn_id_fails(self) -> None:
+        schema = load_schema("context_bundle")
+        artifact = self._valid()
+        del artifact["segments"][0]["source_turn_id"]
+        with pytest.raises(ValidationError):
+            validate(schema, artifact)
+
+    def test_missing_manifest_hash_fails(self) -> None:
+        schema = load_schema("context_bundle")
+        artifact = self._valid()
+        del artifact["manifest_hash"]
         with pytest.raises(ValidationError):
             validate(schema, artifact)
 
@@ -336,5 +353,12 @@ class TestContextBundleSchema:
         schema = load_schema("context_bundle")
         artifact = self._valid()
         artifact["rogue"] = True
+        with pytest.raises(ValidationError):
+            validate(schema, artifact)
+
+    def test_unknown_segment_field_rejected(self) -> None:
+        schema = load_schema("context_bundle")
+        artifact = self._valid()
+        artifact["segments"][0]["rogue"] = True
         with pytest.raises(ValidationError):
             validate(schema, artifact)
