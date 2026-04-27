@@ -1,0 +1,36 @@
+{
+  "fixture_id": "trp-pass",
+  "seam": "pass",
+  "expected_final_status": "pass",
+  "expected_canonical_category": null,
+  "loop_inputs": {
+    "bundle_id": "lpb-pass",
+    "trace_id": "trp-pass-trace",
+    "run_id": "trp-pass-run",
+    "execution_record": {
+      "artifact_id": "exec-1",
+      "artifact_type": "pqx_slice_execution_record",
+      "status": "ok"
+    },
+    "output_artifact": {
+      "artifact_id": "out-1",
+      "artifact_type": "eval_summary"
+    },
+    "eval_summary": {"artifact_id": "evl-1", "status": "healthy"},
+    "control_decision": {"decision_id": "cde-1", "decision": "allow"},
+    "enforcement_action": {
+      "enforcement_id": "sel-1",
+      "enforcement_action": "allow_execution"
+    },
+    "replay_record": {
+      "replay_id": "rpl-1",
+      "artifact_id": "rpl-1",
+      "status": "healthy"
+    },
+    "lineage_summary": {
+      "summary_id": "lin-1",
+      "artifact_id": "lin-1",
+      "status": "healthy"
+    }
+  }
+}

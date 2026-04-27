@@ -1,0 +1,14 @@
+{
+  "fixture_id": "trp-stale-proof",
+  "seam": "stale_trust_artifact",
+  "expected_freshness_status": "stale",
+  "expected_canonical_category": "CERTIFICATION_GAP",
+  "trust_artifact": {
+    "artifact_type": "loop_proof_bundle",
+    "input_digest": "lp-old",
+    "source_evidence_digest": "src-old",
+    "generated_at": "2025-01-01T00:00:00Z"
+  },
+  "expected_input_digest": "lp-old",
+  "expected_source_digest": "src-NEW"
+}

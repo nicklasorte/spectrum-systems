@@ -1,0 +1,37 @@
+{
+  "fixture_id": "trp-freeze",
+  "seam": "control_freeze",
+  "expected_final_status": "freeze",
+  "expected_canonical_categories": ["CERTIFICATION_GAP", "SLO_BUDGET_FAILURE"],
+  "loop_inputs": {
+    "bundle_id": "lpb-freeze",
+    "trace_id": "trp-freeze-trace",
+    "run_id": "trp-freeze-run",
+    "execution_record": {
+      "artifact_id": "exec-3",
+      "artifact_type": "pqx_slice_execution_record",
+      "status": "ok"
+    },
+    "output_artifact": {"artifact_id": "out-3", "artifact_type": "eval_summary"},
+    "eval_summary": {"artifact_id": "evl-3", "status": "healthy"},
+    "control_decision": {
+      "decision_id": "cde-frz",
+      "decision": "freeze",
+      "reason_code": "slo_budget_exhausted"
+    },
+    "enforcement_action": {
+      "enforcement_id": "sel-frz",
+      "enforcement_action": "require_manual_review"
+    },
+    "replay_record": {
+      "replay_id": "rpl-3",
+      "artifact_id": "rpl-3",
+      "status": "healthy"
+    },
+    "lineage_summary": {
+      "summary_id": "lin-3",
+      "artifact_id": "lin-3",
+      "status": "healthy"
+    }
+  }
+}

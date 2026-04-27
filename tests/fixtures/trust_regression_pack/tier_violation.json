@@ -1,0 +1,14 @@
+{
+  "fixture_id": "trp-tier-violation",
+  "seam": "report_as_evidence",
+  "expected_decision": "block",
+  "expected_canonical_category": "POLICY_MISMATCH",
+  "expected_reason_code": "TIER_DRIFT_LOW_TO_EVIDENCE_UNAUTHORIZED",
+  "promotion_evidence_items": [
+    {
+      "artifact_id": "rep-1",
+      "artifact_type": "dashboard_report",
+      "artifact_path": "outputs/reports/dashboard.json"
+    }
+  ]
+}

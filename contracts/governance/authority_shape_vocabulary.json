@@ -74,7 +74,17 @@
       "contracts/schemas/loop_proof_bundle.schema.json",
       "docs/reviews/NS_ALL_01_delivery_report.md",
       "docs/governance-reports/contract-compliance-report.md",
-      "docs/governance-reports/ecosystem-health-report.md"
+      "docs/governance-reports/ecosystem-health-report.md",
+      "spectrum_systems/modules/observability/trust_artifact_freshness.py",
+      "spectrum_systems/modules/observability/artifact_tier_drift.py",
+      "spectrum_systems/modules/observability/reason_code_lifecycle.py",
+      "spectrum_systems/modules/governance/proof_bundle_size.py",
+      "spectrum_systems/modules/governance/certification_delta.py",
+      "spectrum_systems/modules/runtime/control_signal_minimality.py",
+      "scripts/print_loop_proof.py",
+      "contracts/governance/trust_artifact_freshness_policy.json",
+      "contracts/governance/proof_bundle_size_policy.json",
+      "docs/reviews/NT_ALL_01_delivery_report.md"
     ]
   },
   "clusters": {

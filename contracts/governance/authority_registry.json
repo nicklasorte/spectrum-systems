@@ -121,7 +121,13 @@
       "spectrum_systems/modules/governance/certification_prerequisites.py",
       "spectrum_systems/modules/governance/certification_evidence_index.py",
       "spectrum_systems/modules/governance/loop_proof_bundle.py",
-      "spectrum_systems/modules/governance/system_justification_v2.py"
+      "spectrum_systems/modules/governance/system_justification_v2.py",
+      "spectrum_systems/modules/observability/trust_artifact_freshness.py",
+      "spectrum_systems/modules/observability/artifact_tier_drift.py",
+      "spectrum_systems/modules/observability/reason_code_lifecycle.py",
+      "spectrum_systems/modules/governance/proof_bundle_size.py",
+      "spectrum_systems/modules/governance/certification_delta.py",
+      "spectrum_systems/modules/runtime/control_signal_minimality.py"
     ]
   },
   "vocabulary_overrides": {
@@ -359,6 +365,55 @@
       "may_authorize": false,
       "canonical_owner": null,
       "rationale": "Generated ecosystem health observation report mentions historical CI Enforcement category labels but cannot issue control or enforcement_signal decisions."
+    },
+    {
+      "path": "spectrum_systems/modules/observability/trust_artifact_freshness.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "NT-01..03 OBS support seam audits trust artifact freshness using producer/source digests and timestamps; emits a status (current/stale/unknown) consumed by canonical CDE/SEL; cannot authorize promotion."
+    },
+    {
+      "path": "spectrum_systems/modules/observability/artifact_tier_drift.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "NT-07..09 OBS support seam extends tier validation transitively across referenced evidence and detects tier drift between proof runs; consumed by canonical owners; cannot authorize."
+    },
+    {
+      "path": "spectrum_systems/modules/observability/reason_code_lifecycle.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "NT-10..12 OBS support seam classifies reason-code lifecycle (active/deprecated/merged/forbidden) and audits coverage; consumed by canonical owners; cannot authorize."
+    },
+    {
+      "path": "spectrum_systems/modules/governance/proof_bundle_size.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "NT-04..06 GOV/PRA support seam validates proof bundle size budgets and produces deterministic compressed copies; reference-only; does not decide policy."
+    },
+    {
+      "path": "spectrum_systems/modules/governance/certification_delta.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "NT-19..21 GOV/PRA support seam compares two certification evidence indexes and emits a delta artifact (added/removed/changed refs, status/reason/owner changes, delta_risk); reference-only; does not decide policy."
+    },
+    {
+      "path": "spectrum_systems/modules/runtime/control_signal_minimality.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "NT-16..18 SLO/CDE support seam audits control inputs to confirm only hard trust signals can drive freeze/block; observation-only signals never gate promotion; consumed by canonical CDE; cannot authorize."
+    },
+    {
+      "path": "scripts/print_loop_proof.py",
+      "authority_scope": "observational",
+      "may_authorize": false,
+      "canonical_owner": null,
+      "rationale": "NT-13..15 read-only operator triage CLI that renders existing loop_proof_bundle and certification_evidence_index signals; contains no business logic and cannot authorize."
     }
   ]
 }

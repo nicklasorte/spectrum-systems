@@ -1,0 +1,67 @@
+{
+  "artifact_type": "proof_bundle_size_policy",
+  "schema_version": "1.0.0",
+  "policy_id": "NT-04-proof-bundle-size-policy",
+  "purpose": "Bound the size and complexity of trust proof artifacts so a maintainer can read a bundle in under 10 minutes. Bundles that exceed the budget are blocked or compressed deterministically; oversized evidence is referenced, not inlined.",
+  "limits": {
+    "loop_proof_bundle": {
+      "max_top_level_evidence_refs": 12,
+      "max_one_page_summary_chars": 4000,
+      "max_human_readable_chars": 6000,
+      "max_blocking_detail_codes": 10,
+      "max_nested_depth": 5,
+      "forbid_inline_evidence_keys": [
+        "execution_record",
+        "output_artifact",
+        "eval_summary",
+        "control_decision",
+        "enforcement_action",
+        "replay_record",
+        "lineage_summary"
+      ]
+    },
+    "certification_evidence_index": {
+      "max_top_level_evidence_refs": 12,
+      "max_human_readable_chars": 4000,
+      "max_blocking_detail_codes": 10,
+      "max_nested_depth": 4,
+      "forbid_inline_evidence_keys": [
+        "eval_summary",
+        "lineage_summary",
+        "replay_summary",
+        "control_decision",
+        "enforcement_action",
+        "authority_shape_preflight",
+        "registry_validation",
+        "artifact_tier_validation",
+        "failure_trace"
+      ]
+    },
+    "failure_trace": {
+      "max_one_page_summary_chars": 4000,
+      "max_human_readable_chars": 6000,
+      "max_steps": 5,
+      "max_nested_depth": 4
+    }
+  },
+  "overflow_behavior": {
+    "default": "block",
+    "block_reason": "PROOF_BUNDLE_TOO_MANY_EVIDENCE_REFS",
+    "alternative": "compress_to_references",
+    "alternative_rationale": "When compress_to_references is used, oversized evidence is replaced by a reference and a count of suppressed entries is recorded. Compression is deterministic and order-stable."
+  },
+  "stable_ordering": {
+    "evidence_ref_order": [
+      "execution_record_ref",
+      "output_artifact_ref",
+      "eval_summary_ref",
+      "control_decision_ref",
+      "enforcement_action_ref",
+      "replay_record_ref",
+      "lineage_chain_ref",
+      "certification_evidence_index_ref",
+      "failure_trace_ref"
+    ]
+  },
+  "fail_closed": true
+}

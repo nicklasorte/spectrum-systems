@@ -1,0 +1,104 @@
+{
+  "artifact_type": "trust_artifact_freshness_policy",
+  "schema_version": "1.0.0",
+  "policy_id": "NT-01-trust-artifact-freshness-policy",
+  "purpose": "Declare which trust artifacts must be evaluated for freshness, which fields establish freshness (input/source digest preferred, timestamp secondary), and the canonical reason emitted when a trust artifact is stale or unknown. Timestamps alone do not satisfy freshness when a source digest is available. Missing freshness signal blocks rather than silently passing.",
+  "tracked_artifact_types": [
+    "artifact_tier_policy",
+    "reason_code_alias_map",
+    "certification_evidence_index",
+    "loop_proof_bundle",
+    "failure_trace",
+    "replay_lineage_join_summary",
+    "slo_signal_policy",
+    "trust_artifact_freshness_policy",
+    "proof_bundle_size_policy"
+  ],
+  "rules": [
+    {
+      "rule_id": "artifact_tier_policy",
+      "match_artifact_type": "artifact_tier_policy",
+      "input_digest_field": "policy_id",
+      "source_digest_field": null,
+      "timestamp_field": "checked_at",
+      "max_age_days": 90,
+      "stale_reason": "TRUST_FRESHNESS_POLICY_STALE",
+      "missing_reason": "TRUST_FRESHNESS_UNKNOWN"
+    },
+    {
+      "rule_id": "reason_code_alias_map",
+      "match_artifact_type": "reason_code_alias_map",
+      "input_digest_field": "policy_id",
+      "source_digest_field": null,
+      "timestamp_field": "checked_at",
+      "max_age_days": 90,
+      "stale_reason": "TRUST_FRESHNESS_ALIAS_MAP_STALE",
+      "missing_reason": "TRUST_FRESHNESS_UNKNOWN"
+    },
+    {
+      "rule_id": "certification_evidence_index",
+      "match_artifact_type": "certification_evidence_index",
+      "input_digest_field": "input_digest",
+      "source_digest_field": "source_evidence_digest",
+      "timestamp_field": "generated_at",
+      "max_age_days": 7,
+      "stale_reason": "TRUST_FRESHNESS_EVIDENCE_INDEX_STALE",
+      "missing_reason": "TRUST_FRESHNESS_UNKNOWN"
+    },
+    {
+      "rule_id": "loop_proof_bundle",
+      "match_artifact_type": "loop_proof_bundle",
+      "input_digest_field": "input_digest",
+      "source_digest_field": "source_evidence_digest",
+      "timestamp_field": "generated_at",
+      "max_age_days": 7,
+      "stale_reason": "TRUST_FRESHNESS_PROOF_BUNDLE_STALE",
+      "missing_reason": "TRUST_FRESHNESS_UNKNOWN"
+    },
+    {
+      "rule_id": "failure_trace",
+      "match_artifact_type": "failure_trace",
+      "input_digest_field": "input_digest",
+      "source_digest_field": null,
+      "timestamp_field": "generated_at",
+      "max_age_days": 7,
+      "stale_reason": "TRUST_FRESHNESS_TRACE_STALE",
+      "missing_reason": "TRUST_FRESHNESS_UNKNOWN"
+    },
+    {
+      "rule_id": "replay_lineage_join_summary",
+      "match_artifact_type": "replay_lineage_join_summary",
+      "input_digest_field": "input_digest",
+      "source_digest_field": "source_evidence_digest",
+      "timestamp_field": "generated_at",
+      "max_age_days": 7,
+      "stale_reason": "TRUST_FRESHNESS_JOIN_SUMMARY_STALE",
+      "missing_reason": "TRUST_FRESHNESS_UNKNOWN"
+    },
+    {
+      "rule_id": "slo_signal_policy",
+      "match_artifact_type": "slo_signal_policy",
+      "input_digest_field": "policy_id",
+      "source_digest_field": null,
+      "timestamp_field": "checked_at",
+      "max_age_days": 90,
+      "stale_reason": "TRUST_FRESHNESS_SLO_POLICY_STALE",
+      "missing_reason": "TRUST_FRESHNESS_UNKNOWN"
+    }
+  ],
+  "canonical_reason_codes": {
+    "TRUST_FRESHNESS_OK": "CERTIFICATION_GAP",
+    "TRUST_FRESHNESS_POLICY_STALE": "CERTIFICATION_GAP",
+    "TRUST_FRESHNESS_ALIAS_MAP_STALE": "CERTIFICATION_GAP",
+    "TRUST_FRESHNESS_EVIDENCE_INDEX_STALE": "CERTIFICATION_GAP",
+    "TRUST_FRESHNESS_PROOF_BUNDLE_STALE": "CERTIFICATION_GAP",
+    "TRUST_FRESHNESS_TRACE_STALE": "CERTIFICATION_GAP",
+    "TRUST_FRESHNESS_JOIN_SUMMARY_STALE": "CERTIFICATION_GAP",
+    "TRUST_FRESHNESS_SLO_POLICY_STALE": "CERTIFICATION_GAP",
+    "TRUST_FRESHNESS_DIGEST_MISMATCH": "CERTIFICATION_GAP",
+    "TRUST_FRESHNESS_UNKNOWN": "CERTIFICATION_GAP",
+    "TRUST_FRESHNESS_POLICY_UNAVAILABLE": "CERTIFICATION_GAP"
+  },
+  "fail_closed": true,
+  "rationale": "If a source digest is available it must match. Falling back to timestamp alone when a digest mismatch is detectable is forbidden. Missing freshness signal is unknown rather than current."
+}

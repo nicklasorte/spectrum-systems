@@ -90,7 +90,54 @@
     "control_chain_eval_decision_mismatch": "CONTROL_CHAIN_VIOLATION",
     "control_chain_decision_enforcement_mismatch": "CONTROL_CHAIN_VIOLATION",
     "control_chain_missing_eval_reference": "CONTROL_CHAIN_VIOLATION",
-    "control_chain_missing_decision_reference": "CONTROL_CHAIN_VIOLATION"
+    "control_chain_missing_decision_reference": "CONTROL_CHAIN_VIOLATION",
+
+    "trust_freshness_ok": "CERTIFICATION_GAP",
+    "trust_freshness_policy_stale": "CERTIFICATION_GAP",
+    "trust_freshness_alias_map_stale": "CERTIFICATION_GAP",
+    "trust_freshness_evidence_index_stale": "CERTIFICATION_GAP",
+    "trust_freshness_proof_bundle_stale": "CERTIFICATION_GAP",
+    "trust_freshness_trace_stale": "CERTIFICATION_GAP",
+    "trust_freshness_join_summary_stale": "CERTIFICATION_GAP",
+    "trust_freshness_slo_policy_stale": "CERTIFICATION_GAP",
+    "trust_freshness_digest_mismatch": "CERTIFICATION_GAP",
+    "trust_freshness_unknown": "CERTIFICATION_GAP",
+    "trust_freshness_policy_unavailable": "CERTIFICATION_GAP",
+
+    "proof_bundle_ok": "CERTIFICATION_GAP",
+    "proof_bundle_too_many_evidence_refs": "CERTIFICATION_GAP",
+    "proof_bundle_one_page_too_long": "CERTIFICATION_GAP",
+    "proof_bundle_blocking_detail_codes_too_many": "CERTIFICATION_GAP",
+    "proof_bundle_nesting_too_deep": "CERTIFICATION_GAP",
+    "proof_bundle_repeated_evidence_refs": "CERTIFICATION_GAP",
+    "proof_bundle_inline_evidence_forbidden": "CERTIFICATION_GAP",
+    "proof_bundle_size_policy_unavailable": "CERTIFICATION_GAP",
+
+    "tier_drift_low_to_evidence_unauthorized": "POLICY_MISMATCH",
+    "tier_drift_metadata_missing": "POLICY_MISMATCH",
+    "tier_drift_indirect_evidence_laundering": "POLICY_MISMATCH",
+    "tier_drift_inferred_evidence_tier": "POLICY_MISMATCH",
+    "tier_drift_changed_between_runs": "POLICY_MISMATCH",
+
+    "reason_code_lifecycle_active": "CERTIFICATION_GAP",
+    "reason_code_lifecycle_deprecated": "CERTIFICATION_GAP",
+    "reason_code_lifecycle_forbidden": "POLICY_MISMATCH",
+    "reason_code_lifecycle_unmapped_blocking": "POLICY_MISMATCH",
+    "reason_code_lifecycle_unused_alias": "POLICY_MISMATCH",
+    "reason_code_lifecycle_duplicate_alias": "POLICY_MISMATCH",
+    "reason_code_lifecycle_missing_canonical_category": "POLICY_MISMATCH",
+
+    "control_signal_observation_used_as_hard": "POLICY_MISMATCH",
+    "control_signal_minimality_ok": "CERTIFICATION_GAP",
+
+    "certification_delta_added_unexplained": "CERTIFICATION_GAP",
+    "certification_delta_removed_unexplained": "CERTIFICATION_GAP",
+    "certification_delta_changed_digest": "CERTIFICATION_GAP",
+    "certification_delta_changed_status": "CERTIFICATION_GAP",
+    "certification_delta_changed_reason": "CERTIFICATION_GAP",
+    "certification_delta_changed_owner": "CERTIFICATION_GAP",
+    "certification_delta_unknown_baseline": "CERTIFICATION_GAP",
+    "certification_delta_ok": "CERTIFICATION_GAP"
   },
   "high_level_blocking_codes_requiring_canonical_mapping": [
     "blocked",
@@ -98,5 +145,17 @@
     "freeze",
     "fail",
     "error"
-  ]
+  ],
+  "alias_lifecycle": {
+    "default": "active",
+    "deprecated": [],
+    "merged": {},
+    "forbidden": [
+      "approved_silently",
+      "auto_overridden",
+      "decision_implied",
+      "warning_only_block",
+      "control_decision_silent"
+    ]
+  }
 }

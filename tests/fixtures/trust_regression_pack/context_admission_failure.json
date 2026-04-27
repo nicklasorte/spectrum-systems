@@ -1,0 +1,9 @@
+{
+  "fixture_id": "trp-context-admission-failure",
+  "seam": "context_admissibility_block",
+  "expected_decision": "block",
+  "expected_canonical_category": "CONTEXT_ADMISSION_FAILURE",
+  "signals": {
+    "context_admissibility_status": "block"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "fixture_id": "trp-replay-lineage-mismatch",
+  "seam": "replay_match_status_mismatch",
+  "expected_decision": "block",
+  "expected_canonical_category": "REPLAY_MISMATCH",
+  "signals": {
+    "replay_match_status": "mismatch"
+  }
+}

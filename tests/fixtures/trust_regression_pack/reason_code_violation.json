@@ -1,0 +1,10 @@
+{
+  "fixture_id": "trp-reason-code-violation",
+  "seam": "unmapped_or_forbidden_reason",
+  "expected_decision": "block",
+  "expected_canonical_category": "POLICY_MISMATCH",
+  "emitted_codes": [
+    "blocked",
+    "approved_silently"
+  ]
+}
