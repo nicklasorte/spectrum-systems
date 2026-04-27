@@ -137,4 +137,12 @@ describe('Health route source — backward compatibility', () => {
     expect(source).toContain('warnings');
     expect(source).toContain('source_artifacts_used');
   });
+
+  it('route source consumes TLS integration artifact and fail-closed warnings', () => {
+    const source = realFs.readFileSync(routePath, 'utf-8');
+    expect(source).toContain('loadTLSIntegrationArtifact');
+    expect(source).toContain('TLS_INTEGRATION_PATH');
+    expect(source).toContain('fail_closed:');
+    expect(source).toContain('stub_fallback for uncovered systems only');
+  });
 });
