@@ -14,13 +14,13 @@ Implement deterministic, fail-closed null-base (`0000000000000000000000000000000
    - Ensure checkout depth for governed push preflight remains sufficient for `HEAD^` resolution.
 3. `tests/test_build_preflight_pqx_wrapper.py`
    - Add deterministic coverage for null-base fallback success/failure branches and non-null no-op behavior.
-4. `tests/test_artifact_boundary_workflow_pytest_enforcement.py`
+4. `tests/test_artifact_boundary_workflow_policy_observation.py`
    - Add workflow assertion for required checkout depth in governed push preflight job.
 
 ## Validation
 - `pytest -q tests/test_build_preflight_pqx_wrapper.py`
 - `pytest -q tests/test_contract_preflight.py tests/test_preflight_ref_normalization.py tests/test_changed_path_resolution.py`
-- `pytest -q tests/test_artifact_boundary_workflow_pytest_enforcement.py`
+- `pytest -q tests/test_artifact_boundary_workflow_policy_observation.py`
 
 ## Guardrails
 - No silent widening of changed-path scope.
