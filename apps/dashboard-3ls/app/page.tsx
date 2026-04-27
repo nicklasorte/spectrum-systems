@@ -141,6 +141,32 @@ interface SystemsPayload {
   warnings?: string[];
 }
 
+interface SystemFlowNodeArtifact {
+  system_id: string;
+  upstream: string[];
+  downstream: string[];
+  artifacts_owned?: string[];
+  primary_code_paths?: string[];
+  purpose?: string;
+}
+
+interface SystemFlowArtifact {
+  schema_version?: string;
+  phase?: string;
+  active_systems: SystemFlowNodeArtifact[];
+  canonical_loop: string[];
+  canonical_overlays: string[];
+}
+
+type SystemFlowState = 'ok' | 'missing' | 'invalid_schema';
+
+interface SystemFlowResult {
+  state: SystemFlowState;
+  payload: SystemFlowArtifact | null;
+  reason?: string;
+  source_artifact?: string;
+}
+
 interface RGEPayload {
   data_source?: DataSource;
   rge_can_operate?: boolean;
@@ -305,6 +331,14 @@ export default function Dashboard() {
   const [systemsEnvelope, setSystemsEnvelope] = useState<SystemsPayload | null>(null);
   const [rge, setRge] = useState<RGEPayload | null>(null);
   const [priority, setPriority] = useState<PriorityArtifactResult | null>(null);
+  const [systemFlow, setSystemFlow] = useState<SystemFlowResult | null>(null);
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [overlayTrust, setOverlayTrust] = useState(true);
+  const [overlayDataSource, setOverlayDataSource] = useState(true);
+  const [overlayControlPath, setOverlayControlPath] = useState(true);
+  const [filterBrokenOnly, setFilterBrokenOnly] = useState(false);
+  const [filterFallbackOnly, setFilterFallbackOnly] = useState(false);
+  const [filterCanonicalLoopOnly, setFilterCanonicalLoopOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -352,6 +386,19 @@ export default function Dashboard() {
     };
 
     fetchData();
+
+    fetch('/api/system-flow')
+      .then(async (res) => {
+        if (!res.ok) {
+          setSystemFlow({ state: 'missing', payload: null, reason: `http_${res.status}` });
+          return;
+        }
+        const payload = (await res.json()) as SystemFlowResult;
+        setSystemFlow(payload);
+      })
+      .catch(() => {
+        setSystemFlow({ state: 'missing', payload: null, reason: 'fetch_failed' });
+      });
   }, []);
 
   const computed = useMemo(() => {
@@ -682,6 +729,80 @@ export default function Dashboard() {
       ? apiLeverage
       : derivedLeverage.map((d) => ({ ...d, source_artifacts_used: [] as string[] }));
 
+    const graphPayload = systemFlow?.state === 'ok' ? systemFlow.payload : null;
+    const graphNodesRaw = graphPayload?.active_systems ?? [];
+    const graphNodeIds = new Set(graphNodesRaw.map((n) => n.system_id));
+    const healthById = new Map(systems.map((s) => [s.system_id, s]));
+    const rankedById = new Map(
+      (priority?.payload?.ranked_systems ?? []).map((row) => [row.system_id, row] as const)
+    );
+
+    const graphNodes = graphNodesRaw.map((node) => {
+      const healthNode = healthById.get(node.system_id);
+      const ds = (healthNode?.data_source ?? 'unknown') as DataSource;
+      const sourceClass =
+        ds === 'artifact_store' || ds === 'repo_registry'
+          ? 'artifact'
+          : ds === 'unknown' || ds === 'stub_fallback'
+          ? 'fallback'
+          : 'inferred';
+      return {
+        ...node,
+        status: healthNode?.status ?? 'unknown',
+        data_source: ds,
+        sourceClass,
+        trust_gap_signals: rankedById.get(node.system_id)?.trust_gap_signals ?? [],
+      };
+    });
+
+    const graphEdges = graphNodesRaw.flatMap((node) =>
+      (node.upstream ?? []).map((upstream) => {
+        const sourceNode = healthById.get(upstream);
+        const targetNode = healthById.get(node.system_id);
+        const missingSource = !graphNodeIds.has(upstream);
+        const sourceBacked =
+          sourceNode &&
+          ((sourceNode.data_source ?? 'unknown') === 'artifact_store' ||
+            (sourceNode.data_source ?? 'unknown') === 'repo_registry');
+        const targetBacked =
+          targetNode &&
+          ((targetNode.data_source ?? 'unknown') === 'artifact_store' ||
+            (targetNode.data_source ?? 'unknown') === 'repo_registry');
+
+        return {
+          source: upstream,
+          target: node.system_id,
+          kind: missingSource ? 'broken' : sourceBacked && targetBacked ? 'artifact_backed' : 'inferred',
+          canonical:
+            (graphPayload?.canonical_loop ?? []).includes(upstream) &&
+            (graphPayload?.canonical_loop ?? []).includes(node.system_id),
+          overlay:
+            (graphPayload?.canonical_overlays ?? []).includes(upstream) ||
+            (graphPayload?.canonical_overlays ?? []).includes(node.system_id),
+        };
+      })
+    );
+
+    const brokenNodeIds = new Set(
+      graphEdges.filter((e) => e.kind === 'broken').flatMap((e) => [e.source, e.target])
+    );
+    const visibleNodes = graphNodes.filter((node) => {
+      if (filterBrokenOnly && !brokenNodeIds.has(node.system_id)) return false;
+      if (filterFallbackOnly && node.sourceClass !== 'fallback') return false;
+      if (filterCanonicalLoopOnly && !(graphPayload?.canonical_loop ?? []).includes(node.system_id))
+        return false;
+      return true;
+    });
+    const visibleNodeIds = new Set(visibleNodes.map((n) => n.system_id));
+    const visibleEdges = graphEdges.filter(
+      (edge) => visibleNodeIds.has(edge.target) || visibleNodeIds.has(edge.source)
+    );
+
+    const selected = selectedNode ? graphNodes.find((n) => n.system_id === selectedNode) ?? null : null;
+    const selectedRanked = selected ? rankedById.get(selected.system_id) : null;
+    const selectedUpstream = selected ? selected.upstream : [];
+    const selectedDownstream = selected ? selected.downstream : [];
+
     return {
       systems,
       sourceMix,
@@ -707,8 +828,29 @@ export default function Dashboard() {
         ? (intelligence?.leverage_queue?.data_source ?? 'artifact_store')
         : ('derived' as DataSource)) as DataSource,
       warnings,
+      graphState: systemFlow?.state ?? 'missing',
+      graphReason: systemFlow?.reason ?? null,
+      graphSourceArtifact: systemFlow?.source_artifact ?? null,
+      graphNodes: visibleNodes,
+      graphEdges: visibleEdges,
+      graphCanonicalLoop: graphPayload?.canonical_loop ?? [],
+      graphSelected: selected,
+      graphSelectedRanked: selectedRanked,
+      graphSelectedUpstream: selectedUpstream,
+      graphSelectedDownstream: selectedDownstream,
     };
-  }, [health, intelligence, systemsEnvelope, rge]);
+  }, [
+    health,
+    intelligence,
+    systemsEnvelope,
+    rge,
+    systemFlow,
+    priority,
+    selectedNode,
+    filterBrokenOnly,
+    filterFallbackOnly,
+    filterCanonicalLoopOnly,
+  ]);
 
   if (loading) return <div className="p-8">Loading dashboard artifacts...</div>;
   if (error) return <div className="p-8 text-red-600">Error: {error}</div>;
@@ -764,6 +906,122 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
+      </section>
+
+      <section className="bg-white border rounded p-4" data-testid="system-flow-graph-panel">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-semibold">SYSTEM FLOW GRAPH (TRUST-AWARE)</h2>
+          <div className="text-xs text-gray-500 font-mono">
+            source: {computed.graphSourceArtifact ?? 'missing_artifact'}
+          </div>
+        </div>
+
+        {computed.graphState !== 'ok' ? (
+          <div className="border border-red-300 bg-red-50 rounded p-3 text-sm text-red-800" data-testid="system-flow-fail-closed">
+            Graph unavailable ({computed.graphState}). Fail-closed: flow graph hidden until artifact is present.
+            {computed.graphReason ? <span className="ml-1 font-mono">reason={computed.graphReason}</span> : null}
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-wrap gap-2 mb-3 text-xs">
+              <button className={`border rounded px-2 py-1 ${overlayTrust ? 'bg-blue-50 border-blue-300' : ''}`} onClick={() => setOverlayTrust((v) => !v)}>
+                Trust overlay
+              </button>
+              <button className={`border rounded px-2 py-1 ${overlayDataSource ? 'bg-blue-50 border-blue-300' : ''}`} onClick={() => setOverlayDataSource((v) => !v)}>
+                Data source overlay
+              </button>
+              <button className={`border rounded px-2 py-1 ${overlayControlPath ? 'bg-blue-50 border-blue-300' : ''}`} onClick={() => setOverlayControlPath((v) => !v)}>
+                Control path overlay
+              </button>
+              <button className={`border rounded px-2 py-1 ${filterBrokenOnly ? 'bg-red-50 border-red-300' : ''}`} onClick={() => setFilterBrokenOnly((v) => !v)}>
+                Show only broken systems
+              </button>
+              <button className={`border rounded px-2 py-1 ${filterFallbackOnly ? 'bg-amber-50 border-amber-300' : ''}`} onClick={() => setFilterFallbackOnly((v) => !v)}>
+                Show only fallback systems
+              </button>
+              <button className={`border rounded px-2 py-1 ${filterCanonicalLoopOnly ? 'bg-indigo-50 border-indigo-300' : ''}`} onClick={() => setFilterCanonicalLoopOnly((v) => !v)}>
+                Show only canonical loop
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {computed.graphNodes.map((node) => {
+                const trustClass =
+                  node.status === 'healthy'
+                    ? 'bg-green-50 border-green-300'
+                    : node.status === 'warning'
+                    ? 'bg-amber-50 border-amber-300'
+                    : node.status === 'critical'
+                    ? 'bg-red-50 border-red-300'
+                    : 'bg-gray-50 border-gray-300';
+                const controlPath =
+                  computed.graphCanonicalLoop.includes(node.system_id) && overlayControlPath;
+                return (
+                  <button
+                    type="button"
+                    key={node.system_id}
+                    data-testid={`flow-node-${node.system_id}`}
+                    onClick={() => setSelectedNode(node.system_id)}
+                    className={`text-left border rounded p-3 ${overlayTrust ? trustClass : ''} ${
+                      controlPath ? 'ring-2 ring-indigo-300' : ''
+                    }`}
+                  >
+                    <div className="font-mono font-semibold">{node.system_id}</div>
+                    {overlayTrust ? <div className="text-xs">trust: {node.status}</div> : null}
+                    {overlayDataSource ? (
+                      <div className="text-xs">
+                        source: {node.sourceClass} ({node.data_source})
+                      </div>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-3 border rounded p-3" data-testid="flow-edge-list">
+              <div className="text-xs uppercase tracking-wide text-gray-500 mb-2">Edges</div>
+              <ul className="space-y-1 text-xs font-mono">
+                {computed.graphEdges.map((edge, idx) => (
+                  <li
+                    key={`${edge.source}-${edge.target}-${idx}`}
+                    data-testid={edge.kind === 'broken' ? 'flow-edge-broken' : undefined}
+                    className={
+                      edge.kind === 'broken'
+                        ? 'text-red-700'
+                        : edge.kind === 'artifact_backed'
+                        ? 'text-gray-800'
+                        : 'text-gray-500'
+                    }
+                  >
+                    {edge.source} → {edge.target} [{edge.kind === 'artifact_backed' ? 'solid' : edge.kind === 'inferred' ? 'dashed' : 'broken/red'}]
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="mt-3 border rounded p-3 text-xs" data-testid="flow-legend">
+              <div className="font-semibold mb-1">Legend</div>
+              <div>Node colors: green=trusted, yellow=watch, red=critical, gray=unknown.</div>
+              <div>Edge types: solid=artifact-backed, dashed=inferred, red=broken.</div>
+            </div>
+
+            {computed.graphSelected && (
+              <div className="mt-3 border rounded p-3 text-sm" data-testid="flow-node-detail">
+                <div className="font-semibold font-mono">{computed.graphSelected.system_id}</div>
+                <div className="text-xs text-gray-600 mt-1">upstream dependencies: {computed.graphSelectedUpstream.join(', ') || 'none'}</div>
+                <div className="text-xs text-gray-600">downstream systems: {computed.graphSelectedDownstream.join(', ') || 'none'}</div>
+                <div className="text-xs text-gray-600">
+                  trust_gap_signals:{' '}
+                  {computed.graphSelectedRanked?.trust_gap_signals?.join(', ') || computed.graphSelected.trust_gap_signals.join(', ') || 'none'}
+                </div>
+                <div className="text-xs text-gray-600 break-all">
+                  artifact refs:{' '}
+                  {[...(computed.graphSelected.artifacts_owned ?? []), ...(computed.graphSelected.primary_code_paths ?? [])].join(', ') || 'none'}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </section>
 
       <section className="bg-white border rounded p-4" data-testid="loop-bottleneck-panel">

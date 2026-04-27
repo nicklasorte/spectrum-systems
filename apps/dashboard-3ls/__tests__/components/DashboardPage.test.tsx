@@ -64,19 +64,55 @@ const mockPriorityMissing = {
   reason: 'not_found:artifacts/system_dependency_priority_report.json',
 };
 
+const mockSystemFlow = {
+  state: 'ok' as const,
+  source_artifact: 'artifacts/tls/system_registry_dependency_graph.json',
+  payload: {
+    schema_version: 'tls-00.v1',
+    phase: 'TLS-00',
+    canonical_loop: ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL'],
+    canonical_overlays: ['REP', 'LIN', 'OBS', 'SLO'],
+    active_systems: [
+      {
+        system_id: 'AEX',
+        upstream: [],
+        downstream: ['PQX'],
+        artifacts_owned: ['build_admission_record'],
+        primary_code_paths: ['spectrum_systems/modules/runtime/agent_golden_path.py'],
+      },
+      {
+        system_id: 'PQX',
+        upstream: ['AEX'],
+        downstream: ['EVL'],
+        artifacts_owned: ['execution_result'],
+        primary_code_paths: ['spectrum_systems/modules/runtime/pqx_sequence_runner.py'],
+      },
+      {
+        system_id: 'EVL',
+        upstream: ['PQX', 'MISSING_UPSTREAM'],
+        downstream: ['TPA'],
+        artifacts_owned: ['eval_summary'],
+        primary_code_paths: ['spectrum_systems/modules/runtime/eval_pipeline.py'],
+      },
+    ],
+  },
+};
+
 function setupFetch(
   health = mockHealth,
   intelligence = mockIntelligence,
   systems = mockSystems,
   rge = mockRGE,
   priority: unknown = mockPriorityMissing,
+  systemFlow: unknown = mockSystemFlow,
 ) {
   (global.fetch as jest.Mock)
     .mockResolvedValueOnce({ ok: true, json: async () => health })
     .mockResolvedValueOnce({ ok: true, json: async () => intelligence })
     .mockResolvedValueOnce({ ok: true, json: async () => systems })
     .mockResolvedValueOnce({ ok: true, json: async () => rge })
-    .mockResolvedValueOnce({ ok: true, json: async () => priority });
+    .mockResolvedValueOnce({ ok: true, json: async () => priority })
+    .mockResolvedValueOnce({ ok: true, json: async () => systemFlow });
 }
 
 describe('DashboardPage panels', () => {
@@ -127,6 +163,22 @@ describe('DashboardPage panels', () => {
       expect(screen.getByText(/^Eval$/)).toBeInTheDocument();
       expect(screen.getByText(/reason_codes: eval_missing/)).toBeInTheDocument();
     });
+  });
+
+  it('system flow graph renders from artifact, highlights trust colors, fallback nodes, and broken edges', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('system-flow-graph-panel')).toBeInTheDocument();
+      expect(screen.getByTestId('flow-node-AEX')).toBeInTheDocument();
+      expect(screen.getByTestId('flow-node-EVL')).toBeInTheDocument();
+      expect(screen.getByTestId('flow-edge-list')).toBeInTheDocument();
+      expect(screen.getAllByTestId('flow-edge-broken').length).toBeGreaterThan(0);
+    });
+
+    expect(screen.getByTestId('flow-node-AEX').textContent).toContain('source: fallback');
+    expect(screen.getByTestId('flow-node-EVL').textContent).toContain('trust: unknown');
   });
 
   it('leverage queue items always include failure_prevented and signal_improved', async () => {
