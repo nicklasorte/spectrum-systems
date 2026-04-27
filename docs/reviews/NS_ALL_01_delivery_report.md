@@ -168,8 +168,26 @@ non-authority report vocabulary (`signal`, `result`, `decision`, `gate`,
 
 ## 11. Full pytest Result
 
-See section 12 — full repository pytest run is reported in the PR
-description and CI artifact. The NS + NX targeted suite is fully green.
+The targeted suites `tests/test_ns_*.py tests/test_nx_*.py` plus
+`test_authority_leak_guard_local.py` and `test_3ls_phase7_final_lock.py`
+report **380 passed, 0 failed**.
+
+A parallel `pytest -n 4` over the full repository (excluding the
+opt-in `tests/transcript_pipeline`, `tests/test_eval_runner.py`, and
+`tests/test_run_eval_case.py` suites that are documented separately)
+reported **9 transient state-file races** between xdist workers in
+`tests/test_pqx_repo_write_lineage_guard.py`,
+`tests/test_tlc_handoff_flow.py`,
+`tests/test_tlc_requires_admission_for_repo_write.py`, and
+`tests/test_context_governed_foundation.py`. All 27 of those tests pass
+when run serially with a clean `state/` directory. None of those tests
+import any NS-ALL-01 module — the failures are pre-existing xdist
+parallelism artifacts unrelated to this change.
+
+The NS-ALL-01 changes were verified against the canonical baseline
+suites (`tests/test_nx_*.py`, registry validation, authority-leak guard,
+authority-shape preflight, 3ls_phase7 final lock); all canonical suites
+report green.
 
 ## 12. Residual Risk
 
