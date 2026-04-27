@@ -28,9 +28,9 @@
 | TLS-FX-10 | Operator intelligence bundle | Operator intelligence summary artifact and retrieve index. | Improves clarity without dashboard coupling. | TLS-FIX-08 | TLS-RT-09 |
 | TLS-RT-09 | Operator intelligence red-team round | Operator intelligence red-team report. | Protects operator retrieve quality and trust. | TLS-FX-10 | TLS-FIX-09 |
 | TLS-FIX-09 | Operator intelligence fix bundle | Fixed operator intelligence summary artifact. | Keeps operator-facing outputs clear and bounded. | TLS-RT-09 | TLS-FX-11 |
-| TLS-FX-11 | Policy hook schema bundle | Policy hook schema and override input contract. | Allows owner context retrieve without ownership transfer. | TLS-FIX-09 | TLS-RT-10 |
-| TLS-RT-10 | Policy hook red-team round | Policy hook red-team findings. | Ensures hooks remain recommendation-only and read-only. | TLS-FX-11 | TLS-FIX-10 |
-| TLS-FIX-10 | Policy hook fix bundle | Fixed policy hook schema artifact. | Closes bypass paths before simulation phase. | TLS-RT-10 | TLS-FX-12 |
+| TLS-FX-11 | TPA input context bundle | Read-only TPA context packet and observation input shape. | Allows TPA-owned policy evaluation to retrieve TLS context without ownership transfer. | TLS-FIX-09 | TLS-RT-10 |
+| TLS-RT-10 | TPA input red-team round | TPA input red-team findings. | Ensures TPA input context packets remain recommendation-only and read-only. | TLS-FX-11 | TLS-FIX-10 |
+| TLS-FIX-10 | TPA input fix bundle | Fixed read-only TPA context packet schema artifact. | Closes bypass paths before simulation phase. | TLS-RT-10 | TLS-FX-12 |
 | TLS-FX-12 | Simulation harness bundle | Simulation outcomes artifact with scenario matrix. | Validates behavior under edge and adversarial inputs. | TLS-FIX-10 | TLS-RT-11 |
 | TLS-RT-11 | Simulation red-team round | Simulation red-team report. | Prevents latent fallback paths from reaching final integration. | TLS-FX-12 | TLS-FIX-11 |
 | TLS-FIX-11 | Simulation fix bundle | Fixed simulation outcomes artifact and guard notes. | Ensures stable basis for final integration. | TLS-RT-11 | TLS-FX-13 |
@@ -87,8 +87,8 @@
 - **TLS-BND-07**: TLS-FX-07, TLS-RT-07, TLS-FIX-07 — Drift detection guard hardening.
 - **TLS-BND-08**: TLS-FX-08, TLS-FX-09, TLS-RT-08 — Dataset map + eval gate + red-team pass.
 - **TLS-BND-09**: TLS-FIX-08, TLS-FX-10, TLS-RT-09 — Close eval findings then operator intelligence pass.
-- **TLS-BND-10**: TLS-FIX-09, TLS-FX-11, TLS-RT-10 — Operator intelligence closure and policy hook hardening.
-- **TLS-BND-11**: TLS-FIX-10, TLS-FX-12, TLS-RT-11 — Policy hook closure and simulation red-team.
+- **TLS-BND-10**: TLS-FIX-09, TLS-FX-11, TLS-RT-10 — Operator intelligence closure and TPA input boundary hardening.
+- **TLS-BND-11**: TLS-FIX-10, TLS-FX-12, TLS-RT-11 — TPA input closure and simulation red-team.
 - **TLS-BND-12**: TLS-FIX-11, TLS-FX-13, TLS-RT-12 — Simulation closure and final integration red-team.
 - **TLS-BND-13**: TLS-FIX-12 — Final readiness gate and closeout artifact.
 

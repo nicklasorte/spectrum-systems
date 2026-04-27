@@ -130,7 +130,7 @@
         "TLS-FX-11",
         "TLS-RT-10"
       ],
-      "rationale": "Operator intelligence closure and policy hook hardening."
+      "rationale": "Operator intelligence closure and TPA input boundary hardening."
     },
     {
       "bundle_id": "TLS-BND-11",
@@ -139,7 +139,7 @@
         "TLS-FX-12",
         "TLS-RT-11"
       ],
-      "rationale": "Policy hook closure and simulation red-team."
+      "rationale": "TPA input closure and simulation red-team."
     },
     {
       "bundle_id": "TLS-BND-12",
@@ -946,10 +946,10 @@
     },
     {
       "id": "TLS-FX-11",
-      "title": "Policy hook schema bundle",
-      "purpose": "Create policy and override signal hook schema with blocked owner keys.",
-      "what_it_builds": "Policy hook schema and override input contract.",
-      "why_it_matters": "Allows owner context retrieve without ownership transfer.",
+      "title": "TPA input context bundle",
+      "purpose": "Create read-only TPA context packet schema with blocked owner keys.",
+      "what_it_builds": "Read-only TPA context packet and observation input shape.",
+      "why_it_matters": "Allows TPA-owned policy evaluation to retrieve TLS context without ownership transfer.",
       "dependencies": [
         "TLS-FIX-09"
       ],
@@ -958,7 +958,7 @@
         "authority_blur"
       ],
       "artifacts_created": [
-        "artifacts/tls/tls_policy_hook_schema.json"
+        "artifacts/tls/tls_tpa_input_context_schema.json"
       ],
       "tests_required": [
         "tests/test_policy_engine.py",
@@ -975,10 +975,10 @@
     },
     {
       "id": "TLS-RT-10",
-      "title": "Policy hook red-team round",
-      "purpose": "Attempt owner-key and side-effect injection on policy hooks.",
-      "what_it_builds": "Policy hook red-team findings.",
-      "why_it_matters": "Ensures hooks remain recommendation-only and read-only.",
+      "title": "TPA input red-team round",
+      "purpose": "Attempt owner-key and side-effect injection on TPA input context packets.",
+      "what_it_builds": "TPA input red-team findings.",
+      "why_it_matters": "Ensures TPA input context packets remain recommendation-only and read-only.",
       "dependencies": [
         "TLS-FX-11"
       ],
@@ -987,7 +987,7 @@
         "side_effect_injection"
       ],
       "artifacts_created": [
-        "artifacts/tls/tls_policy_hook_redteam_report.json"
+        "artifacts/tls/tls_tpa_input_redteam_report.json"
       ],
       "tests_required": [
         "tests/test_tls_roadmap_artifacts.py::test_no_authority_boundary_violations_in_artifacts"
@@ -1003,24 +1003,24 @@
     },
     {
       "id": "TLS-FIX-10",
-      "title": "Policy hook fix bundle",
-      "purpose": "Apply policy hook schema fixes from red-team findings.",
-      "what_it_builds": "Fixed policy hook schema artifact.",
+      "title": "TPA input fix bundle",
+      "purpose": "Apply TPA input context schema fixes from red-team findings.",
+      "what_it_builds": "Fixed read-only TPA context packet schema artifact.",
       "why_it_matters": "Closes bypass paths before simulation phase.",
       "dependencies": [
         "TLS-RT-10"
       ],
       "failure_modes_prevented": [
-        "policy_hook_regression"
+        "tpa_input_context_regression"
       ],
       "artifacts_created": [
-        "artifacts/tls/tls_policy_hook_schema_fixed.json"
+        "artifacts/tls/tls_tpa_input_context_schema_fixed.json"
       ],
       "tests_required": [
         "tests/test_policy_engine.py"
       ],
       "acceptance_criteria": [
-        "No open high-risk policy hook findings remain."
+        "No open high-risk TPA input findings remain."
       ],
       "authority_owner": "none",
       "execution_scope": "multi-system",

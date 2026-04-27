@@ -249,28 +249,28 @@
     },
     {
       "id": "TLS-RM-18",
-      "title": "Policy + Override signal hooks",
-      "purpose": "Add policy-aware recommendation annotations and explicit override input hooks for owners.",
-      "what_it_builds": "Policy signal annotation schema, override input contract, blocked-key guardrail.",
+      "title": "TPA input context signals",
+      "purpose": "Add read-only TPA context annotations and explicit observation input fields for owners.",
+      "what_it_builds": "Policy signal annotation schema, observation input shape, blocked-key guardrail.",
       "why_it_matters": "Lets owners retrieve policy context while preventing TLS from acting as policy owner.",
       "dependencies": [
         "TLS-RM-17"
       ],
       "failure_modes_prevented": [
-        "policy_blind_recommendations",
-        "unsafe_override_shape",
+        "tpa_context_blind_recommendations",
+        "unsafe_observation_input_shape",
         "authority_blur"
       ],
       "artifacts_created": [
-        "artifacts/tls/tls_policy_override_hooks.json"
+        "artifacts/tls/tls_tpa_input_context_signals.json"
       ],
       "tests_required": [
         "tests/test_policy_engine.py",
         "tests/test_policy_backtesting.py"
       ],
       "acceptance_criteria": [
-        "Hooks accept owner input but do not execute control actions.",
-        "Unknown override keys fail closed.",
+        "TPA input context fields accept owner input but do not execute control actions.",
+        "Unknown observation input keys fail closed.",
         "Policy annotations remain read-only metadata."
       ],
       "authority_owner": "none",

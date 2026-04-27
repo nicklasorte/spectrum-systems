@@ -6,7 +6,7 @@
     "Control Integration owner-safe bridge combines mapping and guard logic in one step and may be over-scoped.",
     "Dataset + Eval Governance alignment mixes dataset mapping and gate behavior and may exceed one prompt.",
     "Final Outcome OS integration may couple runtime and graph checks too tightly.",
-    "Policy + Override signal hooks could leak owner authority semantics without strict key blocklist.",
+    "TPA input context signals could leak owner authority semantics without strict key blocklist.",
     "Ranking Trust calibration can regress to stub fallback when sparse evidence path is untested.",
     "Simulation harness may bypass runtime constraints if fixture boundaries are unclear.",
     "Boundary + Integration hardening lacks explicit red-team attack cases in initial version.",
@@ -25,7 +25,7 @@
         "TLS-RM-18",
         "TLS-RM-16"
       ],
-      "risk": "policy hook added before eval governance gate can admit unverified policy annotations."
+      "risk": "TPA input context step added before eval governance gate can admit unverified policy annotations."
     },
     {
       "sequence": [
@@ -50,7 +50,7 @@
   ],
   "boundary_violations": [
     "TLS-RM-13 title implies control integration without explicit owner boundary clause.",
-    "TLS-RM-18 override hooks could be misread as runtime authority path."
+    "TLS-RM-18 TPA input context could be misread as runtime authority path."
   ],
   "recommended_fixes": [
     "Split TLS-RM-13 into mapping step and guard-validation step with explicit stop conditions.",
