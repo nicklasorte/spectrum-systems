@@ -64,6 +64,24 @@ const mockPriorityMissing = {
   reason: 'not_found:artifacts/system_dependency_priority_report.json',
 };
 
+
+const mockTrustGraph = {
+  graph_state: 'freeze_signal',
+  generated_at: '2026-04-27T00:00:00.000Z',
+  source_mix: { artifact_store: 10, repo_registry: 0, derived: 2, stub_fallback: 1, missing: 0 },
+  trust_posture: 'freeze_signal',
+  nodes: [
+    { system_id: 'AEX', label: 'AEX', layer: 'core', role: 'admission', trust_state: 'trusted_signal', artifact_backed_percent: 100, source_type: 'artifact_store', trust_gap_signals: [], upstream: [], downstream: ['PQX'], source_artifact_refs: [], warning_count: 0, is_focus: false, is_fallback_backed: false, is_disconnected: false },
+    { system_id: 'EVL', label: 'EVL', layer: 'core', role: 'evaluation', trust_state: 'freeze_signal', artifact_backed_percent: 100, source_type: 'artifact_store', trust_gap_signals: ['missing_replay'], upstream: ['PQX'], downstream: ['TPA'], source_artifact_refs: [], warning_count: 1, is_focus: true, is_fallback_backed: false, is_disconnected: false },
+  ],
+  edges: [{ from: 'AEX', to: 'PQX', edge_type: 'dependency', source_type: 'artifact_store', source_artifact_ref: 'artifact', confidence: 1, is_failure_path: false, is_broken: false }],
+  focus_systems: ['EVL'],
+  failure_path: ['EVL', 'TPA'],
+  missing_artifacts: [],
+  warnings: [],
+  replay_commands: ['python scripts/build_tls_dependency_priority.py --candidates H01,RFX,HOP,MET,METS --fail-if-missing'],
+};
+
 const mockSystemFlow = {
   state: 'ok' as const,
   source_artifact: 'artifacts/tls/system_registry_dependency_graph.json',
@@ -105,14 +123,19 @@ function setupFetch(
   rge = mockRGE,
   priority: unknown = mockPriorityMissing,
   systemFlow: unknown = mockSystemFlow,
+  trustGraph: unknown = mockTrustGraph,
 ) {
-  (global.fetch as jest.Mock)
-    .mockResolvedValueOnce({ ok: true, json: async () => health })
-    .mockResolvedValueOnce({ ok: true, json: async () => intelligence })
-    .mockResolvedValueOnce({ ok: true, json: async () => systems })
-    .mockResolvedValueOnce({ ok: true, json: async () => rge })
-    .mockResolvedValueOnce({ ok: true, json: async () => priority })
-    .mockResolvedValueOnce({ ok: true, json: async () => systemFlow });
+  (global.fetch as jest.Mock).mockImplementation((input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes('/api/health')) return Promise.resolve({ ok: true, json: async () => health });
+    if (url.includes('/api/intelligence')) return Promise.resolve({ ok: true, json: async () => intelligence });
+    if (url.includes('/api/systems')) return Promise.resolve({ ok: true, json: async () => systems });
+    if (url.includes('/api/rge/analysis')) return Promise.resolve({ ok: true, json: async () => rge });
+    if (url.includes('/api/priority')) return Promise.resolve({ ok: true, json: async () => priority });
+    if (url.includes('/api/system-flow')) return Promise.resolve({ ok: true, json: async () => systemFlow });
+    if (url.includes('/api/system-graph')) return Promise.resolve({ ok: true, json: async () => trustGraph });
+    return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
+  });
 }
 
 describe('DashboardPage panels', () => {
@@ -213,6 +236,16 @@ describe('DashboardPage panels', () => {
       expect(panel).toHaveAttribute('data-state', 'missing');
       expect(within(panel).getByTestId('next-systems-state-banner')).toHaveTextContent(/MISSING/i);
     });
+  });
+
+
+  it('dashboard does not compute ranking in UI layer', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('next-systems-panel')).toBeInTheDocument();
+    });
+    expect(screen.getByText(/Dashboard does not compute ranking\./i)).toBeInTheDocument();
   });
 
   it('next-systems-to-finish panel renders top-5 ranked systems verbatim from artifact', async () => {
