@@ -1,0 +1,342 @@
+{
+  "artifact_type": "tls_roadmap_initial",
+  "work_item": "TLS-ROADMAP-01",
+  "generated_at": "2026-04-27T00:00:00Z",
+  "entries": [
+    {
+      "id": "TLS-RM-10",
+      "title": "Boundary + Integration hardening",
+      "purpose": "Harden runtime boundary checks and complete graph/runtime integration seams for TLS recommendation signals.",
+      "what_it_builds": "Boundary contract checks, integration seam map, runtime-safe signal handoff records.",
+      "why_it_matters": "Prevents authority leakage and avoids runtime regressions while TLS signals retrieve into downstream systems.",
+      "dependencies": [
+        "artifacts/tls/tls_integration_roadmap.json",
+        "artifacts/tls/system_graph_integration_report.json"
+      ],
+      "failure_modes_prevented": [
+        "authority_leakage",
+        "runtime_seam_breakage",
+        "silent_signal_drop"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_boundary_integration_hardening_plan.json"
+      ],
+      "tests_required": [
+        "tests/test_ctx_tlx_runtime.py",
+        "tests/test_tls_roadmap_artifacts.py::test_initial_entries_are_complete"
+      ],
+      "acceptance_criteria": [
+        "All boundary checks block cross-owner writes.",
+        "Integration seams include explicit fail_closed stop reasons.",
+        "Runtime handoff emits deterministic signal record."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "2-step bundle limited to boundary checks and integration handoff artifacts."
+    },
+    {
+      "id": "TLS-RM-11",
+      "title": "Ranking Trust calibration",
+      "purpose": "Calibrate ranking trust so recommendation ordering stays robust under adversarial and sparse evidence inputs.",
+      "what_it_builds": "Trust calibration profile, ranking sensitivity matrix, deterministic tie-break policy.",
+      "why_it_matters": "Reduces unstable ranking drift and prevents stub fallback reappearing during low-evidence runs.",
+      "dependencies": [
+        "TLS-RM-10",
+        "artifacts/tls/tls_ranking_review_report.json"
+      ],
+      "failure_modes_prevented": [
+        "ranking_instability",
+        "stub_fallback_regression",
+        "unbounded_weight_shift"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_ranking_trust_calibration.json"
+      ],
+      "tests_required": [
+        "tests/tls_dependency_graph/test_phase4_ranking.py",
+        "tests/test_tls_roadmap_artifacts.py::test_no_oversized_bundles_in_final"
+      ],
+      "acceptance_criteria": [
+        "Ranking variance remains within bounded threshold across replay fixtures.",
+        "Stub fallback path stays disabled when integrated signals exist.",
+        "Tie-break behavior is deterministic for equal scores."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single ranking-calibration prompt with fixed fixture inputs only."
+    },
+    {
+      "id": "TLS-RM-12",
+      "title": "Action Layer recommendation packaging",
+      "purpose": "Package TLS recommendations into operator-readable action proposals without owner-authority language.",
+      "what_it_builds": "Action proposal schema, recommendation rationale packet, bounded confidence bands.",
+      "why_it_matters": "Improves operator retrieve speed while keeping TLS recommendation-only behavior explicit.",
+      "dependencies": [
+        "TLS-RM-11"
+      ],
+      "failure_modes_prevented": [
+        "opaque_recommendations",
+        "operator_confusion",
+        "implicit_authority_escalation"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_action_layer_packet.json"
+      ],
+      "tests_required": [
+        "tests/test_next_phase_contracts.py",
+        "tests/test_tls_roadmap_artifacts.py::test_no_authority_boundary_violations_in_artifacts"
+      ],
+      "acceptance_criteria": [
+        "Every recommendation includes evidence links and confidence band.",
+        "No action packet includes owner-authority vocabulary.",
+        "Action proposals remain read-only with no runtime side effects."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single prompt limited to schema + packet output."
+    },
+    {
+      "id": "TLS-RM-13",
+      "title": "Control Integration owner-safe bridge",
+      "purpose": "Connect TLS recommendation outputs to control-plane inputs via owner-safe translation boundary.",
+      "what_it_builds": "Owner-safe bridge contract, field mapping rules, fail_closed guard on disallowed keys.",
+      "why_it_matters": "Allows downstream control systems to retrieve TLS context without TLS crossing authority ownership.",
+      "dependencies": [
+        "TLS-RM-12"
+      ],
+      "failure_modes_prevented": [
+        "authority_boundary_crossing",
+        "schema_mismatch",
+        "implicit_runtime_mutation"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_owner_safe_control_bridge.json"
+      ],
+      "tests_required": [
+        "tests/test_control_surface_obedience.py",
+        "tests/test_tls_roadmap_artifacts.py::test_no_authority_boundary_violations_in_artifacts"
+      ],
+      "acceptance_criteria": [
+        "Bridge strips owner-authority keys before handoff.",
+        "Schema validation fails closed on unknown authority fields.",
+        "Output remains recommendation-only artifact."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "2-step prompt covering map rules then guard checks."
+    },
+    {
+      "id": "TLS-RM-14",
+      "title": "Learning Loop feedback assimilation",
+      "purpose": "Assimilate post-run feedback into TLS weighting inputs with deterministic replay compatibility.",
+      "what_it_builds": "Feedback assimilation ledger, bounded weight update policy, replay-linked learning record.",
+      "why_it_matters": "Improves recommendation quality while preventing uncontrolled model drift.",
+      "dependencies": [
+        "TLS-RM-13",
+        "artifacts/tls/tls_learning_record.json"
+      ],
+      "failure_modes_prevented": [
+        "non_deterministic_learning",
+        "drift_without_trace",
+        "overfit_on_single_run"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_learning_loop_update.json"
+      ],
+      "tests_required": [
+        "tests/test_failure_learning_artifacts.py",
+        "tests/test_tls_roadmap_artifacts.py::test_deterministic_ordering"
+      ],
+      "acceptance_criteria": [
+        "Weight updates include replay-linked lineage markers.",
+        "Learning loop blocks when required eval coverage missing.",
+        "Updates remain within configured bounded delta."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single prompt with deterministic fixture replay."
+    },
+    {
+      "id": "TLS-RM-15",
+      "title": "Drift Detection signals",
+      "purpose": "Detect recommendation drift across runs and emit actionable drift alerts for operator review.",
+      "what_it_builds": "Drift signal extractor, threshold profile, retrieve-ready drift report artifact.",
+      "why_it_matters": "Catches ranking regressions early before degraded outputs affect operator workflows.",
+      "dependencies": [
+        "TLS-RM-14"
+      ],
+      "failure_modes_prevented": [
+        "silent_drift",
+        "late_regression_detection",
+        "signal_staleness"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_drift_signal_report.json"
+      ],
+      "tests_required": [
+        "tests/test_drift_signal_detection.py",
+        "tests/test_tls_roadmap_artifacts.py::test_roadmap_entries_complete"
+      ],
+      "acceptance_criteria": [
+        "Drift report emits deterministic severity bands.",
+        "Drift check blocks on stale or missing baseline.",
+        "Alert payload excludes owner-authority fields."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single prompt for drift extractor and report."
+    },
+    {
+      "id": "TLS-RM-16",
+      "title": "Dataset + Eval Governance alignment",
+      "purpose": "Align TLS datasets and eval contracts with governed coverage requirements.",
+      "what_it_builds": "Dataset registry link map, eval case matrix, fail_closed missing-coverage gate.",
+      "why_it_matters": "Prevents unverified learning changes and maintains trustworthy recommendation outputs.",
+      "dependencies": [
+        "TLS-RM-15",
+        "artifacts/tls/system_evidence_attachment.json"
+      ],
+      "failure_modes_prevented": [
+        "eval_coverage_gaps",
+        "dataset_drift",
+        "untraceable_training_inputs"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_dataset_eval_governance_map.json"
+      ],
+      "tests_required": [
+        "tests/test_required_eval_coverage.py",
+        "tests/test_eval_coverage_regressions.py"
+      ],
+      "acceptance_criteria": [
+        "Every dataset source maps to at least one eval case.",
+        "Coverage gate fails closed on missing eval map entries.",
+        "Governance map includes deterministic version markers."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "2-step prompt limited to mapping + coverage checks."
+    },
+    {
+      "id": "TLS-RM-17",
+      "title": "Operator Intelligence summarization",
+      "purpose": "Provide operator-focused TLS intelligence summaries with confidence and risk framing.",
+      "what_it_builds": "Operator intelligence summary artifact, confidence explainers, retrieve filters.",
+      "why_it_matters": "Improves operator usability without introducing dashboard assumptions or hidden logic.",
+      "dependencies": [
+        "TLS-RM-16"
+      ],
+      "failure_modes_prevented": [
+        "operator_overload",
+        "missing_context",
+        "dashboard_coupling"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_operator_intelligence_summary.json"
+      ],
+      "tests_required": [
+        "tests/test_operator_shakeout.py",
+        "tests/test_tls_roadmap_artifacts.py::test_no_dashboard_assumption"
+      ],
+      "acceptance_criteria": [
+        "Summary is artifact-only and dashboard-agnostic.",
+        "Every insight links to source evidence artifact.",
+        "Confidence ranges are explicit and bounded."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single prompt generating read-only summary artifact."
+    },
+    {
+      "id": "TLS-RM-18",
+      "title": "Policy + Override signal hooks",
+      "purpose": "Add policy-aware recommendation annotations and explicit override input hooks for owners.",
+      "what_it_builds": "Policy signal annotation schema, override input contract, blocked-key guardrail.",
+      "why_it_matters": "Lets owners retrieve policy context while preventing TLS from acting as policy owner.",
+      "dependencies": [
+        "TLS-RM-17"
+      ],
+      "failure_modes_prevented": [
+        "policy_blind_recommendations",
+        "unsafe_override_shape",
+        "authority_blur"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_policy_override_hooks.json"
+      ],
+      "tests_required": [
+        "tests/test_policy_engine.py",
+        "tests/test_policy_backtesting.py"
+      ],
+      "acceptance_criteria": [
+        "Hooks accept owner input but do not execute control actions.",
+        "Unknown override keys fail closed.",
+        "Policy annotations remain read-only metadata."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "2-step prompt for schema then guard validation."
+    },
+    {
+      "id": "TLS-RM-19",
+      "title": "Simulation harness for TLS scenarios",
+      "purpose": "Run deterministic simulations for edge-case and adversarial TLS recommendation scenarios.",
+      "what_it_builds": "Scenario simulation harness, synthetic stress fixtures, simulation outcome artifact.",
+      "why_it_matters": "Validates recommendation stability before broad operator use and prevents regressions.",
+      "dependencies": [
+        "TLS-RM-18"
+      ],
+      "failure_modes_prevented": [
+        "unseen_edge_case_failures",
+        "adversarial_signal_instability",
+        "runtime_regression_reentry"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_simulation_outcomes.json"
+      ],
+      "tests_required": [
+        "tests/test_run_ops03_adversarial_stress_testing.py",
+        "tests/test_tls_roadmap_artifacts.py::test_redteam_fix_pairing_exists"
+      ],
+      "acceptance_criteria": [
+        "Simulation suite includes adversarial and sparse-input cases.",
+        "Outcomes are deterministic across replay runs.",
+        "Any severe instability blocks next roadmap step."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "single system",
+      "safe_prompt_scope": "Single prompt for deterministic simulation run."
+    },
+    {
+      "id": "TLS-RM-20",
+      "title": "Final Outcome OS integration",
+      "purpose": "Complete TLS integration into final operator system flow as recommendation input only.",
+      "what_it_builds": "Final OS handoff map, runtime compatibility checklist, fail_closed readiness record.",
+      "why_it_matters": "Ensures TLS value is available in the final operator flow without authority leakage.",
+      "dependencies": [
+        "TLS-RM-19",
+        "artifacts/tls/tls_control_input_artifact.json"
+      ],
+      "failure_modes_prevented": [
+        "final_flow_incompatibility",
+        "authority_boundary_break",
+        "silent_fallback_reintroduction"
+      ],
+      "artifacts_created": [
+        "artifacts/tls/tls_final_os_integration_record.json"
+      ],
+      "tests_required": [
+        "tests/test_system_end_to_end_governed_loop.py",
+        "tests/test_tls_roadmap_artifacts.py::test_no_silent_fallback_language"
+      ],
+      "acceptance_criteria": [
+        "Final handoff includes explicit recommendation-only boundary note.",
+        "Runtime compatibility checks pass across integration fixtures.",
+        "Fallback paths require explicit visible marker and fail_closed default."
+      ],
+      "authority_owner": "none",
+      "execution_scope": "multi-system",
+      "safe_prompt_scope": "2-step prompt covering handoff mapping and compatibility checks."
+    }
+  ]
+}
