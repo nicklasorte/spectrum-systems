@@ -1,26 +1,31 @@
 {
-  "cde_approval_required": true,
+  "owner_scope_observations": {
+    "cde_review_input_present": true,
+    "gov_policy_observation_present": true,
+    "sel_policy_observation_present": true,
+    "tpa_policy_observation_present": true
+  },
   "phase": "TLS-08",
   "proposed_actions": [
     {
-      "next_prompt": "Run TLS-FIX-EVL: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'schema_weakness'] on system EVL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "next_prompt": "Run TLS-FIX-EVL: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_observability', 'missing_replay', 'schema_weakness'] on system EVL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
       "rank": 1,
       "system_id": "EVL"
     },
     {
-      "next_prompt": "Run TLS-FIX-SEL: resolve observed trust-gap signals ['missing_replay', 'schema_weakness'] on system SEL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 2,
-      "system_id": "SEL"
-    },
-    {
       "next_prompt": "Run TLS-FIX-TPA: resolve observed trust-gap signals ['missing_observability', 'missing_replay', 'schema_weakness'] on system TPA (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 3,
+      "rank": 2,
       "system_id": "TPA"
     },
     {
-      "next_prompt": "Run TLS-FIX-CDE: resolve observed trust-gap signals ['missing_lineage', 'missing_replay', 'schema_weakness'] on system CDE (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 4,
+      "next_prompt": "Run TLS-FIX-CDE: resolve observed trust-gap signals ['missing_replay', 'schema_weakness'] on system CDE (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 3,
       "system_id": "CDE"
+    },
+    {
+      "next_prompt": "Run TLS-FIX-SEL: resolve observed trust-gap signals ['missing_replay', 'schema_weakness'] on system SEL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 4,
+      "system_id": "SEL"
     },
     {
       "next_prompt": "Run TLS-FIX-LIN: resolve observed trust-gap signals ['missing_enforcement_signal'] on system LIN (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
@@ -28,34 +33,34 @@
       "system_id": "LIN"
     },
     {
-      "next_prompt": "Run TLS-FIX-OBS: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'schema_weakness'] on system OBS (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 6,
-      "system_id": "OBS"
-    },
-    {
-      "next_prompt": "Run TLS-FIX-AEX: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_observability', 'schema_weakness'] on system AEX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 7,
-      "system_id": "AEX"
-    },
-    {
       "next_prompt": "Run TLS-FIX-PRA: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system PRA (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 8,
+      "rank": 6,
       "system_id": "PRA"
     },
     {
-      "next_prompt": "Run TLS-FIX-SLO: resolve observed trust-gap signals ['missing_lineage', 'schema_weakness'] on system SLO (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "next_prompt": "Run TLS-FIX-OBS: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'schema_weakness'] on system OBS (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 7,
+      "system_id": "OBS"
+    },
+    {
+      "next_prompt": "Run TLS-FIX-AEX: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_replay', 'schema_weakness'] on system AEX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 8,
+      "system_id": "AEX"
+    },
+    {
+      "next_prompt": "Run TLS-FIX-REP: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'schema_weakness'] on system REP (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
       "rank": 9,
+      "system_id": "REP"
+    },
+    {
+      "next_prompt": "Run TLS-FIX-SLO: resolve observed trust-gap signals ['missing_lineage', 'schema_weakness'] on system SLO (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 10,
       "system_id": "SLO"
     },
     {
       "next_prompt": "Run TLS-FIX-GOV: resolve observed trust-gap signals ['missing_control', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system GOV (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 10,
-      "system_id": "GOV"
-    },
-    {
-      "next_prompt": "Run TLS-FIX-REP: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'schema_weakness'] on system REP (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
       "rank": 11,
-      "system_id": "REP"
+      "system_id": "GOV"
     },
     {
       "next_prompt": "Run TLS-FIX-PQX: resolve observed trust-gap signals ['missing_enforcement_signal'] on system PQX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
@@ -98,114 +103,114 @@
       "system_id": "CAP"
     },
     {
-      "next_prompt": "Run TLS-FIX-JSX: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system JSX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 20,
-      "system_id": "JSX"
-    },
-    {
       "next_prompt": "Run TLS-FIX-RIL: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system RIL (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 21,
+      "rank": 20,
       "system_id": "RIL"
     },
     {
       "next_prompt": "Run TLS-FIX-JDX: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system JDX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 22,
+      "rank": 21,
       "system_id": "JDX"
     },
     {
       "next_prompt": "Run TLS-FIX-FRE: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system FRE (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 23,
+      "rank": 22,
       "system_id": "FRE"
     },
     {
       "next_prompt": "Run TLS-FIX-RSM: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system RSM (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 24,
+      "rank": 23,
       "system_id": "RSM"
     },
     {
-      "next_prompt": "Run TLS-FIX-CTX: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_readiness_evidence'] on system CTX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 25,
+      "next_prompt": "Run TLS-FIX-CTX: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage', 'missing_replay'] on system CTX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 24,
       "system_id": "CTX"
     },
     {
-      "next_prompt": "Run TLS-FIX-MAP: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage'] on system MAP (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "next_prompt": "Run TLS-FIX-JSX: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_replay', 'schema_weakness'] on system JSX (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 25,
+      "system_id": "JSX"
+    },
+    {
+      "next_prompt": "Run TLS-FIX-HOP: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system HOP (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
       "rank": 26,
+      "system_id": "HOP"
+    },
+    {
+      "next_prompt": "Run TLS-FIX-MAP: resolve observed trust-gap signals ['missing_control', 'missing_enforcement_signal', 'missing_lineage'] on system MAP (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
+      "rank": 27,
       "system_id": "MAP"
     },
     {
       "next_prompt": "Run TLS-FIX-ABX: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system ABX (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 27,
+      "rank": 28,
       "system_id": "ABX"
     },
     {
       "next_prompt": "Run TLS-FIX-CMP: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system CMP (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 28,
+      "rank": 29,
       "system_id": "CMP"
     },
     {
       "next_prompt": "Run TLS-FIX-DBB: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system DBB (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 29,
+      "rank": 30,
       "system_id": "DBB"
     },
     {
       "next_prompt": "Run TLS-FIX-LCE: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system LCE (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 30,
+      "rank": 31,
       "system_id": "LCE"
     },
     {
       "next_prompt": "Run TLS-FIX-NRM: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system NRM (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 31,
+      "rank": 32,
       "system_id": "NRM"
     },
     {
       "next_prompt": "Run TLS-FIX-QRY: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system QRY (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 32,
+      "rank": 33,
       "system_id": "QRY"
     },
     {
       "next_prompt": "Run TLS-FIX-RET: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system RET (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 33,
+      "rank": 34,
       "system_id": "RET"
     },
     {
       "next_prompt": "Run TLS-FIX-RSK: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system RSK (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 34,
+      "rank": 35,
       "system_id": "RSK"
     },
     {
       "next_prompt": "Run TLS-FIX-SAL: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SAL (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 35,
+      "rank": 36,
       "system_id": "SAL"
     },
     {
       "next_prompt": "Run TLS-FIX-SAS: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SAS (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 36,
+      "rank": 37,
       "system_id": "SAS"
     },
     {
       "next_prompt": "Run TLS-FIX-SHA: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SHA (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 37,
+      "rank": 38,
       "system_id": "SHA"
     },
     {
       "next_prompt": "Run TLS-FIX-SIV: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SIV (class=future). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 38,
+      "rank": 39,
       "system_id": "SIV"
     },
     {
       "next_prompt": "Run TLS-FIX-SUP: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system SUP (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 39,
+      "rank": 40,
       "system_id": "SUP"
     },
     {
       "next_prompt": "Run TLS-FIX-TRN: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system TRN (class=support_capability). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
-      "rank": 40,
-      "system_id": "TRN"
-    },
-    {
-      "next_prompt": "Run TLS-FIX-HOP: resolve observed trust-gap signals ['missing_enforcement_signal', 'missing_lineage', 'missing_observability', 'missing_readiness_evidence', 'missing_replay', 'schema_weakness'] on system HOP (class=active_system). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
       "rank": 41,
-      "system_id": "HOP"
+      "system_id": "TRN"
     },
     {
       "next_prompt": "Run TLS-FIX-MET: resolve observed trust-gap signals ['missing_tests', 'schema_weakness'] on system MET (class=unknown). Produce a fail-closed schema-bound artifact for each resolved signal. Update tests.",
@@ -253,8 +258,7 @@
       "system_id": "RWA"
     }
   ],
-  "routing": "TLS->CDE->SEL",
-  "schema_version": "tls-08-control-input.v1",
-  "sel_enforcement_required": true,
-  "tls_can_execute_directly": false
+  "recommendation_only": true,
+  "routing_observation": "TLS->CDE->SEL",
+  "schema_version": "tls-08-owner-input-artifact.v1"
 }

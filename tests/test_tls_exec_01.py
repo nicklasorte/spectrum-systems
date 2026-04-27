@@ -6,7 +6,7 @@ from pathlib import Path
 from spectrum_systems.modules.tls_dependency_graph.tls_exec_01 import phase_1_ranking_review
 from spectrum_systems.modules.tls_dependency_graph.tls_exec_01 import phase_2_fix_loop
 from spectrum_systems.modules.tls_dependency_graph.tls_exec_01 import phase_3_action_layer
-from spectrum_systems.modules.tls_dependency_graph.tls_exec_01 import phase_4_control_integration
+from spectrum_systems.modules.tls_dependency_graph.tls_exec_01 import phase_4_owner_input_packet
 from spectrum_systems.modules.tls_dependency_graph.tls_exec_01 import phase_5_learning_loop
 from spectrum_systems.modules.tls_dependency_graph.tls_exec_01 import run_tls_exec_01
 
@@ -95,25 +95,26 @@ def test_action_plan_correctness_contains_required_fields():
     assert {"next_prompt", "files_to_modify", "expected_artifacts", "stop_condition", "required_tests"}.issubset(first)
 
 
-def test_control_enforcement_requires_cde_and_sel():
+def test_owner_input_packet_boundaries_are_recommendation_only():
     priority = _base_priority_payload()
     review = phase_1_ranking_review(priority)
     updated, _ = phase_2_fix_loop(priority, review)
     action_plan = phase_3_action_layer(updated)
-    control_input, control_decision = phase_4_control_integration(action_plan)
+    owner_input_artifact, owner_input_packet = phase_4_owner_input_packet(action_plan)
 
-    assert control_input["tls_can_execute_directly"] is False
-    assert control_input["cde_approval_required"] is True
-    assert control_decision["constraints"]["sel_must_enforce"] is True
-    assert control_decision["allowed_execution"] is False
+    assert owner_input_artifact["recommendation_only"] is True
+    assert owner_input_artifact["owner_scope_observations"]["cde_review_input_present"] is True
+    assert owner_input_artifact["owner_scope_observations"]["sel_policy_observation_present"] is True
+    assert owner_input_packet["packet_type"] == "owner_input_packet"
+    assert owner_input_packet["recommendation_only"] is True
 
 
 def test_learning_updates_are_emitted(tmp_path: Path):
     priority = _base_priority_payload()
     review = phase_1_ranking_review(priority)
     _updated, log = phase_2_fix_loop(priority, review)
-    _control_input, control_decision = phase_4_control_integration({"systems": []})
-    learning, weight_updates = phase_5_learning_loop(review, log, control_decision)
+    _owner_input_artifact, owner_input_packet = phase_4_owner_input_packet({"systems": []})
+    learning, weight_updates = phase_5_learning_loop(review, log, owner_input_packet)
 
     assert "ranking_quality" in learning
     assert "recommended_weight_updates" in weight_updates
@@ -133,10 +134,35 @@ def test_end_to_end_writes_all_artifacts(tmp_path: Path):
         out_dir / "ranking_adjustment_log.json",
         out_dir / "tls_action_plan.json",
         out_dir / "tls_control_input_artifact.json",
-        out_dir / "tls_control_decision_artifact.json",
+        out_dir / "tls_owner_input_packet.json",
         out_dir / "tls_learning_record.json",
         out_dir / "tls_weight_update_record.json",
         top_out,
     ]
     for path in expected:
         assert path.is_file(), f"missing artifact: {path}"
+
+    assert not (out_dir / "tls_control_decision_artifact.json").exists()
+
+
+def test_generated_tls_artifacts_do_not_contain_forbidden_authority_terms(tmp_path: Path):
+    priority_path = tmp_path / "system_dependency_priority_report.json"
+    out_dir = tmp_path / "tls"
+    top_out = tmp_path / "top_system_dependency_priority_report.json"
+    priority_path.write_text(json.dumps(_base_priority_payload()), encoding="utf-8")
+    run_tls_exec_01(priority_path, out_dir, top_out)
+
+    forbidden_tokens = [
+        "control_decision",
+        "tls_control_decision_artifact",
+        "cde_approval_required",
+        "sel_enforcement_required",
+        "approved",
+    ]
+    for path in out_dir.glob("*.json"):
+        text = path.read_text(encoding="utf-8")
+        for token in forbidden_tokens:
+            assert token not in text, f"forbidden token '{token}' found in {path}"
+
+    packet = json.loads((out_dir / "tls_owner_input_packet.json").read_text(encoding="utf-8"))
+    assert packet["recommendation_only"] is True

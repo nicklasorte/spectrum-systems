@@ -9,7 +9,7 @@
       "system_id": "ABX"
     },
     {
-      "adjusted_score": 121,
+      "adjusted_score": 122,
       "adjustment_total": -20,
       "adjustments": [
         {
@@ -17,7 +17,7 @@
           "reason": "missing_dependency_backrefs"
         }
       ],
-      "original_score": 141,
+      "original_score": 142,
       "system_id": "AEX"
     },
     {
@@ -33,11 +33,11 @@
       "system_id": "CAP"
     },
     {
-      "adjusted_score": 163,
-      "adjustment_total": -70,
+      "adjusted_score": 173,
+      "adjustment_total": -50,
       "adjustments": [
         {
-          "delta": -60,
+          "delta": -40,
           "reason": "dependency_order_violation"
         },
         {
@@ -45,7 +45,7 @@
           "reason": "missing_dependency_backrefs"
         }
       ],
-      "original_score": 233,
+      "original_score": 223,
       "system_id": "CDE"
     },
     {
@@ -56,7 +56,7 @@
       "system_id": "CMP"
     },
     {
-      "adjusted_score": 15,
+      "adjusted_score": 16,
       "adjustment_total": -30,
       "adjustments": [
         {
@@ -64,7 +64,7 @@
           "reason": "missing_dependency_backrefs"
         }
       ],
-      "original_score": 45,
+      "original_score": 46,
       "system_id": "CTX"
     },
     {
@@ -147,13 +147,9 @@
       "system_id": "HNX"
     },
     {
-      "adjusted_score": -8,
-      "adjustment_total": -70,
+      "adjusted_score": 12,
+      "adjustment_total": -50,
       "adjustments": [
-        {
-          "delta": -20,
-          "reason": "dependency_order_violation"
-        },
         {
           "delta": -50,
           "reason": "missing_dependency_backrefs"
@@ -175,9 +171,13 @@
       "system_id": "JDX"
     },
     {
-      "adjusted_score": 33,
-      "adjustment_total": -20,
+      "adjusted_score": 13,
+      "adjustment_total": -40,
       "adjustments": [
+        {
+          "delta": -20,
+          "reason": "dependency_order_violation"
+        },
         {
           "delta": -20,
           "reason": "missing_dependency_backrefs"
@@ -287,13 +287,9 @@
       "system_id": "PQX"
     },
     {
-      "adjusted_score": 108,
-      "adjustment_total": -40,
+      "adjusted_score": 128,
+      "adjustment_total": -20,
       "adjustments": [
-        {
-          "delta": -20,
-          "reason": "dependency_order_violation"
-        },
         {
           "delta": -20,
           "reason": "missing_dependency_backrefs"
@@ -334,11 +330,11 @@
       "system_id": "RAX"
     },
     {
-      "adjusted_score": 97,
-      "adjustment_total": -70,
+      "adjusted_score": 117,
+      "adjustment_total": -50,
       "adjustments": [
         {
-          "delta": -40,
+          "delta": -20,
           "reason": "dependency_order_violation"
         },
         {
@@ -428,9 +424,14 @@
       "system_id": "SEC"
     },
     {
-      "adjusted_score": 207,
-      "adjustment_total": 0,
-      "adjustments": [],
+      "adjusted_score": 167,
+      "adjustment_total": -40,
+      "adjustments": [
+        {
+          "delta": -40,
+          "reason": "dependency_order_violation"
+        }
+      ],
       "original_score": 207,
       "system_id": "SEL"
     },

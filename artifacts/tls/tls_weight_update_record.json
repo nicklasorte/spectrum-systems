@@ -1,5 +1,5 @@
 {
-  "observed_error_ratio": 0.46,
+  "observed_error_ratio": 0.48,
   "phase": "TLS-09",
   "recommended_weight_updates": {
     "dependency_order_penalty": 22,

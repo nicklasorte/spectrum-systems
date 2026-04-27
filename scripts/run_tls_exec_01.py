@@ -50,7 +50,7 @@ def main(argv: list[str] | None = None) -> int:
             "TLS-05": "tls_ranking_review_report.json",
             "TLS-06": ["system_dependency_priority_report.json", "ranking_adjustment_log.json"],
             "TLS-07": "tls_action_plan.json",
-            "TLS-08": ["tls_control_input_artifact.json", "tls_control_decision_artifact.json"],
+            "TLS-08": ["tls_control_input_artifact.json", "tls_owner_input_packet.json"],
             "TLS-09": ["tls_learning_record.json", "tls_weight_update_record.json"],
         },
         "top_5": [

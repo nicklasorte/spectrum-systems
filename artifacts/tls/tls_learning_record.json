@@ -4,13 +4,13 @@
     "premature_build_delays": 5
   },
   "execution_outcomes": {
-    "allowed_execution": false,
-    "control_decision": "pending_cde_review"
+    "owner_input_observation": "tls_owner_input_ready_for_review",
+    "recommendation_only": true
   },
   "phase": "TLS-09",
   "ranking_quality": {
-    "correct_rankings": 27,
-    "incorrect_rankings": 23
+    "correct_rankings": 26,
+    "incorrect_rankings": 24
   },
   "schema_version": "tls-09-learning.v1"
 }

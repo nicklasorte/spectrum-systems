@@ -6,7 +6,7 @@ Pipeline:
 - TLS-05 ranking red-team review
 - TLS-06 scoring fix loop (score-logic only)
 - TLS-07 action layer generation
-- TLS-08 control integration artifacts (TLS -> CDE -> SEL)
+- TLS-08 owner-input packet artifacts (TLS -> CDE -> SEL)
 - TLS-09 learning + weight update artifacts
 
 Fail-closed behavior: any phase failure raises ``TlsExecutionFailure`` and halts.
@@ -202,7 +202,7 @@ def phase_2_fix_loop(
     adjustment_log_rows: List[Dict[str, Any]] = []
     for row in rows:
         sid = row["system_id"]
-        original_score = int(row["score"])
+        base_score = int(row.get("base_score", row["score"]))
         adjustments: List[Dict[str, Any]] = []
 
         if sid in misranked_ids:
@@ -220,14 +220,15 @@ def phase_2_fix_loop(
             adjustments.append({"reason": "weak_explanation", "delta": -weights.weak_explanation_penalty})
 
         total_delta = sum(item["delta"] for item in adjustments)
-        row["score"] = original_score + total_delta
+        row["base_score"] = base_score
+        row["score"] = base_score + total_delta
         row["score_adjustment_total"] = total_delta
         row["score_adjustments"] = adjustments
 
         adjustment_log_rows.append(
             {
                 "system_id": sid,
-                "original_score": original_score,
+                "original_score": base_score,
                 "adjusted_score": row["score"],
                 "adjustment_total": total_delta,
                 "adjustments": adjustments,
@@ -302,7 +303,7 @@ def phase_3_action_layer(priority: Dict[str, Any]) -> Dict[str, Any]:
                     f"artifacts/{sid.lower()}_trust_gap_resolution.json",
                 ],
                 "stop_condition": (
-                    "all trust_gap_signals cleared and CDE gate approved"
+                    "all trust_gap_signals cleared and owner review signals are present"
                     if gaps
                     else "no trust_gap_signals remain"
                 ),
@@ -321,38 +322,42 @@ def phase_3_action_layer(priority: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def phase_4_control_integration(action_plan: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    control_input = {
-        "schema_version": "tls-08-control-input.v1",
+def phase_4_owner_input_packet(action_plan: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    owner_input_artifact = {
+        "schema_version": "tls-08-owner-input-artifact.v1",
         "phase": "TLS-08",
-        "routing": "TLS->CDE->SEL",
-        "tls_can_execute_directly": False,
-        "cde_approval_required": True,
-        "sel_enforcement_required": True,
+        "routing_observation": "TLS->CDE->SEL",
+        "recommendation_only": True,
+        "owner_scope_observations": {
+            "cde_review_input_present": True,
+            "sel_policy_observation_present": True,
+            "tpa_policy_observation_present": True,
+            "gov_policy_observation_present": True,
+        },
         "proposed_actions": [
             {"system_id": row["system_id"], "rank": row["rank"], "next_prompt": row["next_prompt"]}
             for row in action_plan.get("systems") or []
         ],
     }
-    control_decision = {
-        "schema_version": "tls-08-control-decision.v1",
+    owner_input_packet = {
+        "schema_version": "tls-08-owner-input-packet.v1",
         "phase": "TLS-08",
-        "decision": "pending_cde_review",
-        "constraints": {
-            "tls_can_execute_directly": False,
-            "cde_must_approve": True,
-            "sel_must_enforce": True,
-            "default_on_missing_control_artifact": "deny",
-        },
-        "allowed_execution": False,
+        "packet_type": "owner_input_packet",
+        "recommendation_only": True,
+        "owner_input_observation": "tls_owner_input_ready_for_review",
+        "owner_outcome_present": False,
+        "canonical_owner_statement": (
+            "TLS is recommendation-only; CDE/TPA/SEL/GOV remain canonical owners; "
+            "this packet is input for owner review and not an owner outcome."
+        ),
     }
-    return control_input, control_decision
+    return owner_input_artifact, owner_input_packet
 
 
 def phase_5_learning_loop(
     review: Dict[str, Any],
     adjustment_log: Dict[str, Any],
-    control_decision: Dict[str, Any],
+    owner_input_packet: Dict[str, Any],
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     rows = adjustment_log.get("rows") or []
     corrected = sum(1 for row in rows if row.get("adjustment_total", 0) != 0)
@@ -366,8 +371,8 @@ def phase_5_learning_loop(
             "incorrect_rankings": corrected,
         },
         "execution_outcomes": {
-            "control_decision": control_decision.get("decision"),
-            "allowed_execution": bool(control_decision.get("allowed_execution")),
+            "owner_input_observation": owner_input_packet.get("owner_input_observation"),
+            "recommendation_only": bool(owner_input_packet.get("recommendation_only")),
         },
         "delays_caused": {
             "premature_build_delays": len(review["review_findings"]["premature_build_candidates"]),
@@ -405,11 +410,11 @@ def run_tls_exec_01(priority_report_path: Path, out_dir: Path, top_level_priorit
     action_plan = phase_3_action_layer(updated_priority)
     _write_json(out_dir / "tls_action_plan.json", action_plan)
 
-    control_input, control_decision = phase_4_control_integration(action_plan)
-    _write_json(out_dir / "tls_control_input_artifact.json", control_input)
-    _write_json(out_dir / "tls_control_decision_artifact.json", control_decision)
+    owner_input_artifact, owner_input_packet = phase_4_owner_input_packet(action_plan)
+    _write_json(out_dir / "tls_control_input_artifact.json", owner_input_artifact)
+    _write_json(out_dir / "tls_owner_input_packet.json", owner_input_packet)
 
-    learning_record, weight_update_record = phase_5_learning_loop(review, adjustment_log, control_decision)
+    learning_record, weight_update_record = phase_5_learning_loop(review, adjustment_log, owner_input_packet)
     _write_json(out_dir / "tls_learning_record.json", learning_record)
     _write_json(out_dir / "tls_weight_update_record.json", weight_update_record)
 
@@ -418,8 +423,8 @@ def run_tls_exec_01(priority_report_path: Path, out_dir: Path, top_level_priorit
         "updated_priority": updated_priority,
         "adjustment_log": adjustment_log,
         "action_plan": action_plan,
-        "control_input": control_input,
-        "control_decision": control_decision,
+        "owner_input_artifact": owner_input_artifact,
+        "owner_input_packet": owner_input_packet,
         "learning_record": learning_record,
         "weight_update_record": weight_update_record,
     }

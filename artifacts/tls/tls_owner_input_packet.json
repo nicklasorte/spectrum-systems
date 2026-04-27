@@ -1,0 +1,9 @@
+{
+  "canonical_owner_statement": "TLS is recommendation-only; CDE/TPA/SEL/GOV remain canonical owners; this packet is input for owner review and not an owner outcome.",
+  "owner_input_observation": "tls_owner_input_ready_for_review",
+  "owner_outcome_present": false,
+  "packet_type": "owner_input_packet",
+  "phase": "TLS-08",
+  "recommendation_only": true,
+  "schema_version": "tls-08-owner-input-packet.v1"
+}

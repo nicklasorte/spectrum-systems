@@ -7,7 +7,7 @@ PLAN
 TLS-EXEC-01 — Operationalize TLS (Review → Fix → Action → Control → Learn)
 
 ## Objective
-Implement a deterministic five-phase TLS execution pipeline that produces governed artifacts for ranking review, score adjustments, execution action planning, control integration, and learning updates.
+Implement a deterministic five-phase TLS execution pipeline that produces governed artifacts for ranking review, score adjustments, execution action planning, owner-input packets, and learning updates.
 
 ## Declared files
 | File | Change type | Reason |
@@ -15,14 +15,14 @@ Implement a deterministic five-phase TLS execution pipeline that produces govern
 | docs/review-actions/PLAN-TLS-EXEC-01-2026-04-27.md | CREATE | Required plan-first artifact for a multi-file build. |
 | spectrum_systems/modules/tls_dependency_graph/tls_exec_01.py | CREATE | Implement deterministic TLS-05..TLS-09 logic with fail-closed behavior. |
 | scripts/run_tls_exec_01.py | CREATE | Provide CLI entrypoint for artifact-first execution and CI use. |
-| tests/test_tls_exec_01.py | CREATE | Validate misranking detection, ranking improvement, action plan correctness, control enforcement, and learning updates. |
+| tests/test_tls_exec_01.py | CREATE | Validate misranking detection, ranking improvement, action plan correctness, owner-input packet boundaries, and learning updates. |
 | artifacts/tls/tls_ranking_review_report.json | CREATE | TLS-05 output artifact. |
 | artifacts/tls/system_dependency_priority_report.json | MODIFY | TLS-06 adjusted deterministic priority report. |
 | artifacts/system_dependency_priority_report.json | MODIFY | Publish TLS-06 adjusted report at top-level artifact path. |
 | artifacts/tls/ranking_adjustment_log.json | CREATE | TLS-06 adjustment trace artifact. |
 | artifacts/tls/tls_action_plan.json | CREATE | TLS-07 execution action plan artifact. |
 | artifacts/tls/tls_control_input_artifact.json | CREATE | TLS-08 control-input artifact for CDE review. |
-| artifacts/tls/tls_control_decision_artifact.json | CREATE | TLS-08 control decision artifact enforcing CDE+SEL gate. |
+| artifacts/tls/tls_owner_input_packet.json | CREATE | TLS-08 owner-input packet for canonical owner review. |
 | artifacts/tls/tls_learning_record.json | CREATE | TLS-09 learning record artifact. |
 | artifacts/tls/tls_weight_update_record.json | CREATE | TLS-09 deterministic weight update artifact. |
 

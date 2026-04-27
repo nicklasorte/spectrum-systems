@@ -14,10 +14,9 @@
       {
         "explanation": "active upstream dependency ranked after dependent system",
         "rank": 2,
-        "system_id": "CDE",
+        "system_id": "SEL",
         "upstream_rank_violations": [
-          "LIN",
-          "REP",
+          "CDE",
           "TPA"
         ]
       },
@@ -31,7 +30,16 @@
       },
       {
         "explanation": "active upstream dependency ranked after dependent system",
-        "rank": 5,
+        "rank": 4,
+        "system_id": "CDE",
+        "upstream_rank_violations": [
+          "LIN",
+          "REP"
+        ]
+      },
+      {
+        "explanation": "active upstream dependency ranked after dependent system",
+        "rank": 6,
         "system_id": "OBS",
         "upstream_rank_violations": [
           "PQX"
@@ -39,27 +47,18 @@
       },
       {
         "explanation": "active upstream dependency ranked after dependent system",
-        "rank": 6,
-        "system_id": "REP",
+        "rank": 10,
+        "system_id": "GOV",
         "upstream_rank_violations": [
-          "LIN",
-          "PQX"
-        ]
-      },
-      {
-        "explanation": "active upstream dependency ranked after dependent system",
-        "rank": 7,
-        "system_id": "PRA",
-        "upstream_rank_violations": [
-          "LIN"
+          "POL"
         ]
       },
       {
         "explanation": "active upstream dependency ranked after dependent system",
         "rank": 11,
-        "system_id": "GOV",
+        "system_id": "REP",
         "upstream_rank_violations": [
-          "POL"
+          "PQX"
         ]
       },
       {
@@ -72,10 +71,10 @@
       },
       {
         "explanation": "active upstream dependency ranked after dependent system",
-        "rank": 19,
-        "system_id": "HOP",
+        "rank": 20,
+        "system_id": "JSX",
         "upstream_rank_violations": [
-          "CTX"
+          "JDX"
         ]
       }
     ],
