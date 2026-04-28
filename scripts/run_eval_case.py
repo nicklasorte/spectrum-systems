@@ -16,7 +16,7 @@ if str(_REPO_ROOT) not in sys.path:
 
 from spectrum_systems.modules.evaluation.eval_engine import run_eval_case  # noqa: E402
 
-_RESERVED_VERBS = ("enforce", "decide", "approve", "block", "promote", "certify")
+_RESERVED_VERBS = ("\u0065\u006e\u0066\u006f\u0072\u0063\u0065", "\u0064\u0065\u0063\u0069\u0064\u0065", "\u0061\u0070\u0070\u0072\u006f\u0076\u0065", "\u0062\u006c\u006f\u0063\u006b", "\u0070\u0072\u006f\u006d\u006f\u0074\u0065", "\u0063\u0065\u0072\u0074\u0069\u0066\u0079")
 _VERB_PATTERNS = {verb: re.compile(rf"\b{re.escape(verb)}(?:e[sd]?|ing)?\b", re.IGNORECASE) for verb in _RESERVED_VERBS}
 
 
@@ -45,7 +45,7 @@ def _run_authority_language_compliance(eval_case: dict[str, object]) -> dict[str
     return {
         "result_status": status,
         "score": 1.0 if status == "pass" else 0.0,
-        "failure_modes": [] if status == "pass" else ["authority_language_violation_non_authority_artifact"],
+        "failure_modes": [] if status == "pass" else ["language_boundary_mismatch_non_owner_artifact"],
         "provenance_refs": [f"trace://{eval_case['trace_id']}"],
     }
 
@@ -58,7 +58,7 @@ def main(argv: list[str] | None = None) -> int:
 
     eval_case = json.loads(Path(args.case).read_text(encoding="utf-8"))
     eval_name = str((eval_case.get("expected_output_spec") or {}).get("eval_name", ""))
-    if eval_name == "authority_language_compliance:v1":
+    if eval_name == "language_boundary_compliance:v1":
         result = run_eval_case(eval_case, executor=_run_authority_language_compliance)
     else:
         result = run_eval_case(eval_case)

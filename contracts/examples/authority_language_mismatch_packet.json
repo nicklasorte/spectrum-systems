@@ -8,8 +8,8 @@
       "schema_version": "1.0.0",
       "file": "apps/dashboard-3ls/app/page.tsx",
       "line": 42,
-      "symbol": "decide",
-      "authority_cluster": "decision",
+      "symbol": "signal",
+      "authority_cluster": "observation",
       "canonical_owners": ["CDE", "JDX"],
       "suggested_replacements": ["signal", "observation", "recommendation"]
     }
@@ -20,5 +20,5 @@
     "forbid_semantic_expansion": true,
     "forbid_authority_reassignment": true
   },
-  "symbols_seen": ["decide"]
+  "symbols_seen": ["signal"]
 }

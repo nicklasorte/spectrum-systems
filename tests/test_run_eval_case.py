@@ -14,7 +14,7 @@ def _eval_case_payload() -> dict[str, object]:
         "eval_case_id": "authority-language-case",
         "input_artifact_refs": ["docs/review-actions/PLAN-HRD-002-2026-04-28.md"],
         "expected_output_spec": {
-            "eval_name": "authority_language_compliance:v1",
+            "eval_name": "language_boundary_compliance:v1",
             "target_paths": ["docs/review-actions/PLAN-HRD-002-2026-04-28.md"],
         },
         "scoring_rubric": {},
@@ -37,4 +37,4 @@ def test_run_eval_case_authority_language_compliance_fails_on_reserved_verb(tmp_
     assert proc.returncode == 0
     result = json.loads(out_path.read_text(encoding="utf-8"))
     assert result["result_status"] == "fail"
-    assert "authority_language_violation_non_authority_artifact" in result["failure_modes"]
+    assert "language_boundary_mismatch_non_owner_artifact" in result["failure_modes"]

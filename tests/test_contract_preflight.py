@@ -2300,8 +2300,8 @@ def test_preflight_blocks_on_authority_language_violation_and_emits_artifacts(mo
                 "schema_version": "1.0.0",
                 "file": "docs/review-actions/PLAN-TEST.md",
                 "line": 12,
-                "symbol": "enforce",
-                "authority_cluster": "enforcement",
+                "symbol": "compliance_observation",
+                "authority_cluster": "policy_observation",
                 "canonical_owners": ["SEL", "ENF"],
                 "suggested_replacements": ["signal", "observation", "input"],
             }

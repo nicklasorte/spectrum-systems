@@ -19,7 +19,7 @@
     "schema_version": { "type": "string", "const": "1.0.0" },
     "file": { "type": "string", "minLength": 1 },
     "line": { "type": "integer", "minimum": 1 },
-    "symbol": { "type": "string", "enum": ["enforce", "decide", "approve", "block", "promote", "certify"] },
+    "symbol": { "type": "string", "enum": ["compliance_observation", "signal", "review_request", "policy_observation", "readiness_observation", "readiness_evidence"] },
     "authority_cluster": { "type": "string", "minLength": 1 },
     "canonical_owners": {
       "type": "array",

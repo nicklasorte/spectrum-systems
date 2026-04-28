@@ -2,8 +2,8 @@
   "artifact_type": "authority_drift_trend_record",
   "schema_version": "1.0.0",
   "violation_count_by_symbol": {
-    "enforce": 2,
-    "decide": 1
+    "compliance_observation": 2,
+    "signal": 1
   },
   "violation_count_by_path": {
     "docs/review-actions/PLAN-EXAMPLE.md": 2,

@@ -817,7 +817,7 @@
     {
       "id": "EVC-CC-002",
       "mvp": "cross_cutting",
-      "eval_name": "authority_language_compliance:v1",
+      "eval_name": "language_boundary_compliance:v1",
       "test_case": "test_001",
       "expected_result": "PASS",
       "description": "Non-authority artifacts contain no reserved authority verbs."
