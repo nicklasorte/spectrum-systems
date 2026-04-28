@@ -1,0 +1,50 @@
+{
+  "artifact_type": "generated_artifact_policy_handoff_record",
+  "schema_version": "1.0.0",
+  "record_id": "GPH-MET-41-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "config/generated_artifact_policy.json",
+    "artifacts/dashboard_metrics/met_generated_artifact_classification_record.json"
+  ],
+  "reason_codes": [
+    "central_policy_alignment_scan",
+    "no_competing_policy_created"
+  ],
+  "status": "warn",
+  "warnings": [
+    "MET alignment uses central policy when present; mismatches stay observations with next recommended input."
+  ],
+  "failure_prevented": "MET-specific generated-artifact classification drifting away from central policy and causing inconsistent merge posture.",
+  "signal_improved": "Policy alignment items compare MET classification with central policy and keep readiness input visible for unknown/mismatch paths.",
+  "central_policy_path": "config/generated_artifact_policy.json",
+  "central_policy_state": "present",
+  "met_paths_checked": [
+    "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json",
+    "artifacts/dashboard_metrics/materialization_observation_mapper_record.json",
+    "artifacts/dashboard_metrics/comparable_case_qualification_gate_record.json",
+    "artifacts/dashboard_metrics/trend_ready_case_pack_record.json",
+    "artifacts/dashboard_metrics/override_evidence_source_adapter_record.json",
+    "artifacts/dashboard_metrics/fold_candidate_proof_check_record.json",
+    "artifacts/dashboard_metrics/operator_debuggability_drill_record.json",
+    "artifacts/dashboard_metrics/generated_artifact_policy_handoff_record.json"
+  ],
+  "policy_alignment_items": [
+    {
+      "path": "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json",
+      "current_met_classification": "dashboard_metric",
+      "central_policy_classification": "denylist:artifacts/dashboard_metrics/*.json",
+      "alignment_state": "aligned",
+      "next_recommended_input": "Regenerate dashboard_metrics artifacts via scripts/build_dashboard_3ls_with_tls.py when content changes."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/generated_artifact_policy_handoff_record.json",
+      "current_met_classification": "dashboard_metric",
+      "central_policy_classification": "denylist:artifacts/dashboard_metrics/*.json",
+      "alignment_state": "aligned",
+      "next_recommended_input": "Keep alignment verification in contract selection tests for MET batches."
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "artifact_type": "comparable_case_qualification_gate_record",
+  "schema_version": "1.0.0",
+  "record_id": "CCQ-MET-36-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_cases/case_index_record.json",
+    "artifacts/dashboard_cases/case_eval_gap_001.json",
+    "artifacts/dashboard_cases/case_replay_gap_001.json",
+    "artifacts/dashboard_cases/case_cert_incomplete_001.json"
+  ],
+  "reason_codes": [
+    "strict_comparable_case_gate",
+    "trend_frequency_honesty_guard"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Comparable groups need at least 3 cases with same failure shape, systems, evaluated fields, and source type before trend/frequency can move from unknown."
+  ],
+  "failure_prevented": "Non-comparable cases being combined into synthetic trend signals.",
+  "signal_improved": "Qualification output shows exact gaps and cases needed per group.",
+  "qualification_rules": {
+    "same_failure_shape_required": true,
+    "same_affected_systems_required": true,
+    "same_evaluated_fields_required": true,
+    "same_source_type_required": true,
+    "min_case_count": 3
+  },
+  "qualified_case_groups": [
+    {
+      "group_id": "CCG-EVAL-COVERAGE-ARTIFACT-STORE",
+      "failure_shape": "eval_coverage_gap",
+      "affected_systems": [
+        "EVL"
+      ],
+      "evaluated_fields": [
+        "coverage_status"
+      ],
+      "source_type": "artifact_store_case",
+      "case_refs": [
+        "artifacts/dashboard_cases/case_eval_gap_001.json"
+      ],
+      "case_count": 1,
+      "qualifies_for_trend": false,
+      "trend_state": "unknown",
+      "frequency_state": "unknown",
+      "cases_needed": 2,
+      "failure_prevented": "Single-case trend leakage for EVL coverage gaps.",
+      "signal_improved": "Cases needed remains explicit for comparable group."
+    },
+    {
+      "group_id": "CCG-REPLAY-DIMENSION-ARTIFACT-STORE",
+      "failure_shape": "replay_dimension_gap",
+      "affected_systems": [
+        "REP"
+      ],
+      "evaluated_fields": [
+        "replay_dimensions"
+      ],
+      "source_type": "artifact_store_case",
+      "case_refs": [
+        "artifacts/dashboard_cases/case_replay_gap_001.json"
+      ],
+      "case_count": 1,
+      "qualifies_for_trend": false,
+      "trend_state": "unknown",
+      "frequency_state": "unknown",
+      "cases_needed": 2,
+      "failure_prevented": "Replay trend inferred from one case.",
+      "signal_improved": "Comparable-case deficit stays visible."
+    }
+  ]
+}

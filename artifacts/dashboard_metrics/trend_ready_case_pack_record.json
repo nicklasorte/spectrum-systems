@@ -1,0 +1,52 @@
+{
+  "artifact_type": "trend_ready_case_pack_record",
+  "schema_version": "1.0.0",
+  "record_id": "TRC-MET-37-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/comparable_case_qualification_gate_record.json",
+    "artifacts/dashboard_cases/case_index_record.json"
+  ],
+  "reason_codes": [
+    "trend_pack_from_qualified_groups",
+    "insufficient_cases_visible"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Trend/frequency readiness remains insufficient_cases when required comparable count is below 3."
+  ],
+  "failure_prevented": "Dashboard trend readiness showing eligible without enough comparable cases.",
+  "signal_improved": "Case packs expose required count and cases_needed per qualification group.",
+  "case_packs": [
+    {
+      "case_pack_id": "TRCP-EVAL-COVERAGE-001",
+      "qualification_group_id": "CCG-EVAL-COVERAGE-ARTIFACT-STORE",
+      "case_refs": [
+        "artifacts/dashboard_cases/case_eval_gap_001.json"
+      ],
+      "case_count": 1,
+      "required_case_count": 3,
+      "cases_needed": 2,
+      "trend_readiness": "insufficient_cases",
+      "frequency_readiness": "insufficient_cases",
+      "blocked_reason": "Comparable case count below required threshold.",
+      "next_recommended_input": "Retrieve two additional eval_coverage_gap cases with matching evaluated fields."
+    },
+    {
+      "case_pack_id": "TRCP-REPLAY-DIMENSION-001",
+      "qualification_group_id": "CCG-REPLAY-DIMENSION-ARTIFACT-STORE",
+      "case_refs": [
+        "artifacts/dashboard_cases/case_replay_gap_001.json"
+      ],
+      "case_count": 1,
+      "required_case_count": 3,
+      "cases_needed": 2,
+      "trend_readiness": "insufficient_cases",
+      "frequency_readiness": "insufficient_cases",
+      "blocked_reason": "Comparable case count below required threshold.",
+      "next_recommended_input": "Retrieve two additional replay_dimension_gap cases with matching evaluated fields."
+    }
+  ]
+}

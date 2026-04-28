@@ -1,0 +1,86 @@
+{
+  "artifact_type": "owner_read_observation_ledger_record",
+  "schema_version": "1.0.0",
+  "record_id": "ORL-MET-34-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
+    "artifacts/dashboard_metrics/evl_handoff_observation_tracker_record.json",
+    "artifacts/dashboard_metrics/override_evidence_intake_record.json",
+    "artifacts/dashboard_cases/case_index_record.json",
+    "apps/dashboard-3ls/app/api/intelligence/route.ts"
+  ],
+  "reason_codes": [
+    "owner_read_observation_tracking",
+    "no_owner_action_inference_without_refs",
+    "unknown_states_stay_visible"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Owner read observations are artifact-backed signals only and do not claim owner action.",
+    "When owner_artifact_refs is empty, read_observation_state stays none_observed or unknown."
+  ],
+  "failure_prevented": "Candidate handoff signals being treated as if owner systems already read them without artifact-backed observation evidence.",
+  "signal_improved": "Owner read observation state and owner artifact references stay explicit per candidate input.",
+  "owner_read_items": [
+    {
+      "owner_read_observation_id": "ORO-EVC-EVL-LONG-HORIZON",
+      "source_candidate_id": "EVC-EVL-LONG-HORIZON-REPLAY",
+      "source_record": "artifacts/dashboard_metrics/eval_candidate_record.json",
+      "recommended_owner_system": "EVL",
+      "affected_loop_leg": "EVL",
+      "owner_artifact_seen": false,
+      "owner_artifact_refs": [],
+      "read_observation_state": "none_observed",
+      "age_days": 0,
+      "stale_after_days": 30,
+      "next_recommended_input": "Retrieve EVL-owned artifact evidence that references EVC-EVL-LONG-HORIZON-REPLAY.",
+      "failure_prevented": "Silent handoff drift with no owner read observation evidence.",
+      "signal_improved": "EVL owner read state remains explicit as none_observed until references exist.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json"
+      ]
+    },
+    {
+      "owner_read_observation_id": "ORO-POL-CDE-OVERRIDE-AUDIT",
+      "source_candidate_id": "POL-CDE-OVERRIDE-AUDIT",
+      "source_record": "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+      "recommended_owner_system": "CDE",
+      "affected_loop_leg": "CDE",
+      "owner_artifact_seen": "unknown",
+      "owner_artifact_refs": [],
+      "read_observation_state": "unknown",
+      "age_days": "unknown",
+      "stale_after_days": 45,
+      "next_recommended_input": "Retrieve CDE override evidence artifact references if present; keep state unknown otherwise.",
+      "failure_prevented": "Implied CDE read without references.",
+      "signal_improved": "Unknown state remains visible when age and references are unavailable.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/policy_candidate_signal_record.json"
+      ]
+    },
+    {
+      "owner_read_observation_id": "ORO-FRP-GOV-001",
+      "source_candidate_id": "POL-GOV-FALLBACK-REDUCTION",
+      "source_record": "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+      "recommended_owner_system": "GOV",
+      "affected_loop_leg": "GOV",
+      "owner_artifact_seen": false,
+      "owner_artifact_refs": [],
+      "read_observation_state": "stale_candidate_signal",
+      "age_days": 46,
+      "stale_after_days": 45,
+      "next_recommended_input": "Retrieve GOV review input artifact for fallback-reduction signal and refresh age.",
+      "failure_prevented": "Stale owner-read gap being hidden as current.",
+      "signal_improved": "Stale candidate signal is explicit with age and stale window.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json"
+      ]
+    }
+  ]
+}

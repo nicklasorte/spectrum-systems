@@ -1,0 +1,47 @@
+{
+  "artifact_type": "operator_debuggability_drill_record",
+  "schema_version": "1.0.0",
+  "record_id": "ODD-MET-40-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/failure_explanation_packets.json",
+    "artifacts/dashboard_metrics/debug_explanation_index_record.json",
+    "apps/dashboard-3ls/app/api/intelligence/route.ts",
+    "apps/dashboard-3ls/app/page.tsx"
+  ],
+  "reason_codes": [
+    "operator_drill_for_new_engineer",
+    "six_fixed_questions_required"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Drill results are advisory and remain partial until repeated by additional operators."
+  ],
+  "failure_prevented": "Engineers unable to retrieve what failed, why, and next recommended input within operational debug budget.",
+  "signal_improved": "Drill items track completeness against six fixed questions and target minutes.",
+  "target_minutes": 15,
+  "drill_items": [
+    {
+      "drill_id": "DRILL-EVL-COVERAGE-GAP-001",
+      "related_failure_or_risk": "EVL coverage remains partial for long-horizon replay dimension.",
+      "questions": {
+        "what_failed": "Which field remains partial in EVL coverage signal?",
+        "why": "Why does this gap block readiness evidence quality?",
+        "where_in_loop": "Where does this gap appear in AEX\u2192PQX\u2192EVL\u2192TPA\u2192CDE\u2192SEL?",
+        "source_evidence": "Which artifacts support the observation?",
+        "next_recommended_input": "What input should be retrieved next to improve this signal?",
+        "what_remains_unknown": "What is still unknown after current artifact scan?"
+      },
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/debug_explanation_index_record.json",
+        "artifacts/dashboard_metrics/eval_candidate_record.json"
+      ],
+      "answer_completeness": "partial",
+      "estimated_minutes": 12,
+      "debug_readiness": "partial",
+      "improvement_needed": "Add direct owner artifact linkage evidence into debug explanation entries."
+    }
+  ]
+}

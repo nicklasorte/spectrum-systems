@@ -47,6 +47,21 @@ const ARTIFACT_PATHS = {
   debugExplanationIndex: 'artifacts/dashboard_metrics/debug_explanation_index_record.json',
   metGeneratedArtifactClassification:
     'artifacts/dashboard_metrics/met_generated_artifact_classification_record.json',
+  ownerReadObservationLedger:
+    'artifacts/dashboard_metrics/owner_read_observation_ledger_record.json',
+  materializationObservationMapper:
+    'artifacts/dashboard_metrics/materialization_observation_mapper_record.json',
+  comparableCaseQualificationGate:
+    'artifacts/dashboard_metrics/comparable_case_qualification_gate_record.json',
+  trendReadyCasePack: 'artifacts/dashboard_metrics/trend_ready_case_pack_record.json',
+  overrideEvidenceSourceAdapter:
+    'artifacts/dashboard_metrics/override_evidence_source_adapter_record.json',
+  foldCandidateProofCheck:
+    'artifacts/dashboard_metrics/fold_candidate_proof_check_record.json',
+  operatorDebuggabilityDrill:
+    'artifacts/dashboard_metrics/operator_debuggability_drill_record.json',
+  generatedArtifactPolicyHandoff:
+    'artifacts/dashboard_metrics/generated_artifact_policy_handoff_record.json',
 };
 
 interface BottleneckRecord {
@@ -357,6 +372,62 @@ export async function GET() {
     classified_paths?: Array<Record<string, unknown>>;
   }>(ARTIFACT_PATHS.metGeneratedArtifactClassification);
 
+  const ownerReadObservationLedger = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    owner_read_items?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.ownerReadObservationLedger);
+  const materializationObservationMapper = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    materialization_observations?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.materializationObservationMapper);
+  const comparableCaseQualificationGate = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    qualification_rules?: Record<string, unknown>;
+    qualified_case_groups?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.comparableCaseQualificationGate);
+  const trendReadyCasePack = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    case_packs?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.trendReadyCasePack);
+  const overrideEvidenceSourceAdapter = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    override_source_state?: string;
+    override_evidence_count?: number | 'unknown';
+    override_evidence_refs?: string[];
+    next_recommended_input?: string;
+  }>(ARTIFACT_PATHS.overrideEvidenceSourceAdapter);
+  const foldCandidateProofCheck = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    fold_candidates?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.foldCandidateProofCheck);
+  const operatorDebuggabilityDrill = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    target_minutes?: number;
+    drill_items?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.operatorDebuggabilityDrill);
+  const generatedArtifactPolicyHandoff = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    central_policy_path?: string;
+    central_policy_state?: string;
+    policy_alignment_items?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.generatedArtifactPolicyHandoff);
+
   const allSlots = [
     { path: ARTIFACT_PATHS.checkpointSummary, loaded: checkpointSummary !== null },
     { path: ARTIFACT_PATHS.repoSnapshot, loaded: repoSnapshot !== null },
@@ -397,6 +468,14 @@ export async function GET() {
       path: ARTIFACT_PATHS.metGeneratedArtifactClassification,
       loaded: metGeneratedArtifactClassification !== null,
     },
+    { path: ARTIFACT_PATHS.ownerReadObservationLedger, loaded: ownerReadObservationLedger !== null },
+    { path: ARTIFACT_PATHS.materializationObservationMapper, loaded: materializationObservationMapper !== null },
+    { path: ARTIFACT_PATHS.comparableCaseQualificationGate, loaded: comparableCaseQualificationGate !== null },
+    { path: ARTIFACT_PATHS.trendReadyCasePack, loaded: trendReadyCasePack !== null },
+    { path: ARTIFACT_PATHS.overrideEvidenceSourceAdapter, loaded: overrideEvidenceSourceAdapter !== null },
+    { path: ARTIFACT_PATHS.foldCandidateProofCheck, loaded: foldCandidateProofCheck !== null },
+    { path: ARTIFACT_PATHS.operatorDebuggabilityDrill, loaded: operatorDebuggabilityDrill !== null },
+    { path: ARTIFACT_PATHS.generatedArtifactPolicyHandoff, loaded: generatedArtifactPolicyHandoff !== null },
   ];
 
   const envelope = buildSourceEnvelope({
@@ -426,6 +505,14 @@ export async function GET() {
       ...(overrideEvidenceIntake?.warnings ?? []),
       ...(debugExplanationIndex?.warnings ?? []),
       ...(metGeneratedArtifactClassification?.warnings ?? []),
+      ...(ownerReadObservationLedger?.warnings ?? []),
+      ...(materializationObservationMapper?.warnings ?? []),
+      ...(comparableCaseQualificationGate?.warnings ?? []),
+      ...(trendReadyCasePack?.warnings ?? []),
+      ...(overrideEvidenceSourceAdapter?.warnings ?? []),
+      ...(foldCandidateProofCheck?.warnings ?? []),
+      ...(operatorDebuggabilityDrill?.warnings ?? []),
+      ...(generatedArtifactPolicyHandoff?.warnings ?? []),
       'Dashboard seed artifacts are minimal and partial; unknown coverage remains visible by design.',
     ],
   });
@@ -1041,6 +1128,135 @@ export async function GET() {
         ],
       };
 
+
+  // MET-34-41 — owner-read/materialization/trend/fold/debug/policy handoff.
+  const ownerReadObservationsBlock = ownerReadObservationLedger
+    ? {
+        owner_read_items: ownerReadObservationLedger.owner_read_items ?? [],
+        data_source: ownerReadObservationLedger.data_source ?? 'unknown',
+        source_artifacts_used: ownerReadObservationLedger.source_artifacts_used ?? [],
+        warnings: ownerReadObservationLedger.warnings ?? [],
+      }
+    : {
+        owner_read_items: [],
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [`${ARTIFACT_PATHS.ownerReadObservationLedger} unavailable; owner read observations reported as unknown.`],
+      };
+
+  const materializationObservationMapperBlock = materializationObservationMapper
+    ? {
+        materialization_observations:
+          materializationObservationMapper.materialization_observations ?? [],
+        data_source: materializationObservationMapper.data_source ?? 'unknown',
+        source_artifacts_used: materializationObservationMapper.source_artifacts_used ?? [],
+        warnings: materializationObservationMapper.warnings ?? [],
+      }
+    : {
+        materialization_observations: [],
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [`${ARTIFACT_PATHS.materializationObservationMapper} unavailable; materialization observations reported as unknown.`],
+      };
+
+  const comparableCaseQualificationGateBlock = comparableCaseQualificationGate
+    ? {
+        qualification_rules: comparableCaseQualificationGate.qualification_rules ?? null,
+        qualified_case_groups: comparableCaseQualificationGate.qualified_case_groups ?? [],
+        data_source: comparableCaseQualificationGate.data_source ?? 'unknown',
+        source_artifacts_used: comparableCaseQualificationGate.source_artifacts_used ?? [],
+        warnings: comparableCaseQualificationGate.warnings ?? [],
+      }
+    : {
+        qualification_rules: null,
+        qualified_case_groups: [],
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [`${ARTIFACT_PATHS.comparableCaseQualificationGate} unavailable; comparable-case gate reported as unknown.`],
+      };
+
+  const trendReadyCasePackBlock = trendReadyCasePack
+    ? {
+        case_packs: trendReadyCasePack.case_packs ?? [],
+        data_source: trendReadyCasePack.data_source ?? 'unknown',
+        source_artifacts_used: trendReadyCasePack.source_artifacts_used ?? [],
+        warnings: trendReadyCasePack.warnings ?? [],
+      }
+    : {
+        case_packs: [],
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [`${ARTIFACT_PATHS.trendReadyCasePack} unavailable; trend-ready case pack reported as unknown.`],
+      };
+
+  const overrideEvidenceSourceAdapterBlock = overrideEvidenceSourceAdapter
+    ? {
+        override_source_state: overrideEvidenceSourceAdapter.override_source_state ?? 'unknown',
+        override_evidence_count: overrideEvidenceSourceAdapter.override_evidence_count ?? 'unknown',
+        override_evidence_refs: overrideEvidenceSourceAdapter.override_evidence_refs ?? [],
+        next_recommended_input: overrideEvidenceSourceAdapter.next_recommended_input ?? null,
+        data_source: overrideEvidenceSourceAdapter.data_source ?? 'unknown',
+        source_artifacts_used: overrideEvidenceSourceAdapter.source_artifacts_used ?? [],
+        warnings: overrideEvidenceSourceAdapter.warnings ?? [],
+      }
+    : {
+        override_source_state: 'unknown',
+        override_evidence_count: 'unknown',
+        override_evidence_refs: [],
+        next_recommended_input: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [`${ARTIFACT_PATHS.overrideEvidenceSourceAdapter} unavailable; override evidence source state reported as unknown.`],
+      };
+
+  const foldCandidateProofCheckBlock = foldCandidateProofCheck
+    ? {
+        fold_candidates: foldCandidateProofCheck.fold_candidates ?? [],
+        data_source: foldCandidateProofCheck.data_source ?? 'unknown',
+        source_artifacts_used: foldCandidateProofCheck.source_artifacts_used ?? [],
+        warnings: foldCandidateProofCheck.warnings ?? [],
+      }
+    : {
+        fold_candidates: [],
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [`${ARTIFACT_PATHS.foldCandidateProofCheck} unavailable; fold candidate proof check reported as unknown.`],
+      };
+
+  const operatorDebuggabilityDrillBlock = operatorDebuggabilityDrill
+    ? {
+        target_minutes: operatorDebuggabilityDrill.target_minutes ?? 15,
+        drill_items: operatorDebuggabilityDrill.drill_items ?? [],
+        data_source: operatorDebuggabilityDrill.data_source ?? 'unknown',
+        source_artifacts_used: operatorDebuggabilityDrill.source_artifacts_used ?? [],
+        warnings: operatorDebuggabilityDrill.warnings ?? [],
+      }
+    : {
+        target_minutes: 15,
+        drill_items: [],
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [`${ARTIFACT_PATHS.operatorDebuggabilityDrill} unavailable; operator debuggability drill reported as unknown.`],
+      };
+
+  const generatedArtifactPolicyHandoffBlock = generatedArtifactPolicyHandoff
+    ? {
+        central_policy_path: generatedArtifactPolicyHandoff.central_policy_path ?? 'unknown',
+        central_policy_state: generatedArtifactPolicyHandoff.central_policy_state ?? 'unknown',
+        policy_alignment_items: generatedArtifactPolicyHandoff.policy_alignment_items ?? [],
+        data_source: generatedArtifactPolicyHandoff.data_source ?? 'unknown',
+        source_artifacts_used: generatedArtifactPolicyHandoff.source_artifacts_used ?? [],
+        warnings: generatedArtifactPolicyHandoff.warnings ?? [],
+      }
+    : {
+        central_policy_path: 'unknown',
+        central_policy_state: 'unknown',
+        policy_alignment_items: [],
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [`${ARTIFACT_PATHS.generatedArtifactPolicyHandoff} unavailable; generated-artifact policy handoff reported as unknown.`],
+      };
+
   // MET-04 — feedback items list (filter to sourced items only).
   const feedbackItems = (failureFeedback?.feedback_items ?? []).filter(
     (i) =>
@@ -1096,6 +1312,14 @@ export async function GET() {
     override_evidence_intake: overrideEvidenceIntakeBlock,
     debug_explanation_index: debugExplanationIndexBlock,
     met_generated_artifact_classification: metGeneratedArtifactClassificationBlock,
+    owner_read_observations: ownerReadObservationsBlock,
+    materialization_observation_mapper: materializationObservationMapperBlock,
+    comparable_case_qualification_gate: comparableCaseQualificationGateBlock,
+    trend_ready_case_pack: trendReadyCasePackBlock,
+    override_evidence_source_adapter: overrideEvidenceSourceAdapterBlock,
+    fold_candidate_proof_check: foldCandidateProofCheckBlock,
+    operator_debuggability_drill: operatorDebuggabilityDrillBlock,
+    generated_artifact_policy_handoff: generatedArtifactPolicyHandoffBlock,
     source_artifacts_used: Array.from(
       new Set([
         ...(envelope.source_artifacts_used ?? []),
@@ -1121,6 +1345,14 @@ export async function GET() {
         ...(overrideEvidenceIntake?.source_artifacts_used ?? []),
         ...(debugExplanationIndex?.source_artifacts_used ?? []),
         ...(metGeneratedArtifactClassification?.source_artifacts_used ?? []),
+        ...(ownerReadObservationLedger?.source_artifacts_used ?? []),
+        ...(materializationObservationMapper?.source_artifacts_used ?? []),
+        ...(comparableCaseQualificationGate?.source_artifacts_used ?? []),
+        ...(trendReadyCasePack?.source_artifacts_used ?? []),
+        ...(overrideEvidenceSourceAdapter?.source_artifacts_used ?? []),
+        ...(foldCandidateProofCheck?.source_artifacts_used ?? []),
+        ...(operatorDebuggabilityDrill?.source_artifacts_used ?? []),
+        ...(generatedArtifactPolicyHandoff?.source_artifacts_used ?? []),
       ])
     ),
     intelligence_summary: {
