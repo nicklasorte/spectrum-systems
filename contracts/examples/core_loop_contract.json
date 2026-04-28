@@ -1,0 +1,71 @@
+{
+  "artifact_type": "core_loop_contract",
+  "schema_version": "1.0.0",
+  "contract_id": "CL-CORE-LOOP-CONTRACT-01",
+  "description": "Pins the canonical AEX → PQX → EVL → TPA → CDE → SEL handoff chain. Defines the required handoff fields, the required input/output references at each transition, the terminal statuses, and the reason precedence used to elect a single primary canonical reason. The contract is non-authoritative; canonical owners retain authority.",
+  "stage_order": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"],
+  "stage_required_refs": {
+    "AEX": ["aex_admission_ref"],
+    "PQX": ["pqx_execution_envelope_ref"],
+    "EVL": ["evl_eval_summary_ref"],
+    "TPA": ["tpa_policy_input_ref", "tpa_policy_result_ref"],
+    "CDE": ["cde_decision_input_ref", "cde_decision_ref"],
+    "SEL": ["sel_action_ref"]
+  },
+  "transitions": [
+    {
+      "from_stage": "AEX",
+      "to_stage": "PQX",
+      "required_handoff_fields": ["admission_class", "trace_id", "run_id"],
+      "required_input_refs": ["aex_admission_ref"],
+      "required_output_refs": ["aex_admission_ref"]
+    },
+    {
+      "from_stage": "PQX",
+      "to_stage": "EVL",
+      "required_handoff_fields": ["run_id", "trace_id", "execution_status"],
+      "required_input_refs": ["aex_admission_ref"],
+      "required_output_refs": ["pqx_execution_envelope_ref"]
+    },
+    {
+      "from_stage": "EVL",
+      "to_stage": "TPA",
+      "required_handoff_fields": ["trace_id", "eval_summary_status"],
+      "required_input_refs": ["pqx_execution_envelope_ref"],
+      "required_output_refs": ["evl_eval_summary_ref"]
+    },
+    {
+      "from_stage": "TPA",
+      "to_stage": "CDE",
+      "required_handoff_fields": ["trace_id", "policy_result_status"],
+      "required_input_refs": ["evl_eval_summary_ref", "tpa_policy_input_ref"],
+      "required_output_refs": ["tpa_policy_result_ref"]
+    },
+    {
+      "from_stage": "CDE",
+      "to_stage": "SEL",
+      "required_handoff_fields": ["trace_id", "control_outcome"],
+      "required_input_refs": ["tpa_policy_result_ref", "cde_decision_input_ref"],
+      "required_output_refs": ["cde_decision_ref"]
+    }
+  ],
+  "terminal_statuses": ["pass", "block", "freeze"],
+  "reason_precedence": ["admission", "execution", "eval", "policy", "decision", "action"],
+  "stage_owners": {
+    "AEX": "AEX",
+    "PQX": "PQX",
+    "EVL": "EVL",
+    "TPA": "TPA",
+    "CDE": "CDE",
+    "SEL": "SEL"
+  },
+  "non_authority_assertions": [
+    "preparatory_only",
+    "not_admission_authority",
+    "not_execution_authority",
+    "not_eval_authority",
+    "not_policy_authority",
+    "not_control_authority",
+    "not_enforcement_authority"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "artifact_type": "sel_action_mapping_policy",
+  "policy_id": "CL-19-sel-action-mapping-policy",
+  "schema_version": "1.0.0",
+  "purpose": "Explicit, non-authoritative mapping from CDE control-decision types to the SEL action types that SEL is permitted to take. SEL retains canonical enforcement authority. The policy is consulted to detect SEL actions that are inconsistent with the upstream CDE decision (e.g. promote-on-block, no-op-on-freeze, retry-on-policy-mismatch). It does not itself perform any enforcement.",
+  "decision_to_allowed_actions": {
+    "allow": ["allow_continuation"],
+    "block": ["block_no_mutation"],
+    "freeze": ["freeze_hold"],
+    "repair_required": ["bounded_repair"]
+  },
+  "decision_action_pairs": [
+    {"decision": "allow", "action": "allow_continuation", "human_label": "permitted continuation"},
+    {"decision": "block", "action": "block_no_mutation", "human_label": "blocked / no mutation"},
+    {"decision": "freeze", "action": "freeze_hold", "human_label": "freeze / hold"},
+    {"decision": "repair_required", "action": "bounded_repair", "human_label": "bounded repair only"}
+  ],
+  "forbidden_action_patterns": [
+    {"name": "promote_on_block", "pattern_decision": "block", "pattern_action": "allow_continuation", "reason_code": "ACTION_PROMOTE_ON_BLOCK"},
+    {"name": "noop_on_freeze", "pattern_decision": "freeze", "pattern_action": "allow_continuation", "reason_code": "ACTION_NOOP_ON_FREEZE"},
+    {"name": "retry_on_policy_mismatch", "pattern_decision": "block", "pattern_action": "bounded_repair", "reason_code": "ACTION_RETRY_ON_POLICY_MISMATCH"},
+    {"name": "mutation_without_allow", "pattern_decision": "block", "pattern_action": "allow_continuation", "reason_code": "ACTION_MUTATION_WITHOUT_ALLOW"},
+    {"name": "repair_without_authorization", "pattern_decision": "allow", "pattern_action": "bounded_repair", "reason_code": "ACTION_REPAIR_WITHOUT_AUTHORIZATION"}
+  ],
+  "non_authority_assertions": [
+    "preparatory_only",
+    "not_enforcement_authority",
+    "not_control_authority"
+  ]
+}

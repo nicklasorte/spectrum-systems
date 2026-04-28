@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/core_loop_proof.schema.json",
+  "title": "Core Loop Proof",
+  "description": "CL-25: Compact reference-only proof artifact that documents one full traversal of the AEX → PQX → EVL → TPA → CDE → SEL loop for a pass / block / freeze scenario. The proof carries one primary canonical reason, supporting reason details, artifact references for every stage, transition continuity, lineage / replay references, the allowed next action, and the terminal status. The proof is non-authoritative: it does not decide, gate, or enforce.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "proof_id",
+    "trace_id",
+    "audit_timestamp",
+    "stages",
+    "transitions",
+    "primary_reason",
+    "terminal_status",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": { "const": "core_loop_proof" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "proof_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string" },
+    "audit_timestamp": { "type": "string", "minLength": 1 },
+    "stages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"],
+      "properties": {
+        "AEX": { "$ref": "#/$defs/stage_record" },
+        "PQX": { "$ref": "#/$defs/stage_record" },
+        "EVL": { "$ref": "#/$defs/stage_record" },
+        "TPA": { "$ref": "#/$defs/stage_record" },
+        "CDE": { "$ref": "#/$defs/stage_record" },
+        "SEL": { "$ref": "#/$defs/stage_record" }
+      }
+    },
+    "transitions": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": { "$ref": "#/$defs/transition_record" }
+    },
+    "primary_reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary_canonical_reason",
+        "source_stage",
+        "supporting_reasons",
+        "failing_artifact_refs",
+        "next_allowed_action"
+      ],
+      "properties": {
+        "primary_canonical_reason": { "type": "string", "minLength": 1 },
+        "source_stage": {
+          "type": "string",
+          "enum": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL", "NONE"]
+        },
+        "supporting_reasons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["reason_code", "stage"],
+            "properties": {
+              "reason_code": { "type": "string", "minLength": 1 },
+              "stage": {
+                "type": "string",
+                "enum": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"]
+              },
+              "detail": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "failing_artifact_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "next_allowed_action": {
+          "type": "string",
+          "enum": [
+            "allow_continuation",
+            "block_no_mutation",
+            "freeze_hold",
+            "bounded_repair",
+            "no_action"
+          ]
+        }
+      }
+    },
+    "terminal_status": {
+      "type": "string",
+      "enum": ["pass", "block", "freeze"]
+    },
+    "lineage_chain_ref": { "type": ["string", "null"] },
+    "replay_record_ref": { "type": ["string", "null"] },
+    "trace_continuity_ok": { "type": "boolean" },
+    "human_readable": { "type": "string" },
+    "non_authority_assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "preparatory_only",
+          "not_admission_authority",
+          "not_execution_authority",
+          "not_eval_authority",
+          "not_policy_authority",
+          "not_control_authority",
+          "not_enforcement_authority",
+          "not_promotion_authority",
+          "not_certification_authority"
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "stage_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stage", "owner", "artifact_ref", "status"],
+      "properties": {
+        "stage": {
+          "type": "string",
+          "enum": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"]
+        },
+        "owner": {
+          "type": "string",
+          "enum": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"]
+        },
+        "artifact_ref": { "type": ["string", "null"] },
+        "status": {
+          "type": "string",
+          "enum": ["ok", "failed", "missing", "stale", "skipped"]
+        },
+        "reason_code": { "type": ["string", "null"] }
+      }
+    },
+    "transition_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from_stage", "to_stage", "status"],
+      "properties": {
+        "from_stage": {
+          "type": "string",
+          "enum": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"]
+        },
+        "to_stage": {
+          "type": "string",
+          "enum": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ok", "failed", "missing", "stale"]
+        },
+        "reason_code": { "type": ["string", "null"] },
+        "missing_handoff_fields": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "artifact_type": "cde_decision_input_contract",
+  "policy_id": "CL-16-cde-decision-input-contract",
+  "schema_version": "1.0.0",
+  "purpose": "Limits CDE control/closure decision inputs to governed artifacts only: AEX admission result, PQX execution envelope, EVL eval summary, TPA policy result, and trace / lineage / replay status. Free-text-only closure, dashboard-only closure, runbook-only closure, stale proof, and missing TPA result are forbidden. CDE retains canonical control/closure authority; this contract is the inspection surface that fails closed when CDE inputs are ungoverned.",
+  "allowed_input_keys": [
+    "aex_admission_result_ref",
+    "pqx_execution_envelope_ref",
+    "evl_eval_summary_ref",
+    "tpa_policy_result_ref",
+    "trace_id",
+    "run_id",
+    "lineage_chain_ref",
+    "replay_record_ref",
+    "cde_decision_input_ref"
+  ],
+  "required_input_keys": [
+    "aex_admission_result_ref",
+    "pqx_execution_envelope_ref",
+    "evl_eval_summary_ref",
+    "tpa_policy_result_ref",
+    "trace_id"
+  ],
+  "forbidden_input_keys": [
+    "free_text_rationale",
+    "narrative_only_rationale",
+    "dashboard_only_status",
+    "operator_runbook_text",
+    "stale_proof_ref",
+    "ungoverned_input"
+  ],
+  "freshness_rules": {
+    "max_age_seconds": 86400,
+    "stale_reason_code": "DECISION_INPUT_STALE_PROOF"
+  },
+  "missing_input_reason_codes": {
+    "aex_admission_result_ref": "DECISION_INPUT_MISSING_EXECUTION",
+    "pqx_execution_envelope_ref": "DECISION_INPUT_MISSING_EXECUTION",
+    "evl_eval_summary_ref": "DECISION_INPUT_MISSING_EVAL",
+    "tpa_policy_result_ref": "DECISION_INPUT_MISSING_TPA",
+    "trace_id": "DECISION_INPUT_MISSING_EXECUTION"
+  },
+  "forbidden_input_reason_codes": {
+    "free_text_rationale": "DECISION_INPUT_FREE_TEXT_ONLY",
+    "narrative_only_rationale": "DECISION_INPUT_FREE_TEXT_ONLY",
+    "dashboard_only_status": "DECISION_INPUT_DASHBOARD_ONLY",
+    "operator_runbook_text": "DECISION_INPUT_RUNBOOK_ONLY"
+  },
+  "non_authority_assertions": [
+    "preparatory_only",
+    "not_control_authority",
+    "not_certification_authority"
+  ]
+}

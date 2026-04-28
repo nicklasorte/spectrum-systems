@@ -1,0 +1,43 @@
+{
+  "artifact_type": "tpa_policy_input_contract",
+  "policy_id": "CL-13-tpa-policy-input-contract",
+  "schema_version": "1.0.0",
+  "purpose": "Pins the exact set of governed inputs that TPA may consume from upstream stages (AEX, PQX, EVL) and the upstream lineage / replay surfaces. Hidden state, dashboard-only claims, free-text-only narrative, and other ungoverned inputs are forbidden. TPA retains canonical trust/policy authority; this contract makes that authority surface inspectable and rejects ungoverned inputs before they reach TPA evaluation.",
+  "allowed_input_keys": [
+    "aex_admission_ref",
+    "pqx_execution_envelope_ref",
+    "evl_eval_summary_ref",
+    "lineage_chain_ref",
+    "replay_record_ref",
+    "trace_id",
+    "run_id",
+    "tpa_policy_input_ref"
+  ],
+  "required_input_keys": [
+    "aex_admission_ref",
+    "pqx_execution_envelope_ref",
+    "evl_eval_summary_ref",
+    "trace_id"
+  ],
+  "forbidden_input_keys": [
+    "dashboard_status",
+    "dashboard_only_claim",
+    "narrative_rationale",
+    "free_text_rationale",
+    "operator_runbook_text",
+    "hidden_state",
+    "undocumented_input",
+    "raw_text_only"
+  ],
+  "forbidden_input_patterns": [
+    {"name": "dashboard_only", "match": "dashboard_*", "reason_code": "POLICY_DASHBOARD_ONLY_INPUT"},
+    {"name": "narrative_only", "match": "*_narrative", "reason_code": "POLICY_NARRATIVE_ONLY_INPUT"},
+    {"name": "hidden_state", "match": "hidden_*", "reason_code": "POLICY_HIDDEN_INPUT"},
+    {"name": "ungoverned", "match": "ungoverned_*", "reason_code": "POLICY_UNGOVERNED_INPUT"}
+  ],
+  "non_authority_assertions": [
+    "preparatory_only",
+    "not_policy_authority",
+    "not_control_authority"
+  ]
+}

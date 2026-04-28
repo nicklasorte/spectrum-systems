@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.151",
+  "artifact_version": "1.3.152",
   "schema_version": "1.3.99",
   "standards_version": "1.9.10",
   "record_id": "REC-STD-2026-04-18-ENF-01",
@@ -2778,6 +2778,32 @@
       "last_updated_in": "1.3.149",
       "example_path": "contracts/examples/core_loop_alignment_record.json",
       "notes": "ENF-01 required precondition artifact proving alignment to execution\u2192evaluation\u2192control\u2192enforcement loop."
+    },
+    {
+      "artifact_type": "core_loop_contract",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/examples/core_loop_contract.json",
+      "notes": "CL-ALL-01 machine-checkable meta-contract for the canonical AEX\u2192PQX\u2192EVL\u2192TPA\u2192CDE\u2192SEL handoff chain. Non-authoritative; pins stage order, transition handoff fields, terminal statuses, and reason precedence."
+    },
+    {
+      "artifact_type": "core_loop_proof",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/examples/core_loop_proof.json",
+      "notes": "CL-ALL-01 compact reference-only proof artifact for one full traversal of the canonical core loop with one primary canonical reason, supporting reasons, per-stage refs, transitions, and lineage/replay refs."
     },
     {
       "artifact_type": "core_system_integration_validation",

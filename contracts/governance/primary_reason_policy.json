@@ -1,0 +1,84 @@
+{
+  "artifact_type": "primary_reason_policy",
+  "policy_id": "CL-22-primary-reason-policy",
+  "schema_version": "1.0.0",
+  "purpose": "Deterministic precedence used to elect a single primary canonical reason whenever the canonical core loop AEX→PQX→EVL→TPA→CDE→SEL emits a block or freeze. Supporting reasons are preserved alongside the elected primary reason. The policy is non-authoritative; canonical owners retain authority over the underlying signals.",
+  "precedence_order": [
+    "admission",
+    "execution",
+    "eval",
+    "policy",
+    "decision",
+    "action"
+  ],
+  "stage_to_precedence_class": {
+    "AEX": "admission",
+    "PQX": "execution",
+    "EVL": "eval",
+    "TPA": "policy",
+    "CDE": "decision",
+    "SEL": "action"
+  },
+  "canonical_reason_codes": {
+    "admission": [
+      "ADMISSION_MISSING",
+      "ADMISSION_CLASS_UNKNOWN",
+      "ADMISSION_CLASS_MISSING",
+      "ADMISSION_BYPASS_ATTEMPT",
+      "ADMISSION_REPO_MUTATION_WITHOUT_PROOF"
+    ],
+    "execution": [
+      "EXECUTION_ENVELOPE_MISSING",
+      "EXECUTION_TRACE_ID_MISSING",
+      "EXECUTION_RUN_ID_MISMATCH",
+      "EXECUTION_OUTPUT_HASH_MISSING",
+      "EXECUTION_INPUT_REFS_MISSING",
+      "EXECUTION_NOT_REPLAYABLE"
+    ],
+    "eval": [
+      "EVAL_REQUIRED_MISSING",
+      "EVAL_REQUIRED_FAILED",
+      "EVAL_DUPLICATE",
+      "EVAL_UNSUPPORTED_NAME",
+      "EVAL_OPTIONAL_MARKED_REQUIRED",
+      "EVAL_REQUIRED_MARKED_OPTIONAL"
+    ],
+    "policy": [
+      "POLICY_HIDDEN_INPUT",
+      "POLICY_DASHBOARD_ONLY_INPUT",
+      "POLICY_NARRATIVE_ONLY_INPUT",
+      "POLICY_UNGOVERNED_INPUT",
+      "POLICY_INPUT_MISSING",
+      "POLICY_INPUT_STALE",
+      "POLICY_RESULT_MISSING"
+    ],
+    "decision": [
+      "DECISION_INPUT_FREE_TEXT_ONLY",
+      "DECISION_INPUT_DASHBOARD_ONLY",
+      "DECISION_INPUT_RUNBOOK_ONLY",
+      "DECISION_INPUT_STALE_PROOF",
+      "DECISION_INPUT_MISSING_TPA",
+      "DECISION_INPUT_MISSING_EVAL",
+      "DECISION_INPUT_MISSING_EXECUTION",
+      "DECISION_FREEZE_REQUIRED"
+    ],
+    "action": [
+      "ACTION_PROMOTE_ON_BLOCK",
+      "ACTION_NOOP_ON_FREEZE",
+      "ACTION_RETRY_ON_POLICY_MISMATCH",
+      "ACTION_MUTATION_WITHOUT_ALLOW",
+      "ACTION_REPAIR_WITHOUT_AUTHORIZATION",
+      "ACTION_UNKNOWN_DECISION_MAPPING"
+    ]
+  },
+  "pass_reason_code": "CORE_LOOP_PASS",
+  "non_authority_assertions": [
+    "preparatory_only",
+    "not_admission_authority",
+    "not_execution_authority",
+    "not_eval_authority",
+    "not_policy_authority",
+    "not_control_authority",
+    "not_enforcement_authority"
+  ]
+}

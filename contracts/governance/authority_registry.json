@@ -135,6 +135,15 @@
       "spectrum_systems/modules/governance/cleanup_candidate_report.py",
       "spectrum_systems/modules/governance/operator_runbook.py",
       "spectrum_systems/modules/governance/operational_closure_bundle.py",
+      "spectrum_systems/modules/governance/core_loop_contract.py",
+      "spectrum_systems/modules/governance/core_loop_admission_minimality.py",
+      "spectrum_systems/modules/governance/core_loop_execution_envelope.py",
+      "spectrum_systems/modules/governance/core_loop_required_eval_resolver.py",
+      "spectrum_systems/modules/governance/core_loop_policy_input_contract.py",
+      "spectrum_systems/modules/governance/core_loop_decision_input_contract.py",
+      "spectrum_systems/modules/governance/core_loop_action_mapping.py",
+      "spectrum_systems/modules/governance/core_loop_primary_reason.py",
+      "spectrum_systems/modules/governance/core_loop_proof.py",
       "contracts/examples/proof_intake_index.json",
       "contracts/examples/bottleneck_classification.json",
       "contracts/examples/dashboard_truth_projection.json",
@@ -142,7 +151,9 @@
       "contracts/examples/work_selection_record.json",
       "contracts/examples/cleanup_candidate_report.json",
       "contracts/examples/operator_runbook_entry.json",
-      "contracts/examples/operational_closure_bundle.json"
+      "contracts/examples/operational_closure_bundle.json",
+      "contracts/examples/core_loop_contract.json",
+      "contracts/examples/core_loop_proof.json"
     ]
   },
   "vocabulary_overrides": {

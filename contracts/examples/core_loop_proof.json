@@ -1,0 +1,80 @@
+{
+  "artifact_type": "core_loop_proof",
+  "schema_version": "1.0.0",
+  "proof_id": "clp-pass-0001",
+  "trace_id": "trace-cl-0001",
+  "run_id": "run-cl-0001",
+  "audit_timestamp": "2026-04-28T12:00:00Z",
+  "stages": {
+    "AEX": {
+      "stage": "AEX",
+      "owner": "AEX",
+      "artifact_ref": "build_admission_record:adm-1",
+      "status": "ok",
+      "reason_code": null
+    },
+    "PQX": {
+      "stage": "PQX",
+      "owner": "PQX",
+      "artifact_ref": "pqx_execution_envelope:env-1",
+      "status": "ok",
+      "reason_code": null
+    },
+    "EVL": {
+      "stage": "EVL",
+      "owner": "EVL",
+      "artifact_ref": "evl_eval_summary:evs-1",
+      "status": "ok",
+      "reason_code": null
+    },
+    "TPA": {
+      "stage": "TPA",
+      "owner": "TPA",
+      "artifact_ref": "tpa_policy_result:tpr-1",
+      "status": "ok",
+      "reason_code": null
+    },
+    "CDE": {
+      "stage": "CDE",
+      "owner": "CDE",
+      "artifact_ref": "cde_decision:dec-1",
+      "status": "ok",
+      "reason_code": null
+    },
+    "SEL": {
+      "stage": "SEL",
+      "owner": "SEL",
+      "artifact_ref": "sel_action:sel-1",
+      "status": "ok",
+      "reason_code": null
+    }
+  },
+  "transitions": [
+    {"from_stage": "AEX", "to_stage": "PQX", "status": "ok", "reason_code": null, "missing_handoff_fields": []},
+    {"from_stage": "PQX", "to_stage": "EVL", "status": "ok", "reason_code": null, "missing_handoff_fields": []},
+    {"from_stage": "EVL", "to_stage": "TPA", "status": "ok", "reason_code": null, "missing_handoff_fields": []},
+    {"from_stage": "TPA", "to_stage": "CDE", "status": "ok", "reason_code": null, "missing_handoff_fields": []},
+    {"from_stage": "CDE", "to_stage": "SEL", "status": "ok", "reason_code": null, "missing_handoff_fields": []}
+  ],
+  "primary_reason": {
+    "primary_canonical_reason": "CORE_LOOP_PASS",
+    "source_stage": "NONE",
+    "supporting_reasons": [],
+    "failing_artifact_refs": [],
+    "next_allowed_action": "allow_continuation"
+  },
+  "terminal_status": "pass",
+  "lineage_chain_ref": "lineage:lin-1",
+  "replay_record_ref": "replay:rpl-1",
+  "trace_continuity_ok": true,
+  "human_readable": "CORE LOOP PROOF — proof_id=clp-pass-0001 trace_id=trace-cl-0001 terminal_status=pass primary_reason=CORE_LOOP_PASS",
+  "non_authority_assertions": [
+    "preparatory_only",
+    "not_admission_authority",
+    "not_execution_authority",
+    "not_eval_authority",
+    "not_policy_authority",
+    "not_control_authority",
+    "not_enforcement_authority"
+  ]
+}

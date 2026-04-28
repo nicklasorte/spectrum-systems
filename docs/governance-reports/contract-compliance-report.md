@@ -1,6 +1,6 @@
 # Cross-Repo Contract Compliance Report
 
-Generated: 2026-04-28T01:44:55Z
+Generated: 2026-04-28T13:14:40Z
 Source: `contracts/standards-manifest.json`
 
 ## Summary
