@@ -1,0 +1,47 @@
+{
+  "artifact_type": "d3l_final_readiness_packet",
+  "work_item": "D3L-FINALIZE-01",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "readiness": "READY",
+  "registry_status": "pass",
+  "active_system_count": 26,
+  "ranking_freshness_status": "fail_closed_when_not_fresh",
+  "top3_status": "overview_shows_top3_only_when_fresh",
+  "top10_full_ranking_status": "prioritization_only_when_fresh",
+  "maturity_table_status": "active_registry_coverage",
+  "graph_mode_status": {
+    "default": "clean_structure",
+    "failure_path": "supported",
+    "selected_node": "supported",
+    "full_registry": "supported_with_warning"
+  },
+  "mvp_graph_status": "separate_capability_graph",
+  "dark_mode_status": "polished_key_cards_graph_inspectors",
+  "oc_integration_status": "compact_card_or_compact_unavailable_reason",
+  "overview_complexity_status": "compact_budget_maintained",
+  "diagnostics_compatibility_status": "legacy_anchors_preserved",
+  "redteam_report_refs": [
+    "artifacts/tls/d3l_finalize_redteam_report.json"
+  ],
+  "fix_log_refs": [
+    "artifacts/tls/d3l_finalize_fix_log.json"
+  ],
+  "tests_run": [
+    "npm --prefix apps/dashboard-3ls test -- --runInBand",
+    "npm --prefix apps/dashboard-3ls run build",
+    "pytest tests/metrics/test_met_04_18_contract_selection.py tests/metrics/test_met_19_33_contract_selection.py",
+    "pytest tests/test_d3l_*.py",
+    "pytest tests/test_tls_roadmap_artifacts.py tests/test_tls_boundary_map.py",
+    "pytest tests/ -k \"dashboard or d3l or tls or maturity or ranking or registry or oc\""
+  ],
+  "guards_run": [
+    "python scripts/validate_system_registry.py",
+    "python scripts/run_authority_shape_preflight.py --base-ref main --head-ref HEAD --suggest-only --output outputs/authority_shape_preflight/authority_shape_preflight_result.json",
+    "python scripts/run_authority_leak_guard.py --base-ref main --head-ref HEAD --output outputs/authority_leak_guard/authority_leak_guard_result.json",
+    "python scripts/run_system_registry_guard.py --base-ref main --head-ref HEAD --output outputs/system_registry_guard/system_registry_guard_result.json"
+  ],
+  "residual_risks": [
+    "Graph full_registry density is artifact-dependent and may become visually noisy on very large registry updates",
+    "OC generation command in Overview is static guidance and should be kept in sync with OC build script naming"
+  ]
+}

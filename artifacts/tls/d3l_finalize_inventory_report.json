@@ -1,0 +1,40 @@
+{
+  "artifact_type": "d3l_finalize_inventory_report",
+  "work_item": "D3L-FINALIZE-01",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "roadmap_items": {
+    "overview_compact": "present",
+    "ranking_fail_closed": "partial",
+    "graph_clean_default": "partial",
+    "mvp_graph_separation": "present",
+    "dark_mode_polish": "partial",
+    "oc_integration": "partial",
+    "maturity_table": "present",
+    "diagnostics_legacy_anchors": "present"
+  },
+  "missing_or_partial": [
+    "Canonical rankingBlocked boolean was not consistently applied in graph/debug surfaces before finalize edits",
+    "Graph mode selector/default clean structure required explicit mode handling",
+    "OC unavailable state needed compact overview message with deterministic generation command",
+    "Dark-mode styling was incomplete on graph inspectors and legend"
+  ],
+  "files_touched": [
+    "apps/dashboard-3ls/app/page.tsx",
+    "apps/dashboard-3ls/components/SystemTrustGraph.tsx",
+    "apps/dashboard-3ls/components/TrustGraphSection.tsx",
+    "apps/dashboard-3ls/components/RecommendationDebugPanel.tsx",
+    "apps/dashboard-3ls/components/GraphLegend.tsx",
+    "apps/dashboard-3ls/components/SystemInspector.tsx",
+    "apps/dashboard-3ls/components/EdgeInspector.tsx",
+    "apps/dashboard-3ls/components/ActivityLog.tsx",
+    "apps/dashboard-3ls/lib/systemGraphBuilder.ts",
+    "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx",
+    "apps/dashboard-3ls/__tests__/components/SystemTrustGraph.test.tsx",
+    "apps/dashboard-3ls/__tests__/components/TrustGraphSection.test.tsx"
+  ],
+  "current_risks": [
+    "Graph mode behavior depends on artifact edge classification quality for full diagnostic usefulness",
+    "OC generation command is static UI guidance and may need script-name updates if OC pipeline CLI changes",
+    "Freshness-gate contract from /api/priority is assumed to stay stable"
+  ]
+}

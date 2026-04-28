@@ -24,7 +24,7 @@ const TRUST_BORDERS: Array<{ key: string; label: string; color: string }> = [
 
 export function GraphLegend() {
   return (
-    <div className="border rounded p-3 text-xs space-y-3" data-testid="graph-legend">
+    <div className="border dark:border-slate-700 rounded p-3 text-xs space-y-3 bg-white dark:bg-slate-900 dark:text-slate-100" data-testid="graph-legend">
       <h3 className="font-semibold text-sm">Graph Legend</h3>
 
       <div data-testid="legend-node-groups">

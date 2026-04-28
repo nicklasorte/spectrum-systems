@@ -1,0 +1,15 @@
+{
+  "artifact_type": "d3l_finalize_fix_log",
+  "work_item": "D3L-FINALIZE-01",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "fixes": [
+    "Applied canonical rankingBlocked derivation in dashboard surfaces using freshness gate fallback to priority state",
+    "Introduced graph mode selector with clean_structure default and explicit full_registry diagnostics warning",
+    "Mode-filtered graph edges/nodes so default view shows only core chain",
+    "Suppressed recommendation debug actionable content when ranking is blocked and surfaced recompute command",
+    "Added compact OC unavailable panel to Overview with deterministic generation command",
+    "Polished dark-mode classes on graph/legend/inspectors/activity components",
+    "Updated graph replay command candidates to registry-active set",
+    "Expanded dashboard/graph tests for clean default mode and OC unavailable overview behavior"
+  ]
+}

@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import type { DebugMode, SystemGraphEdge, SystemGraphPayload } from '@/lib/systemGraph';
 import type { PriorityArtifactLoadResult } from '@/lib/artifactLoader';
 import { RecomputeGraphButton } from './RecomputeGraphButton';
-import { SystemTrustGraph, type GraphLayoutKey } from './SystemTrustGraph';
+import { SystemTrustGraph, type GraphLayoutKey, type GraphViewMode } from './SystemTrustGraph';
 import { SystemInspector } from './SystemInspector';
 import { EdgeInspector } from './EdgeInspector';
 import { ExplainFreezePanel } from './ExplainFreezePanel';
@@ -25,6 +25,7 @@ export function TrustGraphSection() {
   const [selectedEdge, setSelectedEdge] = useState<SystemGraphEdge | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [layout, setLayout] = useState<GraphLayoutKey>('layered');
+  const [graphMode, setGraphMode] = useState<GraphViewMode>('clean_structure');
   const [debugMode, setDebugMode] = useState<DebugMode>('normal');
   const [highlightedPath, setHighlightedPath] = useState<string[]>([]);
   const [lastRecompute, setLastRecompute] = useState<string | null>(null);
@@ -81,6 +82,10 @@ export function TrustGraphSection() {
   }, [displayGraph, lastRecompute]);
 
   const isFailClosed = !displayGraph || displayGraph.nodes.length === 0;
+  const freshnessGate = (priority as unknown as { freshness_gate?: { ok: boolean; status?: string; blocking_reasons?: string[]; recompute_command?: string } } | null)?.freshness_gate;
+  const rankingBlocked = freshnessGate ? !freshnessGate.ok : priority?.state !== 'ok';
+  const rankingBlockReason = freshnessGate?.blocking_reasons?.join(', ') ?? priority?.reason ?? 'priority_artifact_unavailable';
+  const recomputeCommand = freshnessGate?.recompute_command ?? priority?.recompute_command;
 
   if (loadFailed && !displayGraph) {
     return (
@@ -126,12 +131,23 @@ export function TrustGraphSection() {
   }
 
   return (
-    <section className="bg-white border rounded p-4 space-y-3" data-testid="trust-graph-section">
-      <header className="flex flex-wrap items-center justify-between gap-2 sticky top-0 z-10 bg-white pb-1">
+    <section className="bg-white dark:bg-slate-900 dark:text-slate-100 border dark:border-slate-700 rounded p-4 space-y-3" data-testid="trust-graph-section">
+      <header className="flex flex-wrap items-center justify-between gap-2 sticky top-0 z-10 bg-white dark:bg-slate-900 pb-1">
         <h2 className="font-semibold">SYSTEM TRUST GRAPH</h2>
         <div className="flex flex-wrap items-center gap-3">
           <DebugModeSelector value={debugMode} onChange={setDebugMode} />
           <LayoutSelector value={layout} onChange={setLayout} />
+          <select
+            value={graphMode}
+            onChange={(e) => setGraphMode(e.target.value as GraphViewMode)}
+            className="text-xs border rounded px-2 py-1 bg-white dark:bg-slate-800 dark:border-slate-600"
+            data-testid="graph-mode-selector"
+          >
+            <option value="clean_structure">Clean Structure</option>
+            <option value="failure_path">Failure Path</option>
+            <option value="selected_node">Selected Node</option>
+            <option value="full_registry">Full Registry</option>
+          </select>
           <button
             type="button"
             className="text-xs underline"
@@ -175,6 +191,11 @@ export function TrustGraphSection() {
         </aside>
 
         <div className="space-y-3 min-w-0" data-testid="graph-main-panel" data-canvas-mode={canvasMode}>
+          {graphMode === 'full_registry' && (
+            <p className="text-xs text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 rounded p-2" data-testid="full-registry-warning">
+              ⚠ Full Registry mode shows dense dependency web for diagnostics only.
+            </p>
+          )}
           <div
             className={canvasMode === 'scroll' ? 'overflow-x-auto -mx-2 px-2' : ''}
             data-testid="graph-canvas-wrapper"
@@ -190,6 +211,7 @@ export function TrustGraphSection() {
                 showAll={showAll}
                 layout={layout}
                 debugMode={debugMode}
+                graphMode={graphMode}
                 highlightedPath={highlightedPath}
                 onSelect={(id) => {
                   setSelected(id);
@@ -210,7 +232,12 @@ export function TrustGraphSection() {
           </div>
           <SystemInspector node={selectedNode} replayCommands={displayGraph.replay_commands} />
           <EdgeInspector edge={selectedEdge} />
-          <RecommendationDebugPanel priority={priority} />
+          <RecommendationDebugPanel
+            priority={priority}
+            rankingBlocked={rankingBlocked}
+            blockingReason={rankingBlockReason}
+            recomputeCommand={recomputeCommand}
+          />
         </div>
       </div>
     </section>

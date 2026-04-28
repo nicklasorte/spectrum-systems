@@ -369,7 +369,7 @@ export default function DashboardPage() {
     [priority, contract],
   );
   const freshnessGate = (priority as unknown as { freshness_gate?: { ok: boolean; status: string; blocking_reasons?: string[]; recompute_command?: string } } | null)?.freshness_gate;
-  const rankingBlocked = Boolean(freshnessGate && !freshnessGate.ok);
+  const rankingBlocked = freshnessGate ? !freshnessGate.ok : priority?.state !== 'ok';
 
   const queueResult = useMemo(
     () => buildLeverageQueueFromRoadmap(
@@ -504,7 +504,9 @@ export default function DashboardPage() {
           <Panel title="C. Top 3 Recommendations (TLS artifact only)">
             {rankingBlocked ? (
               <div data-testid="top3-fail-closed" className="border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950 p-3 rounded text-sm">
-                <p className="font-semibold text-red-700 dark:text-red-300">Top 3 hidden — freshness gate failed</p>
+                <p className="font-semibold text-red-700 dark:text-red-300" data-testid="top3-warning">
+                  Top 3 hidden — freshness gate failed ({freshnessGate?.status ?? priority?.state ?? 'unknown'})
+                </p>
                 <p className="text-xs text-red-700 dark:text-red-300">status: <strong>{freshnessGate?.status}</strong>{freshnessGate?.blocking_reasons?.length ? `; reasons: ${freshnessGate.blocking_reasons.join(', ')}` : ''}</p>
                 {(freshnessGate?.recompute_command ?? topThree.recompute_command) && (
                   <p className="text-xs mt-1 break-all">regenerate: <code>{freshnessGate?.recompute_command ?? topThree.recompute_command}</code></p>
@@ -556,18 +558,25 @@ export default function DashboardPage() {
           </Panel>
 
           {/* D3L-MASTER-01 Phase 8 — Leverage Queue moved to Roadmap tab to keep Overview simple. */}
-          {ocBottleneck && ocBottleneck.state === 'ok' && ocBottleneck.card && (
+          {ocBottleneck && (
             <Panel title="D. Current Bottleneck (OC)" testId="overview-oc-bottleneck-section">
-              <div className="text-sm space-y-0.5" data-testid="overview-oc-bottleneck-card">
-                <p><strong>Overall status:</strong> {ocBottleneck.card.overall_status}</p>
-                <p><strong>Category:</strong> {ocBottleneck.card.category}</p>
-                <p><strong>Reason:</strong> {ocBottleneck.card.reason_code}</p>
-                <p><strong>Owning system:</strong> {ocBottleneck.card.owning_system ?? 'unknown'}</p>
-                <p><strong>Next safe action:</strong> {ocBottleneck.card.next_safe_action}</p>
-                {(ocBottleneck.card.warnings ?? []).length > 0 && (
-                  <p className="text-xs text-amber-700 dark:text-amber-300">⚠ {(ocBottleneck.card.warnings ?? []).join('; ')}</p>
-                )}
-              </div>
+              {ocBottleneck.state === 'ok' && ocBottleneck.card ? (
+                <div className="text-sm space-y-0.5" data-testid="overview-oc-bottleneck-card">
+                  <p><strong>Overall status:</strong> {ocBottleneck.card.overall_status}</p>
+                  <p><strong>Category:</strong> {ocBottleneck.card.category}</p>
+                  <p><strong>Reason:</strong> {ocBottleneck.card.reason_code}</p>
+                  <p><strong>Owning system:</strong> {ocBottleneck.card.owning_system ?? 'unknown'}</p>
+                  <p><strong>Next safe action:</strong> {ocBottleneck.card.next_safe_action}</p>
+                  {(ocBottleneck.card.warnings ?? []).length > 0 && (
+                    <p className="text-xs text-amber-700 dark:text-amber-300">⚠ {(ocBottleneck.card.warnings ?? []).join('; ')}</p>
+                  )}
+                </div>
+              ) : (
+                <div className="text-xs text-amber-700 dark:text-amber-300 space-y-1" data-testid="overview-oc-bottleneck-unavailable">
+                  <p>⚠ OC unavailable: <strong>{ocBottleneck.state}</strong> — {ocBottleneck.reason}</p>
+                  <p className="break-all">generate: <code>python scripts/build_operational_closure_artifacts.py --emit-dashboard-truth</code></p>
+                </div>
+              )}
             </Panel>
           )}
 

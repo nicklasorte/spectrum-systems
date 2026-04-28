@@ -5,6 +5,7 @@ import type { DebugMode, SystemGraphEdge, SystemGraphPayload } from '@/lib/syste
 import { CONTROL_PATH_SYSTEMS, deriveDebugStatus } from '@/lib/systemGraph';
 
 export type GraphLayoutKey = 'layered' | 'compact';
+export type GraphViewMode = 'clean_structure' | 'failure_path' | 'selected_node' | 'full_registry';
 
 const NODE_WIDTH = 120;
 const NODE_HEIGHT = 70;
@@ -75,9 +76,15 @@ interface Props {
   layout?: GraphLayoutKey;
   debugMode?: DebugMode;
   highlightedPath?: string[];
+  graphMode?: GraphViewMode;
   onSelect: (systemId: string) => void;
   onSelectEdge?: (edge: SystemGraphEdge) => void;
 }
+
+const CORE_CHAIN = ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL'] as const;
+const CORE_CHAIN_EDGE_KEYS = new Set(
+  CORE_CHAIN.slice(0, -1).map((id, i) => `${id}->${CORE_CHAIN[i + 1]}`),
+);
 
 export function SystemTrustGraph({
   graph,
@@ -87,6 +94,7 @@ export function SystemTrustGraph({
   layout = 'layered',
   debugMode = 'normal',
   highlightedPath = [],
+  graphMode = 'clean_structure',
   onSelect,
   onSelectEdge,
 }: Props) {
@@ -137,6 +145,41 @@ export function SystemTrustGraph({
   };
 
   const labelByRow: Array<{ y: number; label: string }> = LAYOUTS[layout].map((row) => ({ y: row.y, label: row.label }));
+  const selectedContext = useMemo(() => {
+    const out = new Set<string>();
+    if (!selectedSystem) return out;
+    out.add(selectedSystem);
+    for (const edge of graph.edges) {
+      if (edge.from === selectedSystem) out.add(edge.to);
+      if (edge.to === selectedSystem) out.add(edge.from);
+    }
+    return out;
+  }, [graph.edges, selectedSystem]);
+
+  const isVisibleByMode = (from: string, to: string, edge: SystemGraphEdge) => {
+    const coreEdge = CORE_CHAIN_EDGE_KEYS.has(`${from}->${to}`);
+    if (graphMode === 'full_registry') return true;
+    if (graphMode === 'clean_structure') return coreEdge;
+    if (graphMode === 'failure_path') {
+      return coreEdge || edge.is_failure_path || (graph.failure_path.includes(from) && graph.failure_path.includes(to));
+    }
+    if (graphMode === 'selected_node') {
+      return coreEdge || (selectedContext.has(from) && selectedContext.has(to));
+    }
+    return coreEdge;
+  };
+
+  const isNodeVisibleByMode = (systemId: string) => {
+    if (graphMode === 'full_registry') return true;
+    if (graphMode === 'clean_structure') return CORE_CHAIN.includes(systemId as (typeof CORE_CHAIN)[number]);
+    if (graphMode === 'failure_path') {
+      return CORE_CHAIN.includes(systemId as (typeof CORE_CHAIN)[number]) || graph.failure_path.includes(systemId);
+    }
+    if (graphMode === 'selected_node') {
+      return CORE_CHAIN.includes(systemId as (typeof CORE_CHAIN)[number]) || selectedContext.has(systemId);
+    }
+    return true;
+  };
 
   // Mode-driven node opacity. Fail-closed: if mode data is missing, fall back to focus dimming.
   const nodeOpacityForMode = (systemId: string, baseOpacity: number) => {
@@ -181,10 +224,11 @@ export function SystemTrustGraph({
 
   return (
     <div
-      className="border rounded-lg p-4 bg-white"
+      className="border dark:border-slate-700 rounded-lg p-4 bg-white dark:bg-slate-900 dark:text-slate-100"
       data-testid="system-trust-graph"
       data-layout={layout}
       data-debug-mode={debugMode}
+      data-graph-mode={graphMode}
     >
       <svg
         viewBox={`0 0 ${CANVAS_WIDTH} ${canvasHeight}`}
@@ -239,6 +283,21 @@ export function SystemTrustGraph({
           const from = allPositions.get(edge.from);
           const to = allPositions.get(edge.to);
           if (!from || !to) return null;
+          const modeVisible = isVisibleByMode(edge.from, edge.to, edge);
+          if (!modeVisible) {
+            return (
+              <SystemEdge
+                key={`${edge.from}-${edge.to}`}
+                edge={edge}
+                from={from}
+                to={to}
+                opacity={0}
+                hidden
+                nodeWidth={NODE_WIDTH}
+                nodeHeight={NODE_HEIGHT}
+              />
+            );
+          }
           const primary = isPrimaryEdge(edge.from, edge.to, edge.is_failure_path, edge.edge_type);
           if (!showAll && !primary && debugMode === 'normal') {
             return (
@@ -281,6 +340,7 @@ export function SystemTrustGraph({
         })}
 
         {graph.nodes.map((node) => {
+          if (!isNodeVisibleByMode(node.system_id)) return null;
           const pos = allPositions.get(node.system_id);
           if (!pos) return null;
           const baseOpacity = showAll

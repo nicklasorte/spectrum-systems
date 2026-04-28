@@ -1,0 +1,19 @@
+{
+  "artifact_type": "d3l_finalize_redteam_report",
+  "work_item": "D3L-FINALIZE-01",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "cases": [
+    {"case": "stale ranking still visible somewhere", "status": "fixed"},
+    {"case": "overview bloat returns", "status": "fixed"},
+    {"case": "diagnostics test IDs missing", "status": "pass"},
+    {"case": "dense graph lines appear by default", "status": "fixed"},
+    {"case": "full registry warning missing", "status": "fixed"},
+    {"case": "dark mode unreadable", "status": "fixed"},
+    {"case": "mvp boxes leak into 3LS graph", "status": "pass"},
+    {"case": "non-registry node appears", "status": "pass"},
+    {"case": "maturity hardcoded", "status": "pass"},
+    {"case": "oc unavailable silently ignored", "status": "fixed"},
+    {"case": "raw internal enum dominates overview", "status": "pass"},
+    {"case": "authority-shaped wording appears in new plan/docs/code", "status": "pass"}
+  ]
+}

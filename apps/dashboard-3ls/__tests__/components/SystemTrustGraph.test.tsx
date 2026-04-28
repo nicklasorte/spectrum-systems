@@ -39,8 +39,16 @@ const graph: SystemGraphPayload = {
 };
 
 describe('SystemTrustGraph + inspector', () => {
-  it('renders core, overlay, support, and candidate systems', () => {
+  it('default clean structure mode shows only core chain nodes', () => {
     render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll onSelect={() => undefined} />);
+    expect(screen.getByTestId('trust-node-AEX')).toBeInTheDocument();
+    expect(screen.getByTestId('trust-node-SEL')).toBeInTheDocument();
+    expect(screen.queryByTestId('trust-node-REP')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('trust-node-CTX')).not.toBeInTheDocument();
+  });
+
+  it('renders core, overlay, support, and candidate systems', () => {
+    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll graphMode="full_registry" onSelect={() => undefined} />);
     expect(screen.getByTestId('trust-node-AEX')).toBeInTheDocument();
     expect(screen.getByTestId('trust-node-PQX')).toBeInTheDocument();
     expect(screen.getByTestId('trust-node-EVL')).toBeInTheDocument();
@@ -52,8 +60,14 @@ describe('SystemTrustGraph + inspector', () => {
     expect(screen.getByTestId('trust-node-H01')).toBeInTheDocument();
   });
 
+  it('full registry mode renders dense lines and nodes', () => {
+    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll graphMode="full_registry" onSelect={() => undefined} />);
+    expect(screen.getByTestId('trust-node-REP')).toBeInTheDocument();
+    expect(screen.getByTestId('trust-edge-CTX-PQX')).toBeInTheDocument();
+  });
+
   it('layered layout positions core path AEX → PQX → EVL → TPA → CDE → SEL left-to-right on the same row', () => {
-    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll layout="layered" onSelect={() => undefined} />);
+    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll layout="layered" graphMode="full_registry" onSelect={() => undefined} />);
     const order = ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL'];
     const transforms = order.map((id) => screen.getByTestId(`trust-node-${id}`).getAttribute('transform') ?? '');
     const positions = transforms.map((t) => {
@@ -68,7 +82,7 @@ describe('SystemTrustGraph + inspector', () => {
   });
 
   it('layered layout uses distinct rows for overlay, core, support, extension', () => {
-    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll layout="layered" onSelect={() => undefined} />);
+    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll layout="layered" graphMode="full_registry" onSelect={() => undefined} />);
     const overlayY = Number((screen.getByTestId('trust-node-REP').getAttribute('transform') ?? '').match(/translate\([-\d.]+,\s*([-\d.]+)\)/)?.[1]);
     const coreY = Number((screen.getByTestId('trust-node-AEX').getAttribute('transform') ?? '').match(/translate\([-\d.]+,\s*([-\d.]+)\)/)?.[1]);
     const supportY = Number((screen.getByTestId('trust-node-CTX').getAttribute('transform') ?? '').match(/translate\([-\d.]+,\s*([-\d.]+)\)/)?.[1]);
@@ -79,7 +93,7 @@ describe('SystemTrustGraph + inspector', () => {
   });
 
   it('renders dashed group containers for overlay, support, and extension rows', () => {
-    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll layout="layered" onSelect={() => undefined} />);
+    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll layout="layered" graphMode="full_registry" onSelect={() => undefined} />);
     expect(screen.getByTestId('graph-row-overlay')).toBeInTheDocument();
     expect(screen.getByTestId('graph-row-core')).toBeInTheDocument();
     expect(screen.getByTestId('graph-row-support')).toBeInTheDocument();
@@ -87,25 +101,25 @@ describe('SystemTrustGraph + inspector', () => {
   });
 
   it('applies focus dimming when showAll is false', () => {
-    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll={false} onSelect={() => undefined} />);
+    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll={false} graphMode="full_registry" onSelect={() => undefined} />);
     expect(screen.getByTestId('trust-node-EVL')).toHaveAttribute('opacity', '1');
     expect(screen.getByTestId('trust-node-H01')).toHaveAttribute('opacity', '0.25');
   });
 
   it('hides secondary edges in focus mode and shows them when Show all is enabled', () => {
     const { rerender } = render(
-      <SystemTrustGraph graph={graph} selectedSystem={null} showAll={false} onSelect={() => undefined} />,
+      <SystemTrustGraph graph={graph} selectedSystem={null} showAll={false} graphMode="full_registry" onSelect={() => undefined} />,
     );
     const supportEdgeFocus = screen.getByTestId('trust-edge-CTX-PQX');
     expect(supportEdgeFocus).toHaveAttribute('data-edge-hidden', 'true');
 
-    rerender(<SystemTrustGraph graph={graph} selectedSystem={null} showAll onSelect={() => undefined} />);
+    rerender(<SystemTrustGraph graph={graph} selectedSystem={null} showAll graphMode="full_registry" onSelect={() => undefined} />);
     const supportEdgeShowAll = screen.getByTestId('trust-edge-CTX-PQX');
     expect(supportEdgeShowAll).not.toHaveAttribute('data-edge-hidden');
   });
 
   it('marks core canonical edges with the core style for clear directional flow', () => {
-    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll onSelect={() => undefined} />);
+    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll graphMode="full_registry" onSelect={() => undefined} />);
     expect(screen.getByTestId('trust-edge-AEX-PQX')).toHaveAttribute('data-edge-style', 'core');
     expect(screen.getByTestId('trust-edge-CDE-SEL')).toHaveAttribute('data-edge-style', 'core');
     expect(screen.getByTestId('trust-edge-REP-EVL')).toHaveAttribute('data-edge-style', 'failure');
@@ -115,7 +129,7 @@ describe('SystemTrustGraph + inspector', () => {
     let selected = 'EVL';
     const { rerender } = render(
       <>
-        <SystemTrustGraph graph={graph} selectedSystem={selected} showAll onSelect={(id) => { selected = id; }} />
+        <SystemTrustGraph graph={graph} selectedSystem={selected} showAll graphMode="full_registry" onSelect={(id) => { selected = id; }} />
         <SystemInspector node={graph.nodes.find((n) => n.system_id === selected) ?? null} replayCommands={graph.replay_commands} />
       </>,
     );
@@ -123,7 +137,7 @@ describe('SystemTrustGraph + inspector', () => {
     fireEvent.click(screen.getByTestId('trust-node-H01'));
     rerender(
       <>
-        <SystemTrustGraph graph={graph} selectedSystem={selected} showAll onSelect={(id) => { selected = id; }} />
+        <SystemTrustGraph graph={graph} selectedSystem={selected} showAll graphMode="full_registry" onSelect={(id) => { selected = id; }} />
         <SystemInspector node={graph.nodes.find((n) => n.system_id === selected) ?? null} replayCommands={graph.replay_commands} />
       </>,
     );

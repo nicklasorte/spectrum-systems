@@ -171,6 +171,7 @@ describe('Trust Debugger — Node Debug Inspector', () => {
             graph={fullGraph}
             selectedSystem={selected}
             showAll
+            graphMode="full_registry"
             onSelect={(id) => { selected = id; }}
           />
           <SystemInspector node={node} replayCommands={fullGraph.replay_commands} />
@@ -195,6 +196,7 @@ describe('Trust Debugger — Propagation path highlighting', () => {
             graph={fullGraph}
             selectedSystem={null}
             showAll
+            graphMode="full_registry"
             highlightedPath={path}
             onSelect={() => undefined}
           />
@@ -224,7 +226,7 @@ describe('Trust Debugger — Debug Modes', () => {
         graph={fullGraph}
         selectedSystem={null}
         showAll
-        debugMode="blockers"
+        graphMode="full_registry" debugMode="blockers"
         onSelect={() => undefined}
       />,
     );
@@ -239,7 +241,7 @@ describe('Trust Debugger — Debug Modes', () => {
         graph={fullGraph}
         selectedSystem={null}
         showAll
-        debugMode="control"
+        graphMode="full_registry" debugMode="control"
         onSelect={() => undefined}
       />,
     );
@@ -255,7 +257,7 @@ describe('Trust Debugger — Debug Modes', () => {
         graph={fullGraph}
         selectedSystem={null}
         showAll
-        debugMode="lineage"
+        graphMode="full_registry" debugMode="lineage"
         onSelect={() => undefined}
       />,
     );
@@ -271,7 +273,7 @@ describe('Trust Debugger — Debug Modes', () => {
         graph={fullGraph}
         selectedSystem={null}
         showAll
-        debugMode="freshness"
+        graphMode="full_registry" debugMode="freshness"
         onSelect={() => undefined}
       />,
     );
@@ -316,6 +318,7 @@ describe('Trust Debugger — Edge inspector and labels', () => {
         graph={fullGraph}
         selectedSystem={null}
         showAll
+        graphMode="full_registry"
         onSelect={() => undefined}
         onSelectEdge={(e) => { selected = `${e.from}-${e.to}`; }}
       />,

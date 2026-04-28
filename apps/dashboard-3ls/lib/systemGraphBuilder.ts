@@ -118,7 +118,7 @@ export function buildSystemGraphPayload(nowIso: string = new Date().toISOString(
 
   const generatedAt = String(priority?.generated_at ?? nowIso);
   const replayCommands: string[] = [
-    'python scripts/build_tls_dependency_priority.py --candidates H01,RFX,HOP,MET,METS --fail-if-missing',
+    'python scripts/build_tls_dependency_priority.py --candidates HOP,RAX,RSM,CAP,SEC,EVL,OBS,SLO --fail-if-missing',
     'python scripts/build_dashboard_3ls_with_tls.py',
   ];
 

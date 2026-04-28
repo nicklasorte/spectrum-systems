@@ -149,6 +149,13 @@ describe('DashboardPage simplified cockpit', () => {
     expect(screen.getAllByTestId('overview-section').length).toBeLessThanOrEqual(5);
   });
 
+  it('overview shows compact OC unavailable reason when OC artifact is missing', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
+    expect(screen.getByTestId('overview-oc-bottleneck-unavailable')).toBeInTheDocument();
+  });
+
   it('panel base styling includes dark-mode readable classes', async () => {
     setupFetch();
     render(<DashboardPage />);

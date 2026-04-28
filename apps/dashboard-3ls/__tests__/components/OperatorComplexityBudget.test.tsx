@@ -187,7 +187,7 @@ describe('Operator complexity budget', () => {
     await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
     expect(screen.queryAllByTestId('top3-card')).toHaveLength(0);
     expect(screen.getByTestId('top3-warning').textContent).toMatch(/stale/i);
-    expect(screen.getByTestId('top3-recompute-command').textContent).toMatch(/build_tls_dependency_priority/);
+    expect(screen.getByTestId('top3-fail-closed').textContent).toMatch(/build_tls_dependency_priority/);
   });
 
   it('missing-generated_at priority artifact does NOT render Top 3 cards', async () => {
@@ -202,6 +202,6 @@ describe('Operator complexity budget', () => {
     render(<DashboardPage />);
     await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
     expect(screen.queryAllByTestId('top3-card')).toHaveLength(0);
-    expect(screen.getByTestId('top3-warning').textContent).toMatch(/stale/i);
+    expect(screen.getByTestId('top3-warning').textContent).toMatch(/invalid_timestamp|stale/i);
   });
 });

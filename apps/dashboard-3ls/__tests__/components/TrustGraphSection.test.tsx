@@ -55,8 +55,16 @@ describe('TrustGraphSection', () => {
     expect(screen.getByTestId('graph-legend')).toBeInTheDocument();
     expect(screen.getByTestId('activity-log')).toBeInTheDocument();
     expect(screen.getByTestId('layout-selector')).toBeInTheDocument();
+    expect(screen.getByTestId('graph-mode-selector')).toBeInTheDocument();
     expect(screen.getByTestId('focus-toggle')).toBeInTheDocument();
     expect(screen.getByTestId('recompute-graph-button')).toBeInTheDocument();
+  });
+
+  it('clean_structure is the default graph mode', async () => {
+    mockGraphFetch(baseGraph);
+    render(<TrustGraphSection />);
+    await waitFor(() => expect(screen.getByTestId('system-trust-graph')).toBeInTheDocument());
+    expect(screen.getByTestId('system-trust-graph')).toHaveAttribute('data-graph-mode', 'clean_structure');
   });
 
   it('shows a fail-closed warning when the graph artifact fetch fails', async () => {

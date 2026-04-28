@@ -28,7 +28,7 @@ const STATUS_COLORS: Record<string, string> = {
 export function SystemInspector({ node, replayCommands }: Props) {
   if (!node) {
     return (
-      <div className="border rounded p-3 text-sm text-gray-600" data-testid="system-inspector">
+      <div className="border dark:border-slate-700 rounded p-3 text-sm text-gray-600 dark:text-slate-300 bg-white dark:bg-slate-900" data-testid="system-inspector">
         Select a node to investigate.
       </div>
     );
@@ -43,7 +43,7 @@ export function SystemInspector({ node, replayCommands }: Props) {
   const downstreamDependents = node.downstream_dependents ?? node.downstream;
 
   return (
-    <div className="border rounded p-3 text-sm space-y-2" data-testid="system-inspector">
+    <div className="border dark:border-slate-700 rounded p-3 text-sm space-y-2 bg-white dark:bg-slate-900 dark:text-slate-100" data-testid="system-inspector">
       <header className="flex items-center justify-between gap-2">
         <h3 className="font-semibold">Investigate: {node.system_id}</h3>
         <span

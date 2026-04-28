@@ -4,11 +4,14 @@ import { SourceBreadcrumbs } from './SourceBreadcrumbs';
 
 interface Props {
   priority: PriorityArtifactLoadResult | null;
+  rankingBlocked?: boolean;
+  blockingReason?: string;
+  recomputeCommand?: string;
 }
 
 const PRIORITY_PATH = 'artifacts/system_dependency_priority_report.json';
 const PRIORITY_SCHEMA_PATH = 'schemas/tls/system_dependency_priority_report.schema.json';
-const PRODUCING_SCRIPT = 'python scripts/build_tls_dependency_priority.py --candidates H01,RFX,HOP,MET,METS --fail-if-missing';
+const PRODUCING_SCRIPT = 'python scripts/build_tls_dependency_priority.py --candidates HOP,RAX,RSM,CAP,SEC,EVL,OBS,SLO --fail-if-missing';
 const MISSING = 'Unknown / Missing';
 
 function findRanked(payload: PriorityArtifactLoadResult['payload'], systemId: string): RankedSystem | null {
@@ -29,15 +32,19 @@ function rowExplanation(row: RequestedCandidateRow, ranked: RankedSystem | null)
   };
 }
 
-export function RecommendationDebugPanel({ priority }: Props) {
-  if (!priority || priority.state !== 'ok' || !priority.payload) {
+export function RecommendationDebugPanel({ priority, rankingBlocked = false, blockingReason, recomputeCommand }: Props) {
+  if (rankingBlocked || !priority || priority.state !== 'ok' || !priority.payload) {
     return (
-      <div className="border rounded p-3 bg-white space-y-2" data-testid="recommendation-debug-panel">
+      <div className="border dark:border-slate-700 rounded p-3 bg-white dark:bg-slate-900 space-y-2" data-testid="recommendation-debug-panel">
         <h3 className="font-semibold">Recommendation Debug</h3>
         <p className="text-sm text-red-700" data-testid="recommendation-debug-fail-closed">
           ⚠ Priority artifact unavailable; recommendation explanations cannot be shown. Fail-closed: dashboard
           will not synthesise rankings.
         </p>
+        {blockingReason && <p className="text-xs text-red-700 dark:text-red-300">reason: {blockingReason}</p>}
+        {(recomputeCommand ?? priority?.recompute_command) && (
+          <p className="text-xs break-all">regenerate: <code>{recomputeCommand ?? priority?.recompute_command}</code></p>
+        )}
       </div>
     );
   }
@@ -46,7 +53,7 @@ export function RecommendationDebugPanel({ priority }: Props) {
   const top = rows.slice(0, 3);
 
   return (
-    <div className="border rounded p-3 bg-white space-y-2" data-testid="recommendation-debug-panel">
+    <div className="border dark:border-slate-700 rounded p-3 bg-white dark:bg-slate-900 space-y-2" data-testid="recommendation-debug-panel">
       <h3 className="font-semibold">Recommendation Debug (artifact-backed only)</h3>
       <p className="text-xs text-gray-600">
         Rankings are read directly from artifact; the dashboard does not compute order or score.
