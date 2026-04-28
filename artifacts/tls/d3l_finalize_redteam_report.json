@@ -1,0 +1,57 @@
+{
+  "artifact_type": "d3l_finalize_redteam_report",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "work_item": "D3L-FINALIZE-01",
+  "cases": [
+    {
+      "case": "stale ranking still visible somewhere",
+      "status": "pass",
+      "evidence": "ranking surfaces now share canonical ranking block decision"
+    },
+    {
+      "case": "Overview bloat returns",
+      "status": "pass",
+      "evidence": "overview constrained to Trust Pulse, Flow, Top 3/fail-closed, Explain State, optional OC card"
+    },
+    {
+      "case": "Diagnostics test IDs missing",
+      "status": "pass",
+      "evidence": "legacy debug-explanation-index-section and MET anchors preserved"
+    },
+    {
+      "case": "dense graph lines appear by default",
+      "status": "pass",
+      "evidence": "default mode clean_structure hides non-core edges"
+    },
+    {
+      "case": "Full Registry warning missing",
+      "status": "pass",
+      "evidence": "warning banner shown when full_registry selected"
+    },
+    {
+      "case": "dark mode unreadable",
+      "status": "pass",
+      "evidence": "inspector/legend/activity/debug panels now include dark text/bg/border classes"
+    },
+    {
+      "case": "MVP boxes leak into 3LS graph",
+      "status": "pass",
+      "evidence": "3LS graph modes only consume graph payload nodes and core registry chain"
+    },
+    {
+      "case": "non-registry node appears",
+      "status": "pass",
+      "evidence": "graph mode filters render existing payload only; no synthetic node additions"
+    },
+    {
+      "case": "maturity hardcoded",
+      "status": "pass",
+      "evidence": "maturity tab continues to consume /api/maturity artifact rows"
+    },
+    {
+      "case": "OC unavailable silently ignored",
+      "status": "pass",
+      "evidence": "overview compact OC unavailable panel renders reason + regenerate command"
+    }
+  ]
+}

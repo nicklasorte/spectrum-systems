@@ -1,5 +1,6 @@
 import React from 'react';
 import type { PriorityArtifactLoadResult, RankedSystem, RequestedCandidateRow } from '@/lib/artifactLoader';
+import { getRankingBlockDecision } from '@/lib/rankingGate';
 import { SourceBreadcrumbs } from './SourceBreadcrumbs';
 
 interface Props {
@@ -30,20 +31,21 @@ function rowExplanation(row: RequestedCandidateRow, ranked: RankedSystem | null)
 }
 
 export function RecommendationDebugPanel({ priority }: Props) {
-  const gate = (priority as unknown as { freshness_gate?: { ok: boolean; recompute_command?: string } } | null)?.freshness_gate;
-  if (gate && !gate.ok) {
+  const ranking = getRankingBlockDecision(priority);
+  if (ranking.blocked) {
     return (
       <div className="border border-red-300 dark:border-red-700 rounded p-3 bg-red-50 dark:bg-red-950 space-y-2" data-testid="recommendation-debug-panel">
         <h3 className="font-semibold text-red-700 dark:text-red-300">Recommendation Debug unavailable — ranking artifact stale/invalid/missing</h3>
-        {gate.recompute_command && <p className="text-xs break-all">regenerate: <code>{gate.recompute_command}</code></p>}
+        <p className="text-xs text-red-700 dark:text-red-300">reason: <strong>{ranking.reason}</strong></p>
+        <p className="text-xs break-all text-red-700 dark:text-red-300">regenerate: <code>{ranking.recompute_command}</code></p>
       </div>
     );
   }
   if (!priority || priority.state !== 'ok' || !priority.payload) {
     return (
       <div className="border border-gray-200 dark:border-gray-700 rounded p-3 bg-white dark:bg-gray-900 space-y-2" data-testid="recommendation-debug-panel">
-        <h3 className="font-semibold">Recommendation Debug</h3>
-        <p className="text-sm text-red-700" data-testid="recommendation-debug-fail-closed">
+        <h3 className="font-semibold text-slate-900 dark:text-slate-100">Recommendation Debug</h3>
+        <p className="text-sm text-red-700 dark:text-red-300" data-testid="recommendation-debug-fail-closed">
           ⚠ Priority artifact unavailable; recommendation explanations cannot be shown. Fail-closed: dashboard
           will not synthesise rankings.
         </p>
@@ -56,8 +58,8 @@ export function RecommendationDebugPanel({ priority }: Props) {
 
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded p-3 bg-white dark:bg-gray-900 space-y-2" data-testid="recommendation-debug-panel">
-      <h3 className="font-semibold">Recommendation Debug (artifact-backed only)</h3>
-      <p className="text-xs text-gray-600">
+      <h3 className="font-semibold text-slate-900 dark:text-slate-100">Recommendation Debug (artifact-backed only)</h3>
+      <p className="text-xs text-gray-600 dark:text-slate-300">
         Rankings are read directly from artifact; the dashboard does not compute order or score.
       </p>
       <ul className="space-y-2">
@@ -67,7 +69,7 @@ export function RecommendationDebugPanel({ priority }: Props) {
           return (
             <li
               key={row.system_id}
-              className="border rounded p-2 text-sm"
+              className="border border-gray-200 dark:border-gray-700 rounded p-2 text-sm text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900"
               data-testid={`rec-debug-card-${row.system_id}`}
             >
               <p>

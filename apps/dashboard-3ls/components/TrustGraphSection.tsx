@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import type { DebugMode, SystemGraphEdge, SystemGraphPayload } from '@/lib/systemGraph';
+import type { DebugMode, GraphMode, SystemGraphEdge, SystemGraphPayload } from '@/lib/systemGraph';
 import type { PriorityArtifactLoadResult } from '@/lib/artifactLoader';
 import { RecomputeGraphButton } from './RecomputeGraphButton';
 import { SystemTrustGraph, type GraphLayoutKey } from './SystemTrustGraph';
@@ -26,6 +26,7 @@ export function TrustGraphSection() {
   const [showAll, setShowAll] = useState(false);
   const [layout, setLayout] = useState<GraphLayoutKey>('layered');
   const [debugMode, setDebugMode] = useState<DebugMode>('normal');
+  const [graphMode, setGraphMode] = useState<GraphMode>('clean_structure');
   const [highlightedPath, setHighlightedPath] = useState<string[]>([]);
   const [lastRecompute, setLastRecompute] = useState<string | null>(null);
   const [recomputeStatus, setRecomputeStatus] = useState<string | null>(null);
@@ -131,6 +132,21 @@ export function TrustGraphSection() {
         <h2 className="font-semibold">SYSTEM TRUST GRAPH</h2>
         <div className="flex flex-wrap items-center gap-3">
           <DebugModeSelector value={debugMode} onChange={setDebugMode} />
+          <label className="text-xs text-slate-700 dark:text-slate-200" htmlFor="graph-mode-select">
+            Mode:
+            <select
+              id="graph-mode-select"
+              className="ml-1 border rounded px-1 py-0.5 text-xs bg-white dark:bg-slate-800 dark:border-slate-600"
+              value={graphMode}
+              onChange={(e) => setGraphMode(e.target.value as GraphMode)}
+              data-testid="graph-mode-select"
+            >
+              <option value="clean_structure">Clean Structure</option>
+              <option value="failure_path">Failure Path</option>
+              <option value="selected_node">Selected Node</option>
+              <option value="full_registry">Full Registry</option>
+            </select>
+          </label>
           <LayoutSelector value={layout} onChange={setLayout} />
           <button
             type="button"
@@ -171,6 +187,11 @@ export function TrustGraphSection() {
           <ExplainFreezePanel graph={displayGraph} onPathChange={setHighlightedPath} />
           <DiffSinceLastRecompute current={displayGraph} previous={previousGraph} recomputeStatus={recomputeStatus} />
           <GraphLegend />
+          {graphMode === 'full_registry' && (
+            <p className="text-xs text-amber-700 dark:text-amber-300" data-testid="full-registry-warning">
+              ⚠ Full Registry mode is a dense diagnostic view with secondary and observed edges.
+            </p>
+          )}
           <ActivityLog entries={entries} />
         </aside>
 
@@ -190,6 +211,7 @@ export function TrustGraphSection() {
                 showAll={showAll}
                 layout={layout}
                 debugMode={debugMode}
+                graphMode={graphMode}
                 highlightedPath={highlightedPath}
                 onSelect={(id) => {
                   setSelected(id);

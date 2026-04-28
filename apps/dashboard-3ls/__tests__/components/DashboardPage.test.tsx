@@ -8,6 +8,7 @@ const mockHealth = { warnings: ['health_warn'] };
 
 const mockPriority = {
   state: 'ok',
+  freshness_gate: { ok: true, status: 'ok', blocking_reasons: [], recompute_command: 'python scripts/build_tls_dependency_priority.py' },
   payload: {
     schema_version: 'tls-04.v1',
     phase: 'TLS-04',
@@ -253,7 +254,7 @@ describe('DashboardPage simplified cockpit', () => {
     setupFetch({ priority: { state: 'missing', payload: null }, roadmap: { state: 'missing', payload: null, table_markdown: null }, flow: { state: 'missing', payload: null } });
     render(<DashboardPage />);
     await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
-    expect(screen.getByTestId('top3-warning')).toBeInTheDocument();
+    expect(screen.getByTestId('top3-fail-closed')).toBeInTheDocument();
     expect(screen.getByTestId('flow-warning')).toBeInTheDocument();
   });
 

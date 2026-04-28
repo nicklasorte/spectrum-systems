@@ -16,6 +16,7 @@ const mockHealth = { warnings: ['health_warn'] };
 
 const mockPriority = {
   state: 'ok',
+  freshness_gate: { ok: true, status: 'ok', blocking_reasons: [], recompute_command: 'python scripts/build_tls_dependency_priority.py' },
   generated_at: '2026-04-28T00:00:00Z',
   payload: {
     schema_version: 'tls-06.v1',
@@ -139,7 +140,7 @@ describe('Operator complexity budget', () => {
     render(<DashboardPage />);
     await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
     const cards = screen.queryAllByTestId('top3-card');
-    const warning = screen.queryByTestId('top3-warning');
+    const warning = screen.queryByTestId('top3-fail-closed');
     expect(cards.length > 0 || warning).toBeTruthy();
   });
 
@@ -186,8 +187,9 @@ describe('Operator complexity budget', () => {
     render(<DashboardPage />);
     await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
     expect(screen.queryAllByTestId('top3-card')).toHaveLength(0);
-    expect(screen.getByTestId('top3-warning').textContent).toMatch(/stale/i);
-    expect(screen.getByTestId('top3-recompute-command').textContent).toMatch(/build_tls_dependency_priority/);
+    expect(screen.getByTestId('top3-fail-closed')).toBeInTheDocument();
+    expect(screen.getByTestId('top3-fail-closed').textContent).toMatch(/priority_state:stale/i);
+    expect(screen.getByTestId('top3-fail-closed').textContent).toMatch(/build_tls_dependency_priority/);
   });
 
   it('missing-generated_at priority artifact does NOT render Top 3 cards', async () => {
@@ -202,6 +204,15 @@ describe('Operator complexity budget', () => {
     render(<DashboardPage />);
     await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
     expect(screen.queryAllByTestId('top3-card')).toHaveLength(0);
-    expect(screen.getByTestId('top3-warning').textContent).toMatch(/stale/i);
+    expect(screen.getByTestId('top3-fail-closed')).toBeInTheDocument();
+    expect(screen.getByTestId('top3-fail-closed').textContent).toMatch(/generated_at_missing/i);
+  });
+
+  it('overview shows compact OC unavailable reason when OC artifact is missing', async () => {
+    setupFetch({ ocBottleneck: { state: 'unavailable', card: null, reason: 'oc_artifact_missing', sources: [] } });
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
+    expect(screen.getByTestId('overview-oc-bottleneck-unavailable')).toBeInTheDocument();
+    expect(screen.getByTestId('overview-oc-bottleneck-unavailable').textContent).toMatch(/oc_artifact_missing/i);
   });
 });

@@ -326,8 +326,9 @@ describe('Trust Debugger — Edge inspector and labels', () => {
 });
 
 describe('Trust Debugger — Recommendation Debug Panel', () => {
-  const priorityResult: PriorityArtifactLoadResult = {
+  const priorityResult: PriorityArtifactLoadResult & { freshness_gate: { ok: boolean; status: string; blocking_reasons: string[]; recompute_command: string } } = {
     state: 'ok',
+    freshness_gate: { ok: true, status: 'ok', blocking_reasons: [], recompute_command: 'python scripts/build_tls_dependency_priority.py' },
     generated_at: '2026-04-27T00:00:00Z',
     payload: {
       schema_version: 'tls-04.v1',
@@ -396,7 +397,7 @@ describe('Trust Debugger — Recommendation Debug Panel', () => {
         priority={{ state: 'missing', payload: null, reason: 'not_found' }}
       />,
     );
-    expect(screen.getByTestId('recommendation-debug-fail-closed')).toBeInTheDocument();
+    expect(screen.getByTestId('recommendation-debug-panel')).toHaveTextContent(/unavailable/i);
   });
 
   it('does not include any client-side ranking computation in source', () => {

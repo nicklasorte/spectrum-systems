@@ -1,0 +1,27 @@
+{
+  "artifact_type": "d3l_finalize_fix_log",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "work_item": "D3L-FINALIZE-01",
+  "fixes": [
+    {
+      "id": "FIX-01",
+      "summary": "Added canonical client-safe ranking block decision helper and applied across overview/prioritization/debug surfaces."
+    },
+    {
+      "id": "FIX-02",
+      "summary": "Implemented graph modes (clean_structure default, failure_path, selected_node, full_registry) and dense-view warning."
+    },
+    {
+      "id": "FIX-03",
+      "summary": "Kept Overview compact while adding OC unavailable compact fail-closed messaging."
+    },
+    {
+      "id": "FIX-04",
+      "summary": "Polished dark-mode classes for graph-adjacent cards and inspectors without changing status semantics."
+    },
+    {
+      "id": "FIX-05",
+      "summary": "Expanded Jest coverage for graph mode behavior, ranking fail-closed rendering, and OC unavailable message."
+    }
+  ]
+}

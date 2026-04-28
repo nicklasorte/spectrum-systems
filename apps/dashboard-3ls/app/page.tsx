@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { TrustGraphSection } from '@/components/TrustGraphSection';
 import type { PriorityArtifactLoadResult } from '@/lib/artifactLoader';
+import { getRankingBlockDecision } from '@/lib/rankingGate';
 import type { SystemGraphPayload } from '@/lib/systemGraph';
 import {
   buildLeverageQueueFromRoadmap,
@@ -420,7 +421,8 @@ export default function DashboardPage() {
     [priority, contract],
   );
   const freshnessGate = (priority as unknown as { freshness_gate?: { ok: boolean; status: string; blocking_reasons?: string[]; recompute_command?: string } } | null)?.freshness_gate;
-  const rankingBlocked = Boolean(freshnessGate && !freshnessGate.ok);
+  const rankingDecision = useMemo(() => getRankingBlockDecision(priority), [priority]);
+  const rankingBlocked = rankingDecision.blocked;
 
   const queueResult = useMemo(
     () => buildLeverageQueueFromRoadmap(
@@ -556,17 +558,15 @@ export default function DashboardPage() {
             {rankingBlocked ? (
               <div data-testid="top3-fail-closed" className="border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950 p-3 rounded text-sm">
                 <p className="font-semibold text-red-700 dark:text-red-300">Top 3 hidden — freshness gate failed</p>
-                <p className="text-xs text-red-700 dark:text-red-300">status: <strong>{freshnessGate?.status}</strong>{freshnessGate?.blocking_reasons?.length ? `; reasons: ${freshnessGate.blocking_reasons.join(', ')}` : ''}</p>
-                {(freshnessGate?.recompute_command ?? topThree.recompute_command) && (
-                  <p className="text-xs mt-1 break-all">regenerate: <code>{freshnessGate?.recompute_command ?? topThree.recompute_command}</code></p>
-                )}
+                <p className="text-xs text-red-700 dark:text-red-300">reason: <strong>{rankingDecision.reason}</strong></p>
+                <p className="text-xs mt-1 break-all text-red-700 dark:text-red-300">regenerate: <code>{rankingDecision.recompute_command}</code></p>
               </div>
             ) : (
               <>
             {topThree.warning && <p data-testid="top3-warning" className="text-sm text-red-700 dark:text-red-300">⚠ {topThree.warning}</p>}
-            {(freshnessGate?.recompute_command ?? topThree.recompute_command) && (
+            {(rankingDecision.recompute_command ?? topThree.recompute_command) && (
               <p data-testid="top3-recompute-command" className="text-xs text-gray-700 dark:text-gray-300 break-all">
-                regenerate: <code className="text-xs">{freshnessGate?.recompute_command ?? topThree.recompute_command}</code>
+                regenerate: <code className="text-xs">{rankingDecision.recompute_command ?? topThree.recompute_command}</code>
               </p>
             )}
             <div className="space-y-2">
@@ -607,18 +607,25 @@ export default function DashboardPage() {
           </Panel>
 
           {/* D3L-MASTER-01 Phase 8 — Leverage Queue moved to Roadmap tab to keep Overview simple. */}
-          {ocBottleneck && ocBottleneck.state === 'ok' && ocBottleneck.card && (
+          {ocBottleneck && (
             <Panel title="D. Current Bottleneck (OC)" testId="overview-oc-bottleneck-section">
-              <div className="text-sm space-y-0.5" data-testid="overview-oc-bottleneck-card">
-                <p><strong>Overall status:</strong> {ocBottleneck.card.overall_status}</p>
-                <p><strong>Category:</strong> {ocBottleneck.card.category}</p>
-                <p><strong>Reason:</strong> {ocBottleneck.card.reason_code}</p>
-                <p><strong>Owning system:</strong> {ocBottleneck.card.owning_system ?? 'unknown'}</p>
-                <p><strong>Next safe action:</strong> {ocBottleneck.card.next_safe_action}</p>
-                {(ocBottleneck.card.warnings ?? []).length > 0 && (
-                  <p className="text-xs text-amber-700 dark:text-amber-300">⚠ {(ocBottleneck.card.warnings ?? []).join('; ')}</p>
-                )}
-              </div>
+              {ocBottleneck.state === 'ok' && ocBottleneck.card ? (
+                <div className="text-sm space-y-0.5" data-testid="overview-oc-bottleneck-card">
+                  <p><strong>Overall status:</strong> {ocBottleneck.card.overall_status}</p>
+                  <p><strong>Category:</strong> {ocBottleneck.card.category}</p>
+                  <p><strong>Reason:</strong> {ocBottleneck.card.reason_code}</p>
+                  <p><strong>Owning system:</strong> {ocBottleneck.card.owning_system ?? 'unknown'}</p>
+                  <p><strong>Next safe action:</strong> {ocBottleneck.card.next_safe_action}</p>
+                  {(ocBottleneck.card.warnings ?? []).length > 0 && (
+                    <p className="text-xs text-amber-700 dark:text-amber-300">⚠ {(ocBottleneck.card.warnings ?? []).join('; ')}</p>
+                  )}
+                </div>
+              ) : (
+                <div className="text-sm space-y-1" data-testid="overview-oc-bottleneck-unavailable">
+                  <p className="text-amber-700 dark:text-amber-300"><strong>Unavailable:</strong> {ocBottleneck.reason ?? ocBottleneck.state}</p>
+                  <p className="text-xs break-all">regenerate: <code>python scripts/build_operator_complexity_report.py --fail-closed</code></p>
+                </div>
+              )}
             </Panel>
           )}
 
@@ -695,10 +702,8 @@ export default function DashboardPage() {
               return (
                 <div data-testid="prioritization-fail-closed" className="border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950 p-3 rounded text-sm">
                   <p className="font-semibold text-red-700 dark:text-red-300">Prioritization hidden — freshness gate failed</p>
-                  <p className="text-xs text-red-700 dark:text-red-300">status: <strong>{freshnessGate?.status}</strong>{freshnessGate?.blocking_reasons?.length ? `; reasons: ${freshnessGate.blocking_reasons.join(', ')}` : ''}</p>
-                  {(freshnessGate?.recompute_command ?? topThree.recompute_command) && (
-                    <p className="text-xs mt-1 break-all">regenerate: <code>{freshnessGate?.recompute_command ?? topThree.recompute_command}</code></p>
-                  )}
+                  <p className="text-xs text-red-700 dark:text-red-300">reason: <strong>{rankingDecision.reason}</strong></p>
+                  <p className="text-xs mt-1 break-all text-red-700 dark:text-red-300">regenerate: <code>{rankingDecision.recompute_command}</code></p>
                 </div>
               );
             }

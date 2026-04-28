@@ -16,19 +16,19 @@ function listOrMissing(items: string[] | undefined | null): string {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  OK: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-  MISSING: 'bg-red-100 text-red-800 border-red-300',
-  STALE: 'bg-amber-100 text-amber-800 border-amber-300',
-  FAILED: 'bg-orange-100 text-orange-800 border-orange-300',
-  FALLBACK: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  BLOCKING: 'bg-red-200 text-red-900 border-red-400',
-  UNKNOWN: 'bg-slate-100 text-slate-700 border-slate-300',
+  OK: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900 dark:text-emerald-200 dark:border-emerald-700',
+  MISSING: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900 dark:text-red-200 dark:border-red-700',
+  STALE: 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900 dark:text-amber-200 dark:border-amber-700',
+  FAILED: 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700',
+  FALLBACK: 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700',
+  BLOCKING: 'bg-red-200 text-red-900 border-red-400 dark:bg-red-950 dark:text-red-200 dark:border-red-700',
+  UNKNOWN: 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600',
 };
 
 export function SystemInspector({ node, replayCommands }: Props) {
   if (!node) {
     return (
-      <div className="border rounded p-3 text-sm text-gray-600" data-testid="system-inspector">
+      <div className="border dark:border-slate-700 rounded p-3 text-sm text-gray-600 dark:text-slate-300 bg-white dark:bg-slate-900" data-testid="system-inspector">
         Select a node to investigate.
       </div>
     );
@@ -43,7 +43,7 @@ export function SystemInspector({ node, replayCommands }: Props) {
   const downstreamDependents = node.downstream_dependents ?? node.downstream;
 
   return (
-    <div className="border rounded p-3 text-sm space-y-2" data-testid="system-inspector">
+    <div className="border dark:border-slate-700 rounded p-3 text-sm space-y-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100" data-testid="system-inspector">
       <header className="flex items-center justify-between gap-2">
         <h3 className="font-semibold">Investigate: {node.system_id}</h3>
         <span
@@ -56,7 +56,7 @@ export function SystemInspector({ node, replayCommands }: Props) {
       </header>
 
       {!debuggerComplete && (
-        <p className="text-xs text-red-700" data-testid="inspector-fail-closed-warning">
+        <p className="text-xs text-red-700 dark:text-red-300" data-testid="inspector-fail-closed-warning">
           ⚠ Debugger data incomplete; fields below may show Unknown / Missing.
         </p>
       )}
@@ -92,7 +92,7 @@ export function SystemInspector({ node, replayCommands }: Props) {
         </div>
       </dl>
 
-      <p className="text-xs text-gray-600">
+      <p className="text-xs text-gray-600 dark:text-slate-300">
         minimum safe prompt scope: recommendation: single-system hardening for {node.system_id} trust-gap signals.
       </p>
 
@@ -104,7 +104,7 @@ export function SystemInspector({ node, replayCommands }: Props) {
         testid="inspector-breadcrumbs"
       />
 
-      <p className="text-xs text-gray-500">replay command refs: {replayCommands.join(' | ')}</p>
+      <p className="text-xs text-gray-500 dark:text-slate-400">replay command refs: {replayCommands.join(' | ')}</p>
     </div>
   );
 }
