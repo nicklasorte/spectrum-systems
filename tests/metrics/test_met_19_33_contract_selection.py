@@ -436,6 +436,15 @@ def test_dashboard_page_renders_compact_met_19_33_sections() -> None:
         assert testid in src, f"dashboard page missing testId {testid}"
 
 
+def test_dashboard_page_places_met_19_33_section_ids_in_diagnostics_surface() -> None:
+    src = DASHBOARD_PAGE_PATH.read_text(encoding="utf-8")
+    diagnostics_idx = src.find("activeTab === 'diagnostics'")
+    assert diagnostics_idx != -1, "dashboard page missing diagnostics tab surface"
+    for testid in DASHBOARD_TEST_IDS:
+        testid_idx = src.find(testid)
+        assert testid_idx > diagnostics_idx, f"expected {testid} to be rendered under diagnostics surface"
+
+
 def test_dashboard_page_compact_max_constant_present() -> None:
     src = DASHBOARD_PAGE_PATH.read_text(encoding="utf-8")
     assert "MET_COMPACT_ITEM_MAX = 5" in src
