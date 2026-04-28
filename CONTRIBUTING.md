@@ -25,6 +25,17 @@ All schema updates must:
 - maintain backwards compatibility when possible
 - include clear field descriptions
 
+## Resolving Merge Conflicts in Generated Artifacts
+Run-specific generated artifacts (for example
+`artifacts/certification_judgment_40_explicit/*.json`,
+`artifacts/pqx_runs/**/*.json`) embed timestamps and trace IDs that diverge
+between branches. **Do not hand-merge these files.** Regenerate them by running
+the script declared in `config/generated_artifact_policy.json` and commit the
+deterministic output. See `docs/generated-artifact-merge-policy.md`.
+
+After cloning, run `bash scripts/install_hooks.sh` to register the
+`generated-artifact` Git merge driver and the pre-push guard.
+
 ## Agent Workflow
 - Claude → reasoning and architecture
 - Codex → repository changes
