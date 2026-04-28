@@ -89,7 +89,7 @@ describe('SystemTrustGraph + inspector', () => {
   it('applies focus dimming when showAll is false', () => {
     render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll={false} onSelect={() => undefined} />);
     expect(screen.getByTestId('trust-node-EVL')).toHaveAttribute('opacity', '1');
-    expect(screen.getByTestId('trust-node-H01')).toHaveAttribute('opacity', '0.25');
+    expect(screen.queryByTestId('trust-node-H01')).not.toBeInTheDocument();
   });
 
   it('hides secondary edges in focus mode and shows them when Show all is enabled', () => {
@@ -102,6 +102,33 @@ describe('SystemTrustGraph + inspector', () => {
     rerender(<SystemTrustGraph graph={graph} selectedSystem={null} showAll onSelect={() => undefined} />);
     const supportEdgeShowAll = screen.getByTestId('trust-edge-CTX-PQX');
     expect(supportEdgeShowAll).not.toHaveAttribute('data-edge-hidden');
+  });
+
+  it('default clean_structure mode renders only canonical core chain edges', () => {
+    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll={false} onSelect={() => undefined} />);
+    expect(screen.getByTestId('trust-edge-AEX-PQX')).not.toHaveAttribute('data-edge-hidden');
+    expect(screen.getByTestId('trust-edge-CTX-PQX')).toHaveAttribute('data-edge-hidden', 'true');
+    expect(screen.queryByTestId('trust-node-REP')).not.toBeInTheDocument();
+  });
+
+  it('full_registry mode renders dense diagnostic edges', () => {
+    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll={false} graphMode="full_registry" onSelect={() => undefined} />);
+    expect(screen.getByTestId('trust-edge-CTX-PQX')).not.toHaveAttribute('data-edge-hidden');
+    expect(screen.getByTestId('trust-node-REP')).toBeInTheDocument();
+  });
+
+  it('failure_path mode renders failure edges plus core chain', () => {
+    render(<SystemTrustGraph graph={graph} selectedSystem={null} showAll={false} graphMode="failure_path" onSelect={() => undefined} />);
+    expect(screen.getByTestId('trust-edge-REP-EVL')).not.toHaveAttribute('data-edge-hidden');
+    expect(screen.getByTestId('trust-edge-AEX-PQX')).not.toHaveAttribute('data-edge-hidden');
+    expect(screen.getByTestId('trust-edge-CTX-PQX')).toHaveAttribute('data-edge-hidden', 'true');
+  });
+
+  it('selected_node mode shows selected context plus core chain', () => {
+    render(<SystemTrustGraph graph={graph} selectedSystem="REP" showAll={false} graphMode="selected_node" onSelect={() => undefined} />);
+    expect(screen.getByTestId('trust-node-REP')).toBeInTheDocument();
+    expect(screen.getByTestId('trust-edge-REP-EVL')).not.toHaveAttribute('data-edge-hidden');
+    expect(screen.getByTestId('trust-edge-CTX-PQX')).toHaveAttribute('data-edge-hidden', 'true');
   });
 
   it('marks core canonical edges with the core style for clear directional flow', () => {

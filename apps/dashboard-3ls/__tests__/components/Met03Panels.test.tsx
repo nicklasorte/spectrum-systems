@@ -28,13 +28,13 @@ describe('MET-03 dashboard simplification', () => {
     (global.fetch as jest.Mock).mockClear();
   });
 
-  it('renders top3 warning in overview fail-closed state (D3L-MASTER-01 Phase 8: leverage queue moved to roadmap)', async () => {
+  it('renders top3 fail-closed panel in overview fail-closed state (D3L-MASTER-01 Phase 8: leverage queue moved to roadmap)', async () => {
     setupFetch();
     render(<DashboardPage />);
 
     await waitFor(() => {
       expect(screen.getByTestId('overview-tab')).toBeInTheDocument();
-      expect(screen.getByTestId('top3-warning')).toBeInTheDocument();
+      expect(screen.getByTestId('top3-fail-closed')).toBeInTheDocument();
     });
   });
 

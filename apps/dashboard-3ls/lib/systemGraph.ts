@@ -15,6 +15,7 @@ export type DebugNodeStatus =
   | 'UNKNOWN';
 
 export type DebugMode = 'normal' | 'blockers' | 'lineage' | 'control' | 'freshness';
+export type GraphMode = 'clean_structure' | 'failure_path' | 'selected_node' | 'full_registry';
 
 export interface SystemGraphNode {
   system_id: string;

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { SystemNode } from './SystemNode';
 import { SystemEdge } from './SystemEdge';
-import type { DebugMode, SystemGraphEdge, SystemGraphPayload } from '@/lib/systemGraph';
+import type { DebugMode, GraphMode, SystemGraphEdge, SystemGraphPayload } from '@/lib/systemGraph';
 import { CONTROL_PATH_SYSTEMS, deriveDebugStatus } from '@/lib/systemGraph';
 
 export type GraphLayoutKey = 'layered' | 'compact';
@@ -9,6 +9,7 @@ export type GraphLayoutKey = 'layered' | 'compact';
 const NODE_WIDTH = 120;
 const NODE_HEIGHT = 70;
 const CANVAS_WIDTH = 1100;
+const CORE_CHAIN = ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL'];
 
 interface RowDef {
   key: string;
@@ -35,6 +36,7 @@ const LAYOUTS: Record<GraphLayoutKey, RowDef[]> = {
 
 const SUPPORT_LIKE_LAYERS: ReadonlySet<string> = new Set(['support']);
 const CORE_LIKE_LAYERS: ReadonlySet<string> = new Set(['core']);
+const CORE_EDGE_KEYS = new Set(['AEX-PQX', 'PQX-EVL', 'EVL-TPA', 'TPA-CDE', 'CDE-SEL']);
 
 const BLOCKING_STATUSES: ReadonlySet<string> = new Set(['MISSING', 'STALE', 'FAILED', 'FALLBACK', 'BLOCKING']);
 
@@ -74,6 +76,7 @@ interface Props {
   showAll: boolean;
   layout?: GraphLayoutKey;
   debugMode?: DebugMode;
+  graphMode?: GraphMode;
   highlightedPath?: string[];
   onSelect: (systemId: string) => void;
   onSelectEdge?: (edge: SystemGraphEdge) => void;
@@ -86,6 +89,7 @@ export function SystemTrustGraph({
   showAll,
   layout = 'layered',
   debugMode = 'normal',
+  graphMode = 'clean_structure',
   highlightedPath = [],
   onSelect,
   onSelectEdge,
@@ -102,6 +106,18 @@ export function SystemTrustGraph({
     return m;
   }, [slotPositions, overflowPositions]);
 
+  const selectedContext = useMemo(() => {
+    if (!selectedSystem) return new Set<string>();
+    const out = new Set<string>([selectedSystem]);
+    for (const edge of graph.edges) {
+      if (edge.from === selectedSystem || edge.to === selectedSystem) {
+        out.add(edge.from);
+        out.add(edge.to);
+      }
+    }
+    return out;
+  }, [graph.edges, selectedSystem]);
+
   const connectedToFocus = useMemo(() => {
     const set = new Set<string>();
     for (const edge of graph.edges) {
@@ -109,9 +125,13 @@ export function SystemTrustGraph({
         set.add(edge.from);
         set.add(edge.to);
       }
+      if (selectedContext.has(edge.from) || selectedContext.has(edge.to)) {
+        set.add(edge.from);
+        set.add(edge.to);
+      }
     }
     return set;
-  }, [graph.edges, graph.focus_systems]);
+  }, [graph.edges, graph.focus_systems, selectedContext]);
 
   const canvasHeight = useMemo(() => {
     const lastRow = LAYOUTS[layout].at(-1);
@@ -119,10 +139,20 @@ export function SystemTrustGraph({
     return overflowIds.length > 0 ? baseHeight + rowHeight() : baseHeight;
   }, [layout, overflowIds.length]);
 
-  const isPrimaryEdge = (from: string, to: string, isFailurePath: boolean, edgeType: string) => {
-    if (edgeType === 'dependency') return true;
-    if (isFailurePath) return true;
-    if (graph.focus_systems.includes(from) || graph.focus_systems.includes(to)) return true;
+  const isVisibleNode = (systemId: string): boolean => {
+    if (graphMode === 'full_registry') return true;
+    if (CORE_CHAIN.includes(systemId)) return true;
+    if (graphMode === 'failure_path' && graph.failure_path.includes(systemId)) return true;
+    if (graphMode === 'selected_node' && selectedContext.has(systemId)) return true;
+    return false;
+  };
+
+  const isVisibleEdge = (edge: SystemGraphEdge): boolean => {
+    const key = `${edge.from}-${edge.to}`;
+    if (graphMode === 'full_registry') return true;
+    if (CORE_EDGE_KEYS.has(key)) return true;
+    if (graphMode === 'failure_path' && edge.is_failure_path) return true;
+    if (graphMode === 'selected_node' && selectedContext.has(edge.from) && selectedContext.has(edge.to)) return true;
     return false;
   };
 
@@ -138,7 +168,6 @@ export function SystemTrustGraph({
 
   const labelByRow: Array<{ y: number; label: string }> = LAYOUTS[layout].map((row) => ({ y: row.y, label: row.label }));
 
-  // Mode-driven node opacity. Fail-closed: if mode data is missing, fall back to focus dimming.
   const nodeOpacityForMode = (systemId: string, baseOpacity: number) => {
     const node = graph.nodes.find((n) => n.system_id === systemId);
     if (!node) return baseOpacity;
@@ -154,9 +183,7 @@ export function SystemTrustGraph({
     }
     if (debugMode === 'freshness') {
       const status = node.debug_status ?? deriveDebugStatus(node);
-      return node.source_type === 'missing' || node.source_type === 'stub_fallback' || status === 'STALE'
-        ? 1
-        : 0.3;
+      return node.source_type === 'missing' || node.source_type === 'stub_fallback' || status === 'STALE' ? 1 : 0.3;
     }
     return baseOpacity;
   };
@@ -181,10 +208,11 @@ export function SystemTrustGraph({
 
   return (
     <div
-      className="border rounded-lg p-4 bg-white"
+      className="border rounded-lg p-4 bg-white dark:bg-slate-900 dark:border-slate-700"
       data-testid="system-trust-graph"
       data-layout={layout}
       data-debug-mode={debugMode}
+      data-graph-mode={graphMode}
     >
       <svg
         viewBox={`0 0 ${CANVAS_WIDTH} ${canvasHeight}`}
@@ -239,8 +267,8 @@ export function SystemTrustGraph({
           const from = allPositions.get(edge.from);
           const to = allPositions.get(edge.to);
           if (!from || !to) return null;
-          const primary = isPrimaryEdge(edge.from, edge.to, edge.is_failure_path, edge.edge_type);
-          if (!showAll && !primary && debugMode === 'normal') {
+          const visible = isVisibleEdge(edge);
+          if (!showAll && !visible && debugMode === 'normal') {
             return (
               <SystemEdge
                 key={`${edge.from}-${edge.to}`}
@@ -255,14 +283,14 @@ export function SystemTrustGraph({
             );
           }
           const baseOpacity = showAll
-            ? primary
+            ? (visible ? 1 : 0.3)
+            : visible
               ? 1
-              : 0.45
-            : graph.focus_systems.includes(edge.from) || graph.focus_systems.includes(edge.to)
-              ? 1
-              : connectedToFocus.has(edge.from) || connectedToFocus.has(edge.to)
-                ? 0.6
-                : 0.2;
+              : graph.focus_systems.includes(edge.from) || graph.focus_systems.includes(edge.to)
+                ? 1
+                : connectedToFocus.has(edge.from) || connectedToFocus.has(edge.to)
+                  ? 0.6
+                  : 0.2;
           const opacity = debugMode === 'normal' ? baseOpacity : edgeOpacityForMode(edge, baseOpacity);
           const highlighted = isPathEdge(edge.from, edge.to);
           return (
@@ -283,13 +311,16 @@ export function SystemTrustGraph({
         {graph.nodes.map((node) => {
           const pos = allPositions.get(node.system_id);
           if (!pos) return null;
+          if (!showAll && debugMode === 'normal' && !isVisibleNode(node.system_id)) return null;
           const baseOpacity = showAll
             ? 1
-            : graph.focus_systems.includes(node.system_id)
+            : isVisibleNode(node.system_id)
               ? 1
-              : connectedToFocus.has(node.system_id)
-                ? 0.65
-                : 0.25;
+              : graph.focus_systems.includes(node.system_id)
+                ? 1
+                : connectedToFocus.has(node.system_id)
+                  ? 0.65
+                  : 0.25;
           const modeOpacity = debugMode === 'normal' ? baseOpacity : nodeOpacityForMode(node.system_id, baseOpacity);
           const isOnHighlightedPath = highlightedSet.has(node.system_id);
           return (
@@ -317,7 +348,7 @@ export function SystemTrustGraph({
       <div className="hidden" data-testid="candidate-systems">H01 RFX HOP MET METS</div>
       {selectedEdgeKey && <div className="hidden" data-testid="selected-edge-key">{selectedEdgeKey}</div>}
 
-      <p className="text-xs text-gray-500 mt-2">
+      <p className="text-xs text-gray-500 dark:text-slate-300 mt-2">
         Slots are static for readability; nodes, edges, and trust state come from the artifact payload.
       </p>
     </div>

@@ -439,6 +439,12 @@ export interface PriorityFreshnessGateResult {
   source_priority_artifact?: string;
 }
 
+export interface RankingBlockDecision {
+  blocked: boolean;
+  reason: string;
+  recompute_command: string;
+}
+
 const D3L_REGISTRY_CONTRACT_PATH_RUNTIME = 'artifacts/tls/d3l_registry_contract.json';
 
 interface RawD3LContract {
@@ -516,6 +522,33 @@ export function evaluatePriorityFreshnessGate(
   }
 
   return result;
+}
+
+/**
+ * Canonical ranking suppression decision for UI surfaces.
+ *
+ * Ranking is blocked when freshness gate is absent, not ok, or the loader
+ * already marks the artifact stale/invalid/missing.
+ */
+export function getRankingBlockDecision(
+  priority: PriorityArtifactLoadResult | null | undefined,
+): RankingBlockDecision {
+  const gate = (priority as unknown as { freshness_gate?: { ok?: boolean; status?: string; recompute_command?: string; blocking_reasons?: string[] } } | null)?.freshness_gate;
+  const loaderState = priority?.state ?? 'missing';
+  const hardBlocked = loaderState !== 'ok';
+  const missingGate = !gate;
+  const gateBlocked = gate ? gate.ok !== true : false;
+  const blocked = hardBlocked || missingGate || gateBlocked;
+  const recompute = gate?.recompute_command ?? priority?.recompute_command ?? PRIORITY_RECOMPUTE_COMMAND;
+  if (blocked) {
+    const reason = hardBlocked
+      ? `priority_state:${loaderState}${priority?.reason ? `:${priority.reason}` : ''}`
+      : missingGate
+        ? 'freshness_gate_missing'
+        : `freshness_gate_blocked:${gate?.status ?? 'unknown'}${gate?.blocking_reasons?.length ? `:${gate.blocking_reasons.join(',')}` : ''}`;
+    return { blocked: true, reason, recompute_command: recompute };
+  }
+  return { blocked: false, reason: 'freshness_gate_ok', recompute_command: recompute };
 }
 
 export interface TLSIntegratedSystem {

@@ -1,0 +1,43 @@
+{
+  "artifact_type": "d3l_finalize_inventory_report",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "work_item": "D3L-FINALIZE-01",
+  "roadmap_items_present": [
+    "overview_compaction",
+    "ranking_fail_closed_surfaces",
+    "mvp_graph_separation",
+    "dark_mode_theme_classes",
+    "diagnostics_legacy_anchors"
+  ],
+  "roadmap_items_missing": [
+    "readiness_packet_artifact_before_finalize"
+  ],
+  "roadmap_items_partial": [
+    "graph_mode_defaults_and_dense_view_warning",
+    "oc_overview_compact_unavailable_surface"
+  ],
+  "files_touched": [
+    "apps/dashboard-3ls/app/page.tsx",
+    "apps/dashboard-3ls/components/TrustGraphSection.tsx",
+    "apps/dashboard-3ls/components/SystemTrustGraph.tsx",
+    "apps/dashboard-3ls/components/RecommendationDebugPanel.tsx",
+    "apps/dashboard-3ls/components/GraphLegend.tsx",
+    "apps/dashboard-3ls/components/SystemInspector.tsx",
+    "apps/dashboard-3ls/components/EdgeInspector.tsx",
+    "apps/dashboard-3ls/components/ActivityLog.tsx",
+    "apps/dashboard-3ls/lib/systemGraph.ts",
+    "apps/dashboard-3ls/lib/artifactLoader.ts",
+    "apps/dashboard-3ls/lib/rankingGate.ts",
+    "apps/dashboard-3ls/__tests__/components/SystemTrustGraph.test.tsx",
+    "apps/dashboard-3ls/__tests__/components/TrustGraphSection.test.tsx",
+    "apps/dashboard-3ls/__tests__/components/OperatorComplexityBudget.test.tsx",
+    "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx",
+    "apps/dashboard-3ls/__tests__/components/Met03Panels.test.tsx",
+    "apps/dashboard-3ls/__tests__/components/TrustDebugger.test.tsx",
+    "docs/review-actions/PLAN-D3L-FINALIZE-01-2026-04-28.md"
+  ],
+  "current_risks": [
+    "repo contains unrelated generated artifact churn from build/test runs",
+    "full test sweep is long-running and may mask small regressions without focused assertions"
+  ]
+}
