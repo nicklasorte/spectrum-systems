@@ -33,7 +33,7 @@ all of the above + cert delta + trust regression + lineage
 fast_trust_gate manifest + run summary  (governance support)
                       │
                       ▼
-work_selection_signal (governance support; PRA retains promotion authority)
+work_selection_signal (advisory; readiness packaging remains evidence-only)
                       │
                       ▼
 operational_closure_bundle (final reference-only summary)
@@ -50,7 +50,7 @@ operator_runbook_entry (evidence-bound, refuses confident guidance on stale/conf
 | RIL | findings input shape consumed by the classifier |
 | MAP | dashboard truth projection / topology projection consumer |
 | CDE | retains closure decision authority; consumes the closure decision packet |
-| GOV / PRA | retain certification packaging and promotion-readiness authority; consume the operational closure bundle and work selection signal |
+| GOV / PRA | package evidence only; consume the operational closure bundle and work selection signal. CDE retains transition decision responsibility. SEL/ENF retain action boundary responsibility. |
 | EVL / LIN / REP / CTX / SLO / TPA | covered by the bottleneck classifier categories and fast trust gate seams; closure packet refuses to be ready when their inputs are missing or blocking |
 | PQX | execution lineage consumed via the closure packet's `lineage_chain_ref` |
 

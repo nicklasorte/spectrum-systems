@@ -41,10 +41,10 @@ Selection rules (deterministic, fail-closed):
 The intake never silently falls back to the older of two conflicting
 proofs and never lets a stale proof win on timestamp alone.
 
-Module is non-owning. Canonical authority unchanged:
-  * proof packaging owners: GOV (loop_proof_bundle, certification_evidence_index)
-  * closure verdict authority: CDE
-  * enforcement authority: SEL
+Module is non-owning. This module only indexes proof inputs and does
+not execute actions, alter state, package certification evidence, or
+issue closure or transition responsibilities. References downstream
+action evidence when present.
 """
 
 from __future__ import annotations

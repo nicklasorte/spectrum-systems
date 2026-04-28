@@ -26,8 +26,10 @@ A candidate is accepted only if its justification kind is in the
 candidate work_item_id ascending. If no candidates are accepted, the
 record reports ``selection_status = no_recommendation``.
 
-Module is non-owning: it only emits a signal. CDE retains control,
-PRA retains promotion-readiness authority.
+Module is non-owning: it only emits an advisory work-selection signal
+for downstream readiness packaging. CDE retains final transition
+decision responsibility. Readiness packaging remains evidence-only and
+cannot authorize progression.
 """
 
 from __future__ import annotations
