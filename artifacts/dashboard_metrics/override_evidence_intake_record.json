@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "override_evidence_intake_record",
+  "record_id": "OEI-DASH-MET24-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/override_audit_log_record.json",
+    "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+    "artifacts/dashboard_metrics/risk_summary_record.json",
+    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_seed/enforcement_action_record.json"
+  ],
+  "reason_codes": [
+    "override_evidence_missing",
+    "override_count_unknown_until_canonical_log_exists",
+    "no_fabricated_overrides",
+    "evidence_status_absent"
+  ],
+  "status": "warn",
+  "warnings": [
+    "No canonical override log exists in this repo; override_evidence_count remains 'unknown' rather than being substituted by 0.",
+    "MET does not own override evidence. Once CDE/GOV declare an override-log artifact, this intake record will read from it and update evidence_status accordingly.",
+    "evidence_status='absent' is honest unknown framing; it does not infer override_evidence is rare or impossible."
+  ],
+  "failure_prevented": "Override evidence shape staying ambiguous: pure blindness or fabricated entries; override count being silently reported as 0; evidence_status being inferred from missing data.",
+  "signal_improved": "Override intake exposes evidence_status (absent|partial|present|unknown), override_evidence_count is an honest unknown, and a paired POL-CDE-OVERRIDE-AUDIT signal proposes the missing log shape.",
+  "override_evidence_count": "unknown",
+  "override_evidence_items": [],
+  "evidence_status": "absent",
+  "next_recommended_input": "Forward POL-CDE-OVERRIDE-AUDIT to CDE/GOV. Once a canonical override log artifact exists, this intake record will read from it and surface evidence_status='partial' or 'present' based on per-override coverage.",
+  "intake_shape_recommendation": {
+    "fields": [
+      "override_id",
+      "source_context",
+      "reason_observed",
+      "expiry_date",
+      "conversion_status",
+      "source_artifacts_used"
+    ],
+    "rationale": "These fields let MET intake an override entry without inferring approval or enforcement; canonical owners (CDE/GOV) keep the underlying record authoritative."
+  }
+}

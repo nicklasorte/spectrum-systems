@@ -1,0 +1,145 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "debug_explanation_index_record",
+  "record_id": "DEI-DASH-MET25-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/failure_explanation_packets.json",
+    "artifacts/dashboard_metrics/failure_feedback_record.json",
+    "artifacts/dashboard_metrics/eval_candidate_record.json",
+    "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+    "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
+    "artifacts/dashboard_metrics/replay_lineage_hardening_record.json",
+    "artifacts/dashboard_seed/eval_summary_record.json",
+    "artifacts/dashboard_seed/replay_record.json",
+    "artifacts/dashboard_seed/lineage_record.json",
+    "artifacts/dashboard_seed/enforcement_action_record.json"
+  ],
+  "reason_codes": [
+    "debug_target_under_15_minutes",
+    "no_unsourced_recommendation",
+    "unknowns_remain_visible"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Debug readiness reflects artifact-backed evidence only. Where evidence is partial, debug_readiness is 'partial' rather than 'sufficient'.",
+    "next_recommended_input is an MET recommendation; canonical owners adopt or reject through their own governed flows."
+  ],
+  "failure_prevented": "A new engineer needing more than 15 minutes to answer what failed, why, where in the loop, what evidence proves it, and what to feed in next; recommendations being made without a source.",
+  "signal_improved": "One operator-facing index walks failure → evidence → candidate → next recommended input with debug_readiness per entry; unknowns are explicit, not silently absent.",
+  "debug_target_minutes": 15,
+  "explanation_entries": [
+    {
+      "explanation_id": "DEI-EVL-COVERAGE-GAP",
+      "related_failure_packet": "FXP-EVL-COVERAGE-GAP",
+      "what_failed": "EVL eval coverage_status reads partial; long_horizon and certification dimensions are not enumerated.",
+      "why": "Downstream certification readiness depends on EVL coverage being explicit per-dimension; a partial signal makes downstream gates ambiguous.",
+      "where_in_loop": "EVL",
+      "source_evidence": [
+        "artifacts/dashboard_seed/eval_summary_record.json",
+        "artifacts/dashboard_metrics/replay_lineage_hardening_record.json"
+      ],
+      "related_candidate_ids": [
+        "EVC-EVL-LONG-HORIZON-REPLAY",
+        "EVC-EVL-FULL-CERT-SET",
+        "EVC-REP-LONG-HORIZON"
+      ],
+      "next_recommended_input": "Forward EVC-EVL-LONG-HORIZON-REPLAY and EVC-EVL-FULL-CERT-SET to EVL; pair REP hardening item HR-REP-DIM-LONG-HORIZON.",
+      "unknowns": [
+        "Whether EVL plans to surface per-dimension status in the next loop",
+        "Owner timing for HR-REP-DIM-LONG-HORIZON"
+      ],
+      "failure_prevented": "Operator chasing partial coverage state across multiple artifacts.",
+      "signal_improved": "Single explanation entry walks from failure to next input.",
+      "debug_readiness": "sufficient"
+    },
+    {
+      "explanation_id": "DEI-REP-DIMENSION-GAP",
+      "related_failure_packet": "FXP-REP-DIMENSION-GAP",
+      "what_failed": "REP replay_record exposes only short_horizon; long_horizon and distribution_shift dimensions are absent.",
+      "why": "Replay coverage cannot be declared full without the long-horizon dimension; downstream lineage edge per-dimension status is missing.",
+      "where_in_loop": "REP",
+      "source_evidence": [
+        "artifacts/dashboard_seed/replay_record.json",
+        "artifacts/dashboard_metrics/replay_lineage_hardening_record.json"
+      ],
+      "related_candidate_ids": [
+        "EVC-REP-LONG-HORIZON",
+        "HR-REP-DIM-LONG-HORIZON",
+        "HR-LIN-PER-DIM-REPLAY"
+      ],
+      "next_recommended_input": "Forward EVC-REP-LONG-HORIZON and HR-REP-DIM-LONG-HORIZON to EVL/REP.",
+      "unknowns": ["REP per-dimension schema timeline"],
+      "failure_prevented": "REP per-dimension gap requiring multi-artifact lookup.",
+      "signal_improved": "Per-dimension gap surfaces with related candidates and next recommended input.",
+      "debug_readiness": "sufficient"
+    },
+    {
+      "explanation_id": "DEI-LIN-CERT-EDGE-MISSING",
+      "related_failure_packet": "FXP-LIN-CERT-EDGE",
+      "what_failed": "LIN lineage_record does not expose the eval_summary -> certification_evidence edge per-edge status.",
+      "why": "Without the certification edge, replay cannot answer which certification input is missing; SEL observe-only posture is harder to disambiguate.",
+      "where_in_loop": "LIN",
+      "source_evidence": [
+        "artifacts/dashboard_seed/lineage_record.json",
+        "artifacts/dashboard_metrics/replay_lineage_hardening_record.json"
+      ],
+      "related_candidate_ids": [
+        "EVC-LIN-TRACE-COMPLETENESS",
+        "HR-LIN-CERT-EDGE",
+        "HR-LIN-PER-DIM-REPLAY"
+      ],
+      "next_recommended_input": "Forward EVC-LIN-TRACE-COMPLETENESS and HR-LIN-CERT-EDGE to EVL/LIN.",
+      "unknowns": [
+        "LIN per-edge schema timeline"
+      ],
+      "failure_prevented": "Cert-edge gap requiring trace through multiple artifacts to reach the next input.",
+      "signal_improved": "Single index entry names the gap, evidence, and next input.",
+      "debug_readiness": "sufficient"
+    },
+    {
+      "explanation_id": "DEI-OVERRIDE-EVIDENCE-ABSENT",
+      "related_failure_packet": "FXP-OVERRIDE-EVIDENCE-ABSENT",
+      "what_failed": "No canonical override log exists; override_evidence_count is unknown.",
+      "why": "Without an audit log, downstream MET signals cannot reference override history; CDE override-evidence boundary is unobservable.",
+      "where_in_loop": "CDE",
+      "source_evidence": [
+        "artifacts/dashboard_metrics/override_audit_log_record.json",
+        "artifacts/dashboard_metrics/override_evidence_intake_record.json"
+      ],
+      "related_candidate_ids": ["POL-CDE-OVERRIDE-AUDIT"],
+      "next_recommended_input": "Forward POL-CDE-OVERRIDE-AUDIT to CDE/GOV.",
+      "unknowns": [
+        "Whether any overrides occurred — currently unknown, not zero"
+      ],
+      "failure_prevented": "Override absence being inferred from partial reads.",
+      "signal_improved": "Index entry names the gap and explicitly flags the unknown.",
+      "debug_readiness": "partial"
+    },
+    {
+      "explanation_id": "DEI-SEL-OBSERVE-ONLY",
+      "related_failure_packet": "FXP-SEL-OBSERVE-ONLY",
+      "what_failed": "SEL enforcement_action_record reads observe_only without a first-class compliance_posture field.",
+      "why": "Observe-only-by-policy and observe-only-by-missing-evidence are indistinguishable from free text alone.",
+      "where_in_loop": "SEL",
+      "source_evidence": [
+        "artifacts/dashboard_seed/enforcement_action_record.json",
+        "artifacts/dashboard_metrics/sel_compliance_signal_input_record.json"
+      ],
+      "related_candidate_ids": [
+        "POL-SEL-CERT-COMPLETENESS",
+        "SCS-OBSERVE-ONLY-CLARIFY-001"
+      ],
+      "next_recommended_input": "Forward SCS-OBSERVE-ONLY-CLARIFY-001 and POL-SEL-CERT-COMPLETENESS to SEL.",
+      "unknowns": [
+        "SEL timeline for first-class compliance_posture field"
+      ],
+      "failure_prevented": "Observe-only state being mis-read as passivity.",
+      "signal_improved": "Index entry names the gap, evidence, and next input.",
+      "debug_readiness": "sufficient"
+    }
+  ]
+}

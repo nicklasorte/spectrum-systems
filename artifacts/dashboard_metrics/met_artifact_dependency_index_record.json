@@ -1,0 +1,340 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "met_artifact_dependency_index_record",
+  "record_id": "MAD-DASH-MET20-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/bottleneck_record.json",
+    "artifacts/dashboard_metrics/leverage_queue_record.json",
+    "artifacts/dashboard_metrics/risk_summary_record.json",
+    "artifacts/dashboard_metrics/failure_feedback_record.json",
+    "artifacts/dashboard_metrics/eval_candidate_record.json",
+    "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+    "artifacts/dashboard_metrics/feedback_loop_snapshot.json",
+    "artifacts/dashboard_metrics/failure_explanation_packets.json",
+    "artifacts/dashboard_metrics/override_audit_log_record.json",
+    "artifacts/dashboard_metrics/eval_materialization_path_record.json",
+    "artifacts/dashboard_metrics/replay_lineage_hardening_record.json",
+    "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+    "artifacts/dashboard_metrics/sel_compliance_signal_input_record.json",
+    "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
+    "apps/dashboard-3ls/app/api/intelligence/route.ts",
+    "apps/dashboard-3ls/app/page.tsx"
+  ],
+  "reason_codes": [
+    "dependency_index_observation_only",
+    "no_authority_claim_by_MET",
+    "keep_fold_remove_recommendation_only"
+  ],
+  "status": "warn",
+  "warnings": [
+    "This index is an MET observation. Decisions about folding or removing artifacts belong to canonical owners and are tracked here as recommendations only.",
+    "downstream_consumers entries describe artifact-backed reads observed in the dashboard API/page; consumer fan-out outside this repo is not enumerated."
+  ],
+  "failure_prevented": "A new engineer being unable to answer 'what reads this artifact, what API field it surfaces, which dashboard panel renders it, and what failure it prevents' in under 15 minutes; folded/removable items hiding because no MET artifact tracks them.",
+  "signal_improved": "Each MET artifact has a named upstream/downstream map, debug_question_answered coverage, and a keep/fold/remove recommendation tied to failure_prevented and signal_improved.",
+  "artifact_dependencies": [
+    {
+      "artifact_path": "artifacts/dashboard_metrics/bottleneck_record.json",
+      "api_fields": ["bottleneck", "bottleneck_confidence"],
+      "dashboard_panels": ["Diagnostics: Current Bottleneck (OC)"],
+      "upstream_artifacts": [
+        "artifacts/dashboard_seed/minimal_loop_snapshot.json",
+        "artifacts/dashboard_seed/eval_summary_record.json",
+        "artifacts/dashboard_seed/replay_record.json"
+      ],
+      "downstream_consumers": [
+        "apps/dashboard-3ls/app/api/intelligence/route.ts",
+        "apps/dashboard-3ls/app/page.tsx"
+      ],
+      "failure_prevented": "Bottleneck staying invisible during promotion review.",
+      "signal_improved": "Dominant bottleneck system and constrained loop leg are explicit with confidence rationale.",
+      "debug_question_answered": {
+        "what_failed": "yes",
+        "why": "yes",
+        "where_in_loop": "yes",
+        "source_evidence": "yes",
+        "next_recommended_input": "partial"
+      },
+      "keep_fold_remove": "keep",
+      "rationale": "Bottleneck artifact remains the single named handle for constrained-leg observation; no overlap with other MET artifacts."
+    },
+    {
+      "artifact_path": "artifacts/dashboard_metrics/leverage_queue_record.json",
+      "api_fields": ["leverage_queue"],
+      "dashboard_panels": ["Overview: D. Leverage Queue", "Roadmap: Full Leverage Queue"],
+      "upstream_artifacts": [
+        "artifacts/dashboard_metrics/bottleneck_record.json",
+        "artifacts/dashboard_metrics/risk_summary_record.json"
+      ],
+      "downstream_consumers": ["apps/dashboard-3ls/app/api/intelligence/route.ts"],
+      "failure_prevented": "High-leverage items competing with low-leverage items without a sourced ranking.",
+      "signal_improved": "Leverage items surface with leverage_score, source_artifacts_used, systems_affected.",
+      "debug_question_answered": {
+        "what_failed": "partial",
+        "why": "yes",
+        "where_in_loop": "yes",
+        "source_evidence": "yes",
+        "next_recommended_input": "yes"
+      },
+      "keep_fold_remove": "keep",
+      "rationale": "Leverage queue is the only MET artifact ranking items by failure_prevented + signal_improved."
+    },
+    {
+      "artifact_path": "artifacts/dashboard_metrics/risk_summary_record.json",
+      "api_fields": ["risk_summary"],
+      "dashboard_panels": ["Overview: A. Trust Pulse (proof_chain_coverage)"],
+      "upstream_artifacts": [
+        "artifacts/dashboard_seed/minimal_loop_snapshot.json",
+        "artifacts/dashboard_seed/observability_metrics_record.json"
+      ],
+      "downstream_consumers": ["apps/dashboard-3ls/app/api/intelligence/route.ts"],
+      "failure_prevented": "Risk posture being inferred from disparate seed artifacts with no single record.",
+      "signal_improved": "Top risks, fallback signal counts, and proof_chain_coverage are summarized in one place.",
+      "debug_question_answered": {
+        "what_failed": "yes",
+        "why": "partial",
+        "where_in_loop": "partial",
+        "source_evidence": "yes",
+        "next_recommended_input": "partial"
+      },
+      "keep_fold_remove": "keep",
+      "rationale": "Risk summary backs the trust-pulse panel and risk-card listings; not duplicated elsewhere."
+    },
+    {
+      "artifact_path": "artifacts/dashboard_metrics/failure_feedback_record.json",
+      "api_fields": ["feedback_items"],
+      "dashboard_panels": ["Overview: F. Learning Loop"],
+      "upstream_artifacts": [
+        "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
+        "artifacts/dashboard_seed/near_miss_record.json"
+      ],
+      "downstream_consumers": ["apps/dashboard-3ls/app/api/intelligence/route.ts"],
+      "failure_prevented": "Failures and near misses being unobserved into the next loop.",
+      "signal_improved": "Each failure/near miss is linked to a feedback item with explicit affected_systems.",
+      "debug_question_answered": {
+        "what_failed": "yes",
+        "why": "yes",
+        "where_in_loop": "yes",
+        "source_evidence": "yes",
+        "next_recommended_input": "yes"
+      },
+      "keep_fold_remove": "keep",
+      "rationale": "Source-of-truth for the feedback ledger consumed by the learning loop snapshot and closure ledger."
+    },
+    {
+      "artifact_path": "artifacts/dashboard_metrics/eval_candidate_record.json",
+      "api_fields": ["eval_candidates"],
+      "dashboard_panels": ["Overview: F. Learning Loop"],
+      "upstream_artifacts": ["artifacts/dashboard_metrics/failure_feedback_record.json"],
+      "downstream_consumers": [
+        "apps/dashboard-3ls/app/api/intelligence/route.ts",
+        "artifacts/dashboard_metrics/candidate_closure_ledger_record.json"
+      ],
+      "failure_prevented": "Eval coverage gaps remaining unowned with no candidate ever proposed.",
+      "signal_improved": "Each gap has an eval candidate with input artifacts, owner_recommendation=EVL.",
+      "debug_question_answered": {
+        "what_failed": "yes",
+        "why": "yes",
+        "where_in_loop": "yes",
+        "source_evidence": "yes",
+        "next_recommended_input": "yes"
+      },
+      "keep_fold_remove": "keep",
+      "rationale": "Primary EVL handoff record; closure ledger references the same candidate IDs."
+    },
+    {
+      "artifact_path": "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+      "api_fields": ["policy_candidate_signals"],
+      "dashboard_panels": ["Overview: F. Learning Loop"],
+      "upstream_artifacts": ["artifacts/dashboard_metrics/failure_feedback_record.json"],
+      "downstream_consumers": [
+        "apps/dashboard-3ls/app/api/intelligence/route.ts",
+        "artifacts/dashboard_metrics/candidate_closure_ledger_record.json"
+      ],
+      "failure_prevented": "Policy gaps remaining without a named candidate signal addressed to the owner system.",
+      "signal_improved": "Each policy gap has a signal with suggested_owner_system and required_evidence_before_adoption.",
+      "debug_question_answered": {
+        "what_failed": "yes",
+        "why": "yes",
+        "where_in_loop": "yes",
+        "source_evidence": "yes",
+        "next_recommended_input": "yes"
+      },
+      "keep_fold_remove": "keep",
+      "rationale": "Primary canonical-owner handoff record for proposed policy signals."
+    },
+    {
+      "artifact_path": "artifacts/dashboard_metrics/feedback_loop_snapshot.json",
+      "api_fields": ["feedback_loop", "feedback_loop_status", "unresolved_feedback_count"],
+      "dashboard_panels": ["Overview: F. Learning Loop"],
+      "upstream_artifacts": [
+        "artifacts/dashboard_metrics/failure_feedback_record.json",
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_metrics/policy_candidate_signal_record.json"
+      ],
+      "downstream_consumers": ["apps/dashboard-3ls/app/api/intelligence/route.ts"],
+      "failure_prevented": "Loop status read from disparate artifacts without a single rollup.",
+      "signal_improved": "Single snapshot exposes counts, themes, and next recommended improvement inputs.",
+      "debug_question_answered": {
+        "what_failed": "partial",
+        "why": "yes",
+        "where_in_loop": "partial",
+        "source_evidence": "yes",
+        "next_recommended_input": "yes"
+      },
+      "keep_fold_remove": "keep",
+      "rationale": "Rollup is the operator's first-stop overview; closure ledger complements but does not replace it."
+    },
+    {
+      "artifact_path": "artifacts/dashboard_metrics/failure_explanation_packets.json",
+      "api_fields": ["failure_explanation_packets"],
+      "dashboard_panels": ["Overview: G. Failure Explanation"],
+      "upstream_artifacts": [
+        "artifacts/dashboard_metrics/failure_feedback_record.json",
+        "artifacts/dashboard_seed/failure_mode_dashboard_record.json"
+      ],
+      "downstream_consumers": ["apps/dashboard-3ls/app/api/intelligence/route.ts"],
+      "failure_prevented": "Operators needing >15 minutes to answer what failed/why/where/source/next.",
+      "signal_improved": "Per-failure packet with what_failed, why_it_matters, evidence, next_recommended_input.",
+      "debug_question_answered": {
+        "what_failed": "yes",
+        "why": "yes",
+        "where_in_loop": "yes",
+        "source_evidence": "yes",
+        "next_recommended_input": "yes"
+      },
+      "keep_fold_remove": "keep",
+      "rationale": "Direct precursor to the MET-25 debug explanation index; complementary, not redundant."
+    },
+    {
+      "artifact_path": "artifacts/dashboard_metrics/override_audit_log_record.json",
+      "api_fields": ["override_audit"],
+      "dashboard_panels": ["Overview: H. Override / Unknowns"],
+      "upstream_artifacts": [
+        "artifacts/dashboard_seed/control_decision_record.json",
+        "artifacts/dashboard_seed/enforcement_action_record.json"
+      ],
+      "downstream_consumers": ["apps/dashboard-3ls/app/api/intelligence/route.ts"],
+      "failure_prevented": "Override count being silently reported as 0 with no audit log.",
+      "signal_improved": "Override count is unknown until canonical log exists; reason_codes name the gap.",
+      "debug_question_answered": {
+        "what_failed": "yes",
+        "why": "yes",
+        "where_in_loop": "yes",
+        "source_evidence": "yes",
+        "next_recommended_input": "yes"
+      },
+      "keep_fold_remove": "fold_candidate",
+      "rationale": "MET-24 override_evidence_intake_record absorbs the same intake shape with a richer evidence_status field; once MET-24 lands and dashboards read it, this record is a fold candidate. For now keep — closure ledger and dashboard wiring still reference it."
+    },
+    {
+      "artifact_path": "artifacts/dashboard_metrics/eval_materialization_path_record.json",
+      "api_fields": ["eval_materialization_path"],
+      "dashboard_panels": [],
+      "upstream_artifacts": ["artifacts/dashboard_metrics/eval_candidate_record.json"],
+      "downstream_consumers": ["apps/dashboard-3ls/app/api/intelligence/route.ts"],
+      "failure_prevented": "Eval candidate handoff to EVL remaining implicit with no required-authority-input list.",
+      "signal_improved": "Materialization path is proposed only; required_authority_inputs and required_tests are explicit.",
+      "debug_question_answered": {
+        "what_failed": "partial",
+        "why": "yes",
+        "where_in_loop": "yes",
+        "source_evidence": "yes",
+        "next_recommended_input": "yes"
+      },
+      "keep_fold_remove": "fold_candidate",
+      "rationale": "MET-23 evl_handoff_observation_tracker subsumes per-candidate handoff observations. Once MET-23 lands and dashboards read it, this record is a fold candidate. Keep for now to preserve the existing EVL-handoff history."
+    },
+    {
+      "artifact_path": "artifacts/dashboard_metrics/replay_lineage_hardening_record.json",
+      "api_fields": ["replay_lineage_hardening"],
+      "dashboard_panels": ["Overview: J. Replay + Lineage Hardening"],
+      "upstream_artifacts": [
+        "artifacts/dashboard_seed/replay_record.json",
+        "artifacts/dashboard_seed/lineage_record.json"
+      ],
+      "downstream_consumers": ["apps/dashboard-3ls/app/api/intelligence/route.ts"],
+      "failure_prevented": "Causality gaps slipping through with no record naming missing dimensions/edges.",
+      "signal_improved": "Per-dimension replay status and per-edge lineage status are explicit.",
+      "debug_question_answered": {
+        "what_failed": "yes",
+        "why": "yes",
+        "where_in_loop": "yes",
+        "source_evidence": "yes",
+        "next_recommended_input": "yes"
+      },
+      "keep_fold_remove": "keep",
+      "rationale": "Only MET artifact tracking REP/LIN per-dimension/edge gaps; no duplication."
+    },
+    {
+      "artifact_path": "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+      "api_fields": ["fallback_reduction_plan"],
+      "dashboard_panels": ["Overview: I. Fallback Reduction"],
+      "upstream_artifacts": [
+        "artifacts/dashboard_metrics/leverage_queue_record.json",
+        "artifacts/dashboard_metrics/risk_summary_record.json"
+      ],
+      "downstream_consumers": ["apps/dashboard-3ls/app/api/intelligence/route.ts"],
+      "failure_prevented": "Stub fallback rows continuing to be reported as artifact-backed.",
+      "signal_improved": "High-leverage rows have replacement_signal_needed and priority.",
+      "debug_question_answered": {
+        "what_failed": "yes",
+        "why": "yes",
+        "where_in_loop": "yes",
+        "source_evidence": "yes",
+        "next_recommended_input": "yes"
+      },
+      "keep_fold_remove": "keep",
+      "rationale": "Single registry for high-leverage fallback rows; closure ledger references rows here."
+    },
+    {
+      "artifact_path": "artifacts/dashboard_metrics/sel_compliance_signal_input_record.json",
+      "api_fields": ["sel_compliance_signal_input"],
+      "dashboard_panels": [],
+      "upstream_artifacts": [
+        "artifacts/dashboard_seed/enforcement_action_record.json",
+        "artifacts/dashboard_metrics/policy_candidate_signal_record.json"
+      ],
+      "downstream_consumers": ["apps/dashboard-3ls/app/api/intelligence/route.ts"],
+      "failure_prevented": "Observe-only enforcement posture being read as passivity rather than the artifact-backed observation it is.",
+      "signal_improved": "SEL has a named compliance signal input proposing a first-class compliance_posture field.",
+      "debug_question_answered": {
+        "what_failed": "yes",
+        "why": "yes",
+        "where_in_loop": "yes",
+        "source_evidence": "yes",
+        "next_recommended_input": "yes"
+      },
+      "keep_fold_remove": "keep",
+      "rationale": "Single SEL-targeted compliance signal input record."
+    },
+    {
+      "artifact_path": "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
+      "api_fields": ["candidate_closure"],
+      "dashboard_panels": ["Overview: K. Candidate Closure"],
+      "upstream_artifacts": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+        "artifacts/dashboard_metrics/replay_lineage_hardening_record.json",
+        "artifacts/dashboard_metrics/sel_compliance_signal_input_record.json"
+      ],
+      "downstream_consumers": ["apps/dashboard-3ls/app/api/intelligence/route.ts"],
+      "failure_prevented": "Candidates accumulating as a stale suggestion pile no canonical owner ever closed.",
+      "signal_improved": "Each candidate has age_days, stale_after_days, current_state, and next_recommended_input.",
+      "debug_question_answered": {
+        "what_failed": "yes",
+        "why": "yes",
+        "where_in_loop": "yes",
+        "source_evidence": "yes",
+        "next_recommended_input": "yes"
+      },
+      "keep_fold_remove": "keep",
+      "rationale": "New MET-19 closure tracker; only artifact carrying age and stale_after across candidate types."
+    }
+  ]
+}

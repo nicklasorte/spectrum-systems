@@ -1,0 +1,390 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "candidate_closure_ledger_record",
+  "record_id": "CCL-DASH-MET19-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/eval_candidate_record.json",
+    "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+    "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+    "artifacts/dashboard_metrics/replay_lineage_hardening_record.json",
+    "artifacts/dashboard_metrics/sel_compliance_signal_input_record.json",
+    "artifacts/dashboard_metrics/failure_feedback_record.json"
+  ],
+  "reason_codes": [
+    "candidate_items_proposed_only",
+    "no_materialization_evidence_in_this_pr",
+    "stale_candidate_signal_kept_visible",
+    "no_authority_claim_by_MET"
+  ],
+  "status": "warn",
+  "warnings": [
+    "All ledger items reflect MET observations. EVL/TPA/CDE/SEL/GOV remain canonical owners; this artifact does not adopt, accept, or activate any candidate.",
+    "current_state values describe artifact-backed observations only. Without canonical-owner artifacts confirming materialization, items remain proposed/open or surface as stale_candidate_signal.",
+    "Unknown age remains unknown when the source candidate has no created_at."
+  ],
+  "failure_prevented": "MET-created candidates and signal inputs accumulating as a stale suggestion pile that no canonical owner ever closed, with no MET artifact naming which item went stale, when, and what input would close it.",
+  "signal_improved": "Each candidate, signal input, fallback reduction item, and replay/lineage hardening item is tracked with current_state, age_days, stale_after_days, and the next_recommended_input that would close it; stale items surface as stale_candidate_signal rather than disappearing.",
+  "candidate_items": [
+    {
+      "candidate_id": "EVC-EVL-LONG-HORIZON-REPLAY",
+      "candidate_type": "eval_candidate",
+      "source_record": "artifacts/dashboard_metrics/eval_candidate_record.json",
+      "affected_systems": ["EVL", "REP"],
+      "constrained_loop_leg": "EVL",
+      "current_state": "proposed",
+      "age_days": 0,
+      "stale_after_days": 30,
+      "closure_required_by": "EVL artifact reading long_horizon dimension status",
+      "next_recommended_input": "Forward EVC-EVL-LONG-HORIZON-REPLAY to EVL with REP per-dimension hardening recommendation HR-REP-DIM-LONG-HORIZON.",
+      "failure_prevented": "Long-horizon replay coverage gap recurring with no candidate ever closed and no MET signal naming the staleness.",
+      "signal_improved": "EVL has a tracked candidate item with explicit closure conditions and stale_after window.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_seed/replay_record.json"
+      ]
+    },
+    {
+      "candidate_id": "EVC-EVL-FULL-CERT-SET",
+      "candidate_type": "eval_candidate",
+      "source_record": "artifacts/dashboard_metrics/eval_candidate_record.json",
+      "affected_systems": ["EVL", "SEL"],
+      "constrained_loop_leg": "EVL",
+      "current_state": "proposed",
+      "age_days": 0,
+      "stale_after_days": 30,
+      "closure_required_by": "EVL artifact enumerating full certification evidence set",
+      "next_recommended_input": "Forward EVC-EVL-FULL-CERT-SET to EVL alongside POL-SEL-CERT-COMPLETENESS for SEL.",
+      "failure_prevented": "Certification evidence gap remaining with no candidate-closure record and no stale signal raised.",
+      "signal_improved": "EVL has a tracked closure target with named stale_after window.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_seed/eval_summary_record.json"
+      ]
+    },
+    {
+      "candidate_id": "EVC-REP-LONG-HORIZON",
+      "candidate_type": "eval_candidate",
+      "source_record": "artifacts/dashboard_metrics/eval_candidate_record.json",
+      "affected_systems": ["REP", "EVL"],
+      "constrained_loop_leg": "REP",
+      "current_state": "proposed",
+      "age_days": 0,
+      "stale_after_days": 30,
+      "closure_required_by": "REP per-dimension status fields exposed",
+      "next_recommended_input": "Forward EVC-REP-LONG-HORIZON to EVL/REP; pair with HR-REP-DIM-LONG-HORIZON.",
+      "failure_prevented": "REP per-dimension status remaining absent with no closure path tracked.",
+      "signal_improved": "REP has a tracked candidate with closure-by criteria and source artifacts.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_seed/replay_record.json"
+      ]
+    },
+    {
+      "candidate_id": "EVC-SLO-BUDGET-CONTEXT",
+      "candidate_type": "eval_candidate",
+      "source_record": "artifacts/dashboard_metrics/eval_candidate_record.json",
+      "affected_systems": ["SLO", "CDE"],
+      "constrained_loop_leg": "SLO",
+      "current_state": "proposed",
+      "age_days": 0,
+      "stale_after_days": 30,
+      "closure_required_by": "SLO record with consumed_ratio and budget_status as first-class fields",
+      "next_recommended_input": "Forward EVC-SLO-BUDGET-CONTEXT to EVL/SLO.",
+      "failure_prevented": "Budget context remaining partial with no closure tracking.",
+      "signal_improved": "SLO has a tracked candidate with explicit closure criteria.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_seed/slo_status_record.json"
+      ]
+    },
+    {
+      "candidate_id": "EVC-LIN-TRACE-COMPLETENESS",
+      "candidate_type": "eval_candidate",
+      "source_record": "artifacts/dashboard_metrics/eval_candidate_record.json",
+      "affected_systems": ["LIN", "REP", "EVL"],
+      "constrained_loop_leg": "LIN",
+      "current_state": "proposed",
+      "age_days": 0,
+      "stale_after_days": 30,
+      "closure_required_by": "LIN per-edge trace completeness exposed",
+      "next_recommended_input": "Forward EVC-LIN-TRACE-COMPLETENESS to EVL/LIN; pair with HR-LIN-CERT-EDGE and HR-LIN-PER-DIM-REPLAY.",
+      "failure_prevented": "Trace completeness gap recurring without closure path or stale signal.",
+      "signal_improved": "LIN has a tracked candidate with closure-by criteria.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_seed/lineage_record.json"
+      ]
+    },
+    {
+      "candidate_id": "EVC-MET-DASHBOARD-TRUTH",
+      "candidate_type": "eval_candidate",
+      "source_record": "artifacts/dashboard_metrics/eval_candidate_record.json",
+      "affected_systems": ["MET", "OBS"],
+      "constrained_loop_leg": "OBS",
+      "current_state": "proposed",
+      "age_days": 0,
+      "stale_after_days": 30,
+      "closure_required_by": "EVL acceptance condition asserting dashboard-truth invariant",
+      "next_recommended_input": "Forward EVC-MET-DASHBOARD-TRUTH to EVL.",
+      "failure_prevented": "Dashboard-truth signal remaining unaudited with no closure tracking.",
+      "signal_improved": "MET dashboard-truth has a tracked candidate with named closure-by condition.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "apps/dashboard-3ls/app/api/intelligence/route.ts"
+      ]
+    },
+    {
+      "candidate_id": "POL-SEL-CERT-COMPLETENESS",
+      "candidate_type": "policy_candidate_signal",
+      "source_record": "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+      "affected_systems": ["SEL"],
+      "constrained_loop_leg": "SEL",
+      "current_state": "proposed",
+      "age_days": 0,
+      "stale_after_days": 45,
+      "closure_required_by": "SEL artifact reading certification evidence completeness",
+      "next_recommended_input": "Forward POL-SEL-CERT-COMPLETENESS to SEL/GOV for review.",
+      "failure_prevented": "Certification completeness signal remaining unowned with no MET stale-tracking.",
+      "signal_improved": "SEL has a tracked policy candidate signal with named closure-by criteria.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+        "artifacts/dashboard_seed/enforcement_action_record.json"
+      ]
+    },
+    {
+      "candidate_id": "POL-TPA-WARN-BOUNDARY",
+      "candidate_type": "policy_candidate_signal",
+      "source_record": "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+      "affected_systems": ["TPA"],
+      "constrained_loop_leg": "TPA",
+      "current_state": "proposed",
+      "age_days": 0,
+      "stale_after_days": 45,
+      "closure_required_by": "TPA artifact exposing explicit warn-trigger fields",
+      "next_recommended_input": "Forward POL-TPA-WARN-BOUNDARY to TPA.",
+      "failure_prevented": "Warn-boundary observation remaining without owner-tracked closure.",
+      "signal_improved": "TPA has a tracked policy candidate signal with closure-by criteria.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+        "artifacts/dashboard_seed/trust_policy_decision_record.json"
+      ]
+    },
+    {
+      "candidate_id": "POL-GOV-FALLBACK-REDUCTION",
+      "candidate_type": "policy_candidate_signal",
+      "source_record": "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+      "affected_systems": ["GOV"],
+      "constrained_loop_leg": "GOV",
+      "current_state": "proposed",
+      "age_days": 0,
+      "stale_after_days": 45,
+      "closure_required_by": "GOV registry naming high-leverage fallback rows and replacement signals",
+      "next_recommended_input": "Forward POL-GOV-FALLBACK-REDUCTION to GOV with the high-leverage rows from FRP-DASH-MET12-001.",
+      "failure_prevented": "Fallback rows continuing to be reported as artifact-backed with no governance closure.",
+      "signal_improved": "GOV has a tracked policy candidate signal with named closure-by criteria.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json"
+      ]
+    },
+    {
+      "candidate_id": "POL-CDE-OVERRIDE-AUDIT",
+      "candidate_type": "policy_candidate_signal",
+      "source_record": "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+      "affected_systems": ["CDE"],
+      "constrained_loop_leg": "CDE",
+      "current_state": "proposed",
+      "age_days": 0,
+      "stale_after_days": 45,
+      "closure_required_by": "CDE-owned override audit log artifact present and populated",
+      "next_recommended_input": "Forward POL-CDE-OVERRIDE-AUDIT to CDE/GOV.",
+      "failure_prevented": "Override audit gap remaining without canonical-owner closure path tracked.",
+      "signal_improved": "CDE has a tracked policy candidate signal with explicit closure-by criteria.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+        "artifacts/dashboard_metrics/override_audit_log_record.json"
+      ]
+    },
+    {
+      "candidate_id": "FRP-REP-PER-DIM",
+      "candidate_type": "fallback_reduction_item",
+      "source_record": "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+      "affected_systems": ["REP"],
+      "constrained_loop_leg": "REP",
+      "current_state": "open",
+      "age_days": 0,
+      "stale_after_days": 30,
+      "closure_required_by": "REP replay_record exposing per-dimension status fields",
+      "next_recommended_input": "Forward fallback row to REP with HR-REP-DIM-LONG-HORIZON.",
+      "failure_prevented": "REP fallback row remaining with no replacement signal closure tracked.",
+      "signal_improved": "REP fallback row has age and stale_after window.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+        "artifacts/dashboard_seed/replay_record.json"
+      ]
+    },
+    {
+      "candidate_id": "FRP-LIN-PER-EDGE",
+      "candidate_type": "fallback_reduction_item",
+      "source_record": "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+      "affected_systems": ["LIN"],
+      "constrained_loop_leg": "LIN",
+      "current_state": "open",
+      "age_days": 0,
+      "stale_after_days": 30,
+      "closure_required_by": "LIN lineage_record exposing per-edge status",
+      "next_recommended_input": "Forward fallback row to LIN with HR-LIN-CERT-EDGE.",
+      "failure_prevented": "LIN fallback row remaining with no replacement signal closure tracked.",
+      "signal_improved": "LIN fallback row has age and stale_after window.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+        "artifacts/dashboard_seed/lineage_record.json"
+      ]
+    },
+    {
+      "candidate_id": "FRP-SLO-FIRST-CLASS-FIELDS",
+      "candidate_type": "fallback_reduction_item",
+      "source_record": "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+      "affected_systems": ["SLO"],
+      "constrained_loop_leg": "SLO",
+      "current_state": "open",
+      "age_days": 0,
+      "stale_after_days": 30,
+      "closure_required_by": "SLO record carrying consumed_ratio and budget_status",
+      "next_recommended_input": "Forward fallback row to SLO; pair with EVC-SLO-BUDGET-CONTEXT.",
+      "failure_prevented": "SLO fallback row remaining with no closure tracked.",
+      "signal_improved": "SLO fallback row has age and stale_after window.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+        "artifacts/dashboard_seed/slo_status_record.json"
+      ]
+    },
+    {
+      "candidate_id": "FRP-AEX-PER-CASE-SNAPSHOT",
+      "candidate_type": "fallback_reduction_item",
+      "source_record": "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+      "affected_systems": ["AEX"],
+      "constrained_loop_leg": "AEX",
+      "current_state": "open",
+      "age_days": 0,
+      "stale_after_days": 30,
+      "closure_required_by": "AEX execution snapshot present per case with input/output references",
+      "next_recommended_input": "Forward fallback row to AEX.",
+      "failure_prevented": "AEX execution edge remaining invisible with no closure tracked.",
+      "signal_improved": "AEX fallback row has age and stale_after window.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+        "artifacts/dashboard_seed/minimal_loop_snapshot.json"
+      ]
+    },
+    {
+      "candidate_id": "HR-REP-DIM-LONG-HORIZON",
+      "candidate_type": "replay_lineage_hardening_item",
+      "source_record": "artifacts/dashboard_metrics/replay_lineage_hardening_record.json",
+      "affected_systems": ["REP"],
+      "constrained_loop_leg": "REP",
+      "current_state": "open",
+      "age_days": 0,
+      "stale_after_days": 30,
+      "closure_required_by": "REP per-dimension status field present in replay_record",
+      "next_recommended_input": "Forward HR-REP-DIM-LONG-HORIZON to REP.",
+      "failure_prevented": "Per-dimension hardening item remaining open with no closure tracked.",
+      "signal_improved": "REP hardening item has age and stale_after window.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/replay_lineage_hardening_record.json"
+      ]
+    },
+    {
+      "candidate_id": "HR-LIN-CERT-EDGE",
+      "candidate_type": "replay_lineage_hardening_item",
+      "source_record": "artifacts/dashboard_metrics/replay_lineage_hardening_record.json",
+      "affected_systems": ["LIN"],
+      "constrained_loop_leg": "LIN",
+      "current_state": "open",
+      "age_days": 0,
+      "stale_after_days": 30,
+      "closure_required_by": "LIN exposing eval_summary->certification_evidence edge with per-edge status",
+      "next_recommended_input": "Forward HR-LIN-CERT-EDGE to LIN.",
+      "failure_prevented": "Cert-edge hardening item remaining open with no closure tracked.",
+      "signal_improved": "LIN hardening item has age and stale_after window.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/replay_lineage_hardening_record.json"
+      ]
+    },
+    {
+      "candidate_id": "HR-LIN-PER-DIM-REPLAY",
+      "candidate_type": "replay_lineage_hardening_item",
+      "source_record": "artifacts/dashboard_metrics/replay_lineage_hardening_record.json",
+      "affected_systems": ["LIN"],
+      "constrained_loop_leg": "LIN",
+      "current_state": "open",
+      "age_days": 0,
+      "stale_after_days": 30,
+      "closure_required_by": "LIN replay edge surfaced per-dimension",
+      "next_recommended_input": "Forward HR-LIN-PER-DIM-REPLAY to LIN.",
+      "failure_prevented": "Per-dimension replay edge hardening item remaining open with no closure tracked.",
+      "signal_improved": "LIN hardening item has age and stale_after window.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/replay_lineage_hardening_record.json"
+      ]
+    },
+    {
+      "candidate_id": "SCS-OBSERVE-ONLY-CLARIFY-001",
+      "candidate_type": "sel_signal_input",
+      "source_record": "artifacts/dashboard_metrics/sel_compliance_signal_input_record.json",
+      "affected_systems": ["SEL"],
+      "constrained_loop_leg": "SEL",
+      "current_state": "proposed",
+      "age_days": 0,
+      "stale_after_days": 45,
+      "closure_required_by": "SEL artifact exposing first-class compliance_posture field",
+      "next_recommended_input": "Forward SCS-OBSERVE-ONLY-CLARIFY-001 to SEL alongside POL-SEL-CERT-COMPLETENESS.",
+      "failure_prevented": "SEL compliance signal input remaining unowned with no MET stale-tracking.",
+      "signal_improved": "SEL signal input has age and stale_after window with named closure-by criteria.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/sel_compliance_signal_input_record.json",
+        "artifacts/dashboard_seed/enforcement_action_record.json"
+      ]
+    },
+    {
+      "candidate_id": "FB-LEGACY-UNDATED-EXAMPLE",
+      "candidate_type": "failure_feedback_item",
+      "source_record": "artifacts/dashboard_metrics/failure_feedback_record.json",
+      "affected_systems": ["MET"],
+      "constrained_loop_leg": "MET",
+      "current_state": "stale_candidate_signal",
+      "age_days": "unknown",
+      "stale_after_days": 30,
+      "closure_required_by": "Source feedback item reissued with created_at and explicit closure target",
+      "next_recommended_input": "Re-emit the missing-created_at feedback item under the MET-04 schema, then track here.",
+      "failure_prevented": "Undated feedback items being silently dropped from candidate accounting; staleness becoming invisible because age cannot be computed.",
+      "signal_improved": "Stale candidate is surfaced as stale_candidate_signal rather than hidden as open; unknown age stays unknown.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/failure_feedback_record.json"
+      ]
+    }
+  ]
+}

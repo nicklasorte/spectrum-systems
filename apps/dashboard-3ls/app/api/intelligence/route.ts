@@ -39,6 +39,14 @@ const ARTIFACT_PATHS = {
   replayLineageHardening: 'artifacts/dashboard_metrics/replay_lineage_hardening_record.json',
   fallbackReductionPlan: 'artifacts/dashboard_metrics/fallback_reduction_plan_record.json',
   selComplianceSignalInput: 'artifacts/dashboard_metrics/sel_compliance_signal_input_record.json',
+  candidateClosureLedger: 'artifacts/dashboard_metrics/candidate_closure_ledger_record.json',
+  metArtifactDependencyIndex: 'artifacts/dashboard_metrics/met_artifact_dependency_index_record.json',
+  trendFrequencyHonestyGate: 'artifacts/dashboard_metrics/trend_frequency_honesty_gate_record.json',
+  evlHandoffObservationTracker: 'artifacts/dashboard_metrics/evl_handoff_observation_tracker_record.json',
+  overrideEvidenceIntake: 'artifacts/dashboard_metrics/override_evidence_intake_record.json',
+  debugExplanationIndex: 'artifacts/dashboard_metrics/debug_explanation_index_record.json',
+  metGeneratedArtifactClassification:
+    'artifacts/dashboard_metrics/met_generated_artifact_classification_record.json',
 };
 
 interface BottleneckRecord {
@@ -276,6 +284,79 @@ export async function GET() {
     status_label?: string;
   }>(ARTIFACT_PATHS.selComplianceSignalInput);
 
+  // MET-19-33 — closure, dependency, debuggability, and integrity blocks.
+  // Each block degrades to 'unknown' rather than substituting 0 or PASS when
+  // the artifact is missing.
+  const candidateClosureLedger = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    candidate_items?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.candidateClosureLedger);
+  const metArtifactDependencyIndex = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    artifact_dependencies?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.metArtifactDependencyIndex);
+  const trendFrequencyHonestyGate = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    comparable_case_count?: number | 'unknown';
+    required_case_count_for_trend?: number;
+    trend_state?: string;
+    frequency_state?: string;
+    cases_needed?: number | 'unknown';
+    comparable_cases?: Array<Record<string, unknown>>;
+    blocked_trend_fields?: Array<Record<string, unknown>>;
+    shape_breakdown?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.trendFrequencyHonestyGate);
+  const evlHandoffObservationTracker = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    handoff_items?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.evlHandoffObservationTracker);
+  const overrideEvidenceIntake = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    override_evidence_count?: number | 'unknown';
+    override_evidence_items?: Array<Record<string, unknown>>;
+    evidence_status?: string;
+    next_recommended_input?: string;
+    reason_codes?: string[];
+    intake_shape_recommendation?: Record<string, unknown>;
+  }>(ARTIFACT_PATHS.overrideEvidenceIntake);
+  const debugExplanationIndex = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    debug_target_minutes?: number;
+    explanation_entries?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.debugExplanationIndex);
+  const metGeneratedArtifactClassification = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    classified_paths?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.metGeneratedArtifactClassification);
+
   const allSlots = [
     { path: ARTIFACT_PATHS.checkpointSummary, loaded: checkpointSummary !== null },
     { path: ARTIFACT_PATHS.repoSnapshot, loaded: repoSnapshot !== null },
@@ -306,6 +387,16 @@ export async function GET() {
     { path: ARTIFACT_PATHS.replayLineageHardening, loaded: replayLineageHardening !== null },
     { path: ARTIFACT_PATHS.fallbackReductionPlan, loaded: fallbackReductionPlan !== null },
     { path: ARTIFACT_PATHS.selComplianceSignalInput, loaded: selComplianceSignalInput !== null },
+    { path: ARTIFACT_PATHS.candidateClosureLedger, loaded: candidateClosureLedger !== null },
+    { path: ARTIFACT_PATHS.metArtifactDependencyIndex, loaded: metArtifactDependencyIndex !== null },
+    { path: ARTIFACT_PATHS.trendFrequencyHonestyGate, loaded: trendFrequencyHonestyGate !== null },
+    { path: ARTIFACT_PATHS.evlHandoffObservationTracker, loaded: evlHandoffObservationTracker !== null },
+    { path: ARTIFACT_PATHS.overrideEvidenceIntake, loaded: overrideEvidenceIntake !== null },
+    { path: ARTIFACT_PATHS.debugExplanationIndex, loaded: debugExplanationIndex !== null },
+    {
+      path: ARTIFACT_PATHS.metGeneratedArtifactClassification,
+      loaded: metGeneratedArtifactClassification !== null,
+    },
   ];
 
   const envelope = buildSourceEnvelope({
@@ -328,6 +419,13 @@ export async function GET() {
       ...(replayLineageHardening?.warnings ?? []),
       ...(fallbackReductionPlan?.warnings ?? []),
       ...(selComplianceSignalInput?.warnings ?? []),
+      ...(candidateClosureLedger?.warnings ?? []),
+      ...(metArtifactDependencyIndex?.warnings ?? []),
+      ...(trendFrequencyHonestyGate?.warnings ?? []),
+      ...(evlHandoffObservationTracker?.warnings ?? []),
+      ...(overrideEvidenceIntake?.warnings ?? []),
+      ...(debugExplanationIndex?.warnings ?? []),
+      ...(metGeneratedArtifactClassification?.warnings ?? []),
       'Dashboard seed artifacts are minimal and partial; unknown coverage remains visible by design.',
     ],
   });
@@ -725,6 +823,224 @@ export async function GET() {
         ],
       };
 
+  // MET-19 — candidate closure ledger block. Fail-closed: missing artifact
+  // degrades to unknown counts and an explicit warning rather than 0 items.
+  const filteredCandidateItems = (candidateClosureLedger?.candidate_items ?? []).filter(
+    (i) =>
+      typeof i.candidate_id === 'string' &&
+      typeof i.candidate_type === 'string' &&
+      typeof i.current_state === 'string' &&
+      Array.isArray(i.source_artifacts_used) &&
+      (i.source_artifacts_used as unknown[]).length > 0,
+  );
+  const candidateClosureBlock = candidateClosureLedger
+    ? {
+        candidate_items: filteredCandidateItems,
+        candidate_item_count: filteredCandidateItems.length,
+        stale_candidate_signal_count: filteredCandidateItems.filter(
+          (i) => i.current_state === 'stale_candidate_signal',
+        ).length,
+        failure_prevented: candidateClosureLedger.failure_prevented ?? null,
+        signal_improved: candidateClosureLedger.signal_improved ?? null,
+        data_source: candidateClosureLedger.data_source ?? 'unknown',
+        source_artifacts_used: candidateClosureLedger.source_artifacts_used ?? [],
+        warnings: candidateClosureLedger.warnings ?? [],
+      }
+    : {
+        candidate_items: [],
+        candidate_item_count: 'unknown',
+        stale_candidate_signal_count: 'unknown',
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.candidateClosureLedger} unavailable; candidate closure ledger reported as unknown.`,
+        ],
+      };
+
+  // MET-20 — MET artifact dependency index block.
+  const metArtifactDependencyIndexBlock = metArtifactDependencyIndex
+    ? {
+        artifact_dependencies: metArtifactDependencyIndex.artifact_dependencies ?? [],
+        failure_prevented: metArtifactDependencyIndex.failure_prevented ?? null,
+        signal_improved: metArtifactDependencyIndex.signal_improved ?? null,
+        data_source: metArtifactDependencyIndex.data_source ?? 'unknown',
+        source_artifacts_used: metArtifactDependencyIndex.source_artifacts_used ?? [],
+        warnings: metArtifactDependencyIndex.warnings ?? [],
+      }
+    : {
+        artifact_dependencies: [],
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.metArtifactDependencyIndex} unavailable; dependency index reported as unknown.`,
+        ],
+      };
+
+  // MET-22 — trend/frequency honesty gate. trend_state and frequency_state
+  // remain 'unknown' until the comparable_case threshold is met.
+  const trendFrequencyHonestyGateBlock = trendFrequencyHonestyGate
+    ? {
+        comparable_case_count:
+          trendFrequencyHonestyGate.comparable_case_count ?? 'unknown',
+        required_case_count_for_trend:
+          trendFrequencyHonestyGate.required_case_count_for_trend ?? 3,
+        trend_state: trendFrequencyHonestyGate.trend_state ?? 'unknown',
+        frequency_state: trendFrequencyHonestyGate.frequency_state ?? 'unknown',
+        cases_needed: trendFrequencyHonestyGate.cases_needed ?? 'unknown',
+        comparable_cases: trendFrequencyHonestyGate.comparable_cases ?? [],
+        blocked_trend_fields: trendFrequencyHonestyGate.blocked_trend_fields ?? [],
+        shape_breakdown: trendFrequencyHonestyGate.shape_breakdown ?? [],
+        failure_prevented: trendFrequencyHonestyGate.failure_prevented ?? null,
+        signal_improved: trendFrequencyHonestyGate.signal_improved ?? null,
+        data_source: trendFrequencyHonestyGate.data_source ?? 'unknown',
+        source_artifacts_used: trendFrequencyHonestyGate.source_artifacts_used ?? [],
+        warnings: trendFrequencyHonestyGate.warnings ?? [],
+      }
+    : {
+        comparable_case_count: 'unknown',
+        required_case_count_for_trend: 3,
+        trend_state: 'unknown',
+        frequency_state: 'unknown',
+        cases_needed: 'unknown',
+        comparable_cases: [],
+        blocked_trend_fields: [],
+        shape_breakdown: [],
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.trendFrequencyHonestyGate} unavailable; trend/frequency honesty gate reported as unknown.`,
+        ],
+      };
+
+  // MET-23 — EVL handoff observation tracker block.
+  const filteredHandoffItems = (evlHandoffObservationTracker?.handoff_items ?? []).filter(
+    (i) =>
+      typeof i.handoff_signal_id === 'string' &&
+      typeof i.source_eval_candidate_id === 'string' &&
+      Array.isArray(i.source_artifacts_used) &&
+      (i.source_artifacts_used as unknown[]).length > 0,
+  );
+  const evlHandoffObservationsBlock = evlHandoffObservationTracker
+    ? {
+        handoff_items: filteredHandoffItems,
+        handoff_item_count: filteredHandoffItems.length,
+        failure_prevented: evlHandoffObservationTracker.failure_prevented ?? null,
+        signal_improved: evlHandoffObservationTracker.signal_improved ?? null,
+        data_source: evlHandoffObservationTracker.data_source ?? 'unknown',
+        source_artifacts_used: evlHandoffObservationTracker.source_artifacts_used ?? [],
+        warnings: evlHandoffObservationTracker.warnings ?? [],
+      }
+    : {
+        handoff_items: [],
+        handoff_item_count: 'unknown',
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.evlHandoffObservationTracker} unavailable; EVL handoff observations reported as unknown.`,
+        ],
+      };
+
+  // MET-24 — override evidence intake block. override_evidence_count must
+  // remain 'unknown' when no canonical override log exists; never 0.
+  const overrideEvidenceIntakeBlock = overrideEvidenceIntake
+    ? {
+        override_evidence_count: overrideEvidenceIntake.override_evidence_count ?? 'unknown',
+        override_evidence_items: overrideEvidenceIntake.override_evidence_items ?? [],
+        evidence_status: overrideEvidenceIntake.evidence_status ?? 'unknown',
+        next_recommended_input: overrideEvidenceIntake.next_recommended_input ?? null,
+        reason_codes: overrideEvidenceIntake.reason_codes ?? [],
+        intake_shape_recommendation:
+          overrideEvidenceIntake.intake_shape_recommendation ?? null,
+        failure_prevented: overrideEvidenceIntake.failure_prevented ?? null,
+        signal_improved: overrideEvidenceIntake.signal_improved ?? null,
+        data_source: overrideEvidenceIntake.data_source ?? 'unknown',
+        source_artifacts_used: overrideEvidenceIntake.source_artifacts_used ?? [],
+        warnings: overrideEvidenceIntake.warnings ?? [],
+      }
+    : {
+        override_evidence_count: 'unknown',
+        override_evidence_items: [],
+        evidence_status: 'absent',
+        next_recommended_input: null,
+        reason_codes: ['override_evidence_missing'],
+        intake_shape_recommendation: null,
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.overrideEvidenceIntake} unavailable; override_evidence_count reported as unknown.`,
+        ],
+      };
+
+  // MET-25 — debug explanation index block.
+  const filteredExplanationEntries = (
+    debugExplanationIndex?.explanation_entries ?? []
+  ).filter(
+    (e) =>
+      typeof e.explanation_id === 'string' &&
+      typeof e.what_failed === 'string' &&
+      typeof e.next_recommended_input === 'string' &&
+      Array.isArray(e.source_evidence) &&
+      (e.source_evidence as unknown[]).length > 0,
+  );
+  const debugExplanationIndexBlock = debugExplanationIndex
+    ? {
+        debug_target_minutes: debugExplanationIndex.debug_target_minutes ?? 15,
+        explanation_entries: filteredExplanationEntries,
+        explanation_entry_count: filteredExplanationEntries.length,
+        failure_prevented: debugExplanationIndex.failure_prevented ?? null,
+        signal_improved: debugExplanationIndex.signal_improved ?? null,
+        data_source: debugExplanationIndex.data_source ?? 'unknown',
+        source_artifacts_used: debugExplanationIndex.source_artifacts_used ?? [],
+        warnings: debugExplanationIndex.warnings ?? [],
+      }
+    : {
+        debug_target_minutes: 15,
+        explanation_entries: [],
+        explanation_entry_count: 'unknown',
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.debugExplanationIndex} unavailable; debug explanation index reported as unknown.`,
+        ],
+      };
+
+  // MET-26 — generated artifact classification block.
+  const metGeneratedArtifactClassificationBlock = metGeneratedArtifactClassification
+    ? {
+        classified_paths: metGeneratedArtifactClassification.classified_paths ?? [],
+        classified_path_count:
+          (metGeneratedArtifactClassification.classified_paths ?? []).length,
+        failure_prevented: metGeneratedArtifactClassification.failure_prevented ?? null,
+        signal_improved: metGeneratedArtifactClassification.signal_improved ?? null,
+        data_source: metGeneratedArtifactClassification.data_source ?? 'unknown',
+        source_artifacts_used:
+          metGeneratedArtifactClassification.source_artifacts_used ?? [],
+        warnings: metGeneratedArtifactClassification.warnings ?? [],
+      }
+    : {
+        classified_paths: [],
+        classified_path_count: 'unknown',
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.metGeneratedArtifactClassification} unavailable; classification reported as unknown.`,
+        ],
+      };
+
   // MET-04 — feedback items list (filter to sourced items only).
   const feedbackItems = (failureFeedback?.feedback_items ?? []).filter(
     (i) =>
@@ -773,6 +1089,13 @@ export async function GET() {
     replay_lineage_hardening: replayLineageHardeningBlock,
     fallback_reduction_plan: fallbackReductionPlanBlock,
     sel_compliance_signal_input: selComplianceSignalInputBlock,
+    candidate_closure: candidateClosureBlock,
+    met_artifact_dependency_index: metArtifactDependencyIndexBlock,
+    trend_frequency_honesty_gate: trendFrequencyHonestyGateBlock,
+    evl_handoff_observations: evlHandoffObservationsBlock,
+    override_evidence_intake: overrideEvidenceIntakeBlock,
+    debug_explanation_index: debugExplanationIndexBlock,
+    met_generated_artifact_classification: metGeneratedArtifactClassificationBlock,
     source_artifacts_used: Array.from(
       new Set([
         ...(envelope.source_artifacts_used ?? []),
@@ -791,6 +1114,13 @@ export async function GET() {
         ...(replayLineageHardening?.source_artifacts_used ?? []),
         ...(fallbackReductionPlan?.source_artifacts_used ?? []),
         ...(selComplianceSignalInput?.source_artifacts_used ?? []),
+        ...(candidateClosureLedger?.source_artifacts_used ?? []),
+        ...(metArtifactDependencyIndex?.source_artifacts_used ?? []),
+        ...(trendFrequencyHonestyGate?.source_artifacts_used ?? []),
+        ...(evlHandoffObservationTracker?.source_artifacts_used ?? []),
+        ...(overrideEvidenceIntake?.source_artifacts_used ?? []),
+        ...(debugExplanationIndex?.source_artifacts_used ?? []),
+        ...(metGeneratedArtifactClassification?.source_artifacts_used ?? []),
       ])
     ),
     intelligence_summary: {

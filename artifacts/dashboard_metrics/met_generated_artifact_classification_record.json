@@ -1,0 +1,352 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "met_generated_artifact_classification_record",
+  "record_id": "MGC-DASH-MET26-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/met_artifact_dependency_index_record.json",
+    "artifacts/dashboard_seed/minimal_loop_snapshot.json",
+    "artifacts/dashboard_cases/case_index_record.json",
+    "apps/dashboard-3ls/app/api/intelligence/route.ts"
+  ],
+  "reason_codes": [
+    "classification_observation_only",
+    "merge_policy_recommendation_only",
+    "no_existing_generated_artifact_policy_in_repo"
+  ],
+  "status": "warn",
+  "warnings": [
+    "No `config/generated_artifact_policy.json` is present in this repo at the time of MET-26. This record classifies MET paths under a recommended merge_policy shape that aligns with how the artifacts are produced and consumed.",
+    "If a generated-artifact policy lands later, MET will read from it instead of carrying the classification inline.",
+    "Classifications cover MET-owned dashboard_metrics, dashboard_cases, and seed-loop paths consumed by MET. Other systems remain canonical owners of their own generated artifacts."
+  ],
+  "failure_prevented": "Generated MET artifact paths being hand-merged like canonical seeds; stale generated artifacts being read by Vercel without a recompute warning; conflicting generated artifacts being silently merged.",
+  "signal_improved": "Each MET path carries an explicit classification (canonical_seed | dashboard_metric | derived_metric | run_specific_generated | review_artifact | test_fixture | unknown) with a recommended merge_policy.",
+  "classified_paths": [
+    {
+      "path": "artifacts/dashboard_seed/minimal_loop_snapshot.json",
+      "classification": "canonical_seed",
+      "merge_policy": "canonical_review_required",
+      "failure_prevented": "Seed loop drift via casual hand-merge.",
+      "signal_improved": "Canonical seed has explicit canonical_review_required posture."
+    },
+    {
+      "path": "artifacts/dashboard_seed/eval_summary_record.json",
+      "classification": "canonical_seed",
+      "merge_policy": "canonical_review_required",
+      "failure_prevented": "Seed eval drift via casual hand-merge.",
+      "signal_improved": "Canonical seed labelled."
+    },
+    {
+      "path": "artifacts/dashboard_seed/lineage_record.json",
+      "classification": "canonical_seed",
+      "merge_policy": "canonical_review_required",
+      "failure_prevented": "Seed lineage drift via casual hand-merge.",
+      "signal_improved": "Canonical seed labelled."
+    },
+    {
+      "path": "artifacts/dashboard_seed/control_decision_record.json",
+      "classification": "canonical_seed",
+      "merge_policy": "canonical_review_required",
+      "failure_prevented": "Seed control-decision drift via casual hand-merge.",
+      "signal_improved": "Canonical seed labelled."
+    },
+    {
+      "path": "artifacts/dashboard_seed/enforcement_action_record.json",
+      "classification": "canonical_seed",
+      "merge_policy": "canonical_review_required",
+      "failure_prevented": "Seed enforcement-action drift via casual hand-merge.",
+      "signal_improved": "Canonical seed labelled."
+    },
+    {
+      "path": "artifacts/dashboard_seed/replay_record.json",
+      "classification": "canonical_seed",
+      "merge_policy": "canonical_review_required",
+      "failure_prevented": "Seed replay drift via casual hand-merge.",
+      "signal_improved": "Canonical seed labelled."
+    },
+    {
+      "path": "artifacts/dashboard_seed/observability_metrics_record.json",
+      "classification": "canonical_seed",
+      "merge_policy": "canonical_review_required",
+      "failure_prevented": "Seed observability drift via casual hand-merge.",
+      "signal_improved": "Canonical seed labelled."
+    },
+    {
+      "path": "artifacts/dashboard_seed/slo_status_record.json",
+      "classification": "canonical_seed",
+      "merge_policy": "canonical_review_required",
+      "failure_prevented": "Seed SLO drift via casual hand-merge.",
+      "signal_improved": "Canonical seed labelled."
+    },
+    {
+      "path": "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
+      "classification": "canonical_seed",
+      "merge_policy": "canonical_review_required",
+      "failure_prevented": "Seed failure-mode drift via casual hand-merge.",
+      "signal_improved": "Canonical seed labelled."
+    },
+    {
+      "path": "artifacts/dashboard_seed/near_miss_record.json",
+      "classification": "canonical_seed",
+      "merge_policy": "canonical_review_required",
+      "failure_prevented": "Seed near-miss drift via casual hand-merge.",
+      "signal_improved": "Canonical seed labelled."
+    },
+    {
+      "path": "artifacts/dashboard_seed/source_artifact_record.json",
+      "classification": "canonical_seed",
+      "merge_policy": "canonical_review_required",
+      "failure_prevented": "Seed source-artifact drift via casual hand-merge.",
+      "signal_improved": "Canonical seed labelled."
+    },
+    {
+      "path": "artifacts/dashboard_seed/output_artifact_record.json",
+      "classification": "canonical_seed",
+      "merge_policy": "canonical_review_required",
+      "failure_prevented": "Seed output-artifact drift via casual hand-merge.",
+      "signal_improved": "Canonical seed labelled."
+    },
+    {
+      "path": "artifacts/dashboard_seed/trust_policy_decision_record.json",
+      "classification": "canonical_seed",
+      "merge_policy": "canonical_review_required",
+      "failure_prevented": "Seed trust-policy drift via casual hand-merge.",
+      "signal_improved": "Canonical seed labelled."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/bottleneck_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged dashboard metric carrying stale bottleneck observation.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/leverage_queue_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged leverage queue.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/risk_summary_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged risk summary.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/failure_feedback_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged feedback ledger.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/eval_candidate_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged eval candidates.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged policy candidate signals.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/feedback_loop_snapshot.json",
+      "classification": "derived_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Stale derived loop snapshot via hand-merge.",
+      "signal_improved": "Derived metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/failure_explanation_packets.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged failure-explanation packets.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/override_audit_log_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged override-audit-log placeholder.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/eval_materialization_path_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged materialization path.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/replay_lineage_hardening_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged replay/lineage hardening.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged fallback reduction plan.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/sel_compliance_signal_input_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged SEL compliance signal input.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged candidate closure ledger.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/met_artifact_dependency_index_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged dependency index.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/trend_frequency_honesty_gate_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged trend honesty gate.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/evl_handoff_observation_tracker_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged EVL handoff tracker.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/override_evidence_intake_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged override evidence intake.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/debug_explanation_index_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged debug explanation index.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_metrics/met_generated_artifact_classification_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged classification record.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_cases/case_index_record.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged case index.",
+      "signal_improved": "Dashboard metric labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_cases/case_eval_gap_001.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged case fixture.",
+      "signal_improved": "Dashboard case labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_cases/case_replay_gap_001.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged case fixture.",
+      "signal_improved": "Dashboard case labelled regenerate-only."
+    },
+    {
+      "path": "artifacts/dashboard_cases/case_cert_incomplete_001.json",
+      "classification": "dashboard_metric",
+      "merge_policy": "regenerate_not_hand_merge",
+      "failure_prevented": "Hand-merged case fixture.",
+      "signal_improved": "Dashboard case labelled regenerate-only."
+    },
+    {
+      "path": "docs/reviews/MET-21-metric-usefulness-pruning-audit.md",
+      "classification": "review_artifact",
+      "merge_policy": "normal_review",
+      "failure_prevented": "Review doc treated as a generated artifact rather than a reviewed source.",
+      "signal_improved": "Review doc labelled normal_review."
+    },
+    {
+      "path": "docs/reviews/MET-27-closure-authority-redteam.md",
+      "classification": "review_artifact",
+      "merge_policy": "normal_review",
+      "failure_prevented": "Review doc treated as a generated artifact.",
+      "signal_improved": "Review doc labelled normal_review."
+    },
+    {
+      "path": "docs/reviews/MET-28-closure-authority-fixes.md",
+      "classification": "review_artifact",
+      "merge_policy": "normal_review",
+      "failure_prevented": "Review doc treated as a generated artifact.",
+      "signal_improved": "Review doc labelled normal_review."
+    },
+    {
+      "path": "docs/reviews/MET-29-simplification-debuggability-redteam.md",
+      "classification": "review_artifact",
+      "merge_policy": "normal_review",
+      "failure_prevented": "Review doc treated as a generated artifact.",
+      "signal_improved": "Review doc labelled normal_review."
+    },
+    {
+      "path": "docs/reviews/MET-30-simplification-debuggability-fixes.md",
+      "classification": "review_artifact",
+      "merge_policy": "normal_review",
+      "failure_prevented": "Review doc treated as a generated artifact.",
+      "signal_improved": "Review doc labelled normal_review."
+    },
+    {
+      "path": "docs/reviews/MET-31-artifact-integrity-redteam.md",
+      "classification": "review_artifact",
+      "merge_policy": "normal_review",
+      "failure_prevented": "Review doc treated as a generated artifact.",
+      "signal_improved": "Review doc labelled normal_review."
+    },
+    {
+      "path": "docs/reviews/MET-32-artifact-integrity-fixes.md",
+      "classification": "review_artifact",
+      "merge_policy": "normal_review",
+      "failure_prevented": "Review doc treated as a generated artifact.",
+      "signal_improved": "Review doc labelled normal_review."
+    },
+    {
+      "path": "docs/reviews/MET-33-final-hardening-review.md",
+      "classification": "review_artifact",
+      "merge_policy": "normal_review",
+      "failure_prevented": "Review doc treated as a generated artifact.",
+      "signal_improved": "Review doc labelled normal_review."
+    },
+    {
+      "path": "tests/metrics/test_met_19_33_contract_selection.py",
+      "classification": "test_fixture",
+      "merge_policy": "normal_review",
+      "failure_prevented": "Pytest selection target treated as a generated artifact.",
+      "signal_improved": "Test fixture labelled normal_review."
+    }
+  ]
+}

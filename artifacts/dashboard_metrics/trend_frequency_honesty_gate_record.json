@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "trend_frequency_honesty_gate_record",
+  "record_id": "TFH-DASH-MET22-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_cases/case_index_record.json",
+    "artifacts/dashboard_cases/case_eval_gap_001.json",
+    "artifacts/dashboard_cases/case_replay_gap_001.json",
+    "artifacts/dashboard_cases/case_cert_incomplete_001.json",
+    "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
+    "artifacts/dashboard_seed/near_miss_record.json"
+  ],
+  "reason_codes": [
+    "trend_remains_unknown_until_three_comparable_cases",
+    "frequency_remains_unknown_until_three_comparable_cases",
+    "no_fake_trend",
+    "no_fake_frequency"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Trend and frequency stay unknown until at least 3 comparable artifact-backed cases exist with the same shape.",
+    "comparable_cases[] reflects only artifact-backed dashboard cases that share a comparable shape; differently shaped cases are explicitly excluded from the count.",
+    "Dashboard and API surfaces show 'cases needed' when the threshold is not met rather than rendering a fake trend."
+  ],
+  "failure_prevented": "Trend or frequency rendering as if it had statistical meaning when fewer than 3 comparable artifact-backed cases exist; per-failure trend lines being drawn from a single case.",
+  "signal_improved": "Trend and frequency stay unknown below the threshold; cases_needed is explicit; blocked_trend_fields enumerate every API/dashboard field that would otherwise render a fake trend.",
+  "comparable_case_count": 3,
+  "required_case_count_for_trend": 3,
+  "trend_state": "eligible_for_observation",
+  "frequency_state": "eligible_for_observation",
+  "cases_needed": 0,
+  "comparable_cases": [
+    {
+      "case_id": "case_eval_gap_001",
+      "shape": "eval_coverage_gap",
+      "source_artifact": "artifacts/dashboard_cases/case_eval_gap_001.json",
+      "ties_to": "FM-SEED-EVAL-GAP"
+    },
+    {
+      "case_id": "case_replay_gap_001",
+      "shape": "replay_dimension_gap",
+      "source_artifact": "artifacts/dashboard_cases/case_replay_gap_001.json",
+      "ties_to": "FM-SEED-REPLAY-GAP"
+    },
+    {
+      "case_id": "case_cert_incomplete_001",
+      "shape": "certification_evidence_gap",
+      "source_artifact": "artifacts/dashboard_cases/case_cert_incomplete_001.json",
+      "ties_to": "FM-SEED-CERT-INCOMPLETE"
+    }
+  ],
+  "blocked_trend_fields": [
+    {
+      "field": "additional_cases_summary.trend",
+      "reason": "Trend label remains unknown unless 3 comparable cases share the same shape; in this seeded loop the 3 cases are different shapes so per-shape trend is still unknown.",
+      "current_value": "unknown_per_shape"
+    },
+    {
+      "field": "failure_mode_dashboard_record.failure_modes[].trend",
+      "reason": "Per-failure-mode trend cannot be inferred from a single seeded case; trend stays unknown until 3 comparable artifact-backed cases per failure mode exist.",
+      "current_value": "unknown"
+    },
+    {
+      "field": "feedback_loop.expired_feedback_count",
+      "reason": "Frequency-of-expiry inference requires 3+ comparable expired items; below the threshold the count is exposed but no trend is drawn.",
+      "current_value": "unknown_trend"
+    }
+  ],
+  "shape_breakdown": [
+    {
+      "shape": "eval_coverage_gap",
+      "case_count": 1,
+      "trend_state": "unknown",
+      "cases_needed": 2
+    },
+    {
+      "shape": "replay_dimension_gap",
+      "case_count": 1,
+      "trend_state": "unknown",
+      "cases_needed": 2
+    },
+    {
+      "shape": "certification_evidence_gap",
+      "case_count": 1,
+      "trend_state": "unknown",
+      "cases_needed": 2
+    }
+  ]
+}
