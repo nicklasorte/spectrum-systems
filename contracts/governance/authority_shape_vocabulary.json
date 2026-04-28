@@ -307,7 +307,7 @@
     }
   },
   "registry_rules": {
-    "purpose": "Section-aware rules applied only inside files listed in scope.canonical_registry_paths. The registry itself defines canonical ownership boundaries, so cluster terms are legitimate inside canonical-owner sections, in `must_not_do:` boundary disclaimers, and in cross-cutting prose. They are still flagged when a non-owner section claims ownership, either by appearing in claim-position fields, by carrying a claim verb, or by being a non-canonical authority system whose section uses authority-shape terms in claim positions.",
+    "purpose": "Section-aware rules applied only inside files listed in scope.canonical_registry_paths. The registry itself is the canonical owner-definition surface, so authority-shaped cluster terms are legitimate in canonical owner sections, in cross-cutting prose, and in explicit boundary clarifications. Non-owning support sections (for example HOP) still fail closed on ownership-claim language and claim-position fields.",
     "section_header_pattern": "^###[ \\t]+([A-Z][A-Z0-9]{1,5})\\b",
     "h2_header_pattern": "^##[ \\t]+\\S",
     "field_bullet_pattern": "^[ \\t]*-[ \\t]+\\*\\*([A-Za-z][A-Za-z0-9 _]*?)\\s*:\\*\\*",
@@ -337,6 +337,18 @@
       "finalizes",
       "rolls_back",
       "quarantines"
+    ],
+    "boundary_clarification_markers": [
+      "downstream canonical owners",
+      "external to",
+      "advisory-only",
+      "non-owning",
+      "delegates to",
+      "must_not_do",
+      "never",
+      "does not",
+      "do not",
+      "must not"
     ],
     "non_owning_support_systems": [
       "HOP"
