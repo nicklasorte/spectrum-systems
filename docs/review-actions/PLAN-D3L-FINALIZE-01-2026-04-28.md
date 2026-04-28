@@ -13,10 +13,10 @@ Finalize the 3LS dashboard UI behavior and fail-closed guards, then publish read
 
 | File | Change type | Reason |
 | --- | --- | --- |
-| apps/dashboard-3ls/app/page.tsx | MODIFY | Enforce compact overview, canonical rankingBlocked behavior, OC compact unavailable handling, prioritization gating consistency, dark-mode polish for key sections. |
+| apps/dashboard-3ls/app/page.tsx | MODIFY | Apply compact overview, canonical rankingBlocked behavior, OC compact unavailable handling, prioritization gating consistency, dark-mode polish for key sections. |
 | apps/dashboard-3ls/components/TrustGraphSection.tsx | MODIFY | Add explicit graph mode control and pass mode/ranking gate to graph/debug panel. |
 | apps/dashboard-3ls/components/SystemTrustGraph.tsx | MODIFY | Implement clean_structure default and mode-specific edge/node visibility. |
-| apps/dashboard-3ls/components/RecommendationDebugPanel.tsx | MODIFY | Enforce fail-closed recommendation suppression from canonical ranking gate. |
+| apps/dashboard-3ls/components/RecommendationDebugPanel.tsx | MODIFY | Apply fail-closed recommendation suppression from canonical ranking gate. |
 | apps/dashboard-3ls/components/GraphLegend.tsx | MODIFY | Add graph-mode warning cue and dark-mode readability polish. |
 | apps/dashboard-3ls/components/SystemInspector.tsx | MODIFY | Dark-mode readability + status semantic preservation. |
 | apps/dashboard-3ls/components/EdgeInspector.tsx | MODIFY | Dark-mode readability polish. |
