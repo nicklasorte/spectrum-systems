@@ -172,7 +172,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 101,
+      "evidence_count": 103,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -236,7 +236,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 88,
+      "evidence_count": 92,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",

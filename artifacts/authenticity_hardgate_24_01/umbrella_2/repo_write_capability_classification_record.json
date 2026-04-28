@@ -2,7 +2,7 @@
   "artifact_type": "repo_write_capability_classification_record",
   "slice_id": "AH-10",
   "owner": "PQX",
-  "generated_at": "2026-04-28T01:43:47Z",
+  "generated_at": "2026-04-28T13:14:11Z",
   "classification_mode": "capability_first",
   "default_classification": "repo_write_class",
   "isolation_proof_required_for_downgrade": true

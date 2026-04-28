@@ -2,7 +2,7 @@
   "artifact_type": "certification_readiness_decision",
   "slice_id": "AH-21",
   "owner": "CDE",
-  "generated_at": "2026-04-28T01:43:47Z",
+  "generated_at": "2026-04-28T13:14:11Z",
   "authority": "certification_readiness_authoritative",
   "depends_on": [
     "evidence_completeness",
