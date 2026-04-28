@@ -59,7 +59,7 @@ def main() -> int:
         "reason_codes": ["GOVERNANCE_PASS" if status == "allow" else "GOVERNANCE_FAILURE"],
         "failure_summary": {
             "gate_name": "governance_gate",
-            "failure_class": "none" if status == "allow" else "governance_enforcement_failure",
+            "failure_class": "none" if status == "allow" else "governance_check_failure",
             "root_cause": "none" if status == "allow" else "one or more governance checks failed",
             "blocking_reason": "none" if status == "allow" else "non-zero governance command",
             "next_action": "proceed" if status == "allow" else "inspect command_previews",

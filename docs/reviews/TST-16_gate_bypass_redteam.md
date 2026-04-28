@@ -12,9 +12,9 @@
 ## Findings
 - Confirmed bypass risk: workflow could invoke non-canonical script path without ownership mapping.
 - Confirmed bypass risk: new tests could be added without test-gate mapping.
-- Confirmed bypass risk: gate schema file shape drift could go undetected.
+- Confirmed bypass risk: gate schema shape drift could go undetected.
 
 ## Disposition
 - **Fixed:** Added `scripts/run_ci_drift_detector.py` fail-closed checks for all confirmed risks.
 - **Accepted:** none.
-- **Deferred:** external GitHub branch-protection updates (documented manual steps).
+- **Deferred:** external branch-protection updates (documented manual steps).

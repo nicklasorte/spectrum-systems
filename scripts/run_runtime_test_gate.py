@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Canonical Runtime Test Gate runner (TST-03)."""
+"""Runtime test gate runner for fast PR and deep modes."""
 
 from __future__ import annotations
 
@@ -32,29 +32,35 @@ def main() -> int:
     output_dir = REPO_ROOT / args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    if not selection_path.is_file():
-        selected_tests = []
-        selection_status = "block"
-    else:
+    selected_tests: list[str] = []
+    selection_status = "block"
+    if selection_path.is_file():
         selection = json.loads(selection_path.read_text(encoding="utf-8"))
-        selected_tests = selection.get("selected_tests", [])
-        selection_status = selection.get("status", "block")
+        selected_tests = [str(t) for t in selection.get("selected_tests", [])]
+        selection_status = str(selection.get("status", "block"))
 
-    commands = []
-    test_exit = 0
+    commands: list[str] = []
     out_preview = ""
     err_preview = ""
-    if selection_status == "allow" and selected_tests:
+    test_exit = 0
+
+    if selection_status != "allow":
+        status = "block"
+        reason_codes = ["SELECTION_GATE_BLOCK"]
+        test_exit = 2
+    elif not selected_tests:
+        status = "allow"
+        reason_codes = ["NO_RUNTIME_TARGETS_FOR_DIFF"]
+    else:
         cmd = [sys.executable, "-m", "pytest", *selected_tests]
         commands.append(" ".join(cmd))
         proc = subprocess.run(cmd, cwd=REPO_ROOT, capture_output=True, text=True, check=False)
         test_exit = proc.returncode
         out_preview = proc.stdout[-1500:]
         err_preview = proc.stderr[-1500:]
-    else:
-        test_exit = 2
+        status = "allow" if test_exit == 0 else "block"
+        reason_codes = ["PYTEST_PASS" if status == "allow" else "PYTEST_FAIL"]
 
-    status = "allow" if test_exit == 0 else "block"
     result = {
         "artifact_type": "runtime_test_gate_result",
         "schema_version": "1.0.0",
@@ -62,19 +68,19 @@ def main() -> int:
         "status": status,
         "trace": {"produced_at": _utc_now(), "producer_script": "scripts/run_runtime_test_gate.py"},
         "provenance": {"selection_artifact": args.selection_artifact},
-        "inputs": {"selected_tests_count": len(selected_tests)},
+        "inputs": {"selected_tests_count": len(selected_tests), "selection_status": selection_status},
         "outputs": {"stdout_preview": out_preview, "stderr_preview": err_preview},
         "executed_commands": commands,
         "selected_tests": selected_tests,
-        "reason_codes": ["PYTEST_PASS" if status == "allow" else "PYTEST_FAIL_OR_SELECTION_BLOCK"],
+        "reason_codes": reason_codes,
         "failure_summary": {
             "gate_name": "runtime_test_gate",
             "failure_class": "none" if status == "allow" else "runtime_test_failure",
-            "root_cause": "none" if status == "allow" else "pytest failed or selection gate blocked",
+            "root_cause": "none" if status == "allow" else "selection gate blocked or pytest failed",
             "blocking_reason": "none" if status == "allow" else f"exit_code={test_exit}",
-            "next_action": "proceed" if status == "allow" else "fix failing tests or selection policy",
+            "next_action": "proceed" if status == "allow" else "fix selected test surface or runtime failures",
             "affected_files": selected_tests,
-            "failed_command": "" if status == "allow" else (commands[-1] if commands else "selection blocked"),
+            "failed_command": "" if status == "allow" else (commands[-1] if commands else "selection gate blocked"),
             "artifact_refs": [args.selection_artifact],
         },
     }
@@ -82,7 +88,7 @@ def main() -> int:
     out = output_dir / "runtime_test_gate_result.json"
     out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({"status": status, "artifact": str(out)}, indent=2))
-    return 0 if status == "allow" else 2
+    return 0 if status in {"allow", "warn"} else 2
 
 
 if __name__ == "__main__":

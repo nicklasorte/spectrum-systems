@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Canonical Contract Gate runner (TST-03)."""
+"""Contract gate runner."""
 
 from __future__ import annotations
 
@@ -22,8 +22,18 @@ def _hash_payload(payload: dict) -> str:
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
 
 
+def _changed_paths(base_ref: str, head_ref: str) -> list[str]:
+    if not base_ref or not head_ref:
+        return []
+    proc = subprocess.run(["git", "diff", "--name-only", base_ref, head_ref], cwd=REPO_ROOT, capture_output=True, text=True, check=False)
+    if proc.returncode != 0:
+        return []
+    paths = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+    return [p for p in paths if (REPO_ROOT / p).exists()]
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run canonical contract gate")
+    parser = argparse.ArgumentParser(description="Run contract gate")
     parser.add_argument("--base-ref", default="")
     parser.add_argument("--head-ref", default="")
     parser.add_argument("--output-dir", default="outputs/contract_gate")
@@ -32,6 +42,26 @@ def main() -> int:
     output_dir = REPO_ROOT / args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
     legacy_output_dir = REPO_ROOT / "outputs/contract_preflight"
+
+    wrapper_path = legacy_output_dir / "preflight_pqx_task_wrapper.json"
+    changed_paths = _changed_paths(args.base_ref, args.head_ref)
+    if any(path.startswith("contracts/schemas/") for path in changed_paths):
+        changed_paths.append("contracts/governance/authority_shape_vocabulary.json")
+
+    build_cmd = [
+        sys.executable,
+        "scripts/build_preflight_pqx_wrapper.py",
+        "--base-ref",
+        args.base_ref,
+        "--head-ref",
+        args.head_ref,
+        "--output",
+        str(wrapper_path),
+    ]
+    for changed_path in sorted(set(changed_paths)):
+        build_cmd.extend(["--changed-path", changed_path])
+    subprocess.run(build_cmd, cwd=REPO_ROOT, capture_output=True, text=True, check=False)
+
     command = [
         sys.executable,
         "scripts/run_contract_preflight.py",
@@ -43,7 +73,14 @@ def main() -> int:
         str(legacy_output_dir),
         "--execution-context",
         "pqx_governed",
+        "--pqx-wrapper-path",
+        str(wrapper_path),
+        "--authority-evidence-ref",
+        "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
     ]
+    for changed_path in sorted(set(changed_paths)):
+        command.extend(["--changed-path", changed_path])
+
     proc = subprocess.run(command, cwd=REPO_ROOT, capture_output=True, text=True, check=False)
 
     status = "allow" if proc.returncode == 0 else "block"

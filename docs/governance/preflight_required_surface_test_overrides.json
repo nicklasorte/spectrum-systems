@@ -88,6 +88,26 @@
   ],
   "docs/reviews/MET-18-dashboard-usefulness-fixes.md": [
     "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  ".github/workflows/nightly-deep-gate.yml": [
+    "tests/test_release_canary.py"
+  ],
+  "scripts/run_contract_gate.py": [
+    "tests/test_contract_preflight.py"
+  ],
+  "scripts/run_governance_gate.py": [
+    "tests/test_required_check_alignment_audit.py"
+  ],
+  "scripts/run_pr_gate.py": [
+    "tests/test_ci_gate_scripts.py"
+  ],
+  "scripts/run_runtime_test_gate.py": [
+    "tests/test_ci_gate_scripts.py"
+  ],
+  "scripts/run_test_selection_gate.py": [
+    "tests/test_ci_gate_scripts.py"
+  ],
+  "scripts/run_readiness_evidence_gate.py": [
+    "tests/test_ci_gate_scripts.py"
   ]
 }
-

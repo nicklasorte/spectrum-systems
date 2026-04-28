@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Detect CI/test drift against canonical gate ownership (TST-25)."""
+"""Detect CI/test drift against canonical gate ownership manifest."""
 
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import re
 from pathlib import Path
@@ -15,12 +16,16 @@ CANONICAL_GATE_SCRIPTS = {
     "scripts/run_test_selection_gate.py",
     "scripts/run_runtime_test_gate.py",
     "scripts/run_governance_gate.py",
-    "scripts/run_certification_gate.py",
+    "scripts/run_readiness_evidence_gate.py",
 }
 
 
 def _load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _is_mapped(test_path: str, rules: list[dict]) -> bool:
+    return any(fnmatch.fnmatch(test_path, rule.get("test_glob", "")) for rule in rules)
 
 
 def main() -> int:
@@ -39,16 +44,16 @@ def main() -> int:
         if scripts and scripts.isdisjoint(CANONICAL_GATE_SCRIPTS) and "nightly-deep-gate.yml" not in wf.name:
             failures.append(f"workflow_bypasses_canonical_gates:{wf.relative_to(REPO_ROOT)}")
 
-    for script in sorted({s for wf in workflow_paths for s in re.findall(r"scripts/[A-Za-z0-9_./-]+", wf.read_text(encoding='utf-8'))}):
-        if script.startswith("scripts/") and script not in CANONICAL_GATE_SCRIPTS and "owned_ci_scripts" in ownership:
-            if script not in ownership.get("owned_ci_scripts", []):
-                failures.append(f"script_without_ownership:{script}")
+    ci_scripts = sorted({s for wf in workflow_paths for s in re.findall(r"scripts/[A-Za-z0-9_./-]+", wf.read_text(encoding='utf-8'))})
+    for script in ci_scripts:
+        if script.startswith("scripts/") and script not in CANONICAL_GATE_SCRIPTS and script not in ownership.get("owned_ci_scripts", []):
+            failures.append(f"script_without_ownership:{script}")
 
+    rules = mapping.get("mapping_rules", [])
     all_tests = [str(p.relative_to(REPO_ROOT)) for p in (REPO_ROOT / "tests").rglob("*") if p.is_file() and (p.name.startswith("test_") or ".test." in p.name)]
-    mapped = set(mapping.get("tests", {}).keys())
-    for t in all_tests:
-        if t not in mapped:
-            failures.append(f"test_without_gate_mapping:{t}")
+    for test_path in all_tests:
+        if not _is_mapped(test_path, rules):
+            failures.append(f"test_without_gate_mapping:{test_path}")
 
     required_checks = _load_json(REPO_ROOT / "docs/governance/required_pr_checks.json")
     for check in required_checks.get("required_checks", []):
@@ -61,15 +66,15 @@ def main() -> int:
         "contracts/schemas/test_selection_gate_result.schema.json",
         "contracts/schemas/runtime_test_gate_result.schema.json",
         "contracts/schemas/governance_gate_result.schema.json",
-        "contracts/schemas/certification_gate_result.schema.json",
+        "contracts/schemas/readiness_evidence_gate_result.schema.json",
         "contracts/schemas/pr_gate_result.schema.json",
     ]
     for ref in schema_refs:
-        p = REPO_ROOT / ref
-        if not p.is_file():
+        path = REPO_ROOT / ref
+        if not path.is_file():
             failures.append(f"missing_gate_schema:{ref}")
             continue
-        payload = _load_json(p)
+        payload = _load_json(path)
         if payload.get("type") != "object" or payload.get("additionalProperties") is not False:
             failures.append(f"invalid_gate_schema_shape:{ref}")
 

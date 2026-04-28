@@ -6,8 +6,8 @@
 
 ## Parity findings
 - Contract preflight outputs remain consumed by canonical Contract Gate.
-- Required-check audit and system registry guard continue to run via Governance Gate.
-- Runtime selection/output artifacts now explicit and separately schema-governed.
+- Required-check audit and system registry guard continue through Governance Signal Gate.
+- Runtime selection/output artifacts are explicit and separately schema-governed.
 
 ## Remaining risks
-- Legacy workflows still exist and must remain non-authoritative until fully retired.
+- Legacy workflows still exist and should remain non-authoritative until retirement.

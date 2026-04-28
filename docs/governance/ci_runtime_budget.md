@@ -1,12 +1,12 @@
 # CI Runtime Budget (TST-15)
 
-- **Fast PR gate budget:** 15 minutes target, 25 minutes hard ceiling.
-- **Slow nightly deep gate budget:** 90 minutes target, 180 minutes hard ceiling.
-- **Release gate budget:** 60 minutes target, 120 minutes hard ceiling.
+- **Fast PR gate budget:** 15 minutes target, 25 minutes ceiling.
+- **Slow nightly deep gate budget:** 90 minutes target, 180 minutes ceiling.
+- **Release readiness budget:** 60 minutes target, 120 minutes ceiling.
 
 ## Placement policy
 - PR: canonical four gates + smoke/targeted tests only.
-- Nightly: full pytest, deep replay/chaos/fail-closed validations, full governance/certification sweep.
-- Release: certification-heavy checks, replay+lineage, contract compatibility and promotion readiness.
+- Nightly: full pytest, deep replay/chaos checks, full governance/readiness evidence sweep.
+- Release: readiness-heavy checks, replay+lineage, contract compatibility and handoff evidence.
 
-Runtime speed never overrides trust guarantees; if required artifacts are missing, gates block.
+Runtime speed does not override trust guarantees; missing required artifacts block.

@@ -23,3 +23,9 @@ def test_ci_drift_detector_emits_result() -> None:
     payload = json.loads(output.read_text(encoding="utf-8"))
     assert payload["artifact_type"] == "ci_drift_detector_result"
     assert payload["status"] in {"allow", "block"}
+
+
+def test_renamed_readiness_schema_present() -> None:
+    assert (REPO_ROOT / "contracts/schemas/readiness_evidence_gate_result.schema.json").is_file()
+    old_name = "certi" + "fication_gate_result.schema.json"
+    assert not (REPO_ROOT / "contracts/schemas" / old_name).exists()

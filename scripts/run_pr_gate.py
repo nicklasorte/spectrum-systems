@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Thin canonical PR gate orchestrator (TST-04)."""
+"""Thin PR gate orchestrator for canonical CI gate sequence."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ ORDER = [
     ("test_selection_gate", "scripts/run_test_selection_gate.py", "outputs/test_selection_gate/test_selection_gate_result.json"),
     ("runtime_test_gate", "scripts/run_runtime_test_gate.py", "outputs/runtime_test_gate/runtime_test_gate_result.json"),
     ("governance_gate", "scripts/run_governance_gate.py", "outputs/governance_gate/governance_gate_result.json"),
-    ("certification_gate", "scripts/run_certification_gate.py", "outputs/certification_gate/certification_gate_result.json"),
+    ("readiness_evidence_gate", "scripts/run_readiness_evidence_gate.py", "outputs/readiness_evidence_gate/readiness_evidence_gate_result.json"),
 ]
 
 
@@ -45,28 +45,45 @@ def main() -> int:
     output_dir = REPO_ROOT / args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    gate_results = []
-    executed = []
+    gate_results: list[dict] = []
+    executed: list[str] = []
     overall = "allow"
+
     for gate_name, script, artifact_ref in ORDER:
         cmd = [sys.executable, script]
-        if gate_name in {"contract_gate", "test_selection_gate"}:
+        if gate_name in {"contract_gate", "test_selection_gate", "readiness_evidence_gate"}:
             cmd.extend(["--base-ref", args.base_ref, "--head-ref", args.head_ref])
         if gate_name == "runtime_test_gate":
             cmd.extend(["--selection-artifact", "outputs/test_selection_gate/test_selection_gate_result.json"])
         code, stdout, stderr = _run(cmd)
         executed.append(" ".join(cmd))
+
         artifact_path = REPO_ROOT / artifact_ref
-        payload = {"status": "block", "reason_codes": ["MISSING_ARTIFACT"]}
         if artifact_path.is_file():
             payload = json.loads(artifact_path.read_text(encoding="utf-8"))
-        payload.setdefault("stdout_preview", stdout[-300:])
-        payload.setdefault("stderr_preview", stderr[-300:])
-        gate_results.append({"gate_name": gate_name, "status": payload.get("status", "block"), "artifact_ref": artifact_ref, "reason_codes": payload.get("reason_codes", []), "exit_code": code})
-        if code != 0 or payload.get("status") != "allow":
-            overall = "block"
-            break
+        else:
+            payload = {
+                "status": "block",
+                "reason_codes": ["MISSING_ARTIFACT"],
+                "failure_summary": {"root_cause": "gate output artifact missing"},
+            }
 
+        gate_status = str(payload.get("status", "block"))
+        gate_results.append(
+            {
+                "gate_name": gate_name,
+                "status": gate_status,
+                "artifact_ref": artifact_ref,
+                "reason_codes": payload.get("reason_codes", []),
+                "exit_code": code,
+                "stdout_preview": stdout[-250:],
+                "stderr_preview": stderr[-250:],
+            }
+        )
+        if code != 0 or gate_status == "block":
+            overall = "block"
+
+    first_blocked = next((g for g in gate_results if g["status"] == "block" or g["exit_code"] != 0), None)
     result = {
         "artifact_type": "pr_gate_result",
         "schema_version": "1.0.0",
@@ -82,11 +99,11 @@ def main() -> int:
         "failure_summary": {
             "gate_name": "pr_gate",
             "failure_class": "none" if overall == "allow" else "canonical_gate_block",
-            "root_cause": "none" if overall == "allow" else next((g['gate_name'] for g in gate_results if g['status'] != 'allow'), "unknown"),
-            "blocking_reason": "none" if overall == "allow" else "at least one gate blocked",
-            "next_action": "proceed" if overall == "allow" else "inspect first blocked gate artifact",
+            "root_cause": "none" if overall == "allow" else str(first_blocked["gate_name"] if first_blocked else "unknown"),
+            "blocking_reason": "none" if overall == "allow" else "at least one gate returned block",
+            "next_action": "proceed" if overall == "allow" else "inspect the first blocked gate artifact",
             "affected_files": [],
-            "failed_command": "" if overall == "allow" else executed[-1],
+            "failed_command": "" if overall == "allow" else (executed[gate_results.index(first_blocked)] if first_blocked else ""),
             "artifact_refs": [g["artifact_ref"] for g in gate_results],
         },
     }
@@ -94,7 +111,7 @@ def main() -> int:
     out = output_dir / "pr_gate_result.json"
     out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({"status": overall, "artifact": str(out)}, indent=2))
-    return 0 if overall == "allow" else 2
+    return 0 if overall in {"allow", "warn"} else 2
 
 
 if __name__ == "__main__":

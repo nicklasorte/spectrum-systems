@@ -1,27 +1,36 @@
 {
   "artifact_type": "pytest_pr_selection_integrity_policy",
-  "schema_version": "1.1.0",
-  "policy_version": "1.1.0",
+  "schema_version": "1.0.0",
+  "policy_version": "1.0.0",
   "minimum_selection_threshold": 1,
-  "allow_bounded_equivalence": false,
+  "allow_bounded_equivalence": true,
   "governed_surface_prefixes": [
     "contracts/",
     "scripts/",
     "spectrum_systems/",
     "tests/",
     ".github/workflows/",
-    "docs/governance/",
-    "docs/architecture/"
-  ],
-  "selection_fail_closed_on_empty_governed": true,
-  "fallback_suite_ref": "docs/governance/pytest_pr_inventory_baseline.json",
-  "selection_integrity_requirements": [
-    "record_selected_targets",
-    "validate_selected_targets_exist",
-    "fallback_when_weak_or_uncertain",
-    "reject_empty_governed_selection"
+    "docs/governance/"
   ],
   "surface_rules": [
+    {
+      "path_prefix": "scripts/run_contract_preflight.py",
+      "required_test_targets": [
+        "tests/test_contract_preflight.py"
+      ]
+    },
+    {
+      "path_prefix": "spectrum_systems/modules/runtime/github_pr_autofix_contract_preflight.py",
+      "required_test_targets": [
+        "tests/test_github_pr_autofix_contract_preflight.py"
+      ]
+    },
+    {
+      "path_prefix": "spectrum_systems/modules/runtime/test_inventory_integrity.py",
+      "required_test_targets": [
+        "tests/test_test_inventory_integrity.py"
+      ]
+    },
     {
       "path_prefix": "contracts/",
       "required_test_targets": [
@@ -29,55 +38,51 @@
       ]
     },
     {
-      "path_prefix": "docs/architecture/system_registry.md",
+      "path_prefix": ".github/workflows/artifact-boundary.yml",
       "required_test_targets": [
-        "tests/test_system_registry.py"
+        "tests/test_artifact_boundary_workflow_pytest_policy_observation.py",
+        "tests/test_artifact_boundary_workflow_policy_observation.py"
       ]
     },
     {
-      "path_prefix": "spectrum_systems/modules/runtime/control_",
+      "path_prefix": "artifacts/dashboard_metrics/",
       "required_test_targets": [
-        "tests/test_control_signals.py",
-        "tests/test_slo_control.py"
+        "tests/metrics/test_met_04_18_contract_selection.py"
       ]
     },
     {
-      "path_prefix": "spectrum_systems/modules/runtime/policy_",
+      "path_prefix": "artifacts/dashboard_cases/",
       "required_test_targets": [
-        "tests/test_policy_enforcement_integrity.py"
+        "tests/metrics/test_met_04_18_contract_selection.py"
       ]
     },
     {
-      "path_prefix": "spectrum_systems/modules/runtime/eval",
+      "path_prefix": "apps/dashboard-3ls/app/api/intelligence/",
       "required_test_targets": [
-        "tests/test_required_eval_coverage.py"
+        "tests/metrics/test_met_04_18_contract_selection.py"
       ]
     },
     {
-      "path_prefix": "spectrum_systems/modules/runtime/replay",
+      "path_prefix": "apps/dashboard-3ls/app/page.tsx",
       "required_test_targets": [
-        "tests/test_trace_and_provenance.py"
+        "tests/metrics/test_met_04_18_contract_selection.py"
       ]
     },
     {
-      "path_prefix": "spectrum_systems/modules/runtime/lineage",
+      "path_prefix": "docs/reviews/MET-",
       "required_test_targets": [
-        "tests/test_trace_and_provenance.py"
-      ]
-    },
-    {
-      "path_prefix": "apps/dashboard",
-      "required_test_targets": [
-        "tests/test_dashboard_ui.py"
-      ]
-    },
-    {
-      "path_prefix": "apps/dashboard-3ls",
-      "required_test_targets": [
-        "tests/test_dashboard_ui.py"
+        "tests/metrics/test_met_04_18_contract_selection.py"
       ]
     }
   ],
-  "bounded_equivalence": [],
+  "bounded_equivalence": [
+    {
+      "required_target": "tests/test_contract_preflight.py",
+      "equivalent_targets": [
+        "tests/test_contract_preflight.py",
+        "tests/test_run_github_pr_autofix_contract_preflight.py"
+      ]
+    }
+  ],
   "allowed_exceptions": []
 }

@@ -1,13 +1,7 @@
 {
-  "policy_version": "1.1.0",
-  "workflow": "pr-gate",
-  "authoritative_job_id": "pr-gate",
-  "authoritative_display_name": "pr-gate",
-  "required_status_check_name": "pr-gate / pr-gate",
-  "required_checks": [
-    {
-      "job_id": "pr-gate",
-      "required": true
-    }
-  ]
+  "policy_version": "1.0.0",
+  "workflow": "PR",
+  "authoritative_job_id": "pytest",
+  "authoritative_display_name": "pytest",
+  "required_status_check_name": "PR / pytest"
 }
