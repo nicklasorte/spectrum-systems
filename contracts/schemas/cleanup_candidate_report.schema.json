@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/cleanup_candidate_report.schema.json",
+  "title": "Cleanup Candidate Report",
+  "description": "OC-19 advisory-only report that classifies repo artifacts as keep / regenerate / candidate_archive / never_delete / unknown_blocked. The report never deletes artifacts and never authorizes deletion. Artifacts that participate in required proof evidence are forced to never_delete. Ambiguous classifications are forced to unknown_blocked.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "report_id",
+    "audit_timestamp",
+    "candidates",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": { "const": "cleanup_candidate_report" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "report_id": { "type": "string", "minLength": 1 },
+    "audit_timestamp": { "type": "string", "minLength": 1 },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact_path", "classification", "reason_code"],
+        "properties": {
+          "artifact_path": { "type": "string", "minLength": 1 },
+          "artifact_kind": { "type": ["string", "null"] },
+          "classification": {
+            "type": "string",
+            "enum": [
+              "keep",
+              "regenerate",
+              "candidate_archive",
+              "never_delete",
+              "unknown_blocked"
+            ]
+          },
+          "reason_code": { "type": "string", "minLength": 1 },
+          "evidence_role": {
+            "type": "string",
+            "enum": [
+              "required_proof_evidence",
+              "supporting_proof_evidence",
+              "advisory",
+              "none",
+              "unknown"
+            ]
+          }
+        }
+      }
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "advisory_only",
+          "no_deletion",
+          "preparatory_only",
+          "not_control_authority",
+          "not_enforcement_authority"
+        ]
+      }
+    }
+  }
+}

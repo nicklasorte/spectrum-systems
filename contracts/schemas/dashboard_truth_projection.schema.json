@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/dashboard_truth_projection.schema.json",
+  "title": "Dashboard Truth Projection",
+  "description": "OC-07 read-only projection from repo proof to dashboard/public surface. Shows pass/block/freeze, latest proof artifact ref, owning 3-letter system, reason code, bottleneck category, next safe action, freshness status, and dashboard/repo alignment status. The projection is a non-owning support seam consumed by MAP. It does NOT change repo state and never decides promotion.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "projection_id",
+    "audit_timestamp",
+    "current_status",
+    "latest_proof_ref",
+    "owning_system",
+    "reason_code",
+    "bottleneck_category",
+    "next_safe_action",
+    "freshness_status",
+    "alignment_status"
+  ],
+  "properties": {
+    "artifact_type": { "const": "dashboard_truth_projection" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "projection_id": { "type": "string", "minLength": 1 },
+    "audit_timestamp": { "type": "string", "minLength": 1 },
+    "current_status": {
+      "type": "string",
+      "enum": ["pass", "block", "freeze", "unknown"]
+    },
+    "latest_proof_ref": { "type": ["string", "null"] },
+    "owning_system": { "type": ["string", "null"] },
+    "reason_code": { "type": "string", "minLength": 1 },
+    "bottleneck_category": {
+      "type": "string",
+      "enum": [
+        "eval",
+        "replay",
+        "lineage",
+        "context_admission",
+        "registry",
+        "slo",
+        "certification",
+        "authority_shape",
+        "dashboard",
+        "unknown",
+        "none"
+      ]
+    },
+    "next_safe_action": { "type": "string", "minLength": 1 },
+    "freshness_status": {
+      "type": "string",
+      "enum": ["fresh", "stale", "unknown"]
+    },
+    "alignment_status": {
+      "type": "string",
+      "enum": ["aligned", "drifted", "missing", "corrupt", "unknown"]
+    },
+    "alignment_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_kind", "reason_code"],
+        "properties": {
+          "finding_kind": {
+            "type": "string",
+            "enum": [
+              "missing_owner",
+              "stale_status",
+              "digest_mismatch",
+              "ref_corrupt",
+              "missing_proof_ref",
+              "missing_dashboard_ref",
+              "category_mismatch"
+            ]
+          },
+          "reason_code": { "type": "string", "minLength": 1 },
+          "severity": {
+            "type": "string",
+            "enum": ["warn", "block"]
+          }
+        }
+      }
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "artifact_type": "operational_closure_bundle",
+  "schema_version": "1.0.0",
+  "bundle_id": "ocb-example-1",
+  "audit_timestamp": "2026-04-28T12:00:00Z",
+  "overall_status": "pass",
+  "current_bottleneck": {
+    "category": "none",
+    "reason_code": "OPERATIONAL_CLOSURE_OK"
+  },
+  "owning_system": null,
+  "supporting_proof_ref": "lpb-pass-1",
+  "dashboard_alignment": "aligned",
+  "fast_trust_gate_sufficiency": "sufficient",
+  "next_work_item": {
+    "work_item_id": "OC-NEXT-1",
+    "selection_status": "selected"
+  },
+  "justifying_signal_or_failure": "current_bottleneck",
+  "evidence_refs": {
+    "proof_intake_ref": "pii-example-good-1",
+    "bottleneck_classification_ref": "bc-example-1",
+    "dashboard_projection_ref": "dtp-example-1",
+    "closure_packet_ref": "cdp-example-1",
+    "fast_trust_gate_ref": "ftgr-1",
+    "work_selection_ref": "wsr-example-1",
+    "operator_runbook_ref": "runbook-example-1"
+  },
+  "operator_questions": {
+    "is_pass_block_freeze_or_unknown": "pass",
+    "current_bottleneck_label": "none",
+    "owning_three_letter_system": null,
+    "proof_artifact_label": "lpb-pass-1",
+    "dashboard_aligned_with_repo_truth": "yes",
+    "fast_trust_gate_sufficient": "yes",
+    "next_work_item_label": "OC-NEXT-1",
+    "justifying_failure_or_signal": "current_bottleneck"
+  },
+  "non_authority_assertions": [
+    "preparatory_only",
+    "advisory_only",
+    "not_control_authority",
+    "not_certification_authority",
+    "not_promotion_authority",
+    "not_enforcement_authority",
+    "not_closure_authority"
+  ]
+}

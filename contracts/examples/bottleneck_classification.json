@@ -1,0 +1,23 @@
+{
+  "artifact_type": "bottleneck_classification",
+  "schema_version": "1.0.0",
+  "classification_id": "bc-example-1",
+  "audit_timestamp": "2026-04-28T12:00:00Z",
+  "category": "eval",
+  "owning_system": "EVL",
+  "reason_code": "BOTTLENECK_EVAL_FAILED",
+  "evidence_artifact_ref": "evl-1",
+  "confidence": "high",
+  "ambiguous": false,
+  "ambiguity_candidates": [],
+  "next_safe_action": {
+    "action": "block",
+    "rationale": "category=eval; ambiguous=False; reason_code=BOTTLENECK_EVAL_FAILED"
+  },
+  "non_authority_assertions": [
+    "preparatory_only",
+    "not_control_authority",
+    "not_certification_authority",
+    "not_enforcement_authority"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "artifact_type": "fast_trust_gate_manifest",
+  "schema_version": "1.0.0",
+  "manifest_id": "oc-fast-trust-gate-1",
+  "required_seams": [
+    "registry_validation",
+    "authority_shape_preflight",
+    "proof_intake",
+    "bottleneck_classifier",
+    "closure_packet",
+    "dashboard_projection",
+    "work_selection",
+    "trust_regression_pack"
+  ],
+  "selectors": [
+    {
+      "seam": "registry_validation",
+      "selector_kind": "script",
+      "selector": "scripts/validate_system_registry.py"
+    },
+    {
+      "seam": "authority_shape_preflight",
+      "selector_kind": "script",
+      "selector": "scripts/run_authority_shape_preflight.py"
+    },
+    {
+      "seam": "proof_intake",
+      "selector_kind": "pytest_node",
+      "selector": "tests/test_oc_proof_intake_index.py"
+    },
+    {
+      "seam": "bottleneck_classifier",
+      "selector_kind": "pytest_node",
+      "selector": "tests/test_oc_bottleneck_classifier.py"
+    },
+    {
+      "seam": "closure_packet",
+      "selector_kind": "pytest_node",
+      "selector": "tests/test_oc_closure_decision_packet.py"
+    },
+    {
+      "seam": "dashboard_projection",
+      "selector_kind": "pytest_node",
+      "selector": "tests/test_oc_dashboard_truth_projection.py"
+    },
+    {
+      "seam": "work_selection",
+      "selector_kind": "pytest_node",
+      "selector": "tests/test_oc_work_selection_signal.py"
+    },
+    {
+      "seam": "trust_regression_pack",
+      "selector_kind": "pytest_node",
+      "selector": "tests/test_nt_trust_regression_pack.py"
+    }
+  ],
+  "non_authority_assertions": [
+    "preparatory_only",
+    "not_control_authority",
+    "not_enforcement_authority",
+    "not_certification_authority",
+    "not_promotion_authority"
+  ]
+}

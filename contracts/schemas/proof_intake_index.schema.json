@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/proof_intake_index.schema.json",
+  "title": "Proof Intake Index",
+  "description": "OC-01 reference-only index that selects the latest valid proof bundle deterministically from observed proof candidates. The index is a non-owning support seam. It does NOT decide promotion. It records per-kind selection, freshness, conflict, and reason codes that downstream support seams (closure decision packet, dashboard truth projection, operator runbook) consume.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "intake_id",
+    "audit_timestamp",
+    "selections",
+    "overall_status",
+    "reason_code"
+  ],
+  "properties": {
+    "artifact_type": { "const": "proof_intake_index" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "intake_id": { "type": "string", "minLength": 1 },
+    "audit_timestamp": { "type": "string", "minLength": 1 },
+    "selections": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z][a-z0-9_]+$": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "selection_status", "reason_code"],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "loop_proof_bundle",
+                "certification_delta_proof",
+                "trust_regression_result",
+                "cli_summary",
+                "dashboard_proof_ref"
+              ]
+            },
+            "selected_artifact_id": { "type": ["string", "null"] },
+            "selected_digest": { "type": ["string", "null"] },
+            "selected_generated_at": { "type": ["string", "null"] },
+            "candidate_count": { "type": "integer", "minimum": 0 },
+            "selection_status": {
+              "type": "string",
+              "enum": ["selected", "missing", "stale", "duplicate", "conflict", "unknown"]
+            },
+            "reason_code": { "type": "string", "minLength": 1 },
+            "rejected_candidates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["artifact_id", "reason_code"],
+                "properties": {
+                  "artifact_id": { "type": "string", "minLength": 1 },
+                  "reason_code": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "overall_status": {
+      "type": "string",
+      "enum": ["ok", "degraded", "blocked"]
+    },
+    "reason_code": { "type": "string", "minLength": 1 },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "preparatory_only",
+          "not_control_authority",
+          "not_certification_authority",
+          "not_promotion_authority",
+          "not_enforcement_authority"
+        ]
+      }
+    }
+  }
+}
