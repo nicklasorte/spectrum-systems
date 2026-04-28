@@ -56,6 +56,10 @@ from spectrum_systems.modules.runtime.trust_spine_evidence_cohesion import (  # 
 from spectrum_systems.modules.runtime.github_pr_autofix_contract_preflight import (  # noqa: E402
     emit_preflight_block_bundle,
 )
+from spectrum_systems.modules.runtime.preflight_selection_diagnostic import (  # noqa: E402
+    build_pytest_selection_observation,
+    is_pytest_selection_observation_class,
+)
 from spectrum_systems.modules.runtime.preflight_failure_normalizer import (  # noqa: E402
     normalize_preflight_failure,
 )
@@ -159,6 +163,10 @@ _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "spectrum_systems/modules/runtime/control_surface_gap_to_pqx.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
     "spectrum_systems/modules/runtime/pqx_slice_runner.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
     "scripts/pqx_runner.py": _CONTROL_SURFACE_GAP_PACKET_REQUIRED_TESTS,
+    ".github/workflows/artifact-boundary.yml": [
+        "tests/test_artifact_boundary_workflow_pytest_policy_observation.py",
+        "tests/test_artifact_boundary_workflow_policy_observation.py",
+    ],
 }
 def _load_required_surface_override_map(repo_root: Path) -> dict[str, list[str]]:
     merged: dict[str, list[str]] = {path: list(targets) for path, targets in _REQUIRED_SURFACE_TEST_OVERRIDES.items()}
@@ -536,8 +544,18 @@ def _is_forced_evaluation_surface(path: str) -> tuple[bool, str, str]:
         or path.startswith("contracts/governance/")
     ):
         return True, "governance", "governance/control surface changed"
+    if path.startswith(".github/workflows/") and path.endswith(".yml"):
+        return True, "ci_workflow_surface", "CI workflow surface changed"
     if path.startswith("tests/") and path.endswith(".py"):
-        tied_markers = ("contract", "preflight", "schema", "roadmap_eligibility", "next_step_decision", "cycle_runner")
+        tied_markers = (
+            "contract",
+            "preflight",
+            "schema",
+            "roadmap_eligibility",
+            "next_step_decision",
+            "cycle_runner",
+            "workflow",
+        )
         if any(marker in path for marker in tied_markers):
             return True, "contract_tied_tests", "contract-tied test changed"
     return False, "other", "path does not map to governed contract surface"
@@ -2283,12 +2301,21 @@ def main() -> int:
             preflight_artifact=preflight_artifact,
             output_dir=output_dir,
         )
+        diagnosis_path = output_dir / "preflight_block_diagnosis_record.json"
+        diagnosis_record = bundle["diagnosis"]
+        if is_pytest_selection_observation_class(str(diagnosis_record.get("failure_class") or "")):
+            diagnosis_record["pytest_selection_diagnostic"] = build_pytest_selection_observation(
+                report=report,
+                policy_path=_PYTEST_SELECTION_INTEGRITY_POLICY_PATH,
+            )
+            validate_artifact(diagnosis_record, "preflight_block_diagnosis_record")
+            diagnosis_path.write_text(json.dumps(diagnosis_record, indent=2) + "\n", encoding="utf-8")
         block_bundle_paths = {
-            "preflight_block_diagnosis_record": str(output_dir / "preflight_block_diagnosis_record.json"),
+            "preflight_block_diagnosis_record": str(diagnosis_path),
             "preflight_repair_plan_record": str(output_dir / "preflight_repair_plan_record.json"),
             "failure_repair_candidate_artifact": str(output_dir / "failure_repair_candidate_artifact.json"),
             "preflight_repair_result_record": str(output_dir / "preflight_repair_result_record.json"),
-            "failure_class": str(bundle["diagnosis"]["failure_class"]),
+            "failure_class": str(diagnosis_record["failure_class"]),
             "eligibility_decision": str(bundle["plan"]["eligibility_decision"]),
         }
         escalation_path = output_dir / "preflight_human_escalation_record.json"

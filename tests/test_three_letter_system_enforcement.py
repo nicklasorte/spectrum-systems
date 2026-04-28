@@ -95,7 +95,7 @@ def _policy() -> dict:
                 "owned_paths": [".github/workflows/artifact-boundary.yml"],
                 "criticality": "high",
                 "minimum_required_tests": [
-                    "tests/test_artifact_boundary_workflow_pytest_enforcement.py"
+                    "tests/test_artifact_boundary_workflow_pytest_policy_observation.py"
                 ],
                 "artifact_boundary_coverage_mandatory": True,
                 "pytest_visibility_mandatory": False,

@@ -282,7 +282,7 @@ def build_preflight_block_diagnosis_record(*, report: dict[str, Any], preflight_
         "artifact_version": "1.0.0",
         "schema_version": "1.0.0",
         "diagnosis_id": f"diag-{preflight_artifact.get('generated_at', 'unknown')}",
-        "strategy_gate_decision": str(((preflight_artifact.get("control_signal") or {}).get("strategy_gate_decision")) or "BLOCK"),
+        "strategy_gate_recommendation": str(((preflight_artifact.get("control_signal") or {}).get("strategy_gate_decision")) or "BLOCK"),
         "failure_class": category,
         "reason_codes": reasons,
         "normalized_failure": {

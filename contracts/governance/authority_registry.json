@@ -133,7 +133,9 @@
     "allowed_fields": {},
     "allowed_values": {
       "spectrum_systems/modules/runtime/ctrl_loop_gates.py": ["block", "freeze"],
-      "spectrum_systems/modules/runtime/roadmap_signal_steering.py": ["block", "freeze"]
+      "spectrum_systems/modules/runtime/roadmap_signal_steering.py": ["block", "freeze"],
+      "spectrum_systems/modules/runtime/github_pr_autofix_contract_preflight.py": ["allow", "block"],
+      "contracts/examples/preflight_block_diagnosis_record.json": ["allow", "block"]
     }
   },
   "preparatory_only": {
