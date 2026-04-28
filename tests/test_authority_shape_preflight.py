@@ -302,6 +302,29 @@ def test_schema_authority_term_in_required_and_enum_fails(tmp_path: Path, vocab)
     assert any(v.rule.startswith("schema_") for v in result.violations)
 
 
+def test_schema_signal_suffix_tokens_are_not_flagged(tmp_path: Path, vocab) -> None:
+    repo = _seed_repo(tmp_path)
+    rel = "contracts/schemas/hop/harness_control_advisory.schema.json"
+    _write(
+        repo,
+        rel,
+        json.dumps(
+            {
+                "title": "Harness advisory envelope",
+                "type": "object",
+                "properties": {
+                    "rollback_signal_request": {"type": "string"},
+                    "previous_promoted_candidate_id": {"type": "string"},
+                },
+                "required": ["rollback_signal_request", "previous_promoted_candidate_id"],
+            }
+        )
+        + "\n",
+    )
+    result = evaluate_preflight(repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only")
+    assert result.status == "pass"
+
+
 def test_review_language_owner_qualified_passes_and_ambiguous_fails(tmp_path: Path, vocab) -> None:
     repo = _seed_repo(tmp_path)
     good_rel = "docs/reviews/owner_qualified.md"

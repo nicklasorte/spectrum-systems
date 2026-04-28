@@ -586,6 +586,18 @@ def classify_evaluation_surfaces(changed_paths: list[str], classified_contracts:
     evaluated_surfaces: set[str] = set()
 
     for path in sorted(set(changed_paths)):
+        if not (REPO_ROOT / path).exists():
+            classifications.append(
+                EvaluationSurfaceClassification(
+                    path=path,
+                    classification="no_applicable_contract_surface",
+                    reason="path is not present at head; skip deterministic evaluation targeting",
+                    requires_evaluation=False,
+                    surface="other",
+                )
+            )
+            no_op_paths.append(path)
+            continue
         if path in contract_surface_paths:
             classifications.append(
                 EvaluationSurfaceClassification(
@@ -681,7 +693,8 @@ def resolve_test_targets(repo_root: Path, impacted_paths: list[str]) -> list[str
     for rel_path in impacted_paths:
         candidate = Path(rel_path)
         if candidate.name.startswith("test_") and candidate.suffix == ".py":
-            targets.add(rel_path)
+            if (repo_root / rel_path).is_file():
+                targets.add(rel_path)
             continue
 
         if rel_path.startswith("tests/helpers/") or rel_path.startswith("tests/fixtures/"):

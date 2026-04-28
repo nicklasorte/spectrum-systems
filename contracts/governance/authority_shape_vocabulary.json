@@ -489,44 +489,6 @@
       ],
       "rationale": "Closure/finalization authority belongs to CDE/GOV. Non-owners surface inputs and recommendations only."
     },
-    "admission": {
-      "terms": [
-        "admission",
-        "admit",
-        "admitted"
-      ],
-      "canonical_owners": [
-        "AEX"
-      ],
-      "owner_path_prefixes": [
-        "spectrum_systems/modules/runtime/context_admission.py",
-        "spectrum_systems/modules/runtime/context_admission_gate.py",
-        "spectrum_systems/modules/runtime/context_admission/"
-      ],
-      "advisory_replacements": [
-        "finding",
-        "signal",
-        "observation",
-        "recommendation"
-      ],
-      "owning_terms": [
-        "admission",
-        "admit",
-        "admitted"
-      ],
-      "allowed_neutral_terms": [
-        "finding",
-        "signal",
-        "observation",
-        "recommendation"
-      ],
-      "disallowed_non_owner_terms": [
-        "admission",
-        "admit",
-        "admitted"
-      ],
-      "rationale": "Admission authority belongs to AEX. Non-owners must use finding/signal/observation/recommendation framing."
-    },
     "repair_recommendation": {
       "terms": [
         "repair_recommendation",

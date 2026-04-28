@@ -405,6 +405,7 @@ def _scan_schema_authority_shape(*, path: Path, rel_path: str, vocab: Vocabulary
         return []
 
     violations: list[Violation] = []
+    safety_set = set(vocab.safety_suffixes)
     cluster_by_term: list[tuple[str, ClusterSpec]] = []
     for cluster in vocab.clusters:
         if is_owner_path(rel_path, cluster):
@@ -425,18 +426,24 @@ def _scan_schema_authority_shape(*, path: Path, rel_path: str, vocab: Vocabulary
     if isinstance(properties, dict):
         for prop_name in properties:
             token = str(prop_name)
+            if _identifier_subtokens(token) & safety_set:
+                continue
             for term, cluster in cluster_by_term:
                 if _identifier_matches_term(token, term):
                     violations.append(_build_violation(rel_path=rel_path, line=_line_for_token(token), symbol=token, cluster=cluster, rule="schema_property_name_authority_term", rationale_suffix="Schema property names must avoid reserved authority terms outside canonical owners."))
                     break
     for field in payload.get("required", []) if isinstance(payload.get("required"), list) else []:
         token = str(field)
+        if _identifier_subtokens(token) & safety_set:
+            continue
         for term, cluster in cluster_by_term:
             if _identifier_matches_term(token, term):
                 violations.append(_build_violation(rel_path=rel_path, line=_line_for_token(token), symbol=token, cluster=cluster, rule="schema_required_field_authority_term", rationale_suffix="Schema required fields must avoid reserved authority terms outside canonical owners."))
                 break
     for token in [payload.get("artifact_kind"), payload.get("title")]:
         if not isinstance(token, str):
+            continue
+        if _identifier_subtokens(token.replace(" ", "_")) & safety_set:
             continue
         for term, cluster in cluster_by_term:
             if _identifier_matches_term(token.replace(" ", "_"), term):
@@ -445,6 +452,8 @@ def _scan_schema_authority_shape(*, path: Path, rel_path: str, vocab: Vocabulary
     for enum_match in re.finditer(r'"enum"\s*:\s*\[([^\]]+)\]', text, flags=re.IGNORECASE | re.MULTILINE):
         enum_body = enum_match.group(1)
         for quoted in re.findall(r'"([^"]+)"', enum_body):
+            if _identifier_subtokens(quoted.replace(" ", "_")) & safety_set:
+                continue
             for term, cluster in cluster_by_term:
                 if _identifier_matches_term(quoted.replace(" ", "_"), term):
                     line = text[: enum_match.start()].count("\n") + 1
@@ -455,6 +464,8 @@ def _scan_schema_authority_shape(*, path: Path, rel_path: str, vocab: Vocabulary
         if isinstance(node, list):
             rendered = json.dumps(node, sort_keys=True)
             for term, cluster in cluster_by_term:
+                if _identifier_subtokens(term.replace(" ", "_")) & safety_set:
+                    continue
                 if re.search(rf"\b{re.escape(term)}\b", rendered, flags=re.IGNORECASE):
                     violations.append(_build_violation(rel_path=rel_path, line=_line_for_token(key), symbol=key, cluster=cluster, rule="schema_examples_authority_term", rationale_suffix="Schema examples must avoid reserved authority terms outside canonical owners."))
                     break
