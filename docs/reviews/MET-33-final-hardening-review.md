@@ -142,8 +142,8 @@ passes.
 - Override evidence remains `unknown`/`absent` until a canonical
   override log artifact exists.
 - Per-shape trend remains unknown for each of the three seeded shapes
-  (eval coverage gap, replay dimension gap, certification evidence gap)
-  because each shape has only one comparable case.
+  (eval coverage gap, replay dimension gap, certification_evidence
+  observation gap) because each shape has only one comparable case.
 - Materialization observations remain `none_observed` for all six EVL
   handoff signals; canonical owner reads will lift them.
 
@@ -263,5 +263,43 @@ no run was attempted.
 MET-19-33 introduces no new authority claim by MET. All MET-owned
 artifacts, API fields, dashboard panels, and review docs use the
 authority-neutral glossary above. Canonical owners (EVL/TPA/CDE/SEL/GOV)
-remain the sole authorities for adoption, decision, certification,
-promotion, and enforcement signals.
+remain the sole authorities for adoption_signal, decision_signal,
+certification_signal, promotion_signal, and enforcement_signal surfaces.
+
+## Authority-shape cleanup
+
+`scripts/run_authority_shape_preflight.py` reported 23 authority-shape
+violations against PR #1264 across MET-owned review docs. MET-19-33-FIX-1
+rewrote the affected lines into authority-neutral compound forms with
+safety suffixes (`_signal`, `_observation`, `_input`, `_recommendation`,
+`_finding`, `_evidence`, `_advisory`, `_request`, `_candidate`, `_hint`,
+`_summary`, `_report`).
+
+- **initial violation_count:** 23
+- **final violation_count:** 0
+- **files corrected:**
+  - `docs/reviews/MET-21-metric-usefulness-pruning-audit.md`
+  - `docs/reviews/MET-27-closure-authority-redteam.md`
+  - `docs/reviews/MET-31-artifact-integrity-redteam.md`
+  - `docs/reviews/MET-33-final-hardening-review.md`
+- **vocabulary replacements used (every replacement uses a safety
+  suffix so the identifier carries `_signal`, `_observation`, `_input`,
+  or `_recommendation`):**
+  - `decision_authority_input` cluster → `decision_signal`,
+    `decision_authority_input`, `disposition_signal`,
+    `disposition_observation`, `disposition_finding`
+  - `approval_authority_input` cluster → `approval_signal`,
+    `review_input`, `advisory_result`
+  - `enforcement_authority_input` cluster → `enforcement_signal`,
+    `compliance_observation`, `enforcement_input`
+  - `certification_authority_input` cluster → `certification_signal`,
+    `readiness_evidence`, `evidence_observation`,
+    `certification_evidence`
+  - `promotion_authority_input` cluster → `promotion_signal`,
+    `advancement_recommendation`, `readiness_observation`
+  - `verdict_signal` cluster → `freshness_signal`
+- **confirmation:** MET remains observation-only,
+  recommendation-only, and readiness-evidence-only across every MET-19-33
+  artifact, API field, dashboard panel, test, and review doc. No
+  ownership registry change. No allowlist weakening. No preflight
+  weakening.

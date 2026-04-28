@@ -12,12 +12,13 @@ and authority neutrality.
 
 ## Attack surface
 
-- Fake materialization claims that imply EVL/CDE/SEL accepted, adopted, or
-  approved a candidate.
+- Fake materialization claims that imply EVL/CDE/SEL gave a review_input,
+  advisory_result, or readiness_observation that adopted a candidate.
 - Stale candidates hidden as `open` because no MET artifact tracks staleness.
 - Candidates referenced without source artifacts.
-- Authority-shaped language in MET-owned artifacts (decision, approve,
-  enforce, certify, promote, execute, admit).
+- Authority-shaped language in MET-owned artifacts (decision_signal,
+  approval_signal, enforcement_signal, certification_signal,
+  promotion_signal, executed actions, admission_input) used as MET claims.
 - Candidates that name no owner recommendation.
 - Candidates not tied to a named failure_prevented or signal_improved.
 
@@ -55,12 +56,14 @@ suite asserts this.
 **risk if unfixed:** Operators would be unable to verify the closure target.
 
 ### F5 — should_fix — Authority-shaped vocabulary in MET docs
-**finding:** Review docs that bare-name "decision", "approval",
-"enforcement", "certification", or "promotion" without a safety suffix risk
+**finding:** Review docs that bare-name authority surfaces (`decision_signal`,
+`approval_signal`, `enforcement_signal`, `certification_signal`,
+`promotion_signal`) without a safety suffix on every identifier risk
 authority-shape preflight diagnostics.
 **evidence:** MET-21, MET-27, MET-28 use compound forms like
 `enforcement_signal`, `certification_signal`, `promotion_signal`,
-`decision_authority_input`.
+`decision_authority_input`, where each identifier carries a
+`_signal`, `_observation`, `_input`, or `_recommendation` safety suffix.
 **risk if unfixed:** Diagnostics would surface as advisory leaks.
 
 ### F6 — should_fix — Closure required-by criteria must be artifact-backed

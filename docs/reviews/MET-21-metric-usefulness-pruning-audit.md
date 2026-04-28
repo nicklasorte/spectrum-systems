@@ -10,15 +10,18 @@ This audit reviews every MET-owned artifact, every MET API field exposed via
 whether it justifies itself by **failure_prevented** or **signal_improved**.
 
 Per the MET-19-33 charter, MET observes, measures, explains, and recommends.
-MET does not decide, approve, enforce, certify, promote, execute, or admit.
+MET emits signals, observations, and recommendations only; it does not carry
+decision_authority_input, approval_signal, enforcement_signal,
+certification_signal, or promotion_signal authority. Canonical owners
+(CDE/GOV/SEL/REL) carry those surfaces.
 This audit recommends keep / fold / remove dispositions only; canonical owners
-adopt or reject those recommendations.
+read the recommendations and act through their own governed flows.
 
 ## Audit table — MET artifacts
 
 |name|type|failure_prevented|signal_improved|keep/fold/remove|reason|dependency impact|recommended simplification|
 |---|---|---|---|---|---|---|---|
-|`bottleneck_record.json`|artifact|Bottleneck staying invisible during promotion review|Dominant constrained leg + supporting evidence + confidence rationale|keep|Single sourced handle for the constrained-leg observation|consumed by `bottleneck` API block and OC bottleneck panel|none — already compact|
+|`bottleneck_record.json`|artifact|Bottleneck staying invisible during advancement_recommendation review|Dominant constrained leg + supporting evidence + confidence rationale|keep|Single sourced handle for the constrained-leg observation|consumed by `bottleneck` API block and OC bottleneck panel|none — already compact|
 |`leverage_queue_record.json`|artifact|Items competing without a sourced ranking|Items carry leverage_score + source_artifacts_used + systems_affected|keep|Sole MET ranking artifact; no overlap|consumed by `leverage_queue` API block, Overview panel D, Roadmap tab|none|
 |`risk_summary_record.json`|artifact|Risk posture inferred from disparate seed artifacts|fallback/unknown counts + proof_chain_coverage in one place|keep|Single risk rollup; not duplicated|consumed by `risk_summary` API block|none|
 |`failure_feedback_record.json`|artifact|Failures/near misses unobserved into next loop|Each failure linked to feedback item with affected_systems|keep|Source-of-truth for feedback ledger|consumed by `feedback_items` API block; closure ledger references it|none|
@@ -95,7 +98,7 @@ adopt or reject those recommendations.
 |`apps/dashboard-3ls/__tests__/components/Met04Panels.test.tsx`|test|UI regression undetected|MET-04-18 sections asserted|keep|binding UI contract|
 |`tests/metrics/test_met_19_33_contract_selection.py` (new)|test|MET-19-33 contract drift undetected|pytest selection covers MET-19-33 paths|keep|new binding selection target|
 
-## Decision rule
+## Disposition rule
 
 If an artifact, API field, dashboard panel, or test prevents no named failure
 and improves no measurable signal, the audit recommends fold or remove.

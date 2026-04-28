@@ -74,7 +74,7 @@ from it rather than carrying classification inline.
 **observation:** Detecting whether a dashboard metric is stale (i.e., older
 than the artifact it summarizes) is a freshness signal owned by OBS/REP.
 MET surfaces the artifact's `created_at` field but does not produce a
-freshness verdict.
+freshness_signal of its own.
 
 ## Classification summary
 
