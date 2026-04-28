@@ -24,7 +24,7 @@ const baseGraph: SystemGraphPayload = {
   replay_commands: ['python scripts/build_tls_dependency_priority.py'],
 };
 
-function mockGraphFetch(payload: SystemGraphPayload | { ok: boolean }) {
+function mockGraphFetch(payload: SystemGraphPayload | { ok: boolean }, priorityOverride?: unknown) {
   (global.fetch as jest.Mock).mockImplementation((input: RequestInfo | URL) => {
     const url = String(input);
     if (url.includes('/api/system-graph')) {
@@ -35,6 +35,38 @@ function mockGraphFetch(payload: SystemGraphPayload | { ok: boolean }) {
     }
     if (url.includes('/api/recompute-graph')) {
       return Promise.resolve({ ok: true, json: async () => ({ status: 'recompute_success_signal' }) });
+    }
+    if (url.includes('/api/priority')) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => priorityOverride ?? {
+          state: 'ok',
+          payload: {
+            requested_candidate_ranking: [{
+              requested_rank: 1,
+              system_id: 'AEX',
+              classification: 'h_slice',
+              recommended_action: 'harden',
+              why_now: 'now',
+              prerequisite_systems: [],
+              trust_gap_signals: [],
+              finish_definition: 'done',
+              risk_if_built_before_prerequisites: 'none',
+              rank_explanation: 'artifact',
+              prerequisite_explanation: 'none',
+              safe_next_action: 'run',
+              build_now_assessment: 'ready_signal',
+              why_not_higher: 'n/a',
+              why_not_lower: 'n/a',
+              minimum_safe_prompt_scope: 'narrow',
+              dependency_warning_level: 'ready_signal',
+              evidence_summary: 'artifact',
+            }],
+            global_ranked_systems: [],
+            ranked_systems: [],
+          },
+        },
+      });
     }
     return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
   });
@@ -105,5 +137,13 @@ describe('TrustGraphSection', () => {
     render(<TrustGraphSection />);
     await waitFor(() => expect(screen.getByTestId('trust-status-last-recompute')).toBeInTheDocument());
     expect(screen.getByTestId('trust-status-last-recompute')).toHaveTextContent('2026-04-27T00:00:00Z');
+  });
+
+  it('hides graph recommendation overlay when priority freshness gate is stale', async () => {
+    mockGraphFetch(baseGraph, { state: 'ok', payload: { requested_candidate_ranking: [] }, freshness_gate: { ok: false, recompute_command: 'python recompute.py' } });
+    render(<TrustGraphSection />);
+    await waitFor(() => expect(screen.getByTestId('recommendation-debug-panel')).toBeInTheDocument());
+    expect(screen.getByText(/unavailable — ranking artifact stale\/invalid\/missing/i)).toBeInTheDocument();
+    expect(screen.queryByTestId('rec-debug-card-AEX')).not.toBeInTheDocument();
   });
 });

@@ -270,7 +270,10 @@ const TABS: Array<{ key: TabKey; label: string }> = [
 
 function Panel({ title, children, testId }: { title: string; children: React.ReactNode; testId?: string }) {
   return (
-    <section data-testid={testId ?? 'overview-section'} className="bg-white border rounded p-4 space-y-3">
+    <section
+      data-testid={testId ?? 'overview-section'}
+      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4 space-y-3 text-gray-900 dark:text-gray-100"
+    >
       <h2 className="font-semibold text-sm uppercase tracking-wide">{title}</h2>
       {children}
     </section>
@@ -365,6 +368,8 @@ export default function DashboardPage() {
     () => extractTopThreeRecommendations(priority, contract),
     [priority, contract],
   );
+  const priorityGate = (priority as unknown as { freshness_gate?: { ok: boolean; recompute_command?: string } } | null)?.freshness_gate;
+  const isPriorityStaleOrInvalid = Boolean(priorityGate && !priorityGate.ok);
 
   const queueResult = useMemo(
     () => buildLeverageQueueFromRoadmap(
@@ -434,30 +439,34 @@ export default function DashboardPage() {
   }, [graph]);
 
   if (loading) {
-    return <main className="p-6">Loading dashboard cockpit…</main>;
+    return <main className="p-6 text-gray-900 dark:text-gray-100">Loading dashboard cockpit…</main>;
   }
 
   if (error) {
-    return <main className="p-6 text-red-700">Dashboard failure: {error}</main>;
+    return <main className="p-6 text-red-700 dark:text-red-300">Dashboard failure: {error}</main>;
   }
 
   return (
-    <main className="p-3 sm:p-6 space-y-4 max-w-full overflow-x-hidden">
+    <main className="p-3 sm:p-6 space-y-4 max-w-full overflow-x-hidden text-gray-900 dark:text-gray-100">
       <header>
         <h1 className="text-xl sm:text-2xl font-bold">Dashboard 3LS — Registry-Aligned Operator Cockpit</h1>
-        <p className="text-xs text-gray-600">
+        <p className="text-xs text-gray-600 dark:text-gray-300">
           Graph nodes are registry-backed only. Roadmap labels, batch IDs, and prompt labels never become nodes.
         </p>
       </header>
 
-      <nav className="sticky top-0 z-10 bg-white pb-1 flex flex-wrap gap-2 overflow-x-auto" aria-label="Dashboard tabs">
+      <nav className="sticky top-0 z-10 bg-white/95 dark:bg-gray-950/95 backdrop-blur pb-1 flex flex-wrap gap-2 overflow-x-auto" aria-label="Dashboard tabs">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             type="button"
             onClick={() => setActiveTab(tab.key)}
             data-testid={`tab-${tab.key}`}
-            className={`px-3 py-1.5 rounded border text-xs sm:text-sm whitespace-nowrap ${activeTab === tab.key ? 'bg-gray-900 text-white' : 'bg-white'}`}
+            className={`px-3 py-1.5 rounded border text-xs sm:text-sm whitespace-nowrap ${
+              activeTab === tab.key
+                ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 border-gray-900 dark:border-gray-100'
+                : 'bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600'
+            }`}
           >
             {tab.label}
           </button>
@@ -472,10 +481,9 @@ export default function DashboardPage() {
               return (
                 <ul className="text-sm space-y-1">
                   <li>
-                    trust state: <strong data-testid="trust-pulse-label">{human.label}</strong>
-                    <span className="text-xs text-gray-500" data-testid="trust-pulse-raw"> ({human.raw || 'unknown'})</span>
+                    Status: <strong data-testid="trust-pulse-label">{human.label}</strong>
                   </li>
-                  <li className="text-xs text-gray-600">{human.description}</li>
+                  <li className="text-xs text-gray-600 dark:text-gray-300">Reason: {human.description}</li>
                   <li>artifact-backed %: <strong>{trustPulse.artifact_backed_pct}%</strong></li>
                   <li>stub fallback %: <strong>{trustPulse.stub_fallback_pct}%</strong></li>
                   <li>last recompute: <strong>{trustPulse.last_recompute}</strong></li>
@@ -499,12 +507,11 @@ export default function DashboardPage() {
 
           <Panel title="C. Top 3 Recommendations (TLS artifact only)">
             {(() => {
-              const gate = (priority as unknown as { freshness_gate?: { ok: boolean; status: string; blocking_reasons?: string[]; recompute_command?: string } } | null)?.freshness_gate;
-              if (gate && !gate.ok) {
+              const gate = priorityGate;
+              if (isPriorityStaleOrInvalid && gate) {
                 return (
                   <div data-testid="top3-fail-closed" className="border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950 p-3 rounded text-sm">
-                    <p className="font-semibold text-red-700 dark:text-red-300">Top 3 hidden — freshness gate failed</p>
-                    <p className="text-xs text-red-700 dark:text-red-300">status: <strong>{gate.status}</strong>{gate.blocking_reasons?.length ? `; reasons: ${gate.blocking_reasons.join(', ')}` : ''}</p>
+                    <p className="font-semibold text-red-700 dark:text-red-300">Top 3 unavailable — ranking artifact stale/invalid/missing</p>
                     {gate.recompute_command && (
                       <p className="text-xs mt-1 break-all">regenerate: <code>{gate.recompute_command}</code></p>
                     )}
@@ -513,14 +520,14 @@ export default function DashboardPage() {
               }
               return null;
             })()}
-            {topThree.warning && <p data-testid="top3-warning" className="text-sm text-red-700 dark:text-red-300">⚠ {topThree.warning}</p>}
-            {topThree.recompute_command && (
+            {!isPriorityStaleOrInvalid && topThree.warning && <p data-testid="top3-warning" className="text-sm text-red-700 dark:text-red-300">⚠ {topThree.warning}</p>}
+            {!isPriorityStaleOrInvalid && topThree.recompute_command && (
               <p data-testid="top3-recompute-command" className="text-xs text-gray-700 dark:text-gray-300 break-all">
                 regenerate: <code className="text-xs">{topThree.recompute_command}</code>
               </p>
             )}
             <div className="space-y-2">
-              {topThree.cards.map((card) => (
+              {!isPriorityStaleOrInvalid && topThree.cards.map((card) => (
                 <article
                   key={`${card.rank}-${card.system_id}`}
                   data-testid="top3-card"
@@ -556,289 +563,14 @@ export default function DashboardPage() {
 
           {/* D3L-MASTER-01 Phase 8 — Leverage Queue moved to Roadmap tab to keep Overview simple. */}
 
-          <Panel title="F. Learning Loop (proposed candidates only)" testId="learning-loop-section">
-            {(() => {
-              const fl = intelligence?.feedback_loop;
-              if (!fl) {
-                return <p className="text-sm text-amber-700">Learning loop unavailable.</p>;
-              }
-              return (
-                <div className="text-sm space-y-1">
-                  <p>loop status: <strong>{fl.loop_status ?? 'unknown'}</strong></p>
-                  <p>feedback items: <strong>{String(fl.feedback_items_count ?? 'unknown')}</strong></p>
-                  <p>eval candidates (proposed): <strong>{String(fl.eval_candidates_count ?? 'unknown')}</strong></p>
-                  <p>policy candidate signals (proposed): <strong>{String(fl.policy_candidate_signals_count ?? 'unknown')}</strong></p>
-                  <p>unresolved: <strong>{String(fl.unresolved_feedback_count ?? 'unknown')}</strong></p>
-                  <p>expired: <strong>{String(fl.expired_feedback_count ?? 'unknown')}</strong></p>
-                  <ul className="list-disc ml-5 text-xs" data-testid="learning-loop-themes">
-                    {(fl.top_feedback_themes ?? []).map((t, i) => (
-                      <li key={`${t.theme}-${i}`}>{t.theme}</li>
-                    ))}
-                  </ul>
-                  {(fl.next_recommended_improvement_inputs ?? []).length > 0 && (
-                    <details className="text-xs">
-                      <summary>next recommended improvement inputs</summary>
-                      <ul className="list-disc ml-5">
-                        {fl.next_recommended_improvement_inputs!.map((s, i) => <li key={i}>{s}</li>)}
-                      </ul>
-                    </details>
-                  )}
-                  {(fl.warnings ?? []).map((w, i) => (
-                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
-                  ))}
-                  <p className="text-xs text-gray-600">All entries are proposed candidates and signal inputs only. Adoption decisions belong to EVL/TPA/CDE/SEL/GOV.</p>
-                </div>
-              );
-            })()}
-          </Panel>
-
-          <Panel title="G. Failure Explanation (debug under 15 minutes)" testId="failure-explanation-section">
-            {(() => {
-              const block = intelligence?.failure_explanation_packets;
-              const packets = block?.packets ?? [];
-              if (packets.length === 0) {
-                return <p className="text-sm text-amber-700">No failure explanation packets available.</p>;
-              }
-              return (
-                <div className="space-y-2">
-                  {packets.map((p) => (
-                    <article key={p.packet_id ?? p.title} data-testid="failure-explanation-packet" className="border rounded p-2 text-sm">
-                      <header className="flex flex-wrap gap-2 items-center">
-                        <strong>{p.title}</strong>
-                        <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-400">{p.current_status ?? 'unknown'}</span>
-                        {p.constrained_loop_leg && <span className="text-xs text-gray-600">leg: {p.constrained_loop_leg}</span>}
-                      </header>
-                      <p className="text-xs"><strong>what failed:</strong> {p.what_failed}</p>
-                      <p className="text-xs"><strong>why it matters:</strong> {p.why_it_matters}</p>
-                      <p className="text-xs"><strong>next recommended input:</strong> {p.next_recommended_input}</p>
-                      <p className="text-xs text-gray-600"><strong>evidence:</strong> {(p.evidence_artifacts ?? []).join(', ') || 'none'}</p>
-                    </article>
-                  ))}
-                  {(block?.warnings ?? []).map((w, i) => (
-                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
-                  ))}
-                </div>
-              );
-            })()}
-          </Panel>
-
-          <Panel title="H. Override / Unknowns (fail-closed)" testId="override-unknowns-section">
-            {(() => {
-              const block = intelligence?.override_audit;
-              if (!block) {
-                return <p className="text-sm text-amber-700">Override audit unavailable.</p>;
-              }
-              return (
-                <div className="text-sm space-y-1">
-                  <p>override count: <strong>{String(block.override_count ?? 'unknown')}</strong></p>
-                  <p>reason codes: <span className="text-xs">{(block.reason_codes ?? []).join(', ') || 'none'}</span></p>
-                  {block.next_recommended_input && (
-                    <p className="text-xs"><strong>next recommended input:</strong> {block.next_recommended_input}</p>
-                  )}
-                  {(block.warnings ?? []).map((w, i) => (
-                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
-                  ))}
-                </div>
-              );
-            })()}
-          </Panel>
-
-          <Panel title="I. Fallback Reduction (high-leverage rows only)" testId="fallback-reduction-section">
-            {(() => {
-              const block = intelligence?.fallback_reduction_plan;
-              if (!block) {
-                return <p className="text-sm text-amber-700">Fallback reduction plan unavailable.</p>;
-              }
-              const items = block.fallback_items ?? [];
-              return (
-                <div className="text-sm space-y-1">
-                  <p>total fallback count: <strong>{String(block.total_fallback_count ?? 'unknown')}</strong></p>
-                  <p>high-leverage rows: <strong>{String(block.high_leverage_fallback_count ?? 'unknown')}</strong></p>
-                  <ul className="list-disc ml-5 text-xs" data-testid="fallback-rows">
-                    {items.map((it, i) => (
-                      <li key={`${it.system_id}-${i}`}>
-                        <strong>{it.system_id}</strong> — {it.replacement_signal_needed} <span className="text-gray-600">(priority: {it.priority})</span>
-                      </li>
-                    ))}
-                  </ul>
-                  {(block.warnings ?? []).map((w, i) => (
-                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
-                  ))}
-                </div>
-              );
-            })()}
-          </Panel>
-
-          <Panel title="J. Replay + Lineage Hardening" testId="replay-lineage-hardening-section">
-            {(() => {
-              const block = intelligence?.replay_lineage_hardening;
-              if (!block) {
-                return <p className="text-sm text-amber-700">Replay/lineage hardening unavailable.</p>;
-              }
-              return (
-                <div className="text-sm space-y-1">
-                  <p>affected systems: <strong>{(block.affected_systems ?? []).join(', ') || 'unknown'}</strong></p>
-                  <p className="text-xs"><strong>replay dimensions:</strong></p>
-                  <ul className="list-disc ml-5 text-xs">
-                    {(block.replay_dimensions_checked ?? []).map((d, i) => (
-                      <li key={i}>{d.dimension}: {d.status}</li>
-                    ))}
-                  </ul>
-                  <p className="text-xs"><strong>lineage edges:</strong></p>
-                  <ul className="list-disc ml-5 text-xs">
-                    {(block.lineage_links_checked ?? []).map((d, i) => (
-                      <li key={i}>{d.edge}: {d.status}</li>
-                    ))}
-                  </ul>
-                  {(block.gaps_observed ?? []).length > 0 && (
-                    <p className="text-xs text-amber-700">gaps: {block.gaps_observed!.join('; ')}</p>
-                  )}
-                  {(block.warnings ?? []).map((w, i) => (
-                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
-                  ))}
-                </div>
-              );
-            })()}
-          </Panel>
-
-          <Panel title="K. Candidate Closure (proposed/open/stale only)" testId="candidate-closure-section">
-            {(() => {
-              const block = intelligence?.candidate_closure;
-              if (!block) {
-                return <p className="text-sm text-amber-700">Candidate closure ledger unavailable.</p>;
-              }
-              const items = (block.candidate_items ?? []).slice(0, MET_COMPACT_ITEM_MAX);
-              return (
-                <div className="text-sm space-y-1">
-                  <p>tracked items: <strong>{String(block.candidate_item_count ?? 'unknown')}</strong></p>
-                  <p>stale_candidate_signal: <strong>{String(block.stale_candidate_signal_count ?? 'unknown')}</strong></p>
-                  <ul className="list-disc ml-5 text-xs" data-testid="candidate-closure-items">
-                    {items.map((it, i) => (
-                      <li key={`${it.candidate_id}-${i}`}>
-                        <strong>{it.candidate_id}</strong> [{it.candidate_type}] — state: {it.current_state}
-                        {' '}<span className="text-gray-600">(age: {String(it.age_days ?? 'unknown')}d / stale_after: {String(it.stale_after_days ?? 'unknown')}d)</span>
-                      </li>
-                    ))}
-                  </ul>
-                  {(block.warnings ?? []).map((w, i) => (
-                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
-                  ))}
-                  <p className="text-xs text-gray-600">EVL/TPA/CDE/SEL/GOV remain canonical owners; ledger surfaces signals only.</p>
-                </div>
-              );
-            })()}
-          </Panel>
-
-          <Panel title="L. Debug Explanation Index (under 15 minutes)" testId="debug-explanation-index-section">
-            {(() => {
-              const block = intelligence?.debug_explanation_index;
-              if (!block) {
-                return <p className="text-sm text-amber-700">Debug explanation index unavailable.</p>;
-              }
-              const entries = (block.explanation_entries ?? []).slice(0, MET_COMPACT_ITEM_MAX);
-              return (
-                <div className="text-sm space-y-1">
-                  <p>debug target: <strong>{block.debug_target_minutes ?? 15} minutes</strong></p>
-                  <p>entries: <strong>{String(block.explanation_entry_count ?? 'unknown')}</strong></p>
-                  <ul className="list-disc ml-5 text-xs" data-testid="debug-explanation-entries">
-                    {entries.map((e, i) => (
-                      <li key={`${e.explanation_id}-${i}`}>
-                        <strong>{e.explanation_id}</strong> — {e.what_failed} <span className="text-gray-600">(loop leg: {e.where_in_loop ?? 'unknown'} · readiness: {e.debug_readiness ?? 'unknown'})</span>
-                      </li>
-                    ))}
-                  </ul>
-                  {(block.warnings ?? []).map((w, i) => (
-                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
-                  ))}
-                </div>
-              );
-            })()}
-          </Panel>
-
-          <Panel title="M. Trend / Frequency Honesty (no fake trend)" testId="trend-frequency-honesty-section">
-            {(() => {
-              const block = intelligence?.trend_frequency_honesty_gate;
-              if (!block) {
-                return <p className="text-sm text-amber-700">Trend/frequency honesty gate unavailable.</p>;
-              }
-              const blocked = (block.blocked_trend_fields ?? []).slice(0, MET_COMPACT_ITEM_MAX);
-              return (
-                <div className="text-sm space-y-1">
-                  <p>comparable cases: <strong>{String(block.comparable_case_count ?? 'unknown')}</strong> / {block.required_case_count_for_trend ?? 3}</p>
-                  <p>cases needed: <strong>{String(block.cases_needed ?? 'unknown')}</strong></p>
-                  <p>trend state: <strong>{block.trend_state ?? 'unknown'}</strong></p>
-                  <p>frequency state: <strong>{block.frequency_state ?? 'unknown'}</strong></p>
-                  <ul className="list-disc ml-5 text-xs" data-testid="trend-honesty-blocked-fields">
-                    {blocked.map((b, i) => (
-                      <li key={i}>
-                        <strong>{b.field}</strong>: {b.current_value} <span className="text-gray-600">— {b.reason}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  {(block.warnings ?? []).map((w, i) => (
-                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
-                  ))}
-                </div>
-              );
-            })()}
-          </Panel>
-
-          <Panel title="N. EVL Handoff Observations (signal only)" testId="evl-handoff-observations-section">
-            {(() => {
-              const block = intelligence?.evl_handoff_observations;
-              if (!block) {
-                return <p className="text-sm text-amber-700">EVL handoff observations unavailable.</p>;
-              }
-              const items = (block.handoff_items ?? []).slice(0, MET_COMPACT_ITEM_MAX);
-              return (
-                <div className="text-sm space-y-1">
-                  <p>handoff items: <strong>{String(block.handoff_item_count ?? 'unknown')}</strong></p>
-                  <ul className="list-disc ml-5 text-xs" data-testid="evl-handoff-items">
-                    {items.map((it, i) => (
-                      <li key={`${it.handoff_signal_id}-${i}`}>
-                        <strong>{it.handoff_signal_id}</strong> → {it.target_owner_recommendation ?? 'EVL'}
-                        {' '}<span className="text-gray-600">(materialization: {it.materialization_observation ?? 'unknown'})</span>
-                      </li>
-                    ))}
-                  </ul>
-                  {(block.warnings ?? []).map((w, i) => (
-                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
-                  ))}
-                  <p className="text-xs text-gray-600">EVL is the canonical owner; this surface records handoff signals and materialization observations only.</p>
-                </div>
-              );
-            })()}
-          </Panel>
-
-          <Panel title="O. Artifact Integrity (override + classification)" testId="artifact-integrity-section">
-            {(() => {
-              const oei = intelligence?.override_evidence_intake;
-              const cls = intelligence?.met_generated_artifact_classification;
-              return (
-                <div className="text-sm space-y-1">
-                  <p>override evidence count: <strong>{String(oei?.override_evidence_count ?? 'unknown')}</strong></p>
-                  <p>evidence status: <strong>{oei?.evidence_status ?? 'unknown'}</strong></p>
-                  {oei?.next_recommended_input && (
-                    <p className="text-xs"><strong>next input:</strong> {oei.next_recommended_input}</p>
-                  )}
-                  <p>classified paths: <strong>{String(cls?.classified_path_count ?? 'unknown')}</strong></p>
-                  <ul className="list-disc ml-5 text-xs" data-testid="artifact-integrity-classified-paths">
-                    {(cls?.classified_paths ?? []).slice(0, MET_COMPACT_ITEM_MAX).map((c, i) => (
-                      <li key={`${c.path}-${i}`}>
-                        <strong>{c.path}</strong> — {c.classification} <span className="text-gray-600">({c.merge_policy})</span>
-                      </li>
-                    ))}
-                  </ul>
-                  {(oei?.warnings ?? []).map((w, i) => (
-                    <p key={`oei-${i}`} className="text-xs text-amber-700">⚠ {w}</p>
-                  ))}
-                  {(cls?.warnings ?? []).map((w, i) => (
-                    <p key={`cls-${i}`} className="text-xs text-amber-700">⚠ {w}</p>
-                  ))}
-                </div>
-              );
-            })()}
-          </Panel>
+          {ocBottleneck && ocBottleneck.state === 'ok' && ocBottleneck.card && (
+            <Panel title="D. Current Bottleneck (OC)" testId="overview-oc-bottleneck-section">
+              <p className="text-sm"><strong>Status:</strong> {ocBottleneck.card.overall_status}</p>
+              <p className="text-sm"><strong>Category:</strong> {ocBottleneck.card.category}</p>
+              <p className="text-sm"><strong>Reason:</strong> {ocBottleneck.card.reason_code}</p>
+              <p className="text-sm"><strong>Next safe action:</strong> {ocBottleneck.card.next_safe_action}</p>
+            </Panel>
+          )}
 
           {explain && explain.root_cause && (
             <Panel title="E. Explain System State (deterministic)" testId="explain-system-state">
@@ -887,7 +619,7 @@ export default function DashboardPage() {
       {activeTab === 'graph' && <TrustGraphSection />}
 
       {activeTab === 'decision' && (
-        <section className="bg-white border rounded p-4 space-y-3" data-testid="decision-tab">
+        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4 space-y-3" data-testid="decision-tab">
           <h2 className="font-semibold">Decision Layer (Signal → Evaluation → Policy → Control → Enforcement)</h2>
           <p className="text-xs text-gray-600">
             View-only projection over the registry. Adds no new systems. CDE is the sole control authority; SEL is the sole enforcement authority.
@@ -913,8 +645,7 @@ export default function DashboardPage() {
             if (gate && !gate.ok) {
               return (
                 <div data-testid="prioritization-fail-closed" className="border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950 p-3 rounded text-sm">
-                  <p className="font-semibold text-red-700 dark:text-red-300">Prioritization hidden — freshness gate failed</p>
-                  <p className="text-xs text-red-700 dark:text-red-300">status: <strong>{gate.status}</strong>{gate.blocking_reasons?.length ? `; reasons: ${gate.blocking_reasons.join(', ')}` : ''}</p>
+                  <p className="font-semibold text-red-700 dark:text-red-300">Prioritization unavailable — ranking artifact stale/invalid/missing</p>
                   {gate.recompute_command && (
                     <p className="text-xs mt-1 break-all">regenerate: <code>{gate.recompute_command}</code></p>
                   )}
@@ -1003,7 +734,7 @@ export default function DashboardPage() {
       )}
 
       {activeTab === 'sources' && (
-        <section className="bg-white border rounded p-4" data-testid="sources-tab">
+        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4" data-testid="sources-tab">
           <h2 className="font-semibold mb-2">Sources (artifact vs fallback)</h2>
           <pre className="text-xs overflow-auto max-h-[60vh]">
             {JSON.stringify({
@@ -1017,10 +748,20 @@ export default function DashboardPage() {
       )}
 
       {activeTab === 'diagnostics' && (
-        <section className="bg-white border rounded p-4 space-y-3" data-testid="diagnostics-tab">
+        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4 space-y-3" data-testid="diagnostics-tab">
           <h2 className="font-semibold">Diagnostics (red-team + validation)</h2>
           <p className="text-sm">Critical hidden check: top 3 + queue + trust + flow visible from Overview.</p>
           <p className="text-sm">Dashboard-side computation check: ranking is read-only from artifact.</p>
+          <div data-testid="diagnostics-intelligence-panel" className="border border-gray-200 dark:border-gray-700 rounded p-3 space-y-1 bg-white dark:bg-gray-900">
+            <h3 className="font-semibold text-sm">Moved Intelligence Panels</h3>
+            <p className="text-xs text-gray-600 dark:text-gray-300">
+              Learning Loop, Failure Explanation, Override / Unknowns, Fallback Reduction, Replay + Lineage Hardening,
+              Candidate Closure, and MET intelligence panels are rendered in diagnostics/raw surfaces, not Overview.
+            </p>
+            <pre className="text-xs overflow-auto max-h-[40vh] bg-gray-50 dark:bg-gray-950 p-2 rounded">
+              {JSON.stringify(intelligence ?? {}, null, 2)}
+            </pre>
+          </div>
 
           {/* D3L-DATA-REGISTRY-01 Phase 7: Compact OC bottleneck card. Renders only
               when the OC artifact loads cleanly. Fail-closed states (unavailable,
@@ -1077,7 +818,7 @@ export default function DashboardPage() {
       )}
 
       {activeTab === 'roadmap' && (
-        <section className="bg-white border rounded p-4 space-y-3" data-testid="roadmap-tab">
+        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4 space-y-3" data-testid="roadmap-tab">
           <h2 className="font-semibold">Roadmap (TLS artifacts)</h2>
           <p className="text-sm">Next safe bundles: {(roadmap?.payload?.safe_bundles ?? []).slice(0, 3).map((b) => b.bundle_id).join(', ') || 'unavailable'}</p>
           <p className="text-sm">Red-team/fix pairing status: paired in sequence (FX → RT → FIX) from roadmap entries.</p>
@@ -1118,7 +859,7 @@ export default function DashboardPage() {
       )}
 
       {activeTab === 'raw' && (
-        <section className="bg-white border rounded p-4" data-testid="raw-tab">
+        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4" data-testid="raw-tab">
           <h2 className="font-semibold mb-2">Raw Artifacts</h2>
           <pre className="text-xs overflow-auto max-h-[60vh]">
             {JSON.stringify({ priority, flow, graph, roadmap, intelligence, contract, explain, decisionLayer }, null, 2)}

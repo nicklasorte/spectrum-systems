@@ -84,7 +84,7 @@ export function TrustGraphSection() {
 
   if (loadFailed && !displayGraph) {
     return (
-      <section className="bg-white border rounded p-4" data-testid="trust-graph-section">
+      <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4" data-testid="trust-graph-section">
         <p className="text-sm text-red-700" data-testid="graph-fail-closed-warning">
           ⚠ Trust graph artifact unavailable. Fail-closed: dashboard will not synthesize graph data.
         </p>
@@ -94,7 +94,7 @@ export function TrustGraphSection() {
 
   if (!displayGraph) {
     return (
-      <section className="bg-white border rounded p-4" data-testid="trust-graph-section">
+      <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4" data-testid="trust-graph-section">
         <p className="text-sm text-gray-500">Loading trust graph artifact…</p>
       </section>
     );
@@ -102,7 +102,7 @@ export function TrustGraphSection() {
 
   if (isFailClosed) {
     return (
-      <section className="bg-white border rounded p-4 space-y-2" data-testid="trust-graph-section">
+      <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4 space-y-2" data-testid="trust-graph-section">
         <h2 className="font-semibold">SYSTEM TRUST GRAPH</h2>
         <p className="text-sm text-red-700" data-testid="graph-fail-closed-warning">
           ⚠ Graph artifact contains no nodes. Fail-closed: refusing to render synthetic graph data.
@@ -126,8 +126,8 @@ export function TrustGraphSection() {
   }
 
   return (
-    <section className="bg-white border rounded p-4 space-y-3" data-testid="trust-graph-section">
-      <header className="flex flex-wrap items-center justify-between gap-2 sticky top-0 z-10 bg-white pb-1">
+    <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4 space-y-3" data-testid="trust-graph-section">
+      <header className="flex flex-wrap items-center justify-between gap-2 sticky top-0 z-10 bg-white/95 dark:bg-gray-950/95 pb-1">
         <h2 className="font-semibold">SYSTEM TRUST GRAPH</h2>
         <div className="flex flex-wrap items-center gap-3">
           <DebugModeSelector value={debugMode} onChange={setDebugMode} />
