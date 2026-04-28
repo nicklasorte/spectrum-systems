@@ -44,15 +44,43 @@ class ClusterSpec:
 
 
 @dataclass(frozen=True)
+class RegistryRules:
+    """Section-aware rules applied only to canonical-registry paths.
+
+    The registry document is the canonical authority-ownership reference, so
+    cluster terms appearing inside any registry-tracked ``### CODE`` section
+    legitimately define that system's authority surface. The exception is
+    ``non_owning_support_systems`` (e.g. HOP), whose sections continue to
+    apply the strict rules: cluster terms are flagged unless they appear in
+    a boundary-disclaim field (``must_not_do:``) or in cross-cutting prose
+    outside any ``### CODE`` section. A claim verb on the same line as a
+    cluster term inside a non-owning-support section flags regardless of
+    field, since it implies ownership. A negation token immediately
+    associated with the claim verb (``never decides``, ``does not decide``)
+    is treated as an explicit disclaim and allowed.
+    """
+
+    section_header_pattern: str
+    h2_header_pattern: str
+    field_bullet_pattern: str
+    boundary_disclaim_field: str
+    claim_position_fields: tuple[str, ...]
+    claim_verbs: tuple[str, ...]
+    non_owning_support_systems: frozenset[str]
+
+
+@dataclass(frozen=True)
 class VocabularyModel:
     scope_prefixes: tuple[str, ...]
     excluded_prefixes: tuple[str, ...]
+    canonical_registry_paths: tuple[str, ...]
     guard_path_prefixes: tuple[str, ...]
     clusters: tuple[ClusterSpec, ...]
     safety_suffixes: tuple[str, ...]
     safe_rename_pairs: tuple[tuple[str, str], ...]
     rename_include_suffixes: tuple[str, ...]
     rename_exclude_prefixes: tuple[str, ...]
+    registry_rules: RegistryRules | None
 
 
 @dataclass
@@ -171,9 +199,46 @@ def load_vocabulary(path: Path) -> VocabularyModel:
     remediation = payload.get("remediation_policy") or {}
     rename_targets = remediation.get("rename_targets") or {}
 
+    registry_rules_payload = payload.get("registry_rules")
+    registry_rules: RegistryRules | None = None
+    if isinstance(registry_rules_payload, dict):
+        registry_rules = RegistryRules(
+            section_header_pattern=str(
+                registry_rules_payload.get("section_header_pattern")
+                or r"^###[ \t]+([A-Z][A-Z0-9]{1,5})\b"
+            ),
+            h2_header_pattern=str(
+                registry_rules_payload.get("h2_header_pattern") or r"^##[ \t]+\S"
+            ),
+            field_bullet_pattern=str(
+                registry_rules_payload.get("field_bullet_pattern")
+                or r"^[ \t]*-[ \t]+\*\*([A-Za-z][A-Za-z0-9 _]*?)\s*:\*\*"
+            ),
+            boundary_disclaim_field=str(
+                registry_rules_payload.get("boundary_disclaim_field") or "must_not_do"
+            ).lower(),
+            claim_position_fields=tuple(
+                str(f).lower()
+                for f in registry_rules_payload.get("claim_position_fields", [])
+            ),
+            claim_verbs=tuple(
+                str(v).lower() for v in registry_rules_payload.get("claim_verbs", [])
+            ),
+            non_owning_support_systems=frozenset(
+                str(s).strip().upper()
+                for s in registry_rules_payload.get(
+                    "non_owning_support_systems", []
+                )
+                if str(s).strip()
+            ),
+        )
+
     return VocabularyModel(
         scope_prefixes=tuple(str(p) for p in scope.get("default_scope_prefixes", [])),
         excluded_prefixes=tuple(str(p) for p in scope.get("excluded_path_prefixes", [])),
+        canonical_registry_paths=tuple(
+            _normalize_path(str(p)) for p in scope.get("canonical_registry_paths", [])
+        ),
         guard_path_prefixes=tuple(str(p) for p in scope.get("guard_path_prefixes", [])),
         clusters=tuple(clusters),
         safety_suffixes=tuple(str(s).lower() for s in payload.get("safety_suffixes", [])),
@@ -184,6 +249,7 @@ def load_vocabulary(path: Path) -> VocabularyModel:
         rename_exclude_prefixes=tuple(
             str(p) for p in rename_targets.get("exclude_path_prefixes", [])
         ),
+        registry_rules=registry_rules,
     )
 
 
@@ -299,6 +365,190 @@ def scan_file(path: Path, rel_path: str, vocab: VocabularyModel) -> list[Violati
     return violations
 
 
+def is_canonical_registry_path(rel_path: str, vocab: VocabularyModel) -> bool:
+    norm = _normalize_path(rel_path)
+    return any(norm == _normalize_path(p) for p in vocab.canonical_registry_paths)
+
+
+@dataclass(frozen=True)
+class RegistryLineContext:
+    """Per-line context for a canonical-registry file.
+
+    ``section_code`` is the most recent ``### CODE`` header above this line,
+    or ``None`` if the line is in the preamble or in a ``## ...`` block that
+    has not yet introduced a ``### CODE`` subsection. ``current_field`` is
+    the most recent ``- **field:**`` bullet within the current section, or
+    ``None``. The field name is lowercased.
+    """
+
+    section_code: str | None
+    current_field: str | None
+
+
+def _compute_registry_contexts(
+    lines: list[str], rules: RegistryRules
+) -> list[RegistryLineContext]:
+    section_re = re.compile(rules.section_header_pattern)
+    h2_re = re.compile(rules.h2_header_pattern)
+    field_re = re.compile(rules.field_bullet_pattern)
+
+    contexts: list[RegistryLineContext] = []
+    section_code: str | None = None
+    current_field: str | None = None
+    for line in lines:
+        if h2_re.match(line) and not section_re.match(line):
+            section_code = None
+            current_field = None
+        else:
+            sec_match = section_re.match(line)
+            if sec_match:
+                section_code = sec_match.group(1)
+                current_field = None
+            else:
+                field_match = field_re.match(line)
+                if field_match:
+                    field_name = field_match.group(1).strip().lower().replace(" ", "_")
+                    current_field = field_name
+        contexts.append(
+            RegistryLineContext(section_code=section_code, current_field=current_field)
+        )
+    return contexts
+
+
+_NEGATION_PATTERN = re.compile(
+    r"\b(?:never|not|no|cannot|can\s*not|must\s*not|shall\s*not|should\s*not|"
+    r"does\s*not|do\s*not|did\s*not|won\s*[' ]\s*t|doesn\s*[' ]\s*t|"
+    r"don\s*[' ]\s*t|isn\s*[' ]\s*t|aren\s*[' ]\s*t|external\s+to)\b"
+)
+
+
+def _line_carries_claim_verb(line: str, claim_verbs: Iterable[str]) -> bool:
+    """Return True if ``line`` contains a non-negated ownership-claim verb.
+
+    The check is whole-word, case-insensitive, and matches whether the verb
+    is written with underscores (``rolls_back``) or as a separated phrase
+    (``rolls back``). It deliberately ignores incidental substrings.
+
+    A line that contains a negation token (``never``, ``does not``,
+    ``must not``, ``external to``, etc.) is treated as a disclaim and
+    returns ``False`` even if it also contains a claim verb. The registry
+    routinely uses sentences like ``HOP never decides promotion`` or
+    ``module X is external to enforcement`` to spell out a non-ownership
+    boundary; flagging those would force the document to lose precision
+    without catching any new ownership claim.
+    """
+    if not line.strip():
+        return False
+    lowered = line.lower()
+    if _NEGATION_PATTERN.search(lowered):
+        return False
+    for verb in claim_verbs:
+        verb_l = verb.strip().lower()
+        if not verb_l:
+            continue
+        spaced = verb_l.replace("_", " ")
+        # Underscore form (whole word).
+        if re.search(r"\b" + re.escape(verb_l) + r"\b", lowered):
+            return True
+        # Spaced form when the verb is multi-token.
+        if spaced != verb_l and re.search(r"\b" + re.escape(spaced) + r"\b", lowered):
+            return True
+    return False
+
+
+def filter_registry_violations(
+    *,
+    violations: list[Violation],
+    lines: list[str],
+    vocab: VocabularyModel,
+) -> list[Violation]:
+    """Drop violations whose context legitimately defines canonical ownership.
+
+    Rules (applied only when the file is in
+    ``vocab.canonical_registry_paths``):
+
+    1. **Cross-cutting prose** — if the violation is in the preamble or in
+       a ``## ...`` block that has no enclosing ``### CODE`` subsection,
+       allow it. Such lines describe the registry's cross-cutting
+       structure and are not an ownership claim by any single system.
+    2. **Per-cluster canonical owner** — if the violation is inside a
+       ``### CODE`` section where ``CODE`` is in the cluster's
+       ``canonical_owners`` list, allow it. The owner is permitted to use
+       its own authority terms.
+    3. **Boundary disclaim** — if the violation is inside a ``### CODE``
+       section under a ``- **must_not_do:**`` field and the line carries
+       no non-negated claim verb, allow it. The field exists precisely
+       to disclaim authority and must be able to name the disclaimed
+       cluster.
+    4. **Registry-tracked authority section** — if the violation is
+       inside a ``### CODE`` section where ``CODE`` is **not** in
+       ``non_owning_support_systems``, allow it. The registry is the
+       single place where each tracked authority system defines its own
+       surface; cluster terms in any descriptive or claim-position field
+       are part of that definition. A non-negated claim verb on the same
+       line still flags, because it would imply ownership beyond what
+       the registry declares.
+    5. **Non-owning support section** — if the violation is inside a
+       ``### CODE`` section where ``CODE`` is in
+       ``non_owning_support_systems`` (e.g. HOP), keep it when the field
+       is a claim-position field (``owns:``, ``produces:``, ``role:``,
+       ``Canonical Artifacts Owned:``, ``Primary Code Paths:``) or when
+       the line carries a non-negated claim verb. Otherwise allow,
+       because descriptive fields in non-owning sections still need to
+       name the canonical owners they delegate to.
+    """
+    if vocab.registry_rules is None:
+        return violations
+
+    rules = vocab.registry_rules
+    contexts = _compute_registry_contexts(lines, rules)
+    canonical_owners_by_cluster = {
+        c.name: {o.upper() for o in c.canonical_owners} for c in vocab.clusters
+    }
+    claim_position = set(rules.claim_position_fields)
+
+    out: list[Violation] = []
+    for v in violations:
+        if v.line < 1 or v.line > len(contexts):
+            out.append(v)
+            continue
+        ctx = contexts[v.line - 1]
+        if ctx.section_code is None:
+            # Rule 1: cross-cutting prose, not an ownership claim.
+            continue
+        owners = canonical_owners_by_cluster.get(v.cluster, set())
+        if ctx.section_code in owners:
+            # Rule 2: per-cluster canonical owner using its own term.
+            continue
+        line_text = lines[v.line - 1] if v.line - 1 < len(lines) else ""
+        carries_claim_verb = _line_carries_claim_verb(line_text, rules.claim_verbs)
+        if ctx.current_field == rules.boundary_disclaim_field and not carries_claim_verb:
+            # Rule 3: explicit boundary disclaim, no claim verb present.
+            continue
+        is_non_owning_support = ctx.section_code in rules.non_owning_support_systems
+        if not is_non_owning_support and not carries_claim_verb:
+            # Rule 4: registry-tracked authority section with no claim
+            # verb on this line.
+            continue
+        if is_non_owning_support and (
+            ctx.current_field in claim_position or carries_claim_verb
+        ):
+            # Rule 5a: HOP-style section claiming authority via field
+            # position or claim verb.
+            out.append(v)
+            continue
+        if not is_non_owning_support and carries_claim_verb:
+            # Rule 5b: registry-tracked authority section with a claim
+            # verb that goes beyond its declared per-cluster ownership.
+            out.append(v)
+            continue
+        # Non-owning support section, descriptive field, no claim verb:
+        # allow. Descriptive fields routinely name canonical owners by
+        # cluster term to spell out delegation.
+        continue
+    return out
+
+
 def _can_apply_rename(rel_path: str, vocab: VocabularyModel) -> tuple[bool, str | None]:
     if any(is_owner_path(rel_path, c) for c in vocab.clusters):
         return False, "canonical_owner_path"
@@ -398,7 +648,18 @@ def evaluate_preflight(
             scanned.append(rel_path)
             continue
         scanned.append(rel_path)
-        violations.extend(scan_file(full_path, rel_path, vocab))
+        file_violations = scan_file(full_path, rel_path, vocab)
+        if is_canonical_registry_path(rel_path, vocab) and vocab.registry_rules is not None:
+            try:
+                file_text = full_path.read_text(encoding="utf-8")
+            except (UnicodeDecodeError, OSError):
+                file_text = ""
+            file_violations = filter_registry_violations(
+                violations=file_violations,
+                lines=file_text.splitlines(),
+                vocab=vocab,
+            )
+        violations.extend(file_violations)
 
     suggestions = [
         {
@@ -431,6 +692,8 @@ def evaluate_preflight(
 __all__ = [
     "AuthorityShapePreflightError",
     "ClusterSpec",
+    "RegistryRules",
+    "RegistryLineContext",
     "VocabularyModel",
     "Violation",
     "Rename",
@@ -439,6 +702,8 @@ __all__ = [
     "scan_file",
     "is_guard_path",
     "is_owner_path",
+    "is_canonical_registry_path",
+    "filter_registry_violations",
     "apply_safe_renames",
     "evaluate_preflight",
 ]
