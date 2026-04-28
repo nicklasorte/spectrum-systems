@@ -14,7 +14,7 @@ export type DebugNodeStatus =
   | 'BLOCKING'
   | 'UNKNOWN';
 
-export type DebugMode = 'normal' | 'blockers' | 'lineage' | 'control' | 'freshness';
+export type DebugMode = 'clean_structure' | 'failure_path' | 'selected_node' | 'full_registry';
 
 export interface SystemGraphNode {
   system_id: string;
@@ -95,11 +95,10 @@ export function deriveDebugStatus(node: Pick<SystemGraphNode, 'trust_state' | 's
 }
 
 export const DEBUG_MODES: ReadonlyArray<{ value: DebugMode; label: string; description: string }> = [
-  { value: 'normal', label: 'Normal', description: 'clean layered graph' },
-  { value: 'blockers', label: 'Blockers', description: 'emphasise failed/missing/stale/blocking systems' },
-  { value: 'lineage', label: 'Lineage', description: 'emphasise artifact dependencies and source paths' },
-  { value: 'control', label: 'Control', description: 'emphasise eval → control → enforcement path' },
-  { value: 'freshness', label: 'Freshness', description: 'emphasise stale / missing artifacts and recompute age' },
+  { value: 'clean_structure', label: 'Clean Structure', description: 'core structure only (default)' },
+  { value: 'failure_path', label: 'Failure Path', description: 'core structure + active failure path only' },
+  { value: 'selected_node', label: 'Selected Node', description: 'core structure + selected node upstream/downstream' },
+  { value: 'full_registry', label: 'Full Registry', description: 'dense diagnostic view: all valid registry edges' },
 ];
 
 export const CONTROL_PATH_SYSTEMS: ReadonlyArray<string> = ['EVL', 'TPA', 'CDE', 'SEL'];

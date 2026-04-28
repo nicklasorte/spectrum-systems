@@ -11,14 +11,14 @@ const MISSING = 'Unknown / Missing';
 export function EdgeInspector({ edge }: Props) {
   if (!edge) {
     return (
-      <div className="border rounded p-3 text-sm text-gray-600" data-testid="edge-inspector">
+      <div className="border border-slate-200 dark:border-slate-700 rounded p-3 text-sm text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900" data-testid="edge-inspector">
         Hover or click an edge label to inspect dependency.
       </div>
     );
   }
 
   return (
-    <div className="border rounded p-3 text-sm space-y-2" data-testid="edge-inspector">
+    <div className="border border-slate-200 dark:border-slate-700 rounded p-3 text-sm space-y-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100" data-testid="edge-inspector">
       <header>
         <h3 className="font-semibold">
           Edge: {edge.from} → {edge.to}

@@ -55,7 +55,6 @@ describe('TrustGraphSection', () => {
     expect(screen.getByTestId('graph-legend')).toBeInTheDocument();
     expect(screen.getByTestId('activity-log')).toBeInTheDocument();
     expect(screen.getByTestId('layout-selector')).toBeInTheDocument();
-    expect(screen.getByTestId('focus-toggle')).toBeInTheDocument();
     expect(screen.getByTestId('recompute-graph-button')).toBeInTheDocument();
   });
 
@@ -91,13 +90,27 @@ describe('TrustGraphSection', () => {
     expect(graphFetches).toBeGreaterThanOrEqual(2);
   });
 
-  it('toggling Show all changes the focus button label', async () => {
+
+  it('default graph mode is clean structure and canvas defaults to scroll (mobile-safe)', async () => {
     mockGraphFetch(baseGraph);
     render(<TrustGraphSection />);
-    await waitFor(() => expect(screen.getByTestId('focus-toggle')).toBeInTheDocument());
-    expect(screen.getByTestId('focus-toggle')).toHaveTextContent('Show all');
-    fireEvent.click(screen.getByTestId('focus-toggle'));
-    expect(screen.getByTestId('focus-toggle')).toHaveTextContent('Focus mode');
+    await waitFor(() => expect(screen.getByTestId('debug-mode-selector-input')).toBeInTheDocument());
+    expect(screen.getByTestId('debug-mode-selector-input')).toHaveValue('clean_structure');
+    expect(screen.getByTestId('graph-canvas-wrapper')).toHaveClass('overflow-x-auto');
+    expect(screen.queryByTestId('canvas-mode-toggle')).not.toBeInTheDocument();
+  });
+
+
+  it('graph panels include dark-mode readable classes', async () => {
+    mockGraphFetch(baseGraph);
+    render(<TrustGraphSection />);
+    await waitFor(() => expect(screen.getByTestId('graph-legend')).toBeInTheDocument());
+    expect(screen.getByTestId('trust-graph-section').className).toContain('dark:bg-slate-900');
+    expect(screen.getByTestId('graph-legend').className).toContain('dark:bg-slate-900');
+    expect(screen.getByTestId('activity-log').className).toContain('dark:bg-slate-900');
+    expect(screen.getByTestId('system-inspector').className).toContain('dark:bg-slate-900');
+    expect(screen.getByTestId('edge-inspector').className).toContain('dark:bg-slate-900');
+    expect(screen.getByTestId('recommendation-debug-panel').className).toContain('dark:bg-slate-900');
   });
 
   it('shows last recompute timestamp from artifact when no recompute has been triggered yet', async () => {

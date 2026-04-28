@@ -28,7 +28,7 @@ const STATUS_COLORS: Record<string, string> = {
 export function SystemInspector({ node, replayCommands }: Props) {
   if (!node) {
     return (
-      <div className="border rounded p-3 text-sm text-gray-600" data-testid="system-inspector">
+      <div className="border border-slate-200 dark:border-slate-700 rounded p-3 text-sm text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900" data-testid="system-inspector">
         Select a node to investigate.
       </div>
     );
@@ -43,7 +43,7 @@ export function SystemInspector({ node, replayCommands }: Props) {
   const downstreamDependents = node.downstream_dependents ?? node.downstream;
 
   return (
-    <div className="border rounded p-3 text-sm space-y-2" data-testid="system-inspector">
+    <div className="border border-slate-200 dark:border-slate-700 rounded p-3 text-sm space-y-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100" data-testid="system-inspector">
       <header className="flex items-center justify-between gap-2">
         <h3 className="font-semibold">Investigate: {node.system_id}</h3>
         <span
@@ -56,7 +56,7 @@ export function SystemInspector({ node, replayCommands }: Props) {
       </header>
 
       {!debuggerComplete && (
-        <p className="text-xs text-red-700" data-testid="inspector-fail-closed-warning">
+        <p className="text-xs text-red-700 dark:text-red-300" data-testid="inspector-fail-closed-warning">
           ⚠ Debugger data incomplete; fields below may show Unknown / Missing.
         </p>
       )}
@@ -92,7 +92,7 @@ export function SystemInspector({ node, replayCommands }: Props) {
         </div>
       </dl>
 
-      <p className="text-xs text-gray-600">
+      <p className="text-xs text-slate-600 dark:text-slate-300">
         minimum safe prompt scope: recommendation: single-system hardening for {node.system_id} trust-gap signals.
       </p>
 
@@ -104,7 +104,7 @@ export function SystemInspector({ node, replayCommands }: Props) {
         testid="inspector-breadcrumbs"
       />
 
-      <p className="text-xs text-gray-500">replay command refs: {replayCommands.join(' | ')}</p>
+      <p className="text-xs text-slate-500 dark:text-slate-300">replay command refs: {replayCommands.join(' | ')}</p>
     </div>
   );
 }
