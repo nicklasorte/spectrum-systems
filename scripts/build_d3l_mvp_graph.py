@@ -23,9 +23,9 @@ MVP_BOXES = [
     {"id": "multi_pass_extraction", "label": "Multi-pass Extraction", "description": "bounded extraction passes over context bundles", "maps_to_systems": ["PQX", "CTX"]},
     {"id": "context_builder", "label": "Context Builder", "description": "context bundle assembly + admission", "maps_to_systems": ["CTX", "PRM"]},
     {"id": "paper_generator", "label": "Paper Generator", "description": "governed paper synthesis with HOP-evaluated harness", "maps_to_systems": ["PQX", "HOP"]},
-    {"id": "eval_system", "label": "Eval System", "description": "required eval coverage and gate decisions", "maps_to_systems": ["EVL"]},
+    {"id": "eval_system", "label": "Eval System", "description": "required eval coverage and gate signals", "maps_to_systems": ["EVL"]},
     {"id": "judgment_engine", "label": "Judgment Engine", "description": "judgment artifact semantics and lifecycle", "maps_to_systems": ["JDX", "JSX"]},
-    {"id": "control_loop", "label": "Control Loop", "description": "closure decisions and trust/policy adjudication", "maps_to_systems": ["CDE", "TPA", "SEL"]},
+    {"id": "control_loop", "label": "Control Loop", "description": "closure signals and trust/policy_observation", "maps_to_systems": ["CDE", "TPA", "SEL"]},
     {"id": "learning_loop", "label": "Learning Loop", "description": "failure diagnosis + repair planning, feeds eval candidates", "maps_to_systems": ["FRE", "RIL", "RAX"]},
     {"id": "slo_system", "label": "SLO System", "description": "observability + reliability error-budget governance", "maps_to_systems": ["OBS", "SLO"]},
 ]

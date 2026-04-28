@@ -69,7 +69,7 @@ export const MVP_BOXES: MVPBoxDefinition[] = [
   {
     id: 'eval_system',
     label: 'Eval System',
-    description: 'required eval coverage and gate decisions',
+    description: 'required eval coverage and gate signals',
     maps_to_systems: ['EVL'],
   },
   {
@@ -81,7 +81,7 @@ export const MVP_BOXES: MVPBoxDefinition[] = [
   {
     id: 'control_loop',
     label: 'Control Loop',
-    description: 'closure decisions and trust/policy adjudication',
+    description: 'closure signals and trust/policy_observation',
     maps_to_systems: ['CDE', 'TPA', 'SEL'],
   },
   {

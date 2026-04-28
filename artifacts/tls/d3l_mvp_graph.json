@@ -38,7 +38,7 @@
       ]
     },
     {
-      "description": "required eval coverage and gate decisions",
+      "description": "required eval coverage and gate signals",
       "id": "eval_system",
       "label": "Eval System",
       "maps_to_systems": [
@@ -55,7 +55,7 @@
       ]
     },
     {
-      "description": "closure decisions and trust/policy adjudication",
+      "description": "closure signals and trust/policy_observation",
       "id": "control_loop",
       "label": "Control Loop",
       "maps_to_systems": [
@@ -118,7 +118,7 @@
       "to": "slo_system"
     }
   ],
-  "generated_at": "2026-04-28T12:55:56Z",
+  "generated_at": "2026-04-28T13:35:16Z",
   "phase": "D3L-MASTER-01",
   "rules": [
     "MVP boxes are product-level capabilities, NOT registry systems",
