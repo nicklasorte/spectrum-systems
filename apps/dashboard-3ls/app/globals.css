@@ -4,6 +4,13 @@
 
 html {
   scroll-behavior: smooth;
+  background-color: #ffffff;
+  color: #111827;
+}
+
+html.dark {
+  background-color: #0b1220;
+  color: #e5e7eb;
 }
 
 body {

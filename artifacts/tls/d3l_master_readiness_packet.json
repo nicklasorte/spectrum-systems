@@ -1,0 +1,105 @@
+{
+  "artifact_type": "d3l_master_readiness_packet",
+  "phase": "D3L-MASTER-01",
+  "schema_version": "d3l-master-01.v1",
+  "generated_at": "2026-04-28T13:10:00Z",
+  "title": "Registry-aligned 3LS dashboard: ranking, maturity, MVP graph, dark mode",
+  "registry_validation": {
+    "guard": "scripts/validate_system_registry.py",
+    "status": "passed",
+    "evidence": "System registry validation passed.",
+    "active_system_count": 26
+  },
+  "ranking_freshness": {
+    "gate_artifact": "artifacts/tls/d3l_priority_freshness_gate.json",
+    "status": "ok",
+    "checks": ["valid_json", "schema_valid", "freshness", "ranking_universe"],
+    "stale_threshold_hours": 24,
+    "recompute_command": "python scripts/build_tls_dependency_priority.py --candidates HOP,RAX,RSM,CAP,SEC,EVL,OBS,SLO --fail-if-missing && python scripts/build_dashboard_3ls_with_tls.py --skip-next-build"
+  },
+  "top_3_status": {
+    "source_artifact": "artifacts/tls/d3l_ranking_report.json",
+    "rendered_in": "Overview tab",
+    "fail_closed_when_blocked": true,
+    "examples": ["EVL", "CDE", "TPA"]
+  },
+  "top_10_full_status": {
+    "rendered_in": "Prioritization tab",
+    "list_only_beyond_rank_3": true,
+    "full_active_list_count": 26
+  },
+  "maturity_status": {
+    "source_artifact": "artifacts/tls/d3l_maturity_report.json",
+    "rendered_in": "Maturity tab",
+    "rows": 26,
+    "level_counts": {"0": 0, "1": 25, "2": 1, "3": 0, "4": 0},
+    "table_columns": ["System", "Maturity", "Status", "Key Gap"]
+  },
+  "rank_maturity_alignment": {
+    "source_artifact": "artifacts/tls/d3l_rank_maturity_alignment.json",
+    "warning_only": true,
+    "rule": "mismatch is informational; control authority (CDE) decides"
+  },
+  "mvp_graph_status": {
+    "source_artifact": "artifacts/tls/d3l_mvp_graph.json",
+    "rendered_in": "MVP Graph tab",
+    "boxes": 9,
+    "rule": "MVP boxes never appear as 3LS graph nodes",
+    "namespace_isolation": "snake_case capability ids vs uppercase 3-letter system ids"
+  },
+  "dark_mode_status": {
+    "preferences": ["light", "dark", "system"],
+    "persisted_in": "localStorage[d3l-theme]",
+    "tailwind_strategy": "class",
+    "status_color_semantics": "preserved (red/orange/yellow/green/gray) with dark: variants",
+    "no_flash_of_light": true
+  },
+  "red_team_reports": [
+    "artifacts/tls/d3l_registry_redteam_report.json",
+    "artifacts/tls/d3l_priority_redteam_report.json",
+    "artifacts/tls/d3l_recompute_redteam_report.json",
+    "artifacts/tls/d3l_ranking_redteam_report.json",
+    "artifacts/tls/d3l_maturity_redteam_report.json",
+    "artifacts/tls/d3l_alignment_redteam_report.json",
+    "artifacts/tls/d3l_mvp_redteam_report.json",
+    "artifacts/tls/d3l_darkmode_redteam_report.json",
+    "artifacts/tls/d3l_overview_redteam_report.json"
+  ],
+  "fix_logs": {
+    "phase_0": "fixes embedded in d3l_registry_redteam_report.json",
+    "phase_1": "fixes embedded in d3l_priority_redteam_report.json",
+    "phase_2": "fixes embedded in d3l_recompute_redteam_report.json",
+    "phase_3": "fixes embedded in d3l_ranking_redteam_report.json",
+    "phase_4": "fixes embedded in d3l_maturity_redteam_report.json",
+    "phase_5": "fixes embedded in d3l_alignment_redteam_report.json",
+    "phase_6": "fixes embedded in d3l_mvp_redteam_report.json",
+    "phase_7": "fixes embedded in d3l_darkmode_redteam_report.json",
+    "phase_8": "fixes embedded in d3l_overview_redteam_report.json"
+  },
+  "tests": {
+    "jest": {
+      "command": "npm --prefix apps/dashboard-3ls test -- --runInBand",
+      "result": "Test Suites: 39 passed, 39 total; Tests: 406 passed, 406 total"
+    },
+    "pytest_scoped": {
+      "command": "pytest tests/ -k \"dashboard or tls or maturity or ranking or registry\"",
+      "result": "592 passed, 1 skipped, 9392 deselected"
+    },
+    "pytest_d3l_master": {
+      "command": "pytest tests/test_d3l_*.py",
+      "result": "30 passed"
+    }
+  },
+  "guards": {
+    "validate_system_registry": "passed",
+    "run_authority_shape_preflight": "passed (violation_count=0)",
+    "run_authority_leak_guard": "passed",
+    "run_system_registry_guard": "passed"
+  },
+  "limitations": [
+    "next build is not run inside this packet; it is invoked by the dashboard CI step that wraps build_dashboard_3ls_with_tls.py",
+    "graph readability under dark mode relies on Tailwind dark: variants applied to status colors; arbitrary inline graph fills are checked only by visual review",
+    "mobile readability validated via panel padding (p-3 sm:p-6) and overflow-x-hidden; no automated viewport snapshot is captured here"
+  ],
+  "promotion_rule": "branch_update_allowed = (terminal_state == \"ready_for_merge\")"
+}

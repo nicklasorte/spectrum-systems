@@ -1,0 +1,77 @@
+{
+  "artifact_type": "d3l_registry_redteam_report",
+  "phase": "D3L-MASTER-01",
+  "redteam_pass": "phase_0",
+  "schema_version": "d3l-master-01.v1",
+  "generated_at": "2026-04-28T12:30:00Z",
+  "source_artifact": "artifacts/tls/d3l_registry_contract.json",
+  "intent": "Pin the no-invented-systems guarantee for ranking and maturity surfaces. Future / deprecated / merged ids and forbidden labels (H01, TLS-BND-*, D3L-FIX-*) MUST never appear as graph nodes, ranking rows, or maturity rows.",
+  "cases": [
+    {
+      "case_id": "phase0_unknown_node_included",
+      "description": "An attacker injects an unknown label (H01) into a ranking candidate list and expects the dashboard to render it as a graph node.",
+      "input": {"systemIds": ["AEX", "H01", "EVL"]},
+      "expected_outcome": "H01 lands in rejected_forbidden; admitted = [AEX, EVL]; no graph node created.",
+      "actual_outcome": "admitAgainstRegistry returns admitted=[AEX,EVL], rejected_forbidden=[H01]",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase0_future_node_included",
+      "description": "Future placeholder ABX is injected into a Top-3 candidate list.",
+      "input": {"systemIds": ["AEX", "ABX"]},
+      "expected_outcome": "ABX is rejected_excluded; admitted = [AEX].",
+      "actual_outcome": "admitAgainstRegistry returns admitted=[AEX], rejected_excluded=[ABX]",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase0_deprecated_node_included",
+      "description": "Demoted system HNX (merged to PQX harness scaffolding) injected into a maturity row list.",
+      "input": {"systemIds": ["AEX", "HNX", "SUP"]},
+      "expected_outcome": "HNX and SUP land in rejected_excluded; admitted = [AEX].",
+      "actual_outcome": "admitAgainstRegistry returns admitted=[AEX], rejected_excluded=[HNX,SUP]",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase0_invented_label",
+      "description": "Roadmap label TLS-BND-01 / D3L-FIX-01 injected into a ranking list.",
+      "input": {"systemIds": ["EVL", "TLS-BND-01", "D3L-FIX-01"]},
+      "expected_outcome": "Both labels rejected_forbidden; admitted = [EVL].",
+      "actual_outcome": "admitAgainstRegistry returns admitted=[EVL], rejected_forbidden=[TLS-BND-01,D3L-FIX-01]",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase0_missing_contract",
+      "description": "Registry contract artifact is missing; the dashboard must fail-closed (admit nothing).",
+      "input": {"systemIds": ["AEX", "EVL"], "contract": null},
+      "expected_outcome": "admitted = []; everything goes into rejected_unknown.",
+      "actual_outcome": "admitAgainstRegistry returns admitted=[], rejected_unknown=[AEX,EVL]",
+      "result": "passed",
+      "fix_required": false
+    }
+  ],
+  "fixes_applied": [
+    {
+      "fix_id": "phase0_fix_admit_against_registry",
+      "scope": "apps/dashboard-3ls/lib/systemRegistry.ts",
+      "rationale": "Centralized ranking/maturity admission helper. Active-only universe; explicit rejection buckets for forbidden / excluded / unknown so downstream UI can fail-closed without inventing nodes.",
+      "linked_test": "apps/dashboard-3ls/__tests__/lib/systemRegistry.test.ts"
+    },
+    {
+      "fix_id": "phase0_fix_contract_artifact",
+      "scope": "scripts/build_d3l_registry_contract.py",
+      "rationale": "Builds artifacts/tls/d3l_registry_contract.json from the canonical registry parser output. Single source of truth for ranking_universe / maturity_universe.",
+      "linked_test": "tests/test_d3l_registry_contract.py"
+    }
+  ],
+  "summary": {
+    "cases_total": 5,
+    "cases_passed": 5,
+    "cases_failed": 0,
+    "fixes_applied_count": 2,
+    "all_fixed": true
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "artifact_type": "d3l_maturity_redteam_report",
+  "phase": "D3L-MASTER-01",
+  "redteam_pass": "phase_4",
+  "schema_version": "d3l-master-01.v1",
+  "generated_at": "2026-04-28T12:48:00Z",
+  "intent": "Pin the maturity computation contract: every active system has a row; missing evidence drops to level 0; structural signals downgrade level; priority freshness caps at level 3; spoofed evidence (has_evidence=true with structural failures) cannot upgrade past level 1.",
+  "cases": [
+    {
+      "case_id": "phase4_spoofed_evidence",
+      "description": "Attacker sets has_evidence=true on a system that still has 2 structural signals failing.",
+      "expected_outcome": "level=1 Emerging; spoofed evidence does not upgrade.",
+      "actual_outcome": "verified by maturity.test.ts:'spoofed evidence (has_evidence true) cannot upgrade past level 1 if structural signals remain'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase4_stale_evidence",
+      "description": "All structural signals clean, ready trust, but priority artifact stale (>24h).",
+      "expected_outcome": "level capped at 3 Stable; staleness_caps_applied incremented.",
+      "actual_outcome": "verified by maturity.test.ts:'clean structural + stale freshness ⇒ caps at level 3 with bookkeeping'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase4_missing_signals",
+      "description": "System has zero evidence (has_evidence=false).",
+      "expected_outcome": "level=0 Unknown; key_gap reflects missing evidence.",
+      "actual_outcome": "verified by maturity.test.ts:'zero evidence ⇒ level 0 Unknown'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase4_all_active_present",
+      "description": "Maturity universe must equal active_system_ids; no future / deprecated rows.",
+      "expected_outcome": "rows_count == ranking_universe_size; every active system has a row.",
+      "actual_outcome": "verified by maturity.test.ts:'all active systems are rows; universe size matches contract'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase4_contract_missing",
+      "description": "Registry contract artifact absent.",
+      "expected_outcome": "fail-closed; rows=[]",
+      "actual_outcome": "verified by maturity.test.ts:'returns fail-closed when contract is missing'",
+      "result": "passed",
+      "fix_required": false
+    }
+  ],
+  "fixes_applied": [
+    {
+      "fix_id": "phase4_fix_engine",
+      "scope": "apps/dashboard-3ls/lib/maturity.ts",
+      "rationale": "Centralized 0-4 level engine pulling from registry contract + evidence + trust gap signals + freshness gate. Staleness cap is bookkeeping-tracked so the operator can see why a system did not advance.",
+      "linked_test": "apps/dashboard-3ls/__tests__/lib/maturity.test.ts"
+    },
+    {
+      "fix_id": "phase4_fix_artifact",
+      "scope": "scripts/build_d3l_maturity_report.py + artifacts/tls/d3l_maturity_report.json",
+      "rationale": "Persists the maturity report so it is reviewable as a governed artifact and can be diffed across runs.",
+      "linked_test": "tests/test_d3l_maturity_report.py"
+    },
+    {
+      "fix_id": "phase4_fix_route",
+      "scope": "apps/dashboard-3ls/app/api/maturity/route.ts",
+      "rationale": "Surfaces the engine result through a route the dashboard can consume, with sources block listing the contributing artifacts.",
+      "linked_test": "apps/dashboard-3ls/__tests__/lib/maturity.test.ts"
+    }
+  ],
+  "summary": {
+    "cases_total": 5,
+    "cases_passed": 5,
+    "cases_failed": 0,
+    "all_fixed": true
+  }
+}

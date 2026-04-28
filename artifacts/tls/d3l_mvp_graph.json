@@ -1,0 +1,208 @@
+{
+  "artifact_type": "d3l_mvp_graph",
+  "boxes": [
+    {
+      "description": "inbound transcript admission and validation",
+      "id": "transcript_ingestion",
+      "label": "Transcript Ingestion",
+      "maps_to_systems": [
+        "AEX",
+        "CTX"
+      ]
+    },
+    {
+      "description": "bounded extraction passes over context bundles",
+      "id": "multi_pass_extraction",
+      "label": "Multi-pass Extraction",
+      "maps_to_systems": [
+        "PQX",
+        "CTX"
+      ]
+    },
+    {
+      "description": "context bundle assembly + admission",
+      "id": "context_builder",
+      "label": "Context Builder",
+      "maps_to_systems": [
+        "CTX",
+        "PRM"
+      ]
+    },
+    {
+      "description": "governed paper synthesis with HOP-evaluated harness",
+      "id": "paper_generator",
+      "label": "Paper Generator",
+      "maps_to_systems": [
+        "PQX",
+        "HOP"
+      ]
+    },
+    {
+      "description": "required eval coverage and gate signals",
+      "id": "eval_system",
+      "label": "Eval System",
+      "maps_to_systems": [
+        "EVL"
+      ]
+    },
+    {
+      "description": "judgment artifact semantics and lifecycle",
+      "id": "judgment_engine",
+      "label": "Judgment Engine",
+      "maps_to_systems": [
+        "JDX",
+        "JSX"
+      ]
+    },
+    {
+      "description": "closure signals and trust/policy_observation",
+      "id": "control_loop",
+      "label": "Control Loop",
+      "maps_to_systems": [
+        "CDE",
+        "TPA",
+        "SEL"
+      ]
+    },
+    {
+      "description": "failure diagnosis + repair planning, feeds eval candidates",
+      "id": "learning_loop",
+      "label": "Learning Loop",
+      "maps_to_systems": [
+        "FRE",
+        "RIL",
+        "RAX"
+      ]
+    },
+    {
+      "description": "observability + reliability error-budget governance",
+      "id": "slo_system",
+      "label": "SLO System",
+      "maps_to_systems": [
+        "OBS",
+        "SLO"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "transcript_ingestion",
+      "to": "multi_pass_extraction"
+    },
+    {
+      "from": "multi_pass_extraction",
+      "to": "context_builder"
+    },
+    {
+      "from": "context_builder",
+      "to": "paper_generator"
+    },
+    {
+      "from": "paper_generator",
+      "to": "eval_system"
+    },
+    {
+      "from": "eval_system",
+      "to": "judgment_engine"
+    },
+    {
+      "from": "judgment_engine",
+      "to": "control_loop"
+    },
+    {
+      "from": "control_loop",
+      "to": "learning_loop"
+    },
+    {
+      "from": "learning_loop",
+      "to": "slo_system"
+    }
+  ],
+  "generated_at": "2026-04-28T13:35:16Z",
+  "phase": "D3L-MASTER-01",
+  "rules": [
+    "MVP boxes are product-level capabilities, NOT registry systems",
+    "MVP boxes MUST never become 3LS graph nodes",
+    "every maps_to_systems entry MUST be in active_system_ids"
+  ],
+  "schema_version": "d3l-master-01.v1",
+  "sources": {
+    "contract": "artifacts/tls/d3l_registry_contract.json"
+  },
+  "validated_mappings": [
+    {
+      "admitted_systems": [
+        "AEX",
+        "CTX"
+      ],
+      "box_id": "transcript_ingestion",
+      "rejected_systems": []
+    },
+    {
+      "admitted_systems": [
+        "PQX",
+        "CTX"
+      ],
+      "box_id": "multi_pass_extraction",
+      "rejected_systems": []
+    },
+    {
+      "admitted_systems": [
+        "CTX",
+        "PRM"
+      ],
+      "box_id": "context_builder",
+      "rejected_systems": []
+    },
+    {
+      "admitted_systems": [
+        "PQX",
+        "HOP"
+      ],
+      "box_id": "paper_generator",
+      "rejected_systems": []
+    },
+    {
+      "admitted_systems": [
+        "EVL"
+      ],
+      "box_id": "eval_system",
+      "rejected_systems": []
+    },
+    {
+      "admitted_systems": [
+        "JDX",
+        "JSX"
+      ],
+      "box_id": "judgment_engine",
+      "rejected_systems": []
+    },
+    {
+      "admitted_systems": [
+        "CDE",
+        "TPA",
+        "SEL"
+      ],
+      "box_id": "control_loop",
+      "rejected_systems": []
+    },
+    {
+      "admitted_systems": [
+        "FRE",
+        "RIL",
+        "RAX"
+      ],
+      "box_id": "learning_loop",
+      "rejected_systems": []
+    },
+    {
+      "admitted_systems": [
+        "OBS",
+        "SLO"
+      ],
+      "box_id": "slo_system",
+      "rejected_systems": []
+    }
+  ],
+  "warnings": []
+}

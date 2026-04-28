@@ -1,0 +1,70 @@
+{
+  "artifact_type": "d3l_alignment_redteam_report",
+  "phase": "D3L-MASTER-01",
+  "redteam_pass": "phase_5",
+  "schema_version": "d3l-master-01.v1",
+  "generated_at": "2026-04-28T12:54:00Z",
+  "intent": "Pin the alignment helper contract: Top 3 vs maturity. Mismatch surfaces a warning; never mutates ranking. Control authority (CDE) decides.",
+  "cases": [
+    {
+      "case_id": "phase5_aligned_no_warning",
+      "description": "Top 3 contains the lowest-maturity systems.",
+      "expected_outcome": "ok=true; warning=null.",
+      "actual_outcome": "verified by rankMaturityAlignment.test.ts:'aligned: Top 3 contains the lowest-maturity systems'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase5_mismatch_warning_no_mutation",
+      "description": "Top 3 above lowest maturity (e.g. SEL is at level 0 but Top 3 is AEX/EVL/CDE at level 4).",
+      "expected_outcome": "ok=false; warning surfaced; Top 3 input order untouched.",
+      "actual_outcome": "verified by rankMaturityAlignment.test.ts:'mismatch: Top 3 above lowest ⇒ warning, but Top 3 unchanged' and 'does not mutate inputs even when warning is set'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase5_top3_without_maturity",
+      "description": "Top 3 references a system that has no maturity row (e.g. transient missing data).",
+      "expected_outcome": "ok=false (mismatch by missing data); warning surfaced; ranking unchanged.",
+      "actual_outcome": "verified by rankMaturityAlignment.test.ts:'Top 3 without maturity row ⇒ warning notes the missing data'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase5_empty_inputs",
+      "description": "Either Top 3 or maturity universe is empty.",
+      "expected_outcome": "ok=true (informational, not a control alarm); notes record what was empty.",
+      "actual_outcome": "verified by rankMaturityAlignment.test.ts:'empty Top 3 or empty maturity ⇒ ok=true with notes (not a mismatch)'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase5_no_re_ranking_invariant",
+      "description": "Even when warning fires, helper MUST NOT mutate Top 3 array order.",
+      "expected_outcome": "input array order preserved; only the report is built.",
+      "actual_outcome": "verified by rankMaturityAlignment.test.ts:'does not mutate inputs even when warning is set'",
+      "result": "passed",
+      "fix_required": false
+    }
+  ],
+  "fixes_applied": [
+    {
+      "fix_id": "phase5_fix_alignment_helper",
+      "scope": "apps/dashboard-3ls/lib/rankMaturityAlignment.ts",
+      "rationale": "Read-only alignment evaluator that surfaces a warning when Top 3 sits above the lowest maturity. The helper does not mutate inputs and explicitly defers control authority to CDE.",
+      "linked_test": "apps/dashboard-3ls/__tests__/lib/rankMaturityAlignment.test.ts"
+    },
+    {
+      "fix_id": "phase5_fix_alignment_artifact",
+      "scope": "scripts/build_d3l_rank_maturity_alignment.py + artifacts/tls/d3l_rank_maturity_alignment.json",
+      "rationale": "Persists the alignment summary so red-team and reviewers can compare across runs.",
+      "linked_test": "tests/test_d3l_rank_maturity_alignment.py"
+    }
+  ],
+  "summary": {
+    "cases_total": 5,
+    "cases_passed": 5,
+    "cases_failed": 0,
+    "all_fixed": true
+  }
+}

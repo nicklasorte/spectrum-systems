@@ -1,0 +1,84 @@
+{
+  "artifact_type": "d3l_priority_redteam_report",
+  "phase": "D3L-MASTER-01",
+  "redteam_pass": "phase_1",
+  "schema_version": "d3l-master-01.v1",
+  "generated_at": "2026-04-28T12:35:00Z",
+  "intent": "Pin the fail-closed contract for the priority freshness gate. When the priority artifact is missing/stale/malformed/non-registry-aligned, Top 3, Top 10, and All views MUST hide ranking and surface the exact recompute command.",
+  "cases": [
+    {
+      "case_id": "phase1_stale_2018_timestamp",
+      "description": "Priority artifact present but generated_at = 2018-01-01.",
+      "expected_outcome": "freshness_gate.status='stale', ok=false, recompute_command surfaced, no Top 3 rendered.",
+      "actual_outcome": "evaluatePriorityFreshnessGate returns status=stale, ok=false; recompute_command starts with build_tls_dependency_priority.py; verified by priorityFreshnessGate.test.ts:'blocks when timestamp is stale'.",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase1_malformed_timestamp",
+      "description": "Priority artifact present but generated_at='not-a-real-date'.",
+      "expected_outcome": "status=invalid_timestamp, ok=false; recompute_command surfaced.",
+      "actual_outcome": "verified by priorityFreshnessGate.test.ts:'blocks when generated_at is malformed'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase1_missing_artifact",
+      "description": "Priority artifact file does not exist.",
+      "expected_outcome": "status=missing, ok=false; recompute_command surfaced.",
+      "actual_outcome": "verified by priorityFreshnessGate.test.ts:'blocks when priority artifact missing'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase1_invalid_schema",
+      "description": "Priority artifact is invalid JSON.",
+      "expected_outcome": "status=invalid_schema, ok=false; recompute_command surfaced.",
+      "actual_outcome": "verified by priorityFreshnessGate.test.ts:'blocks when JSON is invalid'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase1_non_active_in_top5",
+      "description": "Priority artifact lists H01 in top_5 (forbidden / not in active universe).",
+      "expected_outcome": "status=non_active_in_top_5, ok=false; non_active_in_top_5=['H01'].",
+      "actual_outcome": "verified by priorityFreshnessGate.test.ts:'blocks when top_5 references a non-active system_id'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase1_contract_missing",
+      "description": "Registry contract artifact is missing.",
+      "expected_outcome": "status=contract_missing, ok=false; ranking surfaces hidden.",
+      "actual_outcome": "verified by priorityFreshnessGate.test.ts:'blocks when registry contract is missing'",
+      "result": "passed",
+      "fix_required": false
+    }
+  ],
+  "fixes_applied": [
+    {
+      "fix_id": "phase1_fix_freshness_gate",
+      "scope": "apps/dashboard-3ls/lib/artifactLoader.ts (evaluatePriorityFreshnessGate)",
+      "rationale": "Adds registry-universe alignment on top of existing JSON / schema / timestamp / freshness checks; produces a single yes/no for showing ranking surfaces.",
+      "linked_test": "apps/dashboard-3ls/__tests__/lib/priorityFreshnessGate.test.ts"
+    },
+    {
+      "fix_id": "phase1_fix_priority_route",
+      "scope": "apps/dashboard-3ls/app/api/priority/route.ts",
+      "rationale": "Returns the gate alongside the loader payload so the dashboard surface can show the fail-closed banner with the exact recompute command without re-implementing the gate.",
+      "linked_test": "apps/dashboard-3ls/__tests__/lib/priorityFreshnessGate.test.ts"
+    },
+    {
+      "fix_id": "phase1_fix_freshness_artifact",
+      "scope": "scripts/build_d3l_priority_freshness_gate.py + artifacts/tls/d3l_priority_freshness_gate.json",
+      "rationale": "Builds a governed artifact that records JSON/schema/freshness/registry-universe outcomes for review and red-team comparison.",
+      "linked_test": "tests/test_d3l_priority_freshness_gate.py"
+    }
+  ],
+  "summary": {
+    "cases_total": 6,
+    "cases_passed": 6,
+    "cases_failed": 0,
+    "all_fixed": true
+  }
+}

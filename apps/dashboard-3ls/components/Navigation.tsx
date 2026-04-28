@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -38,6 +39,9 @@ export function Navigation() {
                 {link.label}
               </Link>
             ))}
+            <div className="ml-3 pl-3 border-l border-gray-700">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </div>

@@ -1,0 +1,70 @@
+{
+  "artifact_type": "d3l_recompute_redteam_report",
+  "phase": "D3L-MASTER-01",
+  "redteam_pass": "phase_2",
+  "schema_version": "d3l-master-01.v1",
+  "generated_at": "2026-04-28T12:38:00Z",
+  "intent": "Pin the recompute pipeline contract: priority → publish → graph → dashboard integration → registry contract → freshness gate. Failure halts the pipeline; success records a stale_after_recompute check; a governed pipeline summary artifact persists every run.",
+  "cases": [
+    {
+      "case_id": "phase2_full_success",
+      "description": "All steps succeed; priority artifact ends up fresh and registry-aligned.",
+      "expected_outcome": "status=recompute_success_signal, stale_after_recompute=false, artifact d3l_recompute_pipeline.json written.",
+      "actual_outcome": "verified by recomputeGraph.test.ts:'full success'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase2_partial_failure_priority",
+      "description": "build_tls_dependency_priority.py exits non-zero (priority step fails).",
+      "expected_outcome": "status=recompute_failed_signal; subsequent steps NOT run; failing_command recorded; pipeline summary artifact written.",
+      "actual_outcome": "verified by recomputeGraph.test.ts:'partial failure: priority step fails'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase2_graph_stale_after_recompute",
+      "description": "All steps succeed but the priority artifact remains stale (e.g. generated_at = 2018).",
+      "expected_outcome": "status=recompute_success_signal but stale_after_recompute=true with warning surfaced.",
+      "actual_outcome": "verified by recomputeGraph.test.ts:'graph stale after recompute'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase2_no_overwrite_on_failure",
+      "description": "When the priority step fails, the pre-existing on-disk priority artifact must not be overwritten.",
+      "expected_outcome": "no write of priority artifact by the dashboard route; existing contents preserved.",
+      "actual_outcome": "Route only invokes scripts via spawn; no direct write to priority artifact. On failure the loop breaks before any subsequent step runs. Verified by route source (apps/dashboard-3ls/app/api/recompute-graph/route.ts).",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase2_serverless_runtime",
+      "description": "VERCEL=1 environment cannot spawn python.",
+      "expected_outcome": "status=recompute_unavailable_signal; warnings include the exact local recompute commands.",
+      "actual_outcome": "verified by recomputeGraph.test.ts:'vercel runtime: returns recompute_unavailable_signal without spawning'",
+      "result": "passed",
+      "fix_required": false
+    }
+  ],
+  "fixes_applied": [
+    {
+      "fix_id": "phase2_fix_pipeline_summary",
+      "scope": "apps/dashboard-3ls/app/api/recompute-graph/route.ts",
+      "rationale": "Persists artifacts/tls/d3l_recompute_pipeline.json with status, commands, stale_after_recompute. Operator/auditor can replay the most recent recompute outcome without re-issuing it.",
+      "linked_test": "apps/dashboard-3ls/__tests__/api/recomputeGraph.test.ts"
+    },
+    {
+      "fix_id": "phase2_fix_chain_d3l_steps",
+      "scope": "apps/dashboard-3ls/app/api/recompute-graph/route.ts",
+      "rationale": "Adds D3L registry contract + freshness gate as additional pipeline steps so dashboard fail-closed signals always match the freshly produced priority artifact.",
+      "linked_test": "apps/dashboard-3ls/__tests__/api/recomputeGraph.test.ts"
+    }
+  ],
+  "summary": {
+    "cases_total": 5,
+    "cases_passed": 5,
+    "cases_failed": 0,
+    "all_fixed": true
+  }
+}

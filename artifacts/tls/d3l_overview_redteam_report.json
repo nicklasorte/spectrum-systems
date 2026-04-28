@@ -1,0 +1,70 @@
+{
+  "artifact_type": "d3l_overview_redteam_report",
+  "phase": "D3L-MASTER-01",
+  "redteam_pass": "phase_8",
+  "schema_version": "d3l-master-01.v1",
+  "generated_at": "2026-04-28T13:05:00Z",
+  "intent": "Pin the simplified Overview contract: only Trust Pulse, Simple Flow, Top 3 (or fail-closed), and (optional) Explain System State. Top 10/All move to Prioritization tab; Maturity moves to Maturity tab; Roadmap stays in Roadmap tab.",
+  "cases": [
+    {
+      "case_id": "phase8_overview_section_count",
+      "description": "Overview must contain at most 4 sections (Trust Pulse, Simple Flow, Top 3, optional Explain).",
+      "expected_outcome": "section count between 3 and 4.",
+      "actual_outcome": "verified by DashboardPage.test.tsx:'overview shows only allowed sections' and Met03Panels.test.tsx:'keeps overview concise with at most 4 operator panels'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase8_leverage_queue_relocated",
+      "description": "Leverage Queue must NOT render in Overview; Roadmap tab carries the full 4-queue view.",
+      "expected_outcome": "no leverage-queue-item in overview-tab; roadmap-full-queues present in roadmap-tab.",
+      "actual_outcome": "verified by DashboardPage.test.tsx:'leverage queue does NOT render in overview' and 'roadmap tab renders the leverage queue full 4-queue view'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase8_top10_relocated_to_prioritization",
+      "description": "Top 10 + Full active list render in Prioritization tab, not Overview.",
+      "expected_outcome": "Prioritization tab shows top10 + full lists; Overview shows only Top 3.",
+      "actual_outcome": "Implemented in apps/dashboard-3ls/app/page.tsx (prioritization-top10 / prioritization-full data-testids).",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase8_maturity_relocated",
+      "description": "Maturity table renders in Maturity tab.",
+      "expected_outcome": "tab-maturity present; maturity-table renders rows when /api/maturity returns ok.",
+      "actual_outcome": "Implemented in apps/dashboard-3ls/app/page.tsx (data-testid='maturity-tab' / 'maturity-table').",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase8_overview_mobile_usable",
+      "description": "Overview must remain usable on mobile (single-column flow, padded panels).",
+      "expected_outcome": "Panel uses p-3 sm:p-6 spacing; main wrapper preserves max-w-full overflow-x-hidden.",
+      "actual_outcome": "Confirmed in apps/dashboard-3ls/app/page.tsx <main className='p-3 sm:p-6 space-y-4 max-w-full overflow-x-hidden'>",
+      "result": "passed",
+      "fix_required": false
+    }
+  ],
+  "fixes_applied": [
+    {
+      "fix_id": "phase8_fix_overview_simplification",
+      "scope": "apps/dashboard-3ls/app/page.tsx",
+      "rationale": "Removed Leverage Queue from Overview; added Maturity and MVP tabs; replaced Prioritization JSON dump with structured Top 10 + Full lists; freshness gate banner added to Top 3 panel.",
+      "linked_test": "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx"
+    },
+    {
+      "fix_id": "phase8_fix_test_alignment",
+      "scope": "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx + Met03Panels.test.tsx + OperatorComplexityBudget.test.tsx",
+      "rationale": "Updated existing tests to reflect leverage-queue relocation; added registry-contract / maturity / decision-layer / explain-state mock routes so the simplified Overview tests pass.",
+      "linked_test": "apps/dashboard-3ls/__tests__/components/DashboardPage.test.tsx"
+    }
+  ],
+  "summary": {
+    "cases_total": 5,
+    "cases_passed": 5,
+    "cases_failed": 0,
+    "all_fixed": true
+  }
+}
