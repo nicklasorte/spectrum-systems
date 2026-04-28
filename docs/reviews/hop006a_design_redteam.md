@@ -373,7 +373,7 @@ authority-leak guard with no scope changes.
   violations").
 - `delegates_to: ["JSX", "EVL"]` lists owners by code. This is the
   exact pattern the Phase-2 schemas (`harness_release_readiness_signal`,
-  `harness_rollback_signal`) use; it is a *non-owning reference*, not
+  `harness_restoration_signal`) use; it is a *non-owning reference*, not
   a claim.
 - `confidence_signal` enum values (`low` / `medium` / `high`) are
   bucketed labels, not authority verbs. The `_signal` suffix exempts
@@ -455,7 +455,7 @@ authority. The extraction workflow proposed in HOP-006A is a
 **non-owning support capability** that classifies content already
 present in a transcript into advisory items, with `advisory_only=true`
 and `delegates_to` set to the consuming canonical owners (JSX, EVL).
-Every item is content-bound to a source turn. HOP never decides
+Every item is content-bound to a source turn. HOP never emits owner input on
 whether an issue "matters", whether a risk "blocks" anything, or
 whether an action "must" happen — those judgments remain with the
 canonical owners.

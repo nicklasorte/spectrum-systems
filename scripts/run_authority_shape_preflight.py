@@ -76,6 +76,11 @@ evaluate_preflight = _preflight.evaluate_preflight
 load_vocabulary = _preflight.load_vocabulary
 ChangedFilesResolutionError = _changed_files.ChangedFilesResolutionError
 resolve_changed_files = _changed_files.resolve_changed_files
+REQUIRED_EVAL_IDS = (
+    "authority_shape_contract_lint",
+    "authority_shape_review_language_lint",
+    "authority_owner_registry_consistency",
+)
 
 
 def _parse_args() -> argparse.Namespace:
@@ -137,6 +142,62 @@ def main() -> int:
     output_path = REPO_ROOT / args.output
     output_path.parent.mkdir(parents=True, exist_ok=True)
     payload = result.to_dict()
+    owner_registry_path = REPO_ROOT / "contracts" / "governance" / "authority_owner_registry.json"
+    eval_status = {
+        "authority_shape_contract_lint": "pass" if not any(str(v.get("rule", "")).startswith("schema_") for v in payload.get("violations", [])) else "fail",
+        "authority_shape_review_language_lint": "pass" if not any(str(v.get("rule", "")) == "review_language_unqualified_authority_claim" for v in payload.get("violations", [])) else "fail",
+        "authority_owner_registry_consistency": "pass" if owner_registry_path.is_file() else "missing",
+    }
+    missing_or_failed = sorted(eval_id for eval_id in REQUIRED_EVAL_IDS if eval_status.get(eval_id) != "pass")
+    payload["required_evals"] = {"statuses": eval_status, "missing_or_failed": missing_or_failed}
+    if missing_or_failed:
+        payload["status"] = "fail"
+        payload.setdefault("summary", {})["required_eval_failures"] = len(missing_or_failed)
+    if payload.get("violations"):
+        first = payload["violations"][0]
+        subsystem_counts: dict[str, int] = {}
+        cluster_counts: dict[str, int] = {}
+        owner_counts: dict[str, int] = {}
+        replacement_usage: dict[str, int] = {}
+        for item in payload["violations"]:
+            file_path = str(item.get("file") or "")
+            subsystem = file_path.split("/", 2)[1] if file_path.startswith("spectrum_systems/") and len(file_path.split("/")) > 1 else file_path.split("/", 1)[0]
+            subsystem_counts[subsystem] = subsystem_counts.get(subsystem, 0) + 1
+            cluster = str(item.get("cluster") or "unknown")
+            cluster_counts[cluster] = cluster_counts.get(cluster, 0) + 1
+            for owner in item.get("canonical_owners", []) or []:
+                owner_counts[str(owner)] = owner_counts.get(str(owner), 0) + 1
+            for suggestion in item.get("suggested_replacements", []) or []:
+                replacement_usage[str(suggestion)] = replacement_usage.get(str(suggestion), 0) + 1
+        repeated = sorted([name for name, count in subsystem_counts.items() if count >= 3])
+        payload["failure_packet"] = {
+            "failure_class": "policy_mismatch",
+            "subtype": "authority_boundary_drift",
+            "violating_file": first.get("file"),
+            "line": first.get("line"),
+            "symbol": first.get("symbol"),
+            "cluster": first.get("cluster"),
+            "canonical_owners": first.get("canonical_owners", []),
+            "suggested_neutral_terms": first.get("suggested_replacements", []),
+            "first_failure_boundary": first.get("first_failure_boundary", "authority_shape_preflight"),
+        }
+        payload["control_mapping"] = {
+            "unauthorized_authority_terms": "BLOCK",
+            "ambiguous_review_claims": "BLOCK",
+            "repeated_violation_action": "FREEZE" if repeated else "NONE",
+            "freeze_subsystems": repeated,
+        }
+        payload["observability"] = {
+            "violation_count_by_authority_cluster": cluster_counts,
+            "violation_count_by_owning_subsystem": owner_counts,
+            "first_failing_file": first.get("file"),
+            "recurrence_by_pr": {
+                "pr_ref": f"{args.base_ref}..{args.head_ref}",
+                "violation_count": len(payload["violations"]),
+                "subsystem_violation_count": subsystem_counts,
+            },
+            "suggested_replacement_usage": replacement_usage,
+        }
     output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
     summary = {

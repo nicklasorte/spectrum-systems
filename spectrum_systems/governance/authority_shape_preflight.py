@@ -66,6 +66,7 @@ class RegistryRules:
     boundary_disclaim_field: str
     claim_position_fields: tuple[str, ...]
     claim_verbs: tuple[str, ...]
+    boundary_clarification_markers: tuple[str, ...]
     non_owning_support_systems: frozenset[str]
 
 
@@ -93,6 +94,7 @@ class Violation:
     suggested_replacements: tuple[str, ...]
     rationale: str
     rule: str = "authority_shape_outside_owner"
+    first_failure_boundary: str = "authority_shape_preflight"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -104,6 +106,9 @@ class Violation:
             "canonical_owners": list(self.canonical_owners),
             "suggested_replacements": list(self.suggested_replacements),
             "rationale": self.rationale,
+            "failure_class": "policy_mismatch",
+            "subtype": "authority_boundary_drift",
+            "first_failure_boundary": self.first_failure_boundary,
         }
 
 
@@ -224,6 +229,12 @@ def load_vocabulary(path: Path) -> VocabularyModel:
             claim_verbs=tuple(
                 str(v).lower() for v in registry_rules_payload.get("claim_verbs", [])
             ),
+            boundary_clarification_markers=tuple(
+                str(v).lower()
+                for v in registry_rules_payload.get(
+                    "boundary_clarification_markers", []
+                )
+            ),
             non_owning_support_systems=frozenset(
                 str(s).strip().upper()
                 for s in registry_rules_payload.get(
@@ -334,6 +345,9 @@ def scan_file(path: Path, rel_path: str, vocab: VocabularyModel) -> list[Violati
     except (UnicodeDecodeError, OSError):
         return []
 
+    if rel_path.startswith("docs/reviews/") and path.suffix.lower() == ".md":
+        return _scan_review_language(path=path, rel_path=rel_path, vocab=vocab)
+
     violations: list[Violation] = []
     lines = text.splitlines()
     safety_set = set(vocab.safety_suffixes)
@@ -362,6 +376,145 @@ def scan_file(path: Path, rel_path: str, vocab: VocabularyModel) -> list[Violati
                             )
                         )
                         break
+    if path.suffix.lower() == ".json" and rel_path.endswith(".schema.json"):
+        violations.extend(_scan_schema_authority_shape(path=path, rel_path=rel_path, vocab=vocab))
+    return violations
+
+
+def _build_violation(
+    *,
+    rel_path: str,
+    line: int,
+    symbol: str,
+    cluster: ClusterSpec,
+    rule: str,
+    rationale_suffix: str,
+) -> Violation:
+    return Violation(
+        file=rel_path,
+        line=line,
+        symbol=symbol,
+        cluster=cluster.name,
+        canonical_owners=cluster.canonical_owners,
+        suggested_replacements=cluster.advisory_replacements,
+        rationale=f"{cluster.rationale} {rationale_suffix}".strip(),
+        rule=rule,
+        first_failure_boundary="schema_authority_shape_lint" if "schema" in rule else "review_language_authority_lint",
+    )
+
+
+def _scan_schema_authority_shape(*, path: Path, rel_path: str, vocab: VocabularyModel) -> list[Violation]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+        return []
+    if not isinstance(payload, dict):
+        return []
+
+    violations: list[Violation] = []
+    safety_set = set(vocab.safety_suffixes)
+    cluster_by_term: list[tuple[str, ClusterSpec]] = []
+    for cluster in vocab.clusters:
+        if is_owner_path(rel_path, cluster):
+            continue
+        cluster_by_term.extend((term, cluster) for term in cluster.terms)
+
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+
+    def _line_for_token(token: str) -> int:
+        needle = f'"{token}"'
+        for idx, line in enumerate(lines, start=1):
+            if needle in line:
+                return idx
+        return 1
+
+    properties = payload.get("properties")
+    if isinstance(properties, dict):
+        for prop_name in properties:
+            token = str(prop_name)
+            if _identifier_subtokens(token) & safety_set:
+                continue
+            for term, cluster in cluster_by_term:
+                if _identifier_matches_term(token, term):
+                    violations.append(_build_violation(rel_path=rel_path, line=_line_for_token(token), symbol=token, cluster=cluster, rule="schema_property_name_authority_term", rationale_suffix="Schema property names must avoid reserved authority terms outside canonical owners."))
+                    break
+    for field in payload.get("required", []) if isinstance(payload.get("required"), list) else []:
+        token = str(field)
+        if _identifier_subtokens(token) & safety_set:
+            continue
+        for term, cluster in cluster_by_term:
+            if _identifier_matches_term(token, term):
+                violations.append(_build_violation(rel_path=rel_path, line=_line_for_token(token), symbol=token, cluster=cluster, rule="schema_required_field_authority_term", rationale_suffix="Schema required fields must avoid reserved authority terms outside canonical owners."))
+                break
+    for token in [payload.get("artifact_kind"), payload.get("title")]:
+        if not isinstance(token, str):
+            continue
+        if _identifier_subtokens(token.replace(" ", "_")) & safety_set:
+            continue
+        for term, cluster in cluster_by_term:
+            if _identifier_matches_term(token.replace(" ", "_"), term):
+                violations.append(_build_violation(rel_path=rel_path, line=_line_for_token(token), symbol=token, cluster=cluster, rule="schema_metadata_authority_term", rationale_suffix="Schema artifact_kind/title must avoid reserved authority terms outside canonical owners."))
+                break
+    for enum_match in re.finditer(r'"enum"\s*:\s*\[([^\]]+)\]', text, flags=re.IGNORECASE | re.MULTILINE):
+        enum_body = enum_match.group(1)
+        for quoted in re.findall(r'"([^"]+)"', enum_body):
+            if _identifier_subtokens(quoted.replace(" ", "_")) & safety_set:
+                continue
+            for term, cluster in cluster_by_term:
+                if _identifier_matches_term(quoted.replace(" ", "_"), term):
+                    line = text[: enum_match.start()].count("\n") + 1
+                    violations.append(_build_violation(rel_path=rel_path, line=line, symbol=quoted, cluster=cluster, rule="schema_enum_value_authority_term", rationale_suffix="Schema enum values must avoid reserved authority terms outside canonical owners."))
+                    break
+    for key in ("examples", "example"):
+        node = payload.get(key)
+        if isinstance(node, list):
+            rendered = json.dumps(node, sort_keys=True)
+            for term, cluster in cluster_by_term:
+                if _identifier_subtokens(term.replace(" ", "_")) & safety_set:
+                    continue
+                if re.search(rf"\b{re.escape(term)}\b", rendered, flags=re.IGNORECASE):
+                    violations.append(_build_violation(rel_path=rel_path, line=_line_for_token(key), symbol=key, cluster=cluster, rule="schema_examples_authority_term", rationale_suffix="Schema examples must avoid reserved authority terms outside canonical owners."))
+                    break
+    return violations
+
+
+def _scan_review_language(*, path: Path, rel_path: str, vocab: VocabularyModel) -> list[Violation]:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    violations: list[Violation] = []
+    allowed_owner_qualified = {
+        "decision": {"CDE"},
+        "enforcement": {"SEL"},
+        "approval": {"GOV"},
+        "promotion": {"REL"},
+    }
+    for idx, line in enumerate(lines, start=1):
+        normalized = line.strip()
+        if not normalized:
+            continue
+        words = re.findall(r"[A-Za-z]+", normalized)
+        upper_words = {w.upper() for w in words}
+        tokenized = normalized.replace("-", " ").replace("/", " ").lower()
+        for cluster in vocab.clusters:
+            for term in cluster.terms:
+                if not re.search(rf"\b{re.escape(term)}\b", tokenized):
+                    continue
+                allowed_qualifiers = allowed_owner_qualified.get(cluster.name, set())
+                if allowed_qualifiers and upper_words & allowed_qualifiers:
+                    continue
+                if is_owner_path(rel_path, cluster):
+                    continue
+                violations.append(
+                    _build_violation(
+                        rel_path=rel_path,
+                        line=idx,
+                        symbol=term,
+                        cluster=cluster,
+                        rule="review_language_unqualified_authority_claim",
+                        rationale_suffix="Review artifacts must use owner-qualified authority references.",
+                    )
+                )
+                break
     return violations
 
 
@@ -480,22 +633,19 @@ def filter_registry_violations(
        no non-negated claim verb, allow it. The field exists precisely
        to disclaim authority and must be able to name the disclaimed
        cluster.
-    4. **Registry-tracked authority section** — if the violation is
+    4. **Registry-tracked canonical owner definition** — if the violation is
        inside a ``### CODE`` section where ``CODE`` is **not** in
        ``non_owning_support_systems``, allow it. The registry is the
-       single place where each tracked authority system defines its own
-       surface; cluster terms in any descriptive or claim-position field
-       are part of that definition. A non-negated claim verb on the same
-       line still flags, because it would imply ownership beyond what
-       the registry declares.
+       canonical owner-definition surface; authority-shaped terms in those
+       sections define ownership/boundary relationships and are legitimate.
     5. **Non-owning support section** — if the violation is inside a
        ``### CODE`` section where ``CODE`` is in
        ``non_owning_support_systems`` (e.g. HOP), keep it when the field
        is a claim-position field (``owns:``, ``produces:``, ``role:``,
        ``Canonical Artifacts Owned:``, ``Primary Code Paths:``) or when
-       the line carries a non-negated claim verb. Otherwise allow,
-       because descriptive fields in non-owning sections still need to
-       name the canonical owners they delegate to.
+       the line carries a non-negated claim verb. Also allow boundary
+       clarification lines in descriptive fields (for example, delegation
+       text naming downstream canonical owners).
     """
     if vocab.registry_rules is None:
         return violations
@@ -506,6 +656,9 @@ def filter_registry_violations(
         c.name: {o.upper() for o in c.canonical_owners} for c in vocab.clusters
     }
     claim_position = set(rules.claim_position_fields)
+    boundary_markers = tuple(
+        marker for marker in rules.boundary_clarification_markers if marker
+    )
 
     out: list[Violation] = []
     for v in violations:
@@ -526,25 +679,22 @@ def filter_registry_violations(
             # Rule 3: explicit boundary disclaim, no claim verb present.
             continue
         is_non_owning_support = ctx.section_code in rules.non_owning_support_systems
-        if not is_non_owning_support and not carries_claim_verb:
-            # Rule 4: registry-tracked authority section with no claim
-            # verb on this line.
+        if not is_non_owning_support:
+            # Rule 4: canonical owner definition section in the registry.
             continue
-        if is_non_owning_support and (
-            ctx.current_field in claim_position or carries_claim_verb
-        ):
-            # Rule 5a: HOP-style section claiming authority via field
-            # position or claim verb.
+        if ctx.current_field in claim_position or carries_claim_verb:
+            # Rule 5a: non-owning support section claiming authority via
+            # claim-position field or claim verb.
             out.append(v)
             continue
-        if not is_non_owning_support and carries_claim_verb:
-            # Rule 5b: registry-tracked authority section with a claim
-            # verb that goes beyond its declared per-cluster ownership.
-            out.append(v)
+        lowered_line = line_text.lower()
+        if any(marker in lowered_line for marker in boundary_markers):
+            # Rule 5b: non-owning boundary clarification inside descriptive
+            # fields is allowed.
             continue
-        # Non-owning support section, descriptive field, no claim verb:
-        # allow. Descriptive fields routinely name canonical owners by
-        # cluster term to spell out delegation.
+        # Rule 5c: keep violation in non-owning support descriptive fields
+        # unless the line explicitly clarifies non-ownership boundaries.
+        out.append(v)
         continue
     return out
 

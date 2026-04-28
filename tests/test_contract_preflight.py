@@ -157,6 +157,18 @@ def test_classify_evaluation_surfaces_marks_contract_tied_tests_as_evaluated() -
     assert evaluation["path_classifications"][0]["surface"] == "contract_tied_tests"
 
 
+def test_classify_evaluation_surfaces_skips_deleted_paths_from_required_surface() -> None:
+    classified_contracts = preflight.classify_changed_contracts([])
+    evaluation = preflight.classify_evaluation_surfaces(
+        ["spectrum_systems/modules/runtime/nonexistent_deleted_module.py"],
+        classified_contracts,
+    )
+
+    assert evaluation["evaluation_mode"] == "no-op"
+    assert evaluation["required_paths"] == []
+    assert evaluation["path_classifications"][0]["classification"] == "no_applicable_contract_surface"
+
+
 def test_pqx_policy_classifier_marks_governed_paths_deterministically() -> None:
     result = classify_pqx_policy_changed_paths(
         [
@@ -401,6 +413,12 @@ def test_resolve_test_targets_ignores_unreadable_test_files(tmp_path: Path) -> N
 
     targets = preflight.resolve_test_targets(tmp_path, ["tests/fixtures/fixture_zeta.json"])
     assert targets == ["tests/test_readable.py"]
+
+
+def test_resolve_test_targets_ignores_missing_direct_test_paths(tmp_path: Path) -> None:
+    (tmp_path / "tests").mkdir(parents=True, exist_ok=True)
+    targets = preflight.resolve_test_targets(tmp_path, ["tests/test_rfx_contract_snapshot.py"])
+    assert targets == []
 
 
 def test_resolve_required_surface_tests_uses_trust_spine_cohesion_override() -> None:

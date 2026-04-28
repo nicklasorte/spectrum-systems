@@ -272,9 +272,9 @@ function Panel({ title, children, testId }: { title: string; children: React.Rea
   return (
     <section
       data-testid={testId ?? 'overview-section'}
-      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4 space-y-3 text-gray-900 dark:text-gray-100"
+      className="bg-white dark:bg-slate-900 text-slate-950 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded p-4 space-y-3"
     >
-      <h2 className="font-semibold text-sm uppercase tracking-wide">{title}</h2>
+      <h2 className="font-semibold text-sm uppercase tracking-wide text-slate-900 dark:text-slate-100">{title}</h2>
       {children}
     </section>
   );
@@ -368,8 +368,8 @@ export default function DashboardPage() {
     () => extractTopThreeRecommendations(priority, contract),
     [priority, contract],
   );
-  const priorityGate = (priority as unknown as { freshness_gate?: { ok: boolean; recompute_command?: string } } | null)?.freshness_gate;
-  const isPriorityStaleOrInvalid = Boolean(priorityGate && !priorityGate.ok);
+  const freshnessGate = (priority as unknown as { freshness_gate?: { ok: boolean; status: string; blocking_reasons?: string[]; recompute_command?: string } } | null)?.freshness_gate;
+  const rankingBlocked = Boolean(freshnessGate && !freshnessGate.ok);
 
   const queueResult = useMemo(
     () => buildLeverageQueueFromRoadmap(
@@ -439,34 +439,30 @@ export default function DashboardPage() {
   }, [graph]);
 
   if (loading) {
-    return <main className="p-6 text-gray-900 dark:text-gray-100">Loading dashboard cockpit…</main>;
+    return <main className="p-6">Loading dashboard cockpit…</main>;
   }
 
   if (error) {
-    return <main className="p-6 text-red-700 dark:text-red-300">Dashboard failure: {error}</main>;
+    return <main className="p-6 text-red-700">Dashboard failure: {error}</main>;
   }
 
   return (
-    <main className="p-3 sm:p-6 space-y-4 max-w-full overflow-x-hidden text-gray-900 dark:text-gray-100">
+    <main className="p-3 sm:p-6 space-y-4 max-w-full overflow-x-hidden">
       <header>
         <h1 className="text-xl sm:text-2xl font-bold">Dashboard 3LS — Registry-Aligned Operator Cockpit</h1>
-        <p className="text-xs text-gray-600 dark:text-gray-300">
+        <p className="text-xs text-gray-600 dark:text-slate-300">
           Graph nodes are registry-backed only. Roadmap labels, batch IDs, and prompt labels never become nodes.
         </p>
       </header>
 
-      <nav className="sticky top-0 z-10 bg-white/95 dark:bg-gray-950/95 backdrop-blur pb-1 flex flex-wrap gap-2 overflow-x-auto" aria-label="Dashboard tabs">
+      <nav className="sticky top-0 z-10 bg-white pb-1 flex flex-wrap gap-2 overflow-x-auto" aria-label="Dashboard tabs">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             type="button"
             onClick={() => setActiveTab(tab.key)}
             data-testid={`tab-${tab.key}`}
-            className={`px-3 py-1.5 rounded border text-xs sm:text-sm whitespace-nowrap ${
-              activeTab === tab.key
-                ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 border-gray-900 dark:border-gray-100'
-                : 'bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600'
-            }`}
+            className={`px-3 py-1.5 rounded border text-xs sm:text-sm whitespace-nowrap ${activeTab === tab.key ? 'bg-gray-900 text-white' : 'bg-white'}`}
           >
             {tab.label}
           </button>
@@ -483,7 +479,7 @@ export default function DashboardPage() {
                   <li>
                     Status: <strong data-testid="trust-pulse-label">{human.label}</strong>
                   </li>
-                  <li className="text-xs text-gray-600 dark:text-gray-300">Reason: {human.description}</li>
+                  <li className="text-xs text-gray-600 dark:text-slate-300">Reason: {human.description}</li>
                   <li>artifact-backed %: <strong>{trustPulse.artifact_backed_pct}%</strong></li>
                   <li>stub fallback %: <strong>{trustPulse.stub_fallback_pct}%</strong></li>
                   <li>last recompute: <strong>{trustPulse.last_recompute}</strong></li>
@@ -506,28 +502,24 @@ export default function DashboardPage() {
           </Panel>
 
           <Panel title="C. Top 3 Recommendations (TLS artifact only)">
-            {(() => {
-              const gate = priorityGate;
-              if (isPriorityStaleOrInvalid && gate) {
-                return (
-                  <div data-testid="top3-fail-closed" className="border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950 p-3 rounded text-sm">
-                    <p className="font-semibold text-red-700 dark:text-red-300">Top 3 unavailable — ranking artifact stale/invalid/missing</p>
-                    {gate.recompute_command && (
-                      <p className="text-xs mt-1 break-all">regenerate: <code>{gate.recompute_command}</code></p>
-                    )}
-                  </div>
-                );
-              }
-              return null;
-            })()}
-            {!isPriorityStaleOrInvalid && topThree.warning && <p data-testid="top3-warning" className="text-sm text-red-700 dark:text-red-300">⚠ {topThree.warning}</p>}
-            {!isPriorityStaleOrInvalid && topThree.recompute_command && (
+            {rankingBlocked ? (
+              <div data-testid="top3-fail-closed" className="border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950 p-3 rounded text-sm">
+                <p className="font-semibold text-red-700 dark:text-red-300">Top 3 hidden — freshness gate failed</p>
+                <p className="text-xs text-red-700 dark:text-red-300">status: <strong>{freshnessGate?.status}</strong>{freshnessGate?.blocking_reasons?.length ? `; reasons: ${freshnessGate.blocking_reasons.join(', ')}` : ''}</p>
+                {(freshnessGate?.recompute_command ?? topThree.recompute_command) && (
+                  <p className="text-xs mt-1 break-all">regenerate: <code>{freshnessGate?.recompute_command ?? topThree.recompute_command}</code></p>
+                )}
+              </div>
+            ) : (
+              <>
+            {topThree.warning && <p data-testid="top3-warning" className="text-sm text-red-700 dark:text-red-300">⚠ {topThree.warning}</p>}
+            {(freshnessGate?.recompute_command ?? topThree.recompute_command) && (
               <p data-testid="top3-recompute-command" className="text-xs text-gray-700 dark:text-gray-300 break-all">
-                regenerate: <code className="text-xs">{topThree.recompute_command}</code>
+                regenerate: <code className="text-xs">{freshnessGate?.recompute_command ?? topThree.recompute_command}</code>
               </p>
             )}
             <div className="space-y-2">
-              {!isPriorityStaleOrInvalid && topThree.cards.map((card) => (
+              {topThree.cards.map((card) => (
                 <article
                   key={`${card.rank}-${card.system_id}`}
                   data-testid="top3-card"
@@ -548,7 +540,7 @@ export default function DashboardPage() {
                   <p data-testid="top3-card-why" className="text-sm"><strong>Why:</strong> {card.why_now}</p>
                   <p data-testid="top3-card-next" className="text-sm"><strong>Next:</strong> {card.safe_prompt_scope}</p>
                   <p data-testid="top3-card-boundary" className="text-xs text-gray-700"><strong>Boundary:</strong> {card.boundary_warning}</p>
-                  <details className="text-xs text-gray-600 mt-1" data-testid="top3-card-details">
+                  <details className="text-xs text-gray-600 dark:text-slate-300 mt-1" data-testid="top3-card-details">
                     <summary>more</summary>
                     {card.registry_role && <p>role: {card.registry_role}</p>}
                     <p>prerequisite_systems: {card.prerequisite_systems.join(', ') || 'none'}</p>
@@ -558,23 +550,30 @@ export default function DashboardPage() {
                 </article>
               ))}
             </div>
-            <p className="text-xs text-gray-600">Dashboard does not compute ranking. Full detail in the Prioritization tab.</p>
+            <p className="text-xs text-gray-600 dark:text-slate-300">Dashboard does not compute ranking. Full detail in the Prioritization tab.</p>
+              </>
+            )}
           </Panel>
 
           {/* D3L-MASTER-01 Phase 8 — Leverage Queue moved to Roadmap tab to keep Overview simple. */}
-
           {ocBottleneck && ocBottleneck.state === 'ok' && ocBottleneck.card && (
             <Panel title="D. Current Bottleneck (OC)" testId="overview-oc-bottleneck-section">
-              <p className="text-sm"><strong>Status:</strong> {ocBottleneck.card.overall_status}</p>
-              <p className="text-sm"><strong>Category:</strong> {ocBottleneck.card.category}</p>
-              <p className="text-sm"><strong>Reason:</strong> {ocBottleneck.card.reason_code}</p>
-              <p className="text-sm"><strong>Next safe action:</strong> {ocBottleneck.card.next_safe_action}</p>
+              <div className="text-sm space-y-0.5" data-testid="overview-oc-bottleneck-card">
+                <p><strong>Overall status:</strong> {ocBottleneck.card.overall_status}</p>
+                <p><strong>Category:</strong> {ocBottleneck.card.category}</p>
+                <p><strong>Reason:</strong> {ocBottleneck.card.reason_code}</p>
+                <p><strong>Owning system:</strong> {ocBottleneck.card.owning_system ?? 'unknown'}</p>
+                <p><strong>Next safe action:</strong> {ocBottleneck.card.next_safe_action}</p>
+                {(ocBottleneck.card.warnings ?? []).length > 0 && (
+                  <p className="text-xs text-amber-700 dark:text-amber-300">⚠ {(ocBottleneck.card.warnings ?? []).join('; ')}</p>
+                )}
+              </div>
             </Panel>
           )}
 
           {explain && explain.root_cause && (
             <Panel title="E. Explain System State (deterministic)" testId="explain-system-state">
-              <p className="text-sm" data-testid="explain-trust-state">trust state: <strong>{humanTrustState(explain.trust_state).label}</strong> <span className="text-xs text-gray-500">({explain.trust_state ?? 'unknown'})</span></p>
+              <p className="text-sm" data-testid="explain-trust-state">trust state: <strong>{humanTrustState(explain.trust_state).label}</strong> <span className="text-xs text-gray-500 dark:text-slate-400">({explain.trust_state ?? 'unknown'})</span></p>
               <p className="text-sm" data-testid="explain-root-cause">
                 <strong>Root cause:</strong> {explain.root_cause.system_id ?? 'Unknown'}
                 {!explain.root_cause.artifact_backed && <span className="text-xs text-amber-700"> (not artifact-backed)</span>}
@@ -607,7 +606,7 @@ export default function DashboardPage() {
                 </ul>
               )}
               {(explain.notes ?? []).length > 0 && (
-                <ul className="text-xs text-gray-600 list-disc ml-5" data-testid="explain-notes">
+                <ul className="text-xs text-gray-600 dark:text-slate-300 list-disc ml-5" data-testid="explain-notes">
                   {(explain.notes ?? []).map((n) => <li key={n}>{n}</li>)}
                 </ul>
               )}
@@ -619,9 +618,9 @@ export default function DashboardPage() {
       {activeTab === 'graph' && <TrustGraphSection />}
 
       {activeTab === 'decision' && (
-        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4 space-y-3" data-testid="decision-tab">
+        <section className="bg-white border rounded p-4 space-y-3" data-testid="decision-tab">
           <h2 className="font-semibold">Decision Layer (Signal → Evaluation → Policy → Control → Enforcement)</h2>
-          <p className="text-xs text-gray-600">
+          <p className="text-xs text-gray-600 dark:text-slate-300">
             View-only projection over the registry. Adds no new systems. CDE is the sole control authority; SEL is the sole enforcement authority.
           </p>
           {(decisionLayer?.groups ?? []).length === 0 && <p className="text-sm text-amber-700">Decision layer unavailable: registry contract empty.</p>}
@@ -629,7 +628,7 @@ export default function DashboardPage() {
             {(decisionLayer?.groups ?? []).map((group) => (
               <article key={group.layer} data-testid={`decision-group-${group.layer}`} className="border rounded p-3">
                 <h3 className="font-semibold text-sm">{group.label}</h3>
-                <p className="text-xs italic text-gray-600">{group.description}</p>
+                <p className="text-xs italic text-gray-600 dark:text-slate-300">{group.description}</p>
                 <p className="text-sm mt-1"><strong>systems:</strong> {group.systems.join(', ') || 'none registered'}</p>
               </article>
             ))}
@@ -641,13 +640,13 @@ export default function DashboardPage() {
         <section className="bg-white dark:bg-gray-800 dark:text-gray-100 border dark:border-gray-700 rounded p-4 space-y-3" data-testid="prioritization-tab">
           <h2 className="font-semibold mb-2">Prioritization (Top 10 + Full Active List)</h2>
           {(() => {
-            const gate = (priority as unknown as { freshness_gate?: { ok: boolean; status: string; blocking_reasons?: string[]; recompute_command?: string } } | null)?.freshness_gate;
-            if (gate && !gate.ok) {
+            if (rankingBlocked) {
               return (
                 <div data-testid="prioritization-fail-closed" className="border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950 p-3 rounded text-sm">
-                  <p className="font-semibold text-red-700 dark:text-red-300">Prioritization unavailable — ranking artifact stale/invalid/missing</p>
-                  {gate.recompute_command && (
-                    <p className="text-xs mt-1 break-all">regenerate: <code>{gate.recompute_command}</code></p>
+                  <p className="font-semibold text-red-700 dark:text-red-300">Prioritization hidden — freshness gate failed</p>
+                  <p className="text-xs text-red-700 dark:text-red-300">status: <strong>{freshnessGate?.status}</strong>{freshnessGate?.blocking_reasons?.length ? `; reasons: ${freshnessGate.blocking_reasons.join(', ')}` : ''}</p>
+                  {(freshnessGate?.recompute_command ?? topThree.recompute_command) && (
+                    <p className="text-xs mt-1 break-all">regenerate: <code>{freshnessGate?.recompute_command ?? topThree.recompute_command}</code></p>
                   )}
                 </div>
               );
@@ -663,7 +662,7 @@ export default function DashboardPage() {
                   <ol className="list-decimal pl-6 text-sm space-y-1">
                     {top10.map((row) => (
                       <li key={row.system_id} data-testid="prioritization-top10-row">
-                        <strong>{row.system_id}</strong> — {row.action} <span className="text-xs text-gray-600 dark:text-gray-400">({row.trust_state})</span>
+                        <strong>{row.system_id}</strong> — {row.action} <span className="text-xs text-gray-600 dark:text-slate-300 dark:text-gray-400">({row.trust_state})</span>
                       </li>
                     ))}
                   </ol>
@@ -677,7 +676,7 @@ export default function DashboardPage() {
                       </li>
                     ))}
                   </ul>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Full detail (action, why-now, trust signals) available in the Raw Artifacts tab.</p>
+                  <p className="text-xs text-gray-600 dark:text-slate-300 dark:text-gray-400 mt-1">Full detail (action, why-now, trust signals) available in the Raw Artifacts tab.</p>
                 </div>
               </div>
             );
@@ -688,7 +687,7 @@ export default function DashboardPage() {
       {activeTab === 'maturity' && (
         <section className="bg-white dark:bg-gray-800 dark:text-gray-100 border dark:border-gray-700 rounded p-4 space-y-3" data-testid="maturity-tab">
           <h2 className="font-semibold mb-2">Maturity (Active Systems)</h2>
-          {!maturity && <p className="text-xs text-gray-500">loading…</p>}
+          {!maturity && <p className="text-xs text-gray-500 dark:text-slate-400">loading…</p>}
           {maturity && maturity.status === 'fail-closed' && (
             <p className="text-sm text-red-700 dark:text-red-300" data-testid="maturity-fail-closed">⚠ Maturity unavailable: {maturity.blocking_reasons.join(', ')}</p>
           )}
@@ -706,7 +705,7 @@ export default function DashboardPage() {
                 {maturity.rows.map((row) => (
                   <tr key={row.system_id} className="border-b last:border-0 dark:border-gray-700" data-testid="maturity-row">
                     <td className="py-1 font-mono">{row.system_id}</td>
-                    <td className="py-1">{row.level} <span className="text-xs text-gray-600 dark:text-gray-400">{row.level_label}</span></td>
+                    <td className="py-1">{row.level} <span className="text-xs text-gray-600 dark:text-slate-300 dark:text-gray-400">{row.level_label}</span></td>
                     <td className="py-1">{row.status}</td>
                     <td className="py-1 text-xs">{row.key_gap}</td>
                   </tr>
@@ -720,12 +719,12 @@ export default function DashboardPage() {
       {activeTab === 'mvp' && (
         <section className="bg-white dark:bg-gray-800 dark:text-gray-100 border dark:border-gray-700 rounded p-4 space-y-3" data-testid="mvp-tab">
           <h2 className="font-semibold mb-1">MVP Graph (product capabilities, NOT registry systems)</h2>
-          <p className="text-xs text-gray-600 dark:text-gray-300">MVP boxes never appear as 3LS graph nodes. Each box maps to registry-active systems.</p>
+          <p className="text-xs text-gray-600 dark:text-slate-300 dark:text-gray-300">MVP boxes never appear as 3LS graph nodes. Each box maps to registry-active systems.</p>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="mvp-boxes">
             {MVP_BOXES.map((box) => (
               <article key={box.id} data-testid="mvp-box" className="border dark:border-gray-600 rounded p-3 text-sm">
                 <h3 className="font-semibold">{box.label}</h3>
-                <p className="text-xs italic text-gray-600 dark:text-gray-300">{box.description}</p>
+                <p className="text-xs italic text-gray-600 dark:text-slate-300 dark:text-gray-300">{box.description}</p>
                 <p className="text-xs"><strong>Maps to systems:</strong> {box.maps_to_systems.join(', ')}</p>
               </article>
             ))}
@@ -734,7 +733,7 @@ export default function DashboardPage() {
       )}
 
       {activeTab === 'sources' && (
-        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4" data-testid="sources-tab">
+        <section className="bg-white border rounded p-4" data-testid="sources-tab">
           <h2 className="font-semibold mb-2">Sources (artifact vs fallback)</h2>
           <pre className="text-xs overflow-auto max-h-[60vh]">
             {JSON.stringify({
@@ -748,32 +747,56 @@ export default function DashboardPage() {
       )}
 
       {activeTab === 'diagnostics' && (
-        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4 space-y-3" data-testid="diagnostics-tab">
+        <section className="bg-white border rounded p-4 space-y-3" data-testid="diagnostics-tab">
           <h2 className="font-semibold">Diagnostics (red-team + validation)</h2>
           <p className="text-sm">Critical hidden check: top 3 + queue + trust + flow visible from Overview.</p>
           <p className="text-sm">Dashboard-side computation check: ranking is read-only from artifact.</p>
-          <div data-testid="diagnostics-intelligence-panel" className="border border-gray-200 dark:border-gray-700 rounded p-3 space-y-1 bg-white dark:bg-gray-900">
-            <h3 className="font-semibold text-sm">Moved Intelligence Panels</h3>
-            <p className="text-xs text-gray-600 dark:text-gray-300">
-              Learning Loop, Failure Explanation, Override / Unknowns, Fallback Reduction, Replay + Lineage Hardening,
-              Candidate Closure, and MET intelligence panels are rendered in diagnostics/raw surfaces, not Overview.
-            </p>
-            <pre className="text-xs overflow-auto max-h-[40vh] bg-gray-50 dark:bg-gray-950 p-2 rounded">
-              {JSON.stringify(intelligence ?? {}, null, 2)}
-            </pre>
-            <div className="hidden" aria-hidden="true">
-              <div data-testid="learning-loop-section" />
-              <div data-testid="failure-explanation-section" />
-              <div data-testid="override-unknowns-section" />
-              <div data-testid="fallback-reduction-section" />
-              <div data-testid="replay-lineage-hardening-section" />
-              <div data-testid="candidate-closure-section" />
-              <div data-testid="debug-explanation-index-section" />
-              <div data-testid="trend-frequency-honesty-section" />
-              <div data-testid="evl-handoff-observations-section" />
-              <div data-testid="artifact-integrity-section" />
-            </div>
-          </div>
+          <p className="text-xs text-gray-600 dark:text-slate-300" data-testid="trust-pulse-raw">Trust pulse raw code: {humanTrustState(trustPulse.trust_state).raw || 'unknown'}</p>
+
+          <Panel title="Learning Loop (proposed candidates only)" testId="learning-loop-section">
+            <p className="text-sm">{intelligence?.feedback_loop ? 'Learning loop loaded.' : 'Learning loop unavailable.'}</p>
+          </Panel>
+          <Panel title="Failure Explanation (debug under 15 minutes)" testId="failure-explanation-section">
+            <p className="text-sm">{(intelligence?.failure_explanation_packets?.packets ?? []).length > 0 ? 'Failure explanation packets loaded.' : 'No failure explanation packets available.'}</p>
+          </Panel>
+          <Panel title="Override / Unknowns (fail-closed)" testId="override-unknowns-section">
+            <p className="text-sm">override count: <strong>{String(intelligence?.override_audit?.override_count ?? 'unknown')}</strong></p>
+          </Panel>
+          <Panel title="Fallback Reduction (high-leverage rows only)" testId="fallback-reduction-section">
+            <p className="text-sm">high-leverage rows: <strong>{String(intelligence?.fallback_reduction_plan?.high_leverage_fallback_count ?? 'unknown')}</strong></p>
+          </Panel>
+          <Panel title="Replay + Lineage Hardening" testId="replay-lineage-hardening-section">
+            <p className="text-sm">affected systems: <strong>{(intelligence?.replay_lineage_hardening?.affected_systems ?? []).join(', ') || 'unknown'}</strong></p>
+          </Panel>
+          <Panel title="Candidate Closure (proposed/open/stale only)" testId="candidate-closure-section">
+            <p className="text-sm">tracked items: <strong>{String(intelligence?.candidate_closure?.candidate_item_count ?? 'unknown')}</strong></p>
+          </Panel>
+          <Panel title="Debug Explanation Index" testId="debug-explanation-index-section">
+            {(() => {
+              const entries = intelligence?.debug_explanation_index?.explanation_entries ?? [];
+              if (entries.length === 0) {
+                return <p className="text-sm text-amber-700 dark:text-amber-300">Debug explanation index unavailable.</p>;
+              }
+              return (
+                <ul className="list-disc ml-5 text-xs">
+                  {entries.slice(0, MET_COMPACT_ITEM_MAX).map((entry, index) => (
+                    <li key={`${entry.explanation_id}-${index}`}>
+                      <strong>{entry.explanation_id}</strong> — {entry.what_failed}
+                    </li>
+                  ))}
+                </ul>
+              );
+            })()}
+          </Panel>
+          <Panel title="Trend / Frequency Honesty (no fake trend)" testId="trend-frequency-honesty-section">
+            <p className="text-sm">trend state: <strong>{intelligence?.trend_frequency_honesty_gate?.trend_state ?? 'unknown'}</strong></p>
+          </Panel>
+          <Panel title="EVL Handoff Observations (signal only)" testId="evl-handoff-observations-section">
+            <p className="text-sm">handoff items: <strong>{String(intelligence?.evl_handoff_observations?.handoff_item_count ?? 'unknown')}</strong></p>
+          </Panel>
+          <Panel title="Artifact Integrity (override + classification)" testId="artifact-integrity-section">
+            <p className="text-sm">classified paths: <strong>{String(intelligence?.met_generated_artifact_classification?.classified_path_count ?? 'unknown')}</strong></p>
+          </Panel>
 
           {/* D3L-DATA-REGISTRY-01 Phase 7: Compact OC bottleneck card. Renders only
               when the OC artifact loads cleanly. Fail-closed states (unavailable,
@@ -781,7 +804,7 @@ export default function DashboardPage() {
               by reason text, never as a fabricated bottleneck. */}
           <div className="border rounded p-3 space-y-1" data-testid="oc-bottleneck-panel">
             <h3 className="font-semibold text-sm">Current Bottleneck (OC)</h3>
-            {!ocBottleneck && <p className="text-xs text-gray-500" data-testid="oc-bottleneck-loading">loading…</p>}
+            {!ocBottleneck && <p className="text-xs text-gray-500 dark:text-slate-400" data-testid="oc-bottleneck-loading">loading…</p>}
             {ocBottleneck && ocBottleneck.state === 'ok' && ocBottleneck.card && (
               <div className="text-sm space-y-0.5" data-testid="oc-bottleneck-card">
                 <p><strong>overall status:</strong> {ocBottleneck.card.overall_status}</p>
@@ -789,7 +812,7 @@ export default function DashboardPage() {
                 <p><strong>owning system:</strong> {ocBottleneck.card.owning_system ?? 'unknown'}</p>
                 <p><strong>reason:</strong> {ocBottleneck.card.reason_code}</p>
                 <p><strong>next safe action:</strong> {ocBottleneck.card.next_safe_action}</p>
-                <p className="text-xs text-gray-500">source: {ocBottleneck.card.source_artifact_type}</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400">source: {ocBottleneck.card.source_artifact_type}</p>
                 {(ocBottleneck.card.warnings ?? []).length > 0 && (
                   <p className="text-xs text-amber-700">⚠ {(ocBottleneck.card.warnings ?? []).join('; ')}</p>
                 )}
@@ -800,13 +823,13 @@ export default function DashboardPage() {
                 ⚠ OC bottleneck: <strong>{ocBottleneck.state}</strong> — {ocBottleneck.reason}
               </p>
             )}
-            <p className="text-xs text-gray-500">Top 3 (priority) and OC bottleneck are distinct surfaces; mismatches are reported here without a tie-break.</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400">Top 3 (priority) and OC bottleneck are distinct surfaces; mismatches are reported here without a tie-break.</p>
           </div>
 
           <div data-testid="invariant-violations-panel" className="border rounded p-3 space-y-1">
             <h3 className="font-semibold text-sm">Invariant Violations</h3>
             {invariantFindings.length === 0 ? (
-              <p className="text-xs text-gray-600">No invariant violations detected from current artifacts.</p>
+              <p className="text-xs text-gray-600 dark:text-slate-300">No invariant violations detected from current artifacts.</p>
             ) : (
               <ul className="text-xs space-y-1">
                 {invariantFindings.map((f, i) => (
@@ -830,7 +853,7 @@ export default function DashboardPage() {
       )}
 
       {activeTab === 'roadmap' && (
-        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4 space-y-3" data-testid="roadmap-tab">
+        <section className="bg-white border rounded p-4 space-y-3" data-testid="roadmap-tab">
           <h2 className="font-semibold">Roadmap (TLS artifacts)</h2>
           <p className="text-sm">Next safe bundles: {(roadmap?.payload?.safe_bundles ?? []).slice(0, 3).map((b) => b.bundle_id).join(', ') || 'unavailable'}</p>
           <p className="text-sm">Red-team/fix pairing status: paired in sequence (FX → RT → FIX) from roadmap entries.</p>
@@ -845,7 +868,7 @@ export default function DashboardPage() {
             ] as Array<[string, typeof queueResult.queues.queue_1_immediate_next_bundle]>).map(([label, items]) => (
               <div key={label} className="border rounded p-3">
                 <h4 className="font-medium text-sm">{label}</h4>
-                {items.length === 0 && <p className="text-xs text-gray-500">empty</p>}
+                {items.length === 0 && <p className="text-xs text-gray-500 dark:text-slate-400">empty</p>}
                 {items.map((item) => (
                   <article key={item.bundle_id} data-testid="roadmap-queue-item" className="text-sm mt-2">
                     <header className="flex flex-wrap gap-2 items-center">
@@ -858,7 +881,7 @@ export default function DashboardPage() {
                       )}
                     </header>
                     <p className="text-xs">{item.why_it_matters}</p>
-                    <p className="text-xs text-gray-600">deps: {item.dependency_count} · steps: {item.steps.join(' → ')}</p>
+                    <p className="text-xs text-gray-600 dark:text-slate-300">deps: {item.dependency_count} · steps: {item.steps.join(' → ')}</p>
                   </article>
                 ))}
               </div>
@@ -871,7 +894,7 @@ export default function DashboardPage() {
       )}
 
       {activeTab === 'raw' && (
-        <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-4" data-testid="raw-tab">
+        <section className="bg-white border rounded p-4" data-testid="raw-tab">
           <h2 className="font-semibold mb-2">Raw Artifacts</h2>
           <pre className="text-xs overflow-auto max-h-[60vh]">
             {JSON.stringify({ priority, flow, graph, roadmap, intelligence, contract, explain, decisionLayer }, null, 2)}

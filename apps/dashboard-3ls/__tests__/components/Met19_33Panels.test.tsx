@@ -54,7 +54,7 @@ describe('MET-19-33 dashboard sections', () => {
     (global.fetch as jest.Mock).mockClear();
   });
 
-  it('does not render MET-19-33 panels in overview and keeps diagnostics intelligence surface', async () => {
+  it('renders candidate closure section in diagnostics', async () => {
     setupFetch({
       candidate_closure: {
         candidate_item_count: 6,
@@ -138,32 +138,23 @@ describe('MET-19-33 dashboard sections', () => {
     });
 
     render(<DashboardPage />);
+    fireEvent.click(await screen.findByTestId('tab-diagnostics'));
 
-    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
-    expect(screen.queryByTestId('candidate-closure-section')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('debug-explanation-index-section')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('trend-frequency-honesty-section')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('evl-handoff-observations-section')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('artifact-integrity-section')).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByTestId('tab-diagnostics'));
-    await waitFor(() => expect(screen.getByTestId('diagnostics-intelligence-panel')).toBeInTheDocument());
-    expect(screen.getByTestId('diagnostics-intelligence-panel').textContent).toContain('MET intelligence');
-    expect(screen.getByTestId('candidate-closure-section')).toBeInTheDocument();
-    expect(screen.getByTestId('debug-explanation-index-section')).toBeInTheDocument();
-    expect(screen.getByTestId('trend-frequency-honesty-section')).toBeInTheDocument();
-    expect(screen.getByTestId('evl-handoff-observations-section')).toBeInTheDocument();
-    expect(screen.getByTestId('artifact-integrity-section')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('candidate-closure-section')).toBeInTheDocument();
+    });
   });
 
   it('keeps unknown visible when MET-19-33 blocks are missing', async () => {
     setupFetch({});
     render(<DashboardPage />);
-    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
-    expect(screen.queryByTestId('candidate-closure-section')).not.toBeInTheDocument();
+    fireEvent.click(await screen.findByTestId('tab-diagnostics'));
+    await waitFor(() => {
+      expect(screen.getByTestId('candidate-closure-section').textContent).toMatch(/unknown/i);
+    });
   });
 
-  it('diagnostics intelligence surface renders when MET blocks exist', async () => {
+  it('candidate closure section is available from diagnostics and not overview', async () => {
     setupFetch({
       candidate_closure: {
         candidate_item_count: 20,
@@ -210,8 +201,10 @@ describe('MET-19-33 dashboard sections', () => {
     });
 
     render(<DashboardPage />);
-    fireEvent.click(await screen.findByTestId('tab-diagnostics'));
-    await waitFor(() => expect(screen.getByTestId('diagnostics-intelligence-panel')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('tab-diagnostics')).toBeInTheDocument());
+    expect(screen.queryByTestId('candidate-closure-section')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tab-diagnostics'));
+    await waitFor(() => expect(screen.getByTestId('candidate-closure-section')).toBeInTheDocument());
   });
 
   it('does not render an Execute button anywhere on the dashboard', async () => {

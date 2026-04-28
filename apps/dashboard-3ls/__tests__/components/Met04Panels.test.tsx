@@ -26,7 +26,7 @@ describe('MET-04-18 dashboard sections', () => {
     (global.fetch as jest.Mock).mockClear();
   });
 
-  it('does not render MET-04 panels in overview and exposes moved intelligence in diagnostics', async () => {
+  it('renders learning loop, failure explanation, override, fallback, and replay/lineage sections', async () => {
     setupFetch({
       feedback_loop: {
         feedback_items_count: 7,
@@ -90,31 +90,28 @@ describe('MET-04-18 dashboard sections', () => {
     });
 
     render(<DashboardPage />);
+    fireEvent.click(await screen.findByTestId('tab-diagnostics'));
 
     await waitFor(() => {
-      expect(screen.getByTestId('overview-tab')).toBeInTheDocument();
+      expect(screen.getByTestId('learning-loop-section')).toBeInTheDocument();
+      expect(screen.getByTestId('failure-explanation-section')).toBeInTheDocument();
+      expect(screen.getByTestId('override-unknowns-section')).toBeInTheDocument();
+      expect(screen.getByTestId('fallback-reduction-section')).toBeInTheDocument();
+      expect(screen.getByTestId('replay-lineage-hardening-section')).toBeInTheDocument();
     });
-    expect(screen.queryByTestId('learning-loop-section')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('failure-explanation-section')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('override-unknowns-section')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('fallback-reduction-section')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('replay-lineage-hardening-section')).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByTestId('tab-diagnostics'));
-    await waitFor(() => expect(screen.getByTestId('diagnostics-intelligence-panel')).toBeInTheDocument());
-    expect(screen.getByTestId('diagnostics-intelligence-panel').textContent).toContain('Learning Loop');
-    expect(screen.getByTestId('learning-loop-section')).toBeInTheDocument();
-    expect(screen.getByTestId('failure-explanation-section')).toBeInTheDocument();
-    expect(screen.getByTestId('override-unknowns-section')).toBeInTheDocument();
-    expect(screen.getByTestId('fallback-reduction-section')).toBeInTheDocument();
-    expect(screen.getByTestId('replay-lineage-hardening-section')).toBeInTheDocument();
+    expect(screen.getByTestId('override-unknowns-section').textContent).toContain('unknown');
   });
 
   it('keeps unknown/fallback/proposed states visible when feedback loop is missing', async () => {
     setupFetch({});
     render(<DashboardPage />);
-    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
-    expect(screen.queryByTestId('learning-loop-section')).not.toBeInTheDocument();
+    fireEvent.click(await screen.findByTestId('tab-diagnostics'));
+    await waitFor(() => {
+      // Section still renders but is unavailable.
+      expect(screen.getByTestId('learning-loop-section').textContent).toMatch(/unavailable|unknown/i);
+      expect(screen.getByTestId('override-unknowns-section').textContent).toMatch(/unavailable|unknown/i);
+    });
   });
 
   it('does not render an Execute button anywhere on the dashboard', async () => {

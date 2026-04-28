@@ -279,6 +279,87 @@ def test_invalid_mode_raises(tmp_path: Path, vocab) -> None:
         evaluate_preflight(repo_root=repo, changed_files=[], vocab=vocab, mode="advisory")
 
 
+def test_schema_authority_term_in_required_and_enum_fails(tmp_path: Path, vocab) -> None:
+    repo = _seed_repo(tmp_path)
+    rel = "contracts/schemas/aex_candidate.schema.json"
+    _write(
+        repo,
+        rel,
+        json.dumps(
+            {
+                "title": "AEX Candidate Decision Envelope",
+                "artifact_kind": "diagnostic_decision_record",
+                "type": "object",
+                "properties": {"decision_status": {"type": "string", "enum": ["decision", "observation"]}},
+                "required": ["decision_status"],
+                "examples": [{"decision_status": "decision"}],
+            }
+        )
+        + "\n",
+    )
+    result = evaluate_preflight(repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only")
+    assert result.status == "fail"
+    assert any(v.rule.startswith("schema_") for v in result.violations)
+
+
+def test_schema_signal_suffix_tokens_are_not_flagged(tmp_path: Path, vocab) -> None:
+    repo = _seed_repo(tmp_path)
+    rel = "contracts/schemas/hop/harness_control_advisory.schema.json"
+    _write(
+        repo,
+        rel,
+        json.dumps(
+            {
+                "title": "Harness advisory envelope",
+                "type": "object",
+                "properties": {
+                    "rollback_signal_request": {"type": "string"},
+                    "previous_promoted_candidate_id": {"type": "string"},
+                },
+                "required": ["rollback_signal_request", "previous_promoted_candidate_id"],
+            }
+        )
+        + "\n",
+    )
+    result = evaluate_preflight(repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only")
+    assert result.status == "pass"
+
+
+def test_review_language_owner_qualified_passes_and_ambiguous_fails(tmp_path: Path, vocab) -> None:
+    repo = _seed_repo(tmp_path)
+    good_rel = "docs/reviews/owner_qualified.md"
+    bad_rel = "docs/reviews/ambiguous.md"
+    _write(repo, good_rel, "CDE decision remains bounded.\nSEL enforcement remains fail-closed.\nGOV approval is required.\nREL promotion gate applies.\n")
+    _write(repo, bad_rel, "AEX decision requested.\nrepair candidate approval pending.\nadmission result promotion requested.\n")
+    good = evaluate_preflight(repo_root=repo, changed_files=[good_rel], vocab=vocab, mode="suggest-only")
+    bad = evaluate_preflight(repo_root=repo, changed_files=[bad_rel], vocab=vocab, mode="suggest-only")
+    assert good.status == "pass"
+    assert bad.status == "fail"
+    assert any(v.rule == "review_language_unqualified_authority_claim" for v in bad.violations)
+
+
+def test_authority_owner_signal_registry_uses_non_authority_language(vocab) -> None:
+    result = evaluate_preflight(
+        repo_root=REPO_ROOT,
+        changed_files=["contracts/governance/authority_owner_registry.json"],
+        vocab=vocab,
+        mode="suggest-only",
+    )
+    assert result.status == "pass"
+    assert result.violations == []
+
+
+def test_rfx_runtime_module_authority_language_fails_but_signal_language_passes(tmp_path: Path, vocab) -> None:
+    repo = _seed_repo(tmp_path)
+    rel = "spectrum_systems/modules/runtime/rfx_authority_surface.py"
+    _write(repo, rel, "rfx_decision_output = {'value': 'bad'}\n")
+    fail_result = evaluate_preflight(repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only")
+    assert fail_result.status == "fail"
+    _write(repo, rel, "rfx_signal_output = {'value': 'good'}\n")
+    pass_result = evaluate_preflight(repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only")
+    assert pass_result.status == "pass"
+
+
 # ---------------------------------------------------------------------------
 # RFX-SUPER-01F regression: authority-shaped wording is still caught; the
 # neutral RFX-SUPER vocabulary substitutions are not flagged.

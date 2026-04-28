@@ -78,6 +78,10 @@ def test_cli_returns_nonzero_on_violation(monkeypatch, tmp_path: Path) -> None:
     assert payload["status"] == "fail"
     assert payload["summary"]["violation_count"] >= 1
     assert any(v["cluster"] in {"promotion", "decision"} for v in payload["violations"])
+    assert payload["failure_packet"]["failure_class"] == "policy_mismatch"
+    assert payload["failure_packet"]["subtype"] == "authority_boundary_drift"
+    assert payload["control_mapping"]["unauthorized_authority_terms"] == "BLOCK"
+    assert "violation_count_by_authority_cluster" in payload["observability"]
 
 
 def test_cli_does_not_import_governance_package_init() -> None:
