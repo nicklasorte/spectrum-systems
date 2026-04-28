@@ -66,6 +66,7 @@ class RegistryRules:
     boundary_disclaim_field: str
     claim_position_fields: tuple[str, ...]
     claim_verbs: tuple[str, ...]
+    boundary_clarification_markers: tuple[str, ...]
     non_owning_support_systems: frozenset[str]
 
 
@@ -223,6 +224,12 @@ def load_vocabulary(path: Path) -> VocabularyModel:
             ),
             claim_verbs=tuple(
                 str(v).lower() for v in registry_rules_payload.get("claim_verbs", [])
+            ),
+            boundary_clarification_markers=tuple(
+                str(v).lower()
+                for v in registry_rules_payload.get(
+                    "boundary_clarification_markers", []
+                )
             ),
             non_owning_support_systems=frozenset(
                 str(s).strip().upper()
@@ -480,22 +487,19 @@ def filter_registry_violations(
        no non-negated claim verb, allow it. The field exists precisely
        to disclaim authority and must be able to name the disclaimed
        cluster.
-    4. **Registry-tracked authority section** — if the violation is
+    4. **Registry-tracked canonical owner definition** — if the violation is
        inside a ``### CODE`` section where ``CODE`` is **not** in
        ``non_owning_support_systems``, allow it. The registry is the
-       single place where each tracked authority system defines its own
-       surface; cluster terms in any descriptive or claim-position field
-       are part of that definition. A non-negated claim verb on the same
-       line still flags, because it would imply ownership beyond what
-       the registry declares.
+       canonical owner-definition surface; authority-shaped terms in those
+       sections define ownership/boundary relationships and are legitimate.
     5. **Non-owning support section** — if the violation is inside a
        ``### CODE`` section where ``CODE`` is in
        ``non_owning_support_systems`` (e.g. HOP), keep it when the field
        is a claim-position field (``owns:``, ``produces:``, ``role:``,
        ``Canonical Artifacts Owned:``, ``Primary Code Paths:``) or when
-       the line carries a non-negated claim verb. Otherwise allow,
-       because descriptive fields in non-owning sections still need to
-       name the canonical owners they delegate to.
+       the line carries a non-negated claim verb. Also allow boundary
+       clarification lines in descriptive fields (for example, delegation
+       text naming downstream canonical owners).
     """
     if vocab.registry_rules is None:
         return violations
@@ -506,6 +510,9 @@ def filter_registry_violations(
         c.name: {o.upper() for o in c.canonical_owners} for c in vocab.clusters
     }
     claim_position = set(rules.claim_position_fields)
+    boundary_markers = tuple(
+        marker for marker in rules.boundary_clarification_markers if marker
+    )
 
     out: list[Violation] = []
     for v in violations:
@@ -526,25 +533,22 @@ def filter_registry_violations(
             # Rule 3: explicit boundary disclaim, no claim verb present.
             continue
         is_non_owning_support = ctx.section_code in rules.non_owning_support_systems
-        if not is_non_owning_support and not carries_claim_verb:
-            # Rule 4: registry-tracked authority section with no claim
-            # verb on this line.
+        if not is_non_owning_support:
+            # Rule 4: canonical owner definition section in the registry.
             continue
-        if is_non_owning_support and (
-            ctx.current_field in claim_position or carries_claim_verb
-        ):
-            # Rule 5a: HOP-style section claiming authority via field
-            # position or claim verb.
+        if ctx.current_field in claim_position or carries_claim_verb:
+            # Rule 5a: non-owning support section claiming authority via
+            # claim-position field or claim verb.
             out.append(v)
             continue
-        if not is_non_owning_support and carries_claim_verb:
-            # Rule 5b: registry-tracked authority section with a claim
-            # verb that goes beyond its declared per-cluster ownership.
-            out.append(v)
+        lowered_line = line_text.lower()
+        if any(marker in lowered_line for marker in boundary_markers):
+            # Rule 5b: non-owning boundary clarification inside descriptive
+            # fields is allowed.
             continue
-        # Non-owning support section, descriptive field, no claim verb:
-        # allow. Descriptive fields routinely name canonical owners by
-        # cluster term to spell out delegation.
+        # Rule 5c: keep violation in non-owning support descriptive fields
+        # unless the line explicitly clarifies non-ownership boundaries.
+        out.append(v)
         continue
     return out
 
