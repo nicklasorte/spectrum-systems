@@ -72,13 +72,34 @@ interface Props {
   opacity: number;
   onSelect: (systemId: string) => void;
   selected: boolean;
+  isOnHighlightedPath?: boolean;
+  isHighlightRoot?: boolean;
 }
 
-export function SystemNode({ node, x, y, width = 120, height = 70, opacity, onSelect, selected }: Props) {
+export function SystemNode({
+  node,
+  x,
+  y,
+  width = 120,
+  height = 70,
+  opacity,
+  onSelect,
+  selected,
+  isOnHighlightedPath = false,
+  isHighlightRoot = false,
+}: Props) {
   const colors = colorGroup(node);
   const trustBorder = TRUST_BORDER[node.trust_state] ?? '#94a3b8';
   const purpose = shortPurpose(node);
   const trustWeight = `${Math.max(0, Math.min(100, Math.round(node.artifact_backed_percent ?? 0)))}%`;
+  const outline = selected
+    ? '#0f172a'
+    : isHighlightRoot
+      ? '#dc2626'
+      : isOnHighlightedPath
+        ? '#ea580c'
+        : trustBorder;
+  const outlineWidth = selected || isHighlightRoot ? 3 : isOnHighlightedPath ? 2.5 : 1.5;
 
   return (
     <g
@@ -89,6 +110,9 @@ export function SystemNode({ node, x, y, width = 120, height = 70, opacity, onSe
       data-testid={`trust-node-${node.system_id}`}
       data-selected={selected ? 'true' : 'false'}
       data-trust-state={node.trust_state}
+      data-debug-status={node.debug_status}
+      data-highlight-path={isOnHighlightedPath ? 'true' : 'false'}
+      data-highlight-root={isHighlightRoot ? 'true' : 'false'}
     >
       <rect
         width={width}
@@ -96,8 +120,8 @@ export function SystemNode({ node, x, y, width = 120, height = 70, opacity, onSe
         rx={10}
         ry={10}
         fill={colors.secondary}
-        stroke={selected ? '#0f172a' : trustBorder}
-        strokeWidth={selected ? 2.5 : 1.5}
+        stroke={outline}
+        strokeWidth={outlineWidth}
       />
       <rect
         x={0}
