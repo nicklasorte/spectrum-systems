@@ -1,0 +1,57 @@
+{
+  "artifact_type": "fold_candidate_proof_check_record",
+  "schema_version": "1.0.0",
+  "record_id": "FCP-MET-39-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/evl_handoff_observation_tracker_record.json",
+    "artifacts/dashboard_metrics/materialization_observation_mapper_record.json",
+    "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json"
+  ],
+  "reason_codes": [
+    "fold_requires_proof",
+    "no_unsafe_fold"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Fold candidates are observations only; no artifact fold is performed in this PR."
+  ],
+  "failure_prevented": "Removing MET artifacts before replacement coverage is proven across failure/signal/upstream/downstream/debug surfaces.",
+  "signal_improved": "Fold safety observation shows proof status per candidate and names missing coverage.",
+  "fold_candidates": [
+    {
+      "fold_candidate_id": "FOLD-EVL-HANDOFF-TO-OWNER-READ",
+      "source_artifact": "artifacts/dashboard_metrics/evl_handoff_observation_tracker_record.json",
+      "proposed_replacement_artifact": "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json",
+      "same_failure_prevented": true,
+      "same_signal_improved": true,
+      "upstream_artifacts_covered": true,
+      "downstream_consumers_covered": false,
+      "debug_questions_covered": true,
+      "fold_safety_observation": "not_ready_observation",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/evl_handoff_observation_tracker_record.json",
+        "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json"
+      ],
+      "next_recommended_input": "Add downstream consumer coverage proof in API/dashboard tests before fold."
+    },
+    {
+      "fold_candidate_id": "FOLD-EVAL-MATERIALIZATION-TO-MAPPER",
+      "source_artifact": "artifacts/dashboard_metrics/eval_materialization_path_record.json",
+      "proposed_replacement_artifact": "artifacts/dashboard_metrics/materialization_observation_mapper_record.json",
+      "same_failure_prevented": true,
+      "same_signal_improved": true,
+      "upstream_artifacts_covered": true,
+      "downstream_consumers_covered": true,
+      "debug_questions_covered": true,
+      "fold_safety_observation": "fold_ready_observation",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/eval_materialization_path_record.json",
+        "artifacts/dashboard_metrics/materialization_observation_mapper_record.json"
+      ],
+      "next_recommended_input": "Run generated-artifact policy alignment check before any future fold PR."
+    }
+  ]
+}

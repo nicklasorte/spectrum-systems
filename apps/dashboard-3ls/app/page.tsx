@@ -220,6 +220,51 @@ type MetGeneratedArtifactClassificationBlock = IntelligenceBlockEnvelope & {
   classified_path_count?: number | 'unknown';
 };
 
+
+type OwnerReadObservationItem = {
+  owner_read_observation_id?: string;
+  source_candidate_id?: string;
+  read_observation_state?: string;
+  recommended_owner_system?: string;
+  next_recommended_input?: string;
+  source_artifacts_used?: string[];
+};
+
+type OwnerReadObservationsBlock = IntelligenceBlockEnvelope & {
+  owner_read_items?: OwnerReadObservationItem[];
+};
+
+type MaterializationObservationItem = {
+  materialization_observation_id?: string;
+  source_candidate_id?: string;
+  owner_system_recommendation?: string;
+  materialization_observation?: string;
+  next_recommended_input?: string;
+  observed_owner_artifact_refs?: string[];
+};
+
+type MaterializationObservationMapperBlock = IntelligenceBlockEnvelope & {
+  materialization_observations?: MaterializationObservationItem[];
+};
+
+type ComparableCaseQualificationGateBlock = IntelligenceBlockEnvelope & {
+  qualification_rules?: Record<string, unknown> | null;
+  qualified_case_groups?: Array<Record<string, unknown>>;
+};
+
+type TrendReadyCasePackBlock = IntelligenceBlockEnvelope & {
+  case_packs?: Array<Record<string, unknown>>;
+};
+
+type FoldCandidateProofCheckBlock = IntelligenceBlockEnvelope & {
+  fold_candidates?: Array<Record<string, unknown>>;
+};
+
+type OperatorDebuggabilityDrillBlock = IntelligenceBlockEnvelope & {
+  target_minutes?: number;
+  drill_items?: Array<Record<string, unknown>>;
+};
+
 type IntelligencePayload = {
   feedback_loop?: FeedbackLoopBlock;
   feedback_loop_status?: string;
@@ -235,6 +280,12 @@ type IntelligencePayload = {
   override_evidence_intake?: OverrideEvidenceIntakeBlock;
   debug_explanation_index?: DebugExplanationIndexBlock;
   met_generated_artifact_classification?: MetGeneratedArtifactClassificationBlock;
+  owner_read_observations?: OwnerReadObservationsBlock;
+  materialization_observation_mapper?: MaterializationObservationMapperBlock;
+  comparable_case_qualification_gate?: ComparableCaseQualificationGateBlock;
+  trend_ready_case_pack?: TrendReadyCasePackBlock;
+  fold_candidate_proof_check?: FoldCandidateProofCheckBlock;
+  operator_debuggability_drill?: OperatorDebuggabilityDrillBlock;
 };
 
 // MET-19-33 — operator complexity budget for compact MET sections.
@@ -771,6 +822,88 @@ export default function DashboardPage() {
           <Panel title="Candidate Closure (proposed/open/stale only)" testId="candidate-closure-section">
             <p className="text-sm">tracked items: <strong>{String(intelligence?.candidate_closure?.candidate_item_count ?? 'unknown')}</strong></p>
           </Panel>
+
+          <Panel title="Owner Read Observations" testId="owner-read-observations-section">
+            {(() => {
+              const items = intelligence?.owner_read_observations?.owner_read_items ?? [];
+              if (items.length === 0) {
+                return <p className="text-sm text-amber-700 dark:text-amber-300">Owner read observations unknown.</p>;
+              }
+              return (
+                <ul className="list-disc ml-5 text-xs">
+                  {items.slice(0, MET_COMPACT_ITEM_MAX).map((item, index) => (
+                    <li key={`${item.owner_read_observation_id}-${index}`}>
+                      <strong>{item.source_candidate_id ?? 'unknown'}</strong> — {item.read_observation_state ?? 'unknown'} ({item.recommended_owner_system ?? 'unknown'})
+                    </li>
+                  ))}
+                </ul>
+              );
+            })()}
+            <p className="text-xs text-gray-600 dark:text-slate-300">sources: {(intelligence?.owner_read_observations?.source_artifacts_used ?? []).slice(0, 3).join(', ') || 'unknown'}</p>
+          </Panel>
+
+          <Panel title="Materialization Observations" testId="materialization-observations-section">
+            {(() => {
+              const items = intelligence?.materialization_observation_mapper?.materialization_observations ?? [];
+              if (items.length === 0) {
+                return <p className="text-sm text-amber-700 dark:text-amber-300">Materialization observations unknown.</p>;
+              }
+              return (
+                <ul className="list-disc ml-5 text-xs">
+                  {items.slice(0, MET_COMPACT_ITEM_MAX).map((item, index) => (
+                    <li key={`${item.materialization_observation_id}-${index}`}>
+                      <strong>{item.source_candidate_id ?? 'unknown'}</strong> — {item.materialization_observation ?? 'unknown'}
+                    </li>
+                  ))}
+                </ul>
+              );
+            })()}
+            <p className="text-xs text-gray-600 dark:text-slate-300">sources: {(intelligence?.materialization_observation_mapper?.source_artifacts_used ?? []).slice(0, 3).join(', ') || 'unknown'}</p>
+          </Panel>
+
+          <Panel title="Comparable Case / Trend Readiness" testId="comparable-trend-readiness-section">
+            <p className="text-sm">qualified groups: <strong>{String((intelligence?.comparable_case_qualification_gate?.qualified_case_groups ?? []).length || 'unknown')}</strong></p>
+            <p className="text-sm">case packs: <strong>{String((intelligence?.trend_ready_case_pack?.case_packs ?? []).length || 'unknown')}</strong></p>
+            <p className="text-xs text-gray-600 dark:text-slate-300">sources: {(intelligence?.trend_ready_case_pack?.source_artifacts_used ?? []).slice(0, 3).join(', ') || 'unknown'}</p>
+          </Panel>
+
+          <Panel title="Fold Safety" testId="fold-safety-section">
+            {(() => {
+              const items = intelligence?.fold_candidate_proof_check?.fold_candidates ?? [];
+              if (items.length === 0) {
+                return <p className="text-sm text-amber-700 dark:text-amber-300">Fold safety observations unknown.</p>;
+              }
+              return (
+                <ul className="list-disc ml-5 text-xs">
+                  {items.slice(0, MET_COMPACT_ITEM_MAX).map((item, index) => (
+                    <li key={`${String(item.fold_candidate_id)}-${index}`}>
+                      <strong>{String(item.fold_candidate_id ?? 'unknown')}</strong> — {String(item.fold_safety_observation ?? 'unknown')}
+                    </li>
+                  ))}
+                </ul>
+              );
+            })()}
+          </Panel>
+
+          <Panel title="Operator Debuggability Drill" testId="operator-debuggability-drill-section">
+            {(() => {
+              const items = intelligence?.operator_debuggability_drill?.drill_items ?? [];
+              if (items.length === 0) {
+                return <p className="text-sm text-amber-700 dark:text-amber-300">Operator drill unknown.</p>;
+              }
+              return (
+                <ul className="list-disc ml-5 text-xs">
+                  {items.slice(0, MET_COMPACT_ITEM_MAX).map((item, index) => (
+                    <li key={`${String(item.drill_id)}-${index}`}>
+                      <strong>{String(item.drill_id ?? 'unknown')}</strong> — readiness {String(item.debug_readiness ?? 'unknown')}
+                    </li>
+                  ))}
+                </ul>
+              );
+            })()}
+            <p className="text-xs text-gray-600 dark:text-slate-300">target minutes: {String(intelligence?.operator_debuggability_drill?.target_minutes ?? 'unknown')}</p>
+          </Panel>
+
           <Panel title="Debug Explanation Index" testId="debug-explanation-index-section">
             {(() => {
               const entries = intelligence?.debug_explanation_index?.explanation_entries ?? [];

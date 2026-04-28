@@ -1,0 +1,30 @@
+{
+  "artifact_type": "override_evidence_source_adapter_record",
+  "schema_version": "1.0.0",
+  "record_id": "OES-MET-38-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/override_evidence_intake_record.json",
+    "artifacts/dashboard_metrics/override_audit_log_record.json"
+  ],
+  "reason_codes": [
+    "canonical_override_source_scan",
+    "no_override_fabrication"
+  ],
+  "status": "warn",
+  "warnings": [
+    "No canonical override evidence source was found in scanned artifact paths; state remains absent."
+  ],
+  "failure_prevented": "Override evidence being fabricated from non-canonical placeholders.",
+  "signal_improved": "Override source state and evidence count remain explicit when source is absent.",
+  "canonical_override_source_candidates": [
+    "artifacts/runtime/**/override*.json",
+    "artifacts/dashboard_seed/override_evidence_record.json"
+  ],
+  "override_source_state": "absent",
+  "override_evidence_count": "unknown",
+  "override_evidence_refs": [],
+  "next_recommended_input": "Retrieve canonical override evidence source path from owner system artifacts and re-run adapter."
+}

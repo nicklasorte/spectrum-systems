@@ -1,0 +1,73 @@
+{
+  "artifact_type": "materialization_observation_mapper_record",
+  "schema_version": "1.0.0",
+  "record_id": "MOM-MET-35-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
+    "artifacts/dashboard_metrics/evl_handoff_observation_tracker_record.json",
+    "artifacts/dashboard_metrics/override_evidence_intake_record.json",
+    "artifacts/dashboard_cases/case_index_record.json",
+    "apps/dashboard-3ls/app/api/intelligence/route.ts"
+  ],
+  "reason_codes": [
+    "materialization_mapping_observation_only",
+    "none_observed_explicit",
+    "no_closure_inference"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Materialization stays none_observed unless owner artifact references exist."
+  ],
+  "failure_prevented": "Candidate inputs being reported as materialized without owner artifact evidence.",
+  "signal_improved": "Every mapped candidate has explicit observation state and evidence gap.",
+  "materialization_observations": [
+    {
+      "materialization_observation_id": "MOM-EVC-EVL-LONG-HORIZON",
+      "source_candidate_id": "EVC-EVL-LONG-HORIZON-REPLAY",
+      "source_candidate_type": "eval_candidate",
+      "owner_system_recommendation": "EVL",
+      "expected_owner_artifact_family": "required_eval_coverage",
+      "observed_owner_artifact_refs": [],
+      "materialization_observation": "none_observed",
+      "evidence_gap": "No EVL artifact reference includes candidate id.",
+      "next_recommended_input": "Retrieve EVL required_eval_coverage artifact containing candidate linkage.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json"
+      ]
+    },
+    {
+      "materialization_observation_id": "MOM-POL-TPA-WARN-BOUNDARY",
+      "source_candidate_id": "POL-TPA-WARN-BOUNDARY",
+      "source_candidate_type": "policy_candidate_signal",
+      "owner_system_recommendation": "TPA",
+      "expected_owner_artifact_family": "trust_policy_decision",
+      "observed_owner_artifact_refs": [],
+      "materialization_observation": "stale_candidate_signal",
+      "evidence_gap": "No TPA artifact links policy candidate signal within stale window.",
+      "next_recommended_input": "Retrieve TPA trust-policy artifact that names warn-boundary signal or keep stale.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/policy_candidate_signal_record.json"
+      ]
+    },
+    {
+      "materialization_observation_id": "MOM-POL-CDE-OVERRIDE-AUDIT",
+      "source_candidate_id": "POL-CDE-OVERRIDE-AUDIT",
+      "source_candidate_type": "policy_candidate_signal",
+      "owner_system_recommendation": "CDE",
+      "expected_owner_artifact_family": "closure_decision_artifact",
+      "observed_owner_artifact_refs": [],
+      "materialization_observation": "unknown",
+      "evidence_gap": "Canonical owner override source state unknown from current artifact set.",
+      "next_recommended_input": "Retrieve canonical override source and CDE linkage artifacts.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/override_evidence_intake_record.json"
+      ]
+    }
+  ]
+}
