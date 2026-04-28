@@ -515,7 +515,7 @@ export default function DashboardPage() {
             })()}
             {topThree.warning && <p data-testid="top3-warning" className="text-sm text-red-700 dark:text-red-300">⚠ {topThree.warning}</p>}
             {topThree.recompute_command && (
-              <p data-testid="top3-recompute-command" className="text-xs text-slate-700 dark:text-slate-200 dark:text-gray-300 break-all">
+              <p data-testid="top3-recompute-command" className="text-xs text-slate-700 dark:text-slate-200 break-all">
                 regenerate: <code className="text-xs">{topThree.recompute_command}</code>
               </p>
             )}
@@ -553,9 +553,6 @@ export default function DashboardPage() {
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-300">Dashboard does not compute ranking. Full detail in the Prioritization tab.</p>
           </Panel>
-
-
-
           {explain && explain.root_cause && (
             <Panel title="E. Explain System State (deterministic)" testId="explain-system-state">
               <p className="text-sm" data-testid="explain-trust-state">trust state: <strong>{humanTrustState(explain.trust_state).label}</strong> <span className="text-xs text-slate-500 dark:text-slate-300">({explain.trust_state ?? 'unknown'})</span></p>

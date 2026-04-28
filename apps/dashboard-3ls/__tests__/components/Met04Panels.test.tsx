@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import DashboardPage from '@/app/page';
 
 global.fetch = jest.fn();
@@ -26,7 +26,7 @@ describe('MET-04-18 dashboard sections', () => {
     (global.fetch as jest.Mock).mockClear();
   });
 
-  it('renders learning loop, failure explanation, override, fallback, and replay/lineage sections', async () => {
+  it('keeps MET-04-18 heavy sections off Overview and accessible via non-overview tabs', async () => {
     setupFetch({
       feedback_loop: {
         feedback_items_count: 7,
@@ -92,7 +92,7 @@ describe('MET-04-18 dashboard sections', () => {
     render(<DashboardPage />);
 
     await waitFor(() => expect(screen.getByTestId('tab-diagnostics')).toBeInTheDocument());
-    screen.getByTestId('tab-diagnostics').click();
+    fireEvent.click(screen.getByTestId('tab-diagnostics'));
     await waitFor(() => {
       expect(screen.getByTestId('diagnostics-tab')).toBeInTheDocument();
     });
