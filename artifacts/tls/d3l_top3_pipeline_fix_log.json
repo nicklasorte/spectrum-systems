@@ -1,0 +1,38 @@
+{
+  "artifact_type": "d3l_top3_pipeline_fix_log",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_1_top3_artifact_pipeline",
+  "fixes": [
+    {
+      "id": "FIX-1",
+      "addresses": "DIAG-1",
+      "summary": "Loosen schema_version / phase checks to any tls-* / TLS-* prefix while keeping shape validation strict.",
+      "files_changed": ["apps/dashboard-3ls/lib/artifactLoader.ts"],
+      "test_pinning": "__tests__/lib/artifactLoaderPriority.test.ts: accepts the current tls-06.v1 schema version"
+    },
+    {
+      "id": "FIX-2",
+      "addresses": "DIAG-2",
+      "summary": "If the canonical top-level priority artifact is missing, fall back to artifacts/tls/system_dependency_priority_report.json. Loader records source_path so operator can see which path served the artifact.",
+      "files_changed": ["apps/dashboard-3ls/lib/artifactLoader.ts"],
+      "test_pinning": "__tests__/lib/artifactLoaderPriority.test.ts: falls back to artifacts/tls path when only the TLS sibling exists"
+    },
+    {
+      "id": "FIX-3",
+      "addresses": "DIAG-3",
+      "summary": "Surface PRIORITY_RECOMPUTE_COMMAND in every fail-closed result so the operator gets exact remediation: 'python scripts/build_tls_dependency_priority.py ... && python scripts/build_dashboard_3ls_with_tls.py'.",
+      "files_changed": ["apps/dashboard-3ls/lib/artifactLoader.ts", "apps/dashboard-3ls/app/page.tsx"],
+      "test_pinning": "__tests__/lib/artifactLoaderPriority.test.ts: returns missing when artifact does not exist (and exposes recompute_command); UI renders top3-recompute-command testid"
+    }
+  ],
+  "behavior_now": {
+    "valid_top_level_artifact_present": "renders exactly Top 3 cards from artifact, no re-ranking",
+    "only_tls_sibling_present":         "loader publishes/exposes the tls/ artifact via fallback path; Top 3 still renders",
+    "missing_artifact":                 "fail-closed warning includes exact recompute_command",
+    "invalid_schema":                   "fail-closed warning includes shape_mismatch reason and recompute_command",
+    "blocked_signal_or_freeze_signal":  "cards still render; warning announces control_signal so CDE/SEL can adjudicate",
+    "stale_artifact":                   "cards render with stale warning; no silent acceptance"
+  }
+}

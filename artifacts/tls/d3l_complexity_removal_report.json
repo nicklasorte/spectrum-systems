@@ -1,0 +1,43 @@
+{
+  "artifact_type": "d3l_complexity_removal_report",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_11_complexity_removal_pass",
+  "principle": "If a component does not help answer (1) what is broken? (2) why is it broken? (3) what should I fix first? (4) what changed? (5) can I trust this? — remove or move it.",
+  "removed_or_moved_elements": [
+    {
+      "element": "Free-form 'Support / Candidate' text rows under the Simple 3LS Flowchart",
+      "action": "removed",
+      "reason": "Listed candidate labels (H01, RFX, MET, METS) as if they were system rows. Replaced with the Decision Layer projection in its own tab so candidate labels never appear as system rows on the Overview.",
+      "preserved_in": "Top 3 panel (text-only when non-registry); Roadmap tab"
+    },
+    {
+      "element": "Verbose per-bundle steps in the Leverage Queue",
+      "action": "moved",
+      "reason": "Steps repeat what the Roadmap tab already shows in full. Queue card now shows one short summary plus dependency_count.",
+      "preserved_in": "Roadmap tab (table_markdown + safe_bundles steps)"
+    },
+    {
+      "element": "Repeated source text on every node card",
+      "action": "moved",
+      "reason": "Node cards previously surfaced source paths and schema paths inline; this duplicated content also lives in the inspector. Detail moved to inspector + Diagnostics replay panel only.",
+      "preserved_in": "SystemInspector + Diagnostics replay-debug-panel"
+    },
+    {
+      "element": "Non-registry node handling on the graph",
+      "action": "removed_with_explicit_rejection_path",
+      "reason": "Old behavior allowed non-registry labels (e.g. H01) to render as nodes in some modes. New behavior rejects them at builder time and surfaces a single warning in graph.warnings; UI exposes nothing for the rejected node.",
+      "preserved_in": "graph.warnings 'registry_contract_rejected_nodes:*' string"
+    }
+  ],
+  "tests_proving_no_loss_of_critical_warning": [
+    "__tests__/components/Met03Panels.test.tsx: keeps overview concise with only four operator panels — top3-warning and queue-warning still surface in fail-closed state",
+    "__tests__/components/DashboardPage.test.tsx: top 3 + queue + flow + tabs render after simplification",
+    "__tests__/lib/topThreeRecommendations.test.ts: stale, missing, invalid, partial — all warnings still surface",
+    "__tests__/lib/registryContract.test.ts: graph rejects unknown / future / demoted nodes"
+  ],
+  "remaining_risks": [
+    "Decision Layer view duplicates some content visible in Overview B (canonical loop). Acceptable: Decision Layer adds the policy/enforcement axis the Overview lacks."
+  ]
+}

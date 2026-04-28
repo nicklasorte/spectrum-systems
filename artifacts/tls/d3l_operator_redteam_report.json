@@ -1,0 +1,72 @@
+{
+  "artifact_type": "d3l_operator_redteam_report",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_12_final_operator_red_team",
+  "operator_tests": [
+    {
+      "test_id": "OPER-01",
+      "question": "Can user identify Top 3 fixes in 10 seconds?",
+      "evidence": "Top 3 panel is the third Overview panel with explicit '#1 / #2 / #3' headers and registry-backed badges. Bullets are short.",
+      "result": "pass"
+    },
+    {
+      "test_id": "OPER-02",
+      "question": "Can user identify core system flow in 5 seconds?",
+      "evidence": "Simple 3LS Flowchart panel renders core canonical_loop as 'AEX → PQX → EVL → TPA → CDE → SEL'.",
+      "result": "pass"
+    },
+    {
+      "test_id": "OPER-03",
+      "question": "Can user identify root cause in 15 seconds?",
+      "evidence": "Explain System State panel: 'root cause: <system_id> (<taxonomy>)' on a single line.",
+      "result": "pass"
+    },
+    {
+      "test_id": "OPER-04",
+      "question": "Can user identify propagation path in 15 seconds?",
+      "evidence": "Explain System State panel: 'propagation: A → B → C' on a single line; full failure_path used.",
+      "result": "pass"
+    },
+    {
+      "test_id": "OPER-05",
+      "question": "Can user tell if data is stale/missing?",
+      "evidence": "Trust Pulse last_recompute, top3-warning, queue-warning, flow-warning + Diagnostics replay panel show explicit timestamps.",
+      "result": "pass"
+    },
+    {
+      "test_id": "OPER-06",
+      "question": "Can user tell whether a node is registry-backed?",
+      "evidence": "Top 3 cards carry 'registry-backed' or 'text-only · not a registry system' badges; graph rejects non-registry nodes outright.",
+      "result": "pass"
+    },
+    {
+      "test_id": "OPER-07",
+      "question": "Can user avoid confusing roadmap label with system node?",
+      "evidence": "Bundle ids (TLS-BND-*) appear only in queue cards as text labels; never as graph nodes. Decision Layer view is registry-only.",
+      "result": "pass"
+    },
+    {
+      "test_id": "OPER-08",
+      "question": "Can user debug on mobile?",
+      "evidence": "page.tsx uses overflow-x-hidden, sticky tabs with overflow-x-auto, smaller padding at small breakpoints. Inspector and Diagnostics panels still render.",
+      "result": "pass"
+    },
+    {
+      "test_id": "OPER-09",
+      "question": "Can user find full details without cluttering overview?",
+      "evidence": "Diagnostics, Sources, Raw Artifacts, Roadmap, Prioritization tabs preserve all detail behind a tab click.",
+      "result": "pass"
+    },
+    {
+      "test_id": "OPER-10",
+      "question": "Can user tell what changed since last recompute?",
+      "evidence": "DiffSinceLastRecompute (left rail of Graph tab) plus Diagnostics replay panel shows graph + priority generated_at.",
+      "result": "pass"
+    }
+  ],
+  "remaining_risks": [
+    "OPER-08 has not been verified against a real iPhone-width browser session in this phase; mitigation pinned via responsive utilities and is acceptable for a first PR; future bundle should add an explicit Fit / Scroll toggle and an end-to-end mobile screenshot."
+  ]
+}

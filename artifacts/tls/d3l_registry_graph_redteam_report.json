@@ -1,0 +1,67 @@
+{
+  "artifact_type": "d3l_registry_graph_redteam_report",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_0_registry_inventory_and_graph_contract",
+  "abuse_cases_tested": [
+    {
+      "case_id": "RT-RG-01",
+      "description": "graph artifact includes H01 as a node",
+      "expected_outcome": "graph builder rejects H01 because it is not in registry-active set",
+      "implementation": "apps/dashboard-3ls/lib/systemGraphBuilder.ts acceptIfAllowed() drops H01; warning 'registry_contract_rejected_nodes:H01' surfaces in graph.warnings",
+      "test_pinning": "__tests__/lib/registryContract.test.ts: rejects unknown node IDs (e.g. H01)",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-RG-02",
+      "description": "graph artifact includes a roadmap label (TLS-BND-01) as a node",
+      "expected_outcome": "graph builder rejects TLS-BND-01",
+      "implementation": "validateGraphAgainstContract returns rule_id=reject_unknown_node; node dropped",
+      "test_pinning": "__tests__/lib/registryContract.test.ts: rejects edges whose endpoint is not a registry node",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-RG-03",
+      "description": "graph artifact includes prompt label as a node",
+      "expected_outcome": "rejected; node dropped",
+      "implementation": "FORBIDDEN_UNKNOWN_NODE_EXAMPLES enumerates prompt_label; isAllowedActiveNode() returns false",
+      "test_pinning": "__tests__/lib/registryContract.test.ts: rejects roadmap / candidate / prompt labels",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-RG-04",
+      "description": "graph artifact includes deprecated system in default active graph",
+      "expected_outcome": "rejected via reject_demoted_in_default rule",
+      "implementation": "validateGraphAgainstContract emits finding when allowDemotedLayer is false",
+      "test_pinning": "__tests__/lib/registryContract.test.ts: rejects demoted system in default active graph",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-RG-05",
+      "description": "graph artifact includes future placeholder in default active graph",
+      "expected_outcome": "rejected via reject_future_in_default rule",
+      "implementation": "allowFutureLayer flag must be passed; default value false; finding emitted otherwise",
+      "test_pinning": "__tests__/lib/registryContract.test.ts: rejects future placeholder in default active graph",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-RG-06",
+      "description": "graph edge references unknown node",
+      "expected_outcome": "rejected via reject_unknown_edge rule; edge dropped",
+      "implementation": "graph builder drops edge during construction and final contractValidation pass also catches leaks",
+      "test_pinning": "__tests__/lib/registryContract.test.ts: rejects edges whose endpoint is not a registry node",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-RG-07",
+      "description": "Top 3 recommendation card tries to render non-system label as graph node",
+      "expected_outcome": "card renders as text-only with explicit warning; system_id is NOT highlighted as a node",
+      "implementation": "extractTopThreeRecommendations marks card with is_registry_backed=false; UI badges it 'text-only · not a registry system'",
+      "test_pinning": "__tests__/lib/topThreeRecommendations.test.ts: flags non-registry rows as text-only with a warning",
+      "result": "fixed"
+    }
+  ],
+  "remaining_risks": [],
+  "fix_summary": "All seven abuse cases are pinned by tests in apps/dashboard-3ls/__tests__/lib/. Builder, validator, and contract render path all enforce the no-invented-systems guarantee."
+}

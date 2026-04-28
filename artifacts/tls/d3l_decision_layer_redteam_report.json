@@ -1,0 +1,49 @@
+{
+  "artifact_type": "d3l_decision_layer_redteam_report",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_6_decision_layer_view",
+  "checks": [
+    {
+      "case_id": "RT-DL-01",
+      "description": "dashboard text implies dashboard decides",
+      "expected_outcome": "decision-layer view notes CDE is sole control authority and SEL is sole enforcement authority",
+      "implementation": "page.tsx Decision Layer tab: 'View-only projection over the registry. Adds no new systems. CDE is the sole control authority; SEL is the sole enforcement authority.'",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-DL-02",
+      "description": "TLS recommendation appears as control outcome",
+      "expected_outcome": "Top 3 recommendations are signal, not enforcement; UI labels them as recommendations only",
+      "implementation": "Top 3 panel labels itself 'Top 3 Recommendations (TLS artifact only)' and notes 'Dashboard does not compute ranking'",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-DL-03",
+      "description": "enforcement language leaks into non-owner nodes",
+      "expected_outcome": "decision-layer projection places enforcement in only its own group (SEL)",
+      "implementation": "DECISION_LAYER_GROUPS hard-codes SEL in 'enforcement' and CDE in 'control' only",
+      "test_pinning": "__tests__/lib/decisionLayer.test.ts: places CDE in control and SEL in enforcement (no role bleed)",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-DL-04",
+      "description": "policy / control / enforcement roles blurred",
+      "expected_outcome": "groups are explicit and disjoint per the registry",
+      "implementation": "Each registry-active system appears in exactly one decision-layer group (TPA in policy, CDE in control, SEL in enforcement, etc.)",
+      "test_pinning": "__tests__/lib/decisionLayer.test.ts: uses only registry-active system_ids in every group",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-DL-05",
+      "description": "decision-layer view tries to render a non-registry system",
+      "expected_outcome": "filterDecisionLayersByRegistry drops the system",
+      "implementation": "filterDecisionLayersByRegistry intersects each group's systems with the allowlist",
+      "test_pinning": "__tests__/lib/decisionLayer.test.ts: drops groups whose every system is missing from the allowlist",
+      "result": "fixed"
+    }
+  ],
+  "remaining_risks": [],
+  "fix_summary": "Decision-layer view is a view-only projection over the registry; never invents systems and never implies authority outside CDE/SEL."
+}

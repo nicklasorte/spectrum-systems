@@ -1,0 +1,34 @@
+{
+  "artifact_type": "d3l_operator_fix_log",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_12_final_operator_fixes",
+  "fixes_applied": [
+    {
+      "addresses": "OPER-08 mobile readability",
+      "summary": "Wrap main content in p-3 sm:p-6 max-w-full overflow-x-hidden; tabs use sticky + overflow-x-auto + whitespace-nowrap",
+      "file": "apps/dashboard-3ls/app/page.tsx"
+    },
+    {
+      "addresses": "OPER-06 registry-backed clarity",
+      "summary": "Top 3 cards carry data-registry-backed attribute and a visible 'registry-backed' or 'text-only · not a registry system' badge",
+      "file": "apps/dashboard-3ls/app/page.tsx"
+    },
+    {
+      "addresses": "OPER-07 roadmap label confusion",
+      "summary": "Queue card bundle_id renders as a string only; never as a graph node. Linked Top 3 system_id badge appears only when a registry-active id matches",
+      "file": "apps/dashboard-3ls/lib/dashboardSimplified.ts"
+    },
+    {
+      "addresses": "OPER-03/04 root cause + propagation",
+      "summary": "Deterministic Explain System State panel surfaces root cause taxonomy and propagation_path on a single line",
+      "file": "apps/dashboard-3ls/lib/explainSystemState.ts + app/page.tsx"
+    },
+    {
+      "addresses": "OPER-05 staleness clarity",
+      "summary": "Diagnostics replay-debug-panel surfaces graph generated_at, priority generated_at, source_path, replay commands, missing artifacts",
+      "file": "apps/dashboard-3ls/app/page.tsx"
+    }
+  ]
+}
