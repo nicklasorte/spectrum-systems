@@ -28,6 +28,17 @@ const ARTIFACT_PATHS = {
   bottleneck: 'artifacts/dashboard_metrics/bottleneck_record.json',
   leverageQueue: 'artifacts/dashboard_metrics/leverage_queue_record.json',
   riskSummary: 'artifacts/dashboard_metrics/risk_summary_record.json',
+  failureFeedback: 'artifacts/dashboard_metrics/failure_feedback_record.json',
+  evalCandidates: 'artifacts/dashboard_metrics/eval_candidate_record.json',
+  policyCandidateSignals: 'artifacts/dashboard_metrics/policy_candidate_signal_record.json',
+  feedbackLoopSnapshot: 'artifacts/dashboard_metrics/feedback_loop_snapshot.json',
+  failureExplanationPackets: 'artifacts/dashboard_metrics/failure_explanation_packets.json',
+  overrideAuditLog: 'artifacts/dashboard_metrics/override_audit_log_record.json',
+  evalMaterializationPath: 'artifacts/dashboard_metrics/eval_materialization_path_record.json',
+  caseIndex: 'artifacts/dashboard_cases/case_index_record.json',
+  replayLineageHardening: 'artifacts/dashboard_metrics/replay_lineage_hardening_record.json',
+  fallbackReductionPlan: 'artifacts/dashboard_metrics/fallback_reduction_plan_record.json',
+  selComplianceSignalInput: 'artifacts/dashboard_metrics/sel_compliance_signal_input_record.json',
 };
 
 interface BottleneckRecord {
@@ -144,6 +155,127 @@ export async function GET() {
   const leverageQueue = loadArtifact<LeverageQueueRecord>(ARTIFACT_PATHS.leverageQueue);
   const riskSummary = loadArtifact<RiskSummaryRecord>(ARTIFACT_PATHS.riskSummary);
 
+  // MET-04-18 — learning loop, debuggability, and fallback reduction artifacts.
+  // Each block degrades to 'unknown' rather than substituting 0 or PASS when
+  // the artifact is missing.
+  const failureFeedback = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    feedback_items?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.failureFeedback);
+  const evalCandidates = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    candidates_summary?: Record<string, unknown>;
+    candidates?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.evalCandidates);
+  const policyCandidateSignals = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    candidates?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.policyCandidateSignals);
+  const feedbackLoopSnapshot = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    feedback_items_count?: number;
+    eval_candidates_count?: number;
+    policy_candidate_signals_count?: number;
+    unresolved_feedback_count?: number;
+    expired_feedback_count?: number;
+    top_feedback_themes?: Array<Record<string, unknown>>;
+    next_recommended_improvement_inputs?: string[];
+    loop_status?: string;
+  }>(ARTIFACT_PATHS.feedbackLoopSnapshot);
+  const failureExplanationPackets = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    packets?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.failureExplanationPackets);
+  const overrideAuditLog = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    override_count?: number | 'unknown';
+    overrides?: Array<Record<string, unknown>>;
+    next_recommended_input?: string;
+    reason_codes?: string[];
+  }>(ARTIFACT_PATHS.overrideAuditLog);
+  const evalMaterializationPath = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    path_id?: string;
+    source_eval_candidates?: string[];
+    owner_recommendation?: string;
+    required_authority_inputs?: string[];
+    required_artifacts_before_materialization?: string[];
+    required_tests?: string[];
+    materialization_status?: string;
+    next_recommended_input?: string;
+  }>(ARTIFACT_PATHS.evalMaterializationPath);
+  const caseIndex = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    cases?: string[];
+  }>(ARTIFACT_PATHS.caseIndex);
+  const replayLineageHardening = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    affected_systems?: string[];
+    replay_dimensions_checked?: Array<Record<string, unknown>>;
+    lineage_links_checked?: Array<Record<string, unknown>>;
+    gaps_observed?: string[];
+    hardening_recommendations?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.replayLineageHardening);
+  const fallbackReductionPlan = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    total_fallback_count?: number | 'unknown';
+    high_leverage_fallback_count?: number | 'unknown';
+    fallback_items?: Array<Record<string, unknown>>;
+  }>(ARTIFACT_PATHS.fallbackReductionPlan);
+  const selComplianceSignalInput = loadArtifact<{
+    data_source?: string;
+    source_artifacts_used?: string[];
+    warnings?: string[];
+    failure_prevented?: string;
+    signal_improved?: string;
+    signal_input_id?: string;
+    suggested_owner_system?: string;
+    observed_gap?: string;
+    compliance_signal_needed?: string;
+    next_recommended_input?: string;
+    status_label?: string;
+  }>(ARTIFACT_PATHS.selComplianceSignalInput);
+
   const allSlots = [
     { path: ARTIFACT_PATHS.checkpointSummary, loaded: checkpointSummary !== null },
     { path: ARTIFACT_PATHS.repoSnapshot, loaded: repoSnapshot !== null },
@@ -163,6 +295,17 @@ export async function GET() {
     { path: ARTIFACT_PATHS.bottleneck, loaded: bottleneck !== null },
     { path: ARTIFACT_PATHS.leverageQueue, loaded: leverageQueue !== null },
     { path: ARTIFACT_PATHS.riskSummary, loaded: riskSummary !== null },
+    { path: ARTIFACT_PATHS.failureFeedback, loaded: failureFeedback !== null },
+    { path: ARTIFACT_PATHS.evalCandidates, loaded: evalCandidates !== null },
+    { path: ARTIFACT_PATHS.policyCandidateSignals, loaded: policyCandidateSignals !== null },
+    { path: ARTIFACT_PATHS.feedbackLoopSnapshot, loaded: feedbackLoopSnapshot !== null },
+    { path: ARTIFACT_PATHS.failureExplanationPackets, loaded: failureExplanationPackets !== null },
+    { path: ARTIFACT_PATHS.overrideAuditLog, loaded: overrideAuditLog !== null },
+    { path: ARTIFACT_PATHS.evalMaterializationPath, loaded: evalMaterializationPath !== null },
+    { path: ARTIFACT_PATHS.caseIndex, loaded: caseIndex !== null },
+    { path: ARTIFACT_PATHS.replayLineageHardening, loaded: replayLineageHardening !== null },
+    { path: ARTIFACT_PATHS.fallbackReductionPlan, loaded: fallbackReductionPlan !== null },
+    { path: ARTIFACT_PATHS.selComplianceSignalInput, loaded: selComplianceSignalInput !== null },
   ];
 
   const envelope = buildSourceEnvelope({
@@ -174,6 +317,17 @@ export async function GET() {
       ...(bottleneck?.warnings ?? []),
       ...(leverageQueue?.warnings ?? []),
       ...(riskSummary?.warnings ?? []),
+      ...(failureFeedback?.warnings ?? []),
+      ...(evalCandidates?.warnings ?? []),
+      ...(policyCandidateSignals?.warnings ?? []),
+      ...(feedbackLoopSnapshot?.warnings ?? []),
+      ...(failureExplanationPackets?.warnings ?? []),
+      ...(overrideAuditLog?.warnings ?? []),
+      ...(evalMaterializationPath?.warnings ?? []),
+      ...(caseIndex?.warnings ?? []),
+      ...(replayLineageHardening?.warnings ?? []),
+      ...(fallbackReductionPlan?.warnings ?? []),
+      ...(selComplianceSignalInput?.warnings ?? []),
       'Dashboard seed artifacts are minimal and partial; unknown coverage remains visible by design.',
     ],
   });
@@ -287,6 +441,304 @@ export async function GET() {
         ],
   };
 
+  // MET-04 — feedback loop block. Fail-closed: if the artifact is missing,
+  // expose 'unknown' counts and a missing-artifact warning rather than 0.
+  const feedbackLoopBlock = feedbackLoopSnapshot
+    ? {
+        feedback_items_count: feedbackLoopSnapshot.feedback_items_count ?? 'unknown',
+        eval_candidates_count: feedbackLoopSnapshot.eval_candidates_count ?? 'unknown',
+        policy_candidate_signals_count:
+          feedbackLoopSnapshot.policy_candidate_signals_count ?? 'unknown',
+        unresolved_feedback_count:
+          feedbackLoopSnapshot.unresolved_feedback_count ?? 'unknown',
+        expired_feedback_count: feedbackLoopSnapshot.expired_feedback_count ?? 'unknown',
+        top_feedback_themes: feedbackLoopSnapshot.top_feedback_themes ?? [],
+        next_recommended_improvement_inputs:
+          feedbackLoopSnapshot.next_recommended_improvement_inputs ?? [],
+        loop_status: feedbackLoopSnapshot.loop_status ?? 'unknown',
+        data_source: feedbackLoopSnapshot.data_source ?? 'unknown',
+        source_artifacts_used: feedbackLoopSnapshot.source_artifacts_used ?? [],
+        warnings: feedbackLoopSnapshot.warnings ?? [],
+      }
+    : {
+        feedback_items_count: 'unknown',
+        eval_candidates_count: 'unknown',
+        policy_candidate_signals_count: 'unknown',
+        unresolved_feedback_count: 'unknown',
+        expired_feedback_count: 'unknown',
+        top_feedback_themes: [],
+        next_recommended_improvement_inputs: [],
+        loop_status: 'unknown',
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.feedbackLoopSnapshot} unavailable; feedback loop reported as unknown.`,
+        ],
+      };
+
+  // MET-04 — eval candidates block. Filter entries missing source/failure/signal
+  // so the dashboard never renders an unsourced recommendation.
+  const filteredEvalCandidates = (evalCandidates?.candidates ?? []).filter(
+    (c) =>
+      typeof c.title === 'string' &&
+      typeof c.failure_prevented === 'string' &&
+      typeof c.signal_improved === 'string' &&
+      Array.isArray(c.source_artifacts_used) &&
+      (c.source_artifacts_used as unknown[]).length > 0,
+  );
+  const evalCandidatesBlock = {
+    candidates: filteredEvalCandidates,
+    candidates_summary: evalCandidates?.candidates_summary ?? null,
+    failure_prevented: evalCandidates?.failure_prevented ?? null,
+    signal_improved: evalCandidates?.signal_improved ?? null,
+    data_source: evalCandidates?.data_source ?? 'unknown',
+    source_artifacts_used: evalCandidates?.source_artifacts_used ?? [],
+    warnings: evalCandidates
+      ? evalCandidates.warnings ?? []
+      : [`${ARTIFACT_PATHS.evalCandidates} unavailable; eval candidates reported as empty.`],
+  };
+
+  // MET-04 — policy candidate signals block.
+  const filteredPolicySignals = (policyCandidateSignals?.candidates ?? []).filter(
+    (c) =>
+      typeof c.title === 'string' &&
+      typeof c.failure_prevented === 'string' &&
+      typeof c.signal_improved === 'string' &&
+      Array.isArray(c.source_artifacts_used) &&
+      (c.source_artifacts_used as unknown[]).length > 0,
+  );
+  const policyCandidateSignalsBlock = {
+    candidates: filteredPolicySignals,
+    failure_prevented: policyCandidateSignals?.failure_prevented ?? null,
+    signal_improved: policyCandidateSignals?.signal_improved ?? null,
+    data_source: policyCandidateSignals?.data_source ?? 'unknown',
+    source_artifacts_used: policyCandidateSignals?.source_artifacts_used ?? [],
+    warnings: policyCandidateSignals
+      ? policyCandidateSignals.warnings ?? []
+      : [
+          `${ARTIFACT_PATHS.policyCandidateSignals} unavailable; policy candidate signals reported as empty.`,
+        ],
+  };
+
+  // MET-05 — failure explanation packets block.
+  const filteredPackets = (failureExplanationPackets?.packets ?? []).filter(
+    (p) =>
+      typeof p.title === 'string' &&
+      typeof p.failure_prevented === 'string' &&
+      typeof p.signal_improved === 'string' &&
+      Array.isArray(p.source_artifacts_used) &&
+      (p.source_artifacts_used as unknown[]).length > 0,
+  );
+  const failureExplanationPacketsBlock = {
+    packets: filteredPackets,
+    failure_prevented: failureExplanationPackets?.failure_prevented ?? null,
+    signal_improved: failureExplanationPackets?.signal_improved ?? null,
+    data_source: failureExplanationPackets?.data_source ?? 'unknown',
+    source_artifacts_used: failureExplanationPackets?.source_artifacts_used ?? [],
+    warnings: failureExplanationPackets
+      ? failureExplanationPackets.warnings ?? []
+      : [
+          `${ARTIFACT_PATHS.failureExplanationPackets} unavailable; failure explanation packets reported as empty.`,
+        ],
+  };
+
+  // MET-06 — override audit block. override_count must remain 'unknown' when
+  // the field is absent or the artifact is missing — never 0.
+  const overrideAuditBlock = overrideAuditLog
+    ? {
+        override_count: overrideAuditLog.override_count ?? 'unknown',
+        overrides: overrideAuditLog.overrides ?? [],
+        next_recommended_input: overrideAuditLog.next_recommended_input ?? null,
+        reason_codes: overrideAuditLog.reason_codes ?? [],
+        failure_prevented: overrideAuditLog.failure_prevented ?? null,
+        signal_improved: overrideAuditLog.signal_improved ?? null,
+        data_source: overrideAuditLog.data_source ?? 'unknown',
+        source_artifacts_used: overrideAuditLog.source_artifacts_used ?? [],
+        warnings: overrideAuditLog.warnings ?? [],
+      }
+    : {
+        override_count: 'unknown',
+        overrides: [],
+        next_recommended_input: null,
+        reason_codes: ['override_history_missing'],
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.overrideAuditLog} unavailable; override_count reported as unknown.`,
+        ],
+      };
+
+  // MET-09 — eval materialization path block.
+  const evalMaterializationPathBlock = evalMaterializationPath
+    ? {
+        path_id: evalMaterializationPath.path_id ?? 'unknown',
+        source_eval_candidates: evalMaterializationPath.source_eval_candidates ?? [],
+        owner_recommendation: evalMaterializationPath.owner_recommendation ?? 'unknown',
+        required_authority_inputs:
+          evalMaterializationPath.required_authority_inputs ?? [],
+        required_artifacts_before_materialization:
+          evalMaterializationPath.required_artifacts_before_materialization ?? [],
+        required_tests: evalMaterializationPath.required_tests ?? [],
+        materialization_status:
+          evalMaterializationPath.materialization_status ?? 'unknown',
+        next_recommended_input: evalMaterializationPath.next_recommended_input ?? null,
+        failure_prevented: evalMaterializationPath.failure_prevented ?? null,
+        signal_improved: evalMaterializationPath.signal_improved ?? null,
+        data_source: evalMaterializationPath.data_source ?? 'unknown',
+        source_artifacts_used: evalMaterializationPath.source_artifacts_used ?? [],
+        warnings: evalMaterializationPath.warnings ?? [],
+      }
+    : {
+        path_id: 'unknown',
+        source_eval_candidates: [],
+        owner_recommendation: 'unknown',
+        required_authority_inputs: [],
+        required_artifacts_before_materialization: [],
+        required_tests: [],
+        materialization_status: 'unknown',
+        next_recommended_input: null,
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.evalMaterializationPath} unavailable; materialization path reported as unknown.`,
+        ],
+      };
+
+  // MET-10 — additional cases summary. Trend remains unknown unless at
+  // least 3 comparable artifact-backed cases exist.
+  const caseCount = (caseIndex?.cases ?? []).length;
+  const additionalCasesSummaryBlock = {
+    case_count: caseIndex ? caseCount : 'unknown',
+    cases: caseIndex?.cases ?? [],
+    trend: caseCount >= 3 ? 'comparable_set_present' : 'unknown',
+    failure_prevented: caseIndex?.failure_prevented ?? null,
+    signal_improved: caseIndex?.signal_improved ?? null,
+    data_source: caseIndex?.data_source ?? 'unknown',
+    source_artifacts_used: caseIndex?.source_artifacts_used ?? [],
+    warnings: caseIndex
+      ? caseIndex.warnings ?? []
+      : [`${ARTIFACT_PATHS.caseIndex} unavailable; case index reported as unknown.`],
+  };
+
+  // MET-11 — replay/lineage hardening block.
+  const replayLineageHardeningBlock = replayLineageHardening
+    ? {
+        replay_dimensions_checked:
+          replayLineageHardening.replay_dimensions_checked ?? [],
+        lineage_links_checked: replayLineageHardening.lineage_links_checked ?? [],
+        gaps_observed: replayLineageHardening.gaps_observed ?? [],
+        hardening_recommendations:
+          replayLineageHardening.hardening_recommendations ?? [],
+        affected_systems: replayLineageHardening.affected_systems ?? [],
+        failure_prevented: replayLineageHardening.failure_prevented ?? null,
+        signal_improved: replayLineageHardening.signal_improved ?? null,
+        data_source: replayLineageHardening.data_source ?? 'unknown',
+        source_artifacts_used: replayLineageHardening.source_artifacts_used ?? [],
+        warnings: replayLineageHardening.warnings ?? [],
+      }
+    : {
+        replay_dimensions_checked: [],
+        lineage_links_checked: [],
+        gaps_observed: [],
+        hardening_recommendations: [],
+        affected_systems: [],
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.replayLineageHardening} unavailable; replay/lineage hardening reported as unknown.`,
+        ],
+      };
+
+  // MET-12 — fallback reduction plan block.
+  const filteredFallbackItems = (fallbackReductionPlan?.fallback_items ?? []).filter(
+    (i) =>
+      typeof i.system_id === 'string' &&
+      typeof i.replacement_signal_needed === 'string' &&
+      typeof i.failure_prevented === 'string' &&
+      typeof i.signal_improved === 'string' &&
+      Array.isArray(i.source_artifacts_used) &&
+      (i.source_artifacts_used as unknown[]).length > 0,
+  );
+  const fallbackReductionPlanBlock = fallbackReductionPlan
+    ? {
+        total_fallback_count: fallbackReductionPlan.total_fallback_count ?? 'unknown',
+        high_leverage_fallback_count:
+          fallbackReductionPlan.high_leverage_fallback_count ?? 'unknown',
+        fallback_items: filteredFallbackItems,
+        failure_prevented: fallbackReductionPlan.failure_prevented ?? null,
+        signal_improved: fallbackReductionPlan.signal_improved ?? null,
+        data_source: fallbackReductionPlan.data_source ?? 'unknown',
+        source_artifacts_used: fallbackReductionPlan.source_artifacts_used ?? [],
+        warnings: fallbackReductionPlan.warnings ?? [],
+      }
+    : {
+        total_fallback_count: 'unknown',
+        high_leverage_fallback_count: 'unknown',
+        fallback_items: [],
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.fallbackReductionPlan} unavailable; fallback reduction plan reported as empty.`,
+        ],
+      };
+
+  // MET-13 — SEL compliance signal input block.
+  const selComplianceSignalInputBlock = selComplianceSignalInput
+    ? {
+        signal_input_id: selComplianceSignalInput.signal_input_id ?? 'unknown',
+        suggested_owner_system:
+          selComplianceSignalInput.suggested_owner_system ?? 'unknown',
+        observed_gap: selComplianceSignalInput.observed_gap ?? null,
+        compliance_signal_needed:
+          selComplianceSignalInput.compliance_signal_needed ?? null,
+        next_recommended_input:
+          selComplianceSignalInput.next_recommended_input ?? null,
+        status_label: selComplianceSignalInput.status_label ?? 'unknown',
+        failure_prevented: selComplianceSignalInput.failure_prevented ?? null,
+        signal_improved: selComplianceSignalInput.signal_improved ?? null,
+        data_source: selComplianceSignalInput.data_source ?? 'unknown',
+        source_artifacts_used:
+          selComplianceSignalInput.source_artifacts_used ?? [],
+        warnings: selComplianceSignalInput.warnings ?? [],
+      }
+    : {
+        signal_input_id: 'unknown',
+        suggested_owner_system: 'unknown',
+        observed_gap: null,
+        compliance_signal_needed: null,
+        next_recommended_input: null,
+        status_label: 'unknown',
+        failure_prevented: null,
+        signal_improved: null,
+        data_source: 'unknown',
+        source_artifacts_used: [],
+        warnings: [
+          `${ARTIFACT_PATHS.selComplianceSignalInput} unavailable; SEL compliance signal input reported as unknown.`,
+        ],
+      };
+
+  // MET-04 — feedback items list (filter to sourced items only).
+  const feedbackItems = (failureFeedback?.feedback_items ?? []).filter(
+    (i) =>
+      typeof i.id === 'string' &&
+      typeof i.failure_prevented === 'string' &&
+      typeof i.signal_improved === 'string' &&
+      Array.isArray(i.source_artifacts_used) &&
+      (i.source_artifacts_used as unknown[]).length > 0,
+  );
+  const unresolvedFeedbackCount =
+    feedbackLoopSnapshot?.unresolved_feedback_count ??
+    (failureFeedback ? feedbackItems.length : 'unknown');
+  const feedbackLoopStatus = feedbackLoopSnapshot?.loop_status ?? 'unknown';
+
   return NextResponse.json({
     ...envelope,
     seed_artifacts_present: minimalLoop !== null,
@@ -308,6 +760,19 @@ export async function GET() {
     bottleneck_confidence: bottleneckConfidence,
     leverage_queue: leverageBlock,
     risk_summary: riskBlock,
+    feedback_loop: feedbackLoopBlock,
+    feedback_items: feedbackItems,
+    eval_candidates: evalCandidatesBlock,
+    policy_candidate_signals: policyCandidateSignalsBlock,
+    feedback_loop_status: feedbackLoopStatus,
+    unresolved_feedback_count: unresolvedFeedbackCount,
+    failure_explanation_packets: failureExplanationPacketsBlock,
+    override_audit: overrideAuditBlock,
+    eval_materialization_path: evalMaterializationPathBlock,
+    additional_cases_summary: additionalCasesSummaryBlock,
+    replay_lineage_hardening: replayLineageHardeningBlock,
+    fallback_reduction_plan: fallbackReductionPlanBlock,
+    sel_compliance_signal_input: selComplianceSignalInputBlock,
     source_artifacts_used: Array.from(
       new Set([
         ...(envelope.source_artifacts_used ?? []),
@@ -315,6 +780,17 @@ export async function GET() {
         ...(bottleneck?.source_artifacts_used ?? []),
         ...(leverageQueue?.source_artifacts_used ?? []),
         ...(riskSummary?.source_artifacts_used ?? []),
+        ...(failureFeedback?.source_artifacts_used ?? []),
+        ...(evalCandidates?.source_artifacts_used ?? []),
+        ...(policyCandidateSignals?.source_artifacts_used ?? []),
+        ...(feedbackLoopSnapshot?.source_artifacts_used ?? []),
+        ...(failureExplanationPackets?.source_artifacts_used ?? []),
+        ...(overrideAuditLog?.source_artifacts_used ?? []),
+        ...(evalMaterializationPath?.source_artifacts_used ?? []),
+        ...(caseIndex?.source_artifacts_used ?? []),
+        ...(replayLineageHardening?.source_artifacts_used ?? []),
+        ...(fallbackReductionPlan?.source_artifacts_used ?? []),
+        ...(selComplianceSignalInput?.source_artifacts_used ?? []),
       ])
     ),
     intelligence_summary: {

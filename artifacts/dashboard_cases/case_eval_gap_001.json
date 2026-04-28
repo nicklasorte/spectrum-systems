@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "dashboard_case_record",
+  "record_id": "CASE-EVAL-GAP-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/source_artifact_record.json",
+    "artifacts/dashboard_seed/output_artifact_record.json",
+    "artifacts/dashboard_seed/eval_summary_record.json",
+    "artifacts/dashboard_seed/lineage_record.json",
+    "artifacts/dashboard_seed/replay_record.json",
+    "artifacts/dashboard_seed/failure_mode_dashboard_record.json"
+  ],
+  "reason_codes": [
+    "case_tied_to_named_failure_mode",
+    "no_fake_pass",
+    "evidence_partial_status_warn"
+  ],
+  "status": "warn",
+  "case_id": "case-eval-gap-001",
+  "ties_to_failure_mode": "FM-SEED-EVAL-GAP",
+  "ties_to_near_miss": null,
+  "ties_to_leverage_item": "LV-EVL-001",
+  "source_artifact": "artifacts/dashboard_seed/source_artifact_record.json",
+  "output_artifact": "artifacts/dashboard_seed/output_artifact_record.json",
+  "eval_signal": "partial — eval_summary_record reports coverage_status=partial, score=0.72, missing_checks=[long_horizon_replay, full_certification_set]",
+  "lineage_signal": "partial — lineage_record links source -> output -> eval -> control but missing certification edge",
+  "replay_signal": "partial — replay_record missing distribution_shift and long_horizon dimensions",
+  "risk_signal": "high — top_risk FM-SEED-EVAL-GAP gates EVL/TPA/CDE",
+  "failure_prevented": "EVL coverage gap recurring with no case-level evidence record on file.",
+  "signal_improved": "Per-case evidence chain is named: source -> output -> eval -> lineage -> replay -> control posture.",
+  "affected_systems": ["EVL", "TPA", "CDE", "REP"]
+}

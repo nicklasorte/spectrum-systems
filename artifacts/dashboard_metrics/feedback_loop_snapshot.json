@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "feedback_loop_snapshot",
+  "record_id": "FLS-DASH-MET04-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/failure_feedback_record.json",
+    "artifacts/dashboard_metrics/eval_candidate_record.json",
+    "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+    "artifacts/dashboard_metrics/leverage_queue_record.json",
+    "artifacts/dashboard_metrics/bottleneck_record.json"
+  ],
+  "reason_codes": [
+    "feedback_loop_partial_seed",
+    "candidates_proposed_only",
+    "no_authority_claim_by_MET"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Feedback loop is partial: only one seeded case exists and frequency, conversion rate, and historical trend remain unknown.",
+    "All candidates are proposed only. EVL/TPA/CDE/SEL/GOV adoption decisions are unchanged.",
+    "expired_feedback_count is 0 because closure pressure was just seeded; the count will rise without sustained closure activity."
+  ],
+  "failure_prevented": "Feedback items, eval candidates, and policy candidate signals drifting apart with no single snapshot showing how many are open, how many are stale, and what should improve next.",
+  "signal_improved": "One artifact-backed snapshot summarises feedback-loop volume, freshness, themes, and recommended next improvement inputs.",
+  "feedback_items_count": 7,
+  "eval_candidates_count": 6,
+  "policy_candidate_signals_count": 4,
+  "unresolved_feedback_count": 7,
+  "expired_feedback_count": 0,
+  "top_feedback_themes": [
+    {
+      "theme": "EVL coverage gap (long-horizon replay + full certification set)",
+      "feedback_item_ids": ["FFB-FM-EVAL-GAP", "FFB-FM-CERT-INCOMPLETE", "FFB-LV-EVL-001"],
+      "candidate_ids": ["EVC-EVL-LONG-HORIZON-REPLAY", "EVC-EVL-FULL-CERT-SET"],
+      "failure_prevented": "EVL bottleneck recurring without an eval candidate on file."
+    },
+    {
+      "theme": "Replay/lineage hardening (REP long-horizon + LIN trace completeness)",
+      "feedback_item_ids": ["FFB-FM-REPLAY-GAP"],
+      "candidate_ids": ["EVC-REP-LONG-HORIZON", "EVC-LIN-TRACE-COMPLETENESS"],
+      "failure_prevented": "Drift escaping short-horizon replay and incomplete lineage chains shipping."
+    },
+    {
+      "theme": "Fallback reduction for high-leverage non-loop systems",
+      "feedback_item_ids": ["FFB-LV-FALLBACK-001"],
+      "candidate_ids": ["POL-GOV-FALLBACK-REDUCTION"],
+      "failure_prevented": "Stub fallback rows continuing to be reported as artifact-backed."
+    },
+    {
+      "theme": "Override audit and SEL certification posture",
+      "feedback_item_ids": ["FFB-FM-CERT-INCOMPLETE", "FFB-NM-PROMOTION-BYPASS"],
+      "candidate_ids": ["POL-SEL-CERT-COMPLETENESS", "POL-CDE-OVERRIDE-AUDIT", "POL-TPA-WARN-BOUNDARY"],
+      "failure_prevented": "Authority-boundary observations being lost across loops."
+    }
+  ],
+  "next_recommended_improvement_inputs": [
+    "Forward EVC-EVL-LONG-HORIZON-REPLAY and EVC-EVL-FULL-CERT-SET to EVL for adoption review.",
+    "Forward POL-SEL-CERT-COMPLETENESS to SEL/GOV for policy review.",
+    "Seed at least 3 comparable artifact-backed cases so frequency and trend signals can move off 'unknown'.",
+    "Populate artifacts/dashboard_metrics/override_audit_log_record.json from the canonical override source once it exists."
+  ],
+  "loop_status": "partial"
+}

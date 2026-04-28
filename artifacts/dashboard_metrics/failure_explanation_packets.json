@@ -1,0 +1,140 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "failure_explanation_packets",
+  "record_id": "FXP-DASH-MET05-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
+    "artifacts/dashboard_seed/eval_summary_record.json",
+    "artifacts/dashboard_seed/replay_record.json",
+    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_seed/enforcement_action_record.json",
+    "artifacts/dashboard_seed/slo_status_record.json",
+    "artifacts/dashboard_metrics/bottleneck_record.json"
+  ],
+  "reason_codes": [
+    "explanation_packets_seeded_for_top_failure_modes",
+    "no_unsourced_explanation",
+    "next_inputs_proposed_only"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Explanation packets are derived from a single seeded case; explanations are bounded by available evidence.",
+    "next_recommended_input is a recommendation to the canonical owner; MET does not adopt or run the recommended action."
+  ],
+  "failure_prevented": "A new engineer needing >15 minutes to understand what failed, why, where in the loop, and what to do next.",
+  "signal_improved": "Each top failure mode and risk has an artifact-backed explanation packet with what failed, why it matters, evidence, and next recommended input.",
+  "packets": [
+    {
+      "packet_id": "FXP-EVL-COVERAGE-GAP",
+      "title": "Eval coverage gap (long-horizon replay + full certification set)",
+      "failure_prevented": "Promotion gated on partial evaluation evidence with no clear pointer to the missing dimensions.",
+      "signal_improved": "Single-screen explanation: what failed, why, where, evidence, next input.",
+      "affected_systems": ["EVL", "TPA", "CDE"],
+      "what_failed": "EVL eval_summary_record reports coverage_status=partial with score=0.72 and missing_checks=[long_horizon_replay, full_certification_set]; downstream TPA and CDE inherit warn.",
+      "why_it_matters": "EVL is the gating leg for TPA and CDE; partial coverage forces observe-only enforcement and prevents any safe promotion path on this loop.",
+      "evidence_artifacts": [
+        "artifacts/dashboard_seed/eval_summary_record.json",
+        "artifacts/dashboard_seed/trust_policy_decision_record.json",
+        "artifacts/dashboard_seed/control_decision_record.json"
+      ],
+      "constrained_loop_leg": "EVL",
+      "current_status": "warn",
+      "next_recommended_input": "Forward EVC-EVL-LONG-HORIZON-REPLAY and EVC-EVL-FULL-CERT-SET to EVL for adoption review (artifacts/dashboard_metrics/eval_candidate_record.json).",
+      "owner_recommendation": "EVL",
+      "unknowns": [
+        "Frequency of this failure mode across history (only one seeded case)",
+        "Effort to close the missing checks (estimated medium, not measured)"
+      ],
+      "debug_summary": "Open eval_summary_record.json -> see coverage_status=partial, missing_checks list. Trace to control_decision_record.json -> promotion_gate=blocked. Trace to enforcement_action_record.json -> action=observe_only. Fix path is in EVC-EVL-* candidates.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/eval_summary_record.json",
+        "artifacts/dashboard_seed/control_decision_record.json"
+      ]
+    },
+    {
+      "packet_id": "FXP-SEL-CERT-INCOMPLETE",
+      "title": "Certification incomplete forces SEL observe-only",
+      "failure_prevented": "Repeat observe-only enforcement with no clear pointer to the missing certification inputs.",
+      "signal_improved": "Single-screen explanation linking SEL observe-only to the certification-set gap and the proposed policy candidate signal.",
+      "affected_systems": ["SEL", "CDE"],
+      "what_failed": "SEL enforcement_action_record reports action=observe_only because the certification evidence set is partial; CDE control_decision_record records promotion_gate=blocked.",
+      "why_it_matters": "SEL cannot move out of observe_only without complete certification inputs; this gates every downstream promotion path.",
+      "evidence_artifacts": [
+        "artifacts/dashboard_seed/enforcement_action_record.json",
+        "artifacts/dashboard_seed/control_decision_record.json"
+      ],
+      "constrained_loop_leg": "SEL",
+      "current_status": "warn",
+      "next_recommended_input": "Forward POL-SEL-CERT-COMPLETENESS to SEL/GOV for policy review (artifacts/dashboard_metrics/policy_candidate_signal_record.json).",
+      "owner_recommendation": "SEL",
+      "unknowns": [
+        "Whether certification artifact schema has stable required-input set",
+        "Frequency of this failure mode across history"
+      ],
+      "debug_summary": "Open enforcement_action_record.json -> action=observe_only and reason. Trace to eval_summary_record.json missing_checks=full_certification_set. Fix path is POL-SEL-CERT-COMPLETENESS + EVC-EVL-FULL-CERT-SET.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/enforcement_action_record.json",
+        "artifacts/dashboard_seed/control_decision_record.json"
+      ]
+    },
+    {
+      "packet_id": "FXP-REP-REPLAY-GAP",
+      "title": "Replay coverage incomplete for long-horizon drift",
+      "failure_prevented": "Drift slipping through with no eval candidate naming the missing replay dimensions.",
+      "signal_improved": "Explanation links REP partial coverage to EVL coverage_status=partial and the proposed REP eval candidate.",
+      "affected_systems": ["REP", "EVL"],
+      "what_failed": "REP replay_record reports missing distribution_shift and long_horizon dimensions; EVL coverage downgrades accordingly.",
+      "why_it_matters": "Without long-horizon and distribution-shift dimensions, replay cannot reproduce the conditions that EVL needs for full coverage; promotion remains blocked.",
+      "evidence_artifacts": [
+        "artifacts/dashboard_seed/replay_record.json",
+        "artifacts/dashboard_seed/eval_summary_record.json"
+      ],
+      "constrained_loop_leg": "REP",
+      "current_status": "warn",
+      "next_recommended_input": "Forward EVC-REP-LONG-HORIZON to EVL for adoption review (artifacts/dashboard_metrics/eval_candidate_record.json).",
+      "owner_recommendation": "EVL",
+      "unknowns": [
+        "Effort to add long_horizon and distribution_shift dimensions",
+        "Whether REP currently emits per-dimension status fields"
+      ],
+      "debug_summary": "Open replay_record.json -> see dimensions_present and dimensions_missing. Cross-check eval_summary_record.json missing_checks. Fix path is EVC-REP-LONG-HORIZON.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/replay_record.json",
+        "artifacts/dashboard_seed/eval_summary_record.json"
+      ]
+    },
+    {
+      "packet_id": "FXP-SLO-BUDGET-CONTEXT",
+      "title": "SLO budget context partial during promotion review",
+      "failure_prevented": "Promotion review proceeding without an explicit SLO consumed_ratio and budget_status.",
+      "signal_improved": "Explanation links the SLO partial-context warning to the proposed SLO eval candidate.",
+      "affected_systems": ["SLO", "CDE"],
+      "what_failed": "SLO slo_status_record carries partial budget context; consumed_ratio and budget_status fields are not first-class.",
+      "why_it_matters": "CDE consumes SLO context as part of its inputs; partial context masks reliability-budget pressure during promotion review.",
+      "evidence_artifacts": [
+        "artifacts/dashboard_seed/slo_status_record.json",
+        "artifacts/dashboard_seed/control_decision_record.json"
+      ],
+      "constrained_loop_leg": "SLO",
+      "current_status": "warn",
+      "next_recommended_input": "Forward EVC-SLO-BUDGET-CONTEXT to EVL for adoption review (artifacts/dashboard_metrics/eval_candidate_record.json).",
+      "owner_recommendation": "EVL",
+      "unknowns": [
+        "Whether existing SLO record has historical consumed_ratio data"
+      ],
+      "debug_summary": "Open slo_status_record.json -> see partial budget context. Cross-check control_decision_record.json for SLO inputs. Fix path is EVC-SLO-BUDGET-CONTEXT.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/slo_status_record.json",
+        "artifacts/dashboard_seed/control_decision_record.json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "policy_candidate_signal_record",
+  "record_id": "POL-DASH-MET04-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/failure_feedback_record.json",
+    "artifacts/dashboard_seed/trust_policy_decision_record.json",
+    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_seed/enforcement_action_record.json",
+    "artifacts/dashboard_seed/near_miss_record.json"
+  ],
+  "reason_codes": [
+    "policy_candidates_proposed_only",
+    "no_policy_adoption_in_this_pr",
+    "candidate_signals_target_named_authority_boundary"
+  ],
+  "status": "warn",
+  "warnings": [
+    "All entries are proposed policy candidate signals. TPA, CDE, SEL, and GOV remain canonical owners; this artifact does not adopt or activate any policy.",
+    "Suggested policy shapes are recommendations to the owner system; final shape is the owner's to set."
+  ],
+  "failure_prevented": "Recurring authority-boundary gaps remaining without any policy candidate signal addressed to the owner system before the next promotion attempt.",
+  "signal_improved": "Each authority-boundary gap from feedback items has a proposed policy candidate signal with explicit suggested owner, suggested shape, and required evidence before adoption.",
+  "candidates": [
+    {
+      "policy_candidate_id": "POL-SEL-CERT-COMPLETENESS",
+      "title": "Certification completeness gate suggestion for SEL",
+      "policy_gap_observed": "SEL stays observe-only because the certification evidence set is partial, but no policy candidate signal exists requiring the missing certification inputs to be enumerated upstream.",
+      "failure_prevented": "Repeat observe-only enforcement with no policy signal addressing the certification-set gap.",
+      "signal_improved": "SEL has a named policy candidate signal describing the certification completeness gap and suggested gate shape.",
+      "affected_authority_boundary": "SEL enforcement readiness boundary",
+      "suggested_owner_system": "SEL",
+      "suggested_policy_shape": "Required-certification-input set: explicit list of certification artifact types and statuses that must be present before SEL may consider the case complete.",
+      "required_evidence_before_adoption": [
+        "EVC-EVL-FULL-CERT-SET acceptance",
+        "Certification artifact schema confirmation by SEL/GOV",
+        "Source-artifact lineage showing certification inputs trace to canonical owners"
+      ],
+      "status": "proposed",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/enforcement_action_record.json",
+        "artifacts/dashboard_seed/control_decision_record.json"
+      ]
+    },
+    {
+      "policy_candidate_id": "POL-TPA-WARN-BOUNDARY",
+      "title": "Trust policy warn-boundary suggestion for TPA",
+      "policy_gap_observed": "Near-miss record shows the warn gate caught a potential promotion bypass, but no policy candidate signal records the boundary condition or recommends explicit warn-trigger fields.",
+      "failure_prevented": "Loss of the boundary observation that prevented the near miss; recurrence going unrecorded.",
+      "signal_improved": "TPA has a named policy candidate signal capturing the warn-boundary observation and a suggested explicit-trigger shape.",
+      "affected_authority_boundary": "TPA trust-policy warn-trigger boundary",
+      "suggested_owner_system": "TPA",
+      "suggested_policy_shape": "Explicit warn-trigger fields naming partial-eval, partial-cert, partial-replay, and over-budget conditions; each trigger names a downstream consumer (CDE).",
+      "required_evidence_before_adoption": [
+        "Source near-miss record with prevented_by populated",
+        "TPA artifact reason_code mapping to suggested triggers",
+        "CDE confirmation that suggested triggers map to CDE inputs"
+      ],
+      "status": "proposed",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/near_miss_record.json",
+        "artifacts/dashboard_seed/trust_policy_decision_record.json"
+      ]
+    },
+    {
+      "policy_candidate_id": "POL-GOV-FALLBACK-REDUCTION",
+      "title": "Governance fallback-reduction policy candidate signal",
+      "policy_gap_observed": "Multiple non-loop systems still report stub_fallback while the bottleneck/leverage records show this as a high-leverage gap; no governance policy candidate signal names the systems and replacement signals.",
+      "failure_prevented": "Fallback rows continuing to be reported as if artifact-backed, with no policy signal naming the systems and the required replacement signal per row.",
+      "signal_improved": "GOV has a named policy candidate signal listing high-leverage stub_fallback systems and the artifact-backed replacement signal needed for each.",
+      "affected_authority_boundary": "Governance source-of-truth posture for non-loop systems",
+      "suggested_owner_system": "GOV",
+      "suggested_policy_shape": "Per-system fallback-reduction registry: system_id, current_data_source, replacement_signal_needed, priority, owner_for_replacement.",
+      "required_evidence_before_adoption": [
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json#high_leverage_fallback_count > 0",
+        "artifacts/dashboard_metrics/leverage_queue_record.json showing fallback-reduction item",
+        "Owner system confirmation per fallback row"
+      ],
+      "status": "proposed",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/leverage_queue_record.json",
+        "artifacts/dashboard_seed/minimal_loop_snapshot.json"
+      ]
+    },
+    {
+      "policy_candidate_id": "POL-CDE-OVERRIDE-AUDIT",
+      "title": "CDE override-audit policy candidate signal",
+      "policy_gap_observed": "Override count remains 'unknown' because no override audit log exists; CDE has no documented requirement for override evidence to be recorded as an auditable artifact.",
+      "failure_prevented": "Overrides occurring without an audit trail that downstream MET signals can reference.",
+      "signal_improved": "CDE/GOV have a named policy candidate signal recommending an override audit log shape and retention rules.",
+      "affected_authority_boundary": "CDE override-evidence boundary",
+      "suggested_owner_system": "CDE",
+      "suggested_policy_shape": "Override audit log artifact: override_id, source_context, reason_observed, expiry_date, conversion_status, source_artifacts_used.",
+      "required_evidence_before_adoption": [
+        "artifacts/dashboard_metrics/override_audit_log_record.json present and populated by canonical owner",
+        "CDE confirmation of audit-log shape",
+        "GOV confirmation of retention requirement"
+      ],
+      "status": "proposed",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/risk_summary_record.json",
+        "artifacts/dashboard_seed/control_decision_record.json"
+      ]
+    }
+  ]
+}

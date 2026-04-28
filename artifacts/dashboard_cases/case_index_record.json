@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "case_index_record",
+  "record_id": "CASE-IDX-MET10-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
+    "artifacts/dashboard_seed/near_miss_record.json",
+    "artifacts/dashboard_metrics/leverage_queue_record.json"
+  ],
+  "reason_codes": [
+    "cases_seeded_from_real_failures_and_near_misses",
+    "no_fake_pass",
+    "no_fake_trend",
+    "trend_remains_unknown_below_three_comparable_cases"
+  ],
+  "status": "warn",
+  "warnings": [
+    "This is an index of cases under artifacts/dashboard_cases/. Cases tie to real failure modes, near misses, or leverage items.",
+    "Trend reporting on cases remains unknown until at least 3 comparable artifact-backed cases exist with the same shape.",
+    "All case statuses are warn or partial; no case reports pass."
+  ],
+  "failure_prevented": "Dashboard metrics being computed from a single case, with no other artifact-backed reference points to triangulate frequency or trend.",
+  "signal_improved": "Three comparable artifact-backed cases now exist under artifacts/dashboard_cases/, each tied to a named failure mode, near miss, or leverage item.",
+  "cases": [
+    "case_eval_gap_001.json",
+    "case_replay_gap_001.json",
+    "case_cert_incomplete_001.json"
+  ]
+}

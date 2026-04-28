@@ -45,6 +45,96 @@ type DecisionLayerResponse = {
   allowed_active_node_ids: string[];
 };
 
+type IntelligenceBlockEnvelope = {
+  data_source?: string;
+  source_artifacts_used?: string[];
+  warnings?: string[];
+};
+
+type FeedbackTheme = {
+  theme: string;
+  feedback_item_ids?: string[];
+  candidate_ids?: string[];
+  failure_prevented?: string;
+};
+
+type FeedbackLoopBlock = IntelligenceBlockEnvelope & {
+  feedback_items_count?: number | 'unknown';
+  eval_candidates_count?: number | 'unknown';
+  policy_candidate_signals_count?: number | 'unknown';
+  unresolved_feedback_count?: number | 'unknown';
+  expired_feedback_count?: number | 'unknown';
+  top_feedback_themes?: FeedbackTheme[];
+  next_recommended_improvement_inputs?: string[];
+  loop_status?: string;
+};
+
+type FailureExplanationPacket = {
+  packet_id?: string;
+  title?: string;
+  failure_prevented?: string;
+  signal_improved?: string;
+  affected_systems?: string[];
+  what_failed?: string;
+  why_it_matters?: string;
+  evidence_artifacts?: string[];
+  constrained_loop_leg?: string;
+  current_status?: string;
+  next_recommended_input?: string;
+  owner_recommendation?: string;
+  unknowns?: string[];
+  debug_summary?: string;
+  source_artifacts_used?: string[];
+};
+
+type FailureExplanationPacketsBlock = IntelligenceBlockEnvelope & {
+  packets?: FailureExplanationPacket[];
+};
+
+type OverrideAuditBlock = IntelligenceBlockEnvelope & {
+  override_count?: number | 'unknown';
+  overrides?: Array<Record<string, unknown>>;
+  next_recommended_input?: string | null;
+  reason_codes?: string[];
+};
+
+type FallbackItem = {
+  system_id?: string;
+  current_data_source?: string;
+  replacement_signal_needed?: string;
+  failure_prevented?: string;
+  signal_improved?: string;
+  priority?: string;
+  source_artifacts_used?: string[];
+};
+
+type FallbackReductionPlanBlock = IntelligenceBlockEnvelope & {
+  total_fallback_count?: number | 'unknown';
+  high_leverage_fallback_count?: number | 'unknown';
+  fallback_items?: FallbackItem[];
+};
+
+type ReplayDimensionEntry = { dimension?: string; status?: string; source?: string };
+type LineageEdgeEntry = { edge?: string; status?: string; source?: string };
+
+type ReplayLineageHardeningBlock = IntelligenceBlockEnvelope & {
+  replay_dimensions_checked?: ReplayDimensionEntry[];
+  lineage_links_checked?: LineageEdgeEntry[];
+  gaps_observed?: string[];
+  hardening_recommendations?: Array<Record<string, unknown>>;
+  affected_systems?: string[];
+};
+
+type IntelligencePayload = {
+  feedback_loop?: FeedbackLoopBlock;
+  feedback_loop_status?: string;
+  unresolved_feedback_count?: number | 'unknown';
+  failure_explanation_packets?: FailureExplanationPacketsBlock;
+  override_audit?: OverrideAuditBlock;
+  fallback_reduction_plan?: FallbackReductionPlanBlock;
+  replay_lineage_hardening?: ReplayLineageHardeningBlock;
+};
+
 const TABS: Array<{ key: TabKey; label: string }> = [
   { key: 'overview', label: 'Overview' },
   { key: 'graph', label: 'Graph' },
@@ -75,7 +165,7 @@ export default function DashboardPage() {
   const [graph, setGraph] = useState<SystemGraphPayload | null>(null);
   const [health, setHealth] = useState<HealthPayload | null>(null);
   const [roadmap, setRoadmap] = useState<RoadmapResponse | null>(null);
-  const [intelligence, setIntelligence] = useState<unknown>(null);
+  const [intelligence, setIntelligence] = useState<IntelligencePayload | null>(null);
   const [contract, setContract] = useState<RegistryGraphContract | null>(null);
   const [explain, setExplain] = useState<ExplainSystemStateResult | null>(null);
   const [decisionLayer, setDecisionLayer] = useState<DecisionLayerResponse | null>(null);
@@ -337,6 +427,151 @@ export default function DashboardPage() {
                 ))}
               </div>
             ))}
+          </Panel>
+
+          <Panel title="F. Learning Loop (proposed candidates only)" testId="learning-loop-section">
+            {(() => {
+              const fl = intelligence?.feedback_loop;
+              if (!fl) {
+                return <p className="text-sm text-amber-700">Learning loop unavailable.</p>;
+              }
+              return (
+                <div className="text-sm space-y-1">
+                  <p>loop status: <strong>{fl.loop_status ?? 'unknown'}</strong></p>
+                  <p>feedback items: <strong>{String(fl.feedback_items_count ?? 'unknown')}</strong></p>
+                  <p>eval candidates (proposed): <strong>{String(fl.eval_candidates_count ?? 'unknown')}</strong></p>
+                  <p>policy candidate signals (proposed): <strong>{String(fl.policy_candidate_signals_count ?? 'unknown')}</strong></p>
+                  <p>unresolved: <strong>{String(fl.unresolved_feedback_count ?? 'unknown')}</strong></p>
+                  <p>expired: <strong>{String(fl.expired_feedback_count ?? 'unknown')}</strong></p>
+                  <ul className="list-disc ml-5 text-xs" data-testid="learning-loop-themes">
+                    {(fl.top_feedback_themes ?? []).map((t, i) => (
+                      <li key={`${t.theme}-${i}`}>{t.theme}</li>
+                    ))}
+                  </ul>
+                  {(fl.next_recommended_improvement_inputs ?? []).length > 0 && (
+                    <details className="text-xs">
+                      <summary>next recommended improvement inputs</summary>
+                      <ul className="list-disc ml-5">
+                        {fl.next_recommended_improvement_inputs!.map((s, i) => <li key={i}>{s}</li>)}
+                      </ul>
+                    </details>
+                  )}
+                  {(fl.warnings ?? []).map((w, i) => (
+                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
+                  ))}
+                  <p className="text-xs text-gray-600">All entries are proposed candidates and signal inputs only. Adoption decisions belong to EVL/TPA/CDE/SEL/GOV.</p>
+                </div>
+              );
+            })()}
+          </Panel>
+
+          <Panel title="G. Failure Explanation (debug under 15 minutes)" testId="failure-explanation-section">
+            {(() => {
+              const block = intelligence?.failure_explanation_packets;
+              const packets = block?.packets ?? [];
+              if (packets.length === 0) {
+                return <p className="text-sm text-amber-700">No failure explanation packets available.</p>;
+              }
+              return (
+                <div className="space-y-2">
+                  {packets.map((p) => (
+                    <article key={p.packet_id ?? p.title} data-testid="failure-explanation-packet" className="border rounded p-2 text-sm">
+                      <header className="flex flex-wrap gap-2 items-center">
+                        <strong>{p.title}</strong>
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-400">{p.current_status ?? 'unknown'}</span>
+                        {p.constrained_loop_leg && <span className="text-xs text-gray-600">leg: {p.constrained_loop_leg}</span>}
+                      </header>
+                      <p className="text-xs"><strong>what failed:</strong> {p.what_failed}</p>
+                      <p className="text-xs"><strong>why it matters:</strong> {p.why_it_matters}</p>
+                      <p className="text-xs"><strong>next recommended input:</strong> {p.next_recommended_input}</p>
+                      <p className="text-xs text-gray-600"><strong>evidence:</strong> {(p.evidence_artifacts ?? []).join(', ') || 'none'}</p>
+                    </article>
+                  ))}
+                  {(block?.warnings ?? []).map((w, i) => (
+                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
+                  ))}
+                </div>
+              );
+            })()}
+          </Panel>
+
+          <Panel title="H. Override / Unknowns (fail-closed)" testId="override-unknowns-section">
+            {(() => {
+              const block = intelligence?.override_audit;
+              if (!block) {
+                return <p className="text-sm text-amber-700">Override audit unavailable.</p>;
+              }
+              return (
+                <div className="text-sm space-y-1">
+                  <p>override count: <strong>{String(block.override_count ?? 'unknown')}</strong></p>
+                  <p>reason codes: <span className="text-xs">{(block.reason_codes ?? []).join(', ') || 'none'}</span></p>
+                  {block.next_recommended_input && (
+                    <p className="text-xs"><strong>next recommended input:</strong> {block.next_recommended_input}</p>
+                  )}
+                  {(block.warnings ?? []).map((w, i) => (
+                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
+                  ))}
+                </div>
+              );
+            })()}
+          </Panel>
+
+          <Panel title="I. Fallback Reduction (high-leverage rows only)" testId="fallback-reduction-section">
+            {(() => {
+              const block = intelligence?.fallback_reduction_plan;
+              if (!block) {
+                return <p className="text-sm text-amber-700">Fallback reduction plan unavailable.</p>;
+              }
+              const items = block.fallback_items ?? [];
+              return (
+                <div className="text-sm space-y-1">
+                  <p>total fallback count: <strong>{String(block.total_fallback_count ?? 'unknown')}</strong></p>
+                  <p>high-leverage rows: <strong>{String(block.high_leverage_fallback_count ?? 'unknown')}</strong></p>
+                  <ul className="list-disc ml-5 text-xs" data-testid="fallback-rows">
+                    {items.map((it, i) => (
+                      <li key={`${it.system_id}-${i}`}>
+                        <strong>{it.system_id}</strong> — {it.replacement_signal_needed} <span className="text-gray-600">(priority: {it.priority})</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {(block.warnings ?? []).map((w, i) => (
+                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
+                  ))}
+                </div>
+              );
+            })()}
+          </Panel>
+
+          <Panel title="J. Replay + Lineage Hardening" testId="replay-lineage-hardening-section">
+            {(() => {
+              const block = intelligence?.replay_lineage_hardening;
+              if (!block) {
+                return <p className="text-sm text-amber-700">Replay/lineage hardening unavailable.</p>;
+              }
+              return (
+                <div className="text-sm space-y-1">
+                  <p>affected systems: <strong>{(block.affected_systems ?? []).join(', ') || 'unknown'}</strong></p>
+                  <p className="text-xs"><strong>replay dimensions:</strong></p>
+                  <ul className="list-disc ml-5 text-xs">
+                    {(block.replay_dimensions_checked ?? []).map((d, i) => (
+                      <li key={i}>{d.dimension}: {d.status}</li>
+                    ))}
+                  </ul>
+                  <p className="text-xs"><strong>lineage edges:</strong></p>
+                  <ul className="list-disc ml-5 text-xs">
+                    {(block.lineage_links_checked ?? []).map((d, i) => (
+                      <li key={i}>{d.edge}: {d.status}</li>
+                    ))}
+                  </ul>
+                  {(block.gaps_observed ?? []).length > 0 && (
+                    <p className="text-xs text-amber-700">gaps: {block.gaps_observed!.join('; ')}</p>
+                  )}
+                  {(block.warnings ?? []).map((w, i) => (
+                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
+                  ))}
+                </div>
+              );
+            })()}
           </Panel>
 
           {explain && explain.root_cause && (
