@@ -2,7 +2,7 @@
   "artifact_type": "replay_safe_repair_candidate_bundle",
   "slice_id": "AH-16",
   "owner": "FRE",
-  "generated_at": "2026-04-28T01:43:47Z",
+  "generated_at": "2026-04-28T13:24:53Z",
   "repair_planning_only": true,
   "lineage_and_replay_constraints_preserved": true
 }

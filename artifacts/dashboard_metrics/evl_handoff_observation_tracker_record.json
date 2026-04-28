@@ -1,0 +1,166 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "evl_handoff_observation_tracker_record",
+  "record_id": "EHO-DASH-MET23-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/eval_candidate_record.json",
+    "artifacts/dashboard_metrics/eval_materialization_path_record.json",
+    "artifacts/dashboard_metrics/replay_lineage_hardening_record.json",
+    "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
+    "artifacts/dashboard_seed/eval_summary_record.json",
+    "artifacts/dashboard_seed/replay_record.json",
+    "artifacts/dashboard_seed/lineage_record.json"
+  ],
+  "reason_codes": [
+    "handoff_signal_observation_only",
+    "no_authority_claim_by_MET",
+    "no_evl_acceptance_inferred"
+  ],
+  "status": "warn",
+  "warnings": [
+    "MET observes EVL handoffs and records materialization observations only. EVL is the canonical owner; this artifact does not say EVL accepted, adopted, or approved any candidate.",
+    "materialization_observation values are derived from artifact-backed reads of EVL/REP/LIN artifacts. Absence of a confirming artifact is recorded as 'none_observed', not as 'rejected'.",
+    "suggested_eval_shape is a recommendation only; final shape is EVL's to set."
+  ],
+  "failure_prevented": "EVL bottleneck staying invisible because per-candidate handoff signals were not tracked; readiness evidence going unobserved; missing-evidence states being read as EVL passivity.",
+  "signal_improved": "Each eval candidate has a tracked handoff signal with readiness_evidence_available, missing_readiness_evidence, suggested_eval_shape, and a materialization_observation derived from artifact-backed reads.",
+  "handoff_items": [
+    {
+      "handoff_signal_id": "HOH-EVC-EVL-LONG-HORIZON-REPLAY",
+      "source_eval_candidate_id": "EVC-EVL-LONG-HORIZON-REPLAY",
+      "target_owner_recommendation": "EVL",
+      "target_loop_leg": "EVL",
+      "readiness_evidence_available": [
+        "artifacts/dashboard_seed/replay_record.json (short_horizon dimension present)",
+        "artifacts/dashboard_metrics/replay_lineage_hardening_record.json (HR-REP-DIM-LONG-HORIZON proposed)"
+      ],
+      "missing_readiness_evidence": [
+        "REP per-dimension replay status fields including long_horizon and distribution_shift",
+        "EVL coverage_status reading per-dimension status"
+      ],
+      "suggested_eval_shape": "replay_consistency eval with long_horizon dimension required; absent dimension surfaces as warn.",
+      "materialization_observation": "none_observed",
+      "next_recommended_input": "Forward HOH-EVC-EVL-LONG-HORIZON-REPLAY to EVL; pair with HR-REP-DIM-LONG-HORIZON for REP.",
+      "failure_prevented": "Long-horizon replay candidate handoff remaining invisible to EVL with no readiness evidence catalogued.",
+      "signal_improved": "EVL has a named handoff signal with readiness evidence and missing-evidence breakdown.",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_seed/replay_record.json"
+      ]
+    },
+    {
+      "handoff_signal_id": "HOH-EVC-EVL-FULL-CERT-SET",
+      "source_eval_candidate_id": "EVC-EVL-FULL-CERT-SET",
+      "target_owner_recommendation": "EVL",
+      "target_loop_leg": "EVL",
+      "readiness_evidence_available": [
+        "artifacts/dashboard_seed/eval_summary_record.json (eval coverage status partial)",
+        "artifacts/dashboard_seed/enforcement_action_record.json (observe_only with reason text)"
+      ],
+      "missing_readiness_evidence": [
+        "Full certification evidence set artifact list",
+        "LIN eval_summary -> certification_evidence edge"
+      ],
+      "suggested_eval_shape": "evidence_coverage eval enumerating required certification inputs and per-input present/partial/missing.",
+      "materialization_observation": "none_observed",
+      "next_recommended_input": "Forward HOH-EVC-EVL-FULL-CERT-SET to EVL alongside POL-SEL-CERT-COMPLETENESS for SEL.",
+      "failure_prevented": "Certification evidence handoff staying implicit with EVL bottleneck unaddressed.",
+      "signal_improved": "EVL has a named handoff signal with explicit missing-evidence list.",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_seed/eval_summary_record.json"
+      ]
+    },
+    {
+      "handoff_signal_id": "HOH-EVC-REP-LONG-HORIZON",
+      "source_eval_candidate_id": "EVC-REP-LONG-HORIZON",
+      "target_owner_recommendation": "EVL",
+      "target_loop_leg": "EVL",
+      "readiness_evidence_available": [
+        "artifacts/dashboard_seed/replay_record.json"
+      ],
+      "missing_readiness_evidence": [
+        "REP per-dimension status fields: short_horizon, long_horizon, distribution_shift"
+      ],
+      "suggested_eval_shape": "evidence_coverage eval with per-dimension presence; missing dimension surfaces as warn.",
+      "materialization_observation": "none_observed",
+      "next_recommended_input": "Forward HOH-EVC-REP-LONG-HORIZON to EVL/REP.",
+      "failure_prevented": "REP per-dimension handoff being invisible to EVL.",
+      "signal_improved": "EVL has a tracked handoff signal targeting REP.",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_seed/replay_record.json"
+      ]
+    },
+    {
+      "handoff_signal_id": "HOH-EVC-SLO-BUDGET-CONTEXT",
+      "source_eval_candidate_id": "EVC-SLO-BUDGET-CONTEXT",
+      "target_owner_recommendation": "EVL",
+      "target_loop_leg": "EVL",
+      "readiness_evidence_available": [
+        "artifacts/dashboard_seed/slo_status_record.json"
+      ],
+      "missing_readiness_evidence": [
+        "SLO record consumed_ratio (float|unknown)",
+        "SLO record budget_status (within|warn|over|unknown)"
+      ],
+      "suggested_eval_shape": "schema_conformance eval requiring consumed_ratio and budget_status as first-class fields.",
+      "materialization_observation": "none_observed",
+      "next_recommended_input": "Forward HOH-EVC-SLO-BUDGET-CONTEXT to EVL/SLO.",
+      "failure_prevented": "Budget-context handoff invisible.",
+      "signal_improved": "EVL has a tracked handoff signal targeting SLO.",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_seed/slo_status_record.json"
+      ]
+    },
+    {
+      "handoff_signal_id": "HOH-EVC-LIN-TRACE-COMPLETENESS",
+      "source_eval_candidate_id": "EVC-LIN-TRACE-COMPLETENESS",
+      "target_owner_recommendation": "EVL",
+      "target_loop_leg": "EVL",
+      "readiness_evidence_available": [
+        "artifacts/dashboard_seed/lineage_record.json"
+      ],
+      "missing_readiness_evidence": [
+        "LIN per-edge status",
+        "eval_summary -> certification_evidence edge"
+      ],
+      "suggested_eval_shape": "trace_completeness eval enumerating required edges with per-edge status.",
+      "materialization_observation": "none_observed",
+      "next_recommended_input": "Forward HOH-EVC-LIN-TRACE-COMPLETENESS to EVL/LIN.",
+      "failure_prevented": "Trace-completeness handoff invisible.",
+      "signal_improved": "EVL has a tracked handoff signal targeting LIN.",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_seed/lineage_record.json"
+      ]
+    },
+    {
+      "handoff_signal_id": "HOH-EVC-MET-DASHBOARD-TRUTH",
+      "source_eval_candidate_id": "EVC-MET-DASHBOARD-TRUTH",
+      "target_owner_recommendation": "EVL",
+      "target_loop_leg": "EVL",
+      "readiness_evidence_available": [
+        "apps/dashboard-3ls/app/api/intelligence/route.ts",
+        "artifacts/dashboard_metrics/risk_summary_record.json"
+      ],
+      "missing_readiness_evidence": [
+        "EVL acceptance condition asserting dashboard-truth invariant"
+      ],
+      "suggested_eval_shape": "dashboard_truth eval asserting no fake-zero substitution and no banned authority vocabulary.",
+      "materialization_observation": "none_observed",
+      "next_recommended_input": "Forward HOH-EVC-MET-DASHBOARD-TRUTH to EVL.",
+      "failure_prevented": "Dashboard-truth handoff invisible.",
+      "signal_improved": "EVL has a tracked handoff signal for the dashboard-truth invariant.",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "apps/dashboard-3ls/app/api/intelligence/route.ts"
+      ]
+    }
+  ]
+}

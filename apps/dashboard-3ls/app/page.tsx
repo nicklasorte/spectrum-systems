@@ -131,6 +131,95 @@ type ReplayLineageHardeningBlock = IntelligenceBlockEnvelope & {
   affected_systems?: string[];
 };
 
+type CandidateClosureItem = {
+  candidate_id?: string;
+  candidate_type?: string;
+  current_state?: string;
+  age_days?: number | 'unknown';
+  stale_after_days?: number | 'unknown';
+  affected_systems?: string[];
+  next_recommended_input?: string;
+  source_artifacts_used?: string[];
+};
+
+type CandidateClosureBlock = IntelligenceBlockEnvelope & {
+  candidate_items?: CandidateClosureItem[];
+  candidate_item_count?: number | 'unknown';
+  stale_candidate_signal_count?: number | 'unknown';
+};
+
+type DependencyEntry = {
+  artifact_path?: string;
+  api_fields?: string[];
+  dashboard_panels?: string[];
+  keep_fold_remove?: string;
+  rationale?: string;
+};
+
+type MetArtifactDependencyIndexBlock = IntelligenceBlockEnvelope & {
+  artifact_dependencies?: DependencyEntry[];
+};
+
+type BlockedTrendField = { field?: string; reason?: string; current_value?: string };
+
+type TrendFrequencyHonestyGateBlock = IntelligenceBlockEnvelope & {
+  comparable_case_count?: number | 'unknown';
+  required_case_count_for_trend?: number;
+  trend_state?: string;
+  frequency_state?: string;
+  cases_needed?: number | 'unknown';
+  blocked_trend_fields?: BlockedTrendField[];
+};
+
+type HandoffItem = {
+  handoff_signal_id?: string;
+  source_eval_candidate_id?: string;
+  target_owner_recommendation?: string;
+  target_loop_leg?: string;
+  materialization_observation?: string;
+  next_recommended_input?: string;
+  source_artifacts_used?: string[];
+};
+
+type EvlHandoffObservationsBlock = IntelligenceBlockEnvelope & {
+  handoff_items?: HandoffItem[];
+  handoff_item_count?: number | 'unknown';
+};
+
+type OverrideEvidenceIntakeBlock = IntelligenceBlockEnvelope & {
+  override_evidence_count?: number | 'unknown';
+  evidence_status?: string;
+  next_recommended_input?: string | null;
+  reason_codes?: string[];
+};
+
+type ExplanationEntry = {
+  explanation_id?: string;
+  related_failure_packet?: string;
+  what_failed?: string;
+  where_in_loop?: string;
+  next_recommended_input?: string;
+  debug_readiness?: string;
+  source_evidence?: string[];
+};
+
+type DebugExplanationIndexBlock = IntelligenceBlockEnvelope & {
+  debug_target_minutes?: number;
+  explanation_entries?: ExplanationEntry[];
+  explanation_entry_count?: number | 'unknown';
+};
+
+type ClassifiedPath = {
+  path?: string;
+  classification?: string;
+  merge_policy?: string;
+};
+
+type MetGeneratedArtifactClassificationBlock = IntelligenceBlockEnvelope & {
+  classified_paths?: ClassifiedPath[];
+  classified_path_count?: number | 'unknown';
+};
+
 type IntelligencePayload = {
   feedback_loop?: FeedbackLoopBlock;
   feedback_loop_status?: string;
@@ -139,7 +228,17 @@ type IntelligencePayload = {
   override_audit?: OverrideAuditBlock;
   fallback_reduction_plan?: FallbackReductionPlanBlock;
   replay_lineage_hardening?: ReplayLineageHardeningBlock;
+  candidate_closure?: CandidateClosureBlock;
+  met_artifact_dependency_index?: MetArtifactDependencyIndexBlock;
+  trend_frequency_honesty_gate?: TrendFrequencyHonestyGateBlock;
+  evl_handoff_observations?: EvlHandoffObservationsBlock;
+  override_evidence_intake?: OverrideEvidenceIntakeBlock;
+  debug_explanation_index?: DebugExplanationIndexBlock;
+  met_generated_artifact_classification?: MetGeneratedArtifactClassificationBlock;
 };
+
+// MET-19-33 — operator complexity budget for compact MET sections.
+const MET_COMPACT_ITEM_MAX = 5;
 
 type OcBottleneckResponse = {
   state: 'ok' | 'unavailable' | 'invalid_schema' | 'stale_proof' | 'conflict_proof' | 'ambiguous';
@@ -596,6 +695,145 @@ export default function DashboardPage() {
                   )}
                   {(block.warnings ?? []).map((w, i) => (
                     <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
+                  ))}
+                </div>
+              );
+            })()}
+          </Panel>
+
+          <Panel title="K. Candidate Closure (proposed/open/stale only)" testId="candidate-closure-section">
+            {(() => {
+              const block = intelligence?.candidate_closure;
+              if (!block) {
+                return <p className="text-sm text-amber-700">Candidate closure ledger unavailable.</p>;
+              }
+              const items = (block.candidate_items ?? []).slice(0, MET_COMPACT_ITEM_MAX);
+              return (
+                <div className="text-sm space-y-1">
+                  <p>tracked items: <strong>{String(block.candidate_item_count ?? 'unknown')}</strong></p>
+                  <p>stale_candidate_signal: <strong>{String(block.stale_candidate_signal_count ?? 'unknown')}</strong></p>
+                  <ul className="list-disc ml-5 text-xs" data-testid="candidate-closure-items">
+                    {items.map((it, i) => (
+                      <li key={`${it.candidate_id}-${i}`}>
+                        <strong>{it.candidate_id}</strong> [{it.candidate_type}] — state: {it.current_state}
+                        {' '}<span className="text-gray-600">(age: {String(it.age_days ?? 'unknown')}d / stale_after: {String(it.stale_after_days ?? 'unknown')}d)</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {(block.warnings ?? []).map((w, i) => (
+                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
+                  ))}
+                  <p className="text-xs text-gray-600">EVL/TPA/CDE/SEL/GOV remain canonical owners; ledger surfaces signals only.</p>
+                </div>
+              );
+            })()}
+          </Panel>
+
+          <Panel title="L. Debug Explanation Index (under 15 minutes)" testId="debug-explanation-index-section">
+            {(() => {
+              const block = intelligence?.debug_explanation_index;
+              if (!block) {
+                return <p className="text-sm text-amber-700">Debug explanation index unavailable.</p>;
+              }
+              const entries = (block.explanation_entries ?? []).slice(0, MET_COMPACT_ITEM_MAX);
+              return (
+                <div className="text-sm space-y-1">
+                  <p>debug target: <strong>{block.debug_target_minutes ?? 15} minutes</strong></p>
+                  <p>entries: <strong>{String(block.explanation_entry_count ?? 'unknown')}</strong></p>
+                  <ul className="list-disc ml-5 text-xs" data-testid="debug-explanation-entries">
+                    {entries.map((e, i) => (
+                      <li key={`${e.explanation_id}-${i}`}>
+                        <strong>{e.explanation_id}</strong> — {e.what_failed} <span className="text-gray-600">(loop leg: {e.where_in_loop ?? 'unknown'} · readiness: {e.debug_readiness ?? 'unknown'})</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {(block.warnings ?? []).map((w, i) => (
+                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
+                  ))}
+                </div>
+              );
+            })()}
+          </Panel>
+
+          <Panel title="M. Trend / Frequency Honesty (no fake trend)" testId="trend-frequency-honesty-section">
+            {(() => {
+              const block = intelligence?.trend_frequency_honesty_gate;
+              if (!block) {
+                return <p className="text-sm text-amber-700">Trend/frequency honesty gate unavailable.</p>;
+              }
+              const blocked = (block.blocked_trend_fields ?? []).slice(0, MET_COMPACT_ITEM_MAX);
+              return (
+                <div className="text-sm space-y-1">
+                  <p>comparable cases: <strong>{String(block.comparable_case_count ?? 'unknown')}</strong> / {block.required_case_count_for_trend ?? 3}</p>
+                  <p>cases needed: <strong>{String(block.cases_needed ?? 'unknown')}</strong></p>
+                  <p>trend state: <strong>{block.trend_state ?? 'unknown'}</strong></p>
+                  <p>frequency state: <strong>{block.frequency_state ?? 'unknown'}</strong></p>
+                  <ul className="list-disc ml-5 text-xs" data-testid="trend-honesty-blocked-fields">
+                    {blocked.map((b, i) => (
+                      <li key={i}>
+                        <strong>{b.field}</strong>: {b.current_value} <span className="text-gray-600">— {b.reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {(block.warnings ?? []).map((w, i) => (
+                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
+                  ))}
+                </div>
+              );
+            })()}
+          </Panel>
+
+          <Panel title="N. EVL Handoff Observations (signal only)" testId="evl-handoff-observations-section">
+            {(() => {
+              const block = intelligence?.evl_handoff_observations;
+              if (!block) {
+                return <p className="text-sm text-amber-700">EVL handoff observations unavailable.</p>;
+              }
+              const items = (block.handoff_items ?? []).slice(0, MET_COMPACT_ITEM_MAX);
+              return (
+                <div className="text-sm space-y-1">
+                  <p>handoff items: <strong>{String(block.handoff_item_count ?? 'unknown')}</strong></p>
+                  <ul className="list-disc ml-5 text-xs" data-testid="evl-handoff-items">
+                    {items.map((it, i) => (
+                      <li key={`${it.handoff_signal_id}-${i}`}>
+                        <strong>{it.handoff_signal_id}</strong> → {it.target_owner_recommendation ?? 'EVL'}
+                        {' '}<span className="text-gray-600">(materialization: {it.materialization_observation ?? 'unknown'})</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {(block.warnings ?? []).map((w, i) => (
+                    <p key={i} className="text-xs text-amber-700">⚠ {w}</p>
+                  ))}
+                  <p className="text-xs text-gray-600">EVL is the canonical owner; this surface records handoff signals and materialization observations only.</p>
+                </div>
+              );
+            })()}
+          </Panel>
+
+          <Panel title="O. Artifact Integrity (override + classification)" testId="artifact-integrity-section">
+            {(() => {
+              const oei = intelligence?.override_evidence_intake;
+              const cls = intelligence?.met_generated_artifact_classification;
+              return (
+                <div className="text-sm space-y-1">
+                  <p>override evidence count: <strong>{String(oei?.override_evidence_count ?? 'unknown')}</strong></p>
+                  <p>evidence status: <strong>{oei?.evidence_status ?? 'unknown'}</strong></p>
+                  {oei?.next_recommended_input && (
+                    <p className="text-xs"><strong>next input:</strong> {oei.next_recommended_input}</p>
+                  )}
+                  <p>classified paths: <strong>{String(cls?.classified_path_count ?? 'unknown')}</strong></p>
+                  <ul className="list-disc ml-5 text-xs" data-testid="artifact-integrity-classified-paths">
+                    {(cls?.classified_paths ?? []).slice(0, MET_COMPACT_ITEM_MAX).map((c, i) => (
+                      <li key={`${c.path}-${i}`}>
+                        <strong>{c.path}</strong> — {c.classification} <span className="text-gray-600">({c.merge_policy})</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {(oei?.warnings ?? []).map((w, i) => (
+                    <p key={`oei-${i}`} className="text-xs text-amber-700">⚠ {w}</p>
+                  ))}
+                  {(cls?.warnings ?? []).map((w, i) => (
+                    <p key={`cls-${i}`} className="text-xs text-amber-700">⚠ {w}</p>
                   ))}
                 </div>
               );
