@@ -1,0 +1,55 @@
+{
+  "artifact_type": "d3l_diff_replay_redteam_report",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_8_diff_freshness_replay_debug",
+  "checks": [
+    {
+      "case_id": "RT-DR-01",
+      "description": "no previous snapshot",
+      "expected_outcome": "Diff Since Last Recompute shows explicit 'no previous snapshot' state, never empty success",
+      "implementation": "DiffSinceLastRecompute component handles previous=null path and renders the 'no previous snapshot' notice",
+      "result": "covered_by_existing_diff_component"
+    },
+    {
+      "case_id": "RT-DR-02",
+      "description": "stale artifact",
+      "expected_outcome": "freshness warning visible; Top 3 not labelled Ready",
+      "implementation": "loadPriorityArtifact returns state='stale'; extractTopThreeRecommendations prepends 'Top 3 stale' to warning",
+      "test_pinning": "__tests__/lib/topThreeRecommendations.test.ts: reports stale warning when artifact is past freshness threshold",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-DR-03",
+      "description": "mismatched registry/graph",
+      "expected_outcome": "graph contract validation rejects unknown nodes; warnings list affected ids",
+      "implementation": "validateGraphAgainstContract emits findings; warnings include 'graph_contract_violation:...'",
+      "test_pinning": "__tests__/lib/registryContract.test.ts: rejects unknown node IDs",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-DR-04",
+      "description": "priority report newer than graph",
+      "expected_outcome": "Diagnostics replay panel shows generated_at for both; operator sees the asymmetry",
+      "implementation": "Diagnostics replay-debug-panel renders graph.generated_at and priority.generated_at; explainSystemState uses graph for root cause and priority for Top 3",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-DR-05",
+      "description": "graph newer than priority",
+      "expected_outcome": "same as RT-DR-04: explicit timestamps surfaced",
+      "implementation": "Diagnostics replay-debug-panel renders both timestamps",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-DR-06",
+      "description": "unknown timestamp",
+      "expected_outcome": "fields show 'unknown' explicitly, never falsified",
+      "implementation": "Diagnostics replay panel renders graph.generated_at ?? 'unknown' / priority.generated_at ?? 'unknown'",
+      "result": "fixed"
+    }
+  ],
+  "remaining_risks": [],
+  "fix_summary": "Replay debug exposes graph + priority timestamps and source paths; missing values surface as 'unknown' rather than blank or guessed."
+}

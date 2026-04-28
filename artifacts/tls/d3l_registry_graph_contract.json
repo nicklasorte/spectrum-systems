@@ -1,0 +1,94 @@
+{
+  "artifact_type": "d3l_registry_graph_contract",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "produced_by": "apps/dashboard-3ls/lib/registryContract.ts",
+  "source_artifact": "artifacts/tls/system_registry_dependency_graph.json",
+  "registry_source_doc": "docs/architecture/system_registry.md",
+  "allowed_active_node_ids": [
+    "AEX", "PQX", "EVL", "TPA", "CDE", "SEL",
+    "REP", "LIN", "OBS", "SLO",
+    "CTX", "PRM", "POL", "TLC", "RIL", "FRE",
+    "RAX", "RSM", "CAP", "SEC",
+    "JDX", "JSX", "PRA", "GOV", "MAP", "HOP"
+  ],
+  "allowed_future_node_ids": ["ABX", "DBB", "LCE", "SAL", "SAS", "SHA", "SIV"],
+  "demoted_or_deprecated_ids": [
+    "SUP", "RET", "QRY", "NRM", "TRN", "CMP", "RSK",
+    "HNX", "MNT", "RWA", "MCL", "DCL", "DEM",
+    "RDX", "RQX", "PRG", "XRL", "CHX", "DEX", "SIM",
+    "PRX", "CVX", "HIX", "CAL", "AIL", "SCH", "DEP",
+    "RCA", "QOS", "SIMX", "RUX", "XPL", "REL", "DAG",
+    "EXT", "DRT", "DAT", "ROU", "HIT", "ENT", "CON",
+    "ABS", "CRS", "MIG", "TST", "EVD", "HND", "SYN"
+  ],
+  "forbidden_unknown_node_examples": [
+    "H01",
+    "RFX",
+    "MET",
+    "METS",
+    "D3L-FIX-01",
+    "D3L-FIX-02",
+    "TLS-BND-01",
+    "TLS-BND-02",
+    "TLS-FIX-EVL",
+    "TLS-04",
+    "TLS-06",
+    "BUNDLE-01",
+    "BUNDLE-02",
+    "BUNDLE-03",
+    "roadmap_label",
+    "prompt_label",
+    "red_team_report_id"
+  ],
+  "graph_rows": [
+    {
+      "row": 1,
+      "key": "overlay_proof",
+      "label": "Trust / Proof Overlays",
+      "expected_systems": ["REP", "LIN", "OBS", "SLO"]
+    },
+    {
+      "row": 2,
+      "key": "core_loop",
+      "label": "Core Operating Loop",
+      "expected_systems": ["AEX", "PQX", "EVL", "TPA", "CDE", "SEL"]
+    },
+    {
+      "row": 3,
+      "key": "input_routing_support",
+      "label": "Input / Routing / Support",
+      "expected_systems": ["CTX", "PRM", "TLC", "RIL", "FRE", "POL", "SEC", "CAP", "RSM", "RAX", "MAP"]
+    },
+    {
+      "row": 4,
+      "key": "judgment_promotion",
+      "label": "Judgment / Promotion / Certification",
+      "expected_systems": ["JDX", "JSX", "PRA", "GOV"]
+    },
+    {
+      "row": 5,
+      "key": "extension",
+      "label": "Active Specialized / Extension Systems",
+      "expected_systems": ["HOP"]
+    }
+  ],
+  "edge_classes": [
+    { "key": "primary",          "visibility": "default",      "description": "core loop dependency edges" },
+    { "key": "overlay",          "visibility": "overlay",      "description": "overlay-influence edges" },
+    { "key": "governance",       "visibility": "default",      "description": "judgment/promotion/certification edges" },
+    { "key": "failure_path",     "visibility": "failure_only", "description": "edges currently on the failure path" },
+    { "key": "selected_context", "visibility": "overlay",      "description": "edges adjacent to a selected node" },
+    { "key": "secondary",        "visibility": "full_only",    "description": "secondary support edges hidden by default" },
+    { "key": "weak_observed",    "visibility": "full_only",    "description": "low-confidence observed edges hidden by default" }
+  ],
+  "validation_rules": [
+    { "rule_id": "reject_unknown_node",        "description": "graph payload may not contain a system_id absent from the registry contract" },
+    { "rule_id": "reject_demoted_in_default",  "description": "demoted/deprecated systems must not render in the default active graph" },
+    { "rule_id": "reject_future_in_default",   "description": "future placeholders must not render unless the future layer is enabled" },
+    { "rule_id": "reject_roadmap_label_node",  "description": "roadmap / batch / candidate labels (e.g. H01, D3L-FIX-*, TLS-BND-*) must never become nodes" },
+    { "rule_id": "reject_unknown_edge",        "description": "every edge endpoint must be a known registry node" },
+    { "rule_id": "reject_dashboard_ranking",   "description": "dashboard must not compute or re-order ranking; it consumes priority artifact verbatim" }
+  ]
+}

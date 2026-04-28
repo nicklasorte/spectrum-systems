@@ -126,20 +126,47 @@ export interface PriorityArtifactLoadResult {
   payload: PriorityArtifact | null;
   generated_at?: string;
   reason?: string;
+  /**
+   * Records which on-disk path the dashboard actually loaded the artifact
+   * from. The canonical top-level path is preferred; if that is missing,
+   * the dashboard falls back to the TLS sibling path so a freshly built
+   * TLS pipeline still publishes Top 3 instead of failing closed.
+   */
+  source_path?: string;
+  /**
+   * Exact command an operator can run to regenerate the priority artifact
+   * if the dashboard reports it missing or invalid. Surfaced to the UI so
+   * fail-closed never becomes a dead end.
+   */
+  recompute_command?: string;
 }
 
 const PRIORITY_REPORT_PATH = 'artifacts/system_dependency_priority_report.json';
+const PRIORITY_REPORT_TLS_FALLBACK_PATH = 'artifacts/tls/system_dependency_priority_report.json';
 const TLS_INTEGRATION_PATH = 'artifacts/tls/system_graph_integration_report.json';
 
 // 14 days. The artifact is build-time; older than this and the dashboard must
 // surface a stale state instead of misleading the operator.
 const STALE_THRESHOLD_MS = 14 * 24 * 60 * 60 * 1000;
 
+// Accepted schema_version / phase values. Newer TLS pipeline iterations
+// (tls-06.v1, tls-05.v1, tls-04.v1) all share the same observable shape used
+// by the dashboard. Adding a strict newest-only check would lock the
+// dashboard out of the published TLS report; we instead pin the *shape*
+// fields the dashboard reads and accept any tls-* schema_version that
+// matches.
+const ACCEPTED_SCHEMA_VERSION_PREFIX = 'tls-';
+const ACCEPTED_PHASE_PREFIX = 'TLS-';
+
 function isPriorityArtifact(value: unknown): value is PriorityArtifact {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
-  if (obj.schema_version !== 'tls-04.v1') return false;
-  if (obj.phase !== 'TLS-04') return false;
+  if (typeof obj.schema_version !== 'string' || !obj.schema_version.startsWith(ACCEPTED_SCHEMA_VERSION_PREFIX)) {
+    return false;
+  }
+  if (typeof obj.phase !== 'string' || !obj.phase.startsWith(ACCEPTED_PHASE_PREFIX)) {
+    return false;
+  }
   if (!Array.isArray(obj.ranked_systems)) return false;
   if (!Array.isArray(obj.global_ranked_systems)) return false;
   if (!Array.isArray(obj.top_5)) return false;
@@ -160,10 +187,24 @@ function isPriorityArtifact(value: unknown): value is PriorityArtifact {
   return true;
 }
 
-export function loadPriorityArtifact(
-  relativePath: string = PRIORITY_REPORT_PATH,
-  now: Date = new Date(),
-): PriorityArtifactLoadResult {
+/**
+ * Recompute command surfaced to the operator when the priority artifact
+ * cannot be loaded. The dashboard never re-ranks; a fail-closed banner
+ * tells the operator how to regenerate the artifact upstream.
+ */
+export const PRIORITY_RECOMPUTE_COMMAND =
+  'python scripts/build_tls_dependency_priority.py --candidates H01,RFX,HOP,MET,METS --fail-if-missing && python scripts/build_dashboard_3ls_with_tls.py';
+
+interface AttemptResult {
+  state: 'ok' | 'invalid_schema' | 'missing';
+  payload: PriorityArtifact | null;
+  reason?: string;
+  generated_at?: string;
+  source_path?: string;
+  control_signal?: 'blocked_signal' | 'freeze_signal';
+}
+
+function attemptLoad(relativePath: string): AttemptResult {
   const repoRoot = getRepoRoot();
   const fullPath = path.join(repoRoot, relativePath);
   let stat: fs.Stats;
@@ -181,6 +222,7 @@ export function loadPriorityArtifact(
       state: 'invalid_schema',
       payload: null,
       reason: `read_failed:${(err as Error).message}`,
+      source_path: relativePath,
     };
   }
 
@@ -192,39 +234,110 @@ export function loadPriorityArtifact(
       state: 'invalid_schema',
       payload: null,
       reason: `parse_failed:${(err as Error).message}`,
+      source_path: relativePath,
     };
   }
 
   if (!isPriorityArtifact(parsed)) {
-    return { state: 'invalid_schema', payload: null, reason: 'shape_mismatch' };
+    return { state: 'invalid_schema', payload: null, reason: 'shape_mismatch', source_path: relativePath };
   }
 
-  const payload = parsed;
-  const generated_at = payload.generated_at ?? stat.mtime.toISOString();
+  const generated_at = parsed.generated_at ?? stat.mtime.toISOString();
+  return {
+    state: 'ok',
+    payload: parsed,
+    generated_at,
+    source_path: relativePath,
+    control_signal: parsed.control_signal === 'blocked_signal' || parsed.control_signal === 'freeze_signal'
+      ? parsed.control_signal
+      : undefined,
+  };
+}
 
-  if (payload.control_signal === 'blocked_signal') {
+export function loadPriorityArtifact(
+  relativePath: string = PRIORITY_REPORT_PATH,
+  now: Date = new Date(),
+): PriorityArtifactLoadResult {
+  // Strict mode: caller asked for a specific path. Honor it without fallback.
+  if (relativePath !== PRIORITY_REPORT_PATH) {
+    return finalizeLoad(attemptLoad(relativePath), now);
+  }
+
+  // Default mode: prefer the canonical top-level path; if the artifact is
+  // missing there, fall back to the TLS sibling path that the upstream
+  // pipeline produces. This is the Phase 1 fix — Top 3 never reads
+  // "unavailable" purely because the publish step has not copied the
+  // artifact up to the canonical path yet.
+  const primary = attemptLoad(PRIORITY_REPORT_PATH);
+  if (primary.state === 'missing') {
+    const fallback = attemptLoad(PRIORITY_REPORT_TLS_FALLBACK_PATH);
+    if (fallback.state !== 'missing') {
+      return finalizeLoad(fallback, now);
+    }
+    // Both missing: surface the missing-state with the recompute command.
+    return {
+      state: 'missing',
+      payload: null,
+      reason: `not_found:${PRIORITY_REPORT_PATH} and not_found:${PRIORITY_REPORT_TLS_FALLBACK_PATH}`,
+      recompute_command: PRIORITY_RECOMPUTE_COMMAND,
+    };
+  }
+  return finalizeLoad(primary, now);
+}
+
+function finalizeLoad(attempt: AttemptResult, now: Date): PriorityArtifactLoadResult {
+  if (attempt.state === 'missing') {
+    return {
+      state: 'missing',
+      payload: null,
+      reason: attempt.reason,
+      recompute_command: PRIORITY_RECOMPUTE_COMMAND,
+    };
+  }
+  if (attempt.state === 'invalid_schema') {
+    return {
+      state: 'invalid_schema',
+      payload: null,
+      reason: attempt.reason ?? 'shape_mismatch',
+      source_path: attempt.source_path,
+      recompute_command: PRIORITY_RECOMPUTE_COMMAND,
+    };
+  }
+
+  const payload = attempt.payload!;
+  const generated_at = attempt.generated_at!;
+
+  if (attempt.control_signal === 'blocked_signal') {
     return {
       state: 'blocked_signal',
       payload,
       generated_at,
       reason: 'control_signal=blocked_signal',
+      source_path: attempt.source_path,
     };
   }
-  if (payload.control_signal === 'freeze_signal') {
+  if (attempt.control_signal === 'freeze_signal') {
     return {
       state: 'freeze_signal',
       payload,
       generated_at,
       reason: 'control_signal=freeze_signal',
+      source_path: attempt.source_path,
     };
   }
 
   const generatedMs = Date.parse(generated_at);
   if (!Number.isNaN(generatedMs) && now.getTime() - generatedMs > STALE_THRESHOLD_MS) {
-    return { state: 'stale', payload, generated_at, reason: 'older_than_threshold' };
+    return {
+      state: 'stale',
+      payload,
+      generated_at,
+      reason: 'older_than_threshold',
+      source_path: attempt.source_path,
+    };
   }
 
-  return { state: 'ok', payload, generated_at };
+  return { state: 'ok', payload, generated_at, source_path: attempt.source_path };
 }
 
 export interface TLSIntegratedSystem {

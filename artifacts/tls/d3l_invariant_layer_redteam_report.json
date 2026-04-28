@@ -1,0 +1,47 @@
+{
+  "artifact_type": "d3l_invariant_layer_redteam_report",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_10_invariant_trust_rules_layer",
+  "checks": [
+    {
+      "case_id": "RT-IV-01",
+      "description": "invariant warning hidden",
+      "expected_outcome": "violations are surfaced in the Diagnostics 'Invariant Violations' panel",
+      "implementation": "page.tsx invariantFindings derives from graph.warnings; panel renders violations with invariant id + affected system + source artifact",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-IV-02",
+      "description": "invariant warning shown as success",
+      "expected_outcome": "panel never shows a green/success label when violations exist",
+      "implementation": "panel renders findings with red-left-border styling; success message only renders when invariantFindings.length === 0",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-IV-03",
+      "description": "missing eval not surfaced",
+      "expected_outcome": "graph builder warnings include missing_artifact entries that map to invariant 'artifact-first'",
+      "implementation": "graph.warnings include missing_artifact prefixes; invariantFindings maps them to invariant='artifact-first'",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-IV-04",
+      "description": "trace missing not surfaced",
+      "expected_outcome": "trace_gaps included via warnings list",
+      "implementation": "deriveDebugStatus + failureTaxonomy.mapSignalsToTaxonomy treat missing trace as missing_eval taxonomy; node inspector shows trace_gaps explicitly",
+      "result": "covered_by_existing_inspector_and_taxonomy"
+    },
+    {
+      "case_id": "RT-IV-05",
+      "description": "policy mismatch mislabeled",
+      "expected_outcome": "missing_control / missing_enforcement_signal map to policy_mismatch, never another taxonomy",
+      "implementation": "FAILURE_TAXONOMY_TABLE pins evidence signals; tests assert mapping",
+      "test_pinning": "__tests__/lib/failureTaxonomy.test.ts: maps policy / control signals to policy_mismatch taxonomy",
+      "result": "fixed"
+    }
+  ],
+  "remaining_risks": [],
+  "fix_summary": "Invariant violations surface in Diagnostics panel; mapping is taxonomy-driven; success label only when no violations are present."
+}

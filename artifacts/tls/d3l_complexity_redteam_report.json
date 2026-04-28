@@ -1,0 +1,46 @@
+{
+  "artifact_type": "d3l_complexity_redteam_report",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_11_complexity_removal_red_team",
+  "checks": [
+    {
+      "case_id": "RT-CX-01",
+      "description": "did removal hide a critical failure?",
+      "expected_outcome": "all warnings still surface from Overview (Top 3, queue, flow); Diagnostics tab adds invariant violations",
+      "evidence": "__tests__/components/Met03Panels.test.tsx still asserts top3-warning + queue-warning visible; new diagnostics panel adds invariant-violations-panel",
+      "result": "no_critical_loss"
+    },
+    {
+      "case_id": "RT-CX-02",
+      "description": "did removal break debugging?",
+      "expected_outcome": "node inspector still shows missing artifacts, failed evals, trace gaps, upstream blockers, last recompute, source breadcrumbs",
+      "evidence": "SystemInspector preserved; Explain panel adds deterministic explanation",
+      "result": "no_debugger_loss"
+    },
+    {
+      "case_id": "RT-CX-03",
+      "description": "did removal remove needed artifact detail?",
+      "expected_outcome": "Raw Artifacts tab still pretty-prints priority + flow + graph + roadmap + intelligence + contract + explain + decisionLayer payloads",
+      "evidence": "Raw tab JSON.stringify includes new payloads",
+      "result": "no_artifact_loss"
+    },
+    {
+      "case_id": "RT-CX-04",
+      "description": "did Overview become too sparse?",
+      "expected_outcome": "Overview retains 4 essential panels (Trust Pulse, Flow, Top 3, Queue) plus optional Explain panel when explain endpoint is available",
+      "evidence": "Existing test 'keeps overview concise with only four operator panels' still passes",
+      "result": "concise_not_sparse"
+    },
+    {
+      "case_id": "RT-CX-05",
+      "description": "did tabs retain full detail?",
+      "expected_outcome": "Roadmap, Diagnostics, Sources, Prioritization, Raw, Decision Layer, Graph tabs all preserve their full detail",
+      "evidence": "All tabs render their respective payloads; Decision Layer tab adds projection without removing existing tabs",
+      "result": "full_detail_retained"
+    }
+  ],
+  "remaining_risks": [],
+  "fix_summary": "Complexity removal preserves all critical warnings and debug detail; Overview stays concise."
+}

@@ -1,0 +1,62 @@
+{
+  "artifact_type": "d3l_graph_layout_redteam_report",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_2_clean_registry_aligned_graph_layout",
+  "checks": [
+    {
+      "case_id": "RT-GL-01",
+      "description": "default mode renders only registry-active nodes (no H01, no roadmap labels)",
+      "expected_outcome": "graph payload nodes ⊆ allowed_active_node_ids",
+      "implementation": "systemGraphBuilder filters via acceptIfAllowed and contractValidation; rejected ids surfaced as warnings",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-GL-02",
+      "description": "default mode shows only primary / governance / minimal overlay edges",
+      "expected_outcome": "secondary and weak_observed edges hidden by default",
+      "implementation": "edge_classes contract carries visibility; SystemTrustGraph hides non-primary edges in normal mode unless 'show all' is toggled",
+      "result": "covered_by_existing_render_logic"
+    },
+    {
+      "case_id": "RT-GL-03",
+      "description": "core row order is correct: AEX → PQX → EVL → TPA → CDE → SEL",
+      "expected_outcome": "core row slot ordering matches canonical_loop",
+      "implementation": "GRAPH_LAYOUTS.layered.core slots are pinned to canonical loop ordering",
+      "result": "covered_by_existing_layout"
+    },
+    {
+      "case_id": "RT-GL-04",
+      "description": "full mode shows all valid registry edges",
+      "expected_outcome": "every registry-active downstream relationship shown",
+      "implementation": "showAll toggle + contract validation drops only unknown endpoints",
+      "result": "covered_by_existing_show_all_toggle"
+    },
+    {
+      "case_id": "RT-GL-05",
+      "description": "selected-node mode shows local upstream/downstream edges",
+      "expected_outcome": "edges adjacent to selected node remain visible at higher opacity",
+      "implementation": "connectedToFocus + selected-node opacity boost in SystemTrustGraph",
+      "result": "covered_by_existing_render_logic"
+    },
+    {
+      "case_id": "RT-GL-06",
+      "description": "no excessive edges in default mode",
+      "expected_outcome": "default density ≤ ~25% of full mode density",
+      "implementation": "isPrimaryEdge filter retains only dependency / failure_path / focus-adjacent edges",
+      "result": "covered_by_existing_render_logic"
+    },
+    {
+      "case_id": "RT-GL-07",
+      "description": "mobile layout sanity (no clipping at iPhone width)",
+      "expected_outcome": "graph wraps / scrolls; tabs do not overflow",
+      "implementation": "page.tsx adds overflow-x-auto on tabs and overflow-x-hidden on main; graph SVG uses w-full h-auto with viewBox",
+      "result": "covered_by_existing_responsive_styles"
+    }
+  ],
+  "remaining_risks": [
+    "Wide registry can still produce a dense full mode; mitigation is the explicit show-all toggle plus mode-specific dimming."
+  ],
+  "fix_summary": "Default graph is registry-backed only; non-primary edges hidden by default; show-all toggle exposes the full registry edge set."
+}

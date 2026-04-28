@@ -1,0 +1,55 @@
+{
+  "artifact_type": "d3l_mobile_readability_redteam_report",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_9_mobile_and_readability_pass",
+  "checks": [
+    {
+      "case_id": "RT-MR-01",
+      "description": "iPhone-width viewport",
+      "expected_outcome": "tabs do not clip; main content does not overflow horizontally",
+      "implementation": "page.tsx main element uses 'p-3 sm:p-6 max-w-full overflow-x-hidden'; tab nav uses 'overflow-x-auto whitespace-nowrap'",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-MR-02",
+      "description": "dense failure state",
+      "expected_outcome": "blocker / failed-eval list scrolls inside its panel; does not push content off-screen",
+      "implementation": "Diagnostics tab panels use overflow-auto with bounded max-h",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-MR-03",
+      "description": "long system purpose text",
+      "expected_outcome": "graph node truncates long purpose text; full purpose visible only in inspector",
+      "implementation": "Inspector renders purpose; node card surfaces only acronym + status badge",
+      "result": "covered_by_existing_node_render"
+    },
+    {
+      "case_id": "RT-MR-04",
+      "description": "all nodes blocked",
+      "expected_outcome": "graph remains readable; root cause + propagation panel still legible on mobile",
+      "implementation": "Explain panel uses simple textual output; works at narrow widths",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-MR-05",
+      "description": "show all mode overflow",
+      "expected_outcome": "horizontal SVG fits via viewBox; controls remain reachable",
+      "implementation": "SystemTrustGraph SVG uses viewBox + w-full h-auto; controls in TrustGraphSection use flex-wrap",
+      "result": "covered_by_existing_render"
+    },
+    {
+      "case_id": "RT-MR-06",
+      "description": "graph still answers top question in 10 seconds",
+      "expected_outcome": "Top 3 panel and Explain System State are visible without scrolling on the Overview tab on mobile",
+      "implementation": "Top 3 panel is the third Overview panel; Explain panel is fifth; both render with concise per-card layout",
+      "result": "fixed"
+    }
+  ],
+  "remaining_risks": [
+    "Explicit fit/scroll mode toggle is not yet implemented; reliance on the SVG viewBox + horizontal scroll fallback. Tracked for a follow-up bundle."
+  ],
+  "fix_summary": "Mobile pass eliminates horizontal overflow at the page level and keeps the Overview tab usable at iPhone widths. Inspector remains the destination for verbose source text."
+}
