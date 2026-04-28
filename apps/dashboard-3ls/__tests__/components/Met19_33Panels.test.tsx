@@ -149,6 +149,11 @@ describe('MET-19-33 dashboard sections', () => {
     fireEvent.click(screen.getByTestId('tab-diagnostics'));
     await waitFor(() => expect(screen.getByTestId('diagnostics-intelligence-panel')).toBeInTheDocument());
     expect(screen.getByTestId('diagnostics-intelligence-panel').textContent).toContain('MET intelligence');
+    expect(screen.getByTestId('candidate-closure-section')).toBeInTheDocument();
+    expect(screen.getByTestId('debug-explanation-index-section')).toBeInTheDocument();
+    expect(screen.getByTestId('trend-frequency-honesty-section')).toBeInTheDocument();
+    expect(screen.getByTestId('evl-handoff-observations-section')).toBeInTheDocument();
+    expect(screen.getByTestId('artifact-integrity-section')).toBeInTheDocument();
   });
 
   it('keeps unknown visible when MET-19-33 blocks are missing', async () => {

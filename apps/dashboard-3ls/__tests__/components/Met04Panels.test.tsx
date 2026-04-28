@@ -103,6 +103,11 @@ describe('MET-04-18 dashboard sections', () => {
     fireEvent.click(screen.getByTestId('tab-diagnostics'));
     await waitFor(() => expect(screen.getByTestId('diagnostics-intelligence-panel')).toBeInTheDocument());
     expect(screen.getByTestId('diagnostics-intelligence-panel').textContent).toContain('Learning Loop');
+    expect(screen.getByTestId('learning-loop-section')).toBeInTheDocument();
+    expect(screen.getByTestId('failure-explanation-section')).toBeInTheDocument();
+    expect(screen.getByTestId('override-unknowns-section')).toBeInTheDocument();
+    expect(screen.getByTestId('fallback-reduction-section')).toBeInTheDocument();
+    expect(screen.getByTestId('replay-lineage-hardening-section')).toBeInTheDocument();
   });
 
   it('keeps unknown/fallback/proposed states visible when feedback loop is missing', async () => {
