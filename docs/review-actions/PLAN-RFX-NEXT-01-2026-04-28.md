@@ -17,7 +17,7 @@ Deliver a compact, operator-debug-first RFX loop proof surface with stronger int
 | spectrum_systems/modules/runtime/rfx_loop_proof.py | CREATE | Compact loop proof artifact builder + stage compression + primary-reason policy. |
 | scripts/print_rfx_loop_proof.py | CREATE | Debug-first CLI renderer for compact RFX loop proof artifact. |
 | spectrum_systems/modules/runtime/rfx_contract_snapshot.py | MODIFY | Harden snapshot drift validation and explicit migration requirement. |
-| spectrum_systems/modules/runtime/rfx_unknown_state_campaign.py | MODIFY | Enforce unknown-state operator proof completeness. |
+| spectrum_systems/modules/runtime/rfx_unknown_state_campaign.py | MODIFY | Verify unknown-state operator proof completeness. |
 | spectrum_systems/modules/runtime/rfx_module_elimination.py | MODIFY | Add duplication/bloat responsibility checks. |
 | scripts/run_rfx_super_check.py | MODIFY | Add explicit super-check integrity validation for critical checks and loop-proof coverage. |
 | tests/test_rfx_loop_proof.py | CREATE | Validate N01-N04 behavior and RT-N01..RT-N04 scenarios. |
