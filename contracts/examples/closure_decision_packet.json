@@ -1,0 +1,28 @@
+{
+  "artifact_type": "closure_decision_packet",
+  "schema_version": "1.0.0",
+  "packet_id": "cdp-example-1",
+  "trace_id": "tOC-EXAMPLE-1",
+  "audit_timestamp": "2026-04-28T12:00:00Z",
+  "packet_status": "ready_to_merge",
+  "reason_code": "CLOSURE_PACKET_READY",
+  "evidence": {
+    "proof_intake_ref": "pii-example-good-1",
+    "bottleneck_classification_ref": "bc-example-1",
+    "dashboard_projection_ref": "dtp-example-1",
+    "fast_trust_gate_ref": "ftgr-1",
+    "certification_delta_proof_ref": "cdp-1",
+    "trust_regression_pack_ref": "trp-1",
+    "lineage_chain_ref": "lin-1"
+  },
+  "missing_evidence": [],
+  "blocking_findings": [],
+  "non_authority_assertions": [
+    "preparatory_only",
+    "not_control_authority",
+    "not_certification_authority",
+    "not_promotion_authority",
+    "not_enforcement_authority",
+    "not_closure_authority"
+  ]
+}

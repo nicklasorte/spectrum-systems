@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/closure_decision_packet.schema.json",
+  "title": "Closure Decision Packet",
+  "description": "OC-10 reference-only packet that packages the evidence required for CDE to render a closure decision. The packet itself is a non-owning support seam: it derives a packet_status (ready_to_merge / not_ready / freeze / blocked / unknown) directly from the supplied evidence references and never decides closure or enforces. Canonical closure authority remains with CDE.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "packet_id",
+    "trace_id",
+    "audit_timestamp",
+    "packet_status",
+    "reason_code",
+    "evidence",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": { "const": "closure_decision_packet" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "packet_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "audit_timestamp": { "type": "string", "minLength": 1 },
+    "packet_status": {
+      "type": "string",
+      "enum": ["ready_to_merge", "not_ready", "freeze", "blocked", "unknown"]
+    },
+    "reason_code": { "type": "string", "minLength": 1 },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proof_intake_ref",
+        "bottleneck_classification_ref",
+        "dashboard_projection_ref",
+        "fast_trust_gate_ref",
+        "certification_delta_proof_ref",
+        "trust_regression_pack_ref",
+        "lineage_chain_ref"
+      ],
+      "properties": {
+        "proof_intake_ref": { "type": ["string", "null"] },
+        "bottleneck_classification_ref": { "type": ["string", "null"] },
+        "dashboard_projection_ref": { "type": ["string", "null"] },
+        "fast_trust_gate_ref": { "type": ["string", "null"] },
+        "certification_delta_proof_ref": { "type": ["string", "null"] },
+        "trust_regression_pack_ref": { "type": ["string", "null"] },
+        "lineage_chain_ref": { "type": ["string", "null"] }
+      }
+    },
+    "missing_evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "blocking_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_key", "reason_code"],
+        "properties": {
+          "evidence_key": { "type": "string" },
+          "reason_code": { "type": "string" },
+          "severity": {
+            "type": "string",
+            "enum": ["warn", "block", "freeze"]
+          }
+        }
+      }
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "preparatory_only",
+          "not_control_authority",
+          "not_certification_authority",
+          "not_promotion_authority",
+          "not_enforcement_authority",
+          "not_closure_authority"
+        ]
+      }
+    }
+  }
+}
