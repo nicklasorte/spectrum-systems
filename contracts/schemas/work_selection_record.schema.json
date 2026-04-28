@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/work_selection_record.schema.json",
+  "title": "Work Selection Record",
+  "description": "OC-13 non-owning recommendation surface that selects the next work item only when it is tied to a current bottleneck, a proof delta, a failing or weak trust-regression result, a dashboard/proof mismatch, or a measurable signal gap. Attractive but unsupported expansion work is rejected. The record is a finding/recommendation surface; CDE retains control and PRA retains promotion-readiness authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "record_id",
+    "audit_timestamp",
+    "candidates",
+    "recommended_work_item_id",
+    "selection_status",
+    "reason_code",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": { "const": "work_selection_record" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "record_id": { "type": "string", "minLength": 1 },
+    "audit_timestamp": { "type": "string", "minLength": 1 },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "work_item_id",
+          "justification_kind",
+          "evidence_ref",
+          "score",
+          "accepted",
+          "reason_code"
+        ],
+        "properties": {
+          "work_item_id": { "type": "string", "minLength": 1 },
+          "justification_kind": {
+            "type": "string",
+            "enum": [
+              "current_bottleneck",
+              "proof_delta",
+              "failing_trust_regression",
+              "weak_trust_regression",
+              "dashboard_proof_mismatch",
+              "measurable_signal_gap",
+              "expansion_unsupported",
+              "low_trust"
+            ]
+          },
+          "evidence_ref": { "type": ["string", "null"] },
+          "score": { "type": "number" },
+          "accepted": { "type": "boolean" },
+          "reason_code": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "recommended_work_item_id": { "type": ["string", "null"] },
+    "selection_status": {
+      "type": "string",
+      "enum": ["selected", "no_recommendation", "blocked", "unknown"]
+    },
+    "reason_code": { "type": "string", "minLength": 1 },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "preparatory_only",
+          "not_control_authority",
+          "not_certification_authority",
+          "not_promotion_authority",
+          "not_enforcement_authority"
+        ]
+      }
+    }
+  }
+}

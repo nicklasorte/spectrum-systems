@@ -1,0 +1,67 @@
+{
+  "artifact_type": "proof_intake_index",
+  "schema_version": "1.0.0",
+  "intake_id": "pii-example-good-1",
+  "audit_timestamp": "2026-04-28T12:00:00Z",
+  "selections": {
+    "loop_proof_bundle": {
+      "kind": "loop_proof_bundle",
+      "selected_artifact_id": "lpb-pass-1",
+      "selected_digest": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+      "selected_generated_at": "2026-04-28T11:00:00Z",
+      "candidate_count": 1,
+      "selection_status": "selected",
+      "reason_code": "PROOF_INTAKE_OK",
+      "rejected_candidates": []
+    },
+    "certification_delta_proof": {
+      "kind": "certification_delta_proof",
+      "selected_artifact_id": "cdp-1",
+      "selected_digest": null,
+      "selected_generated_at": "2026-04-28T11:01:00Z",
+      "candidate_count": 1,
+      "selection_status": "selected",
+      "reason_code": "PROOF_INTAKE_OK",
+      "rejected_candidates": []
+    },
+    "trust_regression_result": {
+      "kind": "trust_regression_result",
+      "selected_artifact_id": "trr-1",
+      "selected_digest": null,
+      "selected_generated_at": "2026-04-28T11:02:00Z",
+      "candidate_count": 1,
+      "selection_status": "selected",
+      "reason_code": "PROOF_INTAKE_OK",
+      "rejected_candidates": []
+    },
+    "cli_summary": {
+      "kind": "cli_summary",
+      "selected_artifact_id": "cli-1",
+      "selected_digest": null,
+      "selected_generated_at": "2026-04-28T11:03:00Z",
+      "candidate_count": 1,
+      "selection_status": "selected",
+      "reason_code": "PROOF_INTAKE_OK",
+      "rejected_candidates": []
+    },
+    "dashboard_proof_ref": {
+      "kind": "dashboard_proof_ref",
+      "selected_artifact_id": "dpr-1",
+      "selected_digest": null,
+      "selected_generated_at": "2026-04-28T11:04:00Z",
+      "candidate_count": 1,
+      "selection_status": "selected",
+      "reason_code": "PROOF_INTAKE_OK",
+      "rejected_candidates": []
+    }
+  },
+  "overall_status": "ok",
+  "reason_code": "PROOF_INTAKE_OK",
+  "non_authority_assertions": [
+    "preparatory_only",
+    "not_control_authority",
+    "not_certification_authority",
+    "not_promotion_authority",
+    "not_enforcement_authority"
+  ]
+}
