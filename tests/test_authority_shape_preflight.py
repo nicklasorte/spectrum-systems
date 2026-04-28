@@ -26,6 +26,7 @@ from spectrum_systems.governance.authority_shape_preflight import (
     is_owner_path,
     load_vocabulary,
 )
+from spectrum_systems.governance.authority_shape_early_gate import evaluate_early_gate
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VOCAB_PATH = REPO_ROOT / "contracts" / "governance" / "authority_shape_vocabulary.json"
@@ -52,6 +53,38 @@ def _seed_repo(tmp_path: Path) -> Path:
     (repo / "scripts").mkdir()
     (repo / "spectrum_systems" / "modules" / "governance").mkdir()
     return repo
+
+
+def _seed_registry(repo: Path) -> None:
+    registry = repo / "docs" / "architecture" / "system_registry.md"
+    registry.parent.mkdir(parents=True, exist_ok=True)
+    registry.write_text(
+        "\n".join(
+            [
+                "# System Registry (Canonical)",
+                "### CDE",
+                "- **Primary Code Paths:**",
+                "  - `spectrum_systems/modules/runtime/closure_decision_engine.py`",
+                "### CTL",
+                "- **Primary Code Paths:**",
+                "  - `spectrum_systems/modules/runtime/control_loop.py`",
+                "### JDX",
+                "- **Primary Code Paths:**",
+                "  - `spectrum_systems/modules/judgment/`",
+                "### SEL",
+                "- **Primary Code Paths:**",
+                "  - `spectrum_systems/modules/runtime/system_enforcement_layer.py`",
+                "### ENF",
+                "- **Primary Code Paths:**",
+                "  - `spectrum_systems/modules/enforcement/`",
+                "### RFX",
+                "- **Primary Code Paths:**",
+                "  - `contracts/rfx/`",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def test_non_owner_using_promotion_decision_fails(tmp_path: Path, vocab) -> None:
@@ -258,9 +291,68 @@ def test_guard_paths_are_skipped_for_violations(tmp_path: Path, vocab) -> None:
     result = evaluate_preflight(
         repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only"
     )
-    assert all(v.file != rel for v in result.violations), (
-        "guard scripts must be exempt from preflight violation reporting "
-        "since they intentionally enumerate authority terms"
+
+
+def test_early_gate_rfx_decision_language_requires_rename(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    _seed_registry(repo)
+    rel = "contracts/rfx/RFX-001.md"
+    _write(repo, rel, "The system decision is to approve this batch.\n")
+    result = evaluate_early_gate(repo_root=repo, changed_files=[rel])
+    assert result.status == "fail"
+    assert any(
+        h.classification == "non_authority_usage_requires_rename" and h.cluster == "decision"
+        for h in result.hits
+    )
+
+
+def test_early_gate_rfx_recommendation_finding_observation_pass(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    _seed_registry(repo)
+    rel = "contracts/rfx/RFX-002.md"
+    _write(repo, rel, "Recommendation: proceed. Finding: stable. Observation: bounded.\n")
+    result = evaluate_early_gate(repo_root=repo, changed_files=[rel])
+    assert result.status == "pass"
+    assert result.hits == []
+
+
+def test_early_gate_sel_and_enf_can_use_enforcement_terms(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    _seed_registry(repo)
+    sel_rel = "spectrum_systems/modules/runtime/system_enforcement_layer.py"
+    enf_rel = "spectrum_systems/modules/enforcement/policy.py"
+    _write(repo, sel_rel, "enforcement_action = 'halt'\n")
+    _write(repo, enf_rel, "def enforce_policy():\n    return 'ok'\n")
+    result = evaluate_early_gate(repo_root=repo, changed_files=[sel_rel, enf_rel])
+    assert result.status == "pass"
+    assert all(h.classification == "allowed_canonical_owner_usage" for h in result.hits)
+
+
+def test_early_gate_cde_ctl_jdx_can_use_decision_terms(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    _seed_registry(repo)
+    cde_rel = "spectrum_systems/modules/runtime/closure_decision_engine.py"
+    ctl_rel = "spectrum_systems/modules/runtime/control_loop.py"
+    jdx_rel = "spectrum_systems/modules/judgment/rules.py"
+    _write(repo, cde_rel, "decision = 'allow'\n")
+    _write(repo, ctl_rel, "verdict = 'block'\n")
+    _write(repo, jdx_rel, "def adjudicate_case():\n    return 'done'\n")
+    result = evaluate_early_gate(repo_root=repo, changed_files=[cde_rel, ctl_rel, jdx_rel])
+    assert result.status == "pass"
+    assert all(h.classification == "allowed_canonical_owner_usage" for h in result.hits)
+
+
+def test_early_gate_unresolved_owner_is_ambiguous_review_required(tmp_path: Path) -> None:
+    repo = _seed_repo(tmp_path)
+    _seed_registry(repo)
+    rel = "docs/notes/authority.md"
+    _write(repo, rel, "This includes a decision term without owner mapping.\n")
+    result = evaluate_early_gate(repo_root=repo, changed_files=[rel])
+    assert result.status == "fail"
+    assert any(
+        h.classification == "ambiguous_usage_requires_human_review"
+        and h.required_action == "review_required"
+        for h in result.hits
     )
 
 

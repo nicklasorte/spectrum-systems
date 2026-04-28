@@ -15,6 +15,7 @@ import textwrap
 from pathlib import Path
 
 from scripts import run_authority_shape_preflight as preflight_cli
+from scripts import run_authority_shape_early_gate as early_gate_cli
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -206,3 +207,63 @@ def test_cli_propagates_changed_file_resolution_error(monkeypatch, tmp_path: Pat
         assert "bad refs" in str(exc)
     else:
         raise AssertionError("expected AuthorityShapePreflightError")
+
+
+def _make_early_gate_args(**overrides):
+    defaults = {
+        "base_ref": "base",
+        "head_ref": "head",
+        "changed_files": [],
+        "output": "outputs/authority_shape_preflight/authority_shape_early_gate_result.json",
+        "owner_registry": "docs/architecture/system_registry.md",
+    }
+    defaults.update(overrides)
+    return type("Args", (), defaults)()
+
+
+def test_early_gate_cli_writes_structured_artifact(monkeypatch, tmp_path: Path) -> None:
+    output_path = tmp_path / "authority_shape_early_gate_result.json"
+    repo_root = early_gate_cli.REPO_ROOT
+    changed_rel = "contracts/rfx/authority_shape_example.md"
+    changed_path = repo_root / changed_rel
+    changed_path.parent.mkdir(parents=True, exist_ok=True)
+    changed_path.write_text("decision should be avoided in RFX files\n", encoding="utf-8")
+    try:
+        monkeypatch.setattr(
+            early_gate_cli,
+            "_parse_args",
+            lambda: _make_early_gate_args(output=str(output_path)),
+        )
+        monkeypatch.setattr(
+            early_gate_cli,
+            "resolve_changed_files",
+            lambda **_: [changed_rel],
+        )
+        rc = early_gate_cli.main()
+    finally:
+        changed_path.unlink(missing_ok=True)
+    assert rc == 1
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["artifact_type"] == "authority_shape_early_gate_result"
+    assert payload["summary"]["review_required_count"] >= 1
+
+
+def test_early_gate_cli_propagates_changed_file_resolution_error(
+    monkeypatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        early_gate_cli,
+        "_parse_args",
+        lambda: _make_early_gate_args(output=str(tmp_path / "result.json")),
+    )
+
+    def _raise(**_kwargs):
+        raise early_gate_cli.ChangedFilesResolutionError("broken refs")
+
+    monkeypatch.setattr(early_gate_cli, "resolve_changed_files", _raise)
+    try:
+        early_gate_cli.main()
+    except early_gate_cli.AuthorityShapeEarlyGateError as exc:
+        assert "broken refs" in str(exc)
+    else:
+        raise AssertionError("expected AuthorityShapeEarlyGateError")
