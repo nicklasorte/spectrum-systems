@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "gate_name",
+    "status",
+    "trace",
+    "provenance",
+    "inputs",
+    "outputs",
+    "executed_commands",
+    "reason_codes",
+    "failure_summary",
+    "artifact_hash"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "gate_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "warn",
+        "freeze",
+        "block"
+      ]
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "produced_at",
+        "producer_script"
+      ],
+      "properties": {
+        "produced_at": {
+          "type": "string"
+        },
+        "producer_script": {
+          "type": "string"
+        },
+        "source_commit": {
+          "type": "string"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "inputs": {
+      "type": "object"
+    },
+    "outputs": {
+      "type": "object"
+    },
+    "executed_commands": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "selected_tests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "failure_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gate_name",
+        "failure_class",
+        "root_cause",
+        "blocking_reason",
+        "next_action",
+        "affected_files",
+        "failed_command",
+        "artifact_refs"
+      ],
+      "properties": {
+        "gate_name": {
+          "type": "string"
+        },
+        "failure_class": {
+          "type": "string"
+        },
+        "root_cause": {
+          "type": "string"
+        },
+        "blocking_reason": {
+          "type": "string"
+        },
+        "next_action": {
+          "type": "string"
+        },
+        "affected_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "failed_command": {
+          "type": "string"
+        },
+        "artifact_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "artifact_hash": {
+      "type": "string"
+    }
+  }
+}

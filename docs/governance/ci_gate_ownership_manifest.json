@@ -1,0 +1,61 @@
+{
+  "artifact_type": "ci_gate_ownership_manifest",
+  "schema_version": "1.0.0",
+  "owned_ci_scripts": [
+    "scripts/run_pr_gate.py",
+    "scripts/run_contract_gate.py",
+    "scripts/run_test_selection_gate.py",
+    "scripts/run_runtime_test_gate.py",
+    "scripts/run_governance_gate.py",
+    "scripts/run_certification_gate.py"
+  ],
+  "required_checks": {
+    "pr-gate": "pr_gate"
+  },
+  "gates": {
+    "contract_gate": {
+      "owner_surface": "contracts",
+      "purpose": "schema and contract preflight authority",
+      "inputs": ["base_ref", "head_ref", "contracts/*"],
+      "outputs": ["outputs/contract_gate/contract_gate_result.json"],
+      "protected_invariants": ["schema_authority", "contract_fail_closed"],
+      "required_tests": ["tests/test_contracts.py"],
+      "failure_modes": ["missing_preflight", "preflight_nonzero"],
+      "escalation_path": "contracts owners + governance",
+      "runtime_budget": "pr-fast"
+    },
+    "runtime_test_gate": {
+      "owner_surface": "runtime",
+      "purpose": "selected and fallback runtime tests",
+      "inputs": ["changed_paths", "selection_policy", "baseline_suite"],
+      "outputs": ["outputs/test_selection_gate/test_selection_gate_result.json", "outputs/runtime_test_gate/runtime_test_gate_result.json"],
+      "protected_invariants": ["selection_integrity", "required_eval_coverage", "control_signals"],
+      "required_tests": ["tests/test_required_eval_coverage.py", "tests/test_control_signals.py"],
+      "failure_modes": ["empty_governed_selection", "pytest_failure"],
+      "escalation_path": "runtime owners",
+      "runtime_budget": "pr-fast"
+    },
+    "governance_gate": {
+      "owner_surface": "governance",
+      "purpose": "registry and required-check alignment",
+      "inputs": ["system_registry", "required_pr_checks"],
+      "outputs": ["outputs/governance_gate/governance_gate_result.json"],
+      "protected_invariants": ["authority_boundaries", "required_check_integrity"],
+      "required_tests": ["tests/test_required_check_alignment_audit.py", "tests/test_system_registry_guard.py"],
+      "failure_modes": ["required_check_drift", "registry_guard_failure"],
+      "escalation_path": "governance owners",
+      "runtime_budget": "pr-fast"
+    },
+    "certification_gate": {
+      "owner_surface": "certification",
+      "purpose": "promotion readiness via replay/lineage/cert evidence",
+      "inputs": ["upstream_gate_artifacts", "done_certification"],
+      "outputs": ["outputs/certification_gate/certification_gate_result.json"],
+      "protected_invariants": ["promotion_requires_certification", "replay_lineage_presence"],
+      "required_tests": ["tests/test_done_certification.py", "tests/test_trace_and_provenance.py"],
+      "failure_modes": ["missing_artifact", "certification_command_failure"],
+      "escalation_path": "certification owners",
+      "runtime_budget": "pr-fast/release"
+    }
+  }
+}
