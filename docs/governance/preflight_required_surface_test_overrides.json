@@ -16,5 +16,78 @@
   ],
   "contracts/schemas/preflight_block_diagnosis_record.schema.json": [
     "tests/test_contracts.py"
+  ],
+  "artifacts/dashboard_metrics/failure_feedback_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/eval_candidate_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/policy_candidate_signal_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/feedback_loop_snapshot.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/failure_explanation_packets.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/override_audit_log_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/eval_materialization_path_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/replay_lineage_hardening_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/fallback_reduction_plan_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_metrics/sel_compliance_signal_input_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_cases/case_index_record.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_cases/case_eval_gap_001.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_cases/case_replay_gap_001.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "artifacts/dashboard_cases/case_cert_incomplete_001.json": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "apps/dashboard-3ls/app/api/intelligence/route.ts": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "apps/dashboard-3ls/app/page.tsx": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "docs/reviews/MET-04-18-final-integration-review.md": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "docs/reviews/MET-07-learning-loop-truth-redteam.md": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "docs/reviews/MET-08-learning-loop-fixes.md": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "docs/reviews/MET-14-removable-metric-system-audit.md": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "docs/reviews/MET-15-core-loop-strength-redteam.md": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "docs/reviews/MET-16-core-loop-fixes.md": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "docs/reviews/MET-17-dashboard-usefulness-redteam.md": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "docs/reviews/MET-18-dashboard-usefulness-fixes.md": [
+    "tests/metrics/test_met_04_18_contract_selection.py"
   ]
 }
+

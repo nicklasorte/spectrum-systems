@@ -232,3 +232,73 @@ Confirmation MET remains observation/recommendation only:
   proposed eval candidates, proposed policy candidate signals, failure
   explanations, fallback reduction plan, replay/lineage hardening, and SEL
   compliance signal input — function preserved, only wording adjusted.
+
+## Contract preflight selection repair
+
+After the authority-vocabulary cleanup commit, contract preflight reported
+the following observation envelope (canonical owner is the contract-preflight
+autofix module; field names below are quoted from that owner's output):
+
+- `failure_class`: `pytest_selection_missing`
+- repair-eligibility observation: `auto_repair_allowed`
+- strategy-gate observation: `BLOCK`
+
+### Missing-coverage cause
+
+MET-04-18 changed paths sit outside the existing forced-evaluation
+surfaces recognised by `scripts/run_contract_preflight.py::_is_forced_evaluation_surface`:
+
+- `artifacts/dashboard_metrics/*.json`
+- `artifacts/dashboard_cases/*.json`
+- `apps/dashboard-3ls/app/api/intelligence/route.ts`
+- `apps/dashboard-3ls/app/page.tsx`
+- `docs/reviews/MET-*.md`
+
+Because none of those paths matched a contract surface or forced surface,
+`analyze_contract_impact` returned no producers/consumers/fixtures and
+`forced_eval_targets_by_path` was empty. With no pytest target selected,
+the pytest execution record reported `executed=False` and the integrity
+evaluator emitted `PYTEST_SELECTION_ARTIFACT_MISSING`, which the autofix
+classifier mapped to `pytest_selection_missing` and BLOCK.
+
+### Added pytest selection / test file
+
+- New: `tests/metrics/test_met_04_18_contract_selection.py` — 70+ deterministic
+  assertions covering MET-04-18 artifact existence, envelope shape,
+  `failure_prevented` / `signal_improved` presence, candidate-stays-proposed
+  invariants, override-stays-unknown invariants, three-or-more comparable
+  cases, fallback-reduction systems whitelist, review-doc presence,
+  authority-neutral wording, dashboard API/page wiring, and no-fake-zero
+  fail-closed behaviour for `override_count`.
+- Updated: `docs/governance/preflight_required_surface_test_overrides.json`
+  — maps every MET-04-18 artifact, dashboard surface, and review doc path
+  to the new pytest test file as the canonical override target.
+- Updated: `docs/governance/pytest_pr_selection_integrity_policy.json` —
+  adds five `surface_rules` entries for the MET-04-18 path prefixes
+  (`artifacts/dashboard_metrics/`, `artifacts/dashboard_cases/`,
+  `apps/dashboard-3ls/app/api/intelligence/`, `apps/dashboard-3ls/app/page.tsx`,
+  `docs/reviews/MET-`) so the integrity evaluator can verify selection.
+- Updated: `scripts/run_contract_preflight.py::_is_forced_evaluation_surface`
+  — recognises the same five MET-04-18 path prefixes as forced surfaces so
+  they enter `surface_classification["required_paths"]` and the override
+  map resolves them to the new pytest target.
+
+### Rerun result
+
+After the repair, contract preflight selects
+`tests/metrics/test_met_04_18_contract_selection.py` for any MET-04-18
+changed path. Pytest selection integrity evaluation:
+
+- `selected_test_targets` includes the new file
+- `effective_required` includes it via the policy `surface_rules`
+- `executed` becomes True after the test runs
+- the integrity-check observation returns `ALLOW` (no blocking reasons)
+- `failure_class` is no longer `pytest_selection_missing`
+
+### Residual risk
+
+- The new pytest file enforces invariants that depend on the MET-04-18
+  artifact and review-doc shape; future MET-* phases must keep the
+  surface compatible or update the test in the same PR.
+- The override map and policy are repo-native and survive across PRs;
+  there is no allowlist exception or preflight bypass.

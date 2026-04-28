@@ -558,6 +558,19 @@ def _is_forced_evaluation_surface(path: str) -> tuple[bool, str, str]:
         )
         if any(marker in path for marker in tied_markers):
             return True, "contract_tied_tests", "contract-tied test changed"
+    # MET-04-18 surfaces: dashboard metrics/cases artifacts, the dashboard
+    # intelligence API and page, and MET-* review docs are tied to
+    # tests/metrics/test_met_04_18_contract_selection.py via
+    # docs/governance/preflight_required_surface_test_overrides.json.
+    if (
+        path.startswith("artifacts/dashboard_metrics/")
+        or path.startswith("artifacts/dashboard_cases/")
+    ):
+        return True, "met_04_18_dashboard_artifact", "MET-04-18 dashboard artifact changed"
+    if path.startswith("apps/dashboard-3ls/app/api/intelligence/") or path == "apps/dashboard-3ls/app/page.tsx":
+        return True, "met_04_18_dashboard_surface", "MET-04-18 dashboard surface changed"
+    if path.startswith("docs/reviews/MET-") and path.endswith(".md"):
+        return True, "met_review_surface", "MET-* review doc changed"
     return False, "other", "path does not map to governed contract surface"
 
 

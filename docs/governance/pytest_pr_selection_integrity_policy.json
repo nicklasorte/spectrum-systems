@@ -43,6 +43,36 @@
         "tests/test_artifact_boundary_workflow_pytest_policy_observation.py",
         "tests/test_artifact_boundary_workflow_policy_observation.py"
       ]
+    },
+    {
+      "path_prefix": "artifacts/dashboard_metrics/",
+      "required_test_targets": [
+        "tests/metrics/test_met_04_18_contract_selection.py"
+      ]
+    },
+    {
+      "path_prefix": "artifacts/dashboard_cases/",
+      "required_test_targets": [
+        "tests/metrics/test_met_04_18_contract_selection.py"
+      ]
+    },
+    {
+      "path_prefix": "apps/dashboard-3ls/app/api/intelligence/",
+      "required_test_targets": [
+        "tests/metrics/test_met_04_18_contract_selection.py"
+      ]
+    },
+    {
+      "path_prefix": "apps/dashboard-3ls/app/page.tsx",
+      "required_test_targets": [
+        "tests/metrics/test_met_04_18_contract_selection.py"
+      ]
+    },
+    {
+      "path_prefix": "docs/reviews/MET-",
+      "required_test_targets": [
+        "tests/metrics/test_met_04_18_contract_selection.py"
+      ]
     }
   ],
   "bounded_equivalence": [
@@ -56,3 +86,4 @@
   ],
   "allowed_exceptions": []
 }
+
