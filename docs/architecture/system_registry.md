@@ -334,8 +334,10 @@ Overlay authorities required in the same loop:
 - **Purpose:** harness optimization substrate — stores candidate harness code,
   scores, traces, and failure hypotheses; orchestrates candidate evaluation
   against a versioned eval set; exposes a queryable, replay-compatible
-  history. HOP-BATCH-1 is foundation only — no autonomous proposer is
-  implemented yet.
+  history. A bounded proposer module emits candidate harness code from
+  deterministic mutation templates; it is admission-gated, sandboxed, and
+  advisory-only — it never persists artifacts, never invokes the evaluator,
+  and never advances candidates.
 - **Failure Prevented:** ungoverned harness experimentation, eval gaming,
   loss of failure provenance, and free-form harness output dependencies.
 - **Signal Improved:** harness candidate quality visibility, frontier
@@ -356,6 +358,14 @@ Overlay authorities required in the same loop:
   - `spectrum_systems/modules/hop/safety_checks.py`
   - `spectrum_systems/modules/hop/frontier.py`
   - `spectrum_systems/modules/hop/baseline_harness.py`
+  - `spectrum_systems/modules/hop/proposer.py`
+  - `spectrum_systems/modules/hop/mutation_policy.py`
+  - `spectrum_systems/modules/hop/optimization_loop.py`
+  - `spectrum_systems/modules/hop/sandbox.py`
+  - `spectrum_systems/modules/hop/control_integration.py`
+  - readiness_signal builder and rollback_signal emitter modules under
+    `spectrum_systems/modules/hop/` (filenames retained for git history;
+    advisory-only — see `docs/reviews/hop005_authority_eval_hardening_review.md`)
   - `spectrum_systems/cli/hop_cli.py`
 
 ## Merged or demoted systems

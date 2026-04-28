@@ -19,11 +19,13 @@ frontier. With ~10⁵ scores, the working set fits but is unbounded.
 
 ## Autonomous proposer
 
-Out of scope for BATCH-1 by design. BATCH-2 will introduce a `proposer/`
-module that emits new harness candidates, but every emission still runs
-through `hop.admission.admit_candidate` before reaching the evaluator.
-The proposer is forbidden from modifying eval cases or store artifacts;
-those rights remain with the evaluator and the store.
+Landed in BATCH-2: `spectrum_systems/modules/hop/proposer.py` emits
+new harness candidates from deterministic mutation templates. Every
+emission runs through `hop.admission.admit_candidate` before reaching
+the evaluator. The proposer is forbidden from modifying eval cases or
+store artifacts; those rights remain with the evaluator and the
+store. The orchestrator is `optimization_loop.run_proposer_cycle` —
+the proposer never invokes the evaluator itself.
 
 ## Distributed / concurrent writes
 

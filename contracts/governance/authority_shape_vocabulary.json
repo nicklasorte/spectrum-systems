@@ -21,6 +21,9 @@
       "design-reviews/",
       "design-packages/"
     ],
+    "canonical_registry_paths": [
+      "docs/architecture/system_registry.md"
+    ],
     "guard_path_prefixes": [
       "spectrum_systems/modules/governance/system_registry_guard.py",
       "spectrum_systems/modules/governance/changed_files.py",
@@ -302,6 +305,43 @@
       ],
       "rationale": "Closure/finalization authority belongs to CDE/GOV. Non-owners surface inputs and recommendations only."
     }
+  },
+  "registry_rules": {
+    "purpose": "Section-aware rules applied only inside files listed in scope.canonical_registry_paths. The registry itself defines canonical ownership boundaries, so cluster terms are legitimate inside canonical-owner sections, in `must_not_do:` boundary disclaimers, and in cross-cutting prose. They are still flagged when a non-owner section claims ownership, either by appearing in claim-position fields, by carrying a claim verb, or by being a non-canonical authority system whose section uses authority-shape terms in claim positions.",
+    "section_header_pattern": "^###[ \\t]+([A-Z][A-Z0-9]{1,5})\\b",
+    "h2_header_pattern": "^##[ \\t]+\\S",
+    "field_bullet_pattern": "^[ \\t]*-[ \\t]+\\*\\*([A-Za-z][A-Za-z0-9 _]*?)\\s*:\\*\\*",
+    "boundary_disclaim_field": "must_not_do",
+    "claim_position_fields": [
+      "owns",
+      "produces",
+      "role",
+      "canonical_artifacts_owned",
+      "primary_code_paths"
+    ],
+    "claim_verbs": [
+      "owns",
+      "decides",
+      "decides_on",
+      "enforces",
+      "controls",
+      "certifies",
+      "executes",
+      "issues",
+      "promotes",
+      "blocks",
+      "advances",
+      "gates",
+      "approves",
+      "adjudicates",
+      "finalizes",
+      "rolls_back",
+      "quarantines"
+    ],
+    "non_owning_support_systems": [
+      "HOP"
+    ],
+    "non_owning_support_systems_rationale": "Registry-tracked systems that are explicitly non-owning support per CLAUDE.md. Their registry sections must still surface authority-shape ownership language as violations so the AGS preflight catches non-owner ownership claims (e.g. HOP-005 F-1: HOP claiming release/control/judgment/promotion/certification/enforcement). All other ### CODE sections in the registry are treated as registry-tracked authority systems whose definitions legitimately describe their authority surface."
   },
   "safe_rename_pairs": [
     {"from": "promotion_decision", "to": "promotion_signal"},
