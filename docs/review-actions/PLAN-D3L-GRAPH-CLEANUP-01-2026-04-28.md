@@ -15,7 +15,7 @@ Make the Graph tab default to a clean, readable structure view with dense depend
 | --- | --- | --- |
 | apps/dashboard-3ls/lib/systemGraph.ts | MODIFY | Define explicit graph modes and labels for selector/UI behavior. |
 | apps/dashboard-3ls/components/DebugModeSelector.tsx | MODIFY | Retitle/reuse selector for explicit graph modes. |
-| apps/dashboard-3ls/components/SystemTrustGraph.tsx | MODIFY | Enforce edge-render policy by mode (clean default, failure path, selected node, full registry). |
+| apps/dashboard-3ls/components/SystemTrustGraph.tsx | MODIFY | Apply edge-render policy by mode (clean default, failure path, selected node, full registry). |
 | apps/dashboard-3ls/components/TrustGraphSection.tsx | MODIFY | Default to clean mode, remove dense preview behavior, and apply dark-mode-safe classes. |
 | apps/dashboard-3ls/components/GraphLegend.tsx | MODIFY | Align legend with new mode semantics and dark-mode-safe styling. |
 | apps/dashboard-3ls/components/SystemInspector.tsx | MODIFY | Apply dark-mode-safe styling for readability. |
