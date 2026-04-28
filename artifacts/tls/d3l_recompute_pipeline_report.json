@@ -1,0 +1,64 @@
+{
+  "artifact_type": "d3l_recompute_pipeline_report",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_2_recompute_pipeline",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "route": "apps/dashboard-3ls/app/api/recompute-graph/route.ts",
+  "ordered_steps": [
+    {
+      "ordinal": 1,
+      "description": "TLS dependency priority (registry-active candidates only)",
+      "command": "python scripts/build_tls_dependency_priority.py --candidates HOP,RAX,RSM,CAP,SEC,EVL,OBS,SLO --fail-if-missing",
+      "produces": "artifacts/system_dependency_priority_report.json",
+      "also_produces": [
+        "artifacts/tls/system_dependency_priority_report.json",
+        "artifacts/tls/system_registry_dependency_graph.json",
+        "artifacts/tls/system_evidence_attachment.json",
+        "artifacts/tls/system_candidate_classification.json",
+        "artifacts/tls/system_trust_gap_report.json"
+      ]
+    },
+    {
+      "ordinal": 2,
+      "description": "Dashboard 3LS / TLS integration verifier",
+      "command": "python scripts/build_dashboard_3ls_with_tls.py --skip-next-build",
+      "produces": "artifacts/system_dependency_priority_report.json",
+      "purpose": "Re-runs the TLS pipeline through the dashboard build path and asserts the published artifact exists. --skip-next-build avoids invoking 'next build' from the live route."
+    },
+    {
+      "ordinal": 3,
+      "description": "Graph validation report",
+      "command": "python scripts/build_system_graph_validation_report.py",
+      "produces": "artifacts/tls/system_graph_validation_report.json",
+      "skip_when": "scripts/build_system_graph_validation_report.py is not present in the working tree"
+    }
+  ],
+  "structured_response_fields": [
+    "status",
+    "started_at",
+    "completed_at",
+    "commands[].command",
+    "commands[].description",
+    "commands[].code",
+    "commands[].stdout",
+    "commands[].stderr",
+    "commands[].timed_out",
+    "commands[].produced_artifact",
+    "commands[].produced_artifact_present_after",
+    "generated_artifacts",
+    "skipped_artifacts",
+    "artifacts_checked",
+    "warnings",
+    "failing_command",
+    "failure_reason",
+    "stale_after_recompute",
+    "error_message"
+  ],
+  "fail_closed_rules": [
+    "Pipeline halts on first failure; subsequent steps are not executed.",
+    "On failure the route returns HTTP 500 with failing_command and failure_reason populated.",
+    "Last good state on disk is preserved — the route never writes artifacts itself.",
+    "VERCEL=1 short-circuits to recompute_unavailable_signal with the exact commands an operator should run locally.",
+    "After a successful run, stale_after_recompute=true if the freshly-built priority artifact still does not load as state=ok (e.g. generated_at missing in upstream module)."
+  ]
+}

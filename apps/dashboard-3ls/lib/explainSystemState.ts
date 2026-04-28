@@ -29,8 +29,16 @@ export interface ExplainSystemStateResult {
   root_cause: {
     system_id: string | null;
     taxonomy: FailureTaxonomy;
+    /** Short, human-readable reason. Not a list of signals. */
+    reason: string;
     explanation: string;
+    /** True when root_cause.system_id and reason came from a real artifact. */
+    artifact_backed: boolean;
   };
+  /** Signals that contributed evidence to the root-cause classification. */
+  missing_signals: string[];
+  /** Downstream registry systems impacted by the root cause / failure path. */
+  downstream_impact: string[];
   propagation_path: string[];
   top_three_fix_targets: ExplainTopFix[];
   next_safe_action: string;
@@ -43,13 +51,17 @@ const UNAVAILABLE = 'unavailable';
 function describeRootCause(graph: SystemGraphPayload | null): {
   system_id: string | null;
   taxonomy: FailureTaxonomy;
+  reason: string;
   explanation: string;
+  artifact_backed: boolean;
 } {
   if (!graph) {
     return {
       system_id: null,
       taxonomy: 'unknown',
+      reason: 'graph artifact missing',
       explanation: 'graph artifact missing — root cause cannot be determined',
+      artifact_backed: false,
     };
   }
 
@@ -58,13 +70,15 @@ function describeRootCause(graph: SystemGraphPayload | null): {
     return {
       system_id: null,
       taxonomy: 'none',
+      reason: 'no failure path declared',
       explanation: 'no failure path declared by graph artifact',
+      artifact_backed: true,
     };
   }
 
   // Root cause = first node in the failure path that has no upstream blocker
-  // also on the failure path. If we cannot establish that, return the first
-  // failure-path node with explicit Unknown taxonomy on the explanation.
+  // also on the failure path. If we cannot establish that, return root cause
+  // Unknown rather than guessing — the operator must know it is undetermined.
   const rootCandidates = failurePath.filter((systemId) => {
     const node = graph.nodes.find((n) => n.system_id === systemId);
     if (!node) return false;
@@ -73,31 +87,61 @@ function describeRootCause(graph: SystemGraphPayload | null): {
   });
 
   if (rootCandidates.length === 0) {
-    const fallback = failurePath[0];
     return {
-      system_id: fallback,
+      system_id: null,
       taxonomy: 'unknown',
-      explanation: `root cause indeterminate; first failure-path node is ${fallback} but every node has upstream blockers also on the path`,
+      reason: 'every failure-path node has upstream blockers also on the path',
+      explanation: 'root cause indeterminate from current graph; observed blockers are circular or insufficient — see propagation path and missing_signals separately',
+      artifact_backed: false,
     };
   }
 
   const rootId = rootCandidates[0];
   const rootNode = graph.nodes.find((n) => n.system_id === rootId);
-  const taxonomy = rootNode
-    ? mapSignalsToTaxonomy([
+  const evidenceSignals = rootNode
+    ? [
         ...(rootNode.failed_evals ?? []),
         ...(rootNode.trace_gaps ?? []),
         ...(rootNode.missing_artifacts ?? []),
         ...(rootNode.trust_gap_signals ?? []),
-      ])
-    : 'unknown';
-
+      ]
+    : [];
+  const taxonomy = mapSignalsToTaxonomy(evidenceSignals);
   const reason = rootNode?.why_blocked ?? 'no detailed blocker reason recorded on root node';
   return {
     system_id: rootId,
     taxonomy,
+    reason,
     explanation: `${rootId}: ${reason} (taxonomy: ${taxonomyLabel(taxonomy)})`,
+    artifact_backed: !!rootNode && evidenceSignals.length > 0,
   };
+}
+
+/** Collect missing-signal evidence across every failure-path node. These are
+ * NOT root cause; they are the signals the failure path lights up so the
+ * operator can reason about what evidence to gather. */
+function collectMissingSignals(graph: SystemGraphPayload | null): string[] {
+  if (!graph) return [];
+  const failurePath = graph.failure_path ?? [];
+  if (failurePath.length === 0) return [];
+  const signals = new Set<string>();
+  for (const systemId of failurePath) {
+    const node = graph.nodes.find((n) => n.system_id === systemId);
+    if (!node) continue;
+    for (const s of node.failed_evals ?? []) signals.add(s);
+    for (const s of node.trace_gaps ?? []) signals.add(s);
+    for (const s of node.missing_artifacts ?? []) signals.add(`missing_artifact:${s}`);
+    for (const s of node.trust_gap_signals ?? []) signals.add(s);
+  }
+  return Array.from(signals);
+}
+
+/** Downstream impact = registry systems on the failure path other than the
+ * root cause. Operators use this to scope blast radius. */
+function downstreamImpactFromGraph(graph: SystemGraphPayload | null, rootId: string | null): string[] {
+  if (!graph) return [];
+  const failurePath = graph.failure_path ?? [];
+  return failurePath.filter((id) => id !== rootId);
 }
 
 function topThreeFixes(
@@ -149,6 +193,8 @@ function missingData(
 export function explainSystemState(inputs: ExplainSystemStateInputs): ExplainSystemStateResult {
   const { graph, priority, contract } = inputs;
   const root = describeRootCause(graph);
+  const missingSignals = collectMissingSignals(graph);
+  const downstreamImpact = downstreamImpactFromGraph(graph, root.system_id);
   const top = topThreeFixes(priority, contract);
   const next = nextSafeAction(priority, contract);
   const missing = missingData(graph, priority, contract);
@@ -156,11 +202,16 @@ export function explainSystemState(inputs: ExplainSystemStateInputs): ExplainSys
   const notes: string[] = [];
   if (priority?.state === 'blocked_signal') notes.push('priority artifact carries control_signal=blocked_signal');
   if (priority?.state === 'freeze_signal') notes.push('priority artifact carries control_signal=freeze_signal');
+  if (priority?.state === 'stale') notes.push('priority artifact stale: top-3 fix targets reflect last-known ranking only');
+  if (priority?.state === 'invalid_timestamp') notes.push('priority artifact missing or unparseable generated_at — fail-closed; regenerate before acting');
+  if (priority?.state === 'future_timestamp') notes.push('priority artifact generated_at in the future — fail-closed; regenerate before acting');
   if (top.some((row) => !row.is_registry_backed)) notes.push('one or more top-3 entries are non-registry (not in registry-active set); render them as text-only recommendations, not graph nodes');
   return {
     trust_state: graph?.trust_posture ?? 'unknown',
     generated_at: graph?.generated_at ?? priority?.generated_at ?? UNAVAILABLE,
     root_cause: root,
+    missing_signals: missingSignals,
+    downstream_impact: downstreamImpact,
     propagation_path: propagation,
     top_three_fix_targets: top,
     next_safe_action: next,

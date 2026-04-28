@@ -1,17 +1,20 @@
 # HOP Golden Workflow — `transcript -> FAQ`
 
 Owner: HOP (Harness Optimization Pipeline)
-Status: foundation (HOP-BATCH-1)
-Stable across: BATCH-1 through BATCH-2 freeze; revisions require eval-set
-version bump and a frontier recompute.
+Status: active (canonical hard workflow #1)
+Stable across: HOP-BATCH-1 through HOP-005 hardening; revisions require
+eval-set version bump and a frontier recompute. A second hard workflow
+(transcript → issue/risk/action extraction) is designed in
+`docs/hop/hop006_issue_extraction_design.md` and shares this substrate
+without altering the FAQ contract.
 
 ## 1. Purpose
 
-The golden workflow is the single, stable target the HOP foundation is
-allowed to optimize against in BATCH-1. It pins the input shape, the output
+The FAQ golden workflow is the canonical optimization target HOP carries
+through HOP-BATCH-1 and HOP-BATCH-2. It pins the input shape, the output
 shape, the evaluation criteria, and the failure modes that any candidate
 must handle. Every candidate harness — including the deterministic baseline
-— runs against this workflow against the same versioned eval set.
+and proposer-emitted candidates — runs against the same versioned eval set.
 
 ## 2. Input artifact
 
@@ -61,8 +64,8 @@ must handle. Every candidate harness — including the deterministic baseline
 
 ## 4. Evaluation criteria
 
-Evaluation is enum-bound. Three judges are valid in BATCH-1; no free-form
-LLM judge is permitted.
+Evaluation is enum-bound. Three judges are valid for the FAQ workflow;
+no free-form LLM judge is permitted.
 
 | Judge | Pass condition |
 | --- | --- |

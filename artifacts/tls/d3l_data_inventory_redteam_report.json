@@ -1,0 +1,45 @@
+{
+  "artifact_type": "d3l_data_inventory_redteam_report",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_0_redteam",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "checks": [
+    {
+      "check": "two competing priority artifacts",
+      "finding": "yes",
+      "detail": "artifacts/system_dependency_priority_report.json (top-level) and artifacts/tls/system_dependency_priority_report.json (TLS sibling). build_tls_dependency_priority.py --top-level-out publishes both atomically from one rank result, so they should be identical immediately after a build. Drift is possible if only one path is regenerated."
+    },
+    {
+      "check": "top-level artifact diverges from TLS artifact",
+      "finding": "ok",
+      "detail": "Both bytes match on disk after the latest build (same size, same content)."
+    },
+    {
+      "check": "deploy ignores required artifacts",
+      "finding": "ok",
+      "detail": "build_dashboard_3ls_with_tls.py runs the TLS build script before next build and fails closed if required artifacts are missing."
+    },
+    {
+      "check": "dashboard displays stale artifacts as valid",
+      "finding": "yes",
+      "detail": "Threshold is 14 days; loader falls back to file mtime when generated_at is missing. Ranking module never emits generated_at, so a recompute can produce a 'fresh' artifact whose loader-derived timestamp is the publish mtime regardless of repository state. Top 3 will render as actionable even when the underlying ranking is stale."
+    },
+    {
+      "check": "recompute regenerates only graph but not priority",
+      "finding": "yes",
+      "detail": "Current recompute does call the priority script first, then the optional graph validation script. However, it does NOT explicitly invoke build_dashboard_3ls_with_tls.py, so dashboard integration artifacts may go un-refreshed."
+    },
+    {
+      "check": "dashboard shows registry labels not in registry",
+      "finding": "partial",
+      "detail": "registryContract.ts rejects unknown / future / demoted graph nodes. However the recompute candidate list (HOP,MET,METS) and the loader recompute_command default both reference MET and METS, which are NOT registry-active. The candidates flag is documented as advisory-only ('the governed priority artifact still ranks the full registry'), so this does not invent graph nodes — it only confuses the operator."
+    }
+  ],
+  "fix_recommendations_before_phase_1": [
+    "Emit generated_at from ranking.py (UTC ISO-8601) so the freshness gate has a real source of truth rather than file mtime.",
+    "Update PRIORITY_RECOMPUTE_COMMAND to use registry-backed candidates (HOP,RAX,RSM,CAP,SEC,EVL,OBS,SLO).",
+    "Reduce the priority artifact stale threshold default to 24h and make it configurable via D3L_PRIORITY_STALE_HOURS.",
+    "Expand recompute pipeline to invoke build_dashboard_3ls_with_tls.py --skip-next-build so all dashboard-critical artifacts refresh in one click."
+  ],
+  "outcome": "ack — phase 1 will implement these fixes."
+}

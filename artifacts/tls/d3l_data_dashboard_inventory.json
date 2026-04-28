@@ -1,0 +1,125 @@
+{
+  "artifact_type": "d3l_data_dashboard_inventory",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_0_inventory",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "dashboard_artifact_sources": {
+    "priority_top_level": "artifacts/system_dependency_priority_report.json",
+    "priority_tls_fallback": "artifacts/tls/system_dependency_priority_report.json",
+    "registry_graph": "artifacts/tls/system_registry_dependency_graph.json",
+    "graph_validation": "artifacts/tls/system_graph_validation_report.json",
+    "trust_gap": "artifacts/tls/system_trust_gap_report.json",
+    "candidate_classification": "artifacts/tls/system_candidate_classification.json",
+    "evidence_attachment": "artifacts/tls/system_evidence_attachment.json",
+    "tls_roadmap_final": "artifacts/tls/tls_roadmap_final.json",
+    "tls_roadmap_table_md": "artifacts/tls/tls_roadmap_table.md",
+    "tls_integration_report": "artifacts/tls/system_graph_integration_report.json"
+  },
+  "priority_artifact_loader": {
+    "module": "apps/dashboard-3ls/lib/artifactLoader.ts",
+    "default_path": "artifacts/system_dependency_priority_report.json",
+    "fallback_path": "artifacts/tls/system_dependency_priority_report.json",
+    "stale_threshold_ms": 1209600000,
+    "stale_threshold_human": "14 days (default; D3L-DATA-REGISTRY-01 will reduce to a configurable 24h conservative default)",
+    "fallback_to_mtime_when_generated_at_missing": true,
+    "control_signal_states": ["blocked_signal", "freeze_signal"],
+    "schema_version_prefix_accepted": "tls-",
+    "phase_prefix_accepted": "TLS-"
+  },
+  "graph_artifact_builder": {
+    "module": "apps/dashboard-3ls/lib/systemGraphBuilder.ts",
+    "registry_contract_module": "apps/dashboard-3ls/lib/registryContract.ts",
+    "registry_contract_path": "artifacts/tls/system_registry_dependency_graph.json",
+    "validates_against_registry": true
+  },
+  "recompute_route": {
+    "path": "apps/dashboard-3ls/app/api/recompute-graph/route.ts",
+    "vercel_disabled": true,
+    "current_commands": [
+      "python scripts/build_tls_dependency_priority.py --candidates H01,RFX,HOP,MET,METS --fail-if-missing",
+      "python scripts/build_system_graph_validation_report.py (when present)"
+    ],
+    "structured_response_fields_present": [
+      "status",
+      "started_at",
+      "completed_at",
+      "commands",
+      "artifacts_checked",
+      "warnings",
+      "error_message"
+    ],
+    "structured_response_fields_missing": [
+      "generated_artifacts",
+      "skipped_artifacts",
+      "stale_after_recompute",
+      "failing_command"
+    ],
+    "issues": [
+      "candidate list HOP,MET,METS includes labels MET and METS that are NOT in the registry",
+      "no explicit step to (re)build dashboard TLS integration artifact",
+      "response does not surface stale_after_recompute boolean"
+    ]
+  },
+  "freshness_rules_currently_used": {
+    "priority_artifact": "14d threshold; falls back to file mtime if generated_at missing",
+    "graph_artifact": "no explicit freshness check on the served payload",
+    "ranking_module_writes_generated_at": false,
+    "evidence_of_problem": [
+      "spectrum_systems/modules/tls_dependency_graph/ranking.py emits payload WITHOUT a generated_at field",
+      "artifacts/system_dependency_priority_report.json on disk has generated_at=null (missing)"
+    ]
+  },
+  "registry_backed_node_validation_currently_used": {
+    "module": "apps/dashboard-3ls/lib/registryContract.ts",
+    "active_set_count_fixture": 26,
+    "rejects_unknown_nodes": true,
+    "rejects_unknown_edges": true,
+    "rejects_demoted_in_default": true,
+    "rejects_future_in_default": true,
+    "forbidden_examples": [
+      "H01",
+      "RFX",
+      "MET",
+      "METS",
+      "TLS-BND-01",
+      "TLS-FIX-EVL"
+    ]
+  },
+  "human_state_label_mapping_currently": {
+    "implemented": false,
+    "raw_codes_leaked_in_overview": [
+      "blocked_signal",
+      "freeze_signal",
+      "caution_signal",
+      "trusted_signal",
+      "unknown_signal",
+      "degraded_signal"
+    ]
+  },
+  "oc_artifacts_present": {
+    "scripts/print_operational_closure.py": true,
+    "scripts/generate_dashboard_truth_projection.py": true,
+    "contracts/schemas/dashboard_truth_projection.schema.json": true,
+    "contracts/schemas/operational_closure_bundle.schema.json": true,
+    "spectrum_systems/modules/governance/operational_closure_bundle.py": true,
+    "spectrum_systems/modules/observability/dashboard_truth_projection.py": true,
+    "contracts/examples/operational_closure_bundle.json": true,
+    "contracts/examples/dashboard_truth_projection.json": true,
+    "_integration_note": "OC-ALL-01 merged from main on 2026-04-28. Phase 7 dashboard loader now consumes the real OC schemas (dashboard_truth_projection v1.0.0 preferred, operational_closure_bundle v1.0.0 fallback). No published OC artifact path exists yet at artifacts/operational_closure/* — when neither artifact is on disk, dashboard surfaces 'OC unavailable' (fail-closed)."
+  },
+  "known_missing_pieces": [
+    "ranking module does not emit generated_at field, so freshness gate has no source of truth from artifact",
+    "dashboard freshness threshold is 14 days (too lax for operator-trust use)",
+    "dashboard surfaces internal *_signal codes directly to the operator",
+    "Overview Top 3 card and leverage queue cards show too many fields for mobile",
+    "Graph default mode shows full registry edges; no Fit/Scroll toggle on mobile",
+    "Recompute response missing structured fields (generated_artifacts, stale_after_recompute, failing_command)",
+    "Recompute candidate list includes non-registry labels MET / METS",
+    "OC bottleneck steering is referenced by D3L-DATA-REGISTRY-01 but no scripts or schemas exist yet — fail-closed unavailable",
+    "Roadmap tab dumps the full markdown table; full TLS-BND-* list can crowd the operator view if surfaced in Overview"
+  ],
+  "test_baseline": {
+    "dashboard_jest_suites_passing": 27,
+    "dashboard_jest_tests_passing": 286
+  }
+}

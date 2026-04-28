@@ -44,7 +44,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 63,
+      "evidence_count": 69,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -100,7 +100,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 106,
+      "evidence_count": 107,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -140,7 +140,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 96,
+      "evidence_count": 102,
       "in_registry": true,
       "reason": "spec_override:registry_confirmed_active",
       "registry_class": "active_registry",
@@ -148,7 +148,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 83,
+      "evidence_count": 88,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -156,7 +156,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 47,
+      "evidence_count": 54,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -172,7 +172,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 100,
+      "evidence_count": 101,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -228,7 +228,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 104,
+      "evidence_count": 106,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -236,7 +236,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 81,
+      "evidence_count": 88,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -252,7 +252,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 52,
+      "evidence_count": 57,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -276,7 +276,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 53,
+      "evidence_count": 59,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -324,7 +324,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 31,
+      "evidence_count": 37,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -356,7 +356,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 51,
+      "evidence_count": 57,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -388,7 +388,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 109,
+      "evidence_count": 111,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",

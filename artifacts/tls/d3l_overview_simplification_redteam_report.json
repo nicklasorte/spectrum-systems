@@ -1,0 +1,52 @@
+{
+  "artifact_type": "d3l_overview_simplification_redteam_report",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_4_redteam",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "overview_section_budget": {
+    "max_sections": 5,
+    "actual_sections_when_explain_present": 5,
+    "actual_sections_when_explain_absent": 4,
+    "sections_in_order": [
+      "A. Trust Pulse",
+      "B. Simple 3LS Flowchart",
+      "C. Top 3 Recommendations (TLS artifact only)",
+      "D. Leverage Queue (compact)",
+      "E. Explain System State (deterministic) — only when graph supplies a root cause"
+    ]
+  },
+  "queue_budget": {
+    "max_overview_queue_items": 3,
+    "queue_source": "queue_1_immediate_next_bundle slice(0, OVERVIEW_QUEUE_MAX)"
+  },
+  "top3_card_compact_format": [
+    "header: #<rank> <SYSTEM_ID>",
+    "Fix: <action>",
+    "Why: <why_now>",
+    "Next: <safe_prompt_scope>",
+    "Boundary: <boundary_warning>",
+    "<details> more (registry_role / prerequisite_systems / supporting_artifact / next_bundle_text) </details>"
+  ],
+  "abuse_cases": [
+    {
+      "case": "operator answers 'what is broken / what to fix first / can I trust this' in 10 seconds",
+      "evaluation": "Trust Pulse provides 'can I trust this'; Top 3 cards provide 'what to fix first'; Trust Pulse warning_count + Explain panel provide 'what is broken'. Overview is 4–5 panels max; mobile p-3 padding ensures readability.",
+      "status": "ack"
+    },
+    {
+      "case": "did simplification hide critical warnings",
+      "evaluation": "topThree.warning still surfaces with red text and the recompute_command remains visible. Stale state surfaces 'Top 3 stale — regenerate priority artifact.' with the exact command.",
+      "status": "ack"
+    },
+    {
+      "case": "queue duplicating ranking",
+      "evaluation": "Queue is built from roadmap.safe_bundles (TLS roadmap), not from the priority artifact. Top 3 (priority) and Queue (roadmap) are clearly distinct surfaces.",
+      "status": "ack"
+    },
+    {
+      "case": "full roadmap labels crowding Overview",
+      "evaluation": "Overview shows up to 3 items from queue_1_immediate_next_bundle only. Full 4-queue view is on the Roadmap tab inside roadmap-full-queues. TLS-BND-* labels never become graph nodes because registryContract.allowed_active_node_ids excludes them.",
+      "status": "ack"
+    }
+  ]
+}

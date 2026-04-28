@@ -146,6 +146,65 @@ Verified by tests:
 
 Canonical roles remain unchanged and are recorded in `docs/architecture/system_registry.md`. RFX itself remains a non-owning phase label across existing systems.
 
+## RFX-05 → RFX-16 — Self-Improvement Loop (RFX-SUPER-01)
+
+The remaining roadmap completes the RFX self-improvement loop:
+
+`failure → eval → fix → proof → trend → roadmap → build recommendation`
+
+Each slice below is a non-owning phase-label support helper. Canonical
+authority for AEX/TLC/PQX/EVL/TPA/CDE/SEL/GOV/REP/LIN/OBS/SLO/PRA/POL/JDX/JSX/FRE/RIL
+remains with the systems recorded in `docs/architecture/system_registry.md`.
+
+| ID | Status | Existing System Owner | What It Builds | Why It Matters | Dependencies | Strategy Alignment | Primary Trust Gain | Red-Team / Fix Requirement | Acceptance Criteria |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| RFX-05 | implemented | FRE + EVL + PQX + SEL | Fix Integrity Proof verifying schema, test, eval, replay, lineage, OBS/SLO, certification path, and registry-recorded boundaries are not weakened by a fix. | Prevents regression-inducing fixes from moving forward. | LOOP-08 | No hidden behavior during fix stage | Repair safety assurance | RT-13 attempts schema weakening / test removal / eval bypass; fix-follow-up restores guarantees and revalidation re-runs the same vector. | Every fix yields a proof artifact covering protected guarantees. |
+| RFX-06 | implemented | FRE + EVL | Failure → eval auto-generation. Failure artifacts produce EVL-compatible regression eval candidates with deterministic case ids and lineage refs. | Closes the failure-to-eval gap so recurring failures cannot escape coverage. | RFX-05 | Learning loop with governed artifacts | Anti-recurrence eval coverage | RT-14 attempts to generate eval without trace/lineage; deterministic `rfx_failure_missing_trace` blocks. | Failures convert to deduped EVL handoff candidates while EVL retains canonical eval-coverage scope. |
+| RFX-07 | implemented | FRE + OBS + REP | Trend detection + hotspot mapping over failures, repairs, replay drift, eval gaps, OBS gaps, freeze recurrence, and registry-shape findings. | Surfaces systemic weak points across the loop. | RFX-06 | Reliability-preserving loop behavior | Hotspot visibility | RT-15 splits a recurring reason code into variants; clustering still detects recurrence. | Trend artifact produced with deterministic hotspot ids. |
+| RFX-08 | implemented | FRE + GOV | Trend → roadmap recommendation generator producing advisory `rfx_roadmap_recommendation` artifacts with red-team / fix / revalidation triad. | Converts trend signals into governed recommendations without mutating the canonical roadmap. | RFX-07 | Governed adoption | Recommendation quality | RT-16 attempts roadmap item without owner / dependency / red-team triad — blocked. | Recommendation includes source refs, owners, deps, and triad. |
+| RFX-09 | implemented | OBS + SLO + SEL | Chaos campaign engine that continuously asserts fail-closed behavior across the full chaos scenario set. | Detects fail-open regressions across the RFX path. | RFX-08 | Fail-closed completion discipline | Chaos resilience | RT-17 injects a known-bad case that passes — campaign fails with `rfx_chaos_case_failed_open`. | Every required chaos scenario blocks deterministically with a recognized reason code. |
+| RFX-10 | implemented | CDE + GOV + REP + POL | Cross-run consistency detector for equivalent inputs. | Catches decision/certification volatility and replay mismatch across runs. | RFX-09 | Decision trace completeness | Determinism confidence | RT-18 hides inconsistency by changing only non-material metadata — still detected. | Equivalent runs produce a consistency record; divergence yields `rfx_cross_run_inconsistency`. |
+| RFX-11 | implemented | JDX + JSX | Judgment extraction from repeated decision/fix patterns into JDX-compatible candidates. | Converts repeat patterns into JDX candidates without mutating active judgment state. | RFX-10 | Governed adoption | Judgment evidence quality | RT-19 attempts judgment from a single isolated failure — blocked as insufficient. | Candidate produced only with sufficient evidence; JDX/JSX retain canonical roles. |
+| RFX-12 | implemented | POL | Policy compilation: validated judgment candidates become POL-compatible candidate handoffs. | Routes hardened judgments toward POL governance without activating policy. | RFX-11 | Governed adoption | Policy candidate quality | RT-20 attempts to compile directly into active policy — blocked. | Handoff includes eval, rollout / canary requirements, and POL handoff target. |
+| RFX-13 | implemented | EVL + GOV | Calibration + confidence control for fixes, evals, judgments, and recommendations. | Detects miscalibrated confidence before downstream consumption. | RFX-12 | Evidence honesty | Calibration confidence | RT-21 attempts a high-confidence claim without evidence refs — blocked. | Calibrated samples produce a calibration record; overconfidence/no-evidence cases block. |
+| RFX-14 | implemented | SLO | Error-budget governance expansion: ties new-capability eligibility to SLO posture. | Prevents new capability work when reliability budget is exhausted. | RFX-13 | Reliability-preserving loop behavior | Budget discipline | RT-22 misclassifies feature work as reliability without evidence — blocked. | Exhausted budget freezes new capability; reliability work allowed only with evidence refs. |
+| RFX-15 | implemented | OBS + REP | Institutional-memory layer indexing failures, fixes, evals, trends, judgments, policies, calibration records, and recommendations. | Enables retrieval-grounded learning across the loop without free-form mutable memory. | RFX-14 | Provenance + replay requirements | Retrieval discipline | RT-23 attempts to index unsupported memory without source refs — blocked. | Index entries carry artifact id, type, lineage refs, and reason codes. |
+| RFX-16 | implemented | OBS + SLO + GOV | System-intelligence layer composing existing RFX artifacts into an advisory loop report. | Closes the self-improvement loop with composition only — no new ownership claim. | RFX-15 | Artifact-first route discipline | Advisory clarity | RT-24 attempts to claim authorization for execution / promotion via the report — blocked. | Report composes existing artifacts only; missing stages or unsupported next-build refs block. |
+
+RFX-05 → RFX-16 are implemented in:
+
+- `spectrum_systems/modules/runtime/rfx_fix_integrity_proof.py` (RFX-05)
+- `spectrum_systems/modules/runtime/rfx_failure_to_eval.py` (RFX-06)
+- `spectrum_systems/modules/runtime/rfx_trend_analysis.py` (RFX-07)
+- `spectrum_systems/modules/runtime/rfx_roadmap_generator.py` (RFX-08)
+- `spectrum_systems/modules/runtime/rfx_chaos_campaign.py` (RFX-09)
+- `spectrum_systems/modules/runtime/rfx_cross_run_consistency.py` (RFX-10)
+- `spectrum_systems/modules/runtime/rfx_judgment_extraction.py` (RFX-11)
+- `spectrum_systems/modules/runtime/rfx_policy_compilation.py` (RFX-12)
+- `spectrum_systems/modules/runtime/rfx_calibration.py` (RFX-13)
+- `spectrum_systems/modules/runtime/rfx_error_budget_governance.py` (RFX-14)
+- `spectrum_systems/modules/runtime/rfx_memory_index.py` (RFX-15)
+- `spectrum_systems/modules/runtime/rfx_system_intelligence.py` (RFX-16)
+
+Verified by tests:
+
+- `tests/test_rfx_fix_integrity_proof.py` (RT-13)
+- `tests/test_rfx_failure_to_eval.py` (RT-14)
+- `tests/test_rfx_trend_analysis.py` (RT-15)
+- `tests/test_rfx_roadmap_generator.py` (RT-16)
+- `tests/test_rfx_chaos_campaign.py` (RT-17)
+- `tests/test_rfx_cross_run_consistency.py` (RT-18)
+- `tests/test_rfx_judgment_extraction.py` (RT-19)
+- `tests/test_rfx_policy_compilation.py` (RT-20)
+- `tests/test_rfx_calibration.py` (RT-21)
+- `tests/test_rfx_error_budget_governance.py` (RT-22)
+- `tests/test_rfx_memory_index.py` (RT-23)
+- `tests/test_rfx_system_intelligence.py` (RT-24)
+
+Each red-team campaign (RT-13 → RT-24) is followed by a fix step and a
+revalidation test inside the same test module so the triad cannot be
+skipped silently.
+
 ## Recommended Next Build Prompt
 
 **Prompt Type:** BUILD

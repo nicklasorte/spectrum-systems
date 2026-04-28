@@ -1,0 +1,53 @@
+{
+  "artifact_type": "d3l_priority_freshness_fix_log",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_1_fix_log",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "fixes": [
+    {
+      "id": "FRESH-FIX-01",
+      "summary": "TLS pipeline now emits generated_at on the priority artifact.",
+      "file": "spectrum_systems/modules/tls_dependency_graph/ranking.py",
+      "evidence": "rank_systems() returns 'generated_at' produced by _generated_at_iso() (UTC ISO-8601, override-able via TLS_GENERATED_AT_OVERRIDE for tests)."
+    },
+    {
+      "id": "FRESH-FIX-02",
+      "summary": "Dashboard freshness threshold reduced from 14d to 24h and made env-configurable.",
+      "file": "apps/dashboard-3ls/lib/artifactLoader.ts",
+      "evidence": "DEFAULT_STALE_HOURS = 24; getStaleThresholdMs() reads D3L_PRIORITY_STALE_HOURS."
+    },
+    {
+      "id": "FRESH-FIX-03",
+      "summary": "Loader no longer falls back to file mtime when generated_at is missing or unparseable.",
+      "file": "apps/dashboard-3ls/lib/artifactLoader.ts",
+      "evidence": "attemptLoad now leaves generated_at undefined when not a string; finalizeLoad returns invalid_timestamp instead of inventing a value."
+    },
+    {
+      "id": "FRESH-FIX-04",
+      "summary": "Loader rejects future-skewed timestamps beyond a 5-minute clock-skew tolerance.",
+      "file": "apps/dashboard-3ls/lib/artifactLoader.ts",
+      "evidence": "FUTURE_SKEW_TOLERANCE_MS = 5 * 60 * 1000; finalizeLoad returns future_timestamp when ageMs < -tolerance."
+    },
+    {
+      "id": "FRESH-FIX-05",
+      "summary": "Top 3 surface no longer renders cards on stale, invalid_timestamp, future_timestamp, missing, invalid_schema; warning + recompute command surface instead.",
+      "file": "apps/dashboard-3ls/lib/dashboardSimplified.ts",
+      "evidence": "extractTopThreeRecommendations early-returns empty cards with warning text 'Top 3 stale — regenerate priority artifact.' and the exact command."
+    },
+    {
+      "id": "FRESH-FIX-06",
+      "summary": "PRIORITY_RECOMPUTE_COMMAND now uses registry-active candidates only.",
+      "file": "apps/dashboard-3ls/lib/artifactLoader.ts",
+      "evidence": "Candidates HOP,RAX,RSM,CAP,SEC,EVL,OBS,SLO replace the previous H01,RFX,MET,METS list."
+    }
+  ],
+  "tests_added": [
+    "returns invalid_timestamp when generated_at is missing",
+    "returns invalid_timestamp when generated_at is unparseable",
+    "returns future_timestamp when generated_at is meaningfully in the future",
+    "tolerates small clock-skew (<5 minutes) without flagging future_timestamp",
+    "honors D3L_PRIORITY_STALE_HOURS env override",
+    "default 24h threshold flags 30h-old artifacts as stale",
+    "does NOT fall back to file mtime when generated_at is absent"
+  ]
+}

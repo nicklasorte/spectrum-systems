@@ -1,7 +1,7 @@
 {
   "artifact_type": "rdx_execution_trace",
   "batch_id": "CERTIFICATION-JUDGMENT-40-EXPLICIT",
-  "generated_at": "2026-04-28T01:43:50Z",
+  "generated_at": "2026-04-28T07:29:06Z",
   "execution_mode": "STRICT SERIAL WITH HARD CHECKPOINTS",
   "step_sequence": [
     "hard_gate_evidence_inventory_packet",

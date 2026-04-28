@@ -1,0 +1,44 @@
+{
+  "artifact_type": "d3l_root_cause_taxonomy_redteam_report",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_6_redteam",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "abuse_cases": [
+    {
+      "case": "all nodes blocked, no clear root",
+      "expected_behavior": "Root cause: Unknown; observed blockers listed separately; no node falsely promoted to root cause",
+      "actual_behavior": "describeRootCause returns system_id=null + taxonomy=unknown when every failure-path node has upstream blockers also on the path",
+      "status": "fixed"
+    },
+    {
+      "case": "no root cause artifact-backed",
+      "expected_behavior": "Root cause: Unknown; UI marks not-artifact-backed",
+      "actual_behavior": "root_cause.artifact_backed=false flips the UI to '(not artifact-backed)' annotation",
+      "status": "fixed"
+    },
+    {
+      "case": "multiple root causes (two upstream-most)",
+      "expected_behavior": "First is selected as primary; downstream_impact lists the rest",
+      "actual_behavior": "rootCandidates[0] is the primary root cause (deterministic by failure-path order); other failure-path nodes flow into downstream_impact",
+      "status": "ack"
+    },
+    {
+      "case": "stale priority artifact causing recommendation block",
+      "expected_behavior": "explain notes call out the stale state distinctly from root cause",
+      "actual_behavior": "notes adds 'priority artifact stale: top-3 fix targets reflect last-known ranking only' when priority.state === 'stale'",
+      "status": "fixed"
+    },
+    {
+      "case": "missing eval and missing artifact both present",
+      "expected_behavior": "Taxonomy table picks the first matching taxonomy in declared order",
+      "actual_behavior": "FAILURE_TAXONOMY_TABLE order: missing_artifact precedes missing_eval, so missing_artifact wins on tie. Test 'maps missing_artifact signal to missing_artifact taxonomy' confirms.",
+      "status": "ack"
+    },
+    {
+      "case": "downstream SEL blocked but upstream EVL is the cause",
+      "expected_behavior": "Root cause = EVL; downstream_impact contains SEL",
+      "actual_behavior": "describeRootCause walks failure_path and selects the upstream-most node with no upstream blocker on the same path; downstreamImpactFromGraph returns the rest",
+      "status": "ack"
+    }
+  ]
+}

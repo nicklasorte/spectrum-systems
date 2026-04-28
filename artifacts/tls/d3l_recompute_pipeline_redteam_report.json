@@ -1,0 +1,51 @@
+{
+  "artifact_type": "d3l_recompute_pipeline_redteam_report",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_2_redteam",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "abuse_cases": [
+    {
+      "case": "priority generation fails",
+      "expected_behavior": "pipeline halts; failing_command and failure_reason populated; stale_after_recompute false; HTTP 500",
+      "actual_behavior": "first non-zero exit halts loop; failedResult captured; subsequent steps not run; route returns 500",
+      "status": "fixed"
+    },
+    {
+      "case": "graph generation succeeds but priority stale",
+      "expected_behavior": "stale_after_recompute=true; warning surfaces priority_state",
+      "actual_behavior": "after success path, route reloads priority via loadPriorityArtifact(); non-ok state sets stale_after_recompute and adds warning 'stale_after_recompute:priority_state=...:reason=...'",
+      "status": "fixed"
+    },
+    {
+      "case": "priority fresh but graph stale",
+      "expected_behavior": "warnings list missing graph artifact",
+      "actual_behavior": "skipped step adds skip_reason to warnings; missing optional graph validation script does not fail the pipeline (advisory)",
+      "status": "fixed"
+    },
+    {
+      "case": "missing script",
+      "expected_behavior": "warning surfaces; pipeline does not crash",
+      "actual_behavior": "fs.existsSync gate adds explicit skipped step; warnings list 'missing_script:...'",
+      "status": "fixed"
+    },
+    {
+      "case": "invalid artifact after recompute",
+      "expected_behavior": "stale_after_recompute=true even on green commands",
+      "actual_behavior": "loadPriorityArtifact() rerun catches invalid_schema / invalid_timestamp / future_timestamp; sets stale_after_recompute=true",
+      "status": "fixed"
+    },
+    {
+      "case": "Vercel/serverless cannot execute command",
+      "expected_behavior": "recompute_unavailable_signal; do not pretend to run; surface exact local commands",
+      "actual_behavior": "process.env.VERCEL==='1' short-circuits to recompute_unavailable_signal with explicit commands in warnings",
+      "status": "fixed"
+    },
+    {
+      "case": "stale artifact remains after recompute (silent overwrite)",
+      "expected_behavior": "do not overwrite last-known-good state; report failure plainly",
+      "actual_behavior": "route never writes artifacts itself; on script failure files on disk are unchanged from last successful run; failing_command exposes the exact command for operator investigation",
+      "status": "fixed"
+    }
+  ],
+  "outcome": "All Phase 2 abuse cases addressed by the structured fail-closed response."
+}

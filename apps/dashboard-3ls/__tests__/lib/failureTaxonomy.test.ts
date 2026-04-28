@@ -44,6 +44,19 @@ describe('mapSignalsToTaxonomy', () => {
     expect(mapSignalsToTaxonomy(['missing_control'])).toBe('policy_mismatch');
     expect(mapSignalsToTaxonomy(['missing_enforcement_signal'])).toBe('policy_mismatch');
   });
+
+  // D3L-DATA-REGISTRY-01: stale and registry-mismatch taxonomies.
+  it('maps stale artifact signals to stale_artifact taxonomy', () => {
+    expect(mapSignalsToTaxonomy(['older_than_threshold'])).toBe('stale_artifact');
+    expect(mapSignalsToTaxonomy(['generated_at_missing'])).toBe('stale_artifact');
+    expect(mapSignalsToTaxonomy(['generated_at_in_future'])).toBe('stale_artifact');
+  });
+
+  it('maps registry-rejection signals to registry_mismatch taxonomy', () => {
+    expect(mapSignalsToTaxonomy(['registry_contract_rejected_nodes'])).toBe('registry_mismatch');
+    expect(mapSignalsToTaxonomy(['reject_unknown_node'])).toBe('registry_mismatch');
+    expect(mapSignalsToTaxonomy(['reject_unknown_edge'])).toBe('registry_mismatch');
+  });
 });
 
 describe('taxonomyLabel', () => {
