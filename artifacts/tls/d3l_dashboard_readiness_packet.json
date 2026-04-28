@@ -1,0 +1,82 @@
+{
+  "artifact_type": "d3l_dashboard_readiness_packet",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_10_readiness_packet",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "readiness_status": "ready",
+  "registry_validation_result": {
+    "ok": true,
+    "active_count": 26,
+    "module": "apps/dashboard-3ls/lib/registryContract.ts"
+  },
+  "priority_freshness_result": {
+    "ok": true,
+    "module": "apps/dashboard-3ls/lib/artifactLoader.ts",
+    "default_threshold_hours": 24,
+    "env_override": "D3L_PRIORITY_STALE_HOURS",
+    "states": ["ok", "missing", "stale", "invalid_schema", "invalid_timestamp", "future_timestamp", "blocked_signal", "freeze_signal"]
+  },
+  "recompute_pipeline_result": {
+    "ok": true,
+    "route": "apps/dashboard-3ls/app/api/recompute-graph/route.ts",
+    "ordered_commands": [
+      "python scripts/build_tls_dependency_priority.py --candidates HOP,RAX,RSM,CAP,SEC,EVL,OBS,SLO --fail-if-missing",
+      "python scripts/build_dashboard_3ls_with_tls.py --skip-next-build",
+      "python scripts/build_system_graph_validation_report.py (when present)"
+    ],
+    "structured_response": true,
+    "vercel_fail_closed": true
+  },
+  "graph_artifact_validity": {
+    "ok": true,
+    "registry_only_node_admission": true,
+    "rejects_unknown_edges": true
+  },
+  "top3_status": {
+    "ok": true,
+    "fail_closed_states": ["missing", "stale", "invalid_schema", "invalid_timestamp", "future_timestamp"],
+    "registry_backed_only": true
+  },
+  "oc_bottleneck_status": {
+    "ok": true,
+    "module": "apps/dashboard-3ls/lib/ocBottleneck.ts",
+    "fail_closed_when_unavailable": true,
+    "states": ["ok", "unavailable", "invalid_schema", "stale_proof", "conflict_proof", "ambiguous"]
+  },
+  "red_team_reports_created": [
+    "artifacts/tls/d3l_data_inventory_redteam_report.json",
+    "artifacts/tls/d3l_priority_freshness_redteam_report.json",
+    "artifacts/tls/d3l_recompute_pipeline_redteam_report.json",
+    "artifacts/tls/d3l_human_state_labels_redteam_report.json",
+    "artifacts/tls/d3l_overview_simplification_redteam_report.json",
+    "artifacts/tls/d3l_graph_mobile_redteam_report.json",
+    "artifacts/tls/d3l_root_cause_taxonomy_redteam_report.json",
+    "artifacts/tls/d3l_oc_bottleneck_redteam_report.json",
+    "artifacts/tls/d3l_tls_roadmap_alignment_redteam_report.json",
+    "artifacts/tls/d3l_operator_complexity_redteam_report.json",
+    "artifacts/tls/d3l_dashboard_readiness_redteam_report.json"
+  ],
+  "fix_logs_created": [
+    "artifacts/tls/d3l_priority_freshness_fix_log.json",
+    "artifacts/tls/d3l_dashboard_readiness_fix_log.json"
+  ],
+  "tests_run": [
+    "apps/dashboard-3ls jest suite (npx jest)",
+    "tests/tls_dependency_graph/test_phase4_ranking.py",
+    "tests/test_build_tls_dependency_priority.py",
+    "tests/test_tls_exec_01.py",
+    "tests/test_tls_next_01_integration.py",
+    "tests/test_tls_roadmap_artifacts.py"
+  ],
+  "guards_run": [
+    "scripts/validate_system_registry.py",
+    "scripts/run_authority_shape_preflight.py --suggest-only",
+    "scripts/run_authority_leak_guard.py",
+    "scripts/run_system_registry_guard.py"
+  ],
+  "known_limitations": [
+    "OC-ALL-01 scripts and schemas are not yet present in this repo. The dashboard surfaces 'OC unavailable' until OC-ALL-01 lands; this is intentional fail-closed behavior, not a regression of D3L-DATA-REGISTRY-01.",
+    "Recompute route requires a node runtime with Python 3 available; serverless / Vercel deploys short-circuit to recompute_unavailable_signal with the exact local commands surfaced in warnings.",
+    "Full Registry mode for the graph is delivered by the existing 'Show all' toggle; complex multi-mode controls (e.g. structure-only vs. failure-only filters) remain as follow-ups."
+  ]
+}

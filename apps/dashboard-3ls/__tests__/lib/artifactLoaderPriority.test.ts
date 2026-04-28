@@ -196,4 +196,107 @@ describe('loadPriorityArtifact', () => {
     const result = loadPriorityArtifact();
     expect(result.state).toBe('freeze_signal');
   });
+
+  // D3L-DATA-REGISTRY-01: freshness gate hardening.
+  it('returns invalid_timestamp when generated_at is missing', () => {
+    const repo = tmpRepo();
+    process.env.REPO_ROOT = repo;
+    const target = path.join(repo, 'artifacts/system_dependency_priority_report.json');
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, JSON.stringify({ ...VALID_PAYLOAD })); // no generated_at
+    const result = loadPriorityArtifact();
+    expect(result.state).toBe('invalid_timestamp');
+    expect(result.reason).toMatch(/generated_at_missing/);
+    expect(result.recompute_command).toBeDefined();
+  });
+
+  it('returns invalid_timestamp when generated_at is unparseable', () => {
+    const repo = tmpRepo();
+    process.env.REPO_ROOT = repo;
+    const target = path.join(repo, 'artifacts/system_dependency_priority_report.json');
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, JSON.stringify({ ...VALID_PAYLOAD, generated_at: 'not-a-date' }));
+    const result = loadPriorityArtifact();
+    expect(result.state).toBe('invalid_timestamp');
+    expect(result.reason).toMatch(/unparseable/);
+  });
+
+  it('returns future_timestamp when generated_at is meaningfully in the future', () => {
+    const repo = tmpRepo();
+    process.env.REPO_ROOT = repo;
+    const target = path.join(repo, 'artifacts/system_dependency_priority_report.json');
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(
+      target,
+      JSON.stringify({
+        ...VALID_PAYLOAD,
+        generated_at: new Date('2030-01-01T00:00:00Z').toISOString(),
+      }),
+    );
+    const result = loadPriorityArtifact(undefined, new Date('2026-04-28T00:00:00Z'));
+    expect(result.state).toBe('future_timestamp');
+    expect(result.recompute_command).toBeDefined();
+  });
+
+  it('tolerates small clock-skew (<5 minutes) without flagging future_timestamp', () => {
+    const repo = tmpRepo();
+    process.env.REPO_ROOT = repo;
+    const target = path.join(repo, 'artifacts/system_dependency_priority_report.json');
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    const now = new Date('2026-04-28T00:00:00Z');
+    const slightlyAhead = new Date(now.getTime() + 60 * 1000); // +60s
+    fs.writeFileSync(
+      target,
+      JSON.stringify({ ...VALID_PAYLOAD, generated_at: slightlyAhead.toISOString() }),
+    );
+    const result = loadPriorityArtifact(undefined, now);
+    expect(result.state).toBe('ok');
+  });
+
+  it('honors D3L_PRIORITY_STALE_HOURS env override', () => {
+    const repo = tmpRepo();
+    process.env.REPO_ROOT = repo;
+    process.env.D3L_PRIORITY_STALE_HOURS = '48';
+    const target = path.join(repo, 'artifacts/system_dependency_priority_report.json');
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    const now = new Date('2026-04-28T00:00:00Z');
+    const aged30h = new Date(now.getTime() - 30 * 60 * 60 * 1000);
+    fs.writeFileSync(
+      target,
+      JSON.stringify({ ...VALID_PAYLOAD, generated_at: aged30h.toISOString() }),
+    );
+    try {
+      const result = loadPriorityArtifact(undefined, now);
+      expect(result.state).toBe('ok');
+    } finally {
+      delete process.env.D3L_PRIORITY_STALE_HOURS;
+    }
+  });
+
+  it('default 24h threshold flags 30h-old artifacts as stale', () => {
+    const repo = tmpRepo();
+    process.env.REPO_ROOT = repo;
+    const target = path.join(repo, 'artifacts/system_dependency_priority_report.json');
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    const now = new Date('2026-04-28T00:00:00Z');
+    const aged30h = new Date(now.getTime() - 30 * 60 * 60 * 1000);
+    fs.writeFileSync(
+      target,
+      JSON.stringify({ ...VALID_PAYLOAD, generated_at: aged30h.toISOString() }),
+    );
+    const result = loadPriorityArtifact(undefined, now);
+    expect(result.state).toBe('stale');
+    expect(result.recompute_command).toBeDefined();
+  });
+
+  it('does NOT fall back to file mtime when generated_at is absent', () => {
+    const repo = tmpRepo();
+    process.env.REPO_ROOT = repo;
+    const target = path.join(repo, 'artifacts/system_dependency_priority_report.json');
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, JSON.stringify({ ...VALID_PAYLOAD })); // no generated_at
+    // Even though the file mtime is "now", the loader must not use it.
+    const result = loadPriorityArtifact();
+    expect(result.state).toBe('invalid_timestamp');
+  });
 });

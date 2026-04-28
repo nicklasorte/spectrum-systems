@@ -160,6 +160,24 @@ export function extractTopThreeRecommendations(
   if (priority.state === 'invalid_schema') {
     return empty(`Top 3 unavailable: priority artifact invalid (${priority.reason ?? 'shape_mismatch'}).`, priority.recompute_command);
   }
+  if (priority.state === 'invalid_timestamp') {
+    return empty(
+      `Top 3 stale — regenerate priority artifact. (${priority.reason ?? 'generated_at_missing'})`,
+      priority.recompute_command,
+    );
+  }
+  if (priority.state === 'future_timestamp') {
+    return empty(
+      `Top 3 stale — generated_at is in the future, refusing to trust artifact. (${priority.reason ?? 'future_timestamp'})`,
+      priority.recompute_command,
+    );
+  }
+  if (priority.state === 'stale') {
+    return empty(
+      `Top 3 stale — regenerate priority artifact. ${priority.reason ?? ''}`.trim(),
+      priority.recompute_command,
+    );
+  }
   if (!priority.payload) {
     return empty('Top 3 unavailable: priority artifact carried no payload.', priority.recompute_command);
   }
@@ -183,9 +201,10 @@ export function extractTopThreeRecommendations(
   } else if (nonRegistryIds.length > 0) {
     warning = `Top 3 includes ${nonRegistryIds.length} non-registry recommendation(s) (${nonRegistryIds.join(', ')}); rendered as text-only.`;
   }
-  if (priority.state === 'stale') {
-    warning = `Top 3 stale: ${warning ?? 'artifact older than freshness threshold'}.`;
-  }
+  // D3L-DATA-REGISTRY-01: stale / invalid_timestamp / future_timestamp
+  // were handled above with early returns. Only blocked_signal /
+  // freeze_signal remain — those keep cards visible because they are
+  // governed control signals the operator should still see.
   if (priority.state === 'blocked_signal') {
     warning = `Top 3 carries blocked_signal: ${warning ?? 'control authority must adjudicate before acting'}.`;
   }

@@ -31,6 +31,11 @@ export function TrustGraphSection() {
   const [recomputeStatus, setRecomputeStatus] = useState<string | null>(null);
   const [entries, setEntries] = useState<ActivityEntry[]>([]);
   const [priority, setPriority] = useState<PriorityArtifactLoadResult | null>(null);
+  // D3L-DATA-REGISTRY-01 Phase 5: Fit / Scroll toggle. Default 'fit' makes
+  // the SVG scale to container width (good on desktop, thumbnail on
+  // mobile). 'scroll' renders a wide canvas inside an x-scroll container
+  // so the operator can pan a usable, full-resolution graph on mobile.
+  const [canvasMode, setCanvasMode] = useState<'fit' | 'scroll'>('fit');
 
   const loadGraph = async () => {
     const res = await fetch('/api/system-graph');
@@ -122,7 +127,7 @@ export function TrustGraphSection() {
 
   return (
     <section className="bg-white border rounded p-4 space-y-3" data-testid="trust-graph-section">
-      <header className="flex flex-wrap items-center justify-between gap-2">
+      <header className="flex flex-wrap items-center justify-between gap-2 sticky top-0 z-10 bg-white pb-1">
         <h2 className="font-semibold">SYSTEM TRUST GRAPH</h2>
         <div className="flex flex-wrap items-center gap-3">
           <DebugModeSelector value={debugMode} onChange={setDebugMode} />
@@ -134,6 +139,16 @@ export function TrustGraphSection() {
             data-testid="focus-toggle"
           >
             {showAll ? 'Focus mode' : 'Show all'}
+          </button>
+          <button
+            type="button"
+            className="text-xs underline"
+            onClick={() => setCanvasMode((m) => (m === 'fit' ? 'scroll' : 'fit'))}
+            data-testid="canvas-mode-toggle"
+            data-canvas-mode={canvasMode}
+            aria-label="Toggle Fit / Scroll canvas mode"
+          >
+            {canvasMode === 'fit' ? 'Scroll canvas' : 'Fit canvas'}
           </button>
           <RecomputeGraphButton
             onResult={async (result) => {
@@ -159,30 +174,40 @@ export function TrustGraphSection() {
           <ActivityLog entries={entries} />
         </aside>
 
-        <div className="space-y-3 min-w-0" data-testid="graph-main-panel">
-          <SystemTrustGraph
-            graph={displayGraph}
-            selectedSystem={selected}
-            selectedEdgeKey={selectedEdge ? `${selectedEdge.from}-${selectedEdge.to}` : null}
-            showAll={showAll}
-            layout={layout}
-            debugMode={debugMode}
-            highlightedPath={highlightedPath}
-            onSelect={(id) => {
-              setSelected(id);
-              setEntries((prev) => [
-                { timestamp: new Date().toISOString(), message: `node_selected:${id}` },
-                ...prev,
-              ].slice(0, 10));
-            }}
-            onSelectEdge={(edge) => {
-              setSelectedEdge(edge);
-              setEntries((prev) => [
-                { timestamp: new Date().toISOString(), message: `edge_selected:${edge.from}->${edge.to}` },
-                ...prev,
-              ].slice(0, 10));
-            }}
-          />
+        <div className="space-y-3 min-w-0" data-testid="graph-main-panel" data-canvas-mode={canvasMode}>
+          <div
+            className={canvasMode === 'scroll' ? 'overflow-x-auto -mx-2 px-2' : ''}
+            data-testid="graph-canvas-wrapper"
+          >
+            <div
+              style={canvasMode === 'scroll' ? { minWidth: '1100px' } : undefined}
+              data-testid="graph-canvas-inner"
+            >
+              <SystemTrustGraph
+                graph={displayGraph}
+                selectedSystem={selected}
+                selectedEdgeKey={selectedEdge ? `${selectedEdge.from}-${selectedEdge.to}` : null}
+                showAll={showAll}
+                layout={layout}
+                debugMode={debugMode}
+                highlightedPath={highlightedPath}
+                onSelect={(id) => {
+                  setSelected(id);
+                  setEntries((prev) => [
+                    { timestamp: new Date().toISOString(), message: `node_selected:${id}` },
+                    ...prev,
+                  ].slice(0, 10));
+                }}
+                onSelectEdge={(edge) => {
+                  setSelectedEdge(edge);
+                  setEntries((prev) => [
+                    { timestamp: new Date().toISOString(), message: `edge_selected:${edge.from}->${edge.to}` },
+                    ...prev,
+                  ].slice(0, 10));
+                }}
+              />
+            </div>
+          </div>
           <SystemInspector node={selectedNode} replayCommands={displayGraph.replay_commands} />
           <EdgeInspector edge={selectedEdge} />
           <RecommendationDebugPanel priority={priority} />

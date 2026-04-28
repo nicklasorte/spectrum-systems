@@ -29,10 +29,12 @@ export function loadArtifact<T>(relativePath: string): T | null {
 // Strict load contract: dashboard MUST NOT compute ranking. All ranking is
 // produced by the governed TLS pipeline upstream and read here as-is. The
 // loader returns one of:
-//   { state: 'ok', payload }              — schema-shape passed
+//   { state: 'ok', payload }              — schema-shape passed and fresh
 //   { state: 'missing' }                  — file not present
 //   { state: 'stale', generated_at}       — file present but older than threshold
 //   { state: 'invalid_schema' }           — file present but did not match shape
+//   { state: 'invalid_timestamp' }        — generated_at missing/unparseable
+//   { state: 'future_timestamp' }         — generated_at is more than allowed skew in the future
 //   { state: 'blocked_signal' }           — observer-safe halt signal from artifact
 //   { state: 'freeze_signal' }            — observer-safe freeze signal from artifact
 //
@@ -45,6 +47,8 @@ export type PriorityArtifactState =
   | 'missing'
   | 'stale'
   | 'invalid_schema'
+  | 'invalid_timestamp'
+  | 'future_timestamp'
   | 'blocked_signal'
   | 'freeze_signal';
 
@@ -145,9 +149,25 @@ const PRIORITY_REPORT_PATH = 'artifacts/system_dependency_priority_report.json';
 const PRIORITY_REPORT_TLS_FALLBACK_PATH = 'artifacts/tls/system_dependency_priority_report.json';
 const TLS_INTEGRATION_PATH = 'artifacts/tls/system_graph_integration_report.json';
 
-// 14 days. The artifact is build-time; older than this and the dashboard must
-// surface a stale state instead of misleading the operator.
-const STALE_THRESHOLD_MS = 14 * 24 * 60 * 60 * 1000;
+// D3L-DATA-REGISTRY-01 freshness policy:
+//   * Default threshold is 24 hours — operator-trust dashboard must surface
+//     stale state aggressively, not weekly.
+//   * Override via env var D3L_PRIORITY_STALE_HOURS (positive number).
+//   * Future-skew tolerance is 5 minutes (clock-skew). Anything beyond is
+//     treated as future_timestamp (fail-closed).
+const DEFAULT_STALE_HOURS = 24;
+const FUTURE_SKEW_TOLERANCE_MS = 5 * 60 * 1000;
+
+function getStaleThresholdMs(): number {
+  const override = process.env.D3L_PRIORITY_STALE_HOURS;
+  if (override) {
+    const parsed = Number.parseFloat(override);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return parsed * 60 * 60 * 1000;
+    }
+  }
+  return DEFAULT_STALE_HOURS * 60 * 60 * 1000;
+}
 
 // Accepted schema_version / phase values. Newer TLS pipeline iterations
 // (tls-06.v1, tls-05.v1, tls-04.v1) all share the same observable shape used
@@ -191,9 +211,14 @@ function isPriorityArtifact(value: unknown): value is PriorityArtifact {
  * Recompute command surfaced to the operator when the priority artifact
  * cannot be loaded. The dashboard never re-ranks; a fail-closed banner
  * tells the operator how to regenerate the artifact upstream.
+ *
+ * D3L-DATA-REGISTRY-01: candidates list is restricted to registry-active
+ * system_ids only. The previous list (H01,RFX,MET,METS) included roadmap /
+ * batch labels that are not in the system registry; surfacing them here
+ * confused the operator about what the priority artifact actually scores.
  */
 export const PRIORITY_RECOMPUTE_COMMAND =
-  'python scripts/build_tls_dependency_priority.py --candidates H01,RFX,HOP,MET,METS --fail-if-missing && python scripts/build_dashboard_3ls_with_tls.py';
+  'python scripts/build_tls_dependency_priority.py --candidates HOP,RAX,RSM,CAP,SEC,EVL,OBS,SLO --fail-if-missing && python scripts/build_dashboard_3ls_with_tls.py --skip-next-build';
 
 interface AttemptResult {
   state: 'ok' | 'invalid_schema' | 'missing';
@@ -242,11 +267,15 @@ function attemptLoad(relativePath: string): AttemptResult {
     return { state: 'invalid_schema', payload: null, reason: 'shape_mismatch', source_path: relativePath };
   }
 
-  const generated_at = parsed.generated_at ?? stat.mtime.toISOString();
+  // D3L-DATA-REGISTRY-01: never fall back to file mtime. The TLS pipeline
+  // owns the timestamp; if it is missing we surface that as fail-closed.
+  // Capture the raw value so finalizeLoad can decide invalid_timestamp vs
+  // future_timestamp vs stale.
+  const rawGeneratedAt = parsed.generated_at;
   return {
     state: 'ok',
     payload: parsed,
-    generated_at,
+    generated_at: typeof rawGeneratedAt === 'string' ? rawGeneratedAt : undefined,
     source_path: relativePath,
     control_signal: parsed.control_signal === 'blocked_signal' || parsed.control_signal === 'freeze_signal'
       ? parsed.control_signal
@@ -305,13 +334,15 @@ function finalizeLoad(attempt: AttemptResult, now: Date): PriorityArtifactLoadRe
   }
 
   const payload = attempt.payload!;
-  const generated_at = attempt.generated_at!;
+  const rawGeneratedAt = attempt.generated_at;
 
+  // Control-signal short-circuits run first so the operator sees the
+  // governed halt/freeze even if the timestamp itself is unusable.
   if (attempt.control_signal === 'blocked_signal') {
     return {
       state: 'blocked_signal',
       payload,
-      generated_at,
+      generated_at: rawGeneratedAt,
       reason: 'control_signal=blocked_signal',
       source_path: attempt.source_path,
     };
@@ -320,24 +351,56 @@ function finalizeLoad(attempt: AttemptResult, now: Date): PriorityArtifactLoadRe
     return {
       state: 'freeze_signal',
       payload,
-      generated_at,
+      generated_at: rawGeneratedAt,
       reason: 'control_signal=freeze_signal',
       source_path: attempt.source_path,
     };
   }
 
-  const generatedMs = Date.parse(generated_at);
-  if (!Number.isNaN(generatedMs) && now.getTime() - generatedMs > STALE_THRESHOLD_MS) {
+  // Freshness gate. Fail-closed if generated_at is missing or unparseable.
+  if (typeof rawGeneratedAt !== 'string' || rawGeneratedAt.length === 0) {
+    return {
+      state: 'invalid_timestamp',
+      payload,
+      reason: 'generated_at_missing',
+      source_path: attempt.source_path,
+      recompute_command: PRIORITY_RECOMPUTE_COMMAND,
+    };
+  }
+  const generatedMs = Date.parse(rawGeneratedAt);
+  if (Number.isNaN(generatedMs)) {
+    return {
+      state: 'invalid_timestamp',
+      payload,
+      generated_at: rawGeneratedAt,
+      reason: `generated_at_unparseable:${rawGeneratedAt}`,
+      source_path: attempt.source_path,
+      recompute_command: PRIORITY_RECOMPUTE_COMMAND,
+    };
+  }
+  const ageMs = now.getTime() - generatedMs;
+  if (ageMs < -FUTURE_SKEW_TOLERANCE_MS) {
+    return {
+      state: 'future_timestamp',
+      payload,
+      generated_at: rawGeneratedAt,
+      reason: `generated_at_in_future_by_${Math.round(-ageMs / 1000)}s`,
+      source_path: attempt.source_path,
+      recompute_command: PRIORITY_RECOMPUTE_COMMAND,
+    };
+  }
+  if (ageMs > getStaleThresholdMs()) {
     return {
       state: 'stale',
       payload,
-      generated_at,
-      reason: 'older_than_threshold',
+      generated_at: rawGeneratedAt,
+      reason: `older_than_threshold:age_hours=${(ageMs / 3600000).toFixed(2)}`,
       source_path: attempt.source_path,
+      recompute_command: PRIORITY_RECOMPUTE_COMMAND,
     };
   }
 
-  return { state: 'ok', payload, generated_at, source_path: attempt.source_path };
+  return { state: 'ok', payload, generated_at: rawGeneratedAt, source_path: attempt.source_path };
 }
 
 export interface TLSIntegratedSystem {

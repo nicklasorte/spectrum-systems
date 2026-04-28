@@ -1,0 +1,23 @@
+{
+  "artifact_type": "d3l_operator_complexity_budget",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_9_complexity_budget",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "budgets": {
+    "overview_max_sections": 5,
+    "overview_max_queue_items": 3,
+    "default_graph_max_visible_edge_classes": ["primary", "failure_path", "selected_context"],
+    "default_node_card_fields": ["acronym", "role", "status_badge"],
+    "top3_card_overview_fields": ["rank", "system_id", "Fix", "Why", "Next", "Boundary"],
+    "long_lists_must_be_hidden_behind_details_or_tabs": true
+  },
+  "operator_tests": [
+    "operator can find Trust State (data-testid=trust-pulse-label) on Overview",
+    "operator can find Top 3 or stale reason (data-testid=top3-card or data-testid=top3-warning) on Overview",
+    "operator can find next safe action (Top 3 'Next' line; Explain panel 'Next safe action')",
+    "operator can find root cause or Unknown (data-testid=explain-root-cause; renders 'Unknown' when artifact_backed=false)",
+    "operator can find recompute action (RecomputeGraphButton on Graph tab; recompute_command surfaced in Top 3 panel when stale)",
+    "operator can find full roadmap in Roadmap tab (data-testid=roadmap-full-queues + tls_roadmap_table.md)",
+    "dashboard rejects invented graph node (registryContract.validateGraphAgainstContract; tested in registryContract.test.ts)"
+  ]
+}

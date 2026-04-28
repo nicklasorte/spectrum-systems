@@ -1,0 +1,58 @@
+{
+  "artifact_type": "d3l_graph_mobile_redteam_report",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_5_redteam",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "graph_changes": [
+    "Node card now shows acronym + role + human-readable status badge only.",
+    "Removed src:/w:/⚠ fields from node card. They live in the inspector via SystemInspector.",
+    "Status text uses humanTrustLabel(node.trust_state) so the operator sees Blocked/Frozen/Caution/Ready/Unknown — not blocked_signal etc.",
+    "TrustGraphSection adds Fit / Scroll canvas toggle (data-testid=canvas-mode-toggle).",
+    "Scroll mode wraps the graph in overflow-x-auto with minWidth=1100px so the operator can pan a usable graph on iPhone-width viewports.",
+    "Header is sticky on the Graph tab; the operator can keep Mode / Show all / Recompute / Fit-Scroll controls in view while scrolling the canvas."
+  ],
+  "abuse_cases": [
+    {
+      "case": "iPhone width (≤390px) scaling",
+      "expected_behavior": "operator can pan a usable graph rather than staring at a thumbnail",
+      "actual_behavior": "Scroll canvas mode renders min-width:1100px in overflow-x-auto wrapper; operator scrolls horizontally",
+      "status": "fixed"
+    },
+    {
+      "case": "all nodes blocked",
+      "expected_behavior": "node status badge shows Blocked everywhere; not internal code",
+      "actual_behavior": "humanTrustLabel maps blocked_signal → Blocked",
+      "status": "fixed"
+    },
+    {
+      "case": "long labels on node card",
+      "expected_behavior": "card stays readable",
+      "actual_behavior": "shortPurpose truncates role to 18 chars; only acronym + role + status are shown",
+      "status": "fixed"
+    },
+    {
+      "case": "dense dependency set",
+      "expected_behavior": "default view hides secondary/weak edges; full registry mode shows everything",
+      "actual_behavior": "registryContract.edge_classes marks secondary and weak_observed as visibility=full_only; default focus mode + isPrimaryEdge gating is unchanged; existing 'Show all' toggle handles full registry view",
+      "status": "ack — existing toggle preserved"
+    },
+    {
+      "case": "no priority artifact",
+      "expected_behavior": "graph still renders the registry; recompute button is visible",
+      "actual_behavior": "TrustGraphSection's recompute button is sticky in header; the empty graph case shows fail-closed warning + recompute",
+      "status": "ack"
+    },
+    {
+      "case": "stale priority artifact",
+      "expected_behavior": "Top 3 overlay does not appear; warning surfaces",
+      "actual_behavior": "extractTopThreeRecommendations returns empty cards on stale; graph payload focus_systems still uses priority overlay only when fresh",
+      "status": "fixed via Phase 1 freshness gate"
+    },
+    {
+      "case": "selected node inspector usability",
+      "expected_behavior": "inspector lives below the graph on mobile and the same column on desktop",
+      "actual_behavior": "SystemInspector renders directly below SystemTrustGraph in the same data-testid=graph-main-panel column",
+      "status": "ack"
+    }
+  ]
+}

@@ -37,6 +37,16 @@
       "evidence_signals": ["missing_control", "missing_enforcement_signal", "policy_mismatch"]
     },
     {
+      "taxonomy": "stale_artifact",
+      "description": "an artifact loaded but its generated_at is older than the dashboard freshness threshold (or missing/unparseable/future)",
+      "evidence_signals": ["stale_artifact", "older_than_threshold", "generated_at_missing", "generated_at_unparseable", "generated_at_in_future"]
+    },
+    {
+      "taxonomy": "registry_mismatch",
+      "description": "a system_id or graph node is not present in the system registry",
+      "evidence_signals": ["registry_contract_rejected_nodes", "reject_unknown_node", "reject_unknown_edge", "registry_mismatch", "reject_demoted_in_default", "reject_future_in_default"]
+    },
+    {
       "taxonomy": "internal_error",
       "description": "a producing script or API route reported an internal error",
       "evidence_signals": ["internal_error"]
@@ -52,6 +62,14 @@
       "evidence_signals": []
     }
   ],
+  "explain_panel_separation": {
+    "root_cause_system": "single artifact-backed system or 'Unknown'",
+    "root_cause_reason": "human-readable reason recorded on the root node — not a signal list",
+    "missing_signals": "failing signals collected across the entire failure path; never asserted as the root cause",
+    "downstream_impact": "registry systems on the failure path other than the root cause",
+    "taxonomy": "single canonical taxonomy code derived from root-cause signals",
+    "confidence": "artifact_backed=true|false; false when no node-level evidence exists"
+  },
   "ui_state_mapping": [
     { "ui_state": "BLOCKING", "default_taxonomy": "policy_mismatch", "rationale": "blocked_signal usually traces to missing control / enforcement input" },
     { "ui_state": "FAILED",   "default_taxonomy": "schema_violation", "rationale": "freeze_signal often follows a schema or invariant break" },

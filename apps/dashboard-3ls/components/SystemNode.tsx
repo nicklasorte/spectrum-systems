@@ -1,5 +1,6 @@
 import React from 'react';
 import type { SystemGraphNode } from '@/lib/systemGraph';
+import { humanTrustLabel } from '@/lib/humanStateLabels';
 
 const TRUST_BORDER: Record<string, string> = {
   trusted_signal: '#16a34a',
@@ -91,7 +92,6 @@ export function SystemNode({
   const colors = colorGroup(node);
   const trustBorder = TRUST_BORDER[node.trust_state] ?? '#94a3b8';
   const purpose = shortPurpose(node);
-  const trustWeight = `${Math.max(0, Math.min(100, Math.round(node.artifact_backed_percent ?? 0)))}%`;
   const outline = selected
     ? '#0f172a'
     : isHighlightRoot
@@ -100,6 +100,10 @@ export function SystemNode({
         ? '#ea580c'
         : trustBorder;
   const outlineWidth = selected || isHighlightRoot ? 3 : isOnHighlightedPath ? 2.5 : 1.5;
+  // D3L-DATA-REGISTRY-01 Phase 5: node card shows only acronym + one
+  // short role + one status badge. src/weight/warning fields move to
+  // the inspector so the default graph is not cluttered.
+  const status = humanTrustLabel(node.trust_state);
 
   return (
     <g
@@ -110,6 +114,7 @@ export function SystemNode({
       data-testid={`trust-node-${node.system_id}`}
       data-selected={selected ? 'true' : 'false'}
       data-trust-state={node.trust_state}
+      data-trust-label={status}
       data-debug-status={node.debug_status}
       data-highlight-path={isOnHighlightedPath ? 'true' : 'false'}
       data-highlight-root={isHighlightRoot ? 'true' : 'false'}
@@ -127,29 +132,21 @@ export function SystemNode({
         x={0}
         y={0}
         width={width}
-        height={20}
+        height={22}
         rx={10}
         ry={10}
         fill={colors.primary}
       />
-      <rect x={0} y={10} width={width} height={10} fill={colors.primary} />
-      <text x={10} y={15} fontSize={11} fontWeight={700} fill={colors.text}>
+      <rect x={0} y={12} width={width} height={10} fill={colors.primary} />
+      <text x={10} y={16} fontSize={13} fontWeight={700} fill={colors.text}>
         {node.system_id}
       </text>
-      <text x={width - 10} y={15} fontSize={9} fill={colors.text} textAnchor="end" fontWeight={600}>
-        w:{trustWeight}
-      </text>
-      <text x={10} y={36} fontSize={10} fill="#1f2937">
+      <text x={10} y={40} fontSize={10} fill="#1f2937">
         {purpose}
       </text>
-      <text x={10} y={51} fontSize={9} fill="#475569">
-        src: {node.source_type === 'artifact_store' ? 'artifact' : node.source_type}
-      </text>
-      <text x={width - 10} y={51} fontSize={9} fill="#475569" textAnchor="end">
-        ⚠ {node.warning_count}
-      </text>
-      <text x={10} y={64} fontSize={9} fill={trustBorder} fontWeight={600}>
-        {node.trust_state.replace(/_signal$/, '')}
+      <rect x={10} y={48} width={width - 20} height={16} rx={6} fill={trustBorder} fillOpacity={0.12} stroke={trustBorder} strokeWidth={0.75} />
+      <text x={width / 2} y={59} fontSize={10} fill={trustBorder} fontWeight={700} textAnchor="middle">
+        {status}
       </text>
     </g>
   );

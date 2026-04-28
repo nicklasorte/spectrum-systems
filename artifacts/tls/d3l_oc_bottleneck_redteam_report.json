@@ -1,0 +1,60 @@
+{
+  "artifact_type": "d3l_oc_bottleneck_redteam_report",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_7_redteam",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "oc_artifact_paths_consumed": [
+    "artifacts/operational_closure/oc_bottleneck_steering.json",
+    "artifacts/operational_closure/operational_closure_bundle.json",
+    "contracts/schemas/operational_closure_bundle.schema.json"
+  ],
+  "current_repo_state": {
+    "scripts/print_operational_closure.py": "absent",
+    "scripts/generate_dashboard_truth_projection.py": "absent",
+    "contracts/schemas/operational_closure_bundle.schema.json": "absent",
+    "artifacts/operational_closure/*": "absent"
+  },
+  "behavior_when_oc_unavailable": {
+    "api": "/api/oc-bottleneck returns state=unavailable + reason='OC bottleneck artifact not present: artifacts/operational_closure/oc_bottleneck_steering.json'",
+    "ui": "Diagnostics tab Current Bottleneck panel surfaces 'OC bottleneck: unavailable — <reason>' instead of fabricating a card",
+    "core_dashboard_behavior": "Top 3 / Trust Pulse / Graph all continue to operate; OC absence is reported, not propagated as a critical fail-closed across the cockpit"
+  },
+  "abuse_cases": [
+    {
+      "case": "stale proof",
+      "expected": "stale_proof state; not actionable",
+      "actual": "loadOcBottleneck returns state='stale_proof' when bottleneck.stale_proof===true; UI shows 'OC bottleneck: stale_proof — <reason>'",
+      "status": "fixed"
+    },
+    {
+      "case": "duplicate / conflict proof",
+      "expected": "conflict_proof state; no tie-break",
+      "actual": "loadOcBottleneck returns state='conflict_proof' when bottleneck.conflict_proof===true",
+      "status": "fixed"
+    },
+    {
+      "case": "ambiguous bottleneck",
+      "expected": "ambiguous state",
+      "actual": "loadOcBottleneck returns state='ambiguous' when bottleneck.ambiguous===true",
+      "status": "fixed"
+    },
+    {
+      "case": "low-trust work recommendation",
+      "expected": "evidence_status='partial' or 'missing' surfaces in card",
+      "actual": "card.evidence_status passes through verbatim; UI shows 'evidence: partial' / 'evidence: missing'",
+      "status": "fixed"
+    },
+    {
+      "case": "OC contradicts Top 3",
+      "expected": "panel notes that Top 3 and OC are distinct surfaces; no auto-merge",
+      "actual": "Diagnostics panel adds explanatory text 'Top 3 (priority) and OC bottleneck are distinct surfaces; mismatches are reported here without a tie-break'",
+      "status": "ack"
+    },
+    {
+      "case": "OC schema absent",
+      "expected": "unavailable state",
+      "actual": "loadOcBottleneck returns state='unavailable' when artifact file is missing",
+      "status": "fixed"
+    }
+  ]
+}
