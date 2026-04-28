@@ -1,16 +1,23 @@
-# Cross-Repo Contract Enforcement Report
+# Cross-Repo Contract Compliance Report
+
+> Legacy filename retained for backwards-compatible links. The active
+> compliance/validation report is generated at
+> [`contract-compliance-report.md`](contract-compliance-report.md). This
+> document is a non-owning compliance observation surface and does not
+> carry SEL/ENF authority semantics. SEL/ENF retain canonical action
+> boundary responsibility.
 
 Generated: 2026-04-24T21:07:16Z
 Source: `contracts/standards-manifest.json`
 
-## Summary
+## Compliance Summary
 
 | Status | Count |
 |--------|-------|
 | Pass | 13 |
 | Fail | 0 |
 | Warning | 0 |
-| Not Yet Enforceable | 0 |
+| Not Yet Compliance-Validated | 0 |
 | Total Inspected | 15 |
 
 ## Repos Inspected
@@ -31,7 +38,7 @@ Source: `contracts/standards-manifest.json`
 - **tlc** — 🏛 GOVERNANCE REPO
 - **working-paper-review-engine** `working-paper-review-engine` — ✅ PASS
 
-## Enforcement Failures
+## Compliance Findings
 
 None.
 
@@ -39,7 +46,7 @@ None.
 
 None.
 
-## Not Yet Enforceable
+## Not Yet Compliance-Validated
 
 All governed repos have governance manifests.
 
