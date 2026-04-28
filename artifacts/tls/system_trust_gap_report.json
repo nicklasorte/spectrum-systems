@@ -553,13 +553,13 @@
       "failing_signals": [
         "missing_control",
         "missing_enforcement_signal",
+        "missing_lineage",
         "schema_weakness"
       ],
-      "gap_count": 3,
+      "gap_count": 4,
       "gaps_evaluated": 9,
       "passing_signals": [
         "missing_eval",
-        "missing_lineage",
         "missing_observability",
         "missing_readiness_evidence",
         "missing_replay",
