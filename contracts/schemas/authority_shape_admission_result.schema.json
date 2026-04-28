@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/authority_shape_admission_result.schema.json",
+  "title": "Authority Shape Admission Result",
+  "description": "AEX shift-left admission scan result for authority-shaped vocabulary in non-owner contexts. Emitted by the AEX-compatible authority-shape admission scanner before TLC orchestration so PQX cannot proceed on unrepaired authority-shape leaks. The scanner is non-owning — canonical authority ownership stays in the system registry; this artifact only catches misuse earlier than the existing authority_shape_preflight_result and system_registry_guard_result.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "status",
+    "mode",
+    "scanned_files",
+    "skipped_files",
+    "diagnostics",
+    "summary"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "authority_shape_admission_result"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "block"]
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["suggest-only", "enforce"]
+    },
+    "scanned_files": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "skipped_files": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "file",
+          "line",
+          "symbol",
+          "cluster",
+          "canonical_owner",
+          "current_context",
+          "owner_context_allowed",
+          "context_kind",
+          "fail_closed_reason_code",
+          "suggested_safe_replacements"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["pass", "block"]
+          },
+          "file": {"type": "string", "minLength": 1},
+          "line": {"type": "integer", "minimum": 0},
+          "json_path": {"type": "string"},
+          "symbol": {"type": "string"},
+          "cluster": {"type": "string", "minLength": 1},
+          "canonical_owner": {
+            "oneOf": [
+              {"type": "string", "minLength": 1},
+              {"type": "null"}
+            ]
+          },
+          "canonical_owners": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "current_context": {"type": "string"},
+          "owner_context_allowed": {"type": "boolean"},
+          "context_kind": {
+            "type": "string",
+            "enum": ["manifest", "schema", "example", "report", "source", "doc", "script", "unknown"]
+          },
+          "fail_closed_reason_code": {"type": "string"},
+          "suggested_safe_replacements": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1}
+          },
+          "rationale": {"type": "string"}
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "violation_count",
+        "block_count",
+        "pass_count"
+      ],
+      "properties": {
+        "violation_count": {"type": "integer", "minimum": 0},
+        "block_count": {"type": "integer", "minimum": 0},
+        "pass_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  }
+}

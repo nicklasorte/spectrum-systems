@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/authority_shape_repair_candidate.schema.json",
+  "title": "Authority Shape Repair Candidate",
+  "description": "FRE bounded repair candidate for an authority-shape admission/preflight/registry-guard violation. Repair candidates are advisory; they do not auto-apply broad renames or add broad exclusions. They include enough evidence that PQX-equivalent execution can apply a narrow fix and re-run the existing preflight and registry-guard checks. Authority guardrails (CDE, SEL, TPA, AEX) are unchanged by this artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "candidate_id",
+    "source_admission_ref",
+    "file",
+    "original_text",
+    "safe_replacement",
+    "replacement_rationale",
+    "rename_kind",
+    "risk_level",
+    "context_kind",
+    "affected_downstream",
+    "required_tests",
+    "candidate_status",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "authority_shape_repair_candidate"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_admission_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "file": {"type": "string", "minLength": 1},
+    "line": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "json_path": {"type": "string"},
+    "original_text": {"type": "string", "minLength": 1},
+    "safe_replacement": {"type": "string", "minLength": 1},
+    "replacement_rationale": {"type": "string", "minLength": 1},
+    "rename_kind": {
+      "type": "string",
+      "enum": [
+        "content_only",
+        "identifier_breaking",
+        "schema_breaking"
+      ]
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "context_kind": {
+      "type": "string",
+      "enum": ["manifest", "schema", "example", "report", "source", "doc", "script", "unknown"]
+    },
+    "cluster": {"type": "string"},
+    "canonical_owner": {
+      "oneOf": [
+        {"type": "string", "minLength": 1},
+        {"type": "null"}
+      ]
+    },
+    "affected_downstream": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "required_tests": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "candidate_status": {
+      "type": "string",
+      "enum": ["ready", "incomplete", "rejected"]
+    },
+    "rejection_reason": {"type": "string"},
+    "fail_closed_reason_codes": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true,
+      "minItems": 1
+    }
+  }
+}
