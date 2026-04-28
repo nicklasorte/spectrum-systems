@@ -1,0 +1,55 @@
+{
+  "artifact_type": "d3l_debugger_redteam_report",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_5_node_inspector_and_explain_system_state",
+  "checks": [
+    {
+      "case_id": "RT-DBG-01",
+      "description": "missing node debugger data",
+      "expected_outcome": "fields show Unknown / Missing; no synthesised values",
+      "implementation": "SystemInspector listOrMissing() returns 'Unknown / Missing' when fields absent",
+      "result": "covered_by_existing_inspector"
+    },
+    {
+      "case_id": "RT-DBG-02",
+      "description": "invalid source artifact references",
+      "expected_outcome": "SourceBreadcrumbs surfaces the path verbatim; no silent rewriting",
+      "implementation": "source_artifact_refs read directly from systemGraphBuilder",
+      "result": "covered_by_existing_inspector"
+    },
+    {
+      "case_id": "RT-DBG-03",
+      "description": "unknown system clicked",
+      "expected_outcome": "non-registry id never reaches the inspector — graph builder dropped it",
+      "implementation": "registry contract validation drops unknown nodes before render",
+      "test_pinning": "__tests__/lib/registryContract.test.ts: rejects unknown node IDs",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-DBG-04",
+      "description": "circular dependency",
+      "expected_outcome": "explainSystemState falls back to first failure-path node with explicit Unknown explanation",
+      "implementation": "rootCandidates fallback when every node has on-path upstream blockers",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-DBG-05",
+      "description": "stale graph with fresh priority report",
+      "expected_outcome": "freshness warning surfaced; priority Top 3 still rendered with note",
+      "implementation": "loadPriorityArtifact returns state='ok' with source_path; graph.generated_at compared against priority.generated_at in Diagnostics replay panel",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-DBG-06",
+      "description": "fresh graph with stale priority report",
+      "expected_outcome": "Top 3 surfaces stale warning; ranking still preserved verbatim",
+      "implementation": "extractTopThreeRecommendations sets warning='Top 3 stale: ...' when state='stale'",
+      "test_pinning": "__tests__/lib/topThreeRecommendations.test.ts: reports stale warning when artifact is past freshness threshold",
+      "result": "fixed"
+    }
+  ],
+  "remaining_risks": [],
+  "fix_summary": "Inspector is artifact-only; Explain System State is deterministic with snapshot-equivalent same-input/same-output guarantee."
+}

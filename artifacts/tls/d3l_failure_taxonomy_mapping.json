@@ -1,0 +1,64 @@
+{
+  "artifact_type": "d3l_failure_taxonomy_mapping",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_4_root_cause_propagation_failure_topology",
+  "produced_by": "apps/dashboard-3ls/lib/failureTaxonomy.ts",
+  "taxonomy": [
+    {
+      "taxonomy": "missing_artifact",
+      "description": "a required source artifact is absent on disk",
+      "evidence_signals": ["missing_artifact", "source artifact missing", "not_found"]
+    },
+    {
+      "taxonomy": "missing_eval",
+      "description": "a required eval is missing or has not produced evidence",
+      "evidence_signals": ["missing_eval", "missing_required_eval", "evidence_attachment_missing"]
+    },
+    {
+      "taxonomy": "schema_violation",
+      "description": "an artifact failed schema validation",
+      "evidence_signals": ["schema_weakness", "shape_mismatch", "schema_violation"]
+    },
+    {
+      "taxonomy": "trace_missing",
+      "description": "a trace or observability record is missing",
+      "evidence_signals": ["missing_observability", "missing_trace", "trace_gap"]
+    },
+    {
+      "taxonomy": "replay_mismatch",
+      "description": "replay integrity has not been confirmed for this system",
+      "evidence_signals": ["missing_replay", "replay_mismatch"]
+    },
+    {
+      "taxonomy": "policy_mismatch",
+      "description": "a policy or trust-decision artifact is missing or inconsistent",
+      "evidence_signals": ["missing_control", "missing_enforcement_signal", "policy_mismatch"]
+    },
+    {
+      "taxonomy": "internal_error",
+      "description": "a producing script or API route reported an internal error",
+      "evidence_signals": ["internal_error"]
+    },
+    {
+      "taxonomy": "unknown",
+      "description": "no signal evidence available; root cause is explicitly unknown",
+      "evidence_signals": []
+    },
+    {
+      "taxonomy": "none",
+      "description": "no failure detected on the candidate system",
+      "evidence_signals": []
+    }
+  ],
+  "ui_state_mapping": [
+    { "ui_state": "BLOCKING", "default_taxonomy": "policy_mismatch", "rationale": "blocked_signal usually traces to missing control / enforcement input" },
+    { "ui_state": "FAILED",   "default_taxonomy": "schema_violation", "rationale": "freeze_signal often follows a schema or invariant break" },
+    { "ui_state": "MISSING",  "default_taxonomy": "missing_artifact", "rationale": "node has no source artifact backing it" },
+    { "ui_state": "FALLBACK", "default_taxonomy": "missing_artifact", "rationale": "node only has a stub fallback; treat as missing" },
+    { "ui_state": "STALE",    "default_taxonomy": "missing_eval",     "rationale": "stale artifact often precedes missing eval coverage" },
+    { "ui_state": "UNKNOWN",  "default_taxonomy": "unknown",          "rationale": "explicit unknown when no signal evidence is present" },
+    { "ui_state": "OK",       "default_taxonomy": "none",             "rationale": "trusted_signal" }
+  ]
+}

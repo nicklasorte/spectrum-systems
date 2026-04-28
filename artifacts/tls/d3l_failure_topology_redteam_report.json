@@ -1,0 +1,57 @@
+{
+  "artifact_type": "d3l_failure_topology_redteam_report",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_4_root_cause_propagation_failure_topology",
+  "checks": [
+    {
+      "case_id": "RT-FT-01",
+      "description": "all nodes blocked",
+      "expected_outcome": "root cause = the upstream-most node with no upstream blocker; downstream marked propagation, not root",
+      "implementation": "explainSystemState filters failure_path nodes by absent upstream-blocker on path",
+      "test_pinning": "__tests__/lib/explainSystemState.test.ts: identifies root cause as the upstream-most failure-path node",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-FT-02",
+      "description": "no root cause available",
+      "expected_outcome": "Unknown reason is explicit; never guessed",
+      "implementation": "explainSystemState returns root_cause.taxonomy='unknown' with explicit explanation when no root candidate",
+      "test_pinning": "__tests__/lib/explainSystemState.test.ts: returns Unknown root cause when graph has no failure path",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-FT-03",
+      "description": "multiple root causes",
+      "expected_outcome": "first root candidate selected; explanation cites it; UI propagation_path lists all",
+      "implementation": "rootCandidates[0] selected; propagation_path returns full failure_path",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-FT-04",
+      "description": "missing taxonomy",
+      "expected_outcome": "mapSignalsToTaxonomy returns 'unknown', never a guessed default",
+      "implementation": "failureTaxonomy.ts returns 'unknown' when no entry matches",
+      "test_pinning": "__tests__/lib/failureTaxonomy.test.ts: returns unknown when signals do not match the taxonomy",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-FT-05",
+      "description": "downstream-only failure (root has no upstream blocker)",
+      "expected_outcome": "downstream node correctly identified as root",
+      "implementation": "explainSystemState root candidate selection",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-FT-06",
+      "description": "stale artifact causing false block",
+      "expected_outcome": "freshness warning surfaced separately from root_cause",
+      "implementation": "loadPriorityArtifact returns state='stale'; explainSystemState appends to missing_data",
+      "test_pinning": "__tests__/lib/explainSystemState.test.ts: reports missing data when graph and priority artifacts are absent",
+      "result": "fixed"
+    }
+  ],
+  "remaining_risks": [],
+  "fix_summary": "Root cause derivation is artifact-driven; Unknown is explicit; failure topology uses bounded taxonomy with documented evidence signals."
+}

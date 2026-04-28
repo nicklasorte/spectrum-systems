@@ -54,13 +54,41 @@ describe('loadPriorityArtifact', () => {
     else process.env.REPO_ROOT = prevRepoRoot;
   });
 
-  it('returns missing when artifact does not exist', () => {
+  it('returns missing when artifact does not exist (and exposes recompute_command)', () => {
     const repo = tmpRepo();
     process.env.REPO_ROOT = repo;
     const result = loadPriorityArtifact();
     expect(result.state).toBe('missing');
     expect(result.payload).toBeNull();
     expect(result.reason).toMatch(/not_found/);
+    expect(result.recompute_command).toBeDefined();
+  });
+
+  it('falls back to artifacts/tls path when only the TLS sibling exists', () => {
+    const repo = tmpRepo();
+    process.env.REPO_ROOT = repo;
+    const fallbackTarget = path.join(repo, 'artifacts/tls/system_dependency_priority_report.json');
+    fs.mkdirSync(path.dirname(fallbackTarget), { recursive: true });
+    fs.writeFileSync(fallbackTarget, JSON.stringify({ ...VALID_PAYLOAD, generated_at: new Date().toISOString() }));
+    const result = loadPriorityArtifact();
+    expect(result.state).toBe('ok');
+    expect(result.source_path).toBe('artifacts/tls/system_dependency_priority_report.json');
+  });
+
+  it('accepts the current tls-06.v1 schema version', () => {
+    const repo = tmpRepo();
+    process.env.REPO_ROOT = repo;
+    const target = path.join(repo, 'artifacts/system_dependency_priority_report.json');
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, JSON.stringify({
+      ...VALID_PAYLOAD,
+      schema_version: 'tls-06.v1',
+      phase: 'TLS-06',
+      generated_at: new Date().toISOString(),
+    }));
+    const result = loadPriorityArtifact();
+    expect(result.state).toBe('ok');
+    expect(result.payload?.top_5?.[0].system_id).toBe('EVL');
   });
 
   it('returns ok when artifact is fresh and well-formed', () => {

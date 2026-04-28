@@ -8,6 +8,7 @@ import {
   type GraphState,
   type NodeSourceType,
 } from '@/lib/systemGraph';
+import { loadRegistryContract, validateGraphAgainstContract } from '@/lib/registryContract';
 
 const ARTIFACTS = {
   registryGraph: 'artifacts/tls/system_registry_dependency_graph.json',
@@ -66,6 +67,13 @@ export function buildSystemGraphPayload(nowIso: string = new Date().toISOString(
     }
   }
 
+  // Registry contract is the single allowlist for graph nodes. Everything
+  // else (roadmap labels, candidate IDs, prompt labels) must NOT become
+  // a graph node. The contract is parsed from the registry artifact so
+  // the dashboard never invents systems.
+  const contract = loadRegistryContract();
+  const allowedActive = new Set(contract.allowed_active_node_ids);
+
   const activeSystems = asArray<Record<string, unknown>>(registry?.active_systems);
   const canonicalLoop = asArray<string>(registry?.canonical_loop);
   const overlays = asArray<string>(registry?.canonical_overlays);
@@ -88,10 +96,25 @@ export function buildSystemGraphPayload(nowIso: string = new Date().toISOString(
   const focusSystems = failurePath.length > 0 ? failurePath.slice(0, 3) : focusTop;
 
   const systemIds = new Set<string>();
-  for (const row of activeSystems) systemIds.add(String(row.system_id));
-  for (const id of focusSystems) systemIds.add(id);
-  for (const id of canonicalLoop) systemIds.add(id);
-  for (const id of overlays) systemIds.add(id);
+  const rejectedNodeIds: string[] = [];
+  const acceptIfAllowed = (id: string) => {
+    if (!id) return;
+    if (allowedActive.size > 0 && !allowedActive.has(id)) {
+      // Registry contract rejects non-registry-active labels (e.g. H01,
+      // RFX, MET, roadmap bundle IDs). Track them so the warnings panel
+      // can surface what was filtered.
+      if (!rejectedNodeIds.includes(id)) rejectedNodeIds.push(id);
+      return;
+    }
+    systemIds.add(id);
+  };
+  for (const row of activeSystems) acceptIfAllowed(String(row.system_id));
+  for (const id of focusSystems) acceptIfAllowed(id);
+  for (const id of canonicalLoop) acceptIfAllowed(id);
+  for (const id of overlays) acceptIfAllowed(id);
+  if (rejectedNodeIds.length > 0) {
+    warnings.push(`registry_contract_rejected_nodes:${rejectedNodeIds.join(',')}`);
+  }
 
   const generatedAt = String(priority?.generated_at ?? nowIso);
   const replayCommands: string[] = [
@@ -173,6 +196,13 @@ export function buildSystemGraphPayload(nowIso: string = new Date().toISOString(
   const seen = new Set<string>();
   for (const node of nodes) {
     for (const to of node.downstream) {
+      // Drop edges whose endpoint is not in the registry contract.
+      // Otherwise the graph could carry an edge to a label like H01
+      // even if the node was rejected.
+      if (allowedActive.size > 0 && !allowedActive.has(to)) {
+        if (!rejectedNodeIds.includes(to)) rejectedNodeIds.push(to);
+        continue;
+      }
       const key = `${node.system_id}->${to}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -207,21 +237,49 @@ export function buildSystemGraphPayload(nowIso: string = new Date().toISOString(
     }
   }
 
+  // Final defense-in-depth: assert the produced payload contains only
+  // registry-active node ids. If any unknown / future / demoted leaks
+  // through (e.g. via a code path we missed), record a warning and drop
+  // it from the payload. Fail-closed.
+  const contractValidation = validateGraphAgainstContract(contract, { nodes, edges });
+  let safeNodes = nodes;
+  let safeEdges = edges;
+  if (!contractValidation.ok) {
+    for (const finding of contractValidation.findings) {
+      warnings.push(`graph_contract_violation:${finding.rule_id}:${finding.offending.join(',')}`);
+    }
+    const offendingIds = new Set<string>(
+      contractValidation.findings
+        .filter((f) => f.rule_id === 'reject_unknown_node' || f.rule_id === 'reject_future_in_default' || f.rule_id === 'reject_demoted_in_default')
+        .flatMap((f) => f.offending),
+    );
+    if (offendingIds.size > 0) {
+      safeNodes = safeNodes.filter((node) => !offendingIds.has(node.system_id));
+      safeEdges = safeEdges.filter((edge) => !offendingIds.has(edge.from) && !offendingIds.has(edge.to));
+    }
+    const unknownEdgeKeys = new Set<string>(
+      contractValidation.findings.filter((f) => f.rule_id === 'reject_unknown_edge').flatMap((f) => f.offending),
+    );
+    if (unknownEdgeKeys.size > 0) {
+      safeEdges = safeEdges.filter((edge) => !unknownEdgeKeys.has(`${edge.from}->${edge.to}`));
+    }
+  }
+
   return {
     graph_state: mapTrustToGraphState(trustPosture, !registry),
     generated_at: generatedAt,
     source_mix: {
-      artifact_store: nodes.filter((n) => n.source_type === 'artifact_store').length,
-      repo_registry: nodes.filter((n) => n.source_type === 'repo_registry').length,
-      derived: nodes.filter((n) => n.source_type === 'derived').length,
-      stub_fallback: nodes.filter((n) => n.source_type === 'stub_fallback').length,
-      missing: nodes.filter((n) => n.source_type === 'missing').length,
+      artifact_store: safeNodes.filter((n) => n.source_type === 'artifact_store').length,
+      repo_registry: safeNodes.filter((n) => n.source_type === 'repo_registry').length,
+      derived: safeNodes.filter((n) => n.source_type === 'derived').length,
+      stub_fallback: safeNodes.filter((n) => n.source_type === 'stub_fallback').length,
+      missing: safeNodes.filter((n) => n.source_type === 'missing').length,
     },
     trust_posture: trustPosture,
-    nodes,
-    edges,
-    focus_systems: focusSystems,
-    failure_path: failurePath,
+    nodes: safeNodes,
+    edges: safeEdges,
+    focus_systems: focusSystems.filter((id) => allowedActive.size === 0 || allowedActive.has(id)),
+    failure_path: failurePath.filter((id) => allowedActive.size === 0 || allowedActive.has(id)),
     missing_artifacts: missingArtifacts,
     warnings,
     replay_commands: replayCommands,

@@ -8,7 +8,7 @@
     "artifact_version",
     "schema_version",
     "diagnosis_id",
-    "strategy_gate_decision",
+    "strategy_gate_recommendation",
     "failure_class",
     "reason_codes",
     "root_cause_summary",
@@ -27,8 +27,9 @@
     "diagnosis_id": {
       "type": "string"
     },
-    "strategy_gate_decision": {
+    "strategy_gate_recommendation": {
       "type": "string",
+      "description": "Preflight observation of the upstream strategy gate signal value (ALLOW/WARN/FREEZE/BLOCK). The field carries no authority on its own and is consumed by canonical owners as a recommended input.",
       "enum": [
         "ALLOW",
         "WARN",
@@ -90,6 +91,52 @@
         },
         "repairable": {
           "type": "boolean"
+        }
+      }
+    },
+    "pytest_selection_diagnostic": {
+      "type": "object",
+      "description": "Optional diagnostic populated for pytest_selection_* failure classes. Names the changed files that did not map to a pytest selection, the surface rules that were attempted, and the registry locations to update.",
+      "additionalProperties": false,
+      "required": [
+        "unmatched_changed_paths",
+        "attempted_surface_rules",
+        "recommended_mapping_locations"
+      ],
+      "properties": {
+        "unmatched_changed_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attempted_surface_rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path_prefix",
+              "required_test_targets"
+            ],
+            "properties": {
+              "path_prefix": {
+                "type": "string"
+              },
+              "required_test_targets": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "recommended_mapping_locations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }

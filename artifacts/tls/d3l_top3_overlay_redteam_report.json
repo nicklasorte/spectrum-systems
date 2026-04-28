@@ -1,0 +1,55 @@
+{
+  "artifact_type": "d3l_top3_overlay_redteam_report",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_3_top3_graph_overlay",
+  "checks": [
+    {
+      "case_id": "RT-T3-01",
+      "description": "Top 3 entry has invalid (non-registry) system_id",
+      "expected_outcome": "card renders text-only; system_id NOT highlighted as a graph node",
+      "implementation": "extractTopThreeRecommendations returns is_registry_backed=false; UI shows 'text-only · not a registry system' badge",
+      "test_pinning": "__tests__/lib/topThreeRecommendations.test.ts: flags non-registry rows as text-only with a warning",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-T3-02",
+      "description": "Top 3 row has missing safe_prompt_scope",
+      "expected_outcome": "fallback string surfaced explicitly; not blank",
+      "implementation": "rankedSystemToCard fills 'recommendation: scope hardening to ${system_id}' when next_prompt missing",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-T3-03",
+      "description": "Top 3 row has missing supporting artifact",
+      "expected_outcome": "card always carries supporting_artifact path (canonical priority report path)",
+      "implementation": "supporting_artifact is always set to PRIORITY_ARTIFACT_PATH in card construction",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-T3-04",
+      "description": "Top 3 row has missing boundary warning",
+      "expected_outcome": "fallback warning explicitly states the artifact omitted the field",
+      "implementation": "fallbackBoundary() string used; never silent",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-T3-05",
+      "description": "Top 3 conflicts with graph state (e.g. graph blocked but Top 3 says ready)",
+      "expected_outcome": "control_signal warning visible; cards still render; no silent override",
+      "implementation": "blocked_signal/freeze_signal short-circuit warning prepends to result",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-T3-06",
+      "description": "Top 3 has duplicate system_ids",
+      "expected_outcome": "ordering preserved verbatim; no dedup or re-ranking",
+      "implementation": "extractTopThreeRecommendations slices artifact array verbatim; dashboard never reorders",
+      "test_pinning": "__tests__/lib/topThreeRecommendations.test.ts: preserves artifact ordering — dashboard does not re-rank",
+      "result": "fixed"
+    }
+  ],
+  "remaining_risks": [],
+  "fix_summary": "All six abuse cases handled. Top 3 overlay highlights only registry-active system nodes; non-registry recommendations remain visible as text-only cards."
+}

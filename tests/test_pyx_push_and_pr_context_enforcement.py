@@ -35,7 +35,9 @@ def test_pr_visible_check_surface_remains_pr_slash_pytest() -> None:
 def test_push_preflight_and_pr_preflight_use_governed_contract_entrypoint() -> None:
     artifact_text = ARTIFACT_BOUNDARY_WORKFLOW.read_text(encoding="utf-8")
     pr_text = PR_PYTEST_WORKFLOW.read_text(encoding="utf-8")
-    assert "Run authoritative governed preflight gate (push)" in artifact_text
+    assert "Run authoritative governed preflight gate" in artifact_text
+    assert "github.event_name == 'push'" in artifact_text
+    assert "github.event_name == 'pull_request'" in artifact_text
     assert "python scripts/run_contract_preflight.py" in artifact_text
     assert "--execution-context pqx_governed" in artifact_text
     assert "Run governed pytest preflight gate" in pr_text

@@ -1,0 +1,42 @@
+{
+  "artifact_type": "d3l_top3_pipeline_diagnostic",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_1_top3_artifact_pipeline",
+  "investigation": {
+    "scripts_examined": [
+      "scripts/build_tls_dependency_priority.py",
+      "scripts/build_dashboard_3ls_with_tls.py"
+    ],
+    "loaders_examined": [
+      "apps/dashboard-3ls/lib/artifactLoader.ts",
+      "apps/dashboard-3ls/app/api/priority/route.ts"
+    ],
+    "artifacts_examined": [
+      "artifacts/system_dependency_priority_report.json",
+      "artifacts/tls/system_dependency_priority_report.json"
+    ],
+    "vercelignore_examined": false,
+    "findings": [
+      {
+        "id": "DIAG-1",
+        "summary": "Dashboard loader hard-checked schema_version='tls-04.v1' and phase='TLS-04', but the published artifact is 'tls-06.v1' / 'TLS-06'.",
+        "severity": "high",
+        "consequence": "Loader rejected the live artifact as invalid_schema, producing the 'Top 3 unavailable' state."
+      },
+      {
+        "id": "DIAG-2",
+        "summary": "Top-level path artifacts/system_dependency_priority_report.json may exist while the publish step has not yet copied a freshly built TLS artifact.",
+        "severity": "medium",
+        "consequence": "When publish lags the build, dashboard had no fallback to the artifacts/tls/ sibling path."
+      },
+      {
+        "id": "DIAG-3",
+        "summary": "There was no recompute_command surfaced to the operator when the artifact was missing or invalid.",
+        "severity": "medium",
+        "consequence": "Fail-closed banner became a dead end; operator had to inspect docs to find the rebuild command."
+      }
+    ]
+  }
+}

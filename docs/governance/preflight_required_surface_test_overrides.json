@@ -10,5 +10,11 @@
   ],
   "contracts/governance/authority_shape_vocabulary.json": [
     "tests/test_contracts.py"
+  ],
+  "contracts/examples/preflight_block_diagnosis_record.json": [
+    "tests/test_contracts.py"
+  ],
+  "contracts/schemas/preflight_block_diagnosis_record.schema.json": [
+    "tests/test_contracts.py"
   ]
 }

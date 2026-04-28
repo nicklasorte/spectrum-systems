@@ -1,0 +1,57 @@
+{
+  "artifact_type": "d3l_queue_redteam_report",
+  "phase": "D3L-REGISTRY-01",
+  "schema_version": "d3l-registry-01.v1",
+  "generated_at": "2026-04-28T00:00:00.000Z",
+  "scope": "phase_7_leverage_queue_compression_and_roadmap_alignment",
+  "checks": [
+    {
+      "case_id": "RT-Q-01",
+      "description": "queue duplicates ranking",
+      "expected_outcome": "queue mentions Top 3 system_id as a link, not a re-ranked recommendation",
+      "implementation": "buildLeverageQueueFromRoadmap accepts topThreeSystemIds and only adds linked_top3_system_id when one of the bundle's steps mentions it; queue does not produce its own ranking",
+      "test_pinning": "__tests__/lib/topThreeRecommendations.test.ts: links queue card to a top-3 system when one of its steps mentions it",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-Q-02",
+      "description": "queue invents a system",
+      "expected_outcome": "bundle_id (e.g. TLS-BND-01) remains a roadmap label, never a graph node",
+      "implementation": "Queue UI renders bundle_id as a string; graph builder rejects it via registry contract",
+      "test_pinning": "__tests__/lib/topThreeRecommendations.test.ts: does not invent systems even when bundle id resembles one",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-Q-03",
+      "description": "queue hides dependency",
+      "expected_outcome": "queue card shows dependency_count from the roadmap entry",
+      "implementation": "queue card carries dependency_count derived from entry.dependencies length",
+      "test_pinning": "__tests__/lib/topThreeRecommendations.test.ts: compresses each bundle into a single card with dependency_count",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-Q-04",
+      "description": "queue too verbose on mobile",
+      "expected_outcome": "queue card is one short summary; full details remain in Roadmap tab",
+      "implementation": "QueueItem replaced multi-line steps render with single-line bundle_id + title + why + deps + next_safe_action; full steps remain on RoadmapEntry payload accessible from Roadmap tab",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-Q-05",
+      "description": "queue text implies authority outcome",
+      "expected_outcome": "queue card text uses 'next safe action' / 'why it matters' phrasing only — no closure / promotion / enforcement language",
+      "implementation": "labels rendered as 'why it matters' and 'next safe action'; no authority verbs",
+      "result": "fixed"
+    },
+    {
+      "case_id": "RT-Q-06",
+      "description": "missing roadmap artifact",
+      "expected_outcome": "queue surfaces explicit warning",
+      "implementation": "buildLeverageQueueFromRoadmap returns warning='Leverage queue unavailable: ...' when artifact missing",
+      "test_pinning": "__tests__/lib/topThreeRecommendations.test.ts: returns warning when artifact missing",
+      "result": "fixed"
+    }
+  ],
+  "remaining_risks": [],
+  "fix_summary": "Compressed queue cards link to Top 3 systems by ID without introducing graph nodes; missing artifact surfaces fail-closed warning."
+}

@@ -128,7 +128,7 @@ def test_repair_scope_is_bounded_to_declared_paths() -> None:
         "artifact_version": "1.0.0",
         "schema_version": "1.0.0",
         "diagnosis_id": "diag-1",
-        "strategy_gate_decision": "BLOCK",
+        "strategy_gate_recommendation": "BLOCK",
         "failure_class": "invalid_wrapper",
         "reason_codes": ["x"],
         "root_cause_summary": "wrapper missing",
@@ -518,7 +518,7 @@ def test_preflight_test_inventory_failure_is_auto_repairable_and_bounded() -> No
             "artifact_version": "1.0.0",
             "schema_version": "1.0.0",
             "diagnosis_id": "diag-2",
-            "strategy_gate_decision": "BLOCK",
+            "strategy_gate_recommendation": "BLOCK",
             "failure_class": "unexpected_test_inventory_regression",
             "reason_codes": ["unexpected_test_inventory_regression"],
             "root_cause_summary": "inventory drift",
@@ -563,3 +563,5 @@ def test_pr_selection_integrity_required_invariant_classifies_as_selection_missi
         preflight_artifact={"control_signal": {"strategy_gate_decision": "BLOCK"}, "generated_at": "2026"},
     )
     assert diagnosis["failure_class"] == "pytest_selection_missing"
+
+
