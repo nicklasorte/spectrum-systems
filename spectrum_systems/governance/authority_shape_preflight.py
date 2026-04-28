@@ -94,6 +94,7 @@ class Violation:
     suggested_replacements: tuple[str, ...]
     rationale: str
     rule: str = "authority_shape_outside_owner"
+    first_failure_boundary: str = "authority_shape_preflight"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -105,6 +106,9 @@ class Violation:
             "canonical_owners": list(self.canonical_owners),
             "suggested_replacements": list(self.suggested_replacements),
             "rationale": self.rationale,
+            "failure_class": "policy_mismatch",
+            "subtype": "authority_boundary_drift",
+            "first_failure_boundary": self.first_failure_boundary,
         }
 
 
@@ -341,6 +345,9 @@ def scan_file(path: Path, rel_path: str, vocab: VocabularyModel) -> list[Violati
     except (UnicodeDecodeError, OSError):
         return []
 
+    if rel_path.startswith("docs/reviews/") and path.suffix.lower() == ".md":
+        return _scan_review_language(path=path, rel_path=rel_path, vocab=vocab)
+
     violations: list[Violation] = []
     lines = text.splitlines()
     safety_set = set(vocab.safety_suffixes)
@@ -369,6 +376,145 @@ def scan_file(path: Path, rel_path: str, vocab: VocabularyModel) -> list[Violati
                             )
                         )
                         break
+    if path.suffix.lower() == ".json" and rel_path.endswith(".schema.json"):
+        violations.extend(_scan_schema_authority_shape(path=path, rel_path=rel_path, vocab=vocab))
+    return violations
+
+
+def _build_violation(
+    *,
+    rel_path: str,
+    line: int,
+    symbol: str,
+    cluster: ClusterSpec,
+    rule: str,
+    rationale_suffix: str,
+) -> Violation:
+    return Violation(
+        file=rel_path,
+        line=line,
+        symbol=symbol,
+        cluster=cluster.name,
+        canonical_owners=cluster.canonical_owners,
+        suggested_replacements=cluster.advisory_replacements,
+        rationale=f"{cluster.rationale} {rationale_suffix}".strip(),
+        rule=rule,
+        first_failure_boundary="schema_authority_shape_lint" if "schema" in rule else "review_language_authority_lint",
+    )
+
+
+def _scan_schema_authority_shape(*, path: Path, rel_path: str, vocab: VocabularyModel) -> list[Violation]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError):
+        return []
+    if not isinstance(payload, dict):
+        return []
+
+    violations: list[Violation] = []
+    safety_set = set(vocab.safety_suffixes)
+    cluster_by_term: list[tuple[str, ClusterSpec]] = []
+    for cluster in vocab.clusters:
+        if is_owner_path(rel_path, cluster):
+            continue
+        cluster_by_term.extend((term, cluster) for term in cluster.terms)
+
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+
+    def _line_for_token(token: str) -> int:
+        needle = f'"{token}"'
+        for idx, line in enumerate(lines, start=1):
+            if needle in line:
+                return idx
+        return 1
+
+    properties = payload.get("properties")
+    if isinstance(properties, dict):
+        for prop_name in properties:
+            token = str(prop_name)
+            if _identifier_subtokens(token) & safety_set:
+                continue
+            for term, cluster in cluster_by_term:
+                if _identifier_matches_term(token, term):
+                    violations.append(_build_violation(rel_path=rel_path, line=_line_for_token(token), symbol=token, cluster=cluster, rule="schema_property_name_authority_term", rationale_suffix="Schema property names must avoid reserved authority terms outside canonical owners."))
+                    break
+    for field in payload.get("required", []) if isinstance(payload.get("required"), list) else []:
+        token = str(field)
+        if _identifier_subtokens(token) & safety_set:
+            continue
+        for term, cluster in cluster_by_term:
+            if _identifier_matches_term(token, term):
+                violations.append(_build_violation(rel_path=rel_path, line=_line_for_token(token), symbol=token, cluster=cluster, rule="schema_required_field_authority_term", rationale_suffix="Schema required fields must avoid reserved authority terms outside canonical owners."))
+                break
+    for token in [payload.get("artifact_kind"), payload.get("title")]:
+        if not isinstance(token, str):
+            continue
+        if _identifier_subtokens(token.replace(" ", "_")) & safety_set:
+            continue
+        for term, cluster in cluster_by_term:
+            if _identifier_matches_term(token.replace(" ", "_"), term):
+                violations.append(_build_violation(rel_path=rel_path, line=_line_for_token(token), symbol=token, cluster=cluster, rule="schema_metadata_authority_term", rationale_suffix="Schema artifact_kind/title must avoid reserved authority terms outside canonical owners."))
+                break
+    for enum_match in re.finditer(r'"enum"\s*:\s*\[([^\]]+)\]', text, flags=re.IGNORECASE | re.MULTILINE):
+        enum_body = enum_match.group(1)
+        for quoted in re.findall(r'"([^"]+)"', enum_body):
+            if _identifier_subtokens(quoted.replace(" ", "_")) & safety_set:
+                continue
+            for term, cluster in cluster_by_term:
+                if _identifier_matches_term(quoted.replace(" ", "_"), term):
+                    line = text[: enum_match.start()].count("\n") + 1
+                    violations.append(_build_violation(rel_path=rel_path, line=line, symbol=quoted, cluster=cluster, rule="schema_enum_value_authority_term", rationale_suffix="Schema enum values must avoid reserved authority terms outside canonical owners."))
+                    break
+    for key in ("examples", "example"):
+        node = payload.get(key)
+        if isinstance(node, list):
+            rendered = json.dumps(node, sort_keys=True)
+            for term, cluster in cluster_by_term:
+                if _identifier_subtokens(term.replace(" ", "_")) & safety_set:
+                    continue
+                if re.search(rf"\b{re.escape(term)}\b", rendered, flags=re.IGNORECASE):
+                    violations.append(_build_violation(rel_path=rel_path, line=_line_for_token(key), symbol=key, cluster=cluster, rule="schema_examples_authority_term", rationale_suffix="Schema examples must avoid reserved authority terms outside canonical owners."))
+                    break
+    return violations
+
+
+def _scan_review_language(*, path: Path, rel_path: str, vocab: VocabularyModel) -> list[Violation]:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    violations: list[Violation] = []
+    allowed_owner_qualified = {
+        "decision": {"CDE"},
+        "enforcement": {"SEL"},
+        "approval": {"GOV"},
+        "promotion": {"REL"},
+    }
+    for idx, line in enumerate(lines, start=1):
+        normalized = line.strip()
+        if not normalized:
+            continue
+        words = re.findall(r"[A-Za-z]+", normalized)
+        upper_words = {w.upper() for w in words}
+        tokenized = normalized.replace("-", " ").replace("/", " ").lower()
+        for cluster in vocab.clusters:
+            for term in cluster.terms:
+                if not re.search(rf"\b{re.escape(term)}\b", tokenized):
+                    continue
+                allowed_qualifiers = allowed_owner_qualified.get(cluster.name, set())
+                if allowed_qualifiers and upper_words & allowed_qualifiers:
+                    continue
+                if is_owner_path(rel_path, cluster):
+                    continue
+                violations.append(
+                    _build_violation(
+                        rel_path=rel_path,
+                        line=idx,
+                        symbol=term,
+                        cluster=cluster,
+                        rule="review_language_unqualified_authority_claim",
+                        rationale_suffix="Review artifacts must use owner-qualified authority references.",
+                    )
+                )
+                break
     return violations
 
 

@@ -125,8 +125,18 @@
   },
   "clusters": {
     "decision": {
-      "terms": ["decision", "decisions", "decided", "verdict", "adjudication"],
-      "canonical_owners": ["JDX", "CDE"],
+      "terms": [
+        "decision",
+        "decisions",
+        "decided",
+        "verdict",
+        "adjudication"
+      ],
+      "canonical_owners": [
+        "CDE",
+        "CTL",
+        "JDX"
+      ],
       "owner_path_prefixes": [
         "spectrum_systems/modules/runtime/cde_decision_flow.py",
         "spectrum_systems/modules/runtime/closure_decision_engine.py",
@@ -142,11 +152,42 @@
         "finding",
         "input"
       ],
-      "rationale": "Decision authority belongs to JDX/CDE. Non-owners must not name fields, files, or symbols as `*_decision`."
+      "rationale": "Decision authority belongs to JDX/CDE. Non-owners must not name fields, files, or symbols as `*_decision`.",
+      "owning_terms": [
+        "decision",
+        "decisions",
+        "decided",
+        "verdict",
+        "adjudication"
+      ],
+      "allowed_neutral_terms": [
+        "finding",
+        "signal",
+        "observation",
+        "recommendation",
+        "input"
+      ],
+      "disallowed_non_owner_terms": [
+        "decision",
+        "decisions",
+        "decided",
+        "verdict",
+        "adjudication"
+      ]
     },
     "promotion": {
-      "terms": ["promotion", "promoted", "promote", "promotion_ready", "promotion_readiness"],
-      "canonical_owners": ["REL", "GOV", "CDE"],
+      "terms": [
+        "promotion",
+        "promoted",
+        "promote",
+        "promotion_ready",
+        "promotion_readiness"
+      ],
+      "canonical_owners": [
+        "GOV",
+        "REL",
+        "CDE"
+      ],
       "owner_path_prefixes": [
         "spectrum_systems/modules/review_promotion_gate.py",
         "spectrum_systems/modules/runtime/promotion_readiness_checkpoint.py",
@@ -161,11 +202,39 @@
         "promotion_input",
         "advancement_recommendation"
       ],
-      "rationale": "Promotion authority lives in REL/GOV/CDE. Non-owners produce inputs, signals, or readiness observations."
+      "rationale": "Promotion authority lives in REL/GOV/CDE. Non-owners produce inputs, signals, or readiness observations.",
+      "owning_terms": [
+        "promotion",
+        "promoted",
+        "promote",
+        "promotion_ready",
+        "promotion_readiness"
+      ],
+      "allowed_neutral_terms": [
+        "finding",
+        "signal",
+        "observation",
+        "recommendation",
+        "input"
+      ],
+      "disallowed_non_owner_terms": [
+        "promotion",
+        "promoted",
+        "promote",
+        "promotion_ready",
+        "promotion_readiness"
+      ]
     },
     "rollback": {
-      "terms": ["rollback", "rollback_record", "rolled_back", "revert_authority"],
-      "canonical_owners": ["REL"],
+      "terms": [
+        "rollback",
+        "rollback_record",
+        "rolled_back",
+        "revert_authority"
+      ],
+      "canonical_owners": [
+        "REL"
+      ],
       "owner_path_prefixes": [
         "spectrum_systems/modules/release/release_semantics.py",
         "spectrum_systems/modules/release/",
@@ -180,8 +249,15 @@
       "rationale": "Rollback authority lives in REL. Non-owners surface signals/observations only."
     },
     "certification": {
-      "terms": ["certification", "certification_status", "certified", "certify"],
-      "canonical_owners": ["GOV", "CDE"],
+      "terms": [
+        "certification",
+        "certification_status",
+        "certified",
+        "certify"
+      ],
+      "canonical_owners": [
+        "GOV"
+      ],
       "owner_path_prefixes": [
         "spectrum_systems/modules/governance/done_certification.py",
         "spectrum_systems/modules/governance/certification_integrity.py",
@@ -194,11 +270,38 @@
         "certification_signal",
         "evidence_observation"
       ],
-      "rationale": "Certification authority belongs to GOV/CDE. Non-owners feed evidence, not certification verdicts."
+      "rationale": "Certification authority belongs to GOV/CDE. Non-owners feed evidence, not certification verdicts.",
+      "owning_terms": [
+        "certification",
+        "certification_status",
+        "certified",
+        "certify"
+      ],
+      "allowed_neutral_terms": [
+        "finding",
+        "signal",
+        "observation",
+        "recommendation",
+        "input"
+      ],
+      "disallowed_non_owner_terms": [
+        "certification",
+        "certification_status",
+        "certified",
+        "certify"
+      ]
     },
     "control": {
-      "terms": ["control_decision", "control_action", "control_outcome", "ctrl_action"],
-      "canonical_owners": ["CDE", "TPA"],
+      "terms": [
+        "control_decision",
+        "control_action",
+        "control_outcome",
+        "ctrl_action"
+      ],
+      "canonical_owners": [
+        "CDE",
+        "TPA"
+      ],
       "owner_path_prefixes": [
         "spectrum_systems/modules/runtime/evaluation_control.py",
         "spectrum_systems/modules/runtime/tpa_policy_authority.py",
@@ -214,8 +317,16 @@
       "rationale": "Control authority belongs to CDE/TPA. Non-owners emit inputs, risk signals, or advisories only."
     },
     "enforcement": {
-      "terms": ["enforcement", "enforcement_action", "enforce", "enforced"],
-      "canonical_owners": ["SEL", "ENF"],
+      "terms": [
+        "enforcement",
+        "enforcement_action",
+        "enforce",
+        "enforced"
+      ],
+      "canonical_owners": [
+        "SEL",
+        "ENF"
+      ],
       "owner_path_prefixes": [
         "spectrum_systems/modules/runtime/enforcement_engine.py",
         "spectrum_systems/modules/runtime/sel_enforcement_foundation.py",
@@ -229,11 +340,38 @@
         "enforcement_input",
         "policy_observation"
       ],
-      "rationale": "Enforcement authority belongs to SEL/ENF. Non-owners produce signals or compliance observations."
+      "rationale": "Enforcement authority belongs to SEL/ENF. Non-owners produce signals or compliance observations.",
+      "owning_terms": [
+        "enforcement",
+        "enforcement_action",
+        "enforce",
+        "enforced"
+      ],
+      "allowed_neutral_terms": [
+        "finding",
+        "signal",
+        "observation",
+        "recommendation",
+        "input"
+      ],
+      "disallowed_non_owner_terms": [
+        "enforcement",
+        "enforcement_action",
+        "enforce",
+        "enforced"
+      ]
     },
     "approval": {
-      "terms": ["approval", "approved", "approve", "approver"],
-      "canonical_owners": ["GOV", "HIT"],
+      "terms": [
+        "approval",
+        "approved",
+        "approve",
+        "approver"
+      ],
+      "canonical_owners": [
+        "GOV",
+        "HIT"
+      ],
       "owner_path_prefixes": [
         "spectrum_systems/modules/governance/",
         "spectrum_systems/modules/runtime/hit_override_authority.py"
@@ -244,11 +382,37 @@
         "review_input",
         "review_observation"
       ],
-      "rationale": "Approval authority belongs to a human reviewer or GOV. Non-owners surface review requests and advisory results."
+      "rationale": "Approval authority belongs to a human reviewer or GOV. Non-owners surface review requests and advisory results.",
+      "owning_terms": [
+        "approval",
+        "approved",
+        "approve",
+        "approver"
+      ],
+      "allowed_neutral_terms": [
+        "finding",
+        "signal",
+        "observation",
+        "recommendation",
+        "input"
+      ],
+      "disallowed_non_owner_terms": [
+        "approval",
+        "approved",
+        "approve",
+        "approver"
+      ]
     },
     "release": {
-      "terms": ["release_decision", "release_authority", "release_verdict"],
-      "canonical_owners": ["REL", "GOV"],
+      "terms": [
+        "release_decision",
+        "release_authority",
+        "release_verdict"
+      ],
+      "canonical_owners": [
+        "REL",
+        "GOV"
+      ],
       "owner_path_prefixes": [
         "spectrum_systems/modules/release/",
         "spectrum_systems/govern/"
@@ -262,8 +426,14 @@
       "rationale": "Release authority belongs to REL/GOV. Non-owners surface signals and observations."
     },
     "authority": {
-      "terms": ["authority_decision", "authoritative_record", "authority_verdict"],
-      "canonical_owners": ["GOV"],
+      "terms": [
+        "authority_decision",
+        "authoritative_record",
+        "authority_verdict"
+      ],
+      "canonical_owners": [
+        "GOV"
+      ],
       "owner_path_prefixes": [
         "spectrum_systems/govern/",
         "spectrum_systems/modules/governance/"
@@ -276,8 +446,15 @@
       "rationale": "Authority emission is reserved to canonical owners by registry. Non-owners must use input/signal/observation framing."
     },
     "quarantine": {
-      "terms": ["quarantine", "quarantined", "quarantine_decision"],
-      "canonical_owners": ["REL", "SEC"],
+      "terms": [
+        "quarantine",
+        "quarantined",
+        "quarantine_decision"
+      ],
+      "canonical_owners": [
+        "REL",
+        "SEC"
+      ],
       "owner_path_prefixes": [
         "spectrum_systems/modules/release/",
         "spectrum_systems/security/"
@@ -291,8 +468,15 @@
       "rationale": "Quarantine authority belongs to REL/SEC. Non-owners surface signals or risk observations."
     },
     "final": {
-      "terms": ["final_decision", "final_verdict", "finalization_authority"],
-      "canonical_owners": ["CDE", "GOV"],
+      "terms": [
+        "final_decision",
+        "final_verdict",
+        "finalization_authority"
+      ],
+      "canonical_owners": [
+        "CDE",
+        "GOV"
+      ],
       "owner_path_prefixes": [
         "spectrum_systems/modules/runtime/closure_decision_engine.py",
         "spectrum_systems/modules/governance/done_certification.py"
@@ -304,6 +488,41 @@
         "closure_recommendation"
       ],
       "rationale": "Closure/finalization authority belongs to CDE/GOV. Non-owners surface inputs and recommendations only."
+    },
+    "repair_recommendation": {
+      "terms": [
+        "repair_recommendation",
+        "repair recommendation"
+      ],
+      "canonical_owners": [
+        "FRE"
+      ],
+      "owner_path_prefixes": [
+        "spectrum_systems/modules/runtime/fre_",
+        "spectrum_systems/modules/runtime/governed_repair",
+        "spectrum_systems/modules/runtime/repair_"
+      ],
+      "advisory_replacements": [
+        "finding",
+        "signal",
+        "observation",
+        "recommendation"
+      ],
+      "owning_terms": [
+        "repair_recommendation",
+        "repair recommendation"
+      ],
+      "allowed_neutral_terms": [
+        "finding",
+        "signal",
+        "observation",
+        "recommendation"
+      ],
+      "disallowed_non_owner_terms": [
+        "repair_recommendation",
+        "repair recommendation"
+      ],
+      "rationale": "Repair recommendation authority belongs to FRE. Non-owners must not claim repair recommendation authority."
     }
   },
   "registry_rules": {
@@ -356,19 +575,58 @@
     "non_owning_support_systems_rationale": "Registry-tracked systems that are explicitly non-owning support per CLAUDE.md. Their registry sections must still surface authority-shape ownership language as violations so the AGS preflight catches non-owner ownership claims (e.g. HOP-005 F-1: HOP claiming release/control/judgment/promotion/certification/enforcement). All other ### CODE sections in the registry are treated as registry-tracked authority systems whose definitions legitimately describe their authority surface."
   },
   "safe_rename_pairs": [
-    {"from": "promotion_decision", "to": "promotion_signal"},
-    {"from": "harness_promotion_decision", "to": "harness_promotion_signal"},
-    {"from": "rollback_record", "to": "rollback_signal"},
-    {"from": "harness_rollback_record", "to": "harness_rollback_signal"},
-    {"from": "routing_decision", "to": "routing_observation"},
-    {"from": "harness_routing_decision", "to": "harness_routing_observation"},
-    {"from": "certification_record", "to": "certification_input"},
-    {"from": "approval_record", "to": "review_request"},
-    {"from": "enforcement_record", "to": "enforcement_signal"},
-    {"from": "control_decision", "to": "control_input"},
-    {"from": "release_decision", "to": "release_signal"},
-    {"from": "quarantine_record", "to": "quarantine_signal"},
-    {"from": "final_decision", "to": "final_signal"}
+    {
+      "from": "promotion_decision",
+      "to": "promotion_signal"
+    },
+    {
+      "from": "harness_promotion_decision",
+      "to": "harness_promotion_signal"
+    },
+    {
+      "from": "rollback_record",
+      "to": "rollback_signal"
+    },
+    {
+      "from": "harness_rollback_record",
+      "to": "harness_rollback_signal"
+    },
+    {
+      "from": "routing_decision",
+      "to": "routing_observation"
+    },
+    {
+      "from": "harness_routing_decision",
+      "to": "harness_routing_observation"
+    },
+    {
+      "from": "certification_record",
+      "to": "certification_input"
+    },
+    {
+      "from": "approval_record",
+      "to": "review_request"
+    },
+    {
+      "from": "enforcement_record",
+      "to": "enforcement_signal"
+    },
+    {
+      "from": "control_decision",
+      "to": "control_input"
+    },
+    {
+      "from": "release_decision",
+      "to": "release_signal"
+    },
+    {
+      "from": "quarantine_record",
+      "to": "quarantine_signal"
+    },
+    {
+      "from": "final_decision",
+      "to": "final_signal"
+    }
   ],
   "safety_suffixes": [
     "signal",
@@ -385,7 +643,10 @@
     "report"
   ],
   "remediation_policy": {
-    "modes": ["suggest-only", "apply-safe-renames"],
+    "modes": [
+      "suggest-only",
+      "apply-safe-renames"
+    ],
     "default_mode": "suggest-only",
     "unsafe_actions": [
       "modifying guard scripts",
@@ -395,7 +656,15 @@
       "weakening fail-closed policy"
     ],
     "rename_targets": {
-      "include_suffixes": [".py", ".json", ".md", ".yml", ".yaml", ".rst", ".txt"],
+      "include_suffixes": [
+        ".py",
+        ".json",
+        ".md",
+        ".yml",
+        ".yaml",
+        ".rst",
+        ".txt"
+      ],
       "exclude_path_prefixes": [
         "spectrum_systems/modules/governance/",
         "scripts/run_authority_leak_guard.py",
