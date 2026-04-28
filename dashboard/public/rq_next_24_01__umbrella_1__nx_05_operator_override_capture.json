@@ -1,7 +1,7 @@
 {
   "artifact_type": "operator_override_capture",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-27T20:12:13Z",
+  "generated_at": "2026-04-28T01:48:06Z",
   "overrides": [
     {
       "override_id": "OVR-001",

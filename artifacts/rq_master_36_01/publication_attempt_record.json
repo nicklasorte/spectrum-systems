@@ -1,8 +1,8 @@
 {
   "artifact_type": "publication_attempt_record",
-  "publish_attempt_id": "publish-20260427T201236Z",
-  "refresh_run_id": "refresh-20260427T201236Z",
-  "trace_id": "trace-20260427T201236Z",
+  "publish_attempt_id": "publish-20260428T014828Z",
+  "refresh_run_id": "refresh-20260428T014828Z",
+  "trace_id": "trace-20260428T014828Z",
   "decision": "allow",
   "reason_codes": [
     "freshness_ok"
@@ -23,5 +23,5 @@
     "missing_required_artifacts": []
   },
   "trigger_mode": "manual",
-  "timestamp": "2026-04-27T20:12:36Z"
+  "timestamp": "2026-04-28T01:48:28Z"
 }

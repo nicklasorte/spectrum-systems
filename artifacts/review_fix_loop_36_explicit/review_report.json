@@ -1,7 +1,7 @@
 {
   "artifact_type": "review_report",
   "batch_id": "REVIEW-FIX-LOOP-36-EXPLICIT",
-  "generated_at": "2026-04-27T20:11:51Z",
+  "generated_at": "2026-04-28T01:47:46Z",
   "review_mode": "multi_pass",
   "review_scope": "review_fix_replay_promotion_pre_merge_hardening",
   "review_result": "pass"
