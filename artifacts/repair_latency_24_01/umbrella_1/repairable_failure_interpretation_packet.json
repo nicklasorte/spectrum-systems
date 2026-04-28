@@ -3,7 +3,7 @@
   "batch_id": "REPAIR-LATENCY-24-01",
   "slice_id": "RL-01",
   "owner": "RIL",
-  "generated_at": "2026-04-28T13:17:48Z",
+  "generated_at": "2026-04-28T13:57:10Z",
   "classification": {
     "repairable": 4,
     "non_repairable": 2,

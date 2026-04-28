@@ -2,7 +2,7 @@
   "artifact_type": "repair_debt_priority_stack",
   "slice_id": "RS-15",
   "owner": "PRG",
-  "generated_at": "2026-04-28T13:17:48Z",
+  "generated_at": "2026-04-28T13:57:10Z",
   "priority_order": [
     "lineage_patch",
     "publication_patch",

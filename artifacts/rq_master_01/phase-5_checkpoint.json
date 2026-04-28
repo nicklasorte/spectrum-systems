@@ -1,7 +1,7 @@
 {
   "artifact_type": "phase_checkpoint",
   "batch_id": "RQ-MASTER-01",
-  "generated_at": "2026-04-28T13:18:10Z",
+  "generated_at": "2026-04-28T13:57:31Z",
   "phase_id": "PHASE-5",
   "intent": "Readiness and governance",
   "slices": [

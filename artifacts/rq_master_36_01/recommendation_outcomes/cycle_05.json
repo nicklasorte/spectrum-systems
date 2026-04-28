@@ -1,7 +1,7 @@
 {
   "artifact_type": "next_action_outcome_record",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-28T13:18:35Z",
+  "generated_at": "2026-04-28T13:57:57Z",
   "cycle_id": "cycle_05",
   "recommendation_id": "RQ36-REC-005",
   "recommendation_verdict": "correct",

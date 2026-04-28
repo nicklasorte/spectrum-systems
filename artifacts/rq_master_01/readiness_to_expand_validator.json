@@ -1,7 +1,7 @@
 {
   "artifact_type": "readiness_to_expand_validator",
   "batch_id": "RQ-MASTER-01",
-  "generated_at": "2026-04-28T13:18:10Z",
+  "generated_at": "2026-04-28T13:57:31Z",
   "recommendation": "bounded_expand",
   "hard_gate": "pass",
   "required_conditions": {

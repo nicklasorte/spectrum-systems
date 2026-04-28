@@ -2,7 +2,7 @@
   "artifact_type": "admission_authenticity_envelope_spec",
   "slice_id": "AH-01",
   "owner": "AEX",
-  "generated_at": "2026-04-28T13:13:20Z",
+  "generated_at": "2026-04-28T13:52:34Z",
   "required_fields": [
     "issuer",
     "key_id",

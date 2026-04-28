@@ -1,9 +1,9 @@
 {
   "artifact_type": "dashboard_refresh_publish_metrics",
-  "timestamp": "2026-04-28T13:18:36Z",
-  "trace_id": "trace-20260428T131836Z",
+  "timestamp": "2026-04-28T13:57:57Z",
+  "trace_id": "trace-20260428T135757Z",
   "refresh_success_rate": 1.0,
-  "refresh_latency_seconds": 0.009378,
+  "refresh_latency_seconds": 0.007477,
   "publish_success_rate": 1.0,
   "dashboard_freshness_age_seconds": 0.0,
   "stale_artifact_count": 0,

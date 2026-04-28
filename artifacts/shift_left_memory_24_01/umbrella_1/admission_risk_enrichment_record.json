@@ -2,7 +2,7 @@
   "artifact_type": "admission_risk_enrichment_record",
   "slice_id": "SM-02",
   "owner": "AEX",
-  "generated_at": "2026-04-28T13:18:18Z",
+  "generated_at": "2026-04-28T13:57:39Z",
   "risk_classes": [
     "repeat_schema_patch",
     "first_pass_low_confidence"
