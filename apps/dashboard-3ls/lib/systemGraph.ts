@@ -5,6 +5,17 @@ export type GraphState = 'trusted_signal' | 'caution_signal' | 'freeze_signal' |
 
 export type NodeSourceType = 'artifact_store' | 'repo_registry' | 'derived' | 'stub_fallback' | 'missing';
 
+export type DebugNodeStatus =
+  | 'OK'
+  | 'MISSING'
+  | 'STALE'
+  | 'FAILED'
+  | 'FALLBACK'
+  | 'BLOCKING'
+  | 'UNKNOWN';
+
+export type DebugMode = 'normal' | 'blockers' | 'lineage' | 'control' | 'freshness';
+
 export interface SystemGraphNode {
   system_id: string;
   label: string;
@@ -21,6 +32,17 @@ export interface SystemGraphNode {
   is_focus: boolean;
   is_fallback_backed: boolean;
   is_disconnected: boolean;
+  // Debugger-only fields. Fail-closed: missing means missing, never synthesised.
+  debug_status?: DebugNodeStatus;
+  why_blocked?: string | null;
+  missing_artifacts?: string[];
+  failed_evals?: string[];
+  trace_gaps?: string[];
+  upstream_blockers?: string[];
+  downstream_dependents?: string[];
+  schema_paths?: string[];
+  producing_script?: string | null;
+  last_recompute?: string | null;
 }
 
 export interface SystemGraphEdge {
@@ -32,6 +54,11 @@ export interface SystemGraphEdge {
   confidence: number;
   is_failure_path: boolean;
   is_broken: boolean;
+  // Debugger-only edge fields.
+  dependency_type?: string;
+  artifact_backed?: boolean;
+  last_validated?: string | null;
+  related_signal?: string | null;
 }
 
 export interface SystemGraphPayload {
@@ -55,3 +82,24 @@ export function dataSourceToNodeSourceType(dataSource: DataSource | null | undef
   if (dataSource === 'stub_fallback') return 'stub_fallback';
   return 'missing';
 }
+
+export function deriveDebugStatus(node: Pick<SystemGraphNode, 'trust_state' | 'source_type' | 'trust_gap_signals' | 'is_disconnected'>): DebugNodeStatus {
+  if (node.source_type === 'missing') return 'MISSING';
+  if (node.source_type === 'stub_fallback') return 'FALLBACK';
+  if (node.trust_state === 'blocked_signal') return 'BLOCKING';
+  if (node.trust_state === 'freeze_signal') return 'FAILED';
+  if (node.trust_state === 'unknown_signal') return 'UNKNOWN';
+  if (node.trust_state === 'caution_signal' && (node.trust_gap_signals?.length ?? 0) > 0) return 'STALE';
+  if (node.trust_state === 'trusted_signal') return 'OK';
+  return 'UNKNOWN';
+}
+
+export const DEBUG_MODES: ReadonlyArray<{ value: DebugMode; label: string; description: string }> = [
+  { value: 'normal', label: 'Normal', description: 'clean layered graph' },
+  { value: 'blockers', label: 'Blockers', description: 'emphasise failed/missing/stale/blocking systems' },
+  { value: 'lineage', label: 'Lineage', description: 'emphasise artifact dependencies and source paths' },
+  { value: 'control', label: 'Control', description: 'emphasise eval → control → enforcement path' },
+  { value: 'freshness', label: 'Freshness', description: 'emphasise stale / missing artifacts and recompute age' },
+];
+
+export const CONTROL_PATH_SYSTEMS: ReadonlyArray<string> = ['EVL', 'TPA', 'CDE', 'SEL'];

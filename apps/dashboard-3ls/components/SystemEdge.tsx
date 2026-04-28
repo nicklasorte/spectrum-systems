@@ -9,6 +9,8 @@ interface Props {
   hidden?: boolean;
   nodeWidth?: number;
   nodeHeight?: number;
+  highlighted?: boolean;
+  onSelect?: (edge: SystemGraphEdge) => void;
 }
 
 function endpoints(from: { x: number; y: number }, to: { x: number; y: number }, nodeWidth: number, nodeHeight: number) {
@@ -40,7 +42,7 @@ function endpoints(from: { x: number; y: number }, to: { x: number; y: number },
   return { x1, y1, x2, y2 };
 }
 
-export function SystemEdge({ edge, from, to, opacity, hidden, nodeWidth = 120, nodeHeight = 70 }: Props) {
+export function SystemEdge({ edge, from, to, opacity, hidden, nodeWidth = 120, nodeHeight = 70, highlighted, onSelect }: Props) {
   if (hidden) {
     return (
       <line
@@ -91,21 +93,45 @@ export function SystemEdge({ edge, from, to, opacity, hidden, nodeWidth = 120, n
     dasharray = '2 5';
   }
 
+  if (highlighted) {
+    strokeWidth = Math.max(strokeWidth, 3);
+  }
+
   const { x1, y1, x2, y2 } = endpoints(from, to, nodeWidth, nodeHeight);
+  const midX = (x1 + x2) / 2;
+  const midY = (y1 + y2) / 2;
 
   return (
-    <line
-      x1={x1}
-      y1={y1}
-      x2={x2}
-      y2={y2}
-      stroke={stroke}
-      strokeWidth={strokeWidth}
-      strokeDasharray={dasharray}
-      markerEnd={marker}
-      opacity={opacity}
+    <g
       data-testid={`trust-edge-${edge.from}-${edge.to}`}
       data-edge-style={isBroken ? 'broken' : isFailure ? 'failure' : isCore ? 'core' : 'secondary'}
-    />
+      data-edge-highlighted={highlighted ? 'true' : 'false'}
+      data-edge-artifact-backed={(edge.artifact_backed ?? (edge.source_type === 'artifact_store' || edge.source_type === 'repo_registry')) ? 'true' : 'false'}
+      onClick={onSelect ? () => onSelect(edge) : undefined}
+      style={onSelect ? { cursor: 'pointer' } : undefined}
+    >
+      <line
+        x1={x1}
+        y1={y1}
+        x2={x2}
+        y2={y2}
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+        strokeDasharray={dasharray}
+        markerEnd={marker}
+        opacity={opacity}
+      />
+      {highlighted && (
+        <circle
+          cx={midX}
+          cy={midY}
+          r={6}
+          fill="#fff7ed"
+          stroke="#ea580c"
+          strokeWidth={1.5}
+          data-testid={`trust-edge-${edge.from}-${edge.to}-highlight-marker`}
+        />
+      )}
+    </g>
   );
 }
