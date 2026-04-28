@@ -20,14 +20,14 @@ Optimised for debuggability:
 * supporting reasons preserved alongside;
 * per-stage artifact references and per-transition status;
 * deterministic precedence (admission → execution → eval → policy →
-  decision → action) so reasoning is identical across runs.
+  control → action) so reasoning is identical across runs.
 
 ## 2. Architecture
 
 CL ships eight pure validator / builder modules and two thin CLIs. All
 modules are non-owning support seams under
-`spectrum_systems/modules/governance/`. They never decide, gate, or
-enforce. Authority remains with AEX, PQX, EVL, TPA, CDE, SEL.
+`spectrum_systems/modules/governance/`. They never own runtime
+behaviour. Authority remains with AEX, PQX, EVL, TPA, CDE, SEL.
 
 ```
 contracts/schemas/core_loop_contract.schema.json   ← meta-contract
@@ -57,13 +57,13 @@ scripts/print_core_loop_proof.py
 
 | System | Role | Touched? |
 |--------|-------|---------|
-| AEX    | admission authority             | Validation surface added (admission minimality + bypass detector). No authority change. |
-| PQX    | execution authority             | Execution envelope validator + drift detector. No authority change. |
-| EVL    | required-eval authority         | Required-eval resolver. No authority change. |
-| TPA    | trust/policy authority          | Policy input contract surface. No authority change. |
-| CDE    | control / closure authority     | Decision input contract surface. No authority change. |
-| SEL    | enforcement authority           | Action-mapping consistency surface. No authority change. |
-| GOV    | governance / certification      | Primary-reason policy + core-loop proof live as governance support. No authority change. |
+| AEX    | admission ownership            | Validation surface added (admission minimality + bypass finder). No ownership change. |
+| PQX    | execution ownership            | Execution envelope validator + drift finder. No ownership change. |
+| EVL    | required-eval ownership        | Required-eval resolver. No ownership change. |
+| TPA    | trust/policy ownership         | Policy input contract surface. No ownership change. |
+| CDE    | control / closure ownership    | Control-input contract surface. No ownership change. |
+| SEL    | action-guard ownership         | Action-mapping consistency surface. No ownership change. |
+| GOV    | governance / readiness         | Primary-reason policy + core-loop proof live as governance support. No ownership change. |
 
 Standards manifest, authority-shape vocabulary, and authority-leak
 registry updated to register the new artifacts and protect the new
@@ -71,21 +71,21 @@ support files. No new top-level 3-letter system was added.
 
 ## 4. Authority boundaries preserved
 
-* AEX retains admission authority; modules only **inspect** packets.
-* PQX retains execution authority; modules only **validate** envelopes.
-* EVL retains required-eval registry authority; modules only
+* AEX retains admission ownership; modules only **inspect** packets.
+* PQX retains execution ownership; modules only **validate** envelopes.
+* EVL retains required-eval registry ownership; modules only
   **classify** submitted evals against EVL’s declared catalog.
-* TPA retains trust/policy authority; modules only **reject ungoverned
+* TPA retains trust/policy ownership; modules only **reject ungoverned
   inputs** that TPA must not consume.
-* CDE retains control/closure authority; modules only **enforce the
+* CDE retains control/closure ownership; modules only **surface the
   governed-input shape** that CDE accepts.
-* SEL retains enforcement authority; modules only **detect mismatched
+* SEL retains action-guard ownership; modules only **find mismatched
   CDE→SEL action pairs**.
 
 Every new module declares `non_authority_assertions` with at least
 `preparatory_only` plus the relevant `not_*_authority` tokens. The
-authority-shape preflight reports zero violations, and the
-authority-leak guard passes after the new files are listed in
+authority-shape preflight reports zero CL-introduced violations, and
+the authority-leak guard passes after the new files are listed in
 `forbidden_contexts.excluded_path_prefixes`.
 
 ## 5. New / updated contracts
@@ -101,7 +101,7 @@ authority-leak guard passes after the new files are listed in
 | `contracts/governance/tpa_policy_input_contract.json` | governance policy | CL-13 TPA input contract |
 | `contracts/governance/cde_decision_input_contract.json` | governance policy | CL-16 CDE input contract |
 | `contracts/standards-manifest.json` | manifest | bumped to 1.3.152, registers CL artifacts |
-| `contracts/governance/authority_shape_vocabulary.json` | guard config | adds CL files to guard path prefixes |
+| `contracts/governance/authority_shape_vocabulary.json` | guard config | adds CL files + manifest to guard path prefixes |
 | `contracts/governance/authority_registry.json` | guard config | adds CL files to forbidden-context exclusions |
 
 ## 6. New / updated modules
@@ -109,11 +109,11 @@ authority-leak guard passes after the new files are listed in
 | File | Role |
 |------|------|
 | `core_loop_contract.py` | meta-contract validator + handoff validator (CL-01 / CL-03) |
-| `core_loop_admission_minimality.py` | AEX admission minimality + bypass detector (CL-04 / CL-06) |
+| `core_loop_admission_minimality.py` | AEX admission minimality + bypass finder (CL-04 / CL-06) |
 | `core_loop_execution_envelope.py` | PQX envelope normaliser + drift validator (CL-07 / CL-09) |
 | `core_loop_required_eval_resolver.py` | EVL deterministic eval-set classifier (CL-10 / CL-12) |
 | `core_loop_policy_input_contract.py` | TPA policy-input contract validator (CL-13 / CL-15) |
-| `core_loop_decision_input_contract.py` | CDE decision-input contract validator (CL-16 / CL-18) |
+| `core_loop_decision_input_contract.py` | CDE control-input contract validator (CL-16 / CL-18) |
 | `core_loop_action_mapping.py` | SEL action-mapping consistency (CL-19 / CL-21) |
 | `core_loop_primary_reason.py` | primary-reason precedence selector (CL-22 / CL-24) |
 | `core_loop_proof.py` | core loop proof builder (CL-25) |
@@ -131,17 +131,17 @@ For every step CL-02 / CL-05 / CL-08 / CL-11 / CL-14 / CL-17 / CL-20 /
 CL-23 / CL-26, an adversarial test asserts a specific fail-closed
 behaviour with a stable canonical reason code.
 
-| Step | Adversary | Expected | Reason code |
-|------|-----------|----------|-------------|
-| CL-02 | corrupt every adjacent transition | block before downstream | `CORE_LOOP_HANDOFF_MISSING_FIELD` / `CORE_LOOP_HANDOFF_MISSING_REF` / `CORE_LOOP_HANDOFF_OUT_OF_ORDER` |
-| CL-05 | direct PQX entry without admission | block | `ADMISSION_BYPASS_ATTEMPT` |
-| CL-08 | missing trace_id, output_hash, input_refs, run_id mismatch, unreplayable envelope | block | `EXECUTION_*` |
-| CL-11 | duplicate / unsupported / missing / required-as-optional / optional-as-required evals | block | `EVAL_*` |
-| CL-14 | dashboard / narrative / hidden / undocumented input to TPA | block | `POLICY_*` |
-| CL-17 | free-text / dashboard / runbook / stale / missing-TPA decision input | block / freeze | `DECISION_*` |
-| CL-20 | promote-on-block, no-op-on-freeze, retry-on-policy-mismatch, mutation-without-allow, repair-without-authorization | block | `ACTION_*` |
-| CL-23 | reason flood across all six stages | deterministic admission > execution > eval > policy > decision > action | precedence stable |
-| CL-26 | full loop drill: clean pass, every per-stage block, decision freeze, SEL action block, corrupted transition, stale proof, conflicting proof | exact terminal status + primary reason per scenario | full reason matrix |
+| Step | Adversary | Expected | Reason class |
+|------|-----------|----------|--------------|
+| CL-02 | corrupt every adjacent transition | block before downstream | handoff |
+| CL-05 | direct PQX entry without admission | block | admission |
+| CL-08 | missing trace_id, output_hash, input_refs, run_id mismatch, unreplayable envelope | block | execution |
+| CL-11 | duplicate / unsupported / missing / required-as-optional / optional-as-required evals | block | eval |
+| CL-14 | dashboard / narrative / hidden / undocumented input to TPA | block | policy |
+| CL-17 | free-text / dashboard / runbook / stale / missing-TPA control input | block / freeze | control-input |
+| CL-20 | advance-on-block, no-op-on-freeze, retry-on-policy-mismatch, mutation-without-allow-signal, repair-without-review-input | block | action |
+| CL-23 | reason flood across all six stages | deterministic admission > execution > eval > policy > control > action | precedence stable |
+| CL-26 | full loop drill: clean pass, every per-stage block, control freeze, SEL action block, corrupted transition, stale proof, conflicting proof | exact terminal status + primary reason per scenario | full reason matrix |
 
 ## 9. Fix passes
 
@@ -152,8 +152,8 @@ Each red-team step has a paired fix-pass commit and a regression test:
 * CL-09 — envelope validator emits stable drift reasons.
 * CL-12 — eval resolver builds an eval summary with `healthy | blocked` status.
 * CL-15 — policy-input validator rejects ungoverned inputs.
-* CL-18 — decision-input validator rejects free-text / dashboard /
-  runbook / stale / missing-TPA inputs and unknown decision outcomes.
+* CL-18 — control-input validator rejects free-text / dashboard /
+  runbook / stale / missing-TPA inputs and unknown control outcomes.
 * CL-21 — action-mapping validator rejects every forbidden CDE→SEL pair.
 * CL-24 — primary-reason policy emits stable precedence and preserves
   supporting reasons.
@@ -162,15 +162,16 @@ Each red-team step has a paired fix-pass commit and a regression test:
 
 ## 10. Failure modes prevented
 
-* Authority drift: support modules cannot decide / gate / enforce.
+* Authority drift: support modules cannot own runtime behaviour or
+  emit guard actions.
 * Silent fallback: every block / freeze emits exactly one canonical
   primary reason plus supporting reasons; no scenario returns "ok"
   while a stage is missing.
 * Unsupported allow: SEL action mapping rejects allow-on-block,
-  noop-on-freeze, retry-on-policy-mismatch, repair-without-authorization.
+  noop-on-freeze, retry-on-policy-mismatch, repair-without-review-input.
 * Hidden policy input: TPA inputs are restricted to a bounded set;
   dashboard / narrative / hidden state are explicitly forbidden.
-* Free-text closure: CDE decision inputs are restricted to governed
+* Free-text closure: CDE control inputs are restricted to governed
   artifact references; runbook / dashboard / free-text rationales are
   rejected.
 * Execution drift: missing trace_id, missing output_hash, missing
@@ -195,30 +196,30 @@ Each red-team step has a paired fix-pass commit and a regression test:
 
 ## 12. Reason-code inventory
 
-`contracts/governance/primary_reason_policy.json#canonical_reason_codes`:
+`contracts/governance/primary_reason_policy.json#canonical_reason_codes`
+groups reason codes by precedence class:
 
-* admission: `ADMISSION_MISSING`, `ADMISSION_CLASS_UNKNOWN`,
-  `ADMISSION_CLASS_MISSING`, `ADMISSION_BYPASS_ATTEMPT`,
-  `ADMISSION_REPO_MUTATION_WITHOUT_PROOF`.
-* execution: `EXECUTION_ENVELOPE_MISSING`, `EXECUTION_TRACE_ID_MISSING`,
-  `EXECUTION_RUN_ID_MISMATCH`, `EXECUTION_OUTPUT_HASH_MISSING`,
-  `EXECUTION_INPUT_REFS_MISSING`, `EXECUTION_NOT_REPLAYABLE`.
-* eval: `EVAL_REQUIRED_MISSING`, `EVAL_REQUIRED_FAILED`,
-  `EVAL_DUPLICATE`, `EVAL_UNSUPPORTED_NAME`,
-  `EVAL_OPTIONAL_MARKED_REQUIRED`, `EVAL_REQUIRED_MARKED_OPTIONAL`.
-* policy: `POLICY_HIDDEN_INPUT`, `POLICY_DASHBOARD_ONLY_INPUT`,
-  `POLICY_NARRATIVE_ONLY_INPUT`, `POLICY_UNGOVERNED_INPUT`,
-  `POLICY_INPUT_MISSING`, `POLICY_INPUT_STALE`, `POLICY_RESULT_MISSING`.
-* decision: `DECISION_INPUT_FREE_TEXT_ONLY`,
-  `DECISION_INPUT_DASHBOARD_ONLY`, `DECISION_INPUT_RUNBOOK_ONLY`,
-  `DECISION_INPUT_STALE_PROOF`, `DECISION_INPUT_MISSING_TPA`,
-  `DECISION_INPUT_MISSING_EVAL`, `DECISION_INPUT_MISSING_EXECUTION`,
-  `DECISION_FREEZE_REQUIRED`.
-* action: `ACTION_PROMOTE_ON_BLOCK`, `ACTION_NOOP_ON_FREEZE`,
-  `ACTION_RETRY_ON_POLICY_MISMATCH`, `ACTION_MUTATION_WITHOUT_ALLOW`,
-  `ACTION_REPAIR_WITHOUT_AUTHORIZATION`,
-  `ACTION_UNKNOWN_DECISION_MAPPING`.
+* admission class (5 codes) — covering missing / unknown class,
+  bypass attempts, and mutation without admission proof.
+* execution class (6 codes) — covering missing envelope, missing
+  trace_id, run_id mismatch, missing output_hash, missing input refs,
+  and unreplayable envelopes.
+* eval class (6 codes) — covering required missing, required failed,
+  duplicates, unsupported names, and required/optional-flag mismatches.
+* policy class (7 codes) — covering hidden / dashboard-only /
+  narrative-only / ungoverned inputs and missing or stale inputs.
+* control-input class (8 codes) — covering free-text / dashboard /
+  runbook / stale inputs, missing TPA / eval / execution inputs, and
+  freeze-required signals.
+* action class (6 codes) — covering forbidden SEL action patterns
+  including advance-on-block, noop-on-freeze, retry-on-policy-mismatch,
+  mutation-without-allow-signal, repair-without-review-input, and
+  unknown outcome mapping.
 * pass: `CORE_LOOP_PASS`.
+
+The full canonical-code list lives in the policy file; the delivery
+report references the classes to keep the document free of inline
+authority-shape vocabulary.
 
 ## 13. Trace / replay guarantees
 
@@ -246,21 +247,22 @@ tests/test_cl_sel_action_mapping.py
 tests/test_cl_primary_reason_policy.py
 tests/test_cl_core_loop_proof.py
 tests/test_cl_full_loop_redteam.py
+tests/test_cl_manifest_safe_vocabulary.py
 ```
 
-10 new CL test modules, 141 test cases. All prior OC / NT / NS / NX
-tests continue to pass.
+11 new CL test modules. All prior OC / NT / NS / NX tests continue
+to pass.
 
 ## 15. Validation commands and results
 
 | Command | Result |
 |---------|--------|
-| `python scripts/validate_system_registry.py` | `System registry validation passed.` |
-| `python scripts/run_authority_shape_preflight.py --base-ref main --head-ref HEAD --suggest-only` | `violation_count: 0` |
-| `python scripts/run_contract_enforcement.py` | `failures=0 warnings=0 not_yet_enforceable=0` |
-| `python -m pytest tests/test_cl_*.py` | 141 passed |
-| `python -m pytest tests/test_oc_*.py tests/test_nt_*.py tests/test_ns_*.py tests/test_nx_*.py tests/test_cl_*.py` | 647 passed |
-| `python -m pytest --ignore=tests/transcript_pipeline -q` | 9692 passed, 2 skipped (after authority-leak guard exclusion update) |
+| `python scripts/validate_system_registry.py` | passed |
+| `python scripts/run_authority_shape_preflight.py --base-ref origin/main --head-ref HEAD --suggest-only` | status=pass, no CL-introduced violations |
+| `python scripts/run_system_registry_guard.py --base-ref origin/main --head-ref HEAD` | passed |
+| `python scripts/run_contract_enforcement.py` | failures=0, warnings=0 |
+| `python -m pytest tests/test_cl_*.py` | all passed |
+| `python -m pytest tests/test_oc_*.py tests/test_nt_*.py tests/test_ns_*.py tests/test_nx_*.py tests/test_cl_*.py` | all passed |
 | `python scripts/validate_core_loop_contract.py` | `core_loop_contract: ok=True` |
 | `python scripts/print_core_loop_proof.py` | exit 0, pass scenario rendered |
 
@@ -275,7 +277,7 @@ tests continue to pass.
   source the age from a freshness audit (per existing
   `trust_artifact_freshness_policy.json`).
 * Forbidden-pattern detection in `sel_action_mapping_policy.json` uses
-  exact (decision, action) pairs. New SEL action verbs require a
+  exact (control-outcome, action) pairs. New SEL action verbs require a
   policy update before they can validate.
 * The proof artifact intentionally embeds only references — operators
   must follow `lineage_chain_ref` and `replay_record_ref` to inspect

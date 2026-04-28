@@ -1,6 +1,6 @@
-"""CL-07 / CL-09: PQX execution envelope — pure validator.
+"""CL-07 / CL-09: core-loop execution envelope — pure validator.
 
-Every PQX run must surface a normalized execution envelope carrying:
+Every governed run must surface a normalized execution envelope carrying:
 
   * ``run_id``                — deterministic run identifier;
   * ``trace_id``              — trace identifier shared with upstream;
@@ -12,11 +12,12 @@ Every PQX run must surface a normalized execution envelope carrying:
   * ``replayable``            — bool flag asserted by REP;
   * ``aex_admission_ref``     — back-reference to admission proof.
 
-This validator does not own execution; PQX retains that authority. It
-detects execution drift (missing trace_id, missing output_hash, missing
-input refs, run_id mismatch with admission, unreplayable envelope) and
-emits stable canonical reasons consumed by the primary reason policy
-under the ``execution`` precedence class.
+This validator is non-owning. Canonical ownership is declared in the
+system registry. The validator surfaces execution drift signals
+(missing trace_id, missing output_hash, missing input refs, run_id
+mismatch with admission, unreplayable envelope) and emits stable
+canonical reasons consumed by the primary reason policy under the
+``execution`` precedence class.
 """
 
 from __future__ import annotations

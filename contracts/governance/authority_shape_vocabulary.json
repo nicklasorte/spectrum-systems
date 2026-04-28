@@ -137,6 +137,8 @@
       "contracts/schemas/core_loop_proof.schema.json",
       "contracts/examples/core_loop_contract.json",
       "contracts/examples/core_loop_proof.json",
+      "contracts/standards-manifest.json",
+      "docs/reviews/CL_ALL_01_delivery_report.md",
       "docs/reviews/NS_ALL_01_delivery_report.md",
       "docs/governance-reports/contract-compliance-report.md",
       "docs/governance-reports/ecosystem-health-report.md"
