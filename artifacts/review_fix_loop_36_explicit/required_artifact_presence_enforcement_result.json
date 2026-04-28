@@ -4,7 +4,7 @@
   "step": 32,
   "phase": 11,
   "owner": "SEL",
-  "generated_at": "2026-04-28T07:31:37Z",
+  "generated_at": "2026-04-28T13:17:51Z",
   "fail_closed": true,
   "required_artifacts": {
     "delivery_report": "present",

@@ -222,6 +222,8 @@ flowchart TD
   art_control_surface_obedience_result["control_surface_obedience_result\ncoordination"]
   art_coordination_loop["coordination_loop\ncoordination"]
   art_core_loop_alignment_record["core_loop_alignment_record\ngovernance"]
+  art_core_loop_contract["core_loop_contract\ngovernance"]
+  art_core_loop_proof["core_loop_proof\ngovernance"]
   art_core_system_integration_validation["core_system_integration_validation\ncoordination"]
   art_correction_mining_report["correction_mining_report\ngovernance"]
   art_correction_pattern_record["correction_pattern_record\ncoordination"]
@@ -1527,6 +1529,8 @@ flowchart TD
   con_control_surface_manifest["control_surface_manifest\ncontract"]
   con_control_surface_obedience_result["control_surface_obedience_result\ncontract"]
   con_core_loop_alignment_record["core_loop_alignment_record\ncontract"]
+  con_core_loop_contract["core_loop_contract\ncontract"]
+  con_core_loop_proof["core_loop_proof\ncontract"]
   con_core_system_integration_validation["core_system_integration_validation\ncontract"]
   con_correction_mining_report["correction_mining_report\ncontract"]
   con_correction_pattern_record["correction_pattern_record\ncontract"]
@@ -2820,6 +2824,8 @@ flowchart TD
   art_control_surface_manifest -. governed_by .-> con_control_surface_manifest
   art_control_surface_obedience_result -. governed_by .-> con_control_surface_obedience_result
   art_core_loop_alignment_record -. governed_by .-> con_core_loop_alignment_record
+  art_core_loop_contract -. governed_by .-> con_core_loop_contract
+  art_core_loop_proof -. governed_by .-> con_core_loop_proof
   art_core_system_integration_validation -. governed_by .-> con_core_system_integration_validation
   art_correction_mining_report -. governed_by .-> con_correction_mining_report
   art_correction_pattern_record -. governed_by .-> con_correction_pattern_record
@@ -4113,6 +4119,8 @@ flowchart TD
   con_control_surface_manifest -->|validates| art_control_surface_manifest
   con_control_surface_obedience_result -->|validates| art_control_surface_obedience_result
   con_core_loop_alignment_record -->|validates| art_core_loop_alignment_record
+  con_core_loop_contract -->|validates| art_core_loop_contract
+  con_core_loop_proof -->|validates| art_core_loop_proof
   con_core_system_integration_validation -->|validates| art_core_system_integration_validation
   con_correction_mining_report -->|validates| art_correction_mining_report
   con_correction_pattern_record -->|validates| art_correction_pattern_record

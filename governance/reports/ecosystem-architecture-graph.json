@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-04-28T01:47:25Z",
+  "generated_at": "2026-04-28T13:17:28Z",
   "nodes": {
     "repositories": [
       {
@@ -1387,6 +1387,18 @@
       },
       {
         "id": "core_loop_alignment_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "core_loop_contract",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "core_loop_proof",
         "node_type": "contract",
         "schema_version": "1.0.0",
         "stability": ""

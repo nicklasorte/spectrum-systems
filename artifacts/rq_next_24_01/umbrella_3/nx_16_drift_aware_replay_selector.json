@@ -1,7 +1,7 @@
 {
   "artifact_type": "drift_aware_replay_selector",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-28T01:48:06Z",
+  "generated_at": "2026-04-28T13:18:12Z",
   "drift_signal": "input_lineage_variance",
   "selected_scenarios": [
     "REPLAY-001",

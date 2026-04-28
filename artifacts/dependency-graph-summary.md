@@ -226,6 +226,8 @@
 - control_surface_obedience_result [coordination] producers: —; consumers: —; Governed artifact for contract `control_surface_obedience_result`.
 - coordination_loop [coordination] producers: —; consumers: —; Marker node for systems participating in the coordination loop.
 - core_loop_alignment_record [governance] producers: —; consumers: —; Governed artifact for contract `core_loop_alignment_record`.
+- core_loop_contract [governance] producers: —; consumers: —; Governed artifact for contract `core_loop_contract`.
+- core_loop_proof [governance] producers: —; consumers: —; Governed artifact for contract `core_loop_proof`.
 - core_system_integration_validation [coordination] producers: —; consumers: —; Governed artifact for contract `core_system_integration_validation`.
 - correction_mining_report [governance] producers: —; consumers: —; Governed artifact for contract `correction_mining_report`.
 - correction_pattern_record [coordination] producers: —; consumers: —; Governed artifact for contract `correction_pattern_record`.
@@ -1533,6 +1535,8 @@
 - control_surface_manifest [coordination] intended consumers: spectrum-systems; artifacts: control_surface_manifest
 - control_surface_obedience_result [coordination] intended consumers: spectrum-systems; artifacts: control_surface_obedience_result
 - core_loop_alignment_record [governance] intended consumers: spectrum-systems; artifacts: core_loop_alignment_record
+- core_loop_contract [governance] intended consumers: spectrum-systems; artifacts: core_loop_contract
+- core_loop_proof [governance] intended consumers: spectrum-systems; artifacts: core_loop_proof
 - core_system_integration_validation [coordination] intended consumers: spectrum-systems; artifacts: core_system_integration_validation
 - correction_mining_report [governance] intended consumers: spectrum-systems; artifacts: correction_mining_report
 - correction_pattern_record [coordination] intended consumers: spectrum-systems; artifacts: correction_pattern_record

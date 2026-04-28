@@ -1,8 +1,8 @@
 {
   "artifact_type": "publication_attempt_record",
-  "publish_attempt_id": "publish-20260428T073151Z",
-  "refresh_run_id": "refresh-20260428T073151Z",
-  "trace_id": "trace-20260428T073151Z",
+  "publish_attempt_id": "publish-20260428T131836Z",
+  "refresh_run_id": "refresh-20260428T131836Z",
+  "trace_id": "trace-20260428T131836Z",
   "decision": "allow",
   "reason_codes": [
     "freshness_ok"
@@ -23,5 +23,5 @@
     "missing_required_artifacts": []
   },
   "trigger_mode": "manual",
-  "timestamp": "2026-04-28T07:31:51Z"
+  "timestamp": "2026-04-28T13:18:36Z"
 }

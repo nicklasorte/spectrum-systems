@@ -2,7 +2,7 @@
   "artifact_type": "hardening_focus_recommendation",
   "slice_id": "SM-23",
   "owner": "PRG",
-  "generated_at": "2026-04-28T01:48:11Z",
+  "generated_at": "2026-04-28T13:18:18Z",
   "authoritative": false,
   "recommendation": [
     "shift-left evidence coverage",
