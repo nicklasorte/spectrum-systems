@@ -1,0 +1,40 @@
+{
+  "artifact_type": "authority_shape_repair_candidate",
+  "schema_version": "1.0.0",
+  "repair_candidate_id": "fre-asf01-example-0001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "source_interpretation_packet": {
+    "artifact_type": "authority_shape_interpretation_packet",
+    "path": "outputs/authority_shape_preflight/authority_shape_interpretation_packet.json",
+    "packet_id": "ril-asf01-example-0001"
+  },
+  "target_files": [
+    "docs/met/example_met_doc.md"
+  ],
+  "replacements": [
+    {
+      "file": "docs/met/example_met_doc.md",
+      "line": 12,
+      "current_symbol": "promotion_decision",
+      "proposed_symbol": "promotion_signal",
+      "reason": "Promotion authority belongs to REL/GOV/CDE. MET surfaces emit signals, not decisions.",
+      "replacement_class": "vocabulary_only",
+      "cluster": "promotion"
+    }
+  ],
+  "prohibited_actions": [
+    "no_allowlist_change",
+    "no_owner_registry_change",
+    "no_cross_file_rewrite_without_evidence",
+    "no_preflight_weakening",
+    "no_authority_authorization",
+    "no_meaning_change"
+  ],
+  "status": "proposed",
+  "reason_codes": ["bounded_vocabulary_repair"],
+  "non_authority_assertions": [
+    "proposal_only",
+    "no_application",
+    "scope_changed_files"
+  ]
+}

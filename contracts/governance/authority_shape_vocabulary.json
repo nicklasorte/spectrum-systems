@@ -30,10 +30,16 @@
       "scripts/authority_shape_detector.py",
       "scripts/run_system_registry_guard.py",
       "scripts/run_authority_shape_preflight.py",
+      "scripts/run_changed_scope_authority_scan.py",
+      "scripts/validate_authority_repair_candidate.py",
+      "scripts/run_authority_shape_feedback_loop.py",
       "contracts/governance/authority_registry.json",
       "contracts/governance/authority_shape_vocabulary.json",
       "contracts/governance/system_registry_guard_policy.json",
-      "docs/governance/authority_shape_preflight.md"
+      "docs/governance/authority_shape_preflight.md",
+      "docs/governance/authority_shape_feedback_loop.md",
+      "docs/reviews/ASF-01-authority-shape-feedback-loop-redteam.md",
+      "docs/reviews/ASF-01-authority-shape-feedback-loop-fixes.md"
     ]
   },
   "clusters": {
@@ -267,6 +273,9 @@
         "scripts/authority_shape_detector.py",
         "scripts/run_system_registry_guard.py",
         "scripts/run_authority_shape_preflight.py",
+        "scripts/run_changed_scope_authority_scan.py",
+        "scripts/validate_authority_repair_candidate.py",
+        "scripts/run_authority_shape_feedback_loop.py",
         "contracts/governance/",
         "docs/architecture/system_registry.md"
       ]

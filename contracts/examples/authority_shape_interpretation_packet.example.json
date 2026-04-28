@@ -1,0 +1,50 @@
+{
+  "artifact_type": "authority_shape_interpretation_packet",
+  "schema_version": "1.0.0",
+  "packet_id": "ril-asf01-example-0001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "source_scan_record": {
+    "artifact_type": "changed_scope_authority_scan_record",
+    "path": "outputs/authority_shape_preflight/changed_scope_authority_scan_record.json",
+    "run_id": "asf01-examplehash00"
+  },
+  "interpreted_findings": [
+    {
+      "finding_id": "f-0001",
+      "file": "docs/met/example_met_doc.md",
+      "line": 12,
+      "symbol": "promotion_decision",
+      "cluster": "promotion",
+      "failure_class": "authority_shape_violation",
+      "likely_cause": "MET-owned documentation is using promotion-cluster vocabulary owned by REL/GOV/CDE.",
+      "affected_owner_boundary": {
+        "canonical_owners": ["REL", "GOV", "CDE"],
+        "canonical_authority_source": "docs/architecture/system_registry.md"
+      },
+      "safe_repair_strategy": {
+        "strategy": "rename_to_neutral_vocabulary",
+        "neutral_replacements": [
+          "promotion_signal",
+          "readiness_observation",
+          "promotion_input"
+        ],
+        "scope": "changed_file_only"
+      },
+      "unsafe_repair_patterns": [
+        "modify_authority_registry",
+        "add_allowlist_exception",
+        "weaken_preflight",
+        "rename_canonical_owner_artifact",
+        "rewrite_files_outside_changed_set",
+        "change_meaning_instead_of_vocabulary"
+      ]
+    }
+  ],
+  "status": "interpreted",
+  "reason_codes": ["authority_shape_terms_in_changed_files"],
+  "non_authority_assertions": [
+    "no_owner_registry_change",
+    "no_allowlist_change",
+    "interpretation_only"
+  ]
+}

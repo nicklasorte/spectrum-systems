@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/authority_shape_interpretation_packet.schema.json",
+  "title": "Authority-Shape Interpretation Packet (ASF-01 / RIL)",
+  "description": "RIL interpretation of a changed_scope_authority_scan_record. Translates each finding into plain-language failure-class semantics with safe-repair guidance. RIL does not author canonical authority and does not authorize repairs; it only interprets. Authority remains with CDE/SEL.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "packet_id",
+    "source_scan_record",
+    "interpreted_findings",
+    "status",
+    "reason_codes"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "authority_shape_interpretation_packet"
+    },
+    "schema_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "packet_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_scan_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "run_id"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "run_id": {"type": "string", "minLength": 1},
+        "artifact_type": {
+          "type": "string",
+          "const": "changed_scope_authority_scan_record"
+        }
+      }
+    },
+    "interpreted_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "finding_id",
+          "failure_class",
+          "likely_cause",
+          "affected_owner_boundary",
+          "safe_repair_strategy",
+          "unsafe_repair_patterns"
+        ],
+        "properties": {
+          "finding_id": {"type": "string", "minLength": 1},
+          "file": {"type": "string"},
+          "line": {"type": "integer", "minimum": 0},
+          "symbol": {"type": "string"},
+          "cluster": {"type": "string"},
+          "failure_class": {
+            "type": "string",
+            "const": "authority_shape_violation"
+          },
+          "likely_cause": {"type": "string", "minLength": 1},
+          "affected_owner_boundary": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["canonical_owners", "canonical_authority_source"],
+            "properties": {
+              "canonical_owners": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "canonical_authority_source": {"type": "string"}
+            }
+          },
+          "safe_repair_strategy": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["strategy", "neutral_replacements"],
+            "properties": {
+              "strategy": {
+                "type": "string",
+                "enum": [
+                  "rename_to_neutral_vocabulary",
+                  "move_to_canonical_owner_path",
+                  "remove_authority_assertion"
+                ]
+              },
+              "neutral_replacements": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "scope": {
+                "type": "string",
+                "const": "changed_file_only"
+              }
+            }
+          },
+          "unsafe_repair_patterns": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "modify_authority_registry",
+                "add_allowlist_exception",
+                "weaken_preflight",
+                "rename_canonical_owner_artifact",
+                "rewrite_files_outside_changed_set",
+                "change_meaning_instead_of_vocabulary",
+                "introduce_new_authority_term"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["interpreted", "no_findings", "scan_unavailable"]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}

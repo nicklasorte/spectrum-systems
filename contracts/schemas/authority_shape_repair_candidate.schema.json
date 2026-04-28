@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/authority_shape_repair_candidate.schema.json",
+  "title": "Authority-Shape Repair Candidate (ASF-01 / FRE)",
+  "description": "FRE proposes bounded, vocabulary-only replacements for authority-shape findings. Proposals are not authorization to apply. Application is gated by TPA policy check + CDE authorization + SEL execution. The candidate carries explicit prohibited_actions to keep authority ownership intact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "repair_candidate_id",
+    "source_interpretation_packet",
+    "target_files",
+    "replacements",
+    "prohibited_actions",
+    "status",
+    "reason_codes"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "authority_shape_repair_candidate"
+    },
+    "schema_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repair_candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_interpretation_packet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "packet_id"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "packet_id": {"type": "string", "minLength": 1},
+        "artifact_type": {
+          "type": "string",
+          "const": "authority_shape_interpretation_packet"
+        }
+      }
+    },
+    "target_files": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "replacements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "file",
+          "line",
+          "current_symbol",
+          "proposed_symbol",
+          "reason",
+          "replacement_class"
+        ],
+        "properties": {
+          "file": {"type": "string", "minLength": 1},
+          "line": {"type": "integer", "minimum": 0},
+          "current_symbol": {"type": "string", "minLength": 1},
+          "proposed_symbol": {"type": "string", "minLength": 1},
+          "reason": {"type": "string", "minLength": 1},
+          "replacement_class": {
+            "type": "string",
+            "const": "vocabulary_only"
+          },
+          "cluster": {"type": "string"}
+        }
+      }
+    },
+    "prohibited_actions": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "string",
+        "enum": [
+          "no_allowlist_change",
+          "no_owner_registry_change",
+          "no_cross_file_rewrite_without_evidence",
+          "no_preflight_weakening",
+          "no_authority_authorization",
+          "no_meaning_change"
+        ]
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["proposed"]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}
