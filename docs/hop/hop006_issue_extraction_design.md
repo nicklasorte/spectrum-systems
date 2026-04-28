@@ -23,7 +23,7 @@ transcript → issue / risk / action / open_question / assumption items
 
 The workflow is intentionally a strict **support capability**. It
 classifies content present in a transcript into advisory items. It
-does not decide policy, gate releases, advance candidates, or rank
+does not emit policy owner input, gate releases, advance candidates, or rank
 risks for the canonical risk authority (EVL).
 
 ## 2. Boundary statement (read first)
@@ -33,7 +33,7 @@ The extraction harness does NOT, in this workflow:
 - assert that an extracted `risk` blocks any release;
 - assign owners or due dates as commitments — only as raw text the
   transcript already contains;
-- decide what is a "real" issue versus a noise item — that judgment
+- emit what is a "real" issue versus a noise item as owner input — that judgment
   remains with the consuming authority (e.g. JSX/EVL) when one chooses
   to read the artifact;
 - emit any free-form summary of the transcript (the schema permits only
