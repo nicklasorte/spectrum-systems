@@ -3,7 +3,7 @@
   "artifact_version": "1.0.0",
   "schema_version": "1.0.0",
   "diagnosis_id": "diag-1",
-  "strategy_gate_decision": "BLOCK",
+  "strategy_gate_recommendation": "BLOCK",
   "failure_class": "pytest_selection_missing",
   "reason_codes": [
     "PR_PYTEST_SELECTION_INTEGRITY_REQUIRED"

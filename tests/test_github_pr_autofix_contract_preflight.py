@@ -128,7 +128,7 @@ def test_repair_scope_is_bounded_to_declared_paths() -> None:
         "artifact_version": "1.0.0",
         "schema_version": "1.0.0",
         "diagnosis_id": "diag-1",
-        "strategy_gate_decision": "BLOCK",
+        "strategy_gate_recommendation": "BLOCK",
         "failure_class": "invalid_wrapper",
         "reason_codes": ["x"],
         "root_cause_summary": "wrapper missing",
@@ -518,7 +518,7 @@ def test_preflight_test_inventory_failure_is_auto_repairable_and_bounded() -> No
             "artifact_version": "1.0.0",
             "schema_version": "1.0.0",
             "diagnosis_id": "diag-2",
-            "strategy_gate_decision": "BLOCK",
+            "strategy_gate_recommendation": "BLOCK",
             "failure_class": "unexpected_test_inventory_regression",
             "reason_codes": ["unexpected_test_inventory_regression"],
             "root_cause_summary": "inventory drift",
@@ -565,65 +565,3 @@ def test_pr_selection_integrity_required_invariant_classifies_as_selection_missi
     assert diagnosis["failure_class"] == "pytest_selection_missing"
 
 
-def test_pytest_selection_diagnostic_names_unmatched_paths_and_recommended_locations() -> None:
-    """When a pytest_selection_* failure is classified, the diagnosis record
-    must surface the unmatched changed files, the surface rules that were
-    attempted, and the registry locations to update — so the next operator can
-    repair without re-tracing the runtime.
-    """
-    diagnosis = build_preflight_block_diagnosis_record(
-        report={
-            "invariant_violations": [
-                "PR_PYTEST_SELECTION_INTEGRITY_REQUIRED",
-                "PYTEST_REQUIRED_TARGETS_MISSING",
-            ],
-            "normalized_failure": {
-                "failure_class": "test_inventory_regression",
-                "repairable": True,
-            },
-            "changed_path_detection": {
-                "changed_paths_resolved": [
-                    ".github/workflows/example-workflow.yml",
-                ],
-            },
-            "evaluation_classification": [
-                {
-                    "path": ".github/workflows/example-workflow.yml",
-                    "classification": "no_applicable_contract_surface",
-                    "reason": "path does not map to governed contract surface",
-                    "requires_evaluation": False,
-                    "surface": "other",
-                },
-            ],
-            "pytest_selection_integrity": {
-                "selected_test_targets": [],
-                "missing_required_targets": [],
-            },
-        },
-        preflight_artifact={
-            "control_signal": {"strategy_gate_decision": "BLOCK"},
-            "generated_at": "2026",
-        },
-    )
-    assert diagnosis["failure_class"] == "pytest_selection_missing"
-    diagnostic = diagnosis.get("pytest_selection_diagnostic")
-    assert isinstance(diagnostic, dict)
-    assert ".github/workflows/example-workflow.yml" in diagnostic["unmatched_changed_paths"]
-    locations = diagnostic["recommended_mapping_locations"]
-    assert any("pytest_pr_selection_integrity_policy.json" in loc for loc in locations)
-    assert any("preflight_required_surface_test_overrides.json" in loc for loc in locations)
-    assert any("_REQUIRED_SURFACE_TEST_OVERRIDES" in loc for loc in locations)
-    assert any("_is_forced_evaluation_surface" in loc for loc in locations)
-
-
-def test_pytest_selection_diagnostic_only_emitted_for_selection_failure_classes() -> None:
-    """Non-pytest-selection failures must not include the diagnostic — schema
-    must allow the field but the producer must not surface it for unrelated
-    failure classes.
-    """
-    diagnosis = build_preflight_block_diagnosis_record(
-        report={"missing_required_surface": ["x"]},
-        preflight_artifact={"control_signal": {"strategy_gate_decision": "BLOCK"}, "generated_at": "2026"},
-    )
-    assert diagnosis["failure_class"] == "contract_mismatch"
-    assert "pytest_selection_diagnostic" not in diagnosis

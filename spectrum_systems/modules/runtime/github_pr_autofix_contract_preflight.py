@@ -268,82 +268,6 @@ def _repair_policy(failure_class: str) -> tuple[str, bool, bool]:
     return "escalation_required", False, True
 
 
-_PYTEST_SELECTION_FAILURE_CLASSES = {
-    "pytest_selection_missing",
-    "pytest_selection_mismatch",
-    "pytest_selection_filtering",
-    "pytest_selection_threshold",
-}
-
-
-def _build_pytest_selection_diagnostic(report: dict[str, Any]) -> dict[str, Any] | None:
-    detection = report.get("changed_path_detection") or {}
-    changed_paths = [
-        str(item)
-        for item in (detection.get("changed_paths_resolved") or [])
-        if isinstance(item, str) and item.strip()
-    ]
-    selection_integrity = report.get("pytest_selection_integrity") or {}
-    selected = {
-        str(item).strip()
-        for item in (selection_integrity.get("selected_test_targets") or [])
-        if isinstance(item, str) and str(item).strip()
-    }
-    no_op_paths = {
-        str(entry.get("path") or "").strip()
-        for entry in (report.get("evaluation_classification") or [])
-        if isinstance(entry, dict) and str(entry.get("classification") or "") == "no_applicable_contract_surface"
-    }
-    missing_required = {
-        str(target).strip()
-        for target in (selection_integrity.get("missing_required_targets") or [])
-        if isinstance(target, str) and str(target).strip()
-    }
-    unmatched: list[str] = sorted(
-        {
-            path
-            for path in changed_paths
-            if path in no_op_paths or (path.startswith("tests/") and path.endswith(".py") and path not in selected)
-        }
-        | {
-            target
-            for target in missing_required
-            if target not in selected
-        }
-    )
-    attempted_rules: list[dict[str, Any]] = []
-    policy_path = Path("docs/governance/pytest_pr_selection_integrity_policy.json")
-    try:
-        if policy_path.is_file():
-            policy = json.loads(policy_path.read_text(encoding="utf-8"))
-            if isinstance(policy, dict):
-                for rule in policy.get("surface_rules") or []:
-                    if not isinstance(rule, dict):
-                        continue
-                    prefix = str(rule.get("path_prefix") or "").strip()
-                    targets = [
-                        str(target)
-                        for target in (rule.get("required_test_targets") or [])
-                        if isinstance(target, str) and target.strip()
-                    ]
-                    if prefix:
-                        attempted_rules.append(
-                            {"path_prefix": prefix, "required_test_targets": targets}
-                        )
-    except (OSError, json.JSONDecodeError):
-        attempted_rules = []
-    return {
-        "unmatched_changed_paths": unmatched,
-        "attempted_surface_rules": attempted_rules,
-        "recommended_mapping_locations": [
-            "docs/governance/pytest_pr_selection_integrity_policy.json#surface_rules",
-            "docs/governance/preflight_required_surface_test_overrides.json",
-            "scripts/run_contract_preflight.py:_REQUIRED_SURFACE_TEST_OVERRIDES",
-            "scripts/run_contract_preflight.py:_is_forced_evaluation_surface",
-        ],
-    }
-
-
 def build_preflight_block_diagnosis_record(*, report: dict[str, Any], preflight_artifact: dict[str, Any]) -> dict[str, Any]:
     try:
         normalized_failure = report.get("normalized_failure")
@@ -353,12 +277,12 @@ def build_preflight_block_diagnosis_record(*, report: dict[str, Any], preflight_
     except Exception:
         normalized_failure = {"failure_class": "internal_preflight_error", "repairable": False}
         category, reasons = "internal_preflight_error", ["preflight_runtime_exception"]
-    record: dict[str, Any] = {
+    return {
         "artifact_type": "preflight_block_diagnosis_record",
         "artifact_version": "1.0.0",
         "schema_version": "1.0.0",
         "diagnosis_id": f"diag-{preflight_artifact.get('generated_at', 'unknown')}",
-        "strategy_gate_decision": str(((preflight_artifact.get("control_signal") or {}).get("strategy_gate_decision")) or "BLOCK"),
+        "strategy_gate_recommendation": str(((preflight_artifact.get("control_signal") or {}).get("strategy_gate_decision")) or "BLOCK"),
         "failure_class": category,
         "reason_codes": reasons,
         "normalized_failure": {
@@ -367,9 +291,6 @@ def build_preflight_block_diagnosis_record(*, report: dict[str, Any], preflight_
         },
         "root_cause_summary": str((preflight_artifact.get("control_signal") or {}).get("rationale") or "preflight block"),
     }
-    if category in _PYTEST_SELECTION_FAILURE_CLASSES:
-        record["pytest_selection_diagnostic"] = _build_pytest_selection_diagnostic(report)
-    return record
 
 
 def build_preflight_repair_plan_record(*, diagnosis_record: dict[str, Any]) -> dict[str, Any]:

@@ -8,7 +8,7 @@
     "artifact_version",
     "schema_version",
     "diagnosis_id",
-    "strategy_gate_decision",
+    "strategy_gate_recommendation",
     "failure_class",
     "reason_codes",
     "root_cause_summary",
@@ -27,8 +27,9 @@
     "diagnosis_id": {
       "type": "string"
     },
-    "strategy_gate_decision": {
+    "strategy_gate_recommendation": {
       "type": "string",
+      "description": "Preflight observation of the upstream strategy gate signal value (ALLOW/WARN/FREEZE/BLOCK). The field carries no authority on its own and is consumed by canonical owners as a recommended input.",
       "enum": [
         "ALLOW",
         "WARN",

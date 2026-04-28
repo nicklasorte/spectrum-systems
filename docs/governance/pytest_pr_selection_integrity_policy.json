@@ -40,7 +40,7 @@
     {
       "path_prefix": ".github/workflows/artifact-boundary.yml",
       "required_test_targets": [
-        "tests/test_artifact_boundary_workflow_pytest_enforcement.py",
+        "tests/test_artifact_boundary_workflow_pytest_policy_observation.py",
         "tests/test_artifact_boundary_workflow_policy_observation.py"
       ]
     }

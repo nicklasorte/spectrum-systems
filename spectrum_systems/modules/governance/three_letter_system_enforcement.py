@@ -91,7 +91,7 @@ def evaluate_three_letter_system_enforcement(
         for system in sorted(set(matched_systems)):
             row = systems.get(system, {}) if isinstance(systems.get(system), dict) else {}
             missing: list[str] = []
-            if bool(row.get("artifact_boundary_coverage_mandatory")) and "tests/test_artifact_boundary_workflow_pytest_enforcement.py" not in row.get("minimum_required_tests", []):
+            if bool(row.get("artifact_boundary_coverage_mandatory")) and "tests/test_artifact_boundary_workflow_pytest_policy_observation.py" not in row.get("minimum_required_tests", []):
                 missing.append("artifact_boundary_test_expectation")
             if bool(row.get("pytest_visibility_mandatory")) and "tests/test_pytest_trust_gap_audit.py" not in row.get("minimum_required_tests", []):
                 missing.append("pytest_visibility_test_expectation")

@@ -33,7 +33,7 @@ def test_ci_workflow_yaml_classifies_as_forced_evaluation_surface() -> None:
 
 def test_workflow_named_pytest_files_classify_as_contract_tied_tests() -> None:
     requires_eval, surface, _ = preflight._is_forced_evaluation_surface(
-        "tests/test_artifact_boundary_workflow_pytest_enforcement.py"
+        "tests/test_artifact_boundary_workflow_pytest_policy_observation.py"
     )
     assert requires_eval is True
     assert surface == "contract_tied_tests"
@@ -48,7 +48,7 @@ def test_workflow_named_pytest_files_classify_as_contract_tied_tests() -> None:
 def test_artifact_boundary_workflow_has_explicit_required_surface_override() -> None:
     overrides = preflight._load_required_surface_override_map(preflight.REPO_ROOT)
     targets = overrides.get(".github/workflows/artifact-boundary.yml", [])
-    assert "tests/test_artifact_boundary_workflow_pytest_enforcement.py" in targets
+    assert "tests/test_artifact_boundary_workflow_pytest_policy_observation.py" in targets
     assert "tests/test_artifact_boundary_workflow_policy_observation.py" in targets
 
 
@@ -61,7 +61,7 @@ def test_artifact_boundary_workflow_has_explicit_selection_integrity_surface_rul
     }
     assert ".github/workflows/artifact-boundary.yml" in rules
     targets = rules[".github/workflows/artifact-boundary.yml"]
-    assert "tests/test_artifact_boundary_workflow_pytest_enforcement.py" in targets
+    assert "tests/test_artifact_boundary_workflow_pytest_policy_observation.py" in targets
     assert "tests/test_artifact_boundary_workflow_policy_observation.py" in targets
 
 
@@ -70,14 +70,14 @@ def test_artifact_boundary_workflow_pr_diff_produces_allow_selection_integrity()
     # are the workflow yaml and its bound tests must produce ALLOW (no
     # PYTEST_REQUIRED_TARGETS_MISSING, no PYTEST_SELECTION_FILTERING_DETECTED).
     selected = [
-        "tests/test_artifact_boundary_workflow_pytest_enforcement.py",
+        "tests/test_artifact_boundary_workflow_pytest_policy_observation.py",
         "tests/test_artifact_boundary_workflow_policy_observation.py",
     ]
     result = evaluate_pytest_selection_integrity(
         changed_paths=[
             ".github/workflows/artifact-boundary.yml",
             "tests/test_artifact_boundary_workflow_policy_observation.py",
-            "tests/test_artifact_boundary_workflow_pytest_enforcement.py",
+            "tests/test_artifact_boundary_workflow_pytest_policy_observation.py",
         ],
         selected_test_targets=selected,
         required_test_targets=selected,

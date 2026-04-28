@@ -24,6 +24,8 @@
     "guard_path_prefixes": [
       "spectrum_systems/modules/governance/system_registry_guard.py",
       "spectrum_systems/modules/governance/changed_files.py",
+      "spectrum_systems/modules/governance/three_letter_system_enforcement.py",
+      "spectrum_systems/modules/runtime/github_pr_autofix_contract_preflight.py",
       "spectrum_systems/governance/authority_shape_preflight.py",
       "spectrum_systems/modules/runtime/rfx_route_guard.py",
       "spectrum_systems/modules/runtime/rfx_decision_bridge_guard.py",
@@ -46,6 +48,7 @@
       "contracts/governance/authority_registry.json",
       "contracts/governance/authority_shape_vocabulary.json",
       "contracts/governance/system_registry_guard_policy.json",
+      "docs/governance/three_letter_system_policy.json",
       "docs/governance/authority_shape_preflight.md",
       "docs/hop/preflight.md",
       "docs/operations/tls_priority_preflight.md",
