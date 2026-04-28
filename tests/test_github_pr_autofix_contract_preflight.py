@@ -430,6 +430,27 @@ def test_classification_maps_preflight_runtime_exception_reason() -> None:
     assert reason_codes == ["preflight_runtime_exception"]
 
 
+def test_classification_maps_contract_selection_producer_failures() -> None:
+    failure_class, reason_codes = classify_preflight_block(
+        report={
+            "producer_failures": [
+                {"path": "tests/metrics/test_met_04_18_contract_selection.py", "returncode": 1},
+                {"path": "tests/metrics/test_met_19_33_contract_selection.py", "returncode": 1},
+            ]
+        }
+    )
+    assert failure_class == "downstream_test_failure"
+    assert reason_codes == ["CONTRACT_SELECTION_POLICY_MISMATCH"]
+
+
+def test_classification_maps_generic_producer_failures() -> None:
+    failure_class, reason_codes = classify_preflight_block(
+        report={"producer_failures": [{"path": "tests/test_contracts.py", "returncode": 1}]}
+    )
+    assert failure_class == "downstream_test_failure"
+    assert reason_codes == ["PRODUCER_FAILURES_PRESENT"]
+
+
 def test_repair_pipeline_failure_preserves_original_reason_codes(tmp_path: Path) -> None:
     out = _write_base_artifacts(
         tmp_path,
@@ -563,5 +584,4 @@ def test_pr_selection_integrity_required_invariant_classifies_as_selection_missi
         preflight_artifact={"control_signal": {"strategy_gate_decision": "BLOCK"}, "generated_at": "2026"},
     )
     assert diagnosis["failure_class"] == "pytest_selection_missing"
-
 

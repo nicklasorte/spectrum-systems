@@ -202,6 +202,17 @@ def classify_preflight_block(*, report: dict[str, Any]) -> tuple[str, list[str]]
     fixture_hits = [entry for entry in producer_failures if isinstance(entry, dict) and "fixtures" in str(entry.get("path") or "")]
     if fixture_hits:
         return "contract_mismatch", ["FIXTURE_CONTRACT_FAILURE"]
+    if producer_failures:
+        contract_selection_hits = [
+            entry
+            for entry in producer_failures
+            if isinstance(entry, dict)
+            and str(entry.get("path") or "").startswith("tests/metrics/test_met_")
+            and "contract_selection.py" in str(entry.get("path") or "")
+        ]
+        if contract_selection_hits:
+            return "downstream_test_failure", ["CONTRACT_SELECTION_POLICY_MISMATCH"]
+        return "downstream_test_failure", ["PRODUCER_FAILURES_PRESENT"]
 
     consumer_failures = report.get("consumer_failures") or []
     if consumer_failures:
