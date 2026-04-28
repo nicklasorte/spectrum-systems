@@ -30,9 +30,18 @@ function rowExplanation(row: RequestedCandidateRow, ranked: RankedSystem | null)
 }
 
 export function RecommendationDebugPanel({ priority }: Props) {
+  const gate = (priority as unknown as { freshness_gate?: { ok: boolean; recompute_command?: string } } | null)?.freshness_gate;
+  if (gate && !gate.ok) {
+    return (
+      <div className="border border-red-300 dark:border-red-700 rounded p-3 bg-red-50 dark:bg-red-950 space-y-2" data-testid="recommendation-debug-panel">
+        <h3 className="font-semibold text-red-700 dark:text-red-300">Recommendation Debug unavailable — ranking artifact stale/invalid/missing</h3>
+        {gate.recompute_command && <p className="text-xs break-all">regenerate: <code>{gate.recompute_command}</code></p>}
+      </div>
+    );
+  }
   if (!priority || priority.state !== 'ok' || !priority.payload) {
     return (
-      <div className="border rounded p-3 bg-white space-y-2" data-testid="recommendation-debug-panel">
+      <div className="border border-gray-200 dark:border-gray-700 rounded p-3 bg-white dark:bg-gray-900 space-y-2" data-testid="recommendation-debug-panel">
         <h3 className="font-semibold">Recommendation Debug</h3>
         <p className="text-sm text-red-700" data-testid="recommendation-debug-fail-closed">
           ⚠ Priority artifact unavailable; recommendation explanations cannot be shown. Fail-closed: dashboard
@@ -46,7 +55,7 @@ export function RecommendationDebugPanel({ priority }: Props) {
   const top = rows.slice(0, 3);
 
   return (
-    <div className="border rounded p-3 bg-white space-y-2" data-testid="recommendation-debug-panel">
+    <div className="border border-gray-200 dark:border-gray-700 rounded p-3 bg-white dark:bg-gray-900 space-y-2" data-testid="recommendation-debug-panel">
       <h3 className="font-semibold">Recommendation Debug (artifact-backed only)</h3>
       <p className="text-xs text-gray-600">
         Rankings are read directly from artifact; the dashboard does not compute order or score.
