@@ -996,7 +996,6 @@
         "docs": [
           "docs/architecture/autonomous_execution_loop.md",
           "docs/architecture/system_registry.md",
-          "docs/architecture/system_registry_reduction_decision.md",
           "docs/architecture/system_registry_support.md",
           "docs/governance/authority_shape_preflight.md",
           "docs/governance/cdx_02_3ls_roadmap.json",
@@ -1011,6 +1010,7 @@
           "docs/review-actions/PLAN-R100-001-2026-04-15.md",
           "docs/review-actions/PLAN-R100-NP-001-2026-04-15.md",
           "docs/review-actions/PLAN-TLS-STACK-02A-2026-04-26.md",
+          "docs/reviews/MET-04-18-final-integration-review.md",
           "docs/reviews/NX_ALL_01_delivery_report.md",
           "docs/reviews/OPR-TRN-01A_authority_failclosed.md",
           "docs/reviews/autonomous-loop-judgment-eval-slice-status-2026-03-30.md",

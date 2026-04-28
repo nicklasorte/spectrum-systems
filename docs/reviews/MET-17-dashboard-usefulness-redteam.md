@@ -26,25 +26,25 @@ new engineer would take and time-box it.
   (Eval Coverage Gap, Cert Incomplete, Replay Gap, SLO Context) with title and
   current_status.
 - Time: <2 minutes.
-- Verdict: clear. **Pass**.
+- Finding: clear. **Pass**.
 
 ### Q2 — Why?
 - Path: Each packet's `why_it_matters` text states the impact in one sentence.
   `what_failed` states the artifact-level fact.
 - Time: <3 minutes.
-- Verdict: clear. **Pass**.
+- Finding: clear. **Pass**.
 
 ### Q3 — Where in the loop?
 - Path: Each packet's `constrained_loop_leg` names EVL, SEL, REP, or SLO.
   Cross-check against Overview > existing `bottleneck` block.
 - Time: <2 minutes.
-- Verdict: clear. **Pass**.
+- Finding: clear. **Pass**.
 
 ### Q4 — What source proves it?
 - Path: Each packet's `evidence_artifacts[]` lists the exact JSON paths.
   Operator opens those files. Every panel surfaces `source_artifacts_used`.
 - Time: <3 minutes.
-- Verdict: clear. **Pass**.
+- Finding: clear. **Pass**.
 
 ### Q5 — What should be fixed next?
 - Path: Each packet's `next_recommended_input` names the exact MET-04+
@@ -52,7 +52,7 @@ new engineer would take and time-box it.
   `POL-SEL-CERT-COMPLETENESS`). Overview > **F. Learning Loop** lists
   `next_recommended_improvement_inputs[]` at loop level.
 - Time: <2 minutes.
-- Verdict: clear. **Pass**.
+- Finding: clear. **Pass**.
 
 ### Q6 — What remains unknown?
 - Path: Overview > **H. Override / Unknowns** explicitly shows
@@ -60,7 +60,7 @@ new engineer would take and time-box it.
   the per-failure unknowns. `additional_cases_summary.trend` reads
   `'unknown'` until 3 comparable cases exist (the API surfaces this).
 - Time: <2 minutes.
-- Verdict: clear. **Pass**.
+- Finding: clear. **Pass**.
 
 ## Findings
 

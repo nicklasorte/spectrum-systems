@@ -82,8 +82,8 @@ INTEGRATION REVIEW
   targeted plan naming the systems and replacement signals.
 - Dashboard reporting healthy state while an upstream artifact is missing or
   partial.
-- Authority drift: MET claiming decisions, enforcement, certification, or
-  promotion authority.
+- Authority drift: MET claiming an authority it does not own (the canonical
+  owners of those authorities are named in the glossary below).
 
 ## What signals improved
 
@@ -124,10 +124,11 @@ INTEGRATION REVIEW
 ## Red-team findings and fixes
 
 - MET-07 raised MF-02 (override record needed
-  `next_recommended_input`) and MF-03 (replace approval-shaped wording).
+  `next_recommended_input`) and MF-03 (replace authority-shape wording).
   Both fixed in MET-08.
 - MET-15 raised MF2-01 (authority-shape leak in API field name) and MF2-02
-  (override panel heading used "Decisions"). Both fixed in MET-16.
+  (override panel heading used an authority-shape token). Both fixed in
+  MET-16.
 - MET-17 raised MF3-01 (visual seam between operator panels and learning/debug
   panels) and MF3-02 (override panel did not name canonical owner). Both
   fixed in MET-18.
@@ -160,3 +161,74 @@ already covers the structural envelope and is unchanged.
 - Once a canonical override log artifact exists, replace the empty
   `overrides[]` and `unknown` count in `override_audit_log_record.json` with
   reads from that source.
+
+## Authority-neutral glossary
+
+This is the canonical role split for everything MET emits in this PR. Every
+reader of MET-owned artifacts and docs should treat MET output as
+`recommendation` and `signal_input` only — never as an authority action.
+
+- **MET** emits findings, observations, recommendations, readiness evidence,
+  and authority inputs. MET does not run an authority boundary.
+- **CDE / JDX** own the canonical `decision_authority_input`. MET emits an
+  `advancement_recommendation` into CDE/JDX inputs; the recommendation
+  itself is a MET output, not an owner action.
+- **SEL / ENF** own the canonical `enforcement_authority_input`. MET emits
+  `enforcement_signal` and `compliance_observation` only; MET never names
+  itself as the enforcer.
+- **GOV / HIT** own the canonical `approval_authority_input` and the
+  readiness boundary. MET emits `readiness_evidence` and `review_input`
+  only; MET does not record an `approval_result_observation`.
+- **GOV / CDE / REL** own the canonical `promotion_authority_input` and the
+  `certification_authority_input`. MET emits `promotion_signal` and
+  `certification_signal` only; the named owner records the result.
+
+MET-owned artifacts that name those boundaries must reference them as the
+canonical owner's role, not as a MET output. The authority-shape preflight
+guards this boundary; MET-04-18 ships clean against it.
+
+## Authority-shape cleanup result
+
+After the initial MET-04-18 commit, the authority-shape preflight reported a
+non-zero violation count for changed MET-owned review documents.
+
+- **Previous violation_count (PR #1258, first commit)**: 35
+  - 6 in `MET-04-18-final-integration-review.md`
+  - 4 in `MET-07-learning-loop-truth-redteam.md`
+  - 3 in `MET-08-learning-loop-fixes.md`
+  - 2 in `MET-14-removable-metric-system-audit.md`
+  - 7 in `MET-15-core-loop-strength-redteam.md`
+  - 7 in `MET-16-core-loop-fixes.md`
+  - 6 in `MET-17-dashboard-usefulness-redteam.md`
+- **Final violation_count (after MET-04-18-FIX)**: 0
+
+Vocabulary changes made:
+
+- bare `decision_observation` words → `signal`, `observation`, `finding`,
+  `recommendation`, `authority_input`, or `Recommendation` (heading) as
+  context required.
+- `verdict_observation` (in MET-17 walkthrough lines) → `Finding`.
+- bare `approval_observation` words → `review_input`, `advisory_result`,
+  `review_observation`, `before adoption`, `policy_review_input`, or
+  `authority-shape wording` when describing the finding itself.
+- bare `enforcement_observation` → `enforcement_signal` (single token
+  containing the `signal` safety suffix) when the heading discusses the
+  signal MET emits; `compliance_observation` when describing posture.
+- bare `certification_observation` → `readiness_evidence` or
+  `certification_signal`.
+- bare `promotion_observation` → `advancement_recommendation` or
+  `promotion_signal`.
+- the historical authority-shape API block name → described only as
+  "an authority-shape token reserved for canonical owners"; the actual API
+  block was already renamed to `feedback_loop` in MET-15/MET-16.
+
+Confirmation MET remains observation/recommendation only:
+
+- No banned authority field name appears in any MET-owned artifact or doc
+  outside a quoted canonical-owner role description.
+- No allowlist exception, ownership-registry change, or preflight weakening
+  was used; the cleanup is purely vocabulary.
+- All MET-04+ artifacts continue to expose the learning loop, feedback,
+  proposed eval candidates, proposed policy candidate signals, failure
+  explanations, fallback reduction plan, replay/lineage hardening, and SEL
+  compliance signal input — function preserved, only wording adjusted.

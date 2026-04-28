@@ -20,10 +20,11 @@ Resolve every `must_fix` finding from MET-07. No `must_fix` remains open.
 - **Residual risk**: Until a canonical override log artifact exists, the
   record will continue to declare unknown by design.
 
-### MF-03: Replace "approve" wording in policy candidate record
+### MF-03: Replace authority-shape wording in policy candidate record
 - **Finding**: Two suggested-policy-shape strings in
-  `policy_candidate_signal_record.json` read as approval language.
-- **Fix**: Replaced with "before adoption" and "policy review" wording,
+  `policy_candidate_signal_record.json` originally read as authority-shape
+  language attributed to MET.
+- **Fix**: Replaced with "before adoption" and "policy review input" wording,
   consistent with MET-allowed vocabulary (`recommendation`,
   `signal input`, `proposed`).
 - **Files changed**: `artifacts/dashboard_metrics/policy_candidate_signal_record.json`.
@@ -36,7 +37,7 @@ Resolve every `must_fix` finding from MET-07. No `must_fix` remains open.
 ## Verification
 - All MET-04 through MET-06 artifacts re-scanned by hand and by the
   authority-vocabulary tests; no banned authority field/value or
-  approval-shaped wording detected outside canonical-owner descriptions.
+  authority-shape wording detected outside canonical-owner descriptions.
 - Authority-shape preflight: green (see `outputs/authority_shape_preflight/`).
 - 3LS authority preflight: green.
 

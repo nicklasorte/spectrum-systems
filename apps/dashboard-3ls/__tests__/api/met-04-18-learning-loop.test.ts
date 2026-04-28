@@ -303,6 +303,13 @@ describe('MET-04-18 — authority vocabulary discipline in MET-owned artifacts',
       'MET will promote',
       'MET adopts',
       'MET will adopt',
+      'MET approves',
+      'MET will approve',
+      'MET approval',
+      'MET decision',
+      'MET enforcement',
+      'MET certification',
+      'MET promotion',
     ];
     docs.forEach((d) => {
       const content = fs.readFileSync(path.join(reviewsDir, d), 'utf-8');
@@ -310,6 +317,50 @@ describe('MET-04-18 — authority vocabulary discipline in MET-owned artifacts',
         expect(content).not.toContain(phrase);
       });
     });
+  });
+
+  it('MET-owned review docs use authority-neutral vocabulary as primary terms', () => {
+    // After MET-04-18-FIX, every MET-owned review doc must mention at least
+    // one MET-allowed term and avoid bare authority-shape words in MET
+    // self-references. The authority-shape preflight is the binding gate;
+    // this test is a smoke check.
+    const docs = [
+      'MET-07-learning-loop-truth-redteam.md',
+      'MET-08-learning-loop-fixes.md',
+      'MET-14-removable-metric-system-audit.md',
+      'MET-15-core-loop-strength-redteam.md',
+      'MET-16-core-loop-fixes.md',
+      'MET-17-dashboard-usefulness-redteam.md',
+      'MET-18-dashboard-usefulness-fixes.md',
+      'MET-04-18-final-integration-review.md',
+    ];
+    const allowed = [
+      'recommendation',
+      'observation',
+      'signal',
+      'finding',
+      'readiness',
+      'review_input',
+      'review input',
+      'authority input',
+      'eval candidate',
+      'policy candidate signal',
+      'feedback item',
+    ];
+    docs.forEach((d) => {
+      const content = fs.readFileSync(path.join(reviewsDir, d), 'utf-8');
+      const found = allowed.some((term) => content.includes(term));
+      expect(found).toBe(true);
+    });
+  });
+
+  it('MET-04-18 final integration review carries the authority-neutral glossary and cleanup result', () => {
+    const filePath = path.join(reviewsDir, 'MET-04-18-final-integration-review.md');
+    const content = fs.readFileSync(filePath, 'utf-8');
+    expect(content).toContain('Authority-neutral glossary');
+    expect(content).toContain('Authority-shape cleanup result');
+    expect(content).toContain('Final violation_count (after MET-04-18-FIX)');
+    expect(content).toContain('0');
   });
 });
 

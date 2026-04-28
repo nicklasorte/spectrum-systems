@@ -12,7 +12,7 @@ remove.
 
 ## Audit table
 
-| Artifact / Panel | failure_prevented | signal_improved | Decision | Reason | Dependency impact |
+| Artifact / Panel | failure_prevented | signal_improved | Recommendation | Reason | Dependency impact |
 |---|---|---|---|---|---|
 | `bottleneck_record.json` | Bottleneck staying anecdotal | Per-system warning/block counts with sources | keep | First-class bottleneck signal with confidence label | `/api/intelligence` exposes; UI consumes |
 | `leverage_queue_record.json` | Recommendations without source | Sourced leverage items with weights | keep | First-class leverage signal | `/api/intelligence`; UI |
@@ -46,7 +46,7 @@ UI is wired, so any over-paneling discovered there will be folded in MET-16.
   redundant: the seed record names the failure mode; the explanation packet
   adds debug evidence and next recommended input.
 
-## Decision
+## Recommendation
 
 No removals in this PR. MET-15 will re-test after the UI is wired. Any
 fold/remove forced by MET-15 must_fix will be applied in MET-16.

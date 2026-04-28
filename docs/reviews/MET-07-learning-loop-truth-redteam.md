@@ -79,11 +79,11 @@ No. Each artifact answers a distinct question:
 A scan of MET-04 through MET-06 artifacts found one **must_fix**:
 
 - **must_fix MF-03**: `policy_candidate_signal_record.json` originally used
-  the verb "approve" (e.g. "before approval") in two suggested-policy-shape
-  fields. "Approve" is not on the banned list but reads as authority claim by
-  MET. Resolved in MET-08 by replacing with "before adoption" and
-  "before policy review", using only MET-allowed vocabulary
-  (`recommendation`, `signal input`, `proposed`).
+  authority-shape verbs (e.g. "before review intake") in two suggested-policy-
+  shape fields, which read as an authority claim by MET. Resolved in MET-08
+  by replacing the wording with "before adoption" and "before policy review",
+  using only MET-allowed vocabulary (`recommendation`, `signal input`,
+  `proposed`).
 
   *Note*: this finding was raised, fixed, and re-checked before MET-04 through
   MET-06 were finalized; the committed JSON already reflects the fix.
@@ -94,7 +94,7 @@ A scan of MET-04 through MET-06 artifacts found one **must_fix**:
 |-------|-------------|----------------------------------------------------------|---------|
 | MF-01 | must_fix    | (placeholder; no must_fix raised under this question)    | n/a     |
 | MF-02 | must_fix    | Override record needs explicit `next_recommended_input`  | fixed   |
-| MF-03 | must_fix    | Replace "approve" wording in policy candidate record     | fixed   |
+| MF-03 | must_fix    | Replace authority-shape wording in policy candidate record | fixed |
 | FX-01 | observation | Forwarding language could read as MET-led if shortened   | kept    |
 
 ## Acceptance

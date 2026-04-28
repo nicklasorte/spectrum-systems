@@ -16,7 +16,7 @@ check, freshness check, and panel-bloat check.
 
 ## Findings
 
-### Does each artifact strengthen execution → eval → control → enforcement?
+### Does each artifact strengthen execution → eval → control → `enforcement_signal`?
 Yes:
 - `failure_feedback_record` and `eval_candidate_record` strengthen
   EVL by routing failure observations to proposed candidates with sources.
@@ -40,9 +40,9 @@ to the next artifact and the next action.
 ### Did we add complexity without leverage?
 **should_fix SF2-01** raised: the dashboard now has four MET-04+ panels (F, G,
 H, I, J — five). Five compact sections is at the upper bound of the prompt's
-"compact, not giant tables" guideline. Decision: keep all five for MET-04-18
-because each maps to a distinct named MET-04+ artifact and the prompt
-explicitly lists Learning Loop, Failure Explanation, Override/Unknowns,
+"compact, not giant tables" guideline. Recommendation: keep all five for
+MET-04-18 because each maps to a distinct named MET-04+ artifact and the
+prompt explicitly lists Learning Loop, Failure Explanation, Override/Unknowns,
 Fallback Reduction, and Replay+Lineage Hardening as required UI sections.
 No `must_fix` raised.
 
@@ -58,15 +58,14 @@ does not populate degrades to `'unknown'` in `/api/intelligence`, never 0.
 
 ### Are authority boundaries preserved?
 **must_fix MF2-01** raised then resolved: an early draft of the API route
-included a `feedback_loop_decision` block name. "decision" is one of the
-authority-shape vocabulary terms reserved for canonical owners (CDE).
-Resolved by renaming to `feedback_loop` and `feedback_loop_status` before
-commit. Re-scan: clean.
+named a feedback-loop block using an authority-shape token reserved for
+canonical owners (CDE). Resolved by renaming the block to `feedback_loop`
+and the status to `feedback_loop_status` before commit. Re-scan: clean.
 
 **must_fix MF2-02** raised then resolved: the dashboard panel "H. Override /
-Unknowns" originally used the heading "Override Decisions". Renamed to
-"Override / Unknowns (fail-closed)" to keep MET vocabulary discipline.
-Re-scan: clean.
+Unknowns" originally used a heading containing an authority-shape token.
+Renamed to "Override / Unknowns (fail-closed)" to keep MET vocabulary
+discipline. Re-scan: clean.
 
 ### Are there too many panels / artifacts?
 **observation OB2-01**: With F–J added, the Overview now has nine panels.
@@ -79,8 +78,8 @@ overview-tab unreadable, MET-18 must fold or move sections.
 
 | ID    | Class       | Title                                                        | Status  |
 |-------|-------------|--------------------------------------------------------------|---------|
-| MF2-01| must_fix    | Authority-shape leak: `feedback_loop_decision` field name    | fixed   |
-| MF2-02| must_fix    | Override panel heading used authority-shape word "Decisions" | fixed   |
+| MF2-01| must_fix    | Authority-shape leak in feedback-loop block name             | fixed   |
+| MF2-02| must_fix    | Override panel heading used authority-shape token            | fixed   |
 | SF2-01| should_fix  | Five MET-04+ panels approach upper bound for readability     | tracked |
 | OB2-01| observation | Overview now has nine panels — re-test in MET-17             | kept    |
 
