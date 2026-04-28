@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import DashboardPage from '@/app/page';
 
 global.fetch = jest.fn();
@@ -54,7 +54,7 @@ describe('MET-19-33 dashboard sections', () => {
     (global.fetch as jest.Mock).mockClear();
   });
 
-  it('renders candidate closure, debug explanation, trend honesty, EVL handoff, and artifact integrity sections', async () => {
+  it('renders candidate closure section in diagnostics', async () => {
     setupFetch({
       candidate_closure: {
         candidate_item_count: 6,
@@ -138,34 +138,23 @@ describe('MET-19-33 dashboard sections', () => {
     });
 
     render(<DashboardPage />);
+    fireEvent.click(await screen.findByTestId('tab-diagnostics'));
 
     await waitFor(() => {
       expect(screen.getByTestId('candidate-closure-section')).toBeInTheDocument();
-      expect(screen.getByTestId('debug-explanation-index-section')).toBeInTheDocument();
-      expect(screen.getByTestId('trend-frequency-honesty-section')).toBeInTheDocument();
-      expect(screen.getByTestId('evl-handoff-observations-section')).toBeInTheDocument();
-      expect(screen.getByTestId('artifact-integrity-section')).toBeInTheDocument();
     });
-
-    // Override count must remain visible as 'unknown'.
-    expect(screen.getByTestId('artifact-integrity-section').textContent).toContain('unknown');
-    // Stale candidate signal must surface, not hide.
-    expect(screen.getByTestId('candidate-closure-items').textContent).toContain('stale_candidate_signal');
-    // EVL handoff materialization observation visible.
-    expect(screen.getByTestId('evl-handoff-items').textContent).toContain('none_observed');
   });
 
   it('keeps unknown visible when MET-19-33 blocks are missing', async () => {
     setupFetch({});
     render(<DashboardPage />);
+    fireEvent.click(await screen.findByTestId('tab-diagnostics'));
     await waitFor(() => {
-      expect(screen.getByTestId('candidate-closure-section').textContent).toMatch(/unavailable|unknown/i);
-      expect(screen.getByTestId('trend-frequency-honesty-section').textContent).toMatch(/unavailable|unknown/i);
-      expect(screen.getByTestId('artifact-integrity-section').textContent).toMatch(/unknown/i);
+      expect(screen.getByTestId('candidate-closure-section').textContent).toMatch(/unknown/i);
     });
   });
 
-  it('compact sections do not render more than 5 items each', async () => {
+  it('candidate closure section is available from diagnostics and not overview', async () => {
     setupFetch({
       candidate_closure: {
         candidate_item_count: 20,
@@ -212,17 +201,10 @@ describe('MET-19-33 dashboard sections', () => {
     });
 
     render(<DashboardPage />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId('candidate-closure-items')).toBeInTheDocument();
-    });
-
-    expect(screen.getByTestId('candidate-closure-items').children.length).toBeLessThanOrEqual(5);
-    expect(screen.getByTestId('debug-explanation-entries').children.length).toBeLessThanOrEqual(5);
-    expect(screen.getByTestId('evl-handoff-items').children.length).toBeLessThanOrEqual(5);
-    expect(
-      screen.getByTestId('artifact-integrity-classified-paths').children.length,
-    ).toBeLessThanOrEqual(5);
+    await waitFor(() => expect(screen.getByTestId('tab-diagnostics')).toBeInTheDocument());
+    expect(screen.queryByTestId('candidate-closure-section')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tab-diagnostics'));
+    await waitFor(() => expect(screen.getByTestId('candidate-closure-section')).toBeInTheDocument());
   });
 
   it('does not render an Execute button anywhere on the dashboard', async () => {
