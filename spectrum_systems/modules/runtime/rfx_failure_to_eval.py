@@ -2,7 +2,7 @@
 
 Converts failure artifacts into EVL-compatible regression eval candidates.
 This module is a non-owning phase-label support helper; it does **not** own
-eval coverage decisions or eval lifecycle. EVL remains the sole eval-coverage
+eval coverage signals or eval lifecycle. EVL remains the sole eval-coverage
 authority recorded in ``docs/architecture/system_registry.md``.
 
 Outputs:

@@ -17,7 +17,7 @@ RT-13 → RT-24, paired with the revalidation step. Companion review:
 | RT-21 | High-confidence claim without evidence refs | `assert_rfx_calibration` emits `rfx_confidence_without_evidence` and `rfx_overconfidence_risk`. | `tests/test_rfx_calibration.py::test_rt21_red_team_high_confidence_no_evidence_blocks_then_revalidates` | Closed |
 | RT-22 | Misclassify feature work as reliability without evidence | `assert_rfx_error_budget_governance` requires `reliability_evidence_refs` for reliability claims. | `tests/test_rfx_error_budget_governance.py::test_rt22_red_team_reliability_without_evidence_blocks_then_revalidates` | Closed |
 | RT-23 | Index unsupported memory without source refs | `build_rfx_memory_index_record` requires supported `artifact_type`, derivable id, and lineage refs. | `tests/test_rfx_memory_index.py::test_rt23_red_team_no_source_refs_blocks_then_revalidates` | Closed |
-| RT-24 | System intelligence authorizing execution / promotion | `build_rfx_system_intelligence_report` scans narrative chunks for authority-claiming patterns and validates supported next-build slice. | `tests/test_rfx_system_intelligence.py::test_rt24_red_team_authority_violation_blocks_then_revalidates` | Closed |
+| RT-24 | System intelligence claiming authorization for execution / advancement | `build_rfx_system_intelligence_report` scans narrative chunks for authority-claiming patterns and validates supported next-build slice. | `tests/test_rfx_system_intelligence.py::test_rt24_red_team_authority_violation_blocks_then_revalidates` | Closed |
 
 Every campaign produced a fix step and a revalidation step. RFX remains a
 non-owning phase label across the canonical systems recorded in

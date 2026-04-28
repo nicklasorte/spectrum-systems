@@ -54,7 +54,7 @@ def test_unexplained_difference_blocks() -> None:
         _run(run_id="r1", cde_status="ready"),
         _run(run_id="r2", cde_status="not_ready"),
     ]
-    with pytest.raises(RFXCrossRunConsistencyError, match="rfx_decision_volatility"):
+    with pytest.raises(RFXCrossRunConsistencyError, match="rfx_decision_signal_volatility"):
         assert_rfx_cross_run_consistency(runs=runs)
 
 
@@ -83,7 +83,7 @@ def test_rt18_red_team_non_material_metadata_does_not_mask() -> None:
         _run(run_id="r2", cde_status="not_ready", metadata={"timestamp": "2026-04-04", "tag": "y"}),
     ]
     # Same material inputs, different CDE status → must still be detected.
-    with pytest.raises(RFXCrossRunConsistencyError, match="rfx_decision_volatility"):
+    with pytest.raises(RFXCrossRunConsistencyError, match="rfx_decision_signal_volatility"):
         assert_rfx_cross_run_consistency(runs=runs)
 
 

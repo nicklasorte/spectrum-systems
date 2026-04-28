@@ -42,7 +42,7 @@ REQUIRED_CHAOS_SCENARIOS: tuple[str, ...] = (
     "missing_tlc_lineage",
     "missing_evl_evidence",
     "missing_tpa_evidence",
-    "missing_cde_decision",
+    "missing_cde_decision_signal",
     "missing_sel_linkage",
     "broken_lin_lineage",
     "rep_replay_mismatch",

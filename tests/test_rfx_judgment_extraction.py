@@ -27,7 +27,7 @@ def test_repeated_pattern_becomes_candidate() -> None:
     cand = build_rfx_judgment_candidate(**_kwargs())  # type: ignore[arg-type]
     assert cand["artifact_type"] == "rfx_judgment_candidate"
     assert cand["candidate_id"].startswith("rfx-judgment-candidate-")
-    assert "JDX retains judgment semantic authority" in cand["ownership_note"]
+    assert "JDX retains the canonical judgment" in cand["ownership_note"]
 
 
 def test_weak_evidence_blocks_with_one_failure_only() -> None:

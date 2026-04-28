@@ -2,8 +2,8 @@
 
 Detects miscalibrated confidence in fixes, evals, judgments, or
 recommendations. The module is a non-owning phase-label support helper.
-Decision authority remains with CDE; eval coverage with EVL; judgment
-semantics with JDX; policy lifecycle with POL.
+Closure-signal authority remains with CDE; eval coverage with EVL;
+judgment semantics with JDX; policy lifecycle with POL.
 
 Output:
 

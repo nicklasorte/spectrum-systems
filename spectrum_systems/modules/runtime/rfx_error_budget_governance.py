@@ -85,8 +85,8 @@ def assert_rfx_error_budget_governance(
       * ``reliability_evidence_refs`` — list of refs proving reliability
         intent when ``work_type`` claims reliability/hardening
 
-    Returns an ``rfx_error_budget_governance_record`` artifact with
-    deterministic eligibility verdict.
+    Returns an ``rfx_error_budget_governance_record`` artifact with a
+    deterministic eligibility outcome.
     """
     reasons: list[str] = []
 
@@ -122,24 +122,24 @@ def assert_rfx_error_budget_governance(
 
     exhausted = _budget_exhausted(slo_posture)
 
-    verdict_reason_codes: list[str] = []
+    outcome_signal_reason_codes: list[str] = []
     if exhausted:
-        verdict_reason_codes.append("rfx_error_budget_exhausted")
+        outcome_signal_reason_codes.append("rfx_error_budget_exhausted")
         if not is_reliability_work:
-            verdict_reason_codes.append("rfx_new_capability_frozen")
+            outcome_signal_reason_codes.append("rfx_new_capability_frozen")
             eligibility = "blocked"
         else:
-            verdict_reason_codes.append("rfx_reliability_work_allowed")
+            outcome_signal_reason_codes.append("rfx_reliability_work_allowed")
             eligibility = "allowed_reliability_only"
     else:
         eligibility = "allowed"
 
     if eligibility == "blocked":
         # Surface the blocking reason as a fail-closed exception so callers
-        # cannot accidentally promote new-capability work under exhausted
+        # cannot accidentally advance new-capability work under exhausted
         # budget.
         raise RFXErrorBudgetGovernanceError(
-            "; ".join(verdict_reason_codes)
+            "; ".join(outcome_signal_reason_codes)
             + ": new capability work is ineligible while error budget is exhausted"
         )
 
@@ -149,7 +149,7 @@ def assert_rfx_error_budget_governance(
         "budget_exhausted": exhausted,
         "is_reliability_work": is_reliability_work,
         "eligibility": eligibility,
-        "reason_codes": verdict_reason_codes,
+        "reason_codes": outcome_signal_reason_codes,
         "ownership_note": (
             "SLO retains reliability/error-budget authority; this record interprets posture only."
         ),

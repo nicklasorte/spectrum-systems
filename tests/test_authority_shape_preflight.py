@@ -279,6 +279,64 @@ def test_invalid_mode_raises(tmp_path: Path, vocab) -> None:
         evaluate_preflight(repo_root=repo, changed_files=[], vocab=vocab, mode="advisory")
 
 
+# ---------------------------------------------------------------------------
+# RFX-SUPER-01F regression: GOV authority-shaped wording is still caught;
+# the neutral RFX-SUPER vocabulary substitutions are not flagged.
+# ---------------------------------------------------------------------------
+
+
+def test_rfx_super_gov_decides_readiness_still_caught(tmp_path: Path, vocab) -> None:
+    """A non-owner asserting 'GOV decides readiness' must still fail."""
+    repo = _seed_repo(tmp_path)
+    rel = "spectrum_systems/modules/runtime/rfx_demo_helper.py"
+    _write(repo, rel, "GOV_DECISION = 'GOV decides readiness'\n")
+    result = evaluate_preflight(
+        repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only"
+    )
+    assert result.status == "fail"
+    decision_violations = [v for v in result.violations if v.cluster == "decision"]
+    assert decision_violations, "GOV decides readiness must produce a decision-cluster violation"
+
+
+def test_rfx_super_pra_approves_promotion_still_caught(tmp_path: Path, vocab) -> None:
+    """A non-owner asserting 'PRA approves promotion' must still fail."""
+    repo = _seed_repo(tmp_path)
+    rel = "spectrum_systems/modules/runtime/rfx_demo_helper.py"
+    _write(repo, rel, "PRA_PROMOTION = 'PRA approves promotion'\n")
+    result = evaluate_preflight(
+        repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only"
+    )
+    assert result.status == "fail"
+    clusters = {v.cluster for v in result.violations}
+    # Either the promotion cluster or approval cluster (or both) must fire.
+    assert clusters & {"promotion", "approval"}, (
+        f"PRA approves promotion must trigger promotion/approval cluster, got {clusters}"
+    )
+
+
+def test_rfx_super_neutral_wording_passes(tmp_path: Path, vocab) -> None:
+    """The neutral substitutions used by RFX-SUPER-01F must not be flagged."""
+    repo = _seed_repo(tmp_path)
+    rel = "spectrum_systems/modules/runtime/rfx_demo_helper.py"
+    _write(
+        repo,
+        rel,
+        # Neutral phrasing only: readiness signals, evidence-package outcomes,
+        # control-outcome evidence, advancement input. The RFX layer is
+        # advisory and uses safety-suffix subtokens (signal, evidence,
+        # input, observation, recommendation).
+        "rfx_readiness_signal = {}\n"
+        "rfx_evidence_package_signal = {}\n"
+        "rfx_control_outcome_signal = {}\n"
+        "rfx_advancement_input = {}\n",
+    )
+    result = evaluate_preflight(
+        repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only"
+    )
+    assert result.status == "pass"
+    assert result.violations == []
+
+
 def test_load_vocabulary_validates_structure(tmp_path: Path) -> None:
     bad = tmp_path / "vocab.json"
     bad.write_text(json.dumps({"clusters": {}}), encoding="utf-8")

@@ -13,7 +13,7 @@ adversarial case after the fix.
 
 - **Finding.** A fix that drops protected guarantees (schema coverage,
   test coverage, eval coverage, replay match, lineage authenticity, OBS/SLO
-  posture, certification gates, authority ownership) must not pass.
+  posture, evidence-package gates, registry-recorded ownership) must not pass.
 - **Fix action.** `assert_rfx_fix_integrity_proof` aggregates reason codes
   per protected guarantee and requires a complete before/after snapshot.
 - **Re-validation.** `tests/test_rfx_fix_integrity_proof.py::test_rt13_*`
@@ -91,8 +91,8 @@ adversarial case after the fix.
 
 ## RT-20 — Compile directly into active policy
 
-- **Finding.** RFX must not produce a policy artifact in any active /
-  promoted state. POL retains policy lifecycle authority.
+- **Finding.** RFX must not produce a policy artifact in any active or
+  advanced lifecycle state. POL retains policy lifecycle authority.
 - **Fix action.** `build_rfx_policy_candidate_handoff` restricts
   `activation_state` to candidate-class values and emits
   `rfx_policy_candidate_invalid` when an active state is supplied.
@@ -136,10 +136,11 @@ adversarial case after the fix.
   added.
 - **Final status.** Closed.
 
-## RT-24 — System intelligence authorizing execution / promotion
+## RT-24 — System intelligence claiming authorization for execution or advancement
 
 - **Finding.** The advisory layer must not contain language that claims
-  execution, promotion, certification, or enforcement authority.
+  execution, advancement, evidence-package issuance, or control-outcome
+  authority.
 - **Fix action.** `build_rfx_system_intelligence_report` scans narrative
   fields for authority-claiming patterns and validates that the
   next-build slice is supported by an existing roadmap recommendation.

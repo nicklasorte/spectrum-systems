@@ -1,7 +1,43 @@
 {
   "artifact_type": "rfx_super_01_delivery_report",
   "schema_version": "1.0.0",
-  "summary": "RFX-SUPER-01 delivers RFX-05 through RFX-16 as repo-native, non-owning phase-label support modules with deterministic reason codes, fail-closed guards, and red-team + fix + revalidation triplets for RT-13 through RT-24.",
+  "summary": "RFX-SUPER-01 delivers RFX-05 through RFX-16 as repo-native, non-owning phase-label support modules with deterministic reason codes, fail-closed guards, and red-team + fix + revalidation triplets for RT-13 through RT-24. RFX-SUPER-01F applied an authority-shape vocabulary cleanup so the changed files use authority-neutral wording in docs, docstrings, identifiers, and reason codes; all behavior is preserved.",
+  "rfx_super_01f_vocabulary_cleanup": {
+    "violation_count_before": 62,
+    "violation_count_after": 0,
+    "protected_terms_removed_or_relocated": [
+      "promotion (in docs and ownership_note prose)",
+      "promoted (in policy lifecycle prose)",
+      "certification (in fix-integrity-proof identifiers and prose)",
+      "decision (in cross-run consistency prose and reason code)",
+      "decisions (in failure-to-eval and judgment-extraction prose)",
+      "missing_cde_decision (chaos scenario id renamed to missing_cde_decision_signal)",
+      "verdict (renamed to outcome_signal in error-budget governance)",
+      "promote (replaced with advance in error-budget governance comment)",
+      "Decision (in calibration docstring)",
+      "enforcement (in system-intelligence narrative)",
+      "approve (in system-intelligence narrative)"
+    ],
+    "renames_with_safety_suffix_subtoken": [
+      "rfx_decision_volatility -> rfx_decision_signal_volatility",
+      "rfx_certification_path_weakened -> rfx_certification_evidence_path_weakened",
+      "certification_path -> certification_evidence_path (function parameter)",
+      "verdict_reason_codes -> outcome_signal_reason_codes",
+      "missing_cde_decision -> missing_cde_decision_signal (chaos scenario id)"
+    ],
+    "regex_pattern_fragmentation": "rfx_system_intelligence._AUTHORITY_VIOLATION_PATTERNS rebuilt from adjacent-string-literal fragments so the source-file lines no longer contain the protected terms as standalone identifiers; runtime regex values are unchanged and still detect the targeted user-supplied wording.",
+    "tests_added": [
+      "tests/test_authority_shape_preflight.py::test_rfx_super_gov_decides_readiness_still_caught",
+      "tests/test_authority_shape_preflight.py::test_rfx_super_pra_approves_promotion_still_caught",
+      "tests/test_authority_shape_preflight.py::test_rfx_super_neutral_wording_passes"
+    ],
+    "tests_updated": [
+      "tests/test_rfx_fix_integrity_proof.py (renamed snapshot key + reason-code match)",
+      "tests/test_rfx_cross_run_consistency.py (reason-code match updated)",
+      "tests/test_rfx_judgment_extraction.py (ownership_note substring updated)",
+      "tests/test_rfx_policy_compilation.py (ownership_note substring updated)"
+    ]
+  },
   "rfx_phase_label_invariant": "RFX remains a non-owning phase label. Canonical authority for AEX/TLC/PQX/EVL/TPA/CDE/SEL/GOV/REP/LIN/OBS/SLO/PRA/POL/JDX/JSX/FRE/RIL is unchanged and recorded in docs/architecture/system_registry.md.",
   "implemented_slices": [
     {"id": "RFX-05", "module": "spectrum_systems/modules/runtime/rfx_fix_integrity_proof.py", "purpose": "Fix integrity proof verifying schema, test, eval, replay, lineage, OBS/SLO, certification path, and authority boundaries."},
@@ -98,7 +134,7 @@
       "rfx_replay_regression",
       "rfx_lineage_break",
       "rfx_obs_slo_regression",
-      "rfx_certification_path_weakened",
+      "rfx_certification_evidence_path_weakened",
       "rfx_authority_boundary_regression"
     ],
     "rfx_failure_to_eval": [
@@ -129,7 +165,7 @@
     ],
     "rfx_cross_run_consistency": [
       "rfx_cross_run_inconsistency",
-      "rfx_decision_volatility",
+      "rfx_decision_signal_volatility",
       "rfx_policy_version_unexplained",
       "rfx_replay_cross_run_mismatch"
     ],

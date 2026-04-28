@@ -1,11 +1,11 @@
 """RFX trend detection + hotspot mapping — RFX-07.
 
 Detects systemic weak points across failures, repairs, replay drift, eval
-gaps, OBS/SLO freezes, and authority violations. The module is a non-owning
-phase-label support helper; canonical authority for failure diagnosis (FRE),
-eval coverage (EVL), telemetry (OBS), reliability posture (SLO), replay
-(REP), and registry boundaries remains with their canonical owners recorded
-in ``docs/architecture/system_registry.md``.
+gaps, telemetry / reliability freezes, and authority-shape findings. The
+module is a non-owning phase-label support helper; canonical roles for
+failure diagnosis (FRE), eval coverage (EVL), telemetry (OBS), reliability
+posture (SLO), replay (REP), and registry boundaries remain with their
+canonical owners recorded in ``docs/architecture/system_registry.md``.
 
 Outputs:
 

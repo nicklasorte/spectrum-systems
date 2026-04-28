@@ -174,7 +174,7 @@ def build_rfx_roadmap_recommendation(
         "rationale": rationale.strip() if isinstance(rationale, str) else None,
         "ownership_note": (
             "Advisory recommendation only; canonical roadmap authority is unchanged. "
-            "Promotion still requires the canonical roadmap governance flow."
+            "Advancement still requires the canonical roadmap governance flow."
         ),
     }
 

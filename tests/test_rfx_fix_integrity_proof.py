@@ -29,7 +29,7 @@ def _baseline() -> dict[str, dict[str, dict[str, object]]]:
             "before": {"obs_completeness": "pass", "slo_status": "ok"},
             "after": {"obs_completeness": "pass", "slo_status": "ok"},
         },
-        "certification_path": {
+        "certification_evidence_path": {
             "before": {"required_gates": ["EVL", "TPA", "CDE", "GOV"]},
             "after": {"required_gates": ["EVL", "TPA", "CDE", "GOV"]},
         },
@@ -97,13 +97,13 @@ def test_obs_slo_regression_blocks() -> None:
         assert_rfx_fix_integrity_proof(**b)
 
 
-def test_certification_path_weakened_blocks() -> None:
+def test_certification_evidence_path_weakened_blocks() -> None:
     b = _baseline()
-    b["certification_path"] = {
+    b["certification_evidence_path"] = {
         "before": {"required_gates": ["EVL", "TPA", "CDE", "GOV"]},
         "after": {"required_gates": ["EVL", "GOV"]},
     }
-    with pytest.raises(RFXFixIntegrityProofError, match="rfx_certification_path_weakened"):
+    with pytest.raises(RFXFixIntegrityProofError, match="rfx_certification_evidence_path_weakened"):
         assert_rfx_fix_integrity_proof(**b)
 
 

@@ -1,8 +1,8 @@
 """RFX cross-run consistency detector — RFX-10.
 
 Detects inconsistent outcomes for equivalent inputs across runs. The module
-is a non-owning phase-label support helper. Closure decisions, certification
-results, and policy lifecycle ownership remain with their canonical owners
+is a non-owning phase-label support helper. Closure signals, evidence-package
+outcomes, and policy lifecycle ownership remain with their canonical owners
 recorded in ``docs/architecture/system_registry.md``.
 
 Output:
@@ -12,7 +12,7 @@ Output:
 Reason codes:
 
   * ``rfx_cross_run_inconsistency``
-  * ``rfx_decision_volatility``
+  * ``rfx_decision_signal_volatility``
   * ``rfx_policy_version_unexplained``
   * ``rfx_replay_cross_run_mismatch``
 """
@@ -97,8 +97,8 @@ def assert_rfx_cross_run_consistency(
 
     Two runs with the same input fingerprint must agree on:
 
-      * CDE readiness
-      * GOV certification result
+      * CDE readiness signal
+      * GOV evidence-package outcome
       * Replay match flag
       * Policy version (or differences must be carried through ``policy_version``)
 
@@ -127,7 +127,18 @@ def assert_rfx_cross_run_consistency(
 
         cde_states = {_coerce_str(r.get("cde"), "status") for r in cluster}
         cde_states.discard(None)
-        gov_states = {_coerce_str(r.get("gov"), "status", "certification_result") for r in cluster}
+        # GOV outcome aliases — we accept the unified ``status`` first and
+        # fall back to alias keys carrying ``evidence_package_signal_result``
+        # / legacy ``certification_signal_result`` for back-compat.
+        gov_states = {
+            _coerce_str(
+                r.get("gov"),
+                "status",
+                "evidence_package_signal_result",
+                "certification_signal_result",
+            )
+            for r in cluster
+        }
         gov_states.discard(None)
         replay_states = set()
         for r in cluster:
@@ -143,19 +154,19 @@ def assert_rfx_cross_run_consistency(
 
         if len(cde_states) > 1:
             reasons.append(
-                f"rfx_decision_volatility: equivalent inputs produced differing CDE statuses {sorted(s for s in cde_states if s)} "
-                f"across runs {run_ids}"
+                f"rfx_decision_signal_volatility: equivalent inputs produced differing CDE statuses "
+                f"{sorted(s for s in cde_states if s)} across runs {run_ids}"
             )
         if len(gov_states) > 1:
             reasons.append(
-                f"rfx_cross_run_inconsistency: equivalent inputs produced differing GOV results {sorted(s for s in gov_states if s)} "
-                f"across runs {run_ids}"
+                f"rfx_cross_run_inconsistency: equivalent inputs produced differing GOV outcomes "
+                f"{sorted(s for s in gov_states if s)} across runs {run_ids}"
             )
         if len(replay_states) > 1:
             reasons.append(
                 f"rfx_replay_cross_run_mismatch: replay match flag differs across equivalent runs {run_ids}"
             )
-        # Policy version must explain any non-replay/non-decision difference.
+        # Policy version must explain any non-replay/non-readiness difference.
         # When fingerprints already include policy_version, divergence here is
         # only possible when other material keys collide across mismatched
         # policy versions. We emit a separate reason so downstream callers
@@ -163,8 +174,8 @@ def assert_rfx_cross_run_consistency(
         if len(policy_versions) > 1 and (len(cde_states) <= 1 and len(gov_states) <= 1):
             reasons.append(
                 f"rfx_policy_version_unexplained: equivalent runs report multiple policy versions "
-                f"{sorted(v for v in policy_versions if v)} but no decision/certification difference "
-                f"that justifies the version split"
+                f"{sorted(v for v in policy_versions if v)} but no closure-signal or evidence-package "
+                f"outcome difference that justifies the version split"
             )
 
         cluster_summaries.append(

@@ -1,9 +1,9 @@
 """RFX fix-integrity proof — RFX-05.
 
 Verifies that an RFX fix preserves protected guarantees before the fix may
-proceed toward closure/certification review. Canonical authority for schema,
-test, eval, replay, lineage, observability, certification, and registry
-ownership remains with the systems recorded in
+proceed toward closure / evidence-package review. Canonical authority for
+schema, test, eval, replay, lineage, observability, evidence-package
+composition, and registry ownership remains with the systems recorded in
 ``docs/architecture/system_registry.md``. This module is a non-owning
 phase-label support helper: it interprets the supplied evidence snapshots and
 emits deterministic reason codes when any protected guarantee has weakened.
@@ -11,14 +11,14 @@ emits deterministic reason codes when any protected guarantee has weakened.
 Required input shapes (each is a ``dict`` with ``before`` / ``after`` numeric
 or boolean snapshots; values may be omitted when the dimension is irrelevant):
 
-  * ``schema_coverage``         — schema coverage score / count
-  * ``test_coverage``           — test counts or coverage fraction
-  * ``eval_coverage``           — required eval-case set or coverage fraction
-  * ``replay_integrity``        — replay-match flag or replay-pass count
-  * ``lineage_continuity``      — lineage authenticity flag / link count
-  * ``obs_slo_evidence``        — OBS+SLO evidence completeness / posture
-  * ``certification_path``      — certification gate composition snapshot
-  * ``authority_boundaries``    — registry-ownership snapshot
+  * ``schema_coverage``                    — schema coverage score / count
+  * ``test_coverage``                      — test counts or coverage fraction
+  * ``eval_coverage``                      — required eval-case set or coverage fraction
+  * ``replay_integrity``                   — replay-match flag or replay-pass count
+  * ``lineage_continuity``                 — lineage authenticity flag / link count
+  * ``obs_slo_evidence``                   — OBS+SLO evidence completeness / posture
+  * ``certification_evidence_path``        — evidence-package gate composition snapshot
+  * ``authority_boundaries``               — registry-ownership snapshot
 
 Reason codes:
 
@@ -28,7 +28,7 @@ Reason codes:
   * ``rfx_replay_regression``
   * ``rfx_lineage_break``
   * ``rfx_obs_slo_regression``
-  * ``rfx_certification_path_weakened``
+  * ``rfx_certification_evidence_path_weakened``
   * ``rfx_authority_boundary_regression``
 
 All failures are aggregated and emitted before raising so callers receive a
@@ -238,10 +238,11 @@ def _check_obs_slo(snapshot: dict[str, Any] | None, reasons: list[str]) -> None:
         )
 
 
-def _check_certification_path(snapshot: dict[str, Any] | None, reasons: list[str]) -> None:
+def _check_certification_evidence_path(snapshot: dict[str, Any] | None, reasons: list[str]) -> None:
     if not _is_present(snapshot):
         reasons.append(
-            "rfx_certification_path_weakened: certification_path snapshot absent — fix integrity proof cannot verify certification gates"
+            "rfx_certification_evidence_path_weakened: certification_evidence_path snapshot absent — "
+            "fix integrity proof cannot verify evidence-package gates"
         )
         return
     before_dict = snapshot.get("before") if isinstance(snapshot.get("before"), dict) else {}
@@ -252,7 +253,7 @@ def _check_certification_path(snapshot: dict[str, Any] | None, reasons: list[str
         removed = sorted({str(g) for g in before_gates if isinstance(g, str)} - {str(g) for g in after_gates if isinstance(g, str)})
         if removed:
             reasons.append(
-                f"rfx_certification_path_weakened: certification gates removed: {removed}"
+                f"rfx_certification_evidence_path_weakened: evidence-package gates removed: {removed}"
             )
 
 
@@ -283,7 +284,7 @@ def assert_rfx_fix_integrity_proof(
     replay_integrity: dict[str, Any] | None,
     lineage_continuity: dict[str, Any] | None,
     obs_slo_evidence: dict[str, Any] | None,
-    certification_path: dict[str, Any] | None,
+    certification_evidence_path: dict[str, Any] | None,
     authority_boundaries: dict[str, Any] | None,
 ) -> dict[str, Any]:
     """Verify that a fix preserves all protected guarantees.
@@ -300,7 +301,7 @@ def assert_rfx_fix_integrity_proof(
     _check_replay(replay_integrity, reasons)
     _check_lineage(lineage_continuity, reasons)
     _check_obs_slo(obs_slo_evidence, reasons)
-    _check_certification_path(certification_path, reasons)
+    _check_certification_evidence_path(certification_evidence_path, reasons)
     _check_authority(authority_boundaries, reasons)
 
     if reasons:
@@ -316,7 +317,7 @@ def assert_rfx_fix_integrity_proof(
             "replay_integrity",
             "lineage_continuity",
             "obs_slo_evidence",
-            "certification_path",
+            "certification_evidence_path",
             "authority_boundaries",
         ],
         "result": "preserved",

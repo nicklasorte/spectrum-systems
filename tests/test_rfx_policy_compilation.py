@@ -29,7 +29,7 @@ def test_judgment_candidate_becomes_policy_candidate() -> None:
     h = build_rfx_policy_candidate_handoff(**_kwargs())  # type: ignore[arg-type]
     assert h["artifact_type"] == "rfx_policy_candidate_handoff"
     assert h["activation_state"] == "candidate"
-    assert "POL retains policy lifecycle" in h["ownership_note"]
+    assert "POL retains its canonical" in h["ownership_note"]
 
 
 def test_missing_eval_requirement_blocks() -> None:

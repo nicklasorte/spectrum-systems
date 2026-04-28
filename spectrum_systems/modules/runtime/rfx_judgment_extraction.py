@@ -1,10 +1,10 @@
 """RFX judgment extraction — RFX-11.
 
-Converts repeated decision/fix patterns into JDX-compatible judgment
+Converts repeated signal/fix patterns into JDX-compatible judgment
 candidates. This module is a non-owning phase-label support helper and
-must not issue judgment authority directly or supersede JSX lifecycle.
-JDX owns judgment semantics; JSX owns judgment lifecycle. Canonical roles
-are recorded in ``docs/architecture/system_registry.md``.
+must not issue judgment semantics directly. JDX owns judgment semantics;
+the canonical lifecycle role belongs to JSX. Both canonical roles are
+recorded in ``docs/architecture/system_registry.md``.
 
 Output:
 
@@ -133,8 +133,9 @@ def build_rfx_judgment_candidate(
         },
         "jdx_handoff_target": jdx_handoff_target.strip(),  # type: ignore[union-attr]
         "ownership_note": (
-            "Advisory candidate only; JDX retains judgment semantic authority "
-            "and JSX retains judgment lifecycle authority. RFX is a non-owning phase label."
+            "Advisory candidate only; JDX retains the canonical judgment "
+            "semantic role and JSX retains the canonical lifecycle role. "
+            "RFX is a non-owning phase label."
         ),
     }
 

@@ -52,9 +52,10 @@ def build_rfx_policy_candidate_handoff(
     missing/invalid, eval requirements are absent, rollout/canary
     requirements are absent, or no POL handoff target is supplied.
 
-    ``activation_state`` is forced to a candidate-class value: any attempt to
-    pass an active/promoted state raises ``rfx_policy_candidate_invalid``.
-    POL retains all policy activation authority.
+    ``activation_state`` is forced to a candidate-class value: any attempt
+    to pass an active or advanced lifecycle state raises
+    ``rfx_policy_candidate_invalid``. POL retains all policy activation
+    authority.
     """
     reasons: list[str] = []
 
@@ -127,8 +128,8 @@ def build_rfx_policy_candidate_handoff(
         "pol_handoff_target": pol_handoff_target.strip(),  # type: ignore[union-attr]
         "activation_state": activation_state,
         "ownership_note": (
-            "Advisory candidate handoff only; POL retains policy lifecycle / posture authority. "
-            "RFX may not activate policy."
+            "Advisory candidate handoff only; POL retains its canonical "
+            "lifecycle and posture roles. RFX may not activate policy."
         ),
     }
 
