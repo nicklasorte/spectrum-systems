@@ -279,6 +279,42 @@ def test_invalid_mode_raises(tmp_path: Path, vocab) -> None:
         evaluate_preflight(repo_root=repo, changed_files=[], vocab=vocab, mode="advisory")
 
 
+def test_schema_authority_term_in_required_and_enum_fails(tmp_path: Path, vocab) -> None:
+    repo = _seed_repo(tmp_path)
+    rel = "contracts/schemas/aex_candidate.schema.json"
+    _write(
+        repo,
+        rel,
+        json.dumps(
+            {
+                "title": "AEX Candidate Decision Envelope",
+                "artifact_kind": "diagnostic_decision_record",
+                "type": "object",
+                "properties": {"decision_status": {"type": "string", "enum": ["decision", "observation"]}},
+                "required": ["decision_status"],
+                "examples": [{"decision_status": "decision"}],
+            }
+        )
+        + "\n",
+    )
+    result = evaluate_preflight(repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only")
+    assert result.status == "fail"
+    assert any(v.rule.startswith("schema_") for v in result.violations)
+
+
+def test_review_language_owner_qualified_passes_and_ambiguous_fails(tmp_path: Path, vocab) -> None:
+    repo = _seed_repo(tmp_path)
+    good_rel = "docs/reviews/owner_qualified.md"
+    bad_rel = "docs/reviews/ambiguous.md"
+    _write(repo, good_rel, "CDE decision remains bounded.\nSEL enforcement remains fail-closed.\nGOV approval is required.\nREL promotion gate applies.\n")
+    _write(repo, bad_rel, "AEX decision requested.\nrepair candidate approval pending.\nadmission result promotion requested.\n")
+    good = evaluate_preflight(repo_root=repo, changed_files=[good_rel], vocab=vocab, mode="suggest-only")
+    bad = evaluate_preflight(repo_root=repo, changed_files=[bad_rel], vocab=vocab, mode="suggest-only")
+    assert good.status == "pass"
+    assert bad.status == "fail"
+    assert any(v.rule == "review_language_unqualified_authority_claim" for v in bad.violations)
+
+
 # ---------------------------------------------------------------------------
 # RFX-SUPER-01F regression: authority-shaped wording is still caught; the
 # neutral RFX-SUPER vocabulary substitutions are not flagged.

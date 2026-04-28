@@ -50,6 +50,27 @@
           "mandatory_for_progression": true
         }
       ]
+    },
+    {
+      "artifact_family": "authority_shape_governance",
+      "notes": "Required eval coverage for authority-shape boundary drift prevention.",
+      "required_evals": [
+        {
+          "eval_id": "authority_shape_contract_lint",
+          "eval_family": "evl_required_eval",
+          "mandatory_for_progression": true
+        },
+        {
+          "eval_id": "authority_shape_review_language_lint",
+          "eval_family": "evl_required_eval",
+          "mandatory_for_progression": true
+        },
+        {
+          "eval_id": "authority_owner_registry_consistency",
+          "eval_family": "evl_required_eval",
+          "mandatory_for_progression": true
+        }
+      ]
     }
   ],
   "created_at": "2026-04-18T00:00:00Z"

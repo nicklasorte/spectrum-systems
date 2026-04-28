@@ -1,0 +1,48 @@
+{
+  "artifact_type": "authority_owner_registry",
+  "artifact_version": "1.0.0",
+  "clusters": {
+    "decision": {
+      "canonical_owners": ["CDE", "CTL", "JDX"],
+      "owning_terms": ["decision", "decide", "decided", "verdict"],
+      "allowed_neutral_terms": ["finding", "signal", "observation", "recommendation", "input"],
+      "disallowed_non_owner_terms": ["decision", "decide", "decided", "verdict"]
+    },
+    "enforcement": {
+      "canonical_owners": ["SEL", "ENF"],
+      "owning_terms": ["enforcement", "enforce", "enforced"],
+      "allowed_neutral_terms": ["signal", "observation", "recommendation", "input"],
+      "disallowed_non_owner_terms": ["enforcement", "enforce", "enforced"]
+    },
+    "approval": {
+      "canonical_owners": ["GOV", "HIT"],
+      "owning_terms": ["approval", "approve", "approved"],
+      "allowed_neutral_terms": ["review", "signal", "observation", "recommendation"],
+      "disallowed_non_owner_terms": ["approval", "approve", "approved"]
+    },
+    "promotion": {
+      "canonical_owners": ["GOV", "REL", "CDE"],
+      "owning_terms": ["promotion", "promote", "promoted"],
+      "allowed_neutral_terms": ["readiness", "signal", "observation", "recommendation"],
+      "disallowed_non_owner_terms": ["promotion", "promote", "promoted"]
+    },
+    "certification": {
+      "canonical_owners": ["GOV"],
+      "owning_terms": ["certification", "certify", "certified"],
+      "allowed_neutral_terms": ["readiness", "signal", "observation", "evidence"],
+      "disallowed_non_owner_terms": ["certification", "certify", "certified"]
+    },
+    "admission": {
+      "canonical_owners": ["AEX"],
+      "owning_terms": ["admission", "admit", "admitted"],
+      "allowed_neutral_terms": ["finding", "signal", "observation", "recommendation"],
+      "disallowed_non_owner_terms": ["admission", "admit", "admitted"]
+    },
+    "repair_recommendation": {
+      "canonical_owners": ["FRE"],
+      "owning_terms": ["repair_recommendation", "repair recommendation"],
+      "allowed_neutral_terms": ["finding", "signal", "observation", "recommendation"],
+      "disallowed_non_owner_terms": ["repair_recommendation", "repair recommendation"]
+    }
+  }
+}
