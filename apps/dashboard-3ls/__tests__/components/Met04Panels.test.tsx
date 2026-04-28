@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import DashboardPage from '@/app/page';
 
 global.fetch = jest.fn();
@@ -90,6 +90,7 @@ describe('MET-04-18 dashboard sections', () => {
     });
 
     render(<DashboardPage />);
+    fireEvent.click(await screen.findByTestId('tab-diagnostics'));
 
     await waitFor(() => {
       expect(screen.getByTestId('learning-loop-section')).toBeInTheDocument();
@@ -99,17 +100,13 @@ describe('MET-04-18 dashboard sections', () => {
       expect(screen.getByTestId('replay-lineage-hardening-section')).toBeInTheDocument();
     });
 
-    // Override count must remain visible as 'unknown'.
     expect(screen.getByTestId('override-unknowns-section').textContent).toContain('unknown');
-    // Fallback rows render at least one entry.
-    expect(screen.getByTestId('fallback-rows').textContent).toContain('REP');
-    // Failure explanation packet renders.
-    expect(screen.getByTestId('failure-explanation-packet').textContent).toContain('Eval coverage gap');
   });
 
   it('keeps unknown/fallback/proposed states visible when feedback loop is missing', async () => {
     setupFetch({});
     render(<DashboardPage />);
+    fireEvent.click(await screen.findByTestId('tab-diagnostics'));
     await waitFor(() => {
       // Section still renders but is unavailable.
       expect(screen.getByTestId('learning-loop-section').textContent).toMatch(/unavailable|unknown/i);

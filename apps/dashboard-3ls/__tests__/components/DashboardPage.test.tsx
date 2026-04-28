@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import DashboardPage from '@/app/page';
 
 global.fetch = jest.fn();
@@ -104,6 +104,19 @@ const mockRoadmap = {
 };
 
 const mockOcBottleneck = { state: 'unavailable', card: null, reason: 'OC bottleneck artifact not present', sources: [] };
+const mockIntelligence = {
+  data_source: 'artifact_store',
+  feedback_loop: { loop_status: 'ok' },
+  failure_explanation_packets: { packets: [] },
+  override_audit: { override_count: 2 },
+  fallback_reduction_plan: { high_leverage_fallback_count: 1 },
+  replay_lineage_hardening: { affected_systems: ['EVL'] },
+  candidate_closure: { candidate_item_count: 3 },
+  debug_explanation_index: { explanation_entries: [{ explanation_id: 'DBG-1', what_failed: 'missing evidence' }] },
+  trend_frequency_honesty_gate: { trend_state: 'unknown' },
+  evl_handoff_observations: { handoff_item_count: 1 },
+  met_generated_artifact_classification: { classified_path_count: 2 },
+};
 
 function setupFetch(overrides?: Partial<Record<string, unknown>>) {
   (global.fetch as jest.Mock).mockImplementation((input: RequestInfo | URL) => {
@@ -113,7 +126,7 @@ function setupFetch(overrides?: Partial<Record<string, unknown>>) {
     if (url.includes('/api/system-flow')) return Promise.resolve({ ok: true, json: async () => overrides?.flow ?? mockFlow });
     if (url.includes('/api/system-graph')) return Promise.resolve({ ok: true, json: async () => overrides?.graph ?? mockGraph });
     if (url.includes('/api/tls-roadmap')) return Promise.resolve({ ok: true, json: async () => overrides?.roadmap ?? mockRoadmap });
-    if (url.includes('/api/intelligence')) return Promise.resolve({ ok: true, json: async () => ({ data_source: 'artifact_store' }) });
+    if (url.includes('/api/intelligence')) return Promise.resolve({ ok: true, json: async () => overrides?.intelligence ?? mockIntelligence });
     if (url.includes('/api/oc-bottleneck')) return Promise.resolve({ ok: true, json: async () => overrides?.ocBottleneck ?? mockOcBottleneck });
     if (url.includes('/api/registry-contract')) return Promise.resolve({ ok: true, json: async () => overrides?.contract ?? { allowed_active_node_ids: ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL'], active_systems: [], canonical_loop: [], canonical_overlays: [] } });
     if (url.includes('/api/explain-state')) return Promise.resolve({ ok: true, json: async () => overrides?.explain ?? null });
@@ -128,14 +141,22 @@ describe('DashboardPage simplified cockpit', () => {
     (global.fetch as jest.Mock).mockClear();
   });
 
-  it('overview shows only allowed sections (Trust Pulse, Simple Flow, Top 3 — Leverage Queue moved to Roadmap)', async () => {
+  it('overview shows only allowed sections (Trust Pulse, Simple Flow, Top 3, Explain, optional OC bottleneck)', async () => {
     setupFetch();
     render(<DashboardPage />);
     await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
-    // D3L-MASTER-01 Phase 8: Trust Pulse + Simple Flow + Top 3 = 3 panels
-    // (Explain System State only renders when explain has a root cause).
     expect(screen.getAllByTestId('overview-section').length).toBeGreaterThanOrEqual(3);
-    expect(screen.getAllByTestId('overview-section').length).toBeLessThanOrEqual(4);
+    expect(screen.getAllByTestId('overview-section').length).toBeLessThanOrEqual(5);
+  });
+
+  it('panel base styling includes dark-mode readable classes', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
+    const panel = screen.getAllByTestId('overview-section')[0];
+    expect(panel.className).toContain('dark:bg-slate-900');
+    expect(panel.className).toContain('dark:text-slate-100');
+    expect(panel.className).toContain('dark:border-slate-700');
   });
 
   it('top 3 cards are extracted from artifact rows without re-ranking', async () => {
@@ -211,13 +232,20 @@ describe('DashboardPage simplified cockpit', () => {
     expect(screen.getByTestId('oc-bottleneck-card').textContent).toContain('block');
   });
 
-  // D3L-DATA-REGISTRY-01 Phase 3: human trust state label maps blocked_signal
-  // to "Blocked" while preserving the raw code for traceability.
-  it('trust pulse renders a human-readable label and exposes the raw code', async () => {
+  it('trust pulse renders human-readable status on overview without raw enum', async () => {
     setupFetch();
     render(<DashboardPage />);
     await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
     expect(screen.getByTestId('trust-pulse-label').textContent).toBe('Frozen');
+    expect(screen.queryByText(/freeze_signal/i)).not.toBeInTheDocument();
+  });
+
+  it('diagnostics renders trust pulse raw enum detail', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('tab-diagnostics')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('tab-diagnostics'));
+    await waitFor(() => expect(screen.getByTestId('diagnostics-tab')).toBeInTheDocument());
     expect(screen.getByTestId('trust-pulse-raw').textContent).toContain('freeze_signal');
   });
 
@@ -327,7 +355,7 @@ describe('DashboardPage simplified cockpit', () => {
     render(<DashboardPage />);
     await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
     expect(screen.getByText(/A\. Trust Pulse/i)).toBeInTheDocument();
-    expect(screen.getByText(/trust state:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Status:/i)).toBeInTheDocument();
     expect(screen.getByText(/artifact-backed %:/i)).toBeInTheDocument();
     expect(screen.getByText(/stub fallback %:/i)).toBeInTheDocument();
     expect(screen.getByText(/last recompute:/i)).toBeInTheDocument();
@@ -340,5 +368,69 @@ describe('DashboardPage simplified cockpit', () => {
     await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
     const warningLine = screen.getByText(/warning count:/i).closest('li');
     expect(warningLine?.textContent ?? '').toMatch(/2/);
+  });
+
+  it('overview does not render moved diagnostics sections', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
+    expect(screen.queryByTestId('learning-loop-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('failure-explanation-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('override-unknowns-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('fallback-reduction-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('replay-lineage-hardening-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('candidate-closure-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('debug-explanation-index-section')).not.toBeInTheDocument();
+  });
+
+  it('diagnostics still renders moved diagnostic sections', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('tab-diagnostics')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('tab-diagnostics'));
+    await waitFor(() => expect(screen.getByTestId('diagnostics-tab')).toBeInTheDocument());
+    expect(screen.getByTestId('learning-loop-section')).toBeInTheDocument();
+    expect(screen.getByTestId('failure-explanation-section')).toBeInTheDocument();
+    expect(screen.getByTestId('override-unknowns-section')).toBeInTheDocument();
+    expect(screen.getByTestId('fallback-reduction-section')).toBeInTheDocument();
+    expect(screen.getByTestId('replay-lineage-hardening-section')).toBeInTheDocument();
+    expect(screen.getByTestId('candidate-closure-section')).toBeInTheDocument();
+    expect(screen.getByTestId('debug-explanation-index-section')).toBeInTheDocument();
+  });
+
+  it('stale freshness gate hides top 3 cards and full prioritization lists', async () => {
+    setupFetch({
+      priority: {
+        ...mockPriority,
+        freshness_gate: {
+          ok: false,
+          status: 'stale',
+          blocking_reasons: ['ttl_expired'],
+          recompute_command: 'npm run recompute:priority',
+        },
+      },
+    });
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
+    expect(screen.getByTestId('top3-fail-closed')).toBeInTheDocument();
+    expect(screen.queryAllByTestId('top3-card')).toHaveLength(0);
+    fireEvent.click(screen.getByTestId('tab-prioritization'));
+    await waitFor(() => expect(screen.getByTestId('prioritization-tab')).toBeInTheDocument());
+    expect(screen.getByTestId('prioritization-fail-closed')).toBeInTheDocument();
+    expect(screen.queryByTestId('prioritization-top10')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('prioritization-full')).not.toBeInTheDocument();
+  });
+
+  it('dark-mode warning/error surfaces keep dark contrast classes', async () => {
+    setupFetch({
+      priority: {
+        ...mockPriority,
+        freshness_gate: { ok: false, status: 'stale', blocking_reasons: ['ttl_expired'] },
+      },
+    });
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('top3-fail-closed')).toBeInTheDocument());
+    expect(screen.getByTestId('top3-fail-closed').className).toContain('dark:bg-red-950');
+    expect(screen.getByTestId('top3-fail-closed').className).toContain('dark:border-red-700');
   });
 });

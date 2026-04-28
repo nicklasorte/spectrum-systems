@@ -1,0 +1,14 @@
+{
+  "item": "D3L-UI-FIX-01",
+  "date": "2026-04-28",
+  "prompt_type": "BUILD",
+  "status": "pass",
+  "cases": [
+    {"id": "RT-1", "case": "dark mode unreadable card", "result": "pass", "finding": "Panel uses dark background/text/border variants."},
+    {"id": "RT-2", "case": "stale ranking still visible", "result": "pass", "finding": "rankingBlocked hides Top 3 cards and prioritization lists when freshness gate fails."},
+    {"id": "RT-3", "case": "overview has more than allowed sections", "result": "pass", "finding": "Overview now limits to Trust Pulse, Flowchart, Top 3/fail-closed, Explain System State, and optional OC bottleneck."},
+    {"id": "RT-4", "case": "internal enum visible on Overview", "result": "pass", "finding": "Overview Trust Pulse removed raw enum text; raw code shown in Diagnostics only."},
+    {"id": "RT-5", "case": "diagnostics moved content missing", "result": "pass", "finding": "Moved diagnostic sections remain available on Diagnostics tab."},
+    {"id": "RT-6", "case": "warning/error low contrast", "result": "pass", "finding": "Fail-closed warning/error panels include dark red background/border/text classes."}
+  ]
+}

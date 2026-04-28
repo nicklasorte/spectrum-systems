@@ -1,0 +1,16 @@
+{
+  "item": "D3L-UI-FIX-01",
+  "date": "2026-04-28",
+  "changes": [
+    "Implemented theme-aware Panel styling with dark-mode classes.",
+    "Added freshness-gate driven rankingBlocked boolean to enforce fail-closed ranking visibility.",
+    "Reduced Overview to allowed sections and moved diagnostic content off Overview.",
+    "Removed raw trust enum display from Overview and surfaced it in Diagnostics.",
+    "Expanded and updated dashboard tests for dark mode, section scope, and stale ranking handling."
+  ],
+  "validation": {
+    "tests": "pass",
+    "build": "pass",
+    "guards": "pass"
+  }
+}
