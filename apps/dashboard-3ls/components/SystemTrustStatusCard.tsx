@@ -28,14 +28,14 @@ export function SystemTrustStatusCard({ graph, lastRecompute, isStale }: Props) 
       <p>Focus systems: {graph.focus_systems.join(', ') || 'none'}</p>
       {isStale && (
         <p
-          className="text-xs text-amber-700 border border-amber-300 bg-amber-50 rounded px-2 py-1"
+          className="text-xs text-amber-700 dark:text-amber-300 border border-amber-300 bg-amber-50 rounded px-2 py-1"
           data-testid="stale-warning"
         >
           ⚠ Displayed graph is older than the artifact payload — recompute to refresh.
         </p>
       )}
       {graph.warnings.length > 0 && (
-        <p className="text-xs text-amber-700" data-testid="trust-status-warnings">
+        <p className="text-xs text-amber-700 dark:text-amber-300" data-testid="trust-status-warnings">
           warnings: {graph.warnings.join(', ')}
         </p>
       )}

@@ -7,7 +7,7 @@ export interface ActivityEntry {
 
 export function ActivityLog({ entries }: { entries: ActivityEntry[] }) {
   return (
-    <div className="border rounded p-3" data-testid="activity-log">
+    <div className="border border-slate-200 dark:border-slate-700 rounded p-3 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100" data-testid="activity-log">
       <h3 className="font-semibold mb-2">Activity Log</h3>
       <ul className="text-xs space-y-1">
         {entries.map((entry, index) => (

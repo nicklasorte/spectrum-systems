@@ -64,9 +64,14 @@ def _fetch_ref(repo_root: Path, ref: str) -> bool:
         return True
     if _ref_exists(repo_root, ref):
         return True
-    fetch = _run(["git", "fetch", "--no-tags", "--depth=1", "origin", ref], cwd=repo_root)
-    if fetch.returncode != 0:
-        return False
+
+    direct_fetch = _run(["git", "fetch", "--no-tags", "--depth=1", "origin", ref], cwd=repo_root)
+    if direct_fetch.returncode == 0 and _ref_exists(repo_root, ref):
+        return True
+
+    # Some providers reject direct object-id fetches in shallow checkouts.
+    # Perform a bounded-history broad fetch before failing closed.
+    _run(["git", "fetch", "--no-tags", "--depth=2000", "origin"], cwd=repo_root)
     return _ref_exists(repo_root, ref)
 
 

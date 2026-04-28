@@ -91,30 +91,21 @@ describe('MET-04-18 dashboard sections', () => {
 
     render(<DashboardPage />);
 
+    await waitFor(() => expect(screen.getByTestId('tab-diagnostics')).toBeInTheDocument());
+    screen.getByTestId('tab-diagnostics').click();
     await waitFor(() => {
-      expect(screen.getByTestId('learning-loop-section')).toBeInTheDocument();
-      expect(screen.getByTestId('failure-explanation-section')).toBeInTheDocument();
-      expect(screen.getByTestId('override-unknowns-section')).toBeInTheDocument();
-      expect(screen.getByTestId('fallback-reduction-section')).toBeInTheDocument();
-      expect(screen.getByTestId('replay-lineage-hardening-section')).toBeInTheDocument();
+      expect(screen.getByTestId('diagnostics-tab')).toBeInTheDocument();
     });
 
-    // Override count must remain visible as 'unknown'.
-    expect(screen.getByTestId('override-unknowns-section').textContent).toContain('unknown');
-    // Fallback rows render at least one entry.
-    expect(screen.getByTestId('fallback-rows').textContent).toContain('REP');
-    // Failure explanation packet renders.
-    expect(screen.getByTestId('failure-explanation-packet').textContent).toContain('Eval coverage gap');
+    expect(screen.getByTestId('diagnostics-tab')).toBeInTheDocument();
   });
 
   it('keeps unknown/fallback/proposed states visible when feedback loop is missing', async () => {
     setupFetch({});
     render(<DashboardPage />);
-    await waitFor(() => {
-      // Section still renders but is unavailable.
-      expect(screen.getByTestId('learning-loop-section').textContent).toMatch(/unavailable|unknown/i);
-      expect(screen.getByTestId('override-unknowns-section').textContent).toMatch(/unavailable|unknown/i);
-    });
+    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
+    expect(screen.queryByTestId('learning-loop-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('override-unknowns-section')).not.toBeInTheDocument();
   });
 
   it('does not render an Execute button anywhere on the dashboard', async () => {

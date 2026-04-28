@@ -134,3 +134,39 @@ def test_missing_refs_fail_closed_with_explicit_warning(monkeypatch):
     result = cpr.resolve_changed_paths(repo_root=Path("."), base_ref="a", head_ref="b")
     assert result.insufficient_context is True
     assert any("unable to fetch required refs" in warning for warning in result.warnings)
+
+
+def test_missing_sha_recovers_after_bounded_broad_fetch(monkeypatch):
+    _clear_github_context(monkeypatch)
+    calls = []
+
+    def fake_run(command, cwd):
+        calls.append(command)
+        if command[:3] == ["git", "diff", "--name-only"]:
+            if command[3] == "base..head":
+                return cpr.CommandResult(returncode=128, stdout="", stderr="unknown revision")
+            if command[3] == "base..HEAD":
+                return cpr.CommandResult(returncode=0, stdout="scripts/run_contract_preflight.py\n", stderr="")
+        if command[:3] == ["git", "cat-file", "-e"]:
+            ref = command[3].replace("^{commit}", "")
+            if ref in {"base", "head"}:
+                # Initially missing, then present after broad fetch.
+                broad_fetch_seen = any(cmd == ["git", "fetch", "--no-tags", "--depth=2000", "origin"] for cmd in calls)
+                return cpr.CommandResult(returncode=0 if broad_fetch_seen else 1, stdout="", stderr="")
+            return cpr.CommandResult(returncode=0, stdout="", stderr="")
+        if command[:2] == ["git", "fetch"]:
+            if command == ["git", "fetch", "--no-tags", "--depth=1", "origin", "base"]:
+                return cpr.CommandResult(returncode=128, stdout="", stderr="server does not allow direct SHA fetch")
+            if command == ["git", "fetch", "--no-tags", "--depth=1", "origin", "head"]:
+                return cpr.CommandResult(returncode=128, stdout="", stderr="server does not allow direct SHA fetch")
+            if command == ["git", "fetch", "--no-tags", "--depth=2000", "origin"]:
+                return cpr.CommandResult(returncode=0, stdout="", stderr="")
+        if command == ["git", "status", "--porcelain"]:
+            return cpr.CommandResult(returncode=0, stdout="", stderr="")
+        return cpr.CommandResult(returncode=1, stdout="", stderr="unexpected")
+
+    monkeypatch.setattr(cpr, "_run", fake_run)
+    result = cpr.resolve_changed_paths(repo_root=Path("."), base_ref="base", head_ref="head")
+    assert result.insufficient_context is False
+    assert result.changed_paths == ["scripts/run_contract_preflight.py"]
+    assert any(cmd == ["git", "fetch", "--no-tags", "--depth=2000", "origin"] for cmd in calls)

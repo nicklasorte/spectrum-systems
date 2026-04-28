@@ -217,74 +217,40 @@ describe('Trust Debugger — Propagation path highlighting', () => {
   });
 });
 
-describe('Trust Debugger — Debug Modes', () => {
-  it('Blockers mode emphasises blocking systems and dims healthy ones', () => {
+describe('Trust Debugger — Graph Modes', () => {
+  it('Clean Structure mode shows only core chain edges', () => {
     render(
       <SystemTrustGraph
         graph={fullGraph}
         selectedSystem={null}
-        showAll
-        debugMode="blockers"
+        showAll={false}
+        debugMode="clean_structure"
         onSelect={() => undefined}
       />,
     );
-    expect(screen.getByTestId('system-trust-graph')).toHaveAttribute('data-debug-mode', 'blockers');
-    expect(screen.getByTestId('trust-node-EVL')).toHaveAttribute('opacity', '1');
-    expect(screen.getByTestId('trust-node-AEX')).toHaveAttribute('opacity', '0.2');
+    expect(screen.getByTestId('system-trust-graph')).toHaveAttribute('data-debug-mode', 'clean_structure');
+    expect(screen.getByTestId('trust-edge-AEX-EVL')).toHaveAttribute('data-edge-hidden', 'true');
+    expect(screen.getByTestId('trust-edge-TPA-CDE')).not.toHaveAttribute('data-edge-hidden');
   });
 
-  it('Control mode highlights only EVL/TPA/CDE/SEL', () => {
+  it('Full Registry mode reveals dense edges', () => {
     render(
       <SystemTrustGraph
         graph={fullGraph}
         selectedSystem={null}
-        showAll
-        debugMode="control"
+        showAll={false}
+        debugMode="full_registry"
         onSelect={() => undefined}
       />,
     );
-    expect(screen.getByTestId('trust-node-EVL')).toHaveAttribute('opacity', '1');
-    expect(screen.getByTestId('trust-node-CDE')).toHaveAttribute('opacity', '1');
-    expect(screen.getByTestId('trust-node-SEL')).toHaveAttribute('opacity', '1');
-    expect(screen.getByTestId('trust-node-AEX')).toHaveAttribute('opacity', '0.25');
-  });
-
-  it('Lineage mode dims edges that are not artifact-backed', () => {
-    render(
-      <SystemTrustGraph
-        graph={fullGraph}
-        selectedSystem={null}
-        showAll
-        debugMode="lineage"
-        onSelect={() => undefined}
-      />,
-    );
-    const backedEdge = screen.getByTestId('trust-edge-AEX-EVL');
-    expect(backedEdge).toHaveAttribute('data-edge-artifact-backed', 'true');
-    const inferred = screen.getByTestId('trust-edge-PQX-EVL');
-    expect(inferred).toHaveAttribute('data-edge-artifact-backed', 'false');
-  });
-
-  it('Freshness mode emphasises stale and missing nodes', () => {
-    render(
-      <SystemTrustGraph
-        graph={fullGraph}
-        selectedSystem={null}
-        showAll
-        debugMode="freshness"
-        onSelect={() => undefined}
-      />,
-    );
-    expect(screen.getByTestId('trust-node-H01')).toHaveAttribute('opacity', '1');
-    expect(screen.getByTestId('trust-node-TPA')).toHaveAttribute('opacity', '1');
-    expect(screen.getByTestId('trust-node-AEX')).toHaveAttribute('opacity', '0.3');
+    expect(screen.getByTestId('trust-edge-PQX-EVL')).not.toHaveAttribute('data-edge-hidden');
   });
 
   it('DebugModeSelector calls onChange with selected mode value', () => {
-    let captured: string = 'normal';
-    render(<DebugModeSelector value="normal" onChange={(m) => { captured = m; }} />);
-    fireEvent.change(screen.getByTestId('debug-mode-selector-input'), { target: { value: 'blockers' } });
-    expect(captured).toBe('blockers');
+    let captured: string = 'clean_structure';
+    render(<DebugModeSelector value="clean_structure" onChange={(m) => { captured = m; }} />);
+    fireEvent.change(screen.getByTestId('debug-mode-selector-input'), { target: { value: 'full_registry' } });
+    expect(captured).toBe('full_registry');
   });
 });
 

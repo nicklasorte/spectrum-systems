@@ -113,7 +113,7 @@ function setupFetch(overrides?: Partial<Record<string, unknown>>) {
     if (url.includes('/api/system-flow')) return Promise.resolve({ ok: true, json: async () => overrides?.flow ?? mockFlow });
     if (url.includes('/api/system-graph')) return Promise.resolve({ ok: true, json: async () => overrides?.graph ?? mockGraph });
     if (url.includes('/api/tls-roadmap')) return Promise.resolve({ ok: true, json: async () => overrides?.roadmap ?? mockRoadmap });
-    if (url.includes('/api/intelligence')) return Promise.resolve({ ok: true, json: async () => ({ data_source: 'artifact_store' }) });
+    if (url.includes('/api/intelligence')) return Promise.resolve({ ok: true, json: async () => overrides?.intelligence ?? ({ data_source: 'artifact_store' }) });
     if (url.includes('/api/oc-bottleneck')) return Promise.resolve({ ok: true, json: async () => overrides?.ocBottleneck ?? mockOcBottleneck });
     if (url.includes('/api/registry-contract')) return Promise.resolve({ ok: true, json: async () => overrides?.contract ?? { allowed_active_node_ids: ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL'], active_systems: [], canonical_loop: [], canonical_overlays: [] } });
     if (url.includes('/api/explain-state')) return Promise.resolve({ ok: true, json: async () => overrides?.explain ?? null });
@@ -227,6 +227,28 @@ describe('DashboardPage simplified cockpit', () => {
     await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
     expect(screen.getByTestId('top3-warning')).toBeInTheDocument();
     expect(screen.getByTestId('flow-warning')).toBeInTheDocument();
+  });
+
+
+  it('overview does not render diagnostics-heavy panels', async () => {
+    setupFetch({
+      intelligence: {
+        feedback_loop: { loop_status: 'ok' },
+        failure_explanation_packets: { packets: [{ title: 'x' }] },
+        override_audit: { override_count: 1 },
+        fallback_reduction_plan: { total_fallback_count: 1, high_leverage_fallback_count: 1, fallback_items: [] },
+        replay_lineage_hardening: { affected_systems: ['EVL'] },
+        candidate_closure: { candidate_item_count: 1, stale_candidate_signal_count: 0, candidate_items: [] },
+      },
+    });
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
+    expect(screen.queryByTestId('learning-loop-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('failure-explanation-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('override-unknowns-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('fallback-reduction-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('replay-lineage-hardening-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('candidate-closure-section')).not.toBeInTheDocument();
   });
 
   it('tabs exist and isolate complexity panels', async () => {

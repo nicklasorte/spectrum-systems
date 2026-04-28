@@ -32,9 +32,9 @@ function rowExplanation(row: RequestedCandidateRow, ranked: RankedSystem | null)
 export function RecommendationDebugPanel({ priority }: Props) {
   if (!priority || priority.state !== 'ok' || !priority.payload) {
     return (
-      <div className="border rounded p-3 bg-white space-y-2" data-testid="recommendation-debug-panel">
+      <div className="border border-slate-200 dark:border-slate-700 rounded p-3 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 space-y-2" data-testid="recommendation-debug-panel">
         <h3 className="font-semibold">Recommendation Debug</h3>
-        <p className="text-sm text-red-700" data-testid="recommendation-debug-fail-closed">
+        <p className="text-sm text-red-700 dark:text-red-300" data-testid="recommendation-debug-fail-closed">
           ⚠ Priority artifact unavailable; recommendation explanations cannot be shown. Fail-closed: dashboard
           will not synthesise rankings.
         </p>
@@ -46,9 +46,9 @@ export function RecommendationDebugPanel({ priority }: Props) {
   const top = rows.slice(0, 3);
 
   return (
-    <div className="border rounded p-3 bg-white space-y-2" data-testid="recommendation-debug-panel">
+    <div className="border border-slate-200 dark:border-slate-700 rounded p-3 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 space-y-2" data-testid="recommendation-debug-panel">
       <h3 className="font-semibold">Recommendation Debug (artifact-backed only)</h3>
-      <p className="text-xs text-gray-600">
+      <p className="text-xs text-slate-600 dark:text-slate-300">
         Rankings are read directly from artifact; the dashboard does not compute order or score.
       </p>
       <ul className="space-y-2">

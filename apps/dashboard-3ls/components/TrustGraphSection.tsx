@@ -23,9 +23,9 @@ export function TrustGraphSection() {
   const [loadFailed, setLoadFailed] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<SystemGraphEdge | null>(null);
-  const [showAll, setShowAll] = useState(false);
+  const showAll = false;
   const [layout, setLayout] = useState<GraphLayoutKey>('layered');
-  const [debugMode, setDebugMode] = useState<DebugMode>('normal');
+  const [debugMode, setDebugMode] = useState<DebugMode>('clean_structure');
   const [highlightedPath, setHighlightedPath] = useState<string[]>([]);
   const [lastRecompute, setLastRecompute] = useState<string | null>(null);
   const [recomputeStatus, setRecomputeStatus] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export function TrustGraphSection() {
   // the SVG scale to container width (good on desktop, thumbnail on
   // mobile). 'scroll' renders a wide canvas inside an x-scroll container
   // so the operator can pan a usable, full-resolution graph on mobile.
-  const [canvasMode, setCanvasMode] = useState<'fit' | 'scroll'>('fit');
+  const canvasMode: 'fit' | 'scroll' = 'scroll';
 
   const loadGraph = async () => {
     const res = await fetch('/api/system-graph');
@@ -84,8 +84,8 @@ export function TrustGraphSection() {
 
   if (loadFailed && !displayGraph) {
     return (
-      <section className="bg-white border rounded p-4" data-testid="trust-graph-section">
-        <p className="text-sm text-red-700" data-testid="graph-fail-closed-warning">
+      <section className="bg-white border border-slate-200 rounded p-4 text-slate-900 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100" data-testid="trust-graph-section">
+        <p className="text-sm text-red-700 dark:text-red-300" data-testid="graph-fail-closed-warning">
           ⚠ Trust graph artifact unavailable. Fail-closed: dashboard will not synthesize graph data.
         </p>
       </section>
@@ -94,21 +94,21 @@ export function TrustGraphSection() {
 
   if (!displayGraph) {
     return (
-      <section className="bg-white border rounded p-4" data-testid="trust-graph-section">
-        <p className="text-sm text-gray-500">Loading trust graph artifact…</p>
+      <section className="bg-white border border-slate-200 rounded p-4 text-slate-900 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100" data-testid="trust-graph-section">
+        <p className="text-sm text-slate-500 dark:text-slate-300">Loading trust graph artifact…</p>
       </section>
     );
   }
 
   if (isFailClosed) {
     return (
-      <section className="bg-white border rounded p-4 space-y-2" data-testid="trust-graph-section">
+      <section className="bg-white border border-slate-200 rounded p-4 space-y-2 text-slate-900 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100" data-testid="trust-graph-section">
         <h2 className="font-semibold">SYSTEM TRUST GRAPH</h2>
-        <p className="text-sm text-red-700" data-testid="graph-fail-closed-warning">
+        <p className="text-sm text-red-700 dark:text-red-300" data-testid="graph-fail-closed-warning">
           ⚠ Graph artifact contains no nodes. Fail-closed: refusing to render synthetic graph data.
         </p>
         {displayGraph.warnings.length > 0 && (
-          <p className="text-xs text-amber-700">warnings: {displayGraph.warnings.join(', ')}</p>
+          <p className="text-xs text-amber-700 dark:text-amber-300">warnings: {displayGraph.warnings.join(', ')}</p>
         )}
         <RecomputeGraphButton
           onResult={async (result) => {
@@ -126,30 +126,12 @@ export function TrustGraphSection() {
   }
 
   return (
-    <section className="bg-white border rounded p-4 space-y-3" data-testid="trust-graph-section">
-      <header className="flex flex-wrap items-center justify-between gap-2 sticky top-0 z-10 bg-white pb-1">
+    <section className="bg-white border border-slate-200 rounded p-4 space-y-3 text-slate-900 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100" data-testid="trust-graph-section">
+      <header className="flex flex-wrap items-center justify-between gap-2 sticky top-0 z-10 bg-white dark:bg-slate-900 pb-1">
         <h2 className="font-semibold">SYSTEM TRUST GRAPH</h2>
         <div className="flex flex-wrap items-center gap-3">
           <DebugModeSelector value={debugMode} onChange={setDebugMode} />
           <LayoutSelector value={layout} onChange={setLayout} />
-          <button
-            type="button"
-            className="text-xs underline"
-            onClick={() => setShowAll((s) => !s)}
-            data-testid="focus-toggle"
-          >
-            {showAll ? 'Focus mode' : 'Show all'}
-          </button>
-          <button
-            type="button"
-            className="text-xs underline"
-            onClick={() => setCanvasMode((m) => (m === 'fit' ? 'scroll' : 'fit'))}
-            data-testid="canvas-mode-toggle"
-            data-canvas-mode={canvasMode}
-            aria-label="Toggle Fit / Scroll canvas mode"
-          >
-            {canvasMode === 'fit' ? 'Scroll canvas' : 'Fit canvas'}
-          </button>
           <RecomputeGraphButton
             onResult={async (result) => {
               const timestamp = new Date().toISOString();
@@ -176,7 +158,7 @@ export function TrustGraphSection() {
 
         <div className="space-y-3 min-w-0" data-testid="graph-main-panel" data-canvas-mode={canvasMode}>
           <div
-            className={canvasMode === 'scroll' ? 'overflow-x-auto -mx-2 px-2' : ''}
+            className={'overflow-x-auto -mx-2 px-2'}
             data-testid="graph-canvas-wrapper"
           >
             <div
