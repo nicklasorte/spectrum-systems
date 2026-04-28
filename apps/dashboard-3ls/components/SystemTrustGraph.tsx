@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { SystemNode } from './SystemNode';
 import { SystemEdge } from './SystemEdge';
-import type { SystemGraphPayload } from '@/lib/systemGraph';
+import type { DebugMode, SystemGraphEdge, SystemGraphPayload } from '@/lib/systemGraph';
+import { CONTROL_PATH_SYSTEMS, deriveDebugStatus } from '@/lib/systemGraph';
 
 export type GraphLayoutKey = 'layered' | 'compact';
 
@@ -35,6 +36,8 @@ const LAYOUTS: Record<GraphLayoutKey, RowDef[]> = {
 const SUPPORT_LIKE_LAYERS: ReadonlySet<string> = new Set(['support']);
 const CORE_LIKE_LAYERS: ReadonlySet<string> = new Set(['core']);
 
+const BLOCKING_STATUSES: ReadonlySet<string> = new Set(['MISSING', 'STALE', 'FAILED', 'FALLBACK', 'BLOCKING']);
+
 function buildSlotPositions(layout: GraphLayoutKey): Map<string, { x: number; y: number }> {
   const map = new Map<string, { x: number; y: number }>();
   const padX = 30;
@@ -67,12 +70,26 @@ function rowHeight(): number {
 interface Props {
   graph: SystemGraphPayload;
   selectedSystem: string | null;
+  selectedEdgeKey?: string | null;
   showAll: boolean;
   layout?: GraphLayoutKey;
+  debugMode?: DebugMode;
+  highlightedPath?: string[];
   onSelect: (systemId: string) => void;
+  onSelectEdge?: (edge: SystemGraphEdge) => void;
 }
 
-export function SystemTrustGraph({ graph, selectedSystem, showAll, layout = 'layered', onSelect }: Props) {
+export function SystemTrustGraph({
+  graph,
+  selectedSystem,
+  selectedEdgeKey = null,
+  showAll,
+  layout = 'layered',
+  debugMode = 'normal',
+  highlightedPath = [],
+  onSelect,
+  onSelectEdge,
+}: Props) {
   const slotPositions = useMemo(() => buildSlotPositions(layout), [layout]);
 
   const overflowIds = useMemo(() => graph.nodes.map((n) => n.system_id).filter((id) => !slotPositions.has(id)), [graph.nodes, slotPositions]);
@@ -109,10 +126,66 @@ export function SystemTrustGraph({ graph, selectedSystem, showAll, layout = 'lay
     return false;
   };
 
+  const highlightedSet = useMemo(() => new Set(highlightedPath), [highlightedPath]);
+
+  const isPathEdge = (from: string, to: string) => {
+    if (highlightedPath.length < 2) return false;
+    for (let i = 0; i < highlightedPath.length - 1; i += 1) {
+      if (highlightedPath[i] === from && highlightedPath[i + 1] === to) return true;
+    }
+    return false;
+  };
+
   const labelByRow: Array<{ y: number; label: string }> = LAYOUTS[layout].map((row) => ({ y: row.y, label: row.label }));
 
+  // Mode-driven node opacity. Fail-closed: if mode data is missing, fall back to focus dimming.
+  const nodeOpacityForMode = (systemId: string, baseOpacity: number) => {
+    const node = graph.nodes.find((n) => n.system_id === systemId);
+    if (!node) return baseOpacity;
+    if (debugMode === 'blockers') {
+      const status = node.debug_status ?? deriveDebugStatus(node);
+      return BLOCKING_STATUSES.has(status) ? 1 : 0.2;
+    }
+    if (debugMode === 'control') {
+      return CONTROL_PATH_SYSTEMS.includes(systemId) ? 1 : 0.25;
+    }
+    if (debugMode === 'lineage') {
+      return node.source_artifact_refs.length > 0 ? 1 : 0.25;
+    }
+    if (debugMode === 'freshness') {
+      const status = node.debug_status ?? deriveDebugStatus(node);
+      return node.source_type === 'missing' || node.source_type === 'stub_fallback' || status === 'STALE'
+        ? 1
+        : 0.3;
+    }
+    return baseOpacity;
+  };
+
+  const edgeOpacityForMode = (edge: SystemGraphEdge, baseOpacity: number) => {
+    if (debugMode === 'blockers') {
+      return edge.is_failure_path || edge.is_broken ? 1 : 0.2;
+    }
+    if (debugMode === 'control') {
+      const onPath = CONTROL_PATH_SYSTEMS.includes(edge.from) && CONTROL_PATH_SYSTEMS.includes(edge.to);
+      return onPath ? 1 : 0.2;
+    }
+    if (debugMode === 'lineage') {
+      const backed = edge.artifact_backed ?? (edge.source_type === 'artifact_store' || edge.source_type === 'repo_registry');
+      return backed ? 1 : 0.3;
+    }
+    if (debugMode === 'freshness') {
+      return edge.last_validated ? 0.4 : 1;
+    }
+    return baseOpacity;
+  };
+
   return (
-    <div className="border rounded-lg p-4 bg-white" data-testid="system-trust-graph" data-layout={layout}>
+    <div
+      className="border rounded-lg p-4 bg-white"
+      data-testid="system-trust-graph"
+      data-layout={layout}
+      data-debug-mode={debugMode}
+    >
       <svg
         viewBox={`0 0 ${CANVAS_WIDTH} ${canvasHeight}`}
         className="w-full h-auto"
@@ -167,7 +240,7 @@ export function SystemTrustGraph({ graph, selectedSystem, showAll, layout = 'lay
           const to = allPositions.get(edge.to);
           if (!from || !to) return null;
           const primary = isPrimaryEdge(edge.from, edge.to, edge.is_failure_path, edge.edge_type);
-          if (!showAll && !primary) {
+          if (!showAll && !primary && debugMode === 'normal') {
             return (
               <SystemEdge
                 key={`${edge.from}-${edge.to}`}
@@ -181,7 +254,7 @@ export function SystemTrustGraph({ graph, selectedSystem, showAll, layout = 'lay
               />
             );
           }
-          const opacity = showAll
+          const baseOpacity = showAll
             ? primary
               ? 1
               : 0.45
@@ -190,6 +263,8 @@ export function SystemTrustGraph({ graph, selectedSystem, showAll, layout = 'lay
               : connectedToFocus.has(edge.from) || connectedToFocus.has(edge.to)
                 ? 0.6
                 : 0.2;
+          const opacity = debugMode === 'normal' ? baseOpacity : edgeOpacityForMode(edge, baseOpacity);
+          const highlighted = isPathEdge(edge.from, edge.to);
           return (
             <SystemEdge
               key={`${edge.from}-${edge.to}`}
@@ -199,6 +274,8 @@ export function SystemTrustGraph({ graph, selectedSystem, showAll, layout = 'lay
               opacity={opacity}
               nodeWidth={NODE_WIDTH}
               nodeHeight={NODE_HEIGHT}
+              highlighted={highlighted}
+              onSelect={onSelectEdge}
             />
           );
         })}
@@ -206,13 +283,15 @@ export function SystemTrustGraph({ graph, selectedSystem, showAll, layout = 'lay
         {graph.nodes.map((node) => {
           const pos = allPositions.get(node.system_id);
           if (!pos) return null;
-          const opacity = showAll
+          const baseOpacity = showAll
             ? 1
             : graph.focus_systems.includes(node.system_id)
               ? 1
               : connectedToFocus.has(node.system_id)
                 ? 0.65
                 : 0.25;
+          const modeOpacity = debugMode === 'normal' ? baseOpacity : nodeOpacityForMode(node.system_id, baseOpacity);
+          const isOnHighlightedPath = highlightedSet.has(node.system_id);
           return (
             <SystemNode
               key={node.system_id}
@@ -221,9 +300,11 @@ export function SystemTrustGraph({ graph, selectedSystem, showAll, layout = 'lay
               y={pos.y}
               width={NODE_WIDTH}
               height={NODE_HEIGHT}
-              opacity={opacity}
+              opacity={isOnHighlightedPath ? 1 : modeOpacity}
               onSelect={onSelect}
               selected={selectedSystem === node.system_id}
+              isOnHighlightedPath={isOnHighlightedPath}
+              isHighlightRoot={highlightedPath.length > 0 && highlightedPath[0] === node.system_id}
             />
           );
         })}
@@ -234,6 +315,7 @@ export function SystemTrustGraph({ graph, selectedSystem, showAll, layout = 'lay
       <div className="hidden" data-testid="core-flow-systems">AEX PQX EVL TPA CDE SEL</div>
       <div className="hidden" data-testid="overlay-systems">REP LIN OBS SLO</div>
       <div className="hidden" data-testid="candidate-systems">H01 RFX HOP MET METS</div>
+      {selectedEdgeKey && <div className="hidden" data-testid="selected-edge-key">{selectedEdgeKey}</div>}
 
       <p className="text-xs text-gray-500 mt-2">
         Slots are static for readability; nodes, edges, and trust state come from the artifact payload.

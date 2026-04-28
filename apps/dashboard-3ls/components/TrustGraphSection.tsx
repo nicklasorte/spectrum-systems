@@ -1,33 +1,57 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import type { SystemGraphPayload } from '@/lib/systemGraph';
+import type { DebugMode, SystemGraphEdge, SystemGraphPayload } from '@/lib/systemGraph';
+import type { PriorityArtifactLoadResult } from '@/lib/artifactLoader';
 import { RecomputeGraphButton } from './RecomputeGraphButton';
 import { SystemTrustGraph, type GraphLayoutKey } from './SystemTrustGraph';
 import { SystemInspector } from './SystemInspector';
+import { EdgeInspector } from './EdgeInspector';
 import { ExplainFreezePanel } from './ExplainFreezePanel';
 import { ActivityLog, type ActivityEntry } from './ActivityLog';
 import { GraphLegend } from './GraphLegend';
 import { LayoutSelector } from './LayoutSelector';
+import { DebugModeSelector } from './DebugModeSelector';
 import { SystemTrustStatusCard } from './SystemTrustStatusCard';
+import { RecommendationDebugPanel } from './RecommendationDebugPanel';
+import { DiffSinceLastRecompute } from './DiffSinceLastRecompute';
 
 export function TrustGraphSection() {
   const [graph, setGraph] = useState<SystemGraphPayload | null>(null);
   const [lastKnownGraph, setLastKnownGraph] = useState<SystemGraphPayload | null>(null);
+  const [previousGraph, setPreviousGraph] = useState<SystemGraphPayload | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const [selectedEdge, setSelectedEdge] = useState<SystemGraphEdge | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [layout, setLayout] = useState<GraphLayoutKey>('layered');
+  const [debugMode, setDebugMode] = useState<DebugMode>('normal');
+  const [highlightedPath, setHighlightedPath] = useState<string[]>([]);
   const [lastRecompute, setLastRecompute] = useState<string | null>(null);
+  const [recomputeStatus, setRecomputeStatus] = useState<string | null>(null);
   const [entries, setEntries] = useState<ActivityEntry[]>([]);
+  const [priority, setPriority] = useState<PriorityArtifactLoadResult | null>(null);
 
   const loadGraph = async () => {
     const res = await fetch('/api/system-graph');
     const payload = (await res.json()) as SystemGraphPayload;
-    setGraph(payload);
+    setGraph((prev) => {
+      if (prev) setPreviousGraph(prev);
+      return payload;
+    });
     setLastKnownGraph(payload);
     setLoadFailed(false);
     setEntries((prev) => [{ timestamp: new Date().toISOString(), message: 'graph_loaded' }, ...prev].slice(0, 10));
+  };
+
+  const loadPriority = async () => {
+    try {
+      const res = await fetch('/api/priority');
+      const payload = (await res.json()) as PriorityArtifactLoadResult;
+      setPriority(payload);
+    } catch {
+      setPriority({ state: 'missing', payload: null, reason: 'fetch_failed' });
+    }
   };
 
   useEffect(() => {
@@ -35,6 +59,7 @@ export function TrustGraphSection() {
       setLoadFailed(true);
       setEntries((prev) => [{ timestamp: new Date().toISOString(), message: 'graph_load_failed' }, ...prev].slice(0, 10));
     });
+    loadPriority();
   }, []);
 
   const displayGraph = graph ?? lastKnownGraph;
@@ -84,6 +109,7 @@ export function TrustGraphSection() {
           onResult={async (result) => {
             const timestamp = new Date().toISOString();
             setLastRecompute(timestamp);
+            setRecomputeStatus(result.status);
             setEntries((prev) => [{ timestamp, message: `recompute:${result.status}` }, ...prev].slice(0, 10));
             if (result.status === 'recompute_success_signal') {
               await loadGraph();
@@ -99,6 +125,7 @@ export function TrustGraphSection() {
       <header className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-semibold">SYSTEM TRUST GRAPH</h2>
         <div className="flex flex-wrap items-center gap-3">
+          <DebugModeSelector value={debugMode} onChange={setDebugMode} />
           <LayoutSelector value={layout} onChange={setLayout} />
           <button
             type="button"
@@ -112,9 +139,11 @@ export function TrustGraphSection() {
             onResult={async (result) => {
               const timestamp = new Date().toISOString();
               setLastRecompute(timestamp);
+              setRecomputeStatus(result.status);
               setEntries((prev) => [{ timestamp, message: `recompute:${result.status}` }, ...prev].slice(0, 10));
               if (result.status === 'recompute_success_signal') {
                 await loadGraph();
+                await loadPriority();
               }
             }}
           />
@@ -124,7 +153,8 @@ export function TrustGraphSection() {
       <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]" data-testid="graph-tab-layout">
         <aside className="space-y-3" data-testid="graph-left-rail">
           <SystemTrustStatusCard graph={displayGraph} lastRecompute={lastRecompute} isStale={isStale} />
-          <ExplainFreezePanel graph={displayGraph} />
+          <ExplainFreezePanel graph={displayGraph} onPathChange={setHighlightedPath} />
+          <DiffSinceLastRecompute current={displayGraph} previous={previousGraph} recomputeStatus={recomputeStatus} />
           <GraphLegend />
           <ActivityLog entries={entries} />
         </aside>
@@ -133,8 +163,11 @@ export function TrustGraphSection() {
           <SystemTrustGraph
             graph={displayGraph}
             selectedSystem={selected}
+            selectedEdgeKey={selectedEdge ? `${selectedEdge.from}-${selectedEdge.to}` : null}
             showAll={showAll}
             layout={layout}
+            debugMode={debugMode}
+            highlightedPath={highlightedPath}
             onSelect={(id) => {
               setSelected(id);
               setEntries((prev) => [
@@ -142,8 +175,17 @@ export function TrustGraphSection() {
                 ...prev,
               ].slice(0, 10));
             }}
+            onSelectEdge={(edge) => {
+              setSelectedEdge(edge);
+              setEntries((prev) => [
+                { timestamp: new Date().toISOString(), message: `edge_selected:${edge.from}->${edge.to}` },
+                ...prev,
+              ].slice(0, 10));
+            }}
           />
           <SystemInspector node={selectedNode} replayCommands={displayGraph.replay_commands} />
+          <EdgeInspector edge={selectedEdge} />
+          <RecommendationDebugPanel priority={priority} />
         </div>
       </div>
     </section>
