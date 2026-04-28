@@ -1,0 +1,38 @@
+{
+  "artifact_type": "d3l_tls_roadmap_alignment_redteam_report",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_8_redteam",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "alignment_rules": [
+    "Overview shows up to OVERVIEW_QUEUE_MAX (3) items from queue_1_immediate_next_bundle only.",
+    "Full Leverage Queue (4 queues) lives in the Roadmap tab inside the data-testid='roadmap-full-queues' panel.",
+    "Roadmap markdown table is appended below the queues so red-team / fix pairing context is in one place.",
+    "Roadmap labels (TLS-BND-*, TLS-FX-*, TLS-RT-*, TLS-FIX-*) are text-only. They never become graph nodes (filtered by registryContract.allowed_active_node_ids)."
+  ],
+  "abuse_cases": [
+    {
+      "case": "roadmap wall in Overview",
+      "expected_behavior": "Overview suppresses the wall; Roadmap tab is the only place to see it",
+      "actual_behavior": "Overview Leverage Queue panel shows queue_1_immediate_next_bundle.slice(0,3); Roadmap tab renders the full 4-queue view + markdown table",
+      "status": "fixed"
+    },
+    {
+      "case": "roadmap label rendered as system",
+      "expected_behavior": "TLS-BND-01 etc. never become graph nodes",
+      "actual_behavior": "registryContract.forbidden_unknown_node_examples explicitly lists TLS-BND-01/-02 etc.; validateGraphAgainstContract rejects them; Top 3 cards mark them as text-only",
+      "status": "fixed"
+    },
+    {
+      "case": "missing red-team / fix pairing",
+      "expected_behavior": "Roadmap tab still shows pairing status",
+      "actual_behavior": "roadmap-tab renders 'Red-team/fix pairing status: paired in sequence (FX → RT → FIX) from roadmap entries' alongside the markdown table",
+      "status": "ack"
+    },
+    {
+      "case": "queue item with no dependency",
+      "expected_behavior": "card displays dependency_count=0 explicitly",
+      "actual_behavior": "buildLeverageQueueFromRoadmap derives dependency_count from roadmap entries; absent entries default to 0; UI renders 'Depends: 0 artifacts'",
+      "status": "ack"
+    }
+  ]
+}

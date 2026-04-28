@@ -1,0 +1,33 @@
+{
+  "artifact_type": "d3l_dashboard_readiness_fix_log",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_10_fix_log",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "fixes": [
+    {
+      "id": "READY-FIX-01",
+      "summary": "Readiness packet exists and is artifact-backed.",
+      "evidence": "artifacts/tls/d3l_dashboard_readiness_packet.json"
+    },
+    {
+      "id": "READY-FIX-02",
+      "summary": "Readiness packet enumerates registry validation, freshness gate, recompute pipeline, graph validity, Top 3 status, OC bottleneck status, red-team reports, fix logs, tests run, guards run, known limitations.",
+      "evidence": "fields registry_validation_result, priority_freshness_result, recompute_pipeline_result, graph_artifact_validity, top3_status, oc_bottleneck_status, red_team_reports_created, fix_logs_created, tests_run, guards_run, known_limitations"
+    },
+    {
+      "id": "READY-FIX-03",
+      "summary": "Readiness status reflects fail-closed posture; OC unavailability does NOT block dashboard readiness.",
+      "evidence": "readiness_status='ready'; OC limitation documented in known_limitations as fail-closed by design until OC-ALL-01 lands"
+    },
+    {
+      "id": "READY-FIX-04",
+      "summary": "Phase 7 OC integration re-aligned to OC-ALL-01 schemas after merging origin/main.",
+      "evidence": "apps/dashboard-3ls/lib/ocBottleneck.ts now consumes contracts/schemas/dashboard_truth_projection.schema.json and contracts/schemas/operational_closure_bundle.schema.json; 14 schema-aligned tests in apps/dashboard-3ls/__tests__/lib/ocBottleneck.test.ts."
+    },
+    {
+      "id": "READY-FIX-05",
+      "summary": "Verification re-run after merge: jest 30 suites / 333 tests, next build green, python pytest 2128 passed (incl. OC-ALL-01), all four guards pass.",
+      "evidence": "outputs/authority_shape_preflight/authority_shape_preflight_result.json; outputs/authority_leak_guard/authority_leak_guard_result.json; outputs/system_registry_guard/system_registry_guard_result.json; scripts/validate_system_registry.py exit 0."
+    }
+  ]
+}

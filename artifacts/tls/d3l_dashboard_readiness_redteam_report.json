@@ -1,0 +1,38 @@
+{
+  "artifact_type": "d3l_dashboard_readiness_redteam_report",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_10_redteam",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "abuse_cases": [
+    {
+      "case": "readiness says ready despite stale priority",
+      "expected_behavior": "freshness gate must flip readiness to caution/blocked",
+      "actual_behavior": "Priority freshness is enforced at load time (state in {stale, invalid_timestamp, future_timestamp}) and the dashboard refuses to render Top 3. The readiness packet records the freshness policy and recompute pipeline that keep the artifact ok in steady state.",
+      "status": "fixed"
+    },
+    {
+      "case": "readiness ignores missing registry validation",
+      "expected_behavior": "registry contract must still be enforced when the readiness packet is read",
+      "actual_behavior": "loadRegistryContract returns an empty contract on missing artifact; graph builder rejects all nodes (failure_path empty); dashboard warns. Readiness packet documents this guard.",
+      "status": "ack"
+    },
+    {
+      "case": "readiness ignores failed recompute",
+      "expected_behavior": "recompute response must surface failure_reason / failing_command",
+      "actual_behavior": "Phase 2 implementation halts on first non-zero exit, returns HTTP 500 with failing_command + failure_reason populated, never overwrites last good state.",
+      "status": "fixed"
+    },
+    {
+      "case": "readiness ignores hidden unknown",
+      "expected_behavior": "Unknown root cause must surface explicitly",
+      "actual_behavior": "describeRootCause returns artifact_backed=false and taxonomy=unknown rather than guessing; UI annotates '(not artifact-backed)'.",
+      "status": "fixed"
+    },
+    {
+      "case": "readiness ignores test failures",
+      "expected_behavior": "Phase 11 must run the full test/build/guard set",
+      "actual_behavior": "Phase 11 runs npm jest --runInBand for the dashboard, the dashboard build (or its --skip-next-build equivalent), the relevant pytest set, and the four guard scripts. The PR is opened only on green.",
+      "status": "ack"
+    }
+  ]
+}

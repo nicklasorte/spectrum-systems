@@ -1,0 +1,39 @@
+{
+  "artifact_type": "d3l_priority_freshness_gate",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_1_freshness_gate",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "policy": {
+    "default_stale_hours": 24,
+    "future_skew_tolerance_seconds": 300,
+    "env_override": "D3L_PRIORITY_STALE_HOURS",
+    "fallback_to_mtime": false
+  },
+  "states_returned_by_loader": [
+    "ok",
+    "missing",
+    "stale",
+    "invalid_schema",
+    "invalid_timestamp",
+    "future_timestamp",
+    "blocked_signal",
+    "freeze_signal"
+  ],
+  "ui_behavior": {
+    "stale": "Top 3 cards are NOT rendered as actionable. Warning surfaces 'Top 3 stale — regenerate priority artifact.' with the exact recompute command.",
+    "invalid_timestamp": "Top 3 cards are NOT rendered. Warning notes generated_at_missing or generated_at_unparseable.",
+    "future_timestamp": "Top 3 cards are NOT rendered. Warning notes generated_at_in_future.",
+    "missing": "Top 3 cards are NOT rendered. Warning notes 'priority artifact missing'."
+  },
+  "recompute_command": "python scripts/build_tls_dependency_priority.py --candidates HOP,RAX,RSM,CAP,SEC,EVL,OBS,SLO --fail-if-missing && python scripts/build_dashboard_3ls_with_tls.py --skip-next-build",
+  "registry_alignment": {
+    "candidates_list_only_uses_registry_active_systems": true,
+    "active_systems_used": ["HOP", "RAX", "RSM", "CAP", "SEC", "EVL", "OBS", "SLO"]
+  },
+  "tls_pipeline_change": {
+    "module": "spectrum_systems/modules/tls_dependency_graph/ranking.py",
+    "added_field": "generated_at",
+    "format": "UTC ISO-8601 (e.g. 2026-04-28T00:00:00Z)",
+    "env_override_for_tests": "TLS_GENERATED_AT_OVERRIDE"
+  }
+}

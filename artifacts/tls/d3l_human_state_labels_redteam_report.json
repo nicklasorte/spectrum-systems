@@ -1,0 +1,49 @@
+{
+  "artifact_type": "d3l_human_state_labels_redteam_report",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_3_redteam",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "label_mapping": {
+    "blocked_signal": "Blocked",
+    "freeze_signal": "Frozen",
+    "freeze": "Frozen",
+    "frozen": "Frozen",
+    "caution_signal": "Caution",
+    "warning": "Caution",
+    "warn": "Caution",
+    "degraded_signal": "Caution",
+    "trusted_signal": "Ready",
+    "ready": "Ready",
+    "pass": "Ready",
+    "unknown_signal": "Unknown",
+    "missing": "Unknown",
+    "invalid": "Unknown"
+  },
+  "abuse_cases": [
+    {
+      "case": "raw enum leakage in Overview",
+      "expected_behavior": "Trust Pulse shows 'Blocked' / 'Frozen' / 'Caution' / 'Ready' / 'Unknown' as the prominent label; raw code only in a small parenthetical for traceability and in Diagnostics tab.",
+      "actual_behavior": "trust-pulse-label test id renders the human label; trust-pulse-raw renders the original code for reference.",
+      "status": "fixed"
+    },
+    {
+      "case": "inconsistent labels across tabs",
+      "expected_behavior": "Same code → same label everywhere",
+      "actual_behavior": "humanTrustState is the single mapping function; pages reference it by import. Diagnostics still surfaces raw codes.",
+      "status": "fixed"
+    },
+    {
+      "case": "unknown state shown as Ready",
+      "expected_behavior": "Unrecognised codes fall through to Unknown (never silently renamed)",
+      "actual_behavior": "MAP lookup is case-insensitive and explicit; absent keys return Unknown plus 'unrecognised trust state' description.",
+      "status": "fixed"
+    },
+    {
+      "case": "Blocked / Frozen conflated without explanation",
+      "expected_behavior": "Each label has a short description (e.g. 'control authority halted progression on this system' vs 'control authority froze the system pending evidence')",
+      "actual_behavior": "humanTrustState returns description distinct for Blocked vs Frozen.",
+      "status": "fixed"
+    }
+  ],
+  "outcome": "Phase 3 abuse cases covered by humanStateLabels.test.ts and the page.tsx integration."
+}

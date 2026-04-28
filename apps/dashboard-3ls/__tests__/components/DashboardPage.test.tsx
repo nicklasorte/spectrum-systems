@@ -103,6 +103,8 @@ const mockRoadmap = {
   source_artifacts_used: ['artifacts/tls/tls_roadmap_final.json'],
 };
 
+const mockOcBottleneck = { state: 'unavailable', card: null, reason: 'OC bottleneck artifact not present', sources: [] };
+
 function setupFetch(overrides?: Partial<Record<string, unknown>>) {
   (global.fetch as jest.Mock).mockImplementation((input: RequestInfo | URL) => {
     const url = String(input);
@@ -112,6 +114,7 @@ function setupFetch(overrides?: Partial<Record<string, unknown>>) {
     if (url.includes('/api/system-graph')) return Promise.resolve({ ok: true, json: async () => overrides?.graph ?? mockGraph });
     if (url.includes('/api/tls-roadmap')) return Promise.resolve({ ok: true, json: async () => overrides?.roadmap ?? mockRoadmap });
     if (url.includes('/api/intelligence')) return Promise.resolve({ ok: true, json: async () => ({ data_source: 'artifact_store' }) });
+    if (url.includes('/api/oc-bottleneck')) return Promise.resolve({ ok: true, json: async () => overrides?.ocBottleneck ?? mockOcBottleneck });
     return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
   });
 }
@@ -137,12 +140,78 @@ describe('DashboardPage simplified cockpit', () => {
     expect(screen.getByText(/Dashboard does not compute ranking/i)).toBeInTheDocument();
   });
 
-  it('leverage queue is derived from roadmap safe bundles', async () => {
+  it('leverage queue is derived from roadmap safe bundles (compact overview)', async () => {
     setupFetch();
     render(<DashboardPage />);
     await waitFor(() => expect(screen.getAllByTestId('leverage-queue-item').length).toBeGreaterThan(0));
-    expect(screen.getByText(/Queue 1: immediate next bundle/i)).toBeInTheDocument();
-    expect(screen.getByText(/Run bundle TLS-BND-01/i)).toBeInTheDocument();
+    // Phase 4 — Overview shows the compact queue card, not the verbose
+    // 4-queue dump. Title text "Queue 1 — Boundary map bundle" pattern.
+    expect(screen.getByText(/Queue 1\s*—\s*Boundary map bundle/i)).toBeInTheDocument();
+  });
+
+  it('overview leverage queue is capped to 3 items (operator complexity budget)', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getAllByTestId('leverage-queue-item').length).toBeGreaterThan(0));
+    expect(screen.getAllByTestId('leverage-queue-item').length).toBeLessThanOrEqual(3);
+  });
+
+  it('roadmap tab shows the full 4-queue view that overview suppresses', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('tab-roadmap')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('tab-roadmap'));
+    await waitFor(() => expect(screen.getByTestId('roadmap-tab')).toBeInTheDocument());
+    expect(screen.getByTestId('roadmap-full-queues')).toBeInTheDocument();
+    expect(screen.getByText(/Queue 4: later work/i)).toBeInTheDocument();
+  });
+
+  // D3L-DATA-REGISTRY-01 Phase 7: OC bottleneck integration is fail-closed
+  // when the OC artifact is not on disk. Diagnostics tab surfaces the
+  // unavailable reason without fabricating a card.
+  it('diagnostics tab surfaces oc-bottleneck unavailable when OC artifact is missing', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('tab-diagnostics')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('tab-diagnostics'));
+    await waitFor(() => expect(screen.getByTestId('diagnostics-tab')).toBeInTheDocument());
+    expect(screen.getByTestId('oc-bottleneck-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('oc-bottleneck-fail-closed')).toBeInTheDocument();
+  });
+
+  it('diagnostics tab renders the oc-bottleneck card on a well-formed artifact', async () => {
+    setupFetch({
+      ocBottleneck: {
+        state: 'ok',
+        card: {
+          overall_status: 'block',
+          category: 'eval',
+          reason_code: 'EVAL_COVERAGE_INSUFFICIENT',
+          owning_system: 'EVL',
+          next_safe_action: 'attach eval evidence',
+          source_artifact_type: 'dashboard_truth_projection',
+          warnings: [],
+        },
+        reason: 'ok',
+      },
+    });
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('tab-diagnostics')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('tab-diagnostics'));
+    await waitFor(() => expect(screen.getByTestId('oc-bottleneck-card')).toBeInTheDocument());
+    expect(screen.getByTestId('oc-bottleneck-card').textContent).toContain('EVL');
+    expect(screen.getByTestId('oc-bottleneck-card').textContent).toContain('eval');
+    expect(screen.getByTestId('oc-bottleneck-card').textContent).toContain('block');
+  });
+
+  // D3L-DATA-REGISTRY-01 Phase 3: human trust state label maps blocked_signal
+  // to "Blocked" while preserving the raw code for traceability.
+  it('trust pulse renders a human-readable label and exposes the raw code', async () => {
+    setupFetch();
+    render(<DashboardPage />);
+    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
+    expect(screen.getByTestId('trust-pulse-label').textContent).toBe('Frozen');
+    expect(screen.getByTestId('trust-pulse-raw').textContent).toContain('freeze_signal');
   });
 
   it('missing artifacts show fail-closed warnings', async () => {

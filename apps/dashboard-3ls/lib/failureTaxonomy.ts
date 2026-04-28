@@ -14,6 +14,8 @@ export type FailureTaxonomy =
   | 'trace_missing'
   | 'replay_mismatch'
   | 'policy_mismatch'
+  | 'stale_artifact'
+  | 'registry_mismatch'
   | 'internal_error'
   | 'unknown'
   | 'none';
@@ -54,6 +56,16 @@ export const FAILURE_TAXONOMY_TABLE: ReadonlyArray<FailureTaxonomyMappingEntry> 
     taxonomy: 'policy_mismatch',
     description: 'a policy or trust-decision artifact is missing or inconsistent',
     evidence_signals: ['missing_control', 'missing_enforcement_signal', 'policy_mismatch'],
+  },
+  {
+    taxonomy: 'stale_artifact',
+    description: 'an artifact loaded but its generated_at is older than the dashboard freshness threshold',
+    evidence_signals: ['stale_artifact', 'older_than_threshold', 'generated_at_missing', 'generated_at_unparseable', 'generated_at_in_future'],
+  },
+  {
+    taxonomy: 'registry_mismatch',
+    description: 'a system_id or graph node is not present in the system registry',
+    evidence_signals: ['registry_contract_rejected_nodes', 'reject_unknown_node', 'reject_unknown_edge', 'registry_mismatch', 'reject_demoted_in_default', 'reject_future_in_default'],
   },
   {
     taxonomy: 'internal_error',
@@ -108,6 +120,10 @@ export function taxonomyLabel(taxonomy: FailureTaxonomy): string {
       return 'replay mismatch';
     case 'policy_mismatch':
       return 'policy mismatch';
+    case 'stale_artifact':
+      return 'stale artifact';
+    case 'registry_mismatch':
+      return 'registry mismatch';
     case 'internal_error':
       return 'internal error';
     case 'none':

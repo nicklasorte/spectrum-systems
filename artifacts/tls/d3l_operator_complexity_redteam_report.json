@@ -1,0 +1,38 @@
+{
+  "artifact_type": "d3l_operator_complexity_redteam_report",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_9_redteam",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "abuse_cases": [
+    {
+      "case": "new-user scan",
+      "expected": "Trust State, Top 3 or stale reason, next safe action, recompute action all visible without scrolling",
+      "actual": "Overview top-down: Trust Pulse → Flowchart → Top 3 (with recompute_command on stale) → Leverage Queue → Explain (next safe action). Tests pin each surface.",
+      "status": "ack"
+    },
+    {
+      "case": "mobile scan (iPhone width)",
+      "expected": "Operator can complete the same scan on a 390px viewport",
+      "actual": "Overview uses p-3 / sm:p-6, vertical stack, max-w-full overflow-x-hidden; Graph tab adds Fit / Scroll toggle; canvas-mode-toggle test pinned",
+      "status": "ack"
+    },
+    {
+      "case": "all-node-blocked scan",
+      "expected": "Trust Pulse shows 'Blocked' / 'Frozen' label, not internal *_signal",
+      "actual": "humanTrustState maps blocked_signal → Blocked / freeze_signal → Frozen; tested in humanStateLabels.test.ts and OperatorComplexityBudget.test.tsx",
+      "status": "ack"
+    },
+    {
+      "case": "stale Top 3 scan",
+      "expected": "Top 3 cards do not render as actionable; warning + recompute command visible",
+      "actual": "Tested by 'stale priority artifact does NOT render Top 3 cards as actionable' and 'missing-generated_at priority artifact does NOT render Top 3 cards'",
+      "status": "fixed"
+    },
+    {
+      "case": "missing OC scan",
+      "expected": "Diagnostics tab shows 'OC unavailable' instead of fabricating a card; core dashboard still works",
+      "actual": "Tested by 'diagnostics tab surfaces oc-bottleneck unavailable when OC artifact is missing'",
+      "status": "fixed"
+    }
+  ]
+}

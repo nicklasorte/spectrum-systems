@@ -1,0 +1,57 @@
+{
+  "artifact_type": "d3l_priority_freshness_redteam_report",
+  "phase": "D3L-DATA-REGISTRY-01",
+  "step": "phase_1_redteam",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "abuse_cases": [
+    {
+      "case": "generated_at = 2018",
+      "expected_behavior": "stale state; Top 3 not rendered; recompute command surfaced",
+      "actual_behavior": "covered by 'returns stale when artifact is older than threshold' test (24h default)",
+      "status": "fixed"
+    },
+    {
+      "case": "generated_at missing",
+      "expected_behavior": "invalid_timestamp; loader does not fall back to mtime",
+      "actual_behavior": "loader returns invalid_timestamp with reason=generated_at_missing",
+      "status": "fixed"
+    },
+    {
+      "case": "generated_at malformed",
+      "expected_behavior": "invalid_timestamp",
+      "actual_behavior": "loader returns invalid_timestamp with reason=generated_at_unparseable:<value>",
+      "status": "fixed"
+    },
+    {
+      "case": "generated_at in future",
+      "expected_behavior": "future_timestamp unless within 5-minute clock-skew tolerance",
+      "actual_behavior": "loader returns future_timestamp with reason=generated_at_in_future_by_<seconds>s; tolerates skew under 5 minutes",
+      "status": "fixed"
+    },
+    {
+      "case": "artifact copied from TLS path but stale",
+      "expected_behavior": "stale state on the fallback path",
+      "actual_behavior": "loader applies the same freshness gate to the fallback path; stale state returned",
+      "status": "fixed"
+    },
+    {
+      "case": "top-level artifact fresh but TLS source stale",
+      "expected_behavior": "loader prefers top-level fresh artifact",
+      "actual_behavior": "loader prefers PRIORITY_REPORT_PATH when present; only falls back to TLS sibling when top-level is missing. Operator should still run the recompute pipeline (Phase 2) to keep both paths in sync.",
+      "status": "ack — fallback only triggers on missing top-level"
+    },
+    {
+      "case": "priority entry points to non-registry ID",
+      "expected_behavior": "Top 3 card flagged as text-only; not rendered as graph node",
+      "actual_behavior": "extractTopThreeRecommendations marks is_registry_backed=false; warning surfaces text-only count; graph builder filters non-registry IDs",
+      "status": "covered by existing registryContract tests"
+    },
+    {
+      "case": "priority entry points to roadmap label (TLS-BND-01)",
+      "expected_behavior": "is_registry_backed=false; not a graph node",
+      "actual_behavior": "registryContract.allowed_active_node_ids does not contain TLS-BND-* labels; partition function classifies them as non_registry",
+      "status": "covered"
+    }
+  ],
+  "outcome": "Phase 1 abuse cases are covered by tests in apps/dashboard-3ls/__tests__/lib/artifactLoaderPriority.test.ts and apps/dashboard-3ls/__tests__/lib/topThreeRecommendations.test.ts."
+}

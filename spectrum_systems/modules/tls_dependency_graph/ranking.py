@@ -41,11 +41,29 @@ Penalties:
 from __future__ import annotations
 
 import json
+import os
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
 
 SCHEMA_VERSION = "tls-04.v1"
+
+
+def _generated_at_iso() -> str:
+    """Return a UTC ISO-8601 timestamp for the priority artifact.
+
+    D3L-DATA-REGISTRY-01: the dashboard freshness gate must be able to
+    assert the artifact was produced recently. The TLS pipeline owns the
+    timestamp so the dashboard never has to fall back to file mtime.
+
+    Tests can pin the value via ``TLS_GENERATED_AT_OVERRIDE`` to keep
+    fixtures deterministic.
+    """
+    override = os.environ.get("TLS_GENERATED_AT_OVERRIDE")
+    if override:
+        return override
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 # MVP spine — systems on the canonical loop carry max spine weight; overlays
 # carry second-tier weight; everything else is non-spine.
@@ -568,6 +586,7 @@ def rank_systems(
     return {
         "schema_version": SCHEMA_VERSION,
         "phase": "TLS-04",
+        "generated_at": _generated_at_iso(),
         "priority_order": [
             "mvp_spine_dependency",
             "trust_boundary_importance",

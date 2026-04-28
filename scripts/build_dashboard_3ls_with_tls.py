@@ -13,7 +13,12 @@ import sys
 from pathlib import Path
 
 
-CANDIDATES = "H01,RFX,HOP,MET,METS"
+# D3L-DATA-REGISTRY-01: registry-active candidates only. The advisory
+# candidate list previously included roadmap / batch labels (H01, RFX,
+# MET, METS) that confused the operator about what the priority
+# artifact actually scores. The governed priority artifact still ranks
+# the full registry; only the printed summary is filtered.
+CANDIDATES = "HOP,RAX,RSM,CAP,SEC,EVL,OBS,SLO"
 
 
 def repo_root() -> Path:
