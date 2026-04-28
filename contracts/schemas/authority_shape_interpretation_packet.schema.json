@@ -129,7 +129,7 @@
       "type": "array",
       "items": {"type": "string"}
     },
-    "non_authority_assertions": {
+    "non_owner_assertions": {
       "type": "array",
       "items": {"type": "string"}
     }

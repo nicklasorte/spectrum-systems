@@ -396,7 +396,7 @@ def validate_candidate(
         "status": status_label,
         "reason_codes": sorted(set(reason_codes)),
         "findings": findings,
-        "non_authority_assertions": [
+        "non_owner_assertions": [
             "policy_check_only",
             "no_authorization_emitted",
             "no_source_mutation",

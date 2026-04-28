@@ -32,7 +32,7 @@
   ],
   "status": "proposed",
   "reason_codes": ["bounded_vocabulary_repair"],
-  "non_authority_assertions": [
+  "non_owner_assertions": [
     "proposal_only",
     "no_application",
     "scope_changed_files"

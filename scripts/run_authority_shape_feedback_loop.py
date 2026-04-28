@@ -141,7 +141,7 @@ def build_interpretation_packet(
         "interpreted_findings": interpreted,
         "status": status,
         "reason_codes": sorted(set(reason_codes)),
-        "non_authority_assertions": [
+        "non_owner_assertions": [
             "interpretation_only",
             "no_owner_registry_change",
             "no_allowlist_change",
@@ -208,7 +208,7 @@ def build_repair_candidate(
         ],
         "status": "proposed",
         "reason_codes": ["bounded_vocabulary_repair"] if replacements else ["no_repairs_needed"],
-        "non_authority_assertions": [
+        "non_owner_assertions": [
             "proposal_only",
             "no_application",
             "scope_changed_files",

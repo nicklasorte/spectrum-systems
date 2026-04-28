@@ -259,7 +259,7 @@ def build_scan_record(
         "status": status,
         "reason_codes": reason_codes,
         "warnings": warnings,
-        "non_authority_assertions": [
+        "non_owner_assertions": [
             "no_owner_registry_change",
             "no_allowlist_change",
             "no_source_mutation",

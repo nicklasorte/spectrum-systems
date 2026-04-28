@@ -42,7 +42,7 @@
   ],
   "status": "interpreted",
   "reason_codes": ["authority_shape_terms_in_changed_files"],
-  "non_authority_assertions": [
+  "non_owner_assertions": [
     "no_owner_registry_change",
     "no_allowlist_change",
     "interpretation_only"
