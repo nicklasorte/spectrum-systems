@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "override_audit_log_record",
+  "record_id": "OVR-DASH-MET06-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_seed/enforcement_action_record.json",
+    "artifacts/dashboard_seed/trust_policy_decision_record.json",
+    "artifacts/dashboard_metrics/risk_summary_record.json"
+  ],
+  "reason_codes": [
+    "override_history_missing",
+    "override_count_unknown_until_canonical_log_exists",
+    "no_fabricated_overrides"
+  ],
+  "status": "warn",
+  "warnings": [
+    "No canonical override log exists in this repo; override_count remains 'unknown' rather than being substituted by 0.",
+    "MET does not own override evidence. Once CDE/GOV declare an override-log artifact, this record will read from it.",
+    "Conversion suggestions are advisory; they do not adopt or activate any policy."
+  ],
+  "failure_prevented": "Override count being silently reported as 0, masking the absence of any audit log; or fabricated override entries creating a false signal.",
+  "signal_improved": "Override posture is explicit: count is 'unknown', reason is 'override_history_missing', and a paired POL-CDE-OVERRIDE-AUDIT signal proposes the missing log shape.",
+  "override_count": "unknown",
+  "overrides": [],
+  "next_recommended_input": "Forward POL-CDE-OVERRIDE-AUDIT to CDE/GOV for policy review; once an override log artifact exists, replace this record's overrides[] with reads from that source."
+}

@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "sel_compliance_signal_input_record",
+  "record_id": "SCS-DASH-MET13-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/enforcement_action_record.json",
+    "artifacts/dashboard_seed/control_decision_record.json",
+    "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+    "artifacts/dashboard_metrics/failure_explanation_packets.json"
+  ],
+  "reason_codes": [
+    "compliance_signal_input_proposed_only",
+    "no_authority_claim_by_MET",
+    "owner_recommendation_SEL"
+  ],
+  "status": "warn",
+  "warnings": [
+    "This record is a signal input to SEL; it does not claim SEL acted, did not act, or is required to act. SEL is the canonical enforcement authority.",
+    "Compliance posture observations are derived from the seeded loop only."
+  ],
+  "failure_prevented": "Observe-only enforcement posture being read as enforcement passivity rather than the artifact-backed observation it is.",
+  "signal_improved": "SEL has a named compliance signal input describing the observed gap and the suggested compliance signal to expose.",
+  "signal_input_id": "SCS-OBSERVE-ONLY-CLARIFY-001",
+  "suggested_owner_system": "SEL",
+  "observed_gap": "SEL enforcement_action_record currently reports observe_only with reason text but no first-class compliance_posture field. Downstream readers cannot tell observe_only-by-policy from observe_only-by-missing-evidence without parsing free text.",
+  "compliance_signal_needed": "First-class compliance_posture field (e.g. enforced | observe_only_by_policy | observe_only_by_missing_evidence | unknown) with source_artifacts_used per case.",
+  "next_recommended_input": "Forward this record to SEL alongside POL-SEL-CERT-COMPLETENESS for posture review.",
+  "status_label": "proposed"
+}

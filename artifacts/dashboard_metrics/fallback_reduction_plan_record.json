@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "fallback_reduction_plan_record",
+  "record_id": "FRP-DASH-MET12-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/leverage_queue_record.json",
+    "artifacts/dashboard_metrics/risk_summary_record.json",
+    "artifacts/dashboard_seed/minimal_loop_snapshot.json",
+    "artifacts/dashboard_seed/observability_metrics_record.json",
+    "artifacts/dashboard_seed/slo_status_record.json"
+  ],
+  "reason_codes": [
+    "fallback_reduction_targets_high_leverage_only",
+    "no_recommendation_without_source",
+    "owner_recommendations_proposed_only"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Plan only targets high-leverage rows affecting AEX, PQX, EVL, TPA, CDE, SEL, REP, LIN, OBS, SLO. Other systems are intentionally not targeted.",
+    "Replacement signals are recommendations to canonical owners; MET does not adopt or run them."
+  ],
+  "failure_prevented": "Stub fallback rows continuing to be reported as artifact-backed because no targeted plan named the systems and the required replacement signals.",
+  "signal_improved": "Per-system fallback rows are named with current data source, replacement signal needed, and priority — no boil-the-ocean attempt.",
+  "total_fallback_count": 6,
+  "high_leverage_fallback_count": 4,
+  "fallback_items": [
+    {
+      "system_id": "REP",
+      "current_data_source": "stub_fallback (per-dimension status absent)",
+      "replacement_signal_needed": "Per-dimension replay status with source per dimension (short_horizon, long_horizon, distribution_shift).",
+      "failure_prevented": "Replay coverage being reported as artifact-backed when only short_horizon is present.",
+      "signal_improved": "REP replay_record exposes per-dimension fields.",
+      "priority": "high",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/replay_record.json",
+        "artifacts/dashboard_metrics/replay_lineage_hardening_record.json"
+      ]
+    },
+    {
+      "system_id": "LIN",
+      "current_data_source": "stub_fallback (certification edge missing, replay edge not per-dimension)",
+      "replacement_signal_needed": "Per-edge lineage status including eval_summary -> certification_evidence.",
+      "failure_prevented": "Lineage being reported as complete when certification edge is absent.",
+      "signal_improved": "LIN lineage_record exposes per-edge status.",
+      "priority": "high",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/lineage_record.json",
+        "artifacts/dashboard_metrics/replay_lineage_hardening_record.json"
+      ]
+    },
+    {
+      "system_id": "TPA",
+      "current_data_source": "partial (warn-trigger fields not first-class)",
+      "replacement_signal_needed": "Explicit warn-trigger fields naming partial-eval, partial-cert, partial-replay, over-budget conditions.",
+      "failure_prevented": "Warn boundary observations being lost across loops.",
+      "signal_improved": "TPA artifact carries explicit warn-trigger fields with source per trigger.",
+      "priority": "medium",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/trust_policy_decision_record.json",
+        "artifacts/dashboard_metrics/policy_candidate_signal_record.json"
+      ]
+    },
+    {
+      "system_id": "SLO",
+      "current_data_source": "partial (consumed_ratio and budget_status not first-class)",
+      "replacement_signal_needed": "consumed_ratio (float|unknown) and budget_status (within|warn|over|unknown) as first-class fields.",
+      "failure_prevented": "Reliability budget pressure being hidden during promotion review.",
+      "signal_improved": "SLO record carries explicit budget context for CDE.",
+      "priority": "high",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/slo_status_record.json",
+        "artifacts/dashboard_metrics/eval_candidate_record.json"
+      ]
+    },
+    {
+      "system_id": "OBS",
+      "current_data_source": "partial (per-system metrics envelope incomplete)",
+      "replacement_signal_needed": "Per-system trace_completeness and metric_freshness fields with source per field.",
+      "failure_prevented": "Observability rows being read as artifact-backed when fields are not exposed.",
+      "signal_improved": "OBS record carries per-system trace completeness signals.",
+      "priority": "medium",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/observability_metrics_record.json"
+      ]
+    },
+    {
+      "system_id": "AEX",
+      "current_data_source": "stub_fallback (pre-seed; not yet exercised on this case)",
+      "replacement_signal_needed": "AEX execution snapshot with input_artifact and output_artifact source paths.",
+      "failure_prevented": "Execution edge of the loop staying invisible because AEX never reports a per-case snapshot.",
+      "signal_improved": "AEX artifact exists per case with input and output references.",
+      "priority": "high",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/minimal_loop_snapshot.json"
+      ]
+    }
+  ]
+}

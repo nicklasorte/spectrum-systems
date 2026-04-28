@@ -1,0 +1,167 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "eval_candidate_record",
+  "record_id": "EVC-DASH-MET04-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/failure_feedback_record.json",
+    "artifacts/dashboard_seed/eval_summary_record.json",
+    "artifacts/dashboard_seed/replay_record.json",
+    "artifacts/dashboard_seed/slo_status_record.json",
+    "artifacts/dashboard_seed/lineage_record.json"
+  ],
+  "reason_codes": [
+    "eval_candidates_proposed_only",
+    "no_eval_adoption_in_this_pr",
+    "candidates_target_named_failure_or_signal"
+  ],
+  "status": "warn",
+  "warnings": [
+    "All entries are proposed eval candidates. EVL is the canonical owner; this artifact does not adopt, schedule, or run any eval.",
+    "Acceptance conditions are recommendations to EVL; final acceptance criteria are EVL's to set."
+  ],
+  "failure_prevented": "Eval coverage gaps remaining unnamed and unowned across loops; the same partial-coverage failure mode recurring without any eval candidate ever being proposed.",
+  "signal_improved": "Each named failure mode or leverage item has at least one proposed eval candidate with explicit input artifacts and acceptance condition recommendation, ready for EVL review.",
+  "candidates_summary": {
+    "total": 6,
+    "by_type": {
+      "schema_conformance": 1,
+      "evidence_coverage": 2,
+      "trace_completeness": 1,
+      "replay_consistency": 1,
+      "authority_boundary": 0,
+      "dashboard_truth": 1
+    }
+  },
+  "candidates": [
+    {
+      "eval_candidate_id": "EVC-EVL-LONG-HORIZON-REPLAY",
+      "title": "Long-horizon replay coverage eval candidate",
+      "purpose": "Detect drift that escapes short-horizon replay by requiring a long-horizon replay dimension before EVL declares coverage_status=full.",
+      "failure_prevented": "FM-SEED-EVAL-GAP recurring with no signal to EVL that long_horizon_replay was missing.",
+      "signal_improved": "EVL coverage_status reflects long-horizon replay presence and quality.",
+      "target_systems": ["EVL", "REP"],
+      "candidate_eval_type": "replay_consistency",
+      "input_artifacts": [
+        "artifacts/dashboard_seed/eval_summary_record.json",
+        "artifacts/dashboard_seed/replay_record.json"
+      ],
+      "expected_signal": "EVL replay coverage includes long_horizon dimension with pass/partial/fail and source_artifacts_used.",
+      "acceptance_condition": "EVL artifact reports long_horizon dimension with status and source; absent signal becomes warn rather than missing-by-default.",
+      "owner_recommendation": "EVL",
+      "status": "proposed",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/eval_summary_record.json",
+        "artifacts/dashboard_seed/replay_record.json"
+      ]
+    },
+    {
+      "eval_candidate_id": "EVC-EVL-FULL-CERT-SET",
+      "title": "Full certification set evidence-coverage eval candidate",
+      "purpose": "Require the certification evidence set used by SEL to appear in eval inputs so coverage_status=partial cannot stay invisible to downstream gates.",
+      "failure_prevented": "FM-SEED-CERT-INCOMPLETE leading to SEL observe-only with no eval candidate ever raising the missing certification inputs.",
+      "signal_improved": "EVL evidence-coverage signal explicitly lists certification artifacts present and missing.",
+      "target_systems": ["EVL", "SEL"],
+      "candidate_eval_type": "evidence_coverage",
+      "input_artifacts": [
+        "artifacts/dashboard_seed/eval_summary_record.json",
+        "artifacts/dashboard_seed/enforcement_action_record.json"
+      ],
+      "expected_signal": "EVL artifact enumerates required certification inputs and per-input present/partial/missing status.",
+      "acceptance_condition": "Missing certification inputs surface as named warnings; never silently absent.",
+      "owner_recommendation": "EVL",
+      "status": "proposed",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/eval_summary_record.json",
+        "artifacts/dashboard_seed/enforcement_action_record.json"
+      ]
+    },
+    {
+      "eval_candidate_id": "EVC-REP-LONG-HORIZON",
+      "title": "REP long-horizon dimension evidence-coverage eval candidate",
+      "purpose": "Require REP to expose long_horizon and distribution_shift dimensions in its replay record before EVL accepts replay coverage as complete.",
+      "failure_prevented": "FM-SEED-REPLAY-GAP recurring with REP silently omitting long-horizon dimensions.",
+      "signal_improved": "REP replay_record exposes per-dimension status and source.",
+      "target_systems": ["REP", "EVL"],
+      "candidate_eval_type": "evidence_coverage",
+      "input_artifacts": [
+        "artifacts/dashboard_seed/replay_record.json"
+      ],
+      "expected_signal": "REP record carries dimensions=[short_horizon, long_horizon, distribution_shift] with status and source per dimension.",
+      "acceptance_condition": "Any missing dimension produces a named warning visible to EVL.",
+      "owner_recommendation": "EVL",
+      "status": "proposed",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/replay_record.json"
+      ]
+    },
+    {
+      "eval_candidate_id": "EVC-SLO-BUDGET-CONTEXT",
+      "title": "SLO budget-context evidence-coverage eval candidate",
+      "purpose": "Require SLO record to expose consumed_ratio and budget_status alongside CDE inputs.",
+      "failure_prevented": "FM-SEED-SLO-CONTEXT leaving budget context partial during promotion review.",
+      "signal_improved": "SLO consumed_ratio and budget_status are first-class fields in the SLO record consumed by CDE.",
+      "target_systems": ["SLO", "CDE"],
+      "candidate_eval_type": "schema_conformance",
+      "input_artifacts": [
+        "artifacts/dashboard_seed/slo_status_record.json",
+        "artifacts/dashboard_seed/control_decision_record.json"
+      ],
+      "expected_signal": "SLO record includes consumed_ratio (float|unknown) and budget_status (within|warn|over|unknown).",
+      "acceptance_condition": "Absent fields surface as 'unknown' with named warning, never as 0 or pass.",
+      "owner_recommendation": "EVL",
+      "status": "proposed",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/slo_status_record.json",
+        "artifacts/dashboard_seed/control_decision_record.json"
+      ]
+    },
+    {
+      "eval_candidate_id": "EVC-LIN-TRACE-COMPLETENESS",
+      "title": "LIN trace completeness eval candidate",
+      "purpose": "Require lineage record to link source_artifact_record, output_artifact_record, eval_summary_record, control_decision_record, and enforcement_action_record for every loop case.",
+      "failure_prevented": "Cases shipping without an end-to-end lineage chain that EVL can reference for replay.",
+      "signal_improved": "Lineage trace completeness becomes a named eval signal with explicit required edges.",
+      "target_systems": ["LIN", "REP", "EVL"],
+      "candidate_eval_type": "trace_completeness",
+      "input_artifacts": [
+        "artifacts/dashboard_seed/lineage_record.json",
+        "artifacts/dashboard_seed/minimal_loop_snapshot.json"
+      ],
+      "expected_signal": "LIN record explicitly enumerates required upstream/downstream edges and per-edge status.",
+      "acceptance_condition": "Any missing edge produces a named warning visible to EVL.",
+      "owner_recommendation": "EVL",
+      "status": "proposed",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/lineage_record.json",
+        "artifacts/dashboard_seed/minimal_loop_snapshot.json"
+      ]
+    },
+    {
+      "eval_candidate_id": "EVC-MET-DASHBOARD-TRUTH",
+      "title": "Dashboard-truth eval candidate",
+      "purpose": "Verify that /api/intelligence never substitutes 0 for a missing artifact field and never reports a fake-pass status.",
+      "failure_prevented": "Dashboard reporting healthy state while an upstream artifact is missing or partial.",
+      "signal_improved": "Dashboard-truth signal becomes auditable: every numeric field traces to an artifact or surfaces 'unknown'.",
+      "target_systems": ["MET", "OBS"],
+      "candidate_eval_type": "dashboard_truth",
+      "input_artifacts": [
+        "apps/dashboard-3ls/app/api/intelligence/route.ts",
+        "artifacts/dashboard_metrics/risk_summary_record.json",
+        "artifacts/dashboard_metrics/leverage_queue_record.json",
+        "artifacts/dashboard_metrics/bottleneck_record.json"
+      ],
+      "expected_signal": "API responses preserve source_artifacts_used and degrade missing fields to 'unknown', never 0 or PASS.",
+      "acceptance_condition": "Tests assert no fake-zero substitution and no banned authority vocabulary in MET-owned outputs.",
+      "owner_recommendation": "EVL",
+      "status": "proposed",
+      "source_artifacts_used": [
+        "apps/dashboard-3ls/app/api/intelligence/route.ts",
+        "artifacts/dashboard_metrics/risk_summary_record.json"
+      ]
+    }
+  ]
+}

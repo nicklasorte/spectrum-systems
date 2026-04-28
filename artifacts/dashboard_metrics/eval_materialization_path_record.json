@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "eval_materialization_path_record",
+  "record_id": "EVMP-DASH-MET09-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/eval_candidate_record.json",
+    "artifacts/dashboard_metrics/failure_feedback_record.json",
+    "artifacts/dashboard_seed/eval_summary_record.json"
+  ],
+  "reason_codes": [
+    "materialization_path_proposed_only",
+    "owner_recommendation_EVL",
+    "no_eval_adoption_in_this_pr"
+  ],
+  "status": "warn",
+  "warnings": [
+    "This record describes a recommended path. EVL is the canonical owner of eval artifacts; no eval is adopted, scheduled, or run by MET.",
+    "Ordering of required steps is a recommendation, not a binding sequence; EVL may reorder."
+  ],
+  "failure_prevented": "EVL bottleneck recurring loop after loop because there is no documented path from a MET-side eval candidate to an EVL-owned eval artifact.",
+  "signal_improved": "Each MET eval candidate has a named, sourced path to materialization, including required authority inputs, required upstream artifacts, required tests, and a declared owner_recommendation.",
+  "path_id": "EVMP-EVL-MAT-PATH-001",
+  "source_eval_candidates": [
+    "EVC-EVL-LONG-HORIZON-REPLAY",
+    "EVC-EVL-FULL-CERT-SET",
+    "EVC-REP-LONG-HORIZON",
+    "EVC-SLO-BUDGET-CONTEXT",
+    "EVC-LIN-TRACE-COMPLETENESS",
+    "EVC-MET-DASHBOARD-TRUTH"
+  ],
+  "owner_recommendation": "EVL",
+  "required_authority_inputs": [
+    "EVL acceptance of candidate eval shape and acceptance condition",
+    "GOV confirmation that the candidate type fits the EVL canonical eval taxonomy",
+    "TPA confirmation that downstream policy interpretation is unaffected (where the candidate touches policy inputs)"
+  ],
+  "required_artifacts_before_materialization": [
+    "artifacts/dashboard_seed/eval_summary_record.json (canonical EVL inputs)",
+    "artifacts/dashboard_seed/replay_record.json (REP inputs)",
+    "artifacts/dashboard_seed/lineage_record.json (LIN inputs)",
+    "artifacts/dashboard_seed/slo_status_record.json (SLO inputs)",
+    "artifacts/dashboard_metrics/eval_candidate_record.json (the candidate)"
+  ],
+  "required_tests": [
+    "EVL-owned schema test for the new eval artifact",
+    "REP/LIN dimension presence test (per-dimension status field)",
+    "Dashboard-truth test confirming /api/intelligence preserves source_artifacts_used and degrades missing fields to 'unknown'",
+    "Authority-vocabulary tests remain green"
+  ],
+  "materialization_status": "proposed",
+  "next_recommended_input": "Forward this record to EVL alongside `artifacts/dashboard_metrics/eval_candidate_record.json` for adoption review."
+}

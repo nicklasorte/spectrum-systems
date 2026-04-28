@@ -1,0 +1,158 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_type": "failure_feedback_record",
+  "record_id": "FFB-DASH-MET04-001",
+  "created_at": "2026-04-28T00:00:00Z",
+  "owner_system": "MET",
+  "case_id": "dashboard-seed-001",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
+    "artifacts/dashboard_seed/near_miss_record.json",
+    "artifacts/dashboard_metrics/leverage_queue_record.json",
+    "artifacts/dashboard_metrics/bottleneck_record.json",
+    "artifacts/dashboard_metrics/risk_summary_record.json"
+  ],
+  "reason_codes": [
+    "feedback_items_seeded_from_partial_loop",
+    "no_feedback_item_without_source",
+    "candidates_proposed_only_no_authority_claim"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Feedback items derive from a single seeded case. Frequency and conversion rates remain unknown.",
+    "All candidates are proposed only. EVL/TPA/CDE/SEL/GOV ownership is unchanged; no eval, policy, control, or enforcement adoption occurs in this PR.",
+    "closure_required_by dates are recommendations, not deadlines. MET does not gate closure."
+  ],
+  "failure_prevented": "Failures and near misses going unobserved into the next loop with no eval candidate or policy candidate signal raised; promotion gates re-encountering the same blocker without an improvement input on file.",
+  "signal_improved": "Traceable link from each named failure mode, near miss, and leverage item to a proposed eval candidate or policy candidate signal, including age and closure pressure visibility.",
+  "feedback_items": [
+    {
+      "id": "FFB-FM-EVAL-GAP",
+      "source_type": "failure_mode",
+      "source_record": "artifacts/dashboard_seed/failure_mode_dashboard_record.json#FM-SEED-EVAL-GAP",
+      "failure_prevented": "Promotion gated on partial evaluation evidence with no eval candidate logged for the missing dimensions.",
+      "signal_improved": "Long-horizon replay and full certification set coverage become traceable as proposed eval candidates instead of unspoken gaps.",
+      "affected_systems": ["EVL", "TPA", "CDE"],
+      "suggested_eval_candidate_id": "EVC-EVL-LONG-HORIZON-REPLAY",
+      "suggested_policy_candidate_id": null,
+      "feedback_status": "proposed",
+      "age_days": 3,
+      "closure_required_by": "2026-05-12",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
+        "artifacts/dashboard_seed/eval_summary_record.json"
+      ]
+    },
+    {
+      "id": "FFB-FM-CERT-INCOMPLETE",
+      "source_type": "failure_mode",
+      "source_record": "artifacts/dashboard_seed/failure_mode_dashboard_record.json#FM-SEED-CERT-INCOMPLETE",
+      "failure_prevented": "Observe-only enforcement re-occurring on the next loop with no policy candidate signal documenting the certification-set gap.",
+      "signal_improved": "Certification completeness gap is captured as a policy candidate signal addressed to SEL/GOV before any further promotion attempt.",
+      "affected_systems": ["SEL", "CDE"],
+      "suggested_eval_candidate_id": "EVC-EVL-FULL-CERT-SET",
+      "suggested_policy_candidate_id": "POL-SEL-CERT-COMPLETENESS",
+      "feedback_status": "proposed",
+      "age_days": 3,
+      "closure_required_by": "2026-05-12",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
+        "artifacts/dashboard_seed/enforcement_action_record.json",
+        "artifacts/dashboard_seed/control_decision_record.json"
+      ]
+    },
+    {
+      "id": "FFB-FM-REPLAY-GAP",
+      "source_type": "failure_mode",
+      "source_record": "artifacts/dashboard_seed/failure_mode_dashboard_record.json#FM-SEED-REPLAY-GAP",
+      "failure_prevented": "Long-horizon drift slipping through without a replay-coverage eval candidate ever being raised.",
+      "signal_improved": "REP coverage gap becomes a proposed eval candidate visible to EVL upstream of the next promotion attempt.",
+      "affected_systems": ["REP", "EVL", "CDE"],
+      "suggested_eval_candidate_id": "EVC-REP-LONG-HORIZON",
+      "suggested_policy_candidate_id": null,
+      "feedback_status": "proposed",
+      "age_days": 3,
+      "closure_required_by": "2026-05-19",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
+        "artifacts/dashboard_seed/replay_record.json"
+      ]
+    },
+    {
+      "id": "FFB-FM-SLO-CONTEXT",
+      "source_type": "failure_mode",
+      "source_record": "artifacts/dashboard_seed/failure_mode_dashboard_record.json#FM-SEED-SLO-CONTEXT",
+      "failure_prevented": "Promotion review proceeding without an SLO budget eval candidate covering consumed_ratio and budget_status.",
+      "signal_improved": "SLO budget context surfaces as a proposed eval candidate alongside CDE inputs.",
+      "affected_systems": ["SLO", "CDE"],
+      "suggested_eval_candidate_id": "EVC-SLO-BUDGET-CONTEXT",
+      "suggested_policy_candidate_id": null,
+      "feedback_status": "proposed",
+      "age_days": 3,
+      "closure_required_by": "2026-05-26",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/failure_mode_dashboard_record.json",
+        "artifacts/dashboard_seed/slo_status_record.json"
+      ]
+    },
+    {
+      "id": "FFB-NM-PROMOTION-BYPASS",
+      "source_type": "near_miss",
+      "source_record": "artifacts/dashboard_seed/near_miss_record.json#NM-SEED-001",
+      "failure_prevented": "Repeat near miss going unrecorded as a policy candidate signal for the warn-gate boundary that caught it.",
+      "signal_improved": "Near-miss boundary becomes a proposed policy candidate signal addressed to TPA/CDE without MET claiming any policy authority.",
+      "affected_systems": ["TPA", "CDE"],
+      "suggested_eval_candidate_id": null,
+      "suggested_policy_candidate_id": "POL-TPA-WARN-BOUNDARY",
+      "feedback_status": "proposed",
+      "age_days": 3,
+      "closure_required_by": "2026-05-19",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_seed/near_miss_record.json",
+        "artifacts/dashboard_seed/trust_policy_decision_record.json"
+      ]
+    },
+    {
+      "id": "FFB-LV-EVL-001",
+      "source_type": "leverage_item",
+      "source_record": "artifacts/dashboard_metrics/leverage_queue_record.json#LV-EVL-001",
+      "failure_prevented": "Highest-leverage queue item ageing without a paired eval candidate or policy candidate signal.",
+      "signal_improved": "EVL coverage-gap leverage item is paired to a proposed eval candidate so the bottleneck has an attack path on file.",
+      "affected_systems": ["EVL", "TPA", "CDE"],
+      "suggested_eval_candidate_id": "EVC-EVL-LONG-HORIZON-REPLAY",
+      "suggested_policy_candidate_id": null,
+      "feedback_status": "proposed",
+      "age_days": 3,
+      "closure_required_by": "2026-05-12",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/leverage_queue_record.json",
+        "artifacts/dashboard_seed/eval_summary_record.json"
+      ]
+    },
+    {
+      "id": "FFB-LV-FALLBACK-001",
+      "source_type": "leverage_item",
+      "source_record": "artifacts/dashboard_metrics/leverage_queue_record.json#LV-FALLBACK-001",
+      "failure_prevented": "Fallback rows continuing to be reported as if artifact-backed, with no improvement input on file naming the systems and required signals.",
+      "signal_improved": "Per-system fallback reduction becomes a proposed policy candidate signal naming exact systems and replacement signals.",
+      "affected_systems": ["AEX", "PQX", "TPA", "REP", "OBS", "SLO"],
+      "suggested_eval_candidate_id": null,
+      "suggested_policy_candidate_id": "POL-GOV-FALLBACK-REDUCTION",
+      "feedback_status": "proposed",
+      "age_days": 3,
+      "closure_required_by": "2026-06-02",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/leverage_queue_record.json",
+        "artifacts/dashboard_seed/minimal_loop_snapshot.json"
+      ]
+    }
+  ]
+}
