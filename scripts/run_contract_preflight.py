@@ -157,31 +157,37 @@ _GOVERNED_CHANGED_PATH_PREFIXES = (
 
 _AUTHORITY_LANGUAGE_RESERVED_VERBS: dict[str, dict[str, Any]] = {
     "enforce": {
+        "record_symbol": "compliance_observation",
         "authority_cluster": "enforcement",
         "canonical_owners": ["SEL", "ENF"],
         "suggested_replacements": ["signal", "observation", "input"],
     },
     "decide": {
+        "record_symbol": "signal",
         "authority_cluster": "decision",
         "canonical_owners": ["CDE", "JDX"],
         "suggested_replacements": ["signal", "observation", "recommendation"],
     },
     "approve": {
+        "record_symbol": "review_request",
         "authority_cluster": "approval",
         "canonical_owners": ["GOV", "HIT"],
         "suggested_replacements": ["review", "assess", "request"],
     },
     "block": {
+        "record_symbol": "policy_observation",
         "authority_cluster": "control_gate",
         "canonical_owners": ["CDE", "SEL"],
         "suggested_replacements": ["flag", "mark", "signal"],
     },
     "promote": {
+        "record_symbol": "readiness_observation",
         "authority_cluster": "promotion",
         "canonical_owners": ["REL", "GOV", "CDE"],
         "suggested_replacements": ["advance_signal", "readiness_signal", "recommend"],
     },
     "certify": {
+        "record_symbol": "readiness_evidence",
         "authority_cluster": "certification",
         "canonical_owners": ["GOV", "CDE"],
         "suggested_replacements": ["attest_signal", "readiness_evidence", "validate"],
@@ -974,7 +980,7 @@ def _scan_authority_language_violations(repo_root: Path, changed_paths: list[str
                             "schema_version": "1.0.0",
                             "file": path,
                             "line": idx,
-                            "symbol": symbol,
+                            "symbol": str(descriptor.get("record_symbol", "compliance_observation")),
                             "authority_cluster": descriptor["authority_cluster"],
                             "canonical_owners": descriptor["canonical_owners"],
                             "suggested_replacements": descriptor["suggested_replacements"],

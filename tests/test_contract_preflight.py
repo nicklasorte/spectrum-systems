@@ -2318,3 +2318,25 @@ def test_preflight_blocks_on_authority_language_violation_and_emits_artifacts(mo
     assert mismatch["artifact_type"] == "authority_language_mismatch_packet"
     drift = json.loads((output_dir / "authority_drift_trend_record.json").read_text(encoding="utf-8"))
     assert drift["artifact_type"] == "authority_drift_trend_record"
+
+
+def test_scan_maps_block_symbol_to_policy_observation_and_preserves_block_signal(monkeypatch, tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    plan_path = repo_root / "docs" / "review-actions" / "PLAN-HRD-002-BLOCK-TEST.md"
+    plan_path.parent.mkdir(parents=True, exist_ok=True)
+    plan_path.write_text("This step should block on mismatch.\n", encoding="utf-8")
+
+    monkeypatch.setattr(preflight, "REPO_ROOT", repo_root)
+    rel_path = "docs/review-actions/PLAN-HRD-002-BLOCK-TEST.md"
+    violations = preflight._scan_authority_language_violations(repo_root, [rel_path])
+
+    assert len(violations) == 1
+    record = violations[0]
+    preflight.validate_artifact(record, "authority_language_violation_record")
+    assert record["symbol"] == "policy_observation"
+
+    control_signal = preflight.map_preflight_control_signal(
+        report={"status": "failed", "invariant_violations": ["AUTHORITY_LANGUAGE_RESERVED_VERB_NON_AUTHORITY_CONTEXT"]},
+        hardening_flow=False,
+    )
+    assert control_signal["strategy_gate_decision"] == "BLOCK"
