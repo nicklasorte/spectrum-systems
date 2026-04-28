@@ -112,7 +112,7 @@
           "tests/test_github_pr_autofix_review_artifact_validation.py",
           "tests/test_hnx_hardening.py",
           "tests/test_integration_fabric_ifb.py",
-          "tests/test_ns_system_justification_v2.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_opx_001_full_roadmap.py",
           "tests/test_pqx_execution_hardening.py",
           "tests/test_pqx_repo_write_lineage_guard.py",
@@ -213,13 +213,14 @@
           "tests/test_3ls_phase5_release_budget.py",
           "tests/test_ai_governed_integration.py",
           "tests/test_integration_fabric_ifb.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_rdx_hardening.py",
           "tests/test_roadmap_long_fabric.py",
           "tests/test_shift_left_hardening_superlayer.py",
           "tests/test_system_registry_boundary_enforcement.py"
         ]
       },
-      "evidence_count": 68,
+      "evidence_count": 69,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CAP"
@@ -387,12 +388,12 @@
           "docs/reviews/H01_pre_mvp_spine_review.md",
           "docs/reviews/NS_ALL_01_delivery_report.md",
           "docs/reviews/NT_ALL_01_delivery_report.md",
+          "docs/reviews/OC_ALL_01_delivery_report.md",
           "docs/reviews/OSX-03-phase2-ctx.md",
           "docs/reviews/PMH-003_delivery_report.md",
           "docs/reviews/RGP-02-redteam-02-context-fixes.md",
           "docs/reviews/pfx_02_current_fix_and_root_cause_autorepair.md",
           "docs/reviews/phase14_canary_path.md",
-          "docs/reviews/phase1_registry_and_contract_foundation.md",
           "docs/reviews/repo_process_flow.md",
           "docs/reviews/serial_operating_substrate_delivery_report.md",
           "docs/reviews/system_hardening_full_stack_review.md",
@@ -460,6 +461,7 @@
           "tests/test_ns_failure_trace_contract.py",
           "tests/test_ns_reason_codes.py",
           "tests/test_nx_end_to_end_loop.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_osx03_serial_substrate.py",
           "tests/test_policy_backtesting.py",
           "tests/test_pqx_sequential_loop.py",
@@ -468,7 +470,6 @@
           "tests/test_serial_substrate_contracts.py",
           "tests/test_system_cycle_operator.py",
           "tests/test_system_integration_validator.py",
-          "tests/test_trace_and_provenance.py",
           "tests/test_validator_engine.py",
           "tests/test_wpg_multi_pass_critique.py"
         ]
@@ -710,7 +711,7 @@
           "tests/test_fre_repair_flow.py",
           "tests/test_github_pr_autofix_review_artifact_validation.py",
           "tests/test_governed_preflight_remediation_loop.py",
-          "tests/test_lha_runtime_wiring.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_opx_004_durability_build.py",
           "tests/test_repair_standardization_24_01.py",
           "tests/test_review_parsing_engine.py",
@@ -791,7 +792,6 @@
           "docs/training/3ls_training_guide.md"
         ],
         "modules": [
-          "spectrum_systems/compat/deprecation_layer.py",
           "spectrum_systems/govern/__init__.py",
           "spectrum_systems/govern/govern.py",
           "spectrum_systems/governance/system_dependency_map.py",
@@ -799,6 +799,7 @@
           "spectrum_systems/modules/governance/certification_prerequisites.py",
           "spectrum_systems/modules/governance/promotion_requirements.py",
           "spectrum_systems/modules/hop/__init__.py",
+          "spectrum_systems/modules/observability/bottleneck_classifier.py",
           "spectrum_systems/modules/observability/reason_code_canonicalizer.py",
           "spectrum_systems/modules/runtime/authority_drift_preflight.py",
           "spectrum_systems/modules/runtime/authority_repair_engine.py",
@@ -831,8 +832,6 @@
           "scripts/validate_system_registry.py"
         ],
         "tests": [
-          "tests/fixtures/trust_regression_pack/README.md",
-          "tests/mvp-13/gov10-certification.test.ts",
           "tests/test_3ls_phase1_foundation.py",
           "tests/test_3ls_phase7_final_lock.py",
           "tests/test_3ls_registry_guard.py",
@@ -846,6 +845,9 @@
           "tests/test_nx_control_chain.py",
           "tests/test_nx_registry_red_team.py",
           "tests/test_observability.py",
+          "tests/test_oc_bottleneck_classifier.py",
+          "tests/test_oc_dashboard_truth_projection.py",
+          "tests/test_oc_operational_closure_bundle.py",
           "tests/test_policy_engine.py",
           "tests/test_rfx_certification_gate.py",
           "tests/test_rfx_flow_integration.py",
@@ -854,7 +856,6 @@
           "tests/test_rfx_loop_07_08_chaos.py",
           "tests/test_rfx_route_guard.py",
           "tests/test_rge_amender.py",
-          "tests/test_system_justification.py",
           "tests/test_system_lifecycle.py"
         ]
       },
@@ -963,7 +964,6 @@
           "tests/hop/test_eval_factory.py",
           "tests/hop/test_evaluator.py",
           "tests/hop/test_experience_store_concurrency.py",
-          "tests/hop/test_fix_pass.py",
           "tests/hop/test_frontier_streaming.py",
           "tests/hop/test_heldout_hardening.py",
           "tests/hop/test_integration_pipeline.py",
@@ -977,6 +977,7 @@
           "tests/hop/test_validator.py",
           "tests/test_authority_shape_preflight.py",
           "tests/test_build_tls_dependency_priority.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/tls_dependency_graph/test_phase2_classification.py",
           "tests/tls_dependency_graph/test_phase4_ranking.py"
         ]
@@ -1071,6 +1072,7 @@
           "tests/test_next_phase_governance.py",
           "tests/test_next_wave_runtime.py",
           "tests/test_nx_authority_shape_preflight_regression.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_opx_001_full_roadmap.py",
           "tests/test_preflight_selection_diagnostic.py",
           "tests/test_query_surfaces.py",
@@ -1084,7 +1086,7 @@
           "tests/unit/judgment/test_judgment_system.ts"
         ]
       },
-      "evidence_count": 82,
+      "evidence_count": 83,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "JDX"
@@ -1146,12 +1148,13 @@
           "tests/test_contract_enforcement.py",
           "tests/test_contracts.py",
           "tests/test_jsx_drx_runtime.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_roadmap_multi_batch_executor.py",
           "tests/test_serial_substrate_contracts.py",
           "tests/tls_dependency_graph/conftest.py"
         ]
       },
-      "evidence_count": 46,
+      "evidence_count": 47,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "JSX"
@@ -1182,7 +1185,6 @@
           "docs/governance/cdx_02_3ls_roadmap.json",
           "docs/review-actions/PLAN-AIG-001-2026-04-15.md",
           "docs/review-actions/PLAN-CANONICAL-ID-STANDARD-REFINED-2026-03-18.md",
-          "docs/review-actions/PLAN-CDX-01-next-phase-full-roadmap-build.md",
           "docs/review-actions/PLAN-PMH-002-2026-04-16.md",
           "docs/review-actions/PLAN-PMH-003-2026-04-17.md",
           "docs/review-actions/PLAN-PRA-NSX-PRG-001-2026-04-17.md",
@@ -1195,6 +1197,7 @@
           "docs/reviews/NS_ALL_01_delivery_report.md",
           "docs/reviews/NT_ALL_01_delivery_report.md",
           "docs/reviews/NX_ALL_01_delivery_report.md",
+          "docs/reviews/OC_ALL_01_delivery_report.md",
           "docs/reviews/PMH-003_delivery_report.md",
           "docs/reviews/PRA-NSX-PRG-001_delivery_report.md",
           "docs/reviews/SLH-001_delivery_report.md",
@@ -1205,8 +1208,8 @@
           "docs/system-registry.md"
         ],
         "modules": [
-          "spectrum_systems/modules/lineage/lineage_verifier.py",
           "spectrum_systems/modules/lineage/replay_lineage_join.py",
+          "spectrum_systems/modules/observability/bottleneck_classifier.py",
           "spectrum_systems/modules/observability/reason_code_canonicalizer.py",
           "spectrum_systems/modules/runtime/agent_golden_path.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
@@ -1254,15 +1257,15 @@
           "tests/test_nt_certification_delta.py",
           "tests/test_nt_proof_size_budget.py",
           "tests/test_nx_registry_red_team.py",
+          "tests/test_oc_bottleneck_classifier.py",
+          "tests/test_oc_closure_decision_packet.py",
           "tests/test_orchestration_boundaries.py",
           "tests/test_pqx_bundle_orchestrator.py",
           "tests/test_pqx_fix_execution.py",
-          "tests/test_rfx_adversarial_reliability_guard.py",
           "tests/test_rfx_certification_gate.py",
           "tests/test_rfx_flow_integration.py",
           "tests/test_rfx_integrity_bundle.py",
           "tests/test_rfx_loop_04_06_red_team.py",
-          "tests/test_rfx_loop_07_08_chaos.py",
           "tests/test_rfx_route_guard.py",
           "tests/test_rfx_telemetry_slo_gate.py",
           "tests/test_system_registry_boundary_enforcement.py"
@@ -1392,7 +1395,6 @@
         "tests": [
           "tests/test_3ls_simplification.py",
           "tests/test_3ls_simplification_phases_6_9.py",
-          "tests/test_certification_judgment_40_explicit.py",
           "tests/test_crm_comment_mapping.py",
           "tests/test_error_taxonomy.py",
           "tests/test_evaluation_auto_generation.py",
@@ -1400,6 +1402,7 @@
           "tests/test_map_projection_hardening.py",
           "tests/test_mnt_trust_integration.py",
           "tests/test_nx_registry_red_team.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_pqx_fix_gate.py",
           "tests/test_pqx_sequence_runner.py",
           "tests/test_preflight_selection_diagnostic.py",
@@ -1527,6 +1530,7 @@
           "tests/test_integration_fabric_ifb.py",
           "tests/test_ns_reason_codes.py",
           "tests/test_ns_system_justification_v2.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_pqx_sequential_loop.py",
           "tests/test_regression_harness.py",
           "tests/test_rfx_adversarial_reliability_guard.py",
@@ -1540,8 +1544,7 @@
           "tests/test_rfx_telemetry_slo_gate.py",
           "tests/test_rge_red_teamer.py",
           "tests/test_roadmap_long_fabric.py",
-          "tests/test_system_registry_boundary_enforcement.py",
-          "tests/tls_dependency_graph/test_phase0_registry_parser.py"
+          "tests/test_system_registry_boundary_enforcement.py"
         ]
       },
       "evidence_count": 106,
@@ -1625,6 +1628,7 @@
           "tests/test_next_wave_runtime.py",
           "tests/test_nt_proof_size_budget.py",
           "tests/test_nt_trust_freshness.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_rfx_certification_gate.py",
           "tests/test_rfx_flow_integration.py",
           "tests/test_rfx_loop_04_06_red_team.py",
@@ -1634,7 +1638,7 @@
           "tests/test_system_registry_boundary_enforcement.py"
         ]
       },
-      "evidence_count": 69,
+      "evidence_count": 70,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "POL"
@@ -1818,6 +1822,7 @@
           "docs/reviews/NS_ALL_01_delivery_report.md",
           "docs/reviews/NT_ALL_01_delivery_report.md",
           "docs/reviews/NX_ALL_01_delivery_report.md",
+          "docs/reviews/OC_ALL_01_delivery_report.md",
           "docs/reviews/PRA-NSX-PRG-001-HARDENING-001_delivery_report.md",
           "docs/reviews/PRA-NSX-PRG-001_delivery_report.md",
           "docs/reviews/phase10_promotion_readiness_checkpoint.md",
@@ -1846,6 +1851,7 @@
         "tests": [
           "tests/fixtures/pra_nsx_prg_pr_input.json",
           "tests/test_authority_drift_regression.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_pra_nsx_prg_loop.py",
           "tests/test_promotion_and_a2a_guards.py",
           "tests/test_rfx_certification_gate.py",
@@ -1855,7 +1861,7 @@
           "tests/test_rfx_route_guard.py"
         ]
       },
-      "evidence_count": 50,
+      "evidence_count": 52,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRA"
@@ -1911,11 +1917,12 @@
         ],
         "tests": [
           "tests/test_3ls_phase3_judgment_policy.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_rwa_runtime_wiring.py",
           "tests/test_system_registry_boundary_enforcement.py"
         ]
       },
-      "evidence_count": 39,
+      "evidence_count": 40,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRM"
@@ -1988,13 +1995,14 @@
         ],
         "tests": [
           "tests/fixtures/rax_adversarial_eval_pack.json",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_rax_eval_runner.py",
           "tests/test_rax_interface_assurance.py",
           "tests/test_rax_redteam_adversarial_pack.py",
           "tests/test_run_rax_operational_gate_cli.py"
         ]
       },
-      "evidence_count": 58,
+      "evidence_count": 59,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "RAX"
@@ -2030,7 +2038,6 @@
           "docs/review-actions/PLAN-PMH-002-2026-04-16.md",
           "docs/review-actions/PLAN-PMH-003-2026-04-17.md",
           "docs/review-actions/PLAN-PRA-NSX-PRG-001-2026-04-17.md",
-          "docs/review-actions/PLAN-R100-001-2026-04-15.md",
           "docs/review-actions/PLAN-RWA-001-2026-04-16.md",
           "docs/review-actions/PLAN-SLH-001-2026-04-17.md",
           "docs/review-actions/batch-sys-enf-02_registry_to_impl_conformance_scan.md",
@@ -2040,6 +2047,7 @@
           "docs/reviews/NS_ALL_01_delivery_report.md",
           "docs/reviews/NT_ALL_01_delivery_report.md",
           "docs/reviews/NX_ALL_01_delivery_report.md",
+          "docs/reviews/OC_ALL_01_delivery_report.md",
           "docs/reviews/PMH-003_delivery_report.md",
           "docs/reviews/PRA-NSX-PRG-001_delivery_report.md",
           "docs/reviews/SLH-001_delivery_report.md",
@@ -2050,6 +2058,7 @@
           "docs/system-registry.md"
         ],
         "modules": [
+          "spectrum_systems/modules/observability/bottleneck_classifier.py",
           "spectrum_systems/modules/observability/reason_code_canonicalizer.py",
           "spectrum_systems/modules/runtime/ai_governed_integration.py",
           "spectrum_systems/modules/runtime/full_autonomy_execution.py",
@@ -2073,7 +2082,6 @@
           "spectrum_systems/modules/runtime/rwa_owner_surfaces.py",
           "spectrum_systems/modules/runtime/rwa_runtime_wiring.py",
           "spectrum_systems/modules/runtime/shift_left_hardening_superlayer.py",
-          "spectrum_systems/modules/tls_dependency_graph/registry_parser.py",
           "spectrum_systems/modules/tls_dependency_graph/trust_gaps.py"
         ],
         "review_actions": [],
@@ -2096,6 +2104,8 @@
           "tests/test_ns_replay_lineage_join.py",
           "tests/test_nt_trust_regression_pack.py",
           "tests/test_nx_registry_red_team.py",
+          "tests/test_oc_bottleneck_classifier.py",
+          "tests/test_oc_cleanup_candidate_report.py",
           "tests/test_rfx_certification_gate.py",
           "tests/test_rfx_flow_integration.py",
           "tests/test_rfx_integrity_bundle.py",
@@ -2106,9 +2116,7 @@
           "tests/test_rfx_telemetry_slo_gate.py",
           "tests/test_roadmap_long_fabric.py",
           "tests/test_shift_left_hardening_superlayer.py",
-          "tests/test_system_registry_boundary_enforcement.py",
-          "tests/tls_dependency_graph/test_phase2_classification.py",
-          "tests/tls_dependency_graph/test_phase3_trust_gaps.py"
+          "tests/test_system_registry_boundary_enforcement.py"
         ]
       },
       "evidence_count": 96,
@@ -2157,12 +2165,12 @@
           "docs/reviews/20260413T120000Z_rsm_opx_001_implementation_review.md",
           "docs/reviews/BATCH-AUT-RUN-01-DELIVERY-REPORT.md",
           "docs/reviews/GRC-INTEGRATION-01-DELIVERY-REPORT.md",
+          "docs/reviews/OC_ALL_01_delivery_report.md",
           "docs/reviews/OPR-TRN-01A_authority_failclosed.md",
           "docs/reviews/PMH-003_delivery_report.md",
           "docs/reviews/PRA-NSX-PRG-001_delivery_report.md",
           "docs/reviews/REAL-WORLD-EXECUTION-CYCLE-01-DELIVERY-REPORT.md",
           "docs/reviews/REAL-WORLD-EXECUTION-CYCLE-02-DELIVERY-REPORT.md",
-          "docs/reviews/REGISTRY-ALIGN-01-DELIVERY-REPORT.md",
           "docs/reviews/RVW-BATCH-AUT-RUN-01.md",
           "docs/reviews/RVW-EVAL-DRIFT-SLICE-01.md",
           "docs/reviews/RVW-GRC-CANONICAL-01.md",
@@ -2223,6 +2231,7 @@
           "tests/test_governed_repair_loop_execution.py",
           "tests/test_nx_governed_intelligence.py",
           "tests/test_nx_registry_red_team.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_promotion_gate_decision.py",
           "tests/test_repair_latency_24_01.py",
           "tests/test_review_fix_loop_36_explicit.py",
@@ -2234,7 +2243,6 @@
           "tests/test_roadmap_execution.py",
           "tests/test_roadmap_expansion_contracts.py",
           "tests/test_rwa_runtime_wiring.py",
-          "tests/test_shift_left_memory_24_01.py",
           "tests/test_system_end_to_end_governed_loop.py",
           "tests/test_system_handoff_integrity.py",
           "tests/test_system_registry_boundaries.py",
@@ -2296,10 +2304,11 @@
           "scripts/build_dashboard_3ls_with_tls.py"
         ],
         "tests": [
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_rsm_runtime.py"
         ]
       },
-      "evidence_count": 36,
+      "evidence_count": 37,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "RSM"
@@ -2372,12 +2381,13 @@
           "tests/fixtures/autonomous_cycle/hardening/sec_guardrail_record.json",
           "tests/test_3ls_phase5_release_budget.py",
           "tests/test_feedback_system.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_slo_control.py",
           "tests/test_system_registry_boundary_enforcement.py",
           "tests/test_working_paper_generator.py"
         ]
       },
-      "evidence_count": 56,
+      "evidence_count": 57,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "SEC"
@@ -2479,6 +2489,7 @@
           "scripts/run_control_surface_enforcement.py",
           "scripts/run_control_surface_gap_extraction.py",
           "scripts/run_control_surface_obedience.py",
+          "scripts/run_fast_trust_gate.py",
           "scripts/run_repair_latency_24_01.py",
           "scripts/run_repair_standardization_24_01.py",
           "scripts/run_review_artifact_validation.py",
@@ -2503,7 +2514,7 @@
           "tests/test_nt_proof_size_budget.py",
           "tests/test_nx_control_chain.py",
           "tests/test_nx_end_to_end_loop.py",
-          "tests/test_nx_observability_failure_trace.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_opx_004_durability_build.py",
           "tests/test_responsibility_matrix.py",
           "tests/test_review_fix_loop_36_explicit.py",
@@ -2520,7 +2531,7 @@
           "tests/test_top_level_conductor.py"
         ]
       },
-      "evidence_count": 121,
+      "evidence_count": 122,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "SEL"
@@ -2630,6 +2641,7 @@
           "tests/test_ns_slo_signal_diet.py",
           "tests/test_nx_end_to_end_loop.py",
           "tests/test_observability_metrics.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_phase_a_integration.py",
           "tests/test_phase_d_slos.py",
           "tests/test_policy_registry.py",
@@ -2644,7 +2656,6 @@
           "tests/test_slo_control.py",
           "tests/test_slo_enforcement.py",
           "tests/test_slo_enforcer.py",
-          "tests/test_slo_evaluator.py",
           "tests/test_threshold_calibration.py",
           "tests/test_trace_and_provenance.py",
           "tests/test_trace_engine.py",
@@ -2758,12 +2769,12 @@
           "scripts/validate_system_registry_boundaries.py"
         ],
         "tests": [
-          "tests/helpers_repo_write_lineage.py",
           "tests/test_3ls_registry_guard.py",
           "tests/test_3ls_simplification.py",
           "tests/test_authority_drift_regression.py",
           "tests/test_failure_learning_artifacts.py",
           "tests/test_hnx_hardening.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_opx_001_full_roadmap.py",
           "tests/test_opx_004_durability_build.py",
           "tests/test_pqx_execution_hardening.py",
@@ -2899,7 +2910,7 @@
           "tests/test_done_certification.py",
           "tests/test_hnx_hardening.py",
           "tests/test_nt_certification_delta.py",
-          "tests/test_opx_004_durability_build.py",
+          "tests/test_oc_bottleneck_classifier.py",
           "tests/test_pqx_execution_hardening.py",
           "tests/test_pqx_repo_write_lineage_guard.py",
           "tests/test_pqx_sequence_runner.py",

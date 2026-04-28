@@ -180,12 +180,28 @@ describe('DashboardPage simplified cockpit', () => {
   });
 
   it('diagnostics tab renders the oc-bottleneck card on a well-formed artifact', async () => {
-    setupFetch({ ocBottleneck: { state: 'ok', card: { category: 'eval_coverage', owner_system: 'EVL', reason_code: 'missing_required_eval', evidence_status: 'artifact_backed', next_safe_action: 'attach eval evidence', warnings: [] }, reason: 'ok' } });
+    setupFetch({
+      ocBottleneck: {
+        state: 'ok',
+        card: {
+          overall_status: 'block',
+          category: 'eval',
+          reason_code: 'EVAL_COVERAGE_INSUFFICIENT',
+          owning_system: 'EVL',
+          next_safe_action: 'attach eval evidence',
+          source_artifact_type: 'dashboard_truth_projection',
+          warnings: [],
+        },
+        reason: 'ok',
+      },
+    });
     render(<DashboardPage />);
     await waitFor(() => expect(screen.getByTestId('tab-diagnostics')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('tab-diagnostics'));
     await waitFor(() => expect(screen.getByTestId('oc-bottleneck-card')).toBeInTheDocument());
     expect(screen.getByTestId('oc-bottleneck-card').textContent).toContain('EVL');
+    expect(screen.getByTestId('oc-bottleneck-card').textContent).toContain('eval');
+    expect(screen.getByTestId('oc-bottleneck-card').textContent).toContain('block');
   });
 
   // D3L-DATA-REGISTRY-01 Phase 3: human trust state label maps blocked_signal

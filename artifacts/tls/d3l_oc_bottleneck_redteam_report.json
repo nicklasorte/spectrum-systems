@@ -2,46 +2,60 @@
   "artifact_type": "d3l_oc_bottleneck_redteam_report",
   "phase": "D3L-DATA-REGISTRY-01",
   "step": "phase_7_redteam",
-  "generated_at": "2026-04-28T00:00:00Z",
+  "generated_at": "2026-04-28T08:00:00Z",
+  "integration_note": "Phase 7 was re-integrated against the OC-ALL-01 governed schemas after main was merged. The dashboard now consumes contracts/schemas/dashboard_truth_projection.schema.json (preferred) or contracts/schemas/operational_closure_bundle.schema.json (fallback). The OC layer's own self-reported drift (freshness_status, alignment_status, dashboard_alignment, fast_trust_gate_sufficiency, current_bottleneck.category=unknown, next_work_item.selection_status=unknown) maps onto the dashboard's stale_proof / conflict_proof / ambiguous fail-closed states.",
   "oc_artifact_paths_consumed": [
-    "artifacts/operational_closure/oc_bottleneck_steering.json",
-    "artifacts/operational_closure/operational_closure_bundle.json",
+    "artifacts/operational_closure/dashboard_truth_projection.json",
+    "artifacts/operational_closure/operational_closure_bundle.json"
+  ],
+  "schemas": [
+    "contracts/schemas/dashboard_truth_projection.schema.json",
     "contracts/schemas/operational_closure_bundle.schema.json"
   ],
   "current_repo_state": {
-    "scripts/print_operational_closure.py": "absent",
-    "scripts/generate_dashboard_truth_projection.py": "absent",
-    "contracts/schemas/operational_closure_bundle.schema.json": "absent",
-    "artifacts/operational_closure/*": "absent"
+    "scripts/print_operational_closure.py": "present (OC-ALL-01)",
+    "scripts/generate_dashboard_truth_projection.py": "present (OC-ALL-01)",
+    "contracts/schemas/dashboard_truth_projection.schema.json": "present (OC-ALL-01)",
+    "contracts/schemas/operational_closure_bundle.schema.json": "present (OC-ALL-01)",
+    "artifacts/operational_closure/*": "absent in this branch (no static published path yet)"
   },
   "behavior_when_oc_unavailable": {
-    "api": "/api/oc-bottleneck returns state=unavailable + reason='OC bottleneck artifact not present: artifacts/operational_closure/oc_bottleneck_steering.json'",
+    "api": "/api/oc-bottleneck returns state=unavailable + reason='OC artifacts not present: <projection>, <bundle>'",
     "ui": "Diagnostics tab Current Bottleneck panel surfaces 'OC bottleneck: unavailable — <reason>' instead of fabricating a card",
     "core_dashboard_behavior": "Top 3 / Trust Pulse / Graph all continue to operate; OC absence is reported, not propagated as a critical fail-closed across the cockpit"
   },
+  "schema_to_state_mapping": [
+    "freshness_status=stale → stale_proof",
+    "alignment_status in {drifted, corrupt, missing} → conflict_proof",
+    "dashboard_alignment in {drifted, corrupt, missing} → conflict_proof",
+    "current_status=unknown OR overall_status=unknown → ambiguous",
+    "bottleneck_category=unknown OR current_bottleneck.category=unknown → ambiguous",
+    "next_work_item.selection_status=unknown → ambiguous",
+    "all-aligned + non-unknown → ok"
+  ],
   "abuse_cases": [
     {
       "case": "stale proof",
       "expected": "stale_proof state; not actionable",
-      "actual": "loadOcBottleneck returns state='stale_proof' when bottleneck.stale_proof===true; UI shows 'OC bottleneck: stale_proof — <reason>'",
+      "actual": "loadOcBottleneck returns state='stale_proof' when projection.freshness_status='stale'; UI shows 'OC bottleneck: stale_proof — <reason>'; warnings list freshness_status=stale",
       "status": "fixed"
     },
     {
       "case": "duplicate / conflict proof",
       "expected": "conflict_proof state; no tie-break",
-      "actual": "loadOcBottleneck returns state='conflict_proof' when bottleneck.conflict_proof===true",
+      "actual": "loadOcBottleneck returns state='conflict_proof' when projection.alignment_status in {drifted, corrupt, missing} or bundle.dashboard_alignment in same set",
       "status": "fixed"
     },
     {
       "case": "ambiguous bottleneck",
       "expected": "ambiguous state",
-      "actual": "loadOcBottleneck returns state='ambiguous' when bottleneck.ambiguous===true",
+      "actual": "loadOcBottleneck returns state='ambiguous' when either status or category is 'unknown', or when next_work_item.selection_status='unknown'",
       "status": "fixed"
     },
     {
       "case": "low-trust work recommendation",
-      "expected": "evidence_status='partial' or 'missing' surfaces in card",
-      "actual": "card.evidence_status passes through verbatim; UI shows 'evidence: partial' / 'evidence: missing'",
+      "expected": "warnings panel surfaces fast_trust_gate_sufficiency / dashboard_alignment drift",
+      "actual": "card.warnings includes 'fast_trust_gate_sufficiency=insufficient' / 'dashboard_alignment=drifted' so the operator sees the OC layer's self-doubt without needing to read evidence_refs",
       "status": "fixed"
     },
     {
@@ -53,8 +67,20 @@
     {
       "case": "OC schema absent",
       "expected": "unavailable state",
-      "actual": "loadOcBottleneck returns state='unavailable' when artifact file is missing",
+      "actual": "loadOcBottleneck returns state='unavailable' when no projection AND no bundle file is present on disk; sources lists both expected paths plus their schemas",
       "status": "fixed"
+    },
+    {
+      "case": "projection malformed",
+      "expected": "invalid_schema",
+      "actual": "isProjection enforces required enum values for current_status / bottleneck_category / freshness_status / alignment_status and non-empty reason_code; mismatches return invalid_schema",
+      "status": "fixed"
+    },
+    {
+      "case": "projection vs bundle present",
+      "expected": "deterministic preference",
+      "actual": "Loader prefers projection (more direct dashboard projection); only falls back to bundle when projection is absent. Test 'prefers projection over bundle when both are present' confirms.",
+      "status": "ack"
     }
   ]
 }

@@ -52,11 +52,12 @@ type DecisionLayerResponse = {
 type OcBottleneckResponse = {
   state: 'ok' | 'unavailable' | 'invalid_schema' | 'stale_proof' | 'conflict_proof' | 'ambiguous';
   card: {
+    overall_status: 'pass' | 'block' | 'freeze' | 'unknown';
     category: string;
-    owner_system: string | null;
     reason_code: string;
-    evidence_status: 'artifact_backed' | 'partial' | 'missing';
+    owning_system: string | null;
     next_safe_action: string;
+    source_artifact_type: 'dashboard_truth_projection' | 'operational_closure_bundle';
     warnings: string[];
   } | null;
   reason: string;
@@ -476,11 +477,12 @@ export default function DashboardPage() {
             {!ocBottleneck && <p className="text-xs text-gray-500" data-testid="oc-bottleneck-loading">loading…</p>}
             {ocBottleneck && ocBottleneck.state === 'ok' && ocBottleneck.card && (
               <div className="text-sm space-y-0.5" data-testid="oc-bottleneck-card">
+                <p><strong>overall status:</strong> {ocBottleneck.card.overall_status}</p>
                 <p><strong>category:</strong> {ocBottleneck.card.category}</p>
-                <p><strong>owner system:</strong> {ocBottleneck.card.owner_system ?? 'unknown'}</p>
+                <p><strong>owning system:</strong> {ocBottleneck.card.owning_system ?? 'unknown'}</p>
                 <p><strong>reason:</strong> {ocBottleneck.card.reason_code}</p>
-                <p><strong>evidence:</strong> {ocBottleneck.card.evidence_status}</p>
                 <p><strong>next safe action:</strong> {ocBottleneck.card.next_safe_action}</p>
+                <p className="text-xs text-gray-500">source: {ocBottleneck.card.source_artifact_type}</p>
                 {(ocBottleneck.card.warnings ?? []).length > 0 && (
                   <p className="text-xs text-amber-700">⚠ {(ocBottleneck.card.warnings ?? []).join('; ')}</p>
                 )}

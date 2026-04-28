@@ -2,8 +2,13 @@
   "artifact_type": "d3l_dashboard_readiness_packet",
   "phase": "D3L-DATA-REGISTRY-01",
   "step": "phase_10_readiness_packet",
-  "generated_at": "2026-04-28T00:00:00Z",
+  "generated_at": "2026-04-28T08:00:00Z",
   "readiness_status": "ready",
+  "post_main_merge": {
+    "merged_at": "2026-04-28T07:30:00Z",
+    "merged_pr_summary": "OC-ALL-01: operational closure and bottleneck steering",
+    "phase_7_re_integration": "OC bottleneck loader now consumes real OC-ALL-01 schemas (dashboard_truth_projection v1.0.0 preferred, operational_closure_bundle v1.0.0 fallback). 14 schema-aligned tests pass."
+  },
   "registry_validation_result": {
     "ok": true,
     "active_count": 26,
@@ -41,7 +46,23 @@
     "ok": true,
     "module": "apps/dashboard-3ls/lib/ocBottleneck.ts",
     "fail_closed_when_unavailable": true,
-    "states": ["ok", "unavailable", "invalid_schema", "stale_proof", "conflict_proof", "ambiguous"]
+    "states": ["ok", "unavailable", "invalid_schema", "stale_proof", "conflict_proof", "ambiguous"],
+    "schemas_consumed": [
+      "contracts/schemas/dashboard_truth_projection.schema.json",
+      "contracts/schemas/operational_closure_bundle.schema.json"
+    ],
+    "artifact_paths_expected": [
+      "artifacts/operational_closure/dashboard_truth_projection.json",
+      "artifacts/operational_closure/operational_closure_bundle.json"
+    ],
+    "self_drift_to_state_mapping": {
+      "freshness_status=stale": "stale_proof",
+      "alignment_status in {drifted, corrupt, missing}": "conflict_proof",
+      "dashboard_alignment in {drifted, corrupt, missing}": "conflict_proof",
+      "current_status=unknown OR overall_status=unknown": "ambiguous",
+      "bottleneck_category=unknown OR current_bottleneck.category=unknown": "ambiguous",
+      "next_work_item.selection_status=unknown": "ambiguous"
+    }
   },
   "red_team_reports_created": [
     "artifacts/tls/d3l_data_inventory_redteam_report.json",
@@ -61,12 +82,18 @@
     "artifacts/tls/d3l_dashboard_readiness_fix_log.json"
   ],
   "tests_run": [
-    "apps/dashboard-3ls jest suite (npx jest)",
+    "apps/dashboard-3ls jest suite (npx jest --runInBand): 30 suites, 333 tests pass after merge",
+    "next build (apps/dashboard-3ls): pass",
     "tests/tls_dependency_graph/test_phase4_ranking.py",
     "tests/test_build_tls_dependency_priority.py",
     "tests/test_tls_exec_01.py",
     "tests/test_tls_next_01_integration.py",
-    "tests/test_tls_roadmap_artifacts.py"
+    "tests/test_tls_roadmap_artifacts.py",
+    "tests/test_tls_boundary_map.py",
+    "tests/test_oc_operational_closure_bundle.py",
+    "tests/test_oc_dashboard_truth_projection.py",
+    "tests/test_oc_bottleneck_classifier.py",
+    "pytest tests/ -k 'd3l or dashboard or tls or boundary or registry or oc' (excl. tls_dependency_graph): 2128 passed"
   ],
   "guards_run": [
     "scripts/validate_system_registry.py",
@@ -75,7 +102,7 @@
     "scripts/run_system_registry_guard.py"
   ],
   "known_limitations": [
-    "OC-ALL-01 scripts and schemas are not yet present in this repo. The dashboard surfaces 'OC unavailable' until OC-ALL-01 lands; this is intentional fail-closed behavior, not a regression of D3L-DATA-REGISTRY-01.",
+    "OC-ALL-01 schemas and scripts are present (merged from main); however no published OC artifact path yet exists at artifacts/operational_closure/{dashboard_truth_projection,operational_closure_bundle}.json. When neither artifact is on disk, the dashboard surfaces 'OC unavailable' (fail-closed). The CLI scripts/print_operational_closure.py renders an OC bundle on demand; future work may publish a static OC artifact for the dashboard to consume.",
     "Recompute route requires a node runtime with Python 3 available; serverless / Vercel deploys short-circuit to recompute_unavailable_signal with the exact local commands surfaced in warnings.",
     "Full Registry mode for the graph is delivered by the existing 'Show all' toggle; complex multi-mode controls (e.g. structure-only vs. failure-only filters) remain as follow-ups."
   ]

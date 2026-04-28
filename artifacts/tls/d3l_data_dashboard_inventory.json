@@ -97,10 +97,15 @@
     ]
   },
   "oc_artifacts_present": {
-    "scripts/print_operational_closure.py": false,
-    "scripts/generate_dashboard_truth_projection.py": false,
-    "contracts/schemas/dashboard_truth_projection.schema.json": false,
-    "contracts/schemas/operational_closure_bundle.schema.json": false
+    "scripts/print_operational_closure.py": true,
+    "scripts/generate_dashboard_truth_projection.py": true,
+    "contracts/schemas/dashboard_truth_projection.schema.json": true,
+    "contracts/schemas/operational_closure_bundle.schema.json": true,
+    "spectrum_systems/modules/governance/operational_closure_bundle.py": true,
+    "spectrum_systems/modules/observability/dashboard_truth_projection.py": true,
+    "contracts/examples/operational_closure_bundle.json": true,
+    "contracts/examples/dashboard_truth_projection.json": true,
+    "_integration_note": "OC-ALL-01 merged from main on 2026-04-28. Phase 7 dashboard loader now consumes the real OC schemas (dashboard_truth_projection v1.0.0 preferred, operational_closure_bundle v1.0.0 fallback). No published OC artifact path exists yet at artifacts/operational_closure/* — when neither artifact is on disk, dashboard surfaces 'OC unavailable' (fail-closed)."
   },
   "known_missing_pieces": [
     "ranking module does not emit generated_at field, so freshness gate has no source of truth from artifact",
