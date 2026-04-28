@@ -1,39 +1,57 @@
 {
   "artifact_type": "d3l_priority_freshness_gate",
-  "phase": "D3L-DATA-REGISTRY-01",
-  "step": "phase_1_freshness_gate",
-  "generated_at": "2026-04-28T00:00:00Z",
-  "policy": {
-    "default_stale_hours": 24,
-    "future_skew_tolerance_seconds": 300,
-    "env_override": "D3L_PRIORITY_STALE_HOURS",
-    "fallback_to_mtime": false
+  "blocking_reasons": [],
+  "checks": {
+    "freshness": {
+      "age_hours": 5.0056,
+      "future_skewed": false,
+      "generated_at": "2026-04-28T07:32:01Z",
+      "now_iso": "2026-04-28T12:32:21Z",
+      "parsed": true,
+      "reason": null,
+      "stale": false,
+      "stale_threshold_hours": 24
+    },
+    "ranking_universe": {
+      "non_active_in_global": [
+        "H01",
+        "ABX",
+        "CMP",
+        "DBB",
+        "LCE",
+        "NRM",
+        "QRY",
+        "RET",
+        "RSK",
+        "SAL",
+        "SAS",
+        "SHA",
+        "SIV",
+        "SUP",
+        "TRN",
+        "MET",
+        "METS",
+        "RFX",
+        "DCL",
+        "DEM",
+        "HNX",
+        "MCL",
+        "MNT",
+        "RWA"
+      ],
+      "non_active_in_top_5": [],
+      "ok": true,
+      "ranking_universe_size": 26
+    },
+    "schema_valid": true,
+    "valid_json": true
   },
-  "states_returned_by_loader": [
-    "ok",
-    "missing",
-    "stale",
-    "invalid_schema",
-    "invalid_timestamp",
-    "future_timestamp",
-    "blocked_signal",
-    "freeze_signal"
-  ],
-  "ui_behavior": {
-    "stale": "Top 3 cards are NOT rendered as actionable. Warning surfaces 'Top 3 stale — regenerate priority artifact.' with the exact recompute command.",
-    "invalid_timestamp": "Top 3 cards are NOT rendered. Warning notes generated_at_missing or generated_at_unparseable.",
-    "future_timestamp": "Top 3 cards are NOT rendered. Warning notes generated_at_in_future.",
-    "missing": "Top 3 cards are NOT rendered. Warning notes 'priority artifact missing'."
-  },
+  "generated_at": "2026-04-28T12:32:21Z",
+  "phase": "D3L-MASTER-01",
   "recompute_command": "python scripts/build_tls_dependency_priority.py --candidates HOP,RAX,RSM,CAP,SEC,EVL,OBS,SLO --fail-if-missing && python scripts/build_dashboard_3ls_with_tls.py --skip-next-build",
-  "registry_alignment": {
-    "candidates_list_only_uses_registry_active_systems": true,
-    "active_systems_used": ["HOP", "RAX", "RSM", "CAP", "SEC", "EVL", "OBS", "SLO"]
-  },
-  "tls_pipeline_change": {
-    "module": "spectrum_systems/modules/tls_dependency_graph/ranking.py",
-    "added_field": "generated_at",
-    "format": "UTC ISO-8601 (e.g. 2026-04-28T00:00:00Z)",
-    "env_override_for_tests": "TLS_GENERATED_AT_OVERRIDE"
-  }
+  "schema_version": "d3l-master-01.v1",
+  "source_contract_artifact": "artifacts/tls/d3l_registry_contract.json",
+  "source_priority_artifact": "artifacts/system_dependency_priority_report.json",
+  "stale_threshold_hours": 24,
+  "status": "ok"
 }

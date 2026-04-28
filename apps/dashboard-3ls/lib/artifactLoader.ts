@@ -403,6 +403,121 @@ function finalizeLoad(attempt: AttemptResult, now: Date): PriorityArtifactLoadRe
   return { state: 'ok', payload, generated_at: rawGeneratedAt, source_path: attempt.source_path };
 }
 
+// ---------------------------------------------------------------------------
+// D3L-MASTER-01 Phase 1 — priority freshness gate, registry-aligned.
+//
+// `loadPriorityArtifact` already checks JSON validity, schema shape, and
+// freshness (24h default). The freshness gate adds a registry-alignment
+// check: every Top-5 system_id MUST be in the active ranking universe.
+// If it isn't, ranking is hidden — fail-closed — even when the artifact
+// is otherwise fresh and well-formed.
+// ---------------------------------------------------------------------------
+
+export type PriorityFreshnessStatus =
+  | 'ok'
+  | 'missing'
+  | 'stale'
+  | 'invalid_schema'
+  | 'invalid_timestamp'
+  | 'future_timestamp'
+  | 'blocked_signal'
+  | 'freeze_signal'
+  | 'non_active_in_top_5'
+  | 'contract_missing';
+
+export interface PriorityFreshnessGateResult {
+  status: PriorityFreshnessStatus;
+  ok: boolean;
+  loader: PriorityArtifactLoadResult;
+  generated_at?: string;
+  ranking_universe_size: number;
+  non_active_in_top_5: string[];
+  non_active_in_global: string[];
+  blocking_reasons: string[];
+  recompute_command: string;
+  source_contract_artifact?: string;
+  source_priority_artifact?: string;
+}
+
+const D3L_REGISTRY_CONTRACT_PATH_RUNTIME = 'artifacts/tls/d3l_registry_contract.json';
+
+interface RawD3LContract {
+  ranking_universe?: unknown;
+  active_system_ids?: unknown;
+}
+
+function readRankingUniverseFromContract(): string[] | null {
+  const raw = loadArtifact<RawD3LContract>(D3L_REGISTRY_CONTRACT_PATH_RUNTIME);
+  if (!raw) return null;
+  if (Array.isArray(raw.ranking_universe) && raw.ranking_universe.every((v) => typeof v === 'string')) {
+    return raw.ranking_universe as string[];
+  }
+  if (Array.isArray(raw.active_system_ids) && raw.active_system_ids.every((v) => typeof v === 'string')) {
+    return raw.active_system_ids as string[];
+  }
+  return null;
+}
+
+/**
+ * Run the full freshness gate over the priority artifact:
+ *   1. JSON, schema, timestamp, freshness (delegated to loadPriorityArtifact)
+ *   2. registry-universe alignment (Top 5 must be active systems)
+ *
+ * The dashboard surface uses this as the single yes/no for showing
+ * Top 3 / Top 10 / All. Anything not "ok" is fail-closed.
+ */
+export function evaluatePriorityFreshnessGate(
+  now: Date = new Date(),
+): PriorityFreshnessGateResult {
+  const loader = loadPriorityArtifact(undefined, now);
+  const universe = readRankingUniverseFromContract();
+  const universeSize = universe?.length ?? 0;
+
+  const result: PriorityFreshnessGateResult = {
+    status: 'ok',
+    ok: true,
+    loader,
+    generated_at: loader.generated_at,
+    ranking_universe_size: universeSize,
+    non_active_in_top_5: [],
+    non_active_in_global: [],
+    blocking_reasons: [],
+    recompute_command: loader.recompute_command ?? PRIORITY_RECOMPUTE_COMMAND,
+    source_contract_artifact: universe ? D3L_REGISTRY_CONTRACT_PATH_RUNTIME : undefined,
+    source_priority_artifact: loader.source_path,
+  };
+
+  if (loader.state !== 'ok') {
+    result.ok = false;
+    result.status = loader.state as PriorityFreshnessStatus;
+    result.blocking_reasons.push(`priority_state:${loader.state}:${loader.reason ?? 'unknown'}`);
+    return result;
+  }
+
+  if (!universe) {
+    result.ok = false;
+    result.status = 'contract_missing';
+    result.blocking_reasons.push('contract_missing:artifacts/tls/d3l_registry_contract.json');
+    return result;
+  }
+
+  const universeSet = new Set(universe);
+  const top5: string[] = (loader.payload?.top_5 ?? []).map((row) => row.system_id);
+  const global: string[] = (loader.payload?.global_ranked_systems ?? []).map((row) => row.system_id);
+  result.non_active_in_top_5 = top5.filter((id) => !universeSet.has(id));
+  result.non_active_in_global = global.filter((id) => !universeSet.has(id));
+
+  if (result.non_active_in_top_5.length > 0) {
+    result.ok = false;
+    result.status = 'non_active_in_top_5';
+    result.blocking_reasons.push(
+      `non_active_in_top_5:${result.non_active_in_top_5.join(',')}`,
+    );
+  }
+
+  return result;
+}
+
 export interface TLSIntegratedSystem {
   system_id: string;
   classification: string;

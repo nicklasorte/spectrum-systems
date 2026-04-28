@@ -115,6 +115,10 @@ function setupFetch(overrides?: Partial<Record<string, unknown>>) {
     if (url.includes('/api/tls-roadmap')) return Promise.resolve({ ok: true, json: async () => overrides?.roadmap ?? mockRoadmap });
     if (url.includes('/api/intelligence')) return Promise.resolve({ ok: true, json: async () => ({ data_source: 'artifact_store' }) });
     if (url.includes('/api/oc-bottleneck')) return Promise.resolve({ ok: true, json: async () => overrides?.ocBottleneck ?? mockOcBottleneck });
+    if (url.includes('/api/registry-contract')) return Promise.resolve({ ok: true, json: async () => overrides?.contract ?? { allowed_active_node_ids: ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL'], active_systems: [], canonical_loop: [], canonical_overlays: [] } });
+    if (url.includes('/api/explain-state')) return Promise.resolve({ ok: true, json: async () => overrides?.explain ?? null });
+    if (url.includes('/api/decision-layer')) return Promise.resolve({ ok: true, json: async () => overrides?.decision ?? { groups: [], allowed_active_node_ids: [] } });
+    if (url.includes('/api/maturity')) return Promise.resolve({ ok: true, json: async () => overrides?.maturity ?? { status: 'ok', generated_at: '', blocking_reasons: [], rows: [], maturity_universe_size: 0, level_counts: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 }, staleness_caps_applied: 0, warnings: [] } });
     return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
   });
 }
@@ -124,11 +128,14 @@ describe('DashboardPage simplified cockpit', () => {
     (global.fetch as jest.Mock).mockClear();
   });
 
-  it('overview shows only 4 sections', async () => {
+  it('overview shows only allowed sections (Trust Pulse, Simple Flow, Top 3 — Leverage Queue moved to Roadmap)', async () => {
     setupFetch();
     render(<DashboardPage />);
     await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
-    expect(screen.getAllByTestId('overview-section')).toHaveLength(4);
+    // D3L-MASTER-01 Phase 8: Trust Pulse + Simple Flow + Top 3 = 3 panels
+    // (Explain System State only renders when explain has a root cause).
+    expect(screen.getAllByTestId('overview-section').length).toBeGreaterThanOrEqual(3);
+    expect(screen.getAllByTestId('overview-section').length).toBeLessThanOrEqual(4);
   });
 
   it('top 3 cards are extracted from artifact rows without re-ranking', async () => {
@@ -140,20 +147,20 @@ describe('DashboardPage simplified cockpit', () => {
     expect(screen.getByText(/Dashboard does not compute ranking/i)).toBeInTheDocument();
   });
 
-  it('leverage queue is derived from roadmap safe bundles (compact overview)', async () => {
+  it('leverage queue does NOT render in overview (D3L-MASTER-01 Phase 8 simplification)', async () => {
     setupFetch();
     render(<DashboardPage />);
-    await waitFor(() => expect(screen.getAllByTestId('leverage-queue-item').length).toBeGreaterThan(0));
-    // Phase 4 — Overview shows the compact queue card, not the verbose
-    // 4-queue dump. Title text "Queue 1 — Boundary map bundle" pattern.
-    expect(screen.getByText(/Queue 1\s*—\s*Boundary map bundle/i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
+    expect(screen.queryAllByTestId('leverage-queue-item')).toHaveLength(0);
   });
 
-  it('overview leverage queue is capped to 3 items (operator complexity budget)', async () => {
+  it('roadmap tab renders the leverage queue full 4-queue view', async () => {
     setupFetch();
     render(<DashboardPage />);
-    await waitFor(() => expect(screen.getAllByTestId('leverage-queue-item').length).toBeGreaterThan(0));
-    expect(screen.getAllByTestId('leverage-queue-item').length).toBeLessThanOrEqual(3);
+    await waitFor(() => expect(screen.getByTestId('tab-roadmap')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('tab-roadmap'));
+    await waitFor(() => expect(screen.getByTestId('roadmap-tab')).toBeInTheDocument());
+    expect(screen.getByTestId('roadmap-full-queues')).toBeInTheDocument();
   });
 
   it('roadmap tab shows the full 4-queue view that overview suppresses', async () => {
@@ -214,12 +221,11 @@ describe('DashboardPage simplified cockpit', () => {
     expect(screen.getByTestId('trust-pulse-raw').textContent).toContain('freeze_signal');
   });
 
-  it('missing artifacts show fail-closed warnings', async () => {
+  it('missing artifacts show fail-closed warnings (D3L-MASTER-01 Phase 8: queue warning moved to roadmap)', async () => {
     setupFetch({ priority: { state: 'missing', payload: null }, roadmap: { state: 'missing', payload: null, table_markdown: null }, flow: { state: 'missing', payload: null } });
     render(<DashboardPage />);
     await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
     expect(screen.getByTestId('top3-warning')).toBeInTheDocument();
-    expect(screen.getByTestId('queue-warning')).toBeInTheDocument();
     expect(screen.getByTestId('flow-warning')).toBeInTheDocument();
   });
 
@@ -228,7 +234,7 @@ describe('DashboardPage simplified cockpit', () => {
     render(<DashboardPage />);
     await waitFor(() => expect(screen.getByTestId('tab-roadmap')).toBeInTheDocument());
 
-    ['overview', 'graph', 'prioritization', 'sources', 'diagnostics', 'roadmap', 'raw'].forEach((tab) => {
+    ['overview', 'graph', 'mvp', 'prioritization', 'maturity', 'sources', 'diagnostics', 'roadmap', 'raw'].forEach((tab) => {
       expect(screen.getByTestId(`tab-${tab}`)).toBeInTheDocument();
     });
 

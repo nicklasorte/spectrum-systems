@@ -1,0 +1,37 @@
+{
+  "alignment": {
+    "lowest_maturity_level": 1,
+    "notes": [],
+    "ok": true,
+    "top_3_above_lowest_maturity": [],
+    "top_3_levels": [
+      {
+        "level": 1,
+        "system_id": "EVL"
+      },
+      {
+        "level": 1,
+        "system_id": "CDE"
+      },
+      {
+        "level": 1,
+        "system_id": "TPA"
+      }
+    ],
+    "warning": null
+  },
+  "artifact_type": "d3l_rank_maturity_alignment",
+  "blocking_reasons": [],
+  "generated_at": "2026-04-28T12:53:42Z",
+  "phase": "D3L-MASTER-01",
+  "rules": [
+    "alignment is informational only; never mutates ranking",
+    "control authority (CDE) decides; dashboard never re-orders"
+  ],
+  "schema_version": "d3l-master-01.v1",
+  "sources": {
+    "maturity": "artifacts/tls/d3l_maturity_report.json",
+    "ranking": "artifacts/tls/d3l_ranking_report.json"
+  },
+  "status": "ok"
+}

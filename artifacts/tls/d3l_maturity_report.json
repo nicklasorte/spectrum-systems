@@ -1,0 +1,717 @@
+{
+  "artifact_type": "d3l_maturity_report",
+  "blocking_reasons": [],
+  "generated_at": "2026-04-28T12:51:24Z",
+  "level_counts": {
+    "0": 0,
+    "1": 25,
+    "2": 1,
+    "3": 0,
+    "4": 0
+  },
+  "maturity_universe_size": 26,
+  "phase": "D3L-MASTER-01",
+  "priority_fresh": true,
+  "rows": [
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_enforcement_signal,missing_readiness_evidence,missing_replay"
+      ],
+      "evidence_count": 111,
+      "failing_signals": [
+        "missing_enforcement_signal",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_enforcement_signal",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "AEX",
+      "trust_state": "freeze_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_control,missing_enforcement_signal,missing_lineage,missing_readiness_evidence,missing_replay"
+      ],
+      "evidence_count": 69,
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "CAP",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_lineage,missing_observability,missing_replay"
+      ],
+      "evidence_count": 114,
+      "failing_signals": [
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_lineage",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "CDE",
+      "trust_state": "freeze_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_control,missing_enforcement_signal,missing_lineage,missing_observability,missing_readiness_evidence,missing_replay"
+      ],
+      "evidence_count": 96,
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "failing_structural_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "CTX",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_enforcement_signal,missing_lineage,missing_observability"
+      ],
+      "evidence_count": 107,
+      "failing_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "EVL",
+      "trust_state": "freeze_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_enforcement_signal,missing_lineage,missing_observability,missing_replay"
+      ],
+      "evidence_count": 108,
+      "failing_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "FRE",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_control,missing_lineage,missing_replay"
+      ],
+      "evidence_count": 106,
+      "failing_signals": [
+        "missing_control",
+        "missing_lineage",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_control",
+        "missing_lineage",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_lineage",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "GOV",
+      "trust_state": "freeze_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_enforcement_signal,missing_lineage,missing_readiness_evidence,missing_replay"
+      ],
+      "evidence_count": 102,
+      "failing_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "HOP",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_enforcement_signal,missing_lineage,missing_observability,missing_replay"
+      ],
+      "evidence_count": 83,
+      "failing_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "JDX",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_enforcement_signal,missing_lineage,missing_observability,missing_replay"
+      ],
+      "evidence_count": 47,
+      "failing_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "JSX",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_enforcement_signal"
+      ],
+      "evidence_count": 95,
+      "failing_signals": [
+        "missing_enforcement_signal"
+      ],
+      "failing_structural_signals": [
+        "missing_enforcement_signal"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 2,
+      "level_label": "Developing",
+      "status": "caution_signal",
+      "system_id": "LIN",
+      "trust_state": "warn"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_control,missing_enforcement_signal"
+      ],
+      "evidence_count": 126,
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement_signal"
+      ],
+      "failing_structural_signals": [
+        "missing_control",
+        "missing_enforcement_signal"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "MAP",
+      "trust_state": "warn"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_control,missing_enforcement_signal,missing_lineage"
+      ],
+      "evidence_count": 106,
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "OBS",
+      "trust_state": "freeze_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_control,missing_enforcement_signal,missing_lineage,missing_replay"
+      ],
+      "evidence_count": 70,
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "POL",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_enforcement_signal,missing_lineage,missing_readiness_evidence"
+      ],
+      "evidence_count": 127,
+      "failing_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_readiness_evidence"
+      ],
+      "failing_structural_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_readiness_evidence"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "PQX",
+      "trust_state": "freeze_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_control,missing_enforcement_signal,missing_lineage,missing_observability,missing_replay"
+      ],
+      "evidence_count": 52,
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "PRA",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_control,missing_enforcement_signal,missing_lineage,missing_observability,missing_readiness_evidence,missing_replay"
+      ],
+      "evidence_count": 40,
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "PRM",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_control,missing_enforcement_signal,missing_lineage,missing_observability,missing_readiness_evidence,missing_replay"
+      ],
+      "evidence_count": 59,
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "RAX",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_control,missing_enforcement_signal,missing_lineage"
+      ],
+      "evidence_count": 96,
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_lineage"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "REP",
+      "trust_state": "freeze_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_enforcement_signal,missing_lineage,missing_observability,missing_readiness_evidence,missing_replay"
+      ],
+      "evidence_count": 110,
+      "failing_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "RIL",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_enforcement_signal,missing_lineage,missing_observability,missing_readiness_evidence,missing_replay"
+      ],
+      "evidence_count": 37,
+      "failing_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_enforcement_signal",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "RSM",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_control,missing_lineage,missing_observability,missing_readiness_evidence,missing_replay"
+      ],
+      "evidence_count": 57,
+      "failing_signals": [
+        "missing_control",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "failing_structural_signals": [
+        "missing_control",
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_lineage",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "SEC",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_lineage,missing_readiness_evidence,missing_replay"
+      ],
+      "evidence_count": 122,
+      "failing_signals": [
+        "missing_lineage",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_lineage",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_lineage",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "SEL",
+      "trust_state": "freeze_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_lineage,missing_observability,missing_readiness_evidence"
+      ],
+      "evidence_count": 110,
+      "failing_signals": [
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_lineage",
+        "missing_observability",
+        "missing_readiness_evidence"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_lineage",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "SLO",
+      "trust_state": "freeze_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_control,missing_enforcement_signal,missing_observability,missing_readiness_evidence,missing_replay"
+      ],
+      "evidence_count": 112,
+      "failing_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_control",
+        "missing_enforcement_signal",
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_enforcement_signal",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "TLC",
+      "trust_state": "blocked_signal"
+    },
+    {
+      "blocking_reasons": [
+        "structural_signals:missing_observability,missing_readiness_evidence,missing_replay"
+      ],
+      "evidence_count": 115,
+      "failing_signals": [
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay",
+        "schema_weakness"
+      ],
+      "failing_structural_signals": [
+        "missing_observability",
+        "missing_readiness_evidence",
+        "missing_replay"
+      ],
+      "freshness_ok": true,
+      "has_evidence": true,
+      "key_gap": "missing_replay",
+      "level": 1,
+      "level_label": "Emerging",
+      "status": "fail-closed",
+      "system_id": "TPA",
+      "trust_state": "freeze_signal"
+    }
+  ],
+  "schema_version": "d3l-master-01.v1",
+  "sources": {
+    "contract": "artifacts/tls/d3l_registry_contract.json",
+    "evidence": "artifacts/tls/system_evidence_attachment.json",
+    "freshness_gate": "artifacts/tls/d3l_priority_freshness_gate.json",
+    "trust_gap": "artifacts/tls/system_trust_gap_report.json"
+  },
+  "staleness_caps_applied": 0,
+  "status": "ok"
+}

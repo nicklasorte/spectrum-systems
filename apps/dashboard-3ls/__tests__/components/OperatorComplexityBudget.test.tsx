@@ -110,6 +110,7 @@ function setupFetch(overrides?: Partial<Record<string, unknown>>) {
     if (url.includes('/api/explain-state')) return Promise.resolve({ ok: true, json: async () => overrides?.explain ?? mockExplain });
     if (url.includes('/api/decision-layer')) return Promise.resolve({ ok: true, json: async () => ({ groups: [], allowed_active_node_ids: [] }) });
     if (url.includes('/api/oc-bottleneck')) return Promise.resolve({ ok: true, json: async () => overrides?.ocBottleneck ?? mockOcBottleneck });
+    if (url.includes('/api/maturity')) return Promise.resolve({ ok: true, json: async () => overrides?.maturity ?? { status: 'ok', generated_at: '', blocking_reasons: [], rows: [], maturity_universe_size: 0, level_counts: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0 }, staleness_caps_applied: 0, warnings: [] } });
     return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
   });
 }
@@ -153,11 +154,11 @@ describe('Operator complexity budget', () => {
     expect(first.textContent).toMatch(/Boundary:/);
   });
 
-  it('overview leverage queue is capped to 3 items', async () => {
+  it('overview no longer renders leverage queue items (D3L-MASTER-01 Phase 8)', async () => {
     setupFetch();
     render(<DashboardPage />);
-    await waitFor(() => expect(screen.getAllByTestId('leverage-queue-item').length).toBeGreaterThan(0));
-    expect(screen.getAllByTestId('leverage-queue-item').length).toBeLessThanOrEqual(3);
+    await waitFor(() => expect(screen.getByTestId('overview-tab')).toBeInTheDocument());
+    expect(screen.queryAllByTestId('leverage-queue-item')).toHaveLength(0);
   });
 
   it('full roadmap detail lives in the Roadmap tab, not Overview', async () => {

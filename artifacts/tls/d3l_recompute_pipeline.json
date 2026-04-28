@@ -1,0 +1,69 @@
+{
+  "artifact_type": "d3l_recompute_pipeline",
+  "phase": "D3L-MASTER-01",
+  "schema_version": "d3l-master-01.v1",
+  "generated_at": "2026-04-28T12:38:00Z",
+  "status": "documentation_only",
+  "started_at": "2026-04-28T12:38:00Z",
+  "completed_at": "2026-04-28T12:38:00Z",
+  "stale_after_recompute": false,
+  "commands": [
+    {
+      "description": "TLS dependency priority (registry-active candidates only)",
+      "command": ["python", "scripts/build_tls_dependency_priority.py", "--candidates", "HOP,RAX,RSM,CAP,SEC,EVL,OBS,SLO", "--fail-if-missing"],
+      "code": null,
+      "timed_out": false,
+      "produced_artifact": "artifacts/system_dependency_priority_report.json",
+      "produced_artifact_present_after": null
+    },
+    {
+      "description": "Dashboard 3LS / TLS integration verifier",
+      "command": ["python", "scripts/build_dashboard_3ls_with_tls.py", "--skip-next-build"],
+      "code": null,
+      "timed_out": false,
+      "produced_artifact": "artifacts/system_dependency_priority_report.json",
+      "produced_artifact_present_after": null
+    },
+    {
+      "description": "Graph validation report",
+      "command": ["python", "scripts/build_system_graph_validation_report.py"],
+      "code": null,
+      "timed_out": false,
+      "produced_artifact": "artifacts/tls/system_graph_validation_report.json",
+      "produced_artifact_present_after": null
+    },
+    {
+      "description": "D3L registry contract artifact",
+      "command": ["python", "scripts/build_d3l_registry_contract.py"],
+      "code": null,
+      "timed_out": false,
+      "produced_artifact": "artifacts/tls/d3l_registry_contract.json",
+      "produced_artifact_present_after": null
+    },
+    {
+      "description": "D3L priority freshness gate artifact",
+      "command": ["python", "scripts/build_d3l_priority_freshness_gate.py"],
+      "code": null,
+      "timed_out": false,
+      "produced_artifact": "artifacts/tls/d3l_priority_freshness_gate.json",
+      "produced_artifact_present_after": null
+    }
+  ],
+  "generated_artifacts": [],
+  "skipped_artifacts": [],
+  "artifacts_checked": [
+    "artifacts/system_dependency_priority_report.json",
+    "artifacts/tls/system_dependency_priority_report.json",
+    "artifacts/tls/system_registry_dependency_graph.json",
+    "artifacts/tls/system_evidence_attachment.json",
+    "artifacts/tls/system_candidate_classification.json",
+    "artifacts/tls/system_trust_gap_report.json",
+    "artifacts/tls/d3l_registry_contract.json",
+    "artifacts/tls/d3l_priority_freshness_gate.json"
+  ],
+  "warnings": ["documentation_only_baseline:overwritten_by_first_recompute"],
+  "failing_command": null,
+  "failure_reason": null,
+  "error_message": null,
+  "documentation": "Baseline pipeline summary committed alongside the route. The next live recompute will overwrite this file with the actual run summary."
+}

@@ -14,8 +14,10 @@ import type { RegistryGraphContract } from '@/lib/registryContract';
 import type { ExplainSystemStateResult } from '@/lib/explainSystemState';
 import type { DecisionLayerGroup } from '@/lib/decisionLayer';
 import { humanTrustState } from '@/lib/humanStateLabels';
+import type { MaturityReport } from '@/lib/maturity';
+import { MVP_BOXES } from '@/lib/mvpGraph';
 
-type TabKey = 'overview' | 'graph' | 'decision' | 'prioritization' | 'sources' | 'diagnostics' | 'roadmap' | 'raw';
+type TabKey = 'overview' | 'graph' | 'mvp' | 'decision' | 'prioritization' | 'maturity' | 'sources' | 'diagnostics' | 'roadmap' | 'raw';
 
 // D3L-DATA-REGISTRY-01 — operator complexity budget for the Overview tab.
 const OVERVIEW_QUEUE_MAX = 3;
@@ -67,8 +69,10 @@ type OcBottleneckResponse = {
 const TABS: Array<{ key: TabKey; label: string }> = [
   { key: 'overview', label: 'Overview' },
   { key: 'graph', label: 'Graph' },
+  { key: 'mvp', label: 'MVP Graph' },
   { key: 'decision', label: 'Decision Layer' },
   { key: 'prioritization', label: 'Prioritization' },
+  { key: 'maturity', label: 'Maturity' },
   { key: 'sources', label: 'Sources' },
   { key: 'diagnostics', label: 'Diagnostics' },
   { key: 'roadmap', label: 'Roadmap' },
@@ -99,11 +103,12 @@ export default function DashboardPage() {
   const [explain, setExplain] = useState<ExplainSystemStateResult | null>(null);
   const [decisionLayer, setDecisionLayer] = useState<DecisionLayerResponse | null>(null);
   const [ocBottleneck, setOcBottleneck] = useState<OcBottleneckResponse | null>(null);
+  const [maturity, setMaturity] = useState<(MaturityReport & { sources?: Record<string, string | null> }) | null>(null);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [healthRes, priorityRes, flowRes, graphRes, roadmapRes, intelligenceRes, contractRes, explainRes, decisionRes, ocRes] = await Promise.all([
+        const [healthRes, priorityRes, flowRes, graphRes, roadmapRes, intelligenceRes, contractRes, explainRes, decisionRes, ocRes, maturityRes] = await Promise.all([
           fetch('/api/health'),
           fetch('/api/priority'),
           fetch('/api/system-flow'),
@@ -114,9 +119,10 @@ export default function DashboardPage() {
           fetch('/api/explain-state'),
           fetch('/api/decision-layer'),
           fetch('/api/oc-bottleneck'),
+          fetch('/api/maturity'),
         ]);
 
-        const [healthData, priorityData, flowData, graphData, roadmapData, intelligenceData, contractData, explainData, decisionData, ocData] = await Promise.all([
+        const [healthData, priorityData, flowData, graphData, roadmapData, intelligenceData, contractData, explainData, decisionData, ocData, maturityData] = await Promise.all([
           healthRes.json(),
           priorityRes.json(),
           flowRes.json(),
@@ -127,6 +133,7 @@ export default function DashboardPage() {
           explainRes.json(),
           decisionRes.json(),
           ocRes.json(),
+          maturityRes.json(),
         ]);
 
         setHealth(healthData);
@@ -139,6 +146,7 @@ export default function DashboardPage() {
         setExplain(explainData);
         setDecisionLayer(decisionData);
         setOcBottleneck(ocData);
+        setMaturity(maturityData);
         setError(null);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'dashboard_load_failure');
@@ -301,9 +309,24 @@ export default function DashboardPage() {
           </Panel>
 
           <Panel title="C. Top 3 Recommendations (TLS artifact only)">
-            {topThree.warning && <p data-testid="top3-warning" className="text-sm text-red-700">⚠ {topThree.warning}</p>}
+            {(() => {
+              const gate = (priority as unknown as { freshness_gate?: { ok: boolean; status: string; blocking_reasons?: string[]; recompute_command?: string } } | null)?.freshness_gate;
+              if (gate && !gate.ok) {
+                return (
+                  <div data-testid="top3-fail-closed" className="border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950 p-3 rounded text-sm">
+                    <p className="font-semibold text-red-700 dark:text-red-300">Top 3 hidden — freshness gate failed</p>
+                    <p className="text-xs text-red-700 dark:text-red-300">status: <strong>{gate.status}</strong>{gate.blocking_reasons?.length ? `; reasons: ${gate.blocking_reasons.join(', ')}` : ''}</p>
+                    {gate.recompute_command && (
+                      <p className="text-xs mt-1 break-all">regenerate: <code>{gate.recompute_command}</code></p>
+                    )}
+                  </div>
+                );
+              }
+              return null;
+            })()}
+            {topThree.warning && <p data-testid="top3-warning" className="text-sm text-red-700 dark:text-red-300">⚠ {topThree.warning}</p>}
             {topThree.recompute_command && (
-              <p data-testid="top3-recompute-command" className="text-xs text-gray-700 break-all">
+              <p data-testid="top3-recompute-command" className="text-xs text-gray-700 dark:text-gray-300 break-all">
                 regenerate: <code className="text-xs">{topThree.recompute_command}</code>
               </p>
             )}
@@ -342,39 +365,7 @@ export default function DashboardPage() {
             <p className="text-xs text-gray-600">Dashboard does not compute ranking. Full detail in the Prioritization tab.</p>
           </Panel>
 
-          <Panel title="D. Leverage Queue (compact; full detail in Roadmap)">
-            {queueResult.warning && <p data-testid="queue-warning" className="text-sm text-red-700">⚠ {queueResult.warning}</p>}
-            {(() => {
-              // D3L-DATA-REGISTRY-01 Phase 4: Overview shows up to OVERVIEW_QUEUE_MAX
-              // queue items, drawn from the immediate-next-bundle queue only. The
-              // full 4-queue view lives in the Roadmap tab. Roadmap labels stay as
-              // text — never graph nodes.
-              const immediate = queueResult.queues.queue_1_immediate_next_bundle.slice(0, OVERVIEW_QUEUE_MAX);
-              if (immediate.length === 0 && !queueResult.warning) {
-                return <p className="text-xs text-gray-500">no immediate-next bundles in current TLS roadmap</p>;
-              }
-              return (
-                <div className="space-y-2">
-                  {immediate.map((item, i) => (
-                    <article key={item.bundle_id} data-testid="leverage-queue-item" className="border rounded p-2 text-sm">
-                      <header className="flex flex-wrap gap-2 items-center">
-                        <strong>Queue {i + 1} — {item.title}</strong>
-                        {item.linked_top3_system_id && (
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300" data-testid="queue-top3-link">
-                            ↔ Top 3: {item.linked_top3_system_id}
-                          </span>
-                        )}
-                      </header>
-                      <p className="text-xs"><strong>Why:</strong> {item.why_it_matters}</p>
-                      <p className="text-xs text-gray-600"><strong>Depends:</strong> {item.dependency_count} artifact{item.dependency_count === 1 ? '' : 's'}</p>
-                      <p className="text-xs text-gray-600"><strong>Next:</strong> {item.bundle_id}</p>
-                    </article>
-                  ))}
-                  <p className="text-xs text-gray-500">Full declared order and artifact paths: see Roadmap tab.</p>
-                </div>
-              );
-            })()}
-          </Panel>
+          {/* D3L-MASTER-01 Phase 8 — Leverage Queue moved to Roadmap tab to keep Overview simple. */}
 
           {explain && explain.root_cause && (
             <Panel title="E. Explain System State (deterministic)" testId="explain-system-state">
@@ -442,9 +433,99 @@ export default function DashboardPage() {
       )}
 
       {activeTab === 'prioritization' && (
-        <section className="bg-white border rounded p-4" data-testid="prioritization-tab">
-          <h2 className="font-semibold mb-2">Full Prioritization Artifact</h2>
-          <pre className="text-xs overflow-auto max-h-[60vh]">{JSON.stringify(priority, null, 2)}</pre>
+        <section className="bg-white dark:bg-gray-800 dark:text-gray-100 border dark:border-gray-700 rounded p-4 space-y-3" data-testid="prioritization-tab">
+          <h2 className="font-semibold mb-2">Prioritization (Top 10 + Full Active List)</h2>
+          {(() => {
+            const gate = (priority as unknown as { freshness_gate?: { ok: boolean; status: string; blocking_reasons?: string[]; recompute_command?: string } } | null)?.freshness_gate;
+            if (gate && !gate.ok) {
+              return (
+                <div data-testid="prioritization-fail-closed" className="border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950 p-3 rounded text-sm">
+                  <p className="font-semibold text-red-700 dark:text-red-300">Prioritization hidden — freshness gate failed</p>
+                  <p className="text-xs text-red-700 dark:text-red-300">status: <strong>{gate.status}</strong>{gate.blocking_reasons?.length ? `; reasons: ${gate.blocking_reasons.join(', ')}` : ''}</p>
+                  {gate.recompute_command && (
+                    <p className="text-xs mt-1 break-all">regenerate: <code>{gate.recompute_command}</code></p>
+                  )}
+                </div>
+              );
+            }
+            const ranked: Array<{ rank?: number | null; system_id?: string; action?: string; why_now?: string; trust_state?: string }> = ((priority?.payload?.global_ranked_systems as unknown as Array<{ rank?: number | null; system_id?: string; action?: string; why_now?: string; trust_state?: string }> | undefined) ?? []);
+            const universe = new Set(contract?.allowed_active_node_ids ?? []);
+            const filtered = universe.size > 0 ? ranked.filter((r) => typeof r.system_id === 'string' && universe.has(r.system_id)) : ranked;
+            const top10 = filtered.slice(0, 10);
+            return (
+              <div className="space-y-4">
+                <div data-testid="prioritization-top10">
+                  <h3 className="font-semibold text-sm">Top 10</h3>
+                  <ol className="list-decimal pl-6 text-sm space-y-1">
+                    {top10.map((row) => (
+                      <li key={row.system_id} data-testid="prioritization-top10-row">
+                        <strong>{row.system_id}</strong> — {row.action} <span className="text-xs text-gray-600 dark:text-gray-400">({row.trust_state})</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+                <div data-testid="prioritization-full">
+                  <h3 className="font-semibold text-sm">Full Active List ({filtered.length})</h3>
+                  <ul className="text-xs columns-1 sm:columns-2 lg:columns-3">
+                    {filtered.map((row, i) => (
+                      <li key={`${row.system_id}-${i}`} data-testid="prioritization-full-row">
+                        #{row.rank ?? i + 1} <strong>{row.system_id}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Full detail (action, why-now, trust signals) available in the Raw Artifacts tab.</p>
+                </div>
+              </div>
+            );
+          })()}
+        </section>
+      )}
+
+      {activeTab === 'maturity' && (
+        <section className="bg-white dark:bg-gray-800 dark:text-gray-100 border dark:border-gray-700 rounded p-4 space-y-3" data-testid="maturity-tab">
+          <h2 className="font-semibold mb-2">Maturity (Active Systems)</h2>
+          {!maturity && <p className="text-xs text-gray-500">loading…</p>}
+          {maturity && maturity.status === 'fail-closed' && (
+            <p className="text-sm text-red-700 dark:text-red-300" data-testid="maturity-fail-closed">⚠ Maturity unavailable: {maturity.blocking_reasons.join(', ')}</p>
+          )}
+          {maturity && maturity.status === 'ok' && (
+            <table className="w-full text-sm" data-testid="maturity-table">
+              <thead>
+                <tr className="text-left border-b dark:border-gray-600">
+                  <th className="py-1">System</th>
+                  <th className="py-1">Maturity</th>
+                  <th className="py-1">Status</th>
+                  <th className="py-1">Key Gap</th>
+                </tr>
+              </thead>
+              <tbody>
+                {maturity.rows.map((row) => (
+                  <tr key={row.system_id} className="border-b last:border-0 dark:border-gray-700" data-testid="maturity-row">
+                    <td className="py-1 font-mono">{row.system_id}</td>
+                    <td className="py-1">{row.level} <span className="text-xs text-gray-600 dark:text-gray-400">{row.level_label}</span></td>
+                    <td className="py-1">{row.status}</td>
+                    <td className="py-1 text-xs">{row.key_gap}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+      )}
+
+      {activeTab === 'mvp' && (
+        <section className="bg-white dark:bg-gray-800 dark:text-gray-100 border dark:border-gray-700 rounded p-4 space-y-3" data-testid="mvp-tab">
+          <h2 className="font-semibold mb-1">MVP Graph (product capabilities, NOT registry systems)</h2>
+          <p className="text-xs text-gray-600 dark:text-gray-300">MVP boxes never appear as 3LS graph nodes. Each box maps to registry-active systems.</p>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="mvp-boxes">
+            {MVP_BOXES.map((box) => (
+              <article key={box.id} data-testid="mvp-box" className="border dark:border-gray-600 rounded p-3 text-sm">
+                <h3 className="font-semibold">{box.label}</h3>
+                <p className="text-xs italic text-gray-600 dark:text-gray-300">{box.description}</p>
+                <p className="text-xs"><strong>Maps to systems:</strong> {box.maps_to_systems.join(', ')}</p>
+              </article>
+            ))}
+          </div>
         </section>
       )}
 

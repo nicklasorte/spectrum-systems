@@ -51,7 +51,11 @@ const DASHBOARD_CRITICAL_ARTIFACTS = [
   'artifacts/tls/system_evidence_attachment.json',
   'artifacts/tls/system_candidate_classification.json',
   'artifacts/tls/system_trust_gap_report.json',
+  'artifacts/tls/d3l_registry_contract.json',
+  'artifacts/tls/d3l_priority_freshness_gate.json',
 ];
+
+const RECOMPUTE_PIPELINE_ARTIFACT = 'artifacts/tls/d3l_recompute_pipeline.json';
 
 function runCommand(command: string[], cwd: string, timeoutMs: number): Promise<Pick<CommandResult, 'code' | 'stdout' | 'stderr' | 'timed_out'>> {
   return new Promise((resolve) => {
@@ -169,6 +173,21 @@ export async function POST() {
     });
   }
 
+  // D3L-MASTER-01 Phase 2: rebuild registry contract and freshness gate
+  // so the dashboard's fail-closed signals always match the freshly
+  // produced priority artifact. These are cheap pure-python builds and
+  // never start a Next.js build of their own.
+  steps.push({
+    description: 'D3L registry contract artifact',
+    command: ['python', 'scripts/build_d3l_registry_contract.py'],
+    produced_artifact: 'artifacts/tls/d3l_registry_contract.json',
+  });
+  steps.push({
+    description: 'D3L priority freshness gate artifact',
+    command: ['python', 'scripts/build_d3l_priority_freshness_gate.py'],
+    produced_artifact: 'artifacts/tls/d3l_priority_freshness_gate.json',
+  });
+
   const warnings: string[] = [];
   const commandResults: CommandResult[] = [];
   const generated: string[] = [];
@@ -235,37 +254,79 @@ export async function POST() {
   }
 
   const completedAt = new Date().toISOString();
-  if (failedResult) {
-    const body: RecomputeResponseBody = {
-      status: 'recompute_failed_signal',
-      started_at: startedAt,
-      completed_at: completedAt,
-      commands: commandResults,
-      generated_artifacts: generated,
-      skipped_artifacts: skipped,
-      artifacts_checked: DASHBOARD_CRITICAL_ARTIFACTS,
-      warnings,
-      failing_command: failedResult.command,
-      failure_reason: failureReason,
-      stale_after_recompute: staleAfterRecompute,
-      error_message: failedResult.stderr || 'recompute command failed',
+  const responseBody: RecomputeResponseBody = failedResult
+    ? {
+        status: 'recompute_failed_signal',
+        started_at: startedAt,
+        completed_at: completedAt,
+        commands: commandResults,
+        generated_artifacts: generated,
+        skipped_artifacts: skipped,
+        artifacts_checked: DASHBOARD_CRITICAL_ARTIFACTS,
+        warnings,
+        failing_command: failedResult.command,
+        failure_reason: failureReason,
+        stale_after_recompute: staleAfterRecompute,
+        error_message: failedResult.stderr || 'recompute command failed',
+      }
+    : {
+        status: 'recompute_success_signal',
+        started_at: startedAt,
+        completed_at: completedAt,
+        commands: commandResults,
+        generated_artifacts: generated,
+        skipped_artifacts: skipped,
+        artifacts_checked: DASHBOARD_CRITICAL_ARTIFACTS,
+        warnings,
+        failing_command: null,
+        failure_reason: null,
+        stale_after_recompute: staleAfterRecompute,
+        error_message: null,
+      };
+
+  // D3L-MASTER-01 Phase 2: persist a pipeline summary artifact so the
+  // outcome of the most recent recompute is reviewable as a governed
+  // artifact, not just an HTTP response. Failure to write this summary
+  // is non-blocking — we surface the error in the response warnings.
+  try {
+    const summary = {
+      artifact_type: 'd3l_recompute_pipeline',
+      phase: 'D3L-MASTER-01',
+      schema_version: 'd3l-master-01.v1',
+      generated_at: completedAt,
+      status: responseBody.status,
+      started_at: responseBody.started_at,
+      completed_at: responseBody.completed_at,
+      stale_after_recompute: responseBody.stale_after_recompute,
+      commands: responseBody.commands.map((c) => ({
+        description: c.description,
+        command: c.command,
+        code: c.code,
+        timed_out: c.timed_out,
+        produced_artifact: c.produced_artifact,
+        produced_artifact_present_after: c.produced_artifact_present_after,
+      })),
+      generated_artifacts: responseBody.generated_artifacts,
+      skipped_artifacts: responseBody.skipped_artifacts,
+      artifacts_checked: responseBody.artifacts_checked,
+      warnings: responseBody.warnings,
+      failing_command: responseBody.failing_command,
+      failure_reason: responseBody.failure_reason,
+      error_message: responseBody.error_message,
     };
-    return NextResponse.json(body, { status: 500 });
+    const artifactDir = path.join(repoRoot, path.dirname(RECOMPUTE_PIPELINE_ARTIFACT));
+    fs.mkdirSync(artifactDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(repoRoot, RECOMPUTE_PIPELINE_ARTIFACT),
+      JSON.stringify(summary, null, 2) + '\n',
+      'utf-8',
+    );
+  } catch (err) {
+    responseBody.warnings.push(`recompute_summary_write_failed:${(err as Error).message}`);
   }
 
-  const body: RecomputeResponseBody = {
-    status: 'recompute_success_signal',
-    started_at: startedAt,
-    completed_at: completedAt,
-    commands: commandResults,
-    generated_artifacts: generated,
-    skipped_artifacts: skipped,
-    artifacts_checked: DASHBOARD_CRITICAL_ARTIFACTS,
-    warnings,
-    failing_command: null,
-    failure_reason: null,
-    stale_after_recompute: staleAfterRecompute,
-    error_message: null,
-  };
-  return NextResponse.json(body, { status: 200 });
+  if (failedResult) {
+    return NextResponse.json(responseBody, { status: 500 });
+  }
+  return NextResponse.json(responseBody, { status: 200 });
 }

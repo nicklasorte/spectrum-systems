@@ -1,0 +1,76 @@
+{
+  "artifact_type": "d3l_darkmode_redteam_report",
+  "phase": "D3L-MASTER-01",
+  "redteam_pass": "phase_7",
+  "schema_version": "d3l-master-01.v1",
+  "generated_at": "2026-04-28T13:01:00Z",
+  "intent": "Pin the dark mode contract: Light/Dark/System with persistence; status colors retain semantic meaning; tables/graph/warnings stay readable across both themes.",
+  "cases": [
+    {
+      "case_id": "phase7_theme_toggle",
+      "description": "Toggle between Light/Dark/System and confirm the html.dark class is added/removed.",
+      "expected_outcome": "Dark click ⇒ html.dark added; Light click ⇒ removed.",
+      "actual_outcome": "verified by ThemeToggle.test.tsx:'selecting Dark adds .dark to <html>' and 'selecting Light removes .dark'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase7_persistence",
+      "description": "Selection persists across mounts via localStorage[d3l-theme].",
+      "expected_outcome": "Stored preference reapplied on next render.",
+      "actual_outcome": "verified by ThemeToggle.test.tsx:'reads stored preference on mount'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase7_status_color_semantics",
+      "description": "Status colors (red/orange/yellow/green/gray) preserve semantic meaning under both themes.",
+      "expected_outcome": "STATUS_CLASSES carry text/bg/border with dark: variants in the same color family.",
+      "actual_outcome": "verified by theme.test.ts:'STATUS_CLASSES preserves semantic colors across themes'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase7_signal_to_color",
+      "description": "Trust state mapping is registry-aligned (blocked_signal⇒red, freeze_signal⇒orange, caution_signal⇒yellow, ready_signal⇒green, unknown⇒gray).",
+      "expected_outcome": "semanticColorForTrustState returns the canonical color per state.",
+      "actual_outcome": "verified by theme.test.ts:'semanticColorForTrustState'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase7_no_flash_of_light",
+      "description": "On first paint with dark preference set, the page must not flash light mode.",
+      "expected_outcome": "Pre-hydration script in layout.tsx <head> applies html.dark before React mounts.",
+      "actual_outcome": "Implemented as inline THEME_BOOTSTRAP script in apps/dashboard-3ls/app/layout.tsx; reads localStorage and matchMedia synchronously.",
+      "result": "passed",
+      "fix_required": false
+    }
+  ],
+  "fixes_applied": [
+    {
+      "fix_id": "phase7_fix_theme_helpers",
+      "scope": "apps/dashboard-3ls/lib/theme.ts",
+      "rationale": "Pure helpers (resolveTheme, STATUS_CLASSES, semanticColorForTrustState) so theme logic is fully testable without DOM globals.",
+      "linked_test": "apps/dashboard-3ls/__tests__/lib/theme.test.ts"
+    },
+    {
+      "fix_id": "phase7_fix_theme_toggle",
+      "scope": "apps/dashboard-3ls/components/ThemeToggle.tsx + Navigation.tsx",
+      "rationale": "Light/Dark/System component wired into the global Navigation. Persists in localStorage and respects matchMedia for system preference.",
+      "linked_test": "apps/dashboard-3ls/__tests__/components/ThemeToggle.test.tsx"
+    },
+    {
+      "fix_id": "phase7_fix_tailwind_class_strategy",
+      "scope": "apps/dashboard-3ls/tailwind.config.js + globals.css + layout.tsx",
+      "rationale": "Tailwind class strategy + pre-hydration script avoids flash-of-light. Body uses bg/text classes with dark variants so the entire app picks up the theme.",
+      "linked_test": "apps/dashboard-3ls/__tests__/components/ThemeToggle.test.tsx"
+    }
+  ],
+  "summary": {
+    "cases_total": 5,
+    "cases_passed": 5,
+    "cases_failed": 0,
+    "all_fixed": true
+  }
+}

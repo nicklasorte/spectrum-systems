@@ -1,0 +1,70 @@
+{
+  "artifact_type": "d3l_ranking_redteam_report",
+  "phase": "D3L-MASTER-01",
+  "redteam_pass": "phase_3",
+  "schema_version": "d3l-master-01.v1",
+  "generated_at": "2026-04-28T12:42:00Z",
+  "intent": "Pin the ranking projection contract: Top 3 / Top 10 / Full are slices of the artifact-declared order, never re-ranked. The active universe is canonical; non-active labels are excluded with bookkeeping.",
+  "cases": [
+    {
+      "case_id": "phase3_missing_system",
+      "description": "Priority artifact lists only 2 systems; ranking_universe contains 26.",
+      "expected_outcome": "full list still includes all 26; the 24 missing systems carry rank=null and trust_state='unknown_signal'; missing_from_priority enumerates them.",
+      "actual_outcome": "verified by ranking.test.ts:'full list contains every active system; missing systems appear with rank=null'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase3_extra_system",
+      "description": "Priority artifact contains H01 (forbidden), ABX (future), HNX (deprecated).",
+      "expected_outcome": "all three appear in excluded_from_priority; none appear in top_3 / top_10 / full.",
+      "actual_outcome": "verified by ranking.test.ts:'excludes non-active ids (H01, ABX, HNX) and reports them'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase3_ranking_instability",
+      "description": "Verify Top 3 ordering equals the first 3 entries of the artifact's global_ranked_systems list (no re-ranking, no score recomputation).",
+      "expected_outcome": "top_3 == artifact rows in order; top_10 prefix equals top_3.",
+      "actual_outcome": "verified by ranking.test.ts:'preserves artifact ordering — never re-ranks' and 'Top 10 is a slice of artifact-present rows; Top 3 is its prefix'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase3_no_invented_nodes",
+      "description": "Confirm no synthetic system_ids leak into Top 3 / Top 10 / full when the artifact is missing entirely.",
+      "expected_outcome": "fail-closed: empty arrays + warnings.",
+      "actual_outcome": "verified by ranking.test.ts:'returns empty projection when priority artifact is missing'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase3_global_missing_fallback",
+      "description": "Priority artifact has empty global_ranked_systems but populated top_5.",
+      "expected_outcome": "fall back to top_5 with explicit warning; never invent rows.",
+      "actual_outcome": "verified by ranking.test.ts:'falls back to top_5 when global_ranked_systems is empty'",
+      "result": "passed",
+      "fix_required": false
+    }
+  ],
+  "fixes_applied": [
+    {
+      "fix_id": "phase3_fix_projection_helper",
+      "scope": "apps/dashboard-3ls/lib/ranking.ts",
+      "rationale": "Single helper that produces Top 3 / Top 10 / Full from the artifact + contract. Forbids re-ranking; missing-from-priority systems become rank=null tail entries.",
+      "linked_test": "apps/dashboard-3ls/__tests__/lib/ranking.test.ts"
+    },
+    {
+      "fix_id": "phase3_fix_artifact_builder",
+      "scope": "scripts/build_d3l_ranking_report.py",
+      "rationale": "Persists artifacts/tls/d3l_ranking_report.json so the projection is reviewable as a governed artifact and red-team can compare against the live dashboard.",
+      "linked_test": "tests/test_d3l_ranking_report.py"
+    }
+  ],
+  "summary": {
+    "cases_total": 5,
+    "cases_passed": 5,
+    "cases_failed": 0,
+    "all_fixed": true
+  }
+}

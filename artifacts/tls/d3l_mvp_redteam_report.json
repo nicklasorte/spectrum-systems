@@ -1,0 +1,70 @@
+{
+  "artifact_type": "d3l_mvp_redteam_report",
+  "phase": "D3L-MASTER-01",
+  "redteam_pass": "phase_6",
+  "schema_version": "d3l-master-01.v1",
+  "generated_at": "2026-04-28T12:58:00Z",
+  "intent": "Pin the MVP graph contract: MVP boxes are product capabilities, never registry systems. Each box maps to active_system_ids only; mismatches surface as warnings; toggle between 3LS / MVP graph never mixes nodes.",
+  "cases": [
+    {
+      "case_id": "phase6_no_node_mixing",
+      "description": "MVP box ids must not collide with active_system_ids; the 3LS graph never renders an MVP box as a node.",
+      "expected_outcome": "no MVP box id appears in active_system_ids; isMVPBoxId distinguishes the two namespaces.",
+      "actual_outcome": "verified by mvpGraph.test.ts:'MVP box ids never collide with registry system ids' and 'isMVPBoxId returns true for box ids and false for system ids'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase6_mapping_validation",
+      "description": "Every maps_to_systems entry must be in the registry-active set.",
+      "expected_outcome": "validated_mappings.rejected_systems empty; warnings empty.",
+      "actual_outcome": "verified by mvpGraph.test.ts:'every MVP mapping is validated against the registry contract'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase6_partial_contract",
+      "description": "Contract truncated to 2 systems while MVP graph maps 16+.",
+      "expected_outcome": "rejected_systems populated; warnings include mvp_box_rejected_mapping; MVP boxes still render as text-only.",
+      "actual_outcome": "verified by mvpGraph.test.ts:'rejects mappings to systems missing from the active universe'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase6_contract_missing",
+      "description": "Registry contract artifact absent.",
+      "expected_outcome": "warnings include mvp_graph_contract_missing; MVP boxes still produced (no synthetic 3LS nodes).",
+      "actual_outcome": "verified by mvpGraph.test.ts:'warns when contract is missing'",
+      "result": "passed",
+      "fix_required": false
+    },
+    {
+      "case_id": "phase6_edge_endpoints",
+      "description": "Every MVP edge endpoint must be a defined box id.",
+      "expected_outcome": "all edges resolve to box ids in the produced graph.",
+      "actual_outcome": "verified by mvpGraph.test.ts:'all MVP edges reference defined boxes'",
+      "result": "passed",
+      "fix_required": false
+    }
+  ],
+  "fixes_applied": [
+    {
+      "fix_id": "phase6_fix_helper_with_namespace_isolation",
+      "scope": "apps/dashboard-3ls/lib/mvpGraph.ts",
+      "rationale": "MVP_BOXES uses snake_case ids unique to capability namespace (transcript_ingestion, …); active_system_ids use uppercase 3-letter ids. isMVPBoxId / 3LS graph contract guarantee they never overlap.",
+      "linked_test": "apps/dashboard-3ls/__tests__/lib/mvpGraph.test.ts"
+    },
+    {
+      "fix_id": "phase6_fix_artifact_builder",
+      "scope": "scripts/build_d3l_mvp_graph.py + artifacts/tls/d3l_mvp_graph.json",
+      "rationale": "Persists the MVP graph alongside its mapping validation so reviewers can compare against the registry contract; warnings preserved.",
+      "linked_test": "tests/test_d3l_mvp_graph.py"
+    }
+  ],
+  "summary": {
+    "cases_total": 5,
+    "cases_passed": 5,
+    "cases_failed": 0,
+    "all_fixed": true
+  }
+}
