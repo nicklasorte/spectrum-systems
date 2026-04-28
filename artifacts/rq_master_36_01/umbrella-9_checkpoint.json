@@ -1,7 +1,7 @@
 {
   "artifact_type": "rq_master_umbrella_checkpoint",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-27T20:12:36Z",
+  "generated_at": "2026-04-28T06:40:26Z",
   "umbrella_id": "UMBRELLA-9",
   "umbrella_name": "OPERATOR_SURFACE_EXPORT_AND_GATING",
   "intent": "Execute OPERATOR_SURFACE_EXPORT_AND_GATING with serial hard checkpoint enforcement",

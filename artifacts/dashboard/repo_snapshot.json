@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-04-27T20:12:38Z",
-  "freshness_timestamp_utc": "2026-04-27T20:12:38Z",
+  "generated_at": "2026-04-28T06:40:26Z",
+  "freshness_timestamp_utc": "2026-04-28T06:40:26Z",
   "repo_name": "spectrum-systems",
   "root_counts": {
-    "files_total": 8391,
-    "runtime_modules": 295,
-    "tests": 760,
+    "files_total": 8390,
+    "runtime_modules": 296,
+    "tests": 764,
     "contracts_total": 2795,
     "schemas": 1515,
     "examples": 1280,
-    "docs": 1566,
+    "docs": 1567,
     "run_artifacts": 152
   },
   "core_areas": [
@@ -100,12 +100,12 @@
     {
       "title": "Evidence and review density",
       "status": "Strong",
-      "detail": "Review artifacts detected: 1222 markdown files."
+      "detail": "Review artifacts detected: 1223 markdown files."
     },
     {
       "title": "Roadmap sprawl risk",
       "status": "Watch",
-      "detail": "Docs-to-runtime ratio: 5.31."
+      "detail": "Docs-to-runtime ratio: 5.29."
     },
     {
       "title": "Runtime concentration",
