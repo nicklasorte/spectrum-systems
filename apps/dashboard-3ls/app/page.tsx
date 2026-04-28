@@ -771,6 +771,32 @@ export default function DashboardPage() {
           <Panel title="Candidate Closure (proposed/open/stale only)" testId="candidate-closure-section">
             <p className="text-sm">tracked items: <strong>{String(intelligence?.candidate_closure?.candidate_item_count ?? 'unknown')}</strong></p>
           </Panel>
+          <Panel title="Debug Explanation Index" testId="debug-explanation-index-section">
+            {(() => {
+              const entries = intelligence?.debug_explanation_index?.explanation_entries ?? [];
+              if (entries.length === 0) {
+                return <p className="text-sm text-amber-700 dark:text-amber-300">Debug explanation index unavailable.</p>;
+              }
+              return (
+                <ul className="list-disc ml-5 text-xs">
+                  {entries.slice(0, MET_COMPACT_ITEM_MAX).map((entry, index) => (
+                    <li key={`${entry.explanation_id}-${index}`}>
+                      <strong>{entry.explanation_id}</strong> — {entry.what_failed}
+                    </li>
+                  ))}
+                </ul>
+              );
+            })()}
+          </Panel>
+          <Panel title="Trend / Frequency Honesty (no fake trend)" testId="trend-frequency-honesty-section">
+            <p className="text-sm">trend state: <strong>{intelligence?.trend_frequency_honesty_gate?.trend_state ?? 'unknown'}</strong></p>
+          </Panel>
+          <Panel title="EVL Handoff Observations (signal only)" testId="evl-handoff-observations-section">
+            <p className="text-sm">handoff items: <strong>{String(intelligence?.evl_handoff_observations?.handoff_item_count ?? 'unknown')}</strong></p>
+          </Panel>
+          <Panel title="Artifact Integrity (override + classification)" testId="artifact-integrity-section">
+            <p className="text-sm">classified paths: <strong>{String(intelligence?.met_generated_artifact_classification?.classified_path_count ?? 'unknown')}</strong></p>
+          </Panel>
 
           {/* D3L-DATA-REGISTRY-01 Phase 7: Compact OC bottleneck card. Renders only
               when the OC artifact loads cleanly. Fail-closed states (unavailable,

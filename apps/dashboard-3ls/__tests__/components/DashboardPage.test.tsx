@@ -112,6 +112,10 @@ const mockIntelligence = {
   fallback_reduction_plan: { high_leverage_fallback_count: 1 },
   replay_lineage_hardening: { affected_systems: ['EVL'] },
   candidate_closure: { candidate_item_count: 3 },
+  debug_explanation_index: { explanation_entries: [{ explanation_id: 'DBG-1', what_failed: 'missing evidence' }] },
+  trend_frequency_honesty_gate: { trend_state: 'unknown' },
+  evl_handoff_observations: { handoff_item_count: 1 },
+  met_generated_artifact_classification: { classified_path_count: 2 },
 };
 
 function setupFetch(overrides?: Partial<Record<string, unknown>>) {
@@ -376,6 +380,7 @@ describe('DashboardPage simplified cockpit', () => {
     expect(screen.queryByTestId('fallback-reduction-section')).not.toBeInTheDocument();
     expect(screen.queryByTestId('replay-lineage-hardening-section')).not.toBeInTheDocument();
     expect(screen.queryByTestId('candidate-closure-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('debug-explanation-index-section')).not.toBeInTheDocument();
   });
 
   it('diagnostics still renders moved diagnostic sections', async () => {
@@ -390,6 +395,7 @@ describe('DashboardPage simplified cockpit', () => {
     expect(screen.getByTestId('fallback-reduction-section')).toBeInTheDocument();
     expect(screen.getByTestId('replay-lineage-hardening-section')).toBeInTheDocument();
     expect(screen.getByTestId('candidate-closure-section')).toBeInTheDocument();
+    expect(screen.getByTestId('debug-explanation-index-section')).toBeInTheDocument();
   });
 
   it('stale freshness gate hides top 3 cards and full prioritization lists', async () => {
