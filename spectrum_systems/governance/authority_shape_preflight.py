@@ -81,6 +81,11 @@ class VocabularyModel:
     safe_rename_pairs: tuple[tuple[str, str], ...]
     rename_include_suffixes: tuple[str, ...]
     rename_exclude_prefixes: tuple[str, ...]
+    owner_required_prefixes: tuple[str, ...]
+    owner_required_suffixes: tuple[str, ...]
+    owner_symbol_pattern: str
+    owner_declaration_keys: tuple[str, ...]
+    owner_codes: tuple[str, ...]
     registry_rules: RegistryRules | None
 
 
@@ -93,6 +98,7 @@ class Violation:
     canonical_owners: tuple[str, ...]
     suggested_replacements: tuple[str, ...]
     rationale: str
+    owning_or_declared_system: str | None = None
     rule: str = "authority_shape_outside_owner"
 
     def to_dict(self) -> dict[str, Any]:
@@ -105,6 +111,7 @@ class Violation:
             "canonical_owners": list(self.canonical_owners),
             "suggested_replacements": list(self.suggested_replacements),
             "rationale": self.rationale,
+            "owning_or_declared_system": self.owning_or_declared_system,
         }
 
 
@@ -199,6 +206,7 @@ def load_vocabulary(path: Path) -> VocabularyModel:
 
     remediation = payload.get("remediation_policy") or {}
     rename_targets = remediation.get("rename_targets") or {}
+    owner_inference = payload.get("owner_inference") or {}
 
     registry_rules_payload = payload.get("registry_rules")
     registry_rules: RegistryRules | None = None
@@ -255,6 +263,29 @@ def load_vocabulary(path: Path) -> VocabularyModel:
         ),
         rename_exclude_prefixes=tuple(
             str(p) for p in rename_targets.get("exclude_path_prefixes", [])
+        ),
+        owner_required_prefixes=tuple(
+            str(p) for p in owner_inference.get("required_scope_prefixes", [])
+        ),
+        owner_required_suffixes=tuple(
+            str(s) for s in owner_inference.get("required_scope_suffixes", [])
+        ),
+        owner_symbol_pattern=str(
+            owner_inference.get("path_symbol_pattern")
+            or r"(?<![A-Za-z0-9])([A-Z][A-Z0-9]{1,4})(?![A-Za-z0-9])"
+        ),
+        owner_declaration_keys=tuple(
+            str(k).strip().lower()
+            for k in owner_inference.get(
+                "declaration_keys",
+                ["owner_system", "owning_system", "declared_system", "system_owner", "system"],
+            )
+            if str(k).strip()
+        ),
+        owner_codes=tuple(
+            str(code).strip().upper()
+            for code in owner_inference.get("known_system_codes", [])
+            if str(code).strip()
         ),
         registry_rules=registry_rules,
     )
@@ -324,6 +355,57 @@ def _identifier_matches_term(identifier: str, term: str) -> bool:
     return lowered_term in _identifier_subtokens(lowered_id)
 
 
+def _owner_required_for_path(rel_path: str, vocab: VocabularyModel) -> bool:
+    if vocab.owner_required_prefixes and not any(
+        _path_matches_prefix(rel_path, p) for p in vocab.owner_required_prefixes
+    ):
+        return False
+    if vocab.owner_required_suffixes and not rel_path.endswith(tuple(vocab.owner_required_suffixes)):
+        return False
+    return True
+
+
+def _extract_declared_owner(text: str, vocab: VocabularyModel) -> str | None:
+    known = set(vocab.owner_codes)
+    if not known:
+        return None
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line or ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        normalized_key = key.strip().lstrip("-*").strip()
+        norm_key = normalized_key.lower().replace("-", "_").replace(" ", "_")
+        if norm_key not in set(vocab.owner_declaration_keys):
+            continue
+        candidate = value.strip().strip("\"'`").split()[0].strip(",").upper()
+        if candidate in known:
+            return candidate
+    return None
+
+
+def infer_owning_system(rel_path: str, text: str, vocab: VocabularyModel) -> str | None:
+    declared = _extract_declared_owner(text, vocab)
+    if declared:
+        return declared
+    if not vocab.owner_codes:
+        return None
+    tokens = re.split(r"[^A-Za-z0-9]+", rel_path.upper())
+    known = set(vocab.owner_codes)
+    for token in tokens:
+        if token in known:
+            return token
+    try:
+        pattern = re.compile(vocab.owner_symbol_pattern)
+    except re.error:
+        return None
+    for match in pattern.finditer(rel_path.upper()):
+        candidate = match.group(1).upper()
+        if candidate in known:
+            return candidate
+    return None
+
+
 def scan_file(path: Path, rel_path: str, vocab: VocabularyModel) -> list[Violation]:
     """Scan a single file and return violations.
 
@@ -341,9 +423,12 @@ def scan_file(path: Path, rel_path: str, vocab: VocabularyModel) -> list[Violati
     except (UnicodeDecodeError, OSError):
         return []
 
+    inferred_owner = infer_owning_system(rel_path, text, vocab)
     violations: list[Violation] = []
+
     lines = text.splitlines()
     safety_set = set(vocab.safety_suffixes)
+    unresolved_owner_hits: list[tuple[int, str, ClusterSpec]] = []
     for idx, line in enumerate(lines, start=1):
         for ident_match in _IDENTIFIER_PATTERN.finditer(line):
             identifier = ident_match.group(0)
@@ -353,10 +438,17 @@ def scan_file(path: Path, rel_path: str, vocab: VocabularyModel) -> list[Violati
                 # non-owner has explicitly disambiguated authority shape.
                 continue
             for cluster in vocab.clusters:
-                if is_owner_path(rel_path, cluster):
+                if inferred_owner is None and rel_path.startswith("contracts/schemas/"):
+                    continue
+                if is_owner_path(rel_path, cluster) or (
+                    inferred_owner is not None and inferred_owner in set(cluster.canonical_owners)
+                ):
                     continue
                 for term in cluster.terms:
                     if _identifier_matches_term(identifier, term):
+                        if inferred_owner is None and _owner_required_for_path(rel_path, vocab):
+                            unresolved_owner_hits.append((idx, identifier, cluster))
+                            break
                         violations.append(
                             Violation(
                                 file=rel_path,
@@ -366,9 +458,25 @@ def scan_file(path: Path, rel_path: str, vocab: VocabularyModel) -> list[Violati
                                 canonical_owners=cluster.canonical_owners,
                                 suggested_replacements=cluster.advisory_replacements,
                                 rationale=cluster.rationale,
+                                owning_or_declared_system=inferred_owner,
                             )
                         )
                         break
+    if unresolved_owner_hits:
+        first_line, first_symbol, _ = unresolved_owner_hits[0]
+        return [
+            Violation(
+                file=rel_path,
+                line=first_line,
+                symbol=first_symbol,
+                cluster="owner_inference",
+                canonical_owners=tuple(),
+                suggested_replacements=("declare_owner_system",),
+                rationale="owner system is required for authority-shape checks but could not be inferred",
+                owning_or_declared_system=None,
+                rule="owner_inference_unresolved",
+            )
+        ]
     return violations
 
 
@@ -671,6 +779,7 @@ def evaluate_preflight(
             "line": v.line,
             "symbol": v.symbol,
             "cluster": v.cluster,
+            "owning_or_declared_system": v.owning_or_declared_system,
             "canonical_owner": v.canonical_owners[0] if v.canonical_owners else None,
             "suggested_replacement": (
                 v.suggested_replacements[0] if v.suggested_replacements else None
@@ -704,6 +813,7 @@ __all__ = [
     "PreflightResult",
     "load_vocabulary",
     "scan_file",
+    "infer_owning_system",
     "is_guard_path",
     "is_owner_path",
     "is_canonical_registry_path",

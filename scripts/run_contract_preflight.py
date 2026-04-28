@@ -79,6 +79,10 @@ from spectrum_systems.modules.runtime.pytest_selection_integrity import (  # noq
     PytestSelectionIntegrityError,
     evaluate_pytest_selection_integrity,
 )
+from spectrum_systems.governance.authority_shape_preflight import (  # noqa: E402
+    evaluate_preflight as evaluate_authority_shape_preflight,
+    load_vocabulary as load_authority_shape_vocabulary,
+)
 
 DEFAULT_REQUIRED_SMOKE_TESTS = [
     "tests/test_roadmap_eligibility.py",
@@ -137,6 +141,7 @@ _SYSTEM_REGISTRY_PATH = REPO_ROOT / "docs" / "architecture" / "system_registry.m
 _SYSTEM_REGISTRY_GUARD_POLICY_PATH = REPO_ROOT / "contracts" / "governance" / "system_registry_guard_policy.json"
 _TEST_INVENTORY_BASELINE_PATH = REPO_ROOT / "docs" / "governance" / "pytest_pr_inventory_baseline.json"
 _PYTEST_SELECTION_INTEGRITY_POLICY_PATH = REPO_ROOT / "docs" / "governance" / "pytest_pr_selection_integrity_policy.json"
+_AUTHORITY_SHAPE_VOCAB_PATH = REPO_ROOT / "contracts" / "governance" / "authority_shape_vocabulary.json"
 _DEFAULT_PR_INVENTORY_TARGETS = ["tests/test_eval_dataset_registry.py"]
 _GOVERNED_PR_FALLBACK_PYTEST_TARGETS = [
     "tests/test_run_github_pr_autofix_contract_preflight.py",
@@ -878,6 +883,51 @@ def build_pytest_execution_record(
     return payload
 
 
+def run_early_authority_language_guard(*, changed_paths: list[str], output_dir: Path) -> dict[str, Any]:
+    """Run fail-closed authority-language checks before expensive checks."""
+    scoped_paths = [
+        path
+        for path in changed_paths
+        if (
+            path.startswith("contracts/schemas/")
+            or path.startswith("contracts/examples/")
+            or path.startswith("contracts/evals/")
+            or path.startswith("docs/review-actions/")
+            or path.startswith("docs/governance/")
+        )
+    ]
+    if not scoped_paths:
+        payload = {
+            "artifact_type": "authority_shape_preflight_result",
+            "status": "pass",
+            "mode": "suggest-only",
+            "scanned_files": [],
+            "skipped_files": [],
+            "violations": [],
+            "suggestions": [],
+            "applied_renames": [],
+            "refused_renames": [],
+            "summary": {"violation_count": 0, "applied_rename_count": 0, "refused_rename_count": 0},
+            "scope_status": "no_authority_language_guard_targets",
+        }
+        artifact_path = output_dir / "authority_language_guard_result.json"
+        artifact_path.parent.mkdir(parents=True, exist_ok=True)
+        artifact_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        return {"status": "pass", "artifact_ref": str(artifact_path), "result": payload}
+    vocabulary = load_authority_shape_vocabulary(_AUTHORITY_SHAPE_VOCAB_PATH)
+    result = evaluate_authority_shape_preflight(
+        repo_root=REPO_ROOT,
+        changed_files=scoped_paths,
+        vocab=vocabulary,
+        mode="suggest-only",
+    )
+    payload = result.to_dict()
+    artifact_path = output_dir / "authority_language_guard_result.json"
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return {"status": payload.get("status", "fail"), "artifact_ref": str(artifact_path), "result": payload}
+
+
 def detect_masked_failures(failures: list[dict[str, Any]]) -> list[dict[str, Any]]:
     masked: list[dict[str, Any]] = []
     for item in failures:
@@ -1563,6 +1613,12 @@ def main() -> int:
         return 2
 
     detection = detect_changed_paths(REPO_ROOT, ref_context.base_ref, ref_context.head_ref, args.changed_path)
+    classified = classify_changed_contracts(detection.changed_paths)
+    surface_classification = classify_evaluation_surfaces(detection.changed_paths, classified)
+    authority_language_guard = run_early_authority_language_guard(
+        changed_paths=detection.changed_paths,
+        output_dir=output_dir,
+    )
     registry_policy = load_guard_policy(_SYSTEM_REGISTRY_GUARD_POLICY_PATH)
     registry_model = parse_system_registry(_SYSTEM_REGISTRY_PATH)
     system_registry_guard_result = evaluate_system_registry_guard(
@@ -1573,10 +1629,6 @@ def main() -> int:
     )
     srg_output_path = output_dir / "system_registry_guard_result.json"
     srg_output_path.write_text(json.dumps(system_registry_guard_result, indent=2) + "\n", encoding="utf-8")
-    control_surface_gap_bridge = evaluate_control_surface_gap_bridge(output_dir)
-    trust_spine_cohesion = evaluate_trust_spine_cohesion(detection.changed_paths, output_dir)
-    classified = classify_changed_contracts(detection.changed_paths)
-    surface_classification = classify_evaluation_surfaces(detection.changed_paths, classified)
 
     changed_contract_paths = classified["changed_contract_paths"]
     changed_governed_definitions = classified["changed_governed_definitions"]
@@ -1592,6 +1644,69 @@ def main() -> int:
         "evaluated_surfaces": surface_classification["evaluated_surfaces"],
         "ref_context": ref_context.as_dict(),
     }
+    detection_meta["authority_language_guard"] = {
+        "status": authority_language_guard["status"],
+        "artifact_ref": authority_language_guard["artifact_ref"],
+    }
+    if authority_language_guard["status"] == "fail":
+        report = {
+            "status": "failed",
+            "changed_contracts": changed_contracts,
+            "changed_examples": changed_examples,
+            "changed_path_detection": detection_meta,
+            "impact": {"producers": [], "fixtures_or_builders": [], "consumers": [], "required_smoke_tests": []},
+            "schema_example_failures": [],
+            "producer_failures": [],
+            "fixture_failures": [],
+            "consumer_failures": [],
+            "masked_failures": [],
+            "recommended_repair_areas": ["authority language"],
+            "bootstrap_failures": ["early authority-language guard failed closed"],
+            "evaluation_classification": surface_classification["path_classifications"],
+            "missing_required_surface": [],
+            "skip_reason": "authority_language_guard_failed",
+            "invariant_violations": ["AUTHORITY_LANGUAGE_GUARD_FAILED"],
+            "control_surface_enforcement": None,
+            "control_surface_gap_result": None,
+            "control_surface_gap_pqx_work_items": None,
+            "control_surface_gap_pqx_conversion_error": None,
+            "trust_spine_evidence_cohesion": None,
+            "pqx_execution_policy": {},
+            "pqx_required_context_enforcement": {},
+            "system_registry_guard_result": system_registry_guard_result,
+            "system_registry_guard_result_ref": str(srg_output_path),
+            "authority_language_guard": authority_language_guard["result"],
+            "authority_language_guard_result_ref": authority_language_guard["artifact_ref"],
+        }
+        json_path = output_dir / "contract_preflight_report.json"
+        md_path = output_dir / "contract_preflight_report.md"
+        json_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        md_path.write_text(render_markdown(report), encoding="utf-8")
+        preflight_artifact = build_preflight_result_artifact(
+            report=report,
+            json_report_path=json_path,
+            markdown_report_path=md_path,
+            hardening_flow=bool(args.hardening_flow),
+        )
+        preflight_artifact_path = output_dir / "contract_preflight_result_artifact.json"
+        preflight_artifact_path.write_text(json.dumps(preflight_artifact, indent=2) + "\n", encoding="utf-8")
+        emit_preflight_block_bundle(report=report, preflight_artifact=preflight_artifact, output_dir=output_dir)
+        print(
+            json.dumps(
+                {
+                    "status": "failed",
+                    "json_report": str(json_path),
+                    "markdown_report": str(md_path),
+                    "preflight_artifact": str(preflight_artifact_path),
+                    "strategy_gate_decision": preflight_artifact["control_signal"]["strategy_gate_decision"],
+                    "authority_language_guard_result_ref": authority_language_guard["artifact_ref"],
+                },
+                indent=2,
+            )
+        )
+        return 2
+    control_surface_gap_bridge = evaluate_control_surface_gap_bridge(output_dir)
+    trust_spine_cohesion = evaluate_trust_spine_cohesion(detection.changed_paths, output_dir)
     preflight_mode = (
         "commit_range_inspection"
         if not list(getattr(args, "changed_path", []) or [])

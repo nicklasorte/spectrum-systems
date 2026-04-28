@@ -1,0 +1,6 @@
+{
+  "artifact_type": "hrd_observation_packet",
+  "owning_system": "HRD",
+  "hrd_decision": "candidate",
+  "enforce_signal": "should_not_exist"
+}

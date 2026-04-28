@@ -1951,6 +1951,61 @@ def test_main_preflight_emits_classified_test_inventory_failure(tmp_path: Path, 
     assert "unexpected_test_inventory_regression" in report["invariant_violations"]
 
 
+def test_main_fails_early_on_authority_language_guard_before_pytest(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "preflight"
+
+    class _Ref:
+        base_ref = "base"
+        head_ref = "head"
+        event_name = "pull_request"
+        fallback_used = False
+        raw_inputs = {}
+        valid = True
+        reason_code = "ok"
+        reason = "ok"
+
+        def as_dict(self) -> dict[str, object]:
+            return {
+                "base_ref": self.base_ref,
+                "head_ref": self.head_ref,
+                "event_name": self.event_name,
+                "fallback_used": self.fallback_used,
+                "raw_inputs": self.raw_inputs,
+            }
+
+    class _Detection:
+        changed_paths = ["contracts/examples/authority_shape_preflight/hrd_bad_authority.json"]
+        changed_path_detection_mode = "explicit_paths"
+        refs_attempted = ["base..head"]
+        fallback_used = False
+        warnings: list[str] = []
+
+    monkeypatch.setattr(preflight, "_parse_args", lambda: type("Args", (), {
+        "base_ref": "base",
+        "head_ref": "head",
+        "event_name": "pull_request",
+        "changed_path": _Detection.changed_paths,
+        "output_dir": str(output_dir),
+        "hardening_flow": False,
+        "execution_context": "pqx_governed",
+        "pqx_wrapper_path": None,
+        "authority_evidence_ref": None,
+        "refresh_test_inventory_baseline": False,
+    })())
+    monkeypatch.setattr(preflight, "normalize_preflight_ref_context", lambda **_: _Ref())
+    monkeypatch.setattr(preflight, "detect_changed_paths", lambda *_args, **_kwargs: _Detection())
+    monkeypatch.setattr(preflight, "load_guard_policy", lambda *_: {"policy_version": "1.0.0"})
+    monkeypatch.setattr(preflight, "parse_system_registry", lambda *_: {"systems": []})
+    monkeypatch.setattr(preflight, "evaluate_system_registry_guard", lambda **_: {"status": "pass", "normalized_reason_codes": []})
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("pytest must not run")))
+
+    exit_code = preflight.main()
+    assert exit_code == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["skip_reason"] == "authority_language_guard_failed"
+    assert report["authority_language_guard"]["status"] == "fail"
+
+
 def test_pull_request_blocks_when_no_pytest_execution_and_no_fallback_targets(tmp_path: Path, monkeypatch) -> None:
     output_dir = tmp_path / "out"
     monkeypatch.setattr(

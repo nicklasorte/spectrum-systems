@@ -384,6 +384,29 @@
     "summary",
     "report"
   ],
+  "owner_inference": {
+    "required_scope_prefixes": [
+      "contracts/examples/",
+      "contracts/evals/",
+      "docs/review-actions/",
+      "docs/governance/"
+    ],
+    "required_scope_suffixes": [
+      ".json",
+      ".md",
+      ".yaml",
+      ".yml"
+    ],
+    "declaration_keys": [
+      "owner_system",
+      "owning_system",
+      "declared_system",
+      "system_owner",
+      "system"
+    ],
+    "path_symbol_pattern": "(?<![A-Za-z0-9])([A-Z][A-Z0-9]{1,4})(?![A-Za-z0-9])",
+    "known_system_codes": ["HRD", "SEL", "ENF", "GOV", "CDE", "JDX", "REL", "HIT", "TPA", "AEX", "SEC", "HOP"]
+  },
   "remediation_policy": {
     "modes": ["suggest-only", "apply-safe-renames"],
     "default_mode": "suggest-only",

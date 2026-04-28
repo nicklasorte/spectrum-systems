@@ -1,0 +1,6 @@
+{
+  "artifact_type": "hrd_observation_packet",
+  "owning_system": "HRD",
+  "observation_signal": "candidate",
+  "recommendation_input": "forward_to_control"
+}

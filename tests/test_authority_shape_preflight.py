@@ -110,7 +110,7 @@ def test_non_owner_plan_doc_using_enforce_term_fails(tmp_path: Path, vocab) -> N
     _write(
         repo,
         rel,
-        "# PLAN\n\n1. Enforce fail-closed runtime behavior for all modules.\n",
+        "# PLAN\n\n- owning_system: HRD\n\n1. Enforce fail-closed runtime behavior for all modules.\n",
     )
     result = evaluate_preflight(
         repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only"
@@ -154,8 +154,43 @@ def test_violation_payload_carries_required_fields(tmp_path: Path, vocab) -> Non
         "canonical_owners",
         "suggested_replacements",
         "rationale",
+        "owning_or_declared_system",
     ):
         assert field in leak, f"missing {field} in violation payload"
+
+
+def test_hrd_bad_fixture_fails_for_reserved_authority_terms(vocab) -> None:
+    rel = "contracts/examples/authority_shape_preflight/hrd_bad_authority.json"
+    result = evaluate_preflight(
+        repo_root=REPO_ROOT,
+        changed_files=[rel],
+        vocab=vocab,
+        mode="suggest-only",
+    )
+    assert result.status == "fail"
+    assert any(v.cluster == "decision" for v in result.violations)
+    assert any(v.owning_or_declared_system == "HRD" for v in result.violations)
+
+
+def test_hrd_good_fixture_passes_for_observation_language(vocab) -> None:
+    rel = "contracts/examples/authority_shape_preflight/hrd_good_advisory.json"
+    result = evaluate_preflight(
+        repo_root=REPO_ROOT,
+        changed_files=[rel],
+        vocab=vocab,
+        mode="suggest-only",
+    )
+    assert result.status == "pass"
+    assert result.violations == []
+
+
+def test_owner_inference_fails_closed_when_missing_for_required_scope(tmp_path: Path, vocab) -> None:
+    repo = _seed_repo(tmp_path)
+    rel = "contracts/examples/authority_without_owner.json"
+    _write(repo, rel, '{"artifact_type":"sample","decision_record":"candidate"}\n')
+    result = evaluate_preflight(repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only")
+    assert result.status == "fail"
+    assert result.violations[0].rule == "owner_inference_unresolved"
 
 
 def test_apply_safe_renames_updates_text_and_preserves_guards(
