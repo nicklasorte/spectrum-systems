@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/fast_trust_gate_manifest.schema.json",
+  "title": "Fast Trust Gate Manifest",
+  "description": "OC-16 manifest that defines the smaller high-signal trust gate separate from the full pytest suite. The manifest enumerates the seams the fast gate must cover and the test selectors used to exercise them. The manifest is non-owning support: it does not enforce. The fast gate runner consumes the manifest and emits findings; CDE/SEL retain decision and enforcement authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "manifest_id",
+    "required_seams",
+    "selectors",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": { "const": "fast_trust_gate_manifest" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "manifest_id": { "type": "string", "minLength": 1 },
+    "required_seams": {
+      "type": "array",
+      "minItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "registry_validation",
+          "authority_shape_preflight",
+          "proof_intake",
+          "bottleneck_classifier",
+          "closure_packet",
+          "dashboard_projection",
+          "work_selection",
+          "trust_regression_pack"
+        ]
+      }
+    },
+    "selectors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["seam", "selector_kind", "selector"],
+        "properties": {
+          "seam": {
+            "type": "string",
+            "enum": [
+              "registry_validation",
+              "authority_shape_preflight",
+              "proof_intake",
+              "bottleneck_classifier",
+              "closure_packet",
+              "dashboard_projection",
+              "work_selection",
+              "trust_regression_pack"
+            ]
+          },
+          "selector_kind": {
+            "type": "string",
+            "enum": ["pytest_node", "script", "module_callable"]
+          },
+          "selector": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "preparatory_only",
+          "not_control_authority",
+          "not_enforcement_authority",
+          "not_certification_authority",
+          "not_promotion_authority"
+        ]
+      }
+    }
+  }
+}

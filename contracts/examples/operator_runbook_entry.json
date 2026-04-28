@@ -1,0 +1,29 @@
+{
+  "artifact_type": "operator_runbook_entry",
+  "schema_version": "1.0.0",
+  "entry_id": "runbook-example-1",
+  "audit_timestamp": "2026-04-28T12:00:00Z",
+  "status": "pass",
+  "summary": "closure_bundle.overall_status=pass",
+  "claims": [
+    {
+      "claim_text": "operational closure bundle status: pass",
+      "evidence_ref": "ocb-example-1",
+      "evidence_kind": "operational_closure_bundle"
+    },
+    {
+      "claim_text": "closure packet status: ready_to_merge",
+      "evidence_ref": "cdp-example-1",
+      "evidence_kind": "closure_decision_packet"
+    }
+  ],
+  "next_safe_action": "merge",
+  "refused_claims": [],
+  "non_authority_assertions": [
+    "advisory_only",
+    "preparatory_only",
+    "not_control_authority",
+    "not_certification_authority",
+    "not_enforcement_authority"
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/operator_runbook_entry.schema.json",
+  "title": "Operator Runbook Entry",
+  "description": "OC-22 evidence-bound runbook entry derived only from the supplied proof and closure packet. If proof is insufficient or stale or conflicting, the entry MUST report status `blocked` or `insufficient_evidence` and refuse confident guidance. The entry never invents rationale; every claim points to a referenced artifact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "entry_id",
+    "audit_timestamp",
+    "status",
+    "summary",
+    "claims",
+    "next_safe_action",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": { "const": "operator_runbook_entry" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "entry_id": { "type": "string", "minLength": 1 },
+    "audit_timestamp": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "block", "freeze", "insufficient_evidence", "blocked"]
+    },
+    "summary": { "type": "string", "minLength": 1 },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim_text", "evidence_ref", "evidence_kind"],
+        "properties": {
+          "claim_text": { "type": "string", "minLength": 1 },
+          "evidence_ref": { "type": "string", "minLength": 1 },
+          "evidence_kind": {
+            "type": "string",
+            "enum": [
+              "proof_intake_index",
+              "bottleneck_classification",
+              "dashboard_truth_projection",
+              "closure_decision_packet",
+              "operational_closure_bundle",
+              "loop_proof_bundle",
+              "certification_evidence_index",
+              "trust_regression_pack",
+              "fast_trust_gate_run"
+            ]
+          }
+        }
+      }
+    },
+    "next_safe_action": { "type": "string", "minLength": 1 },
+    "refused_claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim_text", "reason_code"],
+        "properties": {
+          "claim_text": { "type": "string", "minLength": 1 },
+          "reason_code": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "advisory_only",
+          "preparatory_only",
+          "not_control_authority",
+          "not_certification_authority",
+          "not_promotion_authority",
+          "not_enforcement_authority"
+        ]
+      }
+    }
+  }
+}

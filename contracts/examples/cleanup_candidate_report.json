@@ -1,0 +1,29 @@
+{
+  "artifact_type": "cleanup_candidate_report",
+  "schema_version": "1.0.0",
+  "report_id": "cleanup-example-1",
+  "audit_timestamp": "2026-04-28T12:00:00Z",
+  "candidates": [
+    {
+      "artifact_path": "outputs/old_run_1/intermediate.json",
+      "artifact_kind": "intermediate_log",
+      "classification": "candidate_archive",
+      "reason_code": "CLEANUP_CANDIDATE_ARCHIVE_AGED",
+      "evidence_role": "advisory"
+    },
+    {
+      "artifact_path": "contracts/examples/loop_proof_bundle_pass.json",
+      "artifact_kind": "loop_proof_bundle",
+      "classification": "never_delete",
+      "reason_code": "CLEANUP_NEVER_DELETE_REQUIRED_PROOF",
+      "evidence_role": "required_proof_evidence"
+    }
+  ],
+  "non_authority_assertions": [
+    "advisory_only",
+    "no_deletion",
+    "preparatory_only",
+    "not_control_authority",
+    "not_enforcement_authority"
+  ]
+}
