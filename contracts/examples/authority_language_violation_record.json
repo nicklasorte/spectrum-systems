@@ -1,0 +1,10 @@
+{
+  "artifact_type": "authority_language_violation_record",
+  "schema_version": "1.0.0",
+  "file": "docs/review-actions/PLAN-EXAMPLE.md",
+  "line": 17,
+  "symbol": "enforce",
+  "authority_cluster": "enforcement",
+  "canonical_owners": ["SEL", "ENF"],
+  "suggested_replacements": ["signal", "observation", "input"]
+}

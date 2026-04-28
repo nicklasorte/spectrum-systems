@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/authority_drift_trend_record.schema.json",
+  "title": "authority_drift_trend_record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "violation_count_by_symbol",
+    "violation_count_by_path",
+    "repeat_violation_fingerprint",
+    "total_violations"
+  ],
+  "properties": {
+    "artifact_type": { "type": "string", "const": "authority_drift_trend_record" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "violation_count_by_symbol": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "violation_count_by_path": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "repeat_violation_fingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "total_violations": { "type": "integer", "minimum": 0 }
+  }
+}

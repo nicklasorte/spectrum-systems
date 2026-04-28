@@ -109,3 +109,16 @@ This policy is intentionally narrow:
 - **Plan lineage:** PQX-CLT-011 (`docs/reviews/2026-03-27-parallel-pqx-trial-plan.md`)
 - **Approved trial lineage:** PQX-CLT-015 (recorded in `docs/reviews/2026-03-27-parallel-pqx-trial-closure.md`)
 - **Policy activation:** PQX-CLT-016 (this document)
+
+## 10) GOV hardening rule — authority-language boundaries (HRD-002)
+
+For **non-CTL/SEL/ENF artifacts**, authority references are signal-only:
+
+1. artifacts may reference control/enforcement systems strictly as input, signal, or observation seams;
+2. artifacts must not imply execution, decision, promotion, enforcement, or certification ownership;
+3. any authority-language implication in non-CTL/SEL/ENF artifacts is a **certification failure** and maps to a fail-closed **BLOCK** outcome.
+
+This rule is consumed by preflight and eval hardening gates:
+
+- AEX emits `authority_language_violation_record` and blocks preflight.
+- EVAL executes `authority_language_compliance:v1`; fail result auto-blocks promotion gating.

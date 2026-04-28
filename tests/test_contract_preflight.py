@@ -2256,3 +2256,65 @@ def test_pr_blocks_on_execution_provenance_mismatch(tmp_path: Path, monkeypatch)
     assert preflight.main() == 2
     report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
     assert "PR_PYTEST_PROVENANCE_COMMIT_MISMATCH" in report["invariant_violations"]
+
+
+def test_preflight_blocks_on_authority_language_violation_and_emits_artifacts(monkeypatch, tmp_path: Path) -> None:
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "base_ref": "origin/main",
+                "head_ref": "HEAD",
+                "event_name": None,
+                "changed_path": [],
+                "output_dir": str(output_dir),
+                "hardening_flow": False,
+                "execution_context": "pqx_governed",
+                "pqx_wrapper_path": None,
+                "authority_evidence_ref": None,
+                "refresh_test_inventory_baseline": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "detect_changed_paths",
+        lambda *_args, **_kwargs: preflight.ChangedPathDetectionResult(
+            changed_paths=[],
+            changed_path_detection_mode="explicit_paths",
+            refs_attempted=[],
+            fallback_used=False,
+            warnings=[],
+        ),
+    )
+    monkeypatch.setattr(
+        preflight,
+        "_scan_authority_language_violations",
+        lambda *_args, **_kwargs: [
+            {
+                "artifact_type": "authority_language_violation_record",
+                "schema_version": "1.0.0",
+                "file": "docs/review-actions/PLAN-TEST.md",
+                "line": 12,
+                "symbol": "enforce",
+                "authority_cluster": "enforcement",
+                "canonical_owners": ["SEL", "ENF"],
+                "suggested_replacements": ["signal", "observation", "input"],
+            }
+        ],
+    )
+    monkeypatch.setattr(preflight, "resolve_test_targets", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(preflight, "run_targeted_pytests", lambda *_args, **_kwargs: [])
+
+    assert preflight.main() == 2
+    report = json.loads((output_dir / "contract_preflight_report.json").read_text(encoding="utf-8"))
+    assert report["authority_language"]["violation_count"] == 1
+    assert "AUTHORITY_LANGUAGE_RESERVED_VERB_NON_AUTHORITY_CONTEXT" in report["invariant_violations"]
+    mismatch = json.loads((output_dir / "authority_language_mismatch_packet.json").read_text(encoding="utf-8"))
+    assert mismatch["artifact_type"] == "authority_language_mismatch_packet"
+    drift = json.loads((output_dir / "authority_drift_trend_record.json").read_text(encoding="utf-8"))
+    assert drift["artifact_type"] == "authority_drift_trend_record"

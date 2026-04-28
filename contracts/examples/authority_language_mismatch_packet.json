@@ -1,0 +1,24 @@
+{
+  "artifact_type": "authority_language_mismatch_packet",
+  "schema_version": "1.0.0",
+  "mismatch_count": 1,
+  "violations": [
+    {
+      "artifact_type": "authority_language_violation_record",
+      "schema_version": "1.0.0",
+      "file": "apps/dashboard-3ls/app/page.tsx",
+      "line": 42,
+      "symbol": "decide",
+      "authority_cluster": "decision",
+      "canonical_owners": ["CDE", "JDX"],
+      "suggested_replacements": ["signal", "observation", "recommendation"]
+    }
+  ],
+  "allowed_replacement_policy": "replacement_only_no_semantic_expansion_no_authority_reassignment",
+  "repair_constraints": {
+    "allow_only_suggested_replacements": true,
+    "forbid_semantic_expansion": true,
+    "forbid_authority_reassignment": true
+  },
+  "symbols_seen": ["decide"]
+}

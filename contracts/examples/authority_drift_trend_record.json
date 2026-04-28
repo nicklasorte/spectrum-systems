@@ -1,0 +1,14 @@
+{
+  "artifact_type": "authority_drift_trend_record",
+  "schema_version": "1.0.0",
+  "violation_count_by_symbol": {
+    "enforce": 2,
+    "decide": 1
+  },
+  "violation_count_by_path": {
+    "docs/review-actions/PLAN-EXAMPLE.md": 2,
+    "apps/dashboard-3ls/app/page.tsx": 1
+  },
+  "repeat_violation_fingerprint": "5b4e53c38c7ec0e007f133fed8f54373f95af5367839324f48284f0a2fdf6a42",
+  "total_violations": 3
+}

@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -153,6 +154,57 @@ _GOVERNED_CHANGED_PATH_PREFIXES = (
     ".github/workflows/",
     "docs/governance/",
 )
+
+_AUTHORITY_LANGUAGE_RESERVED_VERBS: dict[str, dict[str, Any]] = {
+    "enforce": {
+        "authority_cluster": "enforcement",
+        "canonical_owners": ["SEL", "ENF"],
+        "suggested_replacements": ["signal", "observation", "input"],
+    },
+    "decide": {
+        "authority_cluster": "decision",
+        "canonical_owners": ["CDE", "JDX"],
+        "suggested_replacements": ["signal", "observation", "recommendation"],
+    },
+    "approve": {
+        "authority_cluster": "approval",
+        "canonical_owners": ["GOV", "HIT"],
+        "suggested_replacements": ["review", "assess", "request"],
+    },
+    "block": {
+        "authority_cluster": "control_gate",
+        "canonical_owners": ["CDE", "SEL"],
+        "suggested_replacements": ["flag", "mark", "signal"],
+    },
+    "promote": {
+        "authority_cluster": "promotion",
+        "canonical_owners": ["REL", "GOV", "CDE"],
+        "suggested_replacements": ["advance_signal", "readiness_signal", "recommend"],
+    },
+    "certify": {
+        "authority_cluster": "certification",
+        "canonical_owners": ["GOV", "CDE"],
+        "suggested_replacements": ["attest_signal", "readiness_evidence", "validate"],
+    },
+}
+_AUTHORITY_LANGUAGE_REGEXES: dict[str, re.Pattern[str]] = {
+    symbol: re.compile(rf"\b{re.escape(symbol)}(?:e[sd]?|ing)?\b", re.IGNORECASE)
+    for symbol in _AUTHORITY_LANGUAGE_RESERVED_VERBS
+}
+_AUTHORITY_LANGUAGE_TARGET_PATH_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"^docs/review-actions/PLAN-.*\.md$", re.IGNORECASE),
+    re.compile(r"^apps/dashboard-3ls/.*"),
+)
+_AUTHORITY_LANGUAGE_ALLOWED_PREFIXES: tuple[str, ...] = (
+    "contracts/governance/",
+    "docs/architecture/",
+    "docs/governance/",
+    "scripts/run_authority_shape_preflight.py",
+    "spectrum_systems/modules/governance/",
+    "spectrum_systems/governance/",
+    "tests/governance/",
+)
+_AUTHORITY_LANGUAGE_FREEZE_THRESHOLD = 3
 
 _REQUIRED_SURFACE_TEST_OVERRIDES: dict[str, list[str]] = {
     "scripts/run_autonomous_validation_run.py": ["tests/test_run_autonomous_validation_run.py"],
@@ -893,6 +945,82 @@ def detect_masked_failures(failures: list[dict[str, Any]]) -> list[dict[str, Any
     return masked
 
 
+def _path_is_authority_language_target(path: str) -> bool:
+    if any(path.startswith(prefix) for prefix in _AUTHORITY_LANGUAGE_ALLOWED_PREFIXES):
+        return False
+    if any(pattern.match(path) for pattern in _AUTHORITY_LANGUAGE_TARGET_PATH_PATTERNS):
+        return True
+    return False
+
+
+def _scan_authority_language_violations(repo_root: Path, changed_paths: list[str]) -> list[dict[str, Any]]:
+    violations: list[dict[str, Any]] = []
+    for path in sorted(set(changed_paths)):
+        if not _path_is_authority_language_target(path):
+            continue
+        file_path = repo_root / path
+        if not file_path.is_file():
+            continue
+        try:
+            lines = file_path.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            continue
+        for idx, line in enumerate(lines, start=1):
+            for symbol, descriptor in _AUTHORITY_LANGUAGE_RESERVED_VERBS.items():
+                if _AUTHORITY_LANGUAGE_REGEXES[symbol].search(line):
+                    violations.append(
+                        {
+                            "artifact_type": "authority_language_violation_record",
+                            "schema_version": "1.0.0",
+                            "file": path,
+                            "line": idx,
+                            "symbol": symbol,
+                            "authority_cluster": descriptor["authority_cluster"],
+                            "canonical_owners": descriptor["canonical_owners"],
+                            "suggested_replacements": descriptor["suggested_replacements"],
+                        }
+                    )
+    return violations
+
+
+def _build_authority_language_mismatch_packet(violations: list[dict[str, Any]]) -> dict[str, Any]:
+    unique_symbols = sorted({str(item.get("symbol", "")) for item in violations if str(item.get("symbol", ""))})
+    return {
+        "artifact_type": "authority_language_mismatch_packet",
+        "schema_version": "1.0.0",
+        "mismatch_count": len(violations),
+        "violations": violations,
+        "allowed_replacement_policy": "replacement_only_no_semantic_expansion_no_authority_reassignment",
+        "repair_constraints": {
+            "allow_only_suggested_replacements": True,
+            "forbid_semantic_expansion": True,
+            "forbid_authority_reassignment": True,
+        },
+        "symbols_seen": unique_symbols,
+    }
+
+
+def _build_authority_drift_trend_record(violations: list[dict[str, Any]]) -> dict[str, Any]:
+    violation_count_by_symbol: dict[str, int] = {}
+    violation_count_by_path: dict[str, int] = {}
+    for item in violations:
+        symbol = str(item.get("symbol", ""))
+        path = str(item.get("file", ""))
+        if symbol:
+            violation_count_by_symbol[symbol] = violation_count_by_symbol.get(symbol, 0) + 1
+        if path:
+            violation_count_by_path[path] = violation_count_by_path.get(path, 0) + 1
+    fingerprint_source = {"symbol": violation_count_by_symbol, "path": violation_count_by_path}
+    return {
+        "artifact_type": "authority_drift_trend_record",
+        "schema_version": "1.0.0",
+        "violation_count_by_symbol": violation_count_by_symbol,
+        "violation_count_by_path": violation_count_by_path,
+        "repeat_violation_fingerprint": _hash_payload(fingerprint_source),
+        "total_violations": len(violations),
+    }
+
+
 def render_markdown(report: dict[str, Any]) -> str:
     lines = ["# Contract Preflight Report", ""]
     lines.append(f"- **status**: `{report['status']}`")
@@ -947,6 +1075,10 @@ def render_markdown(report: dict[str, Any]) -> str:
         lines.append(f"- **pytest_selection_count**: {pytest_selection_integrity.get('selection_count', 0)}")
         lines.append(f"- **pytest_required_target_count**: {len(pytest_selection_integrity.get('required_test_targets', []))}")
         lines.append(f"- **pytest_selection_blocking_reasons**: {len(pytest_selection_integrity.get('blocking_reasons', []))}")
+    authority_language = report.get("authority_language")
+    if isinstance(authority_language, dict):
+        lines.append(f"- **authority_language_violation_count**: {authority_language.get('violation_count', 0)}")
+        lines.append(f"- **authority_language_freeze_applied**: {authority_language.get('freeze_applied', False)}")
 
     lines.append("")
     pqx_execution_policy = report.get("pqx_execution_policy")
@@ -1592,6 +1724,30 @@ def main() -> int:
         "evaluated_surfaces": surface_classification["evaluated_surfaces"],
         "ref_context": ref_context.as_dict(),
     }
+    authority_language_violations = _scan_authority_language_violations(REPO_ROOT, detection.changed_paths)
+    authority_language_violation_path = output_dir / "authority_language_violation_records.json"
+    authority_language_violation_payload = {
+        "artifact_type": "authority_language_violation_record_set",
+        "schema_version": "1.0.0",
+        "violation_count": len(authority_language_violations),
+        "records": authority_language_violations,
+    }
+    for record in authority_language_violations:
+        validate_artifact(record, "authority_language_violation_record")
+    authority_language_violation_path.write_text(
+        json.dumps(authority_language_violation_payload, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    authority_language_mismatch_packet = _build_authority_language_mismatch_packet(authority_language_violations)
+    validate_artifact(authority_language_mismatch_packet, "authority_language_mismatch_packet")
+    authority_language_mismatch_path = output_dir / "authority_language_mismatch_packet.json"
+    authority_language_mismatch_path.write_text(json.dumps(authority_language_mismatch_packet, indent=2) + "\n", encoding="utf-8")
+    authority_drift_trend_record = _build_authority_drift_trend_record(authority_language_violations)
+    validate_artifact(authority_drift_trend_record, "authority_drift_trend_record")
+    authority_drift_trend_path = output_dir / "authority_drift_trend_record.json"
+    authority_drift_trend_path.write_text(json.dumps(authority_drift_trend_record, indent=2) + "\n", encoding="utf-8")
+    authority_language_freeze = len(authority_language_violations) >= _AUTHORITY_LANGUAGE_FREEZE_THRESHOLD
+    authority_language_blocking_reasons = ["AUTHORITY_LANGUAGE_RESERVED_VERB_NON_AUTHORITY_CONTEXT"] if authority_language_violations else []
     preflight_mode = (
         "commit_range_inspection"
         if not list(getattr(args, "changed_path", []) or [])
@@ -1968,6 +2124,26 @@ def main() -> int:
         "fallback_selection_empty": fallback_selection_empty,
         "selection_reason_codes": sorted(set(pytest_selection_reason_codes)),
     }
+    report["authority_language"] = {
+        "violation_count": len(authority_language_violations),
+        "violations_ref": str(authority_language_violation_path),
+        "mismatch_packet_ref": str(authority_language_mismatch_path),
+        "drift_trend_ref": str(authority_drift_trend_path),
+        "blocking_reasons": authority_language_blocking_reasons,
+        "freeze_applied": authority_language_freeze,
+    }
+    if authority_language_violations:
+        report["status"] = "failed"
+        report["invariant_violations"] = sorted(
+            set(report.get("invariant_violations", []) + authority_language_blocking_reasons)
+        )
+        report["recommended_repair_areas"] = sorted(
+            set(report.get("recommended_repair_areas", []) + ["authority language replacement in non-authority artifacts"])
+        )
+    if authority_language_freeze:
+        report["invariant_violations"] = sorted(
+            set(report.get("invariant_violations", []) + ["AUTHORITY_LANGUAGE_REPEAT_VIOLATION_FREEZE"])
+        )
     pytest_execution_record = build_pytest_execution_record(
         event_name=str(ref_context.event_name or ""),
         source_head_ref=str(ref_context.head_ref or ""),
