@@ -210,3 +210,32 @@ skipped silently.
 **Prompt Type:** BUILD
 
 > Implement LOOP-01 through LOOP-03 only. Keep RFX as a phase label in TLC routing with AEX admission linkage. Add fail-closed tests proving direct PQX invocation without AEX/TLC artifacts is blocked, and prove missing EVL/TPA evidence stops downstream CDE/SEL progression. Do not add a new system.
+
+
+## RFX-HARDEN-ALL (RFX-H01 → RFX-H19)
+
+Status: implemented.
+
+RFX-H01 through RFX-H19 are implemented as non-owning support helpers with deterministic reason codes, focused tests, and red-team/fix/revalidation coverage. RFX remains a phase label and supplies evidence, verification, and recommendations only.
+
+| ID | Status | Module / Surface |
+| --- | --- | --- |
+| RFX-H01 | implemented | `rfx_health_contract.py` |
+| RFX-H02 | implemented | `rfx_reason_code_registry.py` |
+| RFX-H03 | implemented | `rfx_debug_bundle.py` |
+| RFX-H04 | implemented | `rfx_output_envelope.py` |
+| RFX-H05 | implemented | `rfx_golden_loop.py` |
+| RFX-H06 | implemented | `rfx_dependency_map.py` |
+| RFX-H07 | implemented | `rfx_bloat_budget.py` |
+| RFX-H08 | implemented | `rfx_trend_clustering_hardening.py` |
+| RFX-H09 | implemented | `rfx_calibration_policy_handoff.py` |
+| RFX-H10 | implemented | `rfx_memory_persistence_handoff.py` |
+| RFX-H11 | implemented | `rfx_authority_pattern_corpus.py` |
+| RFX-H12 | implemented | `rfx_module_elimination.py` |
+| RFX-H13 | implemented | `rfx_operator_runbook.py` |
+| RFX-H14 | implemented | `rfx_golden_failure_corpus.py` |
+| RFX-H15 | implemented | `scripts/run_rfx_super_check.py` |
+| RFX-H16 | implemented | `rfx_architecture_drift_audit.py` |
+| RFX-H17 | implemented | `rfx_contract_snapshot.py` |
+| RFX-H18 | implemented | `rfx_unknown_state_campaign.py` |
+| RFX-H19 | implemented | `rfx_authority_vocabulary_sweep.py` |
