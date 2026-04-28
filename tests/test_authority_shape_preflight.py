@@ -247,6 +247,44 @@ def test_safe_rename_updates_imports_and_docs(tmp_path: Path, vocab) -> None:
     assert {py_rel, json_rel, md_rel}.issubset(rename_files)
 
 
+
+
+def test_review_language_flags_unqualified_authority_terms_in_prose(tmp_path: Path, vocab) -> None:
+    repo = _seed_repo(tmp_path)
+    rel = "docs/reviews/TST-01_ci_test_inventory.md"
+    _write(repo, rel, "## Summary\nThis panel reports enforcement overlap and decision drift.\n")
+
+    result = evaluate_preflight(
+        repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only"
+    )
+
+    assert result.status == "fail"
+    clusters = {v.cluster for v in result.violations}
+    assert "enforcement" in clusters
+    assert "decision" in clusters
+
+
+def test_review_language_allows_safe_replacement_terms_in_prose_and_tables(tmp_path: Path, vocab) -> None:
+    repo = _seed_repo(tmp_path)
+    rel = "docs/reviews/TST-01_ci_test_inventory.md"
+    _write(
+        repo,
+        rel,
+        "## Summary\n"
+        "This panel reports compliance_observation and policy_observation only.\n"
+        "| script | args |\n"
+        "|---|---|\n"
+        "| `run_contract_enforcement.py` | `--control-decision` |\n",
+    )
+
+    result = evaluate_preflight(
+        repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only"
+    )
+
+    assert result.status == "pass"
+    assert result.violations == []
+
+
 def test_guard_paths_are_skipped_for_violations(tmp_path: Path, vocab) -> None:
     repo = _seed_repo(tmp_path)
     rel = "spectrum_systems/modules/governance/system_registry_guard.py"

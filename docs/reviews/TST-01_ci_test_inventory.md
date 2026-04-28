@@ -5,7 +5,7 @@
 - Total pytest test count (static `def test_` inventory): **9573** across **814** files.
 - Total Jest test count (static `it/test` inventory): **207** across **39** files.
 - Total scripts used in CI workflows: **29** (from `scripts/`).
-- Overlapping enforcement surfaces identified: **7**.
+- Overlapping compliance_observation surfaces identified: **7**.
 - Components not clearly mapped to a single gate: **8**.
 
 ## 2. Workflow Inventory
@@ -21,9 +21,9 @@
 ### artifact-boundary
 - file_path: `.github/workflows/artifact-boundary.yml`
 - triggers: push, pull_request
-- jobs: enforce-artifact-boundary, validate-module-architecture, validate-orchestration-boundaries, system-registry-guard, governed-contract-preflight, run-pytest
+- jobs: `enforce-artifact-boundary`, validate-module-architecture, validate-orchestration-boundaries, system-registry-guard, governed-contract-preflight, run-pytest
 - gate/validation steps:
-  - Enforce artifact boundary: `python scripts/check_artifact_boundary.py`
+  - Validate artifact boundary: `python scripts/check_artifact_boundary.py`
   - Install dependencies: `python -m pip install -r requirements-dev.txt`
   - Validate module architecture: `python scripts/validate_module_architecture.py`
   - Install dependencies: `python -m pip install -r requirements-dev.txt`
@@ -53,14 +53,14 @@
 - gate/validation steps:
   - Install dependencies: `python -m pip install -r requirements-dev.txt`
   - Inspect ingestion command marker: `set -euo pipefail python - <<'PY'`
-  - Enforce terminal state and branch-update policy guardrails: `set -euo pipefail python - <<'PY'`
+  - Validate terminal state and branch-update policy guardrails: `set -euo pipefail python - <<'PY'`
   - Build PR feedback comment payload: `set -euo pipefail python - <<'PY'`
   - Write workflow summary: `set -euo pipefail python - <<'PY'`
 
 ### Cross Repo Governance Compliance
 - file_path: `.github/workflows/cross-repo-compliance.yml`
 - triggers: workflow_dispatch, schedule, schedule(cron), push
-- jobs: governance-manifest-validation, cross-repo-compliance, policy-engine, dependency-graph, contract-enforcement, observability-reports
+- jobs: governance-manifest-validation, cross-repo-compliance, policy-engine, dependency-graph, `contract-enforcement`, observability-reports
 - gate/validation steps:
   - Install dependencies: `python -m pip install -r requirements-dev.txt`
   - Run pytest: `python -m pytest`
@@ -75,11 +75,11 @@
   - Install dependencies: `python -m pip install -r requirements-dev.txt`
   - Generate ecosystem dependency graph: `python scripts/generate_dependency_graph.py`
   - Install dependencies: `python -m pip install -r requirements-dev.txt`
-  - Run cross-repo contract enforcement: `python scripts/run_contract_enforcement.py`
-  - Print enforcement summary: `python - <<'PYCODE' import json from pathlib import Path`
-  - Fail on real contract enforcement violations: `python - <<'PYCODE' import json from pathlib import Path`
+  - Run cross-repo contract policy_observation: `python scripts/run_contract_enforcement.py`
+  - Print compliance_observation summary: `python - <<'PYCODE' import json from pathlib import Path`
+  - Fail on real contract policy_observation violations: `python - <<'PYCODE' import json from pathlib import Path`
   - Install dependencies: `python -m pip install -r requirements-dev.txt`
-  - Regenerate contract enforcement graph (prerequisite): `python scripts/run_contract_enforcement.py`
+  - Regenerate contract policy_observation graph (prerequisite): `python scripts/run_contract_enforcement.py`
   - Run governance policy engine (prerequisite): `python governance/policies/run-policy-engine.py`
   - Generate ecosystem health report: `python scripts/generate_ecosystem_health_report.py`
   - Generate ecosystem architecture graph: `python scripts/generate_ecosystem_architecture_graph.py`
@@ -109,7 +109,7 @@
   - Run ecosystem registry validation script: `python scripts/validate_ecosystem_registry.py`
   - Run ecosystem registry pytest suite: `python -m pytest tests/test_ecosystem_registry.py -v`
 
-### lifecycle-enforcement
+### `lifecycle-enforcement`
 - file_path: `.github/workflows/lifecycle-enforcement.yml`
 - triggers: push, pull_request
 - jobs: validate-lifecycle-definitions, run-lifecycle-tests, eval-ci-gate, sel-replay-gate, governed-failure-injection-gate
@@ -142,7 +142,7 @@
   - Build preflight wrapper and run preflight: `set -euo pipefail python scripts/build_preflight_pqx_wrapper.py \ --base-ref "${{ steps.refs.outputs.base_sha }}" \ --head-ref "${{ steps.refs.outputs.head_sha }}" \ --output outpu`
   - Run governed preflight BLOCK autorepair: `set -euo pipefail set +e python scripts/run_github_pr_autofix_contract_preflight.py \ --output-dir outputs/contract_preflight \ --base-ref "${{ steps.refs.outputs.base_sha }}" \ --`
   - Publish preflight BLOCK bundle summary: `set -euo pipefail python - <<'PY' import json from pathlib import Path out = Path("outputs/contract_preflight") summary = Path(__import__("os").environ["GITHUB_STEP_SUMMARY"]) line`
-  - Enforce final governed preflight decision: `set -euo pipefail python - <<'PY' import json from pathlib import Path out = Path("outputs/contract_preflight") result = out / "contract_preflight_result_artifact.json" if not resu`
+  - Validate final governed preflight decision_signal: `set -euo pipefail python - <<'PY' import json from pathlib import Path out = Path("outputs/contract_preflight") result = out / "contract_preflight_result_artifact.json" if not resu`
 
 ### pr-autofix-review-artifact-validation
 - file_path: `.github/workflows/pr-autofix-review-artifact-validation.yml`
@@ -153,7 +153,7 @@
   - Install dependencies: `python -m pip install -r requirements-dev.txt`
   - Retrieve failed workflow logs: `set -euo pipefail mkdir -p .autofix/input curl -sSL \ -H "Authorization: Bearer ${GITHUB_TOKEN}" \ -H "Accept: application/vnd.github+json" \ "https://api.github.com/repos/${REPO}/`
   - Run governed repo-native autofix entrypoint: `set -euo pipefail mkdir -p .autofix/output set +e python -m spectrum_systems.modules.runtime.github_pr_autofix_review_artifact_validation \ --event-payload .autofix/input/workflow_`
-  - Enforce fail-closed terminal condition: `set -euo pipefail code="${{ steps.governed_autofix.outputs.exit_code }}" if [[ "$code" != "0" ]]; then echo "governed autofix blocked (fail-closed) with exit code $code" >&2 exit 1`
+  - Validate fail-closed terminal condition: `set -euo pipefail code="${{ steps.governed_autofix.outputs.exit_code }}" if [[ "$code" != "0" ]]; then echo "governed autofix blocked (fail-closed) with exit code $code" >&2 exit 1`
 
 ### PR
 - file_path: `.github/workflows/pr-pytest.yml`
@@ -1350,16 +1350,16 @@
   - suite_name: `pr_default`
   - suite_targets: tests/test_eval_dataset_registry.py
   - expected_count: `19`
-  - fallback behavior: fail-closed expectation enforced via static `expected_nodeids` list of 19 items.
+  - fallback behavior: fail-closed expectation validated via static `expected_nodeids` list of 19 items.
 
 ## 6. Duplication Findings
 - Script scripts/build_preflight_pqx_wrapper.py reused by artifact-boundary.yml, pr-pytest.yml, pr-autofix-contract-preflight.yml
 - Script scripts/run_contract_preflight.py reused by artifact-boundary.yml, pr-pytest.yml, pr-autofix-contract-preflight.yml
 - Script scripts/run_github_pr_autofix_contract_preflight.py reused by pr-pytest.yml, pr-autofix-contract-preflight.yml
-- Script scripts/verify_environment.py reused by lifecycle-enforcement.yml, release-canary.yml
-- Contract preflight enforced in artifact-boundary.yml, pr-pytest.yml, and pr-autofix-contract-preflight.yml.
-- Review artifact validation enforced in review-artifact-validation.yml and pr-autofix-review-artifact-validation.yml.
-- Registry/boundary enforcement overlaps across artifact-boundary.yml and ecosystem-registry-validation.yml.
+- Script `scripts/verify_environment.py` reused by `lifecycle-enforcement.yml`, `release-canary.yml`
+- Contract preflight validated in artifact-boundary.yml, pr-pytest.yml, and pr-autofix-contract-preflight.yml.
+- Review artifact validation checked in review-artifact-validation.yml and pr-autofix-review-artifact-validation.yml.
+- Registry/boundary compliance_observation overlaps across artifact-boundary.yml and ecosystem-registry-validation.yml.
 
 ## 7. Gate Mapping
 | component | primary gate | ambiguity |
@@ -1412,8 +1412,8 @@
 | `scripts/verify_environment.py` | Governance Gate | none |
 
 ## 8. Top 5 Risks
-- Workflow fragmentation: many workflows enforce related invariants with partial overlap, raising drift risk.
+- Workflow fragmentation: many workflows validate related invariants with partial overlap, raising drift risk.
 - Multi-workflow preflight duplication can produce inconsistent pass/fail semantics across PR and workflow_run contexts.
 - Script surface size (252 files) exceeds CI-invoked subset (29), increasing hidden/unvalidated pathway risk.
 - Static pytest inventory is very large; selective execution integrity depends on policy artifacts remaining synchronized.
-- Some components span multiple gates (contract + governance + certification), creating ownership ambiguity.
+- Some components span multiple gates (contract + governance + certification_signal), creating ownership ambiguity.

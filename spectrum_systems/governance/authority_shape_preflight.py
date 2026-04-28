@@ -488,10 +488,28 @@ def _scan_review_language(*, path: Path, rel_path: str, vocab: VocabularyModel) 
         "approval": {"GOV"},
         "promotion": {"REL"},
     }
+    in_fenced_block = False
     for idx, line in enumerate(lines, start=1):
-        normalized = line.strip()
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fenced_block = not in_fenced_block
+            continue
+        if in_fenced_block:
+            continue
+        if stripped.startswith("|"):
+            # Markdown tables in review artifacts frequently carry raw file paths,
+            # CLI flags, and schema keys. Those are inventory data, not ownership
+            # claims, and should be validated by contract/surface scanners rather
+            # than prose authority-shape lint.
+            continue
+
+        # Remove inline-code spans so path/script literals do not look like
+        # free-text ownership claims.
+        without_code = re.sub(r"`[^`]*`", " ", line)
+        normalized = without_code.strip()
         if not normalized:
             continue
+
         words = re.findall(r"[A-Za-z]+", normalized)
         upper_words = {w.upper() for w in words}
         tokenized = normalized.replace("-", " ").replace("/", " ").lower()
