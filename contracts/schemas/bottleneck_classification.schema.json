@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/bottleneck_classification.schema.json",
+  "title": "Bottleneck Classification",
+  "description": "OC-04 non-owning classifier output. Maps an observed blocker to one of the canonical categories below, names the existing 3-letter system that owns the seam, points to the evidence artifact, and recommends a next safe action. The classifier never decides closure or enforces; it produces a finding for downstream support seams.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "classification_id",
+    "category",
+    "owning_system",
+    "reason_code",
+    "evidence_artifact_ref",
+    "confidence",
+    "next_safe_action"
+  ],
+  "properties": {
+    "artifact_type": { "const": "bottleneck_classification" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "classification_id": { "type": "string", "minLength": 1 },
+    "audit_timestamp": { "type": "string" },
+    "category": {
+      "type": "string",
+      "enum": [
+        "eval",
+        "replay",
+        "lineage",
+        "context_admission",
+        "registry",
+        "slo",
+        "certification",
+        "authority_shape",
+        "dashboard",
+        "unknown",
+        "none"
+      ]
+    },
+    "owning_system": {
+      "type": ["string", "null"],
+      "enum": [
+        null,
+        "EVL",
+        "REP",
+        "LIN",
+        "CTX",
+        "TPA",
+        "SLO",
+        "GOV",
+        "OBS",
+        "MAP",
+        "CDE",
+        "PRA",
+        "AEX",
+        "PQX",
+        "SEL",
+        "RIL",
+        "FRE",
+        "RAX",
+        "RSM",
+        "CAP",
+        "SEC",
+        "JDX",
+        "JSX",
+        "POL",
+        "TLC",
+        "PRM",
+        "HOP"
+      ]
+    },
+    "reason_code": { "type": "string", "minLength": 1 },
+    "evidence_artifact_ref": { "type": ["string", "null"] },
+    "confidence": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "ambiguous": { "type": "boolean" },
+    "ambiguity_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["category", "owning_system", "reason_code"],
+        "properties": {
+          "category": { "type": "string" },
+          "owning_system": { "type": "string" },
+          "reason_code": { "type": "string" }
+        }
+      }
+    },
+    "next_safe_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "rationale"],
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "block",
+            "freeze",
+            "warn",
+            "investigate",
+            "regenerate_proof",
+            "regenerate_dashboard_projection",
+            "review_evidence",
+            "escalate"
+          ]
+        },
+        "rationale": { "type": "string", "minLength": 1 }
+      }
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

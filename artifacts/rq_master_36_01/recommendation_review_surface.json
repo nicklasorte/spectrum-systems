@@ -1,7 +1,7 @@
 {
   "artifact_type": "recommendation_review_surface",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-27T20:12:36Z",
+  "generated_at": "2026-04-28T01:48:28Z",
   "recommendation_quality": {
     "accuracy": 0.8333,
     "coverage": 3,

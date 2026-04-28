@@ -449,6 +449,53 @@ def test_compliance_no_error_failures_on_example_manifests() -> None:
     )
 
 
+def test_legacy_governance_report_uses_safe_compliance_vocabulary() -> None:
+    """OC-ALL-01-AUTH-SHAPE-REPORT-FIX: the legacy governance report path
+    must not contain authority-shaped enforcement vocabulary, since the
+    report is a non-owning compliance observation surface (SEL/ENF retain
+    canonical action boundary responsibility)."""
+    legacy_path = (
+        REPO_ROOT / "docs" / "governance-reports" / "contract-enforcement-report.md"
+    )
+    if not legacy_path.exists():
+        pytest.skip("legacy report not present in this checkout")
+    content = legacy_path.read_text(encoding="utf-8")
+    forbidden = [
+        "Contract Enforcement Report",
+        "Enforcement Summary",
+        "Enforcement Results",
+        "Enforcement Failures",
+        "enforcement status",
+        "enforcement findings",
+    ]
+    for phrase in forbidden:
+        assert phrase not in content, (
+            f"legacy report still contains protected enforcement vocabulary: {phrase!r}"
+        )
+    assert (
+        "Cross-Repo Contract Compliance Report" in content
+        or "Cross-Repo Contract Validation Report" in content
+    )
+
+
+def test_active_compliance_report_uses_safe_vocabulary() -> None:
+    """The active compliance report must use the safe compliance/validation
+    headings on every section that previously carried enforcement
+    vocabulary."""
+    active_path = (
+        REPO_ROOT / "docs" / "governance-reports" / "contract-compliance-report.md"
+    )
+    if not active_path.exists():
+        pytest.skip("active compliance report not yet generated")
+    content = active_path.read_text(encoding="utf-8")
+    assert "Contract Enforcement Report" not in content
+    assert "Enforcement Summary" not in content
+    assert "Enforcement Results" not in content
+    assert "Enforcement Failures" not in content
+    assert "Cross-Repo Contract Compliance Report" in content
+    assert "## Compliance Findings" in content
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Integration test: canonical consumer-consistency drift guard
 # ─────────────────────────────────────────────────────────────────────────────

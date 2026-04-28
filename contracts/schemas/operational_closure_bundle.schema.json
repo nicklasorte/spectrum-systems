@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/operational_closure_bundle.schema.json",
+  "title": "Operational Closure Bundle",
+  "description": "OC-25 single reference-only bundle that answers the eight operator questions: overall status (pass/block/freeze/unknown), current bottleneck, owning 3-letter system, supporting proof artifact, dashboard/public alignment, fast trust gate sufficiency, next work item, and the failure or measurable signal that justifies that work. The bundle is a non-owning support seam consumed by operators and CDE; it never decides closure or authorizes promotion.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "bundle_id",
+    "audit_timestamp",
+    "overall_status",
+    "current_bottleneck",
+    "owning_system",
+    "supporting_proof_ref",
+    "dashboard_alignment",
+    "fast_trust_gate_sufficiency",
+    "next_work_item",
+    "justifying_signal_or_failure",
+    "evidence_refs",
+    "non_authority_assertions"
+  ],
+  "properties": {
+    "artifact_type": { "const": "operational_closure_bundle" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "bundle_id": { "type": "string", "minLength": 1 },
+    "audit_timestamp": { "type": "string", "minLength": 1 },
+    "overall_status": {
+      "type": "string",
+      "enum": ["pass", "block", "freeze", "unknown"]
+    },
+    "current_bottleneck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["category", "reason_code"],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "eval",
+            "replay",
+            "lineage",
+            "context_admission",
+            "registry",
+            "slo",
+            "certification",
+            "authority_shape",
+            "dashboard",
+            "unknown",
+            "none"
+          ]
+        },
+        "reason_code": { "type": "string", "minLength": 1 }
+      }
+    },
+    "owning_system": { "type": ["string", "null"] },
+    "supporting_proof_ref": { "type": ["string", "null"] },
+    "dashboard_alignment": {
+      "type": "string",
+      "enum": ["aligned", "drifted", "missing", "corrupt", "unknown"]
+    },
+    "fast_trust_gate_sufficiency": {
+      "type": "string",
+      "enum": ["sufficient", "insufficient", "unknown"]
+    },
+    "next_work_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["work_item_id", "selection_status"],
+      "properties": {
+        "work_item_id": { "type": ["string", "null"] },
+        "selection_status": {
+          "type": "string",
+          "enum": ["selected", "no_recommendation", "blocked", "unknown"]
+        }
+      }
+    },
+    "justifying_signal_or_failure": { "type": "string", "minLength": 1 },
+    "evidence_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proof_intake_ref",
+        "bottleneck_classification_ref",
+        "dashboard_projection_ref",
+        "closure_packet_ref",
+        "fast_trust_gate_ref",
+        "work_selection_ref"
+      ],
+      "properties": {
+        "proof_intake_ref": { "type": ["string", "null"] },
+        "bottleneck_classification_ref": { "type": ["string", "null"] },
+        "dashboard_projection_ref": { "type": ["string", "null"] },
+        "closure_packet_ref": { "type": ["string", "null"] },
+        "fast_trust_gate_ref": { "type": ["string", "null"] },
+        "work_selection_ref": { "type": ["string", "null"] },
+        "operator_runbook_ref": { "type": ["string", "null"] }
+      }
+    },
+    "operator_questions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "is_pass_block_freeze_or_unknown": { "type": "string" },
+        "current_bottleneck_label": { "type": "string" },
+        "owning_three_letter_system": { "type": ["string", "null"] },
+        "proof_artifact_label": { "type": ["string", "null"] },
+        "dashboard_aligned_with_repo_truth": { "type": "string" },
+        "fast_trust_gate_sufficient": { "type": "string" },
+        "next_work_item_label": { "type": ["string", "null"] },
+        "justifying_failure_or_signal": { "type": "string" }
+      }
+    },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "preparatory_only",
+          "advisory_only",
+          "not_control_authority",
+          "not_certification_authority",
+          "not_promotion_authority",
+          "not_enforcement_authority",
+          "not_closure_authority"
+        ]
+      }
+    }
+  }
+}

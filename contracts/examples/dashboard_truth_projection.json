@@ -1,0 +1,21 @@
+{
+  "artifact_type": "dashboard_truth_projection",
+  "schema_version": "1.0.0",
+  "projection_id": "dtp-example-1",
+  "audit_timestamp": "2026-04-28T12:00:00Z",
+  "current_status": "pass",
+  "latest_proof_ref": "lpb-pass-1",
+  "owning_system": "GOV",
+  "reason_code": "DASHBOARD_PROJECTION_ALIGNED",
+  "bottleneck_category": "none",
+  "next_safe_action": "merge",
+  "freshness_status": "fresh",
+  "alignment_status": "aligned",
+  "alignment_findings": [],
+  "non_authority_assertions": [
+    "preparatory_only",
+    "not_control_authority",
+    "not_certification_authority",
+    "not_enforcement_authority"
+  ]
+}

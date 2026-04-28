@@ -2,7 +2,7 @@
   "artifact_type": "repair_latency_scoreboard",
   "slice_id": "RL-13",
   "owner": "PRG",
-  "generated_at": "2026-04-27T20:11:48Z",
+  "generated_at": "2026-04-28T01:47:44Z",
   "median_seconds": {
     "fast_path": 210,
     "standard_path": 540

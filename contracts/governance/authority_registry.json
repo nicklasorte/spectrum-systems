@@ -125,7 +125,24 @@
       "spectrum_systems/modules/observability/trust_artifact_freshness.py",
       "spectrum_systems/modules/governance/proof_bundle_size_budget.py",
       "spectrum_systems/modules/governance/certification_delta.py",
-      "spectrum_systems/modules/runtime/control_signal_minimality.py"
+      "spectrum_systems/modules/runtime/control_signal_minimality.py",
+      "spectrum_systems/modules/governance/proof_intake_index.py",
+      "spectrum_systems/modules/observability/bottleneck_classifier.py",
+      "spectrum_systems/modules/observability/dashboard_truth_projection.py",
+      "spectrum_systems/modules/governance/closure_decision_packet.py",
+      "spectrum_systems/modules/governance/work_selection_signal.py",
+      "spectrum_systems/modules/governance/fast_trust_gate.py",
+      "spectrum_systems/modules/governance/cleanup_candidate_report.py",
+      "spectrum_systems/modules/governance/operator_runbook.py",
+      "spectrum_systems/modules/governance/operational_closure_bundle.py",
+      "contracts/examples/proof_intake_index.json",
+      "contracts/examples/bottleneck_classification.json",
+      "contracts/examples/dashboard_truth_projection.json",
+      "contracts/examples/closure_decision_packet.json",
+      "contracts/examples/work_selection_record.json",
+      "contracts/examples/cleanup_candidate_report.json",
+      "contracts/examples/operator_runbook_entry.json",
+      "contracts/examples/operational_closure_bundle.json"
     ]
   },
   "vocabulary_overrides": {
