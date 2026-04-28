@@ -1,8 +1,8 @@
 {
   "artifact_type": "reason_code_alias_map",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "policy_id": "NS-04-reason-code-aliases",
-  "purpose": "Canonical mapping layer for failure reason codes. Maps detail-level codes from eval, replay, lineage, context, control, certification, observability, and SLO into a stable set of canonical categories. Detail codes are preserved alongside the canonical category so the root cause is not erased.",
+  "purpose": "Canonical mapping layer for failure reason codes. Maps detail-level codes from eval, replay, lineage, context, control, certification, observability, and SLO into a stable set of canonical categories. Detail codes are preserved alongside the canonical category so the root cause is not erased. NT-12 adds lifecycle metadata: every alias has a lifecycle status of active, deprecated, merged, or forbidden.",
   "canonical_categories": [
     "SCHEMA_VIOLATION",
     "MISSING_ARTIFACT",
@@ -90,7 +90,57 @@
     "control_chain_eval_decision_mismatch": "CONTROL_CHAIN_VIOLATION",
     "control_chain_decision_enforcement_mismatch": "CONTROL_CHAIN_VIOLATION",
     "control_chain_missing_eval_reference": "CONTROL_CHAIN_VIOLATION",
-    "control_chain_missing_decision_reference": "CONTROL_CHAIN_VIOLATION"
+    "control_chain_missing_decision_reference": "CONTROL_CHAIN_VIOLATION",
+
+    "trust_freshness_ok": "CERTIFICATION_GAP",
+    "trust_freshness_stale_digest_mismatch": "CERTIFICATION_GAP",
+    "trust_freshness_stale_source_digest_mismatch": "CERTIFICATION_GAP",
+    "trust_freshness_stale_timestamp": "CERTIFICATION_GAP",
+    "trust_freshness_unknown_no_proof": "CERTIFICATION_GAP",
+    "trust_freshness_missing_artifact": "CERTIFICATION_GAP",
+    "trust_freshness_policy_unavailable": "CERTIFICATION_GAP",
+
+    "proof_size_ok": "CERTIFICATION_GAP",
+    "proof_size_over_ref_budget": "CERTIFICATION_GAP",
+    "proof_size_nested_too_deep": "CERTIFICATION_GAP",
+    "proof_size_over_line_budget": "CERTIFICATION_GAP",
+    "proof_size_over_char_budget": "CERTIFICATION_GAP",
+    "proof_size_duplicate_refs": "CERTIFICATION_GAP",
+    "proof_size_inline_evidence": "CERTIFICATION_GAP",
+
+    "tier_drift_detected": "POLICY_MISMATCH",
+    "tier_indirect_laundering": "POLICY_MISMATCH",
+    "tier_missing_metadata": "POLICY_MISMATCH",
+    "tier_low_to_evidence_drift": "POLICY_MISMATCH",
+
+    "cert_delta_added": "CERTIFICATION_GAP",
+    "cert_delta_removed": "CERTIFICATION_GAP",
+    "cert_delta_changed_digest": "CERTIFICATION_GAP",
+    "cert_delta_changed_status": "CERTIFICATION_GAP",
+    "cert_delta_changed_reason": "CERTIFICATION_GAP",
+    "cert_delta_changed_owner": "CERTIFICATION_GAP",
+    "cert_delta_unexplained": "CERTIFICATION_GAP",
+    "cert_delta_silent_removal": "CERTIFICATION_GAP"
+  },
+  "alias_lifecycle": {
+    "deprecated": {
+      "weak_evidence_coverage": {
+        "merged_into": "missing_required_eval_result",
+        "since": "2026-04-27",
+        "rationale": "Generic 'weak_evidence_coverage' overlapped with explicit 'missing_required_eval_result'; new code should emit the explicit variant."
+      }
+    },
+    "merged": {},
+    "forbidden": {
+      "shutdown_required": {
+        "rationale": "Authority-shaped term that bypasses CDE/SEL ownership. Use 'cert_evidence_index_incomplete' or freeze via control decision instead.",
+        "since": "2026-04-27"
+      },
+      "auto_promote": {
+        "rationale": "Implies promotion authority outside REL/GOV/CDE. Promotion only follows a control decision with action allow.",
+        "since": "2026-04-27"
+      }
+    }
   },
   "high_level_blocking_codes_requiring_canonical_mapping": [
     "blocked",

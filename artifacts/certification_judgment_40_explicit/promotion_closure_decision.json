@@ -3,7 +3,7 @@
   "batch_id": "CERTIFICATION-JUDGMENT-40-EXPLICIT",
   "step": 38,
   "owner": "CDE",
-  "generated_at": "2026-04-27T12:45:17Z",
+  "generated_at": "2026-04-27T20:07:35Z",
   "execution_mode": "STRICT SERIAL WITH HARD CHECKPOINTS",
   "status": "pass",
   "fail_closed": false,

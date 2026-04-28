@@ -1,7 +1,7 @@
 {
   "artifact_type": "repair_latency_artifact_trace",
   "batch_id": "REPAIR-LATENCY-24-01",
-  "generated_at": "2026-04-27T12:49:20Z",
+  "generated_at": "2026-04-27T20:11:48Z",
   "execution_mode": "SERIAL WITH HARD CHECKPOINTS",
   "checkpoint_progression": "stopped_on_first_failure_else_continue",
   "umbrella_sequence": [

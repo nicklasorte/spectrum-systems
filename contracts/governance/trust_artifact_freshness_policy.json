@@ -1,0 +1,60 @@
+{
+  "artifact_type": "trust_artifact_freshness_policy",
+  "schema_version": "1.0.0",
+  "policy_id": "NT-03-trust-artifact-freshness-policy",
+  "purpose": "Per-kind freshness budgets and digest requirements for the small set of trust artifacts that gate the canonical loop. Digest signals (producer_input_digest, source_artifact_digest) take priority over timestamp budgets. Unknown freshness fails closed unless allow_unknown is explicitly set.",
+  "default_kind_budget": {
+    "max_age_days": 7,
+    "require_digest": true,
+    "allow_unknown": false
+  },
+  "artifact_kinds": {
+    "artifact_tier_policy": {
+      "max_age_days": 90,
+      "require_digest": true,
+      "allow_unknown": false,
+      "rationale": "Tier policy is durable; digest of canonical inputs is the strong proof. Timestamp budget is generous because the policy file rarely changes."
+    },
+    "reason_code_alias_map": {
+      "max_age_days": 90,
+      "require_digest": true,
+      "allow_unknown": false,
+      "rationale": "Alias map is durable; lifecycle changes (deprecated/forbidden) must be detectable. Digest is preferred."
+    },
+    "certification_evidence_index": {
+      "max_age_days": 1,
+      "require_digest": true,
+      "allow_unknown": false,
+      "rationale": "Evidence index is per-trace; freshness must mirror the trace it covers. Stale or unknown evidence indexes block certification."
+    },
+    "loop_proof_bundle": {
+      "max_age_days": 1,
+      "require_digest": true,
+      "allow_unknown": false,
+      "rationale": "Proof bundle is per-trace; must reflect the current evidence index and failure trace."
+    },
+    "failure_trace": {
+      "max_age_days": 1,
+      "require_digest": false,
+      "allow_unknown": false,
+      "rationale": "Failure trace is per-run; require either digest or recent timestamp."
+    },
+    "replay_lineage_join_summary": {
+      "max_age_days": 1,
+      "require_digest": true,
+      "allow_unknown": false,
+      "rationale": "Join summary must be regenerated alongside the replay/lineage records it cross-references."
+    },
+    "slo_signal_policy": {
+      "max_age_days": 30,
+      "require_digest": true,
+      "allow_unknown": false,
+      "rationale": "Signal policy is durable but must be digest-verified so promotion of an observation to a hard signal is auditable."
+    }
+  },
+  "stale_outcome": {
+    "blocks_certification": true,
+    "blocks_loop_proof_bundle": true,
+    "canonical_category": "CERTIFICATION_GAP"
+  }
+}

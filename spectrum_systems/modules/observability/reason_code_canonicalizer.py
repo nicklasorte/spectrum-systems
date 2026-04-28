@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -47,6 +47,10 @@ CANONICAL_CATEGORIES = (
     "CONTROL_CHAIN_VIOLATION",
 )
 
+# NT-12: lifecycle states for aliases. ``active`` is the default when the
+# alias appears in the alias map without an explicit lifecycle entry.
+ALIAS_LIFECYCLE_STATES = ("active", "deprecated", "merged", "forbidden")
+
 # Subsystem hint prefixes -> canonical category default. Used only when
 # alias lookup misses; we never overwrite an explicit alias.
 _PREFIX_TO_CATEGORY = {
@@ -58,6 +62,8 @@ _PREFIX_TO_CATEGORY = {
     "CERT_": "CERTIFICATION_GAP",
     "CONTROL_CHAIN_": "CONTROL_CHAIN_VIOLATION",
     "AUTHORITY_": "AUTHORITY_SHAPE_VIOLATION",
+    "TRUST_FRESHNESS_": "CERTIFICATION_GAP",
+    "PROOF_SIZE_": "CERTIFICATION_GAP",
 }
 
 # Subsystem hints from the same prefix. Best-effort.
@@ -71,6 +77,8 @@ _PREFIX_TO_SUBSYSTEM = {
     "CONTROL_CHAIN_": "CDE",
     "AUTHORITY_": "GOV",
     "TIER_": "OBS",
+    "TRUST_FRESHNESS_": "OBS",
+    "PROOF_SIZE_": "GOV",
 }
 
 
@@ -101,6 +109,31 @@ def _alias_table(reload: bool = False) -> Dict[str, Any]:
     return _alias_cache
 
 
+def _lifecycle_for(alias_lower: str, table_data: Mapping[str, Any]) -> str:
+    """Return the lifecycle state for an alias key.
+
+    The lifecycle map has the shape::
+
+        {
+          "alias_lifecycle": {
+            "deprecated": {alias: {...metadata...}, ...},
+            "merged": {alias: {...}, ...},
+            "forbidden": {alias: {...}, ...}
+          }
+        }
+
+    Aliases not listed default to ``active``.
+    """
+    lifecycle = table_data.get("alias_lifecycle") or {}
+    if not isinstance(lifecycle, Mapping):
+        return "active"
+    for state in ("forbidden", "deprecated", "merged"):
+        bucket = lifecycle.get(state) or {}
+        if isinstance(bucket, Mapping) and alias_lower in {k.lower() for k in bucket}:
+            return state
+    return "active"
+
+
 def canonicalize_reason_code(
     raw_code: str,
     *,
@@ -113,6 +146,7 @@ def canonicalize_reason_code(
       {"canonical_category": str (one of CANONICAL_CATEGORIES) or "UNKNOWN",
        "detail_code": str (preserved input, normalized to lowercase),
        "source_subsystem": str | None,
+       "lifecycle": "active" | "deprecated" | "merged" | "forbidden",
        "details": dict (preserved detail_fields)}
     """
     if not isinstance(raw_code, str):
@@ -123,6 +157,7 @@ def canonicalize_reason_code(
             "canonical_category": "UNKNOWN",
             "detail_code": "",
             "source_subsystem": None,
+            "lifecycle": "active",
             "details": dict(detail_fields or {}),
         }
 
@@ -142,16 +177,38 @@ def canonicalize_reason_code(
             "canonical_category": upper,
             "detail_code": lower,
             "source_subsystem": None,
+            "lifecycle": "active",
             "details": dict(detail_fields or {}),
         }
 
     # 2. Alias hit
     if lower in aliases:
         canonical = aliases[lower]
+        lifecycle = _lifecycle_for(lower, table_data)
         return {
             "canonical_category": canonical if canonical in canonical_set else "UNKNOWN",
             "detail_code": lower,
             "source_subsystem": _infer_subsystem(upper),
+            "lifecycle": lifecycle,
+            "details": dict(detail_fields or {}),
+        }
+
+    # 2b. Lifecycle-only entry (forbidden/deprecated/merged tracked but not
+    # resolved through the active alias map). Surface the lifecycle so the
+    # boundary guard can refuse, but still expose the canonical category
+    # via prefix heuristic when available.
+    lifecycle_only = _lifecycle_for(lower, table_data)
+    if lifecycle_only != "active":
+        category = "UNKNOWN"
+        for prefix, cat in _PREFIX_TO_CATEGORY.items():
+            if upper.startswith(prefix):
+                category = cat
+                break
+        return {
+            "canonical_category": category,
+            "detail_code": lower,
+            "source_subsystem": _infer_subsystem(upper),
+            "lifecycle": lifecycle_only,
             "details": dict(detail_fields or {}),
         }
 
@@ -162,6 +219,7 @@ def canonicalize_reason_code(
                 "canonical_category": category,
                 "detail_code": lower,
                 "source_subsystem": _PREFIX_TO_SUBSYSTEM.get(prefix),
+                "lifecycle": "active",
                 "details": dict(detail_fields or {}),
             }
 
@@ -170,6 +228,7 @@ def canonicalize_reason_code(
         "canonical_category": "UNKNOWN",
         "detail_code": lower,
         "source_subsystem": None,
+        "lifecycle": "active",
         "details": dict(detail_fields or {}),
     }
 
@@ -186,7 +245,10 @@ def assert_canonical_or_alias(raw_code: str) -> None:
 
     Raises ``ReasonCodeError`` when a high-level blocking string (e.g.,
     ``"blocked"``, ``"freeze"``, ``"fail"``) is used as a reason code without
-    a canonical mapping. Canonical categories and known aliases pass.
+    a canonical mapping. Canonical categories and known active aliases pass.
+
+    NT-12: forbidden aliases always raise; deprecated aliases pass but the
+    caller can detect the lifecycle through ``canonicalize_reason_code``.
 
     Empty / whitespace strings are NOT acceptable as blocking reason codes.
     """
@@ -203,6 +265,17 @@ def assert_canonical_or_alias(raw_code: str) -> None:
 
     upper = raw_code.strip().upper()
     lower = raw_code.strip().lower()
+
+    # NT-12: forbidden aliases never pass — they may be present in the alias
+    # map for tracking, but emitting one is a hard fault.
+    forbidden_bucket = (table_data.get("alias_lifecycle") or {}).get("forbidden") or {}
+    if isinstance(forbidden_bucket, Mapping) and lower in {
+        str(k).lower() for k in forbidden_bucket
+    }:
+        raise ReasonCodeError(
+            f"reason code {raw_code!r} is forbidden by lifecycle policy"
+        )
+
     if upper in canonical_set:
         return
     if lower in aliases:
@@ -231,10 +304,122 @@ def categorize_many(
     return out
 
 
+def audit_reason_code_coverage(
+    *,
+    emitted_codes: Iterable[str],
+    expected_blocking_codes: Optional[Iterable[str]] = None,
+    alias_table: Optional[Mapping[str, Any]] = None,
+) -> Dict[str, Any]:
+    """NT-10: Audit reason-code coverage across the alias map.
+
+    Inputs
+    ------
+    emitted_codes:
+        The set of detail codes the codebase actually emits (collected
+        from runtime/tests).
+    expected_blocking_codes:
+        Optional set of detail codes that ARE expected to block; used to
+        verify each one maps to a known canonical category.
+
+    Returns
+    -------
+    {
+      "unmapped_blocking_codes": [...],         # blocking, no canonical
+      "unused_aliases": [...],                  # in alias map, not emitted
+      "duplicate_meaning_aliases": [...],       # two aliases → same canon AND same prefix root
+      "aliases_with_missing_category": [...],   # alias maps to non-canonical
+      "deprecated_emitted": [...],              # deprecated aliases still emitted
+      "forbidden_emitted": [...],               # forbidden aliases emitted (hard error)
+      "summary": str,
+    }
+    """
+    table_data = (
+        dict(alias_table) if alias_table is not None else _alias_table()
+    )
+    aliases_map: Dict[str, str] = {
+        str(k).lower(): str(v).upper()
+        for k, v in (table_data.get("aliases") or {}).items()
+    }
+    canonical_set = set(
+        table_data.get("canonical_categories") or CANONICAL_CATEGORIES
+    )
+    lifecycle = table_data.get("alias_lifecycle") or {}
+    deprecated_bucket = {
+        str(k).lower() for k in (lifecycle.get("deprecated") or {})
+    }
+    forbidden_bucket = {
+        str(k).lower() for k in (lifecycle.get("forbidden") or {})
+    }
+
+    emitted_lower = {str(c).strip().lower() for c in emitted_codes if c}
+    expected_blocking = {
+        str(c).strip().lower() for c in (expected_blocking_codes or []) if c
+    }
+
+    unmapped_blocking: List[str] = []
+    for code in sorted(expected_blocking):
+        if not code:
+            continue
+        canon_result = canonicalize_reason_code(
+            code, alias_table=table_data
+        )
+        if canon_result["canonical_category"] == "UNKNOWN":
+            unmapped_blocking.append(code)
+
+    aliases_with_missing_category: List[str] = [
+        code for code, cat in aliases_map.items() if cat not in canonical_set
+    ]
+
+    # Duplicate meaning detection: two aliases share the same canonical
+    # category AND the same trailing token (the part after the prefix
+    # underscore). This is intentionally conservative.
+    by_signature: Dict[tuple, List[str]] = {}
+    for code, cat in aliases_map.items():
+        last_token = code.split("_")[-1]
+        by_signature.setdefault((cat, last_token), []).append(code)
+    duplicate_meaning_aliases: List[List[str]] = [
+        sorted(group) for group in by_signature.values() if len(group) > 1
+    ]
+
+    unused_aliases = sorted(
+        code
+        for code in aliases_map
+        if code not in emitted_lower
+        and code not in deprecated_bucket
+        and code not in forbidden_bucket
+    )
+
+    deprecated_emitted = sorted(emitted_lower & deprecated_bucket)
+    forbidden_emitted = sorted(emitted_lower & forbidden_bucket)
+
+    summary = (
+        f"reason-code coverage: emitted={len(emitted_lower)} "
+        f"aliases={len(aliases_map)} unmapped_blocking={len(unmapped_blocking)} "
+        f"deprecated_emitted={len(deprecated_emitted)} "
+        f"forbidden_emitted={len(forbidden_emitted)} "
+        f"unused={len(unused_aliases)} duplicate_meaning_groups="
+        f"{len(duplicate_meaning_aliases)}"
+    )
+
+    return {
+        "artifact_type": "reason_code_coverage_audit",
+        "schema_version": "1.0.0",
+        "unmapped_blocking_codes": unmapped_blocking,
+        "unused_aliases": unused_aliases,
+        "duplicate_meaning_aliases": duplicate_meaning_aliases,
+        "aliases_with_missing_category": aliases_with_missing_category,
+        "deprecated_emitted": deprecated_emitted,
+        "forbidden_emitted": forbidden_emitted,
+        "summary": summary,
+    }
+
+
 __all__ = [
+    "ALIAS_LIFECYCLE_STATES",
     "CANONICAL_CATEGORIES",
     "ReasonCodeError",
     "assert_canonical_or_alias",
+    "audit_reason_code_coverage",
     "canonicalize_reason_code",
     "categorize_many",
 ]
