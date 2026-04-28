@@ -1,0 +1,495 @@
+{
+  "artifact_type": "tls_boundary_map_fixed",
+  "schema_version": "tls-bnd-01-boundary-map-fixed.v1",
+  "work_item": "TLS-BND-01",
+  "step_id": "TLS-FIX-01",
+  "supersedes_artifact": "artifacts/tls/tls_boundary_map.json",
+  "redteam_source": "artifacts/tls/tls_boundary_redteam_report.json",
+  "generated_at": "2026-04-27T03:00:00Z",
+  "purpose": "Fixed TLS boundary map. Resolves high-severity findings from TLS-RT-01: broadens forbidden artifact-name patterns, adds field-level and value-level patterns, adds dashboard text rules, adds action-plan verb rules, and adds an explicit owner_input vs owner_outcome field policy. TLS remains recommendation-only / observation-only / owner-input only.",
+  "canonical_authority_source": "docs/architecture/system_registry.md",
+  "tls_role_statement": "TLS produces ranking, classification, evidence-attached observations, trust-gap signals, recommendation packets, and owner-input packets. TLS does not own runtime, gating, or any owner outcome. CDE, TPA, SEL, GOV, and HIT retain canonical ownership of control, policy, enforcement, governance, and human-in-the-loop outcomes.",
+  "recommendation_only": true,
+  "owner_outcome_present": false,
+  "non_authority_assertions": [
+    "preparatory_only",
+    "not_control_authority",
+    "not_enforcement_authority",
+    "not_certification_authority",
+    "not_promotion_authority",
+    "not_approval_authority",
+    "not_runtime_execution_authority",
+    "not_judgment_authority"
+  ],
+  "allowed_responsibilities": [
+    {
+      "id": "AR-1",
+      "name": "registry_parsing",
+      "description": "Parse the canonical system_registry.md into a deterministic dependency graph artifact (system_registry_dependency_graph.json)."
+    },
+    {
+      "id": "AR-2",
+      "name": "evidence_observation",
+      "description": "Attach observed evidence (file presence, lineage refs, replay refs) to system nodes in evidence-attachment artifacts."
+    },
+    {
+      "id": "AR-3",
+      "name": "candidate_classification",
+      "description": "Classify systems into candidate categories (do-not-touch, candidate, blocked) without owning any owner outcome."
+    },
+    {
+      "id": "AR-4",
+      "name": "trust_gap_signal_reporting",
+      "description": "Report trust-gap signals over governed evidence; signals are inputs, not outcomes."
+    },
+    {
+      "id": "AR-5",
+      "name": "priority_ranking",
+      "description": "Compute deterministic priority ranking from governed inputs and write a ranking report artifact."
+    },
+    {
+      "id": "AR-6",
+      "name": "requested_candidate_ranking",
+      "description": "Generate operator-requested candidate ranking lists from governed evidence; ordering is preserved by downstream consumers."
+    },
+    {
+      "id": "AR-7",
+      "name": "explanation_generation",
+      "description": "Emit human-readable explanations for ranking, classification, and trust-gap signals; explanations are observations, never outcomes."
+    },
+    {
+      "id": "AR-8",
+      "name": "roadmap_backed_leverage_queue",
+      "description": "Group governed roadmap safe_bundles into a leverage queue artifact; ordering is artifact-derived only."
+    },
+    {
+      "id": "AR-9",
+      "name": "owner_input_packet_generation_only",
+      "description": "Emit owner-input packets that downstream canonical owners (CDE / TPA / SEL / GOV / HIT) consume; TLS does not emit owner outcomes."
+    }
+  ],
+  "forbidden_responsibilities": [
+    {
+      "id": "FR-1",
+      "name": "control_outcomes",
+      "rationale": "Control outcomes are owned by CDE/TPA. TLS may emit control_input observations only.",
+      "canonical_owner": ["CDE", "TPA"]
+    },
+    {
+      "id": "FR-2",
+      "name": "owner_approvals",
+      "rationale": "Owner approvals are owned by GOV/HIT. TLS may emit review_request signals only.",
+      "canonical_owner": ["GOV", "HIT"]
+    },
+    {
+      "id": "FR-3",
+      "name": "enforcement_actions",
+      "rationale": "Enforcement actions are owned by SEL. TLS may emit enforcement_signal observations only.",
+      "canonical_owner": ["SEL"]
+    },
+    {
+      "id": "FR-4",
+      "name": "certification_outcomes",
+      "rationale": "Certification outcomes are owned by CDE/GOV. TLS may emit certification_input evidence only.",
+      "canonical_owner": ["CDE", "GOV"]
+    },
+    {
+      "id": "FR-5",
+      "name": "promotion_readiness_outcomes",
+      "rationale": "Promotion readiness outcomes are owned by CDE/GOV. TLS may emit readiness_signal observations only.",
+      "canonical_owner": ["CDE", "GOV"]
+    },
+    {
+      "id": "FR-6",
+      "name": "authority_decisions",
+      "rationale": "Authority outcomes are reserved by the authority registry. TLS may emit authority_signal observations only.",
+      "canonical_owner": ["GOV"]
+    },
+    {
+      "id": "FR-7",
+      "name": "runtime_execution_mutation",
+      "rationale": "Runtime mutation is owned by PQX/AEX/SEL. TLS produces no runtime side effects of any kind.",
+      "canonical_owner": ["PQX", "AEX", "SEL"]
+    },
+    {
+      "id": "FR-8",
+      "name": "judgment_outcomes",
+      "rationale": "Judgment outcomes are owned by JDX. TLS may emit observation-shaped findings only.",
+      "canonical_owner": ["JDX"]
+    },
+    {
+      "id": "FR-9",
+      "name": "closure_outcomes",
+      "rationale": "Closure outcomes are owned by CDE. TLS may emit closure_input observations only.",
+      "canonical_owner": ["CDE"]
+    }
+  ],
+  "allowed_artifact_families": [
+    {"family_id": "ARTF-1",  "name": "ranking_report"},
+    {"family_id": "ARTF-2",  "name": "classification_report"},
+    {"family_id": "ARTF-3",  "name": "evidence_attachment"},
+    {"family_id": "ARTF-4",  "name": "trust_gap_signal_report"},
+    {"family_id": "ARTF-5",  "name": "roadmap_table"},
+    {"family_id": "ARTF-6",  "name": "owner_input_packet"},
+    {"family_id": "ARTF-7",  "name": "recommendation_packet"},
+    {"family_id": "ARTF-8",  "name": "observation_packet"},
+    {"family_id": "ARTF-9",  "name": "red_team_report"},
+    {"family_id": "ARTF-10", "name": "fix_log"},
+    {"family_id": "ARTF-11", "name": "boundary_map"}
+  ],
+  "forbidden_artifact_name_patterns": [
+    "*control_decision*",
+    "*control_outcome*",
+    "*enforcement*",
+    "*enforce*",
+    "*approval*",
+    "*approve*",
+    "*approved*",
+    "*certification*",
+    "*certified*",
+    "*certify*",
+    "*promotion*",
+    "*promoted*",
+    "*promotion_ready*",
+    "*authority_decision*",
+    "*authority_verdict*",
+    "*execution_decision*",
+    "*closure_decision*",
+    "*readiness_decision*",
+    "*final_decision*",
+    "*judgment_record*",
+    "*judgment_decision*",
+    "*outcome_record*"
+  ],
+  "forbidden_field_patterns": [
+    "*_decision",
+    "decision",
+    "decisions",
+    "*_action",
+    "enforcement_action",
+    "approval_status",
+    "approver",
+    "approved_at",
+    "approved_by",
+    "certification_status",
+    "certified",
+    "certify",
+    "promotion_ready",
+    "promotion_status",
+    "promoted",
+    "promote",
+    "control_decision",
+    "control_outcome",
+    "closure_decision",
+    "readiness_to_close",
+    "authority_decision",
+    "judgment_record"
+  ],
+  "forbidden_value_patterns": [
+    "approved",
+    "certified",
+    "promoted",
+    "promote",
+    "enforced",
+    "blocked_by_tls",
+    "tls_allow",
+    "tls_block",
+    "tls_freeze"
+  ],
+  "forbidden_text_phrases": [
+    "tls decides",
+    "tls decided",
+    "tls approves",
+    "tls approved",
+    "tls enforces",
+    "tls enforced",
+    "tls promotes",
+    "tls promoted",
+    "tls certifies",
+    "tls certified",
+    "tls authorizes"
+  ],
+  "forbidden_action_verbs": [
+    "execute",
+    "executes",
+    "executing",
+    "mutate",
+    "mutates",
+    "mutating",
+    "deploy",
+    "deploys",
+    "promote",
+    "promotes",
+    "rollback",
+    "rollbacks",
+    "freeze",
+    "freezes",
+    "block",
+    "blocks",
+    "enforce",
+    "enforces",
+    "approve",
+    "approves",
+    "certify",
+    "certifies"
+  ],
+  "allowed_action_verbs": [
+    "recommend",
+    "recommends",
+    "observe",
+    "observes",
+    "rank",
+    "ranks",
+    "classify",
+    "classifies",
+    "flag",
+    "flags",
+    "attach_evidence",
+    "report_signal",
+    "explain"
+  ],
+  "safe_vocabulary": [
+    "recommendation",
+    "prioritization",
+    "observation",
+    "finding",
+    "signal",
+    "owner_input",
+    "readiness_signal",
+    "policy_observation",
+    "compliance_observation",
+    "review_request",
+    "advisory_result",
+    "evidence_observation",
+    "control_input",
+    "enforcement_signal",
+    "certification_input",
+    "readiness_evidence",
+    "authority_signal"
+  ],
+  "safe_replacements": {
+    "control_decision": "control_input",
+    "enforcement_action": "enforcement_signal",
+    "approval": "review_request",
+    "approval_status": "review_request",
+    "approver": "reviewer_ref",
+    "certification_status": "readiness_evidence",
+    "certified": "evidence_observation",
+    "promotion_ready": "readiness_signal",
+    "promoted": "readiness_observation",
+    "decision": "signal",
+    "tls decides": "tls recommends",
+    "tls approves": "tls forwards review request",
+    "tls enforces": "tls signals",
+    "tls promotes": "tls observes readiness",
+    "tls certifies": "tls attaches evidence"
+  },
+  "owner_handoff_rules": [
+    {
+      "rule_id": "OH-1",
+      "statement": "TLS may emit owner-input packets for downstream review.",
+      "applies_to": "owner_input_packet",
+      "tls_role": "emit",
+      "owner_role": "consume"
+    },
+    {
+      "rule_id": "OH-2",
+      "statement": "CDE, TPA, SEL, GOV, and HIT remain canonical owners of control-outcome, enforcement-outcome, certification-outcome, promotion-readiness-outcome, and approval-outcome artifacts.",
+      "applies_to": "owner_outcome_artifacts",
+      "tls_role": "no_emit",
+      "owner_role": "emit"
+    },
+    {
+      "rule_id": "OH-3",
+      "statement": "TLS may not emit owner outcomes. TLS only provides inputs, signals, observations, recommendations, and owner-input packets.",
+      "applies_to": "all_tls_outputs",
+      "tls_role": "input_only",
+      "owner_role": "outcome_only"
+    },
+    {
+      "rule_id": "OH-4",
+      "statement": "Every TLS owner-input packet must declare recommendation_only=true and owner_outcome_present=false.",
+      "applies_to": "owner_input_packet",
+      "tls_role": "declare_recommendation_only",
+      "owner_role": "validate_owner_outcome_absent"
+    },
+    {
+      "rule_id": "OH-5",
+      "statement": "Owner-input packets must populate only allowed_owner_input_fields and must contain none of forbidden_owner_outcome_fields.",
+      "applies_to": "owner_input_packet",
+      "tls_role": "field_policy_compliance",
+      "owner_role": "field_policy_validation"
+    },
+    {
+      "rule_id": "OH-6",
+      "statement": "Dashboard text rendered from TLS-owned artifacts must use safe_vocabulary phrasings (TLS recommends, TLS observes, TLS signals) and must not contain forbidden_text_phrases.",
+      "applies_to": "tls_dashboard_text",
+      "tls_role": "render_safe_vocabulary",
+      "owner_role": "verify_no_decision_implication"
+    },
+    {
+      "rule_id": "OH-7",
+      "statement": "TLS action plans (recommendation packets) must use allowed_action_verbs and must not contain forbidden_action_verbs.",
+      "applies_to": "recommendation_packet",
+      "tls_role": "use_recommendation_verbs",
+      "owner_role": "execute_via_canonical_runtime"
+    }
+  ],
+  "owner_input_packet_field_policy": {
+    "allowed_owner_input_fields": [
+      "packet_type",
+      "schema_version",
+      "phase",
+      "work_item",
+      "step_id",
+      "generated_at",
+      "canonical_owner_statement",
+      "canonical_authority_source",
+      "owner_input_observation",
+      "owner_outcome_present",
+      "recommendation_only",
+      "observation",
+      "observations",
+      "signal",
+      "signals",
+      "recommendation",
+      "recommendations",
+      "ranking",
+      "ranking_ref",
+      "classification",
+      "classification_ref",
+      "evidence_ref",
+      "evidence_refs",
+      "lineage_ref",
+      "replay_ref",
+      "trust_gap_ref",
+      "trust_gap_refs",
+      "non_authority_assertions"
+    ],
+    "forbidden_owner_outcome_fields": [
+      "control_decision",
+      "control_outcome",
+      "enforcement_action",
+      "enforcement_outcome",
+      "certification_outcome",
+      "certification_status",
+      "certified",
+      "promotion_outcome",
+      "promotion_ready",
+      "promoted",
+      "approval_outcome",
+      "approval_status",
+      "approver",
+      "approved_at",
+      "approved_by",
+      "authority_decision",
+      "judgment_record",
+      "closure_decision",
+      "readiness_to_close"
+    ],
+    "required_assertions": {
+      "recommendation_only": true,
+      "owner_outcome_present": false
+    }
+  },
+  "canonical_owner_map": {
+    "control_outcome": ["CDE", "TPA"],
+    "enforcement_outcome": ["SEL"],
+    "certification_outcome": ["CDE", "GOV"],
+    "promotion_readiness_outcome": ["CDE", "GOV"],
+    "approval_outcome": ["GOV", "HIT"],
+    "authority_outcome": ["GOV"],
+    "judgment_outcome": ["JDX"],
+    "closure_outcome": ["CDE"],
+    "runtime_execution_outcome": ["PQX", "AEX", "SEL"],
+    "owner_input_packet_emitter": "TLS",
+    "ranking_report_emitter": "TLS",
+    "classification_report_emitter": "TLS",
+    "evidence_attachment_emitter": "TLS",
+    "trust_gap_signal_report_emitter": "TLS"
+  },
+  "validation_rules": {
+    "fail_closed": true,
+    "rejects_forbidden_artifact_names": true,
+    "rejects_forbidden_field_names": true,
+    "rejects_forbidden_value_patterns": true,
+    "rejects_forbidden_text_phrases_in_tls_text": true,
+    "rejects_forbidden_action_verbs_in_recommendation_packets": true,
+    "rejects_forbidden_owner_outcome_fields_in_owner_input_packets": true,
+    "requires_recommendation_only_flag_on_owner_input_packets": true,
+    "requires_canonical_authority_source_link": true
+  },
+  "fixes_applied": [
+    {
+      "finding_id": "RT-BND-01",
+      "status": "fixed",
+      "change": "Broadened forbidden_artifact_name_patterns to include closure_decision, readiness_decision, final_decision, judgment_record, judgment_decision, control_outcome, authority_verdict, certified, certify, approve, approved, enforce, promotion_ready, outcome_record, and added FR-8 (judgment_outcomes) and FR-9 (closure_outcomes) to forbidden_responsibilities."
+    },
+    {
+      "finding_id": "RT-BND-02",
+      "status": "fixed",
+      "change": "Added explicit verb-stem patterns ('*enforce*', '*approve*', '*certify*') and tightened canonical_owner_map for enforcement_outcome → SEL."
+    },
+    {
+      "finding_id": "RT-BND-03",
+      "status": "fixed",
+      "change": "Added forbidden_field_patterns and safe_replacements; added rule OH-5 enforcing field-level policy on owner-input packets."
+    },
+    {
+      "finding_id": "RT-BND-04",
+      "status": "fixed",
+      "change": "Added forbidden_value_patterns (certified, approved, promoted, enforced) and safe_replacements (readiness_evidence, evidence_observation)."
+    },
+    {
+      "finding_id": "RT-BND-05",
+      "status": "fixed",
+      "change": "Added 'promotion_ready' and 'promoted' to forbidden_field_patterns; added 'readiness_signal' as the explicit safe replacement."
+    },
+    {
+      "finding_id": "RT-BND-06",
+      "status": "fixed",
+      "change": "Added forbidden_text_phrases ('tls decides', 'tls approves', 'tls enforces', 'tls promotes', 'tls certifies', 'tls authorizes') and rule OH-6 binding TLS dashboard text to safe vocabulary."
+    },
+    {
+      "finding_id": "RT-BND-07",
+      "status": "fixed",
+      "change": "Added forbidden_action_verbs (execute, mutate, deploy, promote, rollback, freeze, block, enforce, approve, certify) and allowed_action_verbs (recommend, observe, rank, classify, flag, attach_evidence, report_signal, explain). Added rule OH-7 binding recommendation packets to allowed verbs."
+    },
+    {
+      "finding_id": "RT-BND-08",
+      "status": "fixed",
+      "change": "Added owner_input_packet_field_policy with allowed_owner_input_fields and forbidden_owner_outcome_fields lists, and required_assertions {recommendation_only: true, owner_outcome_present: false}. Added rule OH-5."
+    }
+  ],
+  "test_coverage_added": [
+    "tests/test_tls_boundary_map.py::test_boundary_map_exists",
+    "tests/test_tls_boundary_map.py::test_boundary_map_has_allowed_and_forbidden_responsibilities",
+    "tests/test_tls_boundary_map.py::test_forbidden_artifact_names_are_rejected",
+    "tests/test_tls_boundary_map.py::test_safe_owner_input_names_are_allowed",
+    "tests/test_tls_boundary_map.py::test_redteam_report_has_abuse_cases",
+    "tests/test_tls_boundary_map.py::test_fixed_map_resolves_high_severity_findings"
+  ],
+  "stop_conditions": [
+    "All TLS-owned interfaces classified as allowed or forbidden.",
+    "Every allowed responsibility maps to one allowed artifact family.",
+    "Every forbidden responsibility maps to a canonical owner.",
+    "All TLS owner-input packets carry recommendation_only=true and owner_outcome_present=false.",
+    "Every high-severity red-team finding has a documented fix entry."
+  ],
+  "residual_risks": [
+    {
+      "risk_id": "RR-1",
+      "description": "Validation enforcement is declarative only; static guards must be wired in a downstream bundle to mechanize rejection of forbidden patterns at PR time.",
+      "severity": "low",
+      "follow_up_step": "TLS-FX-02 (integration seam) and downstream guard wiring."
+    },
+    {
+      "risk_id": "RR-2",
+      "description": "Dashboard text rules apply to TLS-owned text; cross-system rendering surfaces are out of scope here and should be audited under D3L-SIMPLE follow-ups.",
+      "severity": "low",
+      "follow_up_step": "Future D3L boundary audit."
+    }
+  ],
+  "recommendation_only": true,
+  "owner_outcome_present": false
+}
