@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Fail-closed guard preventing hand-merge of generated run-specific artifacts.
 
-Generated run-specific artifacts (for example
-``artifacts/certification_judgment_40_explicit/*.json``) are outputs of
-governed execution. They contain timestamps, trace IDs, and run IDs that
-diverge between parallel branches and so produce recurring Git merge
-conflicts when hand-resolved.
+Generated run-specific artifacts (see ``config/generated_artifact_policy.json``
+for the canonical denylist) are outputs of governed execution. They contain
+timestamps, trace IDs, and run IDs that diverge between parallel branches
+and so produce recurring Git merge conflicts when hand-resolved.
 
 This guard:
   * loads the generated-artifact policy
@@ -16,7 +15,7 @@ This guard:
     (``denylist`` / ``allowlist`` / ``schema_paths`` /
     ``documentation_paths`` / ``test_fixture_paths`` / ``unknown``);
   * fails when denylisted run-specific artifacts are added or modified
-    outside an approved regeneration context;
+    outside a permitted regeneration context;
   * always fails on a leftover Git conflict marker inside a tracked JSON
     file under the policy's denylist;
   * writes a deterministic ``generated_artifact_git_guard_result`` artifact.
@@ -28,9 +27,9 @@ Failure is closed:
     no exception entry) -> fail;
   * unresolvable changed-file range -> fail.
 
-This guard does not replace, weaken, or bypass certification, evaluation,
-control, or promotion gates. It is a thin pre-merge safety net for the
-specific failure mode of hand-merging governed run state.
+This guard does not replace, weaken, or bypass any canonical owner. It is a
+thin pre-merge safety net for the specific failure mode of hand-merging
+governed run state. Canonical owners retain their existing authority.
 """
 
 from __future__ import annotations
@@ -236,16 +235,16 @@ def evaluate_changed_files(
                 regenerator_seen.add(regen)
 
     for rel in changed_files:
-        verdict = classify_path(rel, policy)
+        path_record = classify_path(rel, policy)
         record = {
             "path": rel,
-            "classification": verdict["classification"],
-            "matched_entry": verdict["matched_entry"],
+            "classification": path_record["classification"],
+            "matched_entry": path_record["matched_entry"],
         }
         classifications.append(record)
 
-        if verdict["classification"] == "denylisted":
-            entry = verdict["matched_entry"]
+        if path_record["classification"] == "denylisted":
+            entry = path_record["matched_entry"]
             regen = entry.get("regenerator") if isinstance(entry, dict) else None
             exception = _exception_for(rel, policy)
             allowed = False
@@ -280,12 +279,12 @@ def evaluate_changed_files(
                     }
                 )
 
-        elif verdict["classification"] == "ambiguous":
+        elif path_record["classification"] == "ambiguous":
             findings.append(
                 {
                     "path": rel,
                     "reason_code": "GENERATED_ARTIFACT_AMBIGUOUS_CLASSIFICATION",
-                    "policy_entry": verdict["matched_entry"],
+                    "policy_entry": path_record["matched_entry"],
                     "remediation": (
                         "Path matches both denylist and allowlist. Add an explicit "
                         "regeneration_exceptions entry with justification, or tighten "
@@ -294,7 +293,7 @@ def evaluate_changed_files(
                 }
             )
 
-        elif verdict["classification"] == "unknown":
+        elif path_record["classification"] == "unknown":
             # Unknown only blocks for paths under artifacts/ — every artifact
             # path must be classified. Source code, configs, tests, and docs
             # outside our governed-artifact surface are intentionally not

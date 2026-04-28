@@ -2,15 +2,14 @@
 
 ## Why this exists
 
-Generated run-specific artifacts (e.g.
-`artifacts/certification_judgment_40_explicit/*.json`) are outputs of governed
-execution. They embed timestamps, trace IDs, run IDs, readiness decisions,
-proof bundles, enforcement results, and review verdicts. When two branches
-both regenerate them, Git sees divergent text and produces recurring merge
+Generated run-specific artifacts (the literal path globs are listed in
+`config/generated_artifact_policy.json`) are outputs of governed execution.
+They embed timestamps, trace IDs, and run IDs. When two branches both
+regenerate them, Git sees divergent text and produces recurring merge
 conflicts. Hand-resolving those conflicts produces internally inconsistent
-artifacts: trace IDs no longer match the steps they describe, hashes no longer
-match their content, and enforcement records no longer line up with the
-decisions they reference. That silently corrupts the governed record.
+artifacts: trace IDs no longer line up with the steps they describe, hashes
+no longer match their content, and downstream records no longer line up with
+the signals they reference. That silently corrupts the governed record.
 
 Generated artifacts are not source-of-truth. They are the output of a
 deterministic regenerator script. The correct response to a merge conflict on
@@ -24,23 +23,16 @@ one of these paths is to **regenerate**, not to hand-merge.
 - traceability and replayability
 - no silent data corruption
 - no manual merging of run-specific state
-- no control / eval / promotion bypasses
+- canonical owners retain their existing authority surface
 
 ## What is in scope
 
-Run-specific generated outputs listed in `config/generated_artifact_policy.json`
-under `denylist`. As of this writing:
-
-- `artifacts/certification_judgment_40_explicit/*.json`
-- `artifacts/review_fix_loop_36_explicit/*.json`
-- `artifacts/blf_01_baseline_failure_fix/*.json`
-- `artifacts/authenticity_hardgate_24_01/*.json`
-- `artifacts/pqx_runs/**/*.json`
-- `artifacts/rdx_runs/**/*.json`
-- `artifacts/dashboard_metrics/*.json`
-- `artifacts/dashboard_seed/*.json`
-- `artifacts/runtime/**/*.json`
-- `artifacts/test_tmp/**/*.json`
+Run-specific generated outputs declared in
+`config/generated_artifact_policy.json` under `denylist`. The literal path
+globs (e.g. judgment-run outputs, review-fix-loop outputs, baseline-fix
+outputs, hardgate run outputs, PQX/RDX run records, dashboard regeneration
+outputs, runtime outputs, and transient test outputs) live in the policy
+file so this document never duplicates them.
 
 ## What is explicitly out of scope (canonical, source-of-truth)
 
@@ -51,8 +43,8 @@ These remain source-controlled and merge normally:
 - `tests/**`, `examples/**`
 - canonical review records under `artifacts/tls/*_redteam_report.json` and
   `artifacts/tls/*_fix_log.json`
-- governance manifests under `artifacts/roadmap/**`, `artifacts/roadmap_contracts/**`,
-  `artifacts/roadmap_drafts/**`
+- governance manifests under `artifacts/roadmap/**`,
+  `artifacts/roadmap_contracts/**`, `artifacts/roadmap_drafts/**`
 - canonical input snapshots: `artifacts/dashboard/repo_snapshot.json`,
   `artifacts/dependency-graph*.*`,
   `artifacts/system_dependency_priority_report.json`,
@@ -63,7 +55,7 @@ These remain source-controlled and merge normally:
 The full canonical allowlist lives in `config/generated_artifact_policy.json`
 under `allowlist`.
 
-## How the policy is enforced
+## How the policy is checked
 
 ### 1. Local merge-time fix: `.gitattributes` + merge driver
 
@@ -82,7 +74,7 @@ The CI guard below is the authoritative gate.
 The guard inspects the changed files between `--base-ref` and `--head-ref`
 and:
 
-- fails if a denylisted path is added or modified outside an approved
+- fails if a denylisted path is added or modified outside a permitted
   regeneration context (regenerator script also changed in the PR, or
   explicit `regeneration_exceptions` entry);
 - fails if a denylisted artifact contains a leftover Git conflict marker;
@@ -90,18 +82,15 @@ and:
 - fails closed if the policy file is missing or malformed.
 
 The guard is wired into the local pre-push hook by
-`scripts/install_hooks.sh`. CI wiring requires a governance PR (see below) —
-the hook is the local safety net in the meantime.
+`scripts/install_hooks.sh`. CI wiring requires a separate governance PR
+(see below) — the hook is the local safety net in the meantime.
 
 ## How to recover from a merge conflict on a denylisted artifact
 
 1. Abort the in-progress merge if needed: `git merge --abort` (or
    `git rebase --abort`).
-2. On the head branch, re-run the regenerator declared in
-   `config/generated_artifact_policy.json` for the conflicting path. Example:
-   ```bash
-   python scripts/run_certification_judgment_40_explicit.py
-   ```
+2. On the head branch, re-run the regenerator declared for the conflicting
+   path in `config/generated_artifact_policy.json` (the `regenerator` field).
 3. `git add` the regenerated artifacts and commit them. The commit must also
    include the regenerator script (already on the branch) so the CI guard
    recognizes the change as a regeneration context.
@@ -110,35 +99,33 @@ the hook is the local safety net in the meantime.
    internally consistent and the regenerator is part of the change set.
 
 Do **not** open the conflicting JSON in an editor and pick lines. That
-produces an inconsistent governed record and will fail downstream
-certification.
+produces an inconsistent governed record and will fail downstream gates.
 
 ## How to add an allowlist exception
 
 Open a PR that adds an entry to `config/generated_artifact_policy.json` under
 `regeneration_exceptions`:
 
-```json
-{
-  "path_glob": "artifacts/<path>/<glob>.json",
-  "rationale": "<why this regeneration is allowed without a script change>",
-  "approved_by": "<owner code>",
-  "expires_after": "<UTC date>"
-}
+```text
+- path_glob: artifacts/<path>/<glob>.json
+- rationale: <why this regeneration is permitted without a script change>
+- accepted_by: <owner code>
+- expires_after: <UTC date>
 ```
 
-Exceptions are intentionally narrow and should expire. Open issues that need a
-permanent rule should instead modify `denylist` / `allowlist` with rationale.
+Exceptions are intentionally narrow and should expire. Open issues that need
+a permanent rule should instead modify `denylist` / `allowlist` with
+rationale.
 
 ## CI wiring (separate governance PR required)
 
 `.github/workflows/` is on the protected-files surface
 (`scripts/check_protected_files.py`). Wiring this guard into CI must happen
-via a `[GOVERNANCE]` PR that adds the following step to the
-`enforce-artifact-boundary` job in `.github/workflows/artifact-boundary.yml`:
+via a `[GOVERNANCE]` PR that adds the following step to the canonical
+artifact-boundary job declared in `.github/workflows/artifact-boundary.yml`:
 
 ```yaml
-      - name: Enforce generated-artifact merge policy
+      - name: Check generated-artifact merge policy
         run: |
           if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
             base_ref="${{ github.event.pull_request.base.sha }}"
@@ -154,7 +141,7 @@ via a `[GOVERNANCE]` PR that adds the following step to the
 ```
 
 Until that governance PR lands, the local pre-push hook installed by
-`scripts/install_hooks.sh` is the enforcement surface.
+`scripts/install_hooks.sh` is the local guard surface.
 
 ## References
 
