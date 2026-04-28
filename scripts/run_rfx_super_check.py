@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import json
 import pathlib
 import subprocess
@@ -27,29 +28,45 @@ REQUIRED_STEPS = [
 ]
 
 
-def _run_authority_shape_early_gate() -> bool:
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Run RFX super-check")
+    parser.add_argument("--base-ref", default="HEAD~1", help="Git base ref for early gate changed-file resolution")
+    parser.add_argument("--head-ref", default="HEAD", help="Git head ref for early gate changed-file resolution")
+    parser.add_argument(
+        "--early-gate-output",
+        default="outputs/authority_shape_preflight/authority_shape_early_gate_result.json",
+        help="Artifact output path for authority-shape early gate",
+    )
+    return parser.parse_args()
+
+
+def _run_authority_shape_early_gate(*, base_ref: str, head_ref: str, output_rel: str) -> bool:
     repo_root = pathlib.Path(__file__).resolve().parents[1]
-    output = repo_root / "outputs/authority_shape_preflight/authority_shape_early_gate_result.json"
     cmd = [
         sys.executable,
         str(repo_root / "scripts" / "run_authority_shape_early_gate.py"),
         "--base-ref",
-        "HEAD~1",
+        base_ref,
         "--head-ref",
-        "HEAD",
+        head_ref,
         "--output",
-        str(output.relative_to(repo_root)),
+        output_rel,
     ]
     result = subprocess.run(cmd, cwd=repo_root, capture_output=True, text=True, check=False)
     return result.returncode == 0
 
 
-def run_rfx_super_check() -> dict:
+def run_rfx_super_check(
+    *,
+    base_ref: str = "HEAD~1",
+    head_ref: str = "HEAD",
+    output_rel: str = "outputs/authority_shape_preflight/authority_shape_early_gate_result.json",
+) -> dict:
     t = time.time()
     reason = []
     checks = {k: "ok" for k in REQUIRED_STEPS}
 
-    if not _run_authority_shape_early_gate():
+    if not _run_authority_shape_early_gate(base_ref=base_ref, head_ref=head_ref, output_rel=output_rel):
         checks["authority_shape_early_gate"] = "failed"
 
     registry = build_rfx_reason_code_registry(
@@ -108,6 +125,11 @@ def run_rfx_super_check() -> dict:
 
 
 if __name__ == "__main__":
-    result = run_rfx_super_check()
+    args = _parse_args()
+    result = run_rfx_super_check(
+        base_ref=args.base_ref,
+        head_ref=args.head_ref,
+        output_rel=args.early_gate_output,
+    )
     print(json.dumps(result, indent=2, sort_keys=True))
     raise SystemExit(0 if result["status"] == "pass" else 1)
