@@ -356,6 +356,21 @@ def test_dashboard_page_renders_compact_met_04_18_sections() -> None:
         assert testid in src, f"dashboard page missing testId {testid}"
 
 
+def test_dashboard_page_places_met_04_18_section_ids_in_diagnostics_surface() -> None:
+    src = DASHBOARD_PAGE_PATH.read_text(encoding="utf-8")
+    diagnostics_idx = src.find("activeTab === 'diagnostics'")
+    assert diagnostics_idx != -1, "dashboard page missing diagnostics tab surface"
+    for testid in (
+        "learning-loop-section",
+        "failure-explanation-section",
+        "override-unknowns-section",
+        "fallback-reduction-section",
+        "replay-lineage-hardening-section",
+    ):
+        testid_idx = src.find(testid)
+        assert testid_idx > diagnostics_idx, f"expected {testid} to be rendered under diagnostics surface"
+
+
 def test_dashboard_page_does_not_use_authority_shape_headings() -> None:
     src = DASHBOARD_PAGE_PATH.read_text(encoding="utf-8")
     for banned in (
