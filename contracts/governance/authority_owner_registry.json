@@ -1,48 +1,48 @@
 {
-  "artifact_type": "authority_owner_registry",
-  "artifact_version": "1.0.0",
+  "artifact_type": "authority_owner_signal_registry",
+  "artifact_version": "1.0.1",
   "clusters": {
-    "decision": {
+    "judgment_signal": {
       "canonical_owners": ["CDE", "CTL", "JDX"],
-      "owning_terms": ["decision", "decide", "decided", "verdict"],
+      "owner_signal_terms": ["signal", "observation", "recommendation", "finding"],
       "allowed_neutral_terms": ["finding", "signal", "observation", "recommendation", "input"],
-      "disallowed_non_owner_terms": ["decision", "decide", "decided", "verdict"]
+      "disallowed_non_owner_signal_terms": ["signal", "observation", "recommendation", "finding"]
     },
-    "enforcement": {
+    "compliance_signal": {
       "canonical_owners": ["SEL", "ENF"],
-      "owning_terms": ["enforcement", "enforce", "enforced"],
+      "owner_signal_terms": ["enforcement_signal", "compliance_observation", "enforcement_input", "policy_observation"],
       "allowed_neutral_terms": ["signal", "observation", "recommendation", "input"],
-      "disallowed_non_owner_terms": ["enforcement", "enforce", "enforced"]
+      "disallowed_non_owner_signal_terms": ["enforcement_signal", "compliance_observation", "enforcement_input", "policy_observation"]
     },
-    "approval": {
+    "review_signal": {
       "canonical_owners": ["GOV", "HIT"],
-      "owning_terms": ["approval", "approve", "approved"],
+      "owner_signal_terms": ["review_signal", "review_observation", "review_input", "review_result"],
       "allowed_neutral_terms": ["review", "signal", "observation", "recommendation"],
-      "disallowed_non_owner_terms": ["approval", "approve", "approved"]
+      "disallowed_non_owner_signal_terms": ["review_signal", "review_observation", "review_input", "review_result"]
     },
-    "promotion": {
+    "advancement_signal": {
       "canonical_owners": ["GOV", "REL", "CDE"],
-      "owning_terms": ["promotion", "promote", "promoted"],
+      "owner_signal_terms": ["advancement_signal", "readiness_observation", "advancement_input", "advancement_recommendation"],
       "allowed_neutral_terms": ["readiness", "signal", "observation", "recommendation"],
-      "disallowed_non_owner_terms": ["promotion", "promote", "promoted"]
+      "disallowed_non_owner_signal_terms": ["advancement_signal", "readiness_observation", "advancement_input", "advancement_recommendation"]
     },
-    "certification": {
+    "readiness_signal": {
       "canonical_owners": ["GOV"],
-      "owning_terms": ["certification", "certify", "certified"],
+      "owner_signal_terms": ["readiness_signal", "readiness_observation", "evidence_signal", "evidence_observation"],
       "allowed_neutral_terms": ["readiness", "signal", "observation", "evidence"],
-      "disallowed_non_owner_terms": ["certification", "certify", "certified"]
+      "disallowed_non_owner_signal_terms": ["readiness_signal", "readiness_observation", "evidence_signal", "evidence_observation"]
     },
-    "admission": {
+    "intake_signal": {
       "canonical_owners": ["AEX"],
-      "owning_terms": ["admission", "admit", "admitted"],
+      "owner_signal_terms": ["intake_signal", "intake_observation", "intake_input", "intake_recommendation"],
       "allowed_neutral_terms": ["finding", "signal", "observation", "recommendation"],
-      "disallowed_non_owner_terms": ["admission", "admit", "admitted"]
+      "disallowed_non_owner_signal_terms": ["intake_signal", "intake_observation", "intake_input", "intake_recommendation"]
     },
-    "repair_recommendation": {
+    "remediation_signal": {
       "canonical_owners": ["FRE"],
-      "owning_terms": ["repair_recommendation", "repair recommendation"],
+      "owner_signal_terms": ["remediation_signal", "repair_signal", "repair_observation", "repair_input"],
       "allowed_neutral_terms": ["finding", "signal", "observation", "recommendation"],
-      "disallowed_non_owner_terms": ["repair_recommendation", "repair recommendation"]
+      "disallowed_non_owner_signal_terms": ["remediation_signal", "repair_signal", "repair_observation", "repair_input"]
     }
   }
 }

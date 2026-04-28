@@ -18,5 +18,5 @@ Catch authority-shape drift earlier across 3LS by hardening schema lint coverage
 ## Guardrails
 - Preserve fail-closed semantics.
 - No broad allowlists or silent recovery.
-- Keep non-owner systems from claiming decision/enforcement/approval/promotion authority.
+- Keep non-owner systems from claiming judgment/compliance/review/advancement authority.
 - Keep changes scoped to AUTH-HARDEN-01 behavior.

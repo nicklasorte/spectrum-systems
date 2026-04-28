@@ -315,6 +315,28 @@ def test_review_language_owner_qualified_passes_and_ambiguous_fails(tmp_path: Pa
     assert any(v.rule == "review_language_unqualified_authority_claim" for v in bad.violations)
 
 
+def test_authority_owner_signal_registry_uses_non_authority_language(vocab) -> None:
+    result = evaluate_preflight(
+        repo_root=REPO_ROOT,
+        changed_files=["contracts/governance/authority_owner_registry.json"],
+        vocab=vocab,
+        mode="suggest-only",
+    )
+    assert result.status == "pass"
+    assert result.violations == []
+
+
+def test_rfx_runtime_module_authority_language_fails_but_signal_language_passes(tmp_path: Path, vocab) -> None:
+    repo = _seed_repo(tmp_path)
+    rel = "spectrum_systems/modules/runtime/rfx_authority_surface.py"
+    _write(repo, rel, "rfx_decision_output = {'value': 'bad'}\n")
+    fail_result = evaluate_preflight(repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only")
+    assert fail_result.status == "fail"
+    _write(repo, rel, "rfx_signal_output = {'value': 'good'}\n")
+    pass_result = evaluate_preflight(repo_root=repo, changed_files=[rel], vocab=vocab, mode="suggest-only")
+    assert pass_result.status == "pass"
+
+
 # ---------------------------------------------------------------------------
 # RFX-SUPER-01F regression: authority-shaped wording is still caught; the
 # neutral RFX-SUPER vocabulary substitutions are not flagged.
