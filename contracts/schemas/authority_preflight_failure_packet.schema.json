@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/authority_preflight_failure_packet.schema.json",
+  "title": "authority_preflight_failure_packet",
+  "description": "Advisory diagnostic packet emitted by authority_preflight_expanded when vocabulary violations, shadow ownership overlaps, or forbidden symbols are detected. Non-owning: canonical owners (AEX/CDE/SEL) consume this packet and remain the systems that fail-close.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "packet_id",
+    "trace_id",
+    "scanned_files",
+    "violation_count",
+    "violations",
+    "shadow_overlaps",
+    "forbidden_symbols",
+    "status",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": { "const": "authority_preflight_failure_packet" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "packet_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string" },
+    "base_ref": { "type": "string" },
+    "head_ref": { "type": "string" },
+    "scanned_files": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "violation_count": { "type": "integer", "minimum": 0 },
+    "violations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "line", "symbol", "cluster", "canonical_owners", "suggested_replacements", "violation_type"],
+        "properties": {
+          "file": { "type": "string" },
+          "line": { "type": "integer" },
+          "symbol": { "type": "string" },
+          "cluster": { "type": "string" },
+          "canonical_owners": { "type": "array", "items": { "type": "string" } },
+          "suggested_replacements": { "type": "array", "items": { "type": "string" } },
+          "violation_type": {
+            "type": "string",
+            "enum": ["vocabulary_violation", "shadow_ownership_overlap", "forbidden_symbol"]
+          },
+          "rationale": { "type": "string" }
+        }
+      }
+    },
+    "shadow_overlaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "symbol", "declared_owner", "actual_owner"],
+        "properties": {
+          "file": { "type": "string" },
+          "symbol": { "type": "string" },
+          "declared_owner": { "type": "string" },
+          "actual_owner": { "type": "string" },
+          "rationale": { "type": "string" }
+        }
+      }
+    },
+    "forbidden_symbols": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "line", "symbol", "reason_code"],
+        "properties": {
+          "file": { "type": "string" },
+          "line": { "type": "integer" },
+          "symbol": { "type": "string" },
+          "reason_code": { "type": "string" },
+          "rationale": { "type": "string" }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "fail"]
+    },
+    "producer_authority": { "type": "string", "const": "AEX" },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "emitted_at": { "type": "string", "format": "date-time" }
+  }
+}
