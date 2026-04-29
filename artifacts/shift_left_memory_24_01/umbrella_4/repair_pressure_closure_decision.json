@@ -2,6 +2,6 @@
   "artifact_type": "repair_pressure_closure_decision",
   "slice_id": "SM-20",
   "owner": "CDE",
-  "generated_at": "2026-04-29T20:01:25Z",
+  "generated_at": "2026-04-29T20:02:01Z",
   "decision": "readiness_block_if_repair_pressure_exceeds_threshold"
 }

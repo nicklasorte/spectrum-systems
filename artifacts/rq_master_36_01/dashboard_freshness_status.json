@@ -1,7 +1,7 @@
 {
   "artifact_type": "dashboard_freshness_status",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-29T20:01:21Z",
+  "generated_at": "2026-04-29T20:01:54Z",
   "freshness_window_hours": 6,
   "status": "fresh",
   "evidence_basis": [
