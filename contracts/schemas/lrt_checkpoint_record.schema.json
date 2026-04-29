@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/lrt_checkpoint_record.schema.json",
+  "title": "LRT Checkpoint Record",
+  "description": "Checkpoint record for a long-running task slice. Serializable and trace-linked.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "checkpoint_id",
+    "trace_id",
+    "task_id",
+    "stage",
+    "files_changed",
+    "tests_added",
+    "commands_run",
+    "next_recommended_slice",
+    "resume_instructions",
+    "status"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "lrt_checkpoint_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "checkpoint_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stage": {
+      "type": "string",
+      "minLength": 1
+    },
+    "files_changed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "tests_added": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "commands_run": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_recommended_slice": {
+      "type": "string"
+    },
+    "resume_instructions": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["checkpointed", "resumed", "blocked"]
+    }
+  }
+}

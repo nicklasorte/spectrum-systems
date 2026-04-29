@@ -17011,6 +17011,45 @@
       "notes": "SMA-01 v2: operator debuggability measurement. Are failures understandable from a single artifact?"
     },
     {
+      "artifact_type": "ai_programming_work_item_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "AEX-PQX-01",
+      "last_updated_in": "AEX-PQX-01",
+      "example_path": "contracts/examples/ai_programming_work_item_record.example.json",
+      "notes": "AEX-PQX-01: per-work-item evidence record for AI programming contributions (Codex, Claude). MET observation only. Fail-closed: repo_mutating=true requires AEX and PQX. present requires artifact_refs. partial/missing/unknown requires reason_codes."
+    },
+    {
+      "artifact_type": "ai_programming_governance_rollup_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "AEX-PQX-01",
+      "last_updated_in": "AEX-PQX-01",
+      "example_path": "contracts/examples/ai_programming_governance_rollup_record.example.json",
+      "notes": "AEX-PQX-01: aggregate rollup of AI programming governance evidence. Produced by build_ai_programming_governance_rollup.py. Dashboard reads this artifact; does not compute compliance client-side."
+    },
+    {
+      "artifact_type": "ai_programming_loop_violation_record",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "AEX-PQX-01",
+      "last_updated_in": "AEX-PQX-01",
+      "example_path": "contracts/examples/ai_programming_loop_violation_record.example.json",
+      "notes": "AEX-PQX-01: records a specific governance loop violation for a repo-mutating AI programming work item. MET observation only; does not claim enforcement (SEL) or decision (CDE) authority."
+    },
+    {
       "artifact_type": "authority_preflight_failure_packet",
       "artifact_class": "governance",
       "schema_version": "1.0.0",

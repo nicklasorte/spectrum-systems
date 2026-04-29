@@ -1,0 +1,100 @@
+{
+  "artifact_type": "ai_programming_work_item_record",
+  "schema_version": "1.0.0",
+  "record_id": "AIPG-WI-AEX-PQX-DASH-02-CODEX-PRECURSOR",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "work_item_id": "AEX-PQX-DASH-02-CODEX-PRECURSOR",
+  "tool_source": "codex",
+  "repo_mutating": true,
+  "pr_ref": "unknown",
+  "branch_ref": "unknown",
+  "legs": {
+    "AEX": {
+      "status": "partial",
+      "artifact_refs": [
+        "artifacts/aex/aex_admission_evidence_record.json"
+      ],
+      "reason_codes": [
+        "aex_record_references_req_aex_trust_01_not_this_work_item",
+        "aex_evidence_not_explicitly_named_for_aex_pqx_dash_02_codex_precursor"
+      ],
+      "source_artifacts_used": [
+        "artifacts/aex/aex_admission_evidence_record.json"
+      ],
+      "confidence": "low"
+    },
+    "PQX": {
+      "status": "partial",
+      "artifact_refs": [
+        "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json"
+      ],
+      "reason_codes": [
+        "pqx_record_is_preflight_slice_not_work_item_specific",
+        "preflight_slice_not_explicitly_bound_to_this_codex_work_item"
+      ],
+      "source_artifacts_used": [
+        "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json"
+      ],
+      "confidence": "low"
+    },
+    "EVL": {
+      "status": "partial",
+      "artifact_refs": [
+        "outputs/contract_preflight/preflight.pqx_execution_eval_result.json"
+      ],
+      "reason_codes": [
+        "eval_from_preflight_slice_not_work_item_specific",
+        "evl_artifact_is_slice_scoped_not_codex_precursor_scoped"
+      ],
+      "source_artifacts_used": [
+        "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json"
+      ],
+      "confidence": "low"
+    },
+    "TPA": {
+      "status": "unknown",
+      "reason_codes": ["no_tpa_record_for_codex_precursor"],
+      "source_artifacts_used": []
+    },
+    "CDE": {
+      "status": "unknown",
+      "reason_codes": ["no_cde_record_for_codex_precursor"],
+      "source_artifacts_used": []
+    },
+    "SEL": {
+      "status": "unknown",
+      "reason_codes": ["no_sel_record_for_codex_precursor"],
+      "source_artifacts_used": []
+    }
+  },
+  "lineage_status": "missing",
+  "lineage_artifact_refs": [],
+  "lineage_reason_codes": [
+    "no_lineage_chain_linking_aex_pqx_evl_for_this_work_item",
+    "dashboard_seed_lineage_covers_seeded_artifacts_not_codex_precursor_chain",
+    "aex_and_pqx_both_partial_so_lineage_cannot_be_established_with_confidence"
+  ],
+  "compliance_status": "BLOCK",
+  "bypass_risk": "lineage_missing",
+  "backfill_allowed": true,
+  "human_review_required": false,
+  "next_recommended_input": "Backfill a lineage record entry linking the AEX admission evidence (artifacts/aex/aex_admission_evidence_record.json) to the PQX preflight slice execution (artifacts/pqx_runs/preflight.pqx_slice_execution_record.json) to the EVL eval result, explicitly naming AEX-PQX-DASH-02-CODEX-PRECURSOR as the work item. The link will remain partial until the AEX and PQX records are upgraded to work-item-specific artifacts.",
+  "source_artifacts_used": [
+    "artifacts/aex/aex_admission_evidence_record.json",
+    "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
+    "artifacts/dashboard_seed/lineage_record.json",
+    "artifacts/dashboard_metrics/governance_violation_record.json"
+  ],
+  "reason_codes": [
+    "lineage_chain_missing_for_codex_precursor_work_item",
+    "partial_evidence_exists_from_preflight_but_not_explicitly_named"
+  ],
+  "warnings": [
+    "MET observation only. AEX owns admission. PQX owns execution. EVL owns eval. CDE owns control. SEL owns enforcement.",
+    "AEX and PQX evidence is partial, not present: the existing preflight records are not explicitly named for this work item.",
+    "Lineage is missing: no lineage record chains AEX->PQX->EVL for AEX-PQX-DASH-02-CODEX-PRECURSOR.",
+    "compliance_status=BLOCK because repo_mutating=true and lineage is missing; legs are partial not present."
+  ],
+  "sma_loop_run_ref": "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_loop_run_record.json"
+}

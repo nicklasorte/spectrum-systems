@@ -1,7 +1,7 @@
 {
   "artifact_type": "operator_trust_closeout_artifact",
   "batch_id": "RQ-MASTER-36-01",
-  "generated_at": "2026-04-29T19:45:40Z",
+  "generated_at": "2026-04-29T17:24:31Z",
   "dashboard_trust_level": "guarded",
   "recommendation_trust_level": "measured_but_bounded",
   "key_blockers": [

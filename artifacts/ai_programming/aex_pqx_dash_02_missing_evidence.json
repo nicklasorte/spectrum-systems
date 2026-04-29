@@ -1,0 +1,88 @@
+{
+  "artifact_type": "ai_programming_work_item_record",
+  "schema_version": "1.0.0",
+  "record_id": "AIPG-WI-AEX-PQX-DASH-02",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "work_item_id": "AEX-PQX-DASH-02",
+  "tool_source": "claude",
+  "repo_mutating": true,
+  "pr_ref": "unknown",
+  "branch_ref": "unknown",
+  "legs": {
+    "AEX": {
+      "status": "missing",
+      "reason_codes": [
+        "no_aex_intake_record_for_dashboard_implementation",
+        "dashboard_built_before_aex_intake_instrumented",
+        "retroactive_backfill_not_possible_without_aex_owned_artifact"
+      ],
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/ai_programming_governed_path_record.json",
+        "artifacts/dashboard_metrics/governance_violation_record.json"
+      ]
+    },
+    "PQX": {
+      "status": "missing",
+      "reason_codes": [
+        "no_pqx_execution_record_for_dashboard_implementation",
+        "dashboard_built_before_pqx_wrapper_in_place",
+        "no_run_codex_to_pqx_wrapper_invoked_for_this_work_item"
+      ],
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/governance_violation_record.json"
+      ]
+    },
+    "EVL": {
+      "status": "unknown",
+      "reason_codes": [
+        "no_evl_artifact_for_dashboard_work_item",
+        "cannot_assert_eval_without_pqx_execution_record"
+      ],
+      "source_artifacts_used": []
+    },
+    "TPA": {
+      "status": "unknown",
+      "reason_codes": ["no_tpa_record_for_dashboard_work_item"],
+      "source_artifacts_used": []
+    },
+    "CDE": {
+      "status": "unknown",
+      "reason_codes": ["no_cde_record_for_dashboard_work_item"],
+      "source_artifacts_used": []
+    },
+    "SEL": {
+      "status": "unknown",
+      "reason_codes": ["no_sel_record_for_dashboard_work_item"],
+      "source_artifacts_used": []
+    }
+  },
+  "lineage_status": "missing",
+  "lineage_artifact_refs": [],
+  "lineage_reason_codes": [
+    "no_lineage_chain_for_aex_pqx_dash_02",
+    "aex_and_pqx_both_missing_so_lineage_chain_cannot_be_started"
+  ],
+  "compliance_status": "BLOCK",
+  "bypass_risk": "aex_missing",
+  "backfill_allowed": "partial",
+  "human_review_required": true,
+  "next_recommended_input": "Human review required. AEX-PQX-DASH-02 represents the dashboard implementation itself, a Claude-driven repo-mutating work item. Neither AEX admission nor PQX execution evidence was captured at time of implementation (bootstrap gap). A human must confirm whether retrospective evidence can be produced or whether this work item permanently carries missing legs. If retroactive evidence can be produced, AEX must emit an admission_evidence_record naming work_item_id=AEX-PQX-DASH-02 and PQX must emit a pqx_slice_execution_record for the dashboard files written.",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/ai_programming_governed_path_record.json",
+    "artifacts/dashboard_metrics/governance_violation_record.json",
+    "docs/reviews/AEX-PQX-DASH-01-ai-programming-governed-path.md",
+    "docs/architecture/system_registry.md"
+  ],
+  "reason_codes": [
+    "bootstrap_gap_dashboard_built_before_aex_pqx_instrumented",
+    "missing_evidence_record_emitted_per_fail_closed_principle"
+  ],
+  "warnings": [
+    "MET observation only. AEX owns admission. PQX owns execution. EVL owns eval. CDE owns control. SEL owns enforcement.",
+    "This is an explicit missing-evidence record. AEX and PQX cannot be proven present retroactively for this work item without AEX-owned and PQX-owned artifacts naming work_item_id=AEX-PQX-DASH-02.",
+    "The dashboard implementation (AI Programming Governed Path panel) was a Claude-driven repo-mutating work item that predates the AEX intake and PQX execution instrumentation requirements, creating a self-referential bootstrap gap.",
+    "This record does NOT claim that AEX admitted or PQX executed this work item. It explicitly records that both legs are missing and cannot be silently inferred."
+  ],
+  "sma_loop_run_ref": "artifacts/ai_programming/aex_pqx_dash_02_loop_run_record.json"
+}

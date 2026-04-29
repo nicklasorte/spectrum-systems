@@ -121,7 +121,9 @@
       "contracts/schemas/loop_proof_bundle.schema.json",
       "docs/reviews/NS_ALL_01_delivery_report.md",
       "docs/governance-reports/contract-compliance-report.md",
-      "docs/governance-reports/ecosystem-health-report.md"
+      "docs/governance-reports/ecosystem-health-report.md",
+      "docs/reviews/AEX-PQX-01_ai_programming_governance_evidence_report.md",
+      "docs/reviews/AEX-PQX-01_ai_programming_loop_root_cause.md"
     ]
   },
   "clusters": {
@@ -143,6 +145,7 @@
         "spectrum_systems/modules/runtime/closure_decision_engine.py",
         "spectrum_systems/modules/governance/done_certification.py",
         "spectrum_systems/modules/runtime/jdx_judgment_authority.py",
+        "spectrum_systems/modules/runtime/cde_lrt_continuation.py",
         "spectrum_systems/modules/judgment/",
         "spectrum_systems/judgment/"
       ],

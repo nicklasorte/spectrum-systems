@@ -1,0 +1,32 @@
+{
+  "artifact_type": "3ls_loop_run_record",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-aipg-codex-001-2026-04-29",
+  "created_at": "2026-04-29T00:00:00Z",
+  "provenance": {
+    "source_system": "MET",
+    "inputs": [
+      "artifacts/ai_programming/aipg_codex_001_work_item_record.json",
+      "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
+      "artifacts/aex/aex_admission_evidence_record.json"
+    ],
+    "simulated": false
+  },
+  "record_id": "3ls-loop-aipg-codex-001-2026-04-29",
+  "loop_id": "loop-aipg-codex-001",
+  "admission_ref": null,
+  "execution_ref": "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
+  "eval_ref": null,
+  "policy_ref": null,
+  "decision_input_ref": null,
+  "enforcement_signal_ref": null,
+  "loop_status": "partial",
+  "first_failure_system": "AEX",
+  "completion_time_ms": null,
+  "trace_refs": [
+    "artifacts/ai_programming/aipg_codex_001_work_item_record.json"
+  ],
+  "replay_refs": [],
+  "authority_scope": "observation_only",
+  "notes": "AEX-PQX-01: AIPG-CODEX-001 loop run. AEX admission_ref is null because no AEX-owned admission artifact exists for this work item. PQX execution evidence is present (preflight slice) but not work-item-specific. Loop is partial with first_failure_system=AEX."
+}

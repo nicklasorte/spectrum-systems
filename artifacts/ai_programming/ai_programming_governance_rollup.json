@@ -1,0 +1,225 @@
+{
+  "artifact_type": "ai_programming_governance_rollup_record",
+  "schema_version": "1.0.0",
+  "record_id": "AIPG-ROLLUP-20260429",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "compliance_status": "BLOCK",
+  "total_ai_programming_items": 4,
+  "codex_work_count": 2,
+  "claude_work_count": 2,
+  "unknown_tool_count": 0,
+  "repo_mutating_count": 4,
+  "with_aex_evidence": 0,
+  "with_pqx_evidence": 1,
+  "with_evl_evidence": 0,
+  "full_loop_complete_count": 0,
+  "bypass_risk_count": 4,
+  "unknown_path_count": 0,
+  "per_leg_counts": {
+    "AEX": {
+      "present": 0,
+      "partial": 2,
+      "missing": 2,
+      "unknown": 0,
+      "not_required": 0
+    },
+    "PQX": {
+      "present": 1,
+      "partial": 1,
+      "missing": 2,
+      "unknown": 0,
+      "not_required": 0
+    },
+    "EVL": {
+      "present": 0,
+      "partial": 3,
+      "missing": 0,
+      "unknown": 1,
+      "not_required": 0
+    },
+    "TPA": {
+      "present": 0,
+      "partial": 0,
+      "missing": 0,
+      "unknown": 4,
+      "not_required": 0
+    },
+    "CDE": {
+      "present": 0,
+      "partial": 0,
+      "missing": 0,
+      "unknown": 4,
+      "not_required": 0
+    },
+    "SEL": {
+      "present": 0,
+      "partial": 0,
+      "missing": 0,
+      "unknown": 4,
+      "not_required": 0
+    }
+  },
+  "score": 0.0,
+  "total_required_legs": 6,
+  "core_loop_complete": false,
+  "first_missing_leg": "AEX",
+  "weakest_leg": "AEX",
+  "next_recommended_input": "Resolve BLOCK status for work items: AEX-PQX-DASH-02-CODEX-PRECURSOR, AEX-PQX-DASH-02, AIPG-CLAUDE-001, AIPG-CODEX-001. First missing leg is AEX.",
+  "violation_records": [
+    {
+      "work_item_id": "AEX-PQX-DASH-02-CODEX-PRECURSOR",
+      "missing_leg": "TPA",
+      "reason_codes": [
+        "no_tpa_record_for_codex_precursor"
+      ]
+    },
+    {
+      "work_item_id": "AEX-PQX-DASH-02-CODEX-PRECURSOR",
+      "missing_leg": "CDE",
+      "reason_codes": [
+        "no_cde_record_for_codex_precursor"
+      ]
+    },
+    {
+      "work_item_id": "AEX-PQX-DASH-02-CODEX-PRECURSOR",
+      "missing_leg": "SEL",
+      "reason_codes": [
+        "no_sel_record_for_codex_precursor"
+      ]
+    },
+    {
+      "work_item_id": "AEX-PQX-DASH-02",
+      "missing_leg": "AEX",
+      "reason_codes": [
+        "no_aex_intake_record_for_dashboard_implementation",
+        "dashboard_built_before_aex_intake_instrumented",
+        "retroactive_backfill_not_possible_without_aex_owned_artifact"
+      ]
+    },
+    {
+      "work_item_id": "AEX-PQX-DASH-02",
+      "missing_leg": "PQX",
+      "reason_codes": [
+        "no_pqx_execution_record_for_dashboard_implementation",
+        "dashboard_built_before_pqx_wrapper_in_place",
+        "no_run_codex_to_pqx_wrapper_invoked_for_this_work_item"
+      ]
+    },
+    {
+      "work_item_id": "AEX-PQX-DASH-02",
+      "missing_leg": "EVL",
+      "reason_codes": [
+        "no_evl_artifact_for_dashboard_work_item",
+        "cannot_assert_eval_without_pqx_execution_record"
+      ]
+    },
+    {
+      "work_item_id": "AEX-PQX-DASH-02",
+      "missing_leg": "TPA",
+      "reason_codes": [
+        "no_tpa_record_for_dashboard_work_item"
+      ]
+    },
+    {
+      "work_item_id": "AEX-PQX-DASH-02",
+      "missing_leg": "CDE",
+      "reason_codes": [
+        "no_cde_record_for_dashboard_work_item"
+      ]
+    },
+    {
+      "work_item_id": "AEX-PQX-DASH-02",
+      "missing_leg": "SEL",
+      "reason_codes": [
+        "no_sel_record_for_dashboard_work_item"
+      ]
+    },
+    {
+      "work_item_id": "AIPG-CLAUDE-001",
+      "missing_leg": "PQX",
+      "reason_codes": [
+        "no_pqx_execution_record_for_claude_branch",
+        "claude_branch_made_direct_repo_mutations_without_pqx_record"
+      ]
+    },
+    {
+      "work_item_id": "AIPG-CLAUDE-001",
+      "missing_leg": "TPA",
+      "reason_codes": [
+        "no_tpa_record_linked_to_work_item"
+      ]
+    },
+    {
+      "work_item_id": "AIPG-CLAUDE-001",
+      "missing_leg": "CDE",
+      "reason_codes": [
+        "no_cde_record_linked_to_work_item"
+      ]
+    },
+    {
+      "work_item_id": "AIPG-CLAUDE-001",
+      "missing_leg": "SEL",
+      "reason_codes": [
+        "no_sel_record_linked_to_work_item"
+      ]
+    },
+    {
+      "work_item_id": "AIPG-CODEX-001",
+      "missing_leg": "AEX",
+      "reason_codes": [
+        "aex_intake_record_not_linked_to_work_item",
+        "aex_admission_evidence_record_references_req_aex_trust_01_not_aipg_codex_001"
+      ]
+    },
+    {
+      "work_item_id": "AIPG-CODEX-001",
+      "missing_leg": "TPA",
+      "reason_codes": [
+        "no_tpa_record_linked_to_work_item"
+      ]
+    },
+    {
+      "work_item_id": "AIPG-CODEX-001",
+      "missing_leg": "CDE",
+      "reason_codes": [
+        "no_cde_record_linked_to_work_item"
+      ]
+    },
+    {
+      "work_item_id": "AIPG-CODEX-001",
+      "missing_leg": "SEL",
+      "reason_codes": [
+        "no_sel_record_linked_to_work_item"
+      ]
+    }
+  ],
+  "sma_artifact_refs": [
+    "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_loop_run_record.json",
+    "artifacts/ai_programming/aex_pqx_dash_02_loop_run_record.json",
+    "artifacts/ai_programming/aipg_claude_001_loop_run_record.json",
+    "artifacts/ai_programming/aipg_codex_001_loop_run_record.json"
+  ],
+  "source_artifacts_used": [
+    "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+    "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+    "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+    "artifacts/ai_programming/aipg_codex_001_work_item_record.json"
+  ],
+  "work_item_refs": [
+    "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+    "artifacts/ai_programming/aex_pqx_dash_02_missing_evidence.json",
+    "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+    "artifacts/ai_programming/aipg_codex_001_work_item_record.json"
+  ],
+  "warnings": [
+    "MET observation only. Authority boundary assignments are canonical in docs/architecture/system_registry.md.",
+    "unknown does not count as present. repo_mutating=true items with AEX or PQX missing/unknown force compliance_status=BLOCK.",
+    "This rollup is generated deterministically from source work item records in artifacts/ai_programming/. Do not hand-edit."
+  ],
+  "reason_codes": [
+    "ai_programming_governance_rollup_observation_only",
+    "met_does_not_claim_canonical_authority"
+  ]
+}

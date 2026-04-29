@@ -51,6 +51,7 @@
           "owner_path_prefixes": [
             "spectrum_systems/modules/runtime/cde_decision_flow.py",
             "spectrum_systems/modules/runtime/closure_decision_engine.py",
+            "spectrum_systems/modules/runtime/cde_lrt_continuation.py",
             "spectrum_systems/modules/governance/done_certification.py",
             "contracts/examples/cde_execution_mode_selection_decision.json",
             "contracts/schemas/cde_execution_mode_selection_decision.schema.json"
@@ -101,6 +102,7 @@
       "spectrum_systems/modules/runtime/system_enforcement_layer.py",
       "spectrum_systems/modules/runtime/cde_decision_flow.py",
       "spectrum_systems/modules/runtime/closure_decision_engine.py",
+      "spectrum_systems/modules/runtime/cde_lrt_continuation.py",
       "spectrum_systems/modules/governance/done_certification.py",
       "spectrum_systems/modules/review_promotion_gate.py",
       "spectrum_systems/modules/runtime/promotion_readiness_checkpoint.py",
@@ -149,11 +151,13 @@
     "allowed_path_prefixes": [],
     "allowed_fields": {},
     "allowed_values": {
+      "spectrum_systems/modules/runtime/cde_lrt_continuation.py": ["block", "freeze"],
       "spectrum_systems/modules/runtime/ctrl_loop_gates.py": ["block", "freeze"],
       "spectrum_systems/modules/runtime/roadmap_signal_steering.py": ["block", "freeze"],
       "spectrum_systems/modules/runtime/github_pr_autofix_contract_preflight.py": ["allow", "block"],
       "contracts/examples/preflight_block_diagnosis_record.json": ["allow", "block"],
-      "spectrum_systems/modules/runtime/failure_explanation.py": ["block", "freeze"]
+      "spectrum_systems/modules/runtime/failure_explanation.py": ["block", "freeze"],
+      "contracts/examples/ai_programming_work_item_record.example.json": ["block"]
     }
   },
   "preparatory_only": {
