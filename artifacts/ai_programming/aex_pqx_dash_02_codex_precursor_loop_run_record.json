@@ -1,0 +1,35 @@
+{
+  "artifact_type": "3ls_loop_run_record",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-aex-pqx-dash-02-codex-precursor-2026-04-29",
+  "created_at": "2026-04-29T00:00:00Z",
+  "provenance": {
+    "source_system": "MET",
+    "inputs": [
+      "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+      "artifacts/aex/aex_admission_evidence_record.json",
+      "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
+      "artifacts/dashboard_seed/lineage_record.json"
+    ],
+    "simulated": false
+  },
+  "record_id": "3ls-loop-aex-pqx-dash-02-codex-precursor-2026-04-29",
+  "loop_id": "loop-aex-pqx-dash-02-codex-precursor",
+  "admission_ref": "artifacts/aex/aex_admission_evidence_record.json",
+  "execution_ref": "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
+  "eval_ref": null,
+  "policy_ref": null,
+  "decision_input_ref": null,
+  "enforcement_signal_ref": null,
+  "loop_status": "partial",
+  "first_failure_system": "EVL",
+  "completion_time_ms": null,
+  "trace_refs": [
+    "artifacts/ai_programming/aex_pqx_dash_02_codex_precursor_partial_lineage.json",
+    "artifacts/aex/aex_admission_evidence_record.json",
+    "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json"
+  ],
+  "replay_refs": [],
+  "authority_scope": "observation_only",
+  "notes": "AEX-PQX-01: AEX-PQX-DASH-02-CODEX-PRECURSOR loop run. AEX and PQX refs are populated but are not work-item-specific (they are general preflight records). EVL is null because no work-item-specific eval artifact exists. Lineage is missing. Loop is partial with first_failure_system=EVL (first leg after the present/partial AEX+PQX that is definitively absent)."
+}

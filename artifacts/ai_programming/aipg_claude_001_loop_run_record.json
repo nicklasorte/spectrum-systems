@@ -1,0 +1,33 @@
+{
+  "artifact_type": "3ls_loop_run_record",
+  "schema_version": "1.0.0",
+  "trace_id": "trace-aipg-claude-001-2026-04-29",
+  "created_at": "2026-04-29T00:00:00Z",
+  "provenance": {
+    "source_system": "MET",
+    "inputs": [
+      "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+      "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json",
+      "artifacts/dashboard_seed/lineage_record.json"
+    ],
+    "simulated": false
+  },
+  "record_id": "3ls-loop-aipg-claude-001-2026-04-29",
+  "loop_id": "loop-aipg-claude-001",
+  "admission_ref": null,
+  "execution_ref": null,
+  "eval_ref": null,
+  "policy_ref": null,
+  "decision_input_ref": null,
+  "enforcement_signal_ref": null,
+  "loop_status": "partial",
+  "first_failure_system": "AEX",
+  "completion_time_ms": null,
+  "trace_refs": [
+    "artifacts/ai_programming/aipg_claude_001_work_item_record.json",
+    "artifacts/rdx_runs/ROADMAP-APPLY-01-artifact-trace.json"
+  ],
+  "replay_refs": [],
+  "authority_scope": "observation_only",
+  "notes": "AEX-PQX-01: AIPG-CLAUDE-001 loop run. Both admission_ref and execution_ref are null: AEX evidence is only partial (RDX trace, not AEX-owned record) and PQX evidence is missing entirely. Loop is partial with first_failure_system=AEX."
+}

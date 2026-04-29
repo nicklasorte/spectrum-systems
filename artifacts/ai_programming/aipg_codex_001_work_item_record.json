@@ -1,0 +1,92 @@
+{
+  "artifact_type": "ai_programming_work_item_record",
+  "schema_version": "1.0.0",
+  "record_id": "AIPG-WI-CODEX-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "work_item_id": "AIPG-CODEX-001",
+  "tool_source": "codex",
+  "repo_mutating": true,
+  "pr_ref": "unknown",
+  "branch_ref": "unknown",
+  "legs": {
+    "AEX": {
+      "status": "missing",
+      "reason_codes": [
+        "aex_intake_record_not_linked_to_work_item",
+        "aex_admission_evidence_record_references_req_aex_trust_01_not_aipg_codex_001"
+      ],
+      "source_artifacts_used": [
+        "artifacts/aex/aex_admission_evidence_record.json"
+      ]
+    },
+    "PQX": {
+      "status": "present",
+      "artifact_refs": [
+        "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
+        "artifacts/pqx_runs/pqx_003/admitted_slices_20.json"
+      ],
+      "source_artifacts_used": [
+        "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
+        "artifacts/pqx_runs/pqx_003/admitted_slices_20.json"
+      ],
+      "confidence": "medium"
+    },
+    "EVL": {
+      "status": "partial",
+      "artifact_refs": [
+        "outputs/contract_preflight/preflight.pqx_execution_eval_result.json"
+      ],
+      "reason_codes": [
+        "eval_coverage_partial_preflight_only",
+        "eval_is_slice_level_not_work_item_specific"
+      ],
+      "source_artifacts_used": [
+        "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json"
+      ],
+      "confidence": "low"
+    },
+    "TPA": {
+      "status": "unknown",
+      "reason_codes": ["no_tpa_record_linked_to_work_item"],
+      "source_artifacts_used": []
+    },
+    "CDE": {
+      "status": "unknown",
+      "reason_codes": ["no_cde_record_linked_to_work_item"],
+      "source_artifacts_used": []
+    },
+    "SEL": {
+      "status": "unknown",
+      "reason_codes": ["no_sel_record_linked_to_work_item"],
+      "source_artifacts_used": []
+    }
+  },
+  "lineage_status": "missing",
+  "lineage_artifact_refs": [],
+  "lineage_reason_codes": [
+    "no_lineage_chain_linking_aex_pqx_evl_for_this_work_item",
+    "dashboard_seed_lineage_record_covers_seeded_chain_not_codex_work_item"
+  ],
+  "compliance_status": "BLOCK",
+  "bypass_risk": "aex_missing",
+  "backfill_allowed": "partial",
+  "human_review_required": true,
+  "next_recommended_input": "Attach AEX admission evidence (admission_evidence_record naming work_item_id=AIPG-CODEX-001) so the governed path through AEX can be observed end-to-end. Human review required to confirm retroactive AEX evidence is permissible.",
+  "source_artifacts_used": [
+    "artifacts/aex/aex_admission_evidence_record.json",
+    "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json",
+    "artifacts/pqx_runs/pqx_003/admitted_slices_20.json",
+    "artifacts/dashboard_metrics/ai_programming_governed_path_record.json"
+  ],
+  "reason_codes": [
+    "aex_intake_record_not_linked_to_work_item",
+    "preflight_pqx_evidence_used_as_proxy_for_work_item"
+  ],
+  "warnings": [
+    "MET observation only. AEX owns admission. PQX owns execution. EVL owns eval. CDE owns control. SEL owns enforcement.",
+    "PQX evidence is from a general preflight slice run, not work-item-specific. Confidence is medium.",
+    "AEX cannot be proven present: the existing aex_admission_evidence_record.json references req-aex-trust-01-1, not AIPG-CODEX-001."
+  ],
+  "sma_loop_run_ref": "artifacts/ai_programming/aipg_codex_001_loop_run_record.json"
+}

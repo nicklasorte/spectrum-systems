@@ -1,0 +1,53 @@
+{
+  "artifact_type": "ai_programming_governance_rollup_record",
+  "schema_version": "1.0.0",
+  "record_id": "AIPG-ROLLUP-EXAMPLE-20260101",
+  "created_at": "2026-01-01T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "compliance_status": "PASS",
+  "total_ai_programming_items": 1,
+  "codex_work_count": 1,
+  "claude_work_count": 0,
+  "unknown_tool_count": 0,
+  "repo_mutating_count": 1,
+  "with_aex_evidence": 1,
+  "with_pqx_evidence": 1,
+  "with_evl_evidence": 1,
+  "full_loop_complete_count": 1,
+  "bypass_risk_count": 0,
+  "unknown_path_count": 0,
+  "per_leg_counts": {
+    "AEX": {"present": 1, "partial": 0, "missing": 0, "unknown": 0, "not_required": 0},
+    "PQX": {"present": 1, "partial": 0, "missing": 0, "unknown": 0, "not_required": 0},
+    "EVL": {"present": 1, "partial": 0, "missing": 0, "unknown": 0, "not_required": 0},
+    "TPA": {"present": 1, "partial": 0, "missing": 0, "unknown": 0, "not_required": 0},
+    "CDE": {"present": 1, "partial": 0, "missing": 0, "unknown": 0, "not_required": 0},
+    "SEL": {"present": 1, "partial": 0, "missing": 0, "unknown": 0, "not_required": 0}
+  },
+  "score": 1.0,
+  "total_required_legs": 6,
+  "core_loop_complete": true,
+  "first_missing_leg": null,
+  "weakest_leg": "AEX",
+  "next_recommended_input": null,
+  "violation_records": [],
+  "sma_artifact_refs": [
+    "artifacts/ai_programming/example_loop_run_record.json"
+  ],
+  "source_artifacts_used": [
+    "artifacts/ai_programming/example_work_item_record.json"
+  ],
+  "work_item_refs": [
+    "artifacts/ai_programming/example_work_item_record.json"
+  ],
+  "warnings": [
+    "MET observation only. Authority boundary assignments are canonical in docs/architecture/system_registry.md.",
+    "unknown does not count as present. repo_mutating=true items with AEX or PQX missing/unknown force compliance_status=BLOCK.",
+    "This rollup is generated deterministically from source work item records in artifacts/ai_programming/. Do not hand-edit."
+  ],
+  "reason_codes": [
+    "ai_programming_governance_rollup_observation_only",
+    "met_does_not_claim_canonical_authority"
+  ]
+}
