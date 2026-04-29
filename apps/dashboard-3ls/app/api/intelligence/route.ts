@@ -1358,21 +1358,31 @@ export async function GET() {
   );
   const declaredViolationCount = governanceViolation?.violation_count;
   const observedViolationCount = filteredViolations.length;
+  // Fail-closed: a stale or under-counted declared `violation_count` (e.g.
+  // declared 0 with non-empty violations[]) must NOT cause the panel to fall
+  // through to PASS. Use max(declared, observed) so any concrete violation
+  // entry surfaces as BLOCK regardless of the declared scalar.
   const violationCountValue: number | 'unknown' = governanceViolation
     ? typeof declaredViolationCount === 'number'
-      ? declaredViolationCount
+      ? Math.max(declaredViolationCount, observedViolationCount)
       : observedViolationCount
     : 'unknown';
-  const governanceViolationStatus: 'pass' | 'warn' | 'block' | 'unknown' = governanceViolation
-    ? governanceViolation.status === 'block' ||
-      governanceViolation.status === 'warn' ||
-      governanceViolation.status === 'pass' ||
-      governanceViolation.status === 'unknown'
-      ? governanceViolation.status
-      : typeof violationCountValue === 'number' && violationCountValue > 0
-        ? 'block'
-        : 'pass'
-    : 'unknown';
+  // Fail-closed: violation_count > 0 forces BLOCK regardless of the declared
+  // status. A stale `status: 'pass'` with non-empty violations cannot
+  // downgrade the panel.
+  const observedViolationsForce = typeof violationCountValue === 'number' && violationCountValue > 0;
+  const declaredStatusValid =
+    governanceViolation?.status === 'block' ||
+    governanceViolation?.status === 'warn' ||
+    governanceViolation?.status === 'pass' ||
+    governanceViolation?.status === 'unknown';
+  const governanceViolationStatus: 'pass' | 'warn' | 'block' | 'unknown' = !governanceViolation
+    ? 'unknown'
+    : observedViolationsForce
+      ? 'block'
+      : declaredStatusValid
+        ? (governanceViolation.status as 'pass' | 'warn' | 'block' | 'unknown')
+        : 'pass';
   const governanceViolationsBlock = governanceViolation
     ? {
         status: governanceViolationStatus,
@@ -1406,13 +1416,22 @@ export async function GET() {
   // required leg missing AND repo_mutating === true; WARN on partial; UNKNOWN
   // if insufficient evidence.
   const compliance = aiProgrammingGovernedPath?.core_loop_compliance ?? {};
+  // Fail-closed: any leg value that is not exactly one of the four known
+  // LegState strings (case-sensitive) is normalized to 'unknown'. Casing
+  // variants, typos, or unexpected enum values must not bypass the
+  // missing/unknown checks downstream and accidentally promote a malformed
+  // record to PASS or WARN.
+  const normalizeLegState = (value: unknown): LegState =>
+    value === 'present' || value === 'partial' || value === 'missing' || value === 'unknown'
+      ? value
+      : 'unknown';
   const legStates: Record<CoreLoopLeg, LegState> = {
-    AEX: (compliance.AEX as LegState) ?? 'unknown',
-    PQX: (compliance.PQX as LegState) ?? 'unknown',
-    EVL: (compliance.EVL as LegState) ?? 'unknown',
-    TPA: (compliance.TPA as LegState) ?? 'unknown',
-    CDE: (compliance.CDE as LegState) ?? 'unknown',
-    SEL: (compliance.SEL as LegState) ?? 'unknown',
+    AEX: normalizeLegState(compliance.AEX),
+    PQX: normalizeLegState(compliance.PQX),
+    EVL: normalizeLegState(compliance.EVL),
+    TPA: normalizeLegState(compliance.TPA),
+    CDE: normalizeLegState(compliance.CDE),
+    SEL: normalizeLegState(compliance.SEL),
   };
   const legArray: Array<{ leg: CoreLoopLeg; state: LegState }> = CORE_LOOP_LEGS.map(
     (leg) => ({ leg, state: legStates[leg] }),

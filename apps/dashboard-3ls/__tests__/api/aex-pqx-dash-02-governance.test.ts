@@ -200,6 +200,39 @@ describe('AEX-PQX-DASH-02 — /api/intelligence wiring', () => {
     );
   });
 
+  it('fail-closed: violation_count = max(declared, observed)', () => {
+    // A stale declared violation_count must not under-report observed
+    // violations. The route must derive the panel's count as the larger of
+    // the two so a non-empty violations[] always surfaces.
+    expect(intelligenceSrc).toContain(
+      'Math.max(declaredViolationCount, observedViolationCount)',
+    );
+  });
+
+  it('fail-closed: declared status pass cannot override observed violations', () => {
+    // If observed violation_count > 0, status must be forced to BLOCK
+    // regardless of any declared status string.
+    expect(intelligenceSrc).toContain('observedViolationsForce');
+    expect(intelligenceSrc).toContain(
+      "observedViolationsForce\n      ? 'block'",
+    );
+  });
+
+  it('fail-closed: leg states are runtime-validated to LegState', () => {
+    // Casting `as LegState` would let typos / casing variants bypass
+    // missing/unknown checks; ensure a normalize function is present and
+    // used for each leg.
+    expect(intelligenceSrc).toContain('normalizeLegState');
+    for (const leg of ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL']) {
+      expect(intelligenceSrc).toContain(`${leg}: normalizeLegState(compliance.${leg})`);
+    }
+    // The normalize function must default unknown / unexpected strings to
+    // 'unknown' (fail-closed), not to 'present' or 'partial'.
+    expect(intelligenceSrc).toMatch(
+      /normalizeLegState[\s\S]*?value === 'present'[\s\S]*?value === 'partial'[\s\S]*?value === 'missing'[\s\S]*?value === 'unknown'[\s\S]*?: 'unknown'/,
+    );
+  });
+
   it('summary block exposes the required surface fields', () => {
     const block = intelligenceSrc.slice(
       intelligenceSrc.indexOf('const coreLoopComplianceSummaryBlock'),
