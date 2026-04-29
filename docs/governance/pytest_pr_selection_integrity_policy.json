@@ -98,6 +98,30 @@
       "required_test_targets": [
         "tests/test_contract_preflight.py"
       ]
+    },
+    {
+      "path_prefix": "spectrum_systems/modules/runtime/pr_test_selection.py",
+      "required_test_targets": [
+        "tests/test_pr_test_selection_engine.py"
+      ]
+    },
+    {
+      "path_prefix": "scripts/select_pr_test_shard.py",
+      "required_test_targets": [
+        "tests/test_pr_test_shards.py"
+      ]
+    },
+    {
+      "path_prefix": "scripts/run_pr_gate.py",
+      "required_test_targets": [
+        "tests/test_pr_gate_parallel.py"
+      ]
+    },
+    {
+      "path_prefix": "scripts/run_ci_drift_detector.py",
+      "required_test_targets": [
+        "tests/test_ci_drift_detector.py"
+      ]
     }
   ],
   "bounded_equivalence": [

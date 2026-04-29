@@ -107,6 +107,18 @@
   ],
   "docs/reviews/MET-18-dashboard-usefulness-fixes.md": [
     "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  "spectrum_systems/modules/runtime/pr_test_selection.py": [
+    "tests/test_pr_test_selection_engine.py"
+  ],
+  "scripts/select_pr_test_shard.py": [
+    "tests/test_pr_test_shards.py"
+  ],
+  "scripts/run_pr_gate.py": [
+    "tests/test_pr_gate_parallel.py"
+  ],
+  "scripts/run_ci_drift_detector.py": [
+    "tests/test_ci_drift_detector.py"
   ]
 }
 

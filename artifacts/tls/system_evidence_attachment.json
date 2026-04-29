@@ -1451,6 +1451,7 @@
           "scripts/run_3ls_authority_preflight.py",
           "scripts/run_authenticity_hardgate_24_01.py",
           "scripts/run_certification_judgment_40_explicit.py",
+          "scripts/run_ci_drift_detector.py",
           "scripts/run_contract_preflight.py",
           "scripts/run_map_review_orchestration.py",
           "scripts/run_operationalization.py",
@@ -1461,6 +1462,7 @@
           "scripts/run_rh_kernel_24_01.py",
           "scripts/run_rq_master_36_01.py",
           "scripts/run_shift_left_memory_24_01.py",
+          "scripts/select_pr_test_shard.py",
           "scripts/suggest_3ls_authority_repairs.py",
           "scripts/sync_project_design_sources.py",
           "scripts/update_readme_mental_map.py",
@@ -1499,7 +1501,7 @@
           "tests/test_registry_valid.py"
         ]
       },
-      "evidence_count": 126,
+      "evidence_count": 128,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "MAP"
