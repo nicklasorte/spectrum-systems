@@ -58,9 +58,12 @@ def _run_gate(
     result = subprocess.run(cmd, cwd=repo_root, env=env or os.environ.copy())
     gate_result = _load_gate_result(gate_result_path)
     gate_results[label] = gate_result
+    artifact_status = gate_result.get("status", "unknown")
     if result.returncode != 0:
-        status = gate_result.get("status", "unknown")
-        print(f"[pr_gate] {label} FAILED (exit={result.returncode}, status={status})", file=sys.stderr)
+        print(f"[pr_gate] {label} FAILED (exit={result.returncode}, status={artifact_status})", file=sys.stderr)
+        return False
+    if artifact_status in {"missing", "invalid_json"}:
+        print(f"[pr_gate] {label} FAILED — gate artifact {artifact_status} (exit=0 but no valid result)", file=sys.stderr)
         return False
     print(f"[pr_gate] {label} passed")
     return True
