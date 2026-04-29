@@ -19,6 +19,7 @@ Reason codes:
   rfx_simplification_duplicate_role     — two helpers share the same stated role
   rfx_simplification_empty_input        — no helpers supplied
   rfx_simplification_missing_name       — helper entry has no name field
+  rfx_simplification_malformed_row      — a helper row is not a dict
 """
 
 from __future__ import annotations
@@ -59,6 +60,9 @@ def assess_rfx_simplification(
         }
 
     for h in helpers:
+        if not isinstance(h, dict):
+            reason.append("rfx_simplification_malformed_row")
+            continue
         name = (h.get("name") or "").strip()
         if not name:
             reason.append("rfx_simplification_missing_name")

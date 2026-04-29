@@ -84,3 +84,17 @@ def test_signals_clean_pct():
 def test_artifact_type():
     result = check_rfx_authority_fixture_safety(fixtures=[_fx()])
     assert result["artifact_type"] == "rfx_authority_fixture_safety_result"
+
+
+def test_non_dict_fixture_does_not_raise():
+    # P1 fix: non-dict fixture rows must emit rfx_fixture_malformed_row, not AttributeError.
+    result = check_rfx_authority_fixture_safety(fixtures=["not-a-dict"])
+    assert "rfx_fixture_malformed_row" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_authority_fixture_safety_result"
+
+
+def test_mixed_fixtures_malformed_skipped():
+    # P1 fix: malformed rows are skipped; valid rows are still checked.
+    result = check_rfx_authority_fixture_safety(fixtures=[_fx(), "bad-row"])
+    assert "rfx_fixture_malformed_row" in result["reason_codes_emitted"]
+    assert result["signals"]["total_fixtures"] == 2

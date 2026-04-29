@@ -60,3 +60,17 @@ def test_signals_fold_candidates():
 def test_artifact_type():
     result = assess_rfx_simplification(helpers=[_helper()])
     assert result["artifact_type"] == "rfx_simplification_review_result"
+
+
+def test_non_dict_helper_does_not_raise():
+    # P1 fix: non-dict helper rows must emit rfx_simplification_malformed_row, not AttributeError.
+    result = assess_rfx_simplification(helpers=["not-a-dict"])
+    assert "rfx_simplification_malformed_row" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_simplification_review_result"
+
+
+def test_mixed_helpers_malformed_skipped():
+    # P1 fix: malformed rows are skipped; valid rows still appear in recommendations.
+    result = assess_rfx_simplification(helpers=[_helper(), "bad-row"])
+    assert "rfx_simplification_malformed_row" in result["reason_codes_emitted"]
+    assert len(result["recommendations"]) == 1

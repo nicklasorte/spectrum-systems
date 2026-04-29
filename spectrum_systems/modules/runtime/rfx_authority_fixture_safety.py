@@ -19,6 +19,7 @@ Reason codes:
   rfx_fixture_missing_id               — fixture record lacks an identifier
   rfx_fixture_empty_corpus             — no fixtures supplied
   rfx_fixture_dynamic_check_missing    — fixture claims dynamic construction but proof absent
+  rfx_fixture_malformed_row            — a fixture row is not a dict
 """
 
 from __future__ import annotations
@@ -76,6 +77,9 @@ def check_rfx_authority_fixture_safety(
         }
 
     for fx in fixtures:
+        if not isinstance(fx, dict):
+            reason.append("rfx_fixture_malformed_row")
+            continue
         fx_id = fx.get("id") or ""
         if not fx_id:
             reason.append("rfx_fixture_missing_id")
