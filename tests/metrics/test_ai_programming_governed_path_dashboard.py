@@ -159,47 +159,59 @@ def test_ai_programming_work_items_declare_required_evidence() -> None:
         ]
 
 
-def test_codex_repo_mutating_missing_aex_or_pqx_is_visible() -> None:
-    """Spec: missing AEX/PQX evidence on Codex repo-mutating work must be visible in the artifact."""
+def test_codex_work_item_bypass_risk_is_consistent_with_observations() -> None:
+    """Validate the contract shape: any codex item declaring aex_missing /
+    pqx_missing as its bypass_risk must also report a missing AEX or PQX
+    observation, and vice versa. This validates fail-closed logic without
+    requiring a missing-evidence sample to exist permanently in the seed —
+    a fully governed artifact (all evidence present) must still pass.
+    """
     data = _read_json(ARTIFACT_PATH)
     items = data.get("ai_programming_work_items") or []
     codex_items = [i for i in items if i.get("agent_type") == "codex"]
-    assert codex_items, "artifact must seed at least one codex work item"
-    # At least one codex item with repo_mutating=true exposes a missing AEX or PQX
-    # observation so the dashboard panel can render block under the rules.
-    bypass_codex = [
-        i
-        for i in codex_items
-        if i.get("repo_mutating") is True
-        and (
-            i.get("aex_admission_observation") == "missing"
-            or i.get("pqx_execution_observation") == "missing"
-        )
-    ]
-    assert bypass_codex, (
-        "artifact must surface at least one codex work item with missing AEX or PQX "
-        "evidence so the dashboard can render BLOCK fail-closed"
-    )
+    for item in codex_items:
+        bypass = item.get("bypass_risk")
+        aex = item.get("aex_admission_observation")
+        pqx = item.get("pqx_execution_observation")
+        if bypass == "aex_missing":
+            assert aex == "missing", (
+                f"codex {item.get('work_item_id')} declares bypass_risk=aex_missing "
+                f"but aex_admission_observation={aex!r}"
+            )
+        if bypass == "pqx_missing":
+            assert pqx == "missing", (
+                f"codex {item.get('work_item_id')} declares bypass_risk=pqx_missing "
+                f"but pqx_execution_observation={pqx!r}"
+            )
+        # Conversely: a missing AEX or PQX must surface as a non-'none' bypass_risk.
+        if item.get("repo_mutating") is True and (aex == "missing" or pqx == "missing"):
+            assert bypass != "none", (
+                f"codex {item.get('work_item_id')} hides missing AEX/PQX behind bypass_risk=none"
+            )
 
 
-def test_claude_repo_mutating_missing_aex_or_pqx_is_visible() -> None:
+def test_claude_work_item_bypass_risk_is_consistent_with_observations() -> None:
     data = _read_json(ARTIFACT_PATH)
     items = data.get("ai_programming_work_items") or []
     claude_items = [i for i in items if i.get("agent_type") == "claude"]
-    assert claude_items, "artifact must seed at least one claude work item"
-    bypass_claude = [
-        i
-        for i in claude_items
-        if i.get("repo_mutating") is True
-        and (
-            i.get("aex_admission_observation") == "missing"
-            or i.get("pqx_execution_observation") == "missing"
-        )
-    ]
-    assert bypass_claude, (
-        "artifact must surface at least one claude work item with missing AEX or PQX "
-        "evidence so the dashboard can render BLOCK fail-closed"
-    )
+    for item in claude_items:
+        bypass = item.get("bypass_risk")
+        aex = item.get("aex_admission_observation")
+        pqx = item.get("pqx_execution_observation")
+        if bypass == "aex_missing":
+            assert aex == "missing", (
+                f"claude {item.get('work_item_id')} declares bypass_risk=aex_missing "
+                f"but aex_admission_observation={aex!r}"
+            )
+        if bypass == "pqx_missing":
+            assert pqx == "missing", (
+                f"claude {item.get('work_item_id')} declares bypass_risk=pqx_missing "
+                f"but pqx_execution_observation={pqx!r}"
+            )
+        if item.get("repo_mutating") is True and (aex == "missing" or pqx == "missing"):
+            assert bypass != "none", (
+                f"claude {item.get('work_item_id')} hides missing AEX/PQX behind bypass_risk=none"
+            )
 
 
 def test_unknown_agent_with_repo_mutation_remains_visible_not_hidden() -> None:

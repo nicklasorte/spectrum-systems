@@ -166,6 +166,13 @@ function isProofMissing(value: GovernancePresence): boolean {
   return value === 'missing' || value === 'unknown';
 }
 
+// Anything short of 'present' counts as incomplete evidence. After the
+// 'missing' branch returns 'block' the caller has only present/partial/unknown
+// to consider; both 'partial' and 'unknown' must downgrade the item to 'warn'.
+function isProofIncomplete(value: GovernancePresence): boolean {
+  return value !== 'present';
+}
+
 // Compute a status for a single work item using the AEX-PQX-DASH-01 rules.
 //
 // Rules (fail-closed):
@@ -205,8 +212,8 @@ export function computeWorkItemStatus(item: AiProgrammingWorkItem): GovernedPath
     return 'block';
   }
   if (
-    isProofMissing(item.aex_admission_observation) ||
-    isProofMissing(item.pqx_execution_observation)
+    isProofIncomplete(item.aex_admission_observation) ||
+    isProofIncomplete(item.pqx_execution_observation)
   ) {
     return 'warn';
   }

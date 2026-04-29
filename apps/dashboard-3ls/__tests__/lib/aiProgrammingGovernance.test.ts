@@ -128,6 +128,28 @@ describe('aiProgrammingGovernance — per-item status', () => {
     expect(computeWorkItemStatus(item)).toBe('warn');
   });
 
+  it('codex with partial AEX and bypass_risk=none still renders warn (not pass)', () => {
+    // Regression: an item whose AEX evidence is only partial must not slip
+    // through to pass merely because bypass_risk happens to be 'none'.
+    const item = workItem({
+      agent_type: 'codex',
+      aex_admission_observation: 'partial',
+      pqx_execution_observation: 'present',
+      bypass_risk: 'none',
+    });
+    expect(computeWorkItemStatus(item)).toBe('warn');
+  });
+
+  it('claude with partial PQX and bypass_risk=none still renders warn (not pass)', () => {
+    const item = workItem({
+      agent_type: 'claude',
+      aex_admission_observation: 'present',
+      pqx_execution_observation: 'partial',
+      bypass_risk: 'none',
+    });
+    expect(computeWorkItemStatus(item)).toBe('warn');
+  });
+
   it('repo_mutating=unknown for a known agent renders warn', () => {
     const item = workItem({
       agent_type: 'codex',
