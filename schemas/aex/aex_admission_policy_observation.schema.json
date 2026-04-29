@@ -158,10 +158,17 @@
     },
     "non_authority_assertions": {
       "type": "array",
-      "minItems": 5,
+      "uniqueItems": true,
       "items": {
         "type": "string"
-      }
+      },
+      "allOf": [
+        {"contains": {"const": "aex_emits_enforcement_input_only"}, "minContains": 1},
+        {"contains": {"const": "aex_emits_promotion_input_only"}, "minContains": 1},
+        {"contains": {"const": "aex_emits_certification_input_only"}, "minContains": 1},
+        {"contains": {"const": "aex_emits_control_input_only"}, "minContains": 1},
+        {"contains": {"const": "aex_emits_readiness_observation_only"}, "minContains": 1}
+      ]
     }
   }
 }
