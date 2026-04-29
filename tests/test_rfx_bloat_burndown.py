@@ -70,3 +70,17 @@ def test_mixed_justified_and_unjustified():
 def test_artifact_type():
     result = build_rfx_bloat_burndown_report(helpers=[_helper()])
     assert result["artifact_type"] == "rfx_bloat_burndown_report"
+
+
+def test_non_dict_helper_does_not_raise():
+    # P1 fix: non-dict helper rows must emit rfx_bloat_malformed_helper, not AttributeError.
+    result = build_rfx_bloat_burndown_report(helpers=["not-a-dict"])
+    assert "rfx_bloat_malformed_helper" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_bloat_burndown_report"
+
+
+def test_mixed_helpers_malformed_skipped():
+    # P1 fix: malformed rows are skipped; valid rows still appear in report.
+    result = build_rfx_bloat_burndown_report(helpers=[_helper(), "bad-row"])
+    assert "rfx_bloat_malformed_helper" in result["reason_codes_emitted"]
+    assert result["signals"]["justified_count"] == 1

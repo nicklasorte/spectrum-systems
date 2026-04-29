@@ -90,3 +90,17 @@ def test_reason_codes_string_flagged():
         records=[{"status": "ready", "reason_codes_emitted": "not-a-list", "proof_ref": "p-1"}]
     )
     assert "rfx_operator_surface_missing_reason" in result["reason_codes_emitted"]
+
+
+def test_non_dict_record_does_not_raise():
+    # P1 fix: non-dict record rows must emit rfx_operator_surface_malformed_record, not AttributeError.
+    result = validate_rfx_operator_surface(records=["not-a-dict"])
+    assert "rfx_operator_surface_malformed_record" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_operator_surface_contract_result"
+
+
+def test_mixed_records_malformed_skipped():
+    # P1 fix: malformed rows are skipped; valid rows still pass validation.
+    result = validate_rfx_operator_surface(records=[_compact(), "bad-row"])
+    assert "rfx_operator_surface_malformed_record" in result["reason_codes_emitted"]
+    assert result["signals"]["valid_record_count"] == 1

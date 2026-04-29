@@ -22,6 +22,7 @@ Reason codes:
   rfx_bloat_superseded               — helper is explicitly marked as superseded
   rfx_bloat_empty_input              — no helper records supplied
   rfx_bloat_missing_name             — helper record has no name
+  rfx_bloat_malformed_helper         — a helper row is not a dict
 """
 
 from __future__ import annotations
@@ -61,7 +62,12 @@ def build_rfx_bloat_burndown_report(
             },
         }
 
+    valid_helpers: list[dict] = []
     for h in helpers:
+        if not isinstance(h, dict):
+            reason.append("rfx_bloat_malformed_helper")
+            continue
+        valid_helpers.append(h)
         name = (h.get("name") or "").strip()
         if not name:
             reason.append("rfx_bloat_missing_name")
@@ -102,7 +108,7 @@ def build_rfx_bloat_burndown_report(
             })
 
     justified_count = sum(
-        1 for h in helpers
+        1 for h in valid_helpers
         if (h.get("name") or "").strip()
         and (h.get("justification") or "").strip()
         and not (h.get("superseded_by") or "").strip()

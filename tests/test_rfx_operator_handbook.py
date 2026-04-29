@@ -78,3 +78,17 @@ def test_blank_code_emits_missing_code():
 def test_blank_code_not_added_to_entries():
     result = build_rfx_operator_handbook(reason_code_entries=[_entry(code="")])
     assert result["entries"] == []
+
+
+def test_non_dict_entry_does_not_raise():
+    # P1 fix: non-dict entry rows must emit rfx_handbook_malformed_entry, not AttributeError.
+    result = build_rfx_operator_handbook(reason_code_entries=["not-a-dict"])
+    assert "rfx_handbook_malformed_entry" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_operator_handbook"
+
+
+def test_mixed_entries_malformed_skipped():
+    # P1 fix: malformed rows are skipped; valid rows still appear in handbook.
+    result = build_rfx_operator_handbook(reason_code_entries=[_entry(), "bad-row"])
+    assert "rfx_handbook_malformed_entry" in result["reason_codes_emitted"]
+    assert len(result["entries"]) == 1

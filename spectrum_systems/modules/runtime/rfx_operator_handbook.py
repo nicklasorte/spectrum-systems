@@ -20,6 +20,7 @@ Reason codes:
   rfx_handbook_empty               — no reason code entries supplied
   rfx_handbook_duplicate_code      — two entries share the same reason code
   rfx_handbook_missing_code        — entry has a blank or missing reason code field
+  rfx_handbook_malformed_entry     — a reason code entry row is not a dict
 """
 
 from __future__ import annotations
@@ -59,6 +60,9 @@ def build_rfx_operator_handbook(
         }
 
     for entry in reason_code_entries:
+        if not isinstance(entry, dict):
+            reason.append("rfx_handbook_malformed_entry")
+            continue
         code = (entry.get("code") or "").strip()
         if not code:
             reason.append("rfx_handbook_missing_code")

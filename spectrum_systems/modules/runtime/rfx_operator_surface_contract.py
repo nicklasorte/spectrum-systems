@@ -21,6 +21,7 @@ Reason codes:
   rfx_operator_surface_raw_artifact_leak — record exposes raw internal artifact payload
   rfx_operator_surface_missing_proof_ref — record lacks a proof reference
   rfx_operator_surface_empty             — no records supplied
+  rfx_operator_surface_malformed_record  — a record row is not a dict
 """
 
 from __future__ import annotations
@@ -71,6 +72,9 @@ def validate_rfx_operator_surface(
     artifact_wall_count = 0
 
     for rec in records:
+        if not isinstance(rec, dict):
+            reason.append("rfx_operator_surface_malformed_record")
+            continue
         rec_ok = True
         if not rec.get("status"):
             reason.append("rfx_operator_surface_missing_status")
