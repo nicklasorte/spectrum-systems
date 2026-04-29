@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems/contracts/authority_repair_candidate.schema.json",
+  "title": "authority_repair_candidate",
+  "description": "FRE-produced bounded repair candidate from an authority_preflight_failure_packet. Contains rename/replace patches only. Never introduces new ownership. CDE must authorize before PQX applies.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "candidate_id",
+    "trace_id",
+    "source_packet_id",
+    "repair_type",
+    "patches",
+    "safe_to_apply",
+    "emitted_at"
+  ],
+  "properties": {
+    "artifact_type": { "const": "authority_repair_candidate" },
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "candidate_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string" },
+    "source_packet_id": { "type": "string", "minLength": 1 },
+    "repair_type": {
+      "type": "string",
+      "enum": ["rename", "vocabulary_correction"]
+    },
+    "patches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "original_symbol", "replacement_symbol", "patch_type"],
+        "properties": {
+          "file": { "type": "string" },
+          "line": { "type": ["integer", "null"] },
+          "original_symbol": { "type": "string" },
+          "replacement_symbol": { "type": "string" },
+          "patch_type": {
+            "type": "string",
+            "enum": ["rename", "vocabulary_correction"]
+          },
+          "rationale": { "type": "string" },
+          "canonical_owner": { "type": "string" }
+        }
+      }
+    },
+    "safe_to_apply": { "type": "boolean" },
+    "blocked_reason": { "type": ["string", "null"] },
+    "non_authority_assertions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "emitted_at": { "type": "string", "format": "date-time" }
+  }
+}
