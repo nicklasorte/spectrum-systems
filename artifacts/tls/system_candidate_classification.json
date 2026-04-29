@@ -44,7 +44,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 74,
+      "evidence_count": 77,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -68,7 +68,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 100,
+      "evidence_count": 103,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -148,7 +148,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 94,
+      "evidence_count": 97,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -156,7 +156,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 59,
+      "evidence_count": 62,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -252,7 +252,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 57,
+      "evidence_count": 60,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -260,7 +260,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 44,
+      "evidence_count": 47,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -276,7 +276,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 66,
+      "evidence_count": 69,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -324,7 +324,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 40,
+      "evidence_count": 43,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",
@@ -356,7 +356,7 @@
     },
     {
       "classification": "active_system",
-      "evidence_count": 60,
+      "evidence_count": 63,
       "in_registry": true,
       "reason": "active_in_registry_with_repo_evidence",
       "registry_class": "active_registry",

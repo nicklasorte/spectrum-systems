@@ -147,6 +147,7 @@
     {
       "evidence": {
         "artifacts": [
+          "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_dashboard_readiness_packet.json",
           "artifacts/tls/d3l_data_inventory_redteam_report.json",
           "artifacts/tls/d3l_master_readiness_packet.json",
@@ -161,6 +162,8 @@
           "artifacts/tls/d3l_registry_graph_contract.json",
           "artifacts/tls/ranking_adjustment_log.json",
           "artifacts/tls/system_candidate_classification.json",
+          "artifacts/tls/system_dependency_priority_report.json",
+          "artifacts/tls/system_evidence_attachment.json",
           "artifacts/tls/system_graph_integration_report.json",
           "artifacts/tls/system_registry_dependency_graph.json",
           "artifacts/tls/system_trust_gap_report.json",
@@ -234,7 +237,7 @@
           "tests/test_system_registry_boundary_enforcement.py"
         ]
       },
-      "evidence_count": 74,
+      "evidence_count": 77,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CAP"
@@ -388,6 +391,7 @@
           "artifacts/dependency-graph-summary.md",
           "artifacts/policy-engine-report.json",
           "artifacts/policy-engine-summary.md",
+          "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
           "artifacts/tls/d3l_mvp_graph.json",
           "artifacts/tls/d3l_ranking_report.json",
@@ -395,6 +399,8 @@
           "artifacts/tls/d3l_registry_graph_contract.json",
           "artifacts/tls/ranking_adjustment_log.json",
           "artifacts/tls/system_candidate_classification.json",
+          "artifacts/tls/system_dependency_priority_report.json",
+          "artifacts/tls/system_evidence_attachment.json",
           "artifacts/tls/system_graph_integration_report.json",
           "artifacts/tls/system_registry_dependency_graph.json",
           "artifacts/tls/system_trust_gap_report.json",
@@ -499,7 +505,7 @@
           "tests/test_context_selector.py"
         ]
       },
-      "evidence_count": 100,
+      "evidence_count": 103,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "CTX"
@@ -906,6 +912,7 @@
           "artifacts/blf_01_baseline_failure_fix/delivery_report.json",
           "artifacts/hop_trial_run/run_a_summary.json",
           "artifacts/hop_trial_run/run_b_summary.json",
+          "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_dashboard_readiness_packet.json",
           "artifacts/tls/d3l_data_dashboard_inventory.json",
           "artifacts/tls/d3l_data_inventory_redteam_report.json",
@@ -921,12 +928,11 @@
           "artifacts/tls/d3l_registry_graph_contract.json",
           "artifacts/tls/ranking_adjustment_log.json",
           "artifacts/tls/system_candidate_classification.json",
+          "artifacts/tls/system_dependency_priority_report.json",
+          "artifacts/tls/system_evidence_attachment.json",
           "artifacts/tls/system_graph_integration_report.json",
           "artifacts/tls/system_registry_dependency_graph.json",
-          "artifacts/tls/system_trust_gap_report.json",
-          "artifacts/tls/tls_action_plan.json",
-          "artifacts/tls/tls_control_input_artifact.json",
-          "artifacts/tls/tls_ranking_review_report.json"
+          "artifacts/tls/system_trust_gap_report.json"
         ],
         "docs": [
           "docs/architecture/system_registry.md",
@@ -1034,6 +1040,7 @@
           "artifacts/policy-engine-report.json",
           "artifacts/policy-engine-summary.md",
           "artifacts/rfx_super_01_delivery_report.json",
+          "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
           "artifacts/tls/d3l_mvp_graph.json",
           "artifacts/tls/d3l_ranking_report.json",
@@ -1041,6 +1048,8 @@
           "artifacts/tls/d3l_registry_graph_contract.json",
           "artifacts/tls/ranking_adjustment_log.json",
           "artifacts/tls/system_candidate_classification.json",
+          "artifacts/tls/system_dependency_priority_report.json",
+          "artifacts/tls/system_evidence_attachment.json",
           "artifacts/tls/system_graph_integration_report.json",
           "artifacts/tls/system_registry_dependency_graph.json",
           "artifacts/tls/system_trust_gap_report.json",
@@ -1137,7 +1146,7 @@
           "tests/test_wpg_precedent.py"
         ]
       },
-      "evidence_count": 94,
+      "evidence_count": 97,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "JDX"
@@ -1149,6 +1158,7 @@
           "artifacts/policy-engine-report.json",
           "artifacts/policy-engine-summary.md",
           "artifacts/rfx_super_01_delivery_report.json",
+          "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
           "artifacts/tls/d3l_mvp_graph.json",
           "artifacts/tls/d3l_ranking_report.json",
@@ -1156,6 +1166,8 @@
           "artifacts/tls/d3l_registry_graph_contract.json",
           "artifacts/tls/ranking_adjustment_log.json",
           "artifacts/tls/system_candidate_classification.json",
+          "artifacts/tls/system_dependency_priority_report.json",
+          "artifacts/tls/system_evidence_attachment.json",
           "artifacts/tls/system_graph_integration_report.json",
           "artifacts/tls/system_registry_dependency_graph.json",
           "artifacts/tls/system_trust_gap_report.json",
@@ -1217,7 +1229,7 @@
           "tests/tls_dependency_graph/conftest.py"
         ]
       },
-      "evidence_count": 59,
+      "evidence_count": 62,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "JSX"
@@ -1245,11 +1257,11 @@
           "artifacts/dashboard_seed/minimal_loop_snapshot.json",
           "artifacts/rfx_04_loop_07_08/delivery_report.json",
           "artifacts/rfx_super_01_delivery_report.json",
+          "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
           "artifacts/tls/d3l_ranking_report.json",
           "artifacts/tls/d3l_registry_contract.json",
-          "artifacts/tls/d3l_registry_graph_contract.json",
-          "artifacts/tls/ranking_adjustment_log.json"
+          "artifacts/tls/d3l_registry_graph_contract.json"
         ],
         "docs": [
           "docs/architecture/3ls_measurement_layer.md",
@@ -1519,12 +1531,12 @@
           "artifacts/rdx_runs/REAL-WORLD-EXECUTION-CYCLE-02-artifact-trace.json",
           "artifacts/rfx_04_loop_07_08/delivery_report.json",
           "artifacts/rfx_super_01_delivery_report.json",
+          "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_dashboard_readiness_packet.json",
           "artifacts/tls/d3l_data_inventory_redteam_report.json",
           "artifacts/tls/d3l_master_readiness_packet.json",
           "artifacts/tls/d3l_maturity_report.json",
-          "artifacts/tls/d3l_mvp_graph.json",
-          "artifacts/tls/d3l_priority_freshness_fix_log.json"
+          "artifacts/tls/d3l_mvp_graph.json"
         ],
         "docs": [
           "docs/architecture/3ls_measurement_layer.md",
@@ -1655,9 +1667,9 @@
           "artifacts/dashboard_metrics/stale_candidate_pressure_record.json",
           "artifacts/ops_master_01/policy_change_outcome_tracker.json",
           "artifacts/rfx_super_01_delivery_report.json",
+          "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
-          "artifacts/tls/d3l_ranking_report.json",
-          "artifacts/tls/d3l_registry_contract.json"
+          "artifacts/tls/d3l_ranking_report.json"
         ],
         "docs": [
           "docs/architecture/system_inventory_audit.md",
@@ -1903,12 +1915,15 @@
       "evidence": {
         "artifacts": [
           "artifacts/rfx_super_01_delivery_report.json",
+          "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
           "artifacts/tls/d3l_ranking_report.json",
           "artifacts/tls/d3l_registry_contract.json",
           "artifacts/tls/d3l_registry_graph_contract.json",
           "artifacts/tls/ranking_adjustment_log.json",
           "artifacts/tls/system_candidate_classification.json",
+          "artifacts/tls/system_dependency_priority_report.json",
+          "artifacts/tls/system_evidence_attachment.json",
           "artifacts/tls/system_graph_integration_report.json",
           "artifacts/tls/system_registry_dependency_graph.json",
           "artifacts/tls/system_trust_gap_report.json",
@@ -1972,7 +1987,7 @@
           "tests/test_rfx_route_guard.py"
         ]
       },
-      "evidence_count": 57,
+      "evidence_count": 60,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRA"
@@ -1980,6 +1995,7 @@
     {
       "evidence": {
         "artifacts": [
+          "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_maturity_report.json",
           "artifacts/tls/d3l_mvp_graph.json",
           "artifacts/tls/d3l_ranking_report.json",
@@ -1987,6 +2003,8 @@
           "artifacts/tls/d3l_registry_graph_contract.json",
           "artifacts/tls/ranking_adjustment_log.json",
           "artifacts/tls/system_candidate_classification.json",
+          "artifacts/tls/system_dependency_priority_report.json",
+          "artifacts/tls/system_evidence_attachment.json",
           "artifacts/tls/system_graph_integration_report.json",
           "artifacts/tls/system_registry_dependency_graph.json",
           "artifacts/tls/system_trust_gap_report.json",
@@ -2037,7 +2055,7 @@
           "tests/test_system_registry_boundary_enforcement.py"
         ]
       },
-      "evidence_count": 44,
+      "evidence_count": 47,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRM"
@@ -2047,6 +2065,7 @@
         "artifacts": [
           "artifacts/rax_redteam_report.json",
           "artifacts/roadmap_contracts/rax_redteam_report.json",
+          "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_dashboard_readiness_packet.json",
           "artifacts/tls/d3l_data_inventory_redteam_report.json",
           "artifacts/tls/d3l_master_readiness_packet.json",
@@ -2061,6 +2080,8 @@
           "artifacts/tls/d3l_registry_graph_contract.json",
           "artifacts/tls/ranking_adjustment_log.json",
           "artifacts/tls/system_candidate_classification.json",
+          "artifacts/tls/system_dependency_priority_report.json",
+          "artifacts/tls/system_evidence_attachment.json",
           "artifacts/tls/system_graph_integration_report.json",
           "artifacts/tls/system_registry_dependency_graph.json",
           "artifacts/tls/system_trust_gap_report.json",
@@ -2124,7 +2145,7 @@
           "tests/test_run_rax_operational_gate_cli.py"
         ]
       },
-      "evidence_count": 66,
+      "evidence_count": 69,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "RAX"
@@ -2391,6 +2412,7 @@
     {
       "evidence": {
         "artifacts": [
+          "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_dashboard_readiness_packet.json",
           "artifacts/tls/d3l_data_inventory_redteam_report.json",
           "artifacts/tls/d3l_master_readiness_packet.json",
@@ -2404,6 +2426,8 @@
           "artifacts/tls/d3l_registry_graph_contract.json",
           "artifacts/tls/ranking_adjustment_log.json",
           "artifacts/tls/system_candidate_classification.json",
+          "artifacts/tls/system_dependency_priority_report.json",
+          "artifacts/tls/system_evidence_attachment.json",
           "artifacts/tls/system_graph_integration_report.json",
           "artifacts/tls/system_registry_dependency_graph.json",
           "artifacts/tls/system_trust_gap_report.json",
@@ -2444,7 +2468,7 @@
           "tests/test_rsm_runtime.py"
         ]
       },
-      "evidence_count": 40,
+      "evidence_count": 43,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "RSM"
@@ -2452,6 +2476,7 @@
     {
       "evidence": {
         "artifacts": [
+          "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_dashboard_readiness_packet.json",
           "artifacts/tls/d3l_data_inventory_redteam_report.json",
           "artifacts/tls/d3l_master_readiness_packet.json",
@@ -2465,6 +2490,8 @@
           "artifacts/tls/d3l_registry_graph_contract.json",
           "artifacts/tls/ranking_adjustment_log.json",
           "artifacts/tls/system_candidate_classification.json",
+          "artifacts/tls/system_dependency_priority_report.json",
+          "artifacts/tls/system_evidence_attachment.json",
           "artifacts/tls/system_graph_integration_report.json",
           "artifacts/tls/system_registry_dependency_graph.json",
           "artifacts/tls/system_trust_gap_report.json",
@@ -2526,7 +2553,7 @@
           "tests/test_working_paper_generator.py"
         ]
       },
-      "evidence_count": 60,
+      "evidence_count": 63,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "SEC"
@@ -2703,12 +2730,12 @@
           "artifacts/dashboard_seed/slo_status_record.json",
           "artifacts/rfx_04_loop_07_08/delivery_report.json",
           "artifacts/rfx_super_01_delivery_report.json",
+          "artifacts/system_dependency_priority_report.json",
           "artifacts/tls/d3l_dashboard_readiness_packet.json",
           "artifacts/tls/d3l_data_inventory_redteam_report.json",
           "artifacts/tls/d3l_master_readiness_packet.json",
           "artifacts/tls/d3l_maturity_report.json",
-          "artifacts/tls/d3l_mvp_graph.json",
-          "artifacts/tls/d3l_priority_freshness_fix_log.json"
+          "artifacts/tls/d3l_mvp_graph.json"
         ],
         "docs": [
           "docs/2026-03-23-bas-policy-versioning-review.md",
@@ -2856,6 +2883,8 @@
           "docs/architecture/system_registry_reduction_decision.md",
           "docs/governance-reports/contract-compliance-report.md",
           "docs/governance-reports/contract-enforcement-report.md",
+          "docs/governance-reports/ecosystem-dashboard.md",
+          "docs/governance-reports/ecosystem-health-report.md",
           "docs/governance/prompt_contract.md",
           "docs/governance/strategy_control_doc.md",
           "docs/governance/three_letter_system_policy.json",
@@ -2867,9 +2896,7 @@
           "docs/review-actions/3LS_authority_firewall_fix_plan.md",
           "docs/review-actions/BATCH-GOV-B-DELIVERY-REPORT-2026-04-09.md",
           "docs/review-actions/H01B_fix_plan.md",
-          "docs/review-actions/H01_fix_plan.md",
-          "docs/review-actions/PLAN-AEX-001-2026-04-12.md",
-          "docs/review-actions/PLAN-AIG-001-2026-04-15.md"
+          "docs/review-actions/H01_fix_plan.md"
         ],
         "modules": [
           "spectrum_systems/aex/classifier.py",
