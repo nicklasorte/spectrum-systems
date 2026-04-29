@@ -94,8 +94,9 @@ def generate_rfx_repair_prompt(
     if not validation_cmds:
         reason.append("rfx_repair_missing_validation_cmds")
 
-    proof_constraints = rfx_proof.get("guard_constraints") or []
-    caller_constraints = extra_constraints or []
+    raw_proof_constraints = rfx_proof.get("guard_constraints")
+    proof_constraints = list(raw_proof_constraints) if isinstance(raw_proof_constraints, list) else []
+    caller_constraints = list(extra_constraints) if isinstance(extra_constraints, list) else []
     all_constraints = _ALWAYS_CONSTRAINTS + [
         c for c in (proof_constraints + caller_constraints)
         if c not in _ALWAYS_CONSTRAINTS

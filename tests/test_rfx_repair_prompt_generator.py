@@ -91,3 +91,22 @@ def test_extra_constraints_merged():
 def test_artifact_type():
     result = generate_rfx_repair_prompt(rfx_proof=_proof())
     assert result["artifact_type"] == "rfx_repair_prompt"
+
+
+def test_non_list_guard_constraints_does_not_raise():
+    # P1 fix: non-list guard_constraints (e.g. a string) must not raise TypeError;
+    # it should be treated as absent and trigger rfx_repair_missing_guard_constraints.
+    result = generate_rfx_repair_prompt(
+        rfx_proof=_proof(guard_constraints="not-a-list")
+    )
+    assert "rfx_repair_missing_guard_constraints" in result["reason_codes_emitted"]
+    assert result["status"] == "incomplete"
+
+
+def test_non_list_extra_constraints_does_not_raise():
+    # P1 fix: non-list extra_constraints must not raise TypeError.
+    result = generate_rfx_repair_prompt(
+        rfx_proof=_proof(),
+        extra_constraints="not-a-list",
+    )
+    assert result["artifact_type"] == "rfx_repair_prompt"

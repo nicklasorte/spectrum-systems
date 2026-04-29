@@ -66,3 +66,15 @@ def test_handbook_entry_fields():
 def test_artifact_type():
     result = build_rfx_operator_handbook(reason_code_entries=[_entry()])
     assert result["artifact_type"] == "rfx_operator_handbook"
+
+
+def test_blank_code_emits_missing_code():
+    # P2 fix: blank code must emit rfx_handbook_missing_code instead of silently continuing.
+    result = build_rfx_operator_handbook(reason_code_entries=[_entry(code="")])
+    assert "rfx_handbook_missing_code" in result["reason_codes_emitted"]
+    assert result["status"] == "incomplete"
+
+
+def test_blank_code_not_added_to_entries():
+    result = build_rfx_operator_handbook(reason_code_entries=[_entry(code="")])
+    assert result["entries"] == []

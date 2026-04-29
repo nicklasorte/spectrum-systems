@@ -55,7 +55,6 @@ def build_rfx_golden_failure_corpus_v2(
     Each supplied case is validated for completeness and outcome stability.
     Returns a deterministic artifact; callers must not mutate the result.
     """
-    registered_case_ids = registered_case_ids or set()
     reason: list[str] = []
     validated: list[dict[str, Any]] = []
     seen_ids: set[str] = set()
@@ -71,7 +70,7 @@ def build_rfx_golden_failure_corpus_v2(
             reason.append("rfx_v2_duplicate_case_id")
         else:
             # Only check registration when registered_case_ids was explicitly supplied.
-            if registered_case_ids and case_id not in registered_case_ids:
+            if registered_case_ids is not None and case_id not in registered_case_ids:
                 reason.append("rfx_v2_case_unregistered")
         seen_ids.add(case_id)
 

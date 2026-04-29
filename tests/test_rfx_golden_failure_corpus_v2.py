@@ -108,3 +108,13 @@ def test_artifact_type_and_schema():
     result = build_rfx_golden_failure_corpus_v2(cases=[_case()])
     assert result["artifact_type"] == "rfx_golden_failure_corpus_v2"
     assert result["schema_version"] == "2.0.0"
+
+
+def test_explicit_empty_registered_set_enforces_membership():
+    # P2 fix: passing an explicit empty set must trigger rfx_v2_case_unregistered,
+    # not silently pass because an empty set is falsy.
+    result = build_rfx_golden_failure_corpus_v2(
+        cases=[_case(id="c1")],
+        registered_case_ids=set(),
+    )
+    assert "rfx_v2_case_unregistered" in result["reason_codes_emitted"]

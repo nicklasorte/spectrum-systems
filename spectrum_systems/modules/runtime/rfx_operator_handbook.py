@@ -19,6 +19,7 @@ Reason codes:
   rfx_handbook_missing_owner       — reason code entry lacks an owner context
   rfx_handbook_empty               — no reason code entries supplied
   rfx_handbook_duplicate_code      — two entries share the same reason code
+  rfx_handbook_missing_code        — entry has a blank or missing reason code field
 """
 
 from __future__ import annotations
@@ -60,6 +61,7 @@ def build_rfx_operator_handbook(
     for entry in reason_code_entries:
         code = (entry.get("code") or "").strip()
         if not code:
+            reason.append("rfx_handbook_missing_code")
             continue
 
         if code in seen_codes:
