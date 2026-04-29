@@ -38,6 +38,8 @@ _SCHEMA_FILES: Mapping[str, str] = {
     "hop_harness_eval_factory_record": "harness_eval_factory_record.schema.json",
     "hop_harness_trend_report": "harness_trend_report.schema.json",
     "hop_harness_control_advisory": "harness_control_advisory.schema.json",
+    "hop_harness_ai_failure_pattern": "harness_ai_failure_pattern.schema.json",
+    "hop_harness_system_improvement_proposal": "harness_system_improvement_proposal.schema.json",
 }
 
 
