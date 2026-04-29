@@ -73,6 +73,31 @@
       "required_test_targets": [
         "tests/metrics/test_met_04_18_contract_selection.py"
       ]
+    },
+    {
+      "path_prefix": "AGENTS.md",
+      "required_test_targets": [
+        "tests/test_system_registry_guard.py"
+      ]
+    },
+    {
+      "path_prefix": "CLAUDE.md",
+      "required_test_targets": [
+        "tests/test_system_registry_guard.py"
+      ]
+    },
+    {
+      "path_prefix": "docs/governance/pytest_pr_selection_integrity_policy.json",
+      "required_test_targets": [
+        "tests/test_pytest_selection_integrity.py",
+        "tests/test_governance_doc_preflight_selection_mapping.py"
+      ]
+    },
+    {
+      "path_prefix": "docs/governance/preflight_required_surface_test_overrides.json",
+      "required_test_targets": [
+        "tests/test_contract_preflight.py"
+      ]
     }
   ],
   "bounded_equivalence": [
