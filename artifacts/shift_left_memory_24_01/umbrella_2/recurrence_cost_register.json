@@ -2,7 +2,7 @@
   "artifact_type": "recurrence_cost_register",
   "slice_id": "SM-11",
   "owner": "PRG",
-  "generated_at": "2026-04-29T19:17:05Z",
+  "generated_at": "2026-04-29T19:45:19Z",
   "high_cost_classes": [
     {
       "class": "schema_patch",

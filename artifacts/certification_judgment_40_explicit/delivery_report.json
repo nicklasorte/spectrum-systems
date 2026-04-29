@@ -1,7 +1,7 @@
 {
   "artifact_type": "delivery_report",
   "batch_id": "CERTIFICATION-JUDGMENT-40-EXPLICIT",
-  "generated_at": "2026-04-29T19:17:05Z",
+  "generated_at": "2026-04-29T19:39:19Z",
   "required_outputs_delivered": true,
   "step_count": 40,
   "checkpoint_count": 10

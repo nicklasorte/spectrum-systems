@@ -2,7 +2,7 @@
   "artifact_type": "repair_latency_batch_artifact",
   "slice_id": "RL-17",
   "owner": "RDX",
-  "generated_at": "2026-04-29T19:16:30Z",
+  "generated_at": "2026-04-29T19:44:45Z",
   "roadmap_sequence": [
     "RL-B3",
     "RL-B4",

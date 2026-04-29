@@ -1,7 +1,7 @@
 {
   "artifact_type": "registry_alignment_result",
   "batch_id": "REPAIR-STANDARDIZATION-24-01",
-  "generated_at": "2026-04-29T19:16:30Z",
+  "generated_at": "2026-04-29T19:44:45Z",
   "authorities": [
     "README.md",
     "docs/architecture/system_registry.md",

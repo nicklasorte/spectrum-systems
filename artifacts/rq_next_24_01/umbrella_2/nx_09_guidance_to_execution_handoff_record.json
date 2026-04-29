@@ -1,7 +1,7 @@
 {
   "artifact_type": "guidance_to_execution_handoff_record",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-29T19:16:58Z",
+  "generated_at": "2026-04-29T19:45:13Z",
   "handoff_id": "HANDOFF-001",
   "recommendation_id": "REC-006",
   "chosen_action": "hold",

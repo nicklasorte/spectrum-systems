@@ -2,7 +2,7 @@
   "artifact_type": "repair_debt_batch_artifact",
   "slice_id": "RS-16",
   "owner": "RDX",
-  "generated_at": "2026-04-29T19:16:30Z",
+  "generated_at": "2026-04-29T19:44:45Z",
   "sequencing_only": true,
   "selected_batches": [
     "RS-B6",
