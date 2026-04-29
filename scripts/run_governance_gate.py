@@ -28,14 +28,14 @@ _STRATEGY_PATHS = frozenset([
 ])
 _REGISTRY_PATHS = frozenset([
     "docs/architecture/system_registry.md",
+    "docs/governance/",
     "contracts/schemas/",
     "evals/eval_case_library.json",
     "spectrum_systems/governance/",
 ])
 _REVIEW_PATHS = frozenset([
     "design-reviews/",
-    "docs/reviews/review-registry.json",
-    "docs/reviews/review-registry.schema.json",
+    "docs/reviews/",
 ])
 _ECOSYSTEM_PATHS = frozenset([
     "ecosystem/ecosystem-registry.json",
