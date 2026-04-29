@@ -51,7 +51,16 @@ def _canonical_hash(payload: Any) -> str:
 def load_fixture(fixture_path: Path) -> Mapping[str, Any]:
     if not fixture_path.is_file():
         raise AEXReplayError(f"replay fixture not found: {fixture_path}")
-    return json.loads(fixture_path.read_text(encoding="utf-8"))
+    try:
+        payload = json.loads(fixture_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise AEXReplayError(f"replay fixture is not valid JSON: {fixture_path}: {exc}") from exc
+    if not isinstance(payload, Mapping):
+        raise AEXReplayError(
+            f"replay fixture root must be a JSON object (mapping), got "
+            f"{type(payload).__name__}: {fixture_path}"
+        )
+    return payload
 
 
 def replay_admission(fixture: Mapping[str, Any]) -> AdmissionResult:
@@ -92,6 +101,12 @@ def build_admission_replay_record(
     created_at: str | None = None,
 ) -> dict[str, Any]:
     """Build a schema-valid admission_replay_record."""
+    if not isinstance(fixture, Mapping):
+        raise AEXReplayError(
+            f"replay fixture must be a Mapping (got {type(fixture).__name__}); "
+            "fail-closed: refusing to build admission_replay_record from a "
+            "non-mapping payload."
+        )
     request_id = str(fixture.get("request_id") or "unknown")
     trace_id = str(fixture.get("trace_id") or "unknown")
     run_id = f"run-{_hash16([request_id, trace_id, 'replay'])}"

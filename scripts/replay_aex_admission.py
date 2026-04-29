@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -58,15 +59,32 @@ def main(argv: list[str] | None = None) -> int:
         print(f"FAIL: {exc}", file=sys.stderr)
         return 1
 
-    out_dir = REPO_ROOT / "artifacts" / "aex"
+    out_dir = (REPO_ROOT / "artifacts" / "aex").resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = (
-        Path(args.out)
-        if args.out
-        else out_dir / f"aex_admission_replay_{record['request_id']}.json"
-    )
-    if not out_path.is_absolute():
-        out_path = (REPO_ROOT / out_path).resolve()
+    if args.out:
+        out_path = Path(args.out)
+        if not out_path.is_absolute():
+            out_path = (REPO_ROOT / out_path).resolve()
+        else:
+            out_path = out_path.resolve()
+    else:
+        # Sanitize request_id: only [A-Za-z0-9._-] survives; any other
+        # character (including path separators or NUL) is replaced with
+        # '_'. The result must be a single path segment. The final write
+        # target must remain rooted at artifacts/aex/.
+        raw_request_id = str(record["request_id"])
+        safe_request_id = re.sub(r"[^A-Za-z0-9._-]", "_", raw_request_id)
+        if not safe_request_id or safe_request_id in {".", ".."}:
+            safe_request_id = "unknown"
+        candidate = (out_dir / f"aex_admission_replay_{safe_request_id}.json").resolve()
+        if out_dir not in candidate.parents and candidate != out_dir:
+            print(
+                f"FAIL: replay output path escapes artifacts/aex (sanitized "
+                f"request_id={safe_request_id!r})",
+                file=sys.stderr,
+            )
+            return 1
+        out_path = candidate
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
