@@ -189,3 +189,27 @@ class TestDriftDetectorFailsOnMissingGateScript:
         (tmp_path / "scripts/run_pr_gate.py").unlink()
         rc, stdout, stderr = _run_detector(tmp_path)
         assert rc != 0, "Should fail when a canonical gate script is missing"
+
+
+class TestDriftDetectorFailsOnOrphanedScriptInvocation:
+    def test_fails_when_workflow_invokes_nonexistent_script(self, tmp_path: Path) -> None:
+        _setup_valid_repo(tmp_path)
+        wf = tmp_path / ".github/workflows/artifact-boundary.yml"
+        wf.write_text(
+            "name: test\non: push\njobs:\n  j:\n    runs-on: ubuntu-latest\n"
+            "    steps:\n      - run: python scripts/nonexistent_tool.py\n",
+            encoding="utf-8",
+        )
+        rc, stdout, stderr = _run_detector(tmp_path)
+        assert rc != 0, "Should fail when a workflow invokes a script that does not exist"
+
+    def test_passes_when_workflow_invokes_existing_script(self, tmp_path: Path) -> None:
+        _setup_valid_repo(tmp_path)
+        wf = tmp_path / ".github/workflows/artifact-boundary.yml"
+        wf.write_text(
+            "name: test\non: push\njobs:\n  j:\n    runs-on: ubuntu-latest\n"
+            "    steps:\n      - run: python scripts/run_contract_gate.py\n",
+            encoding="utf-8",
+        )
+        rc, stdout, stderr = _run_detector(tmp_path)
+        assert rc == 0, f"Should pass when invoked script exists. stderr={stderr}"

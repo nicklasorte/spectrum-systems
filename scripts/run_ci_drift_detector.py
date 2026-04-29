@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -62,6 +63,9 @@ _KNOWN_WORKFLOW_GATE_MAPPING = {
 }
 
 
+_WORKFLOW_SCRIPT_RE = re.compile(r'python\s+scripts/([\w.\-]+\.py)')
+
+
 def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -90,6 +94,28 @@ def check_workflow_gate_mapping(repo_root: Path) -> list[DriftFinding]:
                 str(yml.relative_to(repo_root)),
                 "error",
             ))
+    return findings
+
+
+def check_workflow_script_invocations(repo_root: Path) -> list[DriftFinding]:
+    """Flag any mapped workflow that invokes a python script that does not exist."""
+    findings: list[DriftFinding] = []
+    workflow_dir = repo_root / ".github/workflows"
+    if not workflow_dir.is_dir():
+        return findings
+    for yml in sorted({*workflow_dir.glob("*.yml"), *workflow_dir.glob("*.yaml")}):
+        if yml.name not in _KNOWN_WORKFLOW_GATE_MAPPING:
+            continue  # unmapped_workflow already reported by check_workflow_gate_mapping
+        content = yml.read_text(encoding="utf-8")
+        for match in _WORKFLOW_SCRIPT_RE.finditer(content):
+            script_rel = f"scripts/{match.group(1)}"
+            if not (repo_root / script_rel).is_file():
+                findings.append(DriftFinding(
+                    "orphaned_script_invocation",
+                    f"Workflow {yml.name!r} invokes {script_rel!r} which does not exist",
+                    str(yml.relative_to(repo_root)),
+                    "error",
+                ))
     return findings
 
 
@@ -215,6 +241,7 @@ def main() -> None:
     all_findings: list[DriftFinding] = []
 
     all_findings += check_workflow_gate_mapping(repo_root)
+    all_findings += check_workflow_script_invocations(repo_root)
     all_findings += check_gate_result_schemas(repo_root)
     all_findings += check_test_gate_mapping(repo_root)
     all_findings += check_canonical_gate_scripts(repo_root)
