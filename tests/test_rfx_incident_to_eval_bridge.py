@@ -102,3 +102,19 @@ def test_numeric_id_field_does_not_raise():
         incidents=[{"id": 99, "classification": "auth_drift", "trace_ref": "t-1"}]
     )
     assert result["artifact_type"] == "rfx_incident_to_eval_bridge"
+
+
+def test_non_dict_incident_does_not_raise():
+    # P1 fix: non-dict incident rows must emit rfx_bridge_malformed_incident, not AttributeError.
+    result = build_rfx_incident_to_eval_bridge(incidents=["not-a-dict"])
+    assert "rfx_bridge_malformed_incident" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_incident_to_eval_bridge"
+
+
+def test_mixed_incidents_malformed_skipped():
+    # P1 fix: malformed rows are skipped; valid rows still produce candidates.
+    result = build_rfx_incident_to_eval_bridge(
+        incidents=[_incident(), "bad-row"],
+    )
+    assert "rfx_bridge_malformed_incident" in result["reason_codes_emitted"]
+    assert len(result["eval_candidates"]) == 1

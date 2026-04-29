@@ -118,3 +118,17 @@ def test_explicit_empty_registered_set_enforces_membership():
         registered_case_ids=set(),
     )
     assert "rfx_v2_case_unregistered" in result["reason_codes_emitted"]
+
+
+def test_non_dict_case_does_not_raise():
+    # P1 fix: non-dict case rows must emit rfx_v2_case_malformed_row, not AttributeError.
+    result = build_rfx_golden_failure_corpus_v2(cases=["not-a-dict"])
+    assert "rfx_v2_case_malformed_row" in result["reason_codes_emitted"]
+    assert result["artifact_type"] == "rfx_golden_failure_corpus_v2"
+
+
+def test_mixed_cases_malformed_skipped():
+    # P1 fix: malformed rows are skipped; valid rows still appear in corpus.
+    result = build_rfx_golden_failure_corpus_v2(cases=[_case(), "bad-row"])
+    assert "rfx_v2_case_malformed_row" in result["reason_codes_emitted"]
+    assert len(result["cases"]) == 1

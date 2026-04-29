@@ -23,6 +23,7 @@ Reason codes:
   rfx_v2_corpus_empty             — no cases supplied
   rfx_v2_duplicate_case_id        — two cases share the same ID
   rfx_v2_case_unregistered        — case ID absent from registered_case_ids when the set is supplied
+  rfx_v2_case_malformed_row       — a case row is not a dict
 """
 
 from __future__ import annotations
@@ -63,6 +64,9 @@ def build_rfx_golden_failure_corpus_v2(
         reason.append("rfx_v2_corpus_empty")
 
     for c in cases:
+        if not isinstance(c, dict):
+            reason.append("rfx_v2_case_malformed_row")
+            continue
         case_id = c.get("id") or ""
         if not case_id:
             reason.append("rfx_v2_case_missing_id")
@@ -105,14 +109,14 @@ def build_rfx_golden_failure_corpus_v2(
         "signals": {
             "total_cases": len(cases),
             "stable_cases": sum(
-                1 for c in cases if c.get("actual") == c.get("expected")
+                1 for c in validated if c.get("actual") == c.get("expected")
             ),
             "category_coverage": len(
-                {c.get("category") for c in cases if c.get("category")}
+                {c.get("category") for c in validated if c.get("category")}
             ),
             "historical_category_coverage_pct": (
                 100.0
-                * len({c.get("category") for c in cases if c.get("category")} & KNOWN_CATEGORIES)
+                * len({c.get("category") for c in validated if c.get("category")} & KNOWN_CATEGORIES)
                 / len(KNOWN_CATEGORIES)
             ),
         },

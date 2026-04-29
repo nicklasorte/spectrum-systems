@@ -24,6 +24,7 @@ Reason codes:
   rfx_bridge_missing_rationale       — eval skip declared but no rationale supplied
   rfx_bridge_missing_trace_ref       — incident lacks a trace/lineage reference
   rfx_bridge_empty                   — no incident records supplied
+  rfx_bridge_malformed_incident      — incident row is not a dict
 """
 
 from __future__ import annotations
@@ -71,6 +72,9 @@ def build_rfx_incident_to_eval_bridge(
 
     skip_with_rationale = 0
     for inc in incidents:
+        if not isinstance(inc, dict):
+            reason.append("rfx_bridge_malformed_incident")
+            continue
         incident_id = str(inc.get("incident_id") or inc.get("id") or "").strip()
         if not incident_id:
             reason.append("rfx_bridge_missing_incident_id")

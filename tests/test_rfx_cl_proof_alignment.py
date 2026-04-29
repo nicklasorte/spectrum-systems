@@ -83,3 +83,21 @@ def test_artifact_type():
     rfx_proof = {"status": "ok", "reason_codes_emitted": [], "trace_ref": "t", "signals": {}}
     result = check_rfx_cl_proof_alignment(rfx_proof=rfx_proof, cl_proof_schema=_CL_SCHEMA)
     assert result["artifact_type"] == "rfx_cl_proof_alignment_result"
+
+
+def test_unknown_schema_type_flagged():
+    # P2 fix: unknown type name (e.g. typo "string") must emit rfx_cl_proof_unknown_schema_type
+    # instead of silently skipping the type check and reporting aligned.
+    rfx_proof = {"status": "ok", "reason_codes_emitted": [], "trace_ref": "t", "signals": {}}
+    schema_with_typo = {**_CL_SCHEMA, "status": "string"}  # "string" is not in _TYPE_MAP
+    result = check_rfx_cl_proof_alignment(rfx_proof=rfx_proof, cl_proof_schema=schema_with_typo)
+    assert "rfx_cl_proof_unknown_schema_type" in result["reason_codes_emitted"]
+    assert result["status"] == "misaligned"
+
+
+def test_unknown_schema_type_not_silently_aligned():
+    # P2 fix: a field with an unknown type label must not pass as aligned.
+    rfx_proof = {"status": "ok", "reason_codes_emitted": [], "trace_ref": "t", "signals": {}}
+    schema_with_typo = {**_CL_SCHEMA, "status": "string"}
+    result = check_rfx_cl_proof_alignment(rfx_proof=rfx_proof, cl_proof_schema=schema_with_typo)
+    assert "status" in result["mismatched_fields"]

@@ -20,6 +20,7 @@ Reason codes:
   rfx_cl_proof_empty_rfx            — RFX proof payload is empty or absent
   rfx_cl_proof_empty_cl             — CL proof schema is empty or absent
   rfx_cl_proof_extra_authority_field — RFX proof contains an authority-claiming field not in CL
+  rfx_cl_proof_unknown_schema_type  — CL schema specifies an unrecognized type name
 """
 
 from __future__ import annotations
@@ -92,7 +93,10 @@ def check_rfx_cl_proof_alignment(
             present_count += 1
             if expected_type_name != "any":
                 expected_type = _TYPE_MAP.get(expected_type_name)
-                if expected_type and (
+                if expected_type is None:
+                    reason.append("rfx_cl_proof_unknown_schema_type")
+                    mismatched_fields.append(field)
+                elif (
                     not isinstance(rfx_proof[field], expected_type)
                     or (expected_type is int and isinstance(rfx_proof[field], bool))
                 ):
