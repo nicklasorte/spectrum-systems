@@ -138,6 +138,8 @@ def generate_eval_candidate_registry(
 
     Returns the full ``eval_candidate_registry`` artifact.
     """
+    if not trace_id or not isinstance(trace_id, str):
+        raise FailureEvalCandidateGeneratorError("trace_id must be a non-empty string")
     if not isinstance(failures, list):
         raise FailureEvalCandidateGeneratorError("failures must be a list")
 

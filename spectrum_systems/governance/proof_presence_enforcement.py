@@ -150,7 +150,9 @@ def _validate_core_loop_alignment_record(proof: dict[str, Any]) -> dict[str, Any
 def _validate_rfx_loop_proof(proof: dict[str, Any]) -> dict[str, Any]:
     """Validate an rfx_loop_proof as proof presence evidence."""
     failure_reasons: list[str] = []
-    stage_map = proof.get("stage_map") or {}
+    stage_map = proof.get("stage_map")
+    if not isinstance(stage_map, dict):
+        stage_map = {}
     stage_count = len([v for v in stage_map.values() if v and v != "Unknown"])
     transition_count = max(0, stage_count - 1)
 

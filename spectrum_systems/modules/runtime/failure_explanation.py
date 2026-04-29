@@ -82,7 +82,7 @@ def _infer_stage_from_artifact_type(artifact_type: str) -> str:
         return "FRE"
     if any(k in low for k in ["replay"]):
         return "REP"
-    if any(k in low for k in ["lineage", "lin"]):
+    if any(k in low for k in ["lineage", "lin_record", "lin_result", "lin_artifact"]):
         return "LIN"
     if any(k in low for k in ["proof_presence", "governance", "gov", "certification"]):
         return "GOV"
