@@ -85,17 +85,59 @@ describe('MET-FULL-ROADMAP — /api/intelligence cockpit blocks', () => {
     expect(intelligenceSrc).toContain('block reported as unknown');
   });
 
-  it('met_registry_status declares NONE authority', () => {
-    expect(intelligenceSrc).toContain("authority: 'NONE'");
+  it('met_registry_status is parsed from system_registry.md (no hard-coded values)', () => {
+    expect(intelligenceSrc).toContain('parseMetRegistryStatus');
+    expect(intelligenceSrc).toContain('docs/architecture/system_registry.md');
+    expect(intelligenceSrc).toMatch(/readRegistryFile/);
+    // Block must not hard-code authority. Construction comes from a parser.
+    expect(intelligenceSrc).not.toMatch(
+      /const metRegistryStatusBlock\s*=\s*\{\s*\n\s*registry_id:\s*'MET',\s*\n\s*status:\s*'active_non_owning'/,
+    );
   });
 
-  it('met_registry_status forbids authority ownership', () => {
-    expect(intelligenceSrc).toContain('decision_ownership');
-    expect(intelligenceSrc).toContain('enforcement_ownership');
-    expect(intelligenceSrc).toContain('certification_ownership');
-    expect(intelligenceSrc).toContain('promotion_ownership');
-    expect(intelligenceSrc).toContain('execution_ownership');
-    expect(intelligenceSrc).toContain('admission_ownership');
+  it('met_registry_status degrades to unknown on read failure', () => {
+    expect(intelligenceSrc).toContain('reported as unknown');
+    expect(intelligenceSrc).toMatch(
+      /readRegistryFile[\s\S]*?return null/,
+    );
+  });
+
+  it('system_registry.md MET section declares NONE authority and forbidden ownership', () => {
+    const registry = fs.readFileSync(
+      path.resolve(repoRoot, 'docs/architecture/system_registry.md'),
+      'utf-8',
+    );
+    const headerIdx = registry.indexOf('### MET\n');
+    expect(headerIdx).toBeGreaterThan(-1);
+    const tail = registry.slice(headerIdx);
+    const nextHeader = tail.slice(8).search(/\n### /);
+    const block = nextHeader > 0 ? tail.slice(0, 8 + nextHeader) : tail;
+    expect(block).toContain('**Authority:** NONE');
+    // Top MET block uses natural-language forbidden list.
+    for (const token of [
+      'decision ownership',
+      'approval ownership',
+      'enforcement ownership',
+      'certification ownership',
+      'promotion ownership',
+      'execution ownership',
+      'admission ownership',
+    ]) {
+      expect(block).toContain(token);
+    }
+    // Lower MET system definition block uses underscore tokens in must_not_do.
+    for (const token of [
+      'own_decision_authority',
+      'own_approval_authority',
+      'own_enforcement_authority',
+      'own_certification_authority',
+      'own_promotion_authority',
+      'own_execution_authority',
+      'own_admission_authority',
+      'emit_authority_outcomes',
+    ]) {
+      expect(registry).toContain(token);
+    }
   });
 
   it('every MET artifact carries failure_prevented and signal_improved', () => {
@@ -162,6 +204,35 @@ describe('MET-FULL-ROADMAP — cockpit summary preserves unknown', () => {
     );
     expect(intelligenceSrc).toContain('top_next_input_count: topNextInputCount');
     expect(intelligenceSrc).toContain('owner_handoff_queue_count: ownerHandoffQueueCount');
+  });
+
+  it('cockpit counts come from full source arrays, not the UI-capped slices', () => {
+    // top_next_input_count counts nextBestSliceRecommendation.slice_candidates
+    // — not topNextInputsBlock.items (which is sliced to 3).
+    expect(intelligenceSrc).toMatch(
+      /topNextInputCount[\s\S]*?nextBestSliceRecommendation\.slice_candidates[\s\S]*?length/,
+    );
+    expect(intelligenceSrc).not.toMatch(
+      /topNextInputCount[^\n]*=\s*nextBestSliceRecommendation[^\n]*\?\s*topNextInputsBlock\.items\.length/,
+    );
+    // Owner handoff queue count derives from a full-array filter (not the
+    // sliced UI block).
+    expect(intelligenceSrc).toContain('ownerHandoffFullQueue');
+    expect(intelligenceSrc).not.toMatch(
+      /ownerHandoffQueueCount[^\n]*=\s*ownerReadObservationLedger[^\n]*\?\s*ownerHandoffQueueBlock\.items\.length/,
+    );
+  });
+
+  it('cockpit provenance is derived from actually loaded slots — never hard-coded', () => {
+    // Hard-coded `data_source: 'artifact_store'` for the cockpit must be gone.
+    // Provenance is computed from a slot table per request.
+    const cockpitStart = intelligenceSrc.indexOf('overall MET cockpit summary card');
+    const cockpitEnd = intelligenceSrc.indexOf('// MET-04 — feedback items list');
+    const cockpit = intelligenceSrc.slice(cockpitStart, cockpitEnd);
+    expect(cockpit).toContain('loadedSlots');
+    expect(cockpit).toContain('missingSlots');
+    expect(cockpit).toMatch(/'partial'/);
+    expect(cockpit).toMatch(/'unknown'/);
   });
 
   it('confidence_calibration_state is derived from calibration_buckets content, not file presence', () => {

@@ -1,5 +1,7 @@
+import fs from 'fs';
+import path from 'path';
 import { NextResponse } from 'next/server';
-import { loadArtifact } from '@/lib/artifactLoader';
+import { getRepoRoot, loadArtifact } from '@/lib/artifactLoader';
 import { buildSourceEnvelope } from '@/lib/sourceClassification';
 import type {
   CheckpointSummary,
@@ -1517,46 +1519,108 @@ export async function GET() {
     integrity_checks: [] as Array<Record<string, unknown>>,
   });
 
-  // MET-FULL-ROADMAP — registry status block. Sourced from system_registry.md.
-  // Authority must remain NONE; if MET produces an authority outcome, block.
-  const metRegistryStatusBlock = {
-    registry_id: 'MET',
-    status: 'active_non_owning',
-    authority: 'NONE',
-    forbidden: [
-      'decision_ownership',
-      'approval_ownership',
-      'enforcement_ownership',
-      'certification_ownership',
-      'promotion_ownership',
-      'execution_ownership',
-      'admission_ownership',
-    ],
-    invariant: 'if_met_produces_authority_outcome_block',
-    failure_prevented: [
-      'undetected_bottlenecks',
-      'unclear_failure_causes',
-      'stale_candidates',
-      'fake_trends',
-      'unverified_improvements',
-      'overconfident_recommendations',
-      'recurring_failures',
-      'metric_gaming',
-    ],
-    signal_improved: [
-      'debuggability',
-      'bottleneck_clarity',
-      'closure_visibility',
-      'outcome_attribution',
-      'recommendation_calibration',
-      'signal_integrity',
-    ],
-    upstream_dependencies: ['EVL', 'LIN', 'REP', 'OBS', 'SLO', 'TPA', 'CDE', 'SEL'],
-    downstream_consumers: ['AEX', 'PQX', 'EVL', 'TPA', 'CDE', 'SEL', 'GOV', 'dashboard-3ls'],
-    data_source: 'artifact_store',
-    source_artifacts_used: ['docs/architecture/system_registry.md'],
-    warnings: [],
-  };
+  // MET-FULL-ROADMAP — registry status block. Read directly from
+  // docs/architecture/system_registry.md so any registry edit (or missing
+  // file) flows through; on read or parse failure the block degrades to
+  // unknown rather than reporting stale hard-coded metadata.
+  const REGISTRY_REL_PATH = 'docs/architecture/system_registry.md';
+  function readRegistryFile(): string | null {
+    try {
+      return fs.readFileSync(path.join(getRepoRoot(), REGISTRY_REL_PATH), 'utf-8');
+    } catch {
+      return null;
+    }
+  }
+
+  function parseMetRegistryStatus(registry: string | null): Record<string, unknown> {
+    if (!registry) {
+      return {
+        registry_id: 'MET',
+        status: 'unknown',
+        authority: 'unknown',
+        forbidden: [] as string[],
+        invariant: 'unknown',
+        failure_prevented: [] as string[],
+        signal_improved: [] as string[],
+        upstream_dependencies: [] as string[],
+        downstream_consumers: [] as string[],
+        data_source: 'unknown',
+        source_artifacts_used: [] as string[],
+        warnings: [`${REGISTRY_REL_PATH} unavailable; MET registry status reported as unknown.`],
+      };
+    }
+    const headerIdx = registry.indexOf('### MET\n');
+    if (headerIdx < 0) {
+      return {
+        registry_id: 'MET',
+        status: 'unknown',
+        authority: 'unknown',
+        forbidden: [] as string[],
+        invariant: 'unknown',
+        failure_prevented: [] as string[],
+        signal_improved: [] as string[],
+        upstream_dependencies: [] as string[],
+        downstream_consumers: [] as string[],
+        data_source: 'unknown',
+        source_artifacts_used: [REGISTRY_REL_PATH],
+        warnings: ['### MET section not present in system_registry.md; reporting unknown.'],
+      };
+    }
+    // Take everything from the first ### MET header until the next ### header.
+    const tail = registry.slice(headerIdx);
+    const nextHeader = tail.slice(8).search(/\n### /);
+    const block = nextHeader > 0 ? tail.slice(0, 8 + nextHeader) : tail;
+
+    const statusMatch = block.match(/\*\*Status:\*\*\s*([^\n]+)/);
+    const authorityMatch = block.match(/\*\*Authority:\*\*\s*([^\n]+)/);
+    const invariantMatch = block.match(/\*\*Invariant:\*\*\s*([^\n]+)/);
+    const status = statusMatch?.[1]?.trim().toLowerCase().includes('active, non-owning')
+      ? 'active_non_owning'
+      : (statusMatch?.[1]?.trim() ?? 'unknown');
+    const authority = authorityMatch?.[1]?.trim() ?? 'unknown';
+
+    function bulletsAfter(label: string): string[] {
+      const labelIdx = block.indexOf(`**${label}:**`);
+      if (labelIdx < 0) return [];
+      const after = block.slice(labelIdx);
+      const stop = after.search(/\n- \*\*[A-Z]/);
+      const region = stop > 0 ? after.slice(0, stop) : after;
+      const items: string[] = [];
+      for (const line of region.split('\n')) {
+        const m = line.match(/^\s+-\s+(.+)$/);
+        if (m) items.push(m[1].trim());
+      }
+      return items;
+    }
+
+    function inlineList(label: string): string[] {
+      const m = block.match(new RegExp(`\\*\\*${label}:\\*\\*\\s*([^\\n]+)`));
+      if (!m) return [];
+      return m[1].split(',').map((s) => s.trim()).filter(Boolean);
+    }
+
+    return {
+      registry_id: 'MET',
+      status,
+      authority: authority === 'NONE' ? 'NONE' : authority || 'unknown',
+      forbidden: bulletsAfter('Forbidden').length
+        ? bulletsAfter('Forbidden')[0].split(',').map((s) => s.trim().replace(/[.\s]+$/, ''))
+        : [],
+      invariant: invariantMatch?.[1]?.trim() ?? 'unknown',
+      failure_prevented: bulletsAfter('Failure Prevented'),
+      signal_improved: bulletsAfter('Signal Improved'),
+      upstream_dependencies: inlineList('Upstream Dependencies'),
+      downstream_consumers: inlineList('Downstream Consumers'),
+      data_source: 'artifact_store',
+      source_artifacts_used: [REGISTRY_REL_PATH],
+      warnings: authority === 'NONE'
+        ? []
+        : ['Authority not equal to NONE in registry; MET must remain non-owning.'],
+    };
+  }
+
+  const registryText = readRegistryFile();
+  const metRegistryStatusBlock = parseMetRegistryStatus(registryText);
 
   // MET-FULL-ROADMAP — Top 3 next inputs aggregated from MET signals (observation only).
   const topNextInputsBlock = {
@@ -1604,11 +1668,19 @@ export async function GET() {
   // MET-FULL-ROADMAP — overall MET cockpit summary card.
   // Counts and aggregate states are derived from artifact content; missing
   // artifacts surface as 'unknown' rather than 0 / 'insufficient_cases'.
+  // Counts use the full source arrays — never the UI-capped slices — so the
+  // cockpit reports true backlog depth even when the rendered list is capped.
   const topNextInputCount: number | 'unknown' = nextBestSliceRecommendation
-    ? topNextInputsBlock.items.length
+    ? (nextBestSliceRecommendation.slice_candidates ?? []).length
     : 'unknown';
+  const ownerHandoffFullQueue = (ownerReadObservationLedger?.owner_read_items ?? []).filter(
+    (item) => {
+      const state = String(item.read_observation_state ?? '');
+      return state === 'stale_candidate_signal' || state === 'none_observed' || state === 'unknown';
+    },
+  );
   const ownerHandoffQueueCount: number | 'unknown' = ownerReadObservationLedger
-    ? ownerHandoffQueueBlock.items.length
+    ? ownerHandoffFullQueue.length
     : 'unknown';
 
   // Aggregate calibration drift across buckets. Surface the strongest observed
@@ -1715,20 +1787,42 @@ export async function GET() {
     recurrence_state: recurrenceState,
     anti_gaming_state:
       (signalIntegrityCheckBlock as { integrity_summary?: { overall_integrity_state?: string } }).integrity_summary?.overall_integrity_state ?? 'unknown',
-    data_source: 'artifact_store',
-    source_artifacts_used: [
-      ARTIFACT_PATHS.nextBestSliceRecommendation,
-      ARTIFACT_PATHS.ownerReadObservationLedger,
-      ARTIFACT_PATHS.staleCandidatePressure,
-      ARTIFACT_PATHS.signalIntegrityCheck,
-      ARTIFACT_PATHS.outcomeAttribution,
-      ARTIFACT_PATHS.calibrationDrift,
-      ARTIFACT_PATHS.recurringFailureCluster,
-      ARTIFACT_PATHS.debugReadinessSla,
-    ],
-    warnings: [
-      'MET cockpit values are observations only; CDE/SEL/GOV remain canonical owners.',
-    ],
+    ...(() => {
+      // Provenance is derived from actual loaded slots so degraded data is
+      // never reported as fully artifact-backed. data_source = 'artifact_store'
+      // only when every required input loaded; otherwise 'partial' with a
+      // count of missing slots, or 'unknown' when nothing loaded.
+      const slots: Array<{ path: string; loaded: boolean }> = [
+        { path: ARTIFACT_PATHS.nextBestSliceRecommendation, loaded: nextBestSliceRecommendation !== null },
+        { path: ARTIFACT_PATHS.ownerReadObservationLedger, loaded: ownerReadObservationLedger !== null },
+        { path: ARTIFACT_PATHS.staleCandidatePressure, loaded: staleCandidatePressure !== null },
+        { path: ARTIFACT_PATHS.signalIntegrityCheck, loaded: signalIntegrityCheck !== null },
+        { path: ARTIFACT_PATHS.outcomeAttribution, loaded: outcomeAttribution !== null },
+        { path: ARTIFACT_PATHS.calibrationDrift, loaded: calibrationDrift !== null },
+        { path: ARTIFACT_PATHS.recurringFailureCluster, loaded: recurringFailureCluster !== null },
+        { path: ARTIFACT_PATHS.debugReadinessSla, loaded: debugReadinessSla !== null },
+      ];
+      const loadedSlots = slots.filter((s) => s.loaded);
+      const missingSlots = slots.filter((s) => !s.loaded);
+      const dataSource =
+        loadedSlots.length === 0
+          ? 'unknown'
+          : missingSlots.length === 0
+          ? 'artifact_store'
+          : 'partial';
+      const warnings = ['MET cockpit values are observations only; CDE/SEL/GOV remain canonical owners.'];
+      if (missingSlots.length > 0) {
+        warnings.push(
+          `MET cockpit provenance partial: ${missingSlots.length}/${slots.length} required artifacts missing (${missingSlots.map((s) => s.path).join(', ')}).`,
+        );
+      }
+      return {
+        data_source: dataSource,
+        source_artifacts_used: loadedSlots.map((s) => s.path),
+        missing_source_artifacts: missingSlots.map((s) => s.path),
+        warnings,
+      };
+    })(),
     status: 'warn',
   };
 

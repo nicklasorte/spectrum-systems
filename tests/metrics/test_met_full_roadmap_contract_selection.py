@@ -275,9 +275,10 @@ def test_api_route_exposes_all_blocks() -> None:
     src = INTELLIGENCE_ROUTE_PATH.read_text(encoding="utf-8")
     for field in API_BLOCK_FIELD_NAMES:
         assert field in src, f"/api/intelligence missing field: {field}"
-    # Forbidden authority terms must appear as catalog-only rejection metadata
-    assert "authority: 'NONE'" in src
-    assert "decision_ownership" in src
+    # MET registry status is parsed from system_registry.md at runtime, not
+    # hard-coded. The route must reference the parser and the registry path.
+    assert "parseMetRegistryStatus" in src
+    assert "docs/architecture/system_registry.md" in src
 
 
 def test_dashboard_renders_compact_met_cockpit() -> None:
