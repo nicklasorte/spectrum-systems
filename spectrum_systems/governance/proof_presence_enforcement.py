@@ -223,6 +223,9 @@ def enforce_proof_presence(
         if proof_artifact is None:
             block_reason = "proof_presence_required_but_missing"
             gate_status = "block"
+        elif not isinstance(proof_artifact, dict):
+            block_reason = "proof_artifact_must_be_a_dict"
+            gate_status = "block"
         else:
             artifact_type = str(proof_artifact.get("artifact_type") or "")
             if artifact_type not in _ACCEPTED_PROOF_TYPES:

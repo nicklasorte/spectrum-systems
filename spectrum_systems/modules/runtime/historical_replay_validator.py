@@ -111,7 +111,7 @@ def _replay_case(
             "expected_classification": "",
             "actual_classification": None,
             "primary_reason_stable": False,
-            "result": "invalid_corpus_entry",
+            "result": "missing_classification",
             "detail": f"corpus entry must be a dict, got {type(case).__name__}",
         }
     case_id = str(case.get("case_id") or "")
