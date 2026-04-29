@@ -79,7 +79,7 @@ def check_workflow_gate_mapping(repo_root: Path) -> list[DriftFinding]:
     workflow_dir = repo_root / ".github/workflows"
     if not workflow_dir.is_dir():
         return findings
-    for yml in workflow_dir.glob("*.yml"):
+    for yml in sorted({*workflow_dir.glob("*.yml"), *workflow_dir.glob("*.yaml")}):
         name = yml.name
         if name not in _KNOWN_WORKFLOW_GATE_MAPPING:
             findings.append(DriftFinding(

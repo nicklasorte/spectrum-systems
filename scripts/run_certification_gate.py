@@ -91,16 +91,16 @@ def _run(cmd: list[str], cwd: str, env: dict | None = None) -> tuple[int, str, s
 
 
 def _get_changed_files(base_ref: str, head_ref: str, repo_root: str) -> list[str]:
-    try:
-        result = subprocess.run(
-            ["git", "diff", "--name-only", base_ref, head_ref],
-            capture_output=True, text=True, cwd=repo_root
+    result = subprocess.run(
+        ["git", "diff", "--name-only", base_ref, head_ref],
+        capture_output=True, text=True, cwd=repo_root
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"git diff --name-only failed (exit {result.returncode}): "
+            f"{result.stderr.strip() or result.stdout.strip()}"
         )
-        if result.returncode == 0:
-            return [f.strip() for f in result.stdout.splitlines() if f.strip()]
-    except Exception:
-        pass
-    return []
+    return [f.strip() for f in result.stdout.splitlines() if f.strip()]
 
 
 def _paths_touch_cert(changed: list[str]) -> bool:
@@ -137,7 +137,20 @@ def main() -> None:
     # Check if cert-relevant paths are touched
     changed_files: list[str] = []
     if args.base_ref and args.head_ref:
-        changed_files = _get_changed_files(args.base_ref, args.head_ref, repo_root)
+        try:
+            changed_files = _get_changed_files(args.base_ref, args.head_ref, repo_root)
+        except RuntimeError as exc:
+            if not args.force and args.mode != "deep":
+                _fail_closed(
+                    "git diff failed — cannot determine cert-relevant paths",
+                    str(exc),
+                    "Ensure base_ref and head_ref are valid, reachable commits in a full checkout",
+                    [],
+                    f"git diff --name-only {args.base_ref} {args.head_ref}",
+                    [],
+                    output_dir,
+                    extra_details=details,
+                )
 
     cert_paths_touched = args.force or args.mode == "deep" or _paths_touch_cert(changed_files)
 
