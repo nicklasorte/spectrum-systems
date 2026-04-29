@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/lrt_execution_budget.schema.json",
+  "title": "LRT Execution Budget",
+  "description": "Bounded execution contract required when a broad/oversized task is detected by AEX or PQX.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "max_files_changed",
+    "max_lines_added",
+    "max_test_file_lines",
+    "max_stage_minutes",
+    "checkpoint_required",
+    "stop_after_checkpoint"
+  ],
+  "properties": {
+    "max_files_changed": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_lines_added": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_test_file_lines": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "max_stage_minutes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "checkpoint_required": {
+      "type": "boolean"
+    },
+    "stop_after_checkpoint": {
+      "type": "boolean"
+    }
+  }
+}

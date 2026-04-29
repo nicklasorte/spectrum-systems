@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prl_lrt_failure_packet.schema.json",
+  "title": "PRL LRT Failure Packet",
+  "description": "Learning-facing failure packet for the stream idle timeout class. Feeds governed eval adoption.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "trace_id",
+    "failure_type",
+    "provider",
+    "stage",
+    "prevention"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "prl_lrt_failure_packet"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failure_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stage": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prevention": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  }
+}
