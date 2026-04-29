@@ -2,7 +2,7 @@
   "artifact_type": "repair_debt_trend_artifact",
   "slice_id": "RS-14",
   "owner": "PRG",
-  "generated_at": "2026-04-28T01:47:44Z",
+  "generated_at": "2026-04-29T19:22:38Z",
   "trend": "shrinking",
   "window_days": 21
 }

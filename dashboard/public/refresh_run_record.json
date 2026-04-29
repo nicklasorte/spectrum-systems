@@ -1,11 +1,11 @@
 {
   "artifact_type": "refresh_run_record",
-  "refresh_run_id": "refresh-20260429T172432Z",
-  "trace_id": "trace-20260429T172432Z",
-  "run_id": "refresh-20260429T172432Z",
+  "refresh_run_id": "refresh-20260429T192326Z",
+  "trace_id": "trace-20260429T192326Z",
+  "run_id": "refresh-20260429T192326Z",
   "target_artifact_family": "dashboard_publication",
-  "start_time": "2026-04-29T17:24:32Z",
-  "end_time": "2026-04-29T17:24:32Z",
+  "start_time": "2026-04-29T19:23:26Z",
+  "end_time": "2026-04-29T19:23:26Z",
   "outcome": "success",
   "refreshed_artifacts": [
     "canonical_roadmap_state_artifact.json",

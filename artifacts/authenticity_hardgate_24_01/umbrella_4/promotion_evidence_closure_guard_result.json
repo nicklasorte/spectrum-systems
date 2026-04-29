@@ -2,7 +2,7 @@
   "artifact_type": "promotion_evidence_closure_guard_result",
   "slice_id": "AH-23",
   "owner": "SEL",
-  "generated_at": "2026-04-29T13:50:29Z",
+  "generated_at": "2026-04-29T19:24:25Z",
   "enforcement_only": true,
   "block_promotion_when_closure_incomplete": true
 }

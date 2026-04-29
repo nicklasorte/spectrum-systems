@@ -1,7 +1,7 @@
 {
   "artifact_type": "canonical_review_report_artifact",
   "batch_id": "REPAIR-LATENCY-24-01",
-  "generated_at": "2026-04-28T01:47:44Z",
+  "generated_at": "2026-04-29T19:22:38Z",
   "review_status": "pass",
   "lineage_reviewed": true
 }

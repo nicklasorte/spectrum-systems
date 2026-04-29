@@ -1,6 +1,6 @@
 {
   "artifact_type": "delivery_report",
-  "generated_at": "2026-04-29T17:24:31Z",
+  "generated_at": "2026-04-29T19:23:25Z",
   "title": "AUTO-PUBLICATION-06-01",
   "batch": "AUTO-PUBLICATION-06-01",
   "summary": "Automatic dashboard refresh wired after successful governed execution with atomic publication and fail-closed deploy gating."

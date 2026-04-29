@@ -12,6 +12,15 @@
 - working-paper-review-engine (operational_engine, loop=document_production, maturity=6) consumes: review_guidance, working_paper_input; emits: reviewer_comment_set; contracts: provenance_record, reviewer_comment_set, working_paper_input
 
 ## Artifacts
+- 3ls_failure_recurrence_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_failure_recurrence_record`.
+- 3ls_handoff_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_handoff_record`.
+- 3ls_loop_run_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_loop_run_record`.
+- 3ls_operator_debuggability_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_operator_debuggability_record`.
+- 3ls_replayability_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_replayability_record`.
+- 3ls_scope_risk_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_scope_risk_record`.
+- 3ls_surface_coverage_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_surface_coverage_record`.
+- 3ls_system_measurement_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_system_measurement_record`.
+- 3ls_trust_gap_closure_record [coordination] producers: —; consumers: —; Governed artifact for contract `3ls_trust_gap_closure_record`.
 - abstention_record [coordination] producers: —; consumers: —; Governed artifact for contract `abstention_record`.
 - action_item_artifact [coordination] producers: —; consumers: —; Governed artifact for contract `action_item_artifact`.
 - action_linkage_record [coordination] producers: —; consumers: —; Governed artifact for contract `action_linkage_record`.
@@ -35,6 +44,9 @@
 - agent_failure_record [coordination] producers: —; consumers: —; Governed artifact for contract `agent_failure_record`.
 - ai_model_request [coordination] producers: —; consumers: —; Governed artifact for contract `ai_model_request`.
 - ai_model_response [coordination] producers: —; consumers: —; Governed artifact for contract `ai_model_response`.
+- ai_programming_governance_rollup_record [governance] producers: —; consumers: —; Governed artifact for contract `ai_programming_governance_rollup_record`.
+- ai_programming_loop_violation_record [governance] producers: —; consumers: —; Governed artifact for contract `ai_programming_loop_violation_record`.
+- ai_programming_work_item_record [governance] producers: —; consumers: —; Governed artifact for contract `ai_programming_work_item_record`.
 - ail_ai_pattern_mining_record [governance] producers: —; consumers: —; Governed artifact for contract `ail_ai_pattern_mining_record`.
 - ail_ai_roadmap_candidate_record [governance] producers: —; consumers: —; Governed artifact for contract `ail_ai_roadmap_candidate_record`.
 - ail_continuous_pattern_learning_record [coordination] producers: —; consumers: —; Governed artifact for contract `ail_continuous_pattern_learning_record`.
@@ -1322,6 +1334,15 @@
 - xrun_signal_quality_result [coordination] producers: —; consumers: —; Governed artifact for contract `xrun_signal_quality_result`.
 
 ## Contracts
+- 3ls_failure_recurrence_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_failure_recurrence_record
+- 3ls_handoff_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_handoff_record
+- 3ls_loop_run_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_loop_run_record
+- 3ls_operator_debuggability_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_operator_debuggability_record
+- 3ls_replayability_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_replayability_record
+- 3ls_scope_risk_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_scope_risk_record
+- 3ls_surface_coverage_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_surface_coverage_record
+- 3ls_system_measurement_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_system_measurement_record
+- 3ls_trust_gap_closure_record [coordination] intended consumers: spectrum-systems; artifacts: 3ls_trust_gap_closure_record
 - abstention_record [coordination] intended consumers: spectrum-systems; artifacts: abstention_record
 - action_item_artifact [coordination] intended consumers: spectrum-systems; artifacts: action_item_artifact
 - action_linkage_record [coordination] intended consumers: spectrum-systems; artifacts: action_linkage_record
@@ -1344,6 +1365,9 @@
 - agent_failure_record [coordination] intended consumers: spectrum-systems; artifacts: agent_failure_record
 - ai_model_request [coordination] intended consumers: spectrum-systems; artifacts: ai_model_request
 - ai_model_response [coordination] intended consumers: spectrum-systems; artifacts: ai_model_response
+- ai_programming_governance_rollup_record [governance] intended consumers: spectrum-systems; artifacts: ai_programming_governance_rollup_record
+- ai_programming_loop_violation_record [governance] intended consumers: spectrum-systems; artifacts: ai_programming_loop_violation_record
+- ai_programming_work_item_record [governance] intended consumers: spectrum-systems; artifacts: ai_programming_work_item_record
 - ail_ai_pattern_mining_record [governance] intended consumers: spectrum-systems; artifacts: ail_ai_pattern_mining_record
 - ail_ai_roadmap_candidate_record [governance] intended consumers: spectrum-systems; artifacts: ail_ai_roadmap_candidate_record
 - ail_continuous_pattern_learning_record [coordination] intended consumers: spectrum-systems; artifacts: ail_continuous_pattern_learning_record

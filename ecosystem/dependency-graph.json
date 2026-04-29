@@ -189,6 +189,69 @@
   ],
   "artifacts": [
     {
+      "artifact_type": "3ls_failure_recurrence_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_failure_recurrence_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_handoff_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_handoff_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_loop_run_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_loop_run_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_operator_debuggability_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_operator_debuggability_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_replayability_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_replayability_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_scope_risk_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_scope_risk_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_surface_coverage_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_surface_coverage_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_system_measurement_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_system_measurement_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "3ls_trust_gap_closure_record",
+      "artifact_class": "coordination",
+      "description": "Governed artifact for contract `3ls_trust_gap_closure_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "abstention_record",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `abstention_record`.",
@@ -346,6 +409,27 @@
       "artifact_type": "ai_model_response",
       "artifact_class": "coordination",
       "description": "Governed artifact for contract `ai_model_response`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "ai_programming_governance_rollup_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `ai_programming_governance_rollup_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "ai_programming_loop_violation_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `ai_programming_loop_violation_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "ai_programming_work_item_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `ai_programming_work_item_record`.",
       "producing_systems": [],
       "consuming_systems": []
     },
@@ -9418,6 +9502,96 @@
   ],
   "contracts": [
     {
+      "contract_name": "3ls_failure_recurrence_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_failure_recurrence_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_handoff_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_handoff_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_loop_run_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_loop_run_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_operator_debuggability_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_operator_debuggability_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_replayability_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_replayability_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_scope_risk_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_scope_risk_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_surface_coverage_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_surface_coverage_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_system_measurement_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_system_measurement_record"
+      ]
+    },
+    {
+      "contract_name": "3ls_trust_gap_closure_record",
+      "artifact_class": "coordination",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "3ls_trust_gap_closure_record"
+      ]
+    },
+    {
       "contract_name": "abstention_record",
       "artifact_class": "coordination",
       "intended_consumers": [
@@ -9635,6 +9809,36 @@
       ],
       "related_artifact_types": [
         "ai_model_response"
+      ]
+    },
+    {
+      "contract_name": "ai_programming_governance_rollup_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "ai_programming_governance_rollup_record"
+      ]
+    },
+    {
+      "contract_name": "ai_programming_loop_violation_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "ai_programming_loop_violation_record"
+      ]
+    },
+    {
+      "contract_name": "ai_programming_work_item_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "ai_programming_work_item_record"
       ]
     },
     {
@@ -22366,6 +22570,69 @@
   "edges": [
     {
       "from_type": "artifact",
+      "from_id": "3ls_failure_recurrence_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_failure_recurrence_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_handoff_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_handoff_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_loop_run_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_loop_run_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_operator_debuggability_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_operator_debuggability_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_replayability_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_replayability_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_scope_risk_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_scope_risk_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_surface_coverage_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_surface_coverage_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_system_measurement_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_system_measurement_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "3ls_trust_gap_closure_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "3ls_trust_gap_closure_record"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "abstention_record",
       "relation": "governed_by",
       "to_type": "contract",
@@ -22517,6 +22784,27 @@
       "relation": "governed_by",
       "to_type": "contract",
       "to_id": "ai_model_response"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "ai_programming_governance_rollup_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "ai_programming_governance_rollup_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "ai_programming_loop_violation_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "ai_programming_loop_violation_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "ai_programming_work_item_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "ai_programming_work_item_record"
     },
     {
       "from_type": "artifact",
@@ -31417,6 +31705,69 @@
     },
     {
       "from_type": "contract",
+      "from_id": "3ls_failure_recurrence_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_failure_recurrence_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_handoff_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_handoff_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_loop_run_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_loop_run_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_operator_debuggability_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_operator_debuggability_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_replayability_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_replayability_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_scope_risk_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_scope_risk_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_surface_coverage_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_surface_coverage_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_system_measurement_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_system_measurement_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "3ls_trust_gap_closure_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "3ls_trust_gap_closure_record"
+    },
+    {
+      "from_type": "contract",
       "from_id": "abstention_record",
       "relation": "validates_against",
       "to_type": "artifact",
@@ -31568,6 +31919,27 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "ai_model_response"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "ai_programming_governance_rollup_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "ai_programming_governance_rollup_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "ai_programming_loop_violation_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "ai_programming_loop_violation_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "ai_programming_work_item_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "ai_programming_work_item_record"
     },
     {
       "from_type": "contract",

@@ -1,7 +1,7 @@
 {
   "artifact_type": "failure_hotspot_simulation_pack",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-28T01:48:06Z",
+  "generated_at": "2026-04-29T19:23:02Z",
   "hotspots": [
     "artifact_basis_missing",
     "confidence_overstated"

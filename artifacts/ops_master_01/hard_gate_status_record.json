@@ -1,7 +1,7 @@
 {
   "artifact_type": "hard_gate_status_record",
   "batch_id": "OPS-MASTER-01",
-  "generated_at": "2026-04-29T13:42:07Z",
+  "generated_at": "2026-04-29T19:22:19Z",
   "required_artifacts": [
     "current_run_state_record",
     "pre_pqx_contract_readiness_artifact",

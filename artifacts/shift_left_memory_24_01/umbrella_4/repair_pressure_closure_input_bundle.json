@@ -2,7 +2,7 @@
   "artifact_type": "repair_pressure_closure_input_bundle",
   "slice_id": "SM-19",
   "owner": "RIL",
-  "generated_at": "2026-04-28T01:48:11Z",
+  "generated_at": "2026-04-29T19:23:07Z",
   "inputs": [
     "repair_debt",
     "recurrence_cost",

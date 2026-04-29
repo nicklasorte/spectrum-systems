@@ -2,6 +2,6 @@
   "artifact_type": "repair_closure_strictness_decision",
   "slice_id": "RL-22",
   "owner": "CDE",
-  "generated_at": "2026-04-28T01:47:44Z",
+  "generated_at": "2026-04-29T19:22:38Z",
   "decision": "block_closure_when_repair_debt_unresolved_or_replay_failed"
 }
