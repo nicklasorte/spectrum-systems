@@ -143,7 +143,10 @@
       "scripts/run_failure_explanation.py",
       "scripts/run_historical_replay_validator.py",
       "scripts/run_minimality_sweep.py",
-      "docs/governance/preflight_required_surface_test_overrides.json"
+      "docs/governance/preflight_required_surface_test_overrides.json",
+      "docs/reviews/PAR-00-01_parallel_pr_tests_final_report.md",
+      "docs/reviews/PAR-00-01_parallel_pr_tests_redteam.md",
+      "spectrum_systems/modules/runtime/pr_test_selection.py"
     ]
   },
   "clusters": {

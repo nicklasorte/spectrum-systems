@@ -1,7 +1,7 @@
 {
   "artifact_type": "standards_manifest",
   "artifact_id": "STD-CONTRACTS",
-  "artifact_version": "1.3.151",
+  "artifact_version": "1.3.152",
   "schema_version": "1.3.99",
   "standards_version": "1.9.10",
   "record_id": "REC-STD-2026-04-18-ENF-01",
@@ -15,7 +15,7 @@
     "contact": "architecture@spectrum-systems.test"
   },
   "source_repo": "nicklasorte/spectrum-systems",
-  "source_repo_version": "1.3.151",
+  "source_repo_version": "1.3.152",
   "input_artifacts": [
     {
       "artifact_id": "STD-CONTRACTS",
@@ -10132,6 +10132,19 @@
       "last_updated_in": "1.0.96",
       "example_path": "contracts/examples/pqx_triage_plan_record.json",
       "notes": "B10 planning-only deterministic triage rack-and-stack artifact translating governed review and fix-gate outcomes into bounded insertion/defer/block recommendations without auto-execution."
+    },
+    {
+      "artifact_type": "pr_test_shard_result",
+      "artifact_class": "governance",
+      "schema_version": "1.0.0",
+      "status": "proposed",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "introduced_in": "1.3.152",
+      "last_updated_in": "1.3.152",
+      "example_path": "contracts/examples/pr_test_shard_result.example.json",
+      "notes": "PAR-00-01 parallel PR shard result contract."
     },
     {
       "artifact_type": "pra_changed_scope_extraction_record",
