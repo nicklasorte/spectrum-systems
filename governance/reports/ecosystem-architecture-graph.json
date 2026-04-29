@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-04-29T13:42:01Z",
+  "generated_at": "2026-04-29T20:21:23Z",
   "nodes": {
     "repositories": [
       {
@@ -125,6 +125,60 @@
       }
     ],
     "contracts": [
+      {
+        "id": "3ls_failure_recurrence_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "3ls_handoff_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "3ls_loop_run_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "3ls_operator_debuggability_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "3ls_replayability_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "3ls_scope_risk_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "3ls_surface_coverage_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "3ls_system_measurement_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "3ls_trust_gap_closure_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
       {
         "id": "abstention_record",
         "node_type": "contract",
@@ -255,6 +309,24 @@
         "id": "ai_model_response",
         "node_type": "contract",
         "schema_version": "1.2.0",
+        "stability": ""
+      },
+      {
+        "id": "ai_programming_governance_rollup_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "ai_programming_loop_violation_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
+        "stability": ""
+      },
+      {
+        "id": "ai_programming_work_item_record",
+        "node_type": "contract",
+        "schema_version": "1.0.0",
         "stability": ""
       },
       {

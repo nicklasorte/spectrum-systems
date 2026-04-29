@@ -8,6 +8,15 @@ flowchart TD
   sys_spectrum_systems["spectrum-systems\ngovernance"]
   sys_system_factory["system-factory\nfactory"]
   sys_working_paper_review_engine["working-paper-review-engine\noperational_engine"]
+  art_3ls_failure_recurrence_record["3ls_failure_recurrence_record\ncoordination"]
+  art_3ls_handoff_record["3ls_handoff_record\ncoordination"]
+  art_3ls_loop_run_record["3ls_loop_run_record\ncoordination"]
+  art_3ls_operator_debuggability_record["3ls_operator_debuggability_record\ncoordination"]
+  art_3ls_replayability_record["3ls_replayability_record\ncoordination"]
+  art_3ls_scope_risk_record["3ls_scope_risk_record\ncoordination"]
+  art_3ls_surface_coverage_record["3ls_surface_coverage_record\ncoordination"]
+  art_3ls_system_measurement_record["3ls_system_measurement_record\ncoordination"]
+  art_3ls_trust_gap_closure_record["3ls_trust_gap_closure_record\ncoordination"]
   art_abstention_record["abstention_record\ncoordination"]
   art_action_item_artifact["action_item_artifact\ncoordination"]
   art_action_linkage_record["action_linkage_record\ncoordination"]
@@ -31,6 +40,9 @@ flowchart TD
   art_agent_failure_record["agent_failure_record\ncoordination"]
   art_ai_model_request["ai_model_request\ncoordination"]
   art_ai_model_response["ai_model_response\ncoordination"]
+  art_ai_programming_governance_rollup_record["ai_programming_governance_rollup_record\ngovernance"]
+  art_ai_programming_loop_violation_record["ai_programming_loop_violation_record\ngovernance"]
+  art_ai_programming_work_item_record["ai_programming_work_item_record\ngovernance"]
   art_ail_ai_pattern_mining_record["ail_ai_pattern_mining_record\ngovernance"]
   art_ail_ai_roadmap_candidate_record["ail_ai_roadmap_candidate_record\ngovernance"]
   art_ail_continuous_pattern_learning_record["ail_continuous_pattern_learning_record\ncoordination"]
@@ -1316,6 +1328,15 @@ flowchart TD
   art_xrl_outcome_trust_weight_record["xrl_outcome_trust_weight_record\ncoordination"]
   art_xrl_real_world_outcome_integration_record["xrl_real_world_outcome_integration_record\ncoordination"]
   art_xrun_signal_quality_result["xrun_signal_quality_result\ncoordination"]
+  con_3ls_failure_recurrence_record["3ls_failure_recurrence_record\ncontract"]
+  con_3ls_handoff_record["3ls_handoff_record\ncontract"]
+  con_3ls_loop_run_record["3ls_loop_run_record\ncontract"]
+  con_3ls_operator_debuggability_record["3ls_operator_debuggability_record\ncontract"]
+  con_3ls_replayability_record["3ls_replayability_record\ncontract"]
+  con_3ls_scope_risk_record["3ls_scope_risk_record\ncontract"]
+  con_3ls_surface_coverage_record["3ls_surface_coverage_record\ncontract"]
+  con_3ls_system_measurement_record["3ls_system_measurement_record\ncontract"]
+  con_3ls_trust_gap_closure_record["3ls_trust_gap_closure_record\ncontract"]
   con_abstention_record["abstention_record\ncontract"]
   con_action_item_artifact["action_item_artifact\ncontract"]
   con_action_linkage_record["action_linkage_record\ncontract"]
@@ -1338,6 +1359,9 @@ flowchart TD
   con_agent_failure_record["agent_failure_record\ncontract"]
   con_ai_model_request["ai_model_request\ncontract"]
   con_ai_model_response["ai_model_response\ncontract"]
+  con_ai_programming_governance_rollup_record["ai_programming_governance_rollup_record\ncontract"]
+  con_ai_programming_loop_violation_record["ai_programming_loop_violation_record\ncontract"]
+  con_ai_programming_work_item_record["ai_programming_work_item_record\ncontract"]
   con_ail_ai_pattern_mining_record["ail_ai_pattern_mining_record\ncontract"]
   con_ail_ai_roadmap_candidate_record["ail_ai_roadmap_candidate_record\ncontract"]
   con_ail_continuous_pattern_learning_record["ail_continuous_pattern_learning_record\ncontract"]
@@ -2609,6 +2633,15 @@ flowchart TD
   con_xrl_outcome_trust_weight_record["xrl_outcome_trust_weight_record\ncontract"]
   con_xrl_real_world_outcome_integration_record["xrl_real_world_outcome_integration_record\ncontract"]
   con_xrun_signal_quality_result["xrun_signal_quality_result\ncontract"]
+  art_3ls_failure_recurrence_record -. governed_by .-> con_3ls_failure_recurrence_record
+  art_3ls_handoff_record -. governed_by .-> con_3ls_handoff_record
+  art_3ls_loop_run_record -. governed_by .-> con_3ls_loop_run_record
+  art_3ls_operator_debuggability_record -. governed_by .-> con_3ls_operator_debuggability_record
+  art_3ls_replayability_record -. governed_by .-> con_3ls_replayability_record
+  art_3ls_scope_risk_record -. governed_by .-> con_3ls_scope_risk_record
+  art_3ls_surface_coverage_record -. governed_by .-> con_3ls_surface_coverage_record
+  art_3ls_system_measurement_record -. governed_by .-> con_3ls_system_measurement_record
+  art_3ls_trust_gap_closure_record -. governed_by .-> con_3ls_trust_gap_closure_record
   art_abstention_record -. governed_by .-> con_abstention_record
   art_action_item_artifact -. governed_by .-> con_action_item_artifact
   art_action_linkage_record -. governed_by .-> con_action_linkage_record
@@ -2631,6 +2664,9 @@ flowchart TD
   art_agent_failure_record -. governed_by .-> con_agent_failure_record
   art_ai_model_request -. governed_by .-> con_ai_model_request
   art_ai_model_response -. governed_by .-> con_ai_model_response
+  art_ai_programming_governance_rollup_record -. governed_by .-> con_ai_programming_governance_rollup_record
+  art_ai_programming_loop_violation_record -. governed_by .-> con_ai_programming_loop_violation_record
+  art_ai_programming_work_item_record -. governed_by .-> con_ai_programming_work_item_record
   art_ail_ai_pattern_mining_record -. governed_by .-> con_ail_ai_pattern_mining_record
   art_ail_ai_roadmap_candidate_record -. governed_by .-> con_ail_ai_roadmap_candidate_record
   art_ail_continuous_pattern_learning_record -. governed_by .-> con_ail_continuous_pattern_learning_record
@@ -3902,6 +3938,15 @@ flowchart TD
   art_xrl_outcome_trust_weight_record -. governed_by .-> con_xrl_outcome_trust_weight_record
   art_xrl_real_world_outcome_integration_record -. governed_by .-> con_xrl_real_world_outcome_integration_record
   art_xrun_signal_quality_result -. governed_by .-> con_xrun_signal_quality_result
+  con_3ls_failure_recurrence_record -->|validates| art_3ls_failure_recurrence_record
+  con_3ls_handoff_record -->|validates| art_3ls_handoff_record
+  con_3ls_loop_run_record -->|validates| art_3ls_loop_run_record
+  con_3ls_operator_debuggability_record -->|validates| art_3ls_operator_debuggability_record
+  con_3ls_replayability_record -->|validates| art_3ls_replayability_record
+  con_3ls_scope_risk_record -->|validates| art_3ls_scope_risk_record
+  con_3ls_surface_coverage_record -->|validates| art_3ls_surface_coverage_record
+  con_3ls_system_measurement_record -->|validates| art_3ls_system_measurement_record
+  con_3ls_trust_gap_closure_record -->|validates| art_3ls_trust_gap_closure_record
   con_abstention_record -->|validates| art_abstention_record
   con_action_item_artifact -->|validates| art_action_item_artifact
   con_action_linkage_record -->|validates| art_action_linkage_record
@@ -3924,6 +3969,9 @@ flowchart TD
   con_agent_failure_record -->|validates| art_agent_failure_record
   con_ai_model_request -->|validates| art_ai_model_request
   con_ai_model_response -->|validates| art_ai_model_response
+  con_ai_programming_governance_rollup_record -->|validates| art_ai_programming_governance_rollup_record
+  con_ai_programming_loop_violation_record -->|validates| art_ai_programming_loop_violation_record
+  con_ai_programming_work_item_record -->|validates| art_ai_programming_work_item_record
   con_ail_ai_pattern_mining_record -->|validates| art_ail_ai_pattern_mining_record
   con_ail_ai_roadmap_candidate_record -->|validates| art_ail_ai_roadmap_candidate_record
   con_ail_continuous_pattern_learning_record -->|validates| art_ail_continuous_pattern_learning_record
