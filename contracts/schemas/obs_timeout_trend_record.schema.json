@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/obs_timeout_trend_record.schema.json",
+  "title": "OBS Timeout Trend Record",
+  "description": "Observability record capturing stream idle timeout events for trend analysis.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "provider",
+    "failure_type",
+    "stage",
+    "task_size_class",
+    "prompt_pattern",
+    "files_changed_before_timeout",
+    "checkpoint_present"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "obs_timeout_trend_record"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failure_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stage": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_size_class": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prompt_pattern": {
+      "type": "string"
+    },
+    "files_changed_before_timeout": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checkpoint_present": {
+      "type": "boolean"
+    }
+  }
+}
