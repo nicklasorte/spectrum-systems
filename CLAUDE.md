@@ -18,7 +18,7 @@ Before editing any files, the agent must identify:
 - authority-shape risks across canonical-owner boundaries (per `docs/architecture/system_registry.md`)
 - required tests and eval coverage
 - required schema or artifact updates
-- required governance mappings (test_gate_mapping, selection policy, ownership manifest)
+- required governance mappings, where they exist (e.g. test-gating, selection, and ownership mappings declared in `docs/architecture/system_registry.md` or `docs/governance/`)
 - required replay and observability updates
 - whether the scope is too large and must be split
 
