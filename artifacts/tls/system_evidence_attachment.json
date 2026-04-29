@@ -66,6 +66,7 @@
           "spectrum_systems/aex/engine.py",
           "spectrum_systems/aex/errors.py",
           "spectrum_systems/aex/hardening.py",
+          "spectrum_systems/aex/lrt_admission_guard.py",
           "spectrum_systems/aex/models.py",
           "spectrum_systems/aex/observability_emitter.py",
           "spectrum_systems/aex/sel_admission_signal.py",
@@ -569,6 +570,7 @@
         ],
         "modules": [
           "spectrum_systems/artifacts/rt2_findings.json",
+          "spectrum_systems/evals/lrt_task_size_eval.py",
           "spectrum_systems/governance/rgp02_gate.py",
           "spectrum_systems/modules/ai_workflow/stale_fixture_detector.py",
           "spectrum_systems/modules/evaluation/eval_coverage_reporting.py",
@@ -592,7 +594,12 @@
           "spectrum_systems/modules/runtime/control_surface_manifest.py",
           "spectrum_systems/modules/runtime/enforcement_engine.py",
           "spectrum_systems/modules/runtime/enforcement_gate.py",
+<<<<<<< HEAD
           "spectrum_systems/modules/runtime/eval_registry.py"
+=======
+          "spectrum_systems/modules/runtime/eval_registry.py",
+          "spectrum_systems/modules/runtime/eval_slice_summary.py"
+>>>>>>> origin/main
         ],
         "review_actions": [],
         "reviews": [],
@@ -1579,6 +1586,7 @@
           "spectrum_systems/modules/runtime/full_autonomy_execution.py",
           "spectrum_systems/modules/runtime/integration_fabric_ifb.py",
           "spectrum_systems/modules/runtime/next24_serial_execution.py",
+          "spectrum_systems/modules/runtime/obs_timeout_trend.py",
           "spectrum_systems/modules/runtime/observability_metrics.py",
           "spectrum_systems/modules/runtime/pmh_003_surfaces.py",
           "spectrum_systems/modules/runtime/pra_nsx_prg_loop.py",

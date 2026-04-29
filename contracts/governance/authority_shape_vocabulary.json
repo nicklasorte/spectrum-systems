@@ -145,6 +145,7 @@
         "spectrum_systems/modules/runtime/closure_decision_engine.py",
         "spectrum_systems/modules/governance/done_certification.py",
         "spectrum_systems/modules/runtime/jdx_judgment_authority.py",
+        "spectrum_systems/modules/runtime/cde_lrt_continuation.py",
         "spectrum_systems/modules/judgment/",
         "spectrum_systems/judgment/"
       ],
