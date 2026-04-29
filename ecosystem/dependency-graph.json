@@ -413,6 +413,27 @@
       "consuming_systems": []
     },
     {
+      "artifact_type": "ai_programming_governance_rollup_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `ai_programming_governance_rollup_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "ai_programming_loop_violation_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `ai_programming_loop_violation_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
+      "artifact_type": "ai_programming_work_item_record",
+      "artifact_class": "governance",
+      "description": "Governed artifact for contract `ai_programming_work_item_record`.",
+      "producing_systems": [],
+      "consuming_systems": []
+    },
+    {
       "artifact_type": "ail_ai_pattern_mining_record",
       "artifact_class": "governance",
       "description": "Governed artifact for contract `ail_ai_pattern_mining_record`.",
@@ -9837,6 +9858,36 @@
       ],
       "related_artifact_types": [
         "ai_model_response"
+      ]
+    },
+    {
+      "contract_name": "ai_programming_governance_rollup_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "ai_programming_governance_rollup_record"
+      ]
+    },
+    {
+      "contract_name": "ai_programming_loop_violation_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "ai_programming_loop_violation_record"
+      ]
+    },
+    {
+      "contract_name": "ai_programming_work_item_record",
+      "artifact_class": "governance",
+      "intended_consumers": [
+        "spectrum-systems"
+      ],
+      "related_artifact_types": [
+        "ai_programming_work_item_record"
       ]
     },
     {
@@ -22855,6 +22906,27 @@
     },
     {
       "from_type": "artifact",
+      "from_id": "ai_programming_governance_rollup_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "ai_programming_governance_rollup_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "ai_programming_loop_violation_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "ai_programming_loop_violation_record"
+    },
+    {
+      "from_type": "artifact",
+      "from_id": "ai_programming_work_item_record",
+      "relation": "governed_by",
+      "to_type": "contract",
+      "to_id": "ai_programming_work_item_record"
+    },
+    {
+      "from_type": "artifact",
       "from_id": "ail_ai_pattern_mining_record",
       "relation": "governed_by",
       "to_type": "contract",
@@ -32015,6 +32087,27 @@
       "relation": "validates_against",
       "to_type": "artifact",
       "to_id": "ai_model_response"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "ai_programming_governance_rollup_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "ai_programming_governance_rollup_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "ai_programming_loop_violation_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "ai_programming_loop_violation_record"
+    },
+    {
+      "from_type": "contract",
+      "from_id": "ai_programming_work_item_record",
+      "relation": "validates_against",
+      "to_type": "artifact",
+      "to_id": "ai_programming_work_item_record"
     },
     {
       "from_type": "contract",

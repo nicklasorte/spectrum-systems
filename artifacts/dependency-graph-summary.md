@@ -44,6 +44,9 @@
 - agent_failure_record [coordination] producers: —; consumers: —; Governed artifact for contract `agent_failure_record`.
 - ai_model_request [coordination] producers: —; consumers: —; Governed artifact for contract `ai_model_request`.
 - ai_model_response [coordination] producers: —; consumers: —; Governed artifact for contract `ai_model_response`.
+- ai_programming_governance_rollup_record [governance] producers: —; consumers: —; Governed artifact for contract `ai_programming_governance_rollup_record`.
+- ai_programming_loop_violation_record [governance] producers: —; consumers: —; Governed artifact for contract `ai_programming_loop_violation_record`.
+- ai_programming_work_item_record [governance] producers: —; consumers: —; Governed artifact for contract `ai_programming_work_item_record`.
 - ail_ai_pattern_mining_record [governance] producers: —; consumers: —; Governed artifact for contract `ail_ai_pattern_mining_record`.
 - ail_ai_roadmap_candidate_record [governance] producers: —; consumers: —; Governed artifact for contract `ail_ai_roadmap_candidate_record`.
 - ail_continuous_pattern_learning_record [coordination] producers: —; consumers: —; Governed artifact for contract `ail_continuous_pattern_learning_record`.
@@ -1369,6 +1372,9 @@
 - agent_failure_record [coordination] intended consumers: spectrum-systems; artifacts: agent_failure_record
 - ai_model_request [coordination] intended consumers: spectrum-systems; artifacts: ai_model_request
 - ai_model_response [coordination] intended consumers: spectrum-systems; artifacts: ai_model_response
+- ai_programming_governance_rollup_record [governance] intended consumers: spectrum-systems; artifacts: ai_programming_governance_rollup_record
+- ai_programming_loop_violation_record [governance] intended consumers: spectrum-systems; artifacts: ai_programming_loop_violation_record
+- ai_programming_work_item_record [governance] intended consumers: spectrum-systems; artifacts: ai_programming_work_item_record
 - ail_ai_pattern_mining_record [governance] intended consumers: spectrum-systems; artifacts: ail_ai_pattern_mining_record
 - ail_ai_roadmap_candidate_record [governance] intended consumers: spectrum-systems; artifacts: ail_ai_roadmap_candidate_record
 - ail_continuous_pattern_learning_record [coordination] intended consumers: spectrum-systems; artifacts: ail_continuous_pattern_learning_record

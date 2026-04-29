@@ -40,6 +40,9 @@ flowchart TD
   art_agent_failure_record["agent_failure_record\ncoordination"]
   art_ai_model_request["ai_model_request\ncoordination"]
   art_ai_model_response["ai_model_response\ncoordination"]
+  art_ai_programming_governance_rollup_record["ai_programming_governance_rollup_record\ngovernance"]
+  art_ai_programming_loop_violation_record["ai_programming_loop_violation_record\ngovernance"]
+  art_ai_programming_work_item_record["ai_programming_work_item_record\ngovernance"]
   art_ail_ai_pattern_mining_record["ail_ai_pattern_mining_record\ngovernance"]
   art_ail_ai_roadmap_candidate_record["ail_ai_roadmap_candidate_record\ngovernance"]
   art_ail_continuous_pattern_learning_record["ail_continuous_pattern_learning_record\ncoordination"]
@@ -1363,6 +1366,9 @@ flowchart TD
   con_agent_failure_record["agent_failure_record\ncontract"]
   con_ai_model_request["ai_model_request\ncontract"]
   con_ai_model_response["ai_model_response\ncontract"]
+  con_ai_programming_governance_rollup_record["ai_programming_governance_rollup_record\ncontract"]
+  con_ai_programming_loop_violation_record["ai_programming_loop_violation_record\ncontract"]
+  con_ai_programming_work_item_record["ai_programming_work_item_record\ncontract"]
   con_ail_ai_pattern_mining_record["ail_ai_pattern_mining_record\ncontract"]
   con_ail_ai_roadmap_candidate_record["ail_ai_roadmap_candidate_record\ncontract"]
   con_ail_continuous_pattern_learning_record["ail_continuous_pattern_learning_record\ncontract"]
@@ -2672,6 +2678,9 @@ flowchart TD
   art_agent_failure_record -. governed_by .-> con_agent_failure_record
   art_ai_model_request -. governed_by .-> con_ai_model_request
   art_ai_model_response -. governed_by .-> con_ai_model_response
+  art_ai_programming_governance_rollup_record -. governed_by .-> con_ai_programming_governance_rollup_record
+  art_ai_programming_loop_violation_record -. governed_by .-> con_ai_programming_loop_violation_record
+  art_ai_programming_work_item_record -. governed_by .-> con_ai_programming_work_item_record
   art_ail_ai_pattern_mining_record -. governed_by .-> con_ail_ai_pattern_mining_record
   art_ail_ai_roadmap_candidate_record -. governed_by .-> con_ail_ai_roadmap_candidate_record
   art_ail_continuous_pattern_learning_record -. governed_by .-> con_ail_continuous_pattern_learning_record
@@ -3981,6 +3990,9 @@ flowchart TD
   con_agent_failure_record -->|validates| art_agent_failure_record
   con_ai_model_request -->|validates| art_ai_model_request
   con_ai_model_response -->|validates| art_ai_model_response
+  con_ai_programming_governance_rollup_record -->|validates| art_ai_programming_governance_rollup_record
+  con_ai_programming_loop_violation_record -->|validates| art_ai_programming_loop_violation_record
+  con_ai_programming_work_item_record -->|validates| art_ai_programming_work_item_record
   con_ail_ai_pattern_mining_record -->|validates| art_ail_ai_pattern_mining_record
   con_ail_ai_roadmap_candidate_record -->|validates| art_ail_ai_roadmap_candidate_record
   con_ail_continuous_pattern_learning_record -->|validates| art_ail_continuous_pattern_learning_record
