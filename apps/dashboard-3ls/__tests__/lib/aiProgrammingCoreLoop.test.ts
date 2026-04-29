@@ -170,6 +170,25 @@ describe('AEX-PQX-DASH-01-REFINE — core-loop proof computation', () => {
       expect(summary.weakest_leg).toBeNull();
     });
 
+    it('drops malformed rows rather than crashing the summary', () => {
+      const partial: AiProgrammingGovernedPathRecord = {
+        data_source: 'artifact_store',
+        ai_programming_work_items: [
+          buildItem({ work_item_id: 'CX-1', agent: 'codex' }),
+          // partial / corrupt rows that would crash summarizeWorkItem
+          // if dereferenced directly
+          null as unknown as AiProgrammingWorkItem,
+          'oops' as unknown as AiProgrammingWorkItem,
+          {} as unknown as AiProgrammingWorkItem,
+          { core_loop_observations: {} } as unknown as AiProgrammingWorkItem,
+        ],
+      };
+      expect(() => computeCoreLoopSummary(partial, 'unavailable')).not.toThrow();
+      const summary = computeCoreLoopSummary(partial, 'unavailable');
+      expect(summary.total_work_item_count).toBe(1);
+      expect(summary.work_items[0].work_item_id).toBe('CX-1');
+    });
+
     it('returns unknown shape with surfaced warning when artifact is missing', () => {
       const summary = computeCoreLoopSummary(null, 'missing-artifact-warning');
       expect(summary.overall_status).toBe('UNKNOWN');

@@ -306,7 +306,17 @@ export function computeCoreLoopSummary(
     };
   }
 
-  const workItems = record.ai_programming_work_items.map(summarizeWorkItem);
+  // Fail-closed: drop malformed rows (null, primitives, or entries without
+  // a string work_item_id) rather than letting summarizeWorkItem dereference
+  // a non-object and 500 the API. Partial-write or drifted artifacts must
+  // surface as UNKNOWN coverage, not as a crash.
+  const validRows = record.ai_programming_work_items.filter(
+    (item): item is AiProgrammingWorkItem =>
+      typeof item === 'object' &&
+      item !== null &&
+      typeof (item as { work_item_id?: unknown }).work_item_id === 'string',
+  );
+  const workItems = validRows.map(summarizeWorkItem);
 
   const counts_by_leg: CoreLoopCounts = {
     aex_present_count: 0,
