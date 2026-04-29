@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-04-28T07:31:51Z",
-  "freshness_timestamp_utc": "2026-04-28T07:31:51Z",
+  "generated_at": "2026-04-29T13:47:42Z",
+  "freshness_timestamp_utc": "2026-04-29T13:47:42Z",
   "repo_name": "spectrum-systems",
   "root_counts": {
-    "files_total": 8636,
-    "runtime_modules": 296,
-    "tests": 774,
-    "contracts_total": 2812,
-    "schemas": 1524,
-    "examples": 1288,
-    "docs": 1569,
+    "files_total": 8669,
+    "runtime_modules": 327,
+    "tests": 817,
+    "contracts_total": 2830,
+    "schemas": 1533,
+    "examples": 1297,
+    "docs": 1612,
     "run_artifacts": 152
   },
   "core_areas": [
@@ -57,7 +57,7 @@
     },
     {
       "area": "Roadmap",
-      "count": 15,
+      "count": 16,
       "note": "Roadmap-linked execution and sequencing support."
     },
     {
@@ -67,12 +67,12 @@
     },
     {
       "area": "Judgment",
-      "count": 7,
+      "count": 8,
       "note": "Judgment and policy decision logic."
     },
     {
       "area": "Evaluation",
-      "count": 21,
+      "count": 22,
       "note": "Evaluation and quality validation modules."
     },
     {
@@ -82,7 +82,7 @@
     },
     {
       "area": "Governed repair",
-      "count": 10,
+      "count": 11,
       "note": "Governed repair and remediation pathways."
     }
   ],
@@ -100,12 +100,12 @@
     {
       "title": "Evidence and review density",
       "status": "Strong",
-      "detail": "Review artifacts detected: 1224 markdown files."
+      "detail": "Review artifacts detected: 1264 markdown files."
     },
     {
       "title": "Roadmap sprawl risk",
       "status": "Watch",
-      "detail": "Docs-to-runtime ratio: 5.30."
+      "detail": "Docs-to-runtime ratio: 4.93."
     },
     {
       "title": "Runtime concentration",
@@ -122,7 +122,7 @@
     "current_run_state_record": {
       "artifact_type": "current_run_state_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-28T01:47:26Z",
+      "generated_at": "2026-04-28T13:17:59Z",
       "last_run_id": "OPS-MASTER-01",
       "status": "completed",
       "outcomes": [
@@ -134,7 +134,7 @@
     "current_bottleneck_record": {
       "artifact_type": "current_bottleneck_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-28T01:47:26Z",
+      "generated_at": "2026-04-28T13:17:59Z",
       "bottleneck_name": "repair_loop_latency",
       "evidence": [
         "first_pass_quality_artifact.first_pass_rate=0.71",
@@ -148,7 +148,7 @@
     "hard_gate_status_record": {
       "artifact_type": "hard_gate_status_record",
       "batch_id": "OPS-MASTER-01",
-      "generated_at": "2026-04-28T01:47:26Z",
+      "generated_at": "2026-04-28T13:17:59Z",
       "required_artifacts": [
         "current_run_state_record",
         "pre_pqx_contract_readiness_artifact",
