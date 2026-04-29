@@ -476,7 +476,7 @@ def map_failure_to_proposals(
             f"{failure_pattern.get('artifact_type')}"
         )
     failure_type = failure_pattern.get("failure_type")
-    if failure_type not in _FAILURE_TO_PROPOSALS:
+    if not isinstance(failure_type, str) or failure_type not in _FAILURE_TO_PROPOSALS:
         raise AIFailureMapperError(
             f"hop_ai_failure_mapper:no_mapping_for_failure_type:{failure_type}"
         )
