@@ -54,12 +54,8 @@
     "record_id": {"type": "string"},
     "system": {
       "type": "string",
-      "enum": [
-        "AEX", "PQX", "EVL", "TPA", "CDE", "SEL",
-        "RIL", "FRE", "RFX",
-        "OBS", "LIN", "REP", "SLO",
-        "GOV", "REL"
-      ]
+      "pattern": "^[A-Z0-9]{2,8}$",
+      "description": "Canonical 3-letter system acronym from docs/architecture/system_registry.md. Pattern matches the registry's acronym shape so this schema does not block measurement of any registered system."
     },
     "measurement_dimensions": {
       "type": "array",

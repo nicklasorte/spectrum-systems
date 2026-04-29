@@ -23,16 +23,20 @@ A non-owning observation surface that:
 
 ## What this layer is NOT
 
-- Not an authority. It does not produce `allow / warn / freeze / block`
-  control verdicts. CDE remains the sole decision authority.
-- Not an orchestrator. TLC remains the sole orchestration authority.
-- Not an executor. PQX remains the sole execution authority.
-- Not an enforcer. SEL remains the sole enforcement authority.
-- Not a routing surface. Routing remains with TLC.
+- This layer does not produce `allow / warn / freeze / block` control
+  verdicts.
+- This layer does not orchestrate.
+- This layer does not execute.
+- This layer does not enforce.
+- This layer does not route.
+
+Canonical ownership for control, orchestration, execution, enforcement, and
+routing is declared in `docs/architecture/system_registry.md` and is
+unchanged by this layer. See that registry for the authoritative ownership
+mapping.
 
 Every measurement artifact carries `authority_scope = "observation_only"`.
-Schema validation rejects any other value, preventing accidental authority
-leakage.
+Schema validation rejects any other value.
 
 ## Artifacts
 

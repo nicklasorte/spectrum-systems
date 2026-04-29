@@ -114,10 +114,19 @@ def test_authority_scope_must_be_observation_only(name: str) -> None:
 # 3ls_system_measurement_record
 # ─────────────────────────────────────────────────────────────────────────────
 
-def test_system_measurement_invalid_system_enum_fails() -> None:
+def test_system_measurement_invalid_system_pattern_fails() -> None:
     instance = load_example("3ls_system_measurement_record")
-    instance["system"] = "NOT_A_SYSTEM"
+    instance["system"] = "lowercase"
     with pytest.raises(ValidationError):
+        validate_artifact(instance, "3ls_system_measurement_record")
+
+
+def test_system_measurement_accepts_any_registry_acronym() -> None:
+    """Pattern-based system field must accept any canonical 3LS acronym from
+    the registry, not just the SMA-01 v2 introductory subset."""
+    instance = load_example("3ls_system_measurement_record")
+    for system in ("CTX", "TLC", "RAX", "JDX", "MNT", "RFX"):
+        instance["system"] = system
         validate_artifact(instance, "3ls_system_measurement_record")
 
 

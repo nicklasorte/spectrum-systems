@@ -52,14 +52,16 @@ Manifest:
 
 ## Systems covered
 
-The `3ls_system_measurement_record` schema enumerates the canonical 3LS
-systems carried forward from SMA-01:
+The systems explicitly retained from SMA-01 are:
 
 `AEX, PQX, EVL, TPA, CDE, SEL, RIL, FRE, RFX, OBS, LIN, REP, SLO, GOV, REL`
 
-Other artifacts (handoff, scope-risk, trust-gap, replayability) accept any
-2–8 char uppercase 3LS identifier so they can attach to systems beyond the
-core 15 without schema churn.
+All measurement schemas (system_measurement, handoff, scope-risk,
+trust-gap, replayability, etc.) accept any canonical 3LS acronym matching
+`^[A-Z0-9]{2,8}$`, aligning with the shape used in
+`docs/architecture/system_registry.md`. This avoids a hardcoded enum that
+would block measurement records for other registered systems (CTX, TLC,
+RAX, JDX, MNT, …) and keeps the schemas resilient to registry growth.
 
 ## Measurement dimensions added
 
