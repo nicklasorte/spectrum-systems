@@ -84,8 +84,7 @@
           "spectrum_systems/modules/runtime/dex_runtime.py",
           "spectrum_systems/modules/runtime/execution_contracts.py",
           "spectrum_systems/modules/runtime/github_pr_autofix_review_artifact_validation.py",
-          "spectrum_systems/modules/runtime/governed_execution_kernel.py",
-          "spectrum_systems/modules/runtime/governed_repair_loop_execution.py"
+          "spectrum_systems/modules/runtime/governed_execution_kernel.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -593,13 +592,7 @@
           "spectrum_systems/modules/runtime/control_loop_chaos.py",
           "spectrum_systems/modules/runtime/control_surface_manifest.py",
           "spectrum_systems/modules/runtime/enforcement_engine.py",
-          "spectrum_systems/modules/runtime/enforcement_gate.py",
-<<<<<<< HEAD
-          "spectrum_systems/modules/runtime/eval_registry.py"
-=======
-          "spectrum_systems/modules/runtime/eval_registry.py",
-          "spectrum_systems/modules/runtime/eval_slice_summary.py"
->>>>>>> origin/main
+          "spectrum_systems/modules/runtime/enforcement_gate.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -1595,8 +1588,7 @@
           "spectrum_systems/modules/runtime/rfx_chaos_campaign.py",
           "spectrum_systems/modules/runtime/rfx_cross_run_consistency.py",
           "spectrum_systems/modules/runtime/rfx_failure_profile.py",
-          "spectrum_systems/modules/runtime/rfx_fix_integrity_proof.py",
-          "spectrum_systems/modules/runtime/rfx_flow_integration.py"
+          "spectrum_systems/modules/runtime/rfx_fix_integrity_proof.py"
         ],
         "review_actions": [],
         "reviews": [],
@@ -2005,6 +1997,7 @@
           "artifacts/policy-engine-report.json",
           "artifacts/policy-engine-summary.md",
           "artifacts/system_dependency_priority_report.json",
+          "artifacts/tls/d3l_registry_contract.json",
           "artifacts/tls/system_candidate_classification.json",
           "artifacts/tls/system_dependency_priority_report.json",
           "artifacts/tls/system_evidence_attachment.json",
@@ -2026,6 +2019,7 @@
           "spectrum_systems/modules/runtime/fre_repair_flow.py",
           "spectrum_systems/modules/runtime/governed_repair_foundation.py",
           "spectrum_systems/modules/runtime/governed_repair_loop_execution.py",
+          "spectrum_systems/modules/runtime/prl_lrt_failure_packet.py",
           "spectrum_systems/modules/runtime/ril_interpretation.py",
           "spectrum_systems/modules/runtime/system_enforcement_layer.py",
           "spectrum_systems/modules/runtime/top_level_conductor.py"
@@ -2054,7 +2048,7 @@
           "tests/test_ril_interpretation.py"
         ]
       },
-      "evidence_count": 40,
+      "evidence_count": 42,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRL"
