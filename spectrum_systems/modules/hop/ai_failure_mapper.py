@@ -372,7 +372,7 @@ def build_ai_failure_pattern(
     """
     if not isinstance(failure_pattern_id, str) or not failure_pattern_id:
         raise AIFailureMapperError("hop_ai_failure_mapper:invalid_failure_pattern_id")
-    if failure_type not in _VALID_FAILURE_TYPES:
+    if not isinstance(failure_type, str) or failure_type not in _VALID_FAILURE_TYPES:
         raise AIFailureMapperError(
             f"hop_ai_failure_mapper:unknown_failure_type:{failure_type}"
         )
@@ -536,7 +536,12 @@ def validate_proposal_authority_boundary(proposal: dict[str, Any]) -> None:
             raise AIFailureMapperError(
                 f"hop_ai_failure_mapper:proposal_forbidden_authority_key:{forbidden_key}"
             )
-    if set(boundary.get("review_owners") or []) != {"CDE", "GOV"}:
+    review_owners = boundary.get("review_owners")
+    try:
+        review_owners_set = set(review_owners or [])
+    except TypeError:
+        raise AIFailureMapperError("hop_ai_failure_mapper:proposal_invalid_review_owners")
+    if review_owners_set != {"CDE", "GOV"}:
         raise AIFailureMapperError("hop_ai_failure_mapper:proposal_invalid_review_owners")
     if boundary.get("execution_owner") != "PQX":
         raise AIFailureMapperError("hop_ai_failure_mapper:proposal_invalid_execution_owner")
