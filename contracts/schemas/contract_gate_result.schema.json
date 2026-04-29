@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "contract_gate_result",
+  "description": "Schema for Contract Gate result artifacts (Gate 1 of 4).",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "gate_name",
+    "status",
+    "produced_at",
+    "producer_script",
+    "artifact_hash"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "contract_gate_result"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "gate_name": {
+      "type": "string",
+      "const": "contract_gate"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["allow", "warn", "freeze", "block"]
+    },
+    "produced_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "producer_script": {
+      "type": "string"
+    },
+    "artifact_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "base_ref": {
+      "type": "string"
+    },
+    "head_ref": {
+      "type": "string"
+    },
+    "execution_context": {
+      "type": "string"
+    },
+    "strategy_gate_decision": {
+      "type": "string",
+      "enum": ["ALLOW", "WARN", "BLOCK", "FREEZE"]
+    },
+    "pytest_execution_record_ref": {
+      "type": "string"
+    },
+    "pytest_selection_integrity_result_ref": {
+      "type": "string"
+    },
+    "preflight_exit_code": {
+      "type": "integer"
+    },
+    "executed_commands": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "failure_summary": {
+      "$ref": "#/definitions/failure_summary"
+    }
+  },
+  "definitions": {
+    "failure_summary": {
+      "type": "object",
+      "required": [
+        "gate_name",
+        "failure_class",
+        "root_cause",
+        "blocking_reason",
+        "next_action"
+      ],
+      "properties": {
+        "gate_name": { "type": "string" },
+        "failure_class": { "type": "string" },
+        "root_cause": { "type": "string" },
+        "blocking_reason": { "type": "string" },
+        "next_action": { "type": "string" },
+        "affected_files": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "failed_command": { "type": "string" },
+        "artifact_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,238 @@
+{
+  "schema_version": "1.0.0",
+  "produced_at": "2026-04-29",
+  "producer": "TST-24 gate ownership manifest",
+  "description": "Canonical ownership, purpose, and operational contract for each CI gate.",
+  "gates": [
+    {
+      "gate_name": "contract_gate",
+      "owner_surface": "scripts/run_contract_gate.py",
+      "purpose": "Enforce schema validity, artifact boundary integrity, module architecture rules, system registry guard, and authority shape compliance before any test execution.",
+      "inputs": [
+        "base_ref",
+        "head_ref",
+        "contracts/schemas/",
+        "docs/architecture/system_registry.md",
+        "docs/governance/preflight_required_surface_test_overrides.json",
+        "artifacts/pqx_runs/preflight.pqx_slice_execution_record.json"
+      ],
+      "outputs": [
+        "outputs/gates/contract_gate_result.json",
+        "outputs/contract_preflight/contract_preflight_result_artifact.json",
+        "outputs/contract_preflight/pytest_execution_record.json",
+        "outputs/contract_preflight/pytest_selection_integrity_result.json"
+      ],
+      "protected_invariants": [
+        "No schema-invalid artifacts may be promoted",
+        "No module cross-write violations",
+        "No authority shape violations",
+        "No orphaned governed surfaces",
+        "Pytest execution must be owned by preflight"
+      ],
+      "required_tests": [
+        "tests/gates/test_gate_fail_closed.py",
+        "tests/test_aex_admission.py",
+        "tests/test_aex_schema_validation.py",
+        "tests/test_contract_preflight.py",
+        "tests/test_contracts.py",
+        "tests/test_system_registry_guard.py",
+        "tests/test_artifact_boundary_workflow_policy_observation.py"
+      ],
+      "failure_modes": [
+        "missing_preflight_artifact",
+        "strategy_gate_decision_block",
+        "strategy_gate_decision_warn",
+        "missing_execution_record",
+        "executed_false",
+        "empty_selected_targets",
+        "missing_provenance_fields",
+        "module_architecture_violation",
+        "artifact_boundary_violation",
+        "registry_authority_violation"
+      ],
+      "escalation_path": "Review contract_gate_result.json → contract_preflight_result_artifact.json → contract_preflight_report.md",
+      "runtime_budget_pr_seconds": 90,
+      "runtime_budget_nightly_seconds": 90
+    },
+    {
+      "gate_name": "test_selection_gate",
+      "owner_surface": "scripts/run_test_selection_gate.py",
+      "purpose": "Validate that the set of tests selected for this PR is non-empty, properly derived from the changed paths, and passes integrity checks.",
+      "inputs": [
+        "outputs/contract_preflight/pytest_execution_record.json",
+        "outputs/contract_preflight/pytest_selection_integrity_result.json",
+        "outputs/contract_preflight/contract_preflight_result_artifact.json",
+        "docs/governance/pytest_pr_selection_integrity_policy.json",
+        "docs/governance/pytest_pr_inventory_baseline.json"
+      ],
+      "outputs": [
+        "outputs/gates/test_selection_gate_result.json"
+      ],
+      "protected_invariants": [
+        "Empty selection is never pass-equivalent",
+        "Governed surface changes always trigger at least a smoke test",
+        "Selection provenance is always hashed and traceable",
+        "Selection cannot be fabricated from stale state"
+      ],
+      "required_tests": [
+        "tests/gates/test_gate_fail_closed.py",
+        "tests/test_pytest_selection_integrity.py"
+      ],
+      "failure_modes": [
+        "missing_upstream_artifact",
+        "invalid_json_artifact",
+        "empty_selection_no_fallback",
+        "missing_provenance_fields",
+        "commit_sha_mismatch",
+        "artifact_hash_mismatch",
+        "selection_integrity_block"
+      ],
+      "escalation_path": "Review test_selection_gate_result.json → pytest_selection_integrity_result.json",
+      "runtime_budget_pr_seconds": 10,
+      "runtime_budget_nightly_seconds": 10
+    },
+    {
+      "gate_name": "runtime_test_gate",
+      "owner_surface": "scripts/run_runtime_test_gate.py",
+      "purpose": "Execute the selected tests and verify all pass.",
+      "inputs": [
+        "outputs/gates/test_selection_gate_result.json",
+        "selected test files (from test_selection_gate_result.selected_targets)"
+      ],
+      "outputs": [
+        "outputs/gates/runtime_test_gate_result.json"
+      ],
+      "protected_invariants": [
+        "No PR may be promoted if any selected test fails",
+        "Test execution is always recorded with provenance",
+        "Runtime failures produce structured artifacts"
+      ],
+      "required_tests": [
+        "tests/gates/test_gate_fail_closed.py"
+      ],
+      "failure_modes": [
+        "missing_selection_result",
+        "empty_selected_targets",
+        "pytest_test_failure",
+        "pytest_nonzero_exit",
+        "executed_false"
+      ],
+      "escalation_path": "Review runtime_test_gate_result.json → failing test output",
+      "runtime_budget_pr_seconds": 120,
+      "runtime_budget_nightly_seconds": 900
+    },
+    {
+      "gate_name": "governance_gate",
+      "owner_surface": "scripts/run_governance_gate.py",
+      "purpose": "Validate governance artifacts, strategy compliance, schema registries, and ecosystem registries for paths touched by this PR.",
+      "inputs": [
+        "base_ref",
+        "head_ref",
+        "docs/governance/",
+        "docs/architecture/system_registry.md",
+        "evals/eval_case_library.json",
+        "docs/governance/governance_manifest.json"
+      ],
+      "outputs": [
+        "outputs/gates/governance_gate_result.json"
+      ],
+      "protected_invariants": [
+        "No governance surface change promoted without validation",
+        "System registry schema gaps block promotion",
+        "Review artifacts are valid before merge",
+        "Authority shape violations caught before main"
+      ],
+      "required_tests": [
+        "tests/gates/test_gate_fail_closed.py",
+        "tests/test_3ls_registry_guard.py",
+        "tests/governance/test_3ls_authority_preflight.py"
+      ],
+      "failure_modes": [
+        "strategy_compliance_violation",
+        "registry_schema_missing",
+        "ecosystem_registry_invalid",
+        "review_artifact_invalid",
+        "governance_manifest_invalid"
+      ],
+      "escalation_path": "Review governance_gate_result.json → specific check output",
+      "runtime_budget_pr_seconds": 45,
+      "runtime_budget_nightly_seconds": 120
+    },
+    {
+      "gate_name": "certification_gate",
+      "owner_surface": "scripts/run_certification_gate.py",
+      "purpose": "Verify the system is certifiable: replay checks, lineage, eval CI, fail-closed behavior, and promotion readiness.",
+      "inputs": [
+        "contracts/examples/eval_run.json",
+        "contracts/examples/eval_case.json",
+        "contracts/examples/continuation_decision_record.json",
+        "data/policy/eval_release_policy.json"
+      ],
+      "outputs": [
+        "outputs/gates/certification_gate_result.json",
+        "outputs/sel_replay_gate/",
+        "outputs/eval_ci_gate/",
+        "outputs/governed_failure_injection/"
+      ],
+      "protected_invariants": [
+        "No promotion without passing certification",
+        "Replay mismatch always blocks",
+        "Eval coverage gaps are surfaced",
+        "Lineage chain must be unbroken"
+      ],
+      "required_tests": [
+        "tests/gates/test_gate_fail_closed.py",
+        "tests/test_governed_failure_injection.py",
+        "tests/test_aex_fail_closed.py"
+      ],
+      "failure_modes": [
+        "sel_replay_mismatch",
+        "eval_ci_failure",
+        "governed_failure_injection_failure",
+        "lineage_broken",
+        "done_certification_missing",
+        "cert_paths_not_touched_skip"
+      ],
+      "escalation_path": "Review certification_gate_result.json → outputs/sel_replay_gate/ → outputs/eval_ci_gate/",
+      "runtime_budget_pr_seconds": 60,
+      "runtime_budget_nightly_seconds": 600
+    },
+    {
+      "gate_name": "ci_drift_detector",
+      "owner_surface": "scripts/run_ci_drift_detector.py",
+      "purpose": "Detect when CI has drifted from the canonical gate model: unmapped workflows, missing schemas, unmapped test files, missing gate scripts.",
+      "inputs": [
+        ".github/workflows/",
+        "contracts/schemas/",
+        "docs/governance/ci_gate_ownership_manifest.json",
+        "docs/governance/test_gate_mapping.json",
+        "scripts/run_*_gate.py"
+      ],
+      "outputs": [
+        "outputs/ci_drift_detector/drift_report.json"
+      ],
+      "protected_invariants": [
+        "Every workflow is mapped to a canonical gate",
+        "All gate result schemas are present and strict",
+        "All canonical gate scripts are present",
+        "Ownership manifest contains all four required gates",
+        "No unmapped test files"
+      ],
+      "required_tests": [
+        "tests/gates/test_ci_drift_detector.py"
+      ],
+      "failure_modes": [
+        "unmapped_workflow",
+        "missing_gate_schema",
+        "invalid_gate_schema",
+        "weak_gate_schema",
+        "missing_ownership_manifest",
+        "incomplete_ownership_manifest",
+        "missing_gate_script"
+      ],
+      "escalation_path": "Review outputs/ci_drift_detector/drift_report.json for findings",
+      "runtime_budget_pr_seconds": 10,
+      "runtime_budget_nightly_seconds": 10
+    }
+  ]
+}

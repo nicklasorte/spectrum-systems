@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "certification_gate_result",
+  "description": "Schema for Certification Gate result artifacts (nightly/release, fast PR mode).",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "gate_name",
+    "status",
+    "produced_at",
+    "producer_script",
+    "artifact_hash"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "certification_gate_result"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "gate_name": {
+      "type": "string",
+      "const": "certification_gate"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["allow", "warn", "freeze", "block"]
+    },
+    "produced_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "producer_script": {
+      "type": "string"
+    },
+    "artifact_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["fast", "deep"]
+    },
+    "base_ref": {
+      "type": "string"
+    },
+    "head_ref": {
+      "type": "string"
+    },
+    "checks_run": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "skipped_reason": {
+      "type": "string"
+    },
+    "executed_commands": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "failure_summary": {
+      "$ref": "#/definitions/failure_summary"
+    }
+  },
+  "definitions": {
+    "failure_summary": {
+      "type": "object",
+      "required": [
+        "gate_name",
+        "failure_class",
+        "root_cause",
+        "blocking_reason",
+        "next_action"
+      ],
+      "properties": {
+        "gate_name": { "type": "string" },
+        "failure_class": { "type": "string" },
+        "root_cause": { "type": "string" },
+        "blocking_reason": { "type": "string" },
+        "next_action": { "type": "string" },
+        "affected_files": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "failed_command": { "type": "string" },
+        "artifact_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

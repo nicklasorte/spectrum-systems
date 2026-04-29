@@ -1,29 +1,32 @@
 {
-  "schema_version": "1.0.0",
-  "suite_name": "pr_default",
+  "schema_version": "2.0.0",
+  "suite_name": "pr_smoke_baseline",
+  "description": "Fallback smoke suite invoked when test selection is below threshold. Covers core invariants: schema, contracts, system registry, control signals, policy enforcement, eval coverage, replay/lineage, SLO/control behavior.",
   "suite_targets": [
-    "tests/test_eval_dataset_registry.py"
+    "tests/test_eval_dataset_registry.py",
+    "tests/test_aex_admission.py",
+    "tests/test_aex_fail_closed.py",
+    "tests/test_aex_schema_validation.py",
+    "tests/test_contracts.py",
+    "tests/test_system_registry.py",
+    "tests/test_system_registry_guard.py",
+    "tests/test_contract_preflight.py",
+    "tests/test_aex_trust_hardening.py",
+    "tests/test_aex_hardening.py",
+    "tests/test_eval_coverage.py",
+    "tests/test_eval_coverage_enforcement.py",
+    "tests/test_artifact_boundary_workflow_policy_observation.py",
+    "tests/test_artifact_boundary_workflow_pytest_policy_observation.py"
   ],
-  "expected_count": 19,
-  "expected_nodeids": [
-    "tests/test_eval_dataset_registry.py::test_valid_dataset_creation",
-    "tests/test_eval_dataset_registry.py::test_member_rejection_for_missing_provenance",
-    "tests/test_eval_dataset_registry.py::test_duplicate_rejection",
-    "tests/test_eval_dataset_registry.py::test_artifact_type_rejection",
-    "tests/test_eval_dataset_registry.py::test_policy_rejection_of_failure_generated_cases",
-    "tests/test_eval_dataset_registry.py::test_policy_rejection_of_manual_cases",
-    "tests/test_eval_dataset_registry.py::test_policy_rejection_of_manual_failure_cases",
-    "tests/test_eval_dataset_registry.py::test_deterministic_summary_counts",
-    "tests/test_eval_dataset_registry.py::test_duplicate_resolution_is_permutation_invariant",
-    "tests/test_eval_dataset_registry.py::test_contains_failure_generated_cases_tracks_admitted_generated_source",
-    "tests/test_eval_dataset_registry.py::test_contains_failure_generated_cases_excludes_rejected_generated_source",
-    "tests/test_eval_dataset_registry.py::test_missing_canonicalization_policy_id_hard_fails",
-    "tests/test_eval_dataset_registry.py::test_unknown_canonicalization_policy_id_hard_fails",
-    "tests/test_eval_dataset_registry.py::test_canonicalization_v1_locks_field_order_and_tie_break_behavior",
-    "tests/test_eval_dataset_registry.py::test_membership_rejects_unsupported_source_at_admission_boundary",
-    "tests/test_eval_dataset_registry.py::test_snapshot_rejects_active_policy_mismatch",
-    "tests/test_eval_dataset_registry.py::test_snapshot_rejects_mixed_canonicalization_policy_ids",
-    "tests/test_eval_dataset_registry.py::test_snapshot_includes_canonicalization_policy_provenance",
-    "tests/test_eval_dataset_registry.py::test_fail_closed_on_malformed_input"
-  ]
+  "invariants_covered": [
+    "contracts/schema enforcement",
+    "system registry guard",
+    "control signals (AEX)",
+    "policy enforcement (AEX fail-closed)",
+    "required eval coverage",
+    "replay/lineage (AEX admission replay)",
+    "SLO/control behavior (aex trust hardening)"
+  ],
+  "expected_minimum_count": 14,
+  "version_note": "v2.0.0 expands from single-file (v1) to multi-file smoke suite covering all canonical gate invariants. The prior single-file baseline (test_eval_dataset_registry.py, 19 tests) is preserved as suite_targets[0]."
 }

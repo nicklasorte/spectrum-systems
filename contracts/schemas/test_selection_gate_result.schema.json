@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "test_selection_gate_result",
+  "description": "Schema for Test Selection Gate result artifacts (Gate 2 of 4).",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "gate_name",
+    "status",
+    "produced_at",
+    "producer_script",
+    "artifact_hash"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "const": "test_selection_gate_result"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "gate_name": {
+      "type": "string",
+      "const": "test_selection_gate"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["allow", "warn", "freeze", "block"]
+    },
+    "produced_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "producer_script": {
+      "type": "string"
+    },
+    "artifact_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_name": {
+      "type": "string"
+    },
+    "selected_targets": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "target_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "selection_integrity_decision": {
+      "type": "string",
+      "enum": ["ALLOW", "BLOCK", "WARN"]
+    },
+    "fallback_invoked": {
+      "type": "boolean"
+    },
+    "executed": {
+      "type": "boolean"
+    },
+    "minimum_selection_threshold": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "execution_record_ref": {
+      "type": "string"
+    },
+    "selection_record_ref": {
+      "type": "string"
+    },
+    "failure_summary": {
+      "$ref": "#/definitions/failure_summary"
+    }
+  },
+  "definitions": {
+    "failure_summary": {
+      "type": "object",
+      "required": [
+        "gate_name",
+        "failure_class",
+        "root_cause",
+        "blocking_reason",
+        "next_action"
+      ],
+      "properties": {
+        "gate_name": { "type": "string" },
+        "failure_class": { "type": "string" },
+        "root_cause": { "type": "string" },
+        "blocking_reason": { "type": "string" },
+        "next_action": { "type": "string" },
+        "affected_files": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "failed_command": { "type": "string" },
+        "artifact_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
