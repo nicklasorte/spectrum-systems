@@ -23,6 +23,13 @@ _KEEP_GOING_PATTERNS = frozenset({
     "dont stop",
     "don't stop",
     "continue indefinitely",
+    # Generic continuation phrases that also require checkpoint guard
+    "continue",
+    "continue please",
+    "go ahead",
+    "proceed",
+    "next",
+    "resume",
 })
 
 _ALLOWED_ACTIONS = frozenset({"continue", "split", "freeze", "block"})
@@ -76,6 +83,14 @@ def decide_lrt_continuation(
             "decision": "continue",
             "reason_codes": ["checkpoint_present", "execution_budget_valid"],
             "block_reason": None,
+        }
+
+    # Safety net: any unrecognised phrase with no checkpoint must not silently continue.
+    if not checkpoint_present:
+        return {
+            "decision": "block",
+            "reason_codes": ["continuation_without_checkpoint"],
+            "block_reason": "no checkpoint present; cannot allow continuation for long-running task",
         }
 
     return {

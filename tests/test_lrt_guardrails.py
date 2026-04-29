@@ -60,13 +60,22 @@ def test_broad_prompt_with_budget_is_admitted_as_bounded() -> None:
 
 
 def test_keep_going_without_checkpoint_is_blocked() -> None:
+    for phrase in ("keep going", "continue", "go ahead", "proceed"):
+        decision = decide_lrt_continuation(
+            continuation_phrase=phrase,
+            checkpoint_present=False,
+            stop_after_checkpoint=False,
+        )
+        assert decision["decision"] == "block", f"phrase {phrase!r} should be blocked without checkpoint"
+
+    # Unrecognised phrase also blocked when no checkpoint present (safety net)
     decision = decide_lrt_continuation(
-        continuation_phrase="keep going",
+        continuation_phrase="do something else",
         checkpoint_present=False,
         stop_after_checkpoint=False,
     )
     assert decision["decision"] == "block"
-    assert "keep_going_without_checkpoint" in decision["reason_codes"]
+    assert "continuation_without_checkpoint" in decision["reason_codes"]
 
 
 def test_checkpoint_record_validates_and_serializes() -> None:
