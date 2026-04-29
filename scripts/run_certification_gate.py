@@ -92,7 +92,7 @@ def _run(cmd: list[str], cwd: str, env: dict | None = None) -> tuple[int, str, s
 
 def _get_changed_files(base_ref: str, head_ref: str, repo_root: str) -> list[str]:
     result = subprocess.run(
-        ["git", "diff", "--name-only", base_ref, head_ref],
+        ["git", "diff", "--name-only", f"{base_ref}...{head_ref}"],
         capture_output=True, text=True, cwd=repo_root
     )
     if result.returncode != 0:
