@@ -107,3 +107,43 @@ def test_workflow_only_pr_does_not_silently_fall_to_fallback_targets() -> None:
     )
     assert result.decision == "BLOCK"
     assert "PYTEST_SELECTION_FILTERING_DETECTED" in result.blocking_reasons
+
+def test_pr1283_changed_paths_have_required_surface_mappings() -> None:
+    changed_paths = [
+        ".github/workflows/nightly-deep-gate.yml",
+        "contracts/schemas/contract_gate_result.schema.json",
+        "contracts/schemas/governance_gate_result.schema.json",
+        "contracts/schemas/pr_gate_result.schema.json",
+        "contracts/schemas/readiness_evidence_gate_result.schema.json",
+        "contracts/schemas/runtime_test_gate_result.schema.json",
+        "contracts/schemas/test_selection_gate_result.schema.json",
+        "docs/architecture/ci_gate_model.md",
+        "docs/governance/ci_gate_ownership_manifest.json",
+        "docs/governance/ci_runtime_budget.md",
+        "docs/governance/preflight_required_surface_test_overrides.json",
+        "docs/governance/pytest_pr_selection_integrity_policy.json",
+        "docs/governance/required_check_cleanup_instructions.md",
+        "docs/governance/test_gate_mapping.json",
+        "docs/review-actions/PLAN-TST-01-25-2026-04-28.md",
+        "docs/review-actions/PLAN-TST-01-25-FIX-PR1283-2026-04-28.md",
+        "docs/reviews/TST-01-25_fix_pr1283_report.md",
+        "docs/reviews/TST-01_ci_test_inventory.md",
+        "docs/reviews/TST-12_required_check_alignment.md",
+        "docs/reviews/TST-16_gate_bypass_redteam.md",
+        "docs/reviews/TST-18_parallel_gate_migration.md",
+        "docs/reviews/TST-20_post_cutover_audit.md",
+        "docs/reviews/TST-21_gate_parity_report.md",
+        "docs/reviews/TST-25_final_delivery_report.md",
+        "scripts/run_ci_drift_detector.py",
+        "scripts/run_contract_gate.py",
+        "scripts/run_governance_gate.py",
+        "scripts/run_pr_gate.py",
+        "scripts/run_readiness_evidence_gate.py",
+        "scripts/run_runtime_test_gate.py",
+        "scripts/run_test_selection_gate.py",
+        "tests/test_ci_drift_detector.py",
+        "tests/test_ci_gate_scripts.py",
+    ]
+    targets_by_path = preflight.resolve_required_surface_tests(preflight.REPO_ROOT, changed_paths)
+    missing = [path for path, targets in targets_by_path.items() if not targets]
+    assert missing == []
