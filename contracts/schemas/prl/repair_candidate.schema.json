@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prl/repair_candidate.schema.json",
+  "title": "Repair Candidate",
+  "description": "PRL-02: bounded repair suggestion. auto_apply is always false. Owned by PRL; consumed advisory-only by FRE/operators.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "id",
+    "timestamp",
+    "run_id",
+    "trace_id",
+    "trace_refs",
+    "failure_packet_ref",
+    "failure_class",
+    "target_files",
+    "repair_prompt",
+    "minimal_fix_scope",
+    "safety_classification",
+    "auto_apply",
+    "requires_human_review"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "repair_candidate"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^prl-rep-[a-f0-9]{16}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": { "type": "string", "minLength": 1 },
+        "related": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "failure_packet_ref": {
+      "type": "string",
+      "pattern": "^pre_pr_failure_packet:.+"
+    },
+    "failure_class": {
+      "type": "string",
+      "enum": [
+        "pytest_selection_missing",
+        "authority_shape_violation",
+        "system_registry_mismatch",
+        "contract_schema_violation",
+        "missing_required_artifact",
+        "trace_missing",
+        "replay_mismatch",
+        "policy_mismatch",
+        "timeout",
+        "rate_limited",
+        "unknown_failure"
+      ]
+    },
+    "target_files": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "repair_prompt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "minimal_fix_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "safety_classification": {
+      "type": "string",
+      "enum": ["safe", "requires_review", "unsafe"]
+    },
+    "auto_apply": {
+      "const": false
+    },
+    "requires_human_review": {
+      "type": "boolean"
+    }
+  }
+}

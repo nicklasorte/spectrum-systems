@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/prl/eval_case_candidate.schema.json",
+  "title": "Eval Case Candidate",
+  "description": "PRL-03: candidate eval case for regression prevention. Not yet promoted to prl_eval_case. Owned by PRL.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "id",
+    "timestamp",
+    "run_id",
+    "trace_id",
+    "trace_refs",
+    "failure_packet_ref",
+    "failure_class",
+    "eval_type",
+    "target_artifact",
+    "pass_condition",
+    "required",
+    "promotion_eligible",
+    "promotion_blocked_reason"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "eval_case_candidate"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^prl-cnd-[a-f0-9]{16}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": { "type": "string", "minLength": 1 },
+        "related": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "failure_packet_ref": {
+      "type": "string",
+      "pattern": "^pre_pr_failure_packet:.+"
+    },
+    "failure_class": {
+      "type": "string",
+      "enum": [
+        "pytest_selection_missing",
+        "authority_shape_violation",
+        "system_registry_mismatch",
+        "contract_schema_violation",
+        "missing_required_artifact",
+        "trace_missing",
+        "replay_mismatch",
+        "policy_mismatch",
+        "timeout",
+        "rate_limited",
+        "unknown_failure"
+      ]
+    },
+    "eval_type": {
+      "type": "string",
+      "enum": [
+        "schema_conformance",
+        "policy_alignment",
+        "replay_consistency",
+        "failure_regression_check"
+      ]
+    },
+    "target_artifact": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pass_condition": {
+      "type": "string",
+      "minLength": 1
+    },
+    "required": {
+      "const": true
+    },
+    "promotion_eligible": {
+      "type": "boolean"
+    },
+    "promotion_blocked_reason": {
+      "type": "string"
+    }
+  }
+}
