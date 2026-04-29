@@ -15,7 +15,7 @@ Before editing any files, the agent must identify:
 
 - request type and intended outcome
 - exact changed surfaces (files, workflows, schemas, tests, docs)
-- authority-shape risks (SEL / ENF / GOV / REL / CDE ownership boundaries)
+- authority-shape risks across canonical-owner boundaries (per `docs/architecture/system_registry.md`)
 - required tests and eval coverage
 - required schema or artifact updates
 - required governance mappings (test_gate_mapping, selection policy, ownership manifest)
@@ -51,12 +51,12 @@ It may produce:
 
 It must NOT claim or implement:
 
-- enforcement authority (SEL / ENF)
-- certification authority (GOV)
-- promotion authority (REL / GOV / CDE)
+- enforcement authority
+- certification authority
+- promotion authority
 - final control decisions
 
-All authority remains with the canonical systems.
+All such authority remains with the canonical owner declared in `docs/architecture/system_registry.md`. AEX emits admission evidence and downstream support inputs only; it does not redefine any 3-letter system's ownership.
 
 ### Fail-Closed Principle
 
@@ -107,10 +107,7 @@ Modules are hard-separated. No module may cross-write another module’s artifac
 |`control/*`    |Emits `allow / warn / freeze / block`        |
 |`enforcement/*`|Executes enforcement actions                 |
 
-- CDE is the sole decision authority.
-- TLC is the sole orchestration authority.
-- PQX is the sole execution authority.
-- SEL is the sole enforcement authority.
+Decision, orchestration, execution, and enforcement assignments are canonical in `docs/architecture/system_registry.md`. Instruction docs must not redefine those assignments here.
 
 ## Hard Rules
 
