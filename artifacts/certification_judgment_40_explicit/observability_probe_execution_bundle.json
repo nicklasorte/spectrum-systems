@@ -3,7 +3,7 @@
   "batch_id": "CERTIFICATION-JUDGMENT-40-EXPLICIT",
   "step": 23,
   "owner": "PQX",
-  "generated_at": "2026-04-29T19:26:54Z",
+  "generated_at": "2026-04-29T19:56:00Z",
   "execution_mode": "STRICT SERIAL WITH HARD CHECKPOINTS",
   "status": "pass",
   "fail_closed": false,
