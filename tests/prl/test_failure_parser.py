@@ -25,6 +25,24 @@ class TestParseLogLine:
         assert result is not None
         assert result.failure_class == "system_registry_mismatch"
 
+    def test_srg_acronym_namespace_collision(self):
+        line = "ACRONYM_NAMESPACE_COLLISION: PRL conflicts with existing namespace"
+        result = parse_log_line(line)
+        assert result is not None
+        assert result.failure_class == "system_registry_mismatch"
+
+    def test_srg_removed_system_reference(self):
+        line = "REMOVED_SYSTEM_REFERENCE: system FOO referenced but removed from registry"
+        result = parse_log_line(line)
+        assert result is not None
+        assert result.failure_class == "system_registry_mismatch"
+
+    def test_srg_owner_introduction_forbidden(self):
+        line = "SRG_OWNER_INTRODUCTION_FORBIDDEN: cannot introduce new owner outside governed flow"
+        result = parse_log_line(line)
+        assert result is not None
+        assert result.failure_class == "system_registry_mismatch"
+
     def test_contract_schema_violation_jsonschema(self):
         line = "jsonschema.exceptions.ValidationError: 'foo' is not valid under any of the given schemas"
         result = parse_log_line(line)
@@ -99,6 +117,18 @@ class TestParseLogLine:
         result = parse_log_line(line)
         assert result is not None
         assert any("test_foo.py" in f for f in result.file_refs)
+
+    def test_file_ref_extraction_json(self):
+        line = "ValidationError: additionalProperties violated in contracts/schemas/foo.json"
+        result = parse_log_line(line)
+        assert result is not None
+        assert any("foo.json" in f for f in result.file_refs)
+
+    def test_file_ref_extraction_yaml(self):
+        line = "contract_schema_violation in .github/workflows/ci.yml"
+        result = parse_log_line(line)
+        assert result is not None
+        assert any("ci.yml" in f for f in result.file_refs)
 
     def test_raw_excerpt_truncated_at_500(self):
         long_line = "authority_shape_violation " + "x" * 600

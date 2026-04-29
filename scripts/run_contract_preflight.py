@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -821,9 +822,10 @@ def _resolve_existing_pytest_targets(paths: list[str]) -> list[str]:
 
 
 def run_targeted_pytests(paths: list[str], *, execution_log: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+    _pytest_bin = shutil.which("pytest")
     failures: list[dict[str, Any]] = []
     for path in paths:
-        cmd = [sys.executable, "-m", "pytest", "-q", path]
+        cmd = [_pytest_bin, "-q", path] if _pytest_bin else [sys.executable, "-m", "pytest", "-q", path]
         result = _run(cmd, cwd=REPO_ROOT)
         if execution_log is not None:
             execution_log.append({"target": path, "command": " ".join(cmd), "returncode": result.returncode})

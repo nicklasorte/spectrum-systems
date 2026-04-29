@@ -3,6 +3,7 @@ from __future__ import annotations
 import configparser
 import json
 import os
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -81,7 +82,11 @@ def _discover_test_files(repo_root: Path, testpaths: list[str]) -> tuple[list[st
 
 
 def _run_collect(repo_root: Path, targets: list[str] | None = None, cwd: Path | None = None) -> tuple[int, list[str], str]:
-    command = [sys.executable, "-m", "pytest", "--collect-only", "-q"]
+    pytest_bin = shutil.which("pytest")
+    if pytest_bin:
+        command = [pytest_bin, "--collect-only", "-q"]
+    else:
+        command = [sys.executable, "-m", "pytest", "--collect-only", "-q"]
     if targets:
         command.extend(targets)
     completed = subprocess.run(command, cwd=str(cwd or repo_root), capture_output=True, text=True, check=False)

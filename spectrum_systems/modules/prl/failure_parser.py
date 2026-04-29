@@ -43,7 +43,8 @@ _PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
             r"|INCOMPLETE_SYSTEM_REGISTRATION|UNOWNED_SYSTEM_SURFACE"
             r"|SHADOW_OWNERSHIP_OVERLAP|DIRECT_OWNERSHIP_OVERLAP"
             r"|PROTECTED_AUTHORITY_VIOLATION|NEW_SYSTEM_MISSING_REGISTRATION"
-            r"|AMBIGUOUS_SYSTEM_SURFACE",
+            r"|AMBIGUOUS_SYSTEM_SURFACE|ACRONYM_NAMESPACE_COLLISION"
+            r"|REMOVED_SYSTEM_REFERENCE|SRG_OWNER_INTRODUCTION_FORBIDDEN",
             re.IGNORECASE,
         ),
         "System registry mismatch or guard failure",
@@ -127,7 +128,7 @@ _PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
     ),
 ]
 
-_FILE_REF_PATTERN = re.compile(r"([\w/\-\.]+\.py)(?::(\d+))?")
+_FILE_REF_PATTERN = re.compile(r"([\w/\-\.]+\.(?:py|json|ya?ml|md|txt|sh|toml))(?::(\d+))?")
 
 
 def _extract_file_refs(text: str) -> tuple[tuple[str, ...], Optional[int]]:
