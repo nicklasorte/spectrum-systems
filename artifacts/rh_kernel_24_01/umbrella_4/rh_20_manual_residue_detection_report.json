@@ -3,7 +3,7 @@
   "batch_id": "RH-KERNEL-24-01",
   "slice_id": "RH-20",
   "owner": "PRG",
-  "generated_at": "2026-04-29T19:45:03Z",
+  "generated_at": "2026-04-29T20:23:49Z",
   "residue_patterns": [
     "repeat fail-closed reminder",
     "repeat report quality reminder"

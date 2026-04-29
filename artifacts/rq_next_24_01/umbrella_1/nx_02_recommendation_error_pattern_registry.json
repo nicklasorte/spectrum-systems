@@ -1,7 +1,7 @@
 {
   "artifact_type": "recommendation_error_pattern_registry",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-29T19:45:13Z",
+  "generated_at": "2026-04-29T20:23:59Z",
   "window": "cycles_03_to_06",
   "patterns": [
     {
