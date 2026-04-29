@@ -1,0 +1,50 @@
+{
+  "artifact_type": "pqx_candidate_action_bundle_record",
+  "schema_version": "1.0.0",
+  "record_id": "PCAB-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/next_best_slice_recommendation_record.json",
+    "artifacts/dashboard_metrics/candidate_closure_ledger_record.json"
+  ],
+  "reason_codes": [
+    "candidate_action_bundle_only",
+    "no_execution_initiated",
+    "aex_admits_pqx_executes_cde_controls",
+    "no_admission_claim_by_met"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Action bundles are candidate-only suggestions to PQX. Admission belongs to AEX, execution to PQX, control to CDE.",
+    "MET never marks a bundle as canonical-owner action. State stays proposed until AEX produces a build_admission_record."
+  ],
+  "failure_prevented": "MET emitting an action bundle that looks like an execution request and bypassing AEX admission.",
+  "signal_improved": "Each bundle candidate names its source slice, scope boundary, do-not-touch surface, required evidence, and its readiness_state — pointing AEX/PQX/CDE at a bounded next bundle.",
+  "bundle_candidates": [
+    {
+      "bundle_candidate_id": "BUNDLE-EVL-LONG-HORIZON-REPLAY",
+      "source_slice": "SLICE-EVL-LONG-HORIZON-REPLAY",
+      "failure_prevented": "Bundle for long-horizon replay coverage being assembled outside AEX admission flow.",
+      "signal_improved": "Bundle candidate is bounded to the slice scope and references the canonical AEX admission path.",
+      "affected_systems": ["EVL", "REP"],
+      "recommended_owner_system": "EVL",
+      "scope_boundary": "Add per-dimension long-horizon status field to REP replay_record. Reference from EVL eval coverage.",
+      "do_not_touch": [
+        "spectrum_systems/modules/runtime/cde_decision_flow.py",
+        "spectrum_systems/modules/runtime/sel_enforcement_foundation.py",
+        "spectrum_systems/modules/runtime/aex_admission_authority.py"
+      ],
+      "required_evidence": [
+        "AEX build_admission_record for the bundle",
+        "PQX pqx_slice_execution_record",
+        "EVL eval_slice_summary"
+      ],
+      "readiness_state": "proposed",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/next_best_slice_recommendation_record.json"
+      ]
+    }
+  ]
+}

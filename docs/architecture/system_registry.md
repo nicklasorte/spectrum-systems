@@ -329,6 +329,36 @@ Overlay authorities required in the same loop:
   - `spectrum_systems/modules/runtime/meta_governance_kernel.py`
   - `spectrum_systems/modules/runtime/review_projection_adapter.py`
 
+### MET
+- **Status:** active, non-owning
+- **Purpose:** measurement, explanation, recommendation, closure tracking, outcome attribution, and signal integrity. MET observes the governed loop, compresses signals, and emits readiness/owner-handoff inputs. It does not decide, approve, enforce, certify, promote, execute, or admit.
+- **Failure Prevented:**
+  - undetected bottlenecks
+  - unclear failure causes
+  - stale candidates
+  - fake trends
+  - unverified improvements
+  - overconfident recommendations
+  - recurring failures
+  - metric gaming
+- **Signal Improved:**
+  - debuggability
+  - bottleneck clarity
+  - closure visibility
+  - outcome attribution
+  - recommendation calibration
+  - signal integrity
+- **Authority:** NONE
+- **Forbidden:** decision ownership, approval ownership, enforcement ownership, certification ownership, promotion ownership, execution ownership, admission ownership.
+- **Invariant:** if MET produces an authority outcome, block. MET artifacts surface observations, recommendations, signals, and readiness evidence only.
+- **Canonical Artifacts Owned (non-authority):** `dashboard_metrics/*` measurement, observation, and signal records (e.g. `candidate_closure_ledger_record`, `outcome_attribution_record`, `recommendation_accuracy_record`, `signal_integrity_check_record`).
+- **Upstream Dependencies:** EVL, LIN, REP, OBS, SLO, TPA, CDE, SEL artifacts.
+- **Downstream Consumers:** AEX, PQX, EVL, TPA, CDE, SEL, GOV, dashboard-3ls.
+- **Primary Code Paths:**
+  - `apps/dashboard-3ls/app/api/intelligence/route.ts`
+  - `apps/dashboard-3ls/app/page.tsx`
+  - `artifacts/dashboard_metrics/`
+
 ### HOP
 - **Status:** active
 - **Purpose:** harness optimization substrate — stores candidate harness code,
@@ -441,6 +471,7 @@ These are important but non-top-level authority families:
 - **GOV** — active certification and governance gate authority
 - **MAP** — active metadata/topology authority
 - **HOP** — active harness optimization substrate authority
+- **MET** — active non-owning measurement, observation, and signal-integrity capability (no authority)
 - **SUP** — deprecated merged into JSX supersession lifecycle
 - **RET** — deprecated merged into JSX retirement lifecycle
 - **QRY** — deprecated merged into CTX retrieve admission flow
@@ -1324,6 +1355,47 @@ These are important but non-top-level authority families:
   - promotion_gate_decision_artifact
 - **must_not_do:**
   - decide_policy_authority
+
+### MET
+- **role:** measurement and observation capability (non-owning).
+- **status:** active
+- **authority:** none
+- **owns:**
+  - measurement_observations
+  - signal_compression
+  - readiness_evidence_inputs
+  - owner_handoff_inputs
+  - improvement_inputs
+- **consumes:**
+  - evl_evaluation_inputs
+  - lin_lineage_inputs
+  - rep_replay_inputs
+  - obs_observability_inputs
+  - slo_error_budget_inputs
+  - tpa_trust_inputs
+  - cde_control_inputs
+  - sel_enforcement_inputs
+- **produces:**
+  - candidate_closure_ledger_record
+  - outcome_attribution_record
+  - recommendation_accuracy_record
+  - calibration_drift_record
+  - signal_confidence_record
+  - cross_run_consistency_record
+  - met_error_budget_observation_record
+  - next_best_slice_recommendation_record
+  - counterfactual_reconstruction_record
+  - recurring_failure_cluster_record
+  - signal_integrity_check_record
+- **must_not_do:**
+  - own_decision_authority
+  - own_approval_authority
+  - own_enforcement_authority
+  - own_certification_authority
+  - own_promotion_authority
+  - own_execution_authority
+  - own_admission_authority
+  - emit_authority_outcomes
 
 ### HOP
 - **role:** harness optimization substrate.

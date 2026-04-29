@@ -266,6 +266,72 @@ type OperatorDebuggabilityDrillBlock = IntelligenceBlockEnvelope & {
   drill_items?: Array<Record<string, unknown>>;
 };
 
+// MET-FULL-ROADMAP — non-owning cockpit blocks. Each block is observation only;
+// authority remains with CDE/SEL/GOV/REL.
+type MetRegistryStatusBlock = {
+  registry_id?: string;
+  status?: string;
+  authority?: string;
+  forbidden?: string[];
+  invariant?: string;
+  failure_prevented?: string[];
+  signal_improved?: string[];
+  upstream_dependencies?: string[];
+  downstream_consumers?: string[];
+  data_source?: string;
+  source_artifacts_used?: string[];
+  warnings?: string[];
+};
+
+type MetCockpitBlock = IntelligenceBlockEnvelope & {
+  trust_observation?: string;
+  weakest_loop_leg?: string;
+  top_next_input_count?: number;
+  owner_handoff_queue_count?: number;
+  stale_candidate_pressure_state?: number | string;
+  trend_readiness_state?: string;
+  debug_readiness_state?: string;
+  artifact_integrity_state?: string;
+  outcome_attribution_state?: string;
+  confidence_calibration_state?: string;
+  recurrence_state?: string;
+  anti_gaming_state?: string;
+  status?: string;
+};
+
+type SliceCandidateItem = {
+  slice_candidate_id?: string;
+  affected_systems?: string[];
+  recommended_owner_system?: string;
+  readiness_state?: string;
+  next_recommended_input?: string | null;
+  source_artifacts_used?: string[];
+};
+
+type TopNextInputsBlock = IntelligenceBlockEnvelope & {
+  items?: SliceCandidateItem[];
+  status?: string;
+};
+
+type OwnerHandoffItem = {
+  owner_read_observation_id?: string;
+  source_candidate_id?: string;
+  recommended_owner_system?: string;
+  read_observation_state?: string;
+  next_recommended_input?: string | null;
+  source_artifacts_used?: string[];
+};
+
+type OwnerHandoffBlock = IntelligenceBlockEnvelope & {
+  items?: OwnerHandoffItem[];
+  status?: string;
+};
+
+type GenericRowsBlock = IntelligenceBlockEnvelope & {
+  status?: string;
+  [key: string]: unknown;
+};
+
 type IntelligencePayload = {
   feedback_loop?: FeedbackLoopBlock;
   feedback_loop_status?: string;
@@ -287,6 +353,34 @@ type IntelligencePayload = {
   trend_ready_case_pack?: TrendReadyCasePackBlock;
   fold_candidate_proof_check?: FoldCandidateProofCheckBlock;
   operator_debuggability_drill?: OperatorDebuggabilityDrillBlock;
+  met_registry_status?: MetRegistryStatusBlock;
+  met_cockpit?: MetCockpitBlock;
+  top_next_inputs?: TopNextInputsBlock;
+  owner_handoff?: OwnerHandoffBlock;
+  stale_candidate_pressure?: GenericRowsBlock;
+  trend_readiness?: GenericRowsBlock;
+  override_evidence?: GenericRowsBlock;
+  fold_safety?: GenericRowsBlock;
+  outcome_attribution?: GenericRowsBlock;
+  failure_reduction_signal?: GenericRowsBlock;
+  recommendation_accuracy?: GenericRowsBlock;
+  calibration_drift?: GenericRowsBlock;
+  signal_confidence?: GenericRowsBlock;
+  cross_run_consistency?: GenericRowsBlock;
+  divergence_detection?: GenericRowsBlock;
+  error_budget_observation?: GenericRowsBlock;
+  freeze_recommendation_signal?: GenericRowsBlock;
+  next_best_slice?: GenericRowsBlock;
+  pqx_candidate_action_bundle?: GenericRowsBlock;
+  counterfactuals?: GenericRowsBlock;
+  earlier_intervention_signal?: GenericRowsBlock;
+  recurring_failures?: GenericRowsBlock;
+  recurrence_severity_signal?: GenericRowsBlock;
+  debug_readiness?: GenericRowsBlock;
+  time_to_explain?: GenericRowsBlock;
+  metric_gaming_detection?: GenericRowsBlock;
+  misleading_signal_detection?: GenericRowsBlock;
+  signal_integrity?: GenericRowsBlock;
 };
 
 // MET-19-33 — operator complexity budget for compact MET sections.
@@ -539,6 +633,143 @@ export default function DashboardPage() {
                   <li>warning count: <strong>{trustPulse.warning_count}</strong></li>
                   <li>registry-active count: <strong data-testid="registry-active-count">{contract?.allowed_active_node_ids?.length ?? 0}</strong></li>
                 </ul>
+              );
+            })()}
+          </Panel>
+
+          <Panel title="A2. MET Cockpit (non-owning observations)" testId="met-cockpit-section">
+            {(() => {
+              const cockpit = intelligence?.met_cockpit;
+              const registry = intelligence?.met_registry_status;
+              const topNext = intelligence?.top_next_inputs?.items ?? [];
+              const handoff = intelligence?.owner_handoff?.items ?? [];
+              const integrityState = cockpit?.artifact_integrity_state ?? 'unknown';
+              return (
+                <div className="text-sm space-y-2" data-testid="met-cockpit-card">
+                  <p className="text-xs text-gray-700 dark:text-slate-300">
+                    Authority: <strong data-testid="met-authority">{registry?.authority ?? 'unknown'}</strong> · Registry: <strong data-testid="met-registry-status">{registry?.status ?? 'unknown'}</strong>
+                  </p>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 text-xs">
+                    <li>weakest loop leg: <strong>{cockpit?.weakest_loop_leg ?? 'unknown'}</strong></li>
+                    <li>stale candidate pressure: <strong>{String(cockpit?.stale_candidate_pressure_state ?? 'unknown')}</strong></li>
+                    <li>owner handoff queue: <strong>{cockpit?.owner_handoff_queue_count ?? 0}</strong></li>
+                    <li>trend readiness: <strong>{cockpit?.trend_readiness_state ?? 'unknown'}</strong></li>
+                    <li>debug readiness: <strong>{cockpit?.debug_readiness_state ?? 'unknown'}</strong></li>
+                    <li>artifact integrity: <strong>{integrityState}</strong></li>
+                    <li>outcome attribution: <strong>{cockpit?.outcome_attribution_state ?? 'unknown'}</strong></li>
+                    <li>confidence/calibration: <strong>{cockpit?.confidence_calibration_state ?? 'unknown'}</strong></li>
+                    <li>recurrence state: <strong>{cockpit?.recurrence_state ?? 'unknown'}</strong></li>
+                    <li>anti-gaming state: <strong>{cockpit?.anti_gaming_state ?? 'unknown'}</strong></li>
+                  </ul>
+
+                  <div data-testid="met-top-next-inputs-section">
+                    <p className="text-xs font-semibold mt-2">Top 3 next inputs (candidate signals only):</p>
+                    {topNext.length === 0 ? (
+                      <p className="text-xs text-amber-700 dark:text-amber-300">Top next inputs unknown.</p>
+                    ) : (
+                      <ul className="list-disc ml-5 text-xs">
+                        {topNext.slice(0, 3).map((item, idx) => (
+                          <li key={`${item.slice_candidate_id}-${idx}`} data-testid="met-top-next-input-item">
+                            <strong>{item.slice_candidate_id ?? 'unknown'}</strong>
+                            {' '}— affects {(item.affected_systems ?? []).join(', ') || 'unknown'} · owner: {item.recommended_owner_system ?? 'unknown'} · readiness: {item.readiness_state ?? 'unknown'}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <div data-testid="met-owner-handoff-section">
+                    <p className="text-xs font-semibold mt-2">Owner handoff queue (signals only):</p>
+                    {handoff.length === 0 ? (
+                      <p className="text-xs text-amber-700 dark:text-amber-300">Owner handoff queue empty or unknown.</p>
+                    ) : (
+                      <ul className="list-disc ml-5 text-xs">
+                        {handoff.slice(0, 5).map((item, idx) => (
+                          <li key={`${item.owner_read_observation_id}-${idx}`} data-testid="met-owner-handoff-item">
+                            <strong>{item.source_candidate_id ?? 'unknown'}</strong>
+                            {' '}— state {item.read_observation_state ?? 'unknown'} · owner {item.recommended_owner_system ?? 'unknown'}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-gray-500 dark:text-slate-400">
+                    sources: {(cockpit?.source_artifacts_used ?? []).slice(0, 3).join(', ') || 'unknown'}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">
+                    MET is non-owning. CDE/SEL/GOV/REL retain authority.
+                  </p>
+                </div>
+              );
+            })()}
+          </Panel>
+
+          <Panel title="A3. MET Outcome / Calibration / Integrity" testId="met-outcome-attribution-section">
+            {(() => {
+              const outcomes = (intelligence?.outcome_attribution?.outcome_entries as Array<Record<string, unknown>> | undefined) ?? [];
+              const calBuckets = (intelligence?.calibration_drift?.calibration_buckets as Array<Record<string, unknown>> | undefined) ?? [];
+              const recurClusters = (intelligence?.recurring_failures?.clusters as Array<Record<string, unknown>> | undefined) ?? [];
+              const integrityChecks = (intelligence?.signal_integrity?.integrity_checks as Array<Record<string, unknown>> | undefined) ?? [];
+              return (
+                <div className="text-xs space-y-2">
+                  <div data-testid="met-outcome-attribution-list">
+                    <p className="font-semibold">Outcome attribution (top {Math.min(outcomes.length, MET_COMPACT_ITEM_MAX)} of {outcomes.length}):</p>
+                    {outcomes.length === 0 ? (
+                      <p className="text-amber-700 dark:text-amber-300">Outcome attribution unknown.</p>
+                    ) : (
+                      <ul className="list-disc ml-5">
+                        {outcomes.slice(0, MET_COMPACT_ITEM_MAX).map((entry, idx) => (
+                          <li key={`outcome-${idx}`} data-testid="met-outcome-attribution-item">
+                            <strong>{String(entry.change_or_candidate_id ?? 'unknown')}</strong> — status: {String(entry.status ?? 'unknown')}; delta: {String(entry.observed_delta ?? 'unknown')}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div data-testid="met-calibration-drift-list">
+                    <p className="font-semibold">Calibration drift:</p>
+                    {calBuckets.length === 0 ? (
+                      <p className="text-amber-700 dark:text-amber-300">Calibration drift unknown.</p>
+                    ) : (
+                      <ul className="list-disc ml-5">
+                        {calBuckets.slice(0, MET_COMPACT_ITEM_MAX).map((bucket, idx) => (
+                          <li key={`bucket-${idx}`}>
+                            <strong>{String(bucket.bucket ?? 'unknown')}</strong> — drift: {String(bucket.drift_state ?? 'unknown')}; cases needed: {String(bucket.cases_needed ?? 'unknown')}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div data-testid="met-recurring-failures-list">
+                    <p className="font-semibold">Recurring failure clusters:</p>
+                    {recurClusters.length === 0 ? (
+                      <p className="text-amber-700 dark:text-amber-300">Recurring failures unknown.</p>
+                    ) : (
+                      <ul className="list-disc ml-5">
+                        {recurClusters.slice(0, MET_COMPACT_ITEM_MAX).map((cluster, idx) => (
+                          <li key={`cluster-${idx}`}>
+                            <strong>{String(cluster.cluster_id ?? 'unknown')}</strong> — state: {String(cluster.recurrence_state ?? 'unknown')}; cases needed: {String(cluster.cases_needed ?? 'unknown')}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div data-testid="met-signal-integrity-list">
+                    <p className="font-semibold">Signal integrity (anti-gaming):</p>
+                    {integrityChecks.length === 0 ? (
+                      <p className="text-amber-700 dark:text-amber-300">Signal integrity unknown.</p>
+                    ) : (
+                      <ul className="list-disc ml-5">
+                        {integrityChecks.slice(0, MET_COMPACT_ITEM_MAX).map((check, idx) => (
+                          <li key={`integrity-${idx}`}>
+                            <strong>{String(check.check_id ?? 'unknown')}</strong> — {String(check.state ?? 'unknown')}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
               );
             })()}
           </Panel>

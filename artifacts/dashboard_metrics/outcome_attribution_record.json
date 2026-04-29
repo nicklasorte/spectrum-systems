@@ -1,0 +1,87 @@
+{
+  "artifact_type": "outcome_attribution_record",
+  "schema_version": "1.0.0",
+  "record_id": "OAR-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
+    "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json",
+    "artifacts/dashboard_metrics/materialization_observation_mapper_record.json",
+    "artifacts/dashboard_metrics/replay_lineage_hardening_record.json"
+  ],
+  "reason_codes": [
+    "outcome_attribution_observation_only",
+    "no_outcome_claim_without_before_after_evidence",
+    "insufficient_evidence_remains_visible"
+  ],
+  "status": "warn",
+  "warnings": [
+    "MET does not claim that any change improved the system. Each entry is artifact-backed observation only.",
+    "Where before/after evidence is missing, status remains insufficient_evidence or unknown — never a fake improvement."
+  ],
+  "failure_prevented": "Improvement claims being made without paired before/after artifact evidence, which would let regressions hide as 'fixed'.",
+  "signal_improved": "Each tracked change carries before/after signals, an observed_delta, and an attribution_confidence drawn from artifact-backed evidence — or a visible insufficient_evidence/unknown status.",
+  "outcome_entries": [
+    {
+      "change_or_candidate_id": "EVC-EVL-LONG-HORIZON-REPLAY",
+      "source_recommendation": "artifacts/dashboard_metrics/eval_candidate_record.json",
+      "before_signal": {
+        "metric": "long_horizon_replay_coverage",
+        "value": "partial",
+        "evidence_refs": [
+          "artifacts/dashboard_seed/replay_record.json"
+        ]
+      },
+      "after_signal": {
+        "metric": "long_horizon_replay_coverage",
+        "value": "unknown",
+        "evidence_refs": []
+      },
+      "observed_delta": "unknown",
+      "failure_prevented": "Long-horizon replay coverage remaining partial without owner-evidence pairing.",
+      "signal_improved": "Outcome attribution makes the missing after-evidence visible rather than declaring improvement.",
+      "attribution_confidence": "insufficient",
+      "evidence_refs": [
+        "artifacts/dashboard_seed/replay_record.json"
+      ],
+      "status": "insufficient_evidence",
+      "next_recommended_input": "Retrieve REP-owned per-dimension replay status with after-state evidence.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_seed/replay_record.json"
+      ]
+    },
+    {
+      "change_or_candidate_id": "POL-GOV-FALLBACK-REDUCTION",
+      "source_recommendation": "artifacts/dashboard_metrics/policy_candidate_signal_record.json",
+      "before_signal": {
+        "metric": "high_leverage_fallback_count",
+        "value": "unknown",
+        "evidence_refs": [
+          "artifacts/dashboard_metrics/fallback_reduction_plan_record.json"
+        ]
+      },
+      "after_signal": {
+        "metric": "high_leverage_fallback_count",
+        "value": "unknown",
+        "evidence_refs": []
+      },
+      "observed_delta": "unknown",
+      "failure_prevented": "Fallback reduction being claimed without GOV-side after-state evidence.",
+      "signal_improved": "Outcome remains unknown until canonical fallback rows are retrieved post-action.",
+      "attribution_confidence": "unknown",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json"
+      ],
+      "status": "unknown",
+      "next_recommended_input": "Retrieve GOV-owned fallback reduction artifact and re-evaluate.",
+      "data_source": "artifact_store",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json"
+      ]
+    }
+  ]
+}

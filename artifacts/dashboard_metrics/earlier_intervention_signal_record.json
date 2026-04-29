@@ -1,0 +1,53 @@
+{
+  "artifact_type": "earlier_intervention_signal_record",
+  "schema_version": "1.0.0",
+  "record_id": "EIS-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/counterfactual_reconstruction_record.json",
+    "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json"
+  ],
+  "reason_codes": [
+    "earlier_intervention_signal_only",
+    "no_invented_history",
+    "unknown_remains_unknown"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Earlier-intervention points are signal observations. They do not assert that the canonical owner would have acted.",
+    "Where the counterfactual stays unknown, the intervention signal remains unknown."
+  ],
+  "failure_prevented": "Operators speculating about 'we should have caught this earlier' without artifact-backed earlier-signal evidence.",
+  "signal_improved": "Each top failure surfaces the earliest artifact-backed signal that pointed at the gap and the owner that could have intervened.",
+  "intervention_signals": [
+    {
+      "intervention_signal_id": "EIS-EVL-LONG-HORIZON",
+      "counterfactual_id": "CF-EVL-LONG-HORIZON-REPLAY",
+      "earliest_signal_artifact": "artifacts/dashboard_metrics/eval_candidate_record.json",
+      "earliest_signal_age_days": "unknown",
+      "owner_system_recommendation": "EVL",
+      "intervention_state": "partial",
+      "next_recommended_input": "Pair earliest signal with a bounded slice candidate and an outcome attribution entry."
+    },
+    {
+      "intervention_signal_id": "EIS-GOV-FALLBACK-PRESSURE",
+      "counterfactual_id": "CF-GOV-FALLBACK-PRESSURE",
+      "earliest_signal_artifact": "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+      "earliest_signal_age_days": 46,
+      "owner_system_recommendation": "GOV",
+      "intervention_state": "partial",
+      "next_recommended_input": "Retrieve canonical GOV fallback registry; refresh owner-read observation."
+    },
+    {
+      "intervention_signal_id": "EIS-CDE-OVERRIDE",
+      "counterfactual_id": "CF-CDE-OVERRIDE-AUDIT",
+      "earliest_signal_artifact": null,
+      "earliest_signal_age_days": "unknown",
+      "owner_system_recommendation": "CDE",
+      "intervention_state": "unknown",
+      "next_recommended_input": "Intake override evidence; intervention state remains unknown until evidence appears."
+    }
+  ]
+}

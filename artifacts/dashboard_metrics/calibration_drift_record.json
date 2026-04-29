@@ -1,0 +1,60 @@
+{
+  "artifact_type": "calibration_drift_record",
+  "schema_version": "1.0.0",
+  "record_id": "CDR-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/recommendation_accuracy_record.json",
+    "artifacts/dashboard_metrics/outcome_attribution_record.json"
+  ],
+  "reason_codes": [
+    "calibration_drift_observation_only",
+    "calibration_unknown_until_enough_outcomes",
+    "no_fake_calibration"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Calibration remains unknown until enough paired outcomes exist (minimum 5 paired entries per bucket).",
+    "MET never claims a calibrated state without underlying paired outcomes."
+  ],
+  "failure_prevented": "Confidence values silently drifting without audit, leading the dashboard to render high-confidence recommendations that are no longer accurate.",
+  "signal_improved": "Per-bucket calibration drift state is observable, with cases_needed when paired outcomes are insufficient.",
+  "minimum_paired_outcomes_per_bucket": 5,
+  "calibration_buckets": [
+    {
+      "bucket": "high_confidence",
+      "expected_accuracy_range": [0.8, 1.0],
+      "observed_paired_outcomes": 0,
+      "observed_accuracy": "unknown",
+      "drift_state": "unknown",
+      "cases_needed": 5,
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/recommendation_accuracy_record.json"
+      ]
+    },
+    {
+      "bucket": "medium_confidence",
+      "expected_accuracy_range": [0.5, 0.8],
+      "observed_paired_outcomes": 1,
+      "observed_accuracy": "unknown",
+      "drift_state": "insufficient_cases",
+      "cases_needed": 4,
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/recommendation_accuracy_record.json"
+      ]
+    },
+    {
+      "bucket": "low_confidence",
+      "expected_accuracy_range": [0.0, 0.5],
+      "observed_paired_outcomes": 1,
+      "observed_accuracy": "unknown",
+      "drift_state": "insufficient_cases",
+      "cases_needed": 4,
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/recommendation_accuracy_record.json"
+      ]
+    }
+  ]
+}

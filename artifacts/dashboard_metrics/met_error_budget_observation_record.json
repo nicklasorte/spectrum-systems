@@ -1,0 +1,46 @@
+{
+  "artifact_type": "met_error_budget_observation_record",
+  "schema_version": "1.0.0",
+  "record_id": "MEB-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/slo_status_record.json",
+    "artifacts/dashboard_seed/observability_metrics_record.json"
+  ],
+  "reason_codes": [
+    "error_budget_observation_only",
+    "slo_remains_canonical_owner",
+    "no_freeze_authority_in_met"
+  ],
+  "status": "warn",
+  "warnings": [
+    "SLO remains the canonical error-budget authority. MET emits observations and recommendation signals only.",
+    "consumed_ratio and budget_status are read from SLO. When fields are absent, MET reports them as unknown."
+  ],
+  "failure_prevented": "Reliability posture degradation going un-surfaced because MET refuses to emit a freeze recommendation signal even when SLO is breached.",
+  "signal_improved": "Per-window error budget observation is reported with consumed_ratio, budget_status, and a recommended_input that points at SLO/CDE/SEL — never at MET.",
+  "budget_observations": [
+    {
+      "window": "30d",
+      "consumed_ratio": "unknown",
+      "budget_status": "unknown",
+      "evidence_refs": [
+        "artifacts/dashboard_seed/slo_status_record.json"
+      ],
+      "next_recommended_input": "Retrieve SLO consumed_ratio and budget_status for the 30d window.",
+      "failure_prevented": "Budget posture remaining invisible when SLO record is partial.",
+      "signal_improved": "Unknown stays unknown — no fake green budget."
+    },
+    {
+      "window": "7d",
+      "consumed_ratio": "unknown",
+      "budget_status": "unknown",
+      "evidence_refs": [],
+      "next_recommended_input": "Retrieve SLO consumed_ratio and budget_status for the 7d window.",
+      "failure_prevented": "Short-window degradation hidden by absent SLO fields.",
+      "signal_improved": "Per-window state is explicit and unknown when fields are missing."
+    }
+  ]
+}

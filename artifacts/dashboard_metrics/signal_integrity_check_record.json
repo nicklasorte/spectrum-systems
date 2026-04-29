@@ -1,0 +1,64 @@
+{
+  "artifact_type": "signal_integrity_check_record",
+  "schema_version": "1.0.0",
+  "record_id": "SIC-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/metric_gaming_detection_record.json",
+    "artifacts/dashboard_metrics/misleading_signal_detection_record.json",
+    "artifacts/dashboard_metrics/signal_confidence_record.json",
+    "artifacts/dashboard_metrics/outcome_attribution_record.json"
+  ],
+  "reason_codes": [
+    "signal_integrity_observation_only",
+    "no_authority_outcome",
+    "anti_gaming_aggregated"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Signal integrity is the aggregate of gaming, misleading-signal, and confidence checks. CDE/SEL retain authority for control/enforcement responses.",
+    "Where component checks are unknown, the aggregate stays unknown rather than green."
+  ],
+  "failure_prevented": "Misleading green dashboard states being rendered when underlying gaming/misleading-signal checks have flagged issues.",
+  "signal_improved": "Each integrity check carries a state, a count of flagged observations, and a next_recommended_input.",
+  "integrity_summary": {
+    "gaming_flags": 0,
+    "misleading_flags": 2,
+    "high_confidence_thin_evidence_flags": 1,
+    "stale_signal_flags": 1,
+    "trend_without_cases_flags": 0,
+    "unknown_to_zero_substitutions": 0,
+    "overall_integrity_state": "warn"
+  },
+  "integrity_checks": [
+    {
+      "check_id": "GAMING-AGGREGATE",
+      "rule_id": "metric_gaming_aggregate",
+      "state": "ok",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/metric_gaming_detection_record.json"
+      ],
+      "next_recommended_input": "Continue to monitor; no flagged gaming patterns observed."
+    },
+    {
+      "check_id": "MISLEADING-AGGREGATE",
+      "rule_id": "misleading_signal_aggregate",
+      "state": "warn",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/misleading_signal_detection_record.json"
+      ],
+      "next_recommended_input": "Reduce confidence on SIG-GOV-FALLBACK-PRESSURE and surface POL-GOV-FALLBACK-REDUCTION as stale_candidate_signal."
+    },
+    {
+      "check_id": "CONFIDENCE-AGGREGATE",
+      "rule_id": "signal_confidence_aggregate",
+      "state": "warn",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/signal_confidence_record.json"
+      ],
+      "next_recommended_input": "Add at least 2 more evidence_refs to high_confidence_thin_evidence signals."
+    }
+  ]
+}

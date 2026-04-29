@@ -1,0 +1,66 @@
+{
+  "artifact_type": "counterfactual_reconstruction_record",
+  "schema_version": "1.0.0",
+  "record_id": "CFR-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/failure_explanation_packets.json",
+    "artifacts/dashboard_metrics/debug_explanation_index_record.json",
+    "artifacts/dashboard_metrics/replay_lineage_hardening_record.json"
+  ],
+  "reason_codes": [
+    "counterfactual_observation_only",
+    "no_invented_history",
+    "unknown_remains_unknown"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Counterfactual narratives are reconstructed from artifact evidence only. Where evidence is absent, the reconstruction stays unknown.",
+    "MET never invents history or fills missing steps. REP retains replay authority."
+  ],
+  "failure_prevented": "Postmortem narratives being told from memory rather than artifact evidence — leading to invented earlier-intervention claims.",
+  "signal_improved": "Each top failure carries an explicit what_happened, what_should_have_happened, earlier_intervention_point, and evidence_refs — with unknowns visible.",
+  "counterfactual_entries": [
+    {
+      "counterfactual_id": "CF-EVL-LONG-HORIZON-REPLAY",
+      "related_failure": "Long-horizon replay coverage gap remained partial across multiple dashboard cycles.",
+      "what_happened": "EVL coverage signal partial; REP per-dimension status absent; MET surfaced gap but no bounded slice was admitted.",
+      "what_should_have_happened": "REP per-dimension status field would have been present, EVL coverage would have referenced it, and the gap would have closed via a bounded slice through AEX/PQX/CDE.",
+      "earlier_intervention_point": "When MET first emitted EVC-EVL-LONG-HORIZON-REPLAY, an AEX-admitted PQX slice could have closed the gap before staleness accumulated.",
+      "earlier_intervention_owner_system": "EVL",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_metrics/replay_lineage_hardening_record.json"
+      ],
+      "reconstruction_state": "partial",
+      "next_recommended_input": "Pair the candidate with a REP per-dimension artifact and a slice candidate; refresh after-state evidence."
+    },
+    {
+      "counterfactual_id": "CF-GOV-FALLBACK-PRESSURE",
+      "related_failure": "Fallback rows persisting without GOV-side reduction evidence.",
+      "what_happened": "MET surfaced fallback pressure; no canonical GOV artifact retrieval observed; POL-GOV-FALLBACK-REDUCTION drifted toward stale.",
+      "what_should_have_happened": "GOV-owned fallback row registry would have been retrieved and paired with LIN per-edge lineage.",
+      "earlier_intervention_point": "First MET stale signal at age = stale_after_days // 2 should have triggered owner-evidence retrieval.",
+      "earlier_intervention_owner_system": "GOV",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json",
+        "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json"
+      ],
+      "reconstruction_state": "partial",
+      "next_recommended_input": "Retrieve canonical GOV fallback row registry and pair with LIN per-edge lineage."
+    },
+    {
+      "counterfactual_id": "CF-CDE-OVERRIDE-AUDIT",
+      "related_failure": "CDE override audit gap with no evidence references.",
+      "what_happened": "Override evidence intake was empty; signal remained unknown.",
+      "what_should_have_happened": "unknown",
+      "earlier_intervention_point": "unknown",
+      "earlier_intervention_owner_system": "CDE",
+      "evidence_refs": [],
+      "reconstruction_state": "unknown",
+      "next_recommended_input": "Intake CDE-owned override audit log evidence before reconstructing."
+    }
+  ]
+}

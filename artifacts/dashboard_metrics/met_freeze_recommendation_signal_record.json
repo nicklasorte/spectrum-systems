@@ -1,0 +1,51 @@
+{
+  "artifact_type": "met_freeze_recommendation_signal_record",
+  "schema_version": "1.0.0",
+  "record_id": "MFR-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/met_error_budget_observation_record.json",
+    "artifacts/dashboard_seed/slo_status_record.json"
+  ],
+  "reason_codes": [
+    "freeze_recommendation_signal_only",
+    "slo_remains_budget_owner",
+    "cde_owns_control",
+    "sel_owns_enforcement"
+  ],
+  "status": "warn",
+  "warnings": [
+    "MET emits a recommendation signal only. SLO/CDE/SEL retain canonical authority over budgets, control, and enforcement.",
+    "Where budget posture is unknown, the recommendation_signal stays no_recommendation rather than asserting a freeze need."
+  ],
+  "failure_prevented": "MET emitting freeze language as if it had authority — bypassing SLO/CDE/SEL ownership.",
+  "signal_improved": "Each freeze recommendation signal points at SLO/CDE/SEL, names the source artifacts, and stays no_recommendation when evidence is missing.",
+  "recommendation_signals": [
+    {
+      "recommendation_signal_id": "FRS-30D-WINDOW",
+      "window": "30d",
+      "consumed_ratio_observed": "unknown",
+      "budget_status_observed": "unknown",
+      "recommendation_signal": "no_recommendation",
+      "recommended_owner_system": "SLO",
+      "next_recommended_input": "Retrieve SLO 30d consumed_ratio; if breach is observed, hand the signal to SLO/CDE — never enforce from MET.",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/met_error_budget_observation_record.json"
+      ]
+    },
+    {
+      "recommendation_signal_id": "FRS-7D-WINDOW",
+      "window": "7d",
+      "consumed_ratio_observed": "unknown",
+      "budget_status_observed": "unknown",
+      "recommendation_signal": "no_recommendation",
+      "recommended_owner_system": "SLO",
+      "next_recommended_input": "Retrieve SLO 7d consumed_ratio; CDE/SEL retain freeze authority.",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/met_error_budget_observation_record.json"
+      ]
+    }
+  ]
+}
