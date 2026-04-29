@@ -186,6 +186,30 @@ jobs:
           echo "base_ref=${base_ref}" >> "$GITHUB_OUTPUT"
           echo "head_ref=${head_ref}" >> "$GITHUB_OUTPUT"
 
+      - name: Regenerate and check derived registry artifacts (PQX freshness gate)
+        run: |
+          set -euo pipefail
+          python scripts/build_tls_dependency_priority.py \
+            --out artifacts/tls \
+            --top-level-out artifacts \
+            --candidates ""
+          python scripts/generate_ecosystem_health_report.py
+          if ! git diff --exit-code \
+            artifacts/tls/system_dependency_priority_report.json \
+            artifacts/tls/system_evidence_attachment.json \
+            artifacts/system_dependency_priority_report.json \
+            governance/reports/ecosystem-health.json \
+            docs/governance-reports/ecosystem-health-report.md \
+            docs/governance-reports/ecosystem-dashboard.md; then
+            echo ""
+            echo "ERROR: derived registry artifacts are stale on this branch."
+            echo "Run these commands locally, then commit and push:"
+            echo "  python scripts/build_tls_dependency_priority.py --out artifacts/tls --top-level-out artifacts --candidates ''"
+            echo "  python scripts/generate_ecosystem_health_report.py"
+            exit 1
+          fi
+          echo "Derived registry artifacts are up-to-date."
+
       - name: Run authoritative governed preflight gate
         env:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
