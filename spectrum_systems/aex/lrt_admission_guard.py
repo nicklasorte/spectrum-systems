@@ -79,6 +79,17 @@ def check_lrt_admission(
             block_reason="broad task requires execution_budget contract",
         )
 
+    if not isinstance(execution_budget, Mapping):
+        return LRTAdmissionResult(
+            admitted=False,
+            broad_pattern_detected=True,
+            matched_patterns=tuple(matched),
+            budget_present=True,
+            budget_valid=False,
+            reason_codes=("broad_pattern_detected", "execution_budget_not_a_mapping"),
+            block_reason=f"execution_budget must be a mapping, got {type(execution_budget).__name__}",
+        )
+
     missing = [f for f in _BUDGET_REQUIRED_FIELDS if f not in execution_budget]
     if missing:
         return LRTAdmissionResult(

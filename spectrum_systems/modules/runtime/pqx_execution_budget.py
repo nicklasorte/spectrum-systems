@@ -38,6 +38,9 @@ def validate_execution_budget(
             raise PQXBudgetError("broad task requires execution_budget; none provided")
         return {"valid": True, "applied_budget": dict(EXECUTION_BUDGET_DEFAULTS), "violations": []}
 
+    if not isinstance(budget, Mapping):
+        raise PQXBudgetError(f"execution_budget must be a mapping, got {type(budget).__name__}")
+
     missing = [f for f in _BUDGET_FIELDS if f not in budget]
     if missing:
         raise PQXBudgetError(f"execution_budget missing required fields: {sorted(missing)}")

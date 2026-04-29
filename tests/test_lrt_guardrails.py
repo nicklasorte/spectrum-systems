@@ -122,6 +122,19 @@ def test_stop_after_checkpoint_prevents_continuation() -> None:
     assert decision_without_budget["decision"] == "split"
 
 
+def test_malformed_budget_type_is_fail_closed() -> None:
+    for bad in (1, True, "string", []):
+        result = check_lrt_admission(
+            prompt_text="write the comprehensive test file",
+            execution_budget=bad,  # type: ignore[arg-type]
+        )
+        assert result.admitted is False, f"non-Mapping budget {bad!r} should be blocked"
+        assert "execution_budget_not_a_mapping" in result.reason_codes
+
+        with pytest.raises(PQXBudgetError, match="must be a mapping"):
+            validate_execution_budget(bad, broad_task=True)  # type: ignore[arg-type]
+
+
 def test_oversized_budget_is_rejected_and_invalid_budget_blocks_continuation() -> None:
     oversized = {**_VALID_BUDGET, "max_lines_added": 300 * 11}  # exceeds 10x default
     with pytest.raises(PQXBudgetError, match="exceeds limits"):

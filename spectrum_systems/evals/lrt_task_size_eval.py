@@ -65,6 +65,12 @@ def classify_task_size(
 
     budget_present = execution_budget is not None
     if budget_present:
+        if not isinstance(execution_budget, Mapping):
+            return {
+                "classification": "blocked_until_budgeted",
+                "reason_codes": ["broad_task_detected", "execution_budget_not_a_mapping"],
+                "budget_required": True,
+            }
         missing = [f for f in _BUDGET_REQUIRED_FIELDS if f not in execution_budget]
         if missing:
             return {
