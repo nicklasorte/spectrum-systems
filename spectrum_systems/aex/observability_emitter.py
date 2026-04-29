@@ -19,11 +19,11 @@ from spectrum_systems.contracts import validate_artifact
 
 
 _NON_AUTHORITY_ASSERTIONS = (
-    "aex_does_not_own_observability_authority",
-    "aex_does_not_own_lineage_issuance_authority",
-    "aex_does_not_own_replay_authority",
-    "aex_does_not_own_evaluation_authority",
-    "aex_does_not_own_enforcement_authority",
+    "aex_emits_observability_signal_only",
+    "aex_emits_lineage_observation_only",
+    "aex_emits_replay_observation_only",
+    "aex_emits_evaluation_input_only",
+    "aex_emits_enforcement_input_only",
 )
 
 
@@ -72,8 +72,8 @@ def build_admission_trace_record(
 ) -> dict[str, Any]:
     """Emit a contract-valid admission_trace_record.
 
-    OBS owns the trace store; this record is suitable for OBS ingestion but
-    AEX does not enforce ingestion or own observability authority.
+    OBS owns the trace store and observability authority. AEX produces the
+    record as observability_signal input; AEX never gates ingestion.
     """
     if admission_outcome not in {"admitted", "rejected", "indeterminate"}:
         raise ValueError("admission_outcome must be admitted|rejected|indeterminate")

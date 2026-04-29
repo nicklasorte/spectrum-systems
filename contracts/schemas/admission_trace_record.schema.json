@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/admission_trace_record.schema.json",
   "title": "Admission Trace Record",
-  "description": "AEX-emitted observability trace record for an admission decision. AEX produces traces; OBS owns the trace store. AEX does not own observability authority.",
+  "description": "AEX-emitted observability trace record for an admission outcome. AEX produces traces; OBS owns the trace store and observability authority.",
   "type": "object",
   "additionalProperties": false,
   "required": [

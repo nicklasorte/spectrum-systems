@@ -40,8 +40,8 @@
     }
   ],
   "non_authority_assertions": [
-    "aex_does_not_own_lineage_issuance_authority",
-    "aex_does_not_own_promotion_authority",
-    "aex_does_not_own_certification_authority"
+    "aex_emits_lineage_observation_only",
+    "aex_emits_promotion_input_only",
+    "aex_emits_certification_input_only"
   ]
 }

@@ -20,10 +20,10 @@
     "artifacts/aex/aex_sel_enforcement_input.json"
   ],
   "non_authority_assertions": [
-    "aex_does_not_own_governance_readiness_authority",
-    "aex_does_not_own_promotion_authority",
-    "aex_does_not_own_certification_authority",
-    "aex_does_not_own_control_decision_authority",
-    "aex_does_not_own_enforcement_authority"
+    "aex_emits_readiness_observation_only",
+    "aex_emits_promotion_input_only",
+    "aex_emits_certification_input_only",
+    "aex_emits_control_input_only",
+    "aex_emits_enforcement_input_only"
   ]
 }

@@ -33,7 +33,7 @@ from spectrum_systems.aex.observability_emitter import (
     write_admission_observability_artifacts,
 )
 from spectrum_systems.aex.sel_admission_signal import (
-    assert_no_enforcement_authority_claim,
+    assert_admission_input_only_claim,
     build_sel_admission_input,
 )
 from spectrum_systems.contracts import load_schema, validate_artifact
@@ -215,7 +215,7 @@ def test_sel_admission_signal_emits_consumable_observation() -> None:
     assert "SEL" in obs["downstream_refs"]["consumer_systems"]
     assert "ENF" in obs["downstream_refs"]["consumer_systems"]
     # AEX must declare it does not enforce, promote, certify, control, etc.
-    assert_no_enforcement_authority_claim(obs)
+    assert_admission_input_only_claim(obs)
 
 
 def test_sel_admission_signal_rejects_authority_claims() -> None:
@@ -238,10 +238,10 @@ def test_sel_admission_signal_rejects_authority_claims() -> None:
     )
     obs["non_authority_assertions"] = [
         a for a in obs["non_authority_assertions"]
-        if a != "aex_does_not_own_enforcement_authority"
+        if a != "aex_emits_enforcement_input_only"
     ]
     with pytest.raises(ValueError, match="non-authority assertions"):
-        assert_no_enforcement_authority_claim(obs)
+        assert_admission_input_only_claim(obs)
 
 
 def test_sel_admission_signal_requires_reason_codes() -> None:

@@ -5,11 +5,11 @@
   "owner": "AEX",
   "owner_authority": "admission_only",
   "non_authority_assertions": [
-    "aex_does_not_own_evaluation_authority",
-    "aex_does_not_own_enforcement_authority",
-    "aex_does_not_own_promotion_authority",
-    "aex_does_not_own_certification_authority",
-    "aex_does_not_own_control_decision_authority"
+    "aex_emits_evaluation_input_only",
+    "aex_emits_enforcement_input_only",
+    "aex_emits_promotion_input_only",
+    "aex_emits_certification_input_only",
+    "aex_emits_control_input_only"
   ],
   "evaluator_authority": "EVL",
   "description": "AEX admission eval case registry. EVL is the canonical evaluator authority; AEX provides the admission target artifacts and the cases. Each case is replayable through scripts/replay_aex_admission.py.",
@@ -127,7 +127,7 @@
       "expected_outcome": "admitted",
       "success_criteria": [
         "downstream_refs.consumer_systems contains SEL",
-        "non_authority_assertions includes aex_does_not_own_enforcement_authority",
+        "non_authority_assertions includes aex_emits_enforcement_input_only",
         "producer_authority == 'AEX'"
       ],
       "expected_result": "PASS"
@@ -139,9 +139,9 @@
       "fixture_path": "tests/aex/fixtures/admission_admit_repo_write.json",
       "expected_outcome": "admitted",
       "success_criteria": [
-        "non_authority_assertions includes aex_does_not_own_promotion_authority",
-        "non_authority_assertions includes aex_does_not_own_certification_authority",
-        "non_authority_assertions includes aex_does_not_own_control_decision_authority"
+        "non_authority_assertions includes aex_emits_promotion_input_only",
+        "non_authority_assertions includes aex_emits_certification_input_only",
+        "non_authority_assertions includes aex_emits_control_input_only"
       ],
       "expected_result": "PASS"
     }

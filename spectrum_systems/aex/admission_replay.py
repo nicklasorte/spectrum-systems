@@ -1,7 +1,7 @@
 """AEX deterministic admission replay.
 
 REP owns replay authority. AEX participates by exposing a deterministic
-replay path for its admission decisions. Given a fixture (a stored
+replay path for its admission outcomes. Given a fixture (a stored
 ``codex_build_request`` payload), AEX must produce the same admission
 output every time. This module computes deterministic input/output
 hashes, runs the admission engine, and emits an

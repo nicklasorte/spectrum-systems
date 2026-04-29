@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/admission_policy_observation.schema.json",
   "title": "Admission Policy Observation",
-  "description": "AEX-emitted admission observation that downstream authorities (notably SEL/ENF for enforcement input and POL for policy review) consume. AEX is observer-only — it does not own enforcement, control, or promotion authority. The presence of this artifact signals that AEX's admission decision can be read as enforcement input by SEL.",
+  "description": "AEX-emitted admission observation that downstream owners (SEL/ENF as enforcement_input, POL as policy_observation review surface) consume. AEX is observer-only and emits inputs/signals; final outcomes belong to downstream owners.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -84,7 +84,7 @@
         "type": "string",
         "minLength": 1
       },
-      "description": "Refs to upstream inputs the admission decision read (codex_build_request id, normalized_execution_request ref)."
+      "description": "Refs to upstream inputs the admission outcome considered (codex_build_request id, normalized_execution_request ref)."
     },
     "output_refs": {
       "type": "array",
@@ -172,15 +172,15 @@
       "items": {
         "type": "string",
         "enum": [
-          "aex_does_not_own_enforcement_authority",
-          "aex_does_not_own_promotion_authority",
-          "aex_does_not_own_certification_authority",
-          "aex_does_not_own_control_decision_authority",
-          "aex_does_not_own_governance_readiness_authority",
-          "aex_does_not_own_replay_authority",
-          "aex_does_not_own_lineage_issuance_authority",
-          "aex_does_not_own_observability_authority",
-          "aex_does_not_own_evaluation_authority"
+          "aex_emits_enforcement_input_only",
+          "aex_emits_promotion_input_only",
+          "aex_emits_certification_input_only",
+          "aex_emits_control_input_only",
+          "aex_emits_readiness_observation_only",
+          "aex_emits_replay_observation_only",
+          "aex_emits_lineage_observation_only",
+          "aex_emits_observability_signal_only",
+          "aex_emits_evaluation_input_only"
         ]
       }
     }

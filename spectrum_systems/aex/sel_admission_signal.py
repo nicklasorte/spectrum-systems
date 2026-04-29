@@ -1,9 +1,10 @@
 """AEX SEL admission signal emitter.
 
-AEX is admission-only. SEL owns enforcement. This module emits an
-``admission_policy_observation`` that SEL/ENF and POL can consume as
-*input* to their own enforcement / policy decisions. AEX never invokes
-SEL, never blocks, and never asserts enforcement authority.
+AEX is admission-only. This module emits an
+``admission_policy_observation`` that downstream owners (SEL/ENF as
+enforcement_input, POL as policy_observation review surface) consume.
+AEX never invokes downstream owners, never blocks, and never asserts
+ownership beyond admission.
 
 The module path intentionally contains the ``sel_`` token so the TLS-03
 trust-gap detector can observe the AEX→SEL signal surface as evidence
@@ -21,11 +22,11 @@ from spectrum_systems.contracts import validate_artifact
 
 
 _NON_AUTHORITY_ASSERTIONS_REQUIRED: tuple[str, ...] = (
-    "aex_does_not_own_enforcement_authority",
-    "aex_does_not_own_promotion_authority",
-    "aex_does_not_own_certification_authority",
-    "aex_does_not_own_control_decision_authority",
-    "aex_does_not_own_governance_readiness_authority",
+    "aex_emits_enforcement_input_only",
+    "aex_emits_promotion_input_only",
+    "aex_emits_certification_input_only",
+    "aex_emits_control_input_only",
+    "aex_emits_readiness_observation_only",
 )
 
 
@@ -64,17 +65,17 @@ def build_sel_admission_input(
     """Emit a contract-valid admission_policy_observation.
 
     The observation enumerates downstream consumers (default: SEL, ENF, POL)
-    and the AEX non-authority assertions. SEL/ENF read the observation as
-    enforcement *input*; AEX does not enforce.
+    and the AEX non-authority assertions. Downstream owners read the
+    observation as their input; AEX is observer-only.
     """
     if admission_outcome not in {"admitted", "rejected", "indeterminate"}:
         raise ValueError("admission_outcome must be admitted|rejected|indeterminate")
     if not reason_codes:
-        raise ValueError("reason_codes must be non-empty (admission decisions must explain themselves)")
+        raise ValueError("reason_codes must be non-empty (admission outcomes must explain themselves)")
 
     consumers = list(consumer_systems or ["SEL", "ENF", "POL"])
-    # SEL must always be present in the consumer set so the enforcement
-    # signal surface exists.
+    # SEL must always be present in the consumer set so the
+    # downstream input surface exists.
     if "SEL" not in consumers:
         consumers.insert(0, "SEL")
 
@@ -112,11 +113,12 @@ def build_sel_admission_input(
     return record
 
 
-def assert_no_enforcement_authority_claim(observation: Mapping[str, Any]) -> None:
-    """Fail-closed check: AEX must declare non-authority over enforcement.
+def assert_admission_input_only_claim(observation: Mapping[str, Any]) -> None:
+    """Fail-closed check: AEX must declare admission-input-only ownership.
 
-    SEL/ENF consumers SHOULD invoke this assertion before treating the
-    observation as enforcement input.
+    Downstream owners (SEL, ENF, POL) SHOULD invoke this assertion before
+    consuming the observation, to confirm AEX has not implicitly claimed
+    ownership beyond admission.
     """
     assertions = list(observation.get("non_authority_assertions") or [])
     missing = [a for a in _NON_AUTHORITY_ASSERTIONS_REQUIRED if a not in assertions]
@@ -134,5 +136,5 @@ def assert_no_enforcement_authority_claim(observation: Mapping[str, Any]) -> Non
 
 __all__ = [
     "build_sel_admission_input",
-    "assert_no_enforcement_authority_claim",
+    "assert_admission_input_only_claim",
 ]

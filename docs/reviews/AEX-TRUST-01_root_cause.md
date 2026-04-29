@@ -2,9 +2,9 @@
 
 **Work item:** AEX-TRUST-01 (Harden AEX Trust-Gap Signals)
 **Branch:** `claude/harden-aex-trust-gaps-2tAqj`
-**Scope:** AEX admission boundary only. AEX remains *admission-only*. It does
-not own enforcement, certification, promotion, control, or governance
-authority.
+**Scope:** AEX admission boundary only. AEX remains *admission-only*. It
+emits inputs/observations/signals to downstream owners (SEL/ENF, GOV, REL,
+CDE) but never owns the outcomes those owners produce.
 
 ## 1. Source of dashboard truth
 
@@ -106,8 +106,8 @@ contribute zero evidence to the `schemas` bucket.
 
 ### 3.1 missing_enforcement_signal
 
-* AEX `downstream = [PQX, CTX, PRM]`. SEL is not present (correct —
-  AEX must not own enforcement).
+* AEX `downstream = [PQX, CTX, PRM]`. SEL is not present (correct — SEL
+  retains compliance authority and AEX must not encroach).
 * No module path under AEX evidence contains `sel_`. Modules referencing
   `sel_admission_*` simply do not exist.
 * **Fix shape:** AEX must produce an *admission policy observation* that
@@ -173,17 +173,16 @@ contribute zero evidence to the `schemas` bucket.
 
 This work touches AEX only. It does NOT:
 
-* move enforcement authority to AEX (SEL retains compliance authority);
-* move readiness/promotion authority to AEX (GOV retains readiness/compliance
-  authority);
-* move control / closure authority to AEX (CDE retains it);
-* move replay authority to AEX (REP retains it);
-* move lineage issuance authority to AEX (LIN retains it);
-* move observability authority to AEX (OBS retains it);
-* move evaluation authority to AEX (EVL retains it).
+* move SEL/ENF compliance ownership to AEX (SEL retains it);
+* move GOV/REL readiness/advancement ownership to AEX (REL retains it);
+* move CDE control / closure ownership to AEX (CDE retains it);
+* move REP replay ownership to AEX (REP retains it);
+* move LIN lineage issuance ownership to AEX (LIN retains it);
+* move OBS observability ownership to AEX (OBS retains it);
+* move EVL evaluation ownership to AEX (EVL retains it).
 
 AEX continues to produce only admission outputs and admission-flavored
-observations that downstream authorities consume.
+observations that downstream owners consume.
 
 ## 5. Plan of remediation
 

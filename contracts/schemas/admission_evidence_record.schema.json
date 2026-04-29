@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/admission_evidence_record.schema.json",
   "title": "Admission Evidence Record",
-  "description": "AEX-emitted evidence bundle that lineage / observability / governance authorities can attach to their downstream artifacts. AEX produces evidence; it does not enforce, certify, promote, or close.",
+  "description": "AEX-emitted evidence bundle that downstream owners (LIN for lineage issuance, OBS for observability, GOV for readiness, REP for replay, SEL/ENF for compliance signals) consume. AEX is observer-only — it produces evidence and downstream inputs; it never owns final outcomes.",
   "type": "object",
   "additionalProperties": false,
   "required": [

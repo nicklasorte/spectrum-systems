@@ -142,7 +142,7 @@ They are real generator output, not hand-edited artifacts.
 * `artifacts/aex/aex_admission_replay_record.json`
 * `artifacts/aex/aex_admission_lineage_observation.json`
 * `artifacts/aex/aex_gov_readiness_observation.json` (path token `gov_` —
-  observation only; GOV retains readiness/promotion authority)
+  observation only; GOV/REL retain readiness/advancement ownership)
 
 ### Documentation
 
@@ -236,37 +236,40 @@ AEX is no longer a bottleneck.
 ## 7. Remaining downstream gaps (not AEX's responsibility)
 
 * **SEL/ENF:** Currently lack a *consumer* contract that explicitly reads
-  `admission_policy_observation` as enforcement input. AEX now publishes the
-  observation under a stable schema, but SEL has not yet wired an inbox.
-  This is a downstream SEL/ENF integration gap, not an AEX admission gap.
-  The dashboard reflects this by ranking SEL #4.
+  `admission_policy_observation` as enforcement_input (an input surface, not
+  an outcome). AEX now publishes the observation under a stable schema, but
+  SEL has not yet wired an inbox. This is a downstream SEL/ENF integration
+  gap, not an AEX admission gap. The dashboard reflects this by ranking SEL
+  #4.
 * **EVL:** still ranks #1 — the original "next safe action" is now correctly
   surfaced.
 * **GOV:** AEX emits a readiness observation, but GOV does not yet ingest it.
-  GOV continues to own readiness/promotion authority unchanged.
+  GOV/REL retain readiness/advancement ownership unchanged.
 
 ## 8. Authority-shape statement
 
-AEX remains **admission-only**. AEX does not:
+AEX remains **admission-only**. AEX does not own:
 
-* enforce — SEL retains enforcement authority;
-* certify — GOV retains certification authority;
-* promote — GOV retains promotion authority;
-* close — CDE retains closure authority;
-* decide control outcomes — CDE retains control decision authority;
-* issue lineage — LIN retains lineage issuance authority;
-* own observability storage — OBS retains observability authority;
-* own replay storage — REP retains replay authority;
-* own evaluation — EVL retains evaluation authority.
+* compliance ownership — SEL/ENF retain it;
+* sign-off ownership — GOV retains it;
+* advancement ownership — GOV/REL retain it;
+* closure ownership — CDE retains it;
+* control-outcome ownership — CDE retains it;
+* lineage issuance ownership — LIN retains it;
+* observability-store ownership — OBS retains it;
+* replay-store ownership — REP retains it;
+* evaluation ownership — EVL retains it.
 
 Every new AEX-owned schema (`admission_policy_observation`,
 `admission_evidence_record`, `admission_trace_record`,
 `aex_admission_replay_record`) declares
 `producer_authority: AEX` and the corresponding
-`non_authority_assertions` enumerating these boundaries. The new
+`non_authority_assertions` enumerating these boundaries with safety-suffixed
+labels (`aex_emits_*_input_only`, `aex_emits_*_observation_only`,
+`aex_emits_*_signal_only`). The new
 `tests/test_aex_trust_hardening.py::test_aex_artifacts_do_not_assert_downstream_authority`
-parametrized test enforces that AEX schemas never acquire
-enforcement/control/closure/promotion/certification/policy decision fields.
+parametrized test asserts that AEX schemas never acquire downstream
+ownership fields.
 
 `scripts/run_authority_shape_preflight.py --base-ref main --head-ref HEAD
 --suggest-only` reported `status: pass`, `violation_count: 0`.
@@ -281,10 +284,10 @@ enforcement/control/closure/promotion/certification/policy decision fields.
 * The single generator change (sorted iteration in `evidence_scanner.py`) is
   a deterministic-correctness fix, not a signal mask. It cannot make a
   failing signal pass without underlying evidence.
-* Every new AEX evidence file is real generator/runtime output backed by
-  `validate_artifact()` enforcement.
+* Every new AEX evidence file is real generator/runtime output validated
+  by `validate_artifact()`.
 
-## 10. Verdict
+## 10. Result
 
 AEX is no longer a trust-gap bottleneck. The dashboard correctly identifies
 EVL as the next remediation target. AEX retains its admission-only authority
