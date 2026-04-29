@@ -121,7 +121,7 @@ jobs:
         with:
           name: shard-outputs-${{ matrix.shard }}
           if-no-files-found: warn
-          path: outputs/pr_test_shards/${{ matrix.shard }}/
+          path: outputs/pr_test_shards
 
   pr-gate:
     name: pr-gate
