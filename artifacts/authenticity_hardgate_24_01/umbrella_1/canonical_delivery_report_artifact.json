@@ -1,7 +1,7 @@
 {
   "artifact_type": "canonical_delivery_report_artifact",
   "batch_id": "AUTHENTICITY-HARDGATE-24-01",
-  "generated_at": "2026-04-29T13:37:49Z",
+  "generated_at": "2026-04-29T13:50:29Z",
   "non_empty": true,
   "summary": "Admission authenticity envelope and execution-edge forged-lineage fail gate established."
 }
