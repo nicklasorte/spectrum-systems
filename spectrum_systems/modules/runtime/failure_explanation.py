@@ -76,7 +76,7 @@ def _infer_stage_from_artifact_type(artifact_type: str) -> str:
         return "CDE"
     if any(k in low for k in ["proof_presence"]):
         return "GOV"
-    if any(k in low for k in ["enforcement", "sel", "enforcement_block"]):
+    if any(k in low for k in ["enforcement_action", "enforcement_block", "sel_enforcement"]):
         return "SEL"
     if any(k in low for k in ["failure_diagnosis", "repair_plan", "fre"]):
         return "FRE"

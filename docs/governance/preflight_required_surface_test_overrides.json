@@ -1,4 +1,7 @@
 {
+  "scripts/sync_from_main.sh": [
+    "tests/test_contracts.py"
+  ],
   "scripts/run_failure_explanation.py": [
     "tests/test_failure_explanation.py"
   ],
