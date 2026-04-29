@@ -1996,7 +1996,12 @@
           "artifacts/dependency-graph-summary.md",
           "artifacts/policy-engine-report.json",
           "artifacts/policy-engine-summary.md",
-          "artifacts/tls/system_registry_dependency_graph.json"
+          "artifacts/system_dependency_priority_report.json",
+          "artifacts/tls/system_candidate_classification.json",
+          "artifacts/tls/system_dependency_priority_report.json",
+          "artifacts/tls/system_evidence_attachment.json",
+          "artifacts/tls/system_registry_dependency_graph.json",
+          "artifacts/tls/system_trust_gap_report.json"
         ],
         "docs": [
           "docs/architecture/system_registry.md",
@@ -2041,7 +2046,7 @@
           "tests/test_ril_interpretation.py"
         ]
       },
-      "evidence_count": 35,
+      "evidence_count": 40,
       "has_evidence": true,
       "missing_evidence_reason": null,
       "system_id": "PRL"
