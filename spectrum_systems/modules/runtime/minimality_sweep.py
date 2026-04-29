@@ -196,6 +196,7 @@ def run_minimality_sweep(
     return {
         "artifact_type": "cleanup_candidate_report",
         "schema_version": "1.0.0",
+        "producer_authority": "OBS",
         "report_id": _report_id(),
         "audit_timestamp": _now(),
         "candidates": all_candidates,

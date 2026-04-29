@@ -33,9 +33,10 @@ def test_returns_cleanup_candidate_report() -> None:
 
 def test_required_fields_present() -> None:
     report = run_minimality_sweep(trace_id="t")
-    required = ["artifact_type", "schema_version", "report_id", "audit_timestamp", "candidates", "non_authority_assertions"]
+    required = ["artifact_type", "schema_version", "producer_authority", "report_id", "audit_timestamp", "candidates", "non_authority_assertions"]
     for key in required:
         assert key in report, f"Missing: {key}"
+    assert report["producer_authority"] == "OBS"
 
 
 def test_non_authority_assertions_valid() -> None:
