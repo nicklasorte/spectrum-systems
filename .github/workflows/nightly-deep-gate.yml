@@ -34,7 +34,7 @@ jobs:
       - name: Run contract enforcement
         run: |
           set -euo pipefail
-          python scripts/run_contract_enforcement.py || echo "contract enforcement completed"
+          python scripts/run_contract_enforcement.py
 
       - name: Run CI drift detector
         run: |

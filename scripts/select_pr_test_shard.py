@@ -72,19 +72,31 @@ def _collect_all_tests(required_map: dict[str, list[str]]) -> list[str]:
     return sorted(all_tests)
 
 
+# Shards that run in the required PR matrix. Tests assigned to any shard NOT
+# in this set are absorbed by the changed_scope catch-all so they are never
+# silently dropped when only the four required shards execute.
+_REQUIRED_PR_SHARDS: frozenset[str] = frozenset(
+    {"contract", "governance", "dashboard", "changed_scope"}
+)
+
+
 def _select_tests_for_shard(all_tests: list[str], shard_name: str) -> list[str]:
     """Filter tests that belong to *shard_name*.
 
-    For 'changed_scope' shard, include all tests NOT assigned to another
-    specific shard.  For all other shards, include tests where
-    assign_to_shard() returns that shard name.
+    For 'changed_scope', include tests that are either unassigned OR assigned
+    to a shard that is not in the required PR matrix (_REQUIRED_PR_SHARDS).
+    This ensures tests from deferred shards (runtime_core, measurement) are
+    never silently skipped — they fall through to changed_scope.
+
+    For all other shards, include tests where assign_to_shard() returns that
+    shard name exactly.
     """
     selected: list[str] = []
     for test_path in all_tests:
         assigned = assign_to_shard(test_path)
         if shard_name == "changed_scope":
-            # Catch-all: take tests not assigned to any specific shard.
-            if assigned is None:
+            # Absorb unassigned tests AND tests from deferred (non-required) shards.
+            if assigned is None or assigned not in _REQUIRED_PR_SHARDS:
                 selected.append(test_path)
         else:
             if assigned == shard_name:
