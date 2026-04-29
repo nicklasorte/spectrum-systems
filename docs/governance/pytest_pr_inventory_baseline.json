@@ -28,5 +28,27 @@
     "SLO/control behavior (aex trust hardening)"
   ],
   "expected_minimum_count": 14,
-  "version_note": "v2.0.0 expands from single-file (v1) to multi-file smoke suite covering all canonical gate invariants. The prior single-file baseline (test_eval_dataset_registry.py, 19 tests) is preserved as suite_targets[0]."
+  "expected_nodeids": [
+    "tests/test_eval_dataset_registry.py::test_artifact_type_rejection",
+    "tests/test_eval_dataset_registry.py::test_canonicalization_v1_locks_field_order_and_tie_break_behavior",
+    "tests/test_eval_dataset_registry.py::test_contains_failure_generated_cases_excludes_rejected_generated_source",
+    "tests/test_eval_dataset_registry.py::test_contains_failure_generated_cases_tracks_admitted_generated_source",
+    "tests/test_eval_dataset_registry.py::test_deterministic_summary_counts",
+    "tests/test_eval_dataset_registry.py::test_duplicate_rejection",
+    "tests/test_eval_dataset_registry.py::test_duplicate_resolution_is_permutation_invariant",
+    "tests/test_eval_dataset_registry.py::test_fail_closed_on_malformed_input",
+    "tests/test_eval_dataset_registry.py::test_membership_rejects_unsupported_source_at_admission_boundary",
+    "tests/test_eval_dataset_registry.py::test_member_rejection_for_missing_provenance",
+    "tests/test_eval_dataset_registry.py::test_missing_canonicalization_policy_id_hard_fails",
+    "tests/test_eval_dataset_registry.py::test_policy_rejection_of_failure_generated_cases",
+    "tests/test_eval_dataset_registry.py::test_policy_rejection_of_manual_cases",
+    "tests/test_eval_dataset_registry.py::test_policy_rejection_of_manual_failure_cases",
+    "tests/test_eval_dataset_registry.py::test_snapshot_includes_canonicalization_policy_provenance",
+    "tests/test_eval_dataset_registry.py::test_snapshot_rejects_active_policy_mismatch",
+    "tests/test_eval_dataset_registry.py::test_snapshot_rejects_mixed_canonicalization_policy_ids",
+    "tests/test_eval_dataset_registry.py::test_unknown_canonicalization_policy_id_hard_fails",
+    "tests/test_eval_dataset_registry.py::test_valid_dataset_creation"
+  ],
+  "expected_count": 19,
+  "version_note": "v2.0.0 expands from single-file (v1) to multi-file smoke suite covering all canonical gate invariants. The prior single-file baseline (test_eval_dataset_registry.py, 19 tests) is preserved as suite_targets[0]. expected_nodeids covers the preflight inventory check target (test_eval_dataset_registry.py)."
 }
