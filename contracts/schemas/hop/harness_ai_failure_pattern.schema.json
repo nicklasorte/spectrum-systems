@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spectrum-systems.org/contracts/hop/harness_ai_failure_pattern.schema.json",
+  "title": "HOP AI Failure Pattern",
+  "description": "Input record describing a recurring AI/coding-agent failure pattern. HOP consumes these records to derive system-improvement proposals. Advisory surface only — no authority claim.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_ref",
+    "schema_version",
+    "trace",
+    "content_hash",
+    "failure_pattern_id",
+    "failure_type",
+    "agent_or_provider",
+    "prompt_pattern",
+    "affected_stage",
+    "recurrence_count",
+    "severity",
+    "observed_symptoms",
+    "recommended_preventions",
+    "source_refs",
+    "recorded_at"
+  ],
+  "properties": {
+    "artifact_id": {"type": "string", "pattern": "^hop_ai_failure_[a-z0-9_-]+$"},
+    "artifact_type": {"const": "hop_harness_ai_failure_pattern"},
+    "schema_ref": {"const": "hop/harness_ai_failure_pattern.schema.json"},
+    "schema_version": {"const": "1.0.0"},
+    "content_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "trace": {"$ref": "#/$defs/trace"},
+    "failure_pattern_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$",
+      "minLength": 1
+    },
+    "failure_type": {
+      "type": "string",
+      "enum": [
+        "stream_idle_timeout",
+        "ai_over_scoped_execution",
+        "missing_checkpoint",
+        "budget_exhausted",
+        "scope_drift",
+        "eval_indeterminate",
+        "architecture_boundary_violation"
+      ]
+    },
+    "agent_or_provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prompt_pattern": {
+      "type": "string",
+      "minLength": 1
+    },
+    "affected_stage": {
+      "type": "string",
+      "minLength": 1
+    },
+    "recurrence_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "observed_symptoms": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "recommended_preventions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "recorded_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary", "related"],
+      "properties": {
+        "primary": {"type": "string", "minLength": 1},
+        "related": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}
