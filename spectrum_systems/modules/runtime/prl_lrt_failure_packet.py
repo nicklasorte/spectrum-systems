@@ -2,7 +2,7 @@
 
 Produces a learning-facing failure packet for the stream_idle_timeout class.
 Consumed by the governed eval/learning substrate for future pre-PR prevention.
-Does not make policy decisions or execute enforcement.
+Does not make policy calls or execute policy observations.
 """
 
 from __future__ import annotations

@@ -1,13 +1,18 @@
 """CDE long-running task continuation decision.
 
 Produces a deterministic continuation decision when a coding agent requests
-to "keep going" or continue after a checkpoint. CDE never executes or enforces;
+to "keep going" or continue after a checkpoint. CDE never executes or delegates;
 it emits a decision artifact only.
 """
 
 from __future__ import annotations
 
 from typing import Any, Mapping
+
+from spectrum_systems.modules.runtime.pqx_execution_budget import (
+    PQXBudgetError,
+    validate_execution_budget,
+)
 
 _KEEP_GOING_PATTERNS = frozenset({
     "keep_going",
@@ -20,7 +25,7 @@ _KEEP_GOING_PATTERNS = frozenset({
     "continue indefinitely",
 })
 
-_ALLOWED_DECISIONS = frozenset({"continue", "split", "freeze", "block"})
+_ALLOWED_ACTIONS = frozenset({"continue", "split", "freeze", "block"})
 
 
 class CDELRTContinuationError(ValueError):
@@ -48,7 +53,7 @@ def decide_lrt_continuation(
     if checkpoint_present and stop_after_checkpoint:
         return {
             "decision": "freeze",
-            "reason_codes": ["stop_after_checkpoint_enforced"],
+            "reason_codes": ["stop_after_checkpoint_required"],
             "block_reason": "stop_after_checkpoint=true; agent must halt and report after checkpoint",
         }
 
@@ -59,9 +64,17 @@ def decide_lrt_continuation(
                 "reason_codes": ["keep_going_requires_split", "no_execution_budget"],
                 "block_reason": None,
             }
+        try:
+            validate_execution_budget(execution_budget, broad_task=True)
+        except PQXBudgetError as exc:
+            return {
+                "decision": "split",
+                "reason_codes": ["keep_going_requires_split", "execution_budget_invalid"],
+                "block_reason": str(exc),
+            }
         return {
             "decision": "continue",
-            "reason_codes": ["checkpoint_present", "execution_budget_present"],
+            "reason_codes": ["checkpoint_present", "execution_budget_valid"],
             "block_reason": None,
         }
 

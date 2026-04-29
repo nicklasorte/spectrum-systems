@@ -102,7 +102,7 @@ def test_stop_after_checkpoint_prevents_continuation() -> None:
         stop_after_checkpoint=True,
     )
     assert decision["decision"] == "freeze"
-    assert "stop_after_checkpoint_enforced" in decision["reason_codes"]
+    assert "stop_after_checkpoint_required" in decision["reason_codes"]
 
     decision_without_budget = decide_lrt_continuation(
         continuation_phrase="keep going",
@@ -111,6 +111,22 @@ def test_stop_after_checkpoint_prevents_continuation() -> None:
         execution_budget=None,
     )
     assert decision_without_budget["decision"] == "split"
+
+
+def test_oversized_budget_is_rejected_and_invalid_budget_blocks_continuation() -> None:
+    oversized = {**_VALID_BUDGET, "max_lines_added": 300 * 11}  # exceeds 10x default
+    with pytest.raises(PQXBudgetError, match="exceeds limits"):
+        validate_execution_budget(oversized, broad_task=True)
+
+    empty_budget: dict = {}
+    decision = decide_lrt_continuation(
+        continuation_phrase="keep going",
+        checkpoint_present=True,
+        stop_after_checkpoint=False,
+        execution_budget=empty_budget,
+    )
+    assert decision["decision"] == "split"
+    assert "execution_budget_invalid" in decision["reason_codes"]
 
 
 def test_timeout_trend_record_captures_stream_idle_timeout_no_checkpoint() -> None:

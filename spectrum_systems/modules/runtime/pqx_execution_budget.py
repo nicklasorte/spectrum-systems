@@ -1,8 +1,8 @@
-"""PQX execution budget enforcement.
+"""PQX execution budget validation.
 
 Provides defaults and validation for the execution_budget contract.
-Emits a block artifact when a broad task omits or exceeds budget fields.
-Does not execute work or make control decisions.
+Emits a block signal when a broad task omits, is schema-invalid, or exceeds budget limits.
+Does not execute work or make control calls.
 """
 
 from __future__ import annotations
@@ -32,11 +32,11 @@ def validate_execution_budget(
     *,
     broad_task: bool = False,
 ) -> dict[str, Any]:
-    """Validate execution_budget. Fail closed if broad_task=True and budget missing/invalid."""
+    """Validate execution_budget. Fail closed if broad_task=True and budget missing/invalid/oversized."""
     if budget is None:
         if broad_task:
             raise PQXBudgetError("broad task requires execution_budget; none provided")
-        return {"valid": True, "enforced_budget": dict(EXECUTION_BUDGET_DEFAULTS), "violations": []}
+        return {"valid": True, "applied_budget": dict(EXECUTION_BUDGET_DEFAULTS), "violations": []}
 
     missing = [f for f in _BUDGET_FIELDS if f not in budget]
     if missing:
@@ -53,8 +53,11 @@ def validate_execution_budget(
         if isinstance(default, int) and isinstance(val, int) and val > default * 10:
             violations.append(f"{key}={val} exceeds 10x default ({default})")
 
+    if violations:
+        raise PQXBudgetError(f"execution_budget exceeds limits: {violations}")
+
     return {
         "valid": True,
-        "enforced_budget": dict(budget),
-        "violations": violations,
+        "applied_budget": dict(budget),
+        "violations": [],
     }

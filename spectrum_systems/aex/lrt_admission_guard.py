@@ -1,7 +1,7 @@
 """AEX long-running task admission guard.
 
 Detects broad/oversized execution requests and requires a bounded execution_budget
-contract before admission proceeds. Does not execute work or make policy decisions.
+contract before admission proceeds. Does not execute work or make policy calls.
 """
 
 from __future__ import annotations
