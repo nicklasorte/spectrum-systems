@@ -108,12 +108,19 @@ def _determine_status(
     governed_surfaces: list[dict],
     selected_tests: list[str],
     changed_paths: list[str],
+    all_tests: list[str],
 ) -> tuple[str, list[str]]:
     """Compute (status, reason_codes) before handing off to build_selection_artifact."""
     reason_codes: list[str] = []
 
-    if governed_surfaces and not selected_tests:
+    if governed_surfaces and not all_tests:
+        # No tests mapped to any shard for governed changes — block.
         return "block", ["governed_surface_empty_selection"]
+
+    if governed_surfaces and not selected_tests:
+        # Governed paths changed but this shard has no assigned tests.
+        # Other shards carry the coverage, so empty selection is allowed here.
+        return "empty_allowed", reason_codes
 
     if not changed_paths:
         return "empty_allowed", reason_codes
@@ -150,12 +157,12 @@ def main() -> int:
     # 5. Filter to this shard.
     selected_tests = _select_tests_for_shard(all_tests, args.shard)
 
-    # 6. Compute coverage_ratio.
+    # 6. Compute coverage_ratio (clamped to [0, 1] — governed paths < tests is valid).
     all_governed_paths = [e["path"] for e in governed_surfaces]
-    coverage_ratio = len(selected_tests) / max(1, len(all_governed_paths))
+    coverage_ratio = min(1.0, len(selected_tests) / max(1, len(all_governed_paths)))
 
     # 7. Determine status and reason codes.
-    status, reason_codes = _determine_status(governed_surfaces, selected_tests, changed_paths)
+    status, reason_codes = _determine_status(governed_surfaces, selected_tests, changed_paths, all_tests)
 
     # 8. Build and write the selection artifact.
     trace_refs: list[str] = [

@@ -5,7 +5,7 @@ defaults, and no filesystem side effects except for `load_override_map`, which r
 single governed override file.
 
 Authority scope: observation_only.  This module produces selection artifacts and parity
-artifacts.  It does NOT enforce, certify, or promote.
+artifacts.  It does NOT issue enforcement_signal, readiness_evidence, or promotion_signal.
 """
 
 from __future__ import annotations
@@ -493,16 +493,21 @@ def build_selection_artifact(
     has_tests = len(selected_test_files) > 0
 
     if has_governed and not has_tests:
-        # Check for unknown mapping vs. simply no tests found.
-        surfaces_set = {s.get("surface", "") for s in governed_surfaces}
-        if "other" in surfaces_set or "" in surfaces_set:
-            effective_status = "block"
-            if "unknown_governed_surface_mapping" not in effective_reason_codes:
-                effective_reason_codes.append("unknown_governed_surface_mapping")
+        if status == "empty_allowed":
+            # Caller has determined this shard has no obligation for the governed
+            # surfaces (e.g., required tests belong to other shards).
+            effective_status = "empty_allowed"
         else:
-            effective_status = "block"
-            if "governed_surface_empty_selection" not in effective_reason_codes:
-                effective_reason_codes.append("governed_surface_empty_selection")
+            # Check for unknown mapping vs. simply no tests found.
+            surfaces_set = {s.get("surface", "") for s in governed_surfaces}
+            if "other" in surfaces_set or "" in surfaces_set:
+                effective_status = "block"
+                if "unknown_governed_surface_mapping" not in effective_reason_codes:
+                    effective_reason_codes.append("unknown_governed_surface_mapping")
+            else:
+                effective_status = "block"
+                if "governed_surface_empty_selection" not in effective_reason_codes:
+                    effective_reason_codes.append("governed_surface_empty_selection")
     elif not has_governed and not has_tests:
         # No governed surfaces and no selected tests.
         if not changed_paths:

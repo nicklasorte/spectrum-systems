@@ -131,6 +131,15 @@ def test_governed_surface_empty_selection_blocks():
     assert "governed_surface_empty_selection" in artifact["reason_codes"]
 
 
+def test_governed_surface_empty_selection_allowed_when_caller_declares_empty_allowed():
+    # When other shards carry coverage, _determine_status passes status="empty_allowed".
+    # build_selection_artifact must respect that and not override to "block".
+    artifact = build_selection_artifact(
+        **_base_artifact_kwargs(selected_test_files=[], status="empty_allowed")
+    )
+    assert artifact["status"] == "empty_allowed"
+
+
 def test_docs_only_non_governed_empty_allowed():
     artifact = build_selection_artifact(
         shard_name="changed_scope",

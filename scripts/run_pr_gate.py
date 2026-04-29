@@ -3,7 +3,7 @@
 write a final PR gate result.
 
 This script aggregates evidence only.  It does NOT call any selection
-functions, recompute which tests should run, or make control decisions.
+functions, recompute which tests should run, or make gate-outcome calls.
 Authority scope: observation_only.
 
 Fail-closed: any exception → exit 1.

@@ -168,5 +168,5 @@ may implement its own test selector.
 ### Shard result authority scope
 
 All shard results carry `authority_scope: "observation_only"`. Shards observe and report;
-they do not admit, certify, promote, or enforce. Canonical authority remains with the system
+they carry no readiness_evidence, no promotion_signal, no enforcement_signal. Canonical authority remains with the system
 declared in `docs/architecture/system_registry.md`.
