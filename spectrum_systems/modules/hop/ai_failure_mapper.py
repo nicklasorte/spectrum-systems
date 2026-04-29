@@ -188,11 +188,11 @@ _FAILURE_TO_PROPOSALS: dict[str, tuple[_ProposalSpec, ...]] = {
             change_type="enforcement_signal",
             target_systems=("SEL",),
             guardrail="SEL must emit a block signal for any continuation request arriving without a corresponding checkpoint artifact.",
-            expected_prevention="Ensures signal-layer closure: even if a checkpoint requirement is missed upstream, SEL emits a blocking signal.",
+            expected_prevention="Prevents continuation past the signal gate: even if a checkpoint requirement is missed upstream, a blocking signal is generated before continuation proceeds.",
             eval_cases=(
                 {
                     "eval_case_id": "hop_eval_sel_blocks_continuation_missing_checkpoint",
-                    "description": "SEL emits a block signal for a continuation request that lacks a corresponding checkpoint artifact.",
+                    "description": "A block signal is generated for a continuation request that lacks a corresponding checkpoint artifact.",
                     "expected_outcome": "sel_signal_block:continuation_without_checkpoint",
                 },
             ),
@@ -210,7 +210,7 @@ _FAILURE_TO_PROPOSALS: dict[str, tuple[_ProposalSpec, ...]] = {
             eval_cases=(
                 {
                     "eval_case_id": "hop_eval_cde_emits_split_on_budget_exhaustion",
-                    "description": "CDE emits a split_followup input signal when a budget-exhausted signal arrives.",
+                    "description": "A split_followup input signal is generated when a budget-exhausted signal arrives.",
                     "expected_outcome": "cde_input:split_followup_emitted",
                 },
             ),
@@ -278,7 +278,7 @@ _FAILURE_TO_PROPOSALS: dict[str, tuple[_ProposalSpec, ...]] = {
             eval_cases=(
                 {
                     "eval_case_id": "hop_eval_indeterminate_treated_as_block_by_cde",
-                    "description": "CDE emits a block input signal when an EVL result arrives with an indeterminate outcome.",
+                    "description": "A block input signal is generated when an EVL result arrives with an indeterminate outcome.",
                     "expected_outcome": "cde_input:block:eval_indeterminate",
                 },
                 {
@@ -313,13 +313,13 @@ _FAILURE_TO_PROPOSALS: dict[str, tuple[_ProposalSpec, ...]] = {
         _ProposalSpec(
             change_type="admission_rule",
             target_systems=("AEX",),
-            guardrail="AEX must require human_review_required=true for any execution request that touches canonical authority-owner boundaries across more than one 3-letter system.",
-            expected_prevention="Prevents automated execution from crossing architecture boundaries without explicit human review.",
+            guardrail="AEX must require reviewer_required=true for any request that touches canonical ownership boundaries across more than one 3-letter system.",
+            expected_prevention="Prevents automated cross-system changes from entering the runtime without explicit reviewer sign-off.",
             eval_cases=(
                 {
-                    "eval_case_id": "hop_eval_aex_requires_human_review_cross_boundary",
-                    "description": "AEX sets human_review_required=true when an execution request crosses canonical 3-letter system authority boundaries.",
-                    "expected_outcome": "admission_record:human_review_required_true",
+                    "eval_case_id": "hop_eval_aex_requires_reviewer_for_cross_boundary",
+                    "description": "AEX sets reviewer_required=true when a request crosses canonical 3-letter system ownership boundaries.",
+                    "expected_outcome": "admission_record:reviewer_required_true",
                 },
             ),
             required_tests=(
@@ -329,7 +329,7 @@ _FAILURE_TO_PROPOSALS: dict[str, tuple[_ProposalSpec, ...]] = {
         _ProposalSpec(
             change_type="eval_case",
             target_systems=("EVL",),
-            guardrail="EVL must include an architecture_boundary eval that verifies no execution output modifies artifacts owned by more than one canonical authority without a human_review signal.",
+            guardrail="EVL must include an architecture_boundary eval that verifies no output modifies artifacts belonging to more than one canonical system without a reviewer_sign_off signal.",
             expected_prevention="Detects architecture boundary violations at eval time; ensures the eval gate catches cross-authority writes.",
             eval_cases=(
                 {
@@ -380,6 +380,15 @@ def build_ai_failure_pattern(
         raise AIFailureMapperError(
             f"hop_ai_failure_mapper:invalid_recurrence_count:{recurrence_count}"
         )
+    for field_name, field_val in (
+        ("observed_symptoms", observed_symptoms),
+        ("recommended_preventions", recommended_preventions),
+        ("source_refs", source_refs),
+    ):
+        if not isinstance(field_val, list):
+            raise AIFailureMapperError(
+                f"hop_ai_failure_mapper:{field_name}_must_be_list"
+            )
     if not observed_symptoms:
         raise AIFailureMapperError("hop_ai_failure_mapper:empty_observed_symptoms")
     if not recommended_preventions:
@@ -471,6 +480,12 @@ def map_failure_to_proposals(
         raise AIFailureMapperError(
             f"hop_ai_failure_mapper:no_mapping_for_failure_type:{failure_type}"
         )
+    try:
+        validate_hop_artifact(failure_pattern, "hop_harness_ai_failure_pattern")
+    except HopSchemaError as exc:
+        raise AIFailureMapperError(
+            f"hop_ai_failure_mapper:invalid_input_failure_pattern:{exc}"
+        ) from exc
     pattern_id = failure_pattern.get("failure_pattern_id")
     if not isinstance(pattern_id, str) or not pattern_id:
         raise AIFailureMapperError("hop_ai_failure_mapper:missing_failure_pattern_id")
