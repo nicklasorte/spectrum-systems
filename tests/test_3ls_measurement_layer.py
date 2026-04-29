@@ -349,6 +349,48 @@ def test_trust_gap_negative_count_fails() -> None:
         validate_artifact(instance, "3ls_trust_gap_closure_record")
 
 
+def test_trust_gap_status_must_match_negative_delta() -> None:
+    """Codex P1: a negative delta with status != 'improving' must be rejected."""
+    instance = load_example("3ls_trust_gap_closure_record")
+    instance["delta"] = -2
+    instance["status"] = "regressing"
+    with pytest.raises(ValidationError):
+        validate_artifact(instance, "3ls_trust_gap_closure_record")
+
+
+def test_trust_gap_status_must_match_zero_delta() -> None:
+    instance = load_example("3ls_trust_gap_closure_record")
+    instance["previous_gap_count"] = 3
+    instance["current_gap_count"] = 3
+    instance["delta"] = 0
+    instance["status"] = "improving"
+    with pytest.raises(ValidationError):
+        validate_artifact(instance, "3ls_trust_gap_closure_record")
+
+
+def test_trust_gap_status_must_match_positive_delta() -> None:
+    instance = load_example("3ls_trust_gap_closure_record")
+    instance["previous_gap_count"] = 1
+    instance["current_gap_count"] = 5
+    instance["delta"] = 4
+    instance["status"] = "improving"
+    with pytest.raises(ValidationError):
+        validate_artifact(instance, "3ls_trust_gap_closure_record")
+
+
+def test_trust_gap_delta_arithmetic_consistency() -> None:
+    """Codex P1: delta must equal current_gap_count - previous_gap_count.
+
+    JSON Schema cannot express cross-field arithmetic, so this is enforced at
+    the producing test layer per the schema description.
+    """
+    instance = load_example("3ls_trust_gap_closure_record")
+    actual_delta = instance["current_gap_count"] - instance["previous_gap_count"]
+    assert instance["delta"] == actual_delta, (
+        "Example must satisfy delta == current_gap_count - previous_gap_count"
+    )
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 3ls_replayability_record
 # ─────────────────────────────────────────────────────────────────────────────
@@ -376,6 +418,17 @@ def test_replayability_unavailable_with_gap_reason_passes() -> None:
     instance["replay_refs"] = []
     instance["replay_gap_reason"] = "no replay harness wired for this system"
     validate_artifact(instance, "3ls_replayability_record")
+
+
+def test_replayability_unavailable_rejects_populated_refs() -> None:
+    """Codex P2: replay_available=false with non-empty replay_refs is
+    contradictory and must be rejected by the fail-closed contract."""
+    instance = load_example("3ls_replayability_record")
+    instance["replay_available"] = False
+    instance["replay_gap_reason"] = "no replay harness wired for this system"
+    instance["replay_refs"] = ["artifacts/runtime/replay/replay-001.json"]
+    with pytest.raises(ValidationError):
+        validate_artifact(instance, "3ls_replayability_record")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

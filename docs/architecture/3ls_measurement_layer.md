@@ -78,7 +78,15 @@ rather than producing partial records that could be misread as evidence:
   fingerprint must be `sha256:` formatted; `affected_systems` must be
   non-empty; `failure_class` must align with the repo failure taxonomy.
 - `3ls_replayability_record`: `replay_available = true` requires non-empty
-  `replay_refs`; `false` requires a non-empty `replay_gap_reason`.
+  `replay_refs`; `false` requires a non-empty `replay_gap_reason` AND
+  empty `replay_refs` (a record cannot simultaneously declare replay
+  unavailable and attach replay evidence).
+- `3ls_trust_gap_closure_record`: `status` must agree with the sign of
+  `delta` (improving when delta < 0, unchanged when delta == 0,
+  regressing when delta > 0). The arithmetic identity
+  `delta == current_gap_count - previous_gap_count` is checked by the
+  producing test suite; JSON Schema cannot express the cross-field
+  arithmetic.
 - `3ls_scope_risk_record`: changes touching workflows AND schemas AND
   scripts must classify as `high` or `critical`.
 - `3ls_operator_debuggability_record`: `single_artifact_debuggable = true`

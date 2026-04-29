@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/3ls_trust_gap_closure_record.schema.json",
   "title": "3LS Trust Gap Closure Record",
-  "description": "Measurement of whether a system's trust gaps are improving over time. Integrates with existing artifacts/tls/* artifacts. Observation only; does not assert closure readiness or grant trust.",
+  "description": "Measurement of whether a system's trust gaps are improving over time. Integrates with existing artifacts/tls/* artifacts. Observation only; does not assert closure readiness or grant trust. Consistency: delta MUST equal current_gap_count - previous_gap_count, and status MUST agree with the sign of delta (improving=delta<0, unchanged=delta==0, regressing=delta>0). The delta-vs-counts arithmetic is checked by the producing test suite; the status-vs-delta sign relationship is locked by this schema's allOf clauses.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -72,5 +72,37 @@
     },
     "authority_scope": {"type": "string", "const": "observation_only"},
     "notes": {"type": "string"}
-  }
+  },
+  "allOf": [
+    {
+      "description": "delta < 0 implies status=improving (trust gap shrank).",
+      "if": {
+        "properties": {"delta": {"type": "integer", "exclusiveMaximum": 0}},
+        "required": ["delta"]
+      },
+      "then": {
+        "properties": {"status": {"const": "improving"}}
+      }
+    },
+    {
+      "description": "delta == 0 implies status=unchanged.",
+      "if": {
+        "properties": {"delta": {"type": "integer", "const": 0}},
+        "required": ["delta"]
+      },
+      "then": {
+        "properties": {"status": {"const": "unchanged"}}
+      }
+    },
+    {
+      "description": "delta > 0 implies status=regressing (trust gap grew).",
+      "if": {
+        "properties": {"delta": {"type": "integer", "exclusiveMinimum": 0}},
+        "required": ["delta"]
+      },
+      "then": {
+        "properties": {"status": {"const": "regressing"}}
+      }
+    }
+  ]
 }

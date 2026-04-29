@@ -61,7 +61,7 @@
       }
     },
     {
-      "description": "If replay is unavailable, replay_gap_reason must be a non-empty string.",
+      "description": "If replay is unavailable, replay_gap_reason must be a non-empty string and replay_refs must be empty (a record cannot simultaneously declare replay unavailable and attach replay evidence).",
       "if": {
         "properties": {"replay_available": {"const": false}},
         "required": ["replay_available"]
@@ -69,7 +69,8 @@
       "then": {
         "required": ["replay_gap_reason"],
         "properties": {
-          "replay_gap_reason": {"type": "string", "minLength": 1}
+          "replay_gap_reason": {"type": "string", "minLength": 1},
+          "replay_refs": {"type": "array", "maxItems": 0}
         }
       }
     }
