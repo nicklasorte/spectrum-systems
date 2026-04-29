@@ -3,7 +3,7 @@
   "batch_id": "RH-KERNEL-24-01",
   "slice_id": "RH-12",
   "owner": "AEX",
-  "generated_at": "2026-04-28T07:31:39Z",
+  "generated_at": "2026-04-29T19:32:38Z",
   "preflight": {
     "configuration": "pass",
     "dependency_lock": "pass",

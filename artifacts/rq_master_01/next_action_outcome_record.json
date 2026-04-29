@@ -1,7 +1,7 @@
 {
   "artifact_type": "next_action_outcome_record",
   "batch_id": "RQ-MASTER-01",
-  "generated_at": "2026-04-29T13:47:42Z",
+  "generated_at": "2026-04-29T19:32:48Z",
   "recommendation_id": "RQ-REC-01",
   "outcome_classification": "correct",
   "evidence": [

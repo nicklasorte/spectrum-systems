@@ -1,7 +1,7 @@
 {
   "artifact_type": "governance_exception_register",
   "batch_id": "RQ-NEXT-24-01",
-  "generated_at": "2026-04-28T01:48:06Z",
+  "generated_at": "2026-04-29T19:32:52Z",
   "exceptions": [
     {
       "exception_id": "EX-001",

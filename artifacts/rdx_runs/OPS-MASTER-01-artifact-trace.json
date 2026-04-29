@@ -1,7 +1,7 @@
 {
   "artifact_type": "rdx_run_artifact_trace",
   "batch_id": "OPS-MASTER-01",
-  "generated_at": "2026-04-29T13:42:07Z",
+  "generated_at": "2026-04-29T19:31:52Z",
   "umbrella_sequence": [
     "VISIBILITY_LAYER",
     "SHIFT_LEFT_HARDENING_LAYER",

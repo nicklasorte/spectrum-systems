@@ -1,10 +1,10 @@
 {
-  "last_refreshed_time": "2026-04-29T17:24:36Z",
+  "last_refreshed_time": "2026-04-29T19:33:22Z",
   "snapshot_size": "4541 bytes",
   "data_source_state": "live",
   "snapshot_source_path": "artifacts/dashboard/repo_snapshot.json",
   "snapshot_size_bytes": 4541,
-  "refresh_run_id": "refresh-20260429T172432Z",
-  "trace_id": "trace-20260429T172432Z",
-  "run_id": "refresh-20260429T172432Z"
+  "refresh_run_id": "refresh-20260429T193322Z",
+  "trace_id": "trace-20260429T193322Z",
+  "run_id": "refresh-20260429T193322Z"
 }

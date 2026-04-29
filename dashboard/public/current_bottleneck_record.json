@@ -1,7 +1,7 @@
 {
   "artifact_type": "current_bottleneck_record",
   "batch_id": "OPS-MASTER-01",
-  "generated_at": "2026-04-28T01:47:26Z",
+  "generated_at": "2026-04-29T19:31:52Z",
   "bottleneck_name": "repair_loop_latency",
   "evidence": [
     "first_pass_quality_artifact.first_pass_rate=0.71",

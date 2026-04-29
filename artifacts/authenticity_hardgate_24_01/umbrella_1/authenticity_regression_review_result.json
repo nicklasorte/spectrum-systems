@@ -2,7 +2,7 @@
   "artifact_type": "authenticity_regression_review_result",
   "slice_id": "AH-06",
   "owner": "RQX",
-  "generated_at": "2026-04-29T13:50:29Z",
+  "generated_at": "2026-04-29T19:26:51Z",
   "review_loop_verification_only": true,
   "coverage_status": "all_known_repo_write_paths_reviewed"
 }
