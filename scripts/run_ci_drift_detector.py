@@ -191,7 +191,7 @@ def check_ownership_manifest(repo_root: Path) -> list[DriftFinding]:
         ))
         return findings
 
-    required_gates = {"contract_gate", "test_selection_gate", "runtime_test_gate", "governance_gate"}
+    required_gates = {"contract_gate", "test_selection_gate", "runtime_test_gate", "governance_gate", "certification_gate"}
     gate_names = {g["gate_name"] for g in manifest.get("gates", [])}
     missing = required_gates - gate_names
     if missing:

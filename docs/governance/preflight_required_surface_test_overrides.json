@@ -107,6 +107,10 @@
   ],
   "docs/reviews/MET-18-dashboard-usefulness-fixes.md": [
     "tests/metrics/test_met_04_18_contract_selection.py"
+  ],
+  ".github/workflows/nightly-deep-gate.yml": [
+    "tests/gates/test_ci_drift_detector.py",
+    "tests/gates/test_gate_fail_closed.py"
   ]
 }
 
