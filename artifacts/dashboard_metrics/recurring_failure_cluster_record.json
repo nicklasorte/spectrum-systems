@@ -1,0 +1,57 @@
+{
+  "artifact_type": "recurring_failure_cluster_record",
+  "schema_version": "1.0.0",
+  "record_id": "RFC-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/comparable_case_qualification_gate_record.json",
+    "artifacts/dashboard_metrics/failure_explanation_packets.json",
+    "artifacts/dashboard_metrics/failure_feedback_record.json"
+  ],
+  "reason_codes": [
+    "recurring_failure_observation_only",
+    "min_cases_required_3",
+    "insufficient_cases_remains_visible"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Recurrence claims require a minimum of 3 comparable artifact-backed cases. Below that, status is insufficient_cases.",
+    "MET never claims recurrence without comparability across failure_shape, affected_systems, evaluated_fields, and source_type."
+  ],
+  "failure_prevented": "MET claiming 'this keeps happening' from a single sample, distorting prioritization.",
+  "signal_improved": "Each cluster surfaces occurrences, affected_systems, evidence_refs, and a recommended_input — only when the comparable case count meets the threshold.",
+  "minimum_comparable_cases_for_recurrence": 3,
+  "clusters": [
+    {
+      "cluster_id": "CLUSTER-EVL-COVERAGE-PARTIAL",
+      "recurring_failure_shape": "EVL coverage partial for long-horizon dimension",
+      "occurrences": 2,
+      "comparable_case_count": 2,
+      "affected_systems": ["EVL", "REP"],
+      "severity": "unknown",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/eval_candidate_record.json",
+        "artifacts/dashboard_metrics/replay_lineage_hardening_record.json"
+      ],
+      "recommended_input": "Add at least one more comparable case before treating as recurring; current state is insufficient_cases.",
+      "recurrence_state": "insufficient_cases",
+      "cases_needed": 1
+    },
+    {
+      "cluster_id": "CLUSTER-FALLBACK-PRESSURE",
+      "recurring_failure_shape": "Fallback rows persist without GOV after-state evidence",
+      "occurrences": 1,
+      "comparable_case_count": 1,
+      "affected_systems": ["GOV"],
+      "severity": "unknown",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json"
+      ],
+      "recommended_input": "Retrieve more comparable artifact-backed cases before treating as recurring; current state is insufficient_cases.",
+      "recurrence_state": "insufficient_cases",
+      "cases_needed": 2
+    }
+  ]
+}

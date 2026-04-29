@@ -1,0 +1,43 @@
+{
+  "artifact_type": "recurrence_severity_signal_record",
+  "schema_version": "1.0.0",
+  "record_id": "RSS-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/recurring_failure_cluster_record.json"
+  ],
+  "reason_codes": [
+    "recurrence_severity_observation_only",
+    "no_severity_claim_without_recurrence",
+    "insufficient_cases_remains_visible"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Severity ranking is computed only when the recurring_failure_cluster reaches the minimum case threshold.",
+    "Below threshold, severity remains unknown; MET never escalates severity from insufficient cases."
+  ],
+  "failure_prevented": "Recurring-failure severity being inflated from a single sample, biasing prioritization toward unverified clusters.",
+  "signal_improved": "Each cluster's severity_state is paired with comparable_case_count and a next_recommended_input.",
+  "severity_signals": [
+    {
+      "cluster_id": "CLUSTER-EVL-COVERAGE-PARTIAL",
+      "severity_state": "unknown",
+      "comparable_case_count": 2,
+      "next_recommended_input": "Add a comparable case before computing severity.",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/recurring_failure_cluster_record.json"
+      ]
+    },
+    {
+      "cluster_id": "CLUSTER-FALLBACK-PRESSURE",
+      "severity_state": "unknown",
+      "comparable_case_count": 1,
+      "next_recommended_input": "Add two comparable cases before computing severity.",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/recurring_failure_cluster_record.json"
+      ]
+    }
+  ]
+}

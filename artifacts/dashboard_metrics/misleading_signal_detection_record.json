@@ -1,0 +1,60 @@
+{
+  "artifact_type": "misleading_signal_detection_record",
+  "schema_version": "1.0.0",
+  "record_id": "MSD-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/metric_gaming_detection_record.json",
+    "artifacts/dashboard_metrics/signal_confidence_record.json",
+    "artifacts/dashboard_metrics/recommendation_accuracy_record.json"
+  ],
+  "reason_codes": [
+    "misleading_signal_observation_only",
+    "no_authority_outcome",
+    "states_visible"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Misleading-signal flags are observations. They do not freeze, block, or enforce.",
+    "Each flag references the underlying signal and the rule that triggered it."
+  ],
+  "failure_prevented": "Looks-good-but-wrong signals being rendered as actionable green when they are stale, unevidenced, or contradicted by outcome attribution.",
+  "signal_improved": "Each misleading pattern is named with a rule_id, evidence_refs, and a next_recommended_input.",
+  "rules_checked": [
+    "high_confidence_thin_evidence",
+    "stale_signal_rendered_as_current",
+    "outcome_contradicts_recommendation",
+    "green_status_without_owner_refs"
+  ],
+  "misleading_signal_observations": [
+    {
+      "rule_id": "high_confidence_thin_evidence",
+      "signal_id": "SIG-GOV-FALLBACK-PRESSURE",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/signal_confidence_record.json"
+      ],
+      "flagged": true,
+      "next_recommended_input": "Reduce confidence_level to 'low' until at least 3 evidence_refs are present."
+    },
+    {
+      "rule_id": "stale_signal_rendered_as_current",
+      "signal_id": "POL-GOV-FALLBACK-REDUCTION",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json"
+      ],
+      "flagged": true,
+      "next_recommended_input": "Surface as stale_candidate_signal in the cockpit; refresh after-state evidence."
+    },
+    {
+      "rule_id": "outcome_contradicts_recommendation",
+      "signal_id": null,
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/recommendation_accuracy_record.json"
+      ],
+      "flagged": false,
+      "next_recommended_input": "No outcomes are paired yet; continue to monitor."
+    }
+  ]
+}

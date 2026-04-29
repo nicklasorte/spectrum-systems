@@ -1,0 +1,55 @@
+{
+  "artifact_type": "time_to_explain_record",
+  "schema_version": "1.0.0",
+  "record_id": "TTE-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/operator_debuggability_drill_record.json",
+    "artifacts/dashboard_metrics/debug_explanation_index_record.json"
+  ],
+  "reason_codes": [
+    "time_to_explain_observation_only",
+    "six_questions_required",
+    "insufficient_drills_remains_visible"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Time-to-explain values are observed estimates from drill items; they are not authority commitments.",
+    "Where drill items are missing or incomplete, the value remains unknown — never substituted with 0."
+  ],
+  "failure_prevented": "Operators reporting 'we can debug fast' without measured drill evidence — leaving slow paths invisible.",
+  "signal_improved": "Per-drill estimated minutes and answer_completeness are surfaced alongside the canonical six debug questions.",
+  "target_minutes": 15,
+  "questions_required": [
+    "what_failed",
+    "why",
+    "where_in_loop",
+    "source_evidence",
+    "next_recommended_input",
+    "what_remains_unknown"
+  ],
+  "time_to_explain_entries": [
+    {
+      "drill_id": "DRILL-EVL-COVERAGE-GAP-001",
+      "estimated_minutes": 12,
+      "answer_completeness": "partial",
+      "questions_answered": [
+        "what_failed",
+        "why",
+        "where_in_loop",
+        "source_evidence",
+        "next_recommended_input"
+      ],
+      "questions_remaining": [
+        "what_remains_unknown"
+      ],
+      "explanation_state": "partial",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/operator_debuggability_drill_record.json"
+      ],
+      "next_recommended_input": "Complete what_remains_unknown answer for DRILL-EVL-COVERAGE-GAP-001 by adding REP per-dimension evidence."
+    }
+  ]
+}

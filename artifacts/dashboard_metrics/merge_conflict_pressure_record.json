@@ -1,0 +1,94 @@
+{
+  "artifact_type": "merge_conflict_pressure_record",
+  "schema_version": "1.0.0",
+  "record_id": "MCP-20260429T141159Z",
+  "created_at": "2026-04-29T14:11:59.579898Z",
+  "owner_system": "MET",
+  "data_source": "git_diff",
+  "source_artifacts_used": [
+    ".git/HEAD",
+    "git:origin/main",
+    "git:HEAD"
+  ],
+  "reason_codes": [
+    "merge_conflict_pressure_observation_only",
+    "no_authority_outcome",
+    "developer_owns_resolution"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Conflict pressure is an MET observation only; canonical conflict resolution belongs to the developer / PR flow."
+  ],
+  "failure_prevented": "PR reaching the merge gate with unresolved conflicts that block branch advancement.",
+  "signal_improved": "Per-file conflict risk and next recommended input are surfaced before the merge queue rejects the PR.",
+  "base_ref": "origin/main",
+  "head_ref": "HEAD",
+  "base_resolved": "feb89bd92cddbcef8f801e8d806e72ce0f9600cd",
+  "head_resolved": "25c4b876e088ea871a51d13869e04d1635770685",
+  "merge_base": "1e3a3c7b37032e3ff9bd8a4cd91a28ad75404e80",
+  "overall_state": "high_pressure_observed",
+  "counts": {
+    "high": 2,
+    "medium": 0,
+    "low": 5,
+    "unknown": 0
+  },
+  "items": [
+    {
+      "file_path": "apps/dashboard-3ls/app/api/intelligence/route.ts",
+      "head_changed": true,
+      "base_changed": true,
+      "risk": "high",
+      "reason": "Both head and base have modified this file since the merge base; git will attempt auto-merge but content conflicts are possible.",
+      "next_recommended_input": "Pre-emptively `git merge origin/main` while still on the feature branch and resolve apps/dashboard-3ls/app/api/intelligence/route.ts now. Re-run the cockpit tests after resolving."
+    },
+    {
+      "file_path": "apps/dashboard-3ls/app/page.tsx",
+      "head_changed": true,
+      "base_changed": true,
+      "risk": "high",
+      "reason": "Both head and base have modified this file since the merge base; git will attempt auto-merge but content conflicts are possible.",
+      "next_recommended_input": "Pre-emptively `git merge origin/main` while still on the feature branch and resolve apps/dashboard-3ls/app/page.tsx now. Re-run the cockpit tests after resolving."
+    },
+    {
+      "file_path": "artifacts/system_dependency_priority_report.json",
+      "head_changed": true,
+      "base_changed": true,
+      "risk": "low",
+      "reason": "Both head and base have modified this file since the merge base; git will attempt auto-merge but content conflicts are possible.",
+      "next_recommended_input": "artifacts/system_dependency_priority_report.json typically auto-merges (regenerated artifact / report); no immediate action required."
+    },
+    {
+      "file_path": "artifacts/tls/system_candidate_classification.json",
+      "head_changed": true,
+      "base_changed": true,
+      "risk": "low",
+      "reason": "Both head and base have modified this file since the merge base; git will attempt auto-merge but content conflicts are possible.",
+      "next_recommended_input": "artifacts/tls/system_candidate_classification.json typically auto-merges (regenerated artifact / report); no immediate action required."
+    },
+    {
+      "file_path": "artifacts/tls/system_dependency_priority_report.json",
+      "head_changed": true,
+      "base_changed": true,
+      "risk": "low",
+      "reason": "Both head and base have modified this file since the merge base; git will attempt auto-merge but content conflicts are possible.",
+      "next_recommended_input": "artifacts/tls/system_dependency_priority_report.json typically auto-merges (regenerated artifact / report); no immediate action required."
+    },
+    {
+      "file_path": "artifacts/tls/system_evidence_attachment.json",
+      "head_changed": true,
+      "base_changed": true,
+      "risk": "low",
+      "reason": "Both head and base have modified this file since the merge base; git will attempt auto-merge but content conflicts are possible.",
+      "next_recommended_input": "artifacts/tls/system_evidence_attachment.json typically auto-merges (regenerated artifact / report); no immediate action required."
+    },
+    {
+      "file_path": "artifacts/tls/system_trust_gap_report.json",
+      "head_changed": true,
+      "base_changed": true,
+      "risk": "low",
+      "reason": "Both head and base have modified this file since the merge base; git will attempt auto-merge but content conflicts are possible.",
+      "next_recommended_input": "artifacts/tls/system_trust_gap_report.json typically auto-merges (regenerated artifact / report); no immediate action required."
+    }
+  ]
+}

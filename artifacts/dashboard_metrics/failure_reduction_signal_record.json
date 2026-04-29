@@ -1,0 +1,72 @@
+{
+  "artifact_type": "failure_reduction_signal_record",
+  "schema_version": "1.0.0",
+  "record_id": "FRS-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/outcome_attribution_record.json",
+    "artifacts/dashboard_metrics/failure_explanation_packets.json",
+    "artifacts/dashboard_metrics/recurring_failure_cluster_record.json"
+  ],
+  "reason_codes": [
+    "failure_reduction_observation_only",
+    "no_reduction_claim_without_paired_evidence",
+    "unknown_remains_unknown"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Failure reduction observations are paired with outcome_attribution_record entries; missing pairings surface as insufficient_evidence."
+  ],
+  "failure_prevented": "Trend graphs that show 'fewer failures' without paired before/after evidence per failure shape.",
+  "signal_improved": "Each failure shape carries an observed_delta (count, severity, recurrence) only when both before and after signals are artifact-backed.",
+  "failure_reduction_signals": [
+    {
+      "failure_shape": "long_horizon_replay_coverage_gap",
+      "affected_systems": ["EVL", "REP"],
+      "before_state": {
+        "occurrences": 1,
+        "severity": "medium",
+        "evidence_refs": [
+          "artifacts/dashboard_seed/replay_record.json"
+        ]
+      },
+      "after_state": {
+        "occurrences": "unknown",
+        "severity": "unknown",
+        "evidence_refs": []
+      },
+      "observed_delta": "unknown",
+      "attribution_confidence": "insufficient",
+      "status": "insufficient_evidence",
+      "next_recommended_input": "Pair this signal with a REP per-dimension replay artifact post-fix.",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/outcome_attribution_record.json"
+      ]
+    },
+    {
+      "failure_shape": "fallback_row_persistence",
+      "affected_systems": ["GOV"],
+      "before_state": {
+        "occurrences": "unknown",
+        "severity": "unknown",
+        "evidence_refs": [
+          "artifacts/dashboard_metrics/fallback_reduction_plan_record.json"
+        ]
+      },
+      "after_state": {
+        "occurrences": "unknown",
+        "severity": "unknown",
+        "evidence_refs": []
+      },
+      "observed_delta": "unknown",
+      "attribution_confidence": "unknown",
+      "status": "unknown",
+      "next_recommended_input": "Retrieve GOV after-state evidence before computing reduction delta.",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json"
+      ]
+    }
+  ]
+}

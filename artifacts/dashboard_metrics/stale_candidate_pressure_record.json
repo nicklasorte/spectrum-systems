@@ -1,0 +1,65 @@
+{
+  "artifact_type": "stale_candidate_pressure_record",
+  "schema_version": "1.0.0",
+  "record_id": "SCP-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/candidate_closure_ledger_record.json",
+    "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json",
+    "artifacts/dashboard_metrics/materialization_observation_mapper_record.json"
+  ],
+  "reason_codes": [
+    "stale_candidate_pressure_observation_only",
+    "no_owner_action_inferred",
+    "unknown_age_remains_unknown"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Stale candidate pressure is an MET observation only. EVL/CDE/SEL/GOV remain canonical owners; this record never claims closure or owner adoption.",
+    "Items with unknown age remain unknown; never substituted with 0."
+  ],
+  "failure_prevented": "Stale MET candidates accumulating without a visible pressure metric, causing recommendations to silently rot in the queue with no owner-handoff readiness signal.",
+  "signal_improved": "Stale candidate pressure is surfaced per loop leg with the count of items past their stale window, the age distribution, and the next recommended input to refresh the signal.",
+  "pressure_summary": {
+    "total_tracked_candidates": 18,
+    "stale_count": 1,
+    "open_count": 6,
+    "proposed_count": 11,
+    "unknown_age_count": 1,
+    "max_observed_age_days": 46,
+    "stale_threshold_observation": "Items past stale_after_days surface as stale_candidate_signal in the closure ledger."
+  },
+  "pressure_by_loop_leg": [
+    {
+      "loop_leg": "EVL",
+      "tracked_count": 5,
+      "stale_count": 0,
+      "next_recommended_input": "Forward EVC-EVL-* candidates to EVL for owner artifact retrieval.",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/candidate_closure_ledger_record.json"
+      ]
+    },
+    {
+      "loop_leg": "GOV",
+      "tracked_count": 1,
+      "stale_count": 1,
+      "next_recommended_input": "Refresh POL-GOV-FALLBACK-REDUCTION owner read evidence; current age 46 days exceeds 45-day stale window.",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json",
+        "artifacts/dashboard_metrics/fallback_reduction_plan_record.json"
+      ]
+    },
+    {
+      "loop_leg": "CDE",
+      "tracked_count": 1,
+      "stale_count": 0,
+      "unknown_age_count": 1,
+      "next_recommended_input": "Retrieve CDE override evidence references; age stays unknown until source materializes.",
+      "source_artifacts_used": [
+        "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json"
+      ]
+    }
+  ]
+}

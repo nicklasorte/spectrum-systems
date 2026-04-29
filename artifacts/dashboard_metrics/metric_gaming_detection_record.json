@@ -1,0 +1,63 @@
+{
+  "artifact_type": "metric_gaming_detection_record",
+  "schema_version": "1.0.0",
+  "record_id": "MGD-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/outcome_attribution_record.json",
+    "artifacts/dashboard_metrics/recommendation_accuracy_record.json",
+    "artifacts/dashboard_metrics/owner_read_observation_ledger_record.json",
+    "artifacts/dashboard_metrics/candidate_closure_ledger_record.json"
+  ],
+  "reason_codes": [
+    "metric_gaming_observation_only",
+    "no_authority_outcome",
+    "states_visible"
+  ],
+  "status": "warn",
+  "warnings": [
+    "Gaming flags are MET observations. CDE/SEL/GOV retain authority for any control or enforcement response.",
+    "Each flag references an artifact and a specific anti-gaming rule."
+  ],
+  "failure_prevented": "Improvements being claimed via metric gaming — green status with weak evidence, improved metric without changed failure rate, candidate closure without owner artifact refs.",
+  "signal_improved": "Each gaming pattern is named with a rule_id, evidence_refs, and a next_recommended_input.",
+  "rules_checked": [
+    "green_status_with_weak_evidence",
+    "metric_improved_failure_rate_unchanged",
+    "stale_artifact_rendered_as_current",
+    "candidate_closure_without_owner_refs",
+    "trend_without_enough_comparable_cases",
+    "unknown_substituted_with_zero"
+  ],
+  "gaming_observations": [
+    {
+      "rule_id": "candidate_closure_without_owner_refs",
+      "observation": "Materialization observations marked 'observed' must include owner_artifact_refs.",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/materialization_observation_mapper_record.json"
+      ],
+      "flagged": false,
+      "next_recommended_input": "Continue to require owner_artifact_refs on every observed materialization row."
+    },
+    {
+      "rule_id": "trend_without_enough_comparable_cases",
+      "observation": "Trend/frequency state stays unknown until 3 comparable cases are present.",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/trend_frequency_honesty_gate_record.json"
+      ],
+      "flagged": false,
+      "next_recommended_input": "Continue to enforce 3-case threshold."
+    },
+    {
+      "rule_id": "unknown_substituted_with_zero",
+      "observation": "API blocks degrade to 'unknown' when artifacts are missing — never to 0.",
+      "evidence_refs": [
+        "apps/dashboard-3ls/app/api/intelligence/route.ts"
+      ],
+      "flagged": false,
+      "next_recommended_input": "Continue to enforce unknown-not-zero invariant."
+    }
+  ]
+}

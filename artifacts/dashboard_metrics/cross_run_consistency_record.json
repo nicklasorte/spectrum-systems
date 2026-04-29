@@ -1,0 +1,77 @@
+{
+  "artifact_type": "cross_run_consistency_record",
+  "schema_version": "1.0.0",
+  "record_id": "CRC-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_seed/replay_record.json",
+    "artifacts/dashboard_metrics/replay_lineage_hardening_record.json",
+    "apps/dashboard-3ls/app/api/intelligence/route.ts"
+  ],
+  "reason_codes": [
+    "cross_run_consistency_observation_only",
+    "rep_owns_replay",
+    "ignore_non_material_timestamp_differences"
+  ],
+  "status": "warn",
+  "warnings": [
+    "REP remains the canonical replay authority. MET only emits cross-run consistency observations against MET-owned outputs.",
+    "Non-material differences (timestamps, generated_at) are ignored; only material output fields are compared."
+  ],
+  "failure_prevented": "MET outputs silently diverging across runs for the same input fingerprint without an MET observation surfacing the divergence to REP.",
+  "signal_improved": "Per-fingerprint comparison of MET outputs is recorded with material_fields_compared, divergence_found, and divergence_reason — feeding REP-owned replay analysis.",
+  "non_material_fields_ignored": [
+    "created_at",
+    "generated_at",
+    "record_id",
+    "schema_version"
+  ],
+  "consistency_entries": [
+    {
+      "input_fingerprint": "fingerprint:dashboard_seed:case-001:eval_candidate_record",
+      "compared_runs": [
+        {
+          "run_id": "run-2026-04-28-001",
+          "output_artifact": "artifacts/dashboard_metrics/eval_candidate_record.json"
+        },
+        {
+          "run_id": "run-2026-04-29-001",
+          "output_artifact": "artifacts/dashboard_metrics/eval_candidate_record.json"
+        }
+      ],
+      "material_fields_compared": [
+        "candidates",
+        "candidates_summary",
+        "failure_prevented",
+        "signal_improved"
+      ],
+      "divergence_found": false,
+      "divergence_reason": null,
+      "affected_systems": ["EVL"],
+      "failure_prevented": "Silent MET output drift across runs for identical inputs.",
+      "signal_improved": "Cross-run consistency observation pairs MET outputs and surfaces divergences to REP.",
+      "next_recommended_input": "No action required while divergence_found is false."
+    },
+    {
+      "input_fingerprint": "fingerprint:dashboard_seed:fallback_rows",
+      "compared_runs": [
+        {
+          "run_id": "run-2026-04-28-001",
+          "output_artifact": "artifacts/dashboard_metrics/fallback_reduction_plan_record.json"
+        }
+      ],
+      "material_fields_compared": [
+        "fallback_items",
+        "high_leverage_fallback_count"
+      ],
+      "divergence_found": "unknown",
+      "divergence_reason": "single_run_no_pair",
+      "affected_systems": ["GOV"],
+      "failure_prevented": "Cross-run divergence going undetected in single-run states.",
+      "signal_improved": "Single-run state is explicitly flagged as unknown until a paired run exists.",
+      "next_recommended_input": "Capture a second run to enable comparison."
+    }
+  ]
+}

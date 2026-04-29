@@ -1,0 +1,51 @@
+{
+  "artifact_type": "divergence_detection_record",
+  "schema_version": "1.0.0",
+  "record_id": "DDR-MET-FULL-001",
+  "created_at": "2026-04-29T00:00:00Z",
+  "owner_system": "MET",
+  "data_source": "artifact_store",
+  "source_artifacts_used": [
+    "artifacts/dashboard_metrics/cross_run_consistency_record.json"
+  ],
+  "reason_codes": [
+    "divergence_detection_observation_only",
+    "rep_remains_replay_owner",
+    "no_authority_outcome_emitted"
+  ],
+  "status": "warn",
+  "warnings": [
+    "REP remains the canonical replay authority. This record reports observations only.",
+    "Non-material divergences (timestamps, record IDs) are excluded by construction."
+  ],
+  "failure_prevented": "Material divergence in MET outputs hiding under timestamp-only differences and never reaching REP for replay analysis.",
+  "signal_improved": "Material divergences are reported with affected_systems and a next_recommended_input to feed REP.",
+  "divergence_entries": [
+    {
+      "divergence_id": "DIV-NONE-2026-04-29",
+      "input_fingerprint": "fingerprint:dashboard_seed:case-001:eval_candidate_record",
+      "divergence_found": false,
+      "divergence_reason": null,
+      "affected_systems": ["EVL"],
+      "failure_prevented": "Silent material divergence between MET runs.",
+      "signal_improved": "No-divergence state is explicit per fingerprint.",
+      "next_recommended_input": "Continue paired-run capture; no action required.",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/cross_run_consistency_record.json"
+      ]
+    },
+    {
+      "divergence_id": "DIV-UNKNOWN-2026-04-29",
+      "input_fingerprint": "fingerprint:dashboard_seed:fallback_rows",
+      "divergence_found": "unknown",
+      "divergence_reason": "single_run_no_pair",
+      "affected_systems": ["GOV"],
+      "failure_prevented": "Single-run divergence state being substituted with 0 or false instead of unknown.",
+      "signal_improved": "Single-run state remains visibly unknown until a paired run is captured.",
+      "next_recommended_input": "Capture a second run to enable divergence detection.",
+      "evidence_refs": [
+        "artifacts/dashboard_metrics/cross_run_consistency_record.json"
+      ]
+    }
+  ]
+}
