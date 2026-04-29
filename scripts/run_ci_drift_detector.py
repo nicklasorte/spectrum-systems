@@ -81,7 +81,7 @@ def _check_unmapped_test_files(
         shard_policy.get("governed_test_dirs", ["tests/"])
     )
 
-    for test_file in sorted(tests_root.glob("test_*.py")):
+    for test_file in sorted(tests_root.rglob("test_*.py")):
         rel_path = test_file.relative_to(repo_root).as_posix()
         assigned = assign_to_shard(rel_path)
         if assigned is not None:

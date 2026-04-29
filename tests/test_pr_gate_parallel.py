@@ -63,15 +63,18 @@ def _write_result(tmp: Path, shard: str, status: str = "pass", failure_summary=N
     (d / f"{shard}_result.json").write_text(json.dumps(res))
 
 
-def _run_gate(tmp: Path, output: Path) -> subprocess.CompletedProcess:
+def _run_gate(tmp: Path, output: Path, shard_matrix_result: str = "") -> subprocess.CompletedProcess:
+    cmd = [
+        sys.executable,
+        str(_GATE_SCRIPT),
+        "--shard-dir", str(tmp),
+        "--output", str(output),
+        "--required-shards", ",".join(_REQUIRED_SHARDS),
+    ]
+    if shard_matrix_result:
+        cmd += ["--shard-matrix-result", shard_matrix_result]
     return subprocess.run(
-        [
-            sys.executable,
-            str(_GATE_SCRIPT),
-            "--shard-dir", str(tmp),
-            "--output", str(output),
-            "--required-shards", ",".join(_REQUIRED_SHARDS),
-        ],
+        cmd,
         cwd=str(REPO_ROOT),
         capture_output=True,
         text=True,
@@ -208,3 +211,35 @@ def test_aggregator_does_not_recompute_selection(tmp_path):
     assert "selected_test_files" not in result, (
         "Aggregator must not recompute or re-emit selected_test_files"
     )
+
+
+def test_shard_matrix_failure_blocks_gate(tmp_path):
+    output = tmp_path / "gate_result.json"
+    _setup_all_pass(tmp_path)
+    proc = _run_gate(tmp_path, output, shard_matrix_result="failure")
+    assert proc.returncode == 1
+    result = json.loads(output.read_text())
+    reasons_str = " ".join(result["blocking_reasons"])
+    assert "shard_matrix_failed" in reasons_str
+
+
+def test_parity_failure_blocks_gate(tmp_path):
+    output = tmp_path / "gate_result.json"
+    _setup_all_pass(tmp_path)
+    parity = {
+        "artifact_type": "precheck_selection_parity",
+        "schema_version": "1.0.0",
+        "ci_selection_ref": "ci.json",
+        "precheck_selection_ref": "pre.json",
+        "parity_status": "fail",
+        "mismatched_shards": ["contract"],
+        "mismatched_tests": ["tests/test_contracts.py"],
+        "reason_codes": ["ci_precheck_diverge"],
+        "authority_scope": "observation_only",
+    }
+    (tmp_path / "precheck_selection_parity.json").write_text(json.dumps(parity))
+    proc = _run_gate(tmp_path, output)
+    assert proc.returncode == 1
+    result = json.loads(output.read_text())
+    reasons_str = " ".join(result["blocking_reasons"])
+    assert "parity_check_failed" in reasons_str

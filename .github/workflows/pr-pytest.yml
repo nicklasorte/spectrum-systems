@@ -126,6 +126,7 @@ jobs:
   pr-gate:
     name: pr-gate
     needs: shard-select
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -153,6 +154,7 @@ jobs:
           python scripts/run_pr_gate.py \
             --shard-dir outputs/pr_test_shards \
             --required-shards contract,governance,dashboard,changed_scope \
+            --shard-matrix-result "${{ needs.shard-select.result }}" \
             --output outputs/pr_gate/pr_gate_result.json
 
       - name: Upload PR gate result

@@ -49,6 +49,11 @@ def _parse_args() -> argparse.Namespace:
             f"(default: {_DEFAULT_REQUIRED_SHARDS})."
         ),
     )
+    parser.add_argument(
+        "--shard-matrix-result",
+        default="",
+        help="GitHub Actions matrix result for shard-select job (success/failure/cancelled).",
+    )
     return parser.parse_args()
 
 
@@ -167,6 +172,12 @@ def main() -> int:
     blocking_reasons: list[str] = []
     trace_refs: list[str] = []
 
+    # (a) Check whether the upstream shard-select matrix concluded successfully.
+    matrix_result = (args.shard_matrix_result or "").strip().lower()
+    if matrix_result and matrix_result != "success":
+        blocking_reasons.append(f"shard_matrix_failed:{matrix_result}")
+        trace_refs.append(f"shard_matrix_result={matrix_result}")
+
     for shard in required_shards:
         label, reason = _evaluate_shard(shard, shard_dir)
         shard_statuses[shard] = label
@@ -176,8 +187,11 @@ def main() -> int:
         else:
             trace_refs.append(f"shard={shard} label={label}")
 
-    # (g) CI/precheck parity check.
+    # (g) CI/precheck parity check — parity failure is a blocking condition.
     parity_status = _check_parity(shard_dir)
+    if parity_status == "fail":
+        blocking_reasons.append("parity_check_failed")
+        trace_refs.append("parity_status=fail")
 
     gate_status = "block" if blocking_reasons else "pass"
 
