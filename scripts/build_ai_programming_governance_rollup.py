@@ -239,11 +239,21 @@ def build_rollup(fail_closed: bool = False) -> int:
     # Source artifacts used.
     source_artifacts_used = list(work_item_refs)
 
+    # Derive created_at from the latest source record so reruns are stable.
+    source_timestamps = [i.get("created_at", "") for i in items if i.get("created_at")]
+    if source_timestamps:
+        rollup_created_at = max(source_timestamps)
+        rollup_date = rollup_created_at[:10].replace("-", "")
+    else:
+        _now = datetime.now(timezone.utc)
+        rollup_created_at = _now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        rollup_date = _now.strftime("%Y%m%d")
+
     rollup = {
         "artifact_type": "ai_programming_governance_rollup_record",
         "schema_version": "1.0.0",
-        "record_id": f"AIPG-ROLLUP-{datetime.now(timezone.utc).strftime('%Y%m%d')}",
-        "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "record_id": f"AIPG-ROLLUP-{rollup_date}",
+        "created_at": rollup_created_at,
         "owner_system": "MET",
         "data_source": "artifact_store",
         "compliance_status": compliance_status,

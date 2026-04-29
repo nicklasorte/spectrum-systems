@@ -2,7 +2,7 @@
   "artifact_type": "ai_programming_governance_rollup_record",
   "schema_version": "1.0.0",
   "record_id": "AIPG-ROLLUP-20260429",
-  "created_at": "2026-04-29T17:38:55Z",
+  "created_at": "2026-04-29T00:00:00Z",
   "owner_system": "MET",
   "data_source": "artifact_store",
   "compliance_status": "BLOCK",

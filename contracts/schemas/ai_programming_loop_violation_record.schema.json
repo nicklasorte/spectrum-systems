@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spectrum-systems.org/contracts/ai_programming_loop_violation_record.schema.json",
   "title": "AI Programming Loop Violation Record",
-  "description": "Records a specific governance loop violation for an AI programming work item. Emitted when a required leg (AEX, PQX, EVL, TPA, CDE, SEL) is missing or unknown for a repo_mutating work item. MET observation only; does not claim enforcement authority (SEL) or decision authority (CDE).",
+  "description": "Records a specific governance loop violation for an AI programming work item. Emitted when a required leg (AEX, PQX, EVL, TPA, CDE, SEL) is missing or unknown for a repo_mutating work item. MET observation only; does not claim SEL or CDE authority.",
   "type": "object",
   "additionalProperties": false,
   "required": [

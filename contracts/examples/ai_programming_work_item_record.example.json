@@ -59,7 +59,7 @@
   ],
   "reason_codes": [],
   "warnings": [
-    "MET observation only. AEX owns admission. PQX owns execution. EVL owns eval. CDE owns control. SEL owns enforcement."
+    "MET observation only. Authority boundary assignments are canonical in docs/architecture/system_registry.md."
   ],
   "sma_loop_run_ref": null
 }
