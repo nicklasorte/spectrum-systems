@@ -73,9 +73,9 @@ def build_rfx_bloat_burndown_report(
             reason.append("rfx_bloat_missing_name")
             continue
 
-        justification = (h.get("justification") or "").strip()
-        responsibility = (h.get("responsibility") or "").strip().lower()
-        superseded_by = (h.get("superseded_by") or "").strip()
+        justification = str(h.get("justification") or "").strip()
+        responsibility = str(h.get("responsibility") or "").strip().lower()
+        superseded_by = str(h.get("superseded_by") or "").strip()
 
         tags: list[str] = []
         action = "keep"
@@ -109,9 +109,9 @@ def build_rfx_bloat_burndown_report(
 
     justified_count = sum(
         1 for h in valid_helpers
-        if (h.get("name") or "").strip()
-        and (h.get("justification") or "").strip()
-        and not (h.get("superseded_by") or "").strip()
+        if str(h.get("name") or "").strip()
+        and str(h.get("justification") or "").strip()
+        and not str(h.get("superseded_by") or "").strip()
     )
     unique_reasons = sorted(set(reason))
     return {

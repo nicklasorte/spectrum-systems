@@ -101,3 +101,13 @@ def test_numeric_code_does_not_raise():
     )
     assert result["artifact_type"] == "rfx_operator_handbook"
     assert result["entries"][0]["code"] == "123"
+
+
+def test_numeric_plain_action_and_owner_context_do_not_raise():
+    # P1 fix: non-string plain_action/owner_context must not raise AttributeError.
+    result = build_rfx_operator_handbook(
+        reason_code_entries=[_entry(plain_action=42, owner_context=True)]
+    )
+    assert result["artifact_type"] == "rfx_operator_handbook"
+    assert result["entries"][0]["plain_action"] == "42"
+    assert result["entries"][0]["owner_context"] == "True"

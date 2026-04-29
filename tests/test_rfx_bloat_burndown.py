@@ -84,3 +84,12 @@ def test_mixed_helpers_malformed_skipped():
     result = build_rfx_bloat_burndown_report(helpers=[_helper(), "bad-row"])
     assert "rfx_bloat_malformed_helper" in result["reason_codes_emitted"]
     assert result["signals"]["justified_count"] == 1
+
+
+def test_numeric_metadata_fields_do_not_raise():
+    # P1 fix: non-string justification/responsibility/superseded_by must not raise AttributeError.
+    result = build_rfx_bloat_burndown_report(
+        helpers=[{"name": "rfx_foo", "justification": 42, "responsibility": True, "superseded_by": 0}]
+    )
+    assert result["artifact_type"] == "rfx_bloat_burndown_report"
+    assert result["signals"]["justified_count"] == 1

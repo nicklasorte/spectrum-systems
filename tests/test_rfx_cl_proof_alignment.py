@@ -101,3 +101,15 @@ def test_unknown_schema_type_not_silently_aligned():
     schema_with_typo = {**_CL_SCHEMA, "status": "string"}
     result = check_rfx_cl_proof_alignment(rfx_proof=rfx_proof, cl_proof_schema=schema_with_typo)
     assert "status" in result["mismatched_fields"]
+
+
+def test_type_mismatch_does_not_inflate_alignment_rate():
+    # P2 fix: type-mismatched fields must not count toward present_count / alignment_rate.
+    schema = {"status": "str", "count": "int"}
+    rfx_proof = {"status": "ok", "count": "not-an-int"}  # count present but wrong type
+    result = check_rfx_cl_proof_alignment(rfx_proof=rfx_proof, cl_proof_schema=schema)
+    assert "rfx_cl_proof_type_mismatch" in result["reason_codes_emitted"]
+    assert result["status"] == "misaligned"
+    # Only the valid-typed field counts; the mismatched one must not inflate the rate.
+    assert result["signals"]["alignment_rate"] < 1.0
+    assert result["signals"]["present_field_count"] == 1

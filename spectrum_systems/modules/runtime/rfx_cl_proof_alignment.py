@@ -90,18 +90,22 @@ def check_rfx_cl_proof_alignment(
             reason.append("rfx_cl_proof_missing_rfx_field")
             missing_fields.append(field)
         else:
-            present_count += 1
+            type_valid = True
             if expected_type_name != "any":
                 expected_type = _TYPE_MAP.get(expected_type_name)
                 if expected_type is None:
                     reason.append("rfx_cl_proof_unknown_schema_type")
                     mismatched_fields.append(field)
+                    type_valid = False
                 elif (
                     not isinstance(rfx_proof[field], expected_type)
                     or (expected_type is int and isinstance(rfx_proof[field], bool))
                 ):
                     reason.append("rfx_cl_proof_type_mismatch")
                     mismatched_fields.append(field)
+                    type_valid = False
+            if type_valid:
+                present_count += 1
 
     # Check for authority-claiming fields added by RFX but not in CL schema.
     for field in rfx_proof:

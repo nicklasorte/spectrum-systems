@@ -72,11 +72,11 @@ def build_rfx_operator_handbook(
             reason.append("rfx_handbook_duplicate_code")
         seen_codes.add(code)
 
-        plain_action = (entry.get("plain_action") or "").strip()
+        plain_action = str(entry.get("plain_action") or "").strip()
         if not plain_action:
             reason.append("rfx_handbook_missing_action")
 
-        owner_context = (entry.get("owner_context") or "").strip()
+        owner_context = str(entry.get("owner_context") or "").strip()
         if not owner_context:
             reason.append("rfx_handbook_missing_owner")
 
