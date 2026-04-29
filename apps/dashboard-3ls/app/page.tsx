@@ -266,7 +266,54 @@ type OperatorDebuggabilityDrillBlock = IntelligenceBlockEnvelope & {
   drill_items?: Array<Record<string, unknown>>;
 };
 
-// AEX-PQX-DASH-01 — AI programming governed-path types.
+// AEX-PQX-DASH-02 — governance violation panel + core-loop compliance summary.
+type CoreLoopLegState = 'present' | 'partial' | 'missing' | 'unknown';
+
+type GovernanceViolationItem = {
+  violation_id?: string;
+  work_item_id?: string;
+  agent_type?: string;
+  violation_type?: string;
+  missing_leg?: string;
+  repo_mutating?: boolean | 'unknown';
+  source_artifacts_used?: string[];
+  why_it_matters?: string;
+  next_recommended_input?: string;
+};
+
+type GovernanceViolationsBlock = IntelligenceBlockEnvelope & {
+  status?: 'pass' | 'warn' | 'block' | 'unknown';
+  violation_count?: number | 'unknown';
+  violations?: GovernanceViolationItem[];
+  reason_codes?: string[];
+  failure_prevented?: string | null;
+  signal_improved?: string | null;
+};
+
+type CoreLoopComplianceSummaryBlock = IntelligenceBlockEnvelope & {
+  status?: 'pass' | 'warn' | 'block' | 'unknown';
+  core_loop_compliance?: Record<string, CoreLoopLegState>;
+  core_loop_complete?: boolean | 'unknown';
+  compliance_score?: number | 'unknown';
+  total_legs?: number;
+  first_missing_leg?: string | null;
+  weakest_leg?: string | null;
+  repo_mutating?: boolean | 'unknown';
+  missing_legs?: string[];
+  partial_legs?: string[];
+  unknown_legs?: string[];
+  violation_count?: number | 'unknown';
+  total_work_items?: number | 'unknown';
+  compliant_work_items?: number | 'unknown';
+  blocked_work_items?: number | 'unknown';
+  missing_by_leg?: Record<string, number | 'unknown'>;
+  next_recommended_input?: string | null;
+  reason_codes?: string[];
+  failure_prevented?: string | null;
+  signal_improved?: string | null;
+};
+
+// AEX-PQX-DASH-01 — AI programming governed-path types (per-work-item).
 type AiProgrammingWorkItemView = {
   work_item_id?: string;
   agent_type?: 'codex' | 'claude' | 'unknown_ai_agent';
@@ -335,7 +382,18 @@ type IntelligencePayload = {
   trend_ready_case_pack?: TrendReadyCasePackBlock;
   fold_candidate_proof_check?: FoldCandidateProofCheckBlock;
   operator_debuggability_drill?: OperatorDebuggabilityDrillBlock;
+  governance_violations?: GovernanceViolationsBlock;
+  core_loop_compliance_summary?: CoreLoopComplianceSummaryBlock;
 };
+
+const CORE_LOOP_LEGS_DISPLAY: ReadonlyArray<'AEX' | 'PQX' | 'EVL' | 'TPA' | 'CDE' | 'SEL'> = [
+  'AEX',
+  'PQX',
+  'EVL',
+  'TPA',
+  'CDE',
+  'SEL',
+];
 
 // MET-19-33 — operator complexity budget for compact MET sections.
 const MET_COMPACT_ITEM_MAX = 5;
@@ -732,6 +790,230 @@ export default function DashboardPage() {
 
       {activeTab === 'overview' && (
         <div className="space-y-4" data-testid="overview-tab">
+          {(() => {
+            // AEX-PQX-DASH-02 — TOP-PANEL: Governance Violations.
+            // Always rendered, never collapsible. If violation_count > 0,
+            // status is forced to BLOCK. Missing artifact surfaces as UNKNOWN
+            // (never PASS).
+            const gv = intelligence?.governance_violations;
+            const declaredStatus = gv?.status ?? 'unknown';
+            const violationCount = gv?.violation_count ?? 'unknown';
+            const status: 'pass' | 'warn' | 'block' | 'unknown' =
+              typeof violationCount === 'number' && violationCount > 0
+                ? 'block'
+                : declaredStatus;
+            const banner =
+              status === 'block'
+                ? 'border-red-500 bg-red-100 dark:bg-red-950 text-red-900 dark:text-red-100'
+                : status === 'warn'
+                  ? 'border-amber-500 bg-amber-50 dark:bg-amber-950 text-amber-900 dark:text-amber-100'
+                  : status === 'pass'
+                    ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-100'
+                    : 'border-slate-500 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100';
+            const top3 = (gv?.violations ?? []).slice(0, 3);
+            return (
+              <section
+                data-testid="governance-violations-panel"
+                aria-label="Governance violations (top panel)"
+                className={`border-2 rounded p-4 space-y-2 ${banner}`}
+              >
+                <header className="flex flex-wrap items-center gap-2">
+                  <span aria-hidden="true">🚨</span>
+                  <h2 className="font-bold text-sm uppercase tracking-wide">
+                    Governance Violations
+                  </h2>
+                  <span
+                    data-testid="governance-violations-status"
+                    className="ml-auto px-2 py-0.5 rounded border text-xs font-semibold"
+                  >
+                    {status.toUpperCase()}
+                  </span>
+                  <span
+                    data-testid="governance-violations-count"
+                    className="px-2 py-0.5 rounded border text-xs"
+                  >
+                    violations: <strong>{String(violationCount)}</strong>
+                  </span>
+                </header>
+                {!gv && (
+                  <p className="text-xs" data-testid="governance-violations-missing">
+                    ⚠ governance_violation_record.json unavailable; reported as UNKNOWN. The
+                    dashboard cannot infer PASS without artifact-backed evidence.
+                  </p>
+                )}
+                {(gv?.warnings ?? []).map((w) => (
+                  <p key={w} className="text-xs" data-testid="governance-violations-warning">
+                    ⚠ {w}
+                  </p>
+                ))}
+                {top3.length === 0 && gv && status !== 'block' && (
+                  <p className="text-xs" data-testid="governance-violations-empty">
+                    No artifact-backed violations recorded.
+                  </p>
+                )}
+                {top3.length > 0 && (
+                  <ul className="space-y-2" data-testid="governance-violations-list">
+                    {top3.map((v) => (
+                      <li
+                        key={v.violation_id}
+                        data-testid="governance-violation-item"
+                        className="border-l-4 border-red-500 pl-2 text-xs space-y-0.5"
+                      >
+                        <p>
+                          <strong data-testid="governance-violation-work-item">
+                            {v.work_item_id ?? 'unknown'}
+                          </strong>{' '}
+                          <span data-testid="governance-violation-agent">
+                            ({v.agent_type ?? 'unknown_ai_agent'})
+                          </span>{' '}
+                          — missing leg:{' '}
+                          <strong data-testid="governance-violation-missing-leg">
+                            {v.missing_leg ?? 'unknown'}
+                          </strong>
+                        </p>
+                        {v.why_it_matters && (
+                          <p data-testid="governance-violation-why">
+                            <strong>Why it matters:</strong> {v.why_it_matters}
+                          </p>
+                        )}
+                        {v.next_recommended_input && (
+                          <p data-testid="governance-violation-next">
+                            <strong>Next recommended input:</strong>{' '}
+                            {v.next_recommended_input}
+                          </p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <p className="text-[10px] opacity-80">
+                  MET observes only. CDE is the sole control authority; SEL is the sole
+                  enforcement authority.
+                </p>
+              </section>
+            );
+          })()}
+
+          {(() => {
+            // AEX-PQX-DASH-02 — Section 2: AI Programming Governance (Full Loop).
+            const cl = intelligence?.core_loop_compliance_summary;
+            const legs = cl?.core_loop_compliance ?? {};
+            const status = cl?.status ?? 'unknown';
+            const banner =
+              status === 'block'
+                ? 'border-red-500'
+                : status === 'warn'
+                  ? 'border-amber-500'
+                  : status === 'pass'
+                    ? 'border-emerald-500'
+                    : 'border-slate-400';
+            const cell = (state: CoreLoopLegState | string | undefined): string => {
+              switch (state) {
+                case 'present':
+                  return 'bg-emerald-200 dark:bg-emerald-800 text-emerald-950 dark:text-emerald-50';
+                case 'partial':
+                  return 'bg-amber-200 dark:bg-amber-800 text-amber-950 dark:text-amber-50';
+                case 'missing':
+                  return 'bg-red-200 dark:bg-red-800 text-red-950 dark:text-red-50';
+                default:
+                  return 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100';
+              }
+            };
+            return (
+              <section
+                data-testid="ai-programming-governance-panel"
+                className={`border-2 rounded p-4 space-y-2 ${banner} bg-white dark:bg-slate-900`}
+              >
+                <header className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-semibold text-sm uppercase tracking-wide text-slate-900 dark:text-slate-100">
+                    AI Programming Governance (Full Loop)
+                  </h2>
+                  <span
+                    data-testid="core-loop-status"
+                    className="ml-auto px-2 py-0.5 rounded border text-xs font-semibold"
+                  >
+                    {status.toUpperCase()}
+                  </span>
+                  <span
+                    data-testid="core-loop-compliance-score"
+                    className="px-2 py-0.5 rounded border text-xs"
+                  >
+                    score:{' '}
+                    <strong>
+                      {String(cl?.compliance_score ?? 'unknown')}/{cl?.total_legs ?? 6}
+                    </strong>
+                  </span>
+                </header>
+                <div
+                  className="grid grid-cols-6 gap-1 text-center text-xs font-mono"
+                  data-testid="core-loop-grid"
+                >
+                  {CORE_LOOP_LEGS_DISPLAY.map((leg) => {
+                    const state = legs[leg] ?? 'unknown';
+                    return (
+                      <div
+                        key={leg}
+                        data-testid={`core-loop-leg-${leg}`}
+                        data-state={state}
+                        className={`border rounded p-1 ${cell(state)}`}
+                      >
+                        <div className="font-bold">{leg}</div>
+                        <div className="text-[10px]">{state}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <ul className="text-xs space-y-0.5 text-slate-900 dark:text-slate-100">
+                  <li data-testid="core-loop-first-missing">
+                    first missing leg:{' '}
+                    <strong>{cl?.first_missing_leg ?? 'unknown'}</strong>
+                  </li>
+                  <li data-testid="core-loop-weakest">
+                    weakest leg: <strong>{cl?.weakest_leg ?? 'unknown'}</strong>
+                  </li>
+                  <li data-testid="core-loop-repo-mutating">
+                    repo_mutating: <strong>{String(cl?.repo_mutating ?? 'unknown')}</strong>
+                  </li>
+                  <li data-testid="core-loop-complete">
+                    core_loop_complete: <strong>{String(cl?.core_loop_complete ?? 'unknown')}</strong>
+                  </li>
+                  <li data-testid="core-loop-violation-count">
+                    violation_count: <strong>{String(cl?.violation_count ?? 'unknown')}</strong>
+                  </li>
+                  <li data-testid="core-loop-work-items">
+                    work items: total <strong>{String(cl?.total_work_items ?? 'unknown')}</strong>{' '}
+                    · compliant{' '}
+                    <strong>{String(cl?.compliant_work_items ?? 'unknown')}</strong> ·
+                    blocked <strong>{String(cl?.blocked_work_items ?? 'unknown')}</strong>
+                  </li>
+                  {cl?.next_recommended_input && (
+                    <li data-testid="core-loop-next-input">
+                      <strong>Next recommended input:</strong> {cl.next_recommended_input}
+                    </li>
+                  )}
+                </ul>
+                {(cl?.warnings ?? []).map((w) => (
+                  <p
+                    key={w}
+                    className="text-xs text-amber-800 dark:text-amber-200"
+                    data-testid="core-loop-warning"
+                  >
+                    ⚠ {w}
+                  </p>
+                ))}
+                <p className="text-[10px] opacity-80 text-slate-700 dark:text-slate-300">
+                  Per-leg compliance is artifact-backed. AEX or PQX missing
+                  forces BLOCK; any other required leg missing forces BLOCK
+                  when repo_mutating is true.
+                </p>
+              </section>
+            );
+          })()}
+
+          {/* AEX-PQX-DASH-01 — main's per-work-item AI programming governed
+              path panel renders alongside the AEX-PQX-DASH-02 aggregate
+              violation/compliance panels above. Different surface, same
+              artifact backing. */}
           <AiProgrammingGovernedPathPanel block={intelligence?.ai_programming_governed_path} />
 
           <Panel title="A. Trust Pulse">
